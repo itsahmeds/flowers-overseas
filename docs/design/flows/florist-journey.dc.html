@@ -91,7 +91,7 @@
     <dl>
       <dt>Purpose</dt><dd>How a Warsaw florist meets us, applies, and on a demo call signs in on staging and handles a first example order on their phone. Phase 0 exit signal 9 depends on it.</dd>
       <dt>What changed (spec 011 Appendix B item 6)</dt><dd>Step 03 is the staging inbox reached through the one email sign-in (spec 011 §13 Q2, accepted): there is no per-order <code>/v/{token}</code> link. Step 04 drops the public-use consent question (§13 Q6: photos stay private until spec 029's recipient consent) and the substitution field (spec 027). The walkthrough has its own page now. “Not in Phase 0” names specs 026 and 027.</dd>
-      <dt>What is honest here</dt><dd>No count of florists, no testimonial, no shop logo. The payout example is two lines, the buyer's price from the catalogue and the agreed amount, labelled as one example. Every inbox order on staging is synthetic.</dd>
+      <dt>What is honest here</dt><dd>No count of florists, no testimonial, no shop logo. The status line is drawn as “We are opening country by country, starting in Poland.” (founder copy pending; it replaces spec 011's “choosing” line, which the founder's ruling bans). The payout example is two lines, the buyer's price from the catalogue and the agreed amount, labelled as one example. Every inbox order on staging is synthetic.</dd>
       <dt>Owning spec</dt><dd>011 · <code>plan/05</code> rows 41, 42, 43, 45 · artboards <code>wireframes/for-florists-*</code>, <code>for-florists-walkthrough-*</code>, <code>for-florists-apply-*</code>, <code>florist-sign-in-*</code>, <code>florist-inbox-*</code></dd>
     </dl>
   </section>
@@ -100,7 +100,7 @@
       <div class="step">
         <header><span class="i">01</span><b>For florists</b></header>
         <code>/en-gb/for-florists · /pl/dla-kwiaciarni · /de/fuer-floristen</code>
-        <div class="thumb"><div class="ink"></div><span>Orders from abroad, made by you</span><div class="box">We are choosing our first florists, starting in Poland.</div><div class="row2"><div class="box" style="flex:1">What we do</div><div class="box" style="flex:1">What you do</div></div><div class="box">An example from Poland: the buyer pays · you receive, agreed before you start</div><div class="box">How an order reaches you · FAQ · talk to us first</div><div class="acc"></div></div>
+        <div class="thumb"><div class="ink"></div><span>Orders from abroad, made by you</span><div class="box">We are opening country by country, starting in Poland. <span class="slot">founder copy pending</span></div><div class="row2"><div class="box" style="flex:1">What we do</div><div class="box" style="flex:1">What you do</div></div><div class="box">An example from Poland: the buyer pays · you receive, agreed before you start</div><div class="box">How an order reaches you · FAQ · talk to us first</div><div class="acc"></div></div>
         <dl class="meta"><dt>Decision</dt><dd>Is this worth a call or a form? Apply, see how an order reaches you, or phone first.</dd><dt>Trust</dt><dd><span class="trust">The payout example's buyer price is resolved from the catalogue, never copied; no count of florists or orders anywhere.</span></dd><dt>Reads</dt><dd><code>content/pages/{locale}/for-florists.md</code>; <code>src/config/florists.ts</code> (the example); no database.</dd><dt>Index</dt><dd>yes, by rule (reviewed locales only)</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
