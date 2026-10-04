@@ -9,17 +9,27 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   T-39). The founder chose option A on 2026-10-04 ("yes A"). They approved no German or Polish
   text: every value this task writes is `reviewed: false`, and no clause here may be read as their
   review.
-- **Dispatch gate.** A15 is a draft until the founder approves its text (after `/advise`). Do not
-  start before then. Also wait for TASK-172, TASK-177 and TASK-179 to merge: all three edit
-  `messages/{en,de,pl}.json`, TASK-172 adds the freshness-claim scan, and TASK-179 changes
-  `catalog.floristSentence`, which ends every product description.
+- **Approved.** The founder approved A15 on 2026-10-04 ("yes A"), and answered its open items
+  "all defaults" the same day: German uses `Sie`, check 10 is an error with held keys on the
+  `identical` allow-list, and English parts stay while `de`/`pl` are `noindex`. The advisor's
+  verdict was GO WITH FIXES (`docs/advice/2026-10-04-spec-003-a15.md`). Its four fixes are in A15's
+  text, and they are binding here (below).
+- **Dispatch gate and merge order.** TASK-177 has merged. Wait for **TASK-172 and TASK-179** to
+  merge. Both edit `messages/{en,de,pl}.json`. TASK-172 adds the freshness-claim scan, and TASK-179
+  changes `catalog.floristSentence`, which ends every product description. Spec 041's
+  **TASK-182–184 merge after this task** and rebase onto it. With check 10 an error, each of them
+  turns red on rebase until it carries its own `de`/`pl` drafts for its new `infoPages.*` keys
+  (A15 clause 6, clause 8). `infoPages.legal.*` is already excluded by name. Their promise and
+  refund answers join `reviewBeforeOrders`. Do not draft `infoPages.*` keys here unless one of
+  them has merged first, against this order.
 - **Scope.** Two sets:
   - every `en` key whose value resolved for `de` or `pl` (after the fallback chain) is
     byte-identical to `en`'s, minus the exclusions in A15 clause 4. State the exact counts per
     locale in the PR; the orchestrator estimated about 340 per locale on 2026-10-04;
   - the `de`/`pl` rows in `seed/data/copy/{de,pl}/products.json` with
-    `translationStatus: "machine"` (84 per locale): `descriptionMd` body, `seoTitle`,
-    `seoDescription`.
+    `translationStatus: "machine"` (84 per locale), minus the sympathy, funeral and All Saints'
+    rows (about 18, which leaves about 66): `descriptionMd` body, `seoTitle`, `seoDescription`.
+    State the exact numbers in the PR.
 - **Meta (clause 2).** For messages: `source: "machine"`, `reviewed: false`, and `sourceHash` =
   sha256 of the `en` value. For seed rows: `translationStatus: "machine"`, `reviewed: false`, and the
   `en` row's `copySourceHash`.
@@ -27,19 +37,58 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   - Leave every `human` or `reviewed: true` record byte-identical, in value and meta.
   - Do not change `MESSAGE_SOURCES` or `MessageMetaSchema`.
 - **Never drafted (clause 4):**
-  - legal copy (`consent.*`, `footer.reminders.consent`, `company.operatedBy`, any `legal.*` key);
+  - legal copy (`consent.*`, `footer.reminders.consent`, `company.operatedBy`, `infoPages.legal.*`
+    by that name, and any other `legal.*` key);
   - price-display legal text (`nav.utility.pricesInclude`, `catalog.price.inclusive`,
     `catalog.price.allIn`, `product.vat`, the corridor `fromValue` key);
-  - `content/corridors/**` and the legal documents under `content/pages/`;
+  - no file under `content/corridors/**`, `content/pages/**` (spec 041's trust pages) or
+    `content/legal/**` (spec 041's legal documents) is touched;
+  - sympathy, funeral and All Saints' copy. That means every message key with a path segment
+    `sympathy`, `funeral` or `allSaints` (today `nav.category.sympathy`,
+    `catalog.facet.productType.funeral`, `catalog.facet.occasion.sympathy`,
+    `catalog.facet.occasion.allSaints`, `catalog.descriptor.form.funeral`, `occasions.sympathy.*`,
+    `occasions.date.allSaints.*`). It also means every seed product row whose record in
+    `seed/data/products.json` has `productType: "funeral"`, or has `sympathy` or `all_saints` in
+    `occasions` (`FO-FN-001`–`FO-FN-010` among them);
   - `pathSegments`, slugs, brand names and product names.
 
   Write the complete exclusion list into `content/i18n/draft-policy.json` from the catalogue as it
-  stands after the three dependencies, and list it in the PR description so the reviewer can confirm
-  it.
+  stands after the dependencies: keys under `excluded`, product keys under `excludedSeedRows`. List
+  both in the PR description so the reviewer can confirm them.
+- **`reviewBeforeOrders` (clause 4, advisor fix 2).** A third list in `draft-policy.json` names the
+  drafted values that make a promise a buyer can hold us to. At least these:
+  - the guarantee and redelivery promises (`trust.guarantee.*`, `home.proof.guarantee.*`,
+    `faq.nobodyHome.answer`, and the text of the fresh-flower promise as TASK-172 leaves it);
+  - every cutoff line (`nav.utility.cutoff`, `nav.utility.cutoffShort`, `finder.cutoff`,
+    `faq.whoDelivers.answerCutoff`, `delivery.picker.live`);
+  - every refund, cancellation or withdrawal answer (`faq.lasting.answer` joins when its held English
+    is fixed and drafted);
+  - `seed:products`, standing for every drafted product row.
+
+  Renamed keys take their new names. No entry is also excluded, and every entry names a key that
+  exists. List it in the PR. Write A15 (c)'s gate into `docs/runbooks/i18n-translations.md` §10.
+  The gate: a person writes every excluded key, and a native reviewer attests every
+  `reviewBeforeOrders` key, before the first of these happens for that locale:
+  - the locale becomes indexable;
+  - `/de` or `/pl` can take an order;
+  - any consent-gated tag switches on there.
 - **How the drafts read (clauses 4 and 5):**
-  - follow `content/i18n/glossary.{en,de,pl}.md`;
-  - Polish uses informal `Ty`; German uses `Sie` (open item (a): if the founder rules `du` first,
-    follow the ruling and update AC-37's register rule in the same PR);
+  - follow `content/i18n/glossary.{en,de,pl}.md`. Where a glossary disagrees, the decisions log and
+    spec 004 §14 A5/A22 win (advisor fix 4). In this PR, rewrite `glossary.en.md` §2's "partner
+    florist" and §4's ban on "our florists" to match A5 and A22 (T-38). The sympathy, funeral and
+    All Saints' lines in `glossary.de.md` §2 and `glossary.pl.md` §3 stand: those keys are
+    excluded;
+  - Polish uses informal `Ty`; German uses `Sie` (open item (a), confirmed by the founder
+    2026-10-04);
+  - A5's banned words in German and Polish (advisor fix 3). Add the target-language forms to
+    `src/config/voice.ts` so that `bannedVoiceWordsIn()` matches them in every drafted `de`/`pl`
+    value:
+    - at least "Netzwerk", "Drittanbieter", "Korridor" and "Relais" in German;
+    - at least "sieć", "sieci", "pośrednik", "korytarz" and "strona trzecia" in Polish;
+    - complete the list from A5's nine words, and list an inflected form that does not contain its
+      base form;
+    - keep `BANNED_VOICE_WORDS` and its README pin at the nine English words;
+    - list the forms in the PR;
   - "Flowers Overseas" is untranslated and uninflected;
   - ICU placeholder names stay exactly as they are; every Polish plural has
     `one`/`few`/`many`/`other`;
@@ -84,6 +133,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 - `specs/003-i18n-foundation.md`: read `## 0. Index` first, then §14 A15, §2 "Messages", §7
   "Translation review plan", AC-22 to AC-24
+- `docs/advice/2026-10-04-spec-003-a15.md`: the advisor's four fixes, now in A15
+- `seed/data/products.json` (`productType`, `occasions`: the excluded rows)
 - `docs/codebase-map.md`: where everything lives
 - `docs/runbooks/i18n-translations.md` §2, §3, §4, §7, §10 (§2, §3 and §10 change here)
 - `content/i18n/glossary.en.md`, `glossary.de.md`, `glossary.pl.md` (the status lines change here)
@@ -108,13 +159,22 @@ Each must be watched red with its subject removed, then green (CLAUDE.md DoD §4
     `human` record.
 - **T-35 (unit):** every excluded key's `de`/`pl` value equals `en`'s or is `human`.
   - Red when `consent.headline` gets a machine German value.
-  - The PR diff touches no corridor guide, legal page, `pathSegments` or seed `name`/`slug`.
+  - Red when `infoPages.legal.*` or `occasions.date.allSaints.*` is removed from `excluded`.
+  - `excludedSeedRows` equals the set computed from `seed/data/products.json`; red when
+    `FO-FN-001` is removed.
+  - `reviewBeforeOrders` contains `seed:products` and `nav.utility.cutoff` (or its successor); red
+    when either is removed, when a key is in both `excluded` and `reviewBeforeOrders`, and when an
+    entry names a missing key.
+  - The PR diff touches nothing under `content/corridors/**`, `content/pages/**` or
+    `content/legal/**`, no `pathSegments`, and no seed `name`/`slug`.
 - **T-36 (unit):** `isLocaleIndexable` is `false` and `localeBetaTag` is set for `de` and `pl`;
   `alternatesFor("/")` excludes both.
   - A fixture manifest with every record reviewed flips `de` to indexable.
 - **T-37 (unit):** `i18n:check` exits 0, and the voice, freshness, home-price, register, brand and
   Polish-plural checks pass on every drafted value. Each check goes red on one seeded fault:
   - "Partner" in a `de` value;
+  - "Netzwerk" in a `de` value, and "pośrednik" in a `pl` value. Each must go red only through the
+    German or Polish forms; the English list alone would pass them;
   - "7 Tage frisch" in a `de` value;
   - "inkl. MwSt." in a `home.*` value;
   - "du" in a `de` value, or "Państwo" in a `pl` value;
@@ -125,12 +185,17 @@ Each must be watched red with its subject removed, then green (CLAUDE.md DoD §4
   exits 0.
   - Red when one body is restored to English.
   - Red when one `slug` changes.
+  - Every `excludedSeedRows` row is byte-identical to the base; red when `FO-FN-001`'s `de` body
+    gets a machine draft.
+  - `glossary.en.md` has neither "partner florist" nor the ban on "our florists"; red when either
+    line is restored.
 - **T-39 (unit):** a dry run of `draftLocale` and `draftCopyLocale` on the committed tree changes
   nothing.
   - Red when the keep-fresh rule is reverted.
   - Check 10 exits non-zero, naming file and key, on each of its four seeded faults, and 0 on the
     repaired fixture.
-  - The runbook and glossary text name the policy file and check 10.
+  - The runbook and glossary text name the policy file and check 10, and runbook §10 names
+    `reviewBeforeOrders` and the three events.
 
 ## Carry-forwards
 
@@ -138,13 +203,14 @@ _None recorded._
 
 ## Escalations
 
-- **A15 open items (2026-10-04), to the founder through the orchestrator:**
-  - (a) German register: `Sie` (default) or `du`;
-  - (b) check 10's severity: error (default) or warning;
+- **A15 open items (2026-10-04). Ruled by the founder the same day, in chat: "all defaults".**
+  - (a) German register: **`Sie`**. Ruled.
+  - (b) check 10's severity: **error**, with held keys on the `identical` allow-list. Ruled.
   - (c) the English that stays on `/de` and `/pl` (excluded and held keys, the consent sheet
-    included): accepted while `noindex` (default).
-
-  All three are `open`; the defaults bind.
+    included): **accepted while `noindex`**. Ruled. Per advisor fix 2, a person writes every
+    excluded key, and a native reviewer attests every `reviewBeforeOrders` key, before the first
+    of these happens for that locale: it becomes indexable; it can take an order; a consent-gated
+    tag switches on there.
 
 ## Progress
 
