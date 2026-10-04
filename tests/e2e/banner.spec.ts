@@ -28,6 +28,12 @@
  */
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftOutside,
+} from "../support/layout-shift.ts";
+
 const BANNER = '[data-fo-banner="shown"]';
 const SWITCH = '[data-fo-banner-action="switch"]';
 const STAY = '[data-fo-banner-action="stay"]';
@@ -64,27 +70,14 @@ async function forceLanguages(
   }, languages);
 }
 
-/** Collect unbuffered layout shifts from the first paint onwards. */
-async function observeLayoutShifts(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const store = window as unknown as { __clsTotal: number };
-    store.__clsTotal = 0;
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const shift = entry as PerformanceEntry & {
-          value: number;
-          hadRecentInput: boolean;
-        };
-        if (!shift.hadRecentInput) store.__clsTotal += shift.value;
-      }
-    }).observe({ type: "layout-shift", buffered: true });
-  });
-}
-
-function cumulativeLayoutShift(page: Page): Promise<number> {
-  return page.evaluate(
-    () => (window as unknown as { __clsTotal: number }).__clsTotal,
-  );
+/**
+ * The shift the banner can cause: every entry not wholly inside the home's sentence picker
+ * (`../support/layout-shift.ts`). The sentence re-measures when its webfont swaps in, and its own
+ * test in `./home.spec.ts` bounds that; the banner overlays, so any shift it causes moves
+ * something else.
+ */
+function bannerShift(page: Page): Promise<number> {
+  return shiftOutside(page, SENTENCE_REGION);
 }
 
 interface CookieAssertion {
@@ -166,7 +159,7 @@ test.describe("a German browser on /en (AC-28)", () => {
 
   test.beforeEach(async ({ page }) => {
     await forceLanguages(page, ["de-DE", "de"]);
-    await observeLayoutShifts(page);
+    await recordLayoutShifts(page);
   });
 
   test("is not in the server HTML, then appears after hydration", async ({
@@ -205,14 +198,14 @@ test.describe("a German browser on /en (AC-28)", () => {
     const heading = page.locator("h1");
     await expect(heading).toBeVisible();
     const before = await heading.boundingBox();
-    const shiftsBefore = await cumulativeLayoutShift(page);
+    const shiftsBefore = await bannerShift(page);
 
     await expect(page.locator(BANNER)).toBeVisible();
 
     const after = await heading.boundingBox();
     expect(after).toEqual(before);
-    expect(await cumulativeLayoutShift(page)).toBe(shiftsBefore);
-    expect(await cumulativeLayoutShift(page)).toBe(0);
+    expect(await bannerShift(page)).toBe(shiftsBefore);
+    expect(await bannerShift(page)).toBe(0);
   });
 
   test("is keyboard reachable and takes no focus of its own", async ({

@@ -371,6 +371,7 @@
  * there the swap fell back to an unmatched system face and a late font moved boxes. These two faces
  * are the first named fallbacks of the Latin calls (`src/modules/ui/fonts/index.ts`) and carry the
  * same overrides over the metric-compatible clones — Liberation and the ChromeOS Croscore fonts.
+ * The roman display face has an italic sibling, below.
  * The numbers are Next's own computation for the committed 400 Latin files, and
  * `tests/unit/fonts.test.ts` recomputes them, so a re-subset that moves them fails a test.
  */
@@ -390,6 +391,29 @@
   descent-override: 26.79%;
   line-gap-override: 0%;
   size-adjust: 95.19%;
+}
+
+/*
+ * The italic of the same fallback family (A21 clause 3 "on every face"; TASK-177, escalation 7).
+ * Without it, italic text fell back to the roman face above, slanted by the browser and sized for
+ * the roman: about 12 % wider than Fraunces 300 italic. The home's sentence selects are that
+ * italic, sized to their choice, so each one changed width when the webfont swapped in and moved
+ * the words after it (CLS 0.003 on /pl in CI). This face matches the italic file instead. Next's
+ * computation, over the italic Liberation and Croscore clones: `size-adjust` is the Fraunces
+ * italic's a–z average width over Times New Roman Italic's (846.558 / 2048 units, which Liberation
+ * Serif Italic and Tinos Italic share), and the overrides are the italic file's ascent and descent
+ * over that. `tests/unit/fonts-italic-fallback.test.ts` recomputes them from the committed file.
+ * The Latin-Ext roman needs no face of its own: its characters fall through to the roman face
+ * above, which is already matched.
+ */
+@font-face {
+  font-family: "Fraunces Fallback Liberation";
+  font-style: italic;
+  src: local("Liberation Serif Italic"), local("Tinos Italic");
+  ascent-override: 114.64%;
+  descent-override: 29.89%;
+  line-gap-override: 0%;
+  size-adjust: 85.31%;
 }
 
 /*

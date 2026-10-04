@@ -31,6 +31,8 @@ import { createHash } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+import { recordLayoutShifts, shiftInside } from "../support/layout-shift.ts";
+
 /** The sticky part: masthead + category row, and the `banner` landmark. */
 const HEADER = "[data-fo-header]";
 
@@ -97,26 +99,19 @@ const LOCALES = [
 /** Tailwind's `md` breakpoint is 48rem; below it the mobile artboard's bands apply. */
 const MD_BREAKPOINT = 768;
 
-/** Sum of every layout-shift entry the page reported (the banner suite's measurement, locally). */
-async function cumulativeLayoutShift(page: import("@playwright/test").Page) {
-  return page.evaluate(
+/**
+ * The shift the header causes: entries with a source inside the header or the utility strip
+ * (`../support/layout-shift.ts`), after a 500 ms settle. The home's sentence re-measures when its
+ * webfont swaps in; that shift is bounded by its own test in `./home.spec.ts`, not read here.
+ */
+async function headerShift(page: import("@playwright/test").Page) {
+  await page.evaluate(
     () =>
-      new Promise<number>((resolve) => {
-        let total = 0;
-        new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            const shift = entry as PerformanceEntry & {
-              value: number;
-              hadRecentInput: boolean;
-            };
-            if (!shift.hadRecentInput) total += shift.value;
-          }
-        }).observe({ type: "layout-shift", buffered: true });
-        setTimeout(() => {
-          resolve(total);
-        }, 500);
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, 500);
       }),
   );
+  return shiftInside(page, `${HEADER}, ${UTILITY}`);
 }
 
 test.describe("the site header (AC-7)", () => {
@@ -132,6 +127,7 @@ test.describe("the site header (AC-7)", () => {
           get: () => [],
         });
       });
+      await recordLayoutShifts(page);
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
 
@@ -163,7 +159,7 @@ test.describe("the site header (AC-7)", () => {
       await expect(utility).toHaveCSS("position", "static");
 
       // Nothing the header does shifts the page.
-      expect(await cumulativeLayoutShift(page)).toBe(0);
+      expect(await headerShift(page)).toBe(0);
     });
   }
 

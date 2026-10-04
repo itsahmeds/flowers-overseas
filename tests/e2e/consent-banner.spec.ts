@@ -31,6 +31,12 @@
  */
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftOutside,
+} from "../support/layout-shift.ts";
+
 import { COOKIE_REGISTRY, isRegisteredCookie } from "../../src/config/cookies";
 import { ConsentDecisionSchema } from "../../src/lib/consent";
 import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
@@ -65,20 +71,13 @@ async function emptyLanguages(target: Page | BrowserContext): Promise<void> {
   });
 }
 
-async function observeLayoutShifts(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const store = window as unknown as { __clsTotal: number };
-    store.__clsTotal = 0;
-    new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        const shift = entry as PerformanceEntry & {
-          value: number;
-          hadRecentInput: boolean;
-        };
-        if (!shift.hadRecentInput) store.__clsTotal += shift.value;
-      }
-    }).observe({ type: "layout-shift", buffered: true });
-  });
+/**
+ * The shift the sheet can cause: every entry not wholly inside the home's sentence picker
+ * (`../support/layout-shift.ts`), whose webfont swap is bounded by its own test in
+ * `./home.spec.ts`. The sheet overlays, so any shift it causes moves something else.
+ */
+function sheetShift(page: Page): Promise<number> {
+  return shiftOutside(page, SENTENCE_REGION);
 }
 
 /** Every `gtag('consent','update',…)` payload the page pushed, in order. */
@@ -176,7 +175,7 @@ test.describe("the sheet appears without disturbing the page (AC-17)", () => {
       context,
     }) => {
       await emptyLanguages(page);
-      await observeLayoutShifts(page);
+      await recordLayoutShifts(page);
 
       const response = await page.goto(`/${locale}`);
       expect(response?.status()).toBe(200);
@@ -191,11 +190,7 @@ test.describe("the sheet appears without disturbing the page (AC-17)", () => {
 
       const after = await heading.boundingBox();
       expect(after).toEqual(before);
-      expect(
-        await page.evaluate(
-          () => (window as unknown as { __clsTotal: number }).__clsTotal,
-        ),
-      ).toBeLessThanOrEqual(0.001);
+      expect(await sheetShift(page)).toBeLessThanOrEqual(0.001);
 
       // Focus is not stolen: it is still where the document left it.
       expect(

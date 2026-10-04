@@ -28,6 +28,12 @@
  */
 import { expect, test } from "@playwright/test";
 
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftInside,
+} from "../support/layout-shift.ts";
+
 const LOCALES = ["/en", "/en-gb", "/de", "/pl"] as const;
 
 const HERO = "[data-fo-hero]";
@@ -443,4 +449,69 @@ test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () =
     expect(landed.search).toBe("");
     await expect(page.locator("h1")).toHaveCount(1);
   });
+});
+
+/**
+ * The sentence's webfont swap stays small (spec 004 §14 A21 clause 3; TASK-177 escalation 7,
+ * orchestrator ruling 2026-10-04).
+ *
+ * The selects are set in Fraunces 300 italic and the frame in Fraunces roman, neither of which
+ * A21 clause 3 lets the home preload, and each select sizes to its choice
+ * (`field-sizing: content`). When the webfont swaps in, a select whose fallback is not
+ * metric-matched changes width and moves the words after it. `src/app/globals.css` gives both
+ * styles a matched fallback, so the swap moves them by a fraction of a pixel; this case pins that
+ * the shift attributed to the sentence stays at or below 0.005 on every home, at both artboard
+ * widths. The header, banner and consent tests read only their own subject's shifts, so this is
+ * the one place the sentence's swap is measured.
+ */
+const SENTENCE_SHIFT_BOUND = 0.005;
+const SENTENCE_VIEWPORTS = [
+  { width: 1280, height: 720 },
+  { width: 390, height: 844 },
+] as const;
+
+test.describe("the home sentence's font swap stays small", () => {
+  for (const path of LOCALES) {
+    for (const viewport of SENTENCE_VIEWPORTS) {
+      test(`${path} at ${String(viewport.width)} px: the sentence shifts by at most ${String(SENTENCE_SHIFT_BOUND)}`, async ({
+        page,
+      }, testInfo) => {
+        await page.setViewportSize(viewport);
+        await page.addInitScript(() => {
+          Object.defineProperty(navigator, "languages", {
+            configurable: true,
+            get: () => [],
+          });
+        });
+        await recordLayoutShifts(page);
+
+        const response = await page.goto(path);
+        expect(response?.status()).toBe(200);
+        await expect(page.locator(SENTENCE_REGION)).toBeVisible();
+        // Every face the page asked for has arrived, so the swap has happened, then two frames
+        // and a settle for the entries to be reported.
+        await page.evaluate(async () => {
+          await document.fonts.ready;
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                setTimeout(resolve, 500);
+              });
+            });
+          });
+        });
+
+        const shift = await shiftInside(page, SENTENCE_REGION);
+        testInfo.annotations.push({
+          type: "sentence-shift",
+          description: `${path} ${String(viewport.width)}: ${String(shift)}`,
+        });
+        // The measured value, in the log CI keeps, for the escalation's before/after record.
+        console.log(
+          `sentence-shift ${path} ${String(viewport.width)} ${String(shift)}`,
+        );
+        expect(shift).toBeLessThanOrEqual(SENTENCE_SHIFT_BOUND);
+      });
+    }
+  }
 });
