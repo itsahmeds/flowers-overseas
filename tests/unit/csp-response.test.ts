@@ -23,7 +23,7 @@ import { join } from "node:path";
 import { nodeFs } from "next/dist/server/lib/node-fs-methods.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import CspCacheHandler from "../../src/lib/csp-cache-handler.mjs";
+import CspCacheHandler from "../../src/lib/csp-cache-handler.ts";
 import {
   CSP_HEADER,
   CSP_REPORT_ONLY_HEADER,
@@ -32,7 +32,7 @@ import {
   stampCspHeaders,
   staticPolicyFromRoutesManifest,
   withScriptHashes,
-} from "../../src/lib/csp-response.mjs";
+} from "../../src/lib/csp-response.ts";
 import { cspValue } from "../../src/lib/csp";
 import { cspReportOnly } from "../../src/lib/env.schema";
 

@@ -65,7 +65,7 @@ const platform = hostPlatform(process.env);
 // This static CSP is always `Content-Security-Policy-Report-Only` (TASK-058). The **enforced**
 // policy is per cached document — this same string plus the hashes of that document's inline
 // scripts, Next's flight blocks included — written by the `cacheHandler` below when the server
-// runs with `CSP_REPORT_ONLY=false` (`src/lib/csp-response.mjs`, spec 004 §14 A2).
+// runs with `CSP_REPORT_ONLY=false` (`src/lib/csp-response.ts`, spec 004 §14 A2).
 //
 // `inlineHashes` carries exactly one value (TASK-050): the sha256 of the ≤1 KB Consent-Mode
 // default-denied bootstrap in `src/lib/consent-bootstrap.ts`, computed here at build time from
@@ -131,14 +131,14 @@ const nextConfig: NextConfig = {
   // with the static policy above plus the `'sha256-…'` of that document's inline scripts — the
   // one place the HTML and its headers meet before either is sent. A hash describes bytes, so it
   // is cached with them; no nonce is ever put in cached HTML. Switched on at run time by
-  // `CSP_REPORT_ONLY=false`. Plain `.mjs` because Next `import()`s it unbundled; traced into the
+  // `CSP_REPORT_ONLY=false`. Next `import()`s it unbundled, on Node's type stripping; traced into the
   // standalone output by Next. **Not on Vercel**, where the platform serves prerenders itself and
   // never consults this handler — so the cold fallback stays Report-Only, which is recorded in
   // `docs/runbooks/csp-enforce.md`.
   ...(platform === "vercel"
     ? {}
     : {
-        cacheHandler: path.join(process.cwd(), "src/lib/csp-cache-handler.mjs"),
+        cacheHandler: path.join(process.cwd(), "src/lib/csp-cache-handler.ts"),
       }),
   // A country shop root request carrying a parameter the listing honours is answered by the
   // internal parameter route, so no route file reads the query string and the depth-3 route stays

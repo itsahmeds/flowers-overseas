@@ -34,12 +34,12 @@
  * It cannot be the enforced one, because Next 16 emits ten-odd inline `self.__next_f.push(…)`
  * flight blocks per document whose bytes differ per route, build and ISR regeneration (spec 004
  * §14 A2). The enforced policy is therefore written **per cached document**, by
- * `src/lib/csp-cache-handler.mjs`: this exact static string, read back from the build's
+ * `src/lib/csp-cache-handler.ts`: this exact static string, read back from the build's
  * `routes-manifest.json`, plus the `'sha256-…'` of every inline script in that document
- * (`src/lib/csp-response.mjs`). `CSP_REPORT_ONLY=false` switches that header on at **run time**
+ * (`src/lib/csp-response.ts`). `CSP_REPORT_ONLY=false` switches that header on at **run time**
  * — it is read by the server, not baked by the build — and absent or any other value leaves it
  * off. The reasoning against ADR-0016's cached-HTML rule (a hash describes bytes and is safe to
- * cache; a nonce is not) is in `src/lib/csp-response.mjs` and in the TASK-058 PR.
+ * cache; a nonce is not) is in `src/lib/csp-response.ts` and in the TASK-058 PR.
  *
  * `Reporting-Endpoints` plus `report-to` is the current reporting shape; the deprecated
  * `report-uri` is emitted alongside because Safari and older Chromium still only implement that
@@ -52,7 +52,7 @@ import type { DeploymentEnvironment, HostPlatform } from "./env.schema";
 import { MEDIA_ORIGIN } from "./media-origin";
 import type { HeaderRule } from "./robots-headers";
 
-import { CSP_HEADER, CSP_REPORT_ONLY_HEADER } from "./csp-response.mjs";
+import { CSP_HEADER, CSP_REPORT_ONLY_HEADER } from "./csp-response.ts";
 import { ALL_PATHS } from "./robots-headers";
 
 export { CSP_HEADER, CSP_REPORT_ONLY_HEADER };
@@ -103,7 +103,7 @@ export interface CspOptions {
    * the script itself, because a bootstrap the policy would report is a false negative in the
    * Report-Only evidence. The application contains **exactly one application inline script**;
    * Next's flight blocks are authorised per document, not here (spec 004 §14 A2, TASK-058:
-   * `src/lib/csp-response.mjs`).
+   * `src/lib/csp-response.ts`).
    */
   readonly inlineHashes?: readonly string[];
   /**
@@ -246,7 +246,7 @@ export function cspValue(
 
 /**
  * The static CSP header. Always the Report-Only name (TASK-058): the enforced policy is the
- * per-document one `src/lib/csp-cache-handler.mjs` writes, because only it can name the flight
+ * per-document one `src/lib/csp-cache-handler.ts` writes, because only it can name the flight
  * blocks' hashes. Enforcing this string would block hydration on every page (spec 004 §14 A2).
  */
 export function cspHeader(

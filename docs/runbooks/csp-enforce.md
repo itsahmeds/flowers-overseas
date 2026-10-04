@@ -1,7 +1,7 @@
 # Enforcing the Content-Security-Policy
 
 Spec 004 §5.2, §14 A2, AC-23 · ADR-0016 · TASK-058 · `src/lib/csp.ts`,
-`src/lib/csp-response.mjs`, `src/lib/csp-cache-handler.mjs`, `src/lib/csp-report.ts`
+`src/lib/csp-response.ts`, `src/lib/csp-cache-handler.ts`, `src/lib/csp-report.ts`
 
 The policy is **built and dark**. Every response carries the static policy as
 `Content-Security-Policy-Report-Only`. Enforcement is one Railway variable, `CSP_REPORT_ONLY=false`,

@@ -1,20 +1,24 @@
-// @ts-check
 /**
  * The per-response Content-Security-Policy of a cached HTML document (spec 004 §14 A2, AC-23,
- * ADR-0016; TASK-058). Plain JavaScript on purpose: `src/lib/csp-cache-handler.mjs` imports it,
- * and Next loads that handler with a bare `import()` at server start — no bundler, no type
- * stripping, no path alias — in `next start` and in the standalone container alike. The
- * TypeScript side (`src/lib/csp.ts`, the tests) imports the same file, so the header names and the
+ * ADR-0016; TASK-058).
+ *
+ * **Loaded by Node directly, not by the bundler.** `src/lib/csp-cache-handler.ts` imports this
+ * file, and Next loads that handler with a bare `import()` at server start, in `next start` and in
+ * the standalone container alike, so both files run on Node's own type stripping. Hence the rules
+ * every line here keeps: erasable TypeScript only (no enum, no parameter property, no namespace —
+ * `erasableSyntaxOnly` in `tsconfig.json` enforces it), relative imports with their `.ts`
+ * extension, no `@/` alias, and no import that pulls in the app (`./logger.ts` included). The
+ * bundled side (`src/lib/csp.ts`, the tests) imports the same file, so the header names and the
  * hashing rule have one definition.
  *
  * ## The problem this solves
  *
  * Next 16 writes the React flight payload into the document as a run of inline
- * `<script>self.__next_f.push(…)</script>` blocks — ten on a locale home, measured at `/review 28`
- * — next to the one application inline script, the Consent-Mode bootstrap. The static policy of
- * ADR-0016 authorises the bootstrap by hash and nothing else, so enforcing it blocks hydration on
- * every page. The flight blocks carry the page's data, so their bytes differ per route, per build
- * and per ISR regeneration: no static header can name them.
+ * `<script>self.__next_f.push(…)</script>` blocks next to the one application inline script, the
+ * Consent-Mode bootstrap. The static policy of ADR-0016 authorises the bootstrap by hash and
+ * nothing else, so enforcing it blocks hydration on every page (`/review 28`). The flight blocks
+ * carry the page's data, so their bytes differ per route, per build and per ISR regeneration: no
+ * static header can name them.
  *
  * ## Hash per response, not nonce
  *
@@ -26,7 +30,7 @@
  * anywhere here.
  *
  * The hashes are computed from the HTML **as it is stored in the cache entry**, which is the HTML
- * that is served: `src/lib/csp-cache-handler.mjs` stamps the entry when Next writes it (build-time
+ * that is served: `src/lib/csp-cache-handler.ts` stamps the entry when Next writes it (build-time
  * prerender, ISR regeneration, first on-demand render) and again when Next reads it, so an entry
  * written before a flag change is served with the policy the running server asks for.
  */
@@ -42,11 +46,10 @@ export const CSP_REPORT_ONLY_KEY = "CSP_REPORT_ONLY";
  * Whether the per-response policy is **enforced**. Asymmetric like `cspReportOnly()` in
  * `src/lib/env.schema.ts`: only the exact string `"false"` enforces, so absence, a typo and every
  * other value stay report-only.
- *
- * @param {Readonly<Record<string, string | undefined>>} source
- * @returns {boolean}
  */
-export function cspEnforced(source) {
+export function cspEnforced(
+  source: Readonly<Record<string, string | undefined>>,
+): boolean {
   return source[CSP_REPORT_ONLY_KEY] === "false";
 }
 
@@ -55,7 +58,7 @@ export function cspEnforced(source) {
  * `type="application/ld+json"` block is data, never run and never checked against `script-src`,
  * so hashing it would only lengthen the header.
  */
-const EXECUTABLE_TYPES = new Set([
+const EXECUTABLE_TYPES: ReadonlySet<string> = new Set([
   "",
   "text/javascript",
   "application/javascript",
@@ -75,13 +78,10 @@ const TYPE_ATTRIBUTE =
  *
  * The digest is over the UTF-8 bytes of the element's text, exactly as the browser computes it:
  * no trimming, no normalisation. An empty inline script is hashed too — the browser checks it.
- *
- * @param {string} html
- * @returns {string[]} values like `sha256-AbC…=`, without the surrounding quotes
+ * Values are returned without the surrounding quotes, like `CspOptions.inlineHashes`.
  */
-export function inlineScriptHashes(html) {
-  /** @type {string[]} */
-  const hashes = [];
+export function inlineScriptHashes(html: string): string[] {
+  const hashes: string[] = [];
   for (const match of html.matchAll(SCRIPT_ELEMENT)) {
     const attributes = match[1] ?? "";
     if (SRC_ATTRIBUTE.test(attributes)) continue;
@@ -105,12 +105,11 @@ export function inlineScriptHashes(html) {
  * per-response policy is the static policy of `src/lib/csp.ts` plus exactly the hashes of one
  * document. `undefined` when the policy has no `script-src`: a policy this function cannot
  * extend is not one it should guess at.
- *
- * @param {string} policy
- * @param {readonly string[]} hashes
- * @returns {string | undefined}
  */
-export function withScriptHashes(policy, hashes) {
+export function withScriptHashes(
+  policy: string,
+  hashes: readonly string[],
+): string | undefined {
   const directives = policy
     .split(";")
     .map((part) => part.trim())
@@ -128,26 +127,27 @@ export function withScriptHashes(policy, hashes) {
   return `${directives.join("; ")};`;
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
 /**
  * The static policy this build sends, read from Next's `routes-manifest.json` — the file
  * `next.config.ts`'s `headers()` is compiled into. Reading it back (instead of recomputing it
  * here) is what keeps one source of truth: the per-response policy can only ever be the static
  * policy plus hashes, never a second hand-written copy that drifts.
- *
- * @param {unknown} manifest the parsed `routes-manifest.json`
- * @returns {string | undefined}
  */
-export function staticPolicyFromRoutesManifest(manifest) {
-  if (typeof manifest !== "object" || manifest === null) return undefined;
-  const rules = /** @type {{ headers?: unknown }} */ (manifest).headers;
-  if (!Array.isArray(rules)) return undefined;
-  for (const rule of rules) {
-    const headers = /** @type {{ headers?: unknown }} */ (rule ?? {}).headers;
-    if (!Array.isArray(headers)) continue;
-    for (const header of headers) {
-      const { key, value } = /** @type {{ key?: unknown, value?: unknown }} */ (
-        header ?? {}
-      );
+export function staticPolicyFromRoutesManifest(
+  manifest: unknown,
+): string | undefined {
+  if (!isRecord(manifest) || !Array.isArray(manifest["headers"])) {
+    return undefined;
+  }
+  for (const rule of manifest["headers"] as unknown[]) {
+    if (!isRecord(rule) || !Array.isArray(rule["headers"])) continue;
+    for (const header of rule["headers"] as unknown[]) {
+      if (!isRecord(header)) continue;
+      const key = header["key"];
+      const value = header["value"];
       if (
         typeof key === "string" &&
         typeof value === "string" &&
@@ -158,6 +158,13 @@ export function staticPolicyFromRoutesManifest(manifest) {
     }
   }
   return undefined;
+}
+
+export interface StampOptions {
+  /** The static policy, from `staticPolicyFromRoutesManifest()`; `undefined` fails open. */
+  readonly staticPolicy: string | undefined;
+  /** `cspEnforced(process.env)`. */
+  readonly enforce: boolean;
 }
 
 /**
@@ -174,22 +181,20 @@ export function staticPolicyFromRoutesManifest(manifest) {
  * static `Content-Security-Policy-Report-Only` from `next.config.ts` still reaches every
  * response, so the report-only period keeps exactly its pre-TASK-058 evidence).
  *
- * @param {unknown} value a cache entry value (`IncrementalCacheValue`)
- * @param {{ staticPolicy: string | undefined, enforce: boolean }} options
- * @returns {boolean} whether an enforcing header is now on the entry
+ * Returns whether an enforcing header is now on the entry.
  */
-export function stampCspHeaders(value, { staticPolicy, enforce }) {
-  if (typeof value !== "object" || value === null) return false;
-  const entry =
-    /** @type {{ kind?: unknown, html?: unknown, headers?: unknown }} */ (
-      value
-    );
-  if (entry.kind !== "APP_PAGE" || typeof entry.html !== "string") return false;
+export function stampCspHeaders(
+  value: unknown,
+  options: StampOptions,
+): boolean {
+  if (!isRecord(value)) return false;
+  const html = value["html"];
+  if (value["kind"] !== "APP_PAGE" || typeof html !== "string") return false;
 
-  /** @type {Record<string, unknown>} */
-  const headers = {};
-  if (typeof entry.headers === "object" && entry.headers !== null) {
-    for (const [key, header] of Object.entries(entry.headers)) {
+  const headers: Record<string, unknown> = {};
+  const existing = value["headers"];
+  if (isRecord(existing)) {
+    for (const [key, header] of Object.entries(existing)) {
       const lower = key.toLowerCase();
       if (
         lower === CSP_HEADER.toLowerCase() ||
@@ -202,16 +207,16 @@ export function stampCspHeaders(value, { staticPolicy, enforce }) {
   }
 
   let stamped = false;
-  if (enforce && staticPolicy !== undefined) {
+  if (options.enforce && options.staticPolicy !== undefined) {
     const policy = withScriptHashes(
-      staticPolicy,
-      inlineScriptHashes(entry.html),
+      options.staticPolicy,
+      inlineScriptHashes(html),
     );
     if (policy !== undefined) {
       headers[CSP_HEADER] = policy;
       stamped = true;
     }
   }
-  entry.headers = headers;
+  value["headers"] = headers;
   return stamped;
 }

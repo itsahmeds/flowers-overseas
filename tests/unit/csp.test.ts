@@ -409,7 +409,7 @@ describe("next.config.ts wiring", () => {
     expect(source).toContain("noindexHeaderRules(environment)");
     // The static header no longer reads the flag; the cache handler reads it at run time.
     expect(source).not.toContain("reportOnly:");
-    expect(source).toContain('"src/lib/csp-cache-handler.mjs"');
+    expect(source).toContain('"src/lib/csp-cache-handler.ts"');
   });
 
   it("passes the consent bootstrap's hash and the GA4 gate (TASK-050)", () => {

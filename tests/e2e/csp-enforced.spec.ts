@@ -7,7 +7,7 @@
  *  1. **Hydration survives enforcement.** With `CSP_REPORT_ONLY=false` the server sends
  *     `Content-Security-Policy` on every cached document — the static policy plus the
  *     `'sha256-…'` of that document's inline scripts, Next's `self.__next_f.push(…)` flight blocks
- *     included (`src/lib/csp-response.mjs`). If one flight block were missing from the list the
+ *     included (`src/lib/csp-response.ts`). If one flight block were missing from the list the
  *     browser would refuse it, the RSC payload would never complete, and React would never mount
  *     the consent sheet — which exists only after hydration (`consent-banner.spec.ts`). So the
  *     sheet appearing *and answering a click* is the hydration proof, and zero

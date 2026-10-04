@@ -280,11 +280,11 @@ export const serverEnvSchema = z.object({
    * the exact string `"false"` enforces, so a typo cannot half-enable enforcement.
    *
    * Since TASK-058 it is a **run-time** key: the static `Content-Security-Policy-Report-Only`
-   * header is always sent and does not read it; `src/lib/csp-cache-handler.mjs` reads it at server
+   * header is always sent and does not read it; `src/lib/csp-cache-handler.ts` reads it at server
    * start and, on `"false"`, adds an enforcing `Content-Security-Policy` to every cached HTML
    * document — the static policy plus that document's inline-script hashes. So it is not a build
    * argument, the flip needs a restart and no rebuild, and `docs/runbooks/csp-enforce.md` is the
-   * procedure. `cspEnforced()` in `src/lib/csp-response.mjs` is its run-time mirror, pinned
+   * procedure. `cspEnforced()` in `src/lib/csp-response.ts` is its run-time mirror, pinned
    * against `cspReportOnly()` below by `tests/unit/csp-response.test.ts`.
    */
   CSP_REPORT_ONLY: z.preprocess(
@@ -515,7 +515,7 @@ export function ga4MeasurementId(source: EnvSource): string | undefined {
 
 /**
  * Whether the CSP stays report-only (spec 004 AC-23, ADR-0016). The server reads the same key
- * through `cspEnforced()` in `src/lib/csp-response.mjs`, which a cache handler loaded outside the
+ * through `cspEnforced()` in `src/lib/csp-response.ts`, which a cache handler loaded outside the
  * bundle can import; the two are pinned to the same answer by `tests/unit/csp-response.test.ts`
  * (TASK-058).
  *
