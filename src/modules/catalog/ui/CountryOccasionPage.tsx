@@ -132,7 +132,7 @@ export function CountryOccasionPage({
           heading={shop("h1.countryOccasion", { occasion, country })}
           lede={shop("occasion.lede", { country })}
           eyebrow={shop("listing.eyebrow", { country })}
-          note={shop("root.demoNotice", { country })}
+          note={shop("root.demoNotice")}
           noteLabel={shop("note.label")}
           noteMark={shop("note.mark")}
         >

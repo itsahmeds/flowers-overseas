@@ -5,9 +5,9 @@
  * It reproduces `docs/design/wireframes/chrome-desktop.dc.html` and `chrome-mobile.dc.html`:
  *
  *  1. **the notice bar** — `NoticeBar` (TASK-175's primitive): "A note from us:" in sunflower, then
- *     the honest dates line, "Prices include delivery and VAT" (not on the home; the route decides) and
- *     "Fresh-flower promise" on the
- *     desktop artboard, one short sentence centred on the mobile one. At its inline end, desktop
+ *     the cutoff once dates open, "Prices include delivery and VAT" (not on the home; the route
+ *     decides) and "Fresh-flower promise" on the desktop artboard, the short cutoff centred on the
+ *     mobile one once dates open (nothing before). At its inline end, desktop
  *     only: the help line as a `tel:` link, spec 003's language switcher and the currency as text;
  *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
  *     the outlined `Wordmark`, A21 clause 3) linked to the locale home, the eight category links
@@ -118,10 +118,13 @@ function CategoryEntry({
   );
 }
 
-/** A decorative `·` or `|` between two claims or controls. */
+/**
+ * A decorative `·` or `|` between two claims or controls. `data-fo-sep` lets the notice line hide
+ * one that would open the line (see the claims span below).
+ */
 function Separator({ glyph }: { readonly glyph: "·" | "|" }): ReactElement {
   return (
-    <span aria-hidden="true" className="opacity-45">
+    <span aria-hidden="true" className="opacity-45" data-fo-sep>
       {glyph}
     </span>
   );
@@ -233,22 +236,27 @@ export function SiteHeader({
             </>
           }
         >
-          {/* "A note from us:" in sunflower, then one short sentence on the mobile artboard and
-              the claims on the desktop one. The dates claim is gated (spec 004 §14 A19): the
-              honest form until a destination takes delivery dates, the cutoff once one does (the
-              mobile artboard drops the lead-in before the cutoff). */}
-          <span className={datesOpen ? "hidden md:inline" : undefined}>
+          {/* "A note from us:" in sunflower, then the claims on the desktop artboard and one short
+              sentence on the mobile one. The cutoff is gated (spec 004 §14 A19): it prints once a
+              destination takes delivery dates, and until then nothing takes its place (spec 004
+              §14 A23 clause 12 removed the dates-pending line), so the mobile row is empty and the
+              desktop claims open at the price claim, or at the promise on the home, whose slot is
+              empty. Whichever claim opens the line drops its leading `·`. */}
+          <span className="hidden md:inline">
             <strong>{t("nav.notice.lead")}</strong>{" "}
           </span>
-          <span className="md:hidden">
-            {datesOpen
-              ? t("nav.utility.cutoffShort")
-              : t("nav.utility.datesPendingShort")}
-          </span>
-          <span className="hidden md:inline">
-            {datesOpen
-              ? t("nav.utility.cutoff")
-              : t("nav.utility.datesPending")}
+          {datesOpen ? (
+            <span className="md:hidden">{t("nav.utility.cutoffShort")}</span>
+          ) : null}
+          <span
+            className={
+              datesOpen
+                ? "hidden md:inline"
+                : "hidden md:inline [&>[data-fo-price-claim]:first-child>[data-fo-sep]]:hidden [&>[data-fo-sep]:first-child]:hidden"
+            }
+            data-fo-notice-claims
+          >
+            {datesOpen ? t("nav.utility.cutoff") : null}
             {priceClaim} <Separator glyph="·" /> {t("nav.utility.guarantee")}
           </span>
         </NoticeBar>

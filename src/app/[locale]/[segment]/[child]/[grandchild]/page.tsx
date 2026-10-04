@@ -233,9 +233,9 @@ export async function generateMetadata({
       key: string,
       values?: Record<string, string>,
     ) => string;
-    const country = label(view.country.nameKey);
-    // The description is the shop's reviewed demo sentence: it is true of every product page in
-    // Phase 0, and a PDP writes no new `<head>` copy of its own while every one is `noindex`.
+    // The description is the shop's demo sentence (N1, spec 004 §14 A23 clause 12): it is true of
+    // every product page in Phase 0, and a PDP writes no new `<head>` copy of its own while every
+    // one is `noindex`.
     const shop = await getTranslations({
       locale: match.locale,
       namespace: "shop",
@@ -250,7 +250,7 @@ export async function generateMetadata({
                 flower: label(view.h1.flowerKey),
               }),
             }),
-      description: shop("root.demoNotice", { country }),
+      description: shop("root.demoNotice"),
       directive: view.indexability.directive,
       canonical: canonicalFor(match.locale, view.path, {
         baseUrl: deployment.siteUrl,

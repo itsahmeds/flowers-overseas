@@ -122,7 +122,7 @@ export function CountryShopRootPage({
               heading={shop("h1.countryShopRoot", { country })}
               lede={shop("root.lede", { country })}
               eyebrow={shop("listing.eyebrow", { country })}
-              note={shop("root.demoNotice", { country })}
+              note={shop("root.demoNotice")}
               noteLabel={shop("note.label")}
               noteMark={shop("note.mark")}
             />

@@ -249,9 +249,7 @@ export function PriceSummary({
         <p className="text-ink text-ui m-0 font-bold">
           {product("demo.heading")}
         </p>
-        {live ? null : (
-          <p className="m-0">{product("demo.body", { country })}</p>
-        )}
+        {live ? null : <p className="m-0">{product("demo.body")}</p>}
       </div>
     </section>
   );

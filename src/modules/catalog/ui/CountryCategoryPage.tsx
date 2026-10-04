@@ -103,7 +103,7 @@ export function CountryCategoryPage({
           heading={shop("h1.countryCategory", { country, entity })}
           lede={shop("category.lede", { count: view.resultCount, country })}
           eyebrow={shop("listing.eyebrow", { country })}
-          note={shop("root.demoNotice", { country })}
+          note={shop("root.demoNotice")}
           noteLabel={shop("note.label")}
           noteMark={shop("note.mark")}
         />
