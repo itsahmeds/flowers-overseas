@@ -43,50 +43,54 @@ export const BANNED_VOICE_WORDS = [
 export type BannedVoiceWord = (typeof BANNED_VOICE_WORDS)[number];
 
 /**
- * The **one** sanctioned use of a banned word (spec 004 §14 **A22**; founder, 2026-10-04, in chat:
- * "Allow \"my partner\""). A22 keeps "partner" banned for florists and allows exactly the phrase
- * "my partner" as the home sentence's "who it's for" option. So the exception is pinned to both
- * the **message key** and the **exact phrase**: "my partner" anywhere else, "our partner", or
- * "my partner florist" still fails. Nothing else may be added here without a spec amendment.
+ * The **one** sanctioned use of a banned word (spec 004 §14 **A22** clause 2; founder, 2026-10-04,
+ * in chat: "Allow \"my partner\""). A22 keeps "partner" banned for florists and allows the home
+ * sentence's "who it's for" option to read exactly "my partner". The exception is the exact ICU
+ * select case `partner {my partner}`, in the value of `home.sentence.who`, in the English
+ * catalogues only (`en`, `en-gb`). Per A22's default for its open item (i), `de` and `pl` render
+ * the option without the letters "partner" at all, so no exception reaches them. Anything else
+ * fails: "my partner" as prose, under another key or another case (`friend {my partner}`), with
+ * anything after it inside the braces (`partner {my partner florist}`), or in `de`/`pl`. Nothing
+ * else may be added here without a spec amendment (PR 174 review round 1, R1).
  */
 export const VOICE_EXCEPTIONS = [
-  { messageKey: "home.sentence.who", phrase: "my partner" },
+  {
+    locales: ["en", "en-gb"],
+    messageKey: "home.sentence.who",
+    token: "partner {my partner}",
+  },
 ] as const;
 
 export interface VoiceExceptionRule {
+  readonly locales: readonly string[];
   readonly messageKey: string;
-  readonly phrase: string;
+  readonly token: string;
 }
 
 export interface BannedVoiceOptions {
-  /** The catalogue key the prose is the value of, when it is a message; enables A22's exception. */
+  /** The catalogue the prose comes from, when it is a message (`en`, `de` …). */
+  readonly locale?: string;
+  /** The catalogue key the prose is the value of, when it is a message. */
   readonly messageKey?: string;
   /** The exceptions to honour; `VOICE_EXCEPTIONS` unless a test mutates it. */
   readonly exceptions?: readonly VoiceExceptionRule[];
 }
 
 /**
- * `prose` with each sanctioned phrase removed, unless a florist noun follows it. In an ICU value
- * the phrase is a select branch whose keyword is its own last word (`partner {my partner}`). That
- * keyword is syntax, not prose, so under the exception's key it is dropped; the branch text is
- * scanned as prose like any other, so `partner {our partner}` still fails.
+ * `prose` with each sanctioned token removed: only in a message value, only under the rule's key,
+ * only in the rule's locales, and only as the whole select case — the token must start the value
+ * or follow whitespace or a brace, so `myfriend partner {my partner}` and the like do not slip
+ * through, and it ends at the case's closing brace, so nothing can follow the phrase.
  */
 function withoutExceptions(prose: string, options: BannedVoiceOptions): string {
+  const { locale, messageKey } = options;
+  if (locale === undefined || messageKey === undefined) return prose;
   const rules = (options.exceptions ?? VOICE_EXCEPTIONS).filter(
-    (rule) => rule.messageKey === options.messageKey,
+    (rule) => rule.messageKey === messageKey && rule.locales.includes(locale),
   );
   return rules.reduce((text, rule) => {
-    const keyword = rule.phrase.split(" ").at(-1) ?? rule.phrase;
-    // The select keyword is syntax in every locale's value (`partner {meinen Schatz}`); the
-    // branch text after it is still prose and is still scanned.
-    return text.replaceAll(`${keyword} {`, " {").replaceAll(
-      // Exact, lower-case phrase; not when a florist noun follows ("my partner florist").
-      new RegExp(
-        `(?<![\\p{L}])${rule.phrase}(?![\\p{L}]|[- ]?(?:florist|shop|network))`,
-        "gu",
-      ),
-      " ",
-    );
+    const token = rule.token.replaceAll(/[{}]/g, (brace) => `\\${brace}`);
+    return text.replaceAll(new RegExp(`(?<=^|[\\s{}])${token}`, "gu"), " ");
   }, prose);
 }
 
@@ -98,7 +102,8 @@ function withoutExceptions(prose: string, options: BannedVoiceOptions): string {
  * false positive costs one rewording, a false negative ships the word. Do not "fix" this with
  * `\b` without changing spec 004 §14 A5 first; the reading is recorded in spec 007 §14 A1.
  *
- * A caller scanning a message passes its `messageKey`, and only then can A22's exception apply.
+ * A caller scanning a message passes its `locale` and `messageKey`, and only then can A22's
+ * exception apply.
  */
 export function bannedVoiceWordsIn(
   prose: string,

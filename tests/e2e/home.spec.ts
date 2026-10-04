@@ -135,10 +135,23 @@ test.describe("the locale home, above the fold", () => {
       // Spec 007 AC-20: a destination is a link exactly where its guide exists in this locale.
       // `/de` and `/pl` have none (§13 Q1), so they still link nothing at all — same markup,
       // one element different.
-      // v2 (TASK-177): Poland's chip links to its shop root, which exists in all four locales.
+      // v2 (TASK-177, review R2): every chip links its guide where the guide exists; on `/de` and
+      // `/pl`, which have none, Poland's chip links its shop root instead, so the delivering
+      // destination is never a dead end.
       const expected = path === "/de" || path === "/pl" ? 1 : 7;
       await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(
         expected,
+      );
+      const poland = page.locator(
+        `${DESTINATIONS} [data-fo-destination="PL"] a`,
+      );
+      await expect(poland).toHaveAttribute(
+        "href",
+        path === "/en" || path === "/en-gb"
+          ? `${path}/send-flowers-to/poland`
+          : path === "/de"
+            ? "/de/polen/blumen"
+            : "/pl/polska/kwiaty",
       );
     });
 

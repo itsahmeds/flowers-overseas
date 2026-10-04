@@ -1,9 +1,10 @@
 /**
  * **v2** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.dest-chips`): the intro beside a wrap of
- * chips. The delivering destination is the poppy chip and links to its **shop root** where that
- * exists (`shopHref`, from the page), else to its guide; every other destination is a neutral
- * chip to its guide with its state in words. A destination with neither page is a chip-shaped
- * label with no link (never a dead control, A20).
+ * chips. Every chip links to its destination's **guide** (plan/02 §11, spec 004 Q11/A2; PR 174
+ * review R2), the delivering one in poppy; the guide links the shop root. Where a locale has no
+ * guide, the delivering chip links its **shop root** (`shopHref`, from the page) instead. A
+ * destination with neither page is a chip-shaped label with no link (never a dead control, A20).
+ * The artboard draws Poland's chip to the shop root: recorded in `docs/design/README.md`.
  *
  * `DestinationsGrid` — the artboards' destinations grid (spec 004 §13's 2026-09-08 resolution
  * note "destinations grid with live/guide status", §5.3 `DestinationPicker`, §14 A5, **AC-11**,
@@ -59,7 +60,7 @@ export interface DestinationsGridProps {
   readonly provider?: DestinationStatusProvider;
   /**
    * The delivering destination's shop root in this locale (`corridorShopEntry()`, from the
-   * page), or `undefined` → its chip links to its guide instead.
+   * page), used only where that destination has no guide in this locale.
    */
   readonly shopHref?: string;
 }
@@ -98,10 +99,12 @@ export function DestinationsGrid({
         </div>
         <ul className="flex flex-wrap gap-[10px]">
           {destinations.map((destination) => {
+            // Every chip leads to its guide (plan/02 §11, spec 004 Q11/A2): the guide is the
+            // page that ranks for "send flowers to Poland", and it links the shop root. Only
+            // where a locale has no guide does the delivering chip go straight to the shop.
             const href =
-              destination.delivering && shopHref !== undefined
-                ? shopHref
-                : destination.href;
+              destination.href ??
+              (destination.delivering ? shopHref : undefined);
             return (
               <li key={destination.iso2} data-fo-destination={destination.iso2}>
                 <Chip

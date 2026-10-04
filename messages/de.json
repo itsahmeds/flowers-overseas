@@ -589,7 +589,7 @@
       "heading": "Für wen ist der Strauß?",
       "notYet": "{country} (not yet)",
       "occasion": "{occasion, select, birthday {{pronoun, select, other {zum Geburtstag}}} nameDay {zum Namenstag} anniversary {zum Jahrestag} sympathy {zum Trost} justBecause {einfach so} newBaby {zur Geburt} other {zu einem Anlass}}",
-      "who": "{who, select, mum {meine Mama} dad {meinen Papa} grandma {meine Oma} grandad {meinen Opa} partner {meinen Schatz} friend {jemanden aus dem Freundeskreis} other {einen lieben Menschen}}"
+      "who": "{who, select, mum {meine Mama} dad {meinen Papa} grandma {meine Oma} grandad {meinen Opa} friend {jemanden aus dem Freundeskreis} someoneILove {einen lieben Menschen} other {meinen Schatz}}"
     },
     "trending": {
       "basis": "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",

@@ -472,23 +472,34 @@ describe("the destinations grid", () => {
     expect(order("en")).toHaveLength(COUNTRIES.length);
   });
 
-  it("links the delivering destination's poppy chip to its shop root when the page hands one in", () => {
+  it("links the delivering destination's poppy chip to its guide, even when the page hands in a shop root (R2)", () => {
     const html = render(
       <DestinationsGrid locale="en" shopHref="/en/poland/flowers" />,
       "en",
     );
     const poland = html.slice(html.indexOf('data-fo-destination="PL"'));
 
+    // plan/02 §11, spec 004 Q11/A2: the chip feeds the guide, which links the shop root.
     expect(poland.slice(0, poland.indexOf("</li>"))).toMatch(
-      /<a class="[^"]*bg-accent[^"]*" href="\/en\/poland\/flowers">Poland/u,
+      /<a class="[^"]*bg-accent[^"]*" href="\/en\/send-flowers-to\/poland">Poland/u,
     );
-    // The six others still go to their guides, and nothing on the section asks for input.
+    expect(html).not.toContain('href="/en/poland/flowers"');
+    // All seven chips go to their guides, and nothing on the section asks for input.
     expect(
       hrefs(html).filter((href) => href.includes("send-flowers-to")),
-    ).toHaveLength(6);
+    ).toHaveLength(7);
     for (const tag of ["<input", "<form", "<button", "<select", "<textarea"]) {
       expect(html, tag).not.toContain(tag);
     }
+  });
+
+  it("links the delivering chip to its shop root only where its guide does not exist in the locale", () => {
+    const html = render(
+      <DestinationsGrid locale="de" shopHref="/de/polen/blumen" />,
+      "de",
+    );
+    // `/de` has no guides (spec 007 §13 Q1): Poland's chip is the one link, to the shop root.
+    expect(hrefs(html)).toEqual(["/de/polen/blumen"]);
   });
 
   it('keeps the `destinations` id, the home\'s anchor for every "where" question', () => {

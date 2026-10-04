@@ -29,6 +29,8 @@ import {
   TrustStrip,
 } from "../../src/modules/ui/trust/TrustStrip.tsx";
 
+import { dayCountIn } from "../support/day-count.ts";
+
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /** The namespaces these five sections read. */
@@ -357,8 +359,11 @@ describe("the FAQ", () => {
     ]) {
       expect(rendered, fragment).toContain(fragment);
     }
-    expect(rendered).not.toMatch(/\b(seven|7)[ -]days?\b/iu);
     expect(rendered).not.toMatch(/\bVAT\b/u);
+    // No day count in any locale: spelled numbers, words between and week words too (H4).
+    for (const locale of LOCALES) {
+      expect(dayCountIn(text(faq(locale))), locale).toBeUndefined();
+    }
   });
 
   it("draws the artboards' `+` affordance on every summary, decorative and CSS-only", () => {

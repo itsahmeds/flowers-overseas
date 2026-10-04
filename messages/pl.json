@@ -589,7 +589,7 @@
       "heading": "Zacznij od tego, dla kogo są kwiaty",
       "notYet": "{country} (not yet)",
       "occasion": "{occasion, select, birthday {{pronoun, select, her {na jej urodziny} his {na jego urodziny} other {na urodziny}}} nameDay {{pronoun, select, her {na jej imieniny} his {na jego imieniny} other {na imieniny}}} anniversary {na rocznicę} sympathy {z wyrazami współczucia} justBecause {bez okazji} newBaby {z okazji narodzin} other {z okazji}}",
-      "who": "{who, select, mum {mojej mamy} dad {mojego taty} grandma {mojej babci} grandad {mojego dziadka} partner {mojej drugiej połówki} friend {przyjaciela lub przyjaciółki} other {ukochanej osoby}}"
+      "who": "{who, select, mum {mojej mamy} dad {mojego taty} grandma {mojej babci} grandad {mojego dziadka} friend {przyjaciela lub przyjaciółki} someoneILove {ukochanej osoby} other {mojej drugiej połówki}}"
     },
     "trending": {
       "basis": "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",

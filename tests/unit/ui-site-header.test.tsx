@@ -52,6 +52,7 @@ import {
   headerSendHref,
 } from "../../src/modules/ui/layout/header-model.ts";
 import { SiteFooter } from "../../src/modules/ui/layout/SiteFooter.tsx";
+import { dayCountIn } from "../support/day-count.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
@@ -123,15 +124,6 @@ function textOf(markup: string): string {
     .replaceAll("&nbsp;", " ")
     .replaceAll("&#x27;", "'");
 }
-
-/**
- * A number of days, in any of the four languages (PR 172 breaker round 2, accepted
- * carry-forward b; founder, 2026-10-04: "cant promise staying fresh"). A number, then at most one
- * hyphen or space, then the stem: day; Tag/Täg (Tage, tägige, Tagen); dni/dzie (dni, dnia, dzień,
- * dniowa). Stems, not words, so "7-tägige" and "7 Tage" both match. "24/7" is not a number of
- * days and has no stem after it, so it passes.
- */
-const N_DAY = /\d[\s\u00a0\-‑–]?(?:day|tag|täg|dni|dzie)/iu;
 
 /** The exact de/pl price claims (carry-forward a). */
 const EXACT_CLAIM = {
@@ -633,12 +625,12 @@ describe("the rendered header (AC-7, AC-14)", () => {
         ["header", html],
         ["footer", renderFooter(locale)],
       ] as const) {
-        expect(textOf(markup), `${locale} ${part}`).not.toMatch(N_DAY);
+        expect(dayCountIn(textOf(markup)), `${locale} ${part}`).toBeUndefined();
       }
     });
   }
 
-  it("the N-day matcher catches every form the breaker found, and allows exactly 24/7", () => {
+  it("the day-count matcher catches every form the breakers found, and allows exactly 24/7", () => {
     for (const phrase of [
       "Unsere 7-tägige Frische-Garantie:",
       "Mit Liebe und 7 Tage Frische.",
@@ -648,15 +640,24 @@ describe("the rendered header (AC-7, AC-14)", () => {
       "7-dniowa gwarancja",
       "7 dzień",
       "7\u00a0Tage",
+      // PR 174 breaker H4.
+      "Fresh for 7 full days",
+      "7 Kalendertage frisch",
+      "sieben Tage Frische",
+      "tydzień świeżości",
+      "fresh for a week",
+      "seven days of freshness",
+      "siedem dni świeżości",
     ]) {
-      expect(phrase, phrase).toMatch(N_DAY);
+      expect(dayCountIn(phrase), phrase).toBeDefined();
     }
     for (const phrase of [
       "Message us any time, 24/7 — we reply within a few hours.",
       "Schreiben Sie uns rund um die Uhr, 24/7.",
       "Order by 14:00 in Warsaw",
+      "send us a photo within 72 hours of delivery",
     ]) {
-      expect(phrase, phrase).not.toMatch(N_DAY);
+      expect(dayCountIn(phrase), phrase).toBeUndefined();
     }
   });
 

@@ -33,6 +33,8 @@ import {
 } from "../../src/modules/ui/home/sentence-model.ts";
 import { setMediaManifest } from "../../src/modules/ui/media/manifest.ts";
 
+import { dayCountIn } from "../support/day-count.ts";
+
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /** The namespaces the hero, the picker and the promise band read. */
@@ -276,6 +278,50 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     ]);
     expect(html).toMatch(/<option value="PL"[^>]* selected=""/);
   });
+
+  it.each([
+    ["de", "Polen", "Deutschland (not yet)"],
+    ["pl", "Polska", "Niemcy (not yet)"],
+  ])(
+    '%s: Poland open, and every other country says "not yet" in words, not by greying alone (H1)',
+    (locale, poland, germany) => {
+      const options = countryOptions(picker(locale));
+
+      expect(options.find(([iso]) => iso === "PL")).toEqual([
+        "PL",
+        poland,
+        false,
+      ]);
+      expect(options.find(([iso]) => iso === "DE")).toEqual([
+        "DE",
+        germany,
+        true,
+      ]);
+      const closed = options.filter(([, , disabled]) => disabled);
+      expect(closed).toHaveLength(6);
+      for (const [iso, label] of closed) {
+        expect(label, iso).toMatch(/ \(not yet\)$/u);
+      }
+    },
+  );
+
+  it.each([
+    ["de", "meinen Schatz", "einen lieben Menschen"],
+    ["pl", "mojej drugiej połówki", "ukochanej osoby"],
+  ])(
+    "%s: the partner option has its own words, through the select's other case (A22 (i))",
+    (locale, partner, someone) => {
+      const options = new Map(
+        optionsOf(picker(locale), "send-who").map(([value, label]) => [
+          value,
+          label,
+        ]),
+      );
+      expect(options.get("partner")).toBe(partner);
+      expect(options.get("someoneILove")).toBe(someone);
+      expect(new Set(options.values()).size).toBe(7);
+    },
+  );
 
   it("closes Poland too when its shop root does not exist here", () => {
     const options = countryOptions(picker("en", []));
@@ -562,7 +608,10 @@ describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
     const rendered = text(band("en"));
 
     expect(rendered.replace("72 hours", "")).not.toMatch(/\d/);
-    expect(rendered.toLowerCase()).not.toMatch(/\b(7|seven)[ -]days?\b/u);
+    // Every locale, with the widened matcher: spelled numbers, words between, week words (H4).
+    for (const locale of LOCALES) {
+      expect(dayCountIn(text(band(locale))), locale).toBeUndefined();
+    }
   });
 
   it("is the inverse surface with three facts and no photo", () => {
@@ -604,15 +653,56 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
       locale,
     );
 
-  it("renders no VAT/delivery inclusion sentence in any of the four locales", () => {
+  /**
+   * A token denylist per locale, over the rendered text (PR 174 breaker H3): any word that taxes,
+   * VAT, an inclusion or a delivery charge would need, not a list of sentences someone might
+   * write. The home's own copy is free to say "delivered" and "delivery": the founder's guarantee
+   * does ("72 hours of delivery"), so delivery is denied only in the charge and inclusion forms.
+   */
+  const PRICE_TALK: Record<(typeof LOCALES)[number], RegExp> = {
+    en: /\b(?:vat|tax|taxes|taxed|delivery (?:charge|fee|cost)s?|shipping|postage|includ(?:e|es|ed|ing) delivery|delivery (?:is |are )?included)\b/iu,
+    "en-gb":
+      /\b(?:vat|tax|taxes|taxed|delivery (?:charge|fee|cost)s?|shipping|postage|includ(?:e|es|ed|ing) delivery|delivery (?:is |are )?included)\b/iu,
+    de: /MwSt|Mehrwertsteuer|Steuer|inkl\.|inklusive|einschließlich|zzgl|zuzüglich|Versand|Lieferung(?:skosten)?\b|Lieferkosten/iu,
+    pl: /\bVAT\b|podat|dostaw|wliczon|zawiera(?:ją)? (?:dostaw|VAT)/iu,
+  };
+
+  it("renders no tax, VAT or delivery-charge word in any of the four locales (H3)", () => {
     for (const locale of LOCALES) {
       const rendered = text(home(locale));
-      expect(rendered, locale).not.toMatch(
-        /\bVAT\b|MwSt|Mehrwertsteuer|inkl\.|w tym VAT|including delivery|delivery included|delivery and VAT|VAT and delivery/iu,
-      );
+      expect(rendered, locale).not.toMatch(PRICE_TALK[locale]);
       // The sections are really there, so the absence is not an empty render.
       expect(rendered.length, locale).toBeGreaterThan(1500);
     }
+  });
+
+  it("renders none of the price-claim messages, in any locale", () => {
+    for (const locale of LOCALES) {
+      const messages = loadMessages(locale, ["catalog", "nav"]) as {
+        catalog: { price: Record<string, string> };
+        nav: { utility: Record<string, string> };
+      };
+      const rendered = text(home(locale));
+      const claims = [
+        messages.nav.utility.pricesInclude ?? "",
+        messages.catalog.price.inclusive ?? "",
+        messages.catalog.price.allIn ?? "",
+      ];
+      for (const claim of claims) {
+        expect(claim, locale).not.toBe("");
+        expect(rendered, `${locale}: ${claim}`).not.toContain(claim);
+      }
+    }
+  });
+
+  it("the denylist bites on the breaker's sentences and spares the guarantee's own words", () => {
+    expect("Lieferung und Steuern inklusive").toMatch(PRICE_TALK.de);
+    expect("Cena obejmuje dostawę i podatek").toMatch(PRICE_TALK.pl);
+    expect("delivery and tax included").toMatch(PRICE_TALK.en);
+    expect("Prices include delivery and VAT").toMatch(PRICE_TALK.en);
+    expect(
+      "send us a photo within 72 hours of delivery and we'll replace them",
+    ).not.toMatch(PRICE_TALK.en);
   });
 });
 
@@ -645,7 +735,7 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
       };
       const who = home.sentence.who ?? "";
       expect(
-        bannedVoiceWordsIn(who, { messageKey: "home.sentence.who" }),
+        bannedVoiceWordsIn(who, { locale, messageKey: "home.sentence.who" }),
         `${locale}: home.sentence.who`,
       ).toStrictEqual([]);
       const serialised = JSON.stringify({
