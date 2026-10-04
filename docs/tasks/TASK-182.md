@@ -48,6 +48,28 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   are the same words, and the PDP links to the guarantee page where `infoPageExists("guarantee",
   locale)` is true. This task owns `infoPageExists`, so it wires that link (§6 "the product page's
   guarantee link") and pins the two texts equal in a test.
+- **Design round 2 (spec 041 §14 A1; spec 004 §14 A24; 2026-10-05).**
+  - **Artboards.** The round-2 artboards on PR 189 bind, at 1440 × 900 and 390 × 844, with spec
+    004's laptop band at 1280 × 800 and 1512 × 945: `how-it-works-*`, `guarantee-and-delivery-*`,
+    `help-and-contact-*` and `about-*`. Each annotation's "Build" row binds the structure. The
+    2026-10-04 v2 drawings no longer bind.
+  - **Help.** The H1 and the not-open line sit above both columns. The contact block is first in
+    the DOM, on columns 8–12. The first four Q&As sit beside it and the other eight follow in two
+    CSS columns. The 01–12 numbers are `aria-hidden`. AC-15 is unchanged.
+  - **About.** The DOM order becomes H1 · status · intro · who runs it · why · today · the
+    company. The repeated name is `aria-hidden`.
+  - **Guarantee, delivery, how it works.** DOM order is unchanged, and the seal and the route
+    rings are `aria-hidden`.
+  - **Phone.** The WhatsApp dock on help, guarantee and delivery, and the Send flowers dock on how
+    it works, are spec 004 AC-48's bar from TASK-195. The back link is AC-50's.
+  - **Copy, founder copy pending, all `reviewed: false`.**
+    - The four not-open replacement sentences of spec 041 §14 A1 clause 3 (P8). The originals are
+      not shipped, and each file holding a replacement is `reviewed: false`.
+    - `company.support.hours` "Message us any time, 24/7. We reply within a few hours." (P6, no
+      em dash). AC-12 and T-12 assert this text.
+    - The dock label "WhatsApp {phone}" (P7).
+
+    Never mark any of them reviewed.
 - **Class:** not review-only (an SEO gate, i18n tooling that decides indexability, compliance
   copy). `/review` and `/break` both run.
 
@@ -55,9 +77,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/041-trust-help-legal-pages.md` — `## 0. Index`, then §2, §5, §6, §7, §8, the ACs above,
   §10, §12 task 1, §13 (Q1, Q2, Q4, Q7 and the two notes at the end), Appendix A.
-- Artboards, desktop and mobile: `docs/design/wireframes/how-it-works-*.dc.html`,
+- Artboards, desktop and mobile, **round 2 (PR 189)**: `docs/design/wireframes/how-it-works-*.dc.html`,
   `guarantee-and-delivery-*.dc.html`, `help-and-contact-*.dc.html`, `about-*.dc.html`; each
-  annotation block's Blocks, States and Chrome rows.
+  annotation block's First screen, Laptop band, Build and Copy rows.
+- `specs/041-trust-help-legal-pages.md` §14 A1; `specs/004-design-system-layout.md` §14 A24
+  clauses 4 and 10, AC-48, AC-50; `docs/design/audits/2026-10-05-round-2.md`.
 - `specs/009-product-page-date-picker.md` §14 A11; `specs/004-design-system-layout.md` §14 A22.
 - `docs/codebase-map.md`; `src/config/site-links.ts`, `src/config/company.ts`,
   `src/config/locales.data.ts`, `src/config/voice.ts`, `scripts/corridor-check.ts`,
@@ -71,6 +95,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `HomeFaq.tsx` and the three message files. Build the home links on the v2 components.
 - **From `/plan-tasks` (2026-10-04):** `company.support.hours` already reads "Message us any time,
   24/7 — we reply within a few hours." in `en`, `de` and `pl` (TASK-176); AC-12 only asserts it.
+  **Superseded 2026-10-05 (spec 041 §14 A1 clause 4):** this task changes it to "Message us any
+  time, 24/7. We reply within a few hours." with no em dash, `reviewed: false`, and AC-12
+  asserts that.
+- **From spec 004 §14 A24 (2026-10-05):** **blocked until PR 189 (design round 2) merges**, and
+  dispatched after TASK-186 (the frame) and TASK-195 (the phone chrome, the dock, the back link)
+  as well as the dependencies above.
 - **From `/plan-tasks` (2026-10-04):** the founder approved Appendix A with the spec ("approve 041")
   before the conforming edits. The 14 Appendix A strings those edits change (spec 041 §13, the
   orchestrator's table) carry that approval once the founder has

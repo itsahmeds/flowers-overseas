@@ -37,6 +37,18 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   **batch 2**: they go to the founder in the PR before it goes ready, and no legal file is marked
   `reviewed: true` before the founder's answer.
 - `budget:client-js` passes: the banner gains one projected string and no logic.
+- **Design round 2 (spec 041 §14 A1; spec 004 §14 A24; 2026-10-05).**
+  - **Artboards.** The round-2 `legal-template-*` and `cookies-*` on PR 189 bind, at 1440 × 900
+    and 390 × 844, with spec 004's laptop band.
+  - **The document.** A white `<article>` on a cream ground. The state is repeated in an
+    `aria-hidden` corner stamp: `infoPages.legal.notInForceYet` for a document not in force, and
+    "In force" for cookies. "In force" is new copy, P9, `reviewed: false`, and never marked
+    reviewed by an agent.
+  - **Unchanged.** The version header stays the accessible statement of the state (AC-9, AC-10).
+    By design, the legal sheet runs past the fold at every laptop size.
+  - **Phone.** "Change cookie settings" is docked on the cookies page in spec 004 AC-48's bar
+    (from TASK-195). It repeats the page's own `data-fo-consent-reopen` button, with no new
+    island. The back link is AC-50's.
 - **Class:** not review-only (compliance and legal text, consent, SEO). `/review` and `/break` both
   run.
 
@@ -45,8 +57,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `specs/041-trust-help-legal-pages.md` — `## 0. Index`, then §2 ("The content model", "The honest
   states", Cookies, Privacy), §5.1, §5.3, §6, §8, the ACs above, §10, §12 task 2, §13 Q1, Q3, Q8,
   Appendix A.1, Appendix B.
-- Artboards, desktop and mobile: `docs/design/wireframes/legal-template-*.dc.html` and
-  `cookies-*.dc.html`; each annotation block's Blocks and States rows.
+- Artboards, desktop and mobile, **round 2 (PR 189)**: `docs/design/wireframes/legal-template-*.dc.html`
+  and `cookies-*.dc.html`; each annotation block's First screen, Build and Copy rows.
+- `specs/041-trust-help-legal-pages.md` §14 A1; `specs/004-design-system-layout.md` §14 A24
+  clause 10, AC-48, AC-50.
 - `docs/compliance/ropa.md` rows 1–5; `docs/adr/` ADR-0016 and ADR-0018.
 - `docs/codebase-map.md`; `src/config/cookies.ts`, `src/config/company.ts`,
   `src/modules/ui/consent/` (`consentView.ts`), `src/app/[locale]/[segment]/[child]/page.tsx`,
@@ -60,6 +74,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From `/plan-tasks` (2026-10-04):** the component-level a11y check of the three gated views
   under `registered: true` is AC-27, owned by TASK-184. Leave the views renderable from a fixture
   so that test can mount them.
+- **From spec 004 §14 A24 (2026-10-05):** **blocked until PR 189 (design round 2) merges**;
+  after TASK-182, which already waits for TASK-186 and TASK-195.
 - **From `/plan-tasks` (2026-10-04):** before the rename, check that nothing links to
   `/pl/regulamin/…` (no URL under it was ever published, §2).
 - **From the PR 164 review (2026-10-04):** the interim notice's transfers sentence is the one in
