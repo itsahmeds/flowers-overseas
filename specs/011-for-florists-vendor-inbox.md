@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 (the inbox is built so that Phase 2's specs 026 and 027 extend it rather than replace it) |
 | Plan refs | plan/01 §3 §4.1 §4.2 §5 §6 §8 §9 · plan/02 §4.1 §7 §8 §9 §10 §11 · plan/03 §5 §6 §7 §8 §10 · plan/05 #41 #42 #43 #45 #58 #59 · plan/06 §2.2 §5.1 §5.2 §5.3 §5.4 · plan/07 §1.1 §1.2 §1.3 §1.4 §1.5 §4 §5 §8 · plan/09 Phase 0 (week 6–12 Oct, AC 1, AC 4, AC 5, AC 6), Phase 2 (026, 027) · plan/10 §2.3 §2.4 §6 · plan/11 §1 §2 §5.2 (T7, T14) §6 · plan/12 §2 §4 · plan/13 A4, B3, B13 |
 | ADRs | ADR-0006 (no IP redirects) · ADR-0007 (index only true pages) · ADR-0009 (event-sourced orders: `orderService.transition` only) · ADR-0010 (build the florist portal) · ADR-0013 (Resend) · ADR-0015 (Neon, R2, Auth.js) · ADR-0016 (CSP) · ADR-0018 (Railway behind Cloudflare). **Proposes one ADR** if §13 Q2 is accepted: "Florists sign in with an Auth.js email link from Phase 0; no separate per-order link scheme; spec 017's order emails sign the florist in and open the order in one tap" (supersedes the `/v/{token}` mechanism of `plan/06` §5.3 and the "no account in Phase 1" line of `plan/11` §1). **Consumes** spec 010's order engine (its task 3) and spec 012's shared sign-in core (its task 1); builds neither. |
 | Author / date | spec-writer via /spec · 2026-10-04 |
-| Approved by / date | — (draft; the founder approves after `/advise`) |
+| Approved by / date | Founder, 2026-10-04: "all defaults, accept all three, do it in Chrome" (answering the 37 open questions with the advisor memo §6 defaults) · 2026-10-04 |
 
 ## 0. Index
 
