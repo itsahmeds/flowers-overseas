@@ -416,43 +416,101 @@ test.describe("the site header (AC-7)", () => {
     });
   });
 
-  test("the currency and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)", async ({
-    page,
-  }) => {
-    for (const viewport of ARTBOARDS) {
-      await page.setViewportSize(viewport);
-      await page.goto("/en");
+  for (const { path } of LOCALES) {
+    test(`${path}: the currency and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)`, async ({
+      page,
+    }) => {
+      for (const viewport of ARTBOARDS) {
+        await page.setViewportSize(viewport);
+        await page.goto(path);
+        await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
+        await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
+
+        const boxes = await page.evaluate(() => {
+          const round = (selector: string) => {
+            const box = document
+              .querySelector(selector)
+              ?.getBoundingClientRect();
+            return {
+              x: Math.round(box?.x ?? Number.NaN),
+              y: Math.round(box?.y ?? Number.NaN),
+              right: Math.round(box?.right ?? Number.NaN),
+              bottom: Math.round(box?.bottom ?? Number.NaN),
+            };
+          };
+          return {
+            strip: round("[data-fo-utility]"),
+            switcher: round("[data-fo-header-switcher]"),
+            currency: round("[data-fo-header-currency]"),
+            viewport: window.innerWidth,
+          };
+        });
+        // Inside the notice bar's own box and inside the viewport: nothing to scroll to.
+        for (const box of [boxes.switcher, boxes.currency]) {
+          expect(box.x, String(viewport.width)).toBeGreaterThanOrEqual(0);
+          expect(box.right, String(viewport.width)).toBeLessThanOrEqual(
+            boxes.viewport,
+          );
+          expect(box.y).toBeGreaterThanOrEqual(boxes.strip.y);
+          expect(box.bottom).toBeLessThanOrEqual(boxes.strip.bottom);
+        }
+      }
+    });
+  }
+
+  /**
+   * WCAG 1.4.10 reflow at 320 × 568, in every locale (PR 168 breaker round 2, HOLE 1, carried to
+   * TASK-176). Below the 390 px artboard the notice bar's second row (the languages and the
+   * currency) wraps instead of widening the page: `max-lg:[&>div>div]:flex-wrap` on the
+   * `NoticeBar` wrapper in `SiteHeader`. Without the wrap the row runs past 320 px and the bar
+   * scrolls sideways.
+   */
+  for (const { path } of LOCALES) {
+    test(`${path}: at 320 px nothing in the header scrolls sideways and the switcher and the currency lie inside the viewport`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 568 });
+      await page.goto(path);
       await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
       await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
 
-      const boxes = await page.evaluate(() => {
-        const round = (selector: string) => {
-          const box = document.querySelector(selector)?.getBoundingClientRect();
+      const measured = await page.evaluate(() => {
+        const widths = (selector: string) => {
+          const node = document.querySelector(selector);
           return {
-            x: Math.round(box?.x ?? Number.NaN),
-            y: Math.round(box?.y ?? Number.NaN),
-            right: Math.round(box?.right ?? Number.NaN),
-            bottom: Math.round(box?.bottom ?? Number.NaN),
+            scroll: node?.scrollWidth ?? Number.NaN,
+            client: node?.clientWidth ?? Number.NaN,
           };
         };
+        const outside = (selector: string) =>
+          [...document.querySelectorAll(selector)]
+            .map((node) => node.getBoundingClientRect())
+            .filter(
+              (box) =>
+                box.width === 0 ||
+                Math.round(box.left) < 0 ||
+                Math.round(box.right) > window.innerWidth,
+            ).length;
         return {
-          strip: round("[data-fo-utility]"),
-          switcher: round("[data-fo-header-switcher]"),
-          currency: round("[data-fo-header-currency]"),
-          viewport: window.innerWidth,
+          utility: widths("[data-fo-utility]"),
+          header: widths("[data-fo-header]"),
+          document: document.documentElement.scrollWidth - window.innerWidth,
+          // The switcher, each of its links, and the currency, all inside the 320 px viewport.
+          outside:
+            outside("[data-fo-header-switcher]") +
+            outside("[data-fo-header-switcher] a") +
+            outside("[data-fo-header-currency]"),
+          links: document.querySelectorAll("[data-fo-header-switcher] a")
+            .length,
         };
       });
-      // Inside the notice bar's own box and inside the viewport: nothing to scroll to.
-      for (const box of [boxes.switcher, boxes.currency]) {
-        expect(box.x, String(viewport.width)).toBeGreaterThanOrEqual(0);
-        expect(box.right, String(viewport.width)).toBeLessThanOrEqual(
-          boxes.viewport,
-        );
-        expect(box.y).toBeGreaterThanOrEqual(boxes.strip.y);
-        expect(box.bottom).toBeLessThanOrEqual(boxes.strip.bottom);
-      }
-    }
-  });
+      expect(measured.utility.scroll).toBe(measured.utility.client);
+      expect(measured.header.scroll).toBe(measured.header.client);
+      expect(measured.document).toBeLessThanOrEqual(0);
+      expect(measured.links).toBeGreaterThan(0);
+      expect(measured.outside).toBe(0);
+    });
+  }
 
   test("draws no menu glyph, because it opened nothing (§14 A20)", async ({
     page,
