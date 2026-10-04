@@ -960,10 +960,8 @@
   },
   "catalog.floristSentence": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (chat, 2026-10-03: future-tense florist sentence)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "51e5aa3405f3475b39a814927b7dcd159a33408ebabad373134dd54b4d654508",
+    "reviewed": false,
+    "sourceHash": "2178186602ab9e7a09a03808bf787f1f7def44b1a7bcb4e2a63be00c2093fa28",
     "retained": true
   },
   "catalog.price.allIn": {

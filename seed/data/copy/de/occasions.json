@@ -16,7 +16,7 @@
       "seoDescription": "Liefertag wählen, vor dem Bestellschluss des Ziellandes bestellen, Karte beilegen. Tulpen, Gerbera, bunte Sträuße und Orchideen zum Geburtstag.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "e6b88272a9f5a30829a49af243fae928d6801ba342e771badea4e55953e493f7"
+      "sourceHash": "e96bbe00d2b7348c95319475433152277d6160730b77056715de0cd2bb98cfda"
     },
     {
       "entity": "occasion",
@@ -29,7 +29,7 @@
       "seoDescription": "Rosen oder Lilien in der Vase und Pfingstrosen in der Saison, geliefert am Datum Ihrer Wahl. Ein Vasengesteck erspart die Suche nach einer Vase.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "d92c4c14f76c2eb20879c3085ced0ca8550c34e75679fb79b24aae5b91c26cb4"
+      "sourceHash": "202825423e0c96cb9de73362f2ad70677a58f15192bd9db3403aa7c31d5f3638"
     },
     {
       "entity": "occasion",
@@ -42,7 +42,7 @@
       "seoDescription": "Rote Rosen mit zwölf, achtzehn oder vierundzwanzig Stielen und Pfingstrosen in der Saison. Bestellschluss und Aufpreis zum Valentinstag vor dem Bezahlen.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "911554b6630947b07a391e712a2776786574eec345f7fb1e906329e21690a08a"
+      "sourceHash": "502db66c17918df302e5687c02a6fa026f31327266b739748990b499e884faa5"
     },
     {
       "entity": "occasion",
@@ -55,7 +55,7 @@
       "seoDescription": "Leuchtende Sträuße und Schreibtischgestecke ohne Vase, für eine neue Stelle, eine Prüfung oder eine Firma. Ins Büro mit Firmenname und Stockwerk.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "245dd844e8843c2403667a930720c12ec5a8e6baae35054909f0d1bd3555c2c8"
+      "sourceHash": "646b70ac15fb4587bb098e30cfdc16397479e48ac091518f6b80415c90f0a16a"
     },
     {
       "entity": "occasion",
@@ -68,7 +68,7 @@
       "seoDescription": "Leichte Sträuße mit wenig Duft für zu Hause oder die Entbindungsstation, auf Wunsch mit neuem Kuscheltier. Für das Krankenhaus den Stationsnamen angeben.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "a0479534536e3a6412f2d0f303981917cfe397aff8e39dcc854167c017b41e18"
+      "sourceHash": "285c9876912ff6d789286a97eddc5fd2970ad9f826d6ee2e9519f8e40e3ff578"
     },
     {
       "entity": "occasion",
@@ -81,7 +81,7 @@
       "seoDescription": "Box- und Topfgestecke ohne Vase, wenig Duft und leicht zu tragen. Freesien, Gerbera und Pastellmischungen für gute Besserung.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "388d58e9d7642deb541a5563b33e713d88f8365542151050d6c5fadc5964023d"
+      "sourceHash": "67c42a1fad8f21e12e86a8eed64629fd2d6cc9c2a63c8dd381891501fe8b5137"
     },
     {
       "entity": "occasion",
@@ -94,7 +94,7 @@
       "seoDescription": "Weiße Lilien, weiße Rosen und Einblatt nach einem Todesfall an eine Wohnung oder ein Büro, geliefert am genannten Datum, nie früher.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "b828db963b49aa8ba2642e0b9a26c60ede1dc6c1bc17e24f0105e87b12266c10"
+      "sourceHash": "d22fc7aa8a7e7653e3dcdb4b0ae25bc5ceb5d02a5235fbe42e5cdd131bc2105e"
     },
     {
       "entity": "occasion",
@@ -107,7 +107,7 @@
       "seoDescription": "Sonnenblumen, gelbe Tulpen und Freesien mit kostenloser gedruckter Karte. Mittlere Preise, geliefert am Datum Ihrer Wahl.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "8b69b0ff30a85f7dd9d5c505f671d4e668991e99d0d136b7ea7a97399fb4a7d4"
+      "sourceHash": "853b46d9d9c65c8352c7c4234ae7b240df7f16d72a384ed341829215f00985e6"
     },
     {
       "entity": "occasion",
@@ -120,7 +120,7 @@
       "seoDescription": "Zarte Rosen, weiße Tulpen und Freesien mit Ihren eigenen Worten auf einer gedruckten Karte. Leise statt groß, geliefert am Tag Ihrer Wahl.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "36141af9785ecaef120c712f9abe3d3315e735f621ee88761c2a57766cec975f"
+      "sourceHash": "f3fd54ab230cdb93ff2c70c68bdd79a09d42f3962bd497714786e504b635dbc4"
     },
     {
       "entity": "occasion",
@@ -133,7 +133,7 @@
       "seoDescription": "Saisonsträuße und lockere bunte Sträuße im unteren Preisbereich, ohne Anlass verschickt. Unser Florist wählt aus, was hineinkommt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f82d4e0f25ccf0c89860298bdb3e1487f0bc2ef6caa874577cca81b92114b122"
+      "sourceHash": "7804b327390698d633d01e748d397569e15ac69b7f69f3b3de9357ba0b48cc2a"
     },
     {
       "entity": "occasion",
@@ -146,7 +146,7 @@
       "seoDescription": "Weiße Rosen, Pfingstrosen, Lilien und Orchideen als Geschenk oder Tischschmuck zur Hochzeit. Keine Brautsträuße und keine Dekoration vor Ort.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "1a5b997102b29bb5b9ec89da2d5a3803b06d8e822be3cad8b188633857b9f30c"
+      "sourceHash": "c5a8cf5127c78dd041c82d70e92f12ff97ac64a177cdf1e2b6aad27bfce93202"
     },
     {
       "entity": "occasion",
@@ -159,7 +159,7 @@
       "seoDescription": "Leuchtende Tulpen, Gerbera und Sets mit Ballon zum Abschluss, an eine Wohnung oder einen Saal. Eine Telefonnummer hilft dem Fahrer.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "24f4e2f3a1bfcc3f0c2cb4a35f8561c6b159395a74b7c451a9588447d7a4a6d8"
+      "sourceHash": "9911ead4fc46fdbd8a8aeb98362e6d9d4c7e3b56a7b57d5698e1bdf5f8c011af"
     },
     {
       "entity": "occasion",
@@ -172,7 +172,7 @@
       "seoDescription": "Körbe, Kisten, Schalen und Pflanzen für ein Zuhause ohne Vase: Olivenbäumchen, Einblatt und Anthurien. Ein Türcode hilft.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f7f16e637e5e47b84e2d84e5467af415b7b8ad920e4fd18e22e501aa28ba7e45"
+      "sourceHash": "797d3cd7e668f50d4b7b9b2f79b374bfa2d9cd0668cc36648d8d2c3c50e83b9a"
     },
     {
       "entity": "occasion",
@@ -185,7 +185,7 @@
       "seoDescription": "Pflanzen, Körbe und gebundene Sträuße, die den Heimweg vom Büro überstehen. Eine gedruckte Karte trägt viele Namen.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "2f200416ed319cda2cbe71181d87355c6e724a9e195aef8fbaaea1cc3fc3b98f"
+      "sourceHash": "303b4abb7b559e93a55c9e59f9b6d58d8f760f83e9c249d568f198cd3d0b7b4e"
     },
     {
       "entity": "occasion",
@@ -198,7 +198,7 @@
       "seoDescription": "Rote Rosen zum 14. Februar in ganz Europa. Höhere Saisonpreise und der Aufpreis des Tages werden vor dem Bezahlen angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "43c0799a3ebf2849778af0e1711724ea1c72b5f2ec3399bfb91e6eaa874a0f26"
+      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
     },
     {
       "entity": "occasion",
@@ -211,7 +211,7 @@
       "seoDescription": "Tulpen zum 8. März, dem Blumentag in Polen und Mitteleuropa. Früherer Bestellschluss und ein Aufpreis am Tag, beides vorab angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "5dd99589f869226632042fb40fde83cd750b0f374253990b496de3764aaf5bce"
+      "sourceHash": "9ca5499ea91368df506370ba94717f83eabf4e031f32fe501b154c3aa39a5d0e"
     },
     {
       "entity": "occasion",
@@ -224,7 +224,7 @@
       "seoDescription": "Muttertag fällt je nach Land auf andere Daten; die Seite des Ziellandes zeigt das gültige. Sträuße in Rosa und Pastell und Pflanzen.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "696c5aa5ea44ba451fd88ee9c301071206fdb6662f697fba723ac6eb0546bd44"
+      "sourceHash": "5ee96461ccca30ae046214fa9cd0f6c9a9e44228fe8cf7ced181e040a42712d8"
     },
     {
       "entity": "occasion",
@@ -237,7 +237,7 @@
       "seoDescription": "Sonnenblumen, Sträuße in Orange, Olivenbäumchen und Anthurien zum Vatertag. Die Daten unterscheiden sich; die Seite des Ziellandes zeigt es.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "dd7c19190c5d8654449cd734d73c241e3500da4d8d0b4d1804dedd5682cfb0f6"
+      "sourceHash": "9ad04741599f455982e97f3939dc4598ef68253aac9e9be97a77699f49f78b2e"
     },
     {
       "entity": "occasion",
@@ -250,7 +250,7 @@
       "seoDescription": "Nelken, Chrysanthemen, Azaleen und Orchideen zum Großelterntag. Die Daten unterscheiden sich, und Polen hat zwei Tage im Januar.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "bd0c086d8a6787343ac1d0db24fcd57600968cb8dde7c076eed518fc4a3bc36a"
+      "sourceHash": "8bef238a1e9d12ed369f39ad88165467a7bfdb3fcaa923520694b91756f42a50"
     },
     {
       "entity": "occasion",
@@ -263,7 +263,7 @@
       "seoDescription": "Bunte und gelbe Tulpen, Narzissen und Gartenkisten zu Ostern. Das Datum wandert; die Seite des Ziellandes zeigt Datum und Bestellschluss.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "bb4598e65aafad66893c81dfdba9ccbd9e9d9176e5cab17b231c89fbaf61d572"
+      "sourceHash": "362884002463d20ae2ac61481fed9f662c0b13bed13b4e6aadc71e483dfc6d14"
     },
     {
       "entity": "occasion",
@@ -276,7 +276,7 @@
       "seoDescription": "Grabsträuße, Kränze und Kreuze aus Chrysanthemen zum 1. November. Für den Friedhof Namen und Grabfeld angeben; früherer Bestellschluss.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "8d78dc6c68bb8f1b711268b9ad260d4d8865ca2477e8f426084c6ebcd39671f9"
+      "sourceHash": "fac9a815538dec0235008900f49c942ecf2a4ffc161344874ce66d8293ca05e3"
     },
     {
       "entity": "occasion",
@@ -289,7 +289,7 @@
       "seoDescription": "Weiße und rote Sträuße mit Kiefer und Eukalyptus, Wintergestecke und Orchideen. Früherer Bestellschluss; das Zielland zeigt die Tage.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "29333ccf3cce2231fb938794b13b51a297bcefa24ae6e14f8526d16d1f535477"
+      "sourceHash": "c6906ba381f95f3ccf2e0a525c48669719f6c957ea067de4b38946bed35851c5"
     },
     {
       "entity": "occasion",
@@ -302,7 +302,7 @@
       "seoDescription": "Weiße Sträuße, Wintergestecke und Pflanzen für ein Büro, das wieder öffnet, oder für Gastgeber. Den ersten freien Tag zeigt das Zielland.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "434969b3ef0e29bab2d0be083a1e46c53c4de244ee086a569ad62932ca680960"
+      "sourceHash": "94c1d50da5420eca78c773ae01935bef67fb0a7308f7ace08e7afdee8b34dd0f"
     },
     {
       "entity": "occasion",
@@ -315,7 +315,7 @@
       "seoDescription": "Nelken, bunte Sträuße und bescheidene Bunde zum Namenstag, einem häufigen Geschenk in Polen und Mitteleuropa. Örtliche Kalender angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "30507f2819fe2cb72072d81a87083f374d5b5cf40f30537b583c49efc67025f5"
+      "sourceHash": "bd273cc4e0a12a03e414f5f86e140ecb32135cc48c63a7c2a0f9f5c53464798b"
     },
     {
       "entity": "occasion",
@@ -328,7 +328,7 @@
       "seoDescription": "Kleine, bescheidene Bunde zum Lehrertag, einem echten Blumentag in Polen. Für Schulen Namen der Schule und eine Kontaktperson angeben.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "d6cc08f2ac37af595e318c4d0f46a670d9521de1a2f9ef4a8935a86ab0dc361b"
+      "sourceHash": "6d6a9eb729891ddb90f61abe5ff9b0c095ca26434491f4a8a902ecee4b7fa2f4"
     },
     {
       "entity": "occasion",
@@ -341,7 +341,7 @@
       "seoDescription": "Einzelne rote Rosen zu Sant Jordi am 23. April, wo wir einen Floristen in der Stadt haben. Die Nachfrage ballt sich auf einen Vormittag.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "7fec03fd111212be7c0c415c99b9a5e5c62653b2adc78bb01933b45b7604475d"
+      "sourceHash": "8af11d90c6d6469c1071ed0883a1502b4b4d345051a69a48136c39bd32bf83fc"
     },
     {
       "entity": "occasion",
@@ -354,7 +354,7 @@
       "seoDescription": "Azaleen, Orchideen, Nelken und Pastellkörbe zum französischen Großmuttertag am ersten Sonntag im März. Das diesjährige Datum wird angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "0bdce92006e613aa36a6c1cda508780291a2094f2c10ac944343d1db7d51edfc"
+      "sourceHash": "3e4713ec4b002b93509e67dae86208610154f347d207ed4e2ed499916232657f"
     },
     {
       "entity": "occasion",
@@ -367,7 +367,7 @@
       "seoDescription": "Maiglöckchen zum 1. Mai in Frankreich, eine Blume für einen Tag mit einem Vorrat für einen Tag. Das Zielland zeigt, wo wir sie beschaffen.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "d91054efa568bd9bbb3cf9c627fbb68e1acba3514de5f5350c5ed8e4f36c28c3"
+      "sourceHash": "5b17baae769606aa59a16ffe755ccde3f49f0fcd7f0a058286445556c50b7bb8"
     },
     {
       "entity": "occasion",
@@ -380,7 +380,7 @@
       "seoDescription": "Sträuße in Weiß und Pastell und Pflanzen zur Konfirmation im Frühling in Deutschland, Dänemark oder Norwegen. Sonntagslieferung mit Aufpreis.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "31a53c5fa2792c710f2e3c5880e56ec0b644957eaef7490567e5c891c1440245"
+      "sourceHash": "8bb92ff56f91d182c803d38aacbebe63ed605fb821298939d487784ad69b6946"
     },
     {
       "entity": "occasion",
@@ -393,7 +393,7 @@
       "seoDescription": "Leuchtende Sträuße und Sets mit Ballon zum Schulabschluss, an die Wohnadresse im Lieferfenster am Morgen. Örtliche Daten angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "fcc26386ebe0e4be62e5ee96c63e4785563901907f41c5e21036510290f88daf"
+      "sourceHash": "e821c49f1642df0bbb696844b07dc602c73f71ca05e5fb47081a3e73e9b8dc14"
     },
     {
       "entity": "occasion",
@@ -406,7 +406,7 @@
       "seoDescription": "Azaleen, Orchideen, Nelken und Pastellkörbe zum estnischen Großmuttertag. Langlebige Wahl; das Datum steht auf der Seite.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "17de5b873264947eb0876946033df459c332ada20ca6b68afe392010ab441611"
+      "sourceHash": "32da19def9789e32e64af02b8b5cc55a077a8eb79661726b3e3ad39c5f4b9d4e"
     },
     {
       "entity": "occasion",
@@ -419,7 +419,7 @@
       "seoDescription": "Sträuße für das Frühstück am 17. Mai in Norwegen, im Lieferfenster am Morgen und ohne Arrangieren. Die belieferten Städte werden angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "0aa655d6ef9503eba5e4f9734e0608abdb9ca9b38d75ffced10b3b5ae8171d0a"
+      "sourceHash": "c8b6f7fe53f166d934b63b79a85d0b5e950b817f7b4dd278b8de75094e4b7077"
     }
   ]
 }

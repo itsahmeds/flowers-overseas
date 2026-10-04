@@ -166,7 +166,7 @@
         "rustic": "Rustic"
       }
     },
-    "floristSentence": "Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+    "floristSentence": "Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
     "price": {
       "allIn": "w tym VAT i dostawa",
       "equivalents": "ok. {amounts} po kursie z {date}",

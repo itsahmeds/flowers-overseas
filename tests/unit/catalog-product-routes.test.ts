@@ -563,20 +563,22 @@ describe("`ProductParamsSchema` is the boundary a path segment arrives at (§5.2
 
 describe("the per-locale counts CI prints (§11)", () => {
   it("counts the pages that exist, the ones prebuilt (all of them, §14 A6) and the honest zero", async () => {
+    // `withoutDescription: 2` in English: FO-BQ-001 and FO-BQ-003, whose present-tense wording
+    // (2026-10-04, TASK-179) waits for the founder's attestation. No PDP is indexable yet anyway.
     expect(await productExistenceCounts()).toEqual([
       {
         locale: "en",
         exists: 588,
         prebuilt: 588,
         indexablePages: 0,
-        withoutDescription: 0,
+        withoutDescription: 2,
       },
       {
         locale: "en-gb",
         exists: 588,
         prebuilt: 588,
         indexablePages: 0,
-        withoutDescription: 0,
+        withoutDescription: 2,
       },
       {
         locale: "de",
