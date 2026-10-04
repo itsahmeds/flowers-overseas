@@ -109,48 +109,123 @@ export function sectionOf(markdown: string, heading: string): string {
   return text === EMPTY_SECTION || text === "_Pending._" ? "" : text;
 }
 
-/** A line that opens or closes a fenced code block: three backticks or three tildes. */
-const FENCE = /^ {0,3}(`{3,}|~{3,})/;
+/**
+ * A line that opens or closes a fenced code block (CommonMark §4.5): up to three spaces, then three
+ * or more backticks or tildes. A closing fence uses the same character, at least as many of it, and
+ * nothing else on the line.
+ */
+const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})/;
+const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t\r]*$/;
+/**
+ * An ATX heading (CommonMark §4.2): up to three spaces, one to six `#`, then a space, a tab or the
+ * end of the line. The text runs to the end of the line, `\r` and trailing spaces included, so the
+ * caller trims it.
+ */
+const ATX_HEADING = /^ {0,3}(#{1,6})(?:[ \t\r]([^\n]*))?$/;
 
-/** The `## ` headings of a brief, in document order, skipping lines inside fenced code blocks. */
-export function briefHeadings(markdown: string): string[] {
-  const headings: string[] = [];
-  let fence: string | undefined;
-  for (const line of markdown.split("\n")) {
-    const marker = FENCE.exec(line)?.[1];
-    if (marker !== undefined) {
-      if (fence === undefined) fence = marker;
-      else if (marker.startsWith(fence)) fence = undefined;
+/** One heading of a brief: its level (1–6), its trimmed text and its 1-based line. */
+export interface BriefHeading {
+  readonly level: number;
+  readonly text: string;
+  readonly line: number;
+}
+
+export interface BriefOutline {
+  readonly headings: BriefHeading[];
+  /** The 1-based line of a code fence that is never closed, which hides every heading after it. */
+  readonly unclosedFence: number | undefined;
+}
+
+/**
+ * Every heading of a brief, at any level, in document order, skipping fenced code blocks. Reads
+ * CRLF files, indented headings (up to three spaces), tab separators and a closing `#` sequence
+ * as CommonMark does.
+ */
+export function briefOutline(markdown: string): BriefOutline {
+  const headings: BriefHeading[] = [];
+  let fence: { readonly marker: string; readonly line: number } | undefined;
+  const lines = markdown.split("\n");
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index] ?? "";
+    if (fence !== undefined) {
+      const close = FENCE_CLOSE.exec(line)?.[1];
+      if (
+        close !== undefined &&
+        close[0] === fence.marker[0] &&
+        close.length >= fence.marker.length
+      ) {
+        fence = undefined;
+      }
       continue;
     }
-    if (fence === undefined && line.startsWith("## ")) {
-      headings.push(line.slice(3).trim());
+    const open = FENCE_OPEN.exec(line)?.[1];
+    if (open !== undefined) {
+      fence = { marker: open, line: index + 1 };
+      continue;
+    }
+    const match = ATX_HEADING.exec(line);
+    if (match?.[1] !== undefined) {
+      const text = (match[2] ?? "").replace(/[ \t]+#+[ \t\r]*$/, "").trim();
+      headings.push({ level: match[1].length, text, line: index + 1 });
     }
   }
-  return headings;
+  return { headings, unclosedFence: fence?.line };
+}
+
+/** The `## ` (level-2) headings of a brief, in document order, skipping fenced code blocks. */
+export function briefHeadings(markdown: string): string[] {
+  return briefOutline(markdown)
+    .headings.filter((heading) => heading.level === 2)
+    .map((heading) => heading.text);
+}
+
+/**
+ * The template heading a lower-level heading's text names, if any: the name itself, compared
+ * case-insensitively, or the name followed by anything that is not a letter or digit
+ * (`Carry-forwards (round 2)`, `Escalations:`). `Readiness` does not name `Read`.
+ */
+function namedTemplateHeading(
+  text: string,
+  names: readonly string[],
+): string | undefined {
+  const lower = text.toLowerCase();
+  return names.find((name) => {
+    const prefix = name.toLowerCase();
+    if (!lower.startsWith(prefix)) return false;
+    const next = lower.charAt(prefix.length);
+    return next === "" || !/[\p{L}\p{N}]/u.test(next);
+  });
 }
 
 /**
  * The shape of a committed brief (TASK-141), as problems; empty means the brief is in shape.
  *
- * The rule: every heading of `required` (by default `BRIEF_HEADINGS`) appears exactly once, the
- * template headings appear in `required`'s order, and nothing follows the last of them,
- * `## Result`. Any other heading above `## Result` is allowed.
+ * The rule: every heading of `required` (by default `BRIEF_HEADINGS`) appears exactly once as a
+ * `##` heading, in `required`'s order; no `#` or `##` heading follows the last of them,
+ * `## Result`; no heading of any level inside `## Result` names another template section
+ * (`### Carry-forwards`, `#### escalations`); and no code fence is left open. Any other heading
+ * above `## Result` is allowed, and so is any other sub-heading inside it.
  *
  * Why the line sits there. Briefs grow (`## Progress`, `## Done when`, a narrative round), and a
  * gate that forbids every extra heading would be fought and then disabled. What cost PR 90 a round
  * was not an extra heading but one **below `## Result`**: a reader who has reached the result
- * stops, so anything after it is stranded. Telling "review output" from "narrative" by its heading
- * text cannot be done mechanically (TASK-137's stranded section was titled "Round 2"), so the
- * gate does not try: nothing goes after `## Result`. A template heading written twice fails too,
+ * stops, so anything after it is stranded. Telling "review output" from "narrative" by a section's
+ * title cannot be done mechanically (TASK-137's stranded section was titled "Round 2"), so the
+ * gate does not try: no section goes after `## Result`. Sub-headings inside the result are the
+ * result's own structure and stay allowed, except one that names a template section, which is
+ * that section written in the place nobody reads. A template heading written twice fails too,
  * because `sectionOf` and a reader both stop at the first, so the second is never read. The
  * order is compared as a sequence; compared as a set, Carry-forwards and Escalations could swap.
+ * An unclosed fence fails because it hides every heading after it from this check.
  */
 export function briefShapeProblems(
   markdown: string,
   required: readonly string[] = BRIEF_HEADINGS,
 ): string[] {
-  const found = briefHeadings(markdown);
+  const outline = briefOutline(markdown);
+  const found = outline.headings
+    .filter((heading) => heading.level === 2)
+    .map((heading) => heading.text);
   const problems: string[] = [];
   for (const heading of required) {
     const count = found.filter((name) => name === heading).length;
@@ -172,14 +247,37 @@ export function briefShapeProblems(
     );
   }
   const closing = required[required.length - 1];
-  const end = closing === undefined ? -1 : found.indexOf(closing);
+  const end =
+    closing === undefined
+      ? -1
+      : outline.headings.findIndex(
+          (heading) => heading.level === 2 && heading.text === closing,
+        );
   if (closing !== undefined && end !== -1) {
-    for (const heading of found.slice(end + 1)) {
-      if (heading === closing) continue;
-      problems.push(
-        `"## ${heading}" sits below "## ${closing}", where nobody reads it; move it above "## ${closing}"`,
-      );
+    const others = required.filter((name) => name !== closing);
+    for (const heading of outline.headings.slice(end + 1)) {
+      const marker = `${"#".repeat(heading.level)} ${heading.text}`;
+      if (heading.level <= 2) {
+        if (heading.level === 2 && heading.text === closing) continue;
+        problems.push(
+          `"${marker}" sits below "## ${closing}", where nobody reads it; move it above "## ${closing}"`,
+        );
+        continue;
+      }
+      const named = namedTemplateHeading(heading.text, others);
+      if (named !== undefined) {
+        problems.push(
+          `"${marker}" (line ${String(heading.line)}) repeats "## ${named}" inside "## ${closing}", ` +
+            `where nobody reads it; move it under "## ${named}"`,
+        );
+      }
     }
+  }
+  if (outline.unclosedFence !== undefined) {
+    problems.push(
+      `the code fence opened at line ${String(outline.unclosedFence)} is never closed, ` +
+        "so every heading after it is hidden",
+    );
   }
   return problems;
 }

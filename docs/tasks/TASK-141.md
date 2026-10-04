@@ -77,6 +77,9 @@ _None recorded._
   `checkBriefShapes` in `scripts/tasks-brief.ts` and the call in `pnpm tasks:check`. On main the
   gate failed five briefs (TASK-112, 135, 136, 137, 192).
 - 2026-10-05: the five briefs reshaped (placement only, verified line by line), gates green, PR ready.
+- 2026-10-05 (round 1 fixes): rebased onto `origin/main` (PR 190 had rewritten TASK-192; it was reshaped
+  again by moves only). The breaker's three holes are closed: CRLF and trailing-space headings, template
+  names at any level inside `## Result`, and CommonMark headings and fences. 9 cases added, 8 mutants red.
 
 ## Result
 
@@ -134,6 +137,24 @@ below `## Result`: `node scripts/tasks-open-decisions.ts` exited 1 naming it; th
 restored and `cmp` showed it identical; exit 0 again. (b) Mutants in `briefShapeProblems`, each
 restored after (`cmp`): order compared as a sorted set → "wrong order" and "moved below Result"
 cases red (2 failed); below-Result loop emptied → 4 red; missing check disabled → 1 red.
+
+**Round 1 (breaker holes, all closed).** The headings are now read as CommonMark ATX headings at
+every level (`briefOutline`): up to three spaces of indent, a space or a tab after the `#`s, an
+optional closing `#` sequence, CRLF line endings and trailing spaces trimmed. Fenced code needs a
+matching closing fence. Three rules were added to the ones above. First, a `#` heading after
+`## Result` fails like a `##` one. Second, a sub-heading of any level inside `## Result` fails
+when its text names another template section: case-insensitive, and the name may be followed by
+a non-letter (`### Carry-forwards`, `#### escalations (round 2)`). The result's own sub-headings
+(`### Evidence`) stay allowed. Third, a code fence left unclosed fails, because it hides every
+heading after it. All committed briefs pass the stricter rules unchanged. Main's TASK-192 was
+rewritten by PR 190 and reshaped again: only `## Carry-forwards` plus `_None recorded._` were
+added, and every original section appears verbatim. Tests: `tasks-brief.test.ts` +9 (CRLF,
+trailing spaces, `###` and `####` inside Result, sub-headings allowed, `#` after Result, unclosed
+fence, 3 vs 4 spaces of indent, tab and closing `#`s). Eight mutants were run and each turned at
+least one case red; the source was restored and checked with `cmp`. The mutants: drop `.trim()`
+(CRLF and trailing-space cases), drop the sub-heading check (`###`, `####`), drop the
+unclosed-fence error, allow no indent, allow a space only (no tab), match names case-sensitively,
+compare order as a set, and allow `#` sections after Result.
 
 **Gates.** No expensive gate run locally: the diff renders nothing.
 
