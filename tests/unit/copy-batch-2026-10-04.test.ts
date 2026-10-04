@@ -33,6 +33,18 @@ const APPROVED: Readonly<Record<string, string>> = {
   "company.support.hours":
     "Message us any time, 24/7 — we reply within a few hours.",
   "footer.signoff": "With love, from wherever you are.",
+  // TASK-177 (PR 174): the home strings of the same batch, attested on `main`.
+  "home.destinations.body":
+    "We open each country only once we have local florists there we can stand behind.",
+  "home.proof.guarantee.body":
+    "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
+  "home.proof.guarantee.title": "Fresh-flower promise",
+  "home.sentence.frame":
+    "Send flowers to <who></who> in <country></country> for <occasion></occasion>.",
+  "home.sentence.heading": "Start with who it's for",
+  "home.sentence.notYet": "{country} (not yet)",
+  "home.sentence.who":
+    "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
   "nav.notice.lead": "A note from us:",
   "nav.send": "Send flowers",
   "nav.utility.guarantee": "Fresh-flower promise",
