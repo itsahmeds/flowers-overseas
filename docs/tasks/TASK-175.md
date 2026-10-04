@@ -23,7 +23,13 @@ Row: `TASKS.md` → TASK-175. This brief is the task's long form (spec 001 §14 
 
 ## Carry-forwards
 
-_None._
+Accepted holes (DoD §4, accepted by the reviewer on PR 168, copied here by the orchestrator):
+- **Round 1, holes 5 and 6:** accepted in round 1; later caught by `tests/unit/client-js-budget.test.ts` as well (breaker round 2).
+- **Round 2, HOLE 1 ACCEPTABLE** (PR 168 comment 5974924179): the strip wraps correctly below 390 px on this head, but nothing pins it. Carried to TASK-176: add a 320 px no-horizontal-scroll case in all four locales, and extend the 390 px chip case beyond `/en`.
+- **Round 2, HOLE 2 ACCEPTABLE:** the Linux fallback-face values are correct and make no network request, and the Linux e2e CLS cases catch drift. Carried to TASK-176: a recompute unit test (FB1–FB6 go red), and fix the comments at `globals.css` L375 and `fonts/index.ts` L26–L28.
+- **Round 2, HOLE 3 ACCEPTABLE:** nothing under `product/` imports Caveat today. Carried to TASK-179: narrow the `fonts.test.ts` L352 exemption to the card-preview file, and check that nothing reachable from `src/modules/ui/index.ts` imports `fonts/hand`.
+- **Round 3:** HOLDS (no holes) on c2ad5cfd.
+- **Reviewer nits (round 2 and the scoped re-check):** the A21 note on the accepted Alegreya 700 preload, and a real-device check of small Alegreya text on Linux and Windows; the `BLOCK_STYLE` doc comment does not mention the date grid; the darwin baselines for the 4 re-taken product shots are stale for local macOS runs.
 
 ## Escalations
 
