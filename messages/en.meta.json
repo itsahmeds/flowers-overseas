@@ -960,9 +960,11 @@
   },
   "catalog.floristSentence": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
     "sourceHash": "2178186602ab9e7a09a03808bf787f1f7def44b1a7bcb4e2a63be00c2093fa28",
-    "retained": true
+    "retained": true,
+    "reviewedBy": "founder, 2026-10-04: ran record-approval-179.py after reading the exact text it printed (tense decision in chat: 'yes use present tense')",
+    "reviewedAt": "2026-10-04T18:02:20Z"
   },
   "catalog.price.allIn": {
     "source": "human",
