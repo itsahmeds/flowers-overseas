@@ -470,7 +470,7 @@
       "x": 0,
       "y": 260213,
       "w": 1440,
-      "h": 4172
+      "h": 4193
     },
     {
       "file": "admin-sign-in-mobile.dc.html",
@@ -478,151 +478,151 @@
       "x": 1520,
       "y": 260213,
       "w": 390,
-      "h": 4197
+      "h": 4256
     },
     {
       "file": "admin-home-desktop.dc.html",
       "title": "admin home · desktop · spec 012",
       "x": 0,
-      "y": 264610,
+      "y": 264669,
       "w": 1440,
-      "h": 4216
+      "h": 4237
     },
     {
       "file": "admin-home-mobile.dc.html",
       "title": "admin home · mobile · spec 012",
       "x": 1520,
-      "y": 264610,
+      "y": 264669,
       "w": 390,
-      "h": 6132
+      "h": 6191
     },
     {
       "file": "admin-orders-desktop.dc.html",
       "title": "admin orders · desktop · spec 012",
       "x": 0,
-      "y": 270942,
+      "y": 271060,
       "w": 1440,
-      "h": 3932
+      "h": 3953
     },
     {
       "file": "admin-orders-mobile.dc.html",
       "title": "admin orders · mobile · spec 012",
       "x": 1520,
-      "y": 270942,
+      "y": 271060,
       "w": 390,
-      "h": 5116
+      "h": 5194
     },
     {
       "file": "admin-order-detail-desktop.dc.html",
       "title": "admin order detail · desktop · spec 012",
       "x": 0,
-      "y": 276258,
+      "y": 276454,
       "w": 1440,
-      "h": 4175
+      "h": 4196
     },
     {
       "file": "admin-order-detail-mobile.dc.html",
       "title": "admin order detail · mobile · spec 012",
       "x": 1520,
-      "y": 276258,
+      "y": 276454,
       "w": 390,
-      "h": 6108
+      "h": 6167
     },
     {
       "file": "admin-flags-desktop.dc.html",
       "title": "admin flags · desktop · spec 012",
       "x": 0,
-      "y": 282566,
+      "y": 282821,
       "w": 1440,
-      "h": 2975
+      "h": 2996
     },
     {
       "file": "admin-flags-mobile.dc.html",
       "title": "admin flags · mobile · spec 012",
       "x": 1520,
-      "y": 282566,
+      "y": 282821,
       "w": 390,
-      "h": 3815
+      "h": 3873
     },
     {
       "file": "admin-partners-desktop.dc.html",
       "title": "admin partners · desktop · spec 012",
       "x": 0,
-      "y": 286581,
+      "y": 286894,
       "w": 1440,
-      "h": 2129
+      "h": 2150
     },
     {
       "file": "admin-partners-mobile.dc.html",
       "title": "admin partners · mobile · spec 012",
       "x": 1520,
-      "y": 286581,
+      "y": 286894,
       "w": 390,
-      "h": 2719
+      "h": 2777
     },
     {
       "file": "admin-partner-detail-desktop.dc.html",
       "title": "admin partner detail · desktop · spec 012",
       "x": 0,
-      "y": 289500,
+      "y": 289871,
       "w": 1440,
-      "h": 4503
+      "h": 4544
     },
     {
       "file": "admin-partner-detail-mobile.dc.html",
       "title": "admin partner detail · mobile · spec 012",
       "x": 1520,
-      "y": 289500,
+      "y": 289871,
       "w": 390,
-      "h": 7197
+      "h": 7313
     },
     {
       "file": "admin-applications-desktop.dc.html",
       "title": "admin applications · desktop · spec 012",
       "x": 0,
-      "y": 296897,
+      "y": 297384,
       "w": 1440,
-      "h": 4497
+      "h": 4518
     },
     {
       "file": "admin-applications-mobile.dc.html",
       "title": "admin applications · mobile · spec 012",
       "x": 1520,
-      "y": 296897,
+      "y": 297384,
       "w": 390,
-      "h": 5700
+      "h": 5758
     },
     {
       "file": "admin-audit-desktop.dc.html",
       "title": "admin audit · desktop · spec 012",
       "x": 0,
-      "y": 302797,
+      "y": 303342,
       "w": 1440,
-      "h": 2079
+      "h": 2100
     },
     {
       "file": "admin-audit-mobile.dc.html",
       "title": "admin audit · mobile · spec 012",
       "x": 1520,
-      "y": 302797,
+      "y": 303342,
       "w": 390,
-      "h": 2472
+      "h": 2531
     },
     {
       "file": "admin-users-desktop.dc.html",
       "title": "admin users · desktop · spec 012",
       "x": 0,
-      "y": 305469,
+      "y": 306073,
       "w": 1440,
-      "h": 2129
+      "h": 2150
     },
     {
       "file": "admin-users-mobile.dc.html",
       "title": "admin users · mobile · spec 012",
       "x": 1520,
-      "y": 305469,
+      "y": 306073,
       "w": 390,
-      "h": 2810
+      "h": 2869
     }
   ],
   "annotations": [
@@ -846,63 +846,63 @@
     {
       "id": "s012-home",
       "x": 0,
-      "y": 264564,
+      "y": 264623,
       "w": 1400,
       "text": "Spec 012 · Admin · Today: three counters, navigation per role, zero state, 403 and 404."
     },
     {
       "id": "s012-orders",
       "x": 0,
-      "y": 270896,
+      "y": 271014,
       "w": 1400,
       "text": "Spec 012 · Admin · Orders (read only): filters, the 3 s live check and its pause, demo marker, new-arrival highlight, empty and filtered-empty."
     },
     {
       "id": "s012-order",
       "x": 0,
-      "y": 276212,
+      "y": 276408,
       "w": 1400,
       "text": "Spec 012 · Admin · One order: lines and VAT, recipient by role, the event timeline with raw payloads, assignments, payments. No action panel in v0 (spec 020)."
     },
     {
       "id": "s012-flags",
       "x": 0,
-      "y": 282520,
+      "y": 282775,
       "w": 1400,
       "text": "Spec 012 · Admin · Flags: checkout.open per country, checkout.demo_guard with the typed-key confirmation, an orphaned key."
     },
     {
       "id": "s012-partners",
       "x": 0,
-      "y": 286535,
+      "y": 286848,
       "w": 1400,
       "text": "Spec 012 · Admin · Florists: list by status."
     },
     {
       "id": "s012-partner",
       "x": 0,
-      "y": 289454,
+      "y": 289825,
       "w": 1400,
       "text": "Spec 012 · Admin · One florist: profile, terms, zones, days off, products and payouts; status with the missing conditions (Make active absent until all are met); demo florist."
     },
     {
       "id": "s012-apps",
       "x": 0,
-      "y": 296851,
+      "y": 297338,
       "w": 1400,
       "text": "Spec 012 · Admin · Applications: list, one application, mark contacted, convert, reject with a reason."
     },
     {
       "id": "s012-audit",
       "x": 0,
-      "y": 302751,
+      "y": 303296,
       "w": 1400,
       "text": "Spec 012 · Admin · Audit log: filters, before/after diff with masked values."
     },
     {
       "id": "s012-users",
       "x": 0,
-      "y": 305423,
+      "y": 306027,
       "w": 1400,
       "text": "Spec 012 · Admin · Users: roles, deactivate, your own last admin role."
     }
