@@ -460,11 +460,20 @@ test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () =
  * (`field-sizing: content`). When the webfont swaps in, a select whose fallback is not
  * metric-matched changes width and moves the words after it. `src/app/globals.css` gives both
  * styles a matched fallback, so the swap moves them by a fraction of a pixel; this case pins that
- * the shift attributed to the sentence stays at or below 0.005 on every home, at both artboard
- * widths. The header, banner and consent tests read only their own subject's shifts, so this is
- * the one place the sentence's swap is measured.
+ * the shift attributed to the sentence stays at or below 0.001 on every home, at both artboard
+ * widths. The header, banner and consent tests exclude the sentence, so this is the one place its
+ * swap is measured.
+ *
+ * Why 0.001 and not the ruling's 0.005 (measured on `next start`, 2026-10-04, at 1280 and 390):
+ * - matched fallbacks: at most 0.000055;
+ * - the italic falling back to the roman face, i.e. main's fallbacks: up to 0.0030 (/pl at 1280);
+ * - the selects set in an unmatched stack (Georgia): up to 0.0033;
+ * - one select widened by 40 px after load: 0.0004 to 0.0158.
+ * At 0.005 the second and third stay green, so the bound would not notice the fallback metrics
+ * going away; at 0.001 all three go red on at least one home, with 18 times headroom over the
+ * matched value.
  */
-const SENTENCE_SHIFT_BOUND = 0.005;
+const SENTENCE_SHIFT_BOUND = 0.001;
 const SENTENCE_VIEWPORTS = [
   { width: 1280, height: 720 },
   { width: 390, height: 844 },

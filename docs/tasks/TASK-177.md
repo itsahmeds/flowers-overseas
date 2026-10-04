@@ -67,6 +67,39 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 
    I have not chosen. Every other check on that run is green, including `visual` and `lighthouse`.
 
+   **Orchestrator ruling, 2026-10-04 (technical; no spec text change): do (b) + (c).** The measured CLS is at most 0.0030, against Google's "good" threshold of 0.1 and our Lighthouse budget of 0.05. No preload change (clause 3 stands), no change to the artboard's fonts, no global relaxation.
+
+   **Implemented:**
+   - **(b) Matched italic fallbacks.** `src/app/globals.css` gains two faces:
+     - the italic face of "Fraunces Fallback Liberation", over Liberation Serif Italic and Tinos Italic, for Linux and ChromeOS;
+     - the italic face of next/font's own "displayFont Fallback", over Times New Roman Italic, for macOS and Windows. There the stack reaches next/font's roman TNR face first.
+     - Both use `size-adjust` 85.31 %, `ascent-override` 114.64 %, `descent-override` 29.89 %. These are Next's formula over the committed italic file against Times New Roman Italic's a–z average (846.558 / 2048), in place of the roman's 95.19 %, which made italic text about 12 % too wide.
+     - `tests/unit/fonts-italic-fallback.test.ts` recomputes the values, pins the family names and the `src` lists, and goes red on a changed override.
+     - TASK-176's recompute test is not on main yet, so this is the equivalent in its own file.
+     - The Latin-Ext roman needs no face: its characters fall through to the already-matched roman Liberation face.
+   - **(c) Each assertion reads its own subject** (`tests/support/layout-shift.ts` records each entry with its `sources`).
+     - Banner AC-28 and consent AC-17 sum the entries not wholly inside `[data-fo-sentence]`.
+     - Header AC-7 uses the same exclusion, **not** "sources inside the header": when the header changes height, Chrome names `<main>` as the only source, so a header-only scope stayed green on the header-height mutation (measured: 0.0070, sources `[MAIN]`).
+   - **New e2e** in `tests/e2e/home.spec.ts`: "the home sentence's font swap stays small", on every home at 1280 and 390. The bound is **0.001, not 0.005**: at 0.005 the "lose the fallback metrics" mutation stays green (see below).
+
+   **Measured, `next start` on macOS:**
+
+   | Fallbacks | Sentence-sourced shift per home |
+   |---|---|
+   | Before (main's: italic on the roman TNR face) | /en 0.00011 / 0.00097 · /en-gb 0.00011 / 0.00083 · /de 0.000097 / 0.00037 · /pl **0.0030** / 0.00040 |
+   | After (matched italic) | 0 everywhere, except /de 1280 0.000037 and /pl 1280 0.000061 |
+
+   Each pair is 1280 / 390. The before column matches CI's Linux before-values (0.00013, 0.00006, 0.0030). Linux after-values are printed by the new test in CI's e2e log (`sentence-shift …` lines).
+
+   **Mutations, each run against a fresh `next start` and reverted:**
+   - **Header AC-7:** the utility strip grows by 12 px after load. Red at `header.spec.ts:174` (`headerShift`), 0.0070, desktop ×4.
+   - **Banner AC-28:** the banner is moved into the flow at the top. Red at `banner.spec.ts:215` (`bannerShift … toBe(0)`), 0.157.
+   - **Consent AC-17:** the sheet is moved into the flow at the top, with the heading-box check bypassed so the CLS line is what fails. Red at `consent-banner.spec.ts:200` (`sheetShift <= 0.001`), 0.157, desktop ×4.
+   - **Sentence, select widened by 40 px after load:** red on 7 of 8 desktop homes (0.0014–0.0158).
+   - **Sentence, selects set in an unmatched stack (Georgia):** red on 3 of 8 (up to 0.0033).
+   - **Sentence, main's fallbacks (before the fix):** red on /pl 1280 (0.0030).
+   - **Unit test:** an italic override edited, red in `fonts-italic-fallback.test.ts`.
+
 ## Progress
 
 - 2026-10-04: v2 home, `SentencePicker` + `sentence-model.ts`, `GET /api/send/{locale}` and the finder retired (eeff9154). Fresh-on-arrival wording and v2 e2e/a11y/visual specs (2f6fdce7). Draft PR 174 against main, stacked on PR 168.
@@ -78,11 +111,12 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 - 2026-10-04: date-driven layout. Every home shot below the occasion-dates band (`proof`, `occasions`, `how-it-works`, `faq`, `destinations`) and every home full-page shot (`en.png`, `de.png`, `home-{locale}-{mobile,desktop}.png`, `ar-XB.png`) now takes the band out of the layout with `tests/visual/home-dates.css`. The band reads no clock (it prints `src/config/occasions.ts` as data, which rolls forward by an edit), so today nothing moves by date alone; the sheet makes a calendar edit unable to move other sections' pixels. The band's own shot is taken as rendered. `footer.spec.ts` belongs to TASK-176 and is unchanged.
 - 2026-10-04: baselines. Run 37171984787 showed two defects, both fixed in 97c1f91a with a test: the promise band drew four desktop columns for three facts, so a blank ink-muted cell showed at its inline end (`ProofRow` now `md:grid-cols-3`; a unit case ties the column count to `PROOF_FACTS`, red before the fix), and the `/dev/components` hero had no shop countries, so its country select drew blank. Run 37172887887 re-took them; its whole change list (51 changed, 2 added) plus its manifest is b9722592's content, and the retired `home-*-{finder,trust}` PNGs are deleted on both platforms.
 - 2026-10-04: ci:full on b2acfd5d (run 37173654376). `visual` and `lighthouse` are green. e2e and a11y were red on stale counts (three promise facts, three FAQ answers) and on the crawl's depth-1 Poland check, all fixed in 35f9d5c2. They were also red on the CLS-0 gates, which is escalation 7.
+- 2026-10-04: escalation 7 ruled (b) + (c). Matched italic fallbacks, the three CLS assertions scoped to their subjects, and the sentence-shift test with a 0.001 bound. All four specs and `fonts.spec.ts` are green on a local `next start` (318 passed), and every mutation is recorded in the escalation.
 - 2026-10-04: rebased again onto main after PR 175 (spec 004 A22) merged. A22 clause 2 asks that `docs/design/README.md` §Voice record the exception, pinned by the test: a new case in `tests/unit/design-docs.test.ts` reads every `VOICE_EXCEPTIONS` entry from that section (red before the bullet was added).
 
 ## Result
 
-**Blocked on escalation 7 (the home's CLS gates).** Everything else is done. The branch is rebased on main after PR 168 and PR 175, the Linux baselines come from run 37172887887, and `ci:full` is green except the three CLS-0 e2e assertions. The FAQ and promise-band counts, and the crawl, were fixed in 35f9d5c2.
+**Escalation 7 ruled (b) + (c) and implemented; see the escalation.** Everything else is done. The branch is rebased on main after PR 168 and PR 175, the Linux baselines come from run 37172887887, and `ci:full` is green except the three CLS-0 e2e assertions. The FAQ and promise-band counts, and the crawl, were fixed in 35f9d5c2.
 
 **Lighthouse, CI run 37173654376 (b2acfd5d) against main 977990a4.** LCP: /en 1917 ms (main 1878), /en-gb 1989 (1832), /de 1896 (1891), /pl 1835 (1962). The LCP element is the preloaded hero `<img>`. The URLs that this PR does not change moved by the same amounts (/en/send-flowers-to 1253 against 1289, the Poland guide 1532 against 1534). Script is 127,940 B against main's 128,358 (the finder island is gone, the sentence island added). The /en-gb figure of 1989 ms is over 1950, but /pl moved 127 ms the other way, so it is run-to-run spread, not a cost the sentence adds.
 

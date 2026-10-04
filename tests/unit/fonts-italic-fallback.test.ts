@@ -135,4 +135,35 @@ describe("the Fraunces italic's metric-matched fallback (A21 clause 3)", () => {
       percent(roman[0]?.get("size-adjust")),
     );
   });
+
+  describe("the italic of next/font's own fallback family, for machines with Times New Roman", () => {
+    const next = fontFaces().filter(
+      (face) =>
+        face.get("font-family")?.replaceAll('"', "") === "displayFont Fallback",
+    );
+
+    it("names the family next/font generates for the `displayFont` call", () => {
+      const fonts = readFileSync(
+        resolve(repoRoot, "src/modules/ui/fonts/index.ts"),
+        "utf8",
+      );
+      const call =
+        /export const displayFont = localFont\(\{[\s\S]*?\n\}\);/.exec(
+          fonts,
+        )?.[0];
+      expect(call).toContain('adjustFontFallback: "Times New Roman"');
+      expect(next).toHaveLength(1);
+      expect(next[0]?.get("font-style")).toBe("italic");
+      expect(next[0]?.get("src")).toBe(
+        'local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT")',
+      );
+    });
+
+    it("carries the same overrides as the Liberation italic", () => {
+      const expected = expectedItalicOverrides();
+      for (const [prop, value] of Object.entries(expected)) {
+        expect(percent(next[0]?.get(prop)), prop).toBe(percent(value));
+      }
+    });
+  });
 });

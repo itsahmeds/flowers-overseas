@@ -31,7 +31,11 @@ import { createHash } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
-import { recordLayoutShifts, shiftInside } from "../support/layout-shift.ts";
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftOutside,
+} from "../support/layout-shift.ts";
 
 /** The sticky part: masthead + category row, and the `banner` landmark. */
 const HEADER = "[data-fo-header]";
@@ -100,9 +104,11 @@ const LOCALES = [
 const MD_BREAKPOINT = 768;
 
 /**
- * The shift the header causes: entries with a source inside the header or the utility strip
- * (`../support/layout-shift.ts`), after a 500 ms settle. The home's sentence re-measures when its
- * webfont swaps in; that shift is bounded by its own test in `./home.spec.ts`, not read here.
+ * The shift the header can cause: every entry not wholly inside the home's sentence picker
+ * (`../support/layout-shift.ts`), after a 500 ms settle. A header that changes height moves what
+ * is below it, and the browser names those nodes (`<main>`), not the header, as the sources, so the
+ * test excludes the one region whose shift another test owns rather than including the header's
+ * own box. The sentence re-measures when its webfont swaps in; `./home.spec.ts` bounds that.
  */
 async function headerShift(page: import("@playwright/test").Page) {
   await page.evaluate(
@@ -111,7 +117,7 @@ async function headerShift(page: import("@playwright/test").Page) {
         setTimeout(resolve, 500);
       }),
   );
-  return shiftInside(page, `${HEADER}, ${UTILITY}`);
+  return shiftOutside(page, SENTENCE_REGION);
 }
 
 test.describe("the site header (AC-7)", () => {
