@@ -3312,9 +3312,7 @@
   },
   "product.eyebrow": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
+    "reviewed": false,
     "sourceHash": "08cb5e418a89588652633f7cbe19a198f9a93e4a6c6a2004dbd53ea49eb85675"
   },
   "product.included": {

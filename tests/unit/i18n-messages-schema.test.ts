@@ -324,6 +324,10 @@ describe("the shipped catalogues and manifests", () => {
     // ahead whatever u feel is good"; TASK-171), so they left this queue; `undatedHeading` was
     // not in that sign-off and still waits.
     "occasionsIndex.undatedHeading",
+    // TASK-179, the v2 product page: the eyebrow "{descriptor} · for {country}" was attested with
+    // the 2026-10-04 copy batch by mistake. It is not one of the batch's 14 items (orchestrator
+    // check, 2026-10-04), so it waits here for the founder.
+    "product.eyebrow",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording

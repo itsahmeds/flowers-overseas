@@ -76,9 +76,10 @@ as `reviewed: true` in `messages/en.meta.json`; de/pl drafted and `reviewed: fal
   ("VAT {rate}" was already reviewed).
 - item 11: the guide card answer, in five authored guides (their front matter was already
   `reviewed: true`).
-- item 14: `product.card.legend` "What should the card say?" and `product.eyebrow`
-  "{descriptor} · for {country}".
-- `en` unreviewed share after the batch: 23 of 545 (4.2 %).
+- item 14: `product.card.legend` "What should the card say?".
+- `product.eyebrow` "{descriptor} · for {country}" is **not** in the batch: it is back to
+  `reviewed: false` and in `AWAITING_FOUNDER_REVIEW` (`tests/unit/i18n-messages-schema.test.ts`).
+- `en` unreviewed share after the batch: 24 of 545 (4.4 %).
 - `src/modules/catalog/product.ts` still calls `freshnessGuarantee` "the 7-day freshness guarantee"
   in a comment. Nothing renders it; it is left for the TASK-172 / spec 009 change.
 
