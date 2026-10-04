@@ -41,7 +41,7 @@ import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
 import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
-import { ProductPage } from "../../src/modules/ui";
+import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
 import { zoneCity } from "../../src/modules/ui/product/labels.ts";
 import { lcpNominations } from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";

@@ -25,7 +25,10 @@ import {
   deploymentDescriptor,
   pageMetadata,
 } from "@/modules/seo";
-import { ProductPage } from "@/modules/ui";
+// Imported directly, not through the `ui` barrel: `ProductPage` mounts the printed-card preview,
+// Caveat's one importer, so the barrel must not reach it (spec 004 §14 A21 clause 3;
+// `tests/unit/fonts.test.ts`).
+import { ProductPage } from "@/modules/ui/product/ProductPage";
 
 /**
  * `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL depth** (spec 008 §14

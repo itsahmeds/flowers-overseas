@@ -23,8 +23,10 @@ import { describe, expect, it } from "vitest";
 import { ListingBreadcrumb, productView } from "../../src/modules/catalog";
 import { DeliveryFacts } from "../../src/modules/geo";
 import { loadMessages } from "../../src/modules/i18n";
-import { ProductPage } from "../../src/modules/ui";
-import { CARD_MESSAGE_MAX } from "../../src/modules/ui/product/ProductPage.tsx";
+import {
+  CARD_MESSAGE_MAX,
+  ProductPage,
+} from "../../src/modules/ui/product/ProductPage.tsx";
 
 import { importClosure } from "./support/import-closure.ts";
 
