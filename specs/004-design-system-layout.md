@@ -942,7 +942,6 @@ Open for the founder (defaults bind until answered):
 Raised by: the founder in chat, 2026-10-03; written by the spec-writer; implemented by TASK-175 to
 TASK-179.
 
-
 **A22 — Present tense for our florists; "my partner" as a who option (§14 A5 L441; §14 A21
 clause 4 L810–L812, clause 7 L875; AC-15, T-17; `src/config/voice.ts` L31–L41;
 `tests/unit/design-docs.test.ts` L477–L482, L547–L560; `docs/design/README.md` L158–L166; founder
