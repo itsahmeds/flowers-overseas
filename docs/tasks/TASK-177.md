@@ -41,6 +41,7 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 ## Escalations
 
 1. **Which destinations the sentence opens (A21 clause 4).** The clause says that an unpublished destination is a disabled "not yet" option and that flipping `corridorPagePublished` enables it. TASK-092 already set `corridorPagePublished: true` on all seven countries, and all seven have a shop root, while the artboards (and "Poland first") draw six as "not yet". Implemented default: open = `corridorPagePublished` **and** `status: "live"` **and** the shop root exists (`isSentenceDestination()`, one predicate in `src/modules/ui/home/sentence-model.ts`). The route uses the same rule, so `?country=DE` → destinations hub. **Question for the orchestrator/founder:** keep this, or open all seven, sending Germany and the rest to their demo shops?
+   **Ruling (orchestrator, PR 174 review round 1, R3): the honest default.** A country opens in the sentence only when it is published, `live` and has a shop root; every other country is a disabled "{country} (not yet)" option that does not submit. That is what ships: `isSentenceDestination()`, with the route on the same predicate. The de and pl "not yet" labels are pinned by test (H1).
 2. **"The occasion page" for evergreen occasions.** Spec 008's `countryOccasion` exists only for seasonal occasions (Poland: Mother's Day). Birthday, anniversary, sympathy, new baby and just because are country *categories* with the same key. The route tries `countryOccasion`, then `countryCategory` with the same key, then the shop root. That is what makes T-12's "PL + birthday → the PL occasion page" true (`/pl/polska/kwiaty/kwiaty-na-urodziny`).
 3. ~~The 5 % copy gate decides how the sentence looks.~~ **Resolved 2026-10-04.** The founder chose the sentence ("go ahead with it. 2") and approved the copy batch ("ok from my end"), so the letter now ships as the sentence with its "who it's for" select. See `## Result
 
@@ -122,6 +123,35 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 - 2026-10-04: date-driven layout. Every home shot below the occasion-dates band (`proof`, `occasions`, `how-it-works`, `faq`, `destinations`) and every home full-page shot (`en.png`, `de.png`, `home-{locale}-{mobile,desktop}.png`, `ar-XB.png`) now takes the band out of the layout with `tests/visual/home-dates.css`. The band reads no clock (it prints `src/config/occasions.ts` as data, which rolls forward by an edit), so today nothing moves by date alone; the sheet makes a calendar edit unable to move other sections' pixels. The band's own shot is taken as rendered. `footer.spec.ts` belongs to TASK-176 and is unchanged.
 - 2026-10-04: baselines. Run 37171984787 showed two defects, both fixed in 97c1f91a with a test: the promise band drew four desktop columns for three facts, so a blank ink-muted cell showed at its inline end (`ProofRow` now `md:grid-cols-3`; a unit case ties the column count to `PROOF_FACTS`, red before the fix), and the `/dev/components` hero had no shop countries, so its country select drew blank. Run 37172887887 re-took them; its whole change list (51 changed, 2 added) plus its manifest is b9722592's content, and the retired `home-*-{finder,trust}` PNGs are deleted on both platforms.
 - 2026-10-04: ci:full on b2acfd5d (run 37173654376). `visual` and `lighthouse` are green. e2e and a11y were red on stale counts (three promise facts, three FAQ answers) and on the crawl's depth-1 Poland check, all fixed in 35f9d5c2. They were also red on the CLS-0 gates, which is escalation 7.
+- 2026-10-04: PR 174 round 1 (review FAIL plus breaker HOLES on f8546476).
+  - Before anything else, the founder's attestation of `home.sentence.who` (09:54:22Z) was committed alone, byte for byte, and the key left `AWAITING_FOUNDER_REVIEW`. The `en` value is unchanged, so the attestation holds.
+  - Then origin/main (b1ea7f03, TASK-178) was merged. Conflicting baselines were taken from this branch and then re-taken.
+  - **R1, the "my partner" exception.** `VOICE_EXCEPTIONS` is now `{ locales: ["en", "en-gb"], messageKey: "home.sentence.who", token: "partner {my partner}" }`. The token must start the value or follow whitespace or a brace, and it ends at the case's closing brace. The scan passes each catalogue's locale. The T-17 case that allowed the phrase as prose is gone.
+  - **R1, de and pl.** They no longer contain the letters "partner". Their partner option is the select's `other` case, and "someone I love" has its own `someoneILove` case:
+    - de: `{who, select, mum {meine Mama} dad {meinen Papa} grandma {meine Oma} grandad {meinen Opa} friend {jemanden aus dem Freundeskreis} someoneILove {einen lieben Menschen} other {meinen Schatz}}`
+    - pl: `{who, select, mum {mojej mamy} dad {mojego taty} grandma {mojej babci} grandad {mojego dziadka} friend {przyjaciela lub przyjaciółki} someoneILove {ukochanej osoby} other {mojej drugiej połówki}}`
+    - Both are `reviewed: false` drafts.
+  - **R2, the Poland chip.** Every destination chip links its guide. Only where a locale has no guide (/de, /pl) does Poland's chip link the shop root. The crawl test is main's again (one click for every guide), and `docs/design/README.md` has a differ row for the artboard's chip.
+  - **R3:** recorded under escalation 1.
+  - **H1:** the de and pl "(not yet)" labels are pinned.
+  - **H3:** a per-locale price-talk denylist over the rendered home, plus a check that none of the price-claim messages (`nav.utility.pricesInclude`, `catalog.price.inclusive`, `catalog.price.allIn`) render on the home.
+  - **H4:** `tests/support/day-count.ts`. A number (digits or spelled one to ten in three languages), at most two words, then a word with a day stem, or any week word; "24/7" passes. It is used by the chrome sweep (header and footer), the promise band in all four locales and the FAQ in all four locales. It does not require a freshness word nearby, so "7 full days" and "a week" go red on their own, as the ruling's list requires.
+  - **Mutations, each run and reverted. Every one went red in the test named:**
+    - R1, in `design-docs.test.ts` ("messages/{locale}.json uses no banned word" plus the A22 cases):
+      - en who `partner {my partner's florist}`;
+      - en who `partner {my partner, our florist}`;
+      - en who `friend {my partner}`;
+      - "Send flowers to my partner" as `home.sentence.heading`;
+      - de who `+ partner {my partner}`;
+      - pl who `+ partner {my partner  florist}`;
+      - the old phrase-wide scanner restored, which also turned the T-17 case red.
+    - R2: the chip back to shop-root-first. Red in `ui-home-gated.test.tsx` ("… to its guide, even when the page hands in a shop root").
+    - H1: de and pl `notYet` = `{country}`. Red in `ui-home.test.tsx` (the H1 cases).
+    - H3: "delivery and tax included" (en), "Lieferung und Steuern inklusive" (de) and "Cena obejmuje dostawę i podatek" (pl), each appended to `home.destinations.body`. Red in `ui-home.test.tsx` (the H3 denylist).
+    - H4, on the home:
+      - "seven full days" (en, no digit), "7 Kalendertage" (de), "Sieben Tage" (de) and "Tydzień świeżości" (pl) in `home.proof.local.body`. Red in `ui-home.test.tsx`.
+      - "a week" in `faq.photo.answer`. Red in `ui-home-sections.test.tsx`.
+    - H4, in the chrome: "seven full days" (en sign-off), "7 Kalendertage" (de sign-off), "Sieben Tage" (de notice lead), "Tydzień świeżości" (pl notice lead) and "a week" (en notice lead). Red in `ui-site-header.test.tsx`.
 - 2026-10-04: CI on 2a39015a (run 37182787523): green.
   - e2e: 1309 passed. One test was flaky and unrelated: `banner.spec.ts:662`, the overlay z-scale, which passed on retry.
   - Sentence-sourced shift on Linux: at most 0.00044 (/en and /en-gb at 390); the rest are at most 0.00022.
@@ -141,7 +171,7 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 
 ## Result
 
-**Escalation 7 ruled (b) + (c) and implemented; see the escalation.** Everything else is done. The branch is rebased on main after PR 168 and PR 175, the Linux baselines come from run 37172887887, and `ci:full` is green except the three CLS-0 e2e assertions. The FAQ and promise-band counts, and the crawl, were fixed in 35f9d5c2.
+**PR 174 round 1 fixes are in; see `## Progress`.** Everything else is done. The branch is rebased on main after PR 168 and PR 175, the Linux baselines come from run 37172887887, and `ci:full` is green except the three CLS-0 e2e assertions. The FAQ and promise-band counts, and the crawl, were fixed in 35f9d5c2.
 
 **Lighthouse, CI run 37173654376 (b2acfd5d) against main 977990a4.** LCP: /en 1917 ms (main 1878), /en-gb 1989 (1832), /de 1896 (1891), /pl 1835 (1962). The LCP element is the preloaded hero `<img>`. The URLs that this PR does not change moved by the same amounts (/en/send-flowers-to 1253 against 1289, the Poland guide 1532 against 1534). Script is 127,940 B against main's 128,358 (the finder island is gone, the sentence island added). The /en-gb figure of 1989 ms is over 1950, but /pl moved 127 ms the other way, so it is run-to-run spread, not a cost the sentence adds.
 
