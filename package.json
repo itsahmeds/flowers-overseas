@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build.ts",
     "start": "next start",
     "lint": "pnpm lint:js && pnpm lint:css && pnpm check:no-literal-disable",
     "lint:js": "eslint . --max-warnings 0",

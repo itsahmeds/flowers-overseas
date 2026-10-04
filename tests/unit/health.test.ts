@@ -22,7 +22,12 @@ const BODY = {
   commit: "abc123",
   appEnv: "preview",
   region: "europe-west4",
+  fxAsOf: "2026-10-02",
+  fxSource: "ecb-build",
 } as const;
+
+/** The served FX snapshot every builder call below reports (spec 005 §14 A7, AC-33). */
+const FX = { fxAsOf: "2026-10-02", fxSource: "ecb-build" } as const;
 
 describe("HealthResponse schema (spec 001 §5.2, spec 040 AC-31)", () => {
   it("accepts the documented body", () => {
@@ -36,12 +41,35 @@ describe("HealthResponse schema (spec 001 §5.2, spec 040 AC-31)", () => {
     return copy;
   }
 
-  it("requires every AC-31 field: status, commit, appEnv, region", () => {
-    for (const field of ["status", "commit", "appEnv", "region"] as const) {
+  it("requires every AC-31 field and spec 005 AC-33's two: status, commit, appEnv, region, fxAsOf, fxSource", () => {
+    for (const field of [
+      "status",
+      "commit",
+      "appEnv",
+      "region",
+      "fxAsOf",
+      "fxSource",
+    ] as const) {
       expect(HealthResponse.safeParse(without(field)).success, field).toBe(
         false,
       );
     }
+  });
+
+  it("accepts only the two FX sources and a calendar-day fxAsOf", () => {
+    for (const fxSource of ["ecb", "db", ""]) {
+      expect(
+        HealthResponse.safeParse({ ...BODY, fxSource }).success,
+        fxSource,
+      ).toBe(false);
+    }
+    expect(
+      HealthResponse.safeParse({ ...BODY, fxSource: "committed" }).success,
+    ).toBe(true);
+    expect(
+      HealthResponse.safeParse({ ...BODY, fxAsOf: "2026-10-02T16:00:00Z" })
+        .success,
+    ).toBe(false);
   });
 
   it("rejects a status other than ok", () => {
@@ -89,6 +117,7 @@ describe("buildHealthResponse", () => {
   it("reports the commit sha as both `commit` and spec 001's `version`", () => {
     expect(
       buildHealthResponse({
+        fx: FX,
         environment: "production",
         version: "deadbeef",
         region: "europe-west4",
@@ -100,11 +129,13 @@ describe("buildHealthResponse", () => {
       commit: "deadbeef",
       appEnv: "production",
       region: "europe-west4",
+      ...FX,
     });
   });
 
   it("falls back to a placeholder commit when no platform injects a SHA", () => {
     const body = buildHealthResponse({
+      fx: FX,
       environment: "preview",
       version: undefined,
     });
@@ -114,21 +145,28 @@ describe("buildHealthResponse", () => {
 
   it("falls back to `local` when no platform names a region", () => {
     expect(
-      buildHealthResponse({ environment: "development", version: "x" }).region,
+      buildHealthResponse({ fx: FX, environment: "development", version: "x" })
+        .region,
     ).toBe(HEALTH_REGION_FALLBACK);
   });
 
   it("reports a test run as development in `env` and as itself in `appEnv`", () => {
-    const body = buildHealthResponse({ environment: "test", version: "x" });
+    const body = buildHealthResponse({
+      fx: FX,
+      environment: "test",
+      version: "x",
+    });
     expect(body.env).toBe("development");
     expect(body.appEnv).toBe("test");
     expect(
-      buildHealthResponse({ environment: "development", version: "x" }).env,
+      buildHealthResponse({ fx: FX, environment: "development", version: "x" })
+        .env,
     ).toBe("development");
   });
 
   it("reports staging as itself in both fields (the florist demo environment)", () => {
     const body = buildHealthResponse({
+      fx: FX,
       environment: "staging",
       version: "x",
       region: "europe-west4",

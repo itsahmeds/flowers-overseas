@@ -113,6 +113,15 @@ concurrency:
 permissions:
   contents: read
 
+# The FX build step (spec 005 §14 A7, `scripts/fx-snapshot.ts`) is turned off for every build in
+# this workflow: the browser suites assert and photograph priced pages, and a build that fetched
+# the ECB's rate of the day would turn those pages from the committed snapshot's fallback into
+# converted prices that move every weekday. CI's builds therefore serve the committed snapshot,
+# one stable state; the fetch itself is tested with MSW (`tests/unit/fx-snapshot.test.ts`), and
+# Railway builds always fetch because the `Dockerfile` declares no `ARG` for this switch (TASK-181).
+env:
+  FX_SNAPSHOT_FETCH: "off"
+
 defaults:
   run:
     # `shell: bash` is `bash --noprofile --norc -eo pipefail`, where the bare default is only

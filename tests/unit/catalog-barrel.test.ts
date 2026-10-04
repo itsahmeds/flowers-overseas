@@ -211,6 +211,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // approximate equivalents under a charged price (spec 004 §14 A21 clause 6; TASK-178)
         "EQUIVALENT_CURRENCIES",
         "priceEquivalents",
+        // which FX snapshot this deployment serves, for `/api/health` (spec 005 §14 A7; TASK-181)
+        "fxSnapshotStatus",
         // availability, indexability, the Omnibus figure and signed quotes (TASK-068)
         "AvailabilityQuerySchema",
         "AvailabilitySchema",
@@ -361,6 +363,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/schemas.ts`,
       `${moduleDir}/shop-entry.ts`,
       `${moduleDir}/slugs.ts`,
+      // The bundled-FX boundary (spec 005 §14 A7 Corrected 2; TASK-181): pure, reads no dataset.
+      `${moduleDir}/static/fx-bundle.ts`,
       `${moduleDir}/static/index.ts`,
       `${moduleDir}/types.ts`,
       `${moduleDir}/ui/CategoryHubPage.tsx`,

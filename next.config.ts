@@ -104,6 +104,13 @@ const headerRules = [
 ];
 
 const nextConfig: NextConfig = {
+  // The FX snapshot `scripts/build.ts` fetched for this build (spec 005 §14 A7 Corrected 2;
+  // TASK-181), inlined into the bundle so `process.env.FX_BUILD_SNAPSHOT` in
+  // `src/modules/catalog/static/index.ts` is a constant in the running deployment: no request
+  // reads it from the environment and none fetches a rate. Empty — the committed snapshot — for
+  // `next dev`, a bare `next build`, and every build whose fetch failed. Public data only: a date
+  // and ten integer rates.
+  env: { FX_BUILD_SNAPSHOT: process.env.FX_BUILD_SNAPSHOT ?? "" },
   // The container of spec 040 §5.3 (AC-8, TASK-098) runs `node server.js` from `.next/standalone`:
   // Next traces the server's dependencies and writes a self-contained tree, so the runtime image
   // carries no development `node_modules`.

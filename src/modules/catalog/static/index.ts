@@ -47,6 +47,8 @@ import { CURRENCIES } from "@/config/currencies";
 
 import { currencyFlagKey } from "../schemas";
 
+import { type FxBundleSource, resolveBundledFx } from "./fx-bundle";
+
 import type {
   AddonCountryPriceRecord,
   AddonRecord,
@@ -122,7 +124,17 @@ const OCCASION_ROWS = deepFrozenCopy(OCCASIONS);
 const ADDON_ROWS = deepFrozenCopy(ADDONS);
 const COUNTRY_PRICE_ROWS = deepFrozenCopy(COUNTRY_PRICES);
 const ADDON_COUNTRY_PRICE_ROWS = deepFrozenCopy(ADDON_COUNTRY_PRICES);
-const FX_RATE_ROWS = deepFrozenCopy(FX_SNAPSHOT);
+/**
+ * The snapshot this deployment serves (spec 005 §14 A7 Corrected 2 (iv)): the ECB daily file the
+ * build fetched when it passed every check, otherwise the whole committed snapshot.
+ *
+ * `process.env.FX_BUILD_SNAPSHOT` is written exactly like this, as a literal member access,
+ * because `next.config.ts`'s `env` **inlines** it into the server bundle at build: a running
+ * deployment never reads it from its environment, and no request makes a network call (AC-31).
+ * Off a Next build — `next dev`, every test — it is unset and the committed snapshot is served.
+ */
+const BUNDLED_FX = resolveBundledFx(process.env.FX_BUILD_SNAPSHOT, FX_SNAPSHOT);
+const FX_RATE_ROWS = deepFrozenCopy(BUNDLED_FX.rows);
 
 /**
  * The authored catalogue, handed over deep-frozen. Every method is `async` because the interface is
@@ -154,7 +166,10 @@ export const staticPriceProvider: PriceProvider = {
     Promise.resolve(ADDON_COUNTRY_PRICE_ROWS),
 };
 
-/** The one committed ECB snapshot, deep-frozen. Whether it is too old is `pricing/fx.ts`'s. */
+/**
+ * The bundled ECB snapshot (fetched at build, or the committed fallback), deep-frozen. Whether it
+ * is too old is `pricing/fx.ts`'s.
+ */
 export const staticFxRateProvider: FxRateProvider = {
   fxRates: (): Promise<readonly FxRateRecord[]> =>
     Promise.resolve(FX_RATE_ROWS),
@@ -171,6 +186,18 @@ export const staticFxRateProvider: FxRateProvider = {
  * policy and its data together in one file.
  */
 export { FX_BUFFER_BP, MAX_FX_AGE_HOURS };
+
+/**
+ * Which snapshot this deployment serves, for `/api/health` (spec 005 §14 A7 Corrected 2 (vi),
+ * AC-33): its `as_of` and whether it is the build's fetch or the committed fallback. Read from the
+ * bundled module, so the health route makes no network call.
+ */
+export function bundledFxStatus(): {
+  readonly fxAsOf: string;
+  readonly fxSource: FxBundleSource;
+} {
+  return { fxAsOf: BUNDLED_FX.asOf, fxSource: BUNDLED_FX.source };
+}
 
 /**
  * The rate-age rule of spec 005 §14 A7 Corrected 5 (AC-35), forwarded from its one home in

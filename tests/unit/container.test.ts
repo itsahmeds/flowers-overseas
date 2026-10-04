@@ -140,9 +140,56 @@ describe("Dockerfile (AC-8)", () => {
   });
 });
 
+/**
+ * The FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31, T-30; TASK-181). The one build
+ * argument that is **not** part of the env contract: nothing reads it, and its only job is to make
+ * a same-commit rebuild miss the cached `RUN pnpm build` layer so the build fetches the day's ECB
+ * rates. The weekday rebuild job sets it before every rebuild (`scripts/fx-refresh.ts`).
+ */
+const FX_CACHE_BREAKER = "FX_REFRESH_AT";
+
+/** The build stage's instructions, comments and blank lines dropped, continuations joined. */
+const buildInstructions = buildStage
+  .replace(/\\\n/gu, " ")
+  .split("\n")
+  .map((line) => line.trim())
+  .filter((line) => line !== "" && !line.startsWith("#"));
+
+describe("the FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31, T-30)", () => {
+  it("declares `ARG FX_REFRESH_AT` as the instruction immediately before `RUN pnpm build`", () => {
+    const build = buildInstructions.indexOf("RUN pnpm build");
+    expect(build).toBeGreaterThan(0);
+    expect(buildInstructions[build - 1]).toMatch(
+      new RegExp(`^ARG ${FX_CACHE_BREAKER}(?:=|$)`, "u"),
+    );
+  });
+
+  it("declares it after `COPY . .`, in the build stage, exactly once", () => {
+    const copy = buildInstructions.indexOf("COPY . .");
+    const arg = buildInstructions.findIndex((line) =>
+      line.startsWith(`ARG ${FX_CACHE_BREAKER}`),
+    );
+    expect(copy).toBeGreaterThan(-1);
+    expect(arg).toBeGreaterThan(copy);
+    expect(
+      declaredArgs.filter((name) => name === FX_CACHE_BREAKER),
+    ).toHaveLength(1);
+  });
+
+  it("is not a secret and not part of the env contract, so no app code reads it", () => {
+    expect([...BUILD_ENV_KEYS, ...RUNTIME_ENV_KEYS]).not.toContain(
+      FX_CACHE_BREAKER,
+    );
+    expect(ENV_KEYS).not.toContain(FX_CACHE_BREAKER);
+  });
+});
+
 describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
   it("declares a build argument for exactly the keys the build consumes", () => {
-    expect([...declaredArgs].sort()).toEqual([...BUILD_ENV_KEYS].sort());
+    // Plus the FX cache-breaker above, which the build consumes as a layer-cache key only.
+    expect(
+      declaredArgs.filter((name) => name !== FX_CACHE_BREAKER).sort(),
+    ).toEqual([...BUILD_ENV_KEYS].sort());
   });
 
   it("declares every build argument in the build stage, never in the runtime stage", () => {

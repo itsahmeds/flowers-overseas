@@ -51,6 +51,7 @@ import { FxRateSchema, IntegerMoneySchema } from "../schemas";
 import {
   FX_BUFFER_BP,
   MAX_FX_AGE_HOURS,
+  bundledFxStatus,
   fxRateStaleAfter,
   isFxRateStaleAt,
 } from "../static";
@@ -131,6 +132,19 @@ export function rateValidUntil(asOf: IsoDate): IsoDate {
   return new Date(fxRateStaleAfter(asOf) - MS_PER_DAY)
     .toISOString()
     .slice(0, 10);
+}
+
+/**
+ * Which FX snapshot this deployment serves (spec 005 §14 A7 Corrected 2 (vi), AC-33): `fxAsOf`
+ * and `fxSource` (`ecb-build` when the build fetched the ECB daily file, `committed` when it fell
+ * back). `/api/health` reports exactly these two, and the weekday rebuild job compares `fxAsOf`
+ * with the ECB's latest date. Process-local: no provider read, no network call.
+ */
+export function fxSnapshotStatus(): {
+  readonly fxAsOf: IsoDate;
+  readonly fxSource: "ecb-build" | "committed";
+} {
+  return bundledFxStatus();
 }
 
 /* -------------------------------------------------------------------------- */

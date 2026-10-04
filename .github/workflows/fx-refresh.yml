@@ -1,0 +1,63 @@
+# The weekday FX rebuild (spec 005 §14 A7 Corrected 3, AC-34; TASK-181).
+#
+# Each Railway environment's build fetches the ECB's euro reference rates once (`scripts/build.ts`).
+# This job keeps that rate current: after the ECB's ~16:00 CET publication it reads each
+# environment's `/api/health` and, where `fxAsOf` is behind the ECB file's date, requests a new
+# build of `web` at exactly the commit that environment already runs. It moves no branch, so
+# staging cannot pick up an unreviewed `main` commit nor production an unpromoted one. The decision
+# logic is `scripts/fx-refresh.ts` (tested against recorded responses in
+# `tests/unit/fx-refresh.test.ts`); this file only schedules it and hands it its inputs.
+#
+#  - 15:30 UTC, Monday to Friday: after the publication in both CET and CEST. Requests rebuilds,
+#    exits 0 unless a secret or variable is missing or Railway refuses.
+#  - 19:30 UTC, Monday to Friday: the retry, and the check that 15:30 worked. It requests a rebuild
+#    for any environment still behind and then **exits red naming it**, so a cache hit, a band
+#    trip or an ECB format change cannot leave a site quietly on the committed fallback.
+#  - Nothing runs on Saturday or Sunday: there is no new rate (Friday's holds through the weekend).
+#
+# Inputs, all set by the founder; no agent creates, reads or rotates a token:
+#  - secrets `RAILWAY_TOKEN_STAGING` and `RAILWAY_TOKEN_PRODUCTION`: Railway **project tokens**,
+#    one scoped to each environment. A missing one fails the run and names it.
+#  - variables `FX_REFRESH_STAGING_URL` and `FX_REFRESH_PRODUCTION_URL`: each environment's base URL
+#    (its `/api/health` is read). A missing one fails the run and names it.
+#
+# Manual run: Actions → fx-refresh → "Run workflow" (`verify` makes it behave like the 19:30 run).
+# This is not the CI workflow, so CLAUDE.md's dispatch ban does not apply (docs/runbooks/pricing.md
+# §4.1). Read-only GitHub permissions, no hook for the cold-fallback host, no test, no other
+# workflow dispatched.
+# Exit: TASK-071 deletes this workflow when the database FX provider goes live (A7 Corrected 6).
+name: fx-refresh
+
+on:
+  schedule:
+    - cron: "30 15 * * 1-5"
+    - cron: "30 19 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      verify:
+        description: "Behave like the 19:30 run: exit red for any environment still behind the ECB"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fx-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Rebuild each Railway environment whose FX rate is behind the ECB
+        env:
+          RAILWAY_TOKEN_STAGING: ${{ secrets.RAILWAY_TOKEN_STAGING }}
+          RAILWAY_TOKEN_PRODUCTION: ${{ secrets.RAILWAY_TOKEN_PRODUCTION }}
+          FX_REFRESH_STAGING_URL: ${{ vars.FX_REFRESH_STAGING_URL }}
+          FX_REFRESH_PRODUCTION_URL: ${{ vars.FX_REFRESH_PRODUCTION_URL }}
+          FX_REFRESH_VERIFY: ${{ github.event.schedule == '30 19 * * 1-5' || inputs.verify == true }}
+        run: node scripts/fx-refresh.ts
