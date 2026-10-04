@@ -56,6 +56,15 @@ ENV APP_ENV=$APP_ENV \
     NEXT_PUBLIC_VERCEL_ENV=$NEXT_PUBLIC_VERCEL_ENV \
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA \
     NEXT_TELEMETRY_DISABLED=1
+# The FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31; TASK-181). `pnpm build` fetches the
+# day's ECB rates, and at one commit `COPY . .` above is byte-identical, so without this line a
+# same-commit rebuild would reuse the cached layer below and fetch nothing. The weekday rebuild job
+# (`scripts/fx-refresh.ts`) sets `FX_REFRESH_AT` on `web` to the run's UTC timestamp before every
+# rebuild; a changed value misses the cache from here on. It must stay the instruction immediately
+# before `RUN pnpm build` (`tests/unit/container.test.ts`): moved above `COPY . .` it would still
+# break the cache, but anything between it and the build could be cached on its own. Not a secret,
+# not part of the env contract, and nothing reads it.
+ARG FX_REFRESH_AT=""
 RUN pnpm build
 
 # --- runtime: standalone server only, non-root -------------------------------------------------

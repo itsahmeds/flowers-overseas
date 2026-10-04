@@ -177,7 +177,10 @@ describe("the three business signals of spec 005 §11", () => {
     ]);
     expect(captureMessage).toHaveBeenCalledWith(
       CATALOG_SIGNALS.fxStale,
-      expect.objectContaining({ level: "warning" }),
+      expect.objectContaining({
+        level: "warning",
+        tags: { signal: CATALOG_SIGNALS.fxStale },
+      }),
     );
   });
 
@@ -216,23 +219,24 @@ describe("the three business signals of spec 005 §11", () => {
 });
 
 describe("the Sentry side of a signal (spec 005 §11, spec 001 §8)", () => {
+  // `catalog.price_missing` rather than `catalog.fx_stale`: the stale signal is sent once per
+  // process per `fx_as_of` (spec 005 §14 A7 Corrected 4, AC-32), and the case above has already
+  // sent it for the snapshot's date in this process; its tag is asserted there. The tagging is
+  // `captureWarning()`'s and is the same for every signal.
   it("tags the signal so it survives `beforeSend`'s free-text redaction", async () => {
-    await priceProjection("en", {
-      productId: SKU,
-      tierKey: TIER,
-      countryIso: LIVE,
-      now: STALE,
-    });
+    await expect(
+      resolvePrice({ productId: SKU, tierKey: "stems_99", countryIso: LIVE }),
+    ).rejects.toThrow(/no active/);
 
     const call = captureMessage.mock.calls.find(
-      ([message]) => message === CATALOG_SIGNALS.fxStale,
+      ([message]) => message === CATALOG_SIGNALS.priceMissing,
     );
     expect(call).toBeDefined();
     const options = call?.[1] as {
       tags?: Record<string, unknown>;
       extra?: Record<string, unknown>;
     };
-    expect(options.tags).toEqual({ signal: CATALOG_SIGNALS.fxStale });
+    expect(options.tags).toEqual({ signal: CATALOG_SIGNALS.priceMissing });
     for (const key of Object.keys(options.extra ?? {})) {
       expect([...CATALOG_LOG_FIELDS], key).toContain(key);
     }

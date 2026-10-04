@@ -37,11 +37,33 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - **From spec 005 §14 A7 Corrected 3 (2026-10-04):** a same-commit staging rebuild during a `/launch` gate run changes staging's rates without changing `commit`. Spec 040 §14 A3 step 3.2 should also read staging's `fxAsOf` at the start and end of visit 1 and halt if it changed. Owed by a spec 040 amendment, not by this task.
 
+- **From `/review 177` round 1 (2026-10-04), nits not done here:**
+  - (a) Staging commit provenance: staging is rebuilt at whatever SHA its health reports (now a
+    zod-checked full SHA, in an environment whose `appEnv` and token both say `staging`). Skipping
+    staging unless that SHA is `main`'s tip or reachable from it would mirror production's guard.
+    **Founder's call.**
+  - (f) One CI job (the `container` job fits) that builds with the captured daily fixture injected
+    and asserts `/api/health` → `fxSource: "ecb-build"`, so the build-time inlining is proven on
+    every PR rather than by a source pin plus one local build.
+  - (c) is done (`pathToFileURL` for the entry check) but untested: the entry point would fetch the
+    ECB, and tests make no network call.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-04 (decision taken, not blocking; reviewer may overrule): **CI's test builds do not
+  fetch.** A7 Corrected 2 (i) says the fetch runs once per build. CI's browser jobs build with
+  `pnpm build` and photograph priced pages (`/en/poland/flowers`); a live fetch would flip them from
+  the committed fallback to converted prices that move every weekday and break the visual baselines
+  daily. `ci.yml` and `visual-baselines.yml` therefore set `FX_SNAPSHOT_FETCH=off` (reason
+  `fetch-off` in the `fx.snapshot` line). The `Dockerfile` declares no `ARG` for it, so a Railway
+  build cannot receive it and always fetches (pinned in `tests/unit/fx-snapshot.test.ts`). To PR 177
+  and the reviewer.
+- 2026-10-04 (founder action, open): the workflow also needs two **repository variables**,
+  `FX_REFRESH_STAGING_URL` and `FX_REFRESH_PRODUCTION_URL` (base URLs; A7 says "the URLs are
+  repository variables" but names none). Until set, the run fails naming each one. Not created by
+  the agent.
 
 ## Progress
 
@@ -49,11 +71,45 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-04: started on branch `task/TASK-180-fx-bridge` (feature PR with TASK-180/181), based on main b1ea7f03 (TASK-178 merged).
+- 2026-10-04: build step, bundle boundary, health fields, workflow and decision script landed with T-29…T-31, T-33, T-34 (commit 5ee4d51a); one local build (build slot) proved the inlining: `fx.snapshot` `ecb-build` 2026-10-02, `/api/health` `fxSource: ecb-build`, `/en/poland/flowers` in EUR with the equivalents line, listing-v2 e2e 7/7 on the fresh state.
+- 2026-10-04: rebased onto PR 178 (A7 approved text); PR 177 ready with `ci:full`.
+- 2026-10-04: round 1 (`/review 177` FAIL, 2 changes; `/break 177` 12 holes). Changes 1 and 2 and holes 1, 2, 3, 6–11 fixed here (holes 4, 5, 12 in TASK-180's brief); nits b, c, d, e done; a and f carried forward above. The Railway calls now read `environment(id) { name serviceInstances { … serviceId serviceName } }` (the shape `railway:check` reads live) instead of the unverified `project.services` query, and refuse a token whose environment is not the one named.
+- 2026-10-04: round 2 (`/review 177` PASS; `/break 177` round 2, 5 new holes): N10 (the entry point is now tested by importing the script as the entry, `c8 ignore` dropped), N17/N18 (`scripts/build.ts` run by behaviour with `spawnSync` mocked; the exact call and no fetch switch pinned), N4 (no `web` instance: no write), N6 (malformed Railway answers fail naming the call), N16 (continuations joined before the Dockerfile scan) closed; review nit 1 done (`appEnv` limited to the five values and never echoed). Still to confirm in the first live run: `serviceInstanceDeployV2` returns a String (breaker note), and `environment(id)` is readable with a project token.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 177 (feature PR with TASK-180). `pnpm build` is now `node scripts/build.ts`: the build step
+(`scripts/fx-snapshot.ts`) fetches the ECB daily file once (one retry, 10 s each, Node's `fetch`
+outside Next), validates it (named reasons: `empty-body`, `not-ecb-xml`, `missing-date`,
+`future-date`, `date-too-old`, `duplicate-currency`, `bad-rate-format`, `missing-currency`,
+`rate-out-of-band`, `http-status`, `timeout`, `network`), prints one `fx.snapshot` line and hands
+the snapshot to `next build` in `FX_BUILD_SNAPSHOT`, which `next.config.ts` `env` inlines; no file is
+written. `src/modules/catalog/static/fx-bundle.ts` re-validates the inlined string with the same
+band/coverage function and serves it or the whole committed snapshot. `/api/health` gains
+`fxAsOf`/`fxSource`. `ARG FX_REFRESH_AT` sits immediately before `RUN pnpm build`.
+`.github/workflows/fx-refresh.yml` (Mon–Fri 15:30/19:30 UTC) runs `scripts/fx-refresh.ts`.
+Tests: unit `fx-snapshot.test.ts` (T-29/T-30, MSW: 200, 503 + retry, timeout, network error,
+band trip, `fetch-off`), `fx-bundle-no-network.test.ts` (T-31, T-33), `fx-refresh.test.ts` (T-34,
+19 cases), `container.test.ts` (cache-breaker pin); contract
+`catalog-static-providers-ecb-build.test.ts` (AC-27 under `ecb-build`). Mutations, each red:
+release guard removed (2), branch sent instead of commit (6), 19:30 check dropped (2), `ARG`
+deleted (2), moved above `COPY . .` (2), an instruction between it and the build (1), band check
+removed (3), `parseFloat` ppm (1, the source scan), mixed snapshot dates (2), no retry (2),
+`fxSource` dropped from health (6).
+**Railway API, verified against the live schema by introspection on 2026-10-04:**
+`serviceInstanceDeployV2(commitSha: String, environmentId: String!, serviceId: String!)` and
+`variableUpsert(input: VariableUpsertInput!)`. Not verified live (taken from Railway's public API
+docs; a second introspection was declined by the session's permission system): the
+`VariableUpsertInput` fields used (`projectId`, `environmentId`, `serviceId`, `name`, `value`,
+`skipDeploys`), the `projectToken { projectId environmentId }` query and the `Project-Access-Token`
+header. The first live run (orchestrator, after merge) is what confirms them.
+**Q-A7.1 first measured Railway build time: not measured** (no live run from the branch, by
+instruction); owed by the orchestrator's first live check. Local `pnpm build` with the fetch took
+the normal build time; the ECB step itself is one request.
+Handed on: spec 040 AC-31's field list owes `fxAsOf`/`fxSource` (carry-forward above);
+`tests/e2e/listing-v2.spec.ts` now reads `/api/health` and asserts the served state's half (stale in
+CI, fresh on a fetched build).

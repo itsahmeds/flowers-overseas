@@ -32,8 +32,10 @@ import {
 import {
   CONTRACT_VARIABLE_KEYS,
   PLATFORM_INJECTED_CONTRACT_KEYS,
+  FX_REFRESH_AT_KEY,
   REQUIRED_VARIABLE_KEYS,
   compareDeployTriggers,
+  compareVariableKeys,
   deployTriggersSchema,
   railwayEnvironmentResponseSchema,
   railwayTriggersResponseSchema,
@@ -191,6 +193,40 @@ describe("variable key sets (AC-11, T-11)", () => {
     expect(report.lines.join("\n")).toContain(
       "unexpected key STAGING_BASIC_AUTH",
     );
+  });
+
+  // Spec 005 §14 A7 (TASK-181, `/review 177` change 1): the weekday FX rebuild upserts the
+  // `Dockerfile`'s cache-breaker onto `web` in staging and production, so after its first run the
+  // key is live there. It must not turn `pnpm railway:check` red, and it stays out of the contract.
+  it.each(["staging", "production"] as const)(
+    "accepts the FX cache-breaker FX_REFRESH_AT on %s, where the weekday rebuild sets it",
+    (environmentName) => {
+      expect(FX_REFRESH_AT_KEY).toBe("FX_REFRESH_AT");
+      const live = [
+        ...REQUIRED_VARIABLE_KEYS,
+        ...(environmentName === "staging" ? ["STAGING_BASIC_AUTH"] : []),
+        FX_REFRESH_AT_KEY,
+      ];
+      expect(compareVariableKeys(live, environmentName)).toEqual({
+        missing: [],
+        unexpected: [],
+        ok: true,
+      });
+    },
+  );
+
+  it("still reports FX_REFRESH_AT on a PR environment, which the rebuild never touches", () => {
+    expect(
+      compareVariableKeys(
+        [...REQUIRED_VARIABLE_KEYS, FX_REFRESH_AT_KEY],
+        "pr-123",
+      ).unexpected,
+    ).toEqual([FX_REFRESH_AT_KEY]);
+  });
+
+  it("keeps FX_REFRESH_AT out of the declared contract", () => {
+    expect(CONTRACT_VARIABLE_KEYS).not.toContain(FX_REFRESH_AT_KEY);
+    expect(REQUIRED_VARIABLE_KEYS).not.toContain(FX_REFRESH_AT_KEY);
   });
 
   it("accepts the switch on a PR environment, which is gated like staging", () => {

@@ -18,6 +18,7 @@ const input = {
   environment: "preview",
   version: "abc123",
   region: "europe-west4",
+  fx: { fxAsOf: "2026-10-02", fxSource: "ecb-build" },
 } as const;
 
 function get(headers: Record<string, string> = {}): Response {
@@ -40,6 +41,9 @@ describe("GET /api/health", () => {
       commit: "abc123",
       appEnv: "preview",
       region: "europe-west4",
+      // Spec 005 §14 A7 Corrected 2 (vi), AC-33 (TASK-181).
+      fxAsOf: "2026-10-02",
+      fxSource: "ecb-build",
     });
   });
 

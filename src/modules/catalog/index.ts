@@ -202,6 +202,9 @@ export {
 // reason; the card asks its translator for `catalog.price.equivalents`.
 export type { ChargedPrice, PriceEquivalents } from "./pricing/equivalents";
 export { EQUIVALENT_CURRENCIES, priceEquivalents } from "./pricing/equivalents";
+// Which FX snapshot this deployment serves, for `/api/health` (spec 005 §14 A7 Corrected 2 (vi),
+// AC-33; TASK-181): a date and a source name, never a rate and never a provider.
+export { fxSnapshotStatus } from "./pricing/fx";
 
 // Availability, indexability, the Omnibus figure and signed quotes (spec 005 §2 "Availability",
 // §5.2 `availability.ts` / `pricing/history.ts` / `pricing/quote.ts`, §6, §8,

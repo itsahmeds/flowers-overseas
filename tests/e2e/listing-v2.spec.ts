@@ -3,21 +3,26 @@
  * amended, AC-7; TASK-178).
  *
  * What a browser can see that the unit suite cannot: the served page, in each locale, has one
- * `<h1>` in the v2 intro, one priced grid, and the **stale** state of the equivalents line: no card
- * carries one, and a converted page says once which currency it is quoting (A21 clause 6 (d)).
+ * `<h1>` in the v2 intro, one priced grid, and the equivalents line in whichever FX state the
+ * served build is in (A21 clause 6 (b)–(d)).
  *
- * Why the stale state, asserted outright: every served build reads the committed snapshot
- * (`src/config/catalogue/fx.data.ts`, `as_of` 2026-09-08), which is past `MAX_FX_AGE_HOURS` for
- * any clock CI runs on. The precondition below says so, so that the day a build serves a current
- * snapshot (spec 005 §14 A7, TASK-180/181) this file fails on that fact and gets its fresh-state
- * half, rather than passing on either state. The fresh state — exactly one line per priced card,
- * no fallback — is asserted page by page over a fixed clock in
+ * Which state, read from the server rather than assumed: since spec 005 §14 A7 (TASK-180/181) a
+ * build serves the ECB file it fetched or the committed snapshot, and `/api/health` reports which
+ * (`fxAsOf`). The test asks it, applies the same weekday age rule the pages apply
+ * (`isFxRateStaleAt`, AC-35), and asserts that state's half:
+ *
+ *  - **stale** (CI's test builds, which keep the committed 2026-09-08 snapshot): no card carries a
+ *    line, and a converted page says once which currency it is quoting;
+ *  - **fresh** (a build that fetched the day's rate): exactly one line per priced card, and no
+ *    fallback sentence.
+ *
+ * Both halves are also asserted page by page over a fixed clock in
  * `tests/unit/catalog-listing-pages-equivalents.test.tsx`. Neither state ever puts the line into
  * JSON-LD.
  */
 import { expect, test } from "@playwright/test";
 
-import { isFxSnapshotStale } from "../../src/config/catalogue/fx.data.ts";
+import { isFxRateStaleAt } from "../../src/config/catalogue/fx.data.ts";
 
 /** `native`: the charged currency is the catalogue's (PLN to Poland), so no fallback exists. */
 const SHOP_ROOTS = [
@@ -34,13 +39,14 @@ const HUBS = [
 ] as const;
 
 for (const [locale, url, native] of SHOP_ROOTS) {
-  test(`${locale}: the shop root renders the v2 intro and, at the stale snapshot, no equivalents line`, async ({
+  test(`${locale}: the shop root renders the v2 intro and the equivalents line of the served FX state`, async ({
     page,
+    request,
   }) => {
-    expect(
-      isFxSnapshotStale(new Date()),
-      "the served snapshot is current: add the fresh-state assertions (one line per priced card, no fallback)",
-    ).toBe(true);
+    const health = await request.get("/api/health");
+    expect(health.status()).toBe(200);
+    const { fxAsOf } = (await health.json()) as { fxAsOf: string };
+    const stale = isFxRateStaleAt(fxAsOf, new Date());
     const response = await page.goto(url);
     expect(response?.status()).toBe(200);
 
@@ -58,12 +64,20 @@ for (const [locale, url, native] of SHOP_ROOTS) {
       .locator("[data-fo-product-card-money='priced']")
       .count();
     expect(cards).toBeGreaterThan(0);
-    // No line anywhere; a converted page says once which currency it is quoting, and a native
-    // page (`/pl`) converted nothing, so it has no fallback to announce.
-    await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(0);
-    await expect(page.locator("main [data-fo-fx-fallback]")).toHaveCount(
-      native ? 0 : 1,
-    );
+    if (stale) {
+      // No line anywhere; a converted page says once which currency it is quoting, and a native
+      // page (`/pl`) converted nothing, so it has no fallback to announce.
+      await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(0);
+      await expect(page.locator("main [data-fo-fx-fallback]")).toHaveCount(
+        native ? 0 : 1,
+      );
+    } else {
+      // One line under every priced card, and nothing to fall back from.
+      await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(
+        cards,
+      );
+      await expect(page.locator("main [data-fo-fx-fallback]")).toHaveCount(0);
+    }
 
     // JSON-LD never carries the line, whichever state the page is in.
     const ld = await page

@@ -55,10 +55,40 @@ const buildStage = dockerfile.slice(
   dockerfile.lastIndexOf("FROM node:24-slim"),
 );
 
+/**
+ * A Dockerfile's instructions: comment lines dropped, `\` continuations joined, one per entry.
+ * Docker reads instruction keywords case-insensitively, so callers match them with `/i`.
+ */
+function instructionsOf(text: string): string[] {
+  return text
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("#"))
+    .join("\n")
+    .replace(/\\\n/gu, " ")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+}
+
+/**
+ * Every name every `ARG` instruction declares, in order. One `ARG` may declare several names
+ * (`ARG A="" B=""`) and may be spelled `arg`, so the whole instruction is read (`/break 177`
+ * hole 3: a second name on an existing line would otherwise pass unseen).
+ */
+function argNamesOf(text: string): string[] {
+  return instructionsOf(text)
+    .filter((line) => /^arg\s/iu.test(line))
+    .flatMap((line) =>
+      [
+        ...line
+          .replace(/^arg\s+/iu, "")
+          .matchAll(/([A-Za-z_][A-Za-z0-9_]*)(?:=(?:"[^"]*"|'[^']*'|\S*))?/gu),
+      ].map((match) => match[1] ?? ""),
+    );
+}
+
 /** Every `ARG` the image declares, in declaration order. */
-const declaredArgs = [...dockerfile.matchAll(/^ARG\s+([A-Za-z0-9_]+)/gmu)].map(
-  (match) => match[1],
-);
+const declaredArgs = argNamesOf(dockerfile);
 
 /**
  * What `docker build` sees with **no** credentials in the environment: the `ARG` defaults of the
@@ -140,16 +170,70 @@ describe("Dockerfile (AC-8)", () => {
   });
 });
 
+/**
+ * The FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31, T-30; TASK-181). The one build
+ * argument that is **not** part of the env contract: nothing reads it, and its only job is to make
+ * a same-commit rebuild miss the cached `RUN pnpm build` layer so the build fetches the day's ECB
+ * rates. The weekday rebuild job sets it before every rebuild (`scripts/fx-refresh.ts`).
+ */
+const FX_CACHE_BREAKER = "FX_REFRESH_AT";
+
+/** The build stage's instructions, comments and blank lines dropped, continuations joined. */
+const buildInstructions = buildStage
+  .replace(/\\\n/gu, " ")
+  .split("\n")
+  .map((line) => line.trim())
+  .filter((line) => line !== "" && !line.startsWith("#"));
+
+describe("the Dockerfile reader the pins above rely on (/break 177 hole 3)", () => {
+  it("reads every name of a multi-name ARG, any case, across continuations", () => {
+    expect(
+      argNamesOf(
+        'ARG A="" B=""\narg c\nARG D=x \\\n    E="y z"\n# ARG F\nENV G=1',
+      ),
+    ).toEqual(["A", "B", "c", "D", "E"]);
+  });
+});
+
+describe("the FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31, T-30)", () => {
+  it("declares `ARG FX_REFRESH_AT` as the instruction immediately before `RUN pnpm build`", () => {
+    const build = buildInstructions.indexOf("RUN pnpm build");
+    expect(build).toBeGreaterThan(0);
+    expect(buildInstructions[build - 1]).toMatch(
+      new RegExp(`^ARG ${FX_CACHE_BREAKER}(?:=|$)`, "u"),
+    );
+  });
+
+  it("declares it after `COPY . .`, in the build stage, exactly once", () => {
+    const copy = buildInstructions.indexOf("COPY . .");
+    const arg = buildInstructions.findIndex((line) =>
+      line.startsWith(`ARG ${FX_CACHE_BREAKER}`),
+    );
+    expect(copy).toBeGreaterThan(-1);
+    expect(arg).toBeGreaterThan(copy);
+    expect(
+      declaredArgs.filter((name) => name === FX_CACHE_BREAKER),
+    ).toHaveLength(1);
+  });
+
+  it("is not a secret and not part of the env contract, so no app code reads it", () => {
+    expect([...BUILD_ENV_KEYS, ...RUNTIME_ENV_KEYS]).not.toContain(
+      FX_CACHE_BREAKER,
+    );
+    expect(ENV_KEYS).not.toContain(FX_CACHE_BREAKER);
+  });
+});
+
 describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
   it("declares a build argument for exactly the keys the build consumes", () => {
-    expect([...declaredArgs].sort()).toEqual([...BUILD_ENV_KEYS].sort());
+    // Plus the FX cache-breaker above, which the build consumes as a layer-cache key only.
+    expect(
+      declaredArgs.filter((name) => name !== FX_CACHE_BREAKER).sort(),
+    ).toEqual([...BUILD_ENV_KEYS].sort());
   });
 
   it("declares every build argument in the build stage, never in the runtime stage", () => {
-    const inBuildStage = [
-      ...buildStage.matchAll(/^ARG\s+([A-Za-z0-9_]+)/gmu),
-    ].map((match) => match[1]);
-    expect(inBuildStage).toEqual(declaredArgs);
+    expect(argNamesOf(buildStage)).toEqual(declaredArgs);
   });
 
   it("makes no server-only key a build argument: a secret must not enter layer history", () => {

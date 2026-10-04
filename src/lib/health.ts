@@ -18,7 +18,8 @@ import type { DeploymentEnvironment } from "./env.schema";
 /**
  * Response shape of `GET /api/health` (spec 001 §5.2; spec 040 §5.6, AC-31).
  *
- * Spec 040 **adds** `commit`, `appEnv` and `region` (§5.6: the endpoint "gains" them); `version`
+ * Spec 040 **adds** `commit`, `appEnv` and `region` (§5.6: the endpoint "gains" them), and spec
+ * 005 §14 A7 adds `fxAsOf` and `fxSource` (AC-33; spec 040 AC-31's list owes them, a carry-forward); `version`
  * and `env` stay, because spec 001 AC-14 pins them and the e2e suite and the launch skill read
  * them. `commit` is the same value as `version` under the name AC-31 uses; `appEnv` is the
  * unreduced five-value `appEnvironment()` result, while `env` keeps spec 001's four-value shape
@@ -34,6 +35,11 @@ export const HealthResponse = z.object({
   commit: z.string(),
   appEnv: z.enum(deploymentEnvironments),
   region: z.string(),
+  // Spec 005 §14 A7 Corrected 2 (vi), AC-33 (TASK-181): which FX snapshot this deployment serves.
+  // A date and a source name — no PII, no secret, no network call — read from the bundled module.
+  // The weekday rebuild job (`scripts/fx-refresh.ts`) compares `fxAsOf` with the ECB's latest.
+  fxAsOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/u),
+  fxSource: z.enum(["ecb-build", "committed"]),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;
 
@@ -62,6 +68,11 @@ export interface HealthInput {
   readonly version: string | undefined;
   /** `deploymentRegion(process.env)`; absent off a platform that names one (spec 040 AC-31). */
   readonly region?: string | undefined;
+  /** `fxSnapshotStatus()` from `@/modules/catalog`: the served FX snapshot (spec 005 AC-33). */
+  readonly fx: {
+    readonly fxAsOf: string;
+    readonly fxSource: "ecb-build" | "committed";
+  };
 }
 
 /**
@@ -85,6 +96,8 @@ export function buildHealthResponse(input: HealthInput): HealthResponse {
     commit,
     appEnv: input.environment,
     region: input.region ?? HEALTH_REGION_FALLBACK,
+    fxAsOf: input.fx.fxAsOf,
+    fxSource: input.fx.fxSource,
   });
 }
 

@@ -79,7 +79,7 @@ import {
   catalogAvailabilityKeys,
 } from "../types";
 
-import { convertForDisplay, rateValidUntil } from "./fx";
+import { convertForDisplay } from "./fx";
 import { fromPrice, resolvePrice, tierPrices } from "./resolve";
 
 /**
@@ -159,22 +159,6 @@ function displayCurrencyFor(locale: LocaleCode): CurrencyCode {
   return currencyDefault;
 }
 
-/**
- * The earlier of two validity dates, treating `null` as "no end at all" (spec 005 §6, §14 A3).
- *
- * A current price row has `activeTo === null` and never expires on its own; an FX snapshot always
- * does. So `null` loses to any date, and two dates resolve to the smaller — `YYYY-MM-DD` strings
- * sort chronologically, so this is a comparison and not date arithmetic.
- */
-function earlierDay(
-  left: IsoDate | null,
-  right: IsoDate | null,
-): IsoDate | null {
-  if (left === null) return right;
-  if (right === null) return left;
-  return left < right ? left : right;
-}
-
 /* -------------------------------------------------------------------------- */
 /* The view model.                                                            */
 /* -------------------------------------------------------------------------- */
@@ -232,13 +216,12 @@ async function projectionOf(
             displayPrice: conversion.price,
             fxAsOf: conversion.rate.asOf,
             ratePpm: conversion.rate.ratePpm,
-            // §6, §14 A3: a converted price is only the price for as long as its rate is usable,
-            // so the offer's validity is the **earlier** of the row's `active_to` and the
-            // snapshot's own last usable day. `null` (a current row) never wins over a date.
-            priceValidUntil: earlierDay(
-              price.activeTo,
-              rateValidUntil(conversion.rate.asOf),
-            ),
+            // §14 A7 Corrected 7 (amending A3 and §6; T-36): the exchange rate is never a source
+            // of `priceValidUntil`. A rate-derived date sits one to four days ahead, so any copy
+            // Google holds longer than that shows a past date and may lose the product snippet.
+            // The offer carries the row's `active_to` when it has one, and no date when it does
+            // not. Shown = charged still holds: a quote carries its own `ratePpm` and `fxAsOf`.
+            priceValidUntil: price.activeTo,
           }
         : {
             ...base,

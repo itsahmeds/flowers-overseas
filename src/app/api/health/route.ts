@@ -11,6 +11,7 @@ import {
   environment,
 } from "@/lib/env";
 import { healthResponse } from "@/lib/health";
+import { fxSnapshotStatus } from "@/modules/catalog";
 
 /** Never cached, never prerendered: the body reports the running deployment (spec 001 §5.4). */
 export const dynamic = "force-dynamic";
@@ -35,5 +36,8 @@ export function GET(request: Request): Response {
     // `src/lib/env.schema.ts` like the SHA above. Still no database call: the whole body is
     // process-local, which is what makes this endpoint measure the web service and not Neon.
     region: deploymentRegion(process.env),
+    // Spec 005 §14 A7 Corrected 2 (vi), AC-33: the FX snapshot bundled into this build, read from
+    // the module — no network call. What the weekday rebuild job and the founder read.
+    fx: fxSnapshotStatus(),
   });
 }

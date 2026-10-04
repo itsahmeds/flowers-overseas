@@ -25,6 +25,7 @@ const input = {
   environment: "staging",
   version: "9f1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c",
   region: "europe-west4",
+  fx: { fxAsOf: "2026-10-02", fxSource: "ecb-build" },
 } as const;
 
 describe("GET /api/health (AC-31)", () => {
@@ -38,15 +39,18 @@ describe("GET /api/health (AC-31)", () => {
     expect(body.region).toBe("europe-west4");
   });
 
-  it("carries no PII and no secret: the body has exactly six known fields", async () => {
+  it("carries no PII and no secret: the body has exactly eight known fields", async () => {
     const body = (await healthResponse(request(), input).json()) as Record<
       string,
       unknown
     >;
+    // Spec 005 §14 A7 Corrected 2 (vi), AC-33 added `fxAsOf` and `fxSource` (TASK-181).
     expect(Object.keys(body).sort()).toEqual([
       "appEnv",
       "commit",
       "env",
+      "fxAsOf",
+      "fxSource",
       "region",
       "status",
       "version",

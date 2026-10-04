@@ -39,10 +39,10 @@ describe("priceEquivalents — a converted charged price (A21 clause 6 (b))", ()
     expect(result).toEqual({
       asOf: "2026-09-08",
       amounts: [
-        // 4590 × 0.8465 = 3885.435 → 3885 (buffered: 3982.57 → 3983)
-        { amountMinor: 3885, currency: "GBP" },
-        // 4590 × 4.268 = 19 590.12 → 19 590
-        { amountMinor: 19_590, currency: "PLN" },
+        // 4590 × 0.8574 = 3935.466 → 3935 (buffered: 4033.85 → 4034)
+        { amountMinor: 3935, currency: "GBP" },
+        // 4590 × 4.3178 = 19 818.702 → 19 819
+        { amountMinor: 19_819, currency: "PLN" },
         // 4590 × 1.1614 = 5330.826 → 5331
         { amountMinor: 5331, currency: "USD" },
       ],
@@ -59,9 +59,11 @@ describe("priceEquivalents — a converted charged price (A21 clause 6 (b))", ()
       FRESH,
     );
     expect(result?.amounts).toEqual([
-      { amountMinor: 4714, currency: "EUR" },
-      { amountMinor: 20_117, currency: "PLN" },
-      { amountMinor: 5474, currency: "USD" },
+      // Inverse ceil(10^12 / 857 400) = 1 166 317 ppm; crosses ceil(4 317 800 × 10^6 / 857 400)
+      // = 5 035 923 and ceil(1 161 400 × 10^6 / 857 400) = 1 354 561 (TASK-180's true rates).
+      { amountMinor: 4654, currency: "EUR" },
+      { amountMinor: 20_093, currency: "PLN" },
+      { amountMinor: 5405, currency: "USD" },
     ]);
   });
 
@@ -107,9 +109,10 @@ describe("priceEquivalents — a native charged price (A21 clause 6 (b))", () =>
     expect(result).toEqual({
       asOf: "2026-09-08",
       amounts: [
-        { amountMinor: 4663, currency: "EUR" },
-        { amountMinor: 3947, currency: "GBP" },
-        { amountMinor: 5415, currency: "USD" },
+        // 231 600 / 198 574 / 268 980 ppm: the inverse and two euro crosses of the true rates.
+        { amountMinor: 4609, currency: "EUR" },
+        { amountMinor: 3952, currency: "GBP" },
+        { amountMinor: 5353, currency: "USD" },
       ],
     });
   });

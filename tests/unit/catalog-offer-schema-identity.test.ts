@@ -201,9 +201,10 @@ describe("offerProjection through spec 001's validate-schema (AC-11, T-09)", () 
  * compares, so the file cannot rot into a fixture that passes a validator while disagreeing with
  * the code it was taken from.
  *
- * Its `priceValidUntil` is in the past by construction: it is the committed FX snapshot's validity
- * (`FX_SNAPSHOT_AS_OF` + `MAX_FX_AGE_HOURS`), and the snapshot is authored data. Regenerating the
- * fixture is part of TASK-071's `fx.refresh`, not a separate chore.
+ * It carries no `priceValidUntil`: the `en` offer is converted (EUR from Poland's PLN) and its
+ * price row is current, and since spec 005 §14 A7 Corrected 7 the exchange rate is never a source
+ * of that date (T-36). Its price is the committed snapshot's conversion, so a change to the
+ * committed rates regenerates it (TASK-180 did, for the true 2026-09-08 ECB rates).
  */
 describe("the committed schema fixture `seo:validate` runs (`/review 52`)", () => {
   const FIXTURE = "tests/fixtures/seo/schema/pdp-product-offer.json";

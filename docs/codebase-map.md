@@ -14,10 +14,10 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts`, `unit/catalog-availability.test.ts` +55 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +61 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/cache-cloudflare.test.ts`, `unit/catalog-country-occasion.test.ts` +24 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +61 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +62 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
@@ -96,6 +96,7 @@ task actually touches.
 |---|---|---|
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the dependency/secret audit gate |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2 "Branch protection", §12… |
+| `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build` with the result inlined… |
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures, gates", §6 "Crawl… |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 (spec 001 AC-3 / T-03) |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` (spec 003 AC-2 / T-02, TASK-033) |
@@ -115,6 +116,8 @@ task actually touches.
 | `env-check.ts` | `env:check` | `pnpm env:check` (spec 001 AC-11 / T-12, TASK-005) |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2 subsets under… |
 | `fonts/build-wordmark.ts` | `fonts:wordmark` | `pnpm fonts:wordmark` — outlines the wordmark to paths (spec 004 §14 A21 clause… |
+| `fx-refresh.ts` | — | Weekday FX rebuild: rebuild each Railway `web` whose fxAsOf is behind the ECB,… |
+| `fx-snapshot.ts` | — | Build-time ECB fetch: the day's euro reference rates, or the committed fallback… |
 | `gates-cheap.ts` | `gates:cheap` | `pnpm gates:cheap` — every cheap gate of `CLAUDE.md` DoD §2, one pasteable… |
 | `i18n-check.ts` | `i18n:check` | `pnpm i18n:check` (spec 003 §2 "Lint, checks, CI", §6 "URL pattern", §11,… |
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` (spec 003 §2 "Messages", §13 Q7,… |
@@ -143,9 +146,9 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 237 |
+| `tests/unit/` | 245 |
 | `tests/integration/` | 10 |
-| `tests/contract/` | 7 |
+| `tests/contract/` | 8 |
 | `tests/e2e/` | 37 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 20 |

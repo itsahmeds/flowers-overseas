@@ -20,12 +20,13 @@
  *     directions are up, deliberately: rounding down could put the amount charged below the
  *     amount converted, and the buffer exists to absorb an intraday move (`plan/06` §2.2), not to
  *     be eroded by rounding.
- *  3. **It fails closed.** `fxRateFor()` returns `null` when the newest usable rate is older than
- *     `MAX_FX_AGE_HOURS`, and `convertForDisplay()` then returns the *unavailable* variant, which
+ *  3. **It fails closed.** `fxRateFor()` returns `null` when the newest usable rate is past the
+ *     age bound (two Monday-to-Friday days, spec 005 §14 A7 Corrected 5), and `convertForDisplay()` then returns the *unavailable* variant, which
  *     carries **no amount at all** — the caller shows the destination currency's own price and
  *     `catalog.availability.fxUnavailable` (AC-15). A stale rate never becomes a displayed price.
- *     The ECB publishes on working days only, so a Monday rate is Friday's; 48 hours is what makes
- *     that normal rather than a failure, and the buffer is what covers the movement (§13 Q2).
+ *     The ECB publishes on working days only, so a Monday rate is Friday's; counting only
+ *     Monday-to-Friday time is what makes that normal rather than a failure, and the buffer is
+ *     what covers the movement (§13 Q2, A7 Corrected 5).
  *  4. **"Now" is injected, never read.** Every function takes the instant it is evaluated at
  *     (`asOf: Date`), so the module has no clock, a cached page's price cannot depend on when a
  *     test ran, and the fail-closed path is exercisable without waiting two days. There is no
@@ -47,7 +48,13 @@ import type { CurrencyCode } from "@/config/currencies";
 import { CATALOG_SIGNALS, catalogSignal } from "../observability";
 import { catalogProviders, type FxRateRecord } from "../providers";
 import { FxRateSchema, IntegerMoneySchema } from "../schemas";
-import { FX_BUFFER_BP, MAX_FX_AGE_HOURS } from "../static";
+import {
+  FX_BUFFER_BP,
+  MAX_FX_AGE_HOURS,
+  bundledFxStatus,
+  fxRateStaleAfter,
+  isFxRateStaleAt,
+} from "../static";
 import type {
   DisplayConversion,
   FxRate,
@@ -76,11 +83,8 @@ const PPM_SCALE = 1_000_000;
 /** Basis points of the whole: 10 000 bp = 100 %, the unit the buffer is stated in. */
 const BASIS_POINTS_SCALE = 10_000;
 
-/** Milliseconds in an hour, for the one age comparison this file makes. */
-const MS_PER_HOUR = 3_600_000;
-
-/** Hours in a day: the step `rateValidUntil()` takes back from the staleness instant. */
-const HOURS_PER_DAY = 24;
+/** Milliseconds in a day: `rateValidUntil()` is the calendar day before the stale instant. */
+const MS_PER_DAY = 86_400_000;
 
 /**
  * The currency every published rate is quoted against: the ECB publishes euro reference rates, so
@@ -102,55 +106,45 @@ export const FX_UNAVAILABLE_REASON_KEY = "catalog.availability.fxUnavailable";
 /* -------------------------------------------------------------------------- */
 
 /**
- * Is a rate published on `asOf` too old to convert with at `now`? (spec 005 §13 Q2, AC-15)
+ * Is a rate published on `asOf` too old to convert with at `now`? (spec 005 §13 Q2, AC-15, AC-35)
  *
- * Age is measured from the **start** of the publication day in UTC, the same conservative
- * convention `fxSnapshotAgeHours()` uses in `fx.data.ts`: the ECB publishes once, around 16:00
- * CET, so taking the start of the day can only make a rate look older than it is — never younger,
- * which is the direction that would matter.
- *
- * The comparison is in **milliseconds against a whole number of hours**, which keeps it exact
- * (no division of a duration, no float) and makes the bound the literal reading of §13 Q2: a rate
- * is stale the moment it is *older than* 48 hours. `fx.data.ts`'s reporting predicate floors the
- * age to whole hours first and is therefore coarser by up to an hour; the two agree on every
- * whole-hour instant, and where they differ this one is the stricter — which is the right way
- * round for the gate that stops a price being displayed.
+ * Stale at every instant **after 00:00Z on the second Monday-to-Friday day after `asOf`**
+ * (§14 A7 Corrected 5): Mon → Wed, Tue → Thu, Wed → Fri, Thu → Mon, Fri → Tue, Sat/Sun → Tue.
+ * Friday's rate therefore holds through the weekend, and a missed working-day publication still
+ * fails closed. Exactly at that instant the rate is still usable. The rule has one home,
+ * `fxRateStaleAfter()` in `src/config/catalogue/fx.data.ts`, read here through `static/` (only
+ * `static/*` may read the dataset, AC-2), so `pnpm catalogue:check`'s report and this gate cannot
+ * disagree. It throws on an `asOf` that is not a calendar day.
  */
 export function isRateStale(asOf: IsoDate, now: Date): boolean {
-  const publishedAt = Date.parse(`${asOf}T00:00:00Z`);
-  if (Number.isNaN(publishedAt)) {
-    throw new Error(
-      `\`${asOf}\` is not a calendar day: an \`fx_rate.as_of\` is a \`YYYY-MM-DD\` date, never a timestamp (spec 002 §5.1)`,
-    );
-  }
-  return now.getTime() - publishedAt > MAX_FX_AGE_HOURS * MS_PER_HOUR;
+  return isFxRateStaleAt(asOf, now);
 }
 
 /**
- * The last calendar day on which a rate published on `asOf` is usable (spec 005 §6, §14 A3;
- * TASK-068).
+ * The last whole calendar day on which a rate published on `asOf` is usable: the day before its
+ * stale instant (Mon → Tue, …, Thu → Sun, Fri → Mon; spec 005 §14 A7 Corrected 5, AC-35).
  *
- * `isRateStale()` measures age from the **start** of the publication day in UTC, so a rate stops
- * being usable `MAX_FX_AGE_HOURS` after that instant — 48 h after `asOf T00:00Z`, i.e. at the
- * start of `asOf + 2` days. The last day it is usable for its whole length is therefore
- * `asOf + 1`, and that is what this returns: the conservative day, the one that cannot claim a
- * price is still valid on a day the rate is already refused.
- *
- * It exists because `Offer.priceValidUntil` is "the active row's `active_to` **or the FX
- * snapshot's validity where a conversion is involved**" (spec 005 §6), and a converted price
- * stops being the price when its rate does, whatever the price row says. The whole-hours bound
- * lives here, in the file that owns FX policy, so the projection does not restate 48.
+ * Since §14 A7 Corrected 7 this is **not** a source of `Offer.priceValidUntil`: a converted offer
+ * carries the price row's `active_to` or nothing, because a date one to four days ahead would sit
+ * in the past in any copy Google holds longer than that (`pricing/project.ts`, T-36).
  */
 export function rateValidUntil(asOf: IsoDate): IsoDate {
-  const publishedAt = Date.parse(`${asOf}T00:00:00Z`);
-  if (Number.isNaN(publishedAt)) {
-    throw new Error(
-      `\`${asOf}\` is not a calendar day: an \`fx_rate.as_of\` is a \`YYYY-MM-DD\` date, never a timestamp (spec 002 §5.1)`,
-    );
-  }
-  const lastWholeDay =
-    publishedAt + (MAX_FX_AGE_HOURS - HOURS_PER_DAY) * MS_PER_HOUR;
-  return new Date(lastWholeDay).toISOString().slice(0, 10);
+  return new Date(fxRateStaleAfter(asOf) - MS_PER_DAY)
+    .toISOString()
+    .slice(0, 10);
+}
+
+/**
+ * Which FX snapshot this deployment serves (spec 005 §14 A7 Corrected 2 (vi), AC-33): `fxAsOf`
+ * and `fxSource` (`ecb-build` when the build fetched the ECB daily file, `committed` when it fell
+ * back). `/api/health` reports exactly these two, and the weekday rebuild job compares `fxAsOf`
+ * with the ECB's latest date. Process-local: no provider read, no network call.
+ */
+export function fxSnapshotStatus(): {
+  readonly fxAsOf: IsoDate;
+  readonly fxSource: "ecb-build" | "committed";
+} {
+  return bundledFxStatus();
 }
 
 /* -------------------------------------------------------------------------- */
