@@ -208,3 +208,18 @@ e2e `tests/e2e/csp-enforced.spec.ts`: 12 passed locally (6 per project) on a fre
 inside the build slot. The slot was released, the spawned servers were stopped by PID, and both
 edited `.html` files were verified restored.
 
+`pnpm gates:cheap` on round-2 head `f5b1263` (rebased on `origin/main`; the commit that pastes this
+block changes only this file):
+
+```
+gates:cheap · f5b1263359d1e9dc2db079d3992a73de5e93aa7d · tree clean · base origin/main · 2026-10-04T23:43:56.320Z
+typecheck             exit 0 · 2.5 s
+lint                  exit 0 · 17.6 s
+format:check          exit 0 · 11.6 s
+i18n:check            exit 0 · 0.5 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 102.1 s · changed 168 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
