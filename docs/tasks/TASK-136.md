@@ -43,6 +43,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   the locale row; keep CLS at 0 across the header (a collapsing search that reflows is worse than
   the field it replaced). Record the before and after pixel heights in `## Result`.
 
+## Read
+
+_None recorded._
 
 ## Carry-forwards
 

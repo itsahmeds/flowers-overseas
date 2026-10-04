@@ -38,6 +38,46 @@ This task brings the tests in step with it:
 Review-only: copy review metadata and its tests; no money, SEO gate, data flow or compliance text
 changes.
 
+## Carry-forwards
+
+_None recorded._
+
+## Escalations
+
+1. **The edit guard does not open for TASK-192 in this worktree.** `.claude/hooks/guarded_paths.py`
+   reads the task's status from the **main checkout's** `TASKS.md`, and the TASK-192 row exists
+   only on this branch (commit `5136f4e1`), not on `main`. So the branch counts as "no task" and
+   shell writes under `tests/` are refused ("TASK-192, which has no row in TASKS.md"). Before the
+   refusal fired, five test files had already been edited through a Python heredoc the guard does
+   not parse; those edits are left **uncommitted** in the worktree and saved as a patch, not
+   committed past the guard. Needed from the orchestrator: land the TASK-192 row on `main` (or
+   otherwise open the guard), then re-dispatch; the patch applies as is. The mutations (queue key
+   back → schema test red; FO-BQ-001 `reviewed: false` → seed-copy red) have not been run, since
+   they need guarded writes.
+   PR 188 put the row on `origin/main` (cecac0c2), which did not by itself resolve this: see 2.
+2. **The main checkout's working tree is behind `origin/main`.** The guard reads
+   `/Users/ahmed/dev/flowers-overseas/TASKS.md` from disk, and that checkout is still at
+   1076bc05 (before PR 188), so its `TASKS.md` has no TASK-192 row and every Edit under `tests/`
+   is refused with the same message. Fast-forwarding the orchestrator's checkout is outside this
+   task's fence, so nothing was routed around the guard. Needed: `git -C
+   /Users/ahmed/dev/flowers-overseas pull --ff-only` (or equivalent), then re-dispatch. The test
+   changes are unchanged from the first run and reviewed (each pin one exact value); the worktree
+   is clean.
+   **Resolved (1 and 2):** the orchestrator fast-forwarded the main checkout to cecac0c2, and the
+   guard opened.
+3. **The founder's commit left `seed/snapshot/` stale.** It changed
+   `seed/data/copy/en/products.json` but did not regenerate the committed snapshot, so
+   `node seed/diff.ts` exits 1 with exactly two updates (`product_translation` FO-BQ-001/en and
+   FO-BQ-003/en: `reviewed` false → true, `reviewed_by` and `reviewed_at` null → the founder's
+   record), and 8 tests in `tests/unit/seed-diff.test.ts` fail (zero-drift, byte-identical
+   snapshot, --dry-run and the report tests). The fix is `pnpm seed:diff --write`, which
+   regenerates `seed/snapshot/product_translation.json` in a new commit on top, leaving the
+   founder's commit as it is. The work order forbids `seed/**`, so it was not run. Needed: a
+   decision to allow that one generated file (as a separate commit, `chore(seed): re-snapshot`),
+   or the founder runs it himself.
+   **Resolved:** orchestrator widened the fence to seed/snapshot/ for the generated snapshot
+   (eb057834; the diff touches only FO-BQ-001/en and FO-BQ-003/en).
+
 ## Progress
 
 - 2026-10-05: decisions-log row committed. Test changes written and green locally (6 files, 387
@@ -87,39 +127,3 @@ RESULT: PASS
 - No expensive gate was run locally; no build slot taken.
 
   The failures: 8 in `tests/unit/seed-diff.test.ts`, out of 3675 tests (3667 pass).
-
-## Escalations
-
-1. **The edit guard does not open for TASK-192 in this worktree.** `.claude/hooks/guarded_paths.py`
-   reads the task's status from the **main checkout's** `TASKS.md`, and the TASK-192 row exists
-   only on this branch (commit `5136f4e1`), not on `main`. So the branch counts as "no task" and
-   shell writes under `tests/` are refused ("TASK-192, which has no row in TASKS.md"). Before the
-   refusal fired, five test files had already been edited through a Python heredoc the guard does
-   not parse; those edits are left **uncommitted** in the worktree and saved as a patch, not
-   committed past the guard. Needed from the orchestrator: land the TASK-192 row on `main` (or
-   otherwise open the guard), then re-dispatch; the patch applies as is. The mutations (queue key
-   back → schema test red; FO-BQ-001 `reviewed: false` → seed-copy red) have not been run, since
-   they need guarded writes.
-   PR 188 put the row on `origin/main` (cecac0c2), which did not by itself resolve this: see 2.
-2. **The main checkout's working tree is behind `origin/main`.** The guard reads
-   `/Users/ahmed/dev/flowers-overseas/TASKS.md` from disk, and that checkout is still at
-   1076bc05 (before PR 188), so its `TASKS.md` has no TASK-192 row and every Edit under `tests/`
-   is refused with the same message. Fast-forwarding the orchestrator's checkout is outside this
-   task's fence, so nothing was routed around the guard. Needed: `git -C
-   /Users/ahmed/dev/flowers-overseas pull --ff-only` (or equivalent), then re-dispatch. The test
-   changes are unchanged from the first run and reviewed (each pin one exact value); the worktree
-   is clean.
-   **Resolved (1 and 2):** the orchestrator fast-forwarded the main checkout to cecac0c2, and the
-   guard opened.
-3. **The founder's commit left `seed/snapshot/` stale.** It changed
-   `seed/data/copy/en/products.json` but did not regenerate the committed snapshot, so
-   `node seed/diff.ts` exits 1 with exactly two updates (`product_translation` FO-BQ-001/en and
-   FO-BQ-003/en: `reviewed` false → true, `reviewed_by` and `reviewed_at` null → the founder's
-   record), and 8 tests in `tests/unit/seed-diff.test.ts` fail (zero-drift, byte-identical
-   snapshot, --dry-run and the report tests). The fix is `pnpm seed:diff --write`, which
-   regenerates `seed/snapshot/product_translation.json` in a new commit on top, leaving the
-   founder's commit as it is. The work order forbids `seed/**`, so it was not run. Needed: a
-   decision to allow that one generated file (as a separate commit, `chore(seed): re-snapshot`),
-   or the founder runs it himself.
-   **Resolved:** orchestrator widened the fence to seed/snapshot/ for the generated snapshot
-   (eb057834; the diff touches only FO-BQ-001/en and FO-BQ-003/en).
