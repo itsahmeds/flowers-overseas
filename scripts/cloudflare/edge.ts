@@ -731,11 +731,16 @@ export function diffPhase(
   return { drifts, notes };
 }
 
-/** Read the zone's edge and diff it against the declaration. GETs only. */
+/**
+ * Read the zone's edge and diff it against the declaration. GETs only. `tokenScopes` is the scope
+ * list a 403 is judged against: a phase whose scope is on it fails on a 403 instead of being
+ * `unverified` (the day spec 040 grants the token a rules scope, the line becomes a failure).
+ */
 export async function checkEdge(
   edge: EdgeDeclaration,
   transport: Transport,
   zoneId: string,
+  tokenScopes: readonly string[] = TOKEN_SCOPES,
 ): Promise<EdgeReport> {
   const drifts: string[] = [];
   const notes: string[] = [];
@@ -766,7 +771,7 @@ export async function checkEdge(
     } catch (error) {
       if (
         error instanceof MissingScopeError &&
-        !TOKEN_SCOPES.includes(error.scope)
+        !tokenScopes.includes(error.scope)
       ) {
         const steps = phaseOf(edge, phase).map((rule) => rule.founderStep);
         notes.push(
