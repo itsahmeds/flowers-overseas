@@ -38,6 +38,15 @@ Branch `task/TASK-017-schema-media-storage-seam`. Keys, never bytes (ADR-0015): 
   migration and the Drizzle mirror, and `tests/integration/schema-media.test.ts` checks
   `information_schema` across every schema.
 
+- **Accepted holes, review and breaker round 1 (PR 184).**
+  - HOLE 5 ACCEPTABLE (reviewer, PR 184): column-level Drizzle↔SQL drift is AC-26, owned by TASK-027.
+  - HOLE 6 ACCEPTABLE (reviewer): head already copies; test optional.
+  - T-11 runs nowhere in CI until TASK-022 (known; accepted).
+- **For TASK-082.** The key alphabet is now segment-wise: lowercase words with dots only between
+  them, so no leading or trailing `/`, no `//`, no `.` or `..` segment and no `..` anywhere. Every
+  minted key and every Phase 0 key in `seed/data/media-variants.json` (868) still passes. `put`
+  refuses a 0-byte body, so the R2 implementation must too (the contract suite checks it).
+
 ## Escalations
 
 _None recorded._
@@ -50,7 +59,73 @@ _None recorded._
   (table in `## Result`). The cheap gates flagged the fake's query-string URL (URL-PII and
   zod-boundary gates), so the signature moved into the path.
 
+- 2026-10-05: round-1 fixes (holes 1-4, R4, the 0-byte nit, hole 6's optional test). Pushed
+  `64a8c9f8` and `fea097c0`.
+
 ## Result
+
+### Round 1 fixes (review FAIL and breaker HOLES on `aeb60c78`)
+
+Each fix has a test. Each mutation below went red, then was reverted.
+
+| Item | Fix | Mutation, and the case that went red |
+|---|---|---|
+| Hole 1 | fake-only case raises the expiry segment of a signed URL: 403 | `#sign` without `${expires}`: "signs the expiry" |
+| Hole 2 | fake-only case: the same key in two buckets, URL signed for A, host swapped to B: 403, and A's own URL reads A's bytes | `#sign` without `${bucket}`: "signs the bucket" |
+| Hole 3 | `product_media_alt_alt_check` is `alt ~ '[^[:space:]\u0085\u00a0\u1680\u180e\u2000-\u200d\u2028\u2029\u202f\u205f\u2060\u3000\ufeff]'` (ASCII SQL; the escapes are the regex engine's). The mirror's `ALT_VISIBLE_PATTERN`, the snapshot and the seed's `AltEntrySchema` match | unit: SQL without NBSP (4 red), range cut to U+200A (6 red), back to `btrim` (36 red), seed regex dropped (34 red). Postgres 16: the live check set back to `btrim`, or without NBSP and U+3000, makes T-11 list those blank alts as `ACCEPTED` |
+| Hole 4 | key alphabet `^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$` in both CHECKs, `OBJECT_KEY_PATTERN`, the mirror, the snapshot and the seed's `ObjectKeySchema` | old pattern in storage (2 red: contract refusal, SQL agreement), in the seed (9 red), in the SQL (2 red). On the live database T-11 lists 7 bad keys as `ACCEPTED` |
+| R4 | contract case: two keys in one bucket; `head` and a signed URL give each its own facts and bytes; delete one, the other stays | `#slot` returns the bucket: "keeps keys apart" |
+| Nit | `put` refuses a 0-byte body; `StorageObject.bytes` is `positive()` | body check without `byteLength > 0`: the contract refusal case |
+| Hole 6 | fake-only case: mutating `head`'s result leaves the stored facts | `head` returns `entry.facts`: "returns a copy from head" |
+
+**Tests added.** Contract: 4 (22 in `storage-in-memory.test.ts`). Unit: `schema-media.test.ts`
++74 (34 blank alts through the SQL's own pattern and 34 through `AltEntrySchema`, 5 real alts,
+the pattern read from the SQL); `storage-object-key.test.ts` +12 (11
+bad keys against the pattern and both `ObjectKeySchema`s, the Phase 0 keys). Integration: T-11 now
+records 31 more blank-alt and 18 bad-key rejections (9 keys, in `media_asset` and
+`media_variant`), each with its constraint.
+
+**Integration evidence, local:** PostgreSQL 16.14 (`embedded-postgres`, scratch directory, no
+Unix socket, on 127.0.0.1 reached as `127.1` so the suite does not skip). `db:migrate` 0001-0004,
+the suite 6/6, the three live mutations above, then `db:rollback --to 0003`, `db:migrate`, 6/6,
+`db:rollback --to 0000`, `db:migrate`, 6/6; all exit 0. Stopped with `pg_ctl stop`.
+
+**Outside the listed fence, on purpose.** `seed/schema/media.ts`: the reviewer's hole 4 ruling
+names its `ObjectKeySchema`, and its `AltEntrySchema` is the only zod schema for alt text, which
+hole 3 names. `db/migrations/meta/0003_snapshot.json`: the Drizzle snapshot of `0004`, kept equal
+to the mirror's changed checks.
+
+**Gates.** The first run hit the 5 s timeout in `url-pii.test.ts` (the whole-tree scan) at load
+7.4; alone it passes in 4.8 s, and the rerun passed:
+
+```
+gates:cheap · fea097c0259853974bd66b1a7a131197d7b25b66 · tree clean · base origin/main · 2026-10-04T20:45:52.546Z
+typecheck             exit 0 · 2.3 s
+lint                  exit 0 · 16.9 s
+format:check          exit 0 · 10.6 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 74.8 s · changed 22 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+ RUN  v4.1.11 /Users/ahmed/dev/fo-attest
+
+{"currency":"EUR","fx_as_of":"2026-09-08","level":"warn","time":"2026-10-04T20:48:42.601Z","msg":"catalog.fx_stale"}
+{"currency":"EUR","fx_as_of":"2026-09-08","level":"warn","time":"2026-10-04T20:48:44.624Z","msg":"catalog.fx_stale"}
+{"sku":"FO-BQ-001","tier_key":"stems_99","country_iso":"PL","level":"warn","time":"2026-10-04T20:48:46.180Z","msg":"catalog.price_missing"}
+{"sku":"FO-BQ-999","tier_key":"stems_12","country_iso":"PL","level":"warn","time":"2026-10-04T20:48:46.184Z","msg":"catalog.price_missing"}
+{"sku":"FO-BQ-001","tier_key":"stems_12","country_iso":"PL","level":"warn","time":"2026-10-04T20:48:46.250Z","msg":"catalog.price_ambiguous"}
+{"sku":"FO-BQ-001","tier_key":"stems_12","country_iso":"PL","level":"warn","time":"2026-10-04T20:48:46.300Z","msg":"catalog.price_missing"}
+{"sku":"FO-AR-001","country_iso":"NL","duration_ms":58,"level":"warn","time":"2026-10-04T20:48:48.159Z","msg":"catalog.read"}
+{"currency":"EUR","fx_as_of":"2026-09-08","level":"warn","time":"2026-10-04T20:48:48.267Z","msg":"catalog.fx_stale"}
+{"currency":"GBP","fx_as_of":"2026-09-08","level":"warn","time":"2026-10-04T20:48:53.841Z","msg":"catalog.fx_stale"}
+{"sku":"FO-BQ-001","tier_key":"stems_24","country_iso":"PL","currency":"PLN","duration_ms":71,"level":"warn","time":"2026-10-04T20:48:56.127Z","msg":"catalog.read"}
+{"sku":"FO-AR-001","country_iso":"PL","duration_ms":69,"level":"warn","time":"2026-10-04T20:48:56.141Z","msg":"catalog.read"}
+```
+
+### Round 0
 
 PR [#184](https://github.com/itsahmeds/flowers-overseas/pull/184).
 
