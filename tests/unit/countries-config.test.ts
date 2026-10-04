@@ -146,13 +146,24 @@ describe("src/config/countries.ts", () => {
     expect(countryConfig("PL").citiesKey).toBe("destinations.pl.cities");
   });
 
-  it("maps a destination's status onto the canvas's two state keys", () => {
-    expect(destinationStateKey(countryConfig("PL"))).toBe(
-      "destinations.state.deliveringNow",
-    );
-    expect(destinationStateKey(countryConfig("DE"))).toBe(
-      "destinations.state.guideNotDelivering",
-    );
+  it("claims delivery in the state word only where delivery dates are open, not on status (PR 174 item 6)", async () => {
+    // Today: Poland is `live` in the registry, but no florist is signed, so nobody can order.
+    expect(countryConfig("PL").status).toBe("live");
+    expect(deliveryDatesOpen("PL")).toBe(false);
+    for (const country of COUNTRIES) {
+      expect(destinationStateKey(country), country.iso2).toBe(
+        "destinations.state.guideNotDelivering",
+      );
+    }
+    // The day a florist is signed, the same predicate opens Poland's dates and its claim.
+    await withActivePartnersProvider({ hasActivePartners: () => true }, () => {
+      expect(destinationStateKey(countryConfig("PL"))).toBe(
+        "destinations.state.deliveringNow",
+      );
+      expect(destinationStateKey(countryConfig("DE"))).toBe(
+        "destinations.state.guideNotDelivering",
+      );
+    });
   });
 
   it("looks a destination up by code and rejects an unknown one", () => {

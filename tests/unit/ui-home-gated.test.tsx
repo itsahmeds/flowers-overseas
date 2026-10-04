@@ -421,8 +421,11 @@ describe("the destinations grid", () => {
         `data-fo-destination="${country.iso2}"`,
       );
     }
-    expect(rendered).toContain("Delivering now");
-    expect(rendered).toContain("Guide · not delivering yet");
+    // PR 174 item 6: nobody can order yet (no florist signed), so no chip claims delivery.
+    expect(rendered).not.toContain("Delivering now");
+    expect(rendered.split("Guide · not delivering yet")).toHaveLength(
+      COUNTRIES.length + 1,
+    );
     // TASK-092 published the seven corridor targets: every destination whose guide exists in
     // this locale is a link, from the same loop and with no markup change (spec 007 AC-20).
     expect(hrefs(html).length).toBe(COUNTRIES.length);
@@ -472,7 +475,7 @@ describe("the destinations grid", () => {
     expect(order("en")).toHaveLength(COUNTRIES.length);
   });
 
-  it("links the delivering destination's poppy chip to its guide, even when the page hands in a shop root (R2)", () => {
+  it("links Poland's chip to its guide, even when the page hands in a shop root (R2)", () => {
     const html = render(
       <DestinationsGrid locale="en" shopHref="/en/poland/flowers" />,
       "en",
@@ -480,8 +483,9 @@ describe("the destinations grid", () => {
     const poland = html.slice(html.indexOf('data-fo-destination="PL"'));
 
     // plan/02 §11, spec 004 Q11/A2: the chip feeds the guide, which links the shop root.
+    // Neutral, not poppy, until delivery dates open (PR 174 item 6); still first, still linked.
     expect(poland.slice(0, poland.indexOf("</li>"))).toMatch(
-      /<a class="[^"]*bg-accent[^"]*" href="\/en\/send-flowers-to\/poland">Poland/u,
+      /<a class="(?![^"]*bg-accent)[^"]*" href="\/en\/send-flowers-to\/poland">Poland/u,
     );
     expect(html).not.toContain('href="/en/poland/flowers"');
     // All seven chips go to their guides, and nothing on the section asks for input.

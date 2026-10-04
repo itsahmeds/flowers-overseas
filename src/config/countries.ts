@@ -491,12 +491,15 @@ export function anyDeliveryDatesOpen(): boolean {
 }
 
 /**
- * The state message the destinations grid and the finder print for a destination — the canvas's
- * two states, as keys rather than as a branch on a literal in a component: "Delivering now" for a
- * live destination, "Guide · not delivering yet" for everything else.
+ * The state message the destinations grid prints for a destination — the canvas's two states, as
+ * keys rather than as a branch on a literal in a component: "Delivering now" only where delivery
+ * dates are open (`deliveryDatesOpen()`, a signed florist behind it), "Guide · not delivering yet"
+ * for everything else. Not `status === "live"`: that is the registry label, true for Poland while
+ * no florist is signed, and it printed "Delivering now" on a home where nobody can order (PR 174,
+ * the live crawl, 2026-10-04). Same predicate as the rest of the site's "You cannot order yet".
  */
 export function destinationStateKey(country: CountryConfig): string {
-  return country.status === "live"
+  return deliveryDatesOpen(country.iso2)
     ? "destinations.state.deliveringNow"
     : "destinations.state.guideNotDelivering";
 }
