@@ -201,3 +201,20 @@ describe("GET /api/health reports the bundled FX snapshot (AC-33, T-33)", () => 
     });
   });
 });
+
+describe("the fetched snapshot is inlined at build, not read at runtime (AC-31)", () => {
+  it("has next.config.ts inline FX_BUILD_SNAPSHOT, read by its literal name in the static provider", () => {
+    // `env` in next.config replaces the literal member access `process.env.FX_BUILD_SNAPSHOT` in
+    // the bundle; any other spelling (a destructure, a computed key) would be read at runtime,
+    // where the running container has no such variable and would serve the committed snapshot.
+    expect(read("next.config.ts")).toContain(
+      'env: { FX_BUILD_SNAPSHOT: process.env.FX_BUILD_SNAPSHOT ?? "" }',
+    );
+    expect(read("src/modules/catalog/static/index.ts")).toContain(
+      "resolveBundledFx(process.env.FX_BUILD_SNAPSHOT, FX_SNAPSHOT)",
+    );
+    expect(read("scripts/build.ts")).toContain(
+      "[FX_BUILD_SNAPSHOT_ENV]: outcome.bundle",
+    );
+  });
+});
