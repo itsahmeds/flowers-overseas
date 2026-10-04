@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §4.2 §4.3 §4.4 §5 §8 §9 §10 · plan/02 §4.1 §7 §9 §14 · plan/03 §7 §8 §10 · plan/04 §2 §8 §9 §10 §12 §13 §14 §15 §16 · plan/06 §2.2 §2.3 §5.2 · plan/07 §1.2 §1.3 §1.4 §2.1 §2.2 §2.3 §3 §4 §5 §8 §10 · plan/09 Phase 0 (6–12 Oct, AC 4), Phase 1 (013, 015) · plan/11 §1 §2 §3 · plan/12 §2 §4 |
 | ADRs | ADR-0009 (orders only through `orderService.transition`) · ADR-0005 (Stripe primary, Mollie fallback) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages) · ADR-0015 (portable Postgres, Auth.js) · ADR-0016 (CSP allowlist) · ADR-0018 (Railway behind Cloudflare, single replica). Requests amendments to spec 002 (§5.1), spec 009 (§5.3) and spec 005 (§5.2); proposes no new ADR |
 | Author / date | spec-writer via /spec · 2026-10-04 |
-| Approved by / date | — (draft; the founder approves) |
+| Approved by / date | Founder, 2026-10-04: "all defaults, accept all three, do it in Chrome" (answering the 37 open questions with the advisor memo §6 defaults) · 2026-10-04 |
 
 ## 0. Index
 
