@@ -91,6 +91,8 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 
    Each pair is 1280 / 390. The before column matches CI's Linux before-values (0.00013, 0.00006, 0.0030). Linux after-values are printed by the new test in CI's e2e log (`sentence-shift …` lines).
 
+   **CI on e424481f (run 37178656213): green.** The sentence-sourced shift on Linux is at most 0.00038: /en and /en-gb at 390 on the mobile project. All the others are 0.00018 or less (/pl 390 0.00018, /pl 1280 0.00010, /de 1280 0.000059, /de 390 0.000034), or 0. Lighthouse CLS on the homes went from /de 0.007 to /de 0.0002, with /en, /en-gb and /pl at 0. LCP was /en 1866, /en-gb 1834, /de 1941, /pl 1833. `visual` was green, so no baseline moved.
+
    **Mutations, each run against a fresh `next start` and reverted:**
    - **Header AC-7:** the utility strip grows by 12 px after load. Red at `header.spec.ts:174` (`headerShift`), 0.0070, desktop ×4.
    - **Banner AC-28:** the banner is moved into the flow at the top. Red at `banner.spec.ts:215` (`bannerShift … toBe(0)`), 0.157.
