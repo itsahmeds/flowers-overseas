@@ -262,10 +262,10 @@ before `/plan-tasks` turns the drawings into tasks.
     and this is not one.
   - The popup offers four languages, with English marked as the default (A16 clause 2) and the
     page's own language marked current.
-  - The highlight is drawn as "matches your browser language" only. **IP hint: founder decision
-    pending (recommended: drop).** The founder's wording does not address the IP signal; A16 keeps
-    A14's `/api/geo` and its RoPA row until the founder decides. (Corrected 2026-10-05: an earlier
-    version of this line attributed dropping the IP hint to the founder.)
+  - **Highlight: browser language only (founder, 2026-10-05: "browser language only").** No
+    country, no IP read, no `/api/geo` and no RoPA row for one. This narrows spec 003 §14 A16, which
+    kept A14's country signal. (Corrected 2026-10-05: an earlier version of this line attributed
+    dropping the IP hint to the founder's 2026-10-04 wording, which did not address it.)
 - **R10 — The mobile popup is a top sheet, not a bottom sheet.** At 390 × 844 the home's sentence
   letter starts at about y 720, so any bottom sheet taller than about 120 px covers it. The brief
   asked for both a bottom sheet of at most 35 % and a sheet that never covers the letter, and no
