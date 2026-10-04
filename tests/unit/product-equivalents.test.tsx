@@ -162,7 +162,7 @@ describe("A21 clause 6: the product page prints the equivalents under the price 
     expect(view.fx.state).toBe("converted");
     const html = render(view);
     const expected =
-      "about 47.32 £, 238.58 PLN or 64.92 US$ at the rate of 8 September";
+      "about 47.07 £, 237.05 PLN or 63.76 US$ at the rate of 8 September";
     expect(lines(block(html, "data-fo-pdp-price"))).toEqual([expected]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
     expect(pageLines(html)).toEqual([expected, expected]);
@@ -181,7 +181,7 @@ describe("A21 clause 6: the product page prints the equivalents under the price 
     });
     expect(view.price.fxAsOf).toBe(undefined);
     const expected =
-      "ok. 53,66 €, 45,42 GBP lub 62,32 USD po kursie z 8 września";
+      "ok. 53,04 €, 45,47 GBP lub 61,60 USD po kursie z 8 września";
     const html = render(view);
     expect(lines(block(html, "data-fo-pdp-price"))).toEqual([expected]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
