@@ -83,6 +83,18 @@ describe("the populated shop root (§5.3 row 1)", () => {
   const html = render(<CountryShopRootPage view={en} />, "en");
   const text = textOf(html);
 
+  it("names the occasion table with its eyebrow and its `<h2>`", () => {
+    // The visual baselines photograph this frame but not the dated rows (`tests/visual/dated-blocks.css`);
+    // the heading text is pinned here as well, so a blanked `<h2>` fails a unit test too.
+    const heading = /<h2[^>]*id="shop-dates-heading"[^>]*>(.*?)<\/h2>/su.exec(
+      html,
+    );
+    expect(textOf(heading?.[1] ?? "").replaceAll("&#x27;", "'")).toBe(
+      "Poland's own dates",
+    );
+    expect(text).toContain("Coming up in Poland");
+  });
+
   it("renders one `<h1>`, and it is the shop root's heading", () => {
     expect(html.match(/<h1/gu)).toHaveLength(1);
     expect(text).toContain("Flowers we make for Poland");
