@@ -26,7 +26,7 @@ file, not the row.
 
   No new AC: this is explicit scope, as TASK-166 was.
 - **Dependency.** PR 185, because the audit that records the finding is there, and the round-2
-  design PR: no TASK-186 to TASK-191 build starts before it merges (spec 004 §14 A23 clause 10;
+  design PR, PR 189: no TASK-186 to TASK-191 build starts before it merges (spec 004 §14 A23 clause 10;
   founder, 2026-10-05). The founder's photograph decision below may be asked earlier.
 - **The decision is the founder's; ask it first** (through the orchestrator, recorded under
   `## Escalations`): replace the two photographs, or withdraw them.
@@ -48,7 +48,10 @@ file, not the row.
     §14 A11).
   - No `leadSku` in `src/config/catalogue/listing-presentation.ts` (TASK-187) points at a withdrawn
     asset's product. If one does, flag it to the orchestrator.
-  - The provenance note still renders once per card that shows an `ai` asset (spec 008 §14 A2).
+  - The provenance note still renders once per card that shows an `ai` asset from `md` up (spec 008
+    §14 A2), and once per grid, above the grid, below `md` (spec 008 §14 A16).
+  - A hub whose lead is now a placeholder still downloads no lead image below `md` (spec 004 §14
+    A24 clause 5).
 - **Review class.** Keeps the breaker: the approval state of published media and the LCP nomination
   of live pages.
 - **Tests.**

@@ -39,13 +39,21 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - `specs/041-trust-help-legal-pages.md` — `## 0. Index`, then §2 "Locales" and "Rendering, budget
   and gates", §6, §7, the ACs above, §10, §11, §12 task 3 and the registration-flip paragraph.
-- All six artboard pairs in `docs/design/wireframes/` (`how-it-works`, `guarantee-and-delivery`,
-  `help-and-contact`, `about`, `legal-template`, `cookies`), States rows (untranslated, JS off).
+- All six artboard pairs in `docs/design/wireframes/`, **round 2 (PR 189)**: `how-it-works`,
+  `guarantee-and-delivery`, `help-and-contact`, `about`, `legal-template`, `cookies`; their
+  States rows (untranslated, JS off) and Laptop band rows.
+- `specs/041-trust-help-legal-pages.md` §14 A1; `specs/004-design-system-layout.md` §14 A24.
 - `docs/codebase-map.md`; `scripts/i18n-draft.ts`, `tests/fixtures/seo/`, the spec 004 AC-14
   footer crawl, `lighthouserc.json`.
 
 ## Carry-forwards
 
+- **From spec 004 §14 A24 (2026-10-05):**
+  - **Blocked until PR 189 (design round 2) merges.**
+  - The visual baselines (T-28) are taken against the round-2 artboards at desktop and mobile,
+    with the phone dock and back link in the mobile shots.
+  - The `de`/`pl` drafts include the round-2 keys (P6, P7, P9) as machine drafts with no em
+    dash, `reviewed: false`.
 - **From `/plan-tasks` (2026-10-04):** §11's scheduled `seo-auditor` check ("no legal page is
   indexable while its `lawyerReviewed` is false") is not code: the orchestrator adds it to the
   auditor's work order. Not in this PR.

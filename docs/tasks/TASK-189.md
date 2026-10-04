@@ -11,17 +11,27 @@ file, not the row.
 - **Owned.** Spec 007 **AC-30, AC-31, AC-32** (T-31, T-32, T-33), and spec 004 **AC-38** for id A11
   (T-40).
 - **Audit.** `docs/design/audits/2026-10-04-site-sweep.md`: findings 6, 7 and 9; §3 rows 6, 7 and 9.
-- **Artboards.** The guide's **artboard in `docs/design/wireframes` (round 2, PR to come)**. The
-  round-1 postmark of PR 185's `corridor-country-*` does not bind (A23 clause 10). Founder's bar:
-  "uncluttered, state of the art, grid-aligned, mobile designed on its own".
+- **Artboards (PR 189).** `wireframes/corridor-country-{desktop,mobile}.dc.html`. The round-1
+  postmark of PR 185 does not bind (A23 clause 10). The state is one quiet text line. Founder's
+  bar: "uncluttered, state of the art, grid-aligned, mobile designed on its own".
+- **What A24 adds (spec 004 §14 A24; spec 007 §14 A12).**
+  - **AC-45 for the guide** (T-50): no empty vertical gap over 120 px and no ornament in the
+    first viewport at 1440 × 900, 1280 × 800 and 390 × 844.
+  - **Below `md`.** TASK-195's back link replaces the trail and goes to the destinations hub, with
+    that hub's trail label. `BreadcrumbList` equals the HTML trail (spec 007 AC-15 as A12 reads it).
+  - **Copy.** `corridor.facts.orderBy.none` gets the proposed "None yet." (P10), `reviewed: false`,
+    with its spec 004 T-47 exception entry kept until the founder approves it. If TASK-193 has
+    already shipped a proposal for this key, rebase onto it and do not change it again.
 - **Measurable rules that hold whatever round 2 draws** (A23 clause 10): the laptop band
   (clause 9); the H1 first in reading order, with the guide state's text and the next three dated
   rows in the first viewport (spec 007 AC-31); honesty (spec 007 A9, §8); tokens only.
 - **Founder.** 2026-10-04: "go, approve copy and also i asked to redesign all the pages not just a
   few. right?"
 - **Dependencies.**
-  - **No build starts before the round-2 design PR merges** (A23 clause 10; founder, 2026-10-05).
+  - **No build starts before the round-2 design PR, PR 189, merges** (A23 clause 10; founder,
+    2026-10-05).
   - TASK-186 (the frame, the breadcrumb offset and the tokens).
+  - **TASK-195** (the phone header and the back link).
   - TASK-193 changes `corridor.facts.delivering.none` (N4) and `corridor.coverage.bodyNone` (N5) on
     the guide. Whichever merges second rebases; never restore the old text.
   - **TASK-179**: PR 170 is open and edits `src/modules/geo/ui/CorridorPage.tsx`,
@@ -60,6 +70,7 @@ file, not the row.
   - **T-32** (e2e + unit). Red with the first screen reading a different window from the table.
   - **T-33** (e2e + visual). Red with the old bar class restored.
   - **Spec 004 T-40** for A11 (unit).
+  - **Spec 004 T-50** for the guide (e2e). Red with a 160 px spacer under the H1.
 
 ## Read
 

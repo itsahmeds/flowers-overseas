@@ -13,11 +13,27 @@ file, not the row.
 - **Founder.** 2026-10-04: "go, approve copy and also i asked to redesign all the pages not just a
   few. right?"; and "also when u redesign or plan for redesign... make sure the sizing of page is
   good for both computer and phone.. cuz current pages on demo site feel big on my macbook".
-- **Dependencies.** **No build starts before the round-2 design PR merges** (A23 clause 10; founder,
-  2026-10-05). The page's round-2 artboard in `docs/design/wireframes` is the source; PR 185's
-  round-1 devices do not bind. If the round-2 artboards are not on `main`, stop and escalate. This
-  task **lands first** among TASK-186 to TASK-191, because TASK-187 to TASK-191 build on its frame
-  and tokens. (TASK-193, copy only, may land earlier.)
+- **Dependencies.** **No build starts before the round-2 design PR, PR 189, merges** (A23 clause 10;
+  founder, 2026-10-05; A24 clause 1 names it). The page's round-2 artboard in
+  `docs/design/wireframes` is the source; PR 185's round-1 devices do not bind. If the round-2
+  artboards are not on `main`, stop and escalate. This task **lands first** among TASK-186 to
+  TASK-191 and TASK-194 to TASK-197, because they all build on its frame and tokens. (TASK-193, copy
+  only, may land earlier.)
+- **A24 (2026-10-05) changes to this task.**
+  - **AC-31 skips full-bleed media** (A24 clause 4 (f)). An element as wide as the viewport is not
+    "the first block": the home photograph, the phone cover and the phone product photograph.
+    T-33 measures the first block after it (home A's white card: x 56 at 1440, x 20 at 390).
+  - **AC-32's phone half moves to TASK-195.** Below `md` the breadcrumb becomes a back link 14 px
+    under the header (A24 clause 4 (e), AC-50). This task keeps the 20 px offset from `md` up,
+    and T-34 drops its 390 case (it moves to T-55).
+  - **`--hero-photo-max` has two exemptions** (A24 clause 5): the home hero and the product
+    gallery, each with its own bound (AC-46, TASK-196 and TASK-197). T-43 skips `/en-gb` for the
+    photograph cap. Do not cap either image here.
+  - **Gutters stay 20 px below `md`.** A design brief asked for 16 px, and it is not adopted (A24
+    clause 8).
+  - **The listing lede may move.** Clause 9's "the deck or lede" in the first screen reads "where
+    the round-2 artboard keeps it there": a lede over two lines moves directly under the first
+    screen (A24 clause 2).
 - **Measurable rules that hold whatever round 2 draws** (A23 clause 10): the laptop band (clause 9),
   the first-screen content order (H1 first, then the primary action, with a product or flowers
   visible), pagination, honesty, and tokens only. Any token round 2 adds lands in `globals.css` and
@@ -67,8 +83,10 @@ file, not the row.
 - **Tests** (watch each go red by mutating its subject):
   - **T-33** (e2e). AC-31's DOM probe on eleven page types at 1440, 1024, 768 and 390 px. Red with
     `Container`'s old padding restored.
-  - **T-34** (e2e). AC-32's offset at both sizes. Red with a page-level margin re-added.
-  - **T-43** (e2e). AC-41 at 1280 × 800 and 1512 × 945. Red with the old `clamp()`s restored.
+  - **T-34** (e2e). AC-32's 20 px offset at 1440 × 900 (and 1024, 768). The 390 case is T-55's
+    (TASK-195). Red with a page-level margin re-added.
+  - **T-43** (e2e). AC-41 at 1280 × 800 and 1512 × 945, skipping `/en-gb` for the photograph cap
+    (A24 clause 5). Red with the old `clamp()`s restored.
   - **T-44** (unit). Pins the seven values in both stylesheets. Red with one file changed alone.
   - **T-45** (e2e). AC-43 at 390 × 844. Red with `--text-xs` set to 12 px.
   - **T-46** (visual). Baselines at 1280 × 800 for the home, country shop, country category,
@@ -76,8 +94,10 @@ file, not the row.
 
 ## Read
 
-- `specs/004-design-system-layout.md` — `## 0. Index`, then §14 A23 clauses 1, 2, 3, 9 and 10 and
-  AC-31, AC-32, AC-41 to AC-43
+- `specs/004-design-system-layout.md` — `## 0. Index`, then §14 A23 clauses 1, 2, 3, 9 and 10,
+  A24 clauses 1, 4 (e) and (f), 5 and 8, and AC-31, AC-32, AC-41 to AC-43
+- `docs/design/audits/2026-10-05-round-2.md` "The laptop band" (on PR 189), and each round-2
+  desktop artboard's Laptop band row
 - `docs/design/audits/2026-10-04-site-sweep.md` §1 findings 4 and 8, §3 rows 4 and 8
 - `docs/codebase-map.md`
 - `src/modules/ui/primitives/layout.tsx`, `src/modules/ui/layout/SiteHeader.tsx`,
