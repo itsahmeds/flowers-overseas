@@ -1394,12 +1394,12 @@ describe("§11: a locale or a country cannot look ready in CI while it is gated 
       );
       expect(byLocale.get(locale)?.ready, locale).toBe(false);
     }
-    // `en` waits on the founder for exactly the two rows reworded into the present tense on
-    // 2026-10-04 (FO-BQ-001 and FO-BQ-003's `seoDescription`; TASK-179). Every other row is
-    // reviewed.
+    // `en` is ready: the two rows reworded into the present tense (FO-BQ-001 and FO-BQ-003's
+    // `seoDescription`; TASK-179) carry the founder's attestation of 2026-10-04 (TASK-192), and
+    // every other row was already reviewed.
     const en = byLocale.get("en");
-    expect(en?.ready).toBe(false);
-    expect((en?.rows ?? 0) - (en?.reviewed ?? 0)).toBe(2);
+    expect(en?.ready).toBe(true);
+    expect((en?.rows ?? 0) - (en?.reviewed ?? 0)).toBe(0);
     for (const locale of launchLocales) {
       expect(byLocale.has(locale), locale).toBe(true);
     }
