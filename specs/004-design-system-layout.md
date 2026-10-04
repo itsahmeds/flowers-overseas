@@ -963,8 +963,9 @@ Corrected (founder rulings, written as binding by the spec-writer, 2026-10-04):
    describes what our florist does in the present tense: "Our florist in the recipient's town makes
    the bouquet the morning it is delivered and hands it over in person."
    - **No rewrites.** A sentence that is already reviewed stays byte-identical. No task rewrites a
-     present-tense sentence into "will make", "will hand" or any other future form, and no task
-     reopens a reviewed string for its tense alone.
+     present-tense sentence into "will make", "will hand" or any other future form. Shipped copy
+     that the founder put into the future tense on 2026-10-03 (decisions log, "The florist
+     sentence (TASK-166)") is open item (iii) below, not reopened by this clause.
    - **Artboards.** Some artboards draw "will make", e.g. `docs/design/directions/warm-c/home.html`
      L403, L576 and L581, `warm-c/shop.html` L331, and the home, country and corridor wireframes in
      `docs/design/wireframes/`. The copy on the page is the message catalogue's, in the present
@@ -986,12 +987,24 @@ Corrected (founder rulings, written as binding by the spec-writer, 2026-10-04):
    - **The checks.** `src/config/voice.ts` and `tests/unit/design-docs.test.ts` may allow the exact
      phrase "my partner" in that select case and nothing broader. That excludes the bare word,
      "my partner" in any other key, and a longer phrase in that case ("my partner florist"). The
-     case name `partner` is an identifier and is read under the existing key-names rule
-     (`tests/unit/design-docs.test.ts` L477–L482). Spec 007's `pnpm corridor:check` imports the
+     scanner reads the whole ICU value (`src/config/voice.ts` L53–L57), so the select keyword
+     `partner` in `home.sentence.who` is treated as ICU syntax, not copy; this needs a change to
+     the scanner, because the key-names rule (`tests/unit/design-docs.test.ts` L477–L482) covers
+     message keys, not ICU case names. `tests/unit/ui-home.test.tsx` L436–L470, which bans
+     "partner" across the whole `home` namespace (keys and ICU case names included), takes the
+     same single exception. Spec 007's `pnpm corridor:check` imports the
      same list and gains no exception: a corridor guide has no who select. `docs/design/README.md`
      §Voice records the exception in the same task, because the test pins that section against
      the list.
-3. **Unchanged.** A21 clause 4's privacy rule for the who select: it has no `name`, it is never
+3. **The home sentence's coded form counts as approved.** The founder approved the home sentence
+   in plain words ("Send flowers to [my mum] in [Poland] for [her birthday].", option 2, founder
+   2026-10-04: "go ahead with it. 2"), with the seven who options in the copy batch. Its form in
+   the message catalogue (the ICU frame `home.sentence.frame` and the `home.sentence.who` select)
+   counts as that same approval. Asked whether it may, the founder answered in chat on 2026-10-04:
+   "Yes, count it". An attestation records the exact catalogue value; when that value changes
+   (adding `partner {my partner}`, for example), it is re-attested against these rulings, never
+   carried forward.
+4. **Unchanged.** A21 clause 4's privacy rule for the who select: it has no `name`, it is never
    submitted, and it never reaches a URL, a log, analytics or the server. `fo-who` stores the key
    `partner`, never the text. AC-15's forbidden claim shapes, and every other word A5 bans.
 
@@ -1017,6 +1030,13 @@ Open for the founder (defaults bind until answered):
   future tense for a destination we have not opened, and `content/corridors/en-gb/de-guide.md` L104
   says "will make". That copy is spec 007's and is already reviewed. A22 does not amend spec 007,
   so it stays byte-identical. Default: unchanged until the founder asks for a spec 007 amendment.
+- **(iii) Product copy the founder put into the future tense on 2026-10-03.** The decisions-log
+  row "The florist sentence (TASK-166)" (L75) chose "Every order will be made by hand and
+  delivered in person by our florist in the recipient's city." (`messages/en.json`
+  `catalog.floristSentence`), plus FO-BQ-001 "to be hand-tied", FO-BQ-003 "Will be made and
+  delivered" and two search descriptions. Clause 1 supersedes L75's rule for new copy. Default:
+  these shipped, reviewed strings stay byte-identical until the founder asks for them to move to
+  the present tense.
 
 Raised by: the founder in chat, 2026-10-04; written by the spec-writer; implemented by TASK-177
 (the who option and the check, A21 clause 8) and the designer's next docs PR (README §Voice and
