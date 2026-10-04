@@ -29,7 +29,18 @@
  * subject rather than the noise: `tests/e2e/banner.spec.ts` (the appearance matrix, CLS delta and
  * cookie) and `tests/a11y/banner.spec.ts` (axe with it forced on screen).
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
+
+/**
+ * The home's occasion-dates band leaves the layout in every home shot here (`./home-dates.css`
+ * says why): the band prints a calendar, and a calendar edit must not move the rest of the page.
+ * The band keeps its own baselines in `./home.spec.ts`.
+ */
+const HOME_DATES_STYLE = fileURLToPath(
+  new URL("./home-dates.css", import.meta.url),
+);
 
 /**
  * Everything still in flight after `goto` resolves, waited out before the shutter: the last
@@ -139,7 +150,7 @@ for (const locale of LOCALE_HOMES) {
 
       await expect(page).toHaveScreenshot(
         `home-${locale}-${artboard.name}.png`,
-        { fullPage: true },
+        { fullPage: true, stylePath: HOME_DATES_STYLE },
       );
     });
   }
@@ -168,6 +179,10 @@ for (const { path, name } of SCREENSHOTS) {
     await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
     await settle(page);
 
-    await expect(page).toHaveScreenshot(name, { fullPage: true });
+    await expect(page).toHaveScreenshot(name, {
+      fullPage: true,
+      // `/` is the chooser and has no dates band; the sheet matches nothing there.
+      stylePath: HOME_DATES_STYLE,
+    });
   });
 }
