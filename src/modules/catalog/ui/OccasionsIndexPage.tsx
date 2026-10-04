@@ -48,18 +48,17 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { formatDate } from "@/modules/i18n";
-import { Container, Display, Label, Stack, Text } from "@/modules/ui";
+import { Chip, Container, Display, Eyebrow, Text } from "@/modules/ui";
 
 import type { ListingOccasionEntry, ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import {
+  ListingIntro,
+  ListingSubsection,
+  OccasionDatesTable,
+} from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
-
-/** Midday UTC: the hour that is the same calendar date in every European zone (spec 007's rule). */
-function instantOf(date: string): Date {
-  return new Date(`${date}T12:00:00Z`);
-}
 
 export interface OccasionsIndexPageProps {
   readonly view: ListingView;
@@ -69,17 +68,22 @@ export interface OccasionsIndexPageProps {
  * One occasion, as a link. The list is `<ul>`/`<li>` rather than a run of anchors because it *is*
  * a list, and a screen reader is told how many there are before it walks them (§5.3).
  */
-function EntryLink({ entry }: { readonly entry: ListingOccasionEntry }) {
+function EntryChips({
+  entries,
+}: {
+  readonly entries: readonly ListingOccasionEntry[];
+}): ReactElement {
   return (
-    <li>
-      <a
-        className="hover:text-accent"
-        data-fo-occasion={entry.key}
-        href={entry.href}
-      >
-        {entry.name}
-      </a>
-    </li>
+    <ul className="gap-sm flex list-none flex-wrap p-0">
+      {entries.map((entry) => (
+        <li key={entry.key}>
+          {/* A hyphenated attribute passes through `Chip`'s rest props onto its `<a>`. */}
+          <Chip data-fo-occasion={entry.key} href={entry.href}>
+            {entry.name}
+          </Chip>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -111,126 +115,74 @@ export function OccasionsIndexPage({
 
   return (
     <Container as="main" id="main" data-fo-occasions-index>
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
-        <Stack gap="md">
-          <Display as="h1" size="display-s">
-            {index("h1")}
-          </Display>
-          <Text measure>{index("intro")}</Text>
-        </Stack>
+        <ListingIntro heading={index("h1")} lede={index("intro")} />
 
         {dated.length === 0 || dateCountry === undefined ? null : (
-          <Stack as="section" gap="md" data-fo-occasions-dated={dated.length}>
-            <Stack gap="xs">
-              <Label>{index("datedEyebrow")}</Label>
-              <Display as="h2" size="2xl">
+          <section
+            aria-labelledby="occasions-dated-heading"
+            className="gap-lg md:gap-2xl grid grid-cols-1 items-start md:grid-cols-[4fr_7fr]"
+            data-fo-occasions-dated={dated.length}
+          >
+            <div>
+              <Eyebrow className="mb-[14px]">{index("datedEyebrow")}</Eyebrow>
+              <Display as="h2" size="2xl" id="occasions-dated-heading">
                 {index("datedHeading")}
               </Display>
-            </Stack>
-            <table className="w-full border-collapse text-sm">
-              <caption className="label text-ink-subtle pb-sm text-start">
-                {index("datedCaption", { country: dateCountry })}
-              </caption>
-              <thead>
-                <tr>
-                  <th
-                    className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                    scope="col"
-                  >
-                    {index("occasionColumn")}
-                  </th>
-                  <th
-                    className="border-rule py-sm text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                    scope="col"
-                  >
-                    {index("dateColumn")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {dated.map((entry) => (
-                  <tr key={entry.key}>
-                    <th
-                      className="border-rule py-sm pe-md border-b text-start font-semibold"
-                      scope="row"
-                    >
-                      <a
-                        className="hover:text-accent"
-                        data-fo-occasion={entry.key}
-                        href={entry.href}
-                      >
-                        {entry.name}
-                      </a>
-                    </th>
-                    <td className="border-rule py-sm border-b">
-                      {/* `nextDate` is non-null for every member of this group by construction;
-                          the guard is the type's, not a second rule about dates. */}
-                      {entry.nextDate === null
-                        ? null
-                        : formatDate(
-                            instantOf(entry.nextDate),
-                            code,
-                            "calendarDate",
-                            "UTC",
-                          )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <Text measure size="sm" tone="subtle">
-              {index("dateSource")}
-            </Text>
-          </Stack>
+            </div>
+            <div>
+              <OccasionDatesTable
+                caption={index("datedCaption", { country: dateCountry })}
+                columns={[index("occasionColumn"), index("dateColumn")]}
+                locale={code}
+                rows={dated.map((entry) => ({
+                  key: entry.key,
+                  name: entry.name,
+                  nameKey: entry.key,
+                  // `nextDate` is non-null for every member of this group by construction.
+                  date: entry.nextDate,
+                  nameHref: entry.href,
+                  nameHook: { "data-fo-occasion": entry.key },
+                }))}
+              />
+              <Text size="xs" tone="subtle" className="text-fine mt-[12px]">
+                {index("dateSource")}
+              </Text>
+            </div>
+          </section>
         )}
 
         {undated.length === 0 ? null : (
-          <Stack
-            as="section"
-            gap="md"
-            data-fo-occasions-undated={undated.length}
+          <ListingSubsection
+            dataHook={{ "data-fo-occasions-undated": String(undated.length) }}
+            heading={index("undatedHeading")}
+            id="occasions-undated-heading"
           >
-            <Display as="h2" size="2xl">
-              {index("undatedHeading")}
-            </Display>
             {dateCountry === undefined ? null : (
-              <Text measure tone="muted">
+              <Text size="sm" tone="muted" className="mb-[18px] max-w-[62ch]">
                 {index("undatedNote", { country: dateCountry })}
               </Text>
             )}
-            <ul className="gap-sm flex list-none flex-wrap p-0">
-              {undated.map((entry) => (
-                <EntryLink entry={entry} key={entry.key} />
-              ))}
-            </ul>
-          </Stack>
+            <EntryChips entries={undated} />
+          </ListingSubsection>
         )}
 
         {everyday.length === 0 ? null : (
-          <Stack
-            as="section"
-            gap="md"
-            data-fo-occasions-everyday={everyday.length}
+          <ListingSubsection
+            dataHook={{ "data-fo-occasions-everyday": String(everyday.length) }}
+            eyebrow={index("everydayEyebrow")}
+            heading={index("everydayHeading")}
+            id="occasions-everyday-heading"
           >
-            <Stack gap="xs">
-              <Label>{index("everydayEyebrow")}</Label>
-              <Display as="h2" size="2xl">
-                {index("everydayHeading")}
-              </Display>
-            </Stack>
-            <Text measure tone="muted">
+            <Text size="sm" tone="muted" className="mb-[18px] max-w-[62ch]">
               {index("everydayNote")}
             </Text>
-            <ul className="gap-sm flex list-none flex-wrap p-0">
-              {everyday.map((entry) => (
-                <EntryLink entry={entry} key={entry.key} />
-              ))}
-            </ul>
-          </Stack>
+            <EntryChips entries={everyday} />
+          </ListingSubsection>
         )}
-      </Stack>
+      </div>
     </Container>
   );
 }

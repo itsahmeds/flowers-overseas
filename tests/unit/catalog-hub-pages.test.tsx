@@ -367,6 +367,16 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
   const html = render(<OccasionHubPage view={mothersDay} />, "en");
   const text = textOf(html);
 
+  it("names the date section with its eyebrow and its `<h2>`", () => {
+    // The visual baselines photograph this frame but not the dated rows (`tests/visual/dated-blocks.css`);
+    // the heading text is pinned here as well, so a blanked `<h2>` fails a unit test too.
+    const heading = /<h2[^>]*id="hub-dates-heading"[^>]*>([^<]*)<\/h2>/u.exec(
+      html,
+    );
+    expect(heading?.[1]).toBe("When it falls, where we deliver");
+    expect(text).toContain("The dates");
+  });
+
   it("prints a computed date for every destination that keeps the occasion", () => {
     const rows = html.match(/data-fo-hub-date="[A-Z]{2}"/gu) ?? [];
     expect(rows).toHaveLength(7);

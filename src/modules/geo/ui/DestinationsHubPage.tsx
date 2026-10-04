@@ -25,15 +25,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { formatList } from "../../i18n/index.ts";
-import {
-  Chip,
-  Container,
-  Display,
-  Grid,
-  Label,
-  Stack,
-  Text,
-} from "../../ui/index.ts";
+import { Chip, Container, Display, Eyebrow, Text } from "../../ui/index.ts";
 import { type HubDestinationView, hubView } from "../hub.ts";
 
 import { CorridorBreadcrumb } from "./CorridorBreadcrumb.tsx";
@@ -60,52 +52,54 @@ function Destination({
   readonly readGuide: string;
   readonly state: string;
 }): ReactElement {
+  // v2 `.dest` (the all-destinations artboards): one ruled row per destination — the country in
+  // the display face on the start side (220 px from `md` up), the state chip and the teaser in
+  // the middle, the cornflower "Read the guide" on the end side; one column on a phone.
+  const row =
+    "border-rule grid grid-cols-1 items-baseline gap-[6px] border-b py-[20px] md:grid-cols-[220px_minmax(0,1fr)_auto] md:gap-x-[32px] md:py-lg";
   if (destination.href === undefined) {
     return (
-      <Stack
-        as="li"
-        className="border-rule p-md border border-dashed"
+      <li
+        className={row}
         data-fo-hub-destination={destination.iso2}
         data-fo-hub-linked="false"
-        gap="xs"
       >
-        <Display as="span" size="xl" className="text-ink-muted">
+        <Display as="span" size="xl" className="text-ink-muted md:text-[30px]">
           {country}
         </Display>
-        <Text as="span" size="sm" tone="muted">
+        <Text as="span" size="md" tone="muted">
           {noGuide}
         </Text>
-      </Stack>
+      </li>
     );
   }
-  // The artboards draw a linked destination as one whole-tile `<a class="tile">`: a target the
-  // size of the card, no underline (the canvas's own chrome link treatment in `globals.css`) and
-  // the accent "Read the guide →" line as its affordance. The accessible name is the country
-  // name alone — `aria-labelledby` points at the span that renders it, so a screen reader's
-  // link list reads "Germany" rather than the whole tile, and the name is still visible text
-  // inside the link (WCAG 2.5.3 label in name).
   const nameId = `hub-destination-${destination.iso2.toLowerCase()}`;
   return (
     <li data-fo-hub-destination={destination.iso2} data-fo-hub-linked="true">
       <a
         aria-labelledby={nameId}
-        className="border-rule p-md gap-xs flex h-full flex-col items-stretch border"
+        className={`${row} group text-ink [text-decoration:none]`}
         href={destination.href}
       >
-        <Display as="span" id={nameId} size="xl">
+        <Display
+          as="span"
+          id={nameId}
+          size="xl"
+          className="decoration-1 underline-offset-[5px] group-hover:underline md:text-[30px] md:leading-[1.1]"
+        >
           {country}
         </Display>
-        <Chip className="self-start" tone="muted">
-          {state}
-        </Chip>
-        {destination.teaser === undefined ? null : (
-          <Text as="span" size="sm" tone="muted">
-            {destination.teaser}
-          </Text>
-        )}
-        <Text as="span" size="xs" tone="accent">
-          {readGuide}
-        </Text>
+        <span className="gap-sm grid">
+          <Chip className="self-start justify-self-start" tone="muted">
+            {state}
+          </Chip>
+          {destination.teaser === undefined ? null : (
+            <Text as="span" size="md" tone="muted">
+              {destination.teaser}
+            </Text>
+          )}
+        </span>
+        <span className="link whitespace-nowrap">{readGuide}</span>
       </a>
     </li>
   );
@@ -122,21 +116,28 @@ export function DestinationsHubPage({
 
   return (
     <Container as="main" id="main" data-fo-destinations-hub={view.locale}>
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <CorridorBreadcrumb crumbs={view.breadcrumb} />
 
-        <Stack gap="md">
-          <Display as="h1" size="display-s">
+        {/* v2 `.shop-intro`: the one `<h1>` and the lede. */}
+        <div className="pt-lg md:pt-xl pb-[36px] md:pb-[56px]">
+          <Display as="h1" size="display">
             {hub("h1")}
           </Display>
-          <Text measure>{hub("intro")}</Text>
-        </Stack>
+          <Text
+            size="lg"
+            tone="muted"
+            className="mt-[18px] max-w-(--measure-lede)"
+          >
+            {hub("intro")}
+          </Text>
+        </div>
 
         {/* The whole-page empty state: every destination as text, named in one sentence and then
             listed with its state line. It is a page, not a 404 — the URL is in the locale's own
             navigation (the artboards' "Empty states" block). */}
         {view.empty ? (
-          <Stack as="section" gap="md" data-fo-hub-empty>
+          <section data-fo-hub-empty>
             <Text measure>
               {hub("emptyBody", {
                 destinations: formatList(
@@ -145,7 +146,7 @@ export function DestinationsHubPage({
                 ),
               })}
             </Text>
-            <Grid as="ul" columns="1-3" gap="md" className="list-none p-0">
+            <ul className="border-rule mt-lg list-none border-t p-0">
               {view.destinations.map((destination) => (
                 <Destination
                   country={named(destination)}
@@ -156,28 +157,31 @@ export function DestinationsHubPage({
                   state={registryLabel(t, destination.stateKey)}
                 />
               ))}
-            </Grid>
-          </Stack>
+            </ul>
+          </section>
         ) : null}
 
-        {view.regions.map((region) => (
-          <Stack
-            as="section"
+        {view.regions.map((region, index) => (
+          <section
+            aria-labelledby={`hub-region-${region.region}`}
+            className={index === 0 ? "" : "md:pt-2xl pt-[48px]"}
             data-fo-hub-region={region.region}
-            gap="md"
             key={region.region}
           >
-            <Stack gap="xs">
-              <Label>
-                {hub("regionLabel", {
-                  region: registryLabel(t, region.headingKey),
-                })}
-              </Label>
-              <Display as="h2" size="2xl">
-                {registryLabel(t, region.headingKey)}
-              </Display>
-            </Stack>
-            <Grid as="ul" columns="1-3" gap="md" className="list-none p-0">
+            <Eyebrow className="mb-[14px]">
+              {hub("regionLabel", {
+                region: registryLabel(t, region.headingKey),
+              })}
+            </Eyebrow>
+            <Display
+              as="h2"
+              size="2xl"
+              id={`hub-region-${region.region}`}
+              className="mb-lg"
+            >
+              {registryLabel(t, region.headingKey)}
+            </Display>
+            <ul className="border-rule list-none border-t p-0">
               {region.destinations.map((destination) => (
                 <Destination
                   country={named(destination)}
@@ -188,10 +192,10 @@ export function DestinationsHubPage({
                   state={registryLabel(t, destination.stateKey)}
                 />
               ))}
-            </Grid>
-          </Stack>
+            </ul>
+          </section>
         ))}
-      </Stack>
+      </div>
     </Container>
   );
 }

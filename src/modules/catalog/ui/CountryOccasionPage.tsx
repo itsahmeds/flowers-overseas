@@ -44,17 +44,21 @@ import {
   type ChipLinkView,
   CategoryChipRow,
   Container,
-  Display,
-  Label,
   ListingGrid,
-  Stack,
   Text,
+  VisuallyHidden,
   assertSinglePriority,
 } from "@/modules/ui";
 
 import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import {
+  ListingCount,
+  ListingIntro,
+  ListingProse,
+  ListingSubsection,
+} from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
 /** Midday UTC: the hour that is the same calendar date in every European zone (007's rule). */
@@ -116,21 +120,27 @@ export function CountryOccasionPage({
       data-fo-country-occasion={view.entity?.key ?? ""}
       data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
     >
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
-        <Stack gap="md">
-          <Display as="h1" size="display-s">
-            {shop("h1.countryOccasion", { occasion, country })}
-          </Display>
-
-          {/* The dated line, and the reason this page type is worth having. */}
-          <Stack
-            gap="xs"
-            className="border-accent p-md max-w-[760px] border"
+        {/* v2 `.shop-intro`: the `<h1>` with the destination in the poppy italic, then the dated
+            line — the reason this page type is worth having — in the display face, the lede, and
+            the Phase 0 demo sentence as the note card (one wording for one fact, shared with the
+            shop root). */}
+        <ListingIntro
+          emphasis={country}
+          heading={shop("h1.countryOccasion", { occasion, country })}
+          lede={shop("occasion.lede", { country })}
+          eyebrow={shop("listing.eyebrow", { country })}
+          note={shop("root.demoNotice", { country })}
+          noteLabel={shop("note.label")}
+          noteMark={shop("note.mark")}
+        >
+          <div
+            className="mt-[28px] grid gap-[6px]"
             data-fo-occasion-date={date ?? ""}
           >
-            <Text as="span" size="md">
+            <Text as="p" size="md" className="display text-md max-w-[44ch]">
               {date === null
                 ? shop("occasion.undatedLine", { occasion, country })
                 : shop("occasion.datedLine", {
@@ -145,52 +155,68 @@ export function CountryOccasionPage({
                   })}
             </Text>
             {date === null ? null : (
-              <Text measure size="sm" tone="muted">
+              <Text size="sm" tone="muted" className="max-w-[44ch]">
                 {shop("occasion.dateNote", { country })}
               </Text>
             )}
-          </Stack>
-
-          <Text measure>{shop("occasion.lede", { country })}</Text>
-          {/* The Phase 0 demo sentence, shared with the shop root: one wording for one fact, so a
-              buyer who reads it twice reads the same sentence. */}
-          <Text measure tone="muted">
-            {shop("root.demoNotice", { country })}
-          </Text>
-        </Stack>
+          </div>
+        </ListingIntro>
 
         {/* Products before prose (§5.3, `docs/design/README.md` §Density). */}
-        <Stack as="section" gap="md" data-fo-shop-listing>
-          <Label>{shop("toolbar.count", { count: view.resultCount })}</Label>
-          {/* §2 "Sort": the default order is labelled for what it is and never called a ranking by
-              sales. The sentence ships with the order, not with the control. */}
-          <Text measure size="sm" tone="muted">
-            {shop("toolbar.disclosure")}
-          </Text>
-          <ListingGrid cards={view.items} locale={code} priority />
+        <section aria-labelledby="occasion-grid-heading" data-fo-shop-listing>
+          <VisuallyHidden as="h2" id="occasion-grid-heading">
+            {shop("h1.countryOccasion", { occasion, country })}
+          </VisuallyHidden>
+          {/* §2 "Sort": the default order is labelled for what it is and never called a ranking
+              by sales. No sort form: this page type has no parameter route, and a control that
+              cannot sort is a dead control (spec 004 §14 A20). */}
+          <ListingCount
+            count={shop("toolbar.count", { count: view.resultCount })}
+            disclosure={shop("toolbar.disclosure")}
+            inclusive={catalog("price.inclusive")}
+          />
+          <div className="mt-[32px]">
+            <ListingGrid cards={view.items} locale={code} priority />
+          </div>
           {/* Stale FX (spec 005 §14 A3): the projection fell back to the destination's own
               authored price, so the page says which currency it is quoting. Once for the page,
               because one rate priced all of it. */}
           {view.fxFallback ? (
-            <Text measure size="sm" tone="muted">
-              {catalog("availability.fxUnavailable")}
-            </Text>
+            <div className="mt-[32px]" data-fo-fx-fallback>
+              <Text measure size="sm" tone="muted">
+                {catalog("availability.fxUnavailable")}
+              </Text>
+            </div>
           ) : null}
-        </Stack>
+        </section>
 
         {/* The artboard's "Also in Poland" row: the other occasions of this destination that have
             a page, and the destination's shop root. Every href is one `listingView()` resolved, so
             none can point at a page that does not exist (spec 004 AC-14, 007 AC-17); an occasion
             below the floor is absent rather than disabled. The occasions index is not repeated
-            here — the breadcrumb already carries it, as a link the day TASK-113 publishes its
-            link id and as text until then. */}
-        <CategoryChipRow
-          heading={shop("occasion.siblingsHeading", { country })}
-          id="occasion-siblings"
-          items={alsoIn}
-          locale={code}
-        />
-      </Stack>
+            here — the breadcrumb already carries it. */}
+        {alsoIn.length === 0 ? null : (
+          <div className="md:pt-2xl pt-[48px]">
+            <CategoryChipRow
+              heading={shop("occasion.siblingsHeading", { country })}
+              id="occasion-siblings"
+              items={alsoIn}
+              locale={code}
+            />
+          </div>
+        )}
+
+        {/* "How it reaches Poland", last: the country's paragraph, as on the shop root. */}
+        <ListingSubsection
+          dataHook={{ "data-fo-shop-intro": true }}
+          emphasis={country}
+          heading={shop("root.introHeading", { country })}
+          id="occasion-how-heading"
+          split
+        >
+          <ListingProse>{shop("root.introBody", { country })}</ListingProse>
+        </ListingSubsection>
+      </div>
     </Container>
   );
 }

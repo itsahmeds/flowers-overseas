@@ -24,6 +24,8 @@
  * failure artifact, which is blocked while the Actions budget is (project memory, 2026-09-09), so
  * these four land as `darwin/` only and the Linux half is taken with the next CI run.
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
 const VIEWPORTS = [
@@ -260,9 +262,13 @@ test.describe("the 500 documents and the gallery", () => {
     // all (runs 35698369912 and 35700517643). The wait is longer here, and only here; nothing
     // about what is compared changes.
     test.slow();
+    // The home's "Coming up" band lists dates computed from today's date; with the list out of
+    // the layout (its heading stays), every section below it sits at the same offset each day
+    // (`./dated-blocks.css`).
     await expect(page).toHaveScreenshot("dev-components-desktop.png", {
       fullPage: true,
       timeout: 60_000,
+      stylePath: fileURLToPath(new URL("./dated-blocks.css", import.meta.url)),
     });
   });
 });

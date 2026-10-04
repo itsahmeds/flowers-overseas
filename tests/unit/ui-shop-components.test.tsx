@@ -130,10 +130,17 @@ describe("ProductCard: the four states of the sheet's first row", () => {
     expect(textOf(link)).toBe(textOf(tile));
   });
 
-  it("shows one all-in price, through formatMoney, with the inclusive wording beside it", () => {
+  it("shows one all-in price, through formatMoney, with `all in` beside it (de/pl: the legal formula)", () => {
     const html = render(<ProductCard card={CARD} locale="en-gb" />, "en-gb");
     expect(html).toContain("£46.90");
-    expect(html).toContain("Includes VAT and delivery");
+    expect(textOf(html)).toContain("all in");
+    // German and Polish price display keeps the VAT-and-delivery formula beside the card price.
+    expect(
+      textOf(render(<ProductCard card={CARD} locale="de" />, "de")),
+    ).toContain("inkl. MwSt. und Versand");
+    expect(
+      textOf(render(<ProductCard card={CARD} locale="pl" />, "pl")),
+    ).toContain("w tym VAT i dostawa");
     // One price and one only: no second currency figure anywhere on the card.
     expect([...textOf(html).matchAll(/£/gu)]).toHaveLength(1);
   });

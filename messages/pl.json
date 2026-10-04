@@ -168,6 +168,8 @@
     },
     "floristSentence": "Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
     "price": {
+      "allIn": "w tym VAT i dostawa",
+      "equivalents": "ok. {amounts} po kursie z {date}",
       "from": "from {price}",
       "inclusive": "w tym VAT i dostawa"
     },
@@ -781,6 +783,9 @@
     "card": {
       "noPrice": "No price here — the price depends on the destination"
     },
+    "cardNote": {
+      "heading": "Every one of these comes with a card, at no cost."
+    },
     "category": {
       "lede": "{count, plural, one {Jeden bukiet, który nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
       "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
@@ -805,6 +810,13 @@
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
     },
+    "listing": {
+      "eyebrow": "Sending to {country}"
+    },
+    "note": {
+      "label": "A note before you choose",
+      "mark": "P.S."
+    },
     "occasion": {
       "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",
       "datedLine": "{occasion} in {country} is {date}.",
@@ -828,7 +840,6 @@
       "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
       "introHeading": "How it reaches {country}",
       "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
-      "listingEyebrow": "The listing",
       "listingHeading": "Everything we can make for {country}",
       "occasionColumn": "Occasion",
       "occasionPageLink": "What we make for it",
@@ -839,7 +850,8 @@
       "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "Send flowers to {country} — what we can make there",
       "tileCount": "{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}",
-      "tilesHeading": "By what it is"
+      "tilesHeading": "By what it is",
+      "tilesSubheading": "Narrow it down"
     },
     "sort": {
       "default": "Our order",

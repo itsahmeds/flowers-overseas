@@ -11,6 +11,7 @@
  * TASK-051), and a shared-chrome change should fail one file rather than every page's.
  */
 import type { BrowserContext } from "@playwright/test";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
 /**
@@ -39,6 +40,11 @@ async function recordConsentRefusal(
   ]);
 }
 
+/** Keeps the sticky header from painting over the top of the shot (see `./static-header.css`). */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
+
 const CATEGORY_URL = "/en/poland/flowers/roses";
 
 const CASES = [
@@ -64,6 +70,9 @@ for (const { name, viewport } of CASES) {
     const response = await page.goto(CATEGORY_URL);
     expect(response?.status(), CATEGORY_URL).toBe(200);
     await expect(page.locator("[data-fo-listing-grid]")).toBeVisible();
-    await expect(page.locator("main")).toHaveScreenshot(`${name}.png`);
+    // The header stays put so the breadcrumb is in the picture (`./static-header.css`).
+    await expect(page.locator("main")).toHaveScreenshot(`${name}.png`, {
+      stylePath: HEADER_STYLE,
+    });
   });
 }

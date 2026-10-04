@@ -33,10 +33,21 @@ const SPEC_002_CURRENCIES = [
   "CHF",
 ] as const;
 
+/**
+ * Spec 004 §14 A21 clause 6 (b): USD is an **equivalent-only** eleventh row (TASK-178) — converted
+ * to for the approximate-equivalents line, never charged or displayed as a price.
+ */
+const EQUIVALENT_ONLY_CURRENCIES = ["USD"] as const;
+
 describe("src/config/currencies.ts (AC-1, AC-4 / T-04)", () => {
-  it("holds exactly the ten currencies spec 002 §5.1 seeds", () => {
-    expect([...CURRENCY_CODES]).toEqual([...SPEC_002_CURRENCIES]);
-    expect(CURRENCIES).toHaveLength(SPEC_002_CURRENCIES.length);
+  it("holds exactly the ten currencies spec 002 §5.1 seeds, then the equivalent-only USD", () => {
+    expect([...CURRENCY_CODES]).toEqual([
+      ...SPEC_002_CURRENCIES,
+      ...EQUIVALENT_ONLY_CURRENCIES,
+    ]);
+    expect(CURRENCIES).toHaveLength(
+      SPEC_002_CURRENCIES.length + EQUIVALENT_ONLY_CURRENCIES.length,
+    );
   });
 
   it("parses under CurrencyConfigSchema at module load", () => {
@@ -103,6 +114,7 @@ describe("src/config/currencies.ts (AC-1, AC-4 / T-04)", () => {
       NOK: "x90",
       DKK: "x90",
       CHF: "x90",
+      USD: "x90",
     });
   });
 

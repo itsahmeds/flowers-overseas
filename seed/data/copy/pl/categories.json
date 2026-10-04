@@ -76,12 +76,12 @@
       "locale": "pl",
       "name": "Kwiaty na urodziny",
       "slug": "kwiaty-na-urodziny",
-      "descriptionMd": "Bukiety, kompozycje i rośliny, które naprawdę wysyła się na urodziny: jaskrawe tulipany i gerbery, różowe i pomarańczowe róże, kolorowy bukiet wybrany w dniu realizacji albo storczyk dla kogoś, kto lubi rośliny. Większość ma trzy rozmiary, można dodać odręcznie napisany bilecik. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety, kompozycje i rośliny, które naprawdę wysyła się na urodziny: jaskrawe tulipany i gerbery, różowe i pomarańczowe róże, kolorowy bukiet wybrany w dniu realizacji albo storczyk dla kogoś, kto lubi rośliny. Większość ma trzy rozmiary, można dodać drukowany bilecik. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na urodziny – dostawa w całej Europie",
       "seoDescription": "Jaskrawe tulipany, gerbery, róże, kolorowe bukiety i storczyki na urodziny, w trzech rozmiarach. Wybierz datę i dodaj bilecik.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "0810e47101bfe9f8c583f353ea8ba81a40d4c8eafa779c662c6c9f88458dac6e"
+      "sourceHash": "31a7eb672a4e7bd57c35022e6dccc42075b96635b374bf348892ed1b6f4ca14b"
     },
     {
       "entity": "category",
@@ -167,12 +167,12 @@
       "locale": "pl",
       "name": "Kwiaty na podziękowanie",
       "slug": "kwiaty-na-podziekowanie",
-      "descriptionMd": "Bukiety, które mówią dziękuję i nic innego: słoneczniki, żółte tulipany, frezje, pomarańczowe mieszanki i sezonowy bukiet wybrany w dniu realizacji. Większość mieści się w środku naszego przedziału cen, a odręcznie napisany bilecik jest gratis, więc powód dociera razem z kwiatami. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety, które mówią dziękuję i nic innego: słoneczniki, żółte tulipany, frezje, pomarańczowe mieszanki i sezonowy bukiet wybrany w dniu realizacji. Większość mieści się w środku naszego przedziału cen, a drukowany bilecik jest gratis, więc powód dociera razem z kwiatami. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na podziękowanie – dostawa w całej Europie",
-      "seoDescription": "Słoneczniki, żółte tulipany, frezje i sezonowe bukiety, które mówią dziękuję. Odręcznie napisany bilecik gratis.",
+      "seoDescription": "Słoneczniki, żółte tulipany, frezje i sezonowe bukiety, które mówią dziękuję. Drukowany bilecik gratis.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "3e4bd056ee5865149159dbe893f4ac7675cc9fc5157bcbe7d9fcec4d3c42edee"
+      "sourceHash": "33a55120f3b965333a5237663e4f9daad6566b8f4be428fffe0be11a1e2f2c46"
     },
     {
       "entity": "category",
@@ -180,12 +180,12 @@
       "locale": "pl",
       "name": "Kwiaty na przeprosiny",
       "slug": "kwiaty-na-przeprosiny",
-      "descriptionMd": "Jasne róże, białe tulipany, frezje i małe pudełko pastelowych kwiatów: raczej ciche niż okazałe, co zwykle jest właściwym tonem, gdy przepraszasz. Odręcznie napisany bilecik jest bezpłatny i warto go tu użyć. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Jasne róże, białe tulipany, frezje i małe pudełko pastelowych kwiatów: raczej ciche niż okazałe, co zwykle jest właściwym tonem, gdy przepraszasz. Drukowany bilecik jest bezpłatny i warto go tu użyć. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na przeprosiny – dostawa w całej Europie",
       "seoDescription": "Jasne róże, białe tulipany, frezje i małe pastelowe pudełka: ciche, nie okazałe. Bezpłatny bilecik, dostawa w wybranym dniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "234d9a61d7ca26744d335053e7ce8e739b1b92a53b5eef88b3eb4ab37cb62ca8"
+      "sourceHash": "ce5636bcf8836b68eabb244bb4fa9ffc3d95d65495c68974268ac6b7fafaec58"
     },
     {
       "entity": "category",

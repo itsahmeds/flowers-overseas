@@ -47,31 +47,28 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { formatDate } from "@/modules/i18n";
 import {
   Container,
-  Display,
-  FromPriceChip,
-  Grid,
-  Label,
   ListingEmpty,
   ListingGrid,
   ListingToolbar,
   Pagination,
-  Stack,
   Text,
+  VisuallyHidden,
   assertSinglePriority,
 } from "@/modules/ui";
 
 import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import {
+  ListingIntro,
+  ListingProse,
+  ListingSubsection,
+  ListingTiles,
+  OccasionDatesTable,
+} from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
-
-/** Midday UTC: the hour that is the same calendar date in every European zone (007's rule). */
-function instantOf(date: string): Date {
-  return new Date(`${date}T12:00:00Z`);
-}
 
 export interface CountryShopRootPageProps {
   readonly view: ListingView;
@@ -102,40 +99,40 @@ export function CountryShopRootPage({
       data-fo-shop-root={view.country?.iso2 ?? ""}
       data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
     >
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         {view.items.length === 0 ? (
           /* AC-8. One sentence and the ways out — and the page stops here: no heading that
              promises a catalogue, no tiles, no dates, no grid, no skeleton, no placeholder card. */
-          <ListingEmpty
-            country={country}
-            headingLevel="h1"
-            links={emptyStateLinks(view, shop, country)}
-          />
+          <div className="pt-xl">
+            <ListingEmpty
+              country={country}
+              headingLevel="h1"
+              links={emptyStateLinks(view, shop, country)}
+            />
+          </div>
         ) : (
           <>
-            {/* The hero: the one `<h1>`, the lede, and the sentence that is the whole of the
-                Phase 0 demo state — no disabled basket button, no "coming soon" panel, no email
-                capture, because there is no purchase affordance on this page at all. */}
-            <Stack gap="md">
-              <Display as="h1" size="display-s">
-                {shop("h1.countryShopRoot", { country })}
-              </Display>
-              <Text measure>{shop("root.lede", { country })}</Text>
-              <Text measure tone="muted">
-                {shop("root.demoNotice", { country })}
-              </Text>
-            </Stack>
+            {/* v2 `.shop-intro`: the one `<h1>` with the destination in the poppy italic, the
+                lede, and the demo sentence as the page's note card — the whole of the Phase 0
+                state, with no disabled basket button and no purchase affordance at all. */}
+            <ListingIntro
+              emphasis={country}
+              heading={shop("h1.countryShopRoot", { country })}
+              lede={shop("root.lede", { country })}
+              eyebrow={shop("listing.eyebrow", { country })}
+              note={shop("root.demoNotice", { country })}
+              noteLabel={shop("note.label")}
+              noteMark={shop("note.mark")}
+            />
 
-            {/* Products before prose (§5.3 row 1, `docs/design/README.md` §Density). */}
-            <Stack as="section" gap="md" data-fo-shop-listing>
-              <Stack gap="xs">
-                <Label>{shop("root.listingEyebrow")}</Label>
-                <Display as="h2" size="2xl">
-                  {shop("root.listingHeading", { country })}
-                </Display>
-              </Stack>
+            {/* Products before prose (§5.3 row 1, `docs/design/README.md` §Density). The grid's
+                heading names the section for a screen reader; the artboards draw none. */}
+            <section aria-labelledby="shop-grid-heading" data-fo-shop-listing>
+              <VisuallyHidden as="h2" id="shop-grid-heading">
+                {shop("root.listingHeading", { country })}
+              </VisuallyHidden>
               {/* The toolbar carries the count, the ranking disclosure and the sort form — one
                   `<form method="get">` with a visible label and a submit button, so sorting works
                   with JavaScript off and from the keyboard alone and adds zero client bytes (§2
@@ -147,154 +144,108 @@ export function CountryShopRootPage({
                 productCount={view.resultCount}
                 sort={view.sort}
               />
-              <ListingGrid cards={view.items} locale={code} priority />
+              <div className="mt-[32px]">
+                <ListingGrid
+                  cards={view.items}
+                  interlude={
+                    <p className="display-em text-accent-strong text-[26px] leading-[1.15] md:text-xl">
+                      {shop("cardNote.heading")}
+                    </p>
+                  }
+                  locale={code}
+                  priority
+                />
+              </div>
               {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
                   destination's own authored price, so the page says which currency it is
                   quoting. One sentence for the page, because one rate priced all of it. */}
               {view.fxFallback ? (
-                <Text measure size="sm" tone="muted">
-                  {catalog("availability.fxUnavailable")}
-                </Text>
+                <div className="mt-[32px]" data-fo-fx-fallback>
+                  <Text measure size="sm" tone="muted">
+                    {catalog("availability.fxUnavailable")}
+                  </Text>
+                </div>
               ) : null}
               {/* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL, nothing at
                   all on a single-page listing (AC-10). The sort is deliberately **not** carried
                   into these hrefs: a sorted URL is `noindex` and may never be a crawlable link
                   (AC-15), so paging out of a sorted view returns the reader to the order the
                   page canonicals to. */}
-              <Pagination
-                baseHref={view.path}
-                locale={code}
-                page={view.page}
-                pageCount={view.pageCount}
-              />
-            </Stack>
+              <div className="mt-xl">
+                <Pagination
+                  baseHref={view.path}
+                  locale={code}
+                  page={view.page}
+                  pageCount={view.pageCount}
+                />
+              </div>
+            </section>
 
             {view.tiles.length === 0 ? null : (
-              <Stack as="section" gap="md" data-fo-shop-tiles>
-                <Display as="h2" size="2xl">
-                  {shop("root.tilesHeading")}
-                </Display>
-                <Grid as="ul" columns="1-3" gap="lg" className="list-none">
-                  {view.tiles.map((tile) => (
-                    <li key={tile.key}>
-                      <Stack
-                        as="article"
-                        gap="xs"
-                        className="border-rule p-md border"
-                        data-fo-category-tile={tile.key}
-                      >
-                        <Display as="h3" size="lg">
-                          <a className="hover:text-accent" href={tile.href}>
-                            {tile.name}
-                          </a>
-                        </Display>
-                        <Text as="span" size="sm" tone="muted">
-                          {shop("root.tileCount", {
-                            count: tile.count,
-                            country,
-                          })}
-                        </Text>
-                        {/* The stale-FX sentence is the page's, once, above this row: six tiles
-                            each repeating it would be one snapshot claimed six times. */}
-                        <FromPriceChip locale={code} price={tile.fromPrice} />
-                      </Stack>
-                    </li>
-                  ))}
-                </Grid>
-              </Stack>
+              <ListingSubsection
+                dataHook={{ "data-fo-shop-tiles": true }}
+                emphasis={shop("root.tilesSubheading").split(" ").at(-1) ?? ""}
+                eyebrow={shop("root.tilesHeading")}
+                heading={shop("root.tilesSubheading")}
+                id="shop-tiles-heading"
+              >
+                <ListingTiles
+                  countLabel={(tile) =>
+                    shop("root.tileCount", { count: tile.count, country })
+                  }
+                  locale={code}
+                  tiles={view.tiles}
+                />
+              </ListingSubsection>
             )}
 
             {occasionDates.length === 0 ? null : (
               /* The dated occasion row. Every date is `occasionDate(rule, year)`'s answer for
                  **this** destination, carried on `listingView()` (§14 A6) and rendered by spec
                  003's `formatDate`: not one of them is typed, in any locale (AC-11's rule applied
-                 to this page type). A captioned table with row headers, because a calendar read
-                 by a screen reader is a table. */
-              <Stack as="section" gap="md" data-fo-shop-occasions>
-                <Stack gap="xs">
-                  <Label>{shop("root.occasionsEyebrow", { country })}</Label>
-                  <Display as="h2" size="2xl">
-                    {shop("root.occasionsHeading", { country })}
-                  </Display>
-                </Stack>
-                <table className="w-full border-collapse text-sm">
-                  <caption className="label text-ink-subtle pb-sm text-start">
-                    {shop("root.occasionsCaption", { country })}
-                  </caption>
-                  <thead>
-                    <tr>
-                      <th
-                        className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                        scope="col"
-                      >
-                        {shop("root.occasionColumn")}
-                      </th>
-                      <th
-                        className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                        scope="col"
-                      >
-                        {shop("root.dateColumn")}
-                      </th>
-                      {/* The third column (§14 **A10**, TASK-111): which of these occasions has a
-                          page of its own. It waited for the pages it links to — a column that
-                          could only ever say "no" is not information — and a row without one
-                          renders an **empty cell**, never a disabled link (spec 004 AC-14). */}
-                      <th
-                        className="border-rule py-sm text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                        scope="col"
-                      >
-                        {shop("root.pageColumn")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {occasionDates.map((occasion) => (
-                      <tr key={`${occasion.nameKey}-${occasion.date ?? ""}`}>
-                        <th
-                          className="border-rule py-sm pe-md border-b text-start font-semibold"
-                          scope="row"
-                        >
-                          {registryLabel(t, occasion.nameKey)}
-                        </th>
-                        <td className="border-rule py-sm pe-md border-b">
-                          {occasion.date === null
-                            ? null
-                            : formatDate(
-                                instantOf(occasion.date),
-                                code,
-                                "calendarDate",
-                                "UTC",
-                              )}
-                        </td>
-                        <td className="border-rule py-sm border-b">
-                          {occasion.href === undefined ? null : (
-                            <a
-                              className="hover:text-accent underline"
-                              data-fo-occasion-page={occasion.nameKey}
-                              href={occasion.href}
-                            >
-                              {shop("root.occasionPageLink")}
-                            </a>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Stack>
+                 to this page type). The third column links only where a country occasion page
+                 exists (§14 **A10**, TASK-111). */
+              <ListingSubsection
+                dataHook={{ "data-fo-shop-occasions": true }}
+                eyebrow={shop("root.occasionsEyebrow", { country })}
+                heading={shop("root.occasionsHeading", { country })}
+                id="shop-dates-heading"
+                split
+              >
+                <OccasionDatesTable
+                  caption={shop("root.occasionsCaption", { country })}
+                  columns={[
+                    shop("root.occasionColumn"),
+                    shop("root.dateColumn"),
+                    shop("root.pageColumn"),
+                  ]}
+                  linkLabel={shop("root.occasionPageLink")}
+                  locale={code}
+                  rows={occasionDates.map((occasion) => ({
+                    key: `${occasion.nameKey}-${occasion.date ?? ""}`,
+                    name: registryLabel(t, occasion.nameKey),
+                    nameKey: occasion.nameKey,
+                    date: occasion.date,
+                    href: occasion.href,
+                  }))}
+                />
+              </ListingSubsection>
             )}
 
             {/* One short intro, last rather than first: the country block that keeps seven
                 near-identical listings from reading as one page. */}
-            <Stack as="section" gap="md" data-fo-shop-intro>
-              <Display as="h2" size="2xl">
-                {shop("root.introHeading", { country })}
-              </Display>
-              <Text measure>{shop("root.introBody", { country })}</Text>
-            </Stack>
+            <ListingSubsection
+              dataHook={{ "data-fo-shop-intro": true }}
+              emphasis={country}
+              heading={shop("root.introHeading", { country })}
+              id="shop-how-heading"
+              split
+            >
+              <ListingProse>{shop("root.introBody", { country })}</ListingProse>
+            </ListingSubsection>
           </>
         )}
-      </Stack>
+      </div>
     </Container>
   );
 }

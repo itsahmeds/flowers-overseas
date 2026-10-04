@@ -5,7 +5,8 @@
  *
  * **What it renders, and it is the whole list** (AC-6): the photograph or spec 006's captioned
  * placeholder in a fixed 4∶5 box, the product name as the card's heading, **one** all-in price
- * through `formatMoney` with the `catalog.price.inclusive` wording beside it, and the honesty
+ * through `formatMoney` with "all in" (`catalog.price.allIn`; the legal VAT-and-delivery formula
+ * in `de` and `pl`) beside it — the page lede carries the full words — and the honesty
  * label wherever the asset it displayed is `ai`.
  *
  * **What it cannot render**, and the mechanism rather than the promise: `ProductCardViewSchema`
@@ -23,6 +24,12 @@
  * total or touches `Intl` (`fo/no-adhoc-intl`, `fo/no-float-money`; §5.2). The name and the price
  * are wrapped in `<bdi>` so a Latin product name inside an RTL run — `/ar-XB`, and Arabic when it
  * ships — cannot reorder the digits of the price beside it (T-30).
+ *
+ * **Approximate equivalents** (spec 004 §14 A21 clause 6; TASK-178): when the view model carries
+ * `equivalents`, the price primitive's slot prints "about … at the rate of …" under the amount —
+ * the other currencies of {EUR, GBP, PLN, USD}, never the charged one. Absent (a stale rate, the
+ * destination-currency fallback), nothing is printed. The line is never in JSON-LD: the `ItemList`
+ * builder reads `price` only.
  *
  * **Or no price at all** (spec 008 §14 **A3**, **AC-7**; TASK-112). A destination-less hub shows
  * the same card with the money removed: it takes a `HubCardView`, which is this schema without
@@ -49,6 +56,7 @@ import { Price } from "../primitives/Price.tsx";
 import { Stack } from "../primitives/layout.tsx";
 import { Display, Text } from "../primitives/typography.tsx";
 
+import { equivalentsMessageValues } from "./equivalents.ts";
 import { type ListingCardView, hasCardPrice } from "./viewModel.ts";
 
 export interface ProductCardProps {
@@ -125,7 +133,15 @@ export function ProductCard({
         <Price
           className="mt-[6px]"
           amount={formatMoney(card.price, locale)}
-          qualifier={catalog("price.inclusive")}
+          qualifier={catalog("price.allIn")}
+          equivalents={
+            card.equivalents === undefined
+              ? undefined
+              : catalog(
+                  "price.equivalents",
+                  equivalentsMessageValues(card.equivalents, locale),
+                )
+          }
         />
       ) : (
         /* The hub card's one line, in the place the price would be and drawn there on both hub

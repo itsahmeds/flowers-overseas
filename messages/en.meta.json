@@ -966,6 +966,20 @@
     "sourceHash": "51e5aa3405f3475b39a814927b7dcd159a33408ebabad373134dd54b4d654508",
     "retained": true
   },
+  "catalog.price.allIn": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "059a68d7eeccef41b446c3dfece06b34baced9e8d2fa37a6cc2a47b859acd852",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
+  },
+  "catalog.price.equivalents": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "b29a7a4b683a371a1395c78e3e8f6d8408a850dccbf04b63f5e15ae49a685c70",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T22:10:00Z"
+  },
   "catalog.price.from": {
     "source": "human",
     "reviewed": true,
@@ -3366,6 +3380,13 @@
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "293d08f61bba4dfa72c29578c5013b9fecbed58e92f96c0600902c98a1f069cf"
   },
+  "shop.cardNote.heading": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "47d732fd584be06e8364c1c4d25c93acc355478d5fdaf276f17a5c60ad40cb2a",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
+  },
   "shop.category.lede": {
     "source": "human",
     "reviewed": true,
@@ -3463,6 +3484,27 @@
     "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "d6c78659f21708394b63d5fd407783f26e51433cb3559df3339d7f98f7905a68"
+  },
+  "shop.listing.eyebrow": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "844dfdbfa5062ebcb259c3dec9d053f55ab027a296724468cd7310a13659d89f",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
+  },
+  "shop.note.label": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "c4eea6824149d50fa3efe20da911e3396308effc1996bba539b3f46f63250315",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
+  },
+  "shop.note.mark": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "073f4407e1c072ce2f793b3994691ddef81b1f31090225bf71aa144a76df99ba",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.occasion.dateNote": {
     "source": "human",
@@ -3580,13 +3622,6 @@
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "8969e9cea4d0555cdda3cbf293b30366263cee7e307be434748cac28b8c154cf"
   },
-  "shop.root.listingEyebrow": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html § the listing, 2026-09-16 design round — the drawn eyebrow, transcribed verbatim by TASK-114)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "7d89b60a4f1025bb57f54c372e0e6c5d8ffe84d5c02337847fcb95cf1a82d7ff"
-  },
   "shop.root.listingHeading": {
     "source": "human",
     "reviewed": true,
@@ -3661,6 +3696,13 @@
     "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
     "reviewedAt": "2026-09-18T00:00:00Z",
     "sourceHash": "58acf2f993d516d97d824bff3c22d768f6bc216b323b701c5c24976710365e12"
+  },
+  "shop.root.tilesSubheading": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "28c6eb010087608ec5c11c85135cbd1fe0c988442effa0f96650c65e5a34fd6f",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-03T21:49:22Z"
   },
   "shop.sort.default": {
     "source": "human",

@@ -195,6 +195,14 @@ export {
   priceTable,
 } from "./pricing/project";
 
+// Approximate equivalents under a charged price (spec 004 §14 A21 clause 6; TASK-178): the other
+// currencies of {EUR, GBP, PLN, USD} at the charged price's own FX snapshot, mid rate, no buffer,
+// no rounding style — or `null`, which hides the line. A display value only: no `Offer`, table or
+// from-price ever reads it. `EQUIVALENTS_LABEL_KEY` stays internal for `FROM_PRICE_LABEL_KEY`'s
+// reason; the card asks its translator for `catalog.price.equivalents`.
+export type { ChargedPrice, PriceEquivalents } from "./pricing/equivalents";
+export { EQUIVALENT_CURRENCIES, priceEquivalents } from "./pricing/equivalents";
+
 // Availability, indexability, the Omnibus figure and signed quotes (spec 005 §2 "Availability",
 // §5.2 `availability.ts` / `pricing/history.ts` / `pricing/quote.ts`, §6, §8,
 // AC-14/AC-17/AC-20/AC-21; TASK-068).

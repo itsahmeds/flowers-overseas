@@ -83,6 +83,18 @@ describe("the populated shop root (§5.3 row 1)", () => {
   const html = render(<CountryShopRootPage view={en} />, "en");
   const text = textOf(html);
 
+  it("names the occasion table with its eyebrow and its `<h2>`", () => {
+    // The visual baselines photograph this frame but not the dated rows (`tests/visual/dated-blocks.css`);
+    // the heading text is pinned here as well, so a blanked `<h2>` fails a unit test too.
+    const heading = /<h2[^>]*id="shop-dates-heading"[^>]*>(.*?)<\/h2>/su.exec(
+      html,
+    );
+    expect(textOf(heading?.[1] ?? "").replaceAll("&#x27;", "'")).toBe(
+      "Poland's own dates",
+    );
+    expect(text).toContain("Coming up in Poland");
+  });
+
   it("renders one `<h1>`, and it is the shop root's heading", () => {
     expect(html.match(/<h1/gu)).toHaveLength(1);
     expect(text).toContain("Flowers we make for Poland");
@@ -107,7 +119,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
     // sort with JavaScript off. Counted exactly, so a second form — a basket, an email capture —
     // fails here.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
-    expect(html).toContain('<form class="gap-sm flex items-end" method="get"');
+    expect(html).toMatch(/<form class="[^"]*" method="get"/u);
     expect(html.match(/<button/giu) ?? []).toHaveLength(1);
     expect(html).toContain('type="submit"');
     expect(html).not.toMatch(/basket|cart|buy now|add to/iu);
@@ -116,7 +128,7 @@ describe("the populated shop root (§5.3 row 1)", () => {
   it("renders the sort form and its disclosure, and offers three orders (AC-9)", () => {
     // A visible `<label>` bound to the `<select>`, three options and a submit button — no island,
     // no `onchange`, nothing that needs JavaScript to work.
-    expect(html).toContain('<label class="text-ink-muted self-center text-sm"');
+    expect(html).toMatch(/<label class="[^"]*" for="listing-sort"/u);
     expect(html).toContain('for="listing-sort"');
     expect(html).toContain('id="listing-sort"');
     expect(html).toContain('name="sort"');
@@ -155,13 +167,30 @@ describe("the populated shop root (§5.3 row 1)", () => {
         /(?:[€£]\s?[\d\u00a0,.]+|[\d\u00a0,.]+\s?(?:PLN|z\u0142))/gu,
       ) ?? [];
     expect(prices.length).toBeGreaterThanOrEqual(cards.length);
-    expect(text).toContain("Includes VAT and delivery");
+    // The card's qualifier is "all in" (founder copy batch, 2026-10-04); the lede keeps the full words.
+    expect(text).toContain("all in");
+    expect(text).toMatch(/VAT and delivery/u);
     // The committed FX snapshot is older than spec 005's ceiling, so every projection falls back
     // to the destination's own currency — and the page says so, once (spec 005 §14 A3, §5.3's
     // "stale FX" state). A price in złoty on an English page with no sentence beside it is the
     // one thing that state exists to prevent.
     expect(en.fxFallback).toBe(true);
     expect(text).toContain("currency of the delivery country");
+  });
+
+  it("renders the v2 intro: eyebrow, P.S. note and the printed-card band after the eighth card", () => {
+    expect(text).toContain("Sending to Poland");
+    expect(html).toMatch(/role="note" aria-label="A note before you choose"/u);
+    expect(text).toContain("P.S.");
+    // The band is a full-width `<li>` of the grid, after exactly eight cards.
+    const grid = html.slice(html.indexOf("data-fo-listing-grid"));
+    const band = grid.indexOf("data-fo-listing-interlude");
+    expect(band).toBeGreaterThan(-1);
+    expect(grid.slice(0, band).match(/data-fo-product-card="/gu)).toHaveLength(
+      8,
+    );
+    expect(text).toContain("Every one of these comes with a card, at no cost.");
+    expect(text).toContain("Narrow it down");
   });
 
   it("renders the category tiles with their `from` prices and plural counts", () => {

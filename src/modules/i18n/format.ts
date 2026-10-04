@@ -338,12 +338,18 @@ export function formatPercentFromBasisPoints(
  * crosses a new year, so `deliveryDate`'s year-less form would print two "8 March" rows a year
  * apart. It is a style on the one formatter rather than an `Intl` call in the calendar component,
  * because `fo/no-adhoc-intl` allows exactly one door (spec 003 §2, AC-21).
+ *
+ * `dayMonth` is the fourth, added by TASK-178 for spec 004 §14 A21 clause 6's equivalents line:
+ * the day and the full month name only ("8 September", "8. September", "8 września"), the date
+ * of the exchange rate the artboards print. No weekday and no year: a rate is shown only while it
+ * is under 48 hours old, so the year can never be ambiguous on the page.
  */
-export type DateStyle = "short" | "deliveryDate" | "calendarDate";
+export type DateStyle = "short" | "deliveryDate" | "calendarDate" | "dayMonth";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
   deliveryDate: { weekday: "short", day: "numeric", month: "short" },
+  dayMonth: { day: "numeric", month: "long" },
   calendarDate: {
     weekday: "long",
     day: "numeric",

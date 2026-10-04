@@ -116,14 +116,14 @@
       "locale": "en",
       "name": "Thank you",
       "slug": "thank-you",
-      "descriptionMd": "A thank you is easier to say with a card than with a bouquet, so both go together: the card is free and handwritten by our florist. Sunflowers, yellow tulips and freesias read as thank you; red roses do not. Most of this range sits in the middle of our prices. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "A thank you is easier to say with a card than with a bouquet, so both go together: the card is free and printed with your words. Sunflowers, yellow tulips and freesias read as thank you; red roses do not. Most of this range sits in the middle of our prices. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Thank you flower delivery across Europe",
-      "seoDescription": "Sunflowers, yellow tulips and freesias with a free handwritten card. Mid-range prices, delivered on the date you choose.",
+      "seoDescription": "Sunflowers, yellow tulips and freesias with a free printed card. Mid-range prices, delivered on the date you choose.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "902983d85da64b8ec24db1ee98e298159b4500446fc26e55108395c84df1b84c"
+      "sourceHash": "8b69b0ff30a85f7dd9d5c505f671d4e668991e99d0d136b7ea7a97399fb4a7d4"
     },
     {
       "entity": "occasion",
@@ -131,14 +131,14 @@
       "locale": "en",
       "name": "I am sorry",
       "slug": "i-am-sorry",
-      "descriptionMd": "When you are apologizing, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will have it written out by hand. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "When you are apologizing, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will print it on our card. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Apology flower delivery across Europe",
-      "seoDescription": "Pale roses, white tulips and freesias with a card written out by hand. Quiet rather than grand, and it arrives on the date you pick.",
+      "seoDescription": "Pale roses, white tulips and freesias with your own words on a printed card. Quiet rather than grand, and it arrives on the date you pick.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "4486c2e6e44426c6579b34baa6b9f32d10b64749e78e7418ac3bf27da660bfca"
+      "sourceHash": "36141af9785ecaef120c712f9abe3d3315e735f621ee88761c2a57766cec975f"
     },
     {
       "entity": "occasion",
@@ -206,14 +206,14 @@
       "locale": "en",
       "name": "Retirement",
       "slug": "retirement",
-      "descriptionMd": "Retirement flowers are usually a group present sent to an office on the last day, then carried home on a train. Something that survives that trip is the point: a plant, a basket, or a bouquet tied rather than arranged. One card can carry many names — send us the text and our florist writes it out. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Retirement flowers are usually a group present sent to an office on the last day, then carried home on a train. Something that survives that trip is the point: a plant, a basket, or a bouquet tied rather than arranged. One card can carry many names — send us the text and we print it on our card. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Retirement flower delivery across Europe",
-      "seoDescription": "Plants, baskets and tied bouquets that survive the journey home from an office. One card can carry many names, written out by hand.",
+      "seoDescription": "Plants, baskets and tied bouquets that survive the journey home from an office. One printed card can carry many names.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "9403eb369b9763ee27fddccc89b1335c560051e3747d52a8a209c9287786dac6"
+      "sourceHash": "2f200416ed319cda2cbe71181d87355c6e724a9e195aef8fbaaea1cc3fc3b98f"
     },
     {
       "entity": "occasion",
