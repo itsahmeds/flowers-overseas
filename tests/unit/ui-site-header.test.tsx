@@ -648,6 +648,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
       "fresh for a week",
       "seven days of freshness",
       "siedem dni świeżości",
+      // PR 174 breaker round 2, hole 3.
+      "Unsere siebentägigen Frische-Garantie",
+      "Siedmiodniowa gwarancja świeżości",
+      "fresh for a fortnight",
+      "Vierzehn Tage frisch",
+      "fresh for fourteen days",
+      "Świeże przez 7 dób",
+      "a 14-day promise",
+      "14-dniowa gwarancja",
     ]) {
       expect(dayCountIn(phrase), phrase).toBeDefined();
     }
@@ -656,6 +665,11 @@ describe("the rendered header (AC-7, AC-14)", () => {
       "Schreiben Sie uns rund um die Uhr, 24/7.",
       "Order by 14:00 in Warsaw",
       "send us a photo within 72 hours of delivery",
+      // The slash guard: without it, the "7" after "24/" would start "7 days".
+      "We answer 24/7 days and nights.",
+      // Not a count of days.
+      "Order by Friday for the weekend",
+      "Blumen fürs Wochenende",
     ]) {
       expect(dayCountIn(phrase), phrase).toBeUndefined();
     }

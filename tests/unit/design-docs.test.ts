@@ -676,6 +676,33 @@ describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TAS
     expect(bannedWordsIn(token)).toStrictEqual(["partner"]);
   });
 
+  /**
+   * The two guards of the token match in `src/config/voice.ts` (PR 174 breaker round 2, hole 5),
+   * each with a case that passes only while the guard is there.
+   */
+  it("matches the token only as a whole case: a letter before it, or another capitalisation, fails", () => {
+    const en = { locale: "en", key: "home.sentence.who" } as const;
+    // The lookbehind: `xpartner {my partner}` is not the case `partner`.
+    for (const prose of [
+      "{who, select, xpartner {my partner} other {x}}",
+      "{who, select, mypartner {my partner} other {x}}",
+    ]) {
+      expect(bannedWordsIn(prose, en), prose).toStrictEqual(["partner"]);
+    }
+    // Case sensitivity: the exception is the lower-case token, nothing else.
+    for (const prose of [
+      "{who, select, Partner {My Partner} other {x}}",
+      "{who, select, partner {My partner} other {x}}",
+      "{who, select, PARTNER {MY PARTNER} other {x}}",
+    ]) {
+      expect(bannedWordsIn(prose, en), prose).toStrictEqual(["partner"]);
+    }
+    // And the guards do not over-reach: the token after a brace or at the start still passes.
+    expect(
+      bannedWordsIn("{who, select,\npartner {my partner} other {x}}", en),
+    ).toStrictEqual([]);
+  });
+
   it('goes red on the who option the moment the exception is removed, and de/pl carry no "partner" at all (A22 (i))', () => {
     const who = (locale: string): string =>
       (

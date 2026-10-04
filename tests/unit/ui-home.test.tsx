@@ -18,14 +18,17 @@ import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
 import { HOME_BLEED, HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
+import { HomeProvenanceNote } from "../../src/modules/ui/home/HomeProvenanceNote.tsx";
 import { HowItWorks } from "../../src/modules/ui/home/HowItWorks.tsx";
 import { OccasionDates } from "../../src/modules/ui/home/OccasionDates.tsx";
 import { OccasionTiles } from "../../src/modules/ui/home/OccasionTiles.tsx";
 import { PROOF_FACTS, ProofRow } from "../../src/modules/ui/home/ProofRow.tsx";
+import { ReviewsSection } from "../../src/modules/ui/home/ReviewsSection.tsx";
 import { SentencePicker } from "../../src/modules/ui/home/SentencePicker.tsx";
 import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
 import {
   SENTENCE_FIELDS,
+  SENTENCE_WHO,
   type SentenceLookups,
   SentenceQuerySchema,
   sentenceAction,
@@ -305,23 +308,76 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     },
   );
 
-  it.each([
-    ["de", "meinen Schatz", "einen lieben Menschen"],
-    ["pl", "mojej drugiej połówki", "ukochanej osoby"],
-  ])(
-    "%s: the partner option has its own words, through the select's other case (A22 (i))",
-    (locale, partner, someone) => {
-      const options = new Map(
+  /**
+   * The whole value → label map of the who select, per catalogue (PR 174 breaker round 2, hole 1).
+   * In de and pl the partner option is the select's `other` case (A22 (i): no "partner" there),
+   * so `other` is not a neutral fallback in those catalogues: every id is pinned to its own words,
+   * and a swapped pair, a lost case or a new id that fell through to `other` goes red.
+   */
+  const WHO_LABELS: Record<
+    (typeof LOCALES)[number],
+    Record<(typeof SENTENCE_WHO)[number]["id"], string>
+  > = {
+    en: {
+      mum: "my mum",
+      dad: "my dad",
+      grandma: "my grandma",
+      grandad: "my grandad",
+      partner: "my partner",
+      friend: "a friend",
+      someoneILove: "someone I love",
+    },
+    "en-gb": {
+      mum: "my mum",
+      dad: "my dad",
+      grandma: "my grandma",
+      grandad: "my grandad",
+      partner: "my partner",
+      friend: "a friend",
+      someoneILove: "someone I love",
+    },
+    de: {
+      mum: "meine Mama",
+      dad: "meinen Papa",
+      grandma: "meine Oma",
+      grandad: "meinen Opa",
+      partner: "meinen Schatz",
+      friend: "jemanden aus dem Freundeskreis",
+      someoneILove: "einen lieben Menschen",
+    },
+    pl: {
+      mum: "mojej mamy",
+      dad: "mojego taty",
+      grandma: "mojej babci",
+      grandad: "mojego dziadka",
+      partner: "mojej drugiej połówki",
+      friend: "przyjaciela lub przyjaciółki",
+      someoneILove: "ukochanej osoby",
+    },
+  };
+
+  describe.each(LOCALES)("%s: the who select", (locale) => {
+    const options = (): Map<string, string> =>
+      new Map(
         optionsOf(picker(locale), "send-who").map(([value, label]) => [
           value,
           label,
         ]),
       );
-      expect(options.get("partner")).toBe(partner);
-      expect(options.get("someoneILove")).toBe(someone);
-      expect(new Set(options.values()).size).toBe(7);
-    },
-  );
+
+    it.each(SENTENCE_WHO.map(({ id }) => id))(
+      "renders %s with its own pinned words",
+      (id) => {
+        expect(options().get(id)).toBe(WHO_LABELS[locale][id]);
+      },
+    );
+
+    it("offers every id once, each with distinct words", () => {
+      const map = options();
+      expect([...map.keys()]).toEqual(SENTENCE_WHO.map(({ id }) => id));
+      expect(new Set(map.values()).size).toBe(SENTENCE_WHO.length);
+    });
+  });
 
   it("closes Poland too when its shop root does not exist here", () => {
     const options = countryOptions(picker("en", []));
@@ -663,8 +719,8 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
     en: /\b(?:vat|tax|taxes|taxed|delivery (?:charge|fee|cost)s?|shipping|postage|includ(?:e|es|ed|ing) delivery|delivery (?:is |are )?included)\b/iu,
     "en-gb":
       /\b(?:vat|tax|taxes|taxed|delivery (?:charge|fee|cost)s?|shipping|postage|includ(?:e|es|ed|ing) delivery|delivery (?:is |are )?included)\b/iu,
-    de: /MwSt|Mehrwertsteuer|Steuer|inkl\.|inklusive|einschließlich|zzgl|zuzüglich|Versand|Lieferung(?:skosten)?\b|Lieferkosten/iu,
-    pl: /\bVAT\b|podat|dostaw|wliczon|zawiera(?:ją)? (?:dostaw|VAT)/iu,
+    de: /MwSt|Mehrwertsteuer|Steuer|Abgabe|inkl\.|inklusive|inbegriffen|einschließlich|enthalten|zzgl|zuzüglich|Endpreis|Gesamtpreis|Versand|Zustellung|Porto|Gebühr|Lieferung(?:skosten)?\b|Lieferkosten/iu,
+    pl: /\bVAT\b|podat|dostaw|wliczon|w cenie|opłat|koszt|zawiera(?:ją)? (?:dostaw|VAT)/iu,
   };
 
   it("renders no tax, VAT or delivery-charge word in any of the four locales (H3)", () => {
@@ -695,11 +751,47 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
     }
   });
 
+  /**
+   * The whole home, in the page's order, less the dates band (PR 174 breaker round 2, hole 4):
+   * the band's stamps print real dates ("26 maja – Dzień Matki", "1 Nov · All Saints' Day"), which
+   * a day-count matcher reads as "26 … Dzień". Everything else a reader sees on the home — hero,
+   * sentence, Popular choices, tiles, the provenance note, reviews, how it works, the promise, the
+   * FAQ and the destinations — is swept.
+   */
+  const homeWithoutDates = (locale: string): string =>
+    render(
+      <>
+        <HomeHero locale={locale} shopCountries={SHOPS} />
+        <TrendingRow locale={locale} />
+        <OccasionTiles locale={locale} />
+        <HomeProvenanceNote locale={locale} />
+        <ReviewsSection locale={locale} />
+        <HowItWorks />
+        <ProofRow />
+        <HomeFaq />
+        <DestinationsGrid locale={locale} />
+      </>,
+      locale,
+    );
+
+  it("promises no day count anywhere on the home, in any locale (hole 4)", () => {
+    for (const locale of LOCALES) {
+      const rendered = text(homeWithoutDates(locale));
+      expect(rendered.length, locale).toBeGreaterThan(1500);
+      expect(dayCountIn(rendered), locale).toBeUndefined();
+    }
+  });
+
   it("the denylist bites on the breaker's sentences and spares the guarantee's own words", () => {
     expect("Lieferung und Steuern inklusive").toMatch(PRICE_TALK.de);
     expect("Cena obejmuje dostawę i podatek").toMatch(PRICE_TALK.pl);
     expect("delivery and tax included").toMatch(PRICE_TALK.en);
     expect("Prices include delivery and VAT").toMatch(PRICE_TALK.en);
+    // PR 174 breaker round 2, hole 2: the paraphrases.
+    expect("Endpreis: Zustellung und Abgaben inbegriffen.").toMatch(
+      PRICE_TALK.de,
+    );
+    expect("Kurier i wszystkie opłaty w cenie.").toMatch(PRICE_TALK.pl);
     expect(
       "send us a photo within 72 hours of delivery and we'll replace them",
     ).not.toMatch(PRICE_TALK.en);
