@@ -296,10 +296,9 @@ describe("the shipped catalogues and manifests", () => {
     "home.proof.photo.body",
     // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
     // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
+    // `home.sentence.who`, with "my partner" (§14 A22), was attested by the founder on 2026-10-04
+    // (09:54:22Z) and left this queue.
     "home.sentence.occasion",
-    // Spec 004 §14 A22 added "my partner" (founder, 2026-10-04); the founder attests the new value
-    // himself with the attestation tool.
-    "home.sentence.who",
     "meta.chooser.description",
     "meta.home.description",
     "nav.utility.cutoff",
