@@ -445,15 +445,15 @@ describe("the v2 colophon's look (chrome artboards, A21)", () => {
     expect(footer).toContain("bg-surface-raised");
   });
 
-  it("links the logo home, named by the outlined wordmark (A21 clause 3)", () => {
+  it("draws the logo named by the outlined wordmark, and links no document to its own home (A21 clause 3, spec 003 AC-6)", () => {
     for (const locale of ["en", "de"] as const) {
       const html = render(<SiteFooter locale={locale} />, locale);
-      const logo = html.slice(
-        html.indexOf(`href="${localePath(locale, "home")}"`),
-      );
-      expect(logo.slice(0, logo.indexOf("</a>"))).toContain(
+      const logo = html.slice(html.indexOf("data-fo-footer-logo"));
+      expect(logo.slice(0, logo.indexOf("</div>"))).toContain(
         `role="img" aria-label="${COMPANY.tradingName}"`,
       );
+      // The masthead lockup is the one home link a document may carry; the footer adds none.
+      expect(html).not.toContain(`href="${localePath(locale, "home")}"`);
     }
     expect(phase0).not.toContain(`>${COMPANY.tradingName}<`);
   });

@@ -99,3 +99,16 @@ founder as reviewer): `nav.send` "Send flowers"; `nav.utility.guarantee` "Fresh-
 - Finding: `§` is not in the font repertoire, so it renders from the fallback (now the size-adjusted Liberation face on
   Linux). It appears only on `/dev/components`; that is why `dev-components-desktop.png` moved.
 
+**First `ci:full` (run 37173032829 on `a98fd30b`): e2e and a11y red, fixed.** Three stale or broken contracts, none seen
+before because the PR had not run `ci:full`:
+- `locale-routing.spec` (AC-6): the v2 footer's logo linked home, a second `href` to the document's own path. The masthead
+  lockup is the only one allowed, so the footer logo is now drawn, named, and links nowhere (`docs/design/README.md` row,
+  deviation 6). Unit case: "links no document to its own home"; making the logo a home link again turns it red.
+- `notices.spec` (AC-12): it compared the lockup's computed font with the masthead's `.display` text, which v2 replaced
+  with the outlined `Wordmark`; it now compares the two SVG drawings and the accessible name.
+- a11y `footer.spec`: it required the reminder form's field, which A20 removed; it now requires no form and no field in
+  the footer.
+- `banner.spec:669` was flaky (it passed on retry) and this diff does not touch it.
+Local check on a production build (inside the build slot): notices, locale-routing, footer, banner e2e 196 passed; a11y
+footer and header 10 passed.
+

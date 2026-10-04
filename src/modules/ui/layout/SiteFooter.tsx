@@ -35,7 +35,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { LocaleSwitcher, localePath } from "@/modules/i18n";
+import { LocaleSwitcher } from "@/modules/i18n";
 
 import { Mark } from "../icons/Mark";
 import { Wordmark } from "../icons/Wordmark";
@@ -187,18 +187,21 @@ export function SiteFooter({
           className="grid grid-cols-1 gap-[36px] md:grid-cols-2 lg:grid-cols-[1.3fr_0.8fr_1fr_1.2fr] lg:gap-[48px]"
           data-fo-footer-grid
         >
-          {/* About: the logo and the relay sentence, then the identity line once registered. */}
+          {/* About: the logo and the relay sentence, then the identity line once registered.
+              The logo is not a link here: the masthead lockup is the one element that may link a
+              document to its own path (spec 003 AC-6, `tests/e2e/locale-routing.spec.ts`), and a
+              second home link on the home is a link to the page you are on. */}
           <div>
-            <a
+            <div
               className="text-logo-ink inline-flex min-h-(--target-min) items-center gap-[10px]"
-              href={localePath(locale, "home")}
+              data-fo-footer-logo
             >
               <Mark className="h-[28px] w-[28px] md:h-[38px] md:w-[38px]" />
               <Wordmark
                 className="h-[19px] md:h-[25px]"
                 label={company.tradingName}
               />
-            </a>
+            </div>
             <p className="text-ink-muted m-0 mt-[14px] max-w-[36ch]">
               {label(company.descriptionKey)}
             </p>
