@@ -399,6 +399,46 @@
       "y": 218916,
       "w": 390,
       "h": 2541
+    },
+    {
+      "file": "home-mobile-option-1.dc.html",
+      "title": "home-mobile-option-1",
+      "x": 0,
+      "y": 221697,
+      "w": 390,
+      "h": 9000
+    },
+    {
+      "file": "home-mobile-option-2.dc.html",
+      "title": "home-mobile-option-2",
+      "x": 510,
+      "y": 221697,
+      "w": 390,
+      "h": 9000
+    },
+    {
+      "file": "home-mobile-option-3.dc.html",
+      "title": "home-mobile-option-3",
+      "x": 1020,
+      "y": 221697,
+      "w": 390,
+      "h": 9000
+    },
+    {
+      "file": "product-mobile-option-1.dc.html",
+      "title": "product-mobile-option-1",
+      "x": 1530,
+      "y": 221697,
+      "w": 390,
+      "h": 9000
+    },
+    {
+      "file": "product-mobile-option-2.dc.html",
+      "title": "product-mobile-option-2",
+      "x": 2040,
+      "y": 221697,
+      "w": 390,
+      "h": 9000
     }
   ],
   "annotations": [
@@ -583,6 +623,13 @@
       "y": 19795,
       "w": 1200,
       "text": "Language popup (sweep 2026-10-04) — the founder's ruling replaces the / chooser with one fixed redirect to /en and this first-visit popup; the old “Would you rather read this page in English?” strip goes. Desktop card, 390 top sheet (ruling R10)."
+    },
+    {
+      "id": "r2-options",
+      "x": 0,
+      "y": 221651,
+      "w": 1400,
+      "text": "Round 2 options for the founder, 2026-10-05 — phone directions for the home (three) and the product page (two). The founder picks one; it becomes home-mobile and product-mobile and sets the phone pattern for every page."
     }
   ],
   "launch": {
