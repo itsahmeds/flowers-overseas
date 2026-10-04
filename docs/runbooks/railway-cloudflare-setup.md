@@ -44,7 +44,8 @@ Then Service → **Settings**:
    hand in the dashboard, or the next `railway:check` will report drift against the repository.
 3. **Region**: confirm it shows `europe-west4 (Amsterdam)` after the first deploy.
 4. **Public networking**: generate the Railway domain for now (`…up.railway.app`). The
-   `staging.flowersoverseas.com` record is added with the Cloudflare half (TASK-100/101).
+   `staging.flowersoverseas.com` custom domain and record are steps E1 and E2 of "Founder
+   steps in the Cloudflare and Railway dashboards" below.
 5. **Resources**: 1 GB memory / 1 vCPU (sharp OOMs at 512 MB — spec 040 §5.3).
 
 Do **not** create the `worker` service here: it is TASK-103's seat, at zero replicas.
@@ -458,7 +459,9 @@ declares every setting spec 040 §5.4 pins, each with its reason. Two commands r
   Run it twice: the second run must print `cloudflare:apply: 0 changes`.
 
 The zone settings are applied while the zone still points at nothing (§12 step 4). DNS records,
-cache rules and the rate limit are TASK-101's and are not in this file.
+cache rules, the redirect and the rate limit are declared in `config/cloudflare/edge.json`
+(TASK-101): the same two commands read them, and "Founder steps in the Cloudflare and Railway
+dashboards" below is how they are made.
 
 ### Z1 — create the token (Cloudflare dashboard, 3 minutes)
 
@@ -567,6 +570,109 @@ dashboard, click **flowersoverseas.com**, then:
 Record the result as one dated bullet in `docs/tasks/TASK-100.md` (or tell the orchestrator): for
 each of the five, what you saw. Anything other than the right-hand column: switch it off (or delete
 the rule), then record what you changed.
+
+## Founder steps in the Cloudflare and Railway dashboards
+
+**Why.** `config/cloudflare/edge.json` declares the DNS records and the rules the site needs at
+the Cloudflare edge (spec 040 §5.4; TASK-101). The token from Z1 can read DNS but holds no scope
+for rules (spec 040 §14 A5 keeps it to five), so you make these changes by hand, once.
+`pnpm cloudflare:check` then compares the zone with the file. Every line it prints names the step
+below that fixes it (`founder step E2`, for example). Every value to type comes from the
+repository or from the Railway screen; nothing here is to be made up.
+
+**Now, for staging (about 30 minutes, most of it waiting for Railway):**
+
+E1. Railway → project `flowers-overseas` → environment **staging** → service `web` →
+**Settings** → **Public Networking** → **+ Custom Domain**. Type `staging.flowersoverseas.com`
+and add it. Railway shows two records: a **CNAME** whose value ends in `.up.railway.app`, and a
+**TXT**. Keep this page open.
+
+E2. Cloudflare → **flowersoverseas.com** → **DNS** → **Records** → **Add record**. Type
+`CNAME`, Name `staging`, Target: the CNAME value from E1, Proxy status **off** (grey cloud,
+"DNS only"), TTL Auto. Save. Add a second record: Type `TXT`, Name and Content exactly as
+Railway shows them (use Railway's copy buttons). Save. Wait until Railway shows a green check next
+to `staging.flowersoverseas.com` (Railway says it issues the certificate within an hour). Then
+edit the `staging` CNAME, switch Proxy status **on** (orange cloud), and save. Grey first,
+because Railway can only issue its certificate while the record points straight at it, and the
+zone checks that certificate (SSL Full (strict), Z3).
+
+E3. Check it: open `https://staging.flowersoverseas.com/api/health` in a browser. You should see
+`"status":"ok"` and `"appEnv":"staging"`. If you see a Cloudflare error page numbered 526 or
+525 instead, switch the CNAME back to grey and tell the orchestrator (TASK-101 escalation E-3).
+
+E4. Cloudflare → **flowersoverseas.com** → **Caching** → **Cache Rules** → **Create rule**.
+Rule name `fo: bypass dynamic paths`. Under _If incoming requests match_, choose **Custom filter
+expression**, click **Edit expression**, and paste this one line exactly:
+
+```text
+(starts_with(http.request.uri.path, "/api/") or starts_with(http.request.uri.path, "/checkout") or starts_with(http.request.uri.path, "/account") or starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/vendor") or starts_with(http.request.uri.path, "/track") or starts_with(http.request.uri.path, "/en/api/") or starts_with(http.request.uri.path, "/en/checkout") or starts_with(http.request.uri.path, "/en/account") or starts_with(http.request.uri.path, "/en/admin") or starts_with(http.request.uri.path, "/en/vendor") or starts_with(http.request.uri.path, "/en/track") or starts_with(http.request.uri.path, "/en-gb/api/") or starts_with(http.request.uri.path, "/en-gb/checkout") or starts_with(http.request.uri.path, "/en-gb/account") or starts_with(http.request.uri.path, "/en-gb/admin") or starts_with(http.request.uri.path, "/en-gb/vendor") or starts_with(http.request.uri.path, "/en-gb/track") or starts_with(http.request.uri.path, "/de/api/") or starts_with(http.request.uri.path, "/de/checkout") or starts_with(http.request.uri.path, "/de/account") or starts_with(http.request.uri.path, "/de/admin") or starts_with(http.request.uri.path, "/de/vendor") or starts_with(http.request.uri.path, "/de/track") or starts_with(http.request.uri.path, "/pl/api/") or starts_with(http.request.uri.path, "/pl/checkout") or starts_with(http.request.uri.path, "/pl/account") or starts_with(http.request.uri.path, "/pl/admin") or starts_with(http.request.uri.path, "/pl/vendor") or starts_with(http.request.uri.path, "/pl/track") or starts_with(http.request.uri.path, "/en-XA/api/") or starts_with(http.request.uri.path, "/en-XA/checkout") or starts_with(http.request.uri.path, "/en-XA/account") or starts_with(http.request.uri.path, "/en-XA/admin") or starts_with(http.request.uri.path, "/en-XA/vendor") or starts_with(http.request.uri.path, "/en-XA/track") or starts_with(http.request.uri.path, "/ar-XB/api/") or starts_with(http.request.uri.path, "/ar-XB/checkout") or starts_with(http.request.uri.path, "/ar-XB/account") or starts_with(http.request.uri.path, "/ar-XB/admin") or starts_with(http.request.uri.path, "/ar-XB/vendor") or starts_with(http.request.uri.path, "/ar-XB/track"))
+```
+
+Under _Then_, **Cache eligibility**: **Bypass cache**. Click **Deploy**. If a rule for
+`media.flowersoverseas.com` is already in the list, leave it; this rule must be the **last** one
+in the list.
+
+E5. Cloudflare → **flowersoverseas.com** → **Security** → **WAF** → **Rate limiting rules** →
+**Create rule**. Rule name `fo: api rate limit`. Click **Edit expression** and paste:
+
+```text
+(starts_with(http.request.uri.path, "/api/"))
+```
+
+_With the same characteristics_: **IP**. _When rate exceeds_: **10** requests per **10 seconds**.
+_Then take action_: **Block**, for **10 seconds**. Click **Deploy**. The Free plan offers only the
+10-second period and the path field, so this is spec 040's "60 a minute on `/api/`" in the
+plan's terms (TASK-101 escalation E-2). Pages are never counted.
+
+E6. Look, and write down what you see in `docs/tasks/TASK-101.md` (or tell the orchestrator):
+**Caching** → **Cache Rules** lists `fo: bypass dynamic paths` last and no rule called "Cache
+everything"; **Rules** → **Redirect Rules** has no rule yet (C2 adds one at the cutover);
+**Security** → **WAF** → **Rate limiting rules** shows only `fo: api rate limit`; **Rules** →
+**Transform Rules** → **Modify Response Header** is empty. Nothing in any rule mentions a country.
+This is how the rules are checked until the token can read them: today `pnpm cloudflare:check`
+prints them as `unverified`.
+
+E7. From your shell, with the token exported as in Z3, run `pnpm cloudflare:check; echo "exit $?"`.
+Expected: the zone line `… declared values match …`, two lines starting `pending cutover (TASK-104)`
+for the apex and `www`, four lines starting `unverified`, then
+`cloudflare:check: the edge matches config/cloudflare/edge.json (6 notes above)` and `exit 0`.
+Then the edge tests. They only read staging, and the last one makes this computer's address wait
+10 seconds on `/api/`:
+
+```bash
+read -rs STAGING_BASIC_AUTH && export STAGING_BASIC_AUTH   # paste user:password from your password manager, then Enter
+STAGING_URL=https://staging.flowersoverseas.com \
+STAGING_ORIGIN_URL=https://<staging web service's Railway domain: Railway → staging → web → Settings → Public Networking> \
+  pnpm exec playwright test --project=e2e-desktop tests/e2e/cloudflare-edge.spec.ts
+unset STAGING_BASIC_AUTH
+```
+
+Paste the summary (passed, skipped, failed) into `docs/tasks/TASK-101.md`.
+
+**At the cutover only (TASK-104, never before: the apex then stops showing the GoDaddy page):**
+
+C1. Cache Rules → **Create rule**. Rule name `fo: cache documents`. **Edit expression**:
+
+```text
+(http.host eq "flowersoverseas.com")
+```
+
+**Cache eligibility**: **Eligible for cache**. **Edge TTL**: _Use cache-control header if present,
+use default Cloudflare caching behavior if not_. **Browser TTL**: _Respect origin TTL_. Change
+nothing else (no cache key option). **Deploy**, then drag `fo: bypass dynamic paths` back to
+the bottom of the list.
+
+C2. **Rules** → **Redirect Rules** → **Create rule**. Rule name `fo: www to apex`. **Edit
+expression**: `(http.host eq "www.flowersoverseas.com")`. Then **URL redirect**, type **Dynamic**, expression
+`concat("https://flowersoverseas.com", http.request.uri.path)`, status code **301**, **Preserve query string** on. **Deploy**.
+
+C3. In Railway, environment **production**, service `web`, add the custom domains
+`flowersoverseas.com` and `www.flowersoverseas.com` as in E1. In Cloudflare **DNS**, delete
+every A, AAAA and CNAME record named `flowersoverseas.com` or `www` (the GoDaddy ones), then
+add the CNAME and TXT records Railway shows, grey first and orange after the green check, as in
+E2. Keep the `_dmarc` TXT record. TASK-104 then sets `cutover.state` to `done` in
+`config/cloudflare/edge.json`, and from then on `pnpm cloudflare:check` fails on any
+GoDaddy record left at either name.
 
 ## Rollback
 

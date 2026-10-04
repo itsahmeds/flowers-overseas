@@ -110,7 +110,7 @@ const ruleSchema = z.strictObject({
   founderStep,
   reason: prose,
   expression: prose,
-  action: z.enum(["set_cache_settings", "redirect", "block"]),
+  action: z.enum(["set_cache_settings", "redirect", "block", "rewrite"]),
   action_parameters: z.record(z.string(), jsonSchema).optional(),
   ratelimit: z.record(z.string(), jsonSchema).optional(),
 });
