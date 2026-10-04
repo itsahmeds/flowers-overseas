@@ -123,13 +123,13 @@
   --tracking-wordmark: 0.04em;
   --measure: 58ch;
   --measure-lede: 46ch;
-  --text-hero-fluid: clamp(50px, 6.2vw, 90px);
-  --text-display-fluid: clamp(42px, 6vw, 84px);
-  --text-title-fluid: clamp(44px, 5vw, 68px);
-  --text-3xl-fluid: clamp(32px, 4.2vw, 54px);
-  --text-2xl-fluid: clamp(30px, 3.4vw, 44px);
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
   --text-lede-fluid: clamp(18px, 1.5vw, 21px);
-  --section-fluid: clamp(64px, 9vw, 128px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
   --gutter-fluid: clamp(20px, 4vw, 56px);
   --space-2xs: 2px;
   --space-xs: 4px;
@@ -711,105 +711,673 @@ body { margin: 0; background: var(--color-paper-3); }
 .gcol { display: grid; gap: 6px; block-size: 56px; }
 .gcol span { background: var(--color-sage-wash); border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-rule); }
 
+
+/* ================= sweep 2026-10-04 — the first screen of every listing ================= */
+/* Every rule below is a composition of existing tokens: no new token, no colour literal,
+   logical properties only. Drawn first on system/components.dc.html, group "First screens". */
+
+/* the hero band: full-bleed ground, the breadcrumb inside it, then copy beside one photograph */
+.hx { position: relative; background: var(--hx-ground, var(--color-paper)); padding-block-end: 64px; overflow: hidden; }
+.M .hx { padding-block-end: 36px; }
+.hx .crumbs { padding-block-start: 20px; }
+.hx-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: center; padding-block-start: 32px; }
+.hx-grid.flip { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.M .hx-grid, .M .hx-grid.flip { grid-template-columns: minmax(0, 1fr); gap: 22px; padding-block-start: 14px; }
+.hx-copy { display: grid; gap: 20px; align-content: center; justify-items: start; }
+.M .hx-copy { gap: 14px; }
+.hx-copy .eyebrow { margin: 0; }
+.hx h1 { font-size: var(--text-display); line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); font-weight: var(--font-weight-display-hero); font-variation-settings: var(--font-variation-display-hero); }
+.M .hx h1 { font-size: var(--text-display-s); }
+.hx h1.t { font-size: var(--text-title); }
+.M .hx h1.t { font-size: 38px; }
+.hx h1 em.sun { text-decoration: underline; text-decoration-color: var(--color-sun); text-decoration-thickness: 0.09em; text-underline-offset: 0.1em; text-decoration-skip-ink: none; }
+.deck { font-size: 22px; line-height: 1.42; color: var(--color-ink-2); max-inline-size: 34ch; }
+.M .deck { font-size: var(--text-body); max-inline-size: none; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; }
+.M .hx-row { gap: 12px 16px; }
+.hx-note { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); max-inline-size: 46ch; }
+
+/* registers: the one variable a hub sets (spec ruling asked for in the audit) */
+.reg-warm { --hx-ground: var(--color-butter); }
+.reg-quiet { --hx-ground: var(--color-paper-2); }
+.reg-quiet .eyebrow, .fo .reg-quiet h1 em { color: var(--color-ink-2); }
+.reg-dated { --hx-ground: var(--color-blush); }
+.reg-cream { --hx-ground: var(--color-paper-2); }
+.reg-leaf { --hx-ground: var(--color-leaf-wash); }
+.reg-sky { --hx-ground: var(--color-sage-wash); }
+.reg-ink { --hx-ground: var(--color-surface-inverse); color: var(--color-on-inverse); }
+.reg-ink .eyebrow, .fo .reg-ink h1 em { color: var(--color-on-inverse-accent); }
+.reg-ink .crumbs, .reg-ink .crumbs a, .reg-ink .crumbs [aria-current], .reg-ink .deck, .reg-ink .hx-note { color: color-mix(in oklab, var(--color-paper) 84%, var(--color-ink)); }
+.reg-ink .crumbs li + li::before { color: color-mix(in oklab, var(--color-paper) 40%, var(--color-ink)); }
+
+/* the lead photograph: the listing's first product, the page's one priority image */
+.lead { position: relative; justify-self: end; inline-size: 100%; max-inline-size: 452px; margin: 0; }
+.M .lead { justify-self: stretch; max-inline-size: none; }
+.lead .frame { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-hero); overflow: hidden; box-shadow: var(--shadow-paper); background: var(--color-paper-2); }
+.M .lead .frame { aspect-ratio: 4 / 3; border-radius: var(--radius-photo); }
+.lead .frame .img { inline-size: 100%; block-size: 100%; }
+.lead.tilt .frame { transform: rotate(1.4deg); }
+.M .lead.tilt .frame { transform: none; }
+.lead.arch .frame { border-radius: var(--radius-arch); }
+.M .lead.arch .frame { aspect-ratio: 1 / 1; }
+.lead.small { max-inline-size: 380px; }
+.lead .pill { position: absolute; z-index: 2; inset-block-end: 14px; inset-inline-start: 14px; background: var(--color-card); color: var(--color-ink-2); font-size: var(--text-xs); line-height: 1.3; padding: 5px 12px; border-radius: var(--radius-full); max-inline-size: calc(100% - 28px); }
+.lead .cap { margin-block-start: 14px; font-size: var(--text-sm); color: var(--color-ink-2); }
+.lead .cap b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); color: var(--color-ink); margin-inline-end: 8px; }
+.reg-ink .lead .cap { color: color-mix(in oklab, var(--color-paper) 84%, var(--color-ink)); }
+.reg-ink .lead .cap b { color: var(--color-on-inverse); }
+.tape { position: absolute; z-index: 3; inset-block-start: -12px; inset-inline-start: 40px; inline-size: 112px; block-size: 26px; background: color-mix(in oklab, var(--color-sun) 78%, transparent); transform: rotate(-5deg); }
+.M .tape { inline-size: 84px; block-size: 20px; inset-block-start: -9px; }
+
+/* the price tag on a country lead: name, the one all-in price, the honesty label */
+.tag { position: absolute; z-index: 3; inset-block-end: -26px; inset-inline-start: -36px; display: grid; gap: 2px; min-inline-size: 236px; padding: 14px 20px 14px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); transform: rotate(-1.6deg); }
+.M .tag { position: relative; inset: auto; margin-block-start: -34px; margin-inline-start: 12px; justify-self: start; inline-size: max-content; max-inline-size: calc(100% - 24px); min-inline-size: 0; transform: rotate(-1deg); }
+.tag b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); line-height: 1.15; }
+.M .tag b { font-size: var(--text-h3); }
+.tag .price { margin: 0; font-size: 20px; }
+.M .tag .price { font-size: var(--text-body); }
+.tag .prov { margin: 2px 0 0; }
+.M .lead.has-tag { display: grid; }
+
+/* the destination postmark: ring = country + its state, so the honest state is the mark itself */
+.pm { flex: none; inline-size: 136px; block-size: 136px; transform: rotate(var(--tilt-postmark)); filter: drop-shadow(0 6px 14px var(--color-shade)); }
+.M .pm { inline-size: 92px; block-size: 92px; }
+.pm.big { inline-size: 188px; block-size: 188px; }
+.M .pm.big { inline-size: 116px; block-size: 116px; }
+.pm-c { position: absolute; z-index: 4; }
+
+/* the P.S. inside a hero */
+.hx .ps { max-inline-size: 430px; }
+.M .hx .ps { max-inline-size: none; transform: rotate(0.4deg); }
+.ps.compact { padding: 16px 20px 18px; }
+.ps.compact .hand { font-size: var(--text-h3); }
+.ps.compact p + p { font-size: var(--text-sm); }
+.ps.flat { transform: none; box-shadow: none; background: transparent; padding: 0; border-inline-start: 2px solid var(--color-rule); padding-inline-start: 18px; }
+.ps.flat::before { content: none; }
+.ps.flat .hand { color: var(--color-ink-2); }
+
+/* the printed card tucked in front of a photograph (Fraunces italic: A21 clause 3 keeps Caveat on the product page) */
+.pcard { position: absolute; z-index: 3; inset-block-end: -30px; inset-inline-start: -64px; inline-size: 228px; padding: 20px 20px 18px; background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); transform: rotate(var(--tilt-card)); display: grid; gap: 10px; }
+.M .pcard { position: relative; inset: auto; inline-size: auto; margin-block-start: -28px; margin-inline: 24px 40px; transform: rotate(-1.5deg); }
+.pcard svg { inline-size: 24px; block-size: 24px; }
+.pcard p { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: 21px; line-height: 1.22; color: var(--color-ink); }
+.M .pcard p { font-size: var(--text-body); }
+.pcard small { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+
+/* stamps, sized for a first screen */
+.stamp.xl .stamp-in { padding: 20px 22px 18px; }
+.stamp.xl .stamp-day { font-size: 112px; }
+.M .stamp.xl .stamp-day { font-size: 76px; }
+.stamp.sm { padding: 9px; }
+.stamp.sm .stamp-in { padding: 12px 12px 10px; gap: 2px; }
+.stamp.sm .stamp-day { font-size: 44px; }
+.stamp.sm h3 { font-size: 17px; margin-block-start: 8px; }
+.stamp.sm .stamp-mon { font-size: 11px; letter-spacing: 0.1em; }
+.stamp.word .stamp-day { font-size: 46px; line-height: 0.95; letter-spacing: var(--tracking-display); }
+.M .stamp.word .stamp-day { font-size: 34px; }
+.tilt-l { transform: rotate(-3deg); }
+.tilt-r { transform: rotate(2.5deg); }
+.stamp-wrap { filter: drop-shadow(var(--shadow-stamp)); display: inline-block; }
+
+/* a row of seven stamps: "country by country", made literal */
+.strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 16px; margin-block-start: 36px; }
+.M .strip { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 132px; gap: 12px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); margin-block-start: 22px; }
+.strip li { filter: drop-shadow(var(--shadow-stamp)); }
+.strip li:nth-child(even) { transform: translateY(8px); }
+.strip .stamp { block-size: 100%; }
+.strip .stamp-go { padding-block-start: 10px; font-size: var(--text-sm); }
+
+/* destination stamps: the category hub's picker, drawn as stamps you can press */
+.dstamps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.dstamps.c7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.M .dstamps, .M .dstamps.c7 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.dstamps li { filter: drop-shadow(var(--shadow-stamp)); }
+.dstamp { display: flex; flex-direction: column; block-size: 100%; text-decoration: none; color: var(--color-ink); padding: 9px; background: var(--color-card);
+  -webkit-mask: linear-gradient(black 0 0) content-box, radial-gradient(circle, transparent 4px, black 4.5px) -7px -7px / 14px 14px round;
+  mask: linear-gradient(black 0 0) content-box, radial-gradient(circle, transparent 4px, black 4.5px) -7px -7px / 14px 14px round; }
+.dstamp-in { flex: 1; display: grid; align-content: start; gap: 4px; padding: 12px 12px 10px; border: var(--rule); background: var(--tint, var(--color-sage-wash)); }
+.dstamp b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 22px; line-height: 1.1; }
+.M .dstamp b { font-size: 19px; }
+.dstamp span { font-size: var(--text-xs); line-height: 1.3; color: var(--color-ink-2); }
+.dstamp i { margin-block-start: 6px; font-style: normal; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-link); }
+
+/* the envelope: the destinations hub's first screen */
+.envelope { position: relative; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 48px; align-items: start; padding: 48px 52px 52px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); margin-block-start: 28px; }
+.M .envelope { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 24px 20px 28px; margin-block-start: 14px; }
+.envelope .addr { display: grid; gap: 18px; }
+.envelope .lines { block-size: 96px; background-image: var(--letter-lines); background-size: 100% 48px; max-inline-size: 420px; }
+.estamps { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; justify-self: end; inline-size: 100%; max-inline-size: 500px; }
+.M .estamps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-inline-size: none; }
+.estamps li { filter: drop-shadow(var(--shadow-stamp)); }
+.estamps li:nth-child(3n) { transform: rotate(-2deg); }
+.estamps li:nth-child(4n+1) { transform: rotate(1.5deg); }
+.estamps .dstamp b { font-size: 19px; }
+.M .estamps .dstamp b { font-size: 14px; }
+.M .estamps .dstamp { padding: 6px; }
+.M .estamps .dstamp-in { padding: 8px 6px 6px; }
+.estamps .pm-c { inset-block-end: -42px; inset-inline-start: -46px; }
+.M .estamps .pm-c { inset-block-end: -30px; inset-inline-start: auto; inset-inline-end: -8px; }
+
+/* the stamp sheet: the occasions index's first screen */
+.sheet-x { position: relative; padding: 22px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-paper); transform: rotate(0.8deg); }
+.M .sheet-x { padding: 14px; transform: none; }
+.sheet-x ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.M .sheet-x ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.sheet-x .stamp { padding: 9px; }
+.sheet-x .stamp-in { padding: 14px 14px 12px; gap: 2px; }
+.sheet-x .stamp-day { font-size: 58px; }
+.M .sheet-x .stamp-day { font-size: 44px; }
+.sheet-x .stamp h3 { font-size: 18px; margin-block-start: 10px; }
+.M .sheet-x .stamp h3 { font-size: var(--text-ui); }
+.sheet-x .pm-c { inset-block-start: -36px; inset-inline-start: -40px; }
+.M .sheet-x .pm-c { inset-block-start: -26px; inset-inline-start: auto; inset-inline-end: -10px; }
+.sheet-x figcaption { margin-block-start: 14px; font-size: var(--text-sm); color: var(--color-ink-3); }
+
+/* the magazine grid: the country category's first screen is its goods */
+.mag { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 40px 24px; }
+.M .mag { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
+.mag > li:first-child { grid-column: span 2; grid-row: span 2; }
+.M .mag > li:first-child { grid-row: auto; }
+.mag > li:first-child .card h3 { font-size: var(--text-xl); }
+.M .mag > li:first-child .card h3 { font-size: var(--text-md); }
+.mag > li:first-child .card .price { font-size: 22px; }
+.mag > li:first-child .card .cph { border-radius: var(--radius-hero); }
+.M .mag > li:first-child .card .cph { aspect-ratio: 4 / 3; border-radius: var(--radius-photo); }
+
+/* a compact header for country-scoped listings */
+.lhead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: end; padding-block: 20px 28px; }
+.M .lhead { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 10px 20px; }
+.lhead .lede { max-inline-size: 52ch; font-size: var(--text-body); margin-block-start: 14px; }
+.lhead-side { display: flex; align-items: center; gap: 20px; }
+.M .lhead-side { gap: 12px; align-items: start; }
+
+/* quiet pull-quote (sympathy) */
+.pull { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-md); line-height: 1.3; color: var(--color-ink); max-inline-size: 30ch; padding-inline-start: 18px; border-inline-start: 2px solid var(--color-field-edge); }
+.M .pull { font-size: var(--text-h3); }
+
+/* the plant label (plants hub) */
+.plabel { position: absolute; z-index: 3; inset-block-end: 56px; inset-inline-end: -40px; inline-size: 210px; padding: 16px 18px 14px; background: var(--color-card); border-radius: var(--radius-letter) var(--radius-letter) var(--radius-letter) 40px; box-shadow: var(--shadow-paper); transform: rotate(4deg); }
+.M .plabel { position: relative; inset: auto; inline-size: auto; margin-block-start: -26px; margin-inline: 40px 16px; transform: rotate(2deg); }
+.plabel p { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: 19px; line-height: 1.25; }
+
+/* links in a hero, chip-sized */
+.hx .chips { gap: 10px; }
+.chip.on-ink { background: transparent; color: var(--color-on-inverse); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-paper) 40%, var(--color-ink)); }
+
+/* annotation helpers for the founder's canvas */
+.fold { position: relative; block-size: 0; border-block-start: 2px dashed var(--color-accent); }
+.fold span { position: absolute; inset-inline-end: 8px; inset-block-start: 4px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent-strong); background: var(--color-card); padding: 2px 8px; border-radius: var(--radius-full); }
+.screen { position: relative; overflow: hidden; background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.about-x { display: grid; grid-template-columns: 4fr 7fr; gap: 72px; align-items: start; }
+.M .about-x { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.lead .pill.end { inset-inline-start: auto; inset-inline-end: 14px; }
+.M .lead .pill.end { inset-inline-end: 10px; inset-block-end: 10px; }
+.M .dstamps.dsrail { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 140px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); padding-block: 4px 10px; }
+.M .hx .ps.under { margin-block-start: -30px; margin-inline: 10px 6px; position: relative; z-index: 3; }
+.D .envelope { grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); }
+.estamps { max-inline-size: 600px; }
+.M .estamps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.estamps .dstamp b { font-size: 18px; }
+.M .estamps .dstamp b { font-size: 14px; }
+.sheet-x .pm-c { inset-inline-start: auto; inset-inline-end: -40px; }
+.lhead { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.lhead-side .ps { max-inline-size: 380px; }
+.M .lhead-side .ps { max-inline-size: none; }
+.ps .pm-in { position: absolute; inset-block-start: -18px; inset-inline-end: -8px; inline-size: 78px; block-size: 78px; }
+a.tag { text-decoration: none; color: inherit; }
+a.tag:hover b { text-decoration: underline; text-underline-offset: 4px; }
+.M .lead.wide .frame { aspect-ratio: 3 / 2; }
+.M .mag > li:first-child .card .cph { aspect-ratio: 3 / 2; }
+.M .lhead { gap: 10px; padding-block: 4px 14px; }
+.pm-corner { position: absolute; z-index: 4; inset-block-start: -16px; inset-inline-start: -8px; inline-size: 84px; block-size: 84px; }
+.pm-h1 { position: absolute; inset-block-end: -6px; inset-inline-end: 0; inline-size: 84px; block-size: 84px; }
+
+
+/* ---------- trust, help and legal pages (spec 041) ---------- */
+.info-head { display: grid; gap: 20px; padding-block: 36px 0; max-inline-size: 980px; }
+.M .info-head { gap: 16px; padding-block: 20px 0; }
+.info-head .lede { max-inline-size: var(--measure-lede); }
+.status-line { max-inline-size: var(--measure); padding: 12px 18px; background: var(--color-paper-2); border-inline-start: 3px solid var(--color-sun); border-start-end-radius: var(--radius-md); border-end-end-radius: var(--radius-md); font-size: var(--text-ui); line-height: var(--line-height-tight); color: var(--color-ink); }
+.status-line.tr { border-inline-start-color: var(--color-sky); }
+.status-stack { display: grid; gap: 8px; }
+.sec { padding-block-start: 64px; }
+.M .sec { padding-block-start: 44px; }
+.prose b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.M .pair { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.box { padding: 32px 34px; border-radius: var(--radius-photo); background: var(--tint, var(--color-card)); display: grid; gap: 18px; align-content: start; }
+.M .box { padding: 24px 22px; }
+.box h2 { font-size: var(--text-xl); line-height: 1.1; }
+.M .box h2 { font-size: var(--text-lg-s); }
+.box dl { display: grid; gap: 14px; }
+.box dt { font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.box dd { color: var(--color-ink-2); }
+.pp { padding: 28px 32px; border-radius: var(--radius-photo); background: var(--color-leaf-wash); display: grid; gap: 12px; }
+.M .pp { padding: 22px 20px; }
+.pp p:first-child { font-family: var(--font-display); font-size: var(--text-md); line-height: 1.35; color: var(--color-ink); }
+.pp p + p { color: var(--color-ink-2); }
+.inlinks { margin-block-start: 72px; padding-block: 28px 8px; border-block-start: var(--rule); }
+.M .inlinks { margin-block-start: 48px; padding-block-start: 22px; }
+.inlinks .chip { color: var(--color-link); font-weight: var(--font-weight-bold); }
+.inlinks .chip::after { content: " →"; }
+.help-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 72px; align-items: start; padding-block-start: 44px; }
+.M .help-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-block-start: 28px; }
+.contact { padding: 30px 30px 26px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); display: grid; gap: 16px; }
+.M .contact { padding: 24px 20px 20px; }
+.contact h2 { font-size: var(--text-xl); }
+.M .contact h2 { font-size: var(--text-lg-s); }
+.contact > p { color: var(--color-ink-2); }
+.contact .facts > div { grid-template-columns: 110px minmax(0, 1fr); }
+.M .contact .facts > div { grid-template-columns: 96px minmax(0, 1fr); }
+.contact .facts a { font-family: var(--font-display); font-size: var(--text-md); color: var(--color-link); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; display: inline-flex; align-items: center; min-block-size: var(--target-min); }
+.M .contact .facts a { font-size: 19px; }
+.contact .hours { font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.contact .pd { font-size: var(--text-sm); color: var(--color-ink-2); }
+.qa { display: grid; border-block-start: var(--rule); }
+.qa > div { padding-block: 22px; border-block-end: var(--rule); display: grid; gap: 8px; }
+.M .qa > div { padding-block: 18px; }
+.qa h2 { font-size: var(--text-h3); line-height: var(--line-height-title); }
+.M .qa h2 { font-size: var(--text-h3-s); }
+.qa p { color: var(--color-ink-2); max-inline-size: 64ch; }
+.vhead { display: flex; flex-wrap: wrap; gap: 6px 0; font-size: var(--text-sm); color: var(--color-ink-2); }
+.vhead li + li::before { content: "·"; margin-inline: 10px; color: var(--color-ink-3); }
+.vhead li:first-child { font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.draft { max-inline-size: var(--measure); padding: 16px 20px; border-radius: var(--radius-field); background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-ui); line-height: var(--line-height-tight); color: var(--color-ink); }
+.draft.nf { background: var(--color-blush); }
+.legal-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); gap: 72px; align-items: start; padding-block-start: 44px; }
+.M .legal-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block-start: 28px; }
+.toc { position: sticky; inset-block-start: 100px; padding: 22px 24px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.M .toc { position: static; padding: 18px 18px; }
+.toc h2 { font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: 8px; font-variation-settings: normal; }
+.toc ol { display: grid; counter-reset: toc; }
+.toc li { counter-increment: toc; display: grid; grid-template-columns: 26px minmax(0, 1fr); font-size: var(--text-sm); }
+.toc li::before { content: counter(toc); color: var(--color-mark); font-weight: var(--font-weight-bold); padding-block-start: 11px; }
+.toc a { display: inline-flex; align-items: center; min-block-size: var(--target-min); color: var(--color-ink); text-underline-offset: 4px; line-height: 1.3; }
+.ldoc { display: grid; gap: 52px; max-inline-size: 780px; }
+.M .ldoc { gap: 40px; }
+.ldoc section { display: grid; gap: 14px; }
+.ldoc h2 { font-size: var(--text-xl); line-height: 1.12; }
+.M .ldoc h2 { font-size: var(--text-lg-s); }
+.ldoc h3 { font-size: var(--text-md); line-height: var(--line-height-title); margin-block-start: 6px; }
+.M .ldoc h3 { font-size: var(--text-h3-s); }
+.ldoc p { color: var(--color-ink-2); max-inline-size: var(--measure); }
+.clog ul { display: grid; border-block-start: var(--rule); }
+.clog li { display: grid; grid-template-columns: 80px 140px minmax(0, 1fr); gap: 12px; padding-block: 12px; border-block-end: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2); }
+.M .clog li { grid-template-columns: 64px minmax(0, 1fr); }
+.clog b { color: var(--color-ink); }
+.reg-wrap { overflow: hidden; }
+.M .reg-wrap { margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+.reg { inline-size: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.M .reg { inline-size: 780px; }
+.reg caption { caption-side: top; text-align: start; padding-block-end: 12px; color: var(--color-ink-3); }
+.reg th, .reg td { text-align: start; vertical-align: baseline; padding-block: 12px; padding-inline: 0 18px; border-block-end: var(--rule); line-height: var(--line-height-tight); }
+.reg thead th { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); white-space: nowrap; }
+.reg tbody th { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; font-weight: var(--font-weight-body); color: var(--color-ink); white-space: nowrap; }
+.reg td { color: var(--color-ink-2); }
+.reg .on { color: var(--color-included); font-weight: var(--font-weight-bold); white-space: nowrap; }
+.reg .later { color: var(--color-ink-3); white-space: nowrap; }
+.dtab { inline-size: 100%; border-collapse: collapse; font-size: var(--text-ui); }
+.dtab caption { caption-side: top; text-align: start; padding-block-end: 12px; font-size: var(--text-sm); color: var(--color-ink-3); }
+.dtab th, .dtab td { text-align: start; vertical-align: baseline; padding-block: 14px; padding-inline: 0 16px; border-block-end: var(--rule); }
+.dtab thead th { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); }
+.dtab tbody th { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 19px; }
+.M .dtab tbody th { font-size: var(--text-body-s); }
+.M .dtab { font-size: var(--text-sm); }
+.dtab td a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; white-space: nowrap; }
+.cbanner { max-inline-size: 560px; padding: 24px 26px; background: var(--color-card); border-radius: var(--radius-field); box-shadow: var(--shadow-md); display: grid; gap: 12px; }
+.M .cbanner { padding: 20px 18px; }
+.cbanner h2 { font-size: var(--text-lg-s); }
+.cbanner p { font-size: var(--text-sm); color: var(--color-ink-2); }
+.cbanner p.ctl { color: var(--color-ink); }
+.cbanner .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-block-start: 4px; }
+.reopen { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+.D .fgrid.six { grid-template-columns: 1.5fr 0.85fr 0.85fr 0.95fr 1.1fr 1fr; gap: 36px; }
+.page-label { margin-block-start: 96px; padding: 14px var(--gutter); background: var(--color-paper-3); border-block: 1px dashed var(--color-ink-3); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.M .page-label { margin-block-start: 64px; padding-inline: var(--gutter-s); }
+
+
+/* ================= round 2 · 2026-10-05 — every remaining page, sized for the laptop band ================= */
+/* Spec 004 §14 A23 clause 9. Desktop type and section rhythm read the fluid steps declared in :root
+   with clause 9's values, so this artboard rendered at 1280 × 800 or 1512 × 945 shows exactly what
+   the code will. The phone artboard pins each step to its unchanged minimum. The one new token is
+   --hero-photo-max = min(520px, 60svh); it is written out below as that expression (not read through
+   var()) until TASK-186 adds it to system/tokens.css and globals.css together (AC-42).
+   No colour literal, logical properties only. */
+.fo.M { --text-hero-fluid: 50px; --text-display-fluid: 42px; --text-title-fluid: 44px; --text-3xl-fluid: 32px; --text-2xl-fluid: 30px; --section-fluid: 64px; }
+
+.t-hero, .t-disp, .t-title { font-weight: var(--font-weight-display-hero) !important; font-variation-settings: var(--font-variation-display-hero) !important; text-wrap: balance; }
+.t-hero { font-size: var(--text-hero-fluid); line-height: var(--line-height-hero); letter-spacing: var(--tracking-hero); }
+.t-disp { font-size: var(--text-display-fluid); line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); }
+.t-title { font-size: var(--text-title-fluid); line-height: 1; letter-spacing: -0.025em; }
+.t-3xl { font-size: var(--text-3xl-fluid); line-height: var(--line-height-heading); letter-spacing: var(--tracking-display); }
+.t-2xl { font-size: var(--text-2xl-fluid); line-height: 1.08; letter-spacing: var(--tracking-display); }
+.fo .t-hero em.sun, .fo .t-disp em.sun, .fo .t-title em.sun { text-decoration: underline; text-decoration-color: var(--color-sun); text-decoration-thickness: 0.09em; text-underline-offset: 0.1em; text-decoration-skip-ink: none; }
+.sec2 { padding-block: var(--section-fluid); }
+.sec2.tight { padding-block: calc(var(--section-fluid) * 0.6); }
+.band2 { background: var(--color-paper-2); }
+.nowrap { white-space: nowrap; }
+
+/* the laptop band, drawn on the founder's canvas: sky lines are where a laptop browser window ends */
+.fold.lap { border-block-start: 1.5px dashed var(--color-sky); }
+.fold.lap span { color: var(--color-sky-strong); inset-inline-end: auto; inset-inline-start: 8px; }
+
+/* chrome · round 2: no dates sentence; the mobile notice is one 44 px row */
+.notice .nlink { color: var(--color-on-inverse-accent); font-weight: var(--font-weight-bold); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in oklab, var(--color-sun) 45%, transparent); }
+.notice svg.leaf { inline-size: 16px; block-size: 16px; vertical-align: -3px; margin-inline-end: 6px; color: var(--color-on-inverse-accent); }
+.M .notice { padding-block: 0; }
+.M .notice .util { min-block-size: var(--target-min); gap: 12px; }
+
+/* ---------- home · the letter on the table ---------- */
+.hm { padding-block: 26px 0; }
+.M .hm { padding-block: 18px 0; }
+.hm-head .eyebrow { margin-block-end: 10px; }
+.hm-grid { display: grid; grid-template-columns: minmax(0, 1fr) 452px; align-items: start; margin-block-start: 26px; }
+.M .hm-grid { grid-template-columns: minmax(0, 1fr); margin-block-start: 16px; }
+.hm-photo { position: relative; inline-size: min(100%, calc(min(520px, 60svh) * 16 / 9)); aspect-ratio: 16 / 9; }
+.M .hm-photo { inline-size: auto; margin-inline: calc(var(--gutter-s) * -1); }
+.hm-photo .img { inline-size: 100%; block-size: 100%; border-radius: var(--radius-hero); box-shadow: var(--shadow-paper); }
+.M .hm-photo .img { border-radius: 0; box-shadow: none; }
+.hm-side { position: relative; z-index: 3; display: grid; gap: 22px; margin-inline-start: -120px; }
+.M .hm-side { margin-inline-start: 0; margin-block-start: -44px; gap: 18px; }
+.hm-lede { margin-inline-start: 120px; font-size: var(--text-lede-fluid); line-height: 1.5; color: var(--color-ink-2); }
+.M .hm-lede { margin-inline-start: 0; order: 2; font-size: var(--text-body-s); }
+.hm .letter { padding: 18px 28px 26px; }
+.M .hm .letter { padding: 14px 18px 20px; margin-inline: 2px; background-image: repeating-linear-gradient(to bottom, transparent 0 39px, var(--color-rule) 39px 40px); background-position: 0 14px; }
+.M .hm .letter-to { line-height: 40px; }
+.M .hm .sentence { line-height: 40px; }
+.M .hm .sentence select { line-height: 34px; font-size: var(--text-lg-s); }
+.M .hm .letter-foot { margin-block-start: 14px; }
+.hm-stamp { position: absolute; z-index: 2; inset-block-start: -18px; inset-inline-start: 22px; inline-size: 132px; transform: rotate(-4deg); filter: drop-shadow(var(--shadow-stamp)); }
+.hm-stamp, .hm-stamp * { text-decoration: none; color: var(--color-ink); }
+.M .hm-stamp { inline-size: 96px; inset-block-start: 12px; inset-inline-start: 14px; }
+.hm-stamp .stamp { padding: 8px; }
+.hm-stamp .stamp-in { padding: 10px 10px 8px; gap: 0; }
+.hm-stamp .stamp-day { font-size: 52px; }
+.M .hm-stamp .stamp-day { font-size: 36px; }
+.hm-stamp h3 { font-size: 15px; margin-block-start: 6px; }
+.M .hm-stamp h3 { font-size: 13px; }
+.hm-stamp .stamp-mon { font-size: 11px; letter-spacing: 0.08em; }
+.hm-pm { position: absolute; z-index: 2; inset-block-end: -34px; inset-inline-start: 34%; inline-size: 132px; block-size: 132px; transform: rotate(var(--tilt-postmark)); filter: drop-shadow(0 6px 14px var(--color-shade)); }
+.M .hm-pm { inline-size: 84px; block-size: 84px; inset-block-end: auto; inset-block-start: 10px; inset-inline-start: auto; inset-inline-end: 12px; }
+.hm-route { position: absolute; z-index: 1; inset-block-start: -100px; inset-inline-end: 30px; inline-size: 340px; block-size: 90px; color: var(--color-accent); pointer-events: none; }
+.M .hm-route { display: none; }
+.hm-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-block-start: 30px; padding-block-start: 18px; border-block-start: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2); }
+.M .hm-strip { margin-block-start: 22px; }
+.hm-strip b { color: var(--color-ink); }
+.hm-strip svg { inline-size: 20px; block-size: 20px; color: var(--color-stem); vertical-align: -5px; margin-inline-end: 6px; }
+.proof3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.M .proof3 { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.proof3 li { padding: 26px 26px 28px; background: var(--color-card); border-radius: var(--radius-photo); box-shadow: inset 0 0 0 1px var(--color-rule); display: grid; gap: 8px; align-content: start; }
+.proof3 svg { inline-size: 32px; block-size: 32px; color: var(--color-mark); }
+.proof3 h3 { font-size: var(--text-md); }
+.proof3 p { color: var(--color-ink-2); }
+.proof3 li.lead { background: var(--color-leaf-wash); box-shadow: none; }
+.proof3 li.lead svg { color: var(--color-stem); }
+
+/* ---------- product · round 2 ---------- */
+.pd { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "gal head" "gal form"; column-gap: 56px; align-items: start; padding-block: 24px 0; }
+.M .pd { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "gal" "form"; padding-block: 12px 0; }
+.pd-head { grid-area: head; display: grid; gap: 10px; justify-items: start; }
+.M .pd-head { gap: 8px; }
+.pd-gal { grid-area: gal; position: sticky; inset-block-start: 24px; display: grid; grid-template-columns: 76px auto; gap: 14px; align-items: start; }
+.M .pd-gal { position: static; grid-template-columns: minmax(0, 1fr); margin-block-start: 16px; }
+.pd-thumbs { display: grid; gap: 10px; }
+.pd-thumbs span { inline-size: 76px; block-size: 95px; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1.5px var(--color-rule); display: block; }
+.pd-thumbs span.on { box-shadow: 0 0 0 2px var(--color-paper), 0 0 0 4px var(--color-ink); }
+.pd-thumbs .img { inline-size: 100%; block-size: 100%; }
+.pd-main { position: relative; block-size: min(520px, 60svh); aspect-ratio: 4 / 5; }
+.pd-main .frame { inline-size: 100%; block-size: 100%; border-radius: var(--radius-hero); overflow: hidden; }
+.pd-main .frame .img { inline-size: 100%; block-size: 100%; }
+.pd-main .g-prov { inset-block-end: auto; inset-block-start: 14px; inset-inline-start: 14px; }
+.g-prov { max-inline-size: calc(100% - 28px); line-height: 1.3; }
+.M .pd-mrail { display: grid; grid-auto-flow: column; grid-auto-columns: 78%; gap: 10px; overflow: hidden; margin-inline: calc(var(--gutter-s) * -1); padding-inline: var(--gutter-s); }
+.M .pd-mrail .frame { aspect-ratio: 4 / 5; border-radius: var(--radius-photo); overflow: hidden; position: relative; }
+.M .pd-mrail .img { inline-size: 100%; block-size: 100%; }
+.pd-card { position: absolute; z-index: 3; inset-block-end: -26px; inset-inline-end: -46px; inline-size: 210px; padding: 18px 18px 14px; background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-paper); transform: rotate(var(--tilt-card)); display: grid; gap: 8px; }
+.M .pd-card { position: relative; inset: auto; inline-size: auto; margin-block-start: -30px; margin-inline: 40px 22px; transform: rotate(-1.5deg); }
+.pd-card svg { inline-size: 22px; block-size: 22px; }
+.pd-card .card-msg { font-size: 23px; line-height: 1.2; }
+.pd-card small { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-included); }
+.dstub { display: inline-block; line-height: 30px; padding: 6px 14px 6px 6px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-sm); color: var(--color-ink-2); }
+.dstub b { color: var(--color-ink); }
+.dstub .mini { vertical-align: middle; margin-inline-end: 8px; display: inline-grid; place-items: center; inline-size: 30px; block-size: 30px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-mark), inset 0 0 0 4px var(--color-card), inset 0 0 0 5px var(--color-mark); }
+.dstub .mini svg { inline-size: 16px; block-size: 16px; }
+.dstub a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; display: inline-block; min-block-size: 24px; }
+.M .dstub { border-radius: var(--radius-field); }
+.sticky .snote { margin-inline-start: auto; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-ink); padding-inline-start: 12px; border-inline-start: 3px solid var(--color-sun); max-inline-size: 170px; line-height: 1.3; }
+.pd-head h1 { margin-block-start: 2px; }
+.pd-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.pd-price strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-2xl-fluid); line-height: 1; font-variant-numeric: lining-nums; }
+.pd-form { grid-area: form; min-inline-size: 0; }
+.pd-form .p-desc { margin-block-start: 14px; max-inline-size: 64ch; }
+.M .pd-form .p-desc { margin-block-start: 22px; }
+.pd .step { margin-block-start: 26px; }
+.pd .step legend { margin-block-end: 12px; }
+.M .pd .days { grid-template-columns: repeat(14, 72px); }
+.pd .tiers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pd .tier { padding: 14px 18px 12px; border-radius: var(--radius-photo-s); }
+.pd .tier b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); }
+.pd .tier span { font-size: var(--text-ui); color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.pd .tier small { font-size: var(--text-xs); color: var(--color-ink-3); }
+.preview-note { display: flex; align-items: center; gap: 12px; padding: 10px 16px 10px 10px; border-radius: var(--radius-full); background: var(--color-sage-wash); font-size: var(--text-ui); line-height: var(--line-height-tight); margin-block-end: 10px; }
+.preview-note i { flex: none; display: grid; place-items: center; inline-size: 28px; block-size: 28px; border-radius: 50%; background: var(--color-card); color: var(--color-mark); font-style: normal; font-weight: var(--font-weight-bold); }
+.pd-sum { margin-block-start: 30px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 28px; align-items: center; padding: 22px 26px; border-radius: var(--radius-photo); background: var(--color-butter); }
+.M .pd-sum { grid-template-columns: minmax(0, 1fr); padding: 20px; }
+.pd-sum .total { margin: 0; padding: 0; border: 0; display: grid; gap: 2px; }
+.pd-sum .total strong { font-size: 36px; }
+.pd-sum .demo { margin: 0; max-inline-size: 38ch; }
+
+/* ---------- task pages: checkout, confirmation, track ---------- */
+.guard { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-block: 12px; background: var(--color-blush); border-block-end: 1px solid color-mix(in oklab, var(--color-accent) 30%, transparent); font-size: var(--text-ui); color: var(--color-ink); }
+.guard b { color: var(--color-accent-strong); letter-spacing: var(--tracking-label); text-transform: uppercase; font-size: var(--text-xs); }
+.co { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 56px; align-items: start; padding-block: 28px 0; }
+.M .co { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-block: 16px 0; }
+.stepper { display: flex; gap: 12px; margin-block-end: 22px; }
+.M .stepper { gap: 8px; margin-block-end: 16px; }
+.stepper li { flex: 1; }
+.stepper .dstamp-in { padding: 10px 12px 8px; }
+.stepper .dstamp b { font-size: 18px; }
+.M .stepper .dstamp b { font-size: var(--text-ui); }
+.stepper .dstamp span { font-size: var(--text-xs); }
+.stepper li.now .dstamp-in { --tint: var(--color-sage-wash); box-shadow: inset 0 0 0 2px var(--color-selected); }
+.stepper li.next .dstamp-in { --tint: var(--color-card); }
+.stepper li.next .dstamp b { color: var(--color-ink-3); }
+.form-letter { position: relative; background: var(--color-card); border-radius: var(--radius-letter); padding: 30px 34px 32px; box-shadow: var(--shadow-letter); display: grid; gap: 18px; }
+.M .form-letter { padding: 22px 18px 24px; gap: 14px; }
+.form-letter h1 { font-size: var(--text-2xl-fluid); line-height: 1.08; }
+.form-letter .why { color: var(--color-ink-2); max-inline-size: 56ch; margin-block-start: -8px; }
+.f2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.M .f2 { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.fld { display: grid; gap: 6px; }
+.fld label { font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.fld .input { color: var(--color-ink-3); font-size: var(--text-ui); min-block-size: 50px; }
+.fld .hint { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.place { display: flex; flex-wrap: wrap; gap: 8px; }
+.place span { display: inline-flex; align-items: center; min-block-size: var(--target-min); padding-inline: 16px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-rule); font-size: var(--text-ui); }
+.place span.on { background: var(--color-selected); color: var(--color-on-selected); box-shadow: none; }
+.recap.airmail { overflow: hidden; }
+.recap-item { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 16px; align-items: start; margin-block-start: 18px; }
+.recap-item .img { inline-size: 84px; aspect-ratio: 4 / 5; border-radius: 12px; }
+.recap-item b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); display: block; }
+.recap-item span { font-size: var(--text-sm); color: var(--color-ink-2); display: block; }
+.recap .rsum { margin-block-start: 18px; display: grid; gap: 8px; }
+.recap .rsum div { display: flex; justify-content: space-between; gap: 16px; font-size: var(--text-ui); }
+.recap .rsum dt { color: var(--color-ink-2); }
+.recap .rsum .inc dd { color: var(--color-included); font-weight: var(--font-weight-bold); }
+.recap .total strong { font-size: 32px; }
+.recap .cardline { margin-block-start: 16px; padding: 12px 16px; border-radius: var(--radius-letter); background: var(--color-paper); font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); color: var(--color-ink-2); }
+.tline { display: grid; gap: 0; counter-reset: tl; }
+.tline li { position: relative; display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 4px 18px; padding-block-end: 22px; align-items: start; }
+.M .tline li { grid-template-columns: 44px minmax(0, 1fr); }
+.tline li::before { counter-increment: tl; content: counter(tl); display: grid; place-items: center; inline-size: 44px; block-size: 44px; border-radius: 50%; font-family: var(--font-display); font-size: var(--text-h3); color: var(--color-mark); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-mark), inset 0 0 0 5px var(--color-card), inset 0 0 0 6px var(--color-mark); grid-row: span 2; }
+.M .tline li::before { inline-size: 38px; block-size: 38px; font-size: var(--text-ui); }
+.tline li:not(:last-child)::after { content: ""; position: absolute; inset-inline-start: 21px; inset-block: 48px 4px; border-inline-start: 2px dashed var(--color-rule); }
+.M .tline li:not(:last-child)::after { inset-inline-start: 18px; inset-block-start: 42px; }
+.tline li.done::before { content: "✓"; background: var(--color-stem); color: var(--color-card); box-shadow: none; }
+.tline li.done:not(:last-child)::after { border-inline-start-style: solid; border-inline-start-color: var(--color-stem); }
+.tline li.now::before { background: var(--color-sky); color: var(--color-card); box-shadow: 0 0 0 5px var(--color-sage-wash); }
+.tline li.later { color: var(--color-ink-3); }
+.tline h3 { font-size: var(--text-md); line-height: 1.2; padding-block-start: 8px; }
+.M .tline h3 { font-size: var(--text-h3-s); padding-block-start: 6px; }
+.tline p { color: var(--color-ink-2); font-size: var(--text-ui); grid-column: 2; }
+.tline time { font-size: var(--text-sm); color: var(--color-ink-3); padding-block-start: 12px; font-variant-numeric: tabular-nums; }
+.M .tline time { grid-column: 2; padding: 0; }
+.tline li.later h3, .tline li.later p { color: var(--color-ink-3); }
+.photo-wait { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-hero); background: var(--color-photo); display: grid; place-items: center; text-align: center; padding: 28px; box-shadow: inset 0 0 0 1px var(--color-rule); }
+.M .photo-wait { aspect-ratio: 4 / 3; border-radius: var(--radius-photo); }
+.photo-wait p { max-inline-size: 26ch; color: var(--color-photo-ink); font-size: var(--text-ui); }
+.photo-wait svg { inline-size: 44px; block-size: 44px; color: var(--color-photo-ink); margin-inline: auto; margin-block-end: 10px; }
+.helpcard { padding: 22px 24px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); display: grid; gap: 6px; }
+.helpcard a.big { font-family: var(--font-display); font-size: var(--text-md); color: var(--color-link); text-underline-offset: 5px; }
+.bigpm { inline-size: 168px; block-size: 168px; transform: rotate(-8deg); filter: drop-shadow(0 6px 14px var(--color-shade)); flex: none; }
+.M .bigpm { inline-size: 104px; block-size: 104px; }
+
+/* ---------- for florists ---------- */
+.ff-hero { background: var(--color-surface-inverse); color: var(--color-on-inverse); padding-block: 0 calc(var(--section-fluid) * 0.6); }
+.ff-hero .crumbs, .ff-hero .crumbs a, .ff-hero .crumbs [aria-current] { color: color-mix(in oklab, var(--color-paper) 84%, var(--color-ink)); }
+.ff-hero .crumbs li + li::before { color: color-mix(in oklab, var(--color-paper) 40%, var(--color-ink)); }
+.ff-hero .eyebrow, .fo .ff-hero h1 em { color: var(--color-on-inverse-accent); }
+.ff-grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 64px; align-items: center; padding-block-start: 32px; }
+.M .ff-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block-start: 14px; }
+.ff-hero .deck { color: color-mix(in oklab, var(--color-paper) 84%, var(--color-ink)); max-inline-size: 44ch; }
+.ff-hero .btn.ghost { color: var(--color-on-inverse); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--color-paper) 60%, var(--color-ink)); }
+.docket { position: relative; justify-self: end; inline-size: 100%; max-inline-size: 460px; padding: 26px 28px 24px; background: var(--color-card); color: var(--color-ink); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); transform: rotate(1.2deg); display: grid; gap: 14px; }
+.M .docket { justify-self: stretch; transform: rotate(0.6deg); padding: 20px 18px; }
+.docket::after { content: ""; position: absolute; inset-inline: 0; inset-block-end: -10px; block-size: 10px; background: radial-gradient(circle at 8px 0, var(--color-card) 7px, transparent 7.5px) 0 0 / 16px 10px repeat-x; }
+.docket .dk-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.docket .dk-top i { font-style: normal; color: var(--color-card); background: var(--color-accent); border-radius: var(--radius-full); padding: 3px 10px; letter-spacing: 0.06em; }
+.docket h2 { font-size: var(--text-xl); line-height: 1.1; }
+.docket dl { display: grid; gap: 8px; border-block: 1px dashed var(--color-rule); padding-block: 12px; }
+.docket dl div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; font-size: var(--text-ui); }
+.docket dt { color: var(--color-ink-3); font-size: var(--text-sm); }
+.docket .dk-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.docket .dk-acts span { display: grid; place-items: center; min-block-size: 46px; border-radius: var(--radius-full); font-weight: var(--font-weight-bold); font-size: var(--text-ui); }
+.docket .dk-acts .ok { background: var(--color-stem); color: var(--color-card); }
+.docket .dk-acts .no { box-shadow: inset 0 0 0 1.5px var(--color-ink-3); color: var(--color-ink-2); }
+.split2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.M .split2 { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+
+/* ---------- blog ---------- */
+.bl-lead { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px; align-items: stretch; }
+.M .bl-lead { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+.bl-post { display: grid; gap: 12px; align-content: start; text-decoration: none; }
+.bl-post .ph { aspect-ratio: 3 / 2; border-radius: var(--radius-photo); }
+.bl-post.big .ph { aspect-ratio: 16 / 10; border-radius: var(--radius-hero); block-size: auto; max-block-size: min(520px, 60svh); }
+.bl-post h2, .bl-post h3 { font-size: var(--text-md); line-height: 1.2; }
+.bl-post.big h2 { font-size: var(--text-2xl-fluid); line-height: 1.08; }
+.bl-post .meta { font-size: var(--text-sm); color: var(--color-ink-3); }
+.bl-side { display: grid; gap: 28px; align-content: start; }
+.bl-side .bl-post { grid-template-columns: 180px minmax(0, 1fr); gap: 16px; }
+.M .bl-side .bl-post { grid-template-columns: 120px minmax(0, 1fr); }
+.bl-side .bl-post .ph { aspect-ratio: 4 / 5; border-radius: var(--radius-photo-s); }
+.art { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 720px) minmax(0, 1fr); }
+.art > * { grid-column: 2; }
+.art .wide { grid-column: 1 / -1; }
+.byline { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--text-sm); color: var(--color-ink-2); padding-block: 14px; border-block: var(--rule); }
+.leadslot { aspect-ratio: 16 / 9; border-radius: var(--radius-hero); max-block-size: min(520px, 60svh); inline-size: min(100%, calc(min(520px, 60svh) * 16 / 9)); margin-inline: auto; }
+.pullq { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-xl); line-height: 1.2; color: var(--color-ink); padding-inline-start: 22px; border-inline-start: 3px solid var(--color-sun); }
+.leads { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 22px 26px; border-radius: var(--radius-photo); background: var(--color-leaf-wash); }
+.M .leads { grid-template-columns: minmax(0, 1fr); }
+
+/* ---------- trust and legal · round 2 first screens ---------- */
+.th { position: relative; background: var(--hx-ground, var(--color-paper)); padding-block-end: calc(var(--section-fluid) * 0.55); }
+.th .crumbs { padding-block-start: 20px; }
+.th-grid { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: 64px; align-items: center; padding-block-start: 28px; }
+.th-grid.c75 { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+.th-grid.c57 { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; }
+.M .th-grid, .M .th-grid.c75, .M .th-grid.c57 { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block-start: 14px; }
+.th-copy { display: grid; gap: 18px; justify-items: start; align-content: start; }
+.M .th-copy { gap: 14px; }
+.th .status-line { background: color-mix(in oklab, var(--color-card) 70%, transparent); }
+.th .lede { max-inline-size: 46ch; }
+.hroute { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; margin-block-start: 36px; position: relative; }
+.M .hroute { grid-template-columns: minmax(0, 1fr); gap: 0; margin-block-start: 22px; }
+.hroute li { position: relative; display: grid; gap: 8px; align-content: start; padding-block-start: 70px; }
+.M .hroute li { padding-block: 0 26px; padding-inline-start: 66px; }
+.hroute li::before { content: attr(data-n); position: absolute; inset-block-start: 0; inset-inline-start: 0; inline-size: 54px; block-size: 54px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-size: var(--text-md); color: var(--color-mark); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-mark), 0 0 0 5px var(--hx-ground, var(--color-paper)), inset 0 0 0 5px var(--color-card), inset 0 0 0 6px var(--color-mark); z-index: 1; }
+.M .hroute li::before { inline-size: 46px; block-size: 46px; font-size: var(--text-h3); }
+.hroute li:not(:last-child)::after { content: ""; position: absolute; inset-block-start: 27px; inset-inline: 62px -20px; border-block-start: 2px dashed var(--color-accent); }
+.M .hroute li:not(:last-child)::after { inset-block: 52px 4px; inset-inline: 22px auto; border-block-start: 0; border-inline-start: 2px dashed var(--color-accent); }
+.hroute h3 { font-size: var(--text-md); line-height: 1.2; }
+.M .hroute h3 { font-size: var(--text-h3); padding-block-start: 10px; }
+.hroute p { color: var(--color-ink-2); font-size: var(--text-ui); }
+.cert { position: relative; padding: 40px 40px 34px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); transform: rotate(-0.8deg); display: grid; gap: 14px; }
+.M .cert { padding: 64px 20px 22px; transform: none; }
+.cert .seal { position: absolute; inset-block-start: -46px; inset-inline-end: -26px; inline-size: 138px; block-size: 138px; transform: rotate(10deg); filter: drop-shadow(0 6px 14px var(--color-shade)); }
+.M .cert .seal { inline-size: 96px; block-size: 96px; inset-block-start: -30px; inset-inline-end: 8px; }
+.cert .lbl { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-stem); }
+.cert .big { font-family: var(--font-display); font-size: 27px; line-height: 1.3; color: var(--color-ink); max-inline-size: 30ch; }
+.M .cert .big { font-size: var(--text-h3); }
+.cert .small2 { color: var(--color-ink-2); font-size: var(--text-ui); max-inline-size: 48ch; }
+.cert .hand { font-size: var(--text-lg); margin-block-start: 4px; }
+.contact2 { position: relative; padding: 30px 32px 26px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); transform: rotate(0.6deg); display: grid; gap: 14px; }
+.M .contact2 { padding: 22px 18px 20px; transform: none; }
+.contact2 h2 { font-size: var(--text-xl); }
+.M .contact2 h2 { font-size: var(--text-lg-s); }
+.contact2 > p { color: var(--color-ink-2); }
+.contact2 dl { display: grid; gap: 10px; }
+.contact2 dl div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 4px 14px; align-items: center; padding-block: 10px; border-block-end: var(--rule); }
+.M .contact2 dl div { grid-template-columns: 92px minmax(0, 1fr); }
+.contact2 dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); }
+.contact2 dd a { font-family: var(--font-display); font-size: 27px; color: var(--color-link); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; display: inline-flex; align-items: center; min-block-size: var(--target-min); white-space: nowrap; }
+.M .contact2 dd a { font-size: 21px; }
+.contact2 .hours { font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.contact2 .pd2 { font-size: var(--text-sm); color: var(--color-ink-2); }
+.contact2 .pm-c { inset-block-start: -34px; inset-inline-start: -40px; inline-size: 104px; block-size: 104px; }
+.M .contact2 .pm-c { inset-inline-start: auto; inset-inline-end: -6px; inset-block-start: -40px; inline-size: 80px; block-size: 80px; }
+.qa2 { columns: 2; column-gap: 56px; }
+.M .qa2 { columns: 1; }
+.qa2 > div { break-inside: avoid; padding-block: 18px; border-block-start: var(--rule); display: grid; gap: 8px; }
+.qa2 h2 { font-size: var(--text-h3); line-height: var(--line-height-title); }
+.M .qa2 h2 { font-size: var(--text-h3-s); }
+.qa2 p { color: var(--color-ink-2); }
+.qa2 .num { font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-mark); letter-spacing: 0.08em; }
+.sign { padding: 32px 34px 30px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); transform: rotate(0.8deg); display: grid; gap: 14px; position: relative; }
+.M .sign { padding: 24px 20px; transform: none; }
+.sign .who { font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-xl); color: var(--color-ink); line-height: 1.1; }
+.sign .role { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.sheet2 { position: relative; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-paper); padding: 44px 52px 52px; }
+.M .sheet2 { padding: 26px 18px 30px; border-radius: var(--radius-md); }
+.rubber { position: absolute; inset-block-start: 30px; inset-inline-end: 36px; padding: 8px 16px; border: 2.5px solid var(--color-accent); border-radius: var(--radius-md); color: var(--color-accent-strong); font-size: var(--text-sm); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; transform: rotate(-6deg); background: var(--color-card); }
+.rubber.ok { border-color: var(--color-stem); color: var(--color-stem); }
+.M .rubber { position: static; display: inline-block; justify-self: start; transform: rotate(-3deg); font-size: var(--text-xs); }
+.legal2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 8fr); gap: 56px; align-items: start; margin-block-start: 28px; }
+.M .legal2 { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-block-start: 18px; }
+.legal2 .toc { inset-block-start: 24px; }
+.dtab2 td .status { font-size: 11px; }
+
+/* a404 (notice document, no airmail edge: A21 keeps the edge to the letter, the recap and the footer) */
+.n404 { position: relative; display: grid; place-items: center; min-block-size: calc(100svh - 82px); padding-block: 48px 72px; background: var(--color-paper-2); overflow: hidden; }
+.M .n404 { min-block-size: calc(100svh - 64px); padding-block: 40px 56px; }
+.n404 .route404 { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; color: var(--color-sky); opacity: 0.55; pointer-events: none; }
+.n404 .letter { max-inline-size: 640px; inline-size: 100%; padding: 52px 56px 46px; background-image: none; }
+.M .n404 .letter { padding: 34px 22px 30px; }
+.n404 .letter::before { content: none; }
+.n404 .stamp404 { position: absolute; inset-block-start: -40px; inset-inline-end: 96px; inline-size: 112px; transform: rotate(5deg); filter: drop-shadow(var(--shadow-stamp)); }
+.M .n404 .stamp404 { inline-size: 84px; inset-inline-end: 72px; inset-block-start: -34px; }
+.n404 .stamp404 .stamp-in { align-items: center; justify-content: center; padding: 14px 8px; }
+.n404 .stamp404 svg { inline-size: 54px; block-size: 54px; }
+.n404 .postmark { inset-block-start: -50px; inset-inline-start: auto; inset-inline-end: -44px; inline-size: 132px; block-size: 132px; }
+.M .n404 .postmark { inline-size: 92px; block-size: 92px; inset-inline-end: -10px; inset-block-start: -44px; }
+.hm-proof { margin-inline-start: 120px; display: grid; gap: 8px; font-size: var(--text-sm); color: var(--color-ink-2); }
+.M .hm-proof { margin-inline-start: 0; order: 3; }
+.hm-proof li { display: flex; gap: 10px; align-items: center; }
+.hm-proof svg { flex: none; inline-size: 20px; block-size: 20px; color: var(--color-stem); }
+.hm-proof a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.fo h2.eyebrow, .fo h2.lbl, .fo h2.role { font-family: var(--font-body); font-variation-settings: normal; font-weight: var(--font-weight-bold); }
+.M .sign .pm-c { inset-inline-end: 6px !important; inline-size: 80px !important; block-size: 80px !important; inset-block-start: -34px !important; }
+.ticks { display: grid; }
+.ticks li { padding-block: 10px; border-block-end: 1px solid color-mix(in oklab, var(--color-ink) 12%, transparent); color: var(--color-ink); }
+.ticks li::before { content: "✓"; color: var(--color-stem); font-weight: var(--font-weight-bold); margin-inline-end: 10px; }
+
   </style>
 </helmet>
 <div class="fo D" style="inline-size: 1440px;">
-<section class="note"><span class="nl">Home · the letter home · desktop 1440 · [internal]</span><dl><dt>Purpose</dt><dd>The locale home. One sentence gets the buyer to the right flowers; everything below it is proof, dates and doors. The approved look (founder, 2026-10-03): <code>directions/warm-c/home.html</code>, redrawn on the v2 tokens.</dd><dt>URL</dt><dd><code>/en</code> · <code>/en-gb</code> · <code>/de</code> · <code>/pl</code>. Supersedes <code>homepage-v1/homepage-{desktop,mobile}.dc.html</code>, which stay as the 2026-09-08 record.</dd><dt>Index</dt><dd>Phase 0: <code>noindex,follow</code> through spec 007's <code>indexability()</code>. Unchanged by this redraw.</dd><dt>Reads</dt><dd><code>trending.ts</code> (the five Popular choices, in registry order) · <code>priceProjection()</code> for each card · <code>countries.ts</code> (Poland's shop root, the six guides) · <code>nextOccasions('PL')</code> and the <code>occasions.date.*</code> keys for the stamps · <code>site-links.ts</code> for every link · spec 006's media manifest for every photograph and alt.</dd><dt>States</dt><dd><b>Drawn:</b> default (Phase 0) · the sentence's three selects closed, open, focused and with the six disabled countries · a Popular-choices card with no photograph · a stamp with a page (link) beside one without (text) · the mobile rails. <b>Loading:</b> none; the page is server-rendered and cached, photographs sit in fixed 4∶5 / 4∶3 boxes on <code>--color-paper-2</code>, so nothing shifts. <b>Error:</b> spec 003's localised 500. <b>Empty:</b> a section with no data renders nothing — no heading, no placeholder (spec 004 §5.3).</dd><dt>Tokens</dt><dd>Ground <code>--color-paper</code>; bands <code>--color-paper-2</code>; promise band <code>--color-surface-inverse</code> with <code>--color-on-inverse-accent</code> (sun). H1 <code>--text-hero</code>/<code>-s</code> at <code>--font-weight-display-hero</code> with <code>--font-variation-display-hero</code>; the italic phrase <code>--color-accent</code>, underlined in <code>--color-sun</code>. Section H2 <code>--text-3xl</code>/<code>-s</code>. Eyebrows <code>--color-eyebrow</code>. The letter: <code>--color-card</code>, <code>--letter-lines</code>, <code>--shadow-letter</code>, <code>--tilt-letter</code>, <code>--airmail-edge</code> on top. Selects in Fraunces 300 italic (<code>--font-weight-display-em</code>) at <code>--text-lg</code>, <code>--color-accent</code>, dashed underline. <b>No Caveat on this page</b> (A21 clause 3): the margin note and the footer sign-off are Fraunces italic too. Stamps: <code>--color-leaf-wash</code>, <code>--color-butter</code>, <code>--color-blush</code>, <code>--color-sage-wash</code>.</dd><dt>Spacing</dt><dd>Gutter <code>--gutter</code> 56 / <code>--gutter-s</code> 20. Sections <code>--space-3xl</code> 128 / <code>--space-section-s</code> 64 (template: <code>--section-fluid</code>). Section head to content 48 / 28. Hero columns 5fr∶6fr, gap 64; photo radius <code>--radius-hero</code> 28 (mobile: full-bleed 4∶3, no radius, the letter overlaps it by 64). Card grid 5 × gap 24 / mobile rail at 72 %, gap 16. Stamps 5 × gap 20 / mobile 232 px rail. Arches 6 × gap 24 / 2 × 16.</dd><dt>Semantics</dt><dd>One <code>&lt;h1&gt;</code>. The sentence is a <code>&lt;form method="get"&gt;</code> whose action is the A21 clause 4 route under <code>/api/</code> (303: to the country occasion page when the destination is published and the page exists, else the country shop root, else the destinations hub; <code>no-store</code>, <code>noindex</code>), labelled by its heading; each choice is a real <code>&lt;select&gt;</code> with a visually hidden <code>&lt;label&gt;</code>; it works with JavaScript off. Only <code>country</code> (ISO code) and <code>occasion</code> have a <code>name</code>; the occasion select reads the six home tiles in <code>src/config/occasions.ts</code>, in registry order, by id (<code>birthday</code>, <code>nameDay</code>, <code>anniversary</code>, <code>sympathy</code>, <code>justBecause</code>, <code>newBaby</code>), each worded by a new message key; <b>who it is for has no <code>name</code> and never reaches a URL</b> (plan/07). The seven destinations are listed in <code>collator(locale)</code> order; an unpublished one is a <code>disabled</code> option labelled “not yet”, never colour alone (A21 clause 4, AC-11). On submit, the ≤1,024 B home island may write the relationship key to <code>sessionStorage</code> (<code>fo-who</code>). <code>field-sizing: content</code> fits each select to its choice; where unsupported the select is as wide as its longest option, which is acceptable. Stamps are an <code>&lt;ul&gt;</code>; a stamp with a page is one <code>&lt;a&gt;</code>, a stamp without is a <code>&lt;div&gt;</code> with no arrow and no hover. The postmark and the signoff are <code>aria-hidden</code>. Every photograph ships as spec 006's <code>Photo</code> (<code>&lt;img srcset sizes&gt;</code>, per-locale alt); the drawing paints it as a background only because artboards carry no <code>&lt;img&gt;</code>.</dd><dt>Copy</dt><dd>Verbatim from <code>messages/en.json</code> except: <b>new or reworded, for the founder's copy batch</b> — the hero proposition and how-it-works step 2/3 in the future tense (“will make it and hand it over”), <code>home.trending.heading</code> → “Popular choices” (founder-approved 2026-10-03) with its eyebrow “For Poland”, <code>home.trending.basis</code> → “Our picks until real orders start.” (founder-approved 2026-10-03), <code>home.proof.guarantee.title</code> → “Freshness guarantee” (no “7-day”), <code>home.destinations.heading</code> “Poland today.” → “Poland first.” (we do not deliver in Poland today), the sentence (“Start with who it's for”, “I'd like to send flowers to … in … for …”, its options, “Show me the flowers”), the dates lede, the name-day stamp, the promise heading and the margin note — all from the approved warm-c page.</dd><dt>Money</dt><dd>Every amount is <code>formatMoney</code>'s output (Intl), never hand-formatted. Drawn for <code>/en</code> (<code>en-150</code>) with a fresh rate: <b>€55.90</b> charged; the equivalents line under it is spec 004 §14 A21 clause 6 — the charged amount at the same snapshot's mid rate, in the other currencies of EUR, GBP, PLN and USD (<code>/en</code> renders “47.32&nbsp;£” and “238.58&nbsp;PLN”; USD is a placeholder bar until TASK-178 commits its rate), with its date. The line is <b>omitted</b> whenever the rate is stale and the price falls back to the destination currency, which is what production shows today (see the stale state). Same amount per locale: <code>/en</code> 229.00&nbsp;PLN · <code>/en-gb</code> PLN&nbsp;229.00 · <code>/de</code> 229,00&nbsp;PLN · <code>/pl</code> 229,00&nbsp;zł — the space is U+00A0. The line's wording is a new key for the founder's copy batch.</dd><dt>Owning spec</dt><dd>004 (home, chrome) · 008 §14 A14 (the links) · 004 §14 A20 (no dead control) · 006 (media, the honesty label) · 004 §14 A21 (v2; clause 4 the sentence and its <code>/api/</code> route; clause 3 the fonts).</dd></dl></section>
-<div class="notice wrap" role="note"><p>Prices include delivery and VAT <span class="sep">·</span> Fresh-flower promise</p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en" aria-current="true">English</a> <a href="/en-gb" lang="en">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in EUR">EUR</span></div></div>
-<header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="nav" aria-label="Main"><ul><li><a href="/en/poland/flowers">Our selection</a></li><li><a href="/en/occasions/birthday">Birthday</a></li><li><a href="/en/occasions/sympathy">Sympathy</a></li><li><a href="/en/occasions">Occasions</a></li><li><a href="/en/flowers/hand-tied-bouquets">Bouquets</a></li><li><a href="/en/flowers/roses">Roses</a></li><li><a href="/en/flowers/plants">Plants</a></li><li><a href="/en/send-flowers-to">Destinations</a></li></ul></nav><a class="btn sm" href="/en#send">Send flowers</a></div></header>
-<main id="main">
-<section class="hero" aria-labelledby="hero-h">
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <p class="eyebrow">International flower delivery</p>
-      <h1 id="hero-h">Flowers for someone <em>far away.</em></h1>
-      <p class="lede">Our florist in your recipient's town makes it and hands it over in person. We never ship a box.</p>
-    </div>
-    <figure class="hero-photo"><div class="img" role="img" aria-label="Loose seasonal flower stems, a sheet of kraft paper and a ball of twine laid out on a warm grey surface, seen from above" style="background-image:url(https://media.flowersoverseas.com/media/home-hero/1200.webp);"></div><svg class="postmark" viewBox="0 0 200 200" aria-hidden="true" focusable="false">
-  <defs><path id="hpd-ring" d="M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0"/></defs>
-  <circle cx="100" cy="100" r="97" style="fill:var(--color-card)"/>
-  <circle cx="100" cy="100" r="92" style="fill:none;stroke:var(--color-mark)" stroke-width="2"/>
-  <circle cx="100" cy="100" r="56" style="fill:none;stroke:var(--color-mark)" stroke-width="1.5"/>
-  <text style="fill:var(--color-mark);font-family:var(--font-body);font-weight:700" font-size="15" letter-spacing="2"><textPath href="#hpd-ring" textLength="446" lengthAdjust="spacing">FROM WHERE YOU ARE · TO WHERE THEY ARE ·</textPath></text>
-  <g transform="translate(76 76)"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></g>
-</svg></figure>
-    <form class="letter" id="send" action="/api/[A21 clause 4 route]" method="get" aria-labelledby="sd-h">
-  <h2 class="letter-to" id="sd-h">Start with who it's for</h2>
-  <p class="sentence">I'd like to send flowers to
-    <span class="pick"><label class="vh" for="sd-who">Who the flowers are for</label><select id="sd-who"><option>my mum</option><option>my dad</option><option>my grandma</option><option>my grandad</option><option>my sister</option><option>my brother</option><option>a friend</option><option>someone I love</option></select></span>
-    in
-    <span class="pick"><label class="vh" for="sd-to">Country</label><select id="sd-to" name="country"><option value="FR" disabled>France (not yet)</option><option value="DE" disabled>Germany (not yet)</option><option value="IT" disabled>Italy (not yet)</option><option value="NL" disabled>Netherlands (not yet)</option><option value="PL" selected>Poland</option><option value="RO" disabled>Romania (not yet)</option><option value="ES" disabled>Spain (not yet)</option></select></span>
-    for
-    <span class="pick"><label class="vh" for="sd-for">Occasion</label><select id="sd-for" name="occasion"><option value="birthday">a birthday</option><option value="nameDay">a name day</option><option value="anniversary">an anniversary</option><option value="sympathy">a loss</option><option value="justBecause">no reason at all</option><option value="newBaby">a new baby</option></select></span>.</p>
-  <div class="letter-foot"><button class="btn" type="submit"><span class="arrow">Show me the flowers</span></button>
-    <p class="letter-note">Every price includes VAT and delivery.</p></div>
-</form>
-  </div>
-</section>
-
-<section class="section" aria-labelledby="pop-h">
-  <div class="wrap">
-    <div class="sh"><div><p class="eyebrow">For Poland</p><h2 class="h2" id="pop-h">Popular <em>choices</em></h2>
-      <p class="small" style="margin-block-start:12px">Our picks until real orders start.</p></div>
-      <a class="link arrow" href="/en/poland/flowers">See every bouquet for Poland</a></div>
-    <ul class="grid5" aria-label="Popular choices"><li><article class="card"><a href="/en/poland/product/amber-hour"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/640.webp);"></div></div><h3>Amber Hour</h3><p class="price">€55.90<small>all in</small></p><p class="eqv">about 47.32&nbsp;£ · 238.58&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/vistula-red"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-002-hero/640.webp);"></div></div><h3>Vistula Red</h3><p class="price">€74.90<small>all in</small></p><p class="eqv">about 63.40&nbsp;£ · 319.67&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/baltic-dawn"><div class="cph"><div class="img" role="img" aria-label="Baltic Dawn: pink roses in two shades, cut short and tied into a rounded modern shape with soft grasses and eucalyptus" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/640.webp);"></div></div><h3>Baltic Dawn</h3><p class="price">€55.90<small>all in</small></p><p class="eqv">about 47.32&nbsp;£ · 238.58&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/quiet-blush"><div class="cph"><div class="img" role="img" aria-label="A restrained hand-tied bouquet of soft pastel roses with eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-004-hero/640.webp);"></div></div><h3>Quiet Blush</h3><p class="price">€40.90<small>all in</small></p><p class="eqv">about 34.62&nbsp;£ · 174.56&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en/poland/product/northern-light"><div class="cph"><div class="img" role="img" aria-label="Northern Light: white roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-005-hero/640.webp);"></div></div><h3>Northern Light</h3><p class="price">€74.90<small>all in</small></p><p class="eqv">about 63.40&nbsp;£ · 319.67&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul>
-  </div>
-</section>
-
-<section class="section band" id="dates" aria-labelledby="dates-h">
-  <div class="wrap">
-    <div class="sh"><div><p class="eyebrow">Coming up in Poland</p><h2 class="h2" id="dates-h">Dates worth <em>sending for</em></h2>
-      <p class="lede">Poland keeps its own days. Here are the next few, on Poland's calendar rather than yours.</p></div></div>
-    <ul class="stamps"><li><a class="stamp" href="/en/occasions/all-saints-day"><div class="stamp-in t-leaf"><span class="stamp-day">1</span><span class="stamp-mon">November · Sunday</span><h3>All Saints' Day</h3><span class="stamp-pl" lang="pl">Wszystkich Świętych</span><span class="stamp-note">Public holiday in Poland.</span><span class="stamp-go arrow">What we make for it</span></div></a></li><li><div class="stamp"><div class="stamp-in t-butter"><span class="stamp-day">29</span><span class="stamp-mon">November · Sunday</span><h3>Andrzejki</h3><span class="stamp-pl">St Andrew's Eve</span></div></div></li><li><a class="stamp" href="/en/occasions/christmas"><div class="stamp-in t-blush"><span class="stamp-day">24</span><span class="stamp-mon">December · Thursday</span><h3>Wigilia</h3><span class="stamp-pl">Christmas Eve</span><span class="stamp-note">Public holiday in Poland.</span><span class="stamp-go arrow">Christmas flowers</span></div></a></li><li><a class="stamp" href="/en/occasions/womens-day"><div class="stamp-in t-sky"><span class="stamp-day">8</span><span class="stamp-mon">March · Monday</span><h3>Women's Day</h3><span class="stamp-pl" lang="pl">Dzień Kobiet</span><span class="stamp-note">Poland's biggest flower day</span><span class="stamp-go arrow">Women's Day flowers</span></div></a></li><li><a class="stamp" href="/en/occasions/name-day"><div class="stamp-in t-butter"><span class="stamp-day" aria-hidden="true">∞</span><span class="stamp-mon">Every day of the year</span><h3>Name days</h3><span class="stamp-pl" lang="pl">Imieniny</span><span class="stamp-note">Every day is somebody's. We will not print a date we cannot stand behind, so ask them.</span><span class="stamp-go arrow">Name-day flowers</span></div></a></li></ul>
-  </div>
-</section>
-
-<section class="section" id="occasions" aria-labelledby="occ-h">
-  <div class="wrap">
-    <div class="sh"><div><p class="eyebrow">Shop by occasion</p><h2 class="h2" id="occ-h">What is the <em>occasion?</em></h2></div>
-      <a class="link arrow" href="/en/occasions">Every occasion</a></div>
-    <ul class="arches"><li><a href="/en/occasions/birthday"><div class="arch"><div class="img" role="img" aria-label="A bright mixed bouquet of gerberas and seasonal stems in vivid colours, wrapped in kraft paper" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-birthday/384.webp);"></div></div><h3>Birthday</h3><p>Any day of the year</p></a></li><li><a href="/en/occasions/name-day"><div class="arch"><div class="img" role="img" aria-label="A modest hand-tied bouquet of mixed seasonal stems in warm colours, wrapped in kraft paper" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-name-day/384.webp);"></div></div><h3>Name day</h3><p>Imieniny, the Polish tradition</p></a></li><li><a href="/en/occasions/anniversary"><div class="arch"><div class="img" role="img" aria-label="A hand-tied bouquet of deep red roses and pink peonies together, wrapped in white paper" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-anniversary/384.webp);"></div></div><h3>Anniversary</h3><p>Roses and peonies</p></a></li><li><a href="/en/occasions/sympathy"><div class="arch"><div class="img" role="img" aria-label="A restrained bouquet of white oriental lilies and white chrysanthemums with dark green foliage, laid on neutral stone" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-sympathy/384.webp);"></div></div><h3>Sympathy</h3><p>Delivered with care</p></a></li><li><a href="/en/occasions/just-because"><div class="arch"><div class="img" role="img" aria-label="A small posy of mixed pastel seasonal stems, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-just-because/384.webp);"></div></div><h3>Just because</h3><p>No reason needed</p></a></li><li><a href="/en/occasions/new-baby"><div class="arch"><div class="img" role="img" aria-label="A soft bouquet of pink and white seasonal stems, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-new-baby/384.webp);"></div></div><h3>New baby</h3><p>Soft colours, no lilies</p></a></li></ul>
-    <p class="prov" style="margin-block-start:20px">Example arrangement · our florist hand-makes each one</p>
-  </div>
-</section>
-
-<section class="section band" id="how" aria-labelledby="how-h">
-  <div class="wrap how-grid">
-    <div class="how-intro"><p class="eyebrow">How we send your flowers</p>
-      <h2 class="h2" id="how-h">Three people touch your order. <em>None of them is a courier.</em></h2>
-      <p>You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person.</p></div>
-    <div>
-      <ol class="route">
-        <li><h3>You choose the town, the day and a bouquet.</h3><p>Every price is final, and any order-by time we show is on the recipient's clock, not yours.</p></li>
-        <li><h3>A florist a few streets away will make it.</h3><p>Made that morning with what is in season locally. Substitutions are like for like, and we tell you.</p></li>
-        <li><h3>Delivered by hand. You get the photo.</h3><p>A picture will arrive when the flowers do, so you know it happened.</p></li>
-      </ol>
-      <p class="margin-note hand"><svg viewBox="0 0 46 34" fill="none" aria-hidden="true" style="inline-size:46px;block-size:34px;flex:none"><path d="M3 30 C 10 12, 24 6, 40 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M33 3 L 41 8 L 34 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Nothing crosses a border, so no customs and no box.</p>
-    </div>
-  </div>
-</section>
-
-<section class="section promise" aria-labelledby="promise-h">
-  <div class="wrap">
-    <div class="sh"><div><p class="eyebrow">What we promise</p><h2 class="h2" id="promise-h">Four things you will <em>never have to ask for</em></h2></div></div>
-    <ul class="promises">
-      <li><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 31V15"/><path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z"/><path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z"/></svg><h3>Freshness guarantee</h3><p>We redeliver or refund, your choice.</p></li>
-      <li><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15 17 5l12 10"/><path d="M8 13v16h18V13"/><path d="M14 29v-8h6v8"/></svg><h3>Made in their own town</h3><p>By independent shops we choose ourselves. <span class="slot">[new copy · not in the approved batch of 2026-10-05]</span></p></li>
-      <li><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18 16 6h12v12L16 30Z"/><circle cx="23" cy="11" r="2"/></svg><h3>The price you see is what we charge</h3><p>Delivery and VAT already in it.</p></li>
-      <li><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="26" height="19" rx="3"/><path d="M12 9l2-4h6l2 4"/><circle cx="17" cy="18.5" r="5"/></svg><h3>A photo from the door</h3><p>We will email you the picture of what was handed over.</p></li>
-    </ul>
-  </div>
-</section>
-
-<section class="section" aria-labelledby="dest-h">
-  <div class="wrap dest-grid">
-    <div><p class="eyebrow">Destinations</p><h2 class="h2" id="dest-h">Poland first. <em>Six more countries to follow.</em></h2>
-      <p class="lede" style="margin-block-start:18px">We open a country only when we have met enough florists there to stand behind every order: across Europe, and only where we really are.</p></div>
-    <ul class="dest-chips"><li><a class="chip" href="/en/send-flowers-to/poland">Poland <small>guide · not delivering yet</small></a></li><li><a class="chip" href="/en/send-flowers-to/france">France <small>guide · not delivering yet</small></a></li><li><a class="chip" href="/en/send-flowers-to/germany">Germany <small>guide · not delivering yet</small></a></li><li><a class="chip" href="/en/send-flowers-to/italy">Italy <small>guide · not delivering yet</small></a></li><li><a class="chip" href="/en/send-flowers-to/netherlands">Netherlands <small>guide · not delivering yet</small></a></li><li><a class="chip" href="/en/send-flowers-to/romania">Romania <small>guide · not delivering yet</small></a></li><li><a class="chip" href="/en/send-flowers-to/spain">Spain <small>guide · not delivering yet</small></a></li></ul>
-  </div>
-</section>
-</main>
-<footer class="ftr"><div class="wrap"><p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p><div class="fgrid"><div class="about"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink)" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink)" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><p>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.</p></div><nav aria-labelledby="f-send"><h2 id="f-send">Sending</h2><ul><li><a href="/en/send-flowers-to">Destinations</a></li><li><a href="/en/occasions">Occasions</a></li></ul></nav><div><h2>Help &amp; WhatsApp</h2><ul><li><a href="tel:+12135925150">+1 (213) 592-5150</a></li></ul><p class="fsmall">Message us any time, 24/7 — we reply within a few hours.</p></div><div><h2>Payment</h2><p class="fsmall">We show the payment methods you can use at checkout.</p></div></div><div class="ffine"><nav class="langs" aria-label="Change language"><a href="/en" aria-current="true">English</a><a href="/en-gb">English (UK)</a><a href="/de">Deutsch · Beta</a><a href="/pl">Polski · Beta</a></nav><button type="button">Cookie settings</button></div></div></footer><section class="state-band" aria-label="States and variants · drawn for the implementer"><span class="nl">States and variants · drawn for the implementer</span><div class="states c2"><div class="state"><span class="state-tag">Sentence · a choice, hovered and focused</span><p class="sentence">I'd like to send flowers to <span class="pick"><span class="sel hover">my grandma</span></span> in <span class="pick"><span class="sel focus">Poland</span></span></p><p class="stub">Hover tints the choice <code>--color-blush</code>. Focus is the shared ring, <code>--focus-ring</code> at <code>--focus-offset</code>. The chevron is drawn, not an icon.</p></div><div class="state"><span class="state-tag">Sentence · the country list, open</span><div class="optlist" role="presentation"><span class="off">France (not yet)</span><span class="off">Germany (not yet)</span><span class="off">Italy (not yet)</span><span class="off">Netherlands (not yet)</span><span class="on">Poland</span><span class="off">Romania (not yet)</span><span class="off">Spain (not yet)</span></div><p class="stub">The platform's own list, in <code>collator(locale)</code> order. Six countries are <code>disabled</code> and say “not yet” in words. Flipping <code>corridorPagePublished</code> enables one, with no change under <code>src/app/</code> (A21 clause 4).</p></div><div class="state"><span class="state-tag">Popular choices · a pick with no photograph</span><ul class="grid4" style="grid-template-columns:minmax(0,220px)"><li><article class="card"><a href="/en/poland/product/quiet-blush"><div class="cph ph"><span>Photography to supply · this bouquet as our florist makes it</span></div><h3>Quiet Blush</h3><p class="price">€40.90<small>all in</small></p><p class="eqv">about 34.62&nbsp;£ · 174.56&nbsp;PLN · <span class="phbar" role="img" aria-label="US dollar amount: no rate committed yet"></span>&nbsp;US$ at the rate of 8 September</p></a></article></li></ul><p class="stub">Spec 006 AC-18: the same 4∶5 box, <code>--color-photo</code>, the caption <code>media.placeholder.product</code>, and no honesty label because no generated image is shown.</p></div><div class="state"><span class="state-tag">Stamp · with a page, and without</span><ul class="stamps" style="grid-template-columns:repeat(2,minmax(0,220px))"><li><a class="stamp" href="/en/occasions/all-saints-day"><div class="stamp-in t-leaf"><span class="stamp-day">1</span><span class="stamp-mon">November · Sunday</span><h3>All Saints' Day</h3><span class="stamp-pl" lang="pl">Wszystkich Świętych</span><span class="stamp-note">Public holiday in Poland.</span><span class="stamp-go arrow">What we make for it</span></div></a></li><li><div class="stamp"><div class="stamp-in t-butter"><span class="stamp-day">29</span><span class="stamp-mon">November · Sunday</span><h3>Andrzejki</h3><span class="stamp-pl">St Andrew's Eve</span></div></div></li></ul><p class="stub">A stamp whose occasion has a hub is a link and ends in a cornflower arrow. Andrzejki has no hub, so it is information: no arrow, no hover, not an <code>&lt;a&gt;</code> (spec 004 §14 A20).</p></div></div></section>
+<section class="note"><span class="nl">Home · the letter on the table · desktop 1440 · round 2, 2026-10-05 · [internal]</span><dl><dt>Purpose</dt><dd>The locale home. Round 2 (founder, 2026-10-04: “home page too”, the top read as bland): the first screen is now <b>a letter laid on the table</b>. The flat-lay photograph is shown at its own 16∶9 (the live page crops it to 4∶5 and loses most of the flowers), the sentence letter lies across its inline-end edge, Poland's next date is a stamp on its corner and the postmark sits on its foot. The H1 is one line at desktop widths.</dd><dt>URL</dt><dd><code>/en</code> · <code>/en-gb</code> (drawn) · <code>/de</code> · <code>/pl</code>.</dd><dt>Index</dt><dd>Phase 0: <code>noindex,follow</code> through spec 007's <code>indexability()</code>. Unchanged.</dd><dt>Reads</dt><dd>Unchanged from v2: <code>trending.ts</code> and <code>priceProjection()</code> for the five cards · <code>nextOccasions('PL')[0]</code> for the hero stamp (the same value as the first stamp of the dates row, through <code>formatDate</code>) · <code>countries.ts</code> · <code>site-links.ts</code> · spec 006's media manifest (<code>home-hero</code> is 1200 × 675).</dd><dt>First screen</dt><dd><b>Desktop:</b> eyebrow · H1 on one line (<code>--text-hero-fluid</code>: 74.9 at 1440 × 900, 66.6 at 1280 × 800, 76 at 1512 × 945) · the photograph at 16∶9, <code>inline-size: min(100%, --hero-photo-max × 16/9)</code> so its block size never passes <code>--hero-photo-max</code> and its ratio never changes · the lede beside it · the letter overlapping the photograph by 120 px with its <b>Continue</b> button. <b>390:</b> eyebrow, H1, the photograph full-bleed at 16∶9, the letter overlapping it by 44 with its button, then the lede (below the fold). Flowers are on the first screen at every size.</dd><dt>Laptop band</dt><dd><i>measured after drawing; see the audit</i></dd><dt>Build</dt><dd><code>HomeHero</code>: one grid, two areas, the same DOM at every width (eyebrow+H1 · photo · side). Side = lede then the sentence <code>&lt;form&gt;</code>; on mobile the lede takes <code>order: 2</code>. The hero stamp is one <code>&lt;a&gt;</code> to the occasion hub (a stamp without a hub is text, A20) with its visible parts <code>aria-hidden</code> and an accessible name built from the same <code>formatDate</code> value. The dashed route and the postmark are <code>aria-hidden</code> SVG. The photograph is the page's one <code>fetchpriority="high"</code> image, <code>sizes="(min-width: 768px) 66vw, 100vw"</code>.</dd><dt>Tokens</dt><dd>H1 <code>--text-hero-fluid</code>, italic <code>--color-accent</code> underlined <code>--color-sun</code>; lede <code>--text-lede-fluid</code> <code>--color-ink-2</code>; photo <code>--radius-hero</code> + <code>--shadow-paper</code> (390: full-bleed, no radius); letter <code>--color-card</code>, <code>--letter-lines</code> (390: a 40 px rule), <code>--shadow-letter</code>, <code>--tilt-letter</code>, <code>--airmail-edge</code> (one of A21's three places); stamp <code>--color-leaf-wash</code>; postmark <code>--color-mark</code>; section padding <code>--section-fluid</code> (99 at 1440 × 900); section H2 <code>--text-3xl-fluid</code>.</dd><dt>Copy</dt><dd>Verbatim shipped strings, including the sentence (<code>home.sentence.*</code>) and its button <b>Continue</b> (<code>finder.submit</code>, as live; the v2 artboard's “Show me the flowers” is withdrawn), the home trust block (<code>trust.heading</code> “Our promise”, <code>home.proof.*</code>), the FAQ (<code>faq.*</code>) and <code>home.destinations.body</code>. The Popular choices eyebrow is the country name. <b>No new string.</b> The notice bar has no dates sentence and, on the home, no price sentence (founder, 2026-10-04).</dd><dt>Money</dt><dd>en-gb at the fresh rate, as live on 2026-10-05: <code>formatMoney</code> output and the A21 clause 6 equivalents line under each card.</dd><dt>Owning spec</dt><dd>004 (home, chrome; §14 A21, A23 clause 9) · 008 §14 A14 · 006 · tasks: TASK-186 (sizing) and a home task to be planned.</dd></dl></section>
+<div class="pg" style="position:relative"><div class="fold lap" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:830px" aria-hidden="true"><span>13″ MacBook Air browser ≈ 1470 × 830 ends about here</span></div><div class="fold lap" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:860px" aria-hidden="true"><span>14″ MacBook Pro browser ≈ 1512 × 860 ends about here</span></div><div class="fold" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:900px" aria-hidden="true"><span>First screen ends here · 1440 × 900</span></div>
+<div class="notice wrap" role="note"><p><a class="nlink" href="/en-gb/guarantee"><svg class="leaf" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 31V15"/><path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z"/><path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z"/></svg>Fresh-flower promise</a></p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en">English</a> <a href="/en-gb" lang="en" aria-current="true">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in GBP">GBP</span></div></div><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="nav" aria-label="Main"><ul><li><a href="/en-gb/poland/flowers">Our selection</a></li><li><a href="/en-gb/occasions/birthday">Birthday</a></li><li><a href="/en-gb/occasions/sympathy">Sympathy</a></li><li><a href="/en-gb/occasions">Occasions</a></li><li><a href="/en-gb/flowers/hand-tied-bouquets">Bouquets</a></li><li><a href="/en-gb/flowers/roses">Roses</a></li><li><a href="/en-gb/flowers/plants">Plants</a></li><li><a href="/en-gb/send-flowers-to">Destinations</a></li></ul></nav><a class="btn sm" href="/en-gb#send">Send flowers</a></div></header><main id="main"><section class="hm" aria-labelledby="hero-h"><div class="wrap"><div class="hm-head"><p class="eyebrow">International flower delivery</p><h1 class="t-hero" id="hero-h" data-fs="h1">Flowers for someone <em class="sun">far away.</em></h1></div><div class="hm-grid"><figure class="hm-photo" data-fs="photo"><div class="img" role="img" aria-label="Loose seasonal flower stems, a sheet of kraft paper and a ball of twine laid out on a warm grey surface, seen from above" style="background-image:url(https://media.flowersoverseas.com/media/home-hero/1200.webp);"></div><a class="hm-stamp" href="/en-gb/occasions/all-saints-day" aria-label="All Saints' Day, Sunday 1 November, in Poland"><span class="stamp"><span class="stamp-in t-leaf"><span class="stamp-day" aria-hidden="true">1</span><span class="stamp-mon" aria-hidden="true">November</span><h3 aria-hidden="true">All Saints' Day</h3></span></span></a><svg class="hm-pm" viewBox="0 0 200 200" aria-hidden="true" focusable="false"><defs><path id="r2pm1" d="M100,100 m-72,0 a72,72 0 1,1 144,0 a72,72 0 1,1 -144,0"/></defs><circle cx="100" cy="100" r="97" style="fill:var(--color-card)"/><circle cx="100" cy="100" r="92" style="fill:none;stroke:var(--color-mark)" stroke-width="2"/><circle cx="100" cy="100" r="56" style="fill:none;stroke:var(--color-mark)" stroke-width="1.5"/><text style="fill:var(--color-mark);font-family:var(--font-body);font-weight:700" font-size="15" letter-spacing="2"><textPath href="#r2pm1" textLength="446" lengthAdjust="spacing">FROM WHERE YOU ARE · TO WHERE THEY ARE ·</textPath></text><g transform="translate(76 76)"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></g></svg></figure><div class="hm-side"><svg class="hm-route" viewBox="0 0 300 90" fill="none" aria-hidden="true" focusable="false"><path d="M4 84 C 70 10, 200 -6, 292 40" stroke="currentColor" stroke-width="2" stroke-dasharray="7 7" stroke-linecap="round"/><path d="M282 30 L 294 41 L 279 46" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="hm-lede">Our florist in your recipient's town makes it and hands it over in person. We never ship a box.</p><form class="letter" id="send" action="/api/[A21 clause 4 route]" method="get" aria-labelledby="sd-h" data-fs="action"><h2 class="letter-to" id="sd-h">Start with who it's for</h2><p class="sentence">Send flowers to <span class="pick"><label class="vh" for="sd-who">Who the flowers are for</label><select id="sd-who"><option>my mum</option><option>my dad</option><option>my grandma</option><option>my grandad</option><option>a friend</option><option>someone I love</option></select></span> in <span class="pick"><label class="vh" for="sd-to">Country</label><select id="sd-to" name="country"><option value="FR" disabled>France (not yet)</option><option value="DE" disabled>Germany (not yet)</option><option value="IT" disabled>Italy (not yet)</option><option value="NL" disabled>Netherlands (not yet)</option><option value="PL" selected>Poland</option><option value="RO" disabled>Romania (not yet)</option><option value="ES" disabled>Spain (not yet)</option></select></span> for <span class="pick"><label class="vh" for="sd-for">Occasion</label><select id="sd-for" name="occasion"><option value="birthday">her birthday</option><option value="nameDay">her name day</option><option value="anniversary">her anniversary</option><option value="sympathy">a loss</option><option value="justBecause">no reason at all</option><option value="newBaby">a new baby</option></select></span>.</p><div class="letter-foot"><button class="btn" type="submit"><span class="arrow">Continue</span></button></div></form><ul class="hm-proof" aria-label="Our promise"><li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 8 14.5 16 5.5"/></svg><a href="/en-gb/guarantee">Fresh-flower promise</a></li><li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 8 14.5 16 5.5"/></svg>We make it in their own town</li><li><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5 8 14.5 16 5.5"/></svg>We photograph it at the door</li></ul></div></div></div></section><section class="sec2" aria-labelledby="pop-h" style="padding-block-start:calc(var(--section-fluid) * 0.7)"><div class="wrap"><div class="sh"><div><p class="eyebrow">Poland</p><h2 class="t-3xl" id="pop-h">Popular <em>choices</em></h2><p class="small" style="margin-block-start:12px">Our picks until real orders start.</p></div><a class="link arrow" href="/en-gb/poland/flowers">Our selection</a></div><ul class="grid5" aria-label="Popular choices"><li><article class="card"><a href="/en-gb/poland/product/amber-hour"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/640.webp);"></div></div><h3>Amber Hour</h3><p class="price">£45.90<small>all in</small></p><p class="eqv">about €53.98, PLN 236.29 or US$60.59 at the rate of 2 October</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/vistula-red"><div class="cph"><div class="img" role="img" aria-label="A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-002-hero/640.webp);"></div></div><h3>Vistula Red</h3><p class="price">£61.90<small>all in</small></p><p class="eqv">about €72.80, PLN 318.66 or US$81.71 at the rate of 2 October</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/baltic-dawn"><div class="cph"><div class="img" role="img" aria-label="Baltic Dawn: pink roses in two shades, cut short and tied into a rounded modern shape with soft grasses and eucalyptus" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/640.webp);"></div></div><h3>Baltic Dawn</h3><p class="price">£45.90<small>all in</small></p><p class="eqv">about €53.98, PLN 236.29 or US$60.59 at the rate of 2 October</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/quiet-blush"><div class="cph"><div class="img" role="img" aria-label="A restrained hand-tied bouquet of soft pastel roses with eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-004-hero/640.webp);"></div></div><h3>Quiet Blush</h3><p class="price">£33.90<small>all in</small></p><p class="eqv">about €39.87, PLN 174.52 or US$44.75 at the rate of 2 October</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card"><a href="/en-gb/poland/product/northern-light"><div class="cph"><div class="img" role="img" aria-label="Northern Light: white roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-005-hero/640.webp);"></div></div><h3>Northern Light</h3><p class="price">£61.90<small>all in</small></p><p class="eqv">about €72.80, PLN 318.66 or US$81.71 at the rate of 2 October</p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul></div></section><section class="sec2 band2" aria-labelledby="dates-h"><div class="wrap"><div class="sh"><div><p class="eyebrow">Coming up in Poland</p><h2 class="t-3xl" id="dates-h">Dates worth <em>sending for</em></h2></div></div><ul class="stamps"><li><a class="stamp" href="/en-gb/occasions/all-saints-day"><div class="stamp-in t-leaf"><span class="stamp-day">1</span><span class="stamp-mon">Sun 1 Nov</span><h3>All Saints' Day</h3><span class="stamp-pl" lang="pl">Wszystkich Świętych</span></div></a></li><li><div class="stamp"><div class="stamp-in t-butter"><span class="stamp-day">29</span><span class="stamp-mon">Sun 29 Nov</span><h3>Andrzejki</h3><span class="stamp-pl">St Andrew's Eve</span></div></div></li><li><a class="stamp" href="/en-gb/occasions/christmas"><div class="stamp-in t-blush"><span class="stamp-day">24</span><span class="stamp-mon">Thu 24 Dec</span><h3>Wigilia</h3><span class="stamp-pl">Christmas Eve</span></div></a></li><li><a class="stamp" href="/en-gb/occasions/womens-day"><div class="stamp-in t-sky"><span class="stamp-day">8</span><span class="stamp-mon">Mon 8 Mar</span><h3>Women's Day</h3><span class="stamp-pl" lang="pl">Dzień Kobiet</span><span class="stamp-note">Poland's biggest flower day</span></div></a></li></ul></div></section><section class="sec2" aria-labelledby="occ-h"><div class="wrap"><div class="sh"><div><p class="eyebrow">Shop by occasion</p><h2 class="t-3xl" id="occ-h">What is the <em>occasion?</em></h2></div><a class="link arrow" href="/en-gb/occasions">Occasions</a></div><ul class="arches"><li><a href="/en-gb/occasions/birthday"><div class="arch"><div class="img" role="img" aria-label="A bright mixed bouquet of gerberas and seasonal stems in vivid colours, wrapped in kraft paper" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-birthday/384.webp);"></div></div><h3>Birthday</h3><p>Any day of the year</p></a></li><li><a href="/en-gb/occasions/name-day"><div class="arch"><div class="img" role="img" aria-label="A modest hand-tied bouquet of mixed seasonal stems in warm colours, wrapped in kraft paper" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-name-day/384.webp);"></div></div><h3>Name day</h3><p>Imieniny, the Polish tradition</p></a></li><li><a href="/en-gb/occasions/anniversary"><div class="arch"><div class="img" role="img" aria-label="A hand-tied bouquet of deep red roses and pink peonies together, wrapped in white paper" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-anniversary/384.webp);"></div></div><h3>Anniversary</h3><p>Roses and peonies</p></a></li><li><a href="/en-gb/occasions/sympathy"><div class="arch"><div class="img" role="img" aria-label="A restrained bouquet of white oriental lilies and white chrysanthemums with dark green foliage, laid on neutral stone" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-sympathy/384.webp);"></div></div><h3>Sympathy</h3><p>Delivered with care</p></a></li><li><a href="/en-gb/occasions/just-because"><div class="arch"><div class="img" role="img" aria-label="A small posy of mixed pastel seasonal stems, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-just-because/384.webp);"></div></div><h3>Just because</h3><p>No reason needed</p></a></li><li><a href="/en-gb/occasions/new-baby"><div class="arch"><div class="img" role="img" aria-label="A soft bouquet of pink and white seasonal stems, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/home-occasion-new-baby/384.webp);"></div></div><h3>New baby</h3><p>Soft colours, no lilies</p></a></li></ul><p class="prov" style="margin-block-start:20px">Example arrangement · our florist hand-makes each one</p></div></section><section class="sec2 band2" aria-labelledby="how-h"><div class="wrap how-grid"><div class="how-intro"><p class="eyebrow">How we send your flowers</p><h2 class="t-3xl" id="how-h">Three people touch your order. <em>None of them is a courier.</em></h2><p>You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.</p></div><ol class="route"><li><h3>You choose the town, the day and a bouquet.</h3><p>Every price is final, and any order-by time we show is on the recipient's clock, not yours.</p></li><li><h3>A florist a few streets away accepts it.</h3><p>Made that morning with what is in season locally. Substitutions are like for like, and we tell you.</p></li><li><h3>Delivered by hand. You get the photo.</h3><p>A picture arrives when the flowers do, so you know it happened.</p></li></ol></div></section><section class="sec2" aria-labelledby="pr-h"><div class="wrap"><div class="sh"><h2 class="t-3xl" id="pr-h">Our <em>promise</em></h2></div><ul class="proof3"><li class="lead"><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 31V15"/><path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z"/><path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z"/></svg><h3>Fresh-flower promise</h3><p>If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.</p></li><li><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15 17 5l12 10"/><path d="M8 13v16h18V13"/><path d="M14 29v-8h6v8"/></svg><h3>We make it in their own town</h3><p>Independent shops we chose ourselves</p></li><li><svg viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="9" width="26" height="19" rx="3"/><path d="M12 9l2-4h6l2 4"/><circle cx="17" cy="18.5" r="5"/></svg><h3>We photograph it at the door</h3><p>We email you the picture of what was handed over</p></li></ul></div></section><section class="sec2 band2" aria-labelledby="faq-h"><div class="wrap two"><div><p class="eyebrow">Before you order</p><h2 class="t-3xl" id="faq-h">Questions people <em>ask first</em></h2><p class="small" style="margin-block-start:14px;max-inline-size:40ch">Our help pages are being written. Until they are up, the answers below are the whole of what we promise.</p></div><div class="faq"><details open><summary>Will the bouquet look like the photo?</summary><p>Close, not identical. Our florists work with what is fresh that morning and substitute like for like in colour and value. Every change is noted on your delivery photo.</p></details><details><summary>What if nobody is home?</summary><p>Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge.</p></details><details><summary>Who delivers, and when?</summary><p>Our own florist in the recipient's town, by hand, on the day you choose.</p></details></div></div></section><section class="sec2" aria-labelledby="dest-h"><div class="wrap dest-grid"><div><p class="eyebrow">Destinations</p><h2 class="t-3xl" id="dest-h">Where we can <em>send flowers</em></h2><p class="lede" style="margin-block-start:18px">We open each country only once we have local florists there we can stand behind.</p></div><ul class="dest-chips"><li><a class="chip" href="/en-gb/send-flowers-to/poland">Poland <small>Guide · not delivering yet</small></a></li><li><a class="chip" href="/en-gb/send-flowers-to/france">France <small>Guide · not delivering yet</small></a></li><li><a class="chip" href="/en-gb/send-flowers-to/germany">Germany <small>Guide · not delivering yet</small></a></li><li><a class="chip" href="/en-gb/send-flowers-to/italy">Italy <small>Guide · not delivering yet</small></a></li><li><a class="chip" href="/en-gb/send-flowers-to/netherlands">Netherlands <small>Guide · not delivering yet</small></a></li><li><a class="chip" href="/en-gb/send-flowers-to/romania">Romania <small>Guide · not delivering yet</small></a></li><li><a class="chip" href="/en-gb/send-flowers-to/spain">Spain <small>Guide · not delivering yet</small></a></li></ul></div></section></main><footer class="ftr"><div class="wrap"><p class="signoff hand" aria-hidden="true">With love, from wherever you are.</p><div class="fgrid"><div class="about"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><p>We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.</p></div><nav aria-labelledby="f-send"><h2 id="f-send">Sending</h2><ul><li><a href="/en-gb/send-flowers-to">Destinations</a></li><li><a href="/en-gb/occasions">Occasions</a></li></ul></nav><div><h2>Help &amp; WhatsApp</h2><ul><li><a href="tel:+12135925150">+1 (213) 592-5150</a></li></ul><p class="fsmall">Message us any time, 24/7 — we reply within a few hours.</p></div><div><h2>Payment</h2><p class="fsmall">We show the payment methods you can use at checkout.</p></div></div><div class="ffine"><nav class="langs" aria-label="Change language"><a href="/en">English</a><a href="/en-gb" aria-current="true">English (UK)</a><a href="/de">Deutsch · Beta</a><a href="/pl">Polski · Beta</a></nav><button type="button">Cookie settings</button></div></div></footer>
+</div>
+<section class="state-band" aria-label="States · drawn for the implementer"><span class="nl">States · drawn for the implementer</span><div class="states c2"><div class="state"><span class="state-tag">Photograph missing</span><div class="ph" style="aspect-ratio:16/9;border-radius:var(--radius-hero)"><span>Photography to supply · our florist finishing a hand-tied bouquet in morning light</span></div><p class="stub">The same 16∶9 box on <code>--color-photo</code> with <code>media.placeholder.hero</code>; the letter, stamp and postmark keep their places, nothing is preloaded.</p></div><div class="state"><span class="state-tag">Next date without a hub</span><p class="stub">When <code>nextOccasions('PL')[0]</code> has no hub (Andrzejki), the hero stamp is a <code>&lt;div&gt;</code>: no link, no hover. With no dated occasion at all, no stamp renders.</p></div></div></section>
 </div>
 </x-dc>
 </body>
