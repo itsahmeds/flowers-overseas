@@ -408,6 +408,8 @@ test.describe("the sentence keeps its possessive in step (the home's one island)
 
     await page.locator("#send-who").selectOption("dad");
     await expect(birthday).toHaveText("his birthday");
+    await page.locator("#send-who").selectOption("partner");
+    await expect(birthday).toHaveText("their birthday");
     await page.locator("#send-who").selectOption("friend");
     await expect(birthday).toHaveText("their birthday");
     // A neutral occasion has one form for everybody.

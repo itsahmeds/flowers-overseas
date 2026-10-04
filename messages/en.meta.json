@@ -2628,10 +2628,8 @@
   },
   "home.sentence.who": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "47db74b73d941c6d77272128741f71d4312a4f44a44309fc3e962ed76ccf8247"
+    "reviewed": false,
+    "sourceHash": "526e571518eec8e7b51a3fabcc07471446b472c3139fa043643ca2f4adaa2c28"
   },
   "home.trending.basis": {
     "source": "human",

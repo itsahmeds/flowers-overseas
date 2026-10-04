@@ -495,7 +495,7 @@
     "sentence": {
       "notYet": "{country} (not yet)",
       "frame": "Send flowers to <who></who> in <country></country> for <occasion></occasion>.",
-      "who": "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} friend {a friend} other {someone I love}}",
+      "who": "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
       "occasion": "{occasion, select, birthday {{pronoun, select, her {her birthday} his {his birthday} other {their birthday}}} nameDay {{pronoun, select, her {her name day} his {his name day} other {their name day}}} anniversary {{pronoun, select, her {her anniversary} his {his anniversary} other {their anniversary}}} sympathy {a loss} justBecause {no reason at all} newBaby {a new baby} other {an occasion}}",
       "heading": "Start with who it's for"
     }

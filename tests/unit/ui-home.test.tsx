@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
+import { bannedVoiceWordsIn } from "../../src/config/voice.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 import { HomeFaq } from "../../src/modules/ui/home/HomeFaq.tsx";
@@ -294,6 +295,7 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
       ["dad", "my dad"],
       ["grandma", "my grandma"],
       ["grandad", "my grandad"],
+      ["partner", "my partner"],
       ["friend", "a friend"],
       ["someoneILove", "someone I love"],
     ]);
@@ -316,6 +318,25 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     ]);
   });
 
+  it("labels a partner's occasions in the natural form: their birthday, their anniversary", () => {
+    const html = render(
+      <>
+        {/* The island's swap, done on the server: the partner's pronoun picks the forms. */}
+        <SentencePicker locale="en" shopCountries={SHOPS} />
+      </>,
+      "en",
+    );
+    const options = optionsOf(html, "send-occasion");
+    const theirOf = (value: string): string | undefined =>
+      /data-label-their="([^"]*)"/.exec(
+        options.find(([id]) => id === value)?.[2] ?? "",
+      )?.[1];
+
+    expect(theirOf("birthday")).toBe("their birthday");
+    expect(theirOf("anniversary")).toBe("their anniversary");
+    expect(theirOf("sympathy")).toBe("a loss");
+  });
+
   it("carries every possessive form for the island to swap, from one ICU select", () => {
     const birthday = optionsOf(picker("en"), "send-occasion")[0]?.[2] ?? "";
 
@@ -333,6 +354,7 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
       ["dad", "his"],
       ["grandma", "her"],
       ["grandad", "his"],
+      ["partner", "their"],
       ["friend", "their"],
       ["someoneILove", "their"],
     ]);
@@ -596,7 +618,20 @@ describe("the copy obeys the brand voice (§14 A5)", () => {
         "faq",
         "occasions",
       ]);
-      const serialised = JSON.stringify(messages).toLowerCase();
+      // Spec 004 §14 A22: the who option "my partner" is the one sanctioned use of "partner";
+      // it is set aside by the voice register's own exception, scoped to its key.
+      const home = messages.home as Record<string, unknown> & {
+        sentence: Record<string, string>;
+      };
+      const who = home.sentence.who ?? "";
+      expect(
+        bannedVoiceWordsIn(who, { messageKey: "home.sentence.who" }),
+        `${locale}: home.sentence.who`,
+      ).toStrictEqual([]);
+      const serialised = JSON.stringify({
+        ...messages,
+        home: { ...home, sentence: { ...home.sentence, who: "" } },
+      }).toLowerCase();
       for (const word of BANNED) {
         expect(serialised, `${locale}: ${word}`).not.toContain(word);
       }

@@ -71,9 +71,9 @@ export const SENTENCE_IDS = {
 
 /**
  * "Who it's for" (founder, 2026-10-04), in the founder's order, each with the pronoun its
- * occasion label takes ("her birthday"). The founder's "my partner" waits for a ruling: spec 004
- * §14 A5 bans the word "partner" from customer copy (`src/config/voice.ts`), so it is not offered
- * until the spec allows the relationship sense (brief, `## Escalations`). The select has **no `name`**: it is never submitted, so
+ * occasion label takes ("her birthday"). "my partner" is spec 004 §14 A22's one sanctioned use of a
+ * banned word (founder, 2026-10-04; `src/config/voice.ts`'s `VOICE_EXCEPTIONS`). For a partner the
+ * labels read "their birthday", "their anniversary". The select has **no `name`**: it is never submitted, so
  * a relationship never reaches a URL, a log or the server (plan/07). The first is the default.
  */
 export const SENTENCE_WHO = [
@@ -81,6 +81,7 @@ export const SENTENCE_WHO = [
   { id: "dad", pronoun: "his" },
   { id: "grandma", pronoun: "her" },
   { id: "grandad", pronoun: "his" },
+  { id: "partner", pronoun: "their" },
   { id: "friend", pronoun: "their" },
   { id: "someoneILove", pronoun: "their" },
 ] as const;

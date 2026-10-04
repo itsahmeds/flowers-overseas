@@ -43,15 +43,69 @@ export const BANNED_VOICE_WORDS = [
 export type BannedVoiceWord = (typeof BANNED_VOICE_WORDS)[number];
 
 /**
+ * The **one** sanctioned use of a banned word (spec 004 §14 **A22**; founder, 2026-10-04, in chat:
+ * "Allow \"my partner\""). A22 keeps "partner" banned for florists and allows exactly the phrase
+ * "my partner" as the home sentence's "who it's for" option. So the exception is pinned to both
+ * the **message key** and the **exact phrase**: "my partner" anywhere else, "our partner", or
+ * "my partner florist" still fails. Nothing else may be added here without a spec amendment.
+ */
+export const VOICE_EXCEPTIONS = [
+  { messageKey: "home.sentence.who", phrase: "my partner" },
+] as const;
+
+export interface VoiceExceptionRule {
+  readonly messageKey: string;
+  readonly phrase: string;
+}
+
+export interface BannedVoiceOptions {
+  /** The catalogue key the prose is the value of, when it is a message; enables A22's exception. */
+  readonly messageKey?: string;
+  /** The exceptions to honour; `VOICE_EXCEPTIONS` unless a test mutates it. */
+  readonly exceptions?: readonly VoiceExceptionRule[];
+}
+
+/**
+ * `prose` with each sanctioned phrase removed, unless a florist noun follows it. In an ICU value
+ * the phrase is a select branch whose keyword is its own last word (`partner {my partner}`). That
+ * keyword is syntax, not prose, so under the exception's key it is dropped; the branch text is
+ * scanned as prose like any other, so `partner {our partner}` still fails.
+ */
+function withoutExceptions(prose: string, options: BannedVoiceOptions): string {
+  const rules = (options.exceptions ?? VOICE_EXCEPTIONS).filter(
+    (rule) => rule.messageKey === options.messageKey,
+  );
+  return rules.reduce((text, rule) => {
+    const keyword = rule.phrase.split(" ").at(-1) ?? rule.phrase;
+    // The select keyword is syntax in every locale's value (`partner {meinen Schatz}`); the
+    // branch text after it is still prose and is still scanned.
+    return text.replaceAll(`${keyword} {`, " {").replaceAll(
+      // Exact, lower-case phrase; not when a florist noun follows ("my partner florist").
+      new RegExp(
+        `(?<![\\p{L}])${rule.phrase}(?![\\p{L}]|[- ]?(?:florist|shop|network))`,
+        "gu",
+      ),
+      " ",
+    );
+  }, prose);
+}
+
+/**
  * The banned words that appear in one piece of prose, each named once, in list order.
  *
  * **No word boundaries, on purpose** (`/review 63`): "networked" trips `network` and "vendors"
  * trips `vendor`. The rule is over-inclusive, which is the safe direction for a copy ban — a
  * false positive costs one rewording, a false negative ships the word. Do not "fix" this with
  * `\b` without changing spec 004 §14 A5 first; the reading is recorded in spec 007 §14 A1.
+ *
+ * A caller scanning a message passes its `messageKey`, and only then can A22's exception apply.
  */
-export function bannedVoiceWordsIn(prose: string): readonly BannedVoiceWord[] {
+export function bannedVoiceWordsIn(
+  prose: string,
+  options: BannedVoiceOptions = {},
+): readonly BannedVoiceWord[] {
+  const scanned = withoutExceptions(prose, options);
   return BANNED_VOICE_WORDS.filter((word) =>
-    new RegExp(word.replaceAll("-", "[- ]"), "i").test(prose),
+    new RegExp(word.replaceAll("-", "[- ]"), "i").test(scanned),
   );
 }

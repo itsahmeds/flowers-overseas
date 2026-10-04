@@ -39,6 +39,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   BANNED_VOICE_WORDS,
+  VOICE_EXCEPTIONS,
   bannedVoiceWordsIn,
 } from "../../src/config/voice.ts";
 import { parseTables } from "../../scripts/tasks-open-decisions.ts";
@@ -492,9 +493,18 @@ const CUSTOMER_COPY_EXEMPT_PATHS = [
   "src/config/voice.ts",
 ];
 
-/** The banned words that appear in one piece of prose, each named once. */
-export function bannedWordsIn(prose: string): string[] {
-  return [...bannedVoiceWordsIn(prose)];
+/**
+ * The banned words that appear in one piece of prose, each named once. A message value passes its
+ * key, which is the only way spec 004 §14 A22's one exception ("my partner" as the home
+ * sentence's who option) can apply.
+ */
+export function bannedWordsIn(prose: string, messageKey?: string): string[] {
+  return [
+    ...bannedVoiceWordsIn(
+      prose,
+      messageKey === undefined ? {} : { messageKey },
+    ),
+  ];
 }
 
 /** Leaf values of a message catalogue, flattened to `dot.path` -> value. */
@@ -550,7 +560,7 @@ describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TAS
       readFileSync(resolve(repoRoot, "messages", file), "utf8"),
     ) as Record<string, unknown>;
     const found = flattenMessages(tree).flatMap(([key, value]) => {
-      const words = bannedWordsIn(value);
+      const words = bannedWordsIn(value, key);
       return words.length === 0 ? [] : [`${key}: ${words.join(", ")}`];
     });
     expect(
@@ -589,6 +599,61 @@ describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TAS
         "Our partner florist relays your order to a third party — a third-party vendor in our network, anywhere in the world, super fresh, through the corridor.",
       ),
     ).toStrictEqual([...BANNED]);
+  });
+
+  /**
+   * Spec 004 §14 A22 (founder, 2026-10-04: "Allow \"my partner\""): "partner" stays banned for
+   * florists; exactly the phrase "my partner", as the home sentence's who option, passes.
+   */
+  it('passes exactly "my partner" as the who option, and nothing else (A22)', () => {
+    const who = "home.sentence.who";
+    expect(
+      bannedWordsIn(
+        "{who, select, mum {my mum} partner {my partner} other {someone I love}}",
+        who,
+      ),
+    ).toStrictEqual([]);
+    expect(
+      bannedWordsIn("Send flowers to my partner in Poland.", who),
+    ).toStrictEqual([]);
+    for (const prose of [
+      "our partner",
+      "partner florist",
+      "Our partner florist will make it.",
+      "my partner florist",
+      "my partner-florist",
+      "partner {our partner}",
+      "my partners",
+    ]) {
+      expect(bannedWordsIn(prose, who), prose).toStrictEqual(["partner"]);
+    }
+    // The phrase is allowed only under its key: the same words in any other message, or in prose
+    // that is not a message, still fail.
+    expect(bannedWordsIn("my partner", "home.hero.proposition")).toStrictEqual([
+      "partner",
+    ]);
+    expect(bannedWordsIn("my partner")).toStrictEqual(["partner"]);
+  });
+
+  it("goes red on the who option the moment the exception is removed (A22's subject, mutated)", () => {
+    const value = JSON.parse(
+      readFileSync(resolve(repoRoot, "messages", "en.json"), "utf8"),
+    ) as { home: { sentence: { who: string } } };
+    expect(VOICE_EXCEPTIONS).toStrictEqual([
+      { messageKey: "home.sentence.who", phrase: "my partner" },
+    ]);
+    expect(value.home.sentence.who).toContain("partner {my partner}");
+    expect(
+      bannedVoiceWordsIn(value.home.sentence.who, {
+        messageKey: "home.sentence.who",
+      }),
+    ).toStrictEqual([]);
+    expect(
+      bannedVoiceWordsIn(value.home.sentence.who, {
+        messageKey: "home.sentence.who",
+        exceptions: [],
+      }),
+    ).toStrictEqual(["partner"]);
   });
 
   it("bites on a banned word written into JSX text, and spares the identifiers around it", () => {
