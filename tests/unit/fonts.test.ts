@@ -8,11 +8,10 @@
  * links in the `<head>`, `swap` and the fallback metrics in the emitted `@font-face`, the bytes a
  * real `en` and `pl` page transfer, and zero requests to Google Fonts.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, relative, resolve } from "node:path";
 
-import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -32,6 +31,8 @@ import {
   unicodeRange,
 } from "../../scripts/fonts/build-fonts.ts";
 
+import { importClosure } from "./support/import-closure.ts";
+
 const repoRoot = resolve(__dirname, "../..");
 const manifest = readManifest(repoRoot);
 
@@ -45,78 +46,11 @@ const KB = 1024;
 const HAND_FILE = "src/modules/ui/fonts/hand.ts";
 const CARD_PREVIEW = "src/modules/ui/product/PrintedCardPreview.tsx";
 
-/**
- * The runtime module specifiers of a source file: every `import`/`export … from`, side-effect
- * `import "…"` and dynamic `import("…")`, minus `import type`/`export type`, which the compiler
- * erases and so reach no module at runtime.
- */
-function runtimeSpecifiers(code: string): string[] {
-  const source = ts.createSourceFile("x.tsx", code, ts.ScriptTarget.Latest);
-  const found: string[] = [];
-  const visit = (node: ts.Node): void => {
-    if (
-      ts.isImportDeclaration(node) &&
-      ts.isStringLiteral(node.moduleSpecifier) &&
-      node.importClause?.isTypeOnly !== true
-    ) {
-      found.push(node.moduleSpecifier.text);
-    } else if (
-      ts.isExportDeclaration(node) &&
-      node.moduleSpecifier !== undefined &&
-      ts.isStringLiteral(node.moduleSpecifier) &&
-      !node.isTypeOnly
-    ) {
-      found.push(node.moduleSpecifier.text);
-    } else if (
-      ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-      node.arguments[0] !== undefined &&
-      ts.isStringLiteral(node.arguments[0])
-    ) {
-      found.push(node.arguments[0].text);
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(source);
-  return found;
-}
-
-/** A repo-relative source file for `specifier` imported from `from`, or `undefined` (a package). */
-function resolveSourceFile(
-  from: string,
-  specifier: string,
-): string | undefined {
-  const base = specifier.startsWith("@/")
-    ? `src/${specifier.slice(2)}`
-    : specifier.startsWith(".")
-      ? relative(repoRoot, resolve(repoRoot, dirname(from), specifier))
-      : undefined;
-  if (base === undefined) return undefined;
-  const stem = base.replace(/\.(?:ts|tsx|js)$/, "");
-  return [".ts", ".tsx", "/index.ts", "/index.tsx"]
-    .map((suffix) => `${stem}${suffix}`)
-    .find((candidate) => existsSync(resolve(repoRoot, candidate)));
-}
-
-/**
- * The first import chain from `entry` to Caveat's module, following runtime imports through every
- * source file they reach (any module, not only `ui`), or `undefined` when there is none.
- */
-function caveatChainFrom(entry: string): string[] | undefined {
-  const seen = new Set<string>([entry]);
-  const queue: string[][] = [[entry]];
-  for (let chain = queue.shift(); chain !== undefined; chain = queue.shift()) {
-    const file = chain[chain.length - 1] ?? entry;
-    if (file === HAND_FILE) return chain;
-    const code = readFileSync(resolve(repoRoot, file), "utf8");
-    for (const specifier of runtimeSpecifiers(code)) {
-      const target = resolveSourceFile(file, specifier);
-      if (target === undefined || seen.has(target)) continue;
-      seen.add(target);
-      queue.push([...chain, target]);
-    }
-  }
-  return undefined;
+/** Every repository file reachable from `entry`, repo-relative (`./support/import-closure.ts`). */
+function reachableFrom(entry: string): string[] {
+  return [...importClosure(resolve(repoRoot, entry)).files]
+    .map((file) => relative(repoRoot, file))
+    .sort();
 }
 
 describe("the committed font subsets (A21 clause 3)", () => {
@@ -449,30 +383,22 @@ describe("the next/font/local declarations", () => {
   });
 
   it("reaches no Caveat import from the `ui` barrel every layout imports", () => {
-    // The barrel's runtime import graph, followed through every module it reaches: a re-export of
+    // The barrel's import closure, followed through every module it reaches: a re-export of
     // `ProductPage` (which mounts the card preview) or of the preview itself puts Caveat's
-    // `@font-face` on every route that imports the barrel (breaker hole 3, PR 168).
-    const chain = caveatChainFrom("src/modules/ui/index.ts");
-    expect(chain, chain?.join(" -> ")).toBe(undefined);
+    // `@font-face` on every route that imports the barrel (breaker hole 3, PR 168). The walk
+    // counts a type-only import as an edge, so it can only be too strict.
+    const reachable = reachableFrom("src/modules/ui/index.ts");
+    expect(reachable).toContain("src/modules/ui/fonts/index.ts");
+    expect(reachable).not.toContain(CARD_PREVIEW);
+    expect(reachable).not.toContain(HAND_FILE);
   });
 
-  it("finds Caveat through a re-export chain (the barrel walk's own check)", () => {
-    // The product route's own entry reaches Caveat through `ProductPage` and the preview, so the
-    // walk above is not vacuous: the same function, from the file that does reach it.
-    expect(caveatChainFrom("src/modules/ui/product/ProductPage.tsx")).toEqual([
-      "src/modules/ui/product/ProductPage.tsx",
-      CARD_PREVIEW,
-      HAND_FILE,
-    ]);
-    // A type-only re-export is erased by the compiler and reaches nothing at runtime.
-    expect(
-      runtimeSpecifiers(
-        'export type { ProductPageProps } from "./product/ProductPage.tsx";\n' +
-          'import type { X } from "./fonts/hand";\n' +
-          'export { ProductPage } from "./product/ProductPage.tsx";\n' +
-          'import "./fonts/hand";\n',
-      ),
-    ).toEqual(["./product/ProductPage.tsx", "./fonts/hand"]);
+  it("finds Caveat from the product page (the barrel walk's own check)", () => {
+    // The route's own import reaches Caveat through `ProductPage` and the preview, so the walk
+    // above is not vacuous: the same walker, from the file that does reach it.
+    const reachable = reachableFrom("src/modules/ui/product/ProductPage.tsx");
+    expect(reachable).toContain(CARD_PREVIEW);
+    expect(reachable).toContain(HAND_FILE);
   });
 
   it("finds a Caveat import however it is written (the walk's own check)", () => {

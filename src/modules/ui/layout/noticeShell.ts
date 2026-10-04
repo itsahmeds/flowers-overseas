@@ -124,8 +124,12 @@ export const NOTICE_LETTER =
 /** The status code, in the cornflower eyebrow voice. */
 export const NOTICE_LETTER_META = "eyebrow m-0 mb-[14px]";
 
-/** The `<h1>` at the v2 title step (68 px, 44 on a phone). */
-export const NOTICE_LETTER_HEADING = "display text-title-s md:text-title m-0";
+/**
+ * The `<h1>` at the v2 title step: 44 px on a phone, 68 at the 1440 artboard, at the title's own
+ * 0.98 leading and -0.025em tracking (the artboard's `.h1t`). `text-title-s`/`text-title` carry a
+ * size and no leading, so a two-line "Something went wrong" took the body's 1.55.
+ */
+export const NOTICE_LETTER_HEADING = "display text-title-fluid m-0";
 
 /** The one sentence, in the lede voice. */
 export const NOTICE_LETTER_BODY =

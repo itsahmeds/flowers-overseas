@@ -29,6 +29,7 @@ import {
   NOTICE_ACTION_SECONDARY,
   NOTICE_BODY,
   NOTICE_HEADING,
+  NOTICE_LETTER_HEADING,
   NOTICE_LOCKUP,
   NOTICE_MAIN,
   NOTICE_META,
@@ -87,6 +88,9 @@ describe("noticeShell.ts", () => {
     // inherit a change to the type system instead of pinning a size.
     expect(NOTICE_HEADING).toContain("display");
     expect(NOTICE_HEADING).toContain("text-title-fluid");
+    // The letter's `<h1>` too: the fluid title step is the one that carries the title's 0.98
+    // leading; `text-title` is a size alone, and a two-line 500 heading took the body's 1.55.
+    expect(NOTICE_LETTER_HEADING.split(" ")).toContain("text-title-fluid");
     expect(NOTICE_META).toBe("label");
     expect(NOTICE_WORDMARK).toContain("display");
   });
