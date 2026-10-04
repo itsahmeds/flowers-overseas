@@ -78,7 +78,7 @@
       "x": 0,
       "y": 28224,
       "w": 1440,
-      "h": 6721
+      "h": 6271
     },
     {
       "file": "wireframes/home-mobile.dc.html",
@@ -86,7 +86,7 @@
       "x": 1520,
       "y": 28224,
       "w": 390,
-      "h": 10263
+      "h": 8748
     },
     {
       "file": "wireframes/chrome-desktop.dc.html",
@@ -102,7 +102,7 @@
       "x": 1520,
       "y": 40459,
       "w": 390,
-      "h": 4307
+      "h": 4283
     },
     {
       "file": "wireframes/locale-chooser-desktop.dc.html",
@@ -142,7 +142,7 @@
       "x": 0,
       "y": 54109,
       "w": 1440,
-      "h": 3964
+      "h": 4193
     },
     {
       "file": "wireframes/all-destinations-mobile.dc.html",
@@ -150,7 +150,7 @@
       "x": 1520,
       "y": 54109,
       "w": 390,
-      "h": 5962
+      "h": 2589
     },
     {
       "file": "wireframes/corridor-country-desktop.dc.html",
@@ -158,7 +158,7 @@
       "x": 0,
       "y": 61596,
       "w": 1440,
-      "h": 8395
+      "h": 8685
     },
     {
       "file": "wireframes/corridor-country-mobile.dc.html",
@@ -166,7 +166,7 @@
       "x": 1520,
       "y": 61596,
       "w": 390,
-      "h": 14041
+      "h": 2396
     },
     {
       "file": "wireframes/country-shop-desktop.dc.html",
@@ -174,7 +174,7 @@
       "x": 0,
       "y": 81222,
       "w": 1440,
-      "h": 9281
+      "h": 9526
     },
     {
       "file": "wireframes/country-shop-mobile.dc.html",
@@ -182,7 +182,7 @@
       "x": 1520,
       "y": 81222,
       "w": 390,
-      "h": 14537
+      "h": 3462
     },
     {
       "file": "wireframes/country-category-desktop.dc.html",
@@ -190,7 +190,7 @@
       "x": 0,
       "y": 98626,
       "w": 1440,
-      "h": 4032
+      "h": 4256
     },
     {
       "file": "wireframes/country-category-mobile.dc.html",
@@ -198,7 +198,7 @@
       "x": 1520,
       "y": 98626,
       "w": 390,
-      "h": 6615
+      "h": 3482
     },
     {
       "file": "wireframes/country-occasion-desktop.dc.html",
@@ -206,7 +206,7 @@
       "x": 0,
       "y": 108610,
       "w": 1440,
-      "h": 4104
+      "h": 4322
     },
     {
       "file": "wireframes/country-occasion-mobile.dc.html",
@@ -214,7 +214,7 @@
       "x": 1520,
       "y": 108610,
       "w": 390,
-      "h": 5781
+      "h": 3366
     },
     {
       "file": "wireframes/product-desktop.dc.html",
@@ -222,7 +222,7 @@
       "x": 0,
       "y": 117499,
       "w": 1440,
-      "h": 4603
+      "h": 4645
     },
     {
       "file": "wireframes/product-mobile.dc.html",
@@ -230,7 +230,7 @@
       "x": 1520,
       "y": 117499,
       "w": 390,
-      "h": 7636
+      "h": 4374
     },
     {
       "file": "wireframes/checkout-desktop.dc.html",
@@ -238,7 +238,7 @@
       "x": 0,
       "y": 134725,
       "w": 1440,
-      "h": 2443
+      "h": 2807
     },
     {
       "file": "wireframes/checkout-mobile.dc.html",
@@ -246,7 +246,7 @@
       "x": 1520,
       "y": 134725,
       "w": 390,
-      "h": 4594
+      "h": 4968
     },
     {
       "file": "wireframes/confirmation-desktop.dc.html",
@@ -254,7 +254,7 @@
       "x": 0,
       "y": 142505,
       "w": 1440,
-      "h": 2922
+      "h": 2933
     },
     {
       "file": "wireframes/confirmation-mobile.dc.html",
@@ -262,7 +262,7 @@
       "x": 1520,
       "y": 142505,
       "w": 390,
-      "h": 4219
+      "h": 4304
     },
     {
       "file": "wireframes/track-order-desktop.dc.html",
@@ -270,7 +270,7 @@
       "x": 0,
       "y": 148265,
       "w": 1440,
-      "h": 2848
+      "h": 2869
     },
     {
       "file": "wireframes/track-order-mobile.dc.html",
@@ -278,7 +278,7 @@
       "x": 1520,
       "y": 148265,
       "w": 390,
-      "h": 4052
+      "h": 4150
     },
     {
       "file": "wireframes/category-hub-desktop.dc.html",
@@ -286,7 +286,7 @@
       "x": 0,
       "y": 152825,
       "w": 1440,
-      "h": 6280
+      "h": 6158
     },
     {
       "file": "wireframes/category-hub-mobile.dc.html",
@@ -294,7 +294,7 @@
       "x": 1520,
       "y": 152825,
       "w": 390,
-      "h": 8448
+      "h": 3168
     },
     {
       "file": "wireframes/occasion-hub-desktop.dc.html",
@@ -302,7 +302,7 @@
       "x": 0,
       "y": 163070,
       "w": 1440,
-      "h": 5949
+      "h": 6143
     },
     {
       "file": "wireframes/occasion-hub-mobile.dc.html",
@@ -310,7 +310,7 @@
       "x": 1520,
       "y": 163070,
       "w": 390,
-      "h": 8693
+      "h": 3203
     },
     {
       "file": "wireframes/occasions-index-desktop.dc.html",
@@ -318,7 +318,7 @@
       "x": 0,
       "y": 173354,
       "w": 1440,
-      "h": 3321
+      "h": 3753
     },
     {
       "file": "wireframes/occasions-index-mobile.dc.html",
@@ -326,7 +326,7 @@
       "x": 1520,
       "y": 173354,
       "w": 390,
-      "h": 5766
+      "h": 2930
     },
     {
       "file": "wireframes/how-it-works-desktop.dc.html",
@@ -334,7 +334,7 @@
       "x": 0,
       "y": 180535,
       "w": 1440,
-      "h": 3374
+      "h": 3365
     },
     {
       "file": "wireframes/how-it-works-mobile.dc.html",
@@ -342,7 +342,7 @@
       "x": 1520,
       "y": 180535,
       "w": 390,
-      "h": 6525
+      "h": 6601
     },
     {
       "file": "wireframes/guarantee-and-delivery-desktop.dc.html",
@@ -350,7 +350,7 @@
       "x": 0,
       "y": 188275,
       "w": 1440,
-      "h": 5986
+      "h": 6034
     },
     {
       "file": "wireframes/guarantee-and-delivery-mobile.dc.html",
@@ -358,7 +358,7 @@
       "x": 1520,
       "y": 188275,
       "w": 390,
-      "h": 10057
+      "h": 9604
     },
     {
       "file": "wireframes/help-and-contact-desktop.dc.html",
@@ -366,7 +366,7 @@
       "x": 0,
       "y": 199602,
       "w": 1440,
-      "h": 4670
+      "h": 4719
     },
     {
       "file": "wireframes/help-and-contact-mobile.dc.html",
@@ -374,7 +374,7 @@
       "x": 1520,
       "y": 199602,
       "w": 390,
-      "h": 8756
+      "h": 8856
     },
     {
       "file": "wireframes/about-desktop.dc.html",
@@ -382,7 +382,7 @@
       "x": 0,
       "y": 209211,
       "w": 1440,
-      "h": 3235
+      "h": 3223
     },
     {
       "file": "wireframes/about-mobile.dc.html",
@@ -390,7 +390,7 @@
       "x": 1520,
       "y": 209211,
       "w": 390,
-      "h": 5633
+      "h": 5709
     },
     {
       "file": "wireframes/for-florists-desktop.dc.html",
@@ -398,7 +398,7 @@
       "x": 0,
       "y": 215600,
       "w": 1440,
-      "h": 3861
+      "h": 3809
     },
     {
       "file": "wireframes/for-florists-mobile.dc.html",
@@ -406,7 +406,7 @@
       "x": 1520,
       "y": 215600,
       "w": 390,
-      "h": 5861
+      "h": 5839
     },
     {
       "file": "wireframes/blog-desktop.dc.html",
@@ -414,7 +414,7 @@
       "x": 0,
       "y": 223560,
       "w": 1440,
-      "h": 4623
+      "h": 4644
     },
     {
       "file": "wireframes/blog-mobile.dc.html",
@@ -422,61 +422,61 @@
       "x": 1520,
       "y": 223560,
       "w": 390,
-      "h": 5746
+      "h": 5824
     },
     {
       "file": "wireframes/legal-template-desktop.dc.html",
       "title": "Legal document template · Withdrawal and refunds · desktop · v2",
       "x": 0,
-      "y": 229426,
+      "y": 229504,
       "w": 1440,
-      "h": 4385
+      "h": 4405
     },
     {
       "file": "wireframes/legal-template-mobile.dc.html",
       "title": "Legal document template · Withdrawal and refunds · mobile · v2",
       "x": 1520,
-      "y": 229426,
+      "y": 229504,
       "w": 390,
-      "h": 7326
+      "h": 7423
     },
     {
       "file": "wireframes/cookies-desktop.dc.html",
       "title": "Cookies · the register · desktop · v2",
       "x": 0,
-      "y": 237840,
+      "y": 237918,
       "w": 1440,
-      "h": 5665
+      "h": 5686
     },
     {
       "file": "wireframes/cookies-mobile.dc.html",
       "title": "Cookies · the register · mobile · v2",
       "x": 1520,
-      "y": 237840,
+      "y": 237918,
       "w": 390,
-      "h": 8862
+      "h": 8959
     },
     {
       "file": "wireframes/errors-desktop.dc.html",
       "title": "404 · 410 · 500 · desktop · v2",
       "x": 0,
-      "y": 247609,
+      "y": 247687,
       "w": 1440,
-      "h": 2216
+      "h": 2236
     },
     {
       "file": "wireframes/errors-mobile.dc.html",
       "title": "404 · 410 · 500 · mobile · v2",
       "x": 1520,
-      "y": 247609,
+      "y": 247687,
       "w": 390,
-      "h": 2781
+      "h": 2917
     },
     {
       "file": "system/motion.dc.html",
       "title": "motion",
       "x": 0,
-      "y": 260039,
+      "y": 250844,
       "w": 1440,
       "h": 3944
     }
@@ -660,21 +660,21 @@
     {
       "id": "wf-legal-template",
       "x": 0,
-      "y": 229380,
+      "y": 229458,
       "w": 1200,
       "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. Legal document template — desktop 1440 and mobile 390, drawn with Withdrawal and refunds (not in force). Version header, draft lines, contents, change log; the imprint and the gated documents as states. The document text is spec 041 batch 2, so it is slotted."
     },
     {
       "id": "wf-cookies",
       "x": 0,
-      "y": 237794,
+      "y": 237872,
       "w": 1200,
       "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. Cookies — desktop 1440 and mobile 390. The register table from src/config/cookies.ts, Change cookie settings, and until the privacy notice exists the two interim sections; the consent banner's controller sentence as a state."
     },
     {
       "id": "wf-errors",
       "x": 0,
-      "y": 247563,
+      "y": 247641,
       "w": 1200,
       "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. 404 · 410 · 500 — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
@@ -688,7 +688,7 @@
     {
       "id": "r2-motion",
       "x": 0,
-      "y": 259993,
+      "y": 250798,
       "w": 1400,
       "text": "Round 2 motion and loading, 2026-10-05 — every motion with its trigger, tokens and reduced-motion version; each one an optional layer the founder switches on or off."
     }
