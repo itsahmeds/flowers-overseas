@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+.fo.M { font-size: var(--text-body-s); }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote, h1, h2, h3, h4) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+:where(.fo) :where(button, select, input, textarea) { font: inherit; color: inherit; }
+.vh { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .stub code, .slot code, .page-label code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; }
+.note ul { display: grid; gap: 2px; }
+.note code { overflow-wrap: anywhere; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+.note .pending { display: inline-block; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-warning); border-radius: var(--radius-full); padding: 1px 8px; }
+
+/* the band that separates the page from its drawn states */
+.state-band { margin-block-start: var(--space-xl); padding: var(--space-xl) var(--gutter) var(--space-2xl); background: var(--color-paper-3); border-block-start: 1px dashed var(--color-ink-3); }
+.M .state-band { padding: var(--space-lg) var(--gutter-s) var(--space-xl); }
+.state-band > .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.states { display: grid; gap: var(--space-lg); }
+.D .states.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.D .states.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.state { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; min-inline-size: 0; }
+.M .state { padding: var(--space-md); }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.stub b { color: var(--color-ink); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); font-size: 0.86em; }
+
+/* a whole drawn screen for one state: a label, then the screen at full width */
+.page-label { margin-block-start: 72px; padding: 14px var(--gutter); background: var(--color-paper-3); border-block: 1px dashed var(--color-ink-3); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.M .page-label { margin-block-start: 48px; padding-inline: var(--gutter-s); }
+.page-label + .scr { border-block-end: 1px dashed var(--color-ink-3); }
+
+/* first-screen markers */
+.fold { position: relative; block-size: 0; border-block-start: 2px dashed var(--color-accent); }
+.fold span { position: absolute; inset-inline-end: 8px; inset-block-start: 4px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent-strong); background: var(--color-card); padding: 2px 8px; border-radius: var(--radius-full); }
+.fold.lap { border-block-start: 1.5px dashed var(--color-sky); }
+.fold.lap span { color: var(--color-sky-strong); inset-inline-end: auto; inset-inline-start: 8px; }
+
+/* ---------- actions ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-block-size: var(--control-md); padding-inline: 28px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-family: var(--font-body); font-weight: var(--font-weight-bold); font-size: var(--text-body-s); line-height: 1.1; text-decoration: none; border: 0; white-space: nowrap; cursor: pointer; }
+.btn.sm { min-block-size: var(--control-sm); padding-inline: 20px; font-size: var(--text-ui); }
+.btn.ghost { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+.btn.ink { background: var(--color-ink); color: var(--color-paper); }
+.btn.quiet { background: transparent; color: var(--color-link); padding-inline: 0; min-block-size: var(--target-min); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.btn.busy { background: var(--color-accent-strong); }
+.btn.focus { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.link { color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.ilink { color: var(--color-link); text-decoration: underline; text-underline-offset: 4px; }
+.phbar { display: inline-block; inline-size: 2.6em; block-size: 0.75em; border-radius: var(--radius-sm); background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); vertical-align: -0.05em; }
+.ph { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); line-height: 1.4; letter-spacing: 0.02em; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-logo-ink); min-block-size: var(--target-min); }
+.wordmark { font-family: var(--font-logo); font-weight: 500; letter-spacing: var(--tracking-wordmark); white-space: nowrap; }
+
+
+/* ---------- admin (spec 012): one shell, dense tables, the v2 tokens ---------- */
+.ad-shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-block-size: 900px; background: var(--color-paper); font-size: var(--text-ui); line-height: 1.45; }
+.ad-side { display: flex; flex-direction: column; gap: 18px; padding: 18px 14px; background: var(--color-paper-2); border-inline-end: var(--rule); }
+.ad-brand { display: flex; align-items: center; gap: 8px; min-block-size: 40px; padding-inline: 8px; text-decoration: none; color: var(--color-logo-ink); }
+.ad-brand svg { inline-size: 26px; block-size: 26px; flex: none; }
+.ad-brand .wordmark { font-size: 17px; }
+.ad-brand small { margin-inline-start: auto; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.ad-env { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; margin-inline: 8px; padding: 2px 10px; border-radius: var(--radius-full); font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.06em; text-transform: uppercase; background: var(--color-butter); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-warning); }
+.ad-env::before { content: ""; inline-size: 7px; block-size: 7px; border-radius: 50%; background: var(--color-warning); }
+.ad-env.prd { background: var(--color-blush); box-shadow: inset 0 0 0 1px var(--color-accent); color: var(--color-accent-strong); }
+.ad-env.prd::before { background: var(--color-accent); }
+.ad-nav ul { display: grid; gap: 2px; }
+.ad-nav a { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-block-size: 38px; padding-inline: 10px; border-radius: 8px; text-decoration: none; color: var(--color-ink-2); font-size: 15px; }
+.ad-nav a[aria-current] { background: var(--color-card); color: var(--color-ink); font-weight: var(--font-weight-bold); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-xs); }
+.ad-n { display: inline-grid; place-items: center; min-inline-size: 20px; block-size: 20px; padding-inline: 6px; border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-paper); font-size: 12px; font-weight: var(--font-weight-bold); font-variant-numeric: tabular-nums; }
+.ad-me { display: grid; gap: 2px; padding: 12px 10px 0; border-block-start: var(--rule); font-size: 14px; }
+.ad-me span { font-size: 13px; color: var(--color-ink-3); }
+.ad-me button { justify-self: start; margin-block-start: 4px; min-block-size: 32px; padding: 0; border: 0; background: none; color: var(--color-link); font-weight: var(--font-weight-bold); font-size: 14px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ad-main { min-inline-size: 0; display: grid; gap: 20px; align-content: start; padding: 28px 40px 48px; }
+.ad-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; }
+.ad-h1 { font-size: 32px; line-height: 1.1; letter-spacing: -0.01em; }
+.ad-h1 .num { font-family: var(--font-display); }
+.ad-sub { margin-block-start: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; color: var(--color-ink-3); font-size: 14px; }
+.ad-back { display: inline-flex; align-items: center; gap: 4px; min-block-size: 32px; color: var(--color-link); font-weight: var(--font-weight-bold); font-size: 14px; text-decoration: none; margin-block-end: -8px; }
+.ad-back svg { inline-size: 18px; block-size: 18px; }
+.ad-live { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-ink-2); }
+.ad-live::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--color-stem); box-shadow: 0 0 0 3px var(--color-leaf-wash); }
+.ad-live.paused::before { background: var(--color-ink-3); box-shadow: 0 0 0 3px var(--color-paper-3); }
+.ad-filters { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; padding: 12px 14px; background: var(--color-card); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); }
+.ad-f { display: grid; gap: 4px; min-inline-size: 0; }
+.ad-f > label, .ad-lbl { font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); }
+.ad-in { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-block-size: 36px; min-inline-size: 140px; padding-inline: 10px; border: var(--rule-field); border-radius: 8px; background: var(--color-card); font-size: 14px; color: var(--color-ink); white-space: nowrap; }
+.ad-in.blank { color: var(--color-ink-3); }
+.ad-in.sel::after { content: ""; inline-size: 7px; block-size: 7px; border-inline-end: 1.5px solid var(--color-ink-2); border-block-end: 1.5px solid var(--color-ink-2); transform: translateY(-2px) rotate(45deg); }
+.ad-in.wide { min-inline-size: 0; inline-size: 100%; }
+.ad-in.area { min-block-size: 76px; align-items: flex-start; padding-block: 8px; white-space: normal; }
+.ad-in.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.ad-f.bad .ad-in { border-color: var(--color-danger); box-shadow: inset 0 0 0 1px var(--color-danger); }
+.ad-ferr { font-size: 13px; font-weight: var(--font-weight-bold); color: var(--color-danger); }
+.ad-range { display: flex; align-items: center; gap: 6px; }
+.ad-range .ad-in { min-inline-size: 118px; }
+.ad-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-block-size: 36px; padding-inline: 14px; border: 0; border-radius: 8px; background: var(--color-ink); color: var(--color-paper); font-size: 14px; font-weight: var(--font-weight-bold); text-decoration: none; white-space: nowrap; cursor: pointer; }
+.ad-btn.primary { background: var(--color-accent); color: var(--color-accent-ink); }
+.ad-btn.ghost { background: var(--color-card); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-field-edge); }
+.ad-btn.danger { background: var(--color-card); color: var(--color-danger); box-shadow: inset 0 0 0 1px var(--color-danger); }
+.ad-btn.dangerfill { background: var(--color-danger); color: var(--color-on-danger); }
+.ad-a { color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }
+.ad-tw { background: var(--color-card); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; }
+.ad-t { inline-size: 100%; border-collapse: collapse; font-size: 14px; }
+.ad-t th { text-align: start; padding: 9px 14px; background: var(--color-paper-2); border-block-end: var(--rule); font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); white-space: nowrap; }
+.ad-t td { padding: 10px 14px; border-block-end: var(--rule); vertical-align: middle; }
+.ad-t tbody tr:last-child td { border-block-end: 0; }
+.ad-t .r { text-align: end; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.ad-t .nw { white-space: nowrap; }
+.ad-t .num, .ad-num { font-variant-numeric: lining-nums tabular-nums; }
+.ad-t tr.new td { background: var(--color-sage-wash); }
+.ad-t tr.muted td { color: var(--color-ink-3); }
+.ad-t tfoot td { padding: 10px 14px; border-block-start: var(--rule); background: var(--color-paper-2); }
+.ad-ref { font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; letter-spacing: 0.02em; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-rule); text-underline-offset: 3px; }
+.ad-2 { display: block; font-size: 13px; color: var(--color-ink-3); }
+.ad-chip { display: inline-flex; align-items: center; gap: 5px; min-block-size: 22px; padding-inline: 8px; border-radius: var(--radius-full); background: var(--color-paper-3); color: var(--color-ink-2); font-size: 12px; font-weight: var(--font-weight-bold); white-space: nowrap; vertical-align: middle; }
+.ad-chip.sky { background: var(--color-sage-wash); color: var(--color-sky-strong); }
+.ad-chip.ok { background: var(--color-leaf-wash); color: var(--color-stem); }
+.ad-chip.warn { background: var(--color-butter); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-warning); }
+.ad-chip.bad { background: var(--color-blush); color: var(--color-accent-strong); }
+.ad-chip.ink { background: var(--color-ink); color: var(--color-paper); }
+.ad-chip.demo { background: var(--color-card); color: var(--color-ink); border: 1px dashed var(--color-ink-3); }
+.ad-chip code { font-size: 12px; }
+.ad-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-block-end: var(--rule); }
+.ad-tabs a { display: inline-flex; align-items: center; gap: 6px; min-block-size: 38px; padding-inline: 12px; color: var(--color-ink-2); text-decoration: none; font-size: 14px; border-block-end: 2px solid transparent; margin-block-end: -1px; }
+.ad-tabs a[aria-current] { color: var(--color-ink); font-weight: var(--font-weight-bold); border-block-end-color: var(--color-ink); }
+.ad-tabs .c { font-size: 12px; color: var(--color-ink-3); font-variant-numeric: tabular-nums; }
+.ad-cols { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 24px; align-items: start; }
+.ad-stack { display: grid; gap: 24px; align-content: start; min-inline-size: 0; }
+.ad-sec { display: grid; gap: 10px; min-inline-size: 0; }
+.ad-sec > h2, .ad-card > h2 { font-size: 20px; line-height: 1.2; }
+.ad-sec > header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.ad-sec > header h2 { font-size: 20px; line-height: 1.2; }
+.ad-card { display: grid; gap: 12px; padding: 18px 20px; background: var(--color-card); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); min-inline-size: 0; }
+.ad-card.sticky { position: sticky; inset-block-start: 20px; }
+.ad-kv { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 8px 16px; font-size: 14px; }
+.ad-kv dt { color: var(--color-ink-3); }
+.ad-kv dd { color: var(--color-ink); overflow-wrap: anywhere; }
+.ad-kv.tight { grid-template-columns: 110px minmax(0, 1fr); }
+.ad-note { font-size: 13px; color: var(--color-ink-3); line-height: 1.45; }
+.ad-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 10px 14px; border-radius: 10px; background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 14px; }
+.ad-banner.warn { background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-warning); }
+.ad-banner.bad { background: var(--color-blush); box-shadow: none; color: var(--color-ink); }
+.ad-banner.ok { background: var(--color-leaf-wash); box-shadow: none; }
+.ad-empty { display: grid; justify-items: center; gap: 8px; padding: 40px 24px; text-align: center; background: var(--color-card); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); color: var(--color-ink-2); }
+.ad-empty b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); color: var(--color-ink); }
+.ad-counters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.ad-counter { display: grid; gap: 6px; align-content: start; padding: 18px 20px; background: var(--color-card); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); text-decoration: none; color: inherit; }
+.ad-counter .k { font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); }
+.ad-counter .v { font-family: var(--font-display); font-size: 44px; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+.ad-counter .s { font-size: 14px; color: var(--color-ink-2); }
+.ad-counter .go { margin-block-start: 6px; color: var(--color-link); font-weight: var(--font-weight-bold); font-size: 14px; }
+.ad-bystatus { display: grid; gap: 4px; font-size: 14px; }
+.ad-bystatus div { display: flex; justify-content: space-between; gap: 12px; padding-block: 3px; border-block-end: var(--rule); }
+.ad-bystatus div:last-child { border-block-end: 0; }
+.ad-bystatus b { font-variant-numeric: tabular-nums; }
+.ad-switch { display: inline-flex; align-items: center; gap: 10px; min-block-size: 32px; padding: 0; border: 0; background: none; font-size: 14px; font-weight: var(--font-weight-bold); color: var(--color-ink); cursor: pointer; }
+.ad-switch .tr { position: relative; flex: none; inline-size: 38px; block-size: 22px; border-radius: var(--radius-full); background: var(--color-paper-3); box-shadow: inset 0 0 0 1.5px var(--color-field-edge); }
+.ad-switch .tr::after { content: ""; position: absolute; inset-block-start: 3px; inset-inline-start: 3px; inline-size: 16px; block-size: 16px; border-radius: 50%; background: var(--color-card); box-shadow: var(--shadow-xs), inset 0 0 0 1px var(--color-field-edge); }
+.ad-switch.on .tr { background: var(--color-selected); box-shadow: none; }
+.ad-switch.on .tr::after { inset-inline-start: 19px; box-shadow: var(--shadow-xs); }
+.ad-stage { display: grid; place-items: center; padding: 40px 24px; border-radius: 12px; background: var(--color-scrim); }
+.ad-dialog { inline-size: 100%; max-inline-size: 480px; display: grid; gap: 14px; padding: 22px 24px; border-radius: 14px; background: var(--color-card); box-shadow: var(--shadow-md); }
+.ad-dialog h2 { font-size: 22px; line-height: 1.2; }
+.ad-dialog p { font-size: 14px; color: var(--color-ink-2); }
+.ad-dialog .acts { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.ad-toast { display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; background: var(--color-ink); color: var(--color-paper); font-size: 14px; box-shadow: var(--shadow-md); }
+.ad-toast::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; background: var(--color-leaf-wash); }
+.ad-pre { margin: 0; padding: 12px 14px; border-radius: 8px; background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.55; color: var(--color-ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.ad-tl { display: grid; }
+.ad-tl > li { position: relative; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 2px 12px; padding-block: 10px; border-block-end: var(--rule); font-size: 14px; }
+.ad-tl > li:last-child { border-block-end: 0; }
+.ad-tl .sq { grid-row: span 2; display: inline-grid; place-items: center; inline-size: 26px; block-size: 26px; border-radius: 50%; background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 12px; font-weight: var(--font-weight-bold); color: var(--color-ink-2); font-variant-numeric: tabular-nums; }
+.ad-tl .ev code { font-size: 13px; font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.ad-tl .when { text-align: end; color: var(--color-ink-3); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ad-tl .meta { grid-column: 2 / span 2; font-size: 13px; color: var(--color-ink-3); }
+.ad-tl .meta code { font-size: 12px; color: var(--color-ink-2); }
+.ad-tl .raw { grid-column: 2 / span 2; margin-block-start: 6px; }
+.ad-tl details summary { cursor: pointer; color: var(--color-link); font-weight: var(--font-weight-bold); font-size: 13px; }
+.ad-pre-list { display: grid; gap: 6px; font-size: 14px; }
+.ad-pre-list li { display: flex; gap: 10px; align-items: baseline; }
+.ad-pre-list li::before { content: "✓"; flex: none; inline-size: 18px; text-align: center; font-weight: var(--font-weight-bold); color: var(--color-stem); }
+.ad-pre-list li.no::before { content: "×"; color: var(--color-danger); }
+.ad-pre-list li.no { color: var(--color-ink); }
+.ad-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.ad-form .full { grid-column: 1 / -1; }
+.ad-form .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ad-diff { inline-size: 100%; border-collapse: collapse; font-size: 13px; }
+.ad-diff th, .ad-diff td { text-align: start; padding: 6px 10px; border-block-end: var(--rule); vertical-align: top; }
+.ad-diff th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); font-weight: var(--font-weight-bold); }
+.ad-diff .b { background: var(--color-blush); }
+.ad-diff .a { background: var(--color-leaf-wash); }
+.ad-mask { font-style: italic; color: var(--color-ink-2); }
+.ad-roles { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ad-x { display: inline-grid; place-items: center; inline-size: 24px; block-size: 24px; margin-inline-end: -6px; border: 0; border-radius: 50%; background: none; color: var(--color-ink-2); font-size: 15px; line-height: 1; cursor: pointer; }
+.ad-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--color-ink-3); }
+
+/* ---------- admin at 390 ---------- */
+.ad-top { display: flex; align-items: center; gap: 10px; min-block-size: 56px; padding-inline: 16px; background: var(--color-paper-2); border-block-end: var(--rule); }
+.ad-top .ad-brand { padding-inline: 0; }
+.ad-top .ad-brand .wordmark { font-size: 16px; }
+.ad-top .ad-env { margin-inline: 0; align-self: center; }
+.ad-menu { margin-inline-start: auto; }
+.ad-menu summary { list-style: none; display: inline-flex; align-items: center; gap: 8px; min-block-size: 40px; padding-inline: 14px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--color-field-edge); background: var(--color-card); font-weight: var(--font-weight-bold); font-size: 14px; cursor: pointer; }
+.ad-menu summary::-webkit-details-marker { display: none; }
+.ad-mpanel { display: grid; gap: 12px; padding: 12px 16px 16px; background: var(--color-paper-2); border-block-end: var(--rule); box-shadow: var(--shadow-md); }
+.ad-mpanel .ad-nav a { min-block-size: 44px; font-size: 16px; }
+.M .ad-shell { display: block; min-block-size: 0; }
+.scr .ad-shell { min-block-size: 0; }
+.ad-top .ad-short { font-family: var(--font-display); font-size: 19px; color: var(--color-ink); }
+.M .ad-main { padding: 18px 16px 32px; gap: 16px; }
+.M .ad-h1 { font-size: 26px; }
+.M .ad-cols { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.M .ad-counters { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.M .ad-kv { grid-template-columns: 112px minmax(0, 1fr); gap: 6px 12px; }
+.M .ad-form { grid-template-columns: minmax(0, 1fr); }
+.M .ad-card { padding: 14px 16px; }
+.M .ad-tl > li { grid-template-columns: 30px minmax(0, 1fr); }
+.M .ad-tl .when { grid-column: 2; text-align: start; }
+.M .ad-tl .meta, .M .ad-tl .raw { grid-column: 2; }
+.ad-mfilters summary { list-style: none; display: inline-flex; align-items: center; gap: 8px; min-block-size: 40px; padding-inline: 14px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--color-field-edge); background: var(--color-card); font-weight: var(--font-weight-bold); font-size: 14px; }
+.ad-mfilters summary::-webkit-details-marker { display: none; }
+.ad-mfilters[open] .ad-filters { margin-block-start: 10px; display: grid; grid-template-columns: minmax(0, 1fr); }
+.ad-mfilters .ad-in { min-inline-size: 0; inline-size: 100%; }
+.ad-mfilters .ad-range .ad-in { min-inline-size: 0; }
+.ad-rows { display: grid; background: var(--color-card); border-radius: 12px; box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; }
+.ad-row { display: grid; gap: 4px; padding: 12px 14px; border-block-end: var(--rule); text-decoration: none; color: inherit; font-size: 14px; }
+.ad-row:last-child { border-block-end: 0; }
+.ad-row.new { background: var(--color-sage-wash); }
+.ad-row .l1 { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ad-row .l1 .tot { margin-inline-start: auto; font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; }
+.ad-row .l2 { color: var(--color-ink-2); }
+.ad-row .l3 { font-size: 13px; color: var(--color-ink-3); }
+
+/* ---------- form primitives (spec 011 §5.3; system/components.dc.html "Forms") ---------- */
+.fm { display: grid; gap: 20px; }
+.fm-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.M .fm-row { grid-template-columns: minmax(0, 1fr); }
+.fm-f { display: grid; gap: 6px; align-content: start; min-inline-size: 0; }
+.fm-f > label, .fm-f > legend, .fm-lbl { font-size: var(--text-ui); font-weight: var(--font-weight-bold); color: var(--color-ink); padding: 0; }
+.fm-f .opt { font-weight: var(--font-weight-body); color: var(--color-ink-3); }
+.fm-hint { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.fm-in { display: flex; align-items: center; inline-size: 100%; min-block-size: 50px; padding-inline: 14px; border-radius: var(--radius-field); border: var(--rule-field); background: var(--color-card); font-size: var(--text-ui); color: var(--color-ink); }
+.fm-in.blank { color: var(--color-ink-3); }
+.fm-in.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.fm-in.dis { background: var(--color-paper-2); border-color: var(--color-rule); color: var(--color-ink-3); }
+.fm-in.area { min-block-size: 96px; align-items: flex-start; padding-block: 12px; }
+.fm-in.sel { justify-content: space-between; }
+.fm-in.sel::after { content: ""; inline-size: 8px; block-size: 8px; border-inline-end: 2px solid var(--color-ink-2); border-block-end: 2px solid var(--color-ink-2); transform: translateY(-3px) rotate(45deg); }
+.fm-f.bad .fm-in { border-color: var(--color-danger); box-shadow: inset 0 0 0 1px var(--color-danger); }
+.fm-err { display: flex; gap: 8px; align-items: baseline; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-danger); line-height: var(--line-height-tight); }
+.fm-err::before { content: "!"; flex: none; display: inline-grid; place-items: center; inline-size: 18px; block-size: 18px; border-radius: 50%; background: var(--color-danger); color: var(--color-on-danger); font-size: 12px; }
+fieldset.fm-f { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
+.fm-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fm-opt { display: inline-flex; align-items: center; gap: 10px; min-block-size: var(--target-min); padding-inline: 14px 18px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-rule); font-size: var(--text-ui); }
+.fm-opt::before { content: ""; inline-size: 18px; block-size: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-field-edge); background: var(--color-card); }
+.fm-opt.on { box-shadow: inset 0 0 0 2px var(--color-selected); }
+.fm-opt.on::before { box-shadow: inset 0 0 0 5px var(--color-selected); }
+.fm-opt.dis { color: var(--color-ink-3); background: var(--color-paper-2); }
+.fm-sum { padding: 18px 20px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 2px var(--color-danger); display: grid; gap: 8px; }
+.fm-sum.focus { outline: var(--focus-ring); outline-offset: 3px; }
+.fm-sum h2 { font-size: var(--text-h3); color: var(--color-ink); }
+.fm-sum ul { display: grid; gap: 4px; }
+.fm-sum a { color: var(--color-danger); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.fm-notice { display: grid; gap: 6px; padding: 16px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-ui); line-height: var(--line-height-tight); color: var(--color-ink); }
+.fm-notice.warn { background: var(--color-blush); box-shadow: none; }
+.fm-notice.ok { background: var(--color-leaf-wash); box-shadow: none; }
+.fm-notice a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.fm-file { display: grid; justify-items: center; align-content: center; gap: 10px; min-block-size: 220px; padding: 24px; border-radius: var(--radius-photo); border: 2px dashed var(--color-field-edge); background: var(--color-card); text-align: center; }
+.fm-file svg { inline-size: 40px; block-size: 40px; color: var(--color-mark); }
+.fm-file b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); line-height: 1.25; max-inline-size: 22ch; }
+.fm-file small { font-size: var(--text-sm); color: var(--color-ink-3); }
+.fm-file.bad { border-color: var(--color-danger); }
+.fm-file.chosen { border-style: solid; border-color: var(--color-selected); }
+
+/* ---------- sign-in (shared core; spec 011 florist instance, spec 012 admin instance) ---------- */
+.si { background: var(--color-paper); }
+.si-body { display: grid; justify-items: center; padding: 32px var(--gutter-s) 48px; }
+.si-d .si-body { padding: 72px var(--gutter) 96px; }
+.si-card { inline-size: 100%; max-inline-size: 440px; display: grid; gap: 18px; padding: 28px 24px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); }
+.si-d .si-card { padding: 40px 40px 36px; }
+.si-card h1 { font-size: 30px; line-height: 1.12; letter-spacing: var(--tracking-display); }
+.si-d .si-card h1 { font-size: 36px; }
+.si-card p { color: var(--color-ink-2); }
+.si-card .btn { inline-size: 100%; min-block-size: 56px; }
+.si-card .fine { font-size: var(--text-sm); color: var(--color-ink-3); }
+.si-mail { display: grid; place-items: center; inline-size: 52px; block-size: 52px; border-radius: 50%; background: var(--color-sage-wash); color: var(--color-mark); }
+.si-mail svg { inline-size: 26px; block-size: 26px; }
+.si-foot { margin-block-start: 18px; text-align: center; font-size: var(--text-sm); color: var(--color-ink-3); max-inline-size: 440px; }
+.mail { inline-size: 100%; max-inline-size: 640px; margin-inline: auto; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); overflow: hidden; }
+.mail-h { display: grid; gap: 4px; padding: 16px 20px; background: var(--color-paper-2); border-block-end: var(--rule); font-size: var(--text-sm); }
+.mail-h div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; }
+.mail-h dt { color: var(--color-ink-3); }
+.mail-h dd { color: var(--color-ink); overflow-wrap: anywhere; }
+.mail-b { display: grid; gap: 14px; padding: 24px 20px 28px; font-size: var(--text-ui); }
+.mail-b .wm { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-logo); font-size: 18px; color: var(--color-logo-ink); }
+.mail-b .wm svg { inline-size: 24px; block-size: 24px; }
+.mail-b .btn { justify-self: start; }
+.mail-t { padding: 16px 20px; border-block-start: 1px dashed var(--color-rule); background: var(--color-paper-2); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.55; color: var(--color-ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  </style>
+</helmet>
+<div class="fo M" style="inline-size: 390px;">
+<section class="note"><span class="nl">Admin · home · mobile 390 · spec 012 · [internal]</span><dl><dt>Purpose</dt><dd>Where the founder lands: three counters, each a link (spec 012 §5.3). Nothing else, so the screen answers “is anything waiting?” at a glance. Phone: a top bar with the environment and Menu; the counters stack.</dd><dt>URL</dt><dd><code>/admin</code></dd><dt>Index</dt><dd>Never: <code>X-Robots-Tag: noindex, nofollow</code> and <code>Cache-Control: no-store, private</code> on every <code>/admin</code> response, <code>&lt;meta name="robots" content="noindex,nofollow"&gt;</code>, <code>Disallow: /admin/</code>, no sitemap, no public link (AC-5, AC-6). No locale prefix. Ids, never names, in URLs.</dd><dt>Permission</dt><dd>Any admin role. The navigation and the counters come from <code>ADMIN_PERMISSIONS</code>: admin sees all seven entries; ops sees Home, Orders, Applications, Florists; finance sees Home, Orders, Florists; content sees Home only in v0 (012b adds its pages).</dd><dt>Reads</dt><dd>Count of today's orders (<code>listOrdersForAdmin</code>, created today in the viewer's zone), <code>listFloristApplications(adminCtx, {status: "new"})</code> count, florists grouped by <code>fulfillment_partner.status</code>. Fixture drawn: staging after TASK-026's seed (3 demo florists per destination, so 21), one converted application.</dd><dt>States</dt><dd>With data (staging fixture) · zero counts · per-role navigation (admin, ops, finance, content) · menu open at 390 · 403 (forbidden permission) · 404 (unknown id). 403 and 404 render no data.</dd><dt>Components</dt><dd>Admin shell (side bar, top bar at 390), counter card, environment chip, empty block. Drawn in the Admin group of <code>system/components.dc.html</code>.</dd><dt>Tokens</dt><dd>Shell <code>--color-paper-2</code> with <code>--rule</code>; current item <code>--color-card</code> + <code>--shadow-xs</code>; counters <code>--font-display</code> 44 px tabular; links <code>--color-link</code>. Targets ≥ 24 px (WCAG 2.5.8; most are 36 to 44).</dd><dt>Copy</dt><dd><span class="pending">Founder copy pending</span> All admin strings are new, English only, in <code>messages/admin/en.json</code> (spec 012 §7, namespaces <code>admin.*</code>), drawn as proposed wording. Internal words are allowed in admin by spec 012 §2.2, but the artboards say “florist” because the banned-word scan's <code>admin-*</code> exemption lands with TASK-217; routes, tables and permissions keep their code names in <code>&lt;code&gt;</code>.</dd><dt>AC</dt><dd>spec 012 AC-1, AC-4, AC-5, AC-7</dd><dt>Owning spec</dt><dd>012 (TASK-217)</dd></dl></section>
+<div class="pg" style="position:relative"><div class="fold" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:844px" aria-hidden="true"><span>First screen ends here · 390 × 844</span></div>
+<div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu"><summary>Menu</summary></details></header><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">Today</h1><p class="ad-sub">Monday 5 October · times in Europe/Tallinn</p></div></div><div class="ad-counters"><a class="ad-counter" href="/admin/orders"><span class="k">Orders today</span><span class="v">3</span><span class="s">All 3 are demo orders.</span><span class="go">Open orders</span></a><a class="ad-counter" href="/admin/applications?status=new"><span class="k">New applications</span><span class="v">1</span><span class="s">Waiting for a reply.</span><span class="go">Open applications</span></a><a class="ad-counter" href="/admin/{florists}"><span class="k">Florists by status</span><div class="ad-bystatus"><div><span>Demo</span><b>21</b></div><div><span>Onboarding</span><b>1</b></div><div><span>Active</span><b>0</b></div><div><span>Paused</span><b>0</b></div><div><span>Offboarded</span><b>0</b></div></div><span class="go">Open florists</span></a></div></main></div>
+</div>
+<p class="page-label" aria-hidden="true">Zero counts</p>
+<div class="scr"><div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu"><summary>Menu</summary></details></header><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">Today</h1><p class="ad-sub">Monday 5 October · times in Europe/Tallinn</p></div></div><div class="ad-counters"><a class="ad-counter" href="/admin/orders"><span class="k">Orders today</span><span class="v">0</span><span class="s">No orders yet today.</span><span class="go">Open orders</span></a><a class="ad-counter" href="/admin/applications?status=new"><span class="k">New applications</span><span class="v">0</span><span class="s">Nothing waiting.</span><span class="go">Open applications</span></a><a class="ad-counter" href="/admin/{florists}"><span class="k">Florists by status</span><div class="ad-bystatus"><div><span>Demo</span><b>0</b></div><div><span>Onboarding</span><b>0</b></div><div><span>Active</span><b>0</b></div><div><span>Paused</span><b>0</b></div><div><span>Offboarded</span><b>0</b></div></div><span class="go">Open florists</span></a></div></main></div></div>
+<p class="page-label" aria-hidden="true">Menu open</p>
+<div class="scr"><div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu" open><summary>Menu</summary></details></header><div class="ad-mpanel"><nav class="ad-nav" aria-label="Admin"><ul><li><a href="/admin" aria-current="page">Home</a></li><li><a href="/admin/orders">Orders</a></li><li><a href="/admin/applications">Applications<span class="ad-n">1</span></a></li><li><a href="/admin/{florists}">Florists</a></li><li><a href="/admin/flags">Flags</a></li><li><a href="/admin/audit">Audit log</a></li><li><a href="/admin/users">Users</a></li></ul></nav><div class="ad-me"><b>Ahmad Hameed</b><span>admin · times in Europe/Tallinn</span><form method="post" action="/admin/api/auth/signout"><button type="submit">Sign out</button></form></div></div><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">Today</h1><p class="ad-sub">Monday 5 October · times in Europe/Tallinn</p></div></div><div class="ad-counters"><a class="ad-counter" href="/admin/orders"><span class="k">Orders today</span><span class="v">3</span><span class="s">All 3 are demo orders.</span><span class="go">Open orders</span></a><a class="ad-counter" href="/admin/applications?status=new"><span class="k">New applications</span><span class="v">1</span><span class="s">Waiting for a reply.</span><span class="go">Open applications</span></a><a class="ad-counter" href="/admin/{florists}"><span class="k">Florists by status</span><div class="ad-bystatus"><div><span>Demo</span><b>21</b></div><div><span>Onboarding</span><b>1</b></div><div><span>Active</span><b>0</b></div><div><span>Paused</span><b>0</b></div><div><span>Offboarded</span><b>0</b></div></div><span class="go">Open florists</span></a></div></main></div></div>
+<p class="page-label" aria-hidden="true">Signed in as ops</p>
+<div class="scr"><div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu"><summary>Menu</summary></details></header><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">Today</h1><p class="ad-sub">Monday 5 October · times in Europe/Tallinn</p></div></div><div class="ad-counters"><a class="ad-counter" href="/admin/orders"><span class="k">Orders today</span><span class="v">3</span><span class="s">All 3 are demo orders.</span><span class="go">Open orders</span></a><a class="ad-counter" href="/admin/applications?status=new"><span class="k">New applications</span><span class="v">1</span><span class="s">Waiting for a reply.</span><span class="go">Open applications</span></a><a class="ad-counter" href="/admin/{florists}"><span class="k">Florists by status</span><div class="ad-bystatus"><div><span>Demo</span><b>21</b></div><div><span>Onboarding</span><b>1</b></div><div><span>Active</span><b>0</b></div><div><span>Paused</span><b>0</b></div><div><span>Offboarded</span><b>0</b></div></div><span class="go">Open florists</span></a></div></main></div></div>
+<p class="page-label" aria-hidden="true">Signed in as content (no page of its own in v0)</p>
+<div class="scr"><div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu"><summary>Menu</summary></details></header><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">Today</h1><p class="ad-sub">Monday 5 October · times in Europe/Tallinn</p></div></div><div class="ad-empty"><b>Nothing here for your role yet</b><p>Content pages arrive with the next admin release.</p></div></main></div></div>
+<p class="page-label" aria-hidden="true">403 · signed in as finance, opening <code>/admin/flags</code></p>
+<div class="scr"><div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu"><summary>Menu</summary></details></header><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">You cannot open this page</h1><p class="ad-sub">Your role does not include it. Ask an admin if you need it.</p></div></div><a class="ad-a" href="/admin">Back to Today</a></main></div></div>
+<p class="page-label" aria-hidden="true">404 · an id that does not exist</p>
+<div class="scr"><div class="ad-shell"><header class="ad-top"><a class="ad-brand" href="/admin" aria-label="Flowers Overseas admin"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="ad-short">Admin</span></a><span class="ad-env">Staging</span><details class="ad-menu"><summary>Menu</summary></details></header><main class="ad-main"><div class="ad-head"><div><h1 class="ad-h1">Not found</h1><p class="ad-sub">There is nothing at this address in admin.</p></div></div><a class="ad-a" href="/admin">Back to Today</a></main></div></div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+.fo.M { font-size: var(--text-body-s); }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote, h1, h2, h3, h4) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+:where(.fo) :where(button, select, input, textarea) { font: inherit; color: inherit; }
+.vh { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .stub code, .slot code, .page-label code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; }
+.note ul { display: grid; gap: 2px; }
+.note code { overflow-wrap: anywhere; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+.note .pending { display: inline-block; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-warning); border-radius: var(--radius-full); padding: 1px 8px; }
+
+/* the band that separates the page from its drawn states */
+.state-band { margin-block-start: var(--space-xl); padding: var(--space-xl) var(--gutter) var(--space-2xl); background: var(--color-paper-3); border-block-start: 1px dashed var(--color-ink-3); }
+.M .state-band { padding: var(--space-lg) var(--gutter-s) var(--space-xl); }
+.state-band > .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.states { display: grid; gap: var(--space-lg); }
+.D .states.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.D .states.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.state { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; min-inline-size: 0; }
+.M .state { padding: var(--space-md); }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.stub b { color: var(--color-ink); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); font-size: 0.86em; }
+
+/* a whole drawn screen for one state: a label, then the screen at full width */
+.page-label { margin-block-start: 72px; padding: 14px var(--gutter); background: var(--color-paper-3); border-block: 1px dashed var(--color-ink-3); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.M .page-label { margin-block-start: 48px; padding-inline: var(--gutter-s); }
+.page-label + .scr { border-block-end: 1px dashed var(--color-ink-3); }
+
+/* first-screen markers */
+.fold { position: relative; block-size: 0; border-block-start: 2px dashed var(--color-accent); }
+.fold span { position: absolute; inset-inline-end: 8px; inset-block-start: 4px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-accent-strong); background: var(--color-card); padding: 2px 8px; border-radius: var(--radius-full); }
+.fold.lap { border-block-start: 1.5px dashed var(--color-sky); }
+.fold.lap span { color: var(--color-sky-strong); inset-inline-end: auto; inset-inline-start: 8px; }
+
+/* ---------- actions ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-block-size: var(--control-md); padding-inline: 28px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-family: var(--font-body); font-weight: var(--font-weight-bold); font-size: var(--text-body-s); line-height: 1.1; text-decoration: none; border: 0; white-space: nowrap; cursor: pointer; }
+.btn.sm { min-block-size: var(--control-sm); padding-inline: 20px; font-size: var(--text-ui); }
+.btn.ghost { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+.btn.ink { background: var(--color-ink); color: var(--color-paper); }
+.btn.quiet { background: transparent; color: var(--color-link); padding-inline: 0; min-block-size: var(--target-min); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.btn.busy { background: var(--color-accent-strong); }
+.btn.focus { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.link { color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.ilink { color: var(--color-link); text-decoration: underline; text-underline-offset: 4px; }
+.phbar { display: inline-block; inline-size: 2.6em; block-size: 0.75em; border-radius: var(--radius-sm); background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); vertical-align: -0.05em; }
+.ph { background: var(--color-photo); display: flex; align-items: flex-end; padding: var(--space-md); color: var(--color-photo-ink); font-size: var(--text-xs); line-height: 1.4; letter-spacing: 0.02em; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--color-logo-ink); min-block-size: var(--target-min); }
+.wordmark { font-family: var(--font-logo); font-weight: 500; letter-spacing: var(--tracking-wordmark); white-space: nowrap; }
+
+
+/* ---------- form primitives (spec 011 §5.3; system/components.dc.html "Forms") ---------- */
+.fm { display: grid; gap: 20px; }
+.fm-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.M .fm-row { grid-template-columns: minmax(0, 1fr); }
+.fm-f { display: grid; gap: 6px; align-content: start; min-inline-size: 0; }
+.fm-f > label, .fm-f > legend, .fm-lbl { font-size: var(--text-ui); font-weight: var(--font-weight-bold); color: var(--color-ink); padding: 0; }
+.fm-f .opt { font-weight: var(--font-weight-body); color: var(--color-ink-3); }
+.fm-hint { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); }
+.fm-in { display: flex; align-items: center; inline-size: 100%; min-block-size: 50px; padding-inline: 14px; border-radius: var(--radius-field); border: var(--rule-field); background: var(--color-card); font-size: var(--text-ui); color: var(--color-ink); }
+.fm-in.blank { color: var(--color-ink-3); }
+.fm-in.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.fm-in.dis { background: var(--color-paper-2); border-color: var(--color-rule); color: var(--color-ink-3); }
+.fm-in.area { min-block-size: 96px; align-items: flex-start; padding-block: 12px; }
+.fm-in.sel { justify-content: space-between; }
+.fm-in.sel::after { content: ""; inline-size: 8px; block-size: 8px; border-inline-end: 2px solid var(--color-ink-2); border-block-end: 2px solid var(--color-ink-2); transform: translateY(-3px) rotate(45deg); }
+.fm-f.bad .fm-in { border-color: var(--color-danger); box-shadow: inset 0 0 0 1px var(--color-danger); }
+.fm-err { display: flex; gap: 8px; align-items: baseline; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-danger); line-height: var(--line-height-tight); }
+.fm-err::before { content: "!"; flex: none; display: inline-grid; place-items: center; inline-size: 18px; block-size: 18px; border-radius: 50%; background: var(--color-danger); color: var(--color-on-danger); font-size: 12px; }
+fieldset.fm-f { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
+.fm-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fm-opt { display: inline-flex; align-items: center; gap: 10px; min-block-size: var(--target-min); padding-inline: 14px 18px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-rule); font-size: var(--text-ui); }
+.fm-opt::before { content: ""; inline-size: 18px; block-size: 18px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-field-edge); background: var(--color-card); }
+.fm-opt.on { box-shadow: inset 0 0 0 2px var(--color-selected); }
+.fm-opt.on::before { box-shadow: inset 0 0 0 5px var(--color-selected); }
+.fm-opt.dis { color: var(--color-ink-3); background: var(--color-paper-2); }
+.fm-sum { padding: 18px 20px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 2px var(--color-danger); display: grid; gap: 8px; }
+.fm-sum.focus { outline: var(--focus-ring); outline-offset: 3px; }
+.fm-sum h2 { font-size: var(--text-h3); color: var(--color-ink); }
+.fm-sum ul { display: grid; gap: 4px; }
+.fm-sum a { color: var(--color-danger); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.fm-notice { display: grid; gap: 6px; padding: 16px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-ui); line-height: var(--line-height-tight); color: var(--color-ink); }
+.fm-notice.warn { background: var(--color-blush); box-shadow: none; }
+.fm-notice.ok { background: var(--color-leaf-wash); box-shadow: none; }
+.fm-notice a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.fm-file { display: grid; justify-items: center; align-content: center; gap: 10px; min-block-size: 220px; padding: 24px; border-radius: var(--radius-photo); border: 2px dashed var(--color-field-edge); background: var(--color-card); text-align: center; }
+.fm-file svg { inline-size: 40px; block-size: 40px; color: var(--color-mark); }
+.fm-file b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); line-height: 1.25; max-inline-size: 22ch; }
+.fm-file small { font-size: var(--text-sm); color: var(--color-ink-3); }
+.fm-file.bad { border-color: var(--color-danger); }
+.fm-file.chosen { border-style: solid; border-color: var(--color-selected); }
+
+/* ---------- florist surfaces (spec 011): phone first; desktop under .fr-d ---------- */
+.fr { background: var(--color-paper); color: var(--color-ink); }
+.fr-hdr { display: flex; align-items: center; gap: 12px; min-block-size: 60px; padding-inline: var(--gutter-s); background: var(--color-paper); border-block-end: var(--rule); }
+.fr-hdr .logo svg { inline-size: 28px; block-size: 28px; flex: none; }
+.fr-hdr .wordmark { font-size: 18px; }
+.fr-menu { margin-inline-start: auto; position: relative; }
+.fr-menu summary { list-style: none; display: inline-flex; align-items: center; gap: 10px; min-block-size: var(--target-min); padding-inline: 16px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1.5px var(--color-ink); font-weight: var(--font-weight-bold); font-size: var(--text-ui); cursor: pointer; }
+.fr-menu summary::-webkit-details-marker { display: none; }
+.fr-menu .bars { position: relative; inline-size: 18px; block-size: 12px; border-block: 2px solid currentColor; }
+.fr-menu .bars::after { content: ""; position: absolute; inset-inline: 0; inset-block-start: 3px; border-block-start: 2px solid currentColor; }
+.fr-langs { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; font-size: var(--text-ui); }
+.fr-langs a { display: inline-flex; align-items: center; min-block-size: var(--target-min); padding-inline: 8px; color: var(--color-ink-2); text-underline-offset: 4px; }
+.fr-langs a[aria-current] { color: var(--color-ink); font-weight: var(--font-weight-bold); text-decoration: none; }
+.fr-hdr .fr-langs { margin-inline-start: auto; }
+.fr-demo { padding: 10px var(--gutter-s); background: var(--color-paper-3); border-block-end: var(--rule); font-size: var(--text-sm); line-height: var(--line-height-tight); color: var(--color-ink-2); }
+.fr-demo b { color: var(--color-ink); }
+.fr-main { display: grid; gap: 24px; align-content: start; padding: 20px var(--gutter-s) 28px; }
+.fr-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.fr-h1 { font-size: 34px; line-height: 1.08; letter-spacing: var(--tracking-display); }
+.fr-sub { margin-block-start: 4px; font-size: var(--text-body); color: var(--color-ink-2); }
+.fr-eyebrow { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); margin-block-end: 8px; }
+.fr-group { display: grid; gap: 10px; }
+.fr-group > h2 { display: flex; align-items: center; gap: 8px; font-family: var(--font-body); font-variation-settings: normal; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.fr-group > h2 .cnt { display: inline-grid; place-items: center; min-inline-size: 22px; block-size: 22px; padding-inline: 6px; border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-paper); letter-spacing: 0; font-size: 12px; }
+.fr-list { display: grid; gap: 10px; }
+.fr-item { position: relative; display: grid; gap: 4px; padding: 16px 48px 16px 18px; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-xs); text-decoration: none; color: inherit; min-block-size: 96px; }
+.fr-item .chev { position: absolute; inset-inline-end: 14px; inset-block-start: 50%; inline-size: 22px; block-size: 22px; margin-block-start: -11px; color: var(--color-ink-3); }
+.fr-item .t { font-family: var(--font-display); font-size: var(--text-h3); line-height: 1.2; }
+.fr-item .m { font-size: var(--text-ui); color: var(--color-ink-2); line-height: 1.35; }
+.fr-item .when { display: flex; flex-wrap: wrap; column-gap: 6px; }
+.fr-item .when .sep::before { content: "· "; color: var(--color-ink-3); }
+.fr-d .fr-item .when { display: contents; }
+.fr-d .fr-item .when .sep::before { content: none; }
+.fr-item .pay { font-size: var(--text-ui); font-weight: var(--font-weight-bold); color: var(--color-included); }
+.fr-item.off { background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.fr-item.off .t { color: var(--color-ink-2); }
+.fr-due { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 8px; border-radius: var(--radius-full); background: var(--color-blush); color: var(--color-accent-strong); font-size: var(--text-sm); font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; }
+.fr-due svg { inline-size: 16px; block-size: 16px; }
+.fr-late { justify-self: start; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-ink-2); }
+.fr-chip { justify-self: start; display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-full); background: var(--color-sage-wash); color: var(--color-sky-strong); font-size: var(--text-sm); font-weight: var(--font-weight-bold); }
+.fr-chip.done { background: var(--color-leaf-wash); color: var(--color-stem); }
+.fr-chip.todo { background: var(--color-butter); color: var(--color-ink); }
+.fr-empty { display: grid; justify-items: center; gap: 10px; padding: 48px 24px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); text-align: center; }
+.fr-empty p { max-inline-size: 30ch; color: var(--color-ink-2); }
+.fr-empty svg { inline-size: 36px; block-size: 36px; color: var(--color-mark); }
+.fr-back { display: inline-flex; align-items: center; gap: 4px; min-block-size: var(--target-min); color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: none; justify-self: start; margin-block: -8px -12px; }
+.fr-back svg { inline-size: 20px; block-size: 20px; }
+.fr-bigdue { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-field); background: var(--color-blush); color: var(--color-accent-strong); font-weight: var(--font-weight-bold); font-size: var(--text-body); font-variant-numeric: lining-nums tabular-nums; }
+.fr-bigdue svg { inline-size: 20px; block-size: 20px; flex: none; }
+.fr-pay { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 16px; border-radius: var(--radius-field); background: var(--color-leaf-wash); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.fr-pay strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); color: var(--color-ink); font-variant-numeric: lining-nums; }
+.fr-facts { display: grid; border-block-start: var(--rule); }
+.fr-facts > div { display: grid; grid-template-columns: 124px minmax(0, 1fr); gap: 2px 14px; padding-block: 12px; border-block-end: var(--rule); align-items: baseline; }
+.fr-facts dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.fr-facts dd { font-size: var(--text-body-s); }
+.fr-sec { display: grid; gap: 10px; }
+.fr-sec > h2 { font-size: var(--text-md); line-height: 1.2; }
+.fr-rcpt { display: grid; gap: 0; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); padding: 4px 16px; }
+.fr-rcpt > div { display: grid; gap: 2px; padding-block: 12px; border-block-end: var(--rule); }
+.fr-rcpt > div:last-child { border-block-end: 0; }
+.fr-rcpt dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.fr-rcpt dd { font-size: var(--text-body-s); line-height: 1.4; }
+.fr-rcpt .name { font-family: var(--font-display); font-size: var(--text-h3); }
+.fr-tel { display: inline-flex; align-items: center; gap: 8px; min-block-size: var(--target-min); color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; font-variant-numeric: lining-nums tabular-nums; }
+.fr-tel svg { inline-size: 18px; block-size: 18px; }
+.fr-cardmsg { padding: 18px 20px; border-radius: var(--radius-letter); background: var(--color-card); box-shadow: var(--shadow-paper); font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); font-variation-settings: var(--font-variation-display); font-size: var(--text-h3); line-height: 1.35; }
+.fr-reasons { display: grid; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; }
+.fr-reasons label { display: flex; align-items: center; gap: 14px; min-block-size: 56px; padding-inline: 16px; border-block-end: var(--rule); font-size: var(--text-body-s); }
+.fr-reasons label:last-child { border-block-end: 0; }
+.fr-reasons label::before { content: ""; flex: none; inline-size: 22px; block-size: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-field-edge); }
+.fr-reasons label.on { background: var(--color-sage-wash); font-weight: var(--font-weight-bold); }
+.fr-reasons label.on::before { box-shadow: inset 0 0 0 6px var(--color-selected); background: var(--color-card); }
+.fr-photo { aspect-ratio: 4 / 5; border-radius: var(--radius-photo-s); overflow: hidden; }
+.fr-photo .ph { block-size: 100%; }
+.fr-file-name { display: flex; justify-content: space-between; gap: 12px; font-size: var(--text-ui); color: var(--color-ink-2); }
+/* the build docks this bar: position: sticky; inset-block-end: 0. Drawn in place so every screen reads top to bottom. */
+.fr-dock { position: relative; z-index: 20; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 10px; padding: 12px var(--gutter-s) 16px; background: var(--color-paper); border-block-start: var(--rule); box-shadow: var(--shadow-sticky); }
+.fr-dock.wide { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); grid-auto-flow: row; }
+.fr-dock .btn { min-block-size: 56px; font-size: var(--text-body-s); padding-inline: 16px; }
+.fr-refresh { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 12px 16px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-sm); color: var(--color-ink-2); }
+.fr-panel { display: grid; gap: 14px; padding: 16px var(--gutter-s) 20px; background: var(--color-paper); border-block-end: var(--rule); box-shadow: var(--shadow-md); }
+.fr-panel h2 { font-family: var(--font-body); font-variation-settings: normal; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.fr-panel .fr-langs { margin-inline-start: -8px; }
+
+/* ---------- desktop: one 12-column grid inside the 1,328 px frame ---------- */
+.fr-d .fr-hdr { min-block-size: 72px; padding-inline: var(--gutter); }
+.fr-d .fr-hdr .logo svg { inline-size: 34px; block-size: 34px; }
+.fr-d .fr-hdr .wordmark { font-size: 22px; }
+.fr-d .fr-hdr .signout { display: inline-flex; align-items: center; min-block-size: var(--target-min); padding-inline: 16px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1.5px var(--color-ink); font-weight: var(--font-weight-bold); font-size: var(--text-ui); text-decoration: none; }
+.fr-d .fr-demo { padding-inline: var(--gutter); }
+.fr-d .fr-main { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; row-gap: 28px; padding: 36px var(--gutter) 64px; }
+.fr-d .fr-main > * { grid-column: 2 / span 10; }
+.fr-d .fr-h1 { font-size: 46px; }
+.fr-d .fr-list { gap: 0; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; }
+.fr-d .fr-item { grid-template-columns: 190px minmax(0, 1.7fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1fr); align-items: center; column-gap: 24px; min-block-size: 76px; padding: 14px 56px 14px 22px; border-radius: 0; box-shadow: none; border-block-end: var(--rule); background: var(--color-card); }
+.fr-d .fr-list > :last-child { border-block-end: 0; }
+.fr-d .fr-item.off { background: var(--color-paper-2); }
+.fr-d .fr-item .fr-lead { grid-column: 1; }
+.fr-d .fr-item .t { font-size: var(--text-h3); }
+.fr-d .fr-order { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; align-items: start; padding: 28px var(--gutter) 72px; }
+.fr-d .fr-order > .fr-main { grid-column: 2 / span 6; display: grid; grid-template-columns: none; padding: 0; gap: 24px; }
+.fr-d .fr-order > .fr-main > * { grid-column: auto; }
+.fr-d .fr-order > .fr-act { grid-column: 9 / span 3; position: sticky; inset-block-start: 24px; display: grid; gap: 12px; padding: 22px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); }
+.fr-d .fr-act .btn { inline-size: 100%; min-block-size: 56px; }
+.fr-d .fr-act .lbl { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.fr-d .fr-narrow { grid-column: 4 / span 6; }
+.fr-d .fr-photo { max-inline-size: 420px; }
+.fr-d .fr-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+
+/* ---------- sign-in (shared core; spec 011 florist instance, spec 012 admin instance) ---------- */
+.si { background: var(--color-paper); }
+.si-body { display: grid; justify-items: center; padding: 32px var(--gutter-s) 48px; }
+.si-d .si-body { padding: 72px var(--gutter) 96px; }
+.si-card { inline-size: 100%; max-inline-size: 440px; display: grid; gap: 18px; padding: 28px 24px; border-radius: var(--radius-photo); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); }
+.si-d .si-card { padding: 40px 40px 36px; }
+.si-card h1 { font-size: 30px; line-height: 1.12; letter-spacing: var(--tracking-display); }
+.si-d .si-card h1 { font-size: 36px; }
+.si-card p { color: var(--color-ink-2); }
+.si-card .btn { inline-size: 100%; min-block-size: 56px; }
+.si-card .fine { font-size: var(--text-sm); color: var(--color-ink-3); }
+.si-mail { display: grid; place-items: center; inline-size: 52px; block-size: 52px; border-radius: 50%; background: var(--color-sage-wash); color: var(--color-mark); }
+.si-mail svg { inline-size: 26px; block-size: 26px; }
+.si-foot { margin-block-start: 18px; text-align: center; font-size: var(--text-sm); color: var(--color-ink-3); max-inline-size: 440px; }
+.mail { inline-size: 100%; max-inline-size: 640px; margin-inline: auto; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); overflow: hidden; }
+.mail-h { display: grid; gap: 4px; padding: 16px 20px; background: var(--color-paper-2); border-block-end: var(--rule); font-size: var(--text-sm); }
+.mail-h div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; }
+.mail-h dt { color: var(--color-ink-3); }
+.mail-h dd { color: var(--color-ink); overflow-wrap: anywhere; }
+.mail-b { display: grid; gap: 14px; padding: 24px 20px 28px; font-size: var(--text-ui); }
+.mail-b .wm { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-logo); font-size: 18px; color: var(--color-logo-ink); }
+.mail-b .wm svg { inline-size: 24px; block-size: 24px; }
+.mail-b .btn { justify-self: start; }
+.mail-t { padding: 16px 20px; border-block-start: 1px dashed var(--color-rule); background: var(--color-paper-2); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.55; color: var(--color-ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  </style>
+</helmet>
+<div class="fo D" style="inline-size: 1440px;">
+<section class="note"><span class="nl">Florist inbox · list, order, photo · desktop 1440 · spec 011 · [internal]</span><dl><dt>Purpose</dt><dd>The florist's inbox v0: every order offered to the signed-in florist's shop, grouped by what it needs from them, then one order at a time with the one action its state allows. Built on the Phase 2 portal's foundations (spec 011 §2), so specs 026 and 027 extend these screens rather than replace them. Desktop: the same screens on the 12-column grid, list on columns 2 to 11, the order on 2 to 7 with the action card on 9 to 11.</dd><dt>URL</dt><dd><code>/demo/vendor-inbox</code> (the list) · <code>/demo/vendor-inbox/orders/{assignmentId}</code> · <code>/demo/vendor-inbox/orders/{assignmentId}/photo</code>; every path from <code>FLORIST_BASE_PATH</code> (links on this artboard write it as <code>{base}</code>). No locale prefix. An id, never a name, in every URL.</dd><dt>Index</dt><dd><code>noindex</code> (<code>X-Robots-Tag</code>), <code>Cache-Control: private, no-store</code>; 404 in <code>production</code> while <code>signInPolicy("production")</code> is empty (AC-22). <code>robots.txt</code> disallows <code>/demo/</code>.</dd><dt>Reads</dt><dd><code>listFloristAssignments(ctx)</code> → <code>FloristAssignmentListItemSchema</code>; <code>floristOrderView(ctx, assignmentId)</code> → <code>FloristOrderViewSchema</code>, a union on the stage with <b>no buyer field at all</b>; the recipient's name, phone, address, note and card message exist only from acceptance to the photo (AC-25). Scoped by row-level security under <code>requireFloristContext()</code>.</dd><dt>States</dt><dd>List: offers waiting with answer-by time · offer expired (text, no accept) · in progress · delivered · empty · the demo notice · the test-order control · refresh stopped after idle · menu open. Order: offer (no recipient contact) · declining (the five reasons, then “Decline the order”) · accepted, being made (recipient and card message shown, “Out for delivery”) · out for delivery (“Delivered, add the photo”) · delivered without photo (“Add the photo”) · photo received (recipient contact removed) · already answered · changed · offer expired · not found (404). Photo step: choose · chosen · wrong type · too large · sent.</dd><dt>Laptop band</dt><dd><b>1280 × 800</b>: H1 46px at y 150, primary action (“Send a test order”) ends y 197 (in view) · <b>1470 × 830</b>: H1 46px at y 150, primary action (“Send a test order”) ends y 197 (in view) · <b>1512 × 860</b>: H1 46px at y 150, primary action (“Send a test order”) ends y 197 (in view) · <b>1512 × 945</b>: H1 46px at y 150, primary action (“Send a test order”) ends y 197 (in view). Measured on this artboard rendered at each window size, annotation hidden (Playwright, 2026-10-05).</dd><dt>Actions</dt><dd>Each a no-JS form post to a florist command, offered <b>only</b> in the states <code>order_transition</code> allows (AC-29): Accept / Decline → <code>respondToOffer</code> (<code>assignment.accepted</code> / <code>assignment.declined</code>) · Out for delivery → <code>markOutForDelivery</code> (<code>order.out_for_delivery</code>) · Delivered, add the photo → <code>markDelivered</code> (<code>order.delivered</code> then <code>order.photo_uploaded</code>) · Add the photo → <code>addDeliveryPhoto</code>. All through spec 010's <code>orderService.transition</code>; none writes a status itself.</dd><dt>Refresh</dt><dd>A client island calls <code>router.refresh()</code> every 5 s while the list is visible and stops after 10 minutes without interaction, leaving the Refresh link (AC-26). No skeleton, no spinner: every page is a server render (spec 011 §5.3). Pending buttons use motion cell 3 of <code>system/motion.dc.html</code>; the photo fades in per cell 11.</dd><dt>Components</dt><dd><code>src/modules/partners/ui/inbox/</code>: list group, list item, order head, facts list, recipient block, card message, decline reasons, photo field, the dock. Form primitives from <code>system/components.dc.html</code> “Forms” (file field, radio list, notice, field error).</dd><dt>Tokens</dt><dd>Ground <code>--color-paper</code>; items <code>--color-card</code> with <code>--rule</code>; answer-by <code>--color-blush</code> on <code>--color-accent-strong</code>; payout <code>--color-leaf-wash</code>; stage chips <code>--color-sage-wash</code> / <code>--color-leaf-wash</code> / <code>--color-butter</code>; the one primary action <code>--color-accent</code>; targets ≥ 56 px in the dock, ≥ 44 px everywhere.</dd><dt>Data drawn</dt><dd>Synthetic only: the recipient is <code>tests/fixtures</code>' “Anna Kowalska, ul. Marszałkowska 10/5, 00-001 Warszawa, +48 22 123 45 67”; products and tiers are catalogue rows. <b>Payouts:</b> “149 zł” is spec 011 §13 Q7's default (the founder accepted the defaults on 2026-10-04); every other payout is the Placeholder bar, because the seed payout mapping (TASK-026) does not exist yet. Times are in Europe/Warsaw, the destination's zone.</dd><dt>Copy</dt><dd><span class="pending">Founder copy pending</span> Every string is spec 011 Appendix A, verbatim, under <code>floristInbox.*</code>, approved with the artboards as spec 011 §12 founder prerequisite 1. One change: Appendix A's “Delivered <b>[em dash]</b> add the photo” is drawn as “Delivered, add the photo” (no em dash; the founder's rule). Strings Appendix A does not have are <span class="slot">[slot]</span>s named on the screen.</dd><dt>AC</dt><dd>spec 011 AC-23, AC-24, AC-25, AC-26, AC-27, AC-28, AC-29, AC-30, AC-32, AC-34 (axe at 390 and 1440)</dd><dt>Owning spec</dt><dd>011 (TASK-210 presentational components, TASK-214 list and demo, TASK-215 actions and photo)</dd></dl></section>
+<div class="pg" style="position:relative"><div class="fold lap" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:830px" aria-hidden="true"><span>13″ MacBook Air browser ≈ 1470 × 830 ends about here</span></div><div class="fold lap" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:860px" aria-hidden="true"><span>14″ MacBook Pro browser ≈ 1512 × 860 ends about here</span></div><div class="fold" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:900px" aria-hidden="true"><span>First screen ends here · 1440 × 900</span></div>
+<div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><main class="fr-main"><div class="fr-top"><h1 class="fr-h1">Orders</h1><form method="post" action="{base}/test-order"><button class="btn ghost sm" type="submit">Send a test order</button></form></div><section class="fr-group" aria-label="Waiting for your answer"><h2>Waiting for your answer<span class="cnt num">2</span></h2><div class="fr-list"><a class="fr-item" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91"><span class="fr-lead"><span class="fr-due"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Answer by 15:40</span></span><span><b class="t">Amber Hour · 18 stems</b><span class="m" style="display:block">+ Vase</span></span><span class="when"><span class="m">For Thu 8 Oct</span><span class="m sep">Warszawa</span></span><span class="pay">You receive 149 zł</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a><div class="fr-item off"><span class="fr-lead"><span class="fr-late">The time to answer has passed.</span></span><span><b class="t">Vistula Red · 12 stems</b></span><span class="when"><span class="m">For Wed 7 Oct</span><span class="m sep">Warszawa</span></span><span class="pay" style="color:var(--color-ink-2)">You receive <span class="phbar" role="img" aria-label="amount"></span></span></div></div></section><section class="fr-group" aria-label="In progress"><h2>In progress<span class="cnt num">2</span></h2><div class="fr-list"><a class="fr-item" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7ca1b2"><span class="fr-lead"><span class="fr-chip">Out for delivery</span></span><span><b class="t">Baltic Dawn · 18 stems</b></span><span class="when"><span class="m">For Tue 6 Oct</span><span class="m sep">Warszawa</span></span><span class="pay">You receive <span class="phbar" role="img" aria-label="amount"></span></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a><a class="fr-item" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7ca1b2"><span class="fr-lead"><span class="fr-chip todo">Being made <span class="slot">[slot]</span></span></span><span><b class="t">Quiet Blush · 24 stems</b></span><span class="when"><span class="m">For Wed 7 Oct</span><span class="m sep">Warszawa</span></span><span class="pay">You receive <span class="phbar" role="img" aria-label="amount"></span></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></div></section><section class="fr-group" aria-label="Delivered"><h2>Delivered<span class="cnt num">1</span></h2><div class="fr-list"><a class="fr-item" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7cc3d4"><span class="fr-lead"><span class="fr-chip done">Photo received</span></span><span><b class="t">Northern Light · 12 stems</b></span><span class="when"><span class="m">For Mon 5 Oct</span><span class="m sep">Warszawa</span></span><span class="pay">You receive <span class="phbar" role="img" aria-label="amount"></span></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></div></section></main></div>
+</div>
+<p class="page-label" aria-hidden="true">List · empty</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><main class="fr-main"><div class="fr-top"><h1 class="fr-h1">Orders</h1><form method="post" action="{base}/test-order"><button class="btn ghost sm" type="submit">Send a test order</button></form></div><div class="fr-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><p>No orders at the moment. We email you when one arrives.</p></div></main></div></div>
+<p class="page-label" aria-hidden="true">Order · offer, no recipient contact · Accept and Decline</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><div><p class="fr-eyebrow">Waiting for your answer</p><h1 class="fr-h1">Amber Hour</h1><p class="fr-sub">18 stems</p></div><dl class="fr-facts"><div><dt>Delivery date</dt><dd>Thu 8 Oct</dd></div><div><dt>Add-ons</dt><dd>Vase</dd></div><div><dt><span class="slot">[slot · Town]</span></dt><dd>00-001 Warszawa</dd></div></dl><p class="fr-pay"><span>You receive</span><strong class="num">149 zł</strong></p></main><aside class="fr-act" aria-label="Your answer"><p class="fr-bigdue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Answer by 15:40</p><a class="btn ghost" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91/decline">Decline</a><form method="post" style="display:contents"><button class="btn" type="submit" name="response" value="accept">Accept</button></form></aside></div></div></div>
+<p class="page-label" aria-hidden="true">Order · declining: the reason, then Decline the order</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Amber Hour</a><fieldset class="fm-f" style="gap:14px"><legend class="fr-h1" style="font-family:var(--font-display);font-weight:var(--font-weight-display);font-size:30px;margin-block-end:8px">Why are you declining?</legend><div class="fr-reasons" role="radiogroup"><label class="on"><input class="vh" type="radio" name="reason" value="capacity" checked>We are full that day</label><label class=""><input class="vh" type="radio" name="reason" value="out_of_area">We do not deliver there</label><label class=""><input class="vh" type="radio" name="reason" value="product_unavailable">We cannot get these flowers</label><label class=""><input class="vh" type="radio" name="reason" value="closed">We are closed that day</label><label class=""><input class="vh" type="radio" name="reason" value="other">Another reason</label></div></fieldset></main><aside class="fr-act" aria-label="Your next step"><button class="btn" type="submit" name="response" value="decline">Decline the order</button></aside></div></div></div>
+<p class="page-label" aria-hidden="true">Order · accepted, being made: recipient and card shown · Out for delivery</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><div><p class="fr-eyebrow">In progress</p><h1 class="fr-h1">Amber Hour</h1><p class="fr-sub">18 stems</p></div><section class="fr-sec" aria-labelledby="r-h"><h2 id="r-h">Recipient</h2><dl class="fr-rcpt"><div><dt>Recipient</dt><dd class="name">Anna Kowalska</dd></div><div><dt>Phone</dt><dd><a class="fr-tel" href="tel:+48221234567"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>+48 22 123 45 67</a></dd></div><div><dt>Address</dt><dd>ul. Marszałkowska 10/5<br>00-001 Warszawa</dd></div><div><dt>Delivery note</dt><dd>Please call when you are downstairs.</dd></div></dl></section><section class="fr-sec" aria-labelledby="c-h"><h2 id="c-h">Card message, to print</h2><blockquote class="fr-cardmsg">Happy birthday, Mama! All my love from London.</blockquote></section><dl class="fr-facts"><div><dt>Delivery date</dt><dd>Thu 8 Oct</dd></div><div><dt>Add-ons</dt><dd>Vase</dd></div></dl><p class="fr-pay"><span>You receive</span><strong class="num">149 zł</strong></p></main><aside class="fr-act" aria-label="Your next step"><button class="btn" type="submit">Out for delivery</button></aside></div></div></div>
+<p class="page-label" aria-hidden="true">Order · out for delivery · Delivered, add the photo</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><div><p class="fr-eyebrow">In progress</p><h1 class="fr-h1">Amber Hour</h1><p class="fr-sub">18 stems</p></div><span class="fr-chip">Out for delivery</span><section class="fr-sec" aria-labelledby="r-h"><h2 id="r-h">Recipient</h2><dl class="fr-rcpt"><div><dt>Recipient</dt><dd class="name">Anna Kowalska</dd></div><div><dt>Phone</dt><dd><a class="fr-tel" href="tel:+48221234567"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>+48 22 123 45 67</a></dd></div><div><dt>Address</dt><dd>ul. Marszałkowska 10/5<br>00-001 Warszawa</dd></div><div><dt>Delivery note</dt><dd>Please call when you are downstairs.</dd></div></dl></section><section class="fr-sec" aria-labelledby="c-h"><h2 id="c-h">Card message, to print</h2><blockquote class="fr-cardmsg">Happy birthday, Mama! All my love from London.</blockquote></section><dl class="fr-facts"><div><dt>Delivery date</dt><dd>Thu 8 Oct</dd></div><div><dt>Add-ons</dt><dd>Vase</dd></div></dl><p class="fr-pay"><span>You receive</span><strong class="num">149 zł</strong></p></main><aside class="fr-act" aria-label="Your next step"><a class="btn" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91/photo">Delivered, add the photo</a></aside></div></div></div>
+<p class="page-label" aria-hidden="true">Order · delivered without a photo · Add the photo</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><div><p class="fr-eyebrow">Delivered</p><h1 class="fr-h1">Amber Hour</h1><p class="fr-sub">18 stems</p></div><section class="fr-sec" aria-labelledby="r-h"><h2 id="r-h">Recipient</h2><dl class="fr-rcpt"><div><dt>Recipient</dt><dd class="name">Anna Kowalska</dd></div><div><dt>Phone</dt><dd><a class="fr-tel" href="tel:+48221234567"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>+48 22 123 45 67</a></dd></div><div><dt>Address</dt><dd>ul. Marszałkowska 10/5<br>00-001 Warszawa</dd></div><div><dt>Delivery note</dt><dd>Please call when you are downstairs.</dd></div></dl></section><section class="fr-sec" aria-labelledby="c-h"><h2 id="c-h">Card message, to print</h2><blockquote class="fr-cardmsg">Happy birthday, Mama! All my love from London.</blockquote></section><dl class="fr-facts"><div><dt>Delivery date</dt><dd>Thu 8 Oct</dd></div><div><dt>Add-ons</dt><dd>Vase</dd></div></dl><p class="fr-pay"><span>You receive</span><strong class="num">149 zł</strong></p></main><aside class="fr-act" aria-label="Your next step"><a class="btn" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91/photo">Add the photo</a></aside></div></div></div>
+<p class="page-label" aria-hidden="true">Order · photo received: the recipient's contact details are gone</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><div><p class="fr-eyebrow">Delivered</p><h1 class="fr-h1">Amber Hour</h1><p class="fr-sub">18 stems</p></div><p class="fm-notice ok" role="status">Photo received. Thank you.</p><div class="fr-photo"><div class="ph" role="img" aria-label="Your photo of the delivered bouquet"><span>Your photo, shown through a signed URL that expires within 5 minutes</span></div></div><dl class="fr-facts"><div><dt>Delivery date</dt><dd>Thu 8 Oct</dd></div><div><dt>Add-ons</dt><dd>Vase</dd></div></dl><p class="fr-pay"><span>You receive</span><strong class="num">149 zł</strong></p></main></div></div></div>
+<p class="page-label" aria-hidden="true">Order · offer expired: no Accept</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><div><p class="fr-eyebrow">Waiting for your answer</p><h1 class="fr-h1">Amber Hour</h1><p class="fr-sub">18 stems</p></div><p class="fm-notice" role="status"><b>The time to answer has passed.</b></p><dl class="fr-facts"><div><dt>Delivery date</dt><dd>Thu 8 Oct</dd></div><div><dt>Add-ons</dt><dd>Vase</dd></div><div><dt><span class="slot">[slot · Town]</span></dt><dd>00-001 Warszawa</dd></div></dl><p class="fr-pay"><span>You receive</span><strong class="num">149 zł</strong></p></main></div></div></div>
+<p class="page-label" aria-hidden="true">Photo step · choose or take</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}/orders/6f1c2e0a-3b7d-4c55-9a1e-2d8f0b7c4e91"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Amber Hour</a><div><p class="fr-eyebrow">Amber Hour · 18 stems · Thu 8 Oct</p></div><div class="fm-f"><label class="fm-file" for="ph"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13h7l3-4h10l3 4h7v19H5z"/><circle cx="20" cy="22" r="6"/></svg><b>Take or choose a photo of the delivered bouquet</b><input class="vh" id="ph" type="file" name="photo" accept="image/*" capture="environment"></label></div></main><aside class="fr-act" aria-label="Send"><button class="btn" type="submit">Send the photo</button></aside></div></div></div>
+<p class="page-label" aria-hidden="true">Photo step · sent, shown through the signed URL</p>
+<div class="scr"><div class="fr fr-d"><header class="fr-hdr"><a class="logo" href="{base}" aria-label="Flowers Overseas, your orders"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="fr-langs" aria-label="Language"><a href="#lang-en" lang="en" aria-current="true">English</a><a href="#lang-pl" lang="pl">Polski</a><a href="#lang-de" lang="de">Deutsch</a></nav><form method="post" action="{base}/api/auth/signout"><button class="signout" type="submit" style="border:0;background:none">Sign out</button></form></header><p class="fr-demo" role="note"><b>Demo:</b> these are example orders. Nobody is charged and nothing is delivered.</p><div class="fr-order"><main class="fr-main"><a class="fr-back" href="{base}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Orders</a><p class="fm-notice ok" role="status" tabindex="-1">Photo received. Thank you.</p><div class="fr-photo"><div class="ph" role="img" aria-label="Your photo of the delivered bouquet"><span>Your photo, shown through a signed URL that expires within 5 minutes</span></div></div></main><aside class="fr-act" aria-label="Send"><a class="btn ghost" href="{base}">Orders</a></aside></div></div></div>
+<section class="state-band" aria-label="States"><span class="nl">Small states (drawn in place on the screens above)</span><div class="states c3"><div class="state"><span class="state-tag">Refresh stopped after 10 minutes idle</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fr-refresh"><span><span class="slot">[slot · spec 011: the paused line]</span></span><a class="link" href="{base}">Refresh</a></p></div></div><p class="stub">Shown above the list once the island stops; the Refresh link reloads the page. Without JavaScript the link is always there.</p></div><div class="state"><span class="state-tag">Test-order control</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><form method="post" action="{base}/test-order"><button class="btn ghost sm" type="submit">Send a test order</button></form></div></div><p class="stub">Rendered only for members of a <code>demo</code> shop outside <code>production</code> (AC-33). It calls <code>placeDemoOrder</code>; the new offer appears within 5 s (AC-26).</p></div><div class="state"><span class="state-tag">Already answered</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fm-notice warn" role="alert">This order has already been answered.</p></div></div><p class="stub">A second Accept, or an answer from another device: the page shows the current state under this notice and writes no event (AC-27).</p></div><div class="state"><span class="state-tag">Changed since you opened it</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fm-notice warn" role="alert">This order has changed since you opened it.</p></div></div><p class="stub">A forged or stale post in a state <code>order_transition</code> does not allow: no event, the current page under this notice (AC-29).</p></div><div class="state"><span class="state-tag">Photo · chosen, before sending</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fr-file-name"><span>IMG_2041.jpg</span><span class="num">3.2 MB</span></p></div></div><p class="stub">The native file input names the file; no client preview (no JavaScript needed). The photo is re-encoded on the server with every metadata field dropped (AC-30).</p></div><div class="state"><span class="state-tag">Photo · wrong type</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fm-err">This file is not a photo we can use. Please send a JPEG, PNG or WebP image.</p></div></div><p class="stub">A GIF or any file whose magic bytes are not JPEG, PNG or WebP; nothing is stored.</p></div><div class="state"><span class="state-tag">Photo · too large</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fm-err">This photo is too large. Please send one under 15 MB.</p></div></div><p class="stub">Over 15 MiB, refused while streaming; nothing is stored.</p></div><div class="state"><span class="state-tag">Order · not found (404)</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fr-sub"><span class="slot">[slot · spec 011: not found heading and line, with a link to Orders]</span></p></div></div><p class="stub">Another shop's order, or an id that does not exist: row-level security hides it, the answer is 404 (AC-23). Same page for both, so nothing leaks.</p></div><div class="state"><span class="state-tag">Error boundary</span><div class="fr fr-d" style="background:none"><div class="fr-main" style="padding:0;display:grid;grid-template-columns:none"><p class="fr-sub"><span class="slot">[slot · spec 011: “Something went wrong. Try again, or call us on +1 (213) 592-5150.”]</span></p></div></div><p class="stub">The list's error boundary; Appendix A has no string for it.</p></div></div></section>
+</div>
+</x-dc>
+</body>
+</html>

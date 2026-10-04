@@ -161,6 +161,20 @@
       </div>
     </div>
 
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">10</span><b>Mock order in the admin queue</b></header>
+        <code>/admin/orders · /admin/orders/{orderId} (spec 012, 2026-10-05)</code>
+        <div class="thumb"><div class="ink"></div><span>Orders · checking for new orders every 3 seconds</span><div class="box">FO-7K2M-Q9XD · Demo · New · routed · Thu 8 Oct, Warszawa</div><div class="box">FO-3HNP-A4TV · Demo · in_production</div><div class="box">No recipient name, phone or street in the list</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>None for the buyer. Phase 0 AC 4: the order placed through the demo checkout (or by the florist's “Send a test order”) appears here, and in the florist's inbox, within 5 seconds.</dd><dt>Trust</dt><dd><span class="trust">Every demo order carries the Demo marker, read from <code>order.mode</code>; the queue is read only and changes nothing.</span></dd><dt>Reads</dt><dd>spec 010's <code>listOrdersForAdmin</code>; a 3 s head poll that pauses after 15 minutes idle.</dd><dt>Index</dt><dd>never (<code>/admin</code>)</dd><dt>Spec</dt><dd>012 · <code>wireframes/admin-orders-*.dc.html</code>, <code>admin-order-detail-*.dc.html</code></dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">·</span><b>The same order, for the florist</b></header>
+        <code>{FLORIST_BASE_PATH}/orders/{assignmentId} (spec 011)</code>
+        <div class="stub"><span>On staging the demo florist sees the offer, accepts it, marks it out for delivery and adds the photo: <code>florist-journey.dc.html</code> steps 03 to 05 and <code>wireframes/florist-inbox-*.dc.html</code>.</span></div>
+      </div>
+    </div>
+
     <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
       <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Where the journey can end early</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">and what each exit is for</h2></div>
       <table class="spec" style="border-collapse: collapse; width: 100%; font-size: var(--text-sm);">
