@@ -102,14 +102,76 @@ _None._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-05, E1, to the orchestrator and founder (PR 194): N1 feeds a meta description.
+  `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx` sets every product page's
+  `<meta name="description">` to `shop.root.demoNotice`, but the brief says no N string feeds one.
+  Product pages are `noindex` in Phase 0. Options: (a) accept the description becoming N1 (the
+  current diff does this); (b) give the product page its own description key, which is new copy.
+  `open`.
+- 2026-10-05, E2, to the orchestrator and founder (PR 194): `unreviewedShare("en")` goes over the
+  5 % gate. With the 7 N keys `reviewed: false` it is 30/535 (5.61 %), or 29/535 (5.42 %) once
+  PR 190 lands; the gate allows 26.75. `en` and `en-gb` become non-indexable, and about 48 unit
+  cases go red (i18n-review, home-honesty, seo-indexability, sitemaps, alternates). The brief
+  requires both `reviewed: false` and a share at or under 5 %, and those cannot both hold.
+  Options: (a) the founder's `record-approval.py` run for N1 to N7 lands on this branch, as its
+  own commit, before ready (recommended); (b) the founder attests at least 3 other queued keys
+  first. `open`.
+- 2026-10-05, E3, to the orchestrator and founder (PR 194): a match outside the exception list.
+  The `intro` of `content/corridors/en/pl-guide.md` says "We are still choosing the florists we
+  want to work with in Poland". A YAML fold splits "still" and "choosing" across two lines, so a
+  line grep misses it, but it renders on `/en/send-flowers-to/poland`. Open item (vii) lists only
+  the FAQ answers, and the list never grows. Options: (a) a spec amendment adds `en/pl-guide.md ›
+  intro`; (b) the founder approves the replacement proposed in PR 194 and this task applies it.
+  T-47's unit and e2e scans are red on it until then. `open`.
+- 2026-10-05, E4, to the orchestrator (PR 194): the mobile notice bar loses its sentence row.
+  "Nothing takes the line's place" leaves the row empty below `md`, so the lone lead is hidden
+  there too, and the bar goes from 80 to 60 px (`tests/e2e/header.spec.ts` updated). CLS stays 0,
+  because the change is static, but the box is permanently 20 px smaller. Confirm this reading of
+  "the strip's layout must not shift". The visual baselines need a `visual:baselines` refresh.
+  `open`.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-05: N1 to N7 written to `en` (`reviewed: false`); `de`/`pl` re-drafted; `datesPending*`
+  and their notice line removed; N1/N2 call sites drop `{country}` (aa69c5f5).
+- 2026-10-05: T-40 and T-47 (unit and e2e) written, old pins moved, mutations watched red
+  (a38f7fb4). Draft PR 194 opened. Four escalations raised, so the task is `blocked`.
 
 ## Result
 
-_Pending._
+**Partial, blocked on E1 to E4.** PR: https://github.com/itsahmeds/flowers-overseas/pull/194
+(draft; not ready, no `ci:full`, because the tree is red by construction until E2 and E3 are
+answered).
+
+- AC-38 for N1 to N7 (T-40) holds. AC-37's phrase bullet (T-47) is written and red on `main`'s own
+  `en/pl-guide.md` intro (E3).
+- Mutations watched red:
+  - one character changed in N1 `en` makes T-40 N1 red;
+  - an em dash in N1 `de` makes the de em-dash case and the de draft case red;
+  - the old N3 sentence restored makes the T-47 scan red;
+  - an added exception makes the scan and the "never grows" case red.
+  The two T-47 runs used a local, uncommitted exception for the E3 intro.
+- Tests:
+  - unit: `neutral-ordering-copy.test.ts`, 18 new cases (17 green, 1 red on E3);
+  - e2e: `phrase-scan.spec.ts`, 22 new cases, not run locally (CI's);
+  - pins moved in 6 unit files and 6 e2e files.
+- No build slot was taken.
+
+`pnpm gates:cheap` (load average 24.6 at the time; `tests` is red only for the E2 cascade, the E3
+scan and one `url-pii` timeout under that load):
+
+```
+gates:cheap · a38f7fb4f83ad8cccfcd9e2097b152dc21efd3bd · tree clean · base origin/main · 2026-10-04T21:56:50.332Z
+typecheck             exit 0 · 2.8 s
+lint                  exit 0 · 20.1 s
+format:check          exit 0 · 15.5 s
+i18n:check            exit 0 · 0.5 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 1 · 91.9 s · changed 126 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: FAIL (1 of 7 red: tests)
+[ELIFECYCLE] Command failed with exit code 1.
+```
