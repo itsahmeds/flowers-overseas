@@ -1612,9 +1612,9 @@
         "seo_title": "Amber Hour — hand-tied orange rose bouquet",
         "seo_description": "Eighteen orange roses with eucalyptus, hand-tied by our florist in the recipient's city. Twelve and twenty-four stem sizes available.",
         "translation_status": "human",
-        "reviewed": false,
-        "reviewed_by": null,
-        "reviewed_at": null,
+        "reviewed": true,
+        "reviewed_by": "founder, 2026-10-04: ran record-approval-179.py after reading the exact text it printed (tense decision in chat: 'yes use present tense')",
+        "reviewed_at": "2026-10-04T18:02:20Z",
         "source_hash": "ed3bffb8a10064fb03b67610fd29da5c1d95059dacc076e64377aefd04de9b2a"
       }
     },
@@ -1650,9 +1650,9 @@
         "seo_title": "Baltic Dawn — hand-tied pink rose bouquet",
         "seo_description": "Eighteen pink roses in two shades, tied into a rounded modern bouquet. Made and delivered by our florist in the recipient's city.",
         "translation_status": "human",
-        "reviewed": false,
-        "reviewed_by": null,
-        "reviewed_at": null,
+        "reviewed": true,
+        "reviewed_by": "founder, 2026-10-04: ran record-approval-179.py after reading the exact text it printed (tense decision in chat: 'yes use present tense')",
+        "reviewed_at": "2026-10-04T18:02:20Z",
         "source_hash": "3e8df8c0df83d97dbfd2530aa602f681685426e1dc8dfcd589bb0f76be324d6c"
       }
     },
