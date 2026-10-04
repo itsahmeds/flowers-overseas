@@ -129,9 +129,18 @@ the key is read at run time. RoPA is unchanged: the new `disposition` field is n
 1.8 s on main). With `.next/` removed it takes 0.95 s. That is a property of the local tree, not of
 the diff.
 
-`pnpm gates:cheap` (head before this brief commit):
+`pnpm gates:cheap` on `0095118` (the brief commit before this block was pasted; the paste changes only this file):
 
 ```
-GATES_BLOCK
+gates:cheap · 009511823c2b288d29008812c77df12cd8af2d6e · tree clean · base origin/main · 2026-10-04T22:35:13.451Z
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 17.1 s
+format:check          exit 0 · 11.2 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 97.7 s · changed 168 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
 ```
 
