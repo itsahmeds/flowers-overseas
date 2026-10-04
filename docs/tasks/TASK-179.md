@@ -29,6 +29,8 @@ Row: `TASKS.md` → TASK-179. This brief is the task's long form (spec 001 §14 
 ## Carry-forwards
 
 _None._
+- **From PR 168 (TASK-175) breaker round 2, HOLE 3 ACCEPTABLE (reviewer, PR 168 comment 5974924179):** the Caveat walk exempts all of `src/modules/ui/product/` (`tests/unit/fonts.test.ts` L352), and the `ui` barrel re-exports `ProductPage`. Narrow the exemption to the card-preview file, make sure the barrel cannot reach it, and add a check that nothing reachable from `src/modules/ui/index.ts` imports `fonts/hand`.
+- **Orchestrator check, 2026-10-04:** `product.eyebrow` ("{descriptor} · for {country}") is attested as founder-approved, but it is not in the 14-item batch. Set it to `reviewed: false`.
 
 ## Escalations
 
