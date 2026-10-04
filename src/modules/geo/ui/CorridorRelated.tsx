@@ -13,48 +13,50 @@
  * link at a 404 even if it tried.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
-import { Chip, Display, Grid, Label, Stack } from "../../ui/index.ts";
+import { Chip } from "../../ui/index.ts";
 import type { CorridorRelatedView } from "../corridor.ts";
 
+import { CorridorSection } from "./CorridorSection.tsx";
 import { registryLabel } from "./labels.ts";
 
 export interface CorridorRelatedProps {
   readonly related: readonly CorridorRelatedView[];
+  /** The shop entry, which the artboard draws under the chips in the same section. */
+  readonly children?: ReactNode;
 }
 
 export function CorridorRelated({
   related,
+  children,
 }: CorridorRelatedProps): ReactElement {
   const t = useTranslations();
   const c = useTranslations("corridor");
 
   return (
-    <Stack as="section" gap="md" data-fo-corridor-related>
-      <Stack gap="xs">
-        <Label>{c("related.eyebrow")}</Label>
-        <Display size="xl">
-          {c("related.heading", { count: related.length })}
-        </Display>
-      </Stack>
-      <Grid columns="1-3" gap="md">
+    <CorridorSection
+      eyebrow={c("related.eyebrow")}
+      heading={c("related.heading", { count: related.length })}
+      id="corridor-related"
+      marker="data-fo-corridor-related"
+    >
+      <ul className="gap-sm m-0 flex list-none flex-wrap p-0">
         {related.map((destination) => (
-          <a
-            className="border-rule bg-surface p-md gap-sm hover:border-accent flex flex-col border"
-            data-fo-related-destination={destination.iso2}
-            href={destination.href}
-            key={destination.iso2}
-          >
-            <Display as="span" size="lg">
+          <li key={destination.iso2}>
+            <Chip
+              data-fo-related-destination={destination.iso2}
+              href={destination.href}
+            >
               {registryLabel(t, destination.nameKey)}
-            </Display>
-            <Chip tone="muted" className="self-start">
-              {registryLabel(t, destination.stateKey)}
+              <small className="text-fine text-ink-subtle font-normal">
+                {registryLabel(t, destination.stateKey)}
+              </small>
             </Chip>
-          </a>
+          </li>
         ))}
-      </Grid>
-    </Stack>
+      </ul>
+      {children}
+    </CorridorSection>
   );
 }

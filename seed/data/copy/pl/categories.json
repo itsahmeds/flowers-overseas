@@ -11,12 +11,12 @@
       "locale": "pl",
       "name": "Bukiety",
       "slug": "bukiety",
-      "descriptionMd": "Kwiaty wiązane ręcznie i dostarczane w opakowaniu, gotowe do przycięcia i wstawienia do wody. Tu jest większość naszej oferty: róże, tulipany, lilie, piwonie, słoneczniki, gerbery i sezonowe mieszanki, każdy w trzech rozmiarach. Ceny na tej stronie obejmują dostawę i lokalny podatek, a rozmiar, który wybierzesz, to rozmiar, który zostanie wykonany. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Kwiaty wiązane ręcznie i dostarczane w opakowaniu, gotowe do przycięcia i wstawienia do wody. Tu jest większość naszej oferty: róże, tulipany, lilie, piwonie, słoneczniki, gerbery i sezonowe mieszanki, każdy w trzech rozmiarach. Ceny na tej stronie obejmują dostawę i lokalny podatek, a rozmiar, który wybierzesz, to rozmiar, który jest wykonywany. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Bukiety kwiatów wiązane ręcznie – dostawa w Europie",
       "seoDescription": "Róże, tulipany, lilie, piwonie, słoneczniki i sezonowe mieszanki, wiązane ręcznie w trzech rozmiarach. Dostawa i podatek w cenie.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "b3a1df93bf3a0d85d433661a35127aea74ccd1ea05243b69d9d7430e6f3b8a58"
+      "sourceHash": "89e0afbba06a95e1e69e35be9a9c76d6bdfcf62d7a170a2f1c0e2fa4a59e18b1"
     },
     {
       "entity": "category",
@@ -24,12 +24,12 @@
       "locale": "pl",
       "name": "Kompozycje kwiatowe",
       "slug": "kompozycje-kwiatowe",
-      "descriptionMd": "Kwiaty ułożone w pudełku, koszu, doniczce lub wazonie, więc po dostawie nic nie trzeba przycinać ani szukać. Przydają się, gdy odbiorca jest w szpitalu, w biurze albo raczej nie ma pod ręką wazonu. Każda kompozycja ma trzy rozmiary, a jeśli wazon lub naczynie jest jej częścią, strona to mówi i cena je obejmuje. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Kwiaty ułożone w pudełku, koszu, doniczce lub wazonie, więc po dostawie nic nie trzeba przycinać ani szukać. Przydają się, gdy odbiorca jest w szpitalu, w biurze albo raczej nie ma pod ręką wazonu. Każda kompozycja ma trzy rozmiary, a jeśli wazon lub naczynie jest jej częścią, strona to mówi i cena je obejmuje. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kompozycje kwiatowe – gotowe do postawienia",
       "seoDescription": "Kwiaty w pudełku, koszu, doniczce lub wazonie, gotowe do postawienia bez przycinania. Trzy rozmiary; naczynie jest wliczone w cenę.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "4ace3f351218a3258d810b7b0ba18a88ac226b29d3d0592b9e8112717cf53925"
+      "sourceHash": "696f78c3c2ecb422cdd56840ef5dc63620f7827c9fe5d0873bf47d29de2ba142"
     },
     {
       "entity": "category",
@@ -37,12 +37,12 @@
       "locale": "pl",
       "name": "Rośliny",
       "slug": "rosliny",
-      "descriptionMd": "Żywe rośliny zamiast kwiatów ciętych: storczyki, skrzydłokwiat, anturium, jaśmin, azalia i małe drzewko oliwne. Trwają miesiące lub lata zamiast dni, dlatego tak często wysyła się je po pogrzebie, do nowego mieszkania albo do biura. Każda w jednym rozmiarze, w doniczce, ze wskazówkami pielęgnacji od osoby, która ją wybrała. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Żywe rośliny zamiast kwiatów ciętych: storczyki, skrzydłokwiat, anturium, jaśmin, azalia i małe drzewko oliwne. Trwają miesiące lub lata zamiast dni, dlatego tak często wysyła się je po pogrzebie, do nowego mieszkania albo do biura. Każda w jednym rozmiarze, w doniczce, ze wskazówkami pielęgnacji od osoby, która ją wybrała. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Rośliny kwitnące – storczyki, skrzydłokwiaty i więcej",
       "seoDescription": "Storczyki, skrzydłokwiat, anturium, jaśmin, azalia i oliwka w doniczce, ze wskazówkami pielęgnacji. Żywe rośliny na miesiące.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f391914c8fd45e7c79347c3d0a507601b571e6d6cb10f9402f306366cf743b75"
+      "sourceHash": "03b92202eedbc7b866f4295a20245550d36c740ec3c2bf61c292ea5cf06f3ad6"
     },
     {
       "entity": "category",
@@ -50,12 +50,12 @@
       "locale": "pl",
       "name": "Kwiaty pogrzebowe",
       "slug": "kwiaty-pogrzebowe",
-      "descriptionMd": "Wieńce, wiązanki, krzyż, serce, bukiety na grób i niskie kompozycje żałobne, w formach, jakich oczekuje się w każdym kraju. Jeśli podasz nam dom pogrzebowy lub cmentarz, przekażemy dane dalej i dopasujemy dostawę do terminu uroczystości. Kwiaty kondolencyjne do domu też są tutaj, na wypadek gdyby formalna wiązanka była zbyt oficjalna. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Wieńce, wiązanki, krzyż, serce, bukiety na grób i niskie kompozycje żałobne, w formach, jakich oczekuje się w każdym kraju. Jeśli podasz nam dom pogrzebowy lub cmentarz, przekażemy dane dalej i dopasujemy dostawę do terminu uroczystości. Kwiaty kondolencyjne do domu też są tutaj, na wypadek gdyby formalna wiązanka była zbyt oficjalna. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty pogrzebowe – wieńce i wiązanki w Europie",
       "seoDescription": "Wieńce, wiązanki, krzyże, serca, bukiety na grób i kompozycje żałobne w formach, jakich oczekuje każdy kraj, dopasowane do uroczystości.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "eea8f7540fc5f6fe628e2b6631f4d9aa2cfb963c19193f394307041f3a0a3ffc"
+      "sourceHash": "709c11263e911c0c256c3eeaf79d59810888f74c4e71643e348cbd60011a6eb8"
     },
     {
       "entity": "category",
@@ -63,12 +63,12 @@
       "locale": "pl",
       "name": "Kwiaty z prezentem",
       "slug": "kwiaty-z-prezentem",
-      "descriptionMd": "Bukiet z jednym dodatkiem: czekoladkami, szklanym wazonem, balonem lub małą przytulanką, kupionym przez tego samego florystę, który robi kwiaty. Nic nie jest wysyłane osobno, więc cały prezent dociera razem i w jednym stanie. Zestawy z jedzeniem pokazują alergeny przy kasie, a każda cena obejmuje dostawę i lokalny podatek. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiet z jednym dodatkiem: czekoladkami, szklanym wazonem, balonem lub małą przytulanką, kupionym przez tego samego florystę, który robi kwiaty. Nic nie jest wysyłane osobno, więc cały prezent dociera razem i w jednym stanie. Zestawy z jedzeniem pokazują alergeny przy kasie, a każda cena obejmuje dostawę i lokalny podatek. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty z prezentem – bukiety z czekoladkami i więcej",
       "seoDescription": "Bukiet z czekoladkami, wazonem, balonem lub przytulanką od tego samego florysty. Jedna dostawa, jedna cena, alergeny podane.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "da398896fe0e0267bf77d4bc3df3381f213614ebc2f36a337cee7c57b6c9d96c"
+      "sourceHash": "347ebb5893ba0df1a7d380df7ae3e2ca06d3c46acbfe1efd55303db366241da1"
     },
     {
       "entity": "category",
@@ -76,12 +76,12 @@
       "locale": "pl",
       "name": "Kwiaty na urodziny",
       "slug": "kwiaty-na-urodziny",
-      "descriptionMd": "Bukiety, kompozycje i rośliny, które naprawdę wysyła się na urodziny: jaskrawe tulipany i gerbery, różowe i pomarańczowe róże, kolorowy bukiet wybrany w dniu realizacji albo storczyk dla kogoś, kto lubi rośliny. Większość ma trzy rozmiary, można dodać drukowany bilecik. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety, kompozycje i rośliny, które naprawdę wysyła się na urodziny: jaskrawe tulipany i gerbery, różowe i pomarańczowe róże, kolorowy bukiet wybrany w dniu realizacji albo storczyk dla kogoś, kto lubi rośliny. Większość ma trzy rozmiary, można dodać drukowany bilecik. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na urodziny – dostawa w całej Europie",
       "seoDescription": "Jaskrawe tulipany, gerbery, róże, kolorowe bukiety i storczyki na urodziny, w trzech rozmiarach. Wybierz datę i dodaj bilecik.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "31a7eb672a4e7bd57c35022e6dccc42075b96635b374bf348892ed1b6f4ca14b"
+      "sourceHash": "d0dfe7ebc1d4361215cc8624a7b8847af9c74b11fdfb22a1ff874a19a54daaab"
     },
     {
       "entity": "category",
@@ -89,12 +89,12 @@
       "locale": "pl",
       "name": "Kwiaty na rocznicę",
       "slug": "kwiaty-na-rocznice",
-      "descriptionMd": "Czerwone i białe róże, piwonie w sezonie, lilie i kompozycje w wazonie: kwiaty, które wysyła się na rocznicę, a nie na urodziny. Kilka z nich jest ułożonych w wazonie, co ma znaczenie, gdy dostawa jest niespodzianką i nikt nie ma przygotowanego naczynia. Ceny obejmują dostawę i lokalny podatek, a pokazany rozmiar to rozmiar wykonany. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Czerwone i białe róże, piwonie w sezonie, lilie i kompozycje w wazonie: kwiaty, które wysyła się na rocznicę, a nie na urodziny. Kilka z nich jest ułożonych w wazonie, co ma znaczenie, gdy dostawa jest niespodzianką i nikt nie ma przygotowanego naczynia. Ceny obejmują dostawę i lokalny podatek, a pokazany rozmiar to rozmiar wykonany. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na rocznicę – dostawa w całej Europie",
       "seoDescription": "Czerwone i białe róże, piwonie w sezonie, lilie i kompozycje w wazonie na rocznicę. Dostawa i podatek wliczone w każdą cenę.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "ef5ae1b09af31db65980472bda95488445ec678c45d4767aa183f41a0895d89b"
+      "sourceHash": "0126ab24d5231576f3833766653985f50d889c730a93a78c528980e3778cf5f0"
     },
     {
       "entity": "category",
@@ -102,12 +102,12 @@
       "locale": "pl",
       "name": "Romantyczne kwiaty",
       "slug": "romantyczne-kwiaty",
-      "descriptionMd": "Czerwone róże, ciemnoróżowe piwonie i kompozycja z róż w wazonie: krótka lista celowo, bo przy tej okazji zgadywanie jest gorsze niż wybór. Rozmiary od dwunastu do dwudziestu czterech łodyg, a bilecik z Twoimi słowami jest bezpłatny. Walentynki mają własny termin zamówień, podany na stronie kraju docelowego. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Czerwone róże, ciemnoróżowe piwonie i kompozycja z róż w wazonie: krótka lista celowo, bo przy tej okazji zgadywanie jest gorsze niż wybór. Rozmiary od dwunastu do dwudziestu czterech łodyg, a bilecik z Twoimi słowami jest bezpłatny. Walentynki mają własny termin zamówień, podany na stronie kraju docelowego. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Romantyczne kwiaty – czerwone róże i piwonie",
       "seoDescription": "Czerwone róże, ciemnoróżowe piwonie i kompozycje z róż w wazonie, od dwunastu do dwudziestu czterech łodyg. Bilecik gratis.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "055b615010c33f50da4e5be1a63c98d1cf6d3b56b5c4678e1fcba8b575512297"
+      "sourceHash": "56279dce7464a5f37f9ba030e8887ebb11d1aa9914c423295ebe6a34de17c247"
     },
     {
       "entity": "category",
@@ -115,12 +115,12 @@
       "locale": "pl",
       "name": "Kwiaty z gratulacjami",
       "slug": "kwiaty-z-gratulacjami",
-      "descriptionMd": "Jaskrawe bukiety, kompozycja na biurko, biała kostka z róż i storczyk: kwiaty na nową pracę, zdany egzamin, pierwsze mieszkanie albo otwartą firmę. Kilka z nich stoi na biurku bez wazonu, bo zwykle tam właśnie trafiają. Większość ma trzy rozmiary, a dostawa i lokalny podatek są w cenie. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Jaskrawe bukiety, kompozycja na biurko, biała kostka z róż i storczyk: kwiaty na nową pracę, zdany egzamin, pierwsze mieszkanie albo otwartą firmę. Kilka z nich stoi na biurku bez wazonu, bo zwykle tam właśnie trafiają. Większość ma trzy rozmiary, a dostawa i lokalny podatek są w cenie. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty z gratulacjami – dostawa w całej Europie",
       "seoDescription": "Jaskrawe bukiety, kompozycje na biurko, kostki z róż i storczyki na nową pracę, egzamin lub pierwsze mieszkanie. Dostawa i podatek w cenie.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "6ff8798cc38449b1704eaacba92d733f8f0a492d81ea84e1dbe2e35ba53af8c5"
+      "sourceHash": "5808434598a5f4e0ee9d4e873c35a37d79eba4d7a5f4dc1dbbf71540cbd3cf64"
     },
     {
       "entity": "category",
@@ -128,12 +128,12 @@
       "locale": "pl",
       "name": "Kwiaty na narodziny",
       "slug": "kwiaty-na-narodziny",
-      "descriptionMd": "Pastelowe bukiety, mały koszyk alstremerii i dwa zestawy z przytulanką, wszystko związane lub ułożone tak lekko, by dało się to nieść z dzieckiem na drugim ręku. Nic tutaj nie pachnie intensywnie. Zabawki są nowe i z metką, a jeśli dostawa jest na oddział położniczy, przy kasie pytamy o nazwę oddziału. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Pastelowe bukiety, mały koszyk alstremerii i dwa zestawy z przytulanką, wszystko związane lub ułożone tak lekko, by dało się to nieść z dzieckiem na drugim ręku. Nic tutaj nie pachnie intensywnie. Zabawki są nowe i z metką, a jeśli dostawa jest na oddział położniczy, przy kasie pytamy o nazwę oddziału. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na narodziny dziecka – dostawa w Europie",
       "seoDescription": "Pastelowe bukiety, koszyki alstremerii i zestawy z nową przytulanką z metką. Lekkie do niesienia i nigdy intensywnie pachnące.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "15846bfda6f9930084a7ce4e3aaaab71b3b56dbd8d3af3684a2825f1d41bd1b0"
+      "sourceHash": "61d41ad16c2aa935cdc4aae50fcdd87e1473c38745e75ef822b49af78bd5e74c"
     },
     {
       "entity": "category",
@@ -141,12 +141,12 @@
       "locale": "pl",
       "name": "Kwiaty na powrót do zdrowia",
       "slug": "kwiaty-na-powrot-do-zdrowia",
-      "descriptionMd": "Bukiety i kompozycje wybrane do sali szpitalnej albo na kanapę: lekkie, o słabym zapachu, kilka w pudełku lub doniczce, więc wazon nie jest potrzebny. Są tu frezje, gerbery, pastelowe mieszanki i skrzydłokwiat. Niektóre oddziały nie przyjmują kwiatów, więc sprawdź to przed zamówieniem, a w razie potrzeby wstrzymamy dostawę. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety i kompozycje wybrane do sali szpitalnej albo na kanapę: lekkie, o słabym zapachu, kilka w pudełku lub doniczce, więc wazon nie jest potrzebny. Są tu frezje, gerbery, pastelowe mieszanki i skrzydłokwiat. Niektóre oddziały nie przyjmują kwiatów, więc sprawdź to przed zamówieniem, a w razie potrzeby wstrzymamy dostawę. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na powrót do zdrowia – dostawa w Europie",
       "seoDescription": "Bukiety i kompozycje w pudełku do sali szpitalnej lub na kanapę: lekkie, o słabym zapachu, bez wazonu. Frezje, gerbery, pastele.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "feda375a940519aa3b4662722c58d92056929b61d19ad1ca26bf911746a0424c"
+      "sourceHash": "7c797184f0a2cc815c130065b6a075d46b053a28ad81234a61ab5b7f38708bec"
     },
     {
       "entity": "category",
@@ -154,12 +154,12 @@
       "locale": "pl",
       "name": "Kwiaty kondolencyjne",
       "slug": "kwiaty-kondolencyjne",
-      "descriptionMd": "Białe lilie, białe róże, skrzydłokwiat i niskie białe kompozycje: kwiaty wysyłane po śmierci bliskiej osoby do domu lub biura, a nie na uroczystość. Formalne wiązanki pogrzebowe są na stronie kwiatów pogrzebowych. Jeśli termin ma znaczenie, podaj nam datę, a nie dostarczymy wcześniej. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Białe lilie, białe róże, skrzydłokwiat i niskie białe kompozycje: kwiaty wysyłane po śmierci bliskiej osoby do domu lub biura, a nie na uroczystość. Formalne wiązanki pogrzebowe są na stronie kwiatów pogrzebowych. Jeśli termin ma znaczenie, podaj nam datę, a nie dostarczymy wcześniej. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty kondolencyjne – dostawa w całej Europie",
       "seoDescription": "Białe lilie, białe róże, skrzydłokwiaty i niskie białe kompozycje do domu lub biura po śmierci bliskiej osoby.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "88d739a4c7f3b33f34956c026d1c7c0548618955e3c0f0ffcfa61fc53fc260de"
+      "sourceHash": "1df8d21cfecfaf3189cf2bc14dc813e42abc9bec15c31766985e611f969ed56d"
     },
     {
       "entity": "category",
@@ -167,12 +167,12 @@
       "locale": "pl",
       "name": "Kwiaty na podziękowanie",
       "slug": "kwiaty-na-podziekowanie",
-      "descriptionMd": "Bukiety, które mówią dziękuję i nic innego: słoneczniki, żółte tulipany, frezje, pomarańczowe mieszanki i sezonowy bukiet wybrany w dniu realizacji. Większość mieści się w środku naszego przedziału cen, a drukowany bilecik jest gratis, więc powód dociera razem z kwiatami. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety, które mówią dziękuję i nic innego: słoneczniki, żółte tulipany, frezje, pomarańczowe mieszanki i sezonowy bukiet wybrany w dniu realizacji. Większość mieści się w środku naszego przedziału cen, a drukowany bilecik jest gratis, więc powód dociera razem z kwiatami. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na podziękowanie – dostawa w całej Europie",
       "seoDescription": "Słoneczniki, żółte tulipany, frezje i sezonowe bukiety, które mówią dziękuję. Drukowany bilecik gratis.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "33a55120f3b965333a5237663e4f9daad6566b8f4be428fffe0be11a1e2f2c46"
+      "sourceHash": "1bdb1fde8efcafa7476b8f259d42713e72a2c191e5bc7300cc043fd8b4cf9fa8"
     },
     {
       "entity": "category",
@@ -180,12 +180,12 @@
       "locale": "pl",
       "name": "Kwiaty na przeprosiny",
       "slug": "kwiaty-na-przeprosiny",
-      "descriptionMd": "Jasne róże, białe tulipany, frezje i małe pudełko pastelowych kwiatów: raczej ciche niż okazałe, co zwykle jest właściwym tonem, gdy przepraszasz. Drukowany bilecik jest bezpłatny i warto go tu użyć. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Jasne róże, białe tulipany, frezje i małe pudełko pastelowych kwiatów: raczej ciche niż okazałe, co zwykle jest właściwym tonem, gdy przepraszasz. Drukowany bilecik jest bezpłatny i warto go tu użyć. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na przeprosiny – dostawa w całej Europie",
       "seoDescription": "Jasne róże, białe tulipany, frezje i małe pastelowe pudełka: ciche, nie okazałe. Bezpłatny bilecik, dostawa w wybranym dniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "ce5636bcf8836b68eabb244bb4fa9ffc3d95d65495c68974268ac6b7fafaec58"
+      "sourceHash": "645805e485a25dcab117b093a530e97bdac7bf7164085ec191a4d34d97fa51a4"
     },
     {
       "entity": "category",
@@ -193,12 +193,12 @@
       "locale": "pl",
       "name": "Kwiaty bez okazji",
       "slug": "kwiaty-bez-okazji",
-      "descriptionMd": "Bez żadnej okazji: sezonowy bukiet, luźny kolorowy bukiet, mały bukiecik albo pachnący jaśmin, przeważnie z niższej części naszych cen, żeby mogło to być przyzwyczajenie, a nie wydarzenie. Kilka z nich nasz florysta komponuje w dniu realizacji i właśnie dlatego wyglądają na zerwane, a nie zamówione. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bez żadnej okazji: sezonowy bukiet, luźny kolorowy bukiet, mały bukiecik albo pachnący jaśmin, przeważnie z niższej części naszych cen, żeby mogło to być przyzwyczajenie, a nie wydarzenie. Kilka z nich nasz florysta komponuje w dniu realizacji i właśnie dlatego wyglądają na zerwane, a nie zamówione. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty bez okazji – dostawa w całej Europie",
       "seoDescription": "Sezonowe bukiety, luźne kolorowe bukiety, małe bukieciki i pachnące rośliny, przeważnie w niższych cenach. Okazja niepotrzebna.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "973fd69868f71c4ce8c8250d9a9ce510f6247ce7eaeffaa0efe394b0367f8566"
+      "sourceHash": "e819158310b59070d9f7b094562201b2bfea8e807e0bf3ddf8b173e80def0665"
     },
     {
       "entity": "category",
@@ -206,12 +206,12 @@
       "locale": "pl",
       "name": "Róże",
       "slug": "roze",
-      "descriptionMd": "Róże czerwone, różowe, białe, pomarańczowe i pastelowe, wiązane ręcznie po dwanaście, osiemnaście lub dwadzieścia cztery łodygi, do tego kompozycje z róż w wazonie i dwie białe wiązanki żałobne. Czerwone na miłość, białe na śluby i kondolencje, różowe i pomarańczowe na urodziny i podziękowania. Sama róża jest stała w każdym bukiecie; zmienia się tylko zieleń. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Róże czerwone, różowe, białe, pomarańczowe i pastelowe, wiązane ręcznie po dwanaście, osiemnaście lub dwadzieścia cztery łodygi, do tego kompozycje z róż w wazonie i dwie białe wiązanki żałobne. Czerwone na miłość, białe na śluby i kondolencje, różowe i pomarańczowe na urodziny i podziękowania. Sama róża jest stała w każdym bukiecie; zmienia się tylko zieleń. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Róże z dostawą w Europie – czerwone, różowe, białe",
       "seoDescription": "Róże czerwone, różowe, białe, pomarańczowe i pastelowe, wiązane ręcznie po dwanaście do dwudziestu czterech łodyg, także w wazonie.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "24aeb5535031bfe25bbcd02b41dc36b25f2861828dc774a76705af1047da6edb"
+      "sourceHash": "3754ad3241652fa5872109f335e3139a16fe498cd371a6e23b226ca3ca0ae9c4"
     },
     {
       "entity": "category",
@@ -219,12 +219,12 @@
       "locale": "pl",
       "name": "Tulipany",
       "slug": "tulipany",
-      "descriptionMd": "Tulipany kolorowe, żółte, białe, różowe i fioletowe, w pęczkach po piętnaście, dwadzieścia pięć lub trzydzieści pięć łodyg, z własnymi liśćmi i bez wypełniaczy. To kwiat wiosenny: hodowcy zmieniają odmiany co tydzień, więc trzymamy się koloru, a odmianę wybiera nasz florysta. Sprzedawane na pęczki, nie na sztuki. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Tulipany kolorowe, żółte, białe, różowe i fioletowe, w pęczkach po piętnaście, dwadzieścia pięć lub trzydzieści pięć łodyg, z własnymi liśćmi i bez wypełniaczy. To kwiat wiosenny: hodowcy zmieniają odmiany co tydzień, więc trzymamy się koloru, a odmianę wybiera nasz florysta. Sprzedawane na pęczki, nie na sztuki. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Tulipany z dostawą w Europie – kolorowe, żółte, różowe",
       "seoDescription": "Tulipany kolorowe, żółte, białe, różowe i fioletowe, od piętnastu do trzydziestu pięciu łodyg z liśćmi. Kolor stały, odmiana zmienna.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "aaf4eca2bb3e8dfe79927faadcfe3adf31e62ed5dcd7f0292abb937ca56b3bdb"
+      "sourceHash": "16e976a94cc63d21b9427f6474398bf9a94aed75dcfab90746df66f788f36696"
     },
     {
       "entity": "category",
@@ -232,12 +232,12 @@
       "locale": "pl",
       "name": "Lilie",
       "slug": "lilie",
-      "descriptionMd": "Lilie orientalne białe i różowe, w wiązkach po pięć, osiem lub dwanaście łodyg oraz w kompozycji w szklanym wazonie. Trzy lub cztery kwiaty na łodydze i mocny zapach, więc nawet mały bukiet wypełnia pokój. Wysyłane na kondolencje, śluby i rocznice. Łodygi opuszczają kwiaciarnię częściowo zamknięte i rozwijają się przez pierwsze dni. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Lilie orientalne białe i różowe, w wiązkach po pięć, osiem lub dwanaście łodyg oraz w kompozycji w szklanym wazonie. Trzy lub cztery kwiaty na łodydze i mocny zapach, więc nawet mały bukiet wypełnia pokój. Wysyłane na kondolencje, śluby i rocznice. Łodygi opuszczają kwiaciarnię częściowo zamknięte i rozwijają się przez pierwsze dni. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Lilie z dostawą w Europie – białe i różowe",
       "seoDescription": "Lilie orientalne białe i różowe, od pięciu do dwunastu łodyg lub w szklanym wazonie. Mocny zapach; pąki rozwijają się przez kilka dni.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "25d3a034a578e8922fc8ad8c931dd41af2f2fd60d69be771c0897080ea80734e"
+      "sourceHash": "0713af0e0d42601f66eb6221b32392605e7f9bc4f041bbb93f507be3525b377e"
     },
     {
       "entity": "category",
@@ -245,12 +245,12 @@
       "locale": "pl",
       "name": "Storczyki",
       "slug": "storczyki",
-      "descriptionMd": "Storczyki falenopsis białe i różowe, z jedną lub dwiema łodygami, w doniczce i z podporą, z pąkami i kwiatami, gdy opuszczają kwiaciarnię. Kwitną tygodniami i potrzebują wody raz w tygodniu, dlatego to roślina do wysłania, gdy nikt nie będzie w domu, by przycinać łodygi. Każdy w jednym rozmiarze, ze wskazówkami pielęgnacji. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Storczyki falenopsis białe i różowe, z jedną lub dwiema łodygami, w doniczce i z podporą, z pąkami i kwiatami, gdy opuszczają kwiaciarnię. Kwitną tygodniami i potrzebują wody raz w tygodniu, dlatego to roślina do wysłania, gdy nikt nie będzie w domu, by przycinać łodygi. Każdy w jednym rozmiarze, ze wskazówkami pielęgnacji. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Storczyki z dostawą w całej Europie",
       "seoDescription": "Storczyki falenopsis białe i różowe, z jedną lub dwiema łodygami, w doniczce z podporą. Kwitną tygodniami, podlewane raz w tygodniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "a6d4e594e41cdd12eb928c3fde4ad0f635f81da647d8abe7bcfef0f66dbb89bf"
+      "sourceHash": "ff19ecf17df92956684407df3702bde01c6a360e70d5b664628bf2e69b3d7be9"
     },
     {
       "entity": "category",
@@ -258,12 +258,12 @@
       "locale": "pl",
       "name": "Słoneczniki",
       "slug": "sloneczniki",
-      "descriptionMd": "Słoneczniki po pięć, dziewięć lub trzynaście łodyg, wiązane rustykalnie z ruszczykiem, pszenicą, trawami lub pomarańczowymi różami gałązkowymi, zależnie od bukietu. To kwiat lata i wczesnej jesieni, odporny w ciepłym pokoju i trudny do nadania mu formalnego wyglądu. Wysyłane na urodziny, z podziękowaniem, na parapetówkę i z życzeniami zdrowia. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Słoneczniki po pięć, dziewięć lub trzynaście łodyg, wiązane rustykalnie z ruszczykiem, pszenicą, trawami lub pomarańczowymi różami gałązkowymi, zależnie od bukietu. To kwiat lata i wczesnej jesieni, odporny w ciepłym pokoju i trudny do nadania mu formalnego wyglądu. Wysyłane na urodziny, z podziękowaniem, na parapetówkę i z życzeniami zdrowia. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Słoneczniki z dostawą w całej Europie",
       "seoDescription": "Słoneczniki po pięć, dziewięć lub trzynaście łodyg, wiązane rustykalnie z ruszczykiem, pszenicą, trawami lub różami. Lato i wczesna jesień.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "a1f0c889e91b6e70660d471739b13abc299ee87ad86e661bc46220a38d701d03"
+      "sourceHash": "0d9e758256f55e87fdc49451c341ac18ccefaecc5d49b44efafb40ad29b84bb1"
     },
     {
       "entity": "category",
@@ -271,12 +271,12 @@
       "locale": "pl",
       "name": "Piwonie",
       "slug": "piwonie",
-      "descriptionMd": "Piwonie różowe, jasnoróżowe i białe, po dziewięć, piętnaście lub dwadzieścia jeden łodyg oraz w ciężkim wazonie. Sezon jest krótki, kilka tygodni późną wiosną, a poza nim nasz florysta mówi nam o tym, zanim przyjmiemy zamówienie, zamiast podstawiać coś innego. Ceny są na górze naszej skali, bo taki jest ten kwiat. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Piwonie różowe, jasnoróżowe i białe, po dziewięć, piętnaście lub dwadzieścia jeden łodyg oraz w ciężkim wazonie. Sezon jest krótki, kilka tygodni późną wiosną, a poza nim nasz florysta mówi nam o tym, zanim przyjmiemy zamówienie, zamiast podstawiać coś innego. Ceny są na górze naszej skali, bo taki jest ten kwiat. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Piwonie z dostawą w Europie – różowe i białe",
       "seoDescription": "Piwonie różowe, jasnoróżowe i białe, od dziewięciu do dwudziestu jeden łodyg lub w ciężkim wazonie. Krótki sezon, bez cichych zamian.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "e8354b80cc2f3ad5ff77b3afd7ca0e8d8aea3f9f3008a01b626886c7d07b6195"
+      "sourceHash": "b390a4bab57dee0e13a1a7f635797993b3c2fe2cf4fe1ba001443a145f536022"
     },
     {
       "entity": "category",
@@ -284,12 +284,12 @@
       "locale": "pl",
       "name": "Gerbery",
       "slug": "gerbery",
-      "descriptionMd": "Gerbery w żywych i mieszanych kolorach, po dziesięć, piętnaście lub dwadzieścia jeden łodyg, a także niska kompozycja w doniczce na biurko. Jeden czysty kwiat na łodydze, bez zapachu, i dobrze trzymają się w ciepłym biurze. Wysyłane z życzeniami zdrowia, na urodziny, ukończenie studiów i z gratulacjami, same lub z balonem. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Gerbery w żywych i mieszanych kolorach, po dziesięć, piętnaście lub dwadzieścia jeden łodyg, a także niska kompozycja w doniczce na biurko. Jeden czysty kwiat na łodydze, bez zapachu, i dobrze trzymają się w ciepłym biurze. Wysyłane z życzeniami zdrowia, na urodziny, ukończenie studiów i z gratulacjami, same lub z balonem. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Gerbery z dostawą w całej Europie",
       "seoDescription": "Gerbery w żywych i mieszanych kolorach, od dziesięciu do dwudziestu jeden łodyg lub w niskiej doniczce. Bez zapachu, trwałe w cieple.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "8cbc1a5c1ff3c24094f8c3b5d57c5aa90c72090407fda551555de92c6fd08cf3"
+      "sourceHash": "e5d01e33da337a74c64691f9a7c466413f8e6c6068e04c34df2fcccd05ca621c"
     },
     {
       "entity": "category",
@@ -297,12 +297,12 @@
       "locale": "pl",
       "name": "Bukiety mieszane",
       "slug": "bukiety-mieszane",
-      "descriptionMd": "Bukiety bez stałego przepisu: nasz florysta układa je z tego, co rano było na giełdzie, w kolorze i rozmiarze, które wybierzesz. Pastelowe, żywe, pomarańczowe, białe lub w pełni mieszane, od dwunastu do dwudziestu czterech łodyg. Ta część oferty najmniej przypomina katalog i właśnie takie kwiaty ludzie z branży wysłaliby sami. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety bez stałego przepisu: nasz florysta układa je z tego, co rano było na giełdzie, w kolorze i rozmiarze, które wybierzesz. Pastelowe, żywe, pomarańczowe, białe lub w pełni mieszane, od dwunastu do dwudziestu czterech łodyg. Ta część oferty najmniej przypomina katalog i właśnie takie kwiaty ludzie z branży wysłaliby sami. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Bukiety mieszane – dostawa w całej Europie",
       "seoDescription": "Bukiety bez stałego przepisu, układane z porannej giełdy w kolorze i rozmiarze, które wybierzesz. Od dwunastu do dwudziestu czterech łodyg.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "e388e444e339146049e9b1fbc1773a184b60cb474f1cd6b0471495848cac2639"
+      "sourceHash": "55c89729f5cb00aa1ea1c369c9b267227a474a76ff573cd4fdbff424b8d8befd"
     }
   ]
 }

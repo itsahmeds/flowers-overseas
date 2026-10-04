@@ -33,7 +33,7 @@ faq:
   - q: "What is Ferragosto and why does it matter?"
     a: "The 15th of August, when much of Italy goes to the coast and stays there. Small shops in a city can be closed for a fortnight around it, with a handwritten sign in the window and no forwarding arrangement."
   - q: "Should I have the card written in Italian?"
-    a: "Only if you want it that way. We write it by hand in whatever language you choose. If you would like Italian and are unsure of the register, tell us the sense of it and we will help you phrase it warmly rather than stiffly."
+    a: "Only if you want it that way. We will print it on our card in whatever language you write it, exactly as you type it. If you would like Italian and are unsure of the register, tell us the sense of it and we will help you phrase it warmly rather than stiffly."
   - q: "Can you deliver flowers in Italy at the moment?"
     a: "No. We have not begun there. We are choosing which shops we want to work with, and until one of them has agreed, this page will carry no date, no hour and no claim about arrival."
 localFlowers: >-

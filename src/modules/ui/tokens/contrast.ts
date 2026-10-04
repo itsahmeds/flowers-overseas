@@ -289,6 +289,19 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
     kind: "body-text",
     usage: "the label of the current chip and the selected day or tier",
   },
+  // Poppy-strong: a date's fee, on the chip and in the summary (TASK-179).
+  {
+    foreground: "--color-accent-strong",
+    background: "--color-card",
+    kind: "body-text",
+    usage: "a date chip's fee on card (the product page's date picker)",
+  },
+  {
+    foreground: "--color-accent-strong",
+    background: "--color-butter",
+    kind: "body-text",
+    usage: "the fee row of the product page's summary on butter",
+  },
   // Leaf: "included".
   {
     foreground: "--color-stem",

@@ -26,16 +26,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import {
-  Chip,
-  Container,
-  Display,
-  Grid,
-  Label,
-  Photo,
-  Stack,
-  Text,
-} from "../../ui/index.ts";
+import { Button, Chip, Photo } from "../../ui/index.ts";
 import type { CorridorView } from "../corridor.ts";
 
 import { CorridorBreadcrumb } from "./CorridorBreadcrumb.tsx";
@@ -44,6 +35,7 @@ import { CorridorFacts } from "./CorridorFacts.tsx";
 import { CorridorFaq } from "./CorridorFaq.tsx";
 import { CorridorGuideBody } from "./CorridorGuideBody.tsx";
 import { CorridorRelated } from "./CorridorRelated.tsx";
+import { CorridorSection } from "./CorridorSection.tsx";
 import { countryName, registryLabel } from "./labels.ts";
 
 /**
@@ -74,169 +66,177 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
   const country = countryName(t, view.nameKey);
   const live = view.state === "live";
 
+  // The shop entry. Rendered only when spec 008 has published a target for this country: an
+  // unpublished link id renders no heading, no disabled button and no "coming soon" box, which is
+  // what keeps "zero links to a non-200 URL" true by construction. **In the guide state it is the
+  // link and nothing else** (`/review 98`, TASK-113): the heading ("See what can arrive in…") and
+  // the body ("Bouquets our florists in… can make, … with delivery…") are state-B copy, and each
+  // is a florist, delivery or availability claim the guide state may not make beside "Not yet. We
+  // are choosing florists in {country} now". v2 draws it as the poppy pill under the related
+  // chips (TASK-179).
+  const shop =
+    view.liveSlots.shopEntryHref === undefined ? null : (
+      <section
+        aria-label={c("shop.cta", { country })}
+        className={`gap-sm flex flex-col ${view.related === undefined ? "pt-[48px] md:pt-[72px]" : "mt-[40px]"}`}
+        data-fo-corridor-shop
+      >
+        {live ? (
+          <>
+            <h3 className="display text-md m-0">
+              {c("shop.heading", { country })}
+            </h3>
+            <p className="text-ink-muted m-0 max-w-prose">
+              {c("shop.body", { country })}
+            </p>
+          </>
+        ) : null}
+        <Button className="self-start" href={view.liveSlots.shopEntryHref}>
+          {c("shop.cta", { country })}
+        </Button>
+      </section>
+    );
+
   return (
-    <Container
-      as="main"
+    <main
+      className="max-w-page mx-auto w-full px-(--gutter-s) pb-[64px] md:px-(--gutter) md:pb-[96px]"
       id="main"
       data-fo-corridor={view.iso2}
       data-fo-corridor-state={view.state}
     >
-      <Stack gap="xl" className="py-xl">
+      <div className="pt-[20px]">
         <CorridorBreadcrumb crumbs={view.breadcrumb} />
+      </div>
 
-        {/* Hero: the one `<h1>` (the text LCP element — there is no photography of any
-            destination, so the slot is spec 004's placeholder and the LCP stays server-rendered
-            text), the status chip, and the authored intro. */}
-        <Grid columns="1-2" gap="xl" className="items-start">
-          <Stack gap="md">
-            <Display as="h1" size="display-s">
-              {view.h1}
-            </Display>
-            <Chip tone={live ? "accent" : "muted"} className="self-start">
+      {/* Hero: the one `<h1>` (the text LCP element — there is no photography of any destination,
+          so the slot is spec 004's placeholder and the LCP stays server-rendered text), the
+          status chip, and the authored intro, in the artboard's 7∶4 pair. */}
+      <div className="grid items-start gap-[28px] pt-[24px] pb-[36px] md:grid-cols-[7fr_4fr] md:gap-[72px] md:pt-[40px] md:pb-[56px]">
+        <div>
+          <h1 className="display text-display-fluid m-0">{view.h1}</h1>
+          <p className="m-0 mt-[20px]">
+            <Chip live={live} tone="muted">
               {registryLabel(t, view.stateKey)}
             </Chip>
-            <Text measure>{view.intro}</Text>
-          </Stack>
-          <Photo ratio="hero" caption={c("photo.caption", { country })} />
-        </Grid>
+          </p>
+          <p className="text-ink-muted text-body-s m-0 mt-[20px] max-w-prose md:text-[19px]">
+            {view.intro}
+          </p>
+        </div>
+        <Photo caption={c("photo.caption", { country })} ratio="card" />
+      </div>
 
-        {/* Delivery facts, in the form the data allows. */}
-        <Stack as="section" gap="md" data-fo-corridor-facts>
-          <Stack gap="xs">
-            <Label>{c("facts.eyebrow")}</Label>
-            <Display size="2xl">
-              {live ? c("facts.headingLive") : c("facts.headingGuide")}
-            </Display>
-          </Stack>
-          <CorridorFacts view={view} />
-        </Stack>
+      {/* Delivery facts, in the form the data allows. */}
+      <CorridorSection
+        eyebrow={c("facts.eyebrow")}
+        heading={live ? c("facts.headingLive") : c("facts.headingGuide")}
+        id="corridor-facts"
+        marker="data-fo-corridor-facts"
+      >
+        <CorridorFacts view={view} />
+      </CorridorSection>
 
-        {/* How we work here — future tense for a destination we have not opened, present tense
-            only where a florist is taking our orders. */}
-        <Stack as="section" gap="md" data-fo-corridor-steps>
-          <Stack gap="xs">
-            <Label>
-              {live ? c("steps.eyebrowLive") : c("steps.eyebrowGuide")}
-            </Label>
-            <Display size="2xl">
-              {live
-                ? c("steps.headingLive", { country })
-                : c("steps.headingGuide")}
-            </Display>
-          </Stack>
-          <Grid columns="1-3" gap="md">
-            {STEP_KEYS[live ? "live" : "guide"].map(
-              ([titleKey, bodyKey], index) => (
-                <Stack
-                  className="border-rule bg-surface p-md border"
-                  gap="sm"
-                  key={titleKey}
+      {/* How we work here — future tense for a destination we have not opened, present tense
+          only where a florist is taking our orders. The route: numbered rings joined by a dashed
+          rule. */}
+      <CorridorSection
+        eyebrow={live ? c("steps.eyebrowLive") : c("steps.eyebrowGuide")}
+        heading={
+          live ? c("steps.headingLive", { country }) : c("steps.headingGuide")
+        }
+        id="corridor-steps"
+        marker="data-fo-corridor-steps"
+      >
+        <ol className="m-0 grid list-none p-0">
+          {STEP_KEYS[live ? "live" : "guide"].map(
+            ([titleKey, bodyKey], index, all) => (
+              <li className="relative ps-[76px] pb-[36px]" key={titleKey}>
+                <span
+                  aria-hidden="true"
+                  className="display text-md text-mark bg-card absolute start-0 -top-[4px] grid size-[52px] place-items-center rounded-full shadow-[inset_0_0_0_1.5px_var(--color-mark),0_0_0_5px_var(--color-paper-2),inset_0_0_0_5px_var(--color-card),inset_0_0_0_6px_var(--color-mark)]"
                 >
-                  <Label>{String(index + 1).padStart(2, "0")}</Label>
-                  <Text as="span" className="font-semibold">
-                    {registryLabel(t, titleKey)}
-                  </Text>
-                  <Text as="span" size="sm" tone="muted">
-                    {registryLabel(t, bodyKey)}
-                  </Text>
-                </Stack>
-              ),
-            )}
-          </Grid>
-        </Stack>
+                  {index + 1}
+                </span>
+                {index === all.length - 1 ? null : (
+                  <span
+                    aria-hidden="true"
+                    className="border-rule absolute start-[25px] top-[56px] bottom-[4px] border-s-2 border-dashed"
+                  />
+                )}
+                <h3 className="display text-h3 m-0 leading-[1.2] md:text-[25px]">
+                  {registryLabel(t, titleKey, { country })}
+                </h3>
+                <p className="text-ink-muted m-0 mt-[8px] max-w-[48ch]">
+                  {registryLabel(t, bodyKey, { country })}
+                </p>
+              </li>
+            ),
+          )}
+        </ol>
+      </CorridorSection>
 
-        {/* The authored guide: the ≥600 words the existence rule is there to protect. */}
-        <CorridorGuideBody body={view.body} />
+      {/* The authored guide: the ≥600 words the existence rule is there to protect. */}
+      <CorridorGuideBody body={view.body} />
 
-        {/* The destination's own calendar — absent entirely when it has no rules. */}
-        {view.occasions === undefined ? null : (
-          <CorridorCalendar
-            country={country}
-            locale={view.locale}
-            occasions={view.occasions}
-            undated={view.undatedOccasions}
-          />
-        )}
+      {/* The destination's own calendar — absent entirely when it has no rules. */}
+      {view.occasions === undefined ? null : (
+        <CorridorCalendar
+          country={country}
+          locale={view.locale}
+          occasions={view.occasions}
+          undated={view.undatedOccasions}
+        />
+      )}
 
-        {/* What is sent, and what is not: the authored `localFlowers` / `taboos` pair. */}
-        <Stack as="section" gap="md" data-fo-corridor-flowers>
-          <Stack gap="xs">
-            <Label>{c("flowers.eyebrow", { country })}</Label>
-            <Display size="2xl">{c("flowers.heading")}</Display>
-          </Stack>
-          <Grid columns="1-2" gap="lg">
-            <Stack className="border-rule bg-surface p-md border" gap="sm">
-              <Label>{c("flowers.sentMost")}</Label>
-              <Text size="sm" tone="muted">
-                {view.localFlowers}
-              </Text>
-            </Stack>
-            <Stack className="border-rule bg-surface p-md border" gap="sm">
-              <Label>{c("flowers.sentRarely")}</Label>
-              <Text size="sm" tone="muted">
-                {view.taboos}
-              </Text>
-            </Stack>
-          </Grid>
-        </Stack>
+      {/* What is sent, and what is not: the authored `localFlowers` / `taboos` pair. */}
+      <CorridorSection
+        eyebrow={c("flowers.eyebrow", { country })}
+        heading={c("flowers.heading")}
+        id="corridor-flowers"
+        marker="data-fo-corridor-flowers"
+      >
+        <div className="grid gap-[20px] md:grid-cols-2">
+          <div className="bg-leaf-wash rounded-photo px-[28px] py-[26px]">
+            <h3 className="display text-md m-0 mb-[10px]">
+              {c("flowers.sentMost")}
+            </h3>
+            <p className="text-ink-muted m-0">{view.localFlowers}</p>
+          </div>
+          <div className="bg-blush rounded-photo px-[28px] py-[26px]">
+            <h3 className="display text-md m-0 mb-[10px]">
+              {c("flowers.sentRarely")}
+            </h3>
+            <p className="text-ink-muted m-0">{view.taboos}</p>
+          </div>
+        </div>
+      </CorridorSection>
 
-        {/* Where we deliver. The registry refuses a `citiesKey` on a destination that is not
-            live, so the no-cities branch cannot name a town by accident. */}
-        <Stack as="section" gap="md" data-fo-corridor-coverage>
-          <Stack gap="xs">
-            <Label>{c("coverage.eyebrow")}</Label>
-            <Display size="xl">
-              {view.facts.citiesKey === undefined
-                ? c("coverage.headingNone", { country })
-                : c("coverage.headingCities", { country })}
-            </Display>
-          </Stack>
-          <Text measure>
-            {view.facts.citiesKey === undefined
-              ? c("coverage.bodyNone", { country })
-              : registryLabel(t, view.facts.citiesKey)}
-          </Text>
-        </Stack>
+      {/* Where we deliver. The registry refuses a `citiesKey` on a destination that is not live,
+          so the no-cities branch cannot name a town by accident. */}
+      <CorridorSection
+        eyebrow={c("coverage.eyebrow")}
+        heading={
+          view.facts.citiesKey === undefined
+            ? c("coverage.headingNone", { country })
+            : c("coverage.headingCities", { country })
+        }
+        id="corridor-coverage"
+        marker="data-fo-corridor-coverage"
+      >
+        <p className="text-ink-muted text-body-s m-0 max-w-prose md:text-[19px]">
+          {view.facts.citiesKey === undefined
+            ? c("coverage.bodyNone", { country })
+            : registryLabel(t, view.facts.citiesKey)}
+        </p>
+      </CorridorSection>
 
-        <CorridorFaq country={country} faq={view.faq} />
+      <CorridorFaq country={country} faq={view.faq} />
 
-        {view.related === undefined ? null : (
-          <CorridorRelated related={view.related} />
-        )}
-
-        {/* The shop entry. Rendered only when spec 008 has published a target for this country:
-            an unpublished link id renders no heading, no disabled button and no "coming soon"
-            box, which is what keeps "zero links to a non-200 URL" true by construction.
-            **In the guide state it is the link and nothing else** (`/review 98`, TASK-113): the
-            heading ("See what can arrive in…") and the body ("Bouquets our florists in… can
-            make, … with delivery…") are state-B copy, and each is a florist, delivery or
-            availability claim the guide state may not make beside "Not yet. We are choosing
-            florists in {country} now". The link's own label names flowers and a country and
-            claims nothing, so a guide page may carry it. */}
-        {view.liveSlots.shopEntryHref === undefined ? null : (
-          <Stack
-            as="section"
-            className="border-accent bg-surface-raised p-lg border"
-            data-fo-corridor-shop
-            gap="sm"
-          >
-            {live ? (
-              <>
-                <Display size="xl">{c("shop.heading", { country })}</Display>
-                <Text size="sm" tone="muted">
-                  {c("shop.body", { country })}
-                </Text>
-              </>
-            ) : null}
-            <a
-              className="text-accent font-semibold"
-              href={view.liveSlots.shopEntryHref}
-            >
-              {c("shop.cta", { country })}
-            </a>
-          </Stack>
-        )}
-      </Stack>
-    </Container>
+      {view.related === undefined ? (
+        shop
+      ) : (
+        <CorridorRelated related={view.related}>{shop}</CorridorRelated>
+      )}
+    </main>
   );
 }

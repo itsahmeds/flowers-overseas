@@ -34,7 +34,7 @@ faq:
   - q: "Which French public holidays should I plan around?"
     a: "1 January, Easter Monday, 1 and 8 May, Ascension, Whit Monday, 14 July, 15 August, 1 and 11 November, and 25 December. Alsace and the Moselle keep Good Friday and 26 December as well."
   - q: "Should the card be written in French?"
-    a: "It is written by hand in whatever language you give us. If you want a French phrasing and are not confident, send us the sense of it in English and we will help you word it properly."
+    a: "We will print it on our card in whatever language you write it, exactly as you type it. If you want a French phrasing and are not confident, send us the sense of it in English and we will help you word it properly."
   - q: "Can you deliver to France today?"
     a: "No. We have not begun there. We are choosing which shops we want to work with, and until one of them has agreed we will not print a date, a time or a claim about arrival on this page."
 localFlowers: >-

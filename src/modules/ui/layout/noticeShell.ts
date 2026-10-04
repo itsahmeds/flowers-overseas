@@ -102,3 +102,39 @@ export const NOTICE_LOCALE_NAME = "display text-md";
  */
 export const NOTICE_LOCALE_PATH =
   "text-ink-subtle text-xs font-medium tracking-[0.14em] whitespace-nowrap";
+
+/*
+ * The v2 error letter (`docs/design/wireframes/errors-{desktop,mobile}.dc.html`; TASK-179): the
+ * 404 and the two 500s are a white letter, tilted, on the paper ground under the lockup — the
+ * status as the eyebrow, the `<h1>` at the title step, one sentence and the two actions. The
+ * chooser keeps the column above (its artboard is still v1). Three of the artboard's marks are
+ * left out on purpose: the airmail edge (spec 004 §14 A21 clause 2 allows it in three places
+ * only), the postmark (an SVG a client boundary would ship on every document) and the italic
+ * split of the heading (a copy change in every locale).
+ */
+
+/** The page: the lockup at the top, the letter centred under it. */
+export const NOTICE_LETTER_MAIN =
+  "mx-auto flex min-h-dvh w-full max-w-page flex-col gap-[56px] px-(--gutter-s) pt-[24px] pb-[72px] md:gap-[112px] md:px-(--gutter) md:pb-[160px]";
+
+/** The letter: card white, the letter shadow and tilt, 640 px at most. */
+export const NOTICE_LETTER =
+  "bg-card shadow-letter rounded-letter mx-auto flex w-full max-w-[640px] rotate-(--tilt-letter-s) flex-col px-[24px] py-[40px] md:rotate-(--tilt-letter) md:px-[56px] md:pt-[56px] md:pb-[48px]";
+
+/** The status code, in the cornflower eyebrow voice. */
+export const NOTICE_LETTER_META = "eyebrow m-0 mb-[14px]";
+
+/**
+ * The `<h1>` at the v2 title step: 44 px on a phone, 68 at the 1440 artboard, at the title's own
+ * 0.98 leading and -0.025em tracking (the artboard's `.h1t`). `text-title-s`/`text-title` carry a
+ * size and no leading, so a two-line "Something went wrong" took the body's 1.55.
+ */
+export const NOTICE_LETTER_HEADING = "display text-title-fluid m-0";
+
+/** The one sentence, in the lede voice. */
+export const NOTICE_LETTER_BODY =
+  "text-ink-muted text-body md:text-[21px] m-0 mt-[18px] max-w-[40ch] leading-[1.5]";
+
+/** The two actions, 32 px under the sentence. */
+export const NOTICE_LETTER_ACTIONS =
+  "mt-[32px] flex flex-wrap items-center gap-[12px]";

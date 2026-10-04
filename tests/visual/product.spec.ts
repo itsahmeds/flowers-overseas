@@ -90,9 +90,17 @@ const BLOCKS = [
   },
 ] as const;
 
-/** Hides the docked total row in the block shots (see the file's own comment). */
+/** Hides the docked total row and takes the date grid out (see the file). */
 const BLOCK_STYLE = fileURLToPath(
   new URL("./product-blocks.css", import.meta.url),
+);
+
+/**
+ * Keeps the sticky header from painting over a block taller than the viewport — the v2 gallery at
+ * 1440 px is 949 px (see `./static-header.css`).
+ */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
 );
 
 const WIDTHS = [
@@ -115,7 +123,7 @@ for (const { width, viewport } of WIDTHS) {
       await expect(page.locator(selector)).toHaveScreenshot(
         `product-${width}-${block}.png`,
         // The docked total row would otherwise sit over a block at a scroll-dependent offset.
-        { stylePath: BLOCK_STYLE },
+        { stylePath: [BLOCK_STYLE, HEADER_STYLE] },
       );
     }
   });

@@ -231,6 +231,9 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
     "--color-sky on --color-card: body-text",
     "--color-sky-strong on --color-card: body-text",
     "--color-on-selected on --color-selected: body-text",
+    // TASK-179: a date's fee in poppy-strong, on a chip (card) and in the summary (butter).
+    "--color-accent-strong on --color-card: body-text",
+    "--color-accent-strong on --color-butter: body-text",
     "--color-stem on --color-paper: body-text",
     "--color-stem on --color-card: body-text",
     "--color-stem on --color-butter: body-text",

@@ -10,9 +10,9 @@ import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import { fontVariables } from "@/modules/ui/fonts";
 import { NoticeDocument } from "@/modules/ui/layout/NoticeDocument";
 import {
-  NOTICE_ACTIONS,
   NOTICE_ACTION_PRIMARY,
   NOTICE_ACTION_SECONDARY,
+  NOTICE_LETTER_ACTIONS,
 } from "@/modules/ui/layout/noticeShell";
 
 import "./globals.css";
@@ -89,11 +89,12 @@ export default async function NotFound() {
         <NoticeDocument
           body={t("notFound.body")}
           heading={t("notFound.heading")}
+          letter
           lockupHref={home}
           meta={NOT_FOUND_STATUS}
           wordmark={COMPANY.tradingName}
         >
-          <div className={NOTICE_ACTIONS}>
+          <div className={NOTICE_LETTER_ACTIONS}>
             <a className={NOTICE_ACTION_PRIMARY} href={home}>
               {common("homeLink")}
             </a>

@@ -31,7 +31,7 @@ faq:
   - q: "Can I send flowers for Wigilia, the Christmas Eve supper?"
     a: "You can, and a poinsettia is the plant most homes already have on the table. If you are sending to a family gathering, earlier in the week is kinder than the day itself, when everyone is cooking."
   - q: "Do I need to write my card message in Polish?"
-    a: "No. We will write it in whatever language you choose, by hand. If you would like it in Polish and you are not sure of the wording, ask us and we will help you say it properly rather than literally."
+    a: "No. We will print it on our card in whatever language you write it, exactly as you type it. If you would like it in Polish and you are not sure of the wording, ask us and we will help you say it properly rather than literally."
   - q: "Will the person paying in one currency and receiving in złoty cause confusion?"
     a: "No. You see one all-in amount in your own currency before you pay, and the person receiving the flowers never sees a price at all."
   - q: "Can you deliver to Poland today?"

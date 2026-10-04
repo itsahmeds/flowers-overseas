@@ -283,6 +283,10 @@ describe("the shipped catalogues and manifests", () => {
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     // TASK-178's `catalog.price.equivalents` left this queue when the founder's attestation was
     // recorded (2026-10-04).
+    // TASK-179, spec 004 §14 A22 open item (iii) closed by the founder on 2026-10-04 ("yes use
+    // present tense"): the closing florist sentence moves from "will be made" to "is made". The
+    // wording is new, so it waits here until the founder attests the exact string.
+    "catalog.floristSentence",
     "categoryHub.destinationLink",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
@@ -324,6 +328,10 @@ describe("the shipped catalogues and manifests", () => {
     // ahead whatever u feel is good"; TASK-171), so they left this queue; `undatedHeading` was
     // not in that sign-off and still waits.
     "occasionsIndex.undatedHeading",
+    // TASK-179, the v2 product page: the eyebrow "{descriptor} · for {country}" was attested with
+    // the 2026-10-04 copy batch by mistake. It is not one of the batch's 14 items (orchestrator
+    // check, 2026-10-04), so it waits here for the founder.
+    "product.eyebrow",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording

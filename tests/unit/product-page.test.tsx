@@ -41,7 +41,7 @@ import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
 import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
-import { ProductPage } from "../../src/modules/ui";
+import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
 import { zoneCity } from "../../src/modules/ui/product/labels.ts";
 import { lcpNominations } from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
@@ -670,7 +670,9 @@ describe("AC-21: one all-in price with its formula, VAT and delivery rows, and t
         catalog: { price: { inclusive: string; from: string } };
       };
       expect(decode(summary)).toContain(messages.catalog.price.inclusive);
-      expect(summary).toContain("data-fo-price-excludes");
+      // v2 moves the sentence out of the summary into the "Good to know" band (TASK-179); the
+      // page still prints it, once.
+      expect([...html.matchAll(/data-fo-price-excludes/gu)]).toHaveLength(1);
       // No "from", no strike-through, no reference price.
       const fromWord = messages.catalog.price.from
         .replace("{price}", "")
@@ -814,7 +816,7 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
         expect(
           firstText(
             radio,
-            /<span class="text-md font-semibold">([^<]*)<\/span>/u,
+            /<span[^>]*data-fo-tier-label[^>]*>([^<]*)<\/span>/u,
           ),
           where,
         ).toBe(label);
@@ -842,7 +844,10 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
           : translate(only.labelKey, { count: only.stems });
       const single = block(render(view), 'data-fo-tier-selector="single"');
       expect(single, locale).not.toBe("");
-      expect(firstText(single, /<b>([^<]*)<\/b>/u), locale).toBe(label);
+      expect(
+        firstText(single, /<b[^>]*data-fo-tier-label[^>]*>([^<]*)<\/b>/u),
+        locale,
+      ).toBe(label);
       expect(firstText(single, /<bdi[^>]*>([^<]*)<\/bdi>/u), locale).toBe(
         formatMoney(only.price, locale),
       );
@@ -906,7 +911,7 @@ describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge
       const expected = printedDate(day, locale);
       const line = firstText(
         block(html, 'data-fo-summary-row="surcharge"'),
-        /<dt>([^<]*)<\/dt>/u,
+        /<dt[^>]*>([^<]*)<\/dt>/u,
       );
       expect(line.split(" · ").at(-1), locale).toBe(expected);
       const docked = firstText(
@@ -1017,18 +1022,124 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
     }
   });
 
-  it("renders the substitution claim only — the trust claims the drawing does not show stay off", async () => {
+  // TASK-127 rendered the substitution claim alone until the founder ruled on the freshness claim.
+  // He did on 2026-10-04: the "Fresh-flower promise" with its 72-hour photo terms, and never a
+  // number of days of freshness. The florist claim stays off (TASK-179).
+  it("renders substitution and the fresh-flower promise with its terms, and nothing else", async () => {
     const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
     expect(view.trust).toContain("freshnessGuarantee");
     const trust = readable(block(render(view), "data-fo-pdp-trust"));
+    const en = loadMessages("en", ["product"]) as {
+      product: { trust: { freshness: { title: string; body: string } } };
+    };
     expect(trust).toContain("If something is unavailable");
-    expect(trust).not.toMatch(/freshness|7-day|hand-made in the recipient/iu);
+    expect(trust).toContain(en.product.trust.freshness.title);
+    expect(trust).toContain(en.product.trust.freshness.body);
+    expect(trust).not.toMatch(/\d+[-\s]day|hand-made in the recipient/iu);
+    const without = readable(
+      block(render({ ...view, trust: ["substitution"] }), "data-fo-pdp-trust"),
+    );
+    expect(without).not.toContain(en.product.trust.freshness.title);
   });
 });
 
 /* -------------------------------------------------------------------------- */
 /* AC-23 — add-ons are read-only rows; the free card is a zero line.          */
 /* -------------------------------------------------------------------------- */
+
+describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charged", () => {
+  it("prints the selected tier's `formatMoney` under the H1, equal to the one total, with no JSON-LD price", async () => {
+    for (const locale of LOCALES) {
+      for (const view of [
+        await viewOf(locale, "PL", AMBER, { now: IN_WINDOW }),
+        await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+        await viewOf(locale, "PL", AMBER, {
+          now: IN_WINDOW,
+          selection: { tierKey: "stems_12" },
+        }),
+      ]) {
+        const html = render(view);
+        const where = `${locale} ${view.fx.state} ${view.selectedTierKey}`;
+        const tier = view.tiers.find(
+          (option) => option.tierKey === view.selectedTierKey,
+        );
+        const shown = firstText(
+          block(html, "data-fo-pdp-price"),
+          /<bdi>([^<]*)<\/bdi>/u,
+        );
+        const total = firstText(
+          block(html, "data-fo-summary-total"),
+          /<bdi[^>]*data-fo-price-total[^>]*>([^<]*)<\/bdi>/u,
+        );
+        expect(decode(shown), where).toBe(
+          formatMoney(view.price.displayPrice, view.locale as Locale),
+        );
+        expect(tier, where).toBeDefined();
+        expect(decode(shown), where).toBe(
+          formatMoney(
+            tier?.price ?? view.price.displayPrice,
+            view.locale as Locale,
+          ),
+        );
+        expect(shown, where).toBe(total);
+        // No structured-data price on a Phase 0 PDP (BreadcrumbList only), so nothing can differ.
+        expect(html, where).not.toMatch(/"price"\s*:/u);
+        // The equivalents line (A21 clause 6) sits under the price and the total exactly when the
+        // view carries it; `tests/unit/product-equivalents.test.tsx` pins its text.
+        expect(
+          [
+            ...block(html, "data-fo-pdp-price").matchAll(
+              /data-fo-price-equivalents/gu,
+            ),
+          ],
+          where,
+        ).toHaveLength(view.equivalents.price === undefined ? 0 : 1);
+      }
+    }
+  });
+
+  it("prints the view's equivalents line under the price and the total, and never a second amount in it", async () => {
+    const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+    expect(view.equivalents.price).toBeDefined();
+    const html = render(view);
+    expect([
+      ...block(html, "data-fo-pdp-price").matchAll(
+        /data-fo-price-equivalents/gu,
+      ),
+    ]).toHaveLength(1);
+    expect([
+      ...block(html, "data-fo-price-summary").matchAll(
+        /data-fo-price-equivalents/gu,
+      ),
+    ]).toHaveLength(1);
+    expect([...html.matchAll(/data-fo-price-total/gu)]).toHaveLength(1);
+  });
+});
+
+describe("no N-day freshness promise on the product page (founder, 2026-10-04)", () => {
+  // "cant promise staying fresh": the guarantee is fresh-on-arrival, and its remedy wording waits
+  // for the founder, so the page renders no freshness promise of any length (TASK-179).
+  const N_DAY_FRESHNESS =
+    /\b(?:\d+|seven)[-\s]days?\b[^.]{0,40}\bfresh|\bfresh[^.]{0,40}\b(?:\d+|seven)[-\s]days?\b|\b7-day\b/iu;
+
+  it("renders none in any locale or picker state, though the view model carries the claim", async () => {
+    expect(N_DAY_FRESHNESS.test("a 7-day freshness guarantee")).toBe(true);
+    for (const locale of LOCALES) {
+      for (const view of [
+        await viewOf(locale, "DE", AMBER),
+        await viewOf(locale, "PL", AMBER, { now: IN_WINDOW }),
+        await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
+      ]) {
+        expect(view.trust).toContain("freshnessGuarantee");
+        const body = readable(render(view));
+        expect(
+          N_DAY_FRESHNESS.exec(body)?.[0],
+          `${locale} ${view.delivery.state}`,
+        ).toBe(undefined);
+      }
+    }
+  });
+});
 
 describe("AC-23: the add-ons are a priced, read-only list", () => {
   it("prints name, per-country price and own VAT rate per row, with no input element", async () => {

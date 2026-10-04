@@ -29,6 +29,11 @@ import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 
 import {
+  NOTICE_LETTER,
+  NOTICE_LETTER_BODY,
+  NOTICE_LETTER_HEADING,
+  NOTICE_LETTER_MAIN,
+  NOTICE_LETTER_META,
   NOTICE_BLOCK,
   NOTICE_BODY,
   NOTICE_HEADING,
@@ -59,6 +64,11 @@ export interface NoticeDocumentProps {
   readonly body: string;
   /** The actions and, on the chooser, the locale list. */
   readonly children?: ReactNode;
+  /**
+   * The v2 error letter (TASK-179): the 404 passes it; the chooser, whose artboard is still v1,
+   * does not, and renders exactly as before.
+   */
+  readonly letter?: boolean;
 }
 
 export function NoticeDocument({
@@ -68,6 +78,7 @@ export function NoticeDocument({
   heading,
   body,
   children,
+  letter = false,
 }: NoticeDocumentProps): ReactElement {
   const lockup = (
     <>
@@ -76,6 +87,31 @@ export function NoticeDocument({
       <Wordmark className={NOTICE_WORDMARK_OUTLINED} label={wordmark} />
     </>
   );
+
+  const lockupElement =
+    lockupHref === undefined ? (
+      <div className={NOTICE_LOCKUP}>{lockup}</div>
+    ) : (
+      <a className={NOTICE_LOCKUP} href={lockupHref}>
+        {lockup}
+      </a>
+    );
+
+  if (letter) {
+    return (
+      <main className={NOTICE_LETTER_MAIN} id="main">
+        {lockupElement}
+        <div className={NOTICE_LETTER} data-fo-notice-letter>
+          {meta === undefined ? null : (
+            <p className={NOTICE_LETTER_META}>{meta}</p>
+          )}
+          <h1 className={NOTICE_LETTER_HEADING}>{heading}</h1>
+          <p className={NOTICE_LETTER_BODY}>{body}</p>
+          {children}
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className={NOTICE_MAIN} id="main">

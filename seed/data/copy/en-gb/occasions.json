@@ -11,14 +11,14 @@
       "locale": "en-gb",
       "name": "I am sorry",
       "slug": "i-am-sorry",
-      "descriptionMd": "When you are apologising, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will print it on our card. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "When you are apologising, quiet beats grand and early beats late. Pale roses, white tulips and freesias are the right register, and the card matters more than the flowers — write it yourself and we will print it on our card. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Apology flower delivery across Europe",
       "seoDescription": "Pale roses, white tulips and freesias with your own words on a printed card. Quiet rather than grand, and it arrives on the date you pick.",
       "translationStatus": "human",
       "reviewed": true,
       "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
       "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "36141af9785ecaef120c712f9abe3d3315e735f621ee88761c2a57766cec975f"
+      "sourceHash": "f3fd54ab230cdb93ff2c70c68bdd79a09d42f3962bd497714786e504b635dbc4"
     }
   ]
 }

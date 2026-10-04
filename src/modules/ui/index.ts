@@ -45,8 +45,8 @@
  */
 
 // Fonts (AC-4, §14 A21 clause 3). `fontVariables` goes on `<html>`; the two Latin font objects
-// are exported for the preload assertions. Caveat (`./fonts/hand`) is deliberately not exported:
-// only the product page's card preview may import it.
+// are exported for the preload assertions. Caveat (`./fonts/hand`) is deliberately not exported,
+// and nothing this barrel reaches imports it: only the product page's card preview may.
 export { bodyFont, displayFont, fontVariables } from "./fonts";
 
 // Icons (AC-5). `MIRRORED_IN_RTL` is exported so the mirroring intent is assertable, not so a call
@@ -508,9 +508,11 @@ export type {
 // none of them computes money — every figure is `productView()`'s, formatted by `formatMoney`.
 // They take `catalog`'s types and nothing else from it, because `catalog` and `geo` import this
 // barrel at runtime; the two blocks they cannot import (008's breadcrumb, 007's delivery facts)
-// reach `ProductPage` as slots from the route.
-export { ProductPage } from "./product/ProductPage.tsx";
-export type { ProductPageProps } from "./product/ProductPage.tsx";
+// reach `ProductPage` as slots from the route. `ProductPage` itself is **not** re-exported: it
+// mounts `PrintedCardPreview`, the one importer of Caveat (`./fonts/hand`), and every document
+// layout imports this barrel, so a re-export here would put Caveat's `@font-face` on every route
+// (PR 168 breaker hole 3). The product route imports `@/modules/ui/product/ProductPage` directly;
+// `tests/unit/fonts.test.ts` walks this barrel's import graph and fails if Caveat is reachable.
 export { Gallery } from "./product/Gallery.tsx";
 export type { GalleryProps } from "./product/Gallery.tsx";
 export { TierSelector, tierLabel } from "./product/TierSelector.tsx";

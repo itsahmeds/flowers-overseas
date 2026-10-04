@@ -289,8 +289,8 @@
         "description": "A bottle of local wine, where the florist is licensed to sell it."
       },
       "card": {
-        "name": "Handwritten card",
-        "description": "Your message, written out by hand and delivered with the flowers."
+        "name": "Printed card",
+        "description": "Your message, printed on our card and tucked into the bouquet."
       },
       "allergen": "Contains food. Please check for allergies before you order."
     },
@@ -378,7 +378,7 @@
         "mai17": "Norwegian Constitution Day"
       }
     },
-    "floristSentence": "Every order will be made by hand and delivered in person by our florist in the recipient's city.",
+    "floristSentence": "Every order is made by hand and delivered in person by our florist in the recipient's city.",
     "descriptor": {
       "name": "{name} — {descriptor}",
       "form": {
@@ -877,8 +877,17 @@
       "substitution": {
         "title": "If something is unavailable",
         "body": "We substitute to the same value, style and colour, and we tell you what changed."
+      },
+      "freshness": {
+        "title": "Fresh-flower promise",
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full."
       }
     },
-    "vat": "VAT {rate}"
+    "vat": "VAT {rate}",
+    "card": {
+      "printed": "Printed on our card · included",
+      "legend": "What should the card say?"
+    },
+    "eyebrow": "{descriptor} · for {country}"
   }
 }

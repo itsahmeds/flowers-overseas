@@ -150,7 +150,13 @@ describe("the guide state (AC-8, AC-19)", () => {
       expect(body).toContain(item.q);
       expect(body).toContain(item.a.slice(0, 40));
     }
-    expect(html.match(/<h3/g) ?? []).toHaveLength(GUIDE_FAQ_ITEMS);
+    // v2 (TASK-179) gives the route steps and the two flower boxes their own `<h3>`s, as the
+    // artboard draws them, so the FAQ's headings are counted inside the FAQ section.
+    const faqSection =
+      /<section[^>]*data-fo-corridor-faq[^>]*>(.*?)<\/section>/su.exec(
+        html,
+      )?.[1] ?? "";
+    expect(faqSection.match(/<h3/g) ?? []).toHaveLength(GUIDE_FAQ_ITEMS);
   });
 
   it("renders the calendar as a captioned table with formatted dates and the rule", () => {
@@ -342,5 +348,25 @@ describe("the other locale and the empty branches", () => {
       "en",
     );
     expect(html).not.toContain("data-fo-corridor-related");
+  });
+});
+
+/**
+ * Founder, 2026-10-04: "cant promise staying fresh". The guarantee is fresh-on-arrival, so no
+ * corridor page may promise a number of days of freshness (TASK-179; spec 009 §14 A9 to be
+ * amended). Scanned over every rendered guide, the authored content included.
+ */
+const N_DAY_FRESHNESS =
+  /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)[-\s]days?\b[^.]{0,40}\bfresh|\bfresh[^.]{0,40}\b(?:\d+|seven)[-\s]days?\b|\b7-day\b/iu;
+
+describe("no N-day freshness promise on any guide (founder, 2026-10-04)", () => {
+  it("finds none on the fourteen rendered guides", () => {
+    expect(N_DAY_FRESHNESS.test("our 7-day freshness guarantee")).toBe(true);
+    for (const { locale, iso2, view } of pages) {
+      const body = text(render(<CorridorPage view={view} />, locale));
+      expect(N_DAY_FRESHNESS.exec(body)?.[0], `${locale}/${iso2}`).toBe(
+        undefined,
+      );
+    }
   });
 });

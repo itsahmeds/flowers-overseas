@@ -356,7 +356,7 @@ describe("the 404 document (AC-8)", () => {
 
     expect(html).toContain('<html lang="en" dir="ltr" class=');
     expect(html).toMatch(
-      /<h1 class="display text-title-fluid">Page not found<\/h1>/,
+      /<h1 class="display text-title-fluid m-0">Page not found<\/h1>/,
     );
     // The `.label` metadata line is the status this document is served with (TASK-055).
     expect(html).toContain(">404</p>");
@@ -381,7 +381,7 @@ describe("the localised 500 boundary (TASK-085: strings as data, no provider)", 
     const html = renderBoundary();
 
     expect(html).toMatch(
-      /<h1 class="display text-title-fluid">Something went wrong<\/h1>/,
+      /<h1 class="display text-title-fluid m-0">Something went wrong<\/h1>/,
     );
     expect(html).toContain("Try again");
     // `en-gb`'s thin override, so this is the *locale's* copy and not the x-default's: the one

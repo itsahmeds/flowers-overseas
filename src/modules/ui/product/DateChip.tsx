@@ -105,17 +105,24 @@ export function DateChip({
     messageFor(t, occasionByKey(key).labelKey),
   );
 
+  // v2's date chip (product artboards; components sheet "Date chip"): card white with a hairline
+  // inset, the chip radius, 92 px tall. A closed day (and every `preview` day) sits on the cream
+  // band; its reason is still in words inside the label (WCAG 1.4.1), never a strike or a fade.
+  // Checked is the cornflower fill. An occasion day carries a poppy inset and its name as a tag on
+  // the chip's top edge, in the Fraunces italic.
   const tone =
-    state === "closed"
-      ? "border-dashed border-border-strong bg-surface-muted text-ink-muted"
-      : "border-border-strong has-[:checked]:border-2 has-[:checked]:border-border-emphasis has-[:checked]:bg-surface-raised cursor-pointer";
+    state === "closed" || pickerState === "preview"
+      ? "bg-surface-raised text-ink-muted"
+      : "bg-card text-ink cursor-pointer has-[:checked]:bg-selected has-[:checked]:text-on-selected has-[:checked]:shadow-none";
+  const edge =
+    occasions.length > 0
+      ? "shadow-[inset_0_0_0_1.5px_var(--color-accent)]"
+      : "shadow-[inset_0_0_0_1.5px_var(--color-rule)]";
 
   return (
     <label
       id={chipId}
-      className={`${tone} py-sm has-[:focus-visible]:outline-focus flex min-h-[82px] flex-col justify-center gap-[2px] rounded-sm border px-[6px] text-center text-xs has-[:focus-visible]:outline-2 ${
-        occasions.length > 0 ? "border-b-accent border-b-[3px]" : ""
-      }`}
+      className={`${tone} ${edge} rounded-chip has-[:focus-visible]:outline-focus relative flex min-h-[92px] flex-col items-center justify-start gap-[2px] px-[4px] py-[10px] text-center text-xs has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
       data-fo-date={date.date}
       data-fo-date-state={state}
       {...(date.reasonKey === undefined
@@ -133,18 +140,21 @@ export function DateChip({
           ? { "aria-labelledby": `${chipId} ${sharedReasonId}` }
           : {})}
       />
-      <b className="text-sm font-semibold">
+      <b className="display text-h3-s leading-[1.15] font-normal">
         {formatDate(instantOf(date.date), code, "deliveryDate", "UTC")}
       </b>
       {date.surcharge === undefined ? (
         state === "included" ? (
-          <span className="text-ink-muted" data-fo-date-fee="included">
+          <span
+            className="text-ink-muted [label:has(:checked)_&]:text-on-selected"
+            data-fo-date-fee="included"
+          >
             {product("included")}
           </span>
         ) : null
       ) : (
         <bdi
-          className="text-accent font-semibold tabular-nums"
+          className="text-accent-strong [label:has(:checked)_&]:text-on-selected text-[12px] font-bold tabular-nums"
           data-fo-date-fee="surcharge"
         >
           {formatMoney(date.surcharge, code, {
@@ -153,7 +163,10 @@ export function DateChip({
         </bdi>
       )}
       {date.reasonKey === undefined || shared ? null : (
-        <span className="text-ink-muted leading-[1.35]" data-fo-date-why>
+        <span
+          className="text-ink-muted text-[11px] leading-[1.15]"
+          data-fo-date-why
+        >
           {messageFor(t, date.reasonKey, {
             country,
             time: cutoffLocal ?? "",
@@ -162,16 +175,13 @@ export function DateChip({
         </span>
       )}
       {occasions.length === 0 ? null : (
-        <b className="text-accent" data-fo-date-occasion>
+        <b
+          className="display-em text-accent bg-surface absolute -start-[12px] -end-[12px] -top-[10px] z-1 rounded-md py-px text-center text-[13px] leading-none font-light whitespace-nowrap"
+          data-fo-date-occasion
+        >
           {occasions.join(" · ")}
         </b>
       )}
-      <span
-        aria-hidden="true"
-        className="text-accent hidden text-xs [label:has(:checked)>&]:inline"
-      >
-        {product("selected")}
-      </span>
     </label>
   );
 }

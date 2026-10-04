@@ -40,7 +40,8 @@ vi.mock("next-intl/server", () => ({
 
 const route =
   await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
-const { ProductPage } = await import("../../src/modules/ui");
+const { ProductPage } =
+  await import("../../src/modules/ui/product/ProductPage.tsx");
 const { listProductPages, productPageExists } =
   await import("../../src/modules/catalog");
 const { listingLocales, publishedCountries } =

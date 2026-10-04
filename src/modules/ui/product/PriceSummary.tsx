@@ -35,6 +35,8 @@ import { occasionByKey } from "@/config/catalogue/occasions.data";
 import { formatDate, formatMoney } from "@/modules/i18n";
 
 import { instantOf, localeOf, messageFor, zoneCity } from "./labels.ts";
+import { equivalentsMessageValues } from "../shop/equivalents.ts";
+
 import { tierLabel } from "./TierSelector.tsx";
 
 /**
@@ -47,9 +49,9 @@ import { tierLabel } from "./TierSelector.tsx";
  * scroll padding, so a focused element scrolls clear of it — and apply only while the bar exists.
  */
 const DOCKED = [
-  "max-sm:fixed max-sm:start-0 max-sm:end-0 max-sm:bottom-0",
-  "max-sm:layer-header max-sm:grid-cols-1 max-sm:gap-y-[2px]",
-  "max-sm:border-t-2 max-sm:bg-surface-raised max-sm:p-md max-sm:shadow-md",
+  "max-sm:fixed max-sm:start-0 max-sm:end-0 max-sm:bottom-0 max-sm:m-0",
+  "max-sm:layer-header max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-y-[2px]",
+  "max-sm:border-t max-sm:border-rule max-sm:bg-card max-sm:px-(--gutter-s) max-sm:py-[12px] max-sm:shadow-sticky",
   "max-sm:[body:has(&)]:pb-[8rem] max-sm:[html:has(&)]:scroll-pb-[8rem]",
 ].join(" ");
 
@@ -62,6 +64,7 @@ export interface PriceSummaryProps {
     | "selectedDate"
     | "price"
     | "fx"
+    | "equivalents"
     | "delivery"
     | "product"
     | "gallery"
@@ -99,135 +102,157 @@ export function PriceSummary({
   const fee = date?.surcharge;
   const live = view.delivery.state === "live";
 
-  const row = "contents";
-  const muted = "text-ink-subtle";
+  // v2 (product artboards, "the summary"): a butter panel of rows — the included ones in leaf, a
+  // fee in poppy-strong — and the total in Fraunces; the demo sentence sits under the panel on a
+  // sunflower rule, where Send will stand in spec 010.
+  const row = "flex justify-between gap-[16px]";
+  const included = "text-included m-0 text-end font-bold";
 
   return (
     <section
       aria-labelledby={`${totalId}-label`}
-      className="border-border-emphasis p-md flex flex-col gap-[6px] border-2"
+      className="flex flex-col"
       data-fo-price-summary
       data-fo-fx-state={view.fx.state}
     >
-      <dl className="gap-x-md m-0 grid grid-cols-[minmax(0,1fr)_auto] gap-y-[6px] text-sm">
-        {tier === undefined ? null : (
-          <div className={row} data-fo-summary-row="tier">
-            <dt>{tierLabel(t, tier)}</dt>
-            <dd className="m-0 text-end tabular-nums">
-              <bdi>{formatMoney(tier.price, code)}</bdi>
-            </dd>
+      <div className="bg-butter rounded-photo flex flex-col px-[22px] pt-[22px] pb-[18px]">
+        <dl className="text-ui m-0 grid gap-[8px]">
+          {tier === undefined ? null : (
+            <div className={row} data-fo-summary-row="tier">
+              <dt className="text-ink-muted">{tierLabel(t, tier)}</dt>
+              <dd className="m-0 text-end tabular-nums">
+                <bdi>{formatMoney(tier.price, code)}</bdi>
+              </dd>
+            </div>
+          )}
+          <div className={row} data-fo-summary-row="delivery">
+            <dt className="text-ink-muted">{product("summary.delivery")}</dt>
+            <dd className={included}>{product("included")}</dd>
           </div>
-        )}
-        {date === undefined || fee === undefined ? null : (
-          <div className={row} data-fo-summary-row="surcharge">
-            <dt>
-              {[
-                ...date.occasionKeys.map((key) =>
-                  messageFor(t, occasionByKey(key).labelKey),
-                ),
-                formatDate(instantOf(date.date), code, "deliveryDate", "UTC"),
-              ].join(" · ")}
+          <div className={row} data-fo-summary-row="vat">
+            <dt className="text-ink-muted">
+              {product("vat", { rate: view.price.vatRateText })}
             </dt>
-            <dd className="m-0 text-end tabular-nums">
-              <bdi>{formatMoney(fee, code, { signDisplay: "always" })}</bdi>
-            </dd>
+            <dd className={included}>{product("included")}</dd>
           </div>
-        )}
-        <div className={row} data-fo-summary-row="delivery">
-          <dt className={muted}>{product("summary.delivery")}</dt>
-          <dd className={`${muted} m-0 text-end`}>{product("included")}</dd>
-        </div>
-        <div className={row} data-fo-summary-row="vat">
-          <dt className={muted}>
-            {product("vat", { rate: view.price.vatRateText })}
-          </dt>
-          <dd className={`${muted} m-0 text-end`}>{product("included")}</dd>
-        </div>
-      </dl>
-      {/* The total row **is** the sticky summary (AC-9: no second money element). On a phone it
-          leaves the flow and docks at the bottom of the viewport, restyled, with the size and the
-          date beside the amount and the demo sentence (or, live, the cutoff) under it — the two
-          lines a buyer would otherwise scroll back for. Those two lines repeat words the summary
-          and the picker already say, so they are hidden from the accessibility tree; the amount
-          is the one `aria-live` region, announced once. The document keeps room for the bar, so
-          it never covers the last line of the page or a focused element (WCAG 2.4.11). */}
-      <div
-        className={`border-border-emphasis gap-x-md pt-sm grid grid-cols-[minmax(0,1fr)_auto] border-t text-lg ${dock ? DOCKED : ""}`}
-        data-fo-summary-total
-      >
-        <span className="font-semibold max-sm:sr-only" id={`${totalId}-label`}>
-          {product("summary.total")}
-        </span>
-        <span
-          aria-live="polite"
-          className="text-end max-sm:text-start"
-          id={totalId}
-        >
-          <bdi className="font-semibold tabular-nums" data-fo-price-total>
-            {formatMoney(view.price.displayPrice, code)}
-          </bdi>
-        </span>
-        <span
-          aria-hidden="true"
-          className="text-ink-muted hidden text-xs max-sm:block"
-          data-fo-summary-docked="selection"
-        >
-          {[
-            ...(tier === undefined ? [] : [tierLabel(t, tier)]),
-            ...(date === undefined
-              ? []
-              : [
+          {date === undefined || fee === undefined ? null : (
+            <div className={row} data-fo-summary-row="surcharge">
+              <dt className="text-ink-muted">
+                {[
+                  ...date.occasionKeys.map((key) =>
+                    messageFor(t, occasionByKey(key).labelKey),
+                  ),
                   formatDate(instantOf(date.date), code, "deliveryDate", "UTC"),
-                ]),
-            catalog("price.inclusive"),
-          ].join(" · ")}
-        </span>
-        <span
-          aria-hidden="true"
-          className="text-ink-muted hidden text-xs max-sm:block"
-          data-fo-summary-docked="status"
-          {...(live ? { "data-fo-cutoff": "docked" } : {})}
+                ].join(" · ")}
+              </dt>
+              <dd className="text-accent-strong m-0 text-end font-bold tabular-nums">
+                <bdi>{formatMoney(fee, code, { signDisplay: "always" })}</bdi>
+              </dd>
+            </div>
+          )}
+        </dl>
+        {/* The total row **is** the sticky summary (AC-9: no second money element). On a phone it
+            leaves the flow and docks at the bottom of the viewport, restyled, with the size and
+            the date beside the amount and the demo sentence (or, live, the cutoff) under it — the
+            two lines a buyer would otherwise scroll back for. Those two lines repeat words the
+            summary and the picker already say, so they are hidden from the accessibility tree;
+            the amount is the one `aria-live` region, announced once. The document keeps room for
+            the bar, so it never covers the last line of the page or a focused element (WCAG
+            2.4.11). */}
+        <div
+          className={`border-rule mt-[14px] grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-[16px] border-t pt-[14px] ${dock ? DOCKED : ""}`}
+          data-fo-summary-total
         >
-          {live
-            ? messageFor(t, view.delivery.noticeKey, {
-                country,
-                time: view.delivery.cutoffLocal ?? "",
-                city:
-                  view.delivery.timeZone === undefined
-                    ? ""
-                    : zoneCity(view.delivery.timeZone),
-              })
-            : product("demo.heading")}
-        </span>
-      </div>
-      {view.fx.noticeKey === undefined ? null : (
-        <p className="text-ink-muted m-0 text-sm" data-fo-fx-notice>
-          {catalog("availability.fxUnavailable")}
+          <span
+            className="max-sm:text-ink-subtle font-bold max-sm:col-start-1 max-sm:text-xs max-sm:font-normal"
+            id={`${totalId}-label`}
+          >
+            {product("summary.total")}
+          </span>
+          <span
+            aria-live="polite"
+            className="text-end max-sm:col-start-1 max-sm:row-start-2 max-sm:text-start"
+            id={totalId}
+          >
+            <bdi
+              className="display num max-sm:text-md text-[32px] leading-[1.1]"
+              data-fo-price-total
+            >
+              {formatMoney(view.price.displayPrice, code)}
+            </bdi>
+          </span>
+          <span
+            aria-hidden="true"
+            className="text-ink-subtle hidden text-xs max-sm:col-start-2 max-sm:row-start-1 max-sm:block max-sm:text-end"
+            data-fo-summary-docked="selection"
+          >
+            {[
+              ...(tier === undefined ? [] : [tierLabel(t, tier)]),
+              ...(date === undefined
+                ? []
+                : [
+                    formatDate(
+                      instantOf(date.date),
+                      code,
+                      "deliveryDate",
+                      "UTC",
+                    ),
+                  ]),
+              catalog("price.inclusive"),
+            ].join(" · ")}
+          </span>
+          <span
+            aria-hidden="true"
+            className="text-ink hidden text-xs font-bold max-sm:col-start-2 max-sm:row-start-2 max-sm:block max-sm:text-end"
+            data-fo-summary-docked="status"
+            {...(live ? { "data-fo-cutoff": "docked" } : {})}
+          >
+            {live
+              ? messageFor(t, view.delivery.noticeKey, {
+                  country,
+                  time: view.delivery.cutoffLocal ?? "",
+                  city:
+                    view.delivery.timeZone === undefined
+                      ? ""
+                      : zoneCity(view.delivery.timeZone),
+                })
+              : product("demo.heading")}
+          </span>
+        </div>
+        {/* The approximate equivalents of the total (spec 004 §14 A21 clause 6): `productView()`'s
+            `priceEquivalents()` of this amount at the page's one clock, absent when any leg is
+            stale or the price is the destination-currency fallback. */}
+        {view.equivalents.total === undefined ? null : (
+          <p
+            className="num text-ink-subtle m-0 mt-[3px] text-xs leading-[1.35]"
+            data-fo-price-equivalents
+          >
+            {catalog(
+              "price.equivalents",
+              equivalentsMessageValues(view.equivalents.total, code),
+            )}
+          </p>
+        )}
+        <p className="text-ink-muted m-0 mt-[6px] text-sm">
+          {catalog("price.inclusive")}
         </p>
-      )}
-      <p className="text-ink-muted m-0 text-sm">{catalog("price.inclusive")}</p>
-      <div
-        className="border-warning mt-sm p-md flex flex-col gap-[2px] border"
-        data-fo-demo-summary
-      >
-        <p className="m-0 text-sm font-semibold">{product("demo.heading")}</p>
-        {live ? null : (
-          <p className="text-ink-muted m-0 text-xs">
-            {product("demo.body", { country })}
+        {view.fx.noticeKey === undefined ? null : (
+          <p className="text-ink-muted m-0 mt-[8px] text-sm" data-fo-fx-notice>
+            {catalog("availability.fxUnavailable")}
           </p>
         )}
       </div>
-      {/* "What the price does not include" names the vase, so it renders only where the vase is
-          not in the price — the 76 of 84 products `vaseIncluded: false` marks. A product that
-          ships in a vase has nothing this sentence could truthfully exclude. And its reason is
-          the photograph ("styled with one"), so it renders only beside a photograph: on the
-          no-photo placeholder there is no picture to imply a vase, and the vase stays a priced
-          add-on row (TASK-126 E-5, ruled 2026-10-03). */}
-      {view.product.vaseIncluded || view.gallery.kind !== "photos" ? null : (
-        <p className="text-ink-subtle m-0 text-xs" data-fo-price-excludes>
-          {product("excludes")}
+      <div
+        className="border-sun text-ink-muted mt-[16px] border-s-[3px] ps-[14px] text-sm leading-[1.45]"
+        data-fo-demo-summary
+      >
+        <p className="text-ink text-ui m-0 font-bold">
+          {product("demo.heading")}
         </p>
-      )}
+        {live ? null : (
+          <p className="m-0">{product("demo.body", { country })}</p>
+        )}
+      </div>
     </section>
   );
 }

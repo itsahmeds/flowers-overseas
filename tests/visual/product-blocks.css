@@ -32,3 +32,17 @@
 [data-fo-occasion-dates] {
   display: none !important;
 }
+
+/*
+ * The FX-dependent lines leave the layout, so the summary shots do not flip with the rate's age.
+ * `[data-fo-price-equivalents]` (the approximate equivalents under the price and the total) is
+ * printed only while the rate is current, and `[data-fo-fx-notice]` ("We are showing this price in
+ * the currency of the delivery country.") only while it is stale. Today the committed snapshot is
+ * always stale against the server clock; once spec 005 A7's weekday ECB fetch lands, the same shot
+ * would show one or the other by day of the week. Both are asserted as text in
+ * `tests/unit/product-equivalents.test.tsx` and `tests/unit/product-page.test.tsx`.
+ */
+[data-fo-price-equivalents],
+[data-fo-fx-notice] {
+  display: none !important;
+}

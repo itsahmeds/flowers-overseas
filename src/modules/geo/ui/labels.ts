@@ -16,11 +16,22 @@ import type { useTranslations } from "next-intl";
 import type { LocaleCode } from "../../../config/locales.ts";
 
 type Translator = ReturnType<typeof useTranslations>;
-type LabelTranslator = (key: string) => string;
+type LabelTranslator = (
+  key: string,
+  values?: Readonly<Record<string, string>>,
+) => string;
 
-/** Resolve a dotted key held as registry data. See the header for the cast. */
-export function registryLabel(t: Translator, key: string): string {
-  return (t as unknown as LabelTranslator)(key);
+/**
+ * Resolve a dotted key held as registry data. See the header for the cast. `values` fills a
+ * key's placeholders — the live steps name the country (`{country}`) — and is optional, so every
+ * existing call site reads exactly as before (TASK-179).
+ */
+export function registryLabel(
+  t: Translator,
+  key: string,
+  values?: Readonly<Record<string, string>>,
+): string {
+  return (t as unknown as LabelTranslator)(key, values);
 }
 
 /** The destination's name in the reader's language, from `countries.ts`'s `nameKey`. */

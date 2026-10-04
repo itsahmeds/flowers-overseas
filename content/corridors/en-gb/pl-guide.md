@@ -30,7 +30,7 @@ faq:
   - q: "Can I send flowers for Wigilia, the Christmas Eve supper?"
     a: "You can, and a poinsettia is what most homes already have out. Earlier in that week is kinder than the day itself, when the household is cooking from morning onwards."
   - q: "Does my card have to be written in Polish?"
-    a: "No. We write it by hand in whatever language you give us. If you would like Polish and are not sure how to put it, send us the sense of it in English and we will help you say it properly rather than word for word."
+    a: "No. We will print it on our card in whatever language you write it, exactly as you type it. If you would like Polish and are not sure how to put it, send us the sense of it in English and we will help you say it properly rather than word for word."
   - q: "What will I pay, and in what currency?"
     a: "You are shown one amount in pounds sterling, with VAT and delivery already inside it, before you enter a card. That figure is the figure charged. Nothing is added afterwards, and the person receiving the flowers is shown no price at all."
   - q: "Who am I buying from, and who do I complain to?"

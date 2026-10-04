@@ -31,6 +31,8 @@ import {
   unicodeRange,
 } from "../../scripts/fonts/build-fonts.ts";
 
+import { importClosure } from "./support/import-closure.ts";
+
 const repoRoot = resolve(__dirname, "../..");
 const manifest = readManifest(repoRoot);
 
@@ -39,6 +41,17 @@ function bytesOf(file: string): number {
 }
 
 const KB = 1024;
+
+/** Caveat's one module, and the one file allowed to import it (spec 004 §14 A21 clause 3). */
+const HAND_FILE = "src/modules/ui/fonts/hand.ts";
+const CARD_PREVIEW = "src/modules/ui/product/PrintedCardPreview.tsx";
+
+/** Every repository file reachable from `entry`, repo-relative (`./support/import-closure.ts`). */
+function reachableFrom(entry: string): string[] {
+  return [...importClosure(resolve(repoRoot, entry)).files]
+    .map((file) => relative(repoRoot, file))
+    .sort();
+}
 
 describe("the committed font subsets (A21 clause 3)", () => {
   it("ships exactly A21's faces — Fraunces 400 and 300 italic, Alegreya Sans 400 and 700, Caveat 500 — each as a Latin and a Latin-Ext file", () => {
@@ -322,10 +335,11 @@ describe("the next/font/local declarations", () => {
 
   it("keeps Caveat out of every module graph but the product page's", () => {
     // Every import or re-export specifier in `src/`, resolved (relative, or `@/` = `src/`), that
-    // lands on `ui/fonts/hand`. Only the product module may hold one: `ui/fonts/index.ts` and the
+    // lands on `ui/fonts/hand`. Only the card preview may hold one: `ui/fonts/index.ts` and the
     // `ui` barrel are imported by every document layout, so a single `import "./hand"` or
     // `export … from "./hand"` there would put Caveat's `@font-face` on every page (breaker hole
-    // 1, PR 168). Exempt: `hand.ts` itself.
+    // 1, PR 168). Exempt: `hand.ts` itself and `CARD_PREVIEW`, one file, not the product
+    // directory (breaker hole 3, PR 168); the barrel walk below proves no layout reaches it.
     const HAND = "src/modules/ui/fonts/hand";
     const SPECIFIER =
       /(?:^|\n)\s*(?:import|export)\b[^;]*?(?:from\s*)?["']([^"']+)["']/g;
@@ -350,7 +364,7 @@ describe("the next/font/local declarations", () => {
         if (
           !/\.tsx?$/.test(entry.name) ||
           path === `${HAND}.ts` ||
-          path.startsWith("src/modules/ui/product/")
+          path === CARD_PREVIEW
         ) {
           continue;
         }
@@ -366,6 +380,25 @@ describe("the next/font/local declarations", () => {
     };
     walk("src");
     expect(offenders).toEqual([]);
+  });
+
+  it("reaches no Caveat import from the `ui` barrel every layout imports", () => {
+    // The barrel's import closure, followed through every module it reaches: a re-export of
+    // `ProductPage` (which mounts the card preview) or of the preview itself puts Caveat's
+    // `@font-face` on every route that imports the barrel (breaker hole 3, PR 168). The walk
+    // counts a type-only import as an edge, so it can only be too strict.
+    const reachable = reachableFrom("src/modules/ui/index.ts");
+    expect(reachable).toContain("src/modules/ui/fonts/index.ts");
+    expect(reachable).not.toContain(CARD_PREVIEW);
+    expect(reachable).not.toContain(HAND_FILE);
+  });
+
+  it("finds Caveat from the product page (the barrel walk's own check)", () => {
+    // The route's own import reaches Caveat through `ProductPage` and the preview, so the walk
+    // above is not vacuous: the same walker, from the file that does reach it.
+    const reachable = reachableFrom("src/modules/ui/product/ProductPage.tsx");
+    expect(reachable).toContain(CARD_PREVIEW);
+    expect(reachable).toContain(HAND_FILE);
   });
 
   it("finds a Caveat import however it is written (the walk's own check)", () => {

@@ -91,6 +91,7 @@ import {
   pageIndexability,
 } from "@/modules/seo";
 import {
+  PriceEquivalentsViewSchema,
   ProductCardViewSchema,
   altFor,
   assetsForProduct,
@@ -106,6 +107,7 @@ import {
   productCardView,
   publishedCountries,
 } from "./listing";
+import { priceEquivalents } from "./pricing/equivalents";
 import { toMinor } from "./pricing/money";
 import { priceProjection } from "./pricing/project";
 import { dateSurcharges, resolveAddonPrice } from "./pricing/resolve";
@@ -686,6 +688,18 @@ export const ProductViewSchema = z
         noticeKey: z.literal(FX_UNAVAILABLE_KEY).optional(),
       })
       .strict(),
+    /**
+     * The approximate equivalents lines (spec 004 §14 A21 clause 6): `price` under the H1's tier
+     * price, `total` under the summary's total — `priceEquivalents()` of each, at the view's one
+     * `now`. Each is absent when any leg is stale or missing (clause 6 (d)), and both are absent
+     * on a stale-FX fallback page. Display only: no builder reads them.
+     */
+    equivalents: z
+      .object({
+        price: PriceEquivalentsViewSchema.optional(),
+        total: PriceEquivalentsViewSchema.optional(),
+      })
+      .strict(),
     addons: z.array(AddonLineSchema).readonly(),
     delivery: ProductDeliverySchema,
     facts: ProductFactsSchema,
@@ -707,6 +721,38 @@ export const ProductViewSchema = z
   .strict()
   .superRefine((view, ctx) => {
     const currency = view.price.displayPrice.currency;
+    // One clock (A21 clause 6 (b), (d)): a page whose price is the stale-FX fallback carries no
+    // equivalents line, no line names the currency the page already quotes, and a converted
+    // price's lines are dated by the snapshot that converted it.
+    for (const line of ["price", "total"] as const) {
+      const equivalents = view.equivalents[line];
+      if (equivalents === undefined) continue;
+      if (view.fx.state === "fallback") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["equivalents", line],
+          message:
+            "a stale-FX fallback price carries no equivalents line: the line and the fallback read two clocks (spec 004 §14 A21 clause 6 (d))",
+        });
+      }
+      if (equivalents.amounts.some((amount) => amount.currency === currency)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["equivalents", line, "amounts"],
+          message: `the equivalents line repeats the page's own ${currency} (A21 clause 6 (b))`,
+        });
+      }
+      if (
+        view.price.fxAsOf !== undefined &&
+        equivalents.asOf !== view.price.fxAsOf
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["equivalents", line, "asOf"],
+          message: `the equivalents line is dated ${equivalents.asOf}, the price was converted at ${view.price.fxAsOf}: one snapshot (A21 clause 6 (b))`,
+        });
+      }
+    }
     const selected = view.tiers.find(
       (tier) => tier.tierKey === view.selectedTierKey,
     );
@@ -1405,6 +1451,14 @@ export async function productView(
     selectedDate,
   );
   const fxState = fxStateOf(price);
+  // The equivalents of the two amounts the page prints, at the same `now` as the price, the
+  // fallback decision and the date window: the H1's tier price (undated) and the summary's total.
+  const selectedBase = grid.base.get(selectedTierKey);
+  if (selectedBase === undefined) {
+    throw new Error(`\`${selectedTierKey}\` unpriced`);
+  }
+  const priceLine = await priceEquivalents(selectedBase, now);
+  const totalLine = await priceEquivalents(price, now);
 
   const state = corridorState(iso2, locale);
   const operations = countryConfig(iso2).operations;
@@ -1473,6 +1527,14 @@ export async function productView(
     fx: {
       state: fxState,
       ...(fxState === "fallback" ? { noticeKey: FX_UNAVAILABLE_KEY } : {}),
+    },
+    equivalents: {
+      ...(priceLine === null
+        ? {}
+        : { price: { asOf: priceLine.asOf, amounts: [...priceLine.amounts] } }),
+      ...(totalLine === null
+        ? {}
+        : { total: { asOf: totalLine.asOf, amounts: [...totalLine.amounts] } }),
     },
     addons: await addonLines(locale, iso2),
     delivery: deliveryOf(window),

@@ -33,15 +33,15 @@ import { TRADING_NAME, errorHomePath } from "@/modules/i18n/error-document";
 // 404 and the chooser without importing the design system into the root error boundary's chunk
 // (`noticeShell.ts`'s header; spec 004 §14 A1).
 import {
-  NOTICE_ACTIONS,
   NOTICE_ACTION_PRIMARY,
   NOTICE_ACTION_SECONDARY,
-  NOTICE_BLOCK,
-  NOTICE_BODY,
-  NOTICE_HEADING,
+  NOTICE_LETTER,
+  NOTICE_LETTER_ACTIONS,
+  NOTICE_LETTER_BODY,
+  NOTICE_LETTER_HEADING,
+  NOTICE_LETTER_MAIN,
+  NOTICE_LETTER_META,
   NOTICE_LOCKUP,
-  NOTICE_MAIN,
-  NOTICE_META,
   NOTICE_WORDMARK,
 } from "@/modules/ui/layout/noticeShell";
 
@@ -59,27 +59,31 @@ export default function LocaleError({ reset }: { reset: () => void }) {
   const home = errorHomePath(code);
 
   return (
-    <main className={NOTICE_MAIN} id="main">
+    <main className={NOTICE_LETTER_MAIN} id="main">
       {/* No `Mark`: the mark is a component in `src/modules/ui`, and this file may import no
           component from there (see the header). The wordmark alone is what the errors wireframe
           draws on the 500 anyway. */}
       <a className={NOTICE_LOCKUP} href={home}>
         <span className={NOTICE_WORDMARK}>{TRADING_NAME}</span>
       </a>
-      <div className={NOTICE_BLOCK}>
-        <p className={NOTICE_META}>{SERVER_ERROR_STATUS}</p>
-        <h1 className={NOTICE_HEADING}>{copy.heading}</h1>
-        <p className={NOTICE_BODY}>{copy.body}</p>
-      </div>
-      <div className={NOTICE_ACTIONS}>
-        <button className={NOTICE_ACTION_PRIMARY} onClick={reset} type="button">
-          {copy.retry}
-        </button>
-        {/* The second action the wireframe draws: a retry that fails again must not be the only
+      <div className={NOTICE_LETTER} data-fo-notice-letter>
+        <p className={NOTICE_LETTER_META}>{SERVER_ERROR_STATUS}</p>
+        <h1 className={NOTICE_LETTER_HEADING}>{copy.heading}</h1>
+        <p className={NOTICE_LETTER_BODY}>{copy.body}</p>
+        <div className={NOTICE_LETTER_ACTIONS}>
+          <button
+            className={NOTICE_ACTION_PRIMARY}
+            onClick={reset}
+            type="button"
+          >
+            {copy.retry}
+          </button>
+          {/* The second action the wireframe draws: a retry that fails again must not be the only
             way out of the page. */}
-        <a className={NOTICE_ACTION_SECONDARY} href={home}>
-          {copy.home}
-        </a>
+          <a className={NOTICE_ACTION_SECONDARY} href={home}>
+            {copy.home}
+          </a>
+        </div>
       </div>
     </main>
   );

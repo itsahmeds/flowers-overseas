@@ -32,7 +32,7 @@ faq:
   - q: "Is a Namenstag celebrated in Germany?"
     a: "In the Catholic south and west, often yes, though it is quieter than a birthday and quieter than the same custom further east. A small bunch is the right scale for it."
   - q: "Should my card message be written in German?"
-    a: "Only if you want it to be. We write the card by hand in whatever language you give us, and if you want a German phrasing and are unsure, ask us and we will help you get it right rather than literal."
+    a: "Only if you want it to be. We will print it on our card in whatever language you write it, exactly as you type it. If you want a German phrasing and are unsure, ask us and we will help you get it right rather than literal."
   - q: "The recipient pays nothing, but will they see what I paid in euro?"
     a: "No. You see one all-in amount in your own currency before you pay, and nothing about money travels with the flowers."
   - q: "Can you send flowers to Germany right now?"

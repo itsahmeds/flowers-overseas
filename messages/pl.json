@@ -29,8 +29,8 @@
         "name": "Balloon"
       },
       "card": {
-        "description": "Your message, written out by hand and delivered with the flowers.",
-        "name": "Handwritten card"
+        "description": "Your message, printed on our card and tucked into the bouquet.",
+        "name": "Printed card"
       },
       "chocolates": {
         "description": "A box of chocolates, sourced by the florist who makes the bouquet.",
@@ -166,7 +166,7 @@
         "rustic": "Rustic"
       }
     },
-    "floristSentence": "Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+    "floristSentence": "Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
     "price": {
       "allIn": "w tym VAT i dostawa",
       "equivalents": "ok. {amounts} po kursie z {date}",
@@ -748,6 +748,10 @@
     "addons": {
       "label": "Add something"
     },
+    "card": {
+      "legend": "What should the card say?",
+      "printed": "Printed on our card · included"
+    },
     "demo": {
       "body": "We are still choosing florists in {country}. When we have one, this is the price you will pay — nothing is added at a later step.",
       "heading": "Ordering is not open yet"
@@ -757,6 +761,7 @@
       "label": "Where is it going?"
     },
     "excludes": "What the price does not include: a vase. The photograph is styled with one and the bouquet is delivered wrapped, so we say it here rather than let the picture imply it.",
+    "eyebrow": "{descriptor} · for {country}",
     "included": "included",
     "related": {
       "heading": "Six more, in our order",
@@ -771,6 +776,10 @@
       "legend": "Which size?"
     },
     "trust": {
+      "freshness": {
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
+        "title": "Fresh-flower promise"
+      },
       "label": "What we promise",
       "substitution": {
         "body": "We substitute to the same value, style and colour, and we tell you what changed.",
@@ -787,7 +796,7 @@
       "heading": "Every one of these comes with a card, at no cost."
     },
     "category": {
-      "lede": "{count, plural, one {Jeden bukiet, który nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta ułoży w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
+      "lede": "{count, plural, one {Jeden bukiet, który nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
       "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "{entity} for {country} — one all-in price",
       "siblingsHeading": "Also for {country}"

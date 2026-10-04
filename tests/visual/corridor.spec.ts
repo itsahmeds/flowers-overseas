@@ -15,7 +15,19 @@
  * the day the window rolls, and the FAQ is authored prose whose correctness is text, asserted in
  * `tests/unit/corridor-page.test.tsx` and `tests/e2e/corridor.spec.ts`.
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, expect, test } from "@playwright/test";
+
+/**
+ * Keeps the sticky header from painting over a block taller than the viewport: the v2 facts list
+ * at 390 px is 758 px, and without it the header's category row lands on its top edge (see
+ * `./static-header.css`). Nothing above the hero or the facts is driven by today's date: the
+ * calendar, the one dated block, sits below both.
+ */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
 
 /** The recorded refusal `./home.spec.ts` carries, for the same reason: no consent sheet on top. */
 async function recordConsentRefusal(
@@ -79,6 +91,7 @@ for (const { name, path, viewport } of CASES) {
     for (const { suffix, selector } of PARTS) {
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
+        { stylePath: HEADER_STYLE },
       );
     }
   });

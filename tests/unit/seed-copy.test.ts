@@ -64,7 +64,15 @@ const messages = JSON.parse(
 ) as { catalog: { floristSentence: string } };
 const meta = JSON.parse(
   readFileSync(join(repoRoot, "messages/en.meta.json"), "utf8"),
-) as Record<string, { retained?: boolean; reviewed?: boolean }>;
+) as Record<
+  string,
+  {
+    retained?: boolean;
+    reviewed?: boolean;
+    source?: string;
+    reviewedBy?: string;
+  }
+>;
 const SENTENCE = messages.catalog.floristSentence;
 /** `de`'s own closing sentence, authored by TASK-106 (human, unreviewed) so German intros close in German. */
 const DE_SENTENCE = (
@@ -94,6 +102,19 @@ function rowsOf(locale: string, entity: SeedCopyFileEntity) {
 function allRows(locale: string) {
   return SEED_COPY_ENTITIES.flatMap((entity) => rowsOf(locale, entity));
 }
+
+/**
+ * The `en` rows and message key whose wording moved to the present tense on 2026-10-04 (spec 004
+ * §14 A22 open item (iii), founder: "yes use present tense"; TASK-179). Each is unreviewed and
+ * unattributed until the founder attests the exact string; nothing else in the `en` copy is.
+ */
+const AWAITING_FOUNDER_ROWS: ReadonlySet<string> = new Set([
+  "product:FO-BQ-001",
+  "product:FO-BQ-003",
+]);
+const AWAITING_FOUNDER_KEYS: ReadonlySet<string> = new Set([
+  FLORIST_SENTENCE_KEY,
+]);
 
 /** A valid product row, so each fixture can break exactly one rule. */
 function fixture(overrides: Record<string, unknown> = {}) {
@@ -339,13 +360,23 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
   });
 
   it("records a reviewer and a date on every authored row", () => {
+    const awaiting: string[] = [];
     for (const row of allRows("en")) {
       expect(row.translationStatus).toBe("human");
-      expect(row.reviewed).toBe(true);
+      expect(row.sourceHash).toBe(copySourceHash(row));
+      if (AWAITING_FOUNDER_ROWS.has(`${row.entity}:${row.key}`)) {
+        // Reworded and waiting: unreviewed, and no one's name on it.
+        awaiting.push(`${row.entity}:${row.key}`);
+        expect(row.reviewed, row.key).toBe(false);
+        expect(row.reviewedBy, row.key).toBe(undefined);
+        expect(row.reviewedAt, row.key).toBe(undefined);
+        continue;
+      }
+      expect(row.reviewed, row.key).toBe(true);
       expect(row.reviewedBy).toMatch(/TASK-073/u);
       expect(row.reviewedAt).toBe("2026-09-09T00:00:00Z");
-      expect(row.sourceHash).toBe(copySourceHash(row));
     }
+    expect(awaiting.sort()).toEqual([...AWAITING_FOUNDER_ROWS].sort());
   });
 
   it("stays inside the SEO field limits", () => {
@@ -378,8 +409,11 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
     for (const row of allRows("en")) {
       expect(row.descriptionMd?.endsWith(SENTENCE)).toBe(true);
     }
-    // The sentence is authored once, in the catalogue, and is not a literal in any component.
-    expect(meta[FLORIST_SENTENCE_KEY]?.reviewed).toBe(true);
+    // The sentence is authored once, in the catalogue, and is not a literal in any component. Its
+    // present-tense wording waits for the founder: unreviewed, and unattributed.
+    expect(meta[FLORIST_SENTENCE_KEY]?.source).toBe("human");
+    expect(meta[FLORIST_SENTENCE_KEY]?.reviewed).toBe(false);
+    expect(meta[FLORIST_SENTENCE_KEY]?.reviewedBy).toBe(undefined);
   });
 });
 
@@ -713,7 +747,7 @@ describe("spec 006 §7: the `media.*` and catalogue message keys exist and are f
   it.each(KEYS.map((key) => [key]))("`%s` is authored and retained", (key) => {
     expect(catalogue[key]).toBeDefined();
     expect(meta[key]?.retained).toBe(true);
-    expect(meta[key]?.reviewed).toBe(true);
+    expect(meta[key]?.reviewed).toBe(!AWAITING_FOUNDER_KEYS.has(key));
   });
 
   it("speaks in the first person and never says `relay`, `partner` or `network`", () => {
