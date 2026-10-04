@@ -92,6 +92,22 @@ T-11 with 65 unannounced-alt rejections and 10 real-alt acceptances. Local run o
 8/8, then the three live mutations above, then `db:rollback --to 0000`, `db:migrate`, 8/8; all exit
 0; the server stopped with `pg_ctl stop`.
 
+**Gates** on `e22b7040` (the commit after it changes only this brief). A first run on `2b95a9ab`
+hit the same 5 s `url-pii` timeout as round 1, at load 11.9, with the brief uncommitted:
+
+```
+gates:cheap · e22b7040aad2a5806c08bd96f9fe074a13504f88 · tree clean · base origin/main · 2026-10-04T21:40:27.646Z
+typecheck             exit 0 · 2.5 s
+lint                  exit 0 · 17.9 s
+format:check          exit 0 · 11.2 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 81.2 s · changed 22 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
 ### Round 1 fixes (review FAIL and breaker HOLES on `aeb60c78`)
 
 Each fix has a test. Each mutation below went red, then was reverted.
