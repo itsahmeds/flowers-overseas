@@ -202,7 +202,7 @@
     "signoff": "With love, from wherever you are."
   },
   "company": {
-    "description": "We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.",
+    "description": "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
       "label": "Help & WhatsApp",

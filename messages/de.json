@@ -205,7 +205,7 @@
     "homeLink": "Home"
   },
   "company": {
-    "description": "Wir verschicken Blumengrüße in ganz Europa. Sie bestellen bei uns; ein Florist am Wohnort der empfangenden Person wird den Strauß binden und persönlich übergeben.",
+    "description": "Wir verschicken Blumengrüße in ganz Europa. Sie bestellen bei uns; unser Florist am Wohnort der empfangenden Person bindet den Strauß und übergibt ihn persönlich.",
     "operatedBy": "Operated by {legalName}, {address}, {registrationNumber}.",
     "support": {
       "hours": "Schreiben Sie uns jederzeit, rund um die Uhr – wir antworten innerhalb weniger Stunden.",
@@ -699,7 +699,7 @@
       "datesPending": "Delivery dates open when we confirm our first florist",
       "datesPendingShort": "Delivery dates are not open yet",
       "guarantee": "Frische-Versprechen",
-      "pricesInclude": "Prices include delivery and VAT"
+      "pricesInclude": "Preise inkl. MwSt. und Versand"
     }
   },
   "occasionHub": {

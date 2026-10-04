@@ -34,11 +34,6 @@ const canvas = readFileSync(
   resolve(__dirname, "../../docs/design/homepage-v1/homepage-desktop.dc.html"),
   "utf8",
 );
-/** The v2 chrome artboard (spec 004 §14 A21; TASK-176), which rewords the footer's about line. */
-const chrome = readFileSync(
-  resolve(__dirname, "../../docs/design/wireframes/chrome-desktop.dc.html"),
-  "utf8",
-);
 
 /** A fully registered identity — the shape the founder fills in after 1 Nov 2026. */
 const registered = {
@@ -81,11 +76,13 @@ describe("src/config/company.ts", () => {
     expect(COMPANY.operatedByKey).toBe("company.operatedBy");
     expect(COMPANY.contact.labelKey).toBe("company.support.label");
     expect(COMPANY.contact.hoursKey).toBe("company.support.hours");
-    // Future tense: no florist makes or delivers today (the v2 chrome artboard's Copy row).
+    // Present tense, the reviewed sentence byte for byte (spec 004 §14 A22 clause 1; founder,
+    // 2026-10-04: "put the old wording that doesnt use future tenses"). The `chrome-*` artboards
+    // still draw a future-tense line; `docs/design/README.md` records the difference.
     expect(messages.company.description).toBe(
-      "We send flowers across Europe. You order from us; a local florist in the recipient's town will make the bouquet and hand it over in person.",
+      "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
     );
-    expect(chrome).toContain(messages.company.description);
+    expect(canvas).toContain(messages.company.description);
     // The support line is the founder's 2026-10-04 copy batch, which postdates the artboard.
     expect(messages.company.support.hours).toBe(
       "Message us any time, 24/7 — we reply within a few hours.",

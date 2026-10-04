@@ -1129,9 +1129,9 @@
   "company.description": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "7d889073dcf5ca9eed6305a8bbd9a034763386f838454217d50e5573726e63bd"
+    "sourceHash": "acf173871d9db47e3b1276d4ed7727b80055493a15e8874b974ceb1b183462b5",
+    "reviewedBy": "orchestrator (founder direction, spec 004 §14 A5)",
+    "reviewedAt": "2026-09-09T00:00:00Z"
   },
   "company.operatedBy": {
     "source": "human",

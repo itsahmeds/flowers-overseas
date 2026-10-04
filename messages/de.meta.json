@@ -727,7 +727,7 @@
   "company.description": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "7d889073dcf5ca9eed6305a8bbd9a034763386f838454217d50e5573726e63bd"
+    "sourceHash": "acf173871d9db47e3b1276d4ed7727b80055493a15e8874b974ceb1b183462b5"
   },
   "company.operatedBy": {
     "source": "machine",
@@ -2120,7 +2120,7 @@
     "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "nav.utility.pricesInclude": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
     "sourceHash": "14c03fcaa8c30420882c8b0fded3edfde4244a977d4ef566ffb0862ba1c30267"
   },
