@@ -372,7 +372,7 @@ No loading skeletons: every page is a server render and every action a form post
 1. Approve the copy of Appendix A and the artboards (all tasks).
 2. A Resend account in the EU region, a verified sending subdomain on Cloudflare DNS, the DPA accepted and filed, `RESEND_API_KEY` and `EMAIL_FROM` set: done once for the shared core, which admin needs too (§13 Q3; spec 012 task 1, and through it tasks 4–5 here).
 3. `AUTH_SECRET` generated per environment and set on Railway (spec 012 task 1).
-4. The private R2 bucket (EU jurisdiction), its scoped token, `R2_PRIVATE_BUCKET` (task 7).
+4. The private R2 bucket (EU jurisdiction), the bucket name in the `R2_PRIVATE_BUCKET` variable, and a credential scoped to that bucket (task 7).
 5. The address for application alerts (§13 Q8; task 5).
 6. A native Polish reviewer for the `pl` copy before the first Warsaw call (§13 Q10).
 
