@@ -93,8 +93,9 @@ test("every FAQ disclosure clears the 44 px tap-target floor and toggles", async
   await page.goto("/en");
 
   const summaries = page.locator("[data-fo-faq] summary");
-  await expect(summaries).toHaveCount(5);
-  for (let index = 0; index < 5; index += 1) {
+  // v2 (TASK-177): three questions; the seven-day and the price answers are gone.
+  await expect(summaries).toHaveCount(3);
+  for (let index = 0; index < 3; index += 1) {
     const summary = summaries.nth(index);
     const box = await summary.boundingBox();
     expect(box?.height ?? 0, `summary ${String(index)}`).toBeGreaterThanOrEqual(
@@ -123,7 +124,7 @@ test("every FAQ summary paints the artboards' `+`, which rotates when the answer
   await page.goto("/en");
 
   const markers = page.locator("[data-fo-faq] summary span[aria-hidden]");
-  await expect(markers).toHaveCount(5);
+  await expect(markers).toHaveCount(3);
 
   const first = markers.first();
   await expect(first).toBeVisible();

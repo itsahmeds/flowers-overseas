@@ -20,7 +20,7 @@
  *    document order, and each is focusable;
  *  - **no cookie is written** by any of it — the finder is a `get` form, and the document is one
  *    cache entry (`plan/02` §14, spec 001 AC-15, spec 003 AC-12);
- *  - **the four-fact proof row** renders four facts and no photograph (AC-15's trap: "We
+ *  - **the promise band** renders three facts and no photograph (AC-15's trap: "We
  *    photograph it at the door" is a promise, not a gallery).
  *
  * Both projects run every test: `e2e-desktop` is 1280 px and `e2e-mobile` is a Pixel 7 at 412 px,
@@ -136,12 +136,13 @@ test.describe("the locale home, above the fold", () => {
       );
     });
 
-    test(`${path} renders the four-fact promise band and no photo in it`, async ({
+    test(`${path} renders the three-fact promise band and no photo in it`, async ({
       page,
     }) => {
       await page.goto(path);
 
-      await expect(page.locator(`${PROOF} li`)).toHaveCount(4);
+      // v2 (TASK-177): three facts; the price fact left the home (founder, 2026-10-04).
+      await expect(page.locator(`${PROOF} li`)).toHaveCount(3);
       await expect(page.locator(`${PROOF} img`)).toHaveCount(0);
       await expect(page.locator(`${PROOF} [data-fo-media-slot]`)).toHaveCount(
         0,

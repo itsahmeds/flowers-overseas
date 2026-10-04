@@ -172,12 +172,13 @@ test.describe("AC-16: no structured data, canonical or hreflang from a 004 page"
     });
   }
 
-  test("the FAQ's five disclosures ship no FAQPage markup", async ({
+  test("the FAQ's three disclosures ship no FAQPage markup", async ({
     page,
   }) => {
     await page.goto("/en");
 
-    await expect(page.locator("[data-fo-faq] details")).toHaveCount(5);
+    // v2 (TASK-177): the seven-day and the price answers are gone (founder, 2026-10-04).
+    await expect(page.locator("[data-fo-faq] details")).toHaveCount(3);
     await expect(
       page.locator('[data-fo-faq] [itemtype*="FAQPage"], [data-fo-faq] script'),
     ).toHaveCount(0);

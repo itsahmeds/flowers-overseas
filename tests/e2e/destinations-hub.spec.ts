@@ -200,11 +200,27 @@ test.describe("the link crawl (AC-17, T-18)", () => {
 
   test("every corridor page is at most two clicks from its locale home", async ({
     page,
+    request,
   }) => {
     await page.goto("/en");
-    const fromHome = new Set(await internalHrefs(page));
-    // Depth 1: the destinations grid links each corridor directly. Depth 2 via the hub holds by
-    // construction, since the hub links the same set.
+    const depth1 = new Set(
+      (await internalHrefs(page)).map((href) => href.split("#")[0] ?? ""),
+    );
+    // Depth 2: every page the home links, crawled once. The v2 home (TASK-177) links Poland's
+    // chip to its shop root, as the artboard draws it, so Poland's guide is reached through the
+    // destinations hub that the header and the footer link; the six other guides are depth 1.
+    // Read as server-rendered HTML, the way a crawler reads it.
+    const depth2 = new Set<string>();
+    for (const href of depth1) {
+      if (!href.startsWith("/en/")) continue;
+      const response = await request.get(href);
+      if (response.status() !== 200) continue;
+      for (const [, next] of (await response.text()).matchAll(
+        /<a[^>]*\shref="(\/[^"#]*)/gu,
+      )) {
+        if (next !== undefined) depth2.add(next);
+      }
+    }
     for (const slug of [
       "poland",
       "germany",
@@ -214,7 +230,19 @@ test.describe("the link crawl (AC-17, T-18)", () => {
       "romania",
       "netherlands",
     ]) {
-      expect(fromHome.has(`/en/send-flowers-to/${slug}`), slug).toBe(true);
+      const corridor = `/en/send-flowers-to/${slug}`;
+      expect(depth1.has(corridor) || depth2.has(corridor), slug).toBe(true);
+    }
+    // The six guides the destinations chips link stay one click away.
+    for (const slug of [
+      "germany",
+      "france",
+      "spain",
+      "italy",
+      "romania",
+      "netherlands",
+    ]) {
+      expect(depth1.has(`/en/send-flowers-to/${slug}`), slug).toBe(true);
     }
   });
 });
