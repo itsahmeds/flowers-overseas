@@ -48,10 +48,27 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-04: started on branch `task/TASK-180-fx-bridge` (feature PR with TASK-180/181), based on main b1ea7f03 (TASK-178 merged).
+- 2026-10-04: fixture captured (`tests/fixtures/fx/ecb-eurofxref-2026-09-08.xml`, the 2026-09-08 `Cube` verbatim from `eurofxref-hist-90d.xml`, sha256 of the 90-day file on capture 9a0eaee2…); committed rows corrected; weekday rule, dedupe and the T-36 `priceValidUntil` rule landed with T-28, T-32, T-35, T-36 (commit e6b9ee82); rate-dependent expectations recomputed independently (integer Python), not recorded from the code.
+- 2026-10-04: rebased onto PR 178 (A7 approved text); PR 177 ready with `ci:full`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 177 (feature PR with TASK-181). The committed snapshot is the ECB's 2026-09-08 publication
+(GBP `857_400`, PLN `4_317_800`, USD `1_161_400`, HUF `363_950_000`, …), pinned row by row to the
+captured fixture (T-28, `tests/unit/catalogue-fx.test.ts`, which reads the XML with its own
+regex, independent of the build parser). The age rule has one home, `fxRateStaleAfter()` in
+`fx.data.ts` (clock-free epoch arithmetic, because the dataset directory may hold no `Date`);
+`isRateStale` / `rateValidUntil` and `isFxSnapshotStale` read it (T-35, 17 cases in
+`tests/unit/catalog-pricing-fx-age.test.ts`). `catalog.fx_stale` is deduplicated per process per
+`fx_as_of` in `observability.ts` (T-32, `tests/unit/catalog-fx-stale-once.test.ts`, over the real
+`/pl` shop root). A converted `Offer` takes `priceValidUntil` only from the row's `active_to`
+(T-36, `tests/unit/catalog-offer-price-valid-until.test.ts`, incl. `validate-schema`); the committed
+schema fixture lost its FX date. Runbook §4 gained the window table. Mutations, each red: one ppm
++1 (3 red), fixture date (1), dedupe removed (2), calendar-hours ageing (5), counting from D
+inclusive (5, the Saturday row among them), `rateValidUntil` fed back into `priceValidUntil` (1).
+Knock-on: the shared FX corpus (`tests/fixtures/catalogue.ts`) and the equivalents/product-view
+expectations were recomputed for the true rates; `catalog-product-view-live`'s "chip differs by
+tier" case moved to FO-BQ-004, because at the true rates Amber's chips are €4.00 on every tier.
