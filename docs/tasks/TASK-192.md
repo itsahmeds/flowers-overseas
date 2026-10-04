@@ -42,6 +42,12 @@ changes.
 
 - 2026-10-05: decisions-log row committed. Test changes written and green locally (6 files, 387
   tests) but **not committed**: see Escalations.
+- 2026-10-05 (re-dispatch): rebased onto `origin/main` cecac0c2; the founder's commit is `=` in
+  `git range-diff` (040518a3, author Ahmed, unchanged). Both extra pins follow from the
+  attestation: `withoutDescription` counts rows with `reviewed: false` (`hasReviewedDescription`,
+  `src/modules/catalog/product.ts`), and `ready` is `indexable && reviewed === rows.length`
+  (`seed/check.ts`). Re-applying the test changes with the Edit tool was refused again: see
+  Escalation 2.
 
 ## Result
 
@@ -57,3 +63,12 @@ changes.
    otherwise open the guard), then re-dispatch; the patch applies as is. The mutations (queue key
    back → schema test red; FO-BQ-001 `reviewed: false` → seed-copy red) have not been run, since
    they need guarded writes.
+   PR 188 put the row on `origin/main` (cecac0c2), which did not by itself resolve this: see 2.
+2. **The main checkout's working tree is behind `origin/main`.** The guard reads
+   `/Users/ahmed/dev/flowers-overseas/TASKS.md` from disk, and that checkout is still at
+   1076bc05 (before PR 188), so its `TASKS.md` has no TASK-192 row and every Edit under `tests/`
+   is refused with the same message. Fast-forwarding the orchestrator's checkout is outside this
+   task's fence, so nothing was routed around the guard. Needed: `git -C
+   /Users/ahmed/dev/flowers-overseas pull --ff-only` (or equivalent), then re-dispatch. The test
+   changes are unchanged from the first run and reviewed (each pin one exact value); the worktree
+   is clean.
