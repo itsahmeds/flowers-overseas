@@ -9,11 +9,20 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   T-39). The founder chose option A on 2026-10-04 ("yes A"). They approved no German or Polish
   text: every value this task writes is `reviewed: false`, and no clause here may be read as their
   review.
-- **Approved.** The founder approved A15 on 2026-10-04 ("yes A"), and answered its open items
-  "all defaults" the same day: German uses `Sie`, check 10 is an error with held keys on the
-  `identical` allow-list, and English parts stay while `de`/`pl` are `noindex`. The advisor's
-  verdict was GO WITH FIXES (`docs/advice/2026-10-04-spec-003-a15.md`). Its four fixes are in A15's
-  text, and they are binding here (below).
+- **Approved.** The founder approved A15's text on 2026-10-04, in chat: "all defaults, accept all
+  three, do it in Chrome".
+  - "all defaults" answers the open items: German uses `Sie`; check 10 is an error, with held keys
+    on the `identical` allow-list; and the English parts stay while `de`/`pl` are `noindex`.
+  - "accept all three" and "do it in Chrome" answer other questions: the Cloudflare rulings and the
+    dashboard steps.
+  - "yes A" was their earlier choice of approach.
+
+  The advisor's verdict was GO WITH FIXES (`docs/advice/2026-10-04-spec-003-a15.md`). The spec
+  writer applied its four fixes in A15's text, and they are binding here (below). Two of them are
+  not founder answers:
+  - the three-event native-review gate is **advisor fix 2 (memo 2026-10-04)**;
+  - excluding sympathy, funeral and All Saints' copy is **the spec writer's choice between the
+    advisor's two options** (fix 4).
 - **Dispatch gate and merge order.** TASK-177 has merged. Wait for **TASK-172 and TASK-179** to
   merge. Both edit `messages/{en,de,pl}.json`. TASK-172 adds the freshness-claim scan, and TASK-179
   changes `catalog.floristSentence`, which ends every product description. Spec 041's
@@ -43,7 +52,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
     `catalog.price.allIn`, `product.vat`, the corridor `fromValue` key);
   - no file under `content/corridors/**`, `content/pages/**` (spec 041's trust pages) or
     `content/legal/**` (spec 041's legal documents) is touched;
-  - sympathy, funeral and All Saints' copy. That means every message key with a path segment
+  - sympathy, funeral and All Saints' copy (the spec writer's choice between the advisor's two
+    options, fix 4). That means every message key with a path segment
     `sympathy`, `funeral` or `allSaints` (today `nav.category.sympathy`,
     `catalog.facet.productType.funeral`, `catalog.facet.occasion.sympathy`,
     `catalog.facet.occasion.allSaints`, `catalog.descriptor.form.funeral`, `occasions.sympathy.*`,
@@ -66,8 +76,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   - `seed:products`, standing for every drafted product row.
 
   Renamed keys take their new names. No entry is also excluded, and every entry names a key that
-  exists. List it in the PR. Write A15 (c)'s gate into `docs/runbooks/i18n-translations.md` §10.
-  The gate: a person writes every excluded key, and a native reviewer attests every
+  exists. List it in the PR. Write the gate of advisor fix 2 (memo 2026-10-04) into
+  `docs/runbooks/i18n-translations.md` §10. The founder's accepted default for (c) asks only that
+  a person writes the English strings before the locale becomes indexable. This gate is the
+  advisor's stricter addition: a person writes every excluded key, and a native reviewer attests every
   `reviewBeforeOrders` key, before the first of these happens for that locale:
   - the locale becomes indexable;
   - `/de` or `/pl` can take an order;
@@ -126,6 +138,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   threshold or robots. `de` and `pl` stay `noindex` and "Beta".
 - **Gates.** `pnpm gates:cheap` (paste the block), `pnpm i18n:check`, `pnpm seed:check`, and the
   unit files the diff touches. The expensive gates belong to CI.
+- **Work order: one sub-agent per locale** (advisor memo, "Building" (1)). The orchestrator
+  dispatches the German and the Polish drafting as separate sub-agents, each with the glossary,
+  this brief and A15, so that drafts written late in a batch of about 340 strings plus 66 product
+  rows are not worse than early ones. One PR still carries both. The tooling and the tests are
+  written once, by the agent that owns the PR.
 - **Class.** Not review-only: i18n tooling that decides indexability, and copy feeding `<title>`
   and meta descriptions. Both `/review` and `/break` run.
 
@@ -203,14 +220,25 @@ _None recorded._
 
 ## Escalations
 
-- **A15 open items (2026-10-04). Ruled by the founder the same day, in chat: "all defaults".**
+- **A15 open items (2026-10-04).** Ruled by the founder the same day, in chat: "all defaults,
+  accept all three, do it in Chrome"; "all defaults" is the part that answers these items.
   - (a) German register: **`Sie`**. Ruled.
   - (b) check 10's severity: **error**, with held keys on the `identical` allow-list. Ruled.
   - (c) the English that stays on `/de` and `/pl` (excluded and held keys, the consent sheet
-    included): **accepted while `noindex`**. Ruled. Per advisor fix 2, a person writes every
-    excluded key, and a native reviewer attests every `reviewBeforeOrders` key, before the first
-    of these happens for that locale: it becomes indexable; it can take an order; a consent-gated
-    tag switches on there.
+    included): **accepted while `noindex`**, and a person writes those strings before either locale
+    can become indexable. Ruled; that is the whole of the founder's answer.
+  - Not a founder answer: **advisor fix 2 (memo 2026-10-04)**, applied by the spec writer, is
+    stricter than (c). A person writes every excluded key, and a native reviewer attests every
+    `reviewBeforeOrders` key, before the first of these happens for that locale: it becomes
+    indexable; it can take an order; a consent-gated tag switches on there.
+  - Not a founder answer: excluding sympathy, funeral and All Saints' copy is **the spec writer's
+    choice between the advisor's two options** (fix 4).
+- **Memo question 2, open (to: orchestrator; answer: `open`).** Who wrote the `source: "human"`
+  German strings `company.description`, `company.support.hours`, `footer.payment.methods` and
+  `footer.signoff`? If an agent wrote them, the label is wrong. Confirm this before dispatch. This
+  task leaves them byte-identical either way (AC-34).
+- **The consent sheet's `lang="en"` (memo, "Law and compliance" (3)).** Declined in A15 ("Still
+  open"): it is a component change, not copy. It is out of scope here.
 
 ## Progress
 
