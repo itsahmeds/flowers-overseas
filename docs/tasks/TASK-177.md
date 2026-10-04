@@ -152,6 +152,19 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
       - "seven full days" (en, no digit), "7 Kalendertage" (de), "Sieben Tage" (de) and "Tydzień świeżości" (pl) in `home.proof.local.body`. Red in `ui-home.test.tsx`.
       - "a week" in `faq.photo.answer`. Red in `ui-home-sections.test.tsx`.
     - H4, in the chrome: "seven full days" (en sign-off), "7 Kalendertage" (de sign-off), "Sieben Tage" (de notice lead), "Tydzień świeżości" (pl notice lead) and "a week" (en notice lead). Red in `ui-site-header.test.tsx`.
+- 2026-10-04: PR 174 breaker round 2 (HOLES at bd715854; the round-2 review passed, and round-1 holes 1–4 were accepted). Five holes closed. Each breaker mutation was applied, run and reverted, and every one went red:
+  1. **Who labels.** The full value → label map for all four catalogues, as one case per `SENTENCE_WHO` id plus "every id once, with distinct words" (now `SENTENCE_WHO.length`, not a hard-coded 7). In de/pl `other` carries the partner option, so it is pinned too.
+     - pl mum ↔ dad swapped: red at "renders mum/dad with its own pinned words".
+     - de grandad case removed, so it falls through to `other`: red at "renders grandad …" and "offers every id once".
+  2. **Price talk.** New de stems: Abgabe, inbegriffen, enthalten, Endpreis, Gesamtpreis, Zustellung, Porto, Gebühr. New pl stems: w cenie, opłat, koszt.
+     - "Endpreis: Zustellung und Abgaben inbegriffen." (de) and "Kurier i wszystkie opłaty w cenie." (pl), each in `home.destinations.body`: red at the H3 denylist.
+  3. **Day counts.** The matcher (`tests/support/day-count.ts`) now catches fused counts (siebentägig, Siedmiodniowa, 14-dniowa), numbers to fourteen, fortnight and dób, with `week(?!end)` and `woche(?!nende)`.
+     - In the promise band, "siebentägigen", "Siedmiodniowa", "a fortnight", "Vierzehn Tage", "fourteen days" and "7 dób": red at the promise-band and whole-home day-count cases.
+     - "We answer 24/7 days and nights." exercises the slash guard. Dropping that guard, or the weekend or Wochenende guard: red at the matcher case in `ui-site-header.test.tsx`.
+  4. **Whole-home sweep.** `dayCountIn` now runs over the whole home render in four locales, less the dates band, whose stamps print real dates.
+     - A day count in de `home.destinations.body`, in the pl hero proposition, or in the de sentence heading: red at "promises no day count anywhere on the home".
+  5. **A22 guards.** Cases for the token's lookbehind (`xpartner {my partner}`, `mypartner {…}`) and its case sensitivity (`Partner {My Partner}`, `PARTNER {MY PARTNER}`).
+     - Dropping the lookbehind, or adding the `i` flag, in `src/config/voice.ts`: red at "matches the token only as a whole case".
 - 2026-10-04: CI on f68fc774 (run 37195581138). Everything was green except one e2e case, `banner.spec.ts:662` ("the suggestion sits in the named z-scale"), on e2e-mobile. It is a race: the test read the consent sheet's layer as soon as the language banner showed, before the consent island had mounted, so the value was "". It had also failed once and passed on retry in run 37182787523. The case now waits for the consent sheet as well. Local `next start`: the four affected specs 292 passed; the case repeated 10 times on both projects, 20 passed.
 - 2026-10-04: round 1 baselines, visual-baselines run 37194900542: the whole change list (15 PNGs, the listing and product shots on `/dev/components` plus the gallery itself) plus the manifest. `--verify` and `--check` exit 0. They had conflicted in the TASK-178 merge and had been taken from this branch. Their geometry now matches main's (the toolbar is 256 px, the mobile grid 727 px); against main they differ only by the sub-pixel offset of the gallery's home section. I looked at all 15, the 43,000 px gallery only as an overview.
 - 2026-10-04: CI on 2a39015a (run 37182787523): green.
