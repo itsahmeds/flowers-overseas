@@ -8,7 +8,8 @@
  *
  * The round trip is put → head → signed URL → delete, plus the failure cases a caller relies on:
  * an absent object, a checksum that does not match the body, a signed URL that was edited, an
- * out-of-range TTL, a key outside the convention. Expiry needs a clock the suite controls, so it
+ * out-of-range TTL, a key outside the convention, an empty body. Two keys in one bucket, and one
+ * key in two buckets, are each two objects. Expiry needs a clock the suite controls, so it
  * runs only where the harness supplies `advanceSeconds` — the fake does, a real bucket cannot.
  */
 import { createHash } from "node:crypto";
@@ -69,6 +70,53 @@ export function describeStorageContract(
       };
       expect(stored).toEqual(expected);
       expect(await harness.storage.head(location)).toEqual(expected);
+    });
+
+    it("keeps keys apart: two keys in one bucket are two objects, each with its own bytes", async () => {
+      const harness = makeHarness();
+      const roses = at(harness, "media/product/fo-bq-003-hero/640.avif");
+      const lilies = at(harness, "media/product/fo-bq-004-hero/640.avif");
+      const roseBytes = bytesOf("twelve red roses");
+      const lilyBytes = bytesOf("white lilies, longer body");
+      await harness.storage.put({
+        ...roses,
+        body: roseBytes,
+        mime: "image/avif",
+      });
+      await harness.storage.put({
+        ...lilies,
+        body: lilyBytes,
+        mime: "image/avif",
+      });
+
+      expect(await harness.storage.head(roses)).toEqual({
+        ...roses,
+        mime: "image/avif",
+        bytes: roseBytes.byteLength,
+        checksumSha256: sha256(roseBytes),
+      });
+      expect(await harness.storage.head(lilies)).toEqual({
+        ...lilies,
+        mime: "image/avif",
+        bytes: lilyBytes.byteLength,
+        checksumSha256: sha256(lilyBytes),
+      });
+      const read = async (location: ObjectLocation): Promise<Uint8Array> => {
+        const response = await harness.fetch(
+          await harness.storage.getSignedUrl(location, 300),
+        );
+        expect(response.status).toBe(200);
+        return new Uint8Array(await response.arrayBuffer());
+      };
+      expect(await read(roses)).toEqual(roseBytes);
+      expect(await read(lilies)).toEqual(lilyBytes);
+
+      await harness.storage.delete(roses);
+      expect(await harness.storage.head(roses)).toBeNull();
+      expect(await harness.storage.head(lilies)).toMatchObject({
+        checksumSha256: sha256(lilyBytes),
+      });
+      expect(await read(lilies)).toEqual(lilyBytes);
     });
 
     it("head is null for a key that was never written", async () => {
@@ -211,7 +259,19 @@ export function describeStorageContract(
 
     it("refuses a location outside the key and bucket alphabets before touching storage", async () => {
       const harness = makeHarness();
-      for (const objectKey of ["/leading-slash", "Upper/case", "", "a b"]) {
+      for (const objectKey of [
+        "/leading-slash",
+        "Upper/case",
+        "",
+        "a b",
+        "originals/../../etc/passwd",
+        "media//x/",
+        "a/./b",
+        "./a",
+        "a/",
+        "a/..",
+        "a..b",
+      ]) {
         await expect(
           harness.storage.put({
             bucket: harness.bucket,
@@ -222,6 +282,18 @@ export function describeStorageContract(
           objectKey,
         ).rejects.toThrow();
       }
+      await expect(
+        harness.storage.put({
+          bucket: harness.bucket,
+          objectKey: "originals/product/empty",
+          body: new Uint8Array(0),
+          mime: "image/png",
+        }),
+        "an empty body: both tables require bytes > 0",
+      ).rejects.toThrow();
+      expect(
+        await harness.storage.head(at(harness, "originals/product/empty")),
+      ).toBeNull();
       await expect(
         harness.storage.put({
           bucket: "Not_A_Bucket",

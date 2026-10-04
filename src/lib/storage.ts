@@ -56,11 +56,15 @@ export const MediaFormat = z.enum(mediaFormats);
 export type MediaFormat = z.infer<typeof MediaFormat>;
 
 /**
- * The object-key alphabet: lowercase, slash-separated, no leading slash. Identical to
- * `ObjectKeySchema` in `seed/schema/media.ts` and to the `*_object_key_check` constraints of
- * migration `0004`, so a key minted here is a key the seed and the database both accept.
+ * The object-key alphabet: lowercase, slash-separated segments, each starting with a letter or a
+ * digit, with dots only between words. So no leading or trailing slash, no empty segment (`//`),
+ * no dot segment (`.`, `..`, `./`) and no `..` anywhere: a key names exactly one object, and the
+ * path `URL` normalises is the path that was signed. Identical to `ObjectKeySchema` in
+ * `seed/schema/media.ts` and to the `*_object_key_check` constraints of migration `0004`, so a
+ * key minted here is a key the seed and the database both accept.
  */
-export const OBJECT_KEY_PATTERN = "^[a-z0-9][a-z0-9/_.-]*$";
+export const OBJECT_KEY_PATTERN =
+  "^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$";
 
 /** An S3/R2 bucket name, as `R2_BUCKET` is validated in `lib/env.schema.ts`. */
 const BUCKET_PATTERN = /^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/;
@@ -81,7 +85,7 @@ export const ObjectKeySchema = z
   .string()
   .regex(
     new RegExp(OBJECT_KEY_PATTERN),
-    "an object key is lowercase, slash-separated, with no leading slash",
+    "an object key is lowercase, slash-separated words, with no empty or dot segment",
   )
   .max(1024);
 
@@ -125,7 +129,8 @@ export const StorageObject = z.strictObject({
   bucket: BucketSchema,
   objectKey: ObjectKeySchema,
   mime: MimeSchema,
-  bytes: z.number().int().nonnegative(),
+  /** Never 0: both tables require `bytes > 0`, and `put` refuses an empty body. */
+  bytes: z.number().int().positive(),
   checksumSha256: Sha256Schema,
 });
 export type StorageObject = z.infer<typeof StorageObject>;
@@ -134,8 +139,8 @@ export const PutInput = z.strictObject({
   bucket: BucketSchema,
   objectKey: ObjectKeySchema,
   body: z.custom<Uint8Array>(
-    (value) => value instanceof Uint8Array,
-    "body must be bytes",
+    (value) => value instanceof Uint8Array && value.byteLength > 0,
+    "body must be at least one byte",
   ),
   mime: MimeSchema,
   /** When given, the write is refused unless the body hashes to it (S3 `x-amz-checksum-sha256`). */

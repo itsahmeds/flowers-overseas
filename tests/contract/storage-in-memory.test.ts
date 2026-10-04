@@ -88,6 +88,84 @@ describe("InMemoryStorage — what the fake adds for tests", () => {
     );
   });
 
+  it("signs the expiry: a URL whose expiry segment was raised is refused", async () => {
+    let now = Date.parse("2026-10-04T09:00:00Z");
+    const storage = new InMemoryStorage({ now: () => new Date(now) });
+    const location = {
+      bucket: "fo-media-test",
+      objectKey: "originals/product/a",
+    };
+    await storage.put({
+      ...location,
+      body: new Uint8Array([1]),
+      mime: "image/png",
+    });
+    const url = await storage.getSignedUrl(location, 60);
+    const expires = now + 60_000;
+    expect(url).toContain(`/${String(expires)}/`);
+    const raised = url.replace(
+      `/${String(expires)}/`,
+      `/${String(expires + 86_400_000)}/`,
+    );
+    expect(raised).not.toBe(url);
+
+    expect((await storage.fetch(url)).status).toBe(200);
+    expect((await storage.fetch(raised)).status).toBe(403);
+    now += 3_600_000;
+    expect((await storage.fetch(url)).status).toBe(403);
+    expect((await storage.fetch(raised)).status).toBe(403);
+  });
+
+  it("signs the bucket: a URL signed for one bucket does not read the same key in another", async () => {
+    const storage = new InMemoryStorage();
+    const objectKey = "originals/partner/statement-1";
+    await storage.put({
+      bucket: "fo-media-test",
+      objectKey,
+      body: new Uint8Array([1]),
+      mime: "application/pdf",
+    });
+    await storage.put({
+      bucket: "fo-private-test",
+      objectKey,
+      body: new Uint8Array([2]),
+      mime: "application/pdf",
+    });
+    const url = await storage.getSignedUrl(
+      { bucket: "fo-media-test", objectKey },
+      60,
+    );
+    const swapped = url.replace(
+      "//fo-media-test.storage.invalid/",
+      "//fo-private-test.storage.invalid/",
+    );
+    expect(swapped).not.toBe(url);
+
+    const own = await storage.fetch(url);
+    expect(own.status).toBe(200);
+    expect(new Uint8Array(await own.arrayBuffer())).toEqual(
+      new Uint8Array([1]),
+    );
+    expect((await storage.fetch(swapped)).status).toBe(403);
+  });
+
+  it("returns a copy from head, so a caller mutating the facts cannot change the stored ones", async () => {
+    const storage = new InMemoryStorage();
+    const location = {
+      bucket: "fo-media-test",
+      objectKey: "originals/product/a",
+    };
+    const stored = await storage.put({
+      ...location,
+      body: new Uint8Array([1, 2]),
+      mime: "image/png",
+    });
+    const first = await storage.head(location);
+    expect(first).toEqual(stored);
+    if (first !== null) first.bytes = 999;
+    expect(await storage.head(location)).toEqual(stored);
+  });
+
   it("answers 400 to a URL it did not sign", async () => {
     const storage = new InMemoryStorage();
     expect((await storage.fetch("https://example.com/x")).status).toBe(400);
