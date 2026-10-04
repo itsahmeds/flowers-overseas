@@ -16,6 +16,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CSP_DIRECTIVES,
+  CSP_DISPOSITIONS,
   CSP_REPORT_CONTENT_TYPES,
   CSP_REPORT_HEADERS,
   CSP_REPORT_MAX_BYTES,
@@ -27,6 +28,7 @@ import {
   createRateLimiter,
   cspReportResponse,
   declaredTooLarge,
+  normaliseDisposition,
 } from "../../src/lib/csp-report";
 import { createLogger, type Logger } from "../../src/lib/logger";
 
@@ -191,14 +193,71 @@ describe("what reaches the log (AC-23)", () => {
     expect(line["blocked_origin"]).toBe("https://cdn.evil.test");
   });
 
-  it("logs nothing but those two fields plus the logger's own reserved keys", async () => {
+  it("logs nothing but those three fields plus the logger's own reserved keys", async () => {
     const capture = capturingLogger();
     await cspReportResponse(reportRequest(reportUriBody), {
       logger: capture.logger,
     });
     expect(
       Object.keys(JSON.parse(capture.lines[0] ?? "{}") as object).sort(),
-    ).toEqual(["blocked_origin", "directive", "level", "msg", "time"]);
+    ).toEqual([
+      "blocked_origin",
+      "directive",
+      "disposition",
+      "level",
+      "msg",
+      "time",
+    ]);
+  });
+
+  // TASK-058: after the enforce flip the static Report-Only policy still reports Next's flight
+  // blocks on every cached page; the disposition is what tells that noise from a real block.
+  it("logs the disposition of both report shapes, so enforce and report never read alike", async () => {
+    const capture = capturingLogger();
+    await cspReportResponse(
+      reportRequest({
+        "csp-report": {
+          "effective-directive": "script-src-elem",
+          "blocked-uri": "inline",
+          disposition: "enforce",
+        },
+      }),
+      { logger: capture.logger },
+    );
+    await cspReportResponse(
+      reportRequest(reportingApiBody, CSP_REPORT_CONTENT_TYPES[1]),
+      { logger: capture.logger },
+    );
+    const lines = capture.lines.map(
+      (line) => JSON.parse(line) as Record<string, unknown>,
+    );
+    expect(lines.map((line) => line["disposition"])).toEqual([
+      "enforce",
+      "report",
+    ]);
+    expect(lines[0]?.["directive"]).toBe("script-src-elem");
+    expect(lines[0]?.["blocked_origin"]).toBe("inline");
+  });
+
+  it("logs an absent or unrecognised disposition as `unknown`, never as its text", async () => {
+    expect(normaliseDisposition(undefined)).toBe("unknown");
+    expect(normaliseDisposition("")).toBe("unknown");
+    expect(normaliseDisposition(`enforce-${SECRET}`)).toBe("unknown");
+    expect(normaliseDisposition(" Report ")).toBe("report");
+    const capture = capturingLogger();
+    await cspReportResponse(
+      reportRequest({
+        "csp-report": { "effective-directive": "img-src", disposition: SECRET },
+      }),
+      { logger: capture.logger },
+    );
+    expect(capture.text()).not.toContain(SECRET);
+    expect(
+      (JSON.parse(capture.lines[0] ?? "{}") as Record<string, unknown>)[
+        "disposition"
+      ],
+    ).toBe("unknown");
+    expect(CSP_DISPOSITIONS).toEqual(["enforce", "report", "unknown"]);
   });
 
   it("never writes document-uri, script-sample, a query string or a user agent", async () => {

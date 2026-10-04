@@ -8,14 +8,19 @@
  * ## What is logged, and what is deliberately thrown away
  *
  * A violation report is attacker-influenced data about a page a real person was looking at, so
- * §8's "no PII in logs" is not advice here. Exactly two fields survive:
+ * §8's "no PII in logs" is not advice here. Exactly three fields survive:
  *
  *  - `directive` — the `effective-directive` (or `violated-directive`, which is what older
  *    Chromium sends), from a **closed set**: an unrecognised value is logged as `other`, so a
  *    report cannot write arbitrary text into a log line;
  *  - `blocked_origin` — the **origin** of `blocked-uri`, never the path and never the query. The
  *    CSP keyword forms (`inline`, `eval`, `data`, `blob`, `wasm-eval`) pass through as themselves
- *    because they are not URLs.
+ *    because they are not URLs;
+ *  - `disposition` — `enforce` or `report`, from a closed set (`unknown` otherwise). Added by
+ *    TASK-058: once the per-document policy enforces, the static Report-Only policy still reports
+ *    Next's flight blocks as `script-src-elem` / `inline` on every cached page, and this field is
+ *    what separates that known noise (`report`) from a script the browser actually refused
+ *    (`enforce`). `docs/runbooks/csp-enforce.md` reads the log by it.
  *
  * Dropped without being read: `document-uri` / `documentURL` (the page URL, which in this product
  * can carry a recipient's town in a path segment and always could carry a query), `referrer`,
@@ -108,6 +113,10 @@ export const CSP_BLOCKED_KEYWORDS = [
   "self",
 ] as const;
 
+/** What the browser did: `enforce` blocked, `report` only reported (TASK-058). */
+export const CSP_DISPOSITIONS = ["enforce", "report", "unknown"] as const;
+export type CspDisposition = (typeof CSP_DISPOSITIONS)[number];
+
 /** Reported when `blocked-uri` is absent, unparsable or not a keyword. */
 export const UNKNOWN_ORIGIN = "unknown";
 
@@ -120,6 +129,7 @@ const ReportUriBody = z.object({
     "effective-directive": z.string().optional(),
     "violated-directive": z.string().optional(),
     "blocked-uri": z.string().optional(),
+    disposition: z.string().optional(),
   }),
 });
 
@@ -132,6 +142,7 @@ const ReportingApiBody = z.array(
         effectiveDirective: z.string().optional(),
         violatedDirective: z.string().optional(),
         blockedURL: z.string().optional(),
+        disposition: z.string().optional(),
       })
       .optional(),
   }),
@@ -139,10 +150,19 @@ const ReportingApiBody = z.array(
 
 export const CspReportSchema = z.union([ReportUriBody, ReportingApiBody]);
 
-/** One log-worthy violation: two fields, both from closed or normalised vocabularies. */
+/** One log-worthy violation: three fields, all from closed or normalised vocabularies. */
 export interface RedactedViolation {
   readonly directive: CspDirective;
   readonly blocked_origin: string;
+  readonly disposition: CspDisposition;
+}
+
+/** `enforce` or `report` verbatim; anything else — absent, other text — is `unknown`. */
+export function normaliseDisposition(
+  value: string | undefined,
+): CspDisposition {
+  const raw = (value ?? "").trim().toLowerCase();
+  return raw === "enforce" || raw === "report" ? raw : "unknown";
 }
 
 function normaliseDirective(value: string | undefined): CspDirective {
@@ -183,6 +203,7 @@ export function redactCspReport(
           entry.body?.effectiveDirective ?? entry.body?.violatedDirective,
         ),
         blocked_origin: blockedOrigin(entry.body?.blockedURL),
+        disposition: normaliseDisposition(entry.body?.disposition),
       }));
   }
   const body = report["csp-report"];
@@ -192,6 +213,7 @@ export function redactCspReport(
         body["effective-directive"] ?? body["violated-directive"],
       ),
       blocked_origin: blockedOrigin(body["blocked-uri"]),
+      disposition: normaliseDisposition(body.disposition),
     },
   ];
 }
@@ -290,6 +312,7 @@ export async function cspReportResponse(
       {
         directive: violation.directive,
         blocked_origin: violation.blocked_origin,
+        disposition: violation.disposition,
       },
       "csp violation",
     );

@@ -34,9 +34,26 @@ import {
   staticPolicyFromRoutesManifest,
 } from "./csp-response.mjs";
 
-/** @type {new (ctx: any) => { get: (...args: any[]) => Promise<any>, set: (...args: any[]) => Promise<any> }} */
+/**
+ * The slice of Next's `CacheHandler` contract this file relies on. Next's own types are not
+ * exported from a public path, so the shape is written down here, as narrowly as it is used.
+ *
+ * @typedef {{ lastModified?: number, value: unknown }} CacheEntry
+ * @typedef {{
+ *   get(key: string, ctx: object): Promise<CacheEntry | null>;
+ *   set(key: string, data: unknown, ctx: object): Promise<void>;
+ * }} CacheHandlerLike
+ * @typedef {{ serverDistDir?: string } & Record<string, unknown>} CacheHandlerContext
+ */
+
+/** @type {new (ctx: CacheHandlerContext) => CacheHandlerLike} */
 const FileSystemCache =
-  /** @type {any} */ (FileSystemCacheModule).default ?? FileSystemCacheModule;
+  /** @type {{ default?: new (ctx: CacheHandlerContext) => CacheHandlerLike }} */ (
+    FileSystemCacheModule
+  ).default ??
+  /** @type {new (ctx: CacheHandlerContext) => CacheHandlerLike} */ (
+    /** @type {unknown} */ (FileSystemCacheModule)
+  );
 
 /** @type {Map<string, string | undefined>} */
 const staticPolicies = new Map();
@@ -68,7 +85,7 @@ function staticPolicyFor(serverDistDir) {
 }
 
 export default class CspCacheHandler extends FileSystemCache {
-  /** @param {{ serverDistDir?: string }} ctx */
+  /** @param {CacheHandlerContext} ctx */
   constructor(ctx) {
     super(ctx);
     /** @private */
@@ -85,17 +102,24 @@ export default class CspCacheHandler extends FileSystemCache {
     });
   }
 
-  /** @param {any[]} args */
-  async get(...args) {
-    const data = await super.get(...args);
+  /**
+   * @override
+   * @param {string} key
+   * @param {object} ctx
+   * @returns {Promise<CacheEntry | null>}
+   */
+  async get(key, ctx) {
+    const data = await super.get(key, ctx);
     if (data !== null && data !== undefined) this.stamp(data.value);
     return data;
   }
 
   /**
+   * @override
    * @param {string} key
    * @param {unknown} data
-   * @param {unknown} ctx
+   * @param {object} ctx
+   * @returns {Promise<void>}
    */
   async set(key, data, ctx) {
     this.stamp(data);
