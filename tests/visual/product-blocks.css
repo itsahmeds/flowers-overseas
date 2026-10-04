@@ -23,3 +23,12 @@
 [data-fo-date-grid] {
   display: none !important;
 }
+
+/*
+ * The `gallery-placeholder` block is photographed on `/dev/components`, below the home's "Coming
+ * up" band, whose dates come from today's date (`./dated-blocks.css` says why that moves every
+ * block under it). The band is not on any product page, so this changes no other block's shot.
+ */
+[data-fo-occasion-dates] {
+  display: none !important;
+}

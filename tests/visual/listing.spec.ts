@@ -12,11 +12,18 @@
  * being 2-up on the mobile artboard, or a toolbar whose submit button dropped below the 44 px
  * target would all pass every text assertion in the suite and fail here.
  */
+import { fileURLToPath } from "node:url";
+
 import { expect, test } from "@playwright/test";
 
 import { settleImages } from "../support/settle-images.ts";
 
 const GALLERY = "/dev/components";
+
+/** Takes the date-driven blocks out of the layout (see `./dated-blocks.css`). */
+const DATES_STYLE = fileURLToPath(
+  new URL("./dated-blocks.css", import.meta.url),
+);
 
 const PARTS = [
   { suffix: "card-image", selector: '[data-fo-listing-state="cardImage"]' },
@@ -58,8 +65,11 @@ for (const { name, viewport } of CASES) {
       // all, and the only thing that used to start this one was `toHaveScreenshot`'s own
       // scroll-and-retry racing the origin (`/review 94` round 2's 2-in-9 flake).
       await settleImages(page, selector);
+      // The gallery draws the home's "Coming up" band above these parts; its dates come from
+      // today's date, so it leaves the layout and every part sits at the same offset each day.
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
+        { stylePath: DATES_STYLE },
       );
     }
   });

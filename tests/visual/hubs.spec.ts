@@ -7,7 +7,7 @@
  * being 3-up at 1440 or 1-up at 390, a card box that stopped being 4∶5, or a block order that put
  * the products before the destinations would all pass the text assertions in
  * `tests/e2e/hubs.spec.ts` and fail here. The occasion hub's date table is not photographed: its
- * dates come from today's date (`./listing-dates.css`); its rows are pinned by
+ * dates come from today's date (`./dated-blocks.css`); its rows are pinned by
  * `tests/unit/catalog-hub-pages.test.tsx` and `tests/e2e/hubs.spec.ts`.
  *
  * `main` rather than the whole document: the header and footer have their own baselines (TASK-050,
@@ -43,9 +43,9 @@ async function recordConsentRefusal(
   ]);
 }
 
-/** Takes the date-driven blocks out of the layout (see `./listing-dates.css`). */
+/** Takes the date-driven blocks out of the layout (see `./dated-blocks.css`). */
 const DATES_STYLE = fileURLToPath(
-  new URL("./listing-dates.css", import.meta.url),
+  new URL("./dated-blocks.css", import.meta.url),
 );
 
 const CASES = [
@@ -90,7 +90,7 @@ for (const { name, url, viewport } of CASES) {
     expect(response?.status(), url).toBe(200);
     await expect(page.locator("[data-fo-listing-grid]")).toBeVisible();
     // The occasion hub's date table comes from today's date; out of the layout, the products
-    // below it sit at the same offset on every day (`./listing-dates.css`). The category hub
+    // below it sit at the same offset on every day (`./dated-blocks.css`). The category hub
     // draws no date block, so the stylesheet changes nothing there.
     await expect(page.locator("main")).toHaveScreenshot(`${name}.png`, {
       stylePath: DATES_STYLE,

@@ -57,7 +57,7 @@ _None recorded._
   conflicts); the 7 attested records and the 6 restored present-tense keys checked byte-identical to their pre-rebase
   records (en, de, pl; json and meta). The attested `catalog.price.equivalents` left the `AWAITING_FOUNDER_REVIEW`
   queue of `tests/unit/i18n-messages-schema.test.ts` (it was red at 570e0ae3). `en` unreviewed: 23/546 = 4.21 %.
-  Listing shots take the date-driven blocks out of the layout: `tests/visual/listing-dates.css`
+  Listing shots take the date-driven blocks out of the layout: `tests/visual/dated-blocks.css`
   (`[data-fo-occasion-date]`, `[data-fo-hub-dates]`, `[data-fo-shop-occasions]`) on `country-shop`,
   `country-occasion` and `hubs`. `visual:baselines` run 37172008153 requested.
 
