@@ -53,6 +53,13 @@ _None recorded._
   d8fffadb`, push `--force-with-lease`, `visual:baselines` label, commit every file of the run's change list, then
   ready + `ci:full` and read CI on the head SHA. PR 169 conflicts with main until then (TASK-175's baselines vs
   TASK-173), so no workflow fires on it yet.
+- 2026-10-04 07:55 — **Rebased** onto main after PR 168 (`git rebase --onto origin/main d8fffadb`, clean, no
+  conflicts); the 7 attested records and the 6 restored present-tense keys checked byte-identical to their pre-rebase
+  records (en, de, pl; json and meta). The attested `catalog.price.equivalents` left the `AWAITING_FOUNDER_REVIEW`
+  queue of `tests/unit/i18n-messages-schema.test.ts` (it was red at 570e0ae3). `en` unreviewed: 23/546 = 4.21 %.
+  Listing shots take the date-driven blocks out of the layout: `tests/visual/listing-dates.css`
+  (`[data-fo-occasion-date]`, `[data-fo-hub-dates]`, `[data-fo-shop-occasions]`) on `country-shop`,
+  `country-occasion` and `hubs`. `visual:baselines` run 37172008153 requested.
 
 ## Result
 
