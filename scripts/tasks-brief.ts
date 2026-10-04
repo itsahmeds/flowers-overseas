@@ -8,7 +8,8 @@
  *
  * The notes now live in `docs/tasks/TASK-NNN.md` under fixed headings and the cell keeps a link
  * plus one summary sentence, at most 400 characters (`scripts/tasks-open-decisions.ts` enforces
- * both the cap and the presence of the brief).
+ * both the cap and the presence of the brief, and, through `checkBriefShapes` here, that every
+ * committed brief keeps `BRIEF_HEADINGS` in order with nothing below `## Result`: TASK-141).
  *
  * Two entry points:
  *   `pnpm tasks:brief TASK-NNN`  scaffolds a brief from `docs/tasks/_template.md`;
@@ -20,7 +21,13 @@
  * byte for byte, and `tests/unit/tasks-brief.test.ts` asserts that for every task id in the
  * committed ledger.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -100,6 +107,99 @@ export function sectionOf(markdown: string, heading: string): string {
   }
   const text = body.join("\n").trim();
   return text === EMPTY_SECTION || text === "_Pending._" ? "" : text;
+}
+
+/** A line that opens or closes a fenced code block: three backticks or three tildes. */
+const FENCE = /^ {0,3}(`{3,}|~{3,})/;
+
+/** The `## ` headings of a brief, in document order, skipping lines inside fenced code blocks. */
+export function briefHeadings(markdown: string): string[] {
+  const headings: string[] = [];
+  let fence: string | undefined;
+  for (const line of markdown.split("\n")) {
+    const marker = FENCE.exec(line)?.[1];
+    if (marker !== undefined) {
+      if (fence === undefined) fence = marker;
+      else if (marker.startsWith(fence)) fence = undefined;
+      continue;
+    }
+    if (fence === undefined && line.startsWith("## ")) {
+      headings.push(line.slice(3).trim());
+    }
+  }
+  return headings;
+}
+
+/**
+ * The shape of a committed brief (TASK-141), as problems; empty means the brief is in shape.
+ *
+ * The rule: every heading of `required` (by default `BRIEF_HEADINGS`) appears exactly once, the
+ * template headings appear in `required`'s order, and nothing follows the last of them,
+ * `## Result`. Any other heading above `## Result` is allowed.
+ *
+ * Why the line sits there. Briefs grow (`## Progress`, `## Done when`, a narrative round), and a
+ * gate that forbids every extra heading would be fought and then disabled. What cost PR 90 a round
+ * was not an extra heading but one **below `## Result`**: a reader who has reached the result
+ * stops, so anything after it is stranded. Telling "review output" from "narrative" by its heading
+ * text cannot be done mechanically (TASK-137's stranded section was titled "Round 2"), so the
+ * gate does not try: nothing goes after `## Result`. A template heading written twice fails too,
+ * because `sectionOf` and a reader both stop at the first, so the second is never read. The
+ * order is compared as a sequence; compared as a set, Carry-forwards and Escalations could swap.
+ */
+export function briefShapeProblems(
+  markdown: string,
+  required: readonly string[] = BRIEF_HEADINGS,
+): string[] {
+  const found = briefHeadings(markdown);
+  const problems: string[] = [];
+  for (const heading of required) {
+    const count = found.filter((name) => name === heading).length;
+    if (count === 0) problems.push(`missing "## ${heading}"`);
+    if (count > 1) {
+      problems.push(
+        `"## ${heading}" appears ${String(count)} times; a reader stops at the first`,
+      );
+    }
+  }
+  const expected = required.filter((heading) => found.includes(heading));
+  const actual = found.filter(
+    (heading, index) =>
+      required.includes(heading) && found.indexOf(heading) === index,
+  );
+  if (actual.join("\n") !== expected.join("\n")) {
+    problems.push(
+      `template headings out of order: ${actual.join(", ")}; expected ${expected.join(", ")}`,
+    );
+  }
+  const closing = required[required.length - 1];
+  const end = closing === undefined ? -1 : found.indexOf(closing);
+  if (closing !== undefined && end !== -1) {
+    for (const heading of found.slice(end + 1)) {
+      if (heading === closing) continue;
+      problems.push(
+        `"## ${heading}" sits below "## ${closing}", where nobody reads it; move it above "## ${closing}"`,
+      );
+    }
+  }
+  return problems;
+}
+
+/** The committed briefs, `TASK-NNN.md` file names under `BRIEF_DIR`, sorted (the template is not one). */
+export function committedBriefs(root: string): string[] {
+  const dir = join(root, BRIEF_DIR);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
+    .filter((name) => /^TASK-\d{3,}\.md$/.test(name))
+    .sort();
+}
+
+/** Every committed brief's shape problems, each prefixed with the brief's path. `pnpm tasks:check` runs it. */
+export function checkBriefShapes(root: string): string[] {
+  return committedBriefs(root).flatMap((name) =>
+    briefShapeProblems(readFileSync(join(root, BRIEF_DIR, name), "utf8")).map(
+      (problem) => `${BRIEF_DIR}/${name}: ${problem}`,
+    ),
+  );
 }
 
 /** Reads back what `renderBrief` wrote, so the migration can be proved lossless. */
