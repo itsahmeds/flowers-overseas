@@ -942,3 +942,102 @@ Open for the founder (defaults bind until answered):
 Raised by: the founder in chat, 2026-10-03; written by the spec-writer; implemented by TASK-175 to
 TASK-179.
 
+**A22 — Present tense for our florists; "my partner" as a who option (§14 A5 L441; §14 A21
+clause 4 L810–L812, clause 7 L875; AC-15, T-17; `src/config/voice.ts` L31–L41;
+`tests/unit/design-docs.test.ts` L477–L482, L547–L560; `docs/design/README.md` L158–L166; founder
+rulings 2026-10-04).**
+Original: A21 clause 7 (L875) keeps "the honesty rules (AC-15, A5 and A10, the future tense for
+florists)", and `docs/design/README.md` L163–L164 tells the artboards that "Florists are spoken of
+in the future tense until one is live ("our florist … will make it")". A5 (L441) bans "partner"
+from all customer copy, because in our copy it meant the florists. `src/config/voice.ts` L34
+enforces the ban with no word boundary and no exception.
+Ruling: (a) the founder, in chat on 2026-10-04: "dont say will just keep makes bro.. put the old
+wording that doesnt use future tenses". (b) Asked whether the home sentence may offer "my partner",
+the founder answered in chat on 2026-10-04: Allow "my partner". The option was already in the
+founder-approved copy batch, whose who options are "my mum", "my dad", "my grandma", "my grandad",
+"my partner", "a friend" and "someone I love" (founder, 2026-10-04: "ok from my end").
+Corrected (founder rulings, written as binding by the spec-writer, 2026-10-04):
+
+1. **Present tense for our florists.** This supersedes A21 clause 7's "the future tense for
+   florists" (L875) and the future-tense rule in `docs/design/README.md` L163–L164. Customer copy
+   describes what our florist does in the present tense: "Our florist in the recipient's town makes
+   the bouquet the morning it is delivered and hands it over in person."
+   - **No rewrites.** A sentence that is already reviewed stays byte-identical. No task rewrites a
+     present-tense sentence into "will make", "will hand" or any other future form. Shipped copy
+     that the founder put into the future tense on 2026-10-03 (decisions log, "The florist
+     sentence (TASK-166)") is open item (iii) below, not reopened by this clause.
+   - **Artboards.** Some artboards draw "will make", e.g. `docs/design/directions/warm-c/home.html`
+     L403, L576 and L581, `warm-c/shop.html` L331, and the home, country and corridor wireframes in
+     `docs/design/wireframes/`. The copy on the page is the message catalogue's, in the present
+     tense (`docs/design/README.md` L158–L160: artboards use real copy verbatim). The designer
+     updates README L163–L164 and those sentences in its next docs PR. Until then it keeps a row
+     under "Where the sheet and the code currently differ".
+   - **The other honesty guardrails stay:** AC-15; A5's coverage rule (geographic claims match
+     live coverage) and its specificity rule (specific beats superlative); the "Nothing can be
+     ordered yet" notices; and A10. The present tense describes how the service works. It never
+     claims that an order was taken, that a delivery happened, how many florists we have, or that a
+     destination is live when it is not.
+2. **"my partner" in the relationship sense.** One exception to A5's ban on "partner" (L441).
+   - **Where.** Only the home sentence's who select (A21 clause 4, L810–L812): message key
+     `home.sentence.who`, select case `partner`, whose English text is exactly "my partner". It
+     means the buyer's loved one, never a florist.
+   - **What stays banned.** "partner" for florists, everywhere: "our partner florist", "partners",
+     "partner shops", "partner network". Every other message key, every artboard, every corridor
+     guide and every prose literal under `src/` is scanned exactly as before.
+   - **The checks.** `src/config/voice.ts` and `tests/unit/design-docs.test.ts` may allow the exact
+     phrase "my partner" in that select case and nothing broader. That excludes the bare word,
+     "my partner" in any other key, and a longer phrase in that case ("my partner florist"). The
+     scanner reads the whole ICU value (`src/config/voice.ts` L53–L57), so the select keyword
+     `partner` in `home.sentence.who` is treated as ICU syntax, not copy; this needs a change to
+     the scanner, because the key-names rule (`tests/unit/design-docs.test.ts` L477–L482) covers
+     message keys, not ICU case names. `tests/unit/ui-home.test.tsx` L436–L470, which bans
+     "partner" across the whole `home` namespace (keys and ICU case names included), takes the
+     same single exception. Spec 007's `pnpm corridor:check` imports the
+     same list and gains no exception: a corridor guide has no who select. `docs/design/README.md`
+     §Voice records the exception in the same task, because the test pins that section against
+     the list.
+3. **The home sentence's coded form counts as approved.** The founder approved the home sentence
+   in plain words ("Send flowers to [my mum] in [Poland] for [her birthday].", option 2, founder
+   2026-10-04: "go ahead with it. 2"), with the seven who options in the copy batch. Its form in
+   the message catalogue (the ICU frame `home.sentence.frame` and the `home.sentence.who` select)
+   counts as that same approval. Asked whether it may, the founder answered in chat on 2026-10-04:
+   "Yes, count it". An attestation records the exact catalogue value; when that value changes
+   (adding `partner {my partner}`, for example), it is re-attested against these rulings, never
+   carried forward.
+4. **Unchanged.** A21 clause 4's privacy rule for the who select: it has no `name`, it is never
+   submitted, and it never reaches a URL, a log, analytics or the server. `fo-who` stores the key
+   `partner`, never the text. AC-15's forbidden claim shapes, and every other word A5 bans.
+
+Tests (each watched red by mutating its subject):
+- **T-17 — honesty, "my partner".** A unit case in `tests/unit/design-docs.test.ts`.
+  - An `en` fixture catalogue whose `home.sentence.who` select has the case `partner {my partner}`
+    passes.
+  - The same fixture fails when "my partner" is moved to another key, when the case text becomes
+    "my partner florist" or "our partner", and when a bare "partner" appears in any other value.
+  - Watched red by widening the allowance to every key: the moved-key case must then go red.
+  - The shipped `messages/*.json` still pass the existing scan (L547–L560). → AC-15.
+- **Present tense.** No new test. Tense is a review rule, not a grep: a ban on "will" would also
+  hit true sentences about us ("We will email you"). The reviewer checks florist sentences against
+  clause 1 when a copy batch lands.
+
+Open for the founder (defaults bind until answered):
+- **(i) "my partner" in `de` and `pl`.** `src/config/voice.ts` matches "partner" in every locale
+  with no word boundary, so German "meinen Partner" and Polish "mojego partnera" would trip it.
+  Default: the exception covers the English catalogues only. `de` and `pl` translate the option
+  without the letters "partner" (for example German "meinen Schatz", Polish "mojej drugiej
+  połówki"), approved with those locales' copy batch.
+- **(ii) Spec 007's corridor guides.** `src/modules/geo/ui/CorridorPage.tsx` L114 renders the
+  future tense for a destination we have not opened, and `content/corridors/en-gb/de-guide.md` L104
+  says "will make". That copy is spec 007's and is already reviewed. A22 does not amend spec 007,
+  so it stays byte-identical. Default: unchanged until the founder asks for a spec 007 amendment.
+- **(iii) Product copy the founder put into the future tense on 2026-10-03.** The decisions-log
+  row "The florist sentence (TASK-166)" (L75) chose "Every order will be made by hand and
+  delivered in person by our florist in the recipient's city." (`messages/en.json`
+  `catalog.floristSentence`), plus FO-BQ-001 "to be hand-tied", FO-BQ-003 "Will be made and
+  delivered" and two search descriptions. Clause 1 supersedes L75's rule for new copy. Default:
+  these shipped, reviewed strings stay byte-identical until the founder asks for them to move to
+  the present tense.
+
+Raised by: the founder in chat, 2026-10-04; written by the spec-writer; implemented by TASK-177
+(the who option and the check, A21 clause 8) and the designer's next docs PR (README §Voice and
+the artboards' sentences).
