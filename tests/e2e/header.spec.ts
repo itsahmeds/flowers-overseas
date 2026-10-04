@@ -643,6 +643,16 @@ const CLAIM_PAGES = [
   { path: "/pl/polska/kwiaty", kind: "shop root", token: "VAT" },
 ] as const;
 
+/**
+ * The de and pl shop roots' claim, as the whole sentence (PR 172 breaker round 2, accepted
+ * carry-forward a). A token would survive "Preise inkl. MwSt. und Versand nicht enthalten" or
+ * "Ceny zawierają dostawę i VAT, koszt dostawy doliczamy"; the exact text does not.
+ */
+const EXACT_CLAIM: Readonly<Record<string, string>> = {
+  "/de/polen/blumen": "Preise inkl. MwSt. und Versand",
+  "/pl/polska/kwiaty": "Ceny zawierają dostawę i VAT",
+};
+
 test.describe("the notice bar's price claim on listing and guide pages", () => {
   for (const { path, kind, token } of CLAIM_PAGES) {
     test(`${path} (${kind}) carries the price claim`, async ({ page }) => {
@@ -653,6 +663,15 @@ test.describe("the notice bar's price claim on listing and guide pages", () => {
       await expect(claim).toHaveCount(1);
       await expect(claim).toBeVisible();
       await expect(claim).toContainText(token);
+      const exact = EXACT_CLAIM[path];
+      if (exact !== undefined) {
+        // The claim's own words, after its decorative " · " separator.
+        const words = ((await claim.textContent()) ?? "").replace(
+          /^[\s·]+/u,
+          "",
+        );
+        expect(words, path).toBe(exact);
+      }
     });
   }
 });

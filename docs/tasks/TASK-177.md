@@ -29,6 +29,15 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
   `/en-gb` 1 767, `/de` 1 776, `/pl` 1 791 (CI run 37137399567; budget 2 000), so the tightest margin is 209 ms; measure
   anything new above the fold.
 
+- **From PR 172's breaker round 2 (TASK-176), accepted by the reviewer in comment 5977141046, carried by the orchestrator 2026-10-04. Done here:**
+  - **a. Pin the exact de/pl price claims.** `tests/unit/ui-site-header.test.tsx` requires `nav.utility.pricesInclude` to be exactly de "Preise inkl. MwSt. und Versand" and pl "Ceny zawierają dostawę i VAT". `tests/e2e/header.spec.ts`'s de and pl shop-root checks compare the claim's own words, after its " · " separator, with the same sentences.
+    - Each of the four breaker sentences went red: "Preise inkl. MwSt., Versand wird extra berechnet", "Preise inkl. MwSt. und Versand nicht enthalten", "Ceny zawierają VAT, dostawa płatna osobno", "Ceny zawierają dostawę i VAT, koszt dostawy doliczamy".
+    - In the unit test they were set in the catalogue, red at "the price claim says …".
+    - In the e2e they were written into the rendered claim against `next start`, red on the exact-words check. The token check alone passed them.
+  - **b. Widen the no-N-day check.** A number, at most one hyphen or space, then a stem: day, tag/täg, dni/dzie. It sweeps the rendered header **and footer** text in all four locales. A matcher case lists the forms that must match and allows exactly "24/7".
+    - Both breaker strings went red when set in `messages/de.json`: "Unsere 7-tägige Frische-Garantie:" as `nav.notice.lead`, and "Mit Liebe und 7 Tage Frische." as `footer.signoff`.
+  - **c. Footer shot.** `tests/visual/footer.spec.ts` photographs the footer on the home, so it now takes the dates band out with `home-dates.css`.
+
 ## Escalations
 
 1. **Which destinations the sentence opens (A21 clause 4).** The clause says that an unpublished destination is a disabled "not yet" option and that flipping `corridorPagePublished` enables it. TASK-092 already set `corridorPagePublished: true` on all seven countries, and all seven have a shop root, while the artboards (and "Poland first") draw six as "not yet". Implemented default: open = `corridorPagePublished` **and** `status: "live"` **and** the shop root exists (`isSentenceDestination()`, one predicate in `src/modules/ui/home/sentence-model.ts`). The route uses the same rule, so `?country=DE` → destinations hub. **Question for the orchestrator/founder:** keep this, or open all seven, sending Germany and the rest to their demo shops?
@@ -113,6 +122,12 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 - 2026-10-04: date-driven layout. Every home shot below the occasion-dates band (`proof`, `occasions`, `how-it-works`, `faq`, `destinations`) and every home full-page shot (`en.png`, `de.png`, `home-{locale}-{mobile,desktop}.png`, `ar-XB.png`) now takes the band out of the layout with `tests/visual/home-dates.css`. The band reads no clock (it prints `src/config/occasions.ts` as data, which rolls forward by an edit), so today nothing moves by date alone; the sheet makes a calendar edit unable to move other sections' pixels. The band's own shot is taken as rendered. `footer.spec.ts` belongs to TASK-176 and is unchanged.
 - 2026-10-04: baselines. Run 37171984787 showed two defects, both fixed in 97c1f91a with a test: the promise band drew four desktop columns for three facts, so a blank ink-muted cell showed at its inline end (`ProofRow` now `md:grid-cols-3`; a unit case ties the column count to `PROOF_FACTS`, red before the fix), and the `/dev/components` hero had no shop countries, so its country select drew blank. Run 37172887887 re-took them; its whole change list (51 changed, 2 added) plus its manifest is b9722592's content, and the retired `home-*-{finder,trust}` PNGs are deleted on both platforms.
 - 2026-10-04: ci:full on b2acfd5d (run 37173654376). `visual` and `lighthouse` are green. e2e and a11y were red on stale counts (three promise facts, three FAQ answers) and on the crawl's depth-1 Poland check, all fixed in 35f9d5c2. They were also red on the CLS-0 gates, which is escalation 7.
+- 2026-10-04: merged origin/main after PR 172 (TASK-176, ae661e5a).
+  - Main's chrome code and tests win where the two overlap.
+  - `fonts.test.ts` keys the roman fallback faces only; the italic faces have their own recompute test.
+  - TASK-176's notice-bar CLS checks use the scoped header measurement.
+  - Carry-forwards a–c are done. Locally, 520 e2e passed on `next start`, all four homes at 1280 and 390.
+  - Every mutation was re-run on the merged build: header 0.0075 red, banner 0.081 red, consent 0.172 red.
 - 2026-10-04: escalation 7 ruled (b) + (c). Matched italic fallbacks, the three CLS assertions scoped to their subjects, and the sentence-shift test with a 0.001 bound. All four specs and `fonts.spec.ts` are green on a local `next start` (318 passed), and every mutation is recorded in the escalation.
 - 2026-10-04: rebased again onto main after PR 175 (spec 004 A22) merged. A22 clause 2 asks that `docs/design/README.md` §Voice record the exception, pinned by the test: a new case in `tests/unit/design-docs.test.ts` reads every `VOICE_EXCEPTIONS` entry from that section (red before the bullet was added).
 
@@ -162,6 +177,5 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
 
 **Found while inspecting the baselines (carry-forwards, not fixed here):**
 - The sticky header covers the top of every home element shot that Playwright scrolls under it. On mobile, `home-mobile-how-it-works` loses its eyebrow and the first line of its heading under the header, and `home-desktop-hero` loses the eyebrow under the category row. The old baselines did the same. A `stylePath` sheet that makes the header static in element shots would fix it, but the header is TASK-176's.
-- `footer.spec.ts` (TASK-176's) photographs the footer on the home, below the dates band, without `home-dates.css`.
 - `HOME_STATES.proof` in `src/app/(dev)/dev/components/catalog.ts` still describes "the four claims … 4-up". It is dev-only text, and fixing it would move the gallery baseline again.
 - On `/de` and `/pl` the home's headings ("Flowers for someone far away.", "Our promise", "What is the occasion?", "Questions people ask first") are English in the `de`/`pl` catalogues. That is the same as on main and waits for the locales' copy batch.
