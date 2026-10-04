@@ -112,6 +112,26 @@ async function viewAt(now: Date, live = false): Promise<ProductView> {
   return view;
 }
 
+/** The markup of the element carrying `marker`: its opening tag through the tag that closes it. */
+function elementAt(html: string, marker: string): string {
+  const at = html.indexOf(marker);
+  if (at === -1) return "";
+  const open = html.lastIndexOf("<", at);
+  const tag = /^<([a-z]+)/u.exec(html.slice(open))?.[1] ?? "div";
+  const re = new RegExp(`<(/?)${tag}(?=[\\s>/])[^>]*?(/?)>`, "gu");
+  re.lastIndex = open;
+  let depth = 0;
+  for (let hit = re.exec(html); hit !== null; hit = re.exec(html)) {
+    if (hit[2] === "/") {
+      if (depth === 0) return hit[0];
+      continue;
+    }
+    depth += hit[1] === "/" ? -1 : 1;
+    if (depth === 0) return html.slice(open, hit.index + hit[0].length);
+  }
+  return html.slice(open);
+}
+
 function render(view: ProductView): string {
   return renderToStaticMarkup(
     <NextIntlClientProvider
@@ -127,10 +147,16 @@ function render(view: ProductView): string {
 describe("`product-blocks.css` matches the product page it is applied to", () => {
   it("the date grid is the element that holds the date chips", async () => {
     const html = render(await viewAt(new Date("2027-03-01T08:00:00Z"), true));
-    const grid =
-      /<div[^>]*\bdata-fo-date-grid\b[^>]*>([\s\S]*?)<\/fieldset>/u.exec(html);
-    expect(grid?.[1]).toMatch(/data-fo-date="2027-03-01"/u);
     expect([...html.matchAll(/\bdata-fo-date-grid\b/gu)]).toHaveLength(1);
+    // The hooked element's own subtree, from its opening tag to the tag that closes it, must hold
+    // every chip on the page: a hooked empty element beside the grid holds none (`/break` round 2
+    // hole V1b on PR 170).
+    const own = elementAt(html, "data-fo-date-grid");
+    const chips = (markup: string): number =>
+      [...markup.matchAll(/data-fo-date="\d{4}-\d{2}-\d{2}"/gu)].length;
+    expect(chips(html)).toBeGreaterThan(0);
+    expect(chips(own)).toBe(chips(html));
+    expect(own).toMatch(/data-fo-date="2027-03-01"/u);
   });
 
   it("the summary total, the equivalents line and the stale-rate sentence each appear in a state the shot can show", async () => {

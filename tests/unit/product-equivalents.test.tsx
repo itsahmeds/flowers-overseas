@@ -350,6 +350,17 @@ describe("one clock for the price, the fallback, the line and the date window", 
         return { page, line: { ...own, asOf: "2026-09-07" } };
       },
     },
+    {
+      // The realistic bug: a helper that dates the line by the latest snapshot instead of the
+      // one that converted the price (`/break` round 2 hole S2 on PR 170).
+      rule: "a converted price's line is not dated by a later snapshot either",
+      subject: async () => {
+        const page = await viewOf("en", { now: FRESH });
+        expect(page.price.fxAsOf).toBe(CURRENT);
+        const own = page.equivalents.price!;
+        return { page, line: { ...own, asOf: "2026-09-09" } };
+      },
+    },
   ];
 
   for (const { rule, subject } of refusals) {

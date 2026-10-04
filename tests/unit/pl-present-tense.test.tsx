@@ -26,8 +26,25 @@ import { loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
 import { textOf } from "../support/listing-honesty";
 
-/** "will arrange", "will be made", "will be delivered" — the forms A22 retires for our florist. */
-const FUTURE = /ułoży|zostanie wykonan|zostanie doręczon/iu;
+/**
+ * The future forms A22 retires for our florist (`/break` round 2 hole 4 on PR 170): the perfective
+ * verbs said of the florist in the third person — ułoży (will arrange), przygotuje (will prepare),
+ * zrobi (will make), dostarczy / doręczy (will deliver), wykona (will make), zwiąże (will tie),
+ * skomponuje (will compose) — and the future passive, `zostanie|zostaną|będzie|będą` plus a
+ * participle of making or delivering. Letters on either side end a match, so "zrobić" and
+ * "wykonany" are not the verbs above.
+ *
+ * **"dostarczymy" (we will deliver) stays allowed.** It is the first person plural: a sentence
+ * about us and the date we commit to ("podaj nam datę, a nie dostarczymy wcześniej"), not a claim
+ * about what a florist does, and A22 is about the florist.
+ */
+const FUTURE = new RegExp(
+  [
+    "(?<!\\p{L})(?:ułoży|przygotuje|zrobi|dostarczy|doręczy|wykona|zwiąże|skomponuje)(?!\\p{L})",
+    "(?<!\\p{L})(?:zostanie|zostaną|będzie|będą)\\s+(?:wykonan|doręczon|dostarczon|przygotowan|ułożon|zrobion|związan|skomponowan)",
+  ].join("|"),
+  "iu",
+);
 
 const FRESH = new Date("2026-09-09T12:00:00Z");
 
@@ -63,10 +80,33 @@ function render(node: ReactElement): string {
 
 describe("A22: no future tense for our florist in rendered Polish", () => {
   it("the pattern finds the retired forms (the check's own subject)", () => {
-    expect(FUTURE.test("nasz florysta ułoży w mieście odbiorcy")).toBe(true);
-    expect(FUTURE.test("rozmiar, który zostanie wykonany")).toBe(true);
-    expect(FUTURE.test("zostanie doręczone osobiście")).toBe(true);
-    expect(FUTURE.test("nasz florysta układa w mieście odbiorcy")).toBe(false);
+    for (const future of [
+      "nasz florysta ułoży w mieście odbiorcy",
+      "nasz florysta przygotuje bukiet",
+      "nasz florysta zrobi bukiet",
+      "nasz florysta dostarczy go osobiście",
+      "nasz florysta doręczy go osobiście",
+      "nasz florysta wykona zamówienie",
+      "rozmiar, który zostanie wykonany",
+      "zostanie doręczone osobiście",
+      "zostanie dostarczone rano",
+      "rozmiar, który będzie wykonany",
+      "będzie wykonane ręcznie i dostarczone",
+      "zostaną przygotowane rano",
+    ]) {
+      expect(FUTURE.test(future), future).toBe(true);
+    }
+    for (const present of [
+      "nasz florysta układa w mieście odbiorcy",
+      "jest wykonywany",
+      "jest wykonywane ręcznie i doręczane osobiście",
+      // About us, not the florist: allowed.
+      "podaj nam datę, a nie dostarczymy wcześniej",
+      "rozmiar, który wykonany jest rano",
+      "chcesz to zrobić",
+    ]) {
+      expect(FUTURE.test(present), present).toBe(false);
+    }
   });
 
   it("renders every pl category hub and country category without one", async () => {
@@ -100,7 +140,8 @@ describe("A22: no future tense for our florist in rendered Polish", () => {
       );
       expect(FUTURE.exec(text)?.[0], page.path).toBe(undefined);
     }
-  });
+    // Every pl category page, each a full `listingView()` and render.
+  }, 60_000);
 
   it("renders every pl product page for Poland without one", async () => {
     const pages = (await listProductPages("pl")).filter(
