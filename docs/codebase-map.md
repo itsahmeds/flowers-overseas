@@ -104,6 +104,7 @@ task actually touches.
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate (spec 040 AC-2) |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec 003 §6 "CWV budget… |
 | `cloudflare/apply-zone-settings.ts` | `cloudflare:check` | `pnpm cloudflare:apply` and `pnpm cloudflare:check` — the Cloudflare zone as… |
+| `cloudflare/edge.ts` | — | The Cloudflare edge as code: DNS records, cache rules, the `www` → apex… |
 | `codebase-map.ts` | `codebase:map` | The codebase map — AC-33 / T-34 (spec 001 §14 A15, TASK-086) |
 | `cookie-register.ts` | `cookies:check` | `pnpm cookies:check [--write]` — renders `docs/compliance/cookie-register.md`'s… |
 | `corridor-check-cases.ts` | — | One deliberately failing fixture per `corridor:check` rule (spec 007 AC-2 /… |
@@ -153,7 +154,7 @@ task actually touches.
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 20 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 309 |
+| `tests/fixtures/` | 311 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
