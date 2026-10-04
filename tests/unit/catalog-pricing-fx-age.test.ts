@@ -128,6 +128,35 @@ describe("weekday TARGET holidays count as days", () => {
   });
 });
 
+describe("real month-end and leap days are accepted (/break 177 hole 5)", () => {
+  it.each([
+    // Wednesday 30 Sep 2026 → Friday 2 Oct.
+    ["2026-09-30", "2026-10-02T00:00:00Z", "2026-10-01"],
+    // Thursday 31 Dec 2026 → Monday 4 Jan 2027: 1 Jan (a Friday, a TARGET holiday) counts.
+    ["2026-12-31", "2027-01-04T00:00:00Z", "2027-01-03"],
+    // Tuesday 29 Feb 2028, a leap day → Thursday 2 Mar.
+    ["2028-02-29", "2028-03-02T00:00:00Z", "2028-03-01"],
+    // Saturday 31 Oct 2026 → Tuesday 3 Nov.
+    ["2026-10-31", "2026-11-03T00:00:00Z", "2026-11-02"],
+  ])("%s is stale after %s", (asOf, staleAt, validUntil) => {
+    expect(fxRateStaleAfter(asOf)).toBe(Date.parse(staleAt));
+    expect(isRateStale(asOf, at(staleAt))).toBe(false);
+    expect(isRateStale(asOf, oneMsAfter(staleAt))).toBe(true);
+    expect(rateValidUntil(asOf)).toBe(validUntil);
+  });
+
+  it("refuses 29 February of a year that is not a leap year, and day 31 of a 30-day month", () => {
+    for (const bad of [
+      "2027-02-29",
+      "2026-09-31",
+      "2026-00-10",
+      "2026-01-00",
+    ]) {
+      expect(() => fxRateStaleAfter(bad), bad).toThrow(/not a calendar day/u);
+    }
+  });
+});
+
 describe("the report over the committed snapshot gives the gate's verdict", () => {
   it("agrees with `isRateStale` around the committed snapshot's stale instant", () => {
     // 2026-09-08 is a Tuesday: stale after Thursday 2026-09-10 00:00Z.

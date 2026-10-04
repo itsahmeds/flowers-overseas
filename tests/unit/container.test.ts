@@ -55,10 +55,40 @@ const buildStage = dockerfile.slice(
   dockerfile.lastIndexOf("FROM node:24-slim"),
 );
 
+/**
+ * A Dockerfile's instructions: comment lines dropped, `\` continuations joined, one per entry.
+ * Docker reads instruction keywords case-insensitively, so callers match them with `/i`.
+ */
+function instructionsOf(text: string): string[] {
+  return text
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("#"))
+    .join("\n")
+    .replace(/\\\n/gu, " ")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line !== "");
+}
+
+/**
+ * Every name every `ARG` instruction declares, in order. One `ARG` may declare several names
+ * (`ARG A="" B=""`) and may be spelled `arg`, so the whole instruction is read (`/break 177`
+ * hole 3: a second name on an existing line would otherwise pass unseen).
+ */
+function argNamesOf(text: string): string[] {
+  return instructionsOf(text)
+    .filter((line) => /^arg\s/iu.test(line))
+    .flatMap((line) =>
+      [
+        ...line
+          .replace(/^arg\s+/iu, "")
+          .matchAll(/([A-Za-z_][A-Za-z0-9_]*)(?:=(?:"[^"]*"|'[^']*'|\S*))?/gu),
+      ].map((match) => match[1] ?? ""),
+    );
+}
+
 /** Every `ARG` the image declares, in declaration order. */
-const declaredArgs = [...dockerfile.matchAll(/^ARG\s+([A-Za-z0-9_]+)/gmu)].map(
-  (match) => match[1],
-);
+const declaredArgs = argNamesOf(dockerfile);
 
 /**
  * What `docker build` sees with **no** credentials in the environment: the `ARG` defaults of the
@@ -155,6 +185,16 @@ const buildInstructions = buildStage
   .map((line) => line.trim())
   .filter((line) => line !== "" && !line.startsWith("#"));
 
+describe("the Dockerfile reader the pins above rely on (/break 177 hole 3)", () => {
+  it("reads every name of a multi-name ARG, any case, across continuations", () => {
+    expect(
+      argNamesOf(
+        'ARG A="" B=""\narg c\nARG D=x \\\n    E="y z"\n# ARG F\nENV G=1',
+      ),
+    ).toEqual(["A", "B", "c", "D", "E"]);
+  });
+});
+
 describe("the FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31, T-30)", () => {
   it("declares `ARG FX_REFRESH_AT` as the instruction immediately before `RUN pnpm build`", () => {
     const build = buildInstructions.indexOf("RUN pnpm build");
@@ -193,10 +233,7 @@ describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
   });
 
   it("declares every build argument in the build stage, never in the runtime stage", () => {
-    const inBuildStage = [
-      ...buildStage.matchAll(/^ARG\s+([A-Za-z0-9_]+)/gmu),
-    ].map((match) => match[1]);
-    expect(inBuildStage).toEqual(declaredArgs);
+    expect(argNamesOf(buildStage)).toEqual(declaredArgs);
   });
 
   it("makes no server-only key a build argument: a secret must not enter layer history", () => {

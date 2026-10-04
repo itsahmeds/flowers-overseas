@@ -31,6 +31,7 @@ import {
 import {
   ECB_ATTEMPTS,
   ECB_DAILY_URL,
+  ECB_TIMEOUT_MS,
   decimalToPpm,
   fxBuildStep,
   parseEcbDaily,
@@ -414,10 +415,15 @@ describe("where the fetch is off, and where it cannot be (A7 Corrected 2 (i); TA
     }
   });
 
-  it("cannot be turned off in a Railway build: the Dockerfile declares no ARG or ENV for it", () => {
-    expect(read("Dockerfile")).not.toMatch(
-      /^(?:ARG|ENV)\s+FX_SNAPSHOT_FETCH\b/mu,
-    );
+  it("cannot be turned off in a Railway build: the Dockerfile names it nowhere outside comments", () => {
+    // Any instruction, any case, any position (an `ENV` continuation line, a lowercase `env`, a
+    // second name on an `ARG` line) would either turn every Railway build into the committed
+    // fallback or let a Railway service variable do it (`/break 177` hole 3).
+    const instructions = read("Dockerfile")
+      .split("\n")
+      .filter((line) => !line.trim().startsWith("#"))
+      .join("\n");
+    expect(instructions).not.toMatch(/FX_SNAPSHOT_FETCH/iu);
     expect(read("config/railway.json")).not.toContain("FX_SNAPSHOT_FETCH");
   });
 
@@ -432,4 +438,71 @@ describe("where the fetch is off, and where it cannot be (A7 Corrected 2 (i); TA
     );
     expect(build).toContain("process.exit(result.status ?? 1)");
   });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Round 1 of `/break 177`.                                                   */
+/* -------------------------------------------------------------------------- */
+
+describe("the boundaries the breaker found open (/break 177 holes 1, 6, 10, 11)", () => {
+  it("accepts a file dated the build day itself: the normal 15:30 path (hole 1)", () => {
+    expect(parseEcbDaily(DAILY, "2026-10-02")).toEqual({
+      ok: true,
+      snapshot: { asOf: "2026-10-02", rates: DAILY_PPM },
+    });
+  });
+
+  it("refuses an impossible Cube date that V8 would roll over (hole 6)", () => {
+    const body = DAILY.replace("time='2026-10-02'", "time='2026-02-30'");
+    expect(parseEcbDaily(body, "2026-03-02")).toEqual({
+      ok: false,
+      reason: "missing-date",
+    });
+  });
+
+  it.each([
+    ["an impossible calendar date", { asOf: "2026-02-30", rates: DAILY_PPM }],
+    ["a date that is not a date", { asOf: "x", rates: DAILY_PPM }],
+    ["a timestamp", { asOf: "2026-10-02T16:00:00Z", rates: DAILY_PPM }],
+    ["an extra key", { asOf: "2026-10-02", rates: DAILY_PPM, source: "ecb" }],
+  ])(
+    "serves the committed snapshot for a bundle with %s (hole 6)",
+    (_name, bundle) => {
+      const bundled = resolveBundledFx(JSON.stringify(bundle), FX_SNAPSHOT);
+      expect(bundled).toMatchObject({
+        source: "committed",
+        asOf: FX_SNAPSHOT_AS_OF,
+        reason: "malformed-bundle",
+      });
+      expect(bundled.rows).toBe(FX_SNAPSHOT);
+    },
+  );
+
+  it("bounds each attempt at 10 s by default (hole 10)", () => {
+    expect(ECB_TIMEOUT_MS).toBe(10_000);
+  });
+
+  it.each([
+    ["empty", ""],
+    ["on", "on"],
+    ["OFF in capitals", "OFF"],
+  ])(
+    "still fetches when FX_SNAPSHOT_FETCH is %s: only the exact `off` turns it off (hole 11)",
+    async (_name, value) => {
+      let requests = 0;
+      server.use(
+        http.get(ECB_DAILY_URL, () => {
+          requests += 1;
+          return HttpResponse.text(DAILY);
+        }),
+      );
+      const outcome = await fxBuildStep({
+        now: new Date(`${BUILD_DATE}T13:00:00Z`),
+        log: () => undefined,
+        env: { FX_SNAPSHOT_FETCH: value },
+      });
+      expect(requests).toBe(1);
+      expect(outcome.source).toBe("ecb-build");
+    },
+  );
 });

@@ -119,9 +119,29 @@ describe("catalog.fx_stale, once per process per stale fx_as_of (AC-32, T-32)", 
     expect(staleCaptures()).toBe(1);
   });
 
-  it("emits nothing when the snapshot is fresh", async () => {
-    await renderPolishShopRoot(FRESH);
-    expect(staleLines).toEqual([]);
+  it("emits nothing when the snapshot is fresh, in a process that has reported nothing yet", async () => {
+    // A fresh module graph, so the dedupe holds no date: a signal fired on a fresh conversion
+    // would be emitted here, not hidden by the earlier cases' entry (`/break 177` hole 12).
+    vi.resetModules();
+    const fresh = await import("../../src/modules/catalog/index.ts");
+    const { CATALOG_SIGNALS: signals } =
+      await import("../../src/modules/catalog/observability.ts");
+    const { logger: freshLogger } = await import("../../src/lib/logger.ts");
+    const lines: unknown[] = [];
+    vi.spyOn(freshLogger, "warn").mockImplementation(
+      (fields: unknown, message?: string) => {
+        if (message === signals.fxStale) lines.push(fields);
+      },
+    );
+    const view = await fresh.listingView(
+      { locale: "pl", pageType: "countryShopRoot", country: "polska" },
+      { from: "2026-09-09", now: FRESH },
+    );
+    // The control: the fresh render converted (every card carries its equivalents line).
+    expect(view?.items.every((card) => card.equivalents !== undefined)).toBe(
+      true,
+    );
+    expect(lines).toEqual([]);
     expect(staleCaptures()).toBe(0);
   });
 });

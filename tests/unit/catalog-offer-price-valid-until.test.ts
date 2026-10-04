@@ -37,6 +37,8 @@ const SKU = "FO-BQ-001" as const;
 const TIER = "stems_18" as const;
 /** Inside the committed snapshot's window: every conversion is available. */
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
+/** Past the committed snapshot's bound (stale after Thu 2026-09-10 00:00Z): fails closed. */
+const STALE = new Date("2026-09-11T10:00:00Z");
 /** A closing date on the price row, far from any FX date. */
 const ROW_ACTIVE_TO = "2026-12-31";
 
@@ -79,12 +81,13 @@ afterEach(() => {
 async function offerFor(
   project: Project,
   locale: "en-gb" | "pl",
+  now: Date = FRESH,
 ): Promise<{ offer: OfferProjection; visible: string; converted: boolean }> {
   const projection = await project.priceProjection(locale, {
     productId: SKU,
     tierKey: TIER,
     countryIso: LIVE,
-    now: FRESH,
+    now,
   });
   const offer = project.offerProjection(projection);
   if (offer === null) throw new Error(`${LIVE} is the live destination`);
@@ -207,5 +210,34 @@ describe("Offer.priceValidUntil takes no date from the exchange rate (T-36)", ()
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+/**
+ * The fail-closed `Offer` — what production serves whenever the rate is stale (`/break 177`
+ * hole 4). An en-gb page falls back to Poland's PLN price; the `Offer` is unconverted, so it keeps
+ * the row's `active_to` and takes nothing from the rate.
+ */
+describe("the stale-rate fallback Offer keeps the row's active_to, and only it (T-36, AC-11)", () => {
+  it("has no priceValidUntil when the row is open-ended", async () => {
+    const { offer, converted } = await offerFor(
+      await projectWithRowActiveTo(undefined),
+      "en-gb",
+      STALE,
+    );
+    expect(converted).toBe(false);
+    expect(offer.priceCurrency).toBe("PLN");
+    expect(offer.priceValidUntil).toBeNull();
+    expect(Object.keys(offerNode(offer))).not.toContain("priceValidUntil");
+  });
+
+  it("carries exactly the row's active_to when the row closes", async () => {
+    const { offer, converted } = await offerFor(
+      await projectWithRowActiveTo(ROW_ACTIVE_TO),
+      "en-gb",
+      STALE,
+    );
+    expect(converted).toBe(false);
+    expect(offer.priceValidUntil).toBe(ROW_ACTIVE_TO);
   });
 });
