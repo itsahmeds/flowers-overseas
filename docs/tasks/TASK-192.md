@@ -48,8 +48,38 @@ changes.
   `src/modules/catalog/product.ts`), and `ready` is `indexable && reviewed === rows.length`
   (`seed/check.ts`). Re-applying the test changes with the Edit tool was refused again: see
   Escalation 2.
+- 2026-10-05 (after the main checkout fast-forward): the guard opened. Test changes re-applied
+  with the Edit tool (identical to the first run's patch) and committed (5b3f7246); the five files
+  pass, 373 tests. Both mutations go red (see Result). `pnpm gates:cheap` is red on
+  `tests/unit/seed-diff.test.ts` only: see Escalation 3.
 
 ## Result
+
+Partial: the test changes are in, the gates are not yet green (Escalation 3).
+
+- Mutations, each run with the Edit tool and reverted with `git checkout`:
+  - `"catalog.floristSentence"` back in `AWAITING_FOUNDER_REVIEW` →
+    `i18n-messages-schema.test.ts` › "reviews the authored English and leaves the machine drafts
+    unreviewed" fails (`expected [ Array(22) ] to strictly equal [ 'catalog.floristSentence',
+    …(22) ]`), 1 failed | 26 passed.
+  - FO-BQ-001 `reviewed: false` in `seed/data/copy/en/products.json` → `seed-copy.test.ts` ›
+    "records a reviewer and a date on every authored row" fails (`FO-BQ-001: expected false to be
+    true`), 1 failed | 82 passed.
+- `unreviewedShare("en")` = 0.0410 (≤ 5 %).
+- `pnpm gates:cheap` (head 5b3f7246, tree dirty only in `TASKS.md`):
+
+```
+typecheck             exit 0 · 2.3 s
+lint                  exit 0 · 17.2 s
+format:check          exit 0 · 11.2 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.3 s
+tests                 exit 1 · 85.4 s · changed 127 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: FAIL (1 of 7 red: tests)
+```
+
+  The failures: 8 in `tests/unit/seed-diff.test.ts`, out of 3675 tests (3667 pass).
 
 ## Escalations
 
@@ -72,3 +102,15 @@ changes.
    /Users/ahmed/dev/flowers-overseas pull --ff-only` (or equivalent), then re-dispatch. The test
    changes are unchanged from the first run and reviewed (each pin one exact value); the worktree
    is clean.
+   **Resolved (1 and 2):** the orchestrator fast-forwarded the main checkout to cecac0c2, and the
+   guard opened.
+3. **The founder's commit left `seed/snapshot/` stale.** It changed
+   `seed/data/copy/en/products.json` but did not regenerate the committed snapshot, so
+   `node seed/diff.ts` exits 1 with exactly two updates (`product_translation` FO-BQ-001/en and
+   FO-BQ-003/en: `reviewed` false → true, `reviewed_by` and `reviewed_at` null → the founder's
+   record), and 8 tests in `tests/unit/seed-diff.test.ts` fail (zero-drift, byte-identical
+   snapshot, --dry-run and the report tests). The fix is `pnpm seed:diff --write`, which
+   regenerates `seed/snapshot/product_translation.json` in a new commit on top, leaving the
+   founder's commit as it is. The work order forbids `seed/**`, so it was not run. Needed: a
+   decision to allow that one generated file (as a separate commit, `chore(seed): re-snapshot`),
+   or the founder runs it himself.
