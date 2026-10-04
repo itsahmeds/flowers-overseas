@@ -17,6 +17,8 @@ Branch `task/TASK-071-fx-refresh-job`. **Blocked on TASK-013** for the same reas
 ## Carry-forwards
 
 - **From `/review 56`:** `fx_stale` fires per conversion with no dedupe — one Sentry event per priced render once a DSN exists; dedupe per snapshot.
+- **From spec 005 §14 A7 (2026-10-04):** when `dbFxRateProvider` goes live, this PR deletes the Phase 0 bridge (TASK-181's build-time ECB fetch and `.github/workflows/fx-refresh.yml`) and changes `/api/health`'s `fxSource` to name the database source; the committed snapshot and its pin test (T-28) stay as the test corpus (A7 Corrected 6).
+- **From spec 005 §14 A7 (2026-10-04):** do not schedule `fx.refresh` at `plan/01` §8's 06:00 CET: age runs from `as_of T00:00Z`, so that leaves a ~5 h fail-closed gap every weekday night. Run after the ECB's ~16:00 CET publication. The weekday-only age rule (AC-35) lives in `pricing/fx.ts` and applies to `dbFxRateProvider` unchanged.
 
 ## Escalations
 
