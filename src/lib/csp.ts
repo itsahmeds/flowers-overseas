@@ -25,20 +25,37 @@
  * nonce, that is the file it comes from, and it will *add* a header to those routes rather than
  * replace this one.
  *
- * ## Report-Only first
+ * ## Report-Only static policy, enforced per-response policy (TASK-058)
  *
- * `CSP_REPORT_ONLY` (absent ⇒ `true`) decides the header **name**, never its content: the same
- * policy string is either enforced or reported, so the evidence collected at `/api/csp-report`
- * is evidence about the policy that will be enforced. `Reporting-Endpoints` plus `report-to` is
- * the current shape; the deprecated `report-uri` is emitted alongside because Safari and older
- * Chromium still only implement that one, and a violation nobody hears about is the failure mode
- * this whole exercise exists to avoid.
+ * The static policy below is **always** sent as `Content-Security-Policy-Report-Only`, on every
+ * response: it is the evidence policy, and the only policy on responses that are not cached HTML
+ * documents (`/api/*`, the per-request listing variants of `_query`, an error render).
+ *
+ * It cannot be the enforced one, because Next 16 emits ten-odd inline `self.__next_f.push(…)`
+ * flight blocks per document whose bytes differ per route, build and ISR regeneration (spec 004
+ * §14 A2). The enforced policy is therefore written **per cached document**, by
+ * `src/lib/csp-cache-handler.mjs`: this exact static string, read back from the build's
+ * `routes-manifest.json`, plus the `'sha256-…'` of every inline script in that document
+ * (`src/lib/csp-response.mjs`). `CSP_REPORT_ONLY=false` switches that header on at **run time**
+ * — it is read by the server, not baked by the build — and absent or any other value leaves it
+ * off. The reasoning against ADR-0016's cached-HTML rule (a hash describes bytes and is safe to
+ * cache; a nonce is not) is in `src/lib/csp-response.mjs` and in the TASK-058 PR.
+ *
+ * `Reporting-Endpoints` plus `report-to` is the current reporting shape; the deprecated
+ * `report-uri` is emitted alongside because Safari and older Chromium still only implement that
+ * one, and a violation nobody hears about is the failure mode this whole exercise exists to avoid.
+ * Both policies report to the same endpoint; `/api/csp-report` logs each report's `disposition`
+ * so an enforced block and a Report-Only flight-block report never read alike
+ * (`docs/runbooks/csp-enforce.md`).
  */
 import type { DeploymentEnvironment, HostPlatform } from "./env.schema";
 import { MEDIA_ORIGIN } from "./media-origin";
 import type { HeaderRule } from "./robots-headers";
 
+import { CSP_HEADER, CSP_REPORT_ONLY_HEADER } from "./csp-response.mjs";
 import { ALL_PATHS } from "./robots-headers";
+
+export { CSP_HEADER, CSP_REPORT_ONLY_HEADER };
 
 /** The route `POST`ing violation reports lands on (`src/app/api/csp-report/route.ts`). */
 export const CSP_REPORT_PATH = "/api/csp-report";
@@ -76,8 +93,6 @@ export const GOOGLE_TAG_MANAGER_ORIGIN = "https://www.googletagmanager.com";
  */
 export const GOOGLE_ANALYTICS_ORIGIN = "https://*.google-analytics.com";
 
-export const CSP_HEADER = "Content-Security-Policy";
-export const CSP_REPORT_ONLY_HEADER = "Content-Security-Policy-Report-Only";
 export const REPORTING_ENDPOINTS_HEADER = "Reporting-Endpoints";
 
 export interface CspOptions {
@@ -86,14 +101,11 @@ export interface CspOptions {
    * **without** the surrounding quotes, which are added here. Empty in this spec: the app has no
    * inline script yet. TASK-050 adds one — the Consent-Mode default block — in the same PR as
    * the script itself, because a bootstrap the policy would report is a false negative in the
-   * Report-Only evidence. The application then contains **exactly one APPLICATION inline script;
-   * Next's flight blocks are unauthorised under this policy and are why the header stays
-   * Report-Only (spec 004 §14 A2)** — the enforce flip waits for a task that adds nonce
-   * propagation or accepts a hash per response, and is no longer TASK-056's.
+   * Report-Only evidence. The application contains **exactly one application inline script**;
+   * Next's flight blocks are authorised per document, not here (spec 004 §14 A2, TASK-058:
+   * `src/lib/csp-response.mjs`).
    */
   readonly inlineHashes?: readonly string[];
-  /** `false` enforces. Defaults to `true` (report only), like the env variable it comes from. */
-  readonly reportOnly?: boolean;
   /**
    * Whether a GA4 measurement id is configured (TASK-050). `true` adds the tag origin to
    * `script-src` and the tag plus measurement origins to `connect-src`; `false` — the Phase 0
@@ -232,13 +244,17 @@ export function cspValue(
   return `${parts.join("; ")};`;
 }
 
-/** The CSP header as a name/value pair; the name is what `reportOnly` decides. */
+/**
+ * The static CSP header. Always the Report-Only name (TASK-058): the enforced policy is the
+ * per-document one `src/lib/csp-cache-handler.mjs` writes, because only it can name the flight
+ * blocks' hashes. Enforcing this string would block hydration on every page (spec 004 §14 A2).
+ */
 export function cspHeader(
   environment: DeploymentEnvironment,
   options: CspOptions = {},
 ): { key: string; value: string } {
   return {
-    key: (options.reportOnly ?? true) ? CSP_REPORT_ONLY_HEADER : CSP_HEADER,
+    key: CSP_REPORT_ONLY_HEADER,
     value: cspValue(environment, options),
   };
 }
@@ -285,7 +301,8 @@ export const HSTS_VALUE = "max-age=63072000; includeSubDomains; preload";
  * the modern, correct one, and the legacy header is what a browser that ignores the Report-Only
  * policy still obeys. While the CSP is Report-Only, `frame-ancestors` reports rather than blocks,
  * so `X-Frame-Options` is the only clickjacking protection actually in force — which is the whole
- * reason it is not dropped as redundant.
+ * reason it is not dropped as redundant. That stays true after the enforce flip on every response
+ * that is not a cached document (TASK-058).
  */
 export function securityHeaderRules(
   environment: DeploymentEnvironment,
