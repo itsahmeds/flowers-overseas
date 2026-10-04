@@ -160,7 +160,11 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
 
       await db
         .begin(async (tx) => {
-          /** Run a statement that must fail, inside a savepoint, and record what refused it. */
+          /**
+           * Run a statement that must fail, inside a savepoint, and record what refused it. The
+           * savepoint is rolled back on both paths, so a statement that is wrongly *accepted* is
+           * recorded as `ACCEPTED` and leaves no row behind to disturb the cases after it.
+           */
           const refuse = async (
             label: string,
             statement: (sp: postgres.TransactionSql) => Promise<unknown>,
@@ -174,6 +178,7 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
                   throw new Error("expected rejection");
                 }
                 failures.push(`${label}: ACCEPTED`);
+                throw new Error("undo the accepted statement");
               })
               .catch(() => undefined);
           };
