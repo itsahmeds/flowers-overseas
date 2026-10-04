@@ -78,6 +78,13 @@ _None recorded._
   pinned as text in `catalog-shop-page` / `catalog-hub-pages` (blanking either turns 1 red). Review carry-forward:
   `tests/visual/static-header.css` unsticks the header for the three retaken listing specs, so the breadcrumb is in
   the shot. Baselines: run 37177780753, 21 PNGs + manifest, all inspected.
+- 2026-10-04 10:45 — **Breaker round 2, holes 4 and 5 closed.** `listingView` reads one clock
+  (`options.now ?? new Date()`) for the cards, `pageFxFallback`, `tilesFor`/`categoryTileView` and the default `from`;
+  no other clock read is left on its render path (`productCardView`/`categoryTileView` keep a fallback for direct
+  callers only). `tests/unit/catalog-listing-one-clock.test.ts`: a `Date` that ticks past the 48 h bound after its
+  first reading (a second `new Date()` in `pageFxFallback` turns the agreement case red), and tiles and cards in one
+  currency under a fresh and a stale injected clock (dropping `now` from `tilesFor` turns the fresh case red). No
+  pixels change (CI renders the stale state either way), so no baselines were retaken.
 
 ## Result
 
