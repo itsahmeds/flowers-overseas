@@ -72,7 +72,7 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 
 **Copy** (founder's batch, 2026-10-04, "ok from my end", transcribed as `reviewed: true` in `en.meta.json` with the
 founder as reviewer): `nav.send` "Send flowers"; `nav.utility.guarantee` "Fresh-flower promise"; `company.support.hours`
-"Message us any time, 24/7 — we reply within a few hours."; `company.description` (future tense); `nav.notice.lead`
+"Message us any time, 24/7 — we reply within a few hours."; `company.description` (since round 1: main's reviewed present-tense sentence, restored byte for byte, see below); `nav.notice.lead`
 "A note from us:"; `footer.signoff` "With love, from wherever you are." de/pl drafts stay `reviewed: false` (all
 `footer.*` labels, `company.support.*`, the six keys above; de "Strauß senden", because the AC-15 partner-name check reads
 "Blumen" as a florist brand).
@@ -111,4 +111,24 @@ before because the PR had not run `ci:full`:
 - `banner.spec:669` was flaky (it passed on retry) and this diff does not touch it.
 Local check on a production build (inside the build slot): notices, locale-routing, footer, banner e2e 196 passed; a11y
 footer and header 10 passed.
+
+**Round 1 (review `pullrequestreview-5404343162` FAIL, breaker `pullrequestreview-5404354054` HOLES), fixed in one round:**
+- R1: rebased onto `origin/main` (05d0af0f); `TASKS.md` keeps main's rows, only this row changes; map regenerated.
+- R2 (spec 004 §14 A22 clause 1): main's reviewed `company.description` and its en attestation restored byte for byte;
+  de/pl drafts in the present tense, `reviewed: false`; `company-config.test.ts` asserts main's sentence;
+  `docs/design/README.md` TASK-176 row records the `chrome-*` future-tense line as difference 7.
+- H1: `nav.utility.pricesInclude` drafts de "Preise inkl. MwSt. und Versand" (spec 005's formula) and pl "Ceny zawierają
+  dostawę i VAT", `reviewed: false`. `ui-site-header.test.tsx` "{locale}: the price claim says the price includes VAT and
+  delivery" (four cases). Mutations red: de "zzgl.", pl "nie zawierają … dostawy", de back to the English sentence.
+- H2: `header.spec` "the notice bar's price claim on listing and guide pages": occasions index and destinations hub (one
+  segment), shop root and corridor guide (two), category and occasion listings (three), de and pl shop roots. Mutation: a
+  null-returning `src/app/[locale]/@notice/[segment]/page.tsx` turned the two one-segment cases red on a production
+  build; removed, header/footer/notices/locale-routing e2e 224 passed (build slot, load average 8–30).
+- H3: `ui-site-header.test.tsx` "{locale}: no N-day freshness promise anywhere in the chrome" (four cases: no digit in the
+  guarantee's name, no number beside day/Tag/Tage/dni/dzień in the chrome). Mutations red: de "7-Tage-Frische-Versprechen",
+  pl "Obietnica świeżości przez 7 dni", pl "7-dniowa obietnica świeżości". `site-footer.test.tsx` "A22 clause 1" pins
+  the en about line in the present tense; the future-tense sentence turns it (and company-config) red. de/pl tense is a
+  translation-review matter, not pinned.
+- Reviewer's note recorded, no change: on phones the header claim is hidden (`hidden md:inline`), as on main and in the
+  mobile artboard; every priced card carries the wording itself.
 
