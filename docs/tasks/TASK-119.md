@@ -140,6 +140,27 @@ The binding list is A16 clause 6. Each case names its layer and must go red when
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the design sweep (2026-10-04, PR 185; spec 004 §14 A23):**
+  - **The Binding above is stale.** The founder ruled on 2026-10-04: "no one should see this
+    page… even direct traffic.. they should be shown the site in english.. but a popup appears"
+    (`wireframes/locale-popup-*` annotation). Audit ruling R9 turns that into four choices, no IP
+    and no country header (so no `/api/geo` and no RoPA row), and `/` as one fixed permanent
+    redirect to `/en`. R10 makes the 390 popup a **top sheet** (about 255 px) instead of a bottom
+    sheet.
+  - **Dispatch rule.** This needs a spec 003 §14 amendment superseding A14, which is not yet written.
+    Do not dispatch this task until it exists, then rewrite this Binding from it.
+  - **What this task owns in spec 004 A23.** The look is bound by A23 clause 1 to
+    `wireframes/locale-popup-{desktop,mobile}.dc.html`. AC-39 (T-41) and AC-38 for L1, L3, L4, L5
+    and L6 (T-40) are this task's. The English strings are approved verbatim (founder, 2026-10-04:
+    "go, approve copy…"):
+    - L1: "Choose your preferred language"
+    - L3: "Current"
+    - L4: "Matches your browser" (desktop) and "Your browser" (390)
+    - L5: "Close"
+    - L6: "You can change it any time at the top of every page."
+
+    L2 (the German and Polish sub-lines) is **not** approved and waits for native review. Ship every
+    key `reviewed: false`; the founder attests.
 
 ## Escalations
 
