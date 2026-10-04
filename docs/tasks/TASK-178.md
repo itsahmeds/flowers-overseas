@@ -85,6 +85,11 @@ _None recorded._
   first reading (a second `new Date()` in `pageFxFallback` turns the agreement case red), and tiles and cards in one
   currency under a fresh and a stale injected clock (dropping `now` from `tilesFor` turns the fresh case red). No
   pixels change (CI renders the stale state either way), so no baselines were retaken.
+- 2026-10-04 11:50 — Rebased onto `ae661e5a` (TASK-176 chrome merged); my two earlier baseline commits were dropped in
+  the rebase (main's set kept) and retaken whole. `static-header.css` now also loads in `country-category.spec.ts` and
+  `destinations-hub.spec.ts` (the v2 header's chip row painted over their tops on a phone), which closes the review
+  carry-forward for every listing shot. Baselines: run 37182424589, 29 PNGs + manifest, all inspected; `--verify`,
+  `--check` exit 0. Copy records re-checked byte-identical; `en` unreviewed 23/549 = 4.19 %.
 
 ## Result
 
