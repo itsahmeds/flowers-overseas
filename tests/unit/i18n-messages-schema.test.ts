@@ -281,10 +281,8 @@ describe("the shipped catalogues and manifests", () => {
     // drawn nowhere — the sheet states Romania's honest blank as an annotation and labels the
     // out-links block "Out of this page", which is architecture, not copy. Recorded in
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
-    // TASK-178 (spec 004 §14 A21 clause 6 (b)): the approximate-equivalents line under a
-    // destination-specific price, "about {amounts} at the rate of {date}". It waits here until
-    // the founder's attestation is recorded.
-    "catalog.price.equivalents",
+    // TASK-178's `catalog.price.equivalents` left this queue when the founder's attestation was
+    // recorded (2026-10-04).
     "categoryHub.destinationLink",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
