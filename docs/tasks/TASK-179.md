@@ -28,11 +28,41 @@ Row: `TASKS.md` → TASK-179. This brief is the task's long form (spec 001 §14 
 
 ## Carry-forwards
 
-_None._
 - **From PR 168 (TASK-175) breaker round 2, HOLE 3 ACCEPTABLE (reviewer, PR 168 comment 5974924179):** the Caveat walk exempts all of `src/modules/ui/product/` (`tests/unit/fonts.test.ts` L352), and the `ui` barrel re-exports `ProductPage`. Narrow the exemption to the card-preview file, make sure the barrel cannot reach it, and add a check that nothing reachable from `src/modules/ui/index.ts` imports `fonts/hand`.
   **Done** (`4e3399da`, `63061ab1`): `ProductPage` is no longer re-exported (the route imports `@/modules/ui/product/ProductPage`), the walk exempts `PrintedCardPreview.tsx` alone, and `tests/unit/fonts.test.ts` checks the barrel's import closure (`tests/unit/support/import-closure.ts`) for the preview and `fonts/hand.ts`, with a self-check from `ProductPage.tsx`. Watched red: a `ProductPage` re-export, a type-only re-export of the preview, and a `fonts/hand` import in `CardMessageField.tsx` (which the old directory exemption let through, confirmed green under it).
 - **Orchestrator check, 2026-10-04:** `product.eyebrow` ("{descriptor} · for {country}") is attested as founder-approved, but it is not in the 14-item batch. Set it to `reviewed: false`.
   **Done** (`8d0248ea`): `reviewed: false`, no `reviewedBy`, and listed in `AWAITING_FOUNDER_REVIEW`.
+
+### From the design sweep (2026-10-04, PR 185; spec 004 §14 A23)
+
+The audit `docs/design/audits/2026-10-04-site-sweep.md` measured the live product page at commit
+`b1e8f7e8`, before PR 170. Close each item below in PR 170, or say in `## Result` that PR 170
+already closes it. `wireframes/product-*` already draws all of them correctly (audit §3 row 5:
+"`product-*` is already right. Build it.").
+
+- **v1 leftovers below the photograph** (finding 5):
+  - the size picker is square, inside a framed `<fieldset>`, with "selected" in red text;
+  - the date cells are square and dashed;
+  - the price summary is a square box with an ink border, and "Ordering is not open yet" is a square
+    ochre box;
+  - the add-ons are a table with a "VAT 23%" column;
+  - "change destination" is poppy where links are cornflower;
+  - at 390 the product name is at y 936, below the first screen.
+- **B1, approved copy** (founder, 2026-10-04: "go, approve copy…"). `catalog.addon.card.name` is
+  "Printed card", and `catalog.addon.card.description` is "Your message, printed on a card and
+  tucked into the bouquet.". Ship them `reviewed: false`; the founder attests them with their own
+  script. "Handwritten card" and "written out by hand" are still live. Spec 004 A23 AC-38 (B1) is
+  this task's.
+- **Alignment** (§2 "Product"). "Where is it going? Poland · change destination" sits between two
+  rules 46 px apart, hard against the breadcrumb. The breadcrumb's 20 px offset and the 1,328 px
+  frame are TASK-186's (A23 clauses 2 and 3). If TASK-186 merges first, rebase onto it and keep its
+  shared offset; remove any page-level margin above the breadcrumb.
+- **Finding 16, an untrue sentence.** "What the price does not include: a vase. The photograph is
+  styled with one" appears beside the Amber Hour photograph, which shows kraft paper and no vase.
+  New wording needs the founder's approval. Escalate it; do not invent it.
+- **The guide and the not-found page.** PR 170 also edits the guide and the 404. Spec 007 §14 A11
+  (TASK-189) and spec 004 A23 AC-40 (TASK-191) come after this task and build only what PR 170
+  leaves. Note in `## Result` which of findings 6, 7, 9 and 11 PR 170 closes.
 
 ## Escalations
 
