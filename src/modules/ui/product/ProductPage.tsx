@@ -39,6 +39,7 @@ import { formatMoney, formatNumber, localePath } from "@/modules/i18n";
 import { Icon } from "../icons/Icon.tsx";
 import { Price } from "../primitives/Price.tsx";
 import { Display, Eyebrow } from "../primitives/typography.tsx";
+import { equivalentsMessageValues } from "../shop/equivalents.ts";
 import { ProductCard } from "../shop/ProductCard.tsx";
 
 import { AddonPriceList } from "./AddonPriceList.tsx";
@@ -57,11 +58,6 @@ export interface ProductPageProps {
   readonly breadcrumb: ReactNode;
   /** Spec 007's delivery-facts block over `view.facts`, mounted by the route. */
   readonly facts: ReactNode;
-  /**
-   * The approximate equivalents line (spec 004 §14 A21 clause 6), finished by the caller, shown
-   * under the price and under the total. Absent, nothing renders (TASK-178 owns the helper).
-   */
-  readonly equivalents?: string | undefined;
 }
 
 /** The related row's full length, which the approved heading names in words ("Six more"). */
@@ -80,7 +76,6 @@ export function ProductPage({
   view,
   breadcrumb,
   facts,
-  equivalents,
 }: ProductPageProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -174,7 +169,14 @@ export function ProductPage({
             <p className="m-0 mt-[18px]" data-fo-pdp-price>
               <Price
                 amount={formatMoney(selectedTier.price, code)}
-                equivalents={equivalents}
+                equivalents={
+                  view.equivalents.price === undefined
+                    ? undefined
+                    : catalog(
+                        "price.equivalents",
+                        equivalentsMessageValues(view.equivalents.price, code),
+                      )
+                }
                 qualifier={catalog("price.inclusive")}
                 variant="page"
               />
@@ -265,11 +267,7 @@ export function ProductPage({
           )}
 
           <div className={STEP}>
-            <PriceSummary
-              country={country}
-              equivalents={equivalents}
-              view={view}
-            />
+            <PriceSummary country={country} view={view} />
           </div>
         </div>
       </div>

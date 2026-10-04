@@ -264,6 +264,7 @@ type SummaryView = Pick<
   | "selectedDate"
   | "price"
   | "fx"
+  | "equivalents"
   | "delivery"
   | "product"
   | "gallery"
@@ -274,6 +275,9 @@ const SUMMARY_BASE = {
   tiers: PRODUCT_TIERS,
   selectedTierKey: "stems_18",
   fx: { state: "converted" },
+  // No equivalents line in these cells: the line is `productView()`'s, from live rates, and the
+  // `Price` primitive's row below shows it.
+  equivalents: {},
   product: {
     sku: "FO-BQ-001",
     name: PRODUCT_NAME,

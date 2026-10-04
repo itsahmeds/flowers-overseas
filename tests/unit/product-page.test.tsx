@@ -1084,32 +1084,34 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
         expect(shown, where).toBe(total);
         // No structured-data price on a Phase 0 PDP (BreadcrumbList only), so nothing can differ.
         expect(html, where).not.toMatch(/"price"\s*:/u);
-        // No equivalents line until the helper is wired (A21 clause 6: absent renders nothing).
-        expect(html, where).not.toContain("data-fo-price-equivalents");
+        // The equivalents line (A21 clause 6) sits under the price and the total exactly when the
+        // view carries it; `tests/unit/product-equivalents.test.tsx` pins its text.
+        expect(
+          [
+            ...block(html, "data-fo-pdp-price").matchAll(
+              /data-fo-price-equivalents/gu,
+            ),
+          ],
+          where,
+        ).toHaveLength(view.equivalents.price === undefined ? 0 : 1);
       }
     }
   });
 
-  it("renders a finished equivalents line under the price and the total, and never a second amount in it", async () => {
+  it("prints the view's equivalents line under the price and the total, and never a second amount in it", async () => {
     const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
-    const line = "about 47.32 £ · 238.58 PLN at the rate of 8 September";
-    const html = renderToStaticMarkup(
-      <NextIntlClientProvider
-        locale={view.locale}
-        messages={loadMessages("en", [...NAMESPACES])}
-        timeZone="UTC"
-      >
-        <ProductPage
-          breadcrumb={null}
-          equivalents={line}
-          facts={null}
-          view={view}
-        />
-      </NextIntlClientProvider>,
-    );
-    expect([...html.matchAll(/data-fo-price-equivalents/gu)]).toHaveLength(2);
-    expect(block(html, "data-fo-pdp-price")).toContain(line);
-    expect(block(html, "data-fo-price-summary")).toContain(line);
+    expect(view.equivalents.price).toBeDefined();
+    const html = render(view);
+    expect([
+      ...block(html, "data-fo-pdp-price").matchAll(
+        /data-fo-price-equivalents/gu,
+      ),
+    ]).toHaveLength(1);
+    expect([
+      ...block(html, "data-fo-price-summary").matchAll(
+        /data-fo-price-equivalents/gu,
+      ),
+    ]).toHaveLength(1);
     expect([...html.matchAll(/data-fo-price-total/gu)]).toHaveLength(1);
   });
 });

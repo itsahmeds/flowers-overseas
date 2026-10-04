@@ -35,6 +35,8 @@ import { occasionByKey } from "@/config/catalogue/occasions.data";
 import { formatDate, formatMoney } from "@/modules/i18n";
 
 import { instantOf, localeOf, messageFor, zoneCity } from "./labels.ts";
+import { equivalentsMessageValues } from "../shop/equivalents.ts";
+
 import { tierLabel } from "./TierSelector.tsx";
 
 /**
@@ -62,6 +64,7 @@ export interface PriceSummaryProps {
     | "selectedDate"
     | "price"
     | "fx"
+    | "equivalents"
     | "delivery"
     | "product"
     | "gallery"
@@ -70,12 +73,6 @@ export interface PriceSummaryProps {
   readonly country: string;
   /** The id of the live region, so a page can point the island at it. */
   readonly totalId?: string;
-  /**
-   * The approximate equivalents line under the total (spec 004 §14 A21 clause 6), finished by the
-   * caller. Absent — a stale rate, the destination-currency fallback, or no helper yet — renders
-   * nothing at all.
-   */
-  readonly equivalents?: string | undefined;
   /**
    * Whether the total row docks below `sm` (the 390 px artboard). A page has one summary and
    * docks it; a surface that renders several side by side (`/dev/components`) passes `false`, or
@@ -89,7 +86,6 @@ export function PriceSummary({
   country,
   totalId = "price-total",
   dock = true,
-  equivalents,
 }: PriceSummaryProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -223,12 +219,18 @@ export function PriceSummary({
               : product("demo.heading")}
           </span>
         </div>
-        {equivalents === undefined || equivalents === "" ? null : (
+        {/* The approximate equivalents of the total (spec 004 §14 A21 clause 6): `productView()`'s
+            `priceEquivalents()` of this amount at the page's one clock, absent when any leg is
+            stale or the price is the destination-currency fallback. */}
+        {view.equivalents.total === undefined ? null : (
           <p
             className="num text-ink-subtle m-0 mt-[3px] text-xs leading-[1.35]"
             data-fo-price-equivalents
           >
-            {equivalents}
+            {catalog(
+              "price.equivalents",
+              equivalentsMessageValues(view.equivalents.total, code),
+            )}
           </p>
         )}
         <p className="text-ink-muted m-0 mt-[6px] text-sm">
