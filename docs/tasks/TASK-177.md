@@ -165,6 +165,19 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
      - A day count in de `home.destinations.body`, in the pl hero proposition, or in the de sentence heading: red at "promises no day count anywhere on the home".
   5. **A22 guards.** Cases for the token's lookbehind (`xpartner {my partner}`, `mypartner {…}`) and its case sensitivity (`Partner {My Partner}`, `PARTNER {MY PARTNER}`).
      - Dropping the lookbehind, or adding the `i` flag, in `src/config/voice.ts`: red at "matches the token only as a whole case".
+- 2026-10-04: PR 174 breaker round 3 (at 6310e49a; the scoped review passed and holes 1–5 for de/pl were closed). Three holes closed, all in tests, plus the reviewer's nits. Each mutation was applied, run and reverted, and every one went red:
+  1. **en/en-gb price talk** gains "duty/duties", "includ… [one word] delivery" and "delivery's included".
+     - "Every price includes local delivery and duties." and "Delivery's included." in `home.proof.local.body`: red at the H3 denylist.
+  2. **The dates band's eyebrow and heading** are swept by `dayCountIn` in all four locales. The stamps are still left out, because they print real dates.
+     - de heading "Termine, 7 Tage frisch", pl heading "… Świeże przez tydzień." and pl eyebrow "Siedmiodniowa świeżość": red at "promises no day count in the dates band's eyebrow and heading".
+  3. **The delivering day.** With a florist signed for Poland (`withActivePartnersProvider`), the grid gives Poland alone `bg-accent`, `text-on-accent` and "Delivering now", exactly once; the other six keep "Guide · not delivering yet".
+     - The provider's `delivering: false`, `tone="neutral"` always, `stateKey` hard-coded to the guide word, and `delivering` false for Poland only: each red at "claims delivery for Poland alone, in word and tone, once a florist is signed".
+  - **Nits:**
+    - The grid no longer re-sorts the provider's order; the provider sorts and is tested.
+    - Stale comments fixed in `corridor.ts`, `partners.ts` and `DestinationsGrid.tsx`.
+    - Two `ui-home-gated` test titles now say "featured".
+    - The TASK-177 differ row in `docs/design/README.md` now says the artboard's "Delivering now" is wrong until a florist is signed.
+  - No copy changed.
 - 2026-10-04: baselines for item 6 and breaker round 2, visual-baselines run 37200904366: the whole change list (15 PNGs) plus the manifest. `--verify` and `--check` exit 0. I looked at all 15.
   - Every one moves because Poland's chip is now neutral with "Guide · not delivering yet". The desktop destinations band grows 35 px because the chips re-wrap.
   - The footer, `/dev/components` and the full-page shots move only below that band.
