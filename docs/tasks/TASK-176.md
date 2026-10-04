@@ -30,6 +30,8 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 - **From the PR 166 design round (2026-10-03), carried by the orchestrator:** the shipped footer draws "Card payments are
   processed by Stripe. We never store card numbers." in Phase 0, against spec 004 §14 A10 (it renders only once a payment
   integration ships). The `chrome-*` artboards mark it hidden in Phase 0; the v2 footer drops it.
+- **From PR 168 (TASK-175) breaker round 2, HOLE 1 ACCEPTABLE (reviewer, PR 168 comment 5974924179):** the utility strip's wrap below 390 px is pinned by nothing. Add a 320 px no-horizontal-scroll case in all four locales, and extend the 390 px chip-in-viewport case beyond `/en` to all four locales. Deleting the wrap classes must turn it red.
+- **From PR 168 breaker round 2, HOLE 2 ACCEPTABLE (same comment):** the Linux fallback faces (`src/app/globals.css` L378–L392, `src/modules/ui/fonts/index.ts` L59, L107) are pinned by nothing. Add a unit test that recomputes the override values with Next's fallback-metrics function (mutations FB1–FB6 must go red), and correct the comments at `globals.css` L375 and `fonts/index.ts` L26–L28, which claim `fonts.test.ts` already does.
 
 ## Escalations
 
