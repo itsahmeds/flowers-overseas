@@ -64,6 +64,32 @@ export const PriceNoteKeySchema = z.enum(PRICE_NOTE_KEYS);
 const NonEmpty = z.string().min(1);
 
 /**
+ * The approximate equivalents under a card price (spec 004 §14 A21 clause 6; TASK-178): the
+ * rate's `as_of` and one to three amounts in the *other* currencies of {EUR, GBP, PLN, USD}.
+ *
+ * `catalog`'s `priceEquivalents()` computes it; the schema only checks the shape a renderer may
+ * rely on — integer `Money`, at most three, no currency twice. That the charged currency is not
+ * among them is a refinement on the card (`ProductCardViewSchema`), because only the card knows
+ * which currency was charged. Absent means **no line at all** (a stale rate, the fallback).
+ */
+export const PriceEquivalentsViewSchema = z
+  .object({
+    asOf: z.iso.date(),
+    amounts: z
+      .array(MoneySchema)
+      .min(1)
+      .max(3)
+      .refine(
+        (amounts) =>
+          new Set(amounts.map((amount) => amount.currency)).size ===
+          amounts.length,
+        { error: "an equivalents line names each currency once" },
+      ),
+  })
+  .strict();
+export type PriceEquivalentsView = z.infer<typeof PriceEquivalentsViewSchema>;
+
+/**
  * The card's photo: an asset from spec 006's manifest, or the placeholder box.
  *
  * `alt` rides along on the asset branch because §5.2 puts it there and because the `ItemList`
@@ -101,7 +127,7 @@ export type ProductCardPhotoView = z.infer<typeof ProductCardPhotoSchema>;
  * `tests/unit/ui-shop-components.test.tsx`, "labels from the manifest, not from the view model's
  * provenance field", so neither can be mistaken for the other's source of truth.
  */
-export const ProductCardViewSchema = z
+const ProductCardFieldsSchema = z
   .object({
     productId: NonEmpty,
     name: NonEmpty,
@@ -109,9 +135,24 @@ export const ProductCardViewSchema = z
     photo: ProductCardPhotoSchema,
     price: MoneySchema,
     priceLabelKey: PriceLabelKeySchema,
+    /** A21 clause 6: the approximate equivalents under the price, or absent (no line). */
+    equivalents: PriceEquivalentsViewSchema.optional(),
     provenance: ProductProvenanceSchema,
   })
   .strict();
+
+export const ProductCardViewSchema = ProductCardFieldsSchema.refine(
+  (card) =>
+    card.equivalents === undefined ||
+    card.equivalents.amounts.every(
+      (amount) => amount.currency !== card.price.currency,
+    ),
+  {
+    error:
+      "the equivalents line never repeats the charged currency (spec 004 §14 A21 clause 6 (b))",
+    path: ["equivalents"],
+  },
+);
 export type ProductCardView = z.infer<typeof ProductCardViewSchema>;
 
 /**
@@ -128,9 +169,10 @@ export type ProductCardView = z.infer<typeof ProductCardViewSchema>;
  * It lives here, beside the schema it is derived from, so the two cannot drift and so
  * `modules/catalog` (which re-exports it) keeps importing one direction only.
  */
-export const HubCardViewSchema = ProductCardViewSchema.omit({
+export const HubCardViewSchema = ProductCardFieldsSchema.omit({
   price: true,
   priceLabelKey: true,
+  equivalents: true,
 });
 export type HubCardView = z.infer<typeof HubCardViewSchema>;
 

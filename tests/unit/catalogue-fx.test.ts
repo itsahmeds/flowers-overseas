@@ -47,7 +47,7 @@ describe("the committed ECB snapshot", () => {
       expect(Number.isInteger(rate.ratePpm), rate.quote).toBe(true);
       expect(rate.ratePpm).toBeGreaterThan(0);
     }
-    // All nine magnitudes, spelled out so a typo in any one of them — 4.268 vs 42.68 PLN per
+    // All ten magnitudes, spelled out so a typo in any one of them — 4.268 vs 42.68 PLN per
     // EUR, 393.2 vs 39.32 HUF — is a failing test rather than a wrong price on a page. The two
     // the first corridor depends on (ADR-0002, UK -> PL) are the first reason for the pin; the
     // other seven are configured-but-flagged-off and a flip must not be the first read of them.
@@ -63,7 +63,11 @@ describe("the committed ECB snapshot", () => {
       NOK: 11_625_000,
       DKK: 7_459_500,
       CHF: 938_500,
+      // Equivalent-only (spec 004 §14 A21 clause 6; TASK-178): the ECB reference rate for the
+      // snapshot's own `as_of`, 1.1614 USD per EUR on 2026-09-08.
+      USD: 1_161_400,
     });
+    expect(fxSnapshotRate("USD")?.asOf).toBe(FX_SNAPSHOT_AS_OF);
     expect(fxSnapshotRate("PLN")?.ratePpm).toBe(4_268_000);
     expect(fxSnapshotRate("GBP")?.ratePpm).toBe(846_500);
     expect(fxSnapshotRate("EUR")).toBeUndefined();

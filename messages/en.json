@@ -407,7 +407,9 @@
     },
     "price": {
       "inclusive": "Includes VAT and delivery",
-      "from": "from {price}"
+      "from": "from {price}",
+      "equivalents": "about {amounts} at the rate of {date}",
+      "allIn": "all in"
     },
     "availability": {
       "inStock": "Available to order",
@@ -774,7 +776,6 @@
     "root": {
       "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
       "demoNotice": "You cannot order yet. We are still choosing our florists in {country}, so every price on this page is the price we would charge and nothing on it can be bought today.",
-      "listingEyebrow": "The listing",
       "listingHeading": "Everything we can make for {country}",
       "tilesHeading": "By what it is",
       "tileCount": "{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}",
@@ -788,7 +789,8 @@
       "seoTitle": "Send flowers to {country} — what we can make there",
       "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "pageColumn": "Page",
-      "occasionPageLink": "What we make for it"
+      "occasionPageLink": "What we make for it",
+      "tilesSubheading": "Narrow it down"
     },
     "occasion": {
       "datedLine": "{occasion} in {country} is {date}.",
@@ -805,6 +807,16 @@
     },
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
+    },
+    "listing": {
+      "eyebrow": "Sending to {country}"
+    },
+    "note": {
+      "mark": "P.S.",
+      "label": "A note before you choose"
+    },
+    "cardNote": {
+      "heading": "Every one of these comes with a card, at no cost."
     }
   },
   "categoryHub": {

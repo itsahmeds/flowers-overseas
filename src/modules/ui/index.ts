@@ -457,6 +457,10 @@ export type {
 export { FromPriceChip } from "./shop/FromPriceChip.tsx";
 export type { FromPriceChipProps } from "./shop/FromPriceChip.tsx";
 export { CategoryChipRow } from "./shop/CategoryChipRow.tsx";
+// The approximate-equivalents line's message values (spec 004 §14 A21 clause 6; TASK-178),
+// shared by the product card and the product page (TASK-179).
+export { equivalentsMessageValues } from "./shop/equivalents.ts";
+export type { EquivalentsMessageValues } from "./shop/equivalents.ts";
 export type { CategoryChipRowProps } from "./shop/CategoryChipRow.tsx";
 export {
   CategoryTileViewSchema,
@@ -469,6 +473,7 @@ export {
   PRICE_NOTE_KEYS,
   PRODUCT_PROVENANCE,
   PriceLabelKeySchema,
+  PriceEquivalentsViewSchema,
   PriceNoteKeySchema,
   ProductCardPhotoSchema,
   ProductCardViewSchema,
@@ -482,6 +487,7 @@ export type {
   ListingCardView,
   ListingSort,
   PriceLabelKey,
+  PriceEquivalentsView,
   PriceNoteKey,
   ProductCardPhotoView,
   ProductCardView,

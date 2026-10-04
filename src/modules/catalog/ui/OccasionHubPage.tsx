@@ -40,13 +40,13 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { formatDate, sortBy } from "@/modules/i18n";
+import { sortBy } from "@/modules/i18n";
 import {
+  Chip,
   Container,
   Display,
-  Label,
+  Eyebrow,
   ListingGrid,
-  Stack,
   Text,
   assertSinglePriority,
 } from "@/modules/ui";
@@ -54,12 +54,12 @@ import {
 import type { ListingDestinationLink, ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import {
+  ListingIntro,
+  ListingSubsection,
+  OccasionDatesTable,
+} from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
-
-/** Midday UTC: the hour that is the same calendar date in every European zone (007's rule). */
-function instantOf(date: string): Date {
-  return new Date(`${date}T12:00:00Z`);
-}
 
 export interface OccasionHubPageProps {
   readonly view: ListingView;
@@ -95,110 +95,90 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
       data-fo-hub="occasion"
       data-fo-hub-entity={view.entity?.key ?? ""}
     >
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
-        <Stack gap="md">
-          <Display as="h1" size="display-s">
-            {hub("h1", { entity })}
-          </Display>
-          {view.intro === undefined ? null : <Text measure>{view.intro}</Text>}
-        </Stack>
+        <ListingIntro
+          heading={hub("h1", { entity })}
+          {...(view.intro === undefined ? {} : { lede: view.intro })}
+        />
 
         {dates.length === 0 ? null : (
-          <Stack as="section" gap="md" data-fo-hub-dates={dates.length}>
-            <Stack gap="xs">
-              <Label>{hub("datesEyebrow")}</Label>
-              <Display as="h2" size="2xl">
+          <section
+            aria-labelledby="hub-dates-heading"
+            className="gap-lg md:gap-2xl grid grid-cols-1 items-start md:grid-cols-[4fr_7fr]"
+            data-fo-hub-dates={dates.length}
+          >
+            <div>
+              <Eyebrow className="mb-[14px]">{hub("datesEyebrow")}</Eyebrow>
+              <Display as="h2" size="2xl" id="hub-dates-heading">
                 {hub("datesHeading")}
               </Display>
-            </Stack>
-            <table className="w-full border-collapse text-sm">
-              <caption className="label text-ink-subtle pb-sm text-start">
-                {hub("datesCaption", { entity })}
-              </caption>
-              <thead>
-                <tr>
-                  <th
-                    className="border-rule py-sm pe-md text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                    scope="col"
-                  >
-                    {hub("countryColumn")}
-                  </th>
-                  <th
-                    className="border-rule py-sm text-ink-subtle border-b text-start text-xs font-semibold uppercase"
-                    scope="col"
-                  >
-                    {hub("dateColumn")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {dates.map((row) => (
-                  <tr key={row.iso2} data-fo-hub-date={row.iso2}>
-                    <th
-                      className="border-rule py-sm pe-md border-b text-start font-semibold"
-                      scope="row"
-                    >
-                      {registryLabel(t, row.nameKey)}
-                    </th>
-                    <td className="border-rule py-sm border-b">
-                      {row.date === null
-                        ? hub("dateUnknown")
-                        : formatDate(
-                            instantOf(row.date),
-                            code,
-                            "calendarDate",
-                            "UTC",
-                          )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Stack>
+            </div>
+            <OccasionDatesTable
+              caption={hub("datesCaption", { entity })}
+              columns={[hub("countryColumn"), hub("dateColumn")]}
+              locale={code}
+              rows={dates.map((row) => ({
+                key: row.iso2,
+                name: registryLabel(t, row.nameKey),
+                nameKey: row.nameKey,
+                date: row.date,
+                hook: { "data-fo-hub-date": row.iso2 },
+              }))}
+              unknownDate={hub("dateUnknown")}
+            />
+          </section>
         )}
 
-        <Stack as="section" gap="md" data-fo-hub-products>
-          <Stack gap="xs">
-            <Label>{hub("productsEyebrow")}</Label>
-            <Display as="h2" size="2xl">
-              {hub("productsHeading", { entity })}
-            </Display>
-          </Stack>
-          {/* AC-7's one sentence, above the grid it explains — where this artboard draws it. */}
-          <Text measure tone="muted">
+        <ListingSubsection
+          dataHook={{ "data-fo-hub-products": true }}
+          emphasis={entity}
+          eyebrow={hub("productsEyebrow")}
+          heading={hub("productsHeading", { entity })}
+          id="hub-products-heading"
+        >
+          {/* AC-7's one sentence, above the grid it explains — where this artboard draws it, on
+              the sage-wash note. */}
+          <Text
+            as="p"
+            size="md"
+            className="bg-sage-wash rounded-field text-ui px-md mb-[32px] max-w-[70ch] py-[12px]"
+          >
             {shop("hub.noMoney")}
           </Text>
           <ListingGrid cards={view.hubItems} locale={code} priority />
-        </Stack>
+        </ListingSubsection>
 
         {destinations.length === 0 ? null : (
           /* One link per country page that exists, and nothing where none does: a block whose
              data is missing renders nothing at all (§5.2). */
-          <Stack as="section" gap="md" data-fo-hub-destinations>
-            <Display as="h2" size="2xl">
-              {hub("destinationsHeading")}
-            </Display>
+          <section
+            aria-labelledby="hub-pages-heading"
+            className="md:pt-2xl pt-[48px]"
+            data-fo-hub-destinations
+          >
+            <Eyebrow className="mb-[14px]">
+              <span id="hub-pages-heading">{hub("destinationsHeading")}</span>
+            </Eyebrow>
             <ul className="gap-sm flex list-none flex-wrap p-0">
               {destinations.map((destination) => (
-                <li key={destination.iso2}>
-                  <a
-                    className="hover:text-accent"
-                    data-fo-hub-destination={destination.iso2}
-                    href={destination.href}
-                  >
+                <li
+                  data-fo-hub-destination={destination.iso2}
+                  key={destination.iso2}
+                >
+                  <Chip href={destination.href ?? ""}>
                     {hub("destinationLink", {
                       country: named(destination),
                       entity,
                     })}
-                  </a>
+                  </Chip>
                 </li>
               ))}
             </ul>
-          </Stack>
+          </section>
         )}
-      </Stack>
+      </div>
     </Container>
   );
 }

@@ -102,12 +102,12 @@
       "locale": "de",
       "name": "Danke",
       "slug": "danke",
-      "descriptionMd": "Danke sagt sich mit einer Karte leichter als mit einem Strauß, deshalb gehört beides zusammen: Die Karte ist kostenlos und wird von unserem Floristen von Hand geschrieben. Sonnenblumen, gelbe Tulpen und Freesien sagen Danke; rote Rosen nicht. Der größte Teil dieser Auswahl liegt in der Mitte unserer Preise. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Danke sagt sich mit einer Karte leichter als mit einem Strauß, deshalb gehört beides zusammen: Die Karte ist kostenlos und wird mit Ihren Worten gedruckt. Sonnenblumen, gelbe Tulpen und Freesien sagen Danke; rote Rosen nicht. Der größte Teil dieser Auswahl liegt in der Mitte unserer Preise. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Danke – Blumen europaweit verschicken",
-      "seoDescription": "Sonnenblumen, gelbe Tulpen und Freesien mit kostenloser handgeschriebener Karte. Mittlere Preise, geliefert am Datum Ihrer Wahl.",
+      "seoDescription": "Sonnenblumen, gelbe Tulpen und Freesien mit kostenloser gedruckter Karte. Mittlere Preise, geliefert am Datum Ihrer Wahl.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "902983d85da64b8ec24db1ee98e298159b4500446fc26e55108395c84df1b84c"
+      "sourceHash": "8b69b0ff30a85f7dd9d5c505f671d4e668991e99d0d136b7ea7a97399fb4a7d4"
     },
     {
       "entity": "occasion",
@@ -115,12 +115,12 @@
       "locale": "de",
       "name": "Entschuldigung",
       "slug": "entschuldigung",
-      "descriptionMd": "Bei einer Entschuldigung ist leise besser als groß und früh besser als spät. Zarte Rosen, weiße Tulpen und Freesien treffen den richtigen Ton, und die Karte zählt mehr als die Blumen: Schreiben Sie sie selbst, und wir lassen sie von Hand abschreiben. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommen die Blumen an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Bei einer Entschuldigung ist leise besser als groß und früh besser als spät. Zarte Rosen, weiße Tulpen und Freesien treffen den richtigen Ton, und die Karte zählt mehr als die Blumen: Schreiben Sie sie selbst, und wir drucken sie auf unsere Karte. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommen die Blumen an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Entschuldigung – Blumen europaweit verschicken",
-      "seoDescription": "Zarte Rosen, weiße Tulpen und Freesien mit einer von Hand geschriebenen Karte. Leise statt groß, geliefert am Tag Ihrer Wahl.",
+      "seoDescription": "Zarte Rosen, weiße Tulpen und Freesien mit Ihren eigenen Worten auf einer gedruckten Karte. Leise statt groß, geliefert am Tag Ihrer Wahl.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "4486c2e6e44426c6579b34baa6b9f32d10b64749e78e7418ac3bf27da660bfca"
+      "sourceHash": "36141af9785ecaef120c712f9abe3d3315e735f621ee88761c2a57766cec975f"
     },
     {
       "entity": "occasion",
@@ -180,12 +180,12 @@
       "locale": "de",
       "name": "Ruhestand",
       "slug": "ruhestand",
-      "descriptionMd": "Blumen zum Ruhestand sind meistens ein Gruppengeschenk, das am letzten Tag ins Büro geht und dann im Zug nach Hause getragen wird. Genau darum geht es: etwas, das die Fahrt übersteht, eine Pflanze, ein Korb oder ein gebundener statt gesteckter Strauß. Eine Karte kann viele Namen tragen; schicken Sie uns den Text, und unser Florist schreibt ihn ab. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Blumen zum Ruhestand sind meistens ein Gruppengeschenk, das am letzten Tag ins Büro geht und dann im Zug nach Hause getragen wird. Genau darum geht es: etwas, das die Fahrt übersteht, eine Pflanze, ein Korb oder ein gebundener statt gesteckter Strauß. Eine Karte kann viele Namen tragen; schicken Sie uns den Text, und wir drucken ihn auf unsere Karte. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Ruhestand – Blumen europaweit verschicken",
-      "seoDescription": "Pflanzen, Körbe und gebundene Sträuße, die den Heimweg vom Büro überstehen. Eine Karte trägt viele Namen, von Hand geschrieben.",
+      "seoDescription": "Pflanzen, Körbe und gebundene Sträuße, die den Heimweg vom Büro überstehen. Eine gedruckte Karte trägt viele Namen.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "9403eb369b9763ee27fddccc89b1335c560051e3747d52a8a209c9287786dac6"
+      "sourceHash": "2f200416ed319cda2cbe71181d87355c6e724a9e195aef8fbaaea1cc3fc3b98f"
     },
     {
       "entity": "occasion",

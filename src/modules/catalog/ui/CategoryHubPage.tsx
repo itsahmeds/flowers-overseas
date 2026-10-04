@@ -35,20 +35,16 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { sortBy } from "@/modules/i18n";
-import {
-  Container,
-  Display,
-  Grid,
-  Label,
-  ListingGrid,
-  Stack,
-  Text,
-  assertSinglePriority,
-} from "@/modules/ui";
+import { Container, ListingGrid, assertSinglePriority } from "@/modules/ui";
 
 import type { ListingDestinationLink, ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import {
+  HubDestinations,
+  ListingIntro,
+  ListingSubsection,
+} from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
 export interface CategoryHubPageProps {
@@ -88,87 +84,53 @@ export function CategoryHubPage({ view }: CategoryHubPageProps): ReactElement {
       data-fo-hub="category"
       data-fo-hub-entity={view.entity?.key ?? ""}
     >
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
-        <Stack gap="md">
-          <Display as="h1" size="display-s">
-            {hub("h1", { entity })}
-          </Display>
-          {/* The authored intro: 40–120 words, human-written, gated by `seed:check`. An intro that
-              is not yet `reviewed` leaves the page `noindex` rather than unpublished — the page
-              renders in full either way (§6, §5.3). */}
-          {view.intro === undefined ? null : <Text measure>{view.intro}</Text>}
-        </Stack>
+        {/* v2 `.shop-intro`: the subject as the eyebrow and in the poppy italic, and the authored
+            intro (40–120 words, human-written, gated by `seed:check`) as the lede. An intro that
+            is not yet `reviewed` leaves the page `noindex` rather than unpublished (§6, §5.3). */}
+        <ListingIntro
+          emphasis={entity}
+          eyebrow={entity}
+          heading={hub("h1", { entity })}
+          {...(view.intro === undefined ? {} : { lede: view.intro })}
+        />
 
         {/* Countries first: the hub's job is the destination (§13 Q4). */}
-        <Stack as="section" gap="md" data-fo-hub-destinations>
-          <Stack gap="xs">
-            <Label>{hub("destinationsEyebrow")}</Label>
-            <Display as="h2" size="2xl">
-              {hub("destinationsHeading")}
-            </Display>
-          </Stack>
-          {/* AC-7's one sentence. A cross-country minimum converted at today's rate is a price no
-              configuration matches, which is the shape the Price Indication Directive and the
-              drip-pricing ban exist to prevent — so the hub shows no money at all and says why,
-              rather than showing a "from" it cannot honour (§8, 005 §13 Q10). */}
-          <Text measure tone="muted">
-            {shop("hub.noMoney")}
-          </Text>
-          <Grid as="ul" columns="1-3" gap="lg" className="list-none">
-            {[...linked, ...unlinked].map((destination) => (
-              <li key={destination.iso2}>
-                <Stack
-                  as="article"
-                  gap="xs"
-                  className="border-rule p-md border"
-                  data-fo-hub-destination={destination.iso2}
-                  data-fo-hub-destination-kind={
-                    destination.href === undefined ? "text" : "link"
-                  }
-                >
-                  <Display as="h3" size="lg">
-                    {named(destination)}
-                  </Display>
-                  {destination.href === undefined ? (
-                    /* No page there, so no link there. The sentence says what is true — we are
-                       choosing florists — instead of padding the list back out with a destination
-                       we cannot serve (spec 004 AC-14). */
-                    <Text as="span" size="sm" tone="muted">
-                      {hub("destinationPending")}
-                    </Text>
-                  ) : (
-                    <>
-                      <Text as="span" size="sm" tone="muted">
-                        {hub("destinationCount", { count: destination.count })}
-                      </Text>
-                      <a className="hover:text-accent" href={destination.href}>
-                        {hub("destinationLink", {
-                          country: named(destination),
-                        })}
-                      </a>
-                    </>
-                  )}
-                </Stack>
-              </li>
-            ))}
-          </Grid>
-        </Stack>
+        <HubDestinations
+          eyebrow={hub("destinationsEyebrow")}
+          heading={hub("destinationsHeading")}
+          id="hub-destinations-heading"
+          noMoney={shop("hub.noMoney")}
+          rows={[...linked, ...unlinked].map((destination) => ({
+            iso2: destination.iso2,
+            name: named(destination),
+            ...(destination.href === undefined
+              ? { pending: hub("destinationPending") }
+              : {
+                  href: destination.href,
+                  count: hub("destinationCount", { count: destination.count }),
+                  link: hub("destinationLink", {
+                    country: named(destination),
+                  }),
+                }),
+          }))}
+        />
 
         {/* Then what we make: names and photographs, no price and no tier. This is the only page
             type on the site permitted to show a product without a price, and it is permitted only
             because the sentence above says why there is none. */}
-        <Stack as="section" gap="md" data-fo-hub-products>
-          <Stack gap="xs">
-            <Label>{hub("productsEyebrow")}</Label>
-            <Display as="h2" size="2xl">
-              {hub("productsHeading", { entity })}
-            </Display>
-          </Stack>
+        <ListingSubsection
+          dataHook={{ "data-fo-hub-products": true }}
+          emphasis={entity}
+          eyebrow={hub("productsEyebrow")}
+          heading={hub("productsHeading", { entity })}
+          id="hub-products-heading"
+        >
           <ListingGrid cards={view.hubItems} locale={code} priority />
-        </Stack>
-      </Stack>
+        </ListingSubsection>
+      </div>
     </Container>
   );
 }

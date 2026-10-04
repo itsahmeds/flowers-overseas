@@ -35,7 +35,8 @@ const STATIC_ROW_COUNTS: CatalogProviderRowCounts = {
   "price.countryPrices": 3332,
   "price.addonCountryPrices": 42,
   // One euro-base ECB snapshot, one row per configured quote currency.
-  "fx.fxRates": 9,
+  // Ten: the nine euro-base rows plus the equivalent-only USD (spec 004 §14 A21 clause 6).
+  "fx.fxRates": 10,
   // One `addon.wine.{country}` row per configured country plus one `currency.{code}` row per
   // configured currency (TASK-064, TASK-067).
   "flags.flags": COUNTRIES.length + CURRENCIES.length,

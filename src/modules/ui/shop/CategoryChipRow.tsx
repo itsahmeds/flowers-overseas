@@ -21,7 +21,7 @@ import { sortBy } from "@/modules/i18n";
 
 import { Chip } from "../primitives/Chip.tsx";
 import { Stack } from "../primitives/layout.tsx";
-import { Label } from "../primitives/typography.tsx";
+import { Eyebrow } from "../primitives/typography.tsx";
 
 import type { ChipLinkView } from "./viewModel.ts";
 
@@ -46,21 +46,22 @@ export function CategoryChipRow({
   const ordered = sortBy(items, locale, (item) => item.name);
 
   return (
-    <Stack as="nav" gap="sm" aria-labelledby={`${id}-heading`} id={id}>
-      <Label id={`${id}-heading`}>{heading}</Label>
-      <div className="gap-sm flex flex-wrap">
-        {ordered.map((item) =>
-          item.current === true ? (
-            <Chip aria-current="page" key={item.key} tone="muted">
-              {item.name}
-            </Chip>
-          ) : (
-            <Chip href={item.href} key={item.key}>
-              {item.name}
-            </Chip>
-          ),
-        )}
-      </div>
+    // v2 (the country category and occasion artboards' "Also for Poland"): the cornflower eyebrow
+    // names the `<nav>`, and the chips are a list of card pills; the current one is the only
+    // selected (cornflower) pill and is not a link to the page the reader is on.
+    <Stack as="nav" gap="md" aria-labelledby={`${id}-heading`} id={id}>
+      <Eyebrow id={`${id}-heading`}>{heading}</Eyebrow>
+      <ul className="gap-sm flex list-none flex-wrap">
+        {ordered.map((item) => (
+          <li key={item.key}>
+            {item.current === true ? (
+              <Chip aria-current="page">{item.name}</Chip>
+            ) : (
+              <Chip href={item.href}>{item.name}</Chip>
+            )}
+          </li>
+        ))}
+      </ul>
     </Stack>
   );
 }

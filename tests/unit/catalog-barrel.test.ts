@@ -208,6 +208,9 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "offerProjection",
         "priceProjection",
         "priceTable",
+        // approximate equivalents under a charged price (spec 004 §14 A21 clause 6; TASK-178)
+        "EQUIVALENT_CURRENCIES",
+        "priceEquivalents",
         // availability, indexability, the Omnibus figure and signed quotes (TASK-068)
         "AvailabilityQuerySchema",
         "AvailabilitySchema",
@@ -342,6 +345,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/listing.ts`,
       `${moduleDir}/observability.ts`,
       `${moduleDir}/params.ts`,
+      `${moduleDir}/pricing/equivalents.ts`,
       `${moduleDir}/pricing/fx.ts`,
       `${moduleDir}/pricing/history.ts`,
       `${moduleDir}/pricing/money.ts`,
@@ -364,6 +368,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
+      `${moduleDir}/ui/ListingChrome.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,
       `${moduleDir}/ui/OccasionsIndexPage.tsx`,
       `${moduleDir}/ui/labels.ts`,
@@ -595,7 +600,7 @@ describe("the provider seam and its Phase 0 stubs", () => {
       42,
     ],
     // One committed euro-base ECB snapshot, one row per configured quote currency.
-    ["fx.fxRates", () => providers.fx.fxRates(), 9],
+    ["fx.fxRates", () => providers.fx.fxRates(), 10],
     // One `addon.wine.{country}` row per configured country, every one off (TASK-064), plus one
     // `currency.{code}` row per configured currency — EUR, GBP and PLN on (TASK-067, §13 Q11).
     [
@@ -717,8 +722,10 @@ describe("PricePointSchema refuses a price without VAT or delivery", () => {
     expect(
       catalog.PricePointSchema.safeParse({ ...point, currency: "PLN" }).success,
     ).toBe(true);
+    // USD became a configured (equivalent-only) code with TASK-178 (spec 004 §14 A21 clause 6),
+    // so the unconfigured example is now JPY.
     expect(
-      catalog.PricePointSchema.safeParse({ ...point, currency: "USD" }).success,
+      catalog.PricePointSchema.safeParse({ ...point, currency: "JPY" }).success,
     ).toBe(false);
   });
 });

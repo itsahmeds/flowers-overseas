@@ -1,0 +1,35 @@
+/*
+ * Takes the rows and lines computed from today's date out of the photographed layout, for the
+ * reason `product-blocks.css` takes the product date grid out: every block below one takes its
+ * offset from the build date. Applied through `toHaveScreenshot`'s `stylePath` by
+ * `country-shop.spec.ts`, `country-occasion.spec.ts`, `hubs.spec.ts`, `listing.spec.ts` and the
+ * gallery's full-page shot in `notices.spec.ts`.
+ *
+ * Each target is rendered on the server from the next occurrence of an occasion after today
+ * (`occasionDate(rule, year)`, spec 008 §14 A6; `occasionDates()` for the home band), formatted by
+ * `formatDate`. When an occasion passes, its row moves to the next year or leaves the list, its
+ * text changes width, and the block's height can change by a fraction of a pixel; the rasteriser
+ * then rounds each text line below it to a different pixel row and the shot fails with no change
+ * to the code (seen on PR 168, 2026-10-04).
+ *
+ * **Only the dated rows leave, never the frame around them.** Each section's eyebrow, `<h2>`,
+ * table caption and column headers stay in the picture, so a blanked or reworded heading still
+ * fails the shot (`/break` round 1 hole 3 on PR 169). What leaves is the part whose content is a
+ * date: a date table's `<tbody>` (with no body rows the column widths come from the fixed header
+ * text alone), the home band's list of dates, and the one sentence on the country occasion page
+ * that prints the date — the note under it stays.
+ *
+ * The rows themselves are pinned elsewhere, not by a picture:
+ *  - the country occasion's dated sentence: `tests/e2e/country-occasion.spec.ts` and
+ *    `tests/unit/catalog-occasion-page.test.tsx` (its text, its ISO date, its place above the grid);
+ *  - the occasion hub's date rows: `tests/e2e/hubs.spec.ts` and `tests/unit/catalog-hub-pages.test.tsx`;
+ *  - the shop root's occasion rows: `tests/unit/catalog-shop-page.test.tsx`;
+ *  - the home band's dates, drawn on `/dev/components` above the listing primitives:
+ *    `tests/e2e/home.spec.ts` and its own `home-dates-*` shots.
+ */
+[data-fo-country-occasion] div[data-fo-occasion-date] > :first-child,
+[data-fo-hub-dates] tbody,
+[data-fo-shop-occasions] tbody,
+[data-fo-occasion-dates] > ul {
+  display: none !important;
+}

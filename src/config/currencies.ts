@@ -73,7 +73,8 @@ export const CurrencyRegistrySchema = z
   });
 
 /**
- * The ten currencies of spec 002 §5.1, in the order that spec seeds them. `plan/03` §1's
+ * The ten currencies of spec 002 §5.1, in the order that spec seeds them, plus USD as an
+ * equivalent-only eleventh (spec 004 §14 A21 clause 6). `plan/03` §1's
  * buyer-selectable display set (which adds CHF, TRY and USD) is a superset reached in Phase 4+;
  * adding one is a row here plus a seed row, never a code change elsewhere.
  */
@@ -92,6 +93,12 @@ const currencies = [
   { code: "NOK", minorUnitExponent: 2, roundingStyle: "x90" },
   { code: "DKK", minorUnitExponent: 2, roundingStyle: "x90" },
   { code: "CHF", minorUnitExponent: 2, roundingStyle: "x90" },
+  // **Equivalent-only** (spec 004 §14 A21 clause 6 (b); TASK-178): USD is converted *to* for the
+  // approximate-equivalents line under a charged price and is never charged, never prominent and
+  // never in `priceTable()` — its `currency.USD` flag stays off (`PHASE_0_DISPLAY_CURRENCIES` is
+  // unchanged). `x90` is the ending `plan/03` §1's display set would give it; the equivalents
+  // line applies no rounding style at all.
+  { code: "USD", minorUnitExponent: 2, roundingStyle: "x90" },
 ] as const satisfies readonly CurrencyConfig[];
 
 /** Parsed at module load: an invalid registry throws on first import, never at request time. */

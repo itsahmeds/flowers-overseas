@@ -71,39 +71,49 @@ export function ListingToolbar({
   const t = useTranslations("shop");
 
   return (
+    // v2 (spec 004 §14 A21; the listing artboards' `.toolbar`): one rule above and below, the
+    // count in the display face with the ranking disclosure under it on the start side, and the
+    // sort form on the end side — stacked into one column on a phone.
     <div
-      className="border-rule gap-md py-md flex flex-wrap items-end justify-between border-y"
+      className="border-rule gap-x-lg gap-y-md grid grid-cols-1 items-end border-y py-[18px] md:grid-cols-[minmax(0,1fr)_auto]"
       data-fo-listing-toolbar={sort}
     >
-      <div className="gap-xs flex flex-col">
-        <Text as="span" size="md" className="font-medium">
+      <div className="flex flex-col">
+        <Text as="span" size="md" className="display text-md">
           {pageCount > 1
             ? t("toolbar.summary", { count: productCount, page, pageCount })
             : t("toolbar.count", { count: productCount })}
         </Text>
         {/* The ranking disclosure, on the page rather than in a tooltip: `plan/07` §2.1. */}
-        <Text as="span" size="xs" tone="subtle" measure>
+        <Text
+          as="span"
+          size="sm"
+          tone="subtle"
+          className="mt-[6px] max-w-[70ch]"
+        >
           {t("toolbar.disclosure")}
         </Text>
       </div>
-      <form className="gap-sm flex items-end" method="get">
-        <label className="text-ink-muted self-center text-sm" htmlFor={id}>
-          {t("toolbar.sortLabel")}
-        </label>
-        <select
-          className="border-ink bg-paper px-sm min-h-[44px] rounded-sm border text-sm"
-          defaultValue={sort}
-          id={id}
-          name="sort"
-        >
-          {LISTING_SORTS.map((option) => (
-            <option key={option} value={option}>
-              {t(SORT_LABEL_KEYS[option])}
-            </option>
-          ))}
-        </select>
+      <form className="flex items-end gap-[12px]" method="get">
+        <div className="gap-xs grid min-w-0 flex-1 md:flex-none">
+          <label className="label text-ink-subtle" htmlFor={id}>
+            {t("toolbar.sortLabel")}
+          </label>
+          <select
+            className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 border-[1.5px] px-[14px] md:min-w-[240px]"
+            defaultValue={sort}
+            id={id}
+            name="sort"
+          >
+            {LISTING_SORTS.map((option) => (
+              <option key={option} value={option}>
+                {t(SORT_LABEL_KEYS[option])}
+              </option>
+            ))}
+          </select>
+        </div>
         <button
-          className="border-ink-subtle bg-paper px-md min-h-[44px] rounded-sm border text-sm font-medium"
+          className="text-ink text-ui hover:bg-surface-raised min-h-(--control-sm) rounded-full px-[20px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
           type="submit"
         >
           {t("toolbar.submit")}

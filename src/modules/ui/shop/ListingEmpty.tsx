@@ -18,7 +18,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Chip } from "../primitives/Chip.tsx";
+import { Button } from "../primitives/Button.tsx";
 import { Stack } from "../primitives/layout.tsx";
 import { Display, Text } from "../primitives/typography.tsx";
 
@@ -49,24 +49,31 @@ export function ListingEmpty({
   const t = useTranslations("shop");
 
   return (
+    // v2 `.empty` (the listing artboards' empty state): a centred card on a rule ring, the
+    // sentence, and the ways out as buttons — the first one filled, the rest outlined.
     <Stack
       as="section"
-      gap="sm"
-      className="border-rule p-md max-w-[640px] border"
+      gap="none"
+      className="bg-card rounded-photo py-xl grid justify-items-center gap-[12px] px-[28px] text-center shadow-[inset_0_0_0_1px_var(--color-rule)]"
       data-fo-listing-empty={country}
     >
-      <Display as={headingLevel} size="xl">
+      <Display as={headingLevel} size="2xl">
         {t("empty.heading", { country })}
       </Display>
-      <Text measure size="md" tone="muted">
+      <Text size="md" tone="muted" className="max-w-[46ch]">
         {t("empty.body", { country })}
       </Text>
       {links.length === 0 ? null : (
-        <div className="gap-sm flex flex-wrap">
-          {links.map((link) => (
-            <Chip href={link.href} key={link.id}>
+        <div className="gap-sm flex flex-wrap justify-center">
+          {links.map((link, index) => (
+            <Button
+              href={link.href}
+              key={link.id}
+              size="sm"
+              variant={index === 0 ? "primary" : "secondary"}
+            >
               {link.label}
-            </Chip>
+            </Button>
           ))}
         </div>
       )}

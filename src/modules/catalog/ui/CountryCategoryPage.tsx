@@ -45,17 +45,21 @@ import type { ReactElement } from "react";
 import {
   CategoryChipRow,
   Container,
-  Display,
-  Label,
   ListingGrid,
-  Stack,
   Text,
+  VisuallyHidden,
   assertSinglePriority,
 } from "@/modules/ui";
 
 import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import {
+  ListingCount,
+  ListingIntro,
+  ListingProse,
+  ListingSubsection,
+} from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
 export interface CountryCategoryPageProps {
@@ -88,64 +92,77 @@ export function CountryCategoryPage({
       data-fo-shop-category={view.entity?.key ?? ""}
       data-fo-listing-state="populated"
     >
-      <Stack gap="xl" className="py-xl">
+      <div className="pb-2xl">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
-        {/* The hero: the one `<h1>`, the counted lede, and the sentence that is the whole of the
-            Phase 0 demo state — no disabled basket button and no purchase affordance at all. */}
-        <Stack gap="md">
-          <Display as="h1" size="display-s">
-            {shop("h1.countryCategory", { country, entity })}
-          </Display>
-          <Text measure>
-            {shop("category.lede", { count: view.resultCount, country })}
-          </Text>
-          <Text measure tone="muted">
-            {shop("root.demoNotice", { country })}
-          </Text>
-        </Stack>
-
-        {/* "Also for Poland": the other categories that clear the floor **for this destination**,
-            collated by `CategoryChipRow` in this locale's order, the current one marked and not a
-            link to the page the reader is already on. */}
-        <CategoryChipRow
-          heading={shop("category.siblingsHeading", { country })}
-          id="sibling-categories"
-          items={view.links.chips}
-          locale={code}
+        {/* v2 `.shop-intro`: the one `<h1>` with the destination in the poppy italic, the
+            counted lede, and the demo sentence as the note card — the whole of the Phase 0
+            state, with no disabled basket button and no purchase affordance at all. */}
+        <ListingIntro
+          emphasis={country}
+          heading={shop("h1.countryCategory", { country, entity })}
+          lede={shop("category.lede", { count: view.resultCount, country })}
+          eyebrow={shop("listing.eyebrow", { country })}
+          note={shop("root.demoNotice", { country })}
+          noteLabel={shop("note.label")}
+          noteMark={shop("note.mark")}
         />
 
-        <Stack as="section" gap="md" data-fo-shop-listing>
-          <Stack gap="xs">
-            <Label>{shop("toolbar.count", { count: view.resultCount })}</Label>
-            {/* §2 "Sort": the default order is labelled for what it is and never called a ranking
-                by sales. The sentence ships with the order, not with the control. */}
-            <Text measure size="sm" tone="muted">
-              {shop("toolbar.disclosure")}
-            </Text>
-          </Stack>
-          <ListingGrid cards={view.items} locale={code} priority />
+        <section aria-labelledby="category-grid-heading" data-fo-shop-listing>
+          <VisuallyHidden as="h2" id="category-grid-heading">
+            {shop("h1.countryCategory", { country, entity })}
+          </VisuallyHidden>
+          {/* The toolbar's count and §2 "Sort"'s disclosure: the default order is labelled for
+              what it is and never called a ranking by sales. No sort form here — this page type
+              has no parameter route yet, and a control that cannot sort is a dead control
+              (spec 004 §14 A20). */}
+          <ListingCount
+            count={shop("toolbar.count", { count: view.resultCount })}
+            disclosure={shop("toolbar.disclosure")}
+          />
+          <div className="mt-[32px]">
+            <ListingGrid cards={view.items} locale={code} priority />
+          </div>
           {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
               destination's own authored price, so the page says which currency it quotes. One
               sentence for the page, because one rate priced all of it. */}
           {view.fxFallback ? (
-            <Text measure size="sm" tone="muted">
-              {catalog("availability.fxUnavailable")}
-            </Text>
+            <div className="mt-[32px]" data-fo-fx-fallback>
+              <Text measure size="sm" tone="muted">
+                {catalog("availability.fxUnavailable")}
+              </Text>
+            </div>
           ) : null}
-        </Stack>
+        </section>
+
+        {/* "Also for Poland": the other categories that clear the floor **for this destination**,
+            collated by `CategoryChipRow` in this locale's order, the current one marked and not a
+            link to the page the reader is already on. */}
+        {view.links.chips.length === 0 ? null : (
+          <div className="md:pt-2xl pt-[48px]">
+            <CategoryChipRow
+              heading={shop("category.siblingsHeading", { country })}
+              id="sibling-categories"
+              items={view.links.chips}
+              locale={code}
+            />
+          </div>
+        )}
 
         {/* One short intro, last rather than first. It is the **country's** paragraph, not the
             category's: the category's authored intro belongs to its destination-less hub (§2's
             existence rule requires one there), and printing it at seven country URLs is the
             near-duplicate the artboard's "How it reaches Poland" exists to avoid. */}
-        <Stack as="section" gap="md" data-fo-shop-intro>
-          <Display as="h2" size="2xl">
-            {shop("root.introHeading", { country })}
-          </Display>
-          <Text measure>{shop("root.introBody", { country })}</Text>
-        </Stack>
-      </Stack>
+        <ListingSubsection
+          dataHook={{ "data-fo-shop-intro": true }}
+          emphasis={country}
+          heading={shop("root.introHeading", { country })}
+          id="category-how-heading"
+          split
+        >
+          <ListingProse>{shop("root.introBody", { country })}</ListingProse>
+        </ListingSubsection>
+      </div>
     </Container>
   );
 }

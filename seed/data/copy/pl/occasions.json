@@ -102,12 +102,12 @@
       "locale": "pl",
       "name": "Podziękowania",
       "slug": "podziekowania",
-      "descriptionMd": "Dziękuję łatwiej powiedzieć bilecikiem niż bukietem, więc idą razem: bilecik jest bezpłatny i nasz florysta pisze go odręcznie. Słoneczniki, żółte tulipany i frezje mówią dziękuję; czerwone róże nie. Większość tej oferty mieści się w środku naszych cen. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Dziękuję łatwiej powiedzieć bilecikiem niż bukietem, więc idą razem: bilecik jest bezpłatny i drukujemy na nim Twoje słowa. Słoneczniki, żółte tulipany i frezje mówią dziękuję; czerwone róże nie. Większość tej oferty mieści się w środku naszych cen. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Podziękowania – wysyłka kwiatów w całej Europie",
-      "seoDescription": "Słoneczniki, żółte tulipany i frezje z bezpłatnym odręcznym bilecikiem. Średnie ceny, dostawa w wybranym dniu.",
+      "seoDescription": "Słoneczniki, żółte tulipany i frezje z bezpłatnym drukowanym bilecikiem. Średnie ceny, dostawa w wybranym dniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "902983d85da64b8ec24db1ee98e298159b4500446fc26e55108395c84df1b84c"
+      "sourceHash": "8b69b0ff30a85f7dd9d5c505f671d4e668991e99d0d136b7ea7a97399fb4a7d4"
     },
     {
       "entity": "occasion",
@@ -115,12 +115,12 @@
       "locale": "pl",
       "name": "Przeprosiny",
       "slug": "przeprosiny",
-      "descriptionMd": "Gdy przepraszasz, cisza wygrywa z przepychem, a wcześnie z późno. Jasne róże, białe tulipany i frezje trafiają we właściwy ton, a bilecik znaczy więcej niż kwiaty: napisz go sam, a my przepiszemy go odręcznie. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Gdy przepraszasz, cisza wygrywa z przepychem, a wcześnie z późno. Jasne róże, białe tulipany i frezje trafiają we właściwy ton, a bilecik znaczy więcej niż kwiaty: napisz go sam, a my wydrukujemy go na naszym bileciku. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Przeprosiny – wysyłka kwiatów w całej Europie",
-      "seoDescription": "Jasne róże, białe tulipany i frezje z odręcznie przepisanym bilecikiem. Ciche, nie okazałe, dostarczone w wybranym dniu.",
+      "seoDescription": "Jasne róże, białe tulipany i frezje z Twoimi słowami na drukowanym bileciku. Ciche, nie okazałe, dostarczone w wybranym dniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "4486c2e6e44426c6579b34baa6b9f32d10b64749e78e7418ac3bf27da660bfca"
+      "sourceHash": "36141af9785ecaef120c712f9abe3d3315e735f621ee88761c2a57766cec975f"
     },
     {
       "entity": "occasion",
@@ -180,12 +180,12 @@
       "locale": "pl",
       "name": "Emerytura",
       "slug": "emerytura",
-      "descriptionMd": "Kwiaty na emeryturę to zwykle prezent od grupy, wysyłany do biura w ostatnim dniu pracy, a potem wieziony do domu pociągiem. Chodzi o coś, co przetrwa tę podróż: roślinę, kosz albo bukiet wiązany, a nie układany. Jeden bilecik może zmieścić wiele podpisów; przyślij nam tekst, a nasz florysta przepisze go odręcznie. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Kwiaty na emeryturę to zwykle prezent od grupy, wysyłany do biura w ostatnim dniu pracy, a potem wieziony do domu pociągiem. Chodzi o coś, co przetrwa tę podróż: roślinę, kosz albo bukiet wiązany, a nie układany. Jeden bilecik może zmieścić wiele podpisów; przyślij nam tekst, a my wydrukujemy go na naszym bileciku. Każde zamówienie zostanie wykonane ręcznie i doręczone osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Emerytura – wysyłka kwiatów w całej Europie",
-      "seoDescription": "Rośliny, kosze i wiązane bukiety, które przetrwają drogę z biura do domu. Jeden bilecik z wieloma podpisami, przepisany odręcznie.",
+      "seoDescription": "Rośliny, kosze i wiązane bukiety, które przetrwają drogę z biura do domu. Jeden drukowany bilecik z wieloma podpisami.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "9403eb369b9763ee27fddccc89b1335c560051e3747d52a8a209c9287786dac6"
+      "sourceHash": "2f200416ed319cda2cbe71181d87355c6e724a9e195aef8fbaaea1cc3fc3b98f"
     },
     {
       "entity": "occasion",

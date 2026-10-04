@@ -229,6 +229,10 @@ describe("src/modules/ui barrel", () => {
         "Pagination",
         "PriceLabelKeySchema",
         "PriceNoteKeySchema",
+        // spec 004 §14 A21 clause 6 (TASK-178): the equivalents line's shape and its message
+        // values, shared by the card and the product page.
+        "PriceEquivalentsViewSchema",
+        "equivalentsMessageValues",
         "ProductCard",
         "ProductCardPhotoSchema",
         "ProductCardViewSchema",

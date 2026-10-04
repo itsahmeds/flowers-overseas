@@ -42,7 +42,16 @@ export function pageHref(baseHref: string, page: number): string {
   return page <= 1 ? baseHref : `${baseHref}?page=${String(page)}`;
 }
 
-const LINK_CLASS = "border-rule rounded-sm border px-sm py-sm text-sm";
+/**
+ * v2 `.pager` (spec 004 §14 A21): 44 px pills — a card fill with a rule ring for a page link,
+ * ink fill for the current page — and Previous/Next as cornflower underlined words.
+ */
+const PILL =
+  "inline-grid place-items-center min-w-(--target-min) min-h-(--target-min) px-[12px] rounded-full no-underline font-medium";
+const LINK_CLASS = `${PILL} bg-card shadow-[inset_0_0_0_1px_var(--color-rule)] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`;
+const CURRENT_CLASS = `${PILL} bg-ink text-paper`;
+const STEP_CLASS =
+  "inline-grid place-items-center min-h-(--target-min) px-[12px] text-link font-bold underline underline-offset-4 hover:text-link-strong";
 
 export function Pagination({
   locale,
@@ -58,17 +67,17 @@ export function Pagination({
   return (
     <nav
       aria-label={t("pagination.label")}
-      className="gap-sm flex flex-wrap items-center"
+      className="flex flex-wrap items-center gap-[6px]"
       data-fo-pagination={pageCount}
     >
       {page > 1 ? (
-        <a className="px-sm py-sm text-sm" href={pageHref(baseHref, page - 1)}>
+        <a className={STEP_CLASS} href={pageHref(baseHref, page - 1)}>
           {t("pagination.previous")}
         </a>
       ) : null}
       {pages.map((n) =>
         n === page ? (
-          <b aria-current="page" className={`${LINK_CLASS} border-ink`} key={n}>
+          <b aria-current="page" className={CURRENT_CLASS} key={n}>
             {formatNumber(n, locale)}
           </b>
         ) : (
@@ -85,7 +94,7 @@ export function Pagination({
         ),
       )}
       {page < pageCount ? (
-        <a className="px-sm py-sm text-sm" href={pageHref(baseHref, page + 1)}>
+        <a className={STEP_CLASS} href={pageHref(baseHref, page + 1)}>
           {t("pagination.next")}
         </a>
       ) : null}

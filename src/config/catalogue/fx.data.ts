@@ -68,8 +68,9 @@ export const MAX_FX_AGE_HOURS = 48;
 /**
  * The committed euro reference rates, one row per quote currency of `src/config/currencies.ts`.
  *
- * All ten configured currencies are covered even though spec 005 §13 Q11 offers only EUR, GBP and
- * PLN as *display* currencies in Phase 0: the seven others are configured-but-flagged-off, and a
+ * All configured currencies are covered (spec 002's ten plus the equivalent-only USD of spec 004
+ * §14 A21 clause 6) even though spec 005 §13 Q11 offers only EUR, GBP and PLN as *display*
+ * currencies in Phase 0: the others are configured-but-flagged-off, and a
  * rate row is what turns one on together with its `currency.{code}` flag rather than a code
  * change (spec 005 §12 "Feature flags").
  */
@@ -83,6 +84,11 @@ const fxRates = [
   { quote: "NOK", ratePpm: 11_625_000 },
   { quote: "DKK", ratePpm: 7_459_500 },
   { quote: "CHF", ratePpm: 938_500 },
+  // USD, equivalent-only (spec 004 §14 A21 clause 6 (b); TASK-178): the ECB euro reference rate
+  // for 2026-09-08, USD 1.1614 per EUR, read on 2026-10-04 from
+  // https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A?startPeriod=2026-09-08&endPeriod=2026-09-08
+  // (series EXR.D.USD.EUR.SP00.A, OBS_STATUS A). Same `as_of` as every row above.
+  { quote: "USD", ratePpm: 1_161_400 },
 ] as const;
 
 /** Parsed at module load: a malformed rate throws on first import, never at request time. */
