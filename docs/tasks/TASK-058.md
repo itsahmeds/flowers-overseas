@@ -14,12 +14,31 @@ Branch `task/TASK-058-csp-enforce`. Created by the orchestrator from `/review 28
 
 ## Carry-forwards
 
-_None recorded._
+- From `/review 196` round 1, nit 2: `get()` recomputes the regex and SHA-256 over the whole HTML
+  on every cache hit (measured 0.4 to 1.6 ms per page). Memoise the computed policy per entry, on
+  `lastModified` or the HTML identity. Not done in this PR.
+- From `/review 196` round 1, E-4 ruling: before `CSP_REPORT_ONLY=false` in **production**, the
+  Report-Only header on cached documents must either carry the same flight hashes or be dropped
+  there. This is now a runbook precondition (`docs/runbooks/csp-enforce.md` §3). It gates the flip,
+  not this merge.
+- From `/review 196` round 1, E-2 ruling: revisit the Report-Only listing variants when they render
+  user input in the HTML (search terms).
+- From `/review 196` round 1, E-3 ruling: every `next` bump runs `ci:full` (runbook §3
+  precondition, ADR-0020 R-3).
 
 ## Escalations
 
-Raised by the implementer on PR #196, 2026-10-05. None blocks review; each needs a decision from
-the founder or the orchestrator.
+Raised by the implementer on PR #196, 2026-10-05. Rulings from `/review 196` round 1:
+
+- E-1: resolved in this PR by writing **ADR-0020** (`docs/adr/ADR-0020-csp-enforced-per-cached-document.md`),
+  status `proposed`. ADR-0019 is PR 191's. **The founder's approval of ADR-0020 is pending and
+  gates the merge.**
+- E-2: ACCEPTABLE for Phase 0 (reviewer).
+- E-3: ACCEPTABLE once the fail-open signal lands (it has: `cspEnforce` in `/api/health` plus a
+  `warn` line) and `ci:full` runs on every `next` bump (runbook and carry-forward).
+- E-4: ACCEPTABLE as a carry-forward that gates the production flip, not the merge.
+
+The escalations as first raised:
 
 - **E-1. ADR-0016's mechanism changes, so a superseding ADR is proposed, not written.** ADR-0016
   says the policy "is emitted from `next.config.ts`'s `headers()`" and is enforced "by setting
@@ -30,7 +49,7 @@ the founder or the orchestrator.
   and the enforcing policy is per cached document, written by a `cacheHandler`
   (`src/lib/csp-cache-handler.ts`). The **policy shape** is unchanged: an allowlist plus hashes on
   cached routes, no nonce in cached HTML, and nonces reserved for `no-store` routes. Proposed
-  record: **ADR-0019 "CSP enforced per cached document: inline-script hashes on the cache entry"**,
+  record: ADR-0019, renumbered **ADR-0020** in round 2,
   superseding ADR-0016's mechanism paragraph and its option-3 rejection and keeping everything
   else.
 - **E-2. Per-request listing variants stay Report-Only.** The `_query` route (`?page=`, `?sort=`,
@@ -57,6 +76,7 @@ the founder or the orchestrator.
 - 2026-10-05 · Mechanism proven on a real build: a `cacheHandler` extending Next's `FileSystemCache` stamps `Content-Security-Policy` (static policy + per-document inline hashes) on `/en`, a shop, a product page and the 404; the `_query` listing variant stays Report-Only (E-2).
 - 2026-10-05 · `tests/e2e/csp-enforced.spec.ts` green (4 per project); both mutations red; disposition logged by `/api/csp-report`; carried nits fixed.
 - 2026-10-05 · Modules moved from `.mjs` to erasable `.ts` (Node 24 strips types) so the `src/` lint locks hold; standalone output verified enforcing; runbook written; `gates:cheap` PASS.
+- 2026-10-05 · Round 2 (`/review 196` FAIL, `/break 196` HOLES). Only Next's flight statements are hashed now: exact shape plus a `JSON.parse` of the argument, so a stored inline script stays unauthorised. Added the e2e stored-XSS case, the `cspEnforce` health signal with its `warn` line, and separate `enforce` and `report` log budgets. ADR-0020 written as proposed; runbook preconditions and canary count added. Each new mutation seen red.
 
 ## Result
 
@@ -143,4 +163,48 @@ tests                 exit 0 · 97.7 s · changed 168 + map 0 + always 2 · alwa
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
+
+### Round 2 (`/review 196` FAIL, `/break 196` HOLES on `6cc3c3ff`)
+
+- **Item 1 / hole 1, stored injection.** `flightScriptHashes()` replaces `inlineScriptHashes()`.
+  A body is hashed only when it is exactly `(self.__next_f=self.__next_f||[]).push([0])` (with an
+  optional `;self.__next_f.push([2,<json>])`) or `self.__next_f.push(<arg>)` whose `<arg>` passes
+  `JSON.parse` as `[1|3, string]`. The consent bootstrap is authorised only by its static
+  build-time hash. Any other inline script gets no hash. CR LF is normalised before hashing
+  (nit 3).
+- **Item 2, the e2e stored-XSS case.** `blocks a script that was in the stored HTML before it was
+  hashed (stored XSS)` writes `<script>window.__foStoredInjected=1</script>` into the prerendered
+  `.html` on disk (one product page per project) before the enforcing server first reads it, then
+  restores the file. It asserts four things: the payload is served; its hash is not in the header;
+  the variable is undefined; there is a `script-src-elem` / `inline` / `enforce` violation. The
+  old case is renamed "added to the response after it was hashed", with its comment corrected.
+  Unit: 14 stored-injection bodies, including `self.__next_f.push([1,"x"]);alert(1)`, get no hash.
+- **Item 3.** `docs/adr/ADR-0020-csp-enforced-per-cached-document.md`, status `proposed`. ADR-0016
+  is untouched.
+- **Item 4, fail-open signal.** `src/lib/csp-state.ts` records when the handler fails open, on
+  `globalThis`, because the handler and the route are separate module instances. `/api/health`
+  reports `cspEnforce: report-only | ok | degraded`, and `reportCspEnforce()` logs
+  `warn "csp enforcement degraded"`. The runbook §4 adds a scheduled check and a log alert. Unit:
+  a forced handler failure (no routes manifest) gives `degraded` plus one warn line. e2e: the
+  enforcing server reports `ok`.
+- **Item 5 / hole 2, report starvation.** `/api/csp-report` has a request gate
+  (`CSP_REPORT_REQUEST_LIMIT` 600 a minute, parse work only) and separate log budgets for `enforce`
+  and for everything else (60 a minute each). Unit: one `enforce` report after 100 `report`
+  reports in the same window is logged. Runbook step 5 counts `enforce` reports, and the step-4
+  canary makes zero mean "pipeline broken", never "clean".
+- **Runbook:** preconditions for `cloudflare:check` (nit 1), E-4 before the production flip, and
+  `ci:full` on every `next` bump (E-3).
+
+**Round-2 mutations, each run and seen red:**
+
+| Mutation | Test | Red at |
+|---|---|---|
+| Hash every inline script again (drop the `isFlightScript` filter) | e2e stored-XSS case | `scriptSources(policy) not.toContain(<payload hash>)` |
+| Same, with that header assertion removed | e2e stored-XSS case | `expect(window.__foStoredInjected).toBeUndefined()`: received 1 |
+| Same | unit `csp-response.test.ts` | 5 cases, including "gives a stored injection no hash, whatever it looks like" |
+| One shared log budget (`enforce` reports drawn from the `report` bucket) | unit `csp-report-route.test.ts` | "logs an enforce report that arrives after a full minute of report-only noise": 0 `enforce` lines, expected 1 |
+
+e2e `tests/e2e/csp-enforced.spec.ts`: 12 passed locally (6 per project) on a fresh `pnpm build`
+inside the build slot. The slot was released, the spawned servers were stopped by PID, and both
+edited `.html` files were verified restored.
 
