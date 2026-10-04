@@ -463,6 +463,17 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
     expect(readme).toContain("## Density");
     for (const word of BANNED) expect(readme.toLowerCase()).toContain(word);
   });
+
+  it("records every voice exception in the README's Voice section (spec 004 §14 A22 clause 2)", () => {
+    const voice = readme.slice(
+      readme.indexOf("## Voice"),
+      readme.indexOf("## Density"),
+    );
+    for (const { messageKey, phrase } of VOICE_EXCEPTIONS) {
+      expect(voice, messageKey).toContain(`\`${messageKey}\``);
+      expect(voice, phrase).toContain(`"${phrase}"`);
+    }
+  });
 });
 
 /* ------------------------------------- 5b. the same ban, on the copy that actually ships */

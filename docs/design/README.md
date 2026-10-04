@@ -192,6 +192,12 @@ In practice, on an artboard:
   `plan/05` and the specs use it as internal vocabulary; everything else is banned everywhere,
   including designer notes and state stubs. Identifiers inside `<code>` are exempt — a route or a
   table name is not copy (`/demo/vendor-inbox`, `partner_application`, `corridorPagePublished`).
+- **One exception: "my partner"** (spec 004 §14 A22 clause 2, founder 2026-10-04). The home
+  sentence's who select, message key `home.sentence.who`, case `partner`, may read exactly
+  "my partner": the buyer's loved one, never a florist. Nothing broader passes: not the bare word,
+  not "my partner florist", not the phrase under any other key. The list is `VOICE_EXCEPTIONS` in
+  `src/config/voice.ts`, and the test pins this bullet against it. `de` and `pl` translate the
+  option without the letters "partner" ("meinen Schatz", "mojej drugiej połówki").
 - **Say the specific thing.** "Order by 14:00 in Warsaw — the recipient's own time" beats "order
   early" — but only once a destination is live: in Phase 0 that sentence is superseded, see the
   2026-09-18 TASK-120 row under "Where the sheet and the code currently differ". "+29 zł" on the chip beats "surcharge may apply". A number we do not have is the
