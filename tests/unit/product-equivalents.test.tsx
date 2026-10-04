@@ -170,6 +170,23 @@ describe("A21 clause 6: the product page prints the equivalents under the price 
     expect(occurrences(html, "data-fo-price-total")).toBe(1);
   });
 
+  it("prints `/pl`'s native złoty price with the line of the latest snapshot, in Polish", async () => {
+    // Spec 009 T-21's native fixture: `/pl` to Poland is charged in złoty with no conversion, so
+    // the line takes the latest snapshot at the page's clock (2026-09-08) for every leg.
+    const view = await viewOf("pl", { now: FRESH });
+    expect(view.fx.state).toBe("native");
+    expect(view.price.displayPrice).toEqual({
+      amountMinor: 22_900,
+      currency: "PLN",
+    });
+    expect(view.price.fxAsOf).toBe(undefined);
+    const expected =
+      "ok. 53,66 €, 45,42 GBP lub 62,32 USD po kursie z 8 września";
+    const html = render(view);
+    expect(lines(block(html, "data-fo-pdp-price"))).toEqual([expected]);
+    expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
+  });
+
   it("prints exactly two lines in every locale, each a list of the other currencies", async () => {
     const conjunction: Record<(typeof LOCALES)[number], string> = {
       en: " or ",
@@ -289,34 +306,75 @@ describe("one clock for the price, the fallback, the line and the date window", 
     expect(html).not.toContain("data-fo-fx-notice");
   });
 
-  it("refuses a fallback view that carries a line", async () => {
-    const fallback = await viewOf("en", { now: STALE });
-    expect(fallback.fx.state).toBe("fallback");
-    expect(fallback.price.displayPrice.currency).toBe("PLN");
-    expect(ProductViewSchema.safeParse(fallback).success).toBe(true);
-    // A current line that names no złoty (`/pl`'s: euro, pound, dollar), so only the one-clock
-    // rule can refuse it.
-    const line = (await viewOf("pl", { now: FRESH })).equivalents;
-    expect(line.price?.amounts.map((amount) => amount.currency)).not.toContain(
-      "PLN",
-    );
-    expect(
-      ProductViewSchema.safeParse({ ...fallback, equivalents: line }).success,
-    ).toBe(false);
-  });
+  /**
+   * The schema's three refusals, each tried on one line at a time — `{ price }` alone and
+   * `{ total }` alone — so a refinement that checked only one of the two lines goes red (`/break`
+   * round 1 hole 1 on PR 170). Each injected line breaks exactly one rule.
+   */
+  type Line = NonNullable<ProductView["equivalents"]["price"]>;
+  const refusals: readonly {
+    readonly rule: string;
+    readonly subject: () => Promise<{ page: ProductView; line: Line }>;
+  }[] = [
+    {
+      rule: "a fallback price carries no line",
+      subject: async () => {
+        const page = await viewOf("en", { now: STALE });
+        expect(page.fx.state).toBe("fallback");
+        expect(page.price.fxAsOf).toBe(undefined);
+        // `/pl`'s current line names no złoty, so only the one-clock rule can refuse it.
+        const line = (await viewOf("pl", { now: FRESH })).equivalents.price;
+        expect(line?.amounts.map((amount) => amount.currency)).not.toContain(
+          "PLN",
+        );
+        return { page, line: line! };
+      },
+    },
+    {
+      rule: "no line names the page's own currency",
+      subject: async () => {
+        const page = await viewOf("en", { now: FRESH });
+        // `/pl`'s line names euros, on the same snapshot date as the euro page's price.
+        const line = (await viewOf("pl", { now: FRESH })).equivalents.price;
+        expect(line?.amounts.map((amount) => amount.currency)).toContain("EUR");
+        expect(line?.asOf).toBe(page.price.fxAsOf);
+        return { page, line: line! };
+      },
+    },
+    {
+      rule: "a converted price's line is dated by the snapshot that converted it",
+      subject: async () => {
+        const page = await viewOf("en", { now: FRESH });
+        expect(page.price.fxAsOf).toBe(CURRENT);
+        const own = page.equivalents.price!;
+        return { page, line: { ...own, asOf: "2026-09-07" } };
+      },
+    },
+  ];
 
-  it("refuses a line that repeats the page's own currency", async () => {
-    const fresh = await viewOf("en", { now: FRESH });
-    const pln = (await viewOf("pl", { now: FRESH })).equivalents;
-    // `/pl`'s line names euros; on a euro page that is the charged currency again.
-    expect(pln.price?.amounts.map((amount) => amount.currency)).toContain(
-      "EUR",
-    );
-    expect(ProductViewSchema.safeParse(fresh).success).toBe(true);
-    expect(
-      ProductViewSchema.safeParse({ ...fresh, equivalents: pln }).success,
-    ).toBe(false);
-  });
+  for (const { rule, subject } of refusals) {
+    for (const which of ["price", "total"] as const) {
+      it(`refuses a bad \`${which}\` line on its own: ${rule}`, async () => {
+        const { page, line } = await subject();
+        // The page as built parses; only the injected line is wrong.
+        expect(ProductViewSchema.safeParse(page).success).toBe(true);
+        const other = which === "price" ? "total" : "price";
+        const equivalents = {
+          ...(page.equivalents[other] === undefined
+            ? {}
+            : { [other]: page.equivalents[other] }),
+          [which]: line,
+        };
+        const result = ProductViewSchema.safeParse({ ...page, equivalents });
+        expect(result.success).toBe(false);
+        expect(
+          result.error?.issues.map((issue) => issue.path.join(".")),
+        ).toContainEqual(
+          expect.stringMatching(new RegExp(`^equivalents\\.${which}`, "u")),
+        );
+      });
+    }
+  }
 });
 
 describe("the H1 line is the tier's, the summary line is the total's", () => {

@@ -721,8 +721,9 @@ export const ProductViewSchema = z
   .strict()
   .superRefine((view, ctx) => {
     const currency = view.price.displayPrice.currency;
-    // One clock (A21 clause 6 (d)): a page whose price is the stale-FX fallback carries no
-    // equivalents line, and no line names the currency the page already quotes.
+    // One clock (A21 clause 6 (b), (d)): a page whose price is the stale-FX fallback carries no
+    // equivalents line, no line names the currency the page already quotes, and a converted
+    // price's lines are dated by the snapshot that converted it.
     for (const line of ["price", "total"] as const) {
       const equivalents = view.equivalents[line];
       if (equivalents === undefined) continue;
@@ -739,6 +740,16 @@ export const ProductViewSchema = z
           code: "custom",
           path: ["equivalents", line, "amounts"],
           message: `the equivalents line repeats the page's own ${currency} (A21 clause 6 (b))`,
+        });
+      }
+      if (
+        view.price.fxAsOf !== undefined &&
+        equivalents.asOf !== view.price.fxAsOf
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["equivalents", line, "asOf"],
+          message: `the equivalents line is dated ${equivalents.asOf}, the price was converted at ${view.price.fxAsOf}: one snapshot (A21 clause 6 (b))`,
         });
       }
     }

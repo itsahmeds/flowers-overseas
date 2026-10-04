@@ -176,6 +176,9 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
     expect(
       html.split(`>${en.catalog.addon.card.description}<`).length,
     ).toBeGreaterThanOrEqual(3);
+    // The literal, not the catalogue's current value: A21 clause 5's label as the founder approved
+    // it (`/break` round 1 hole 2 on PR 170).
+    expect(en.product.card.printed).toBe("Printed on our card · included");
     expect(html.split(`>${en.product.card.printed}<`)).toHaveLength(3);
     // One wrapper hidden below `lg`, the other from `lg` up: never both on screen.
     expect(html).toMatch(
