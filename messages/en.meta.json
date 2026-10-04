@@ -2641,8 +2641,10 @@
   },
   "home.sentence.who": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "526e571518eec8e7b51a3fabcc07471446b472c3139fa043643ca2f4adaa2c28"
+    "reviewed": true,
+    "sourceHash": "526e571518eec8e7b51a3fabcc07471446b472c3139fa043643ca2f4adaa2c28",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-04T09:54:22Z"
   },
   "home.trending.basis": {
     "source": "human",
