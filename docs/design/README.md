@@ -58,12 +58,14 @@ keeps every v1 token *name* (with v2 values) so the artboards not yet redrawn st
 | Destinations hub · country guide | `wireframes/all-destinations-*`, `wireframes/corridor-country-*` |
 | Product (unavailable, preview, live) | `wireframes/product-*` |
 | Not found and error | `wireframes/errors-*` |
+| Trust pages: how it works · our guarantee with delivery and payment · help and contact · about (spec 041) | `wireframes/how-it-works-*`, `wireframes/guarantee-and-delivery-*`, `wireframes/help-and-contact-*` (replaces `about-contact-help-*`), `wireframes/about-*` |
+| Legal documents: the template (withdrawal and refunds, the imprint as a state) · cookies and the register (spec 041) | `wireframes/legal-template-*`, `wireframes/cookies-*` |
 | Tokens, colour, type, components | `system/tokens.css`, `system/colour.dc.html`, `system/typography.dc.html`, `system/components.dc.html` |
 
 The v2 artboards **replace the v1 files in place** (same names, so every spec, brief and README row that
 names them still points at the right page; git history keeps v1). Still in v1 and redrawn by the task
-that next builds them: locale chooser, checkout, confirmation, track order, for florists, legal
-template, how it works, guarantee and delivery, about/contact/help, blog, and the three `flows/`.
+that next builds them: locale chooser, checkout, confirmation, track order, for florists, blog, and the
+three `flows/` (spec 041 added the banner's controller sentence to `consent-and-locale` in v1's style).
 
 ### What the warm-c direction draws that the specs forbid
 
@@ -160,10 +162,13 @@ reason a reviewer can trust a wireframe:
   annotation says which spec owns it.
 - **Drawn in the approved system.** v2: milk paper, plum-navy ink, poppy to act, cornflower to go,
   Fraunces + Alegreya Sans + Caveat. A wireframe is drawn in the approved system, not in grey boxes.
-- **No claim the data cannot carry.** Florists are spoken of in the future tense until one is live
-  ("our florist … will make it"). No "most sent", no ranking we cannot evidence ("Popular choices" is
-  the founder-approved heading, with an honest basis line). The guarantee is the "Freshness guarantee",
-  never "7-day". Cards are printed, never "handwritten".
+- **No claim the data cannot carry.** Our florists are spoken of in the **present tense** ("our florist
+  in the recipient's town makes the bouquet and hands it over in person"): spec 004 §14 A22 clause 1
+  (founder, 2026-10-04) superseded the future-tense rule this line used to state. The present tense
+  describes how the service works; it never claims that an order was taken, a delivery made, a count
+  of florists, or a destination live that is not — the "not taking orders yet" lines carry that. No "most sent", no ranking we cannot evidence ("Popular choices" is
+  the founder-approved heading, with an honest basis line). The guarantee is the "Fresh-flower promise",
+  never "7-day" and never any number of days. Cards are printed, never "handwritten".
 
 ## Voice
 
@@ -275,6 +280,7 @@ Before `/plan-tasks` will break a spec into tasks:
 
 | Difference | Which is right | Note |
 |---|---|---|
+| **2026-10-04 (spec 041 design round) — florist sentences in the present tense.** The six spec 041 pairs draw every florist verb in the present tense (“our florist calls the recipient first”, “makes the bouquet and hands it over”), as spec 041 §2 and Appendix A now do; each artboard's Copy row lists the sentences changed. The other v2 artboards (home, the listings, the guide, `chrome-*`'s footer line) still draw “will make” where A22 says the catalogue's present-tense copy applies. | **the sheet** (spec 004 §14 A22 clause 1) | The founder ruled on 2026-10-04 (“dont say will just keep makes”). Spec 041 §2 and Appendix A were brought into the present tense by the orchestrator's conforming amendment (spec 041 §13, 2026-10-04), so task 1 copies the present-tense strings and their `honestyAllow` sentences match. The remaining “will make” sentences on other artboards are redrawn when each artboard is next opened; A22 clause 1 “No rewrites” keeps shipped reviewed strings byte-identical. This row goes when the other artboards are redrawn. |
 | **2026-10-04 (TASK-176) — the v2 chrome as shipped.** `chrome-{desktop,mobile}.dc.html` differ from the shipped chrome in seven ways: the header at **94 % paper** over the page; the **current page** (`aria-current="page"`) in the category row; on mobile, **no switcher and no currency** in the notice bar; **"Prices include delivery and VAT" on every page**, the home included; the support hours "Mon–Sat 8–20 CET"; the **footer logo**, which is drawn but not a link; and the footer's **about sentence**, which the artboards draw in the future tense ("a local florist … will make the bouquet and hand it over"). | the code | (1) Tailwind inlines a literal colour into the 94 % mix, which spec 004 AC-1 forbids, so the header is opaque paper. (2) The document layout does not know the page's path without opting every page out of static rendering, so no entry is marked current. (3) **Spec 004 §14 A4 binds over `chrome-mobile.dc.html`** (coordinator ruling, 2026-10-04): the language switcher and the currency must be reachable at 390 px, so below `lg` the notice bar has a second centred 44 px row with the four languages and the currency (the help line stays in the footer there). The mobile notice bar is 80 px, not the artboard's ~36; at 320 px the row wraps rather than overflow, and the wordmark scales down beside the Send pill. (4) Founder, 2026-10-04: "Every price includes VAT and delivery. dont write this on home" — the claim is the `@notice` parallel-route slot of the locale layout: absent on `/{locale}`, present on every other page (price-indication law wants it beside prices). (5) The founder's copy batch (2026-10-04) replaced the hours with "Message us any time, 24/7 — we reply within a few hours." and named the guarantee "Fresh-flower promise". (6) The masthead lockup is the one element that may link a document to its own path (spec 003 AC-6, `tests/e2e/locale-routing.spec.ts`), so the footer's logo is drawn, named by the outlined wordmark, and links nowhere. (7) Spec 004 §14 A22 clause 1 (founder, 2026-10-04: "put the old wording that doesnt use future tenses"): the footer prints main's reviewed `company.description` byte for byte, "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person."; the de/pl drafts are present tense and unreviewed. The designer corrects the `chrome-*` sentence in its next docs PR. The one-row desktop header starts at `xl` (1 280 px); below it the chip row applies. |
 | **2026-10-03 — v2, the letter home.** `system/tokens.css`, `colour`, `typography` and `components` and the 22 redrawn page artboards (plus `chrome-*`) are drawn in v2. **TASK-175 shipped the foundation:** `src/app/globals.css` carries `system/tokens.css` name for name and value for value (T-01 reads this file), the contrast manifest covers the v2 pairs, the fonts are A21 clause 3's set (Fraunces 400 + 300 italic at `opsz` 144, Alegreya Sans 400/700, Caveat 500 for the card preview only; Latin and Latin-Ext files), the wordmark is outlined (`Wordmark`, `public/brand/wordmark.svg`), and `Button`, `Chip`, `Photo`, the type primitives, `Price` (with the equivalents slot), `FactsList`, `Breadcrumbs`, `NoticeBar` and the product card are v2. **Still v1 until TASK-176 to TASK-179:** the header and footer (including the wordmark, which they still set as text in Fraunces until TASK-176 swaps in `Wordmark`), and every page layout. | **the sheet**, until the v2 implementation tasks land | The founder locked v2 on 2026-10-03. Like the 007/009 groups below, this is the sheet deliberately leading the code; the implementer who ships v2 tokens and primitives updates this row out of existence. Mapping the implementer needs: v1 token names are kept (values change); new tokens are added (`--color-card`, `--color-sky`, `--color-sun`, `--color-stem`, the four tints, `--color-shade`, `--color-field-edge`, the logo pair, `--airmail-edge`, `--font-hand`, `--font-logo`, the two-value type steps); `BUTTON_VARIANTS` maps `accent` → send (new size, 60 px), `primary` → the poppy pill, `secondary` → the ink outline, `quiet` → cornflower text (`system/components.dc.html`). **Copy the redraw needs** (founder copy batch; each is listed in its artboard's Copy row): “Handwritten card” → “Printed card” (`catalog.addon.card.*`, and the Poland guide's card-language answer); “7-day freshness guarantee” → “Freshness guarantee” (`trust.guarantee.name`, `home.proof.guarantee.title`, `nav.utility.guarantee`); “Most sent this week” → “Popular choices” with a new basis line (`home.trending.*`); florist sentences in the future tense, including `company.description` (the footer: “…a local florist in the recipient's town will make the bouquet and hand it over in person.”) and `media.placeholder.product` (“…this bouquet as our florist will make it”); “Poland today.” → “Poland first.”; “all in” beside card prices; the sentence picker's strings; the equivalents line (“about … at the rate of {date}”). **Resolved by the redraw:** the TASK-120 chrome strings, the TASK-109/110/111 delivery-facts panel and stem line, TASK-112 (a), (c), (d) and TASK-113 (a)–(c) below are all drawn the way the code ships them. **Ruled (spec 004 §14 A21, coordinator 2026-10-03):** the sentence's action is A21 clause 4's route under `/api/` (303); fonts follow clause 3 (Caveat only in the product page's printed-card preview, every other hand note in Fraunces italic, the wordmark outlined); the occasion-reminder form is not rendered (clause 1, A20); the Popular-choices basis line is “Our picks until real orders start.” (founder-approved). The printed-card field and preview are on the Phase 0 product page (clause 5). **Round 1 of PR 166:** the listing, home and product artboards are drawn in the **fresh-rate** state — `/en` charges €55.90 and the clause 6 equivalents line sits under every destination-specific price and under the product page's total (USD as a placeholder bar until TASK-178 commits its rate); a drawn state shows the stale fallback (229.00&nbsp;PLN, the currency sentence, no equivalents), which is production today. Every amount is `formatMoney`'s output, never hand-formatted (`/en` 229.00&nbsp;PLN, `/en-gb` PLN&nbsp;229.00, `/de` 229,00&nbsp;PLN, `/pl` 229,00&nbsp;zł, U+00A0). The footer's Stripe sentence is hidden in Phase 0 (A10). |
 | `homepage-v1/tokens.css` has no status colours, no semantic aliases, no `--color-accent-strong`, no separate photo stops, no radius/shadow/motion/layer scales, and fixed rather than fluid type steps. | the code | Spec 004 added all of them on top of the approved ramp. `system/tokens.css` is the superset and is the file to read; `homepage-v1/tokens.css` stays as the 2026-09-08 record. |
@@ -312,19 +318,20 @@ Every row of `plan/05` §1 and §2 whose Phase column is 0. Rows outside §1–�
 | 13 | Occasion hub | `wireframes/occasion-hub-desktop.dc.html` · `wireframes/occasion-hub-mobile.dc.html` — the per-country date table, country links that exist against the text-only ones, products without prices | 008 |
 | 14 | Occasions index | `wireframes/occasions-index-desktop.dc.html` · `wireframes/occasions-index-mobile.dc.html` — the everyday group and the dated group with their next dates | 008 |
 | 19 | Checkout (3 steps, demo guard) | `wireframes/checkout-desktop.dc.html` · `wireframes/checkout-mobile.dc.html` | 010 |
-| 25 | How it works | `wireframes/how-it-works-desktop.dc.html` · `wireframes/how-it-works-mobile.dc.html` | 007 |
-| 28 | Guarantee & substitution | `wireframes/guarantee-and-delivery-desktop.dc.html` · `wireframes/guarantee-and-delivery-mobile.dc.html` | 007 |
-| 29 | Delivery information | `wireframes/guarantee-and-delivery-desktop.dc.html` · `wireframes/guarantee-and-delivery-mobile.dc.html` | 007 |
-| 32 | FAQ / help | `wireframes/about-contact-help-desktop.dc.html` · `wireframes/about-contact-help-mobile.dc.html` | 007 |
-| 33 | About | `wireframes/about-contact-help-desktop.dc.html` · `wireframes/about-contact-help-mobile.dc.html` | 007 |
-| 34 | Contact | `wireframes/about-contact-help-desktop.dc.html` · `wireframes/about-contact-help-mobile.dc.html` | 007 |
+| 25 | How it works | `wireframes/how-it-works-desktop.dc.html` · `wireframes/how-it-works-mobile.dc.html` — the four steps, what we promise and do not, the not-open and untranslated lines, a missing link target | 041 |
+| 28 | Guarantee & substitution | `wireframes/guarantee-and-delivery-desktop.dc.html` · `wireframes/guarantee-and-delivery-mobile.dc.html` — the fresh-flower promise (72 hours, no number of days), substitutions as a section (#51 has no URL), the legal-rights sentence | 041 |
+| 29 | Delivery information (as “Delivery and payment”) | `wireframes/guarantee-and-delivery-desktop.dc.html` · `wireframes/guarantee-and-delivery-mobile.dc.html` — the seven-country table with each state and guide link, the order-by column and an available payment method as fixture states | 041 |
+| 32 | FAQ / help (as “Help and contact”) | `wireframes/help-and-contact-desktop.dc.html` · `wireframes/help-and-contact-mobile.dc.html` — contact first, twelve questions as visible headings; email, WhatsApp-off and privacy-link states | 041 |
+| 33 | About | `wireframes/about-desktop.dc.html` · `wireframes/about-mobile.dc.html` — the founder's name, the company block before and after registration | 041 |
+| 34 | Contact (the first block of Help and contact; `/en/contact` 404s) | `wireframes/help-and-contact-desktop.dc.html` · `wireframes/help-and-contact-mobile.dc.html` | 041 |
 | 35 | Blog index | `wireframes/blog-desktop.dc.html` · `wireframes/blog-mobile.dc.html` | 007 |
 | 36 | Blog post | `wireframes/blog-desktop.dc.html` · `wireframes/blog-mobile.dc.html` | 007 |
 
-Three pairs cover two page types each — guarantee with delivery information, about with contact and
-help, blog index with blog post — because in each case the two pages share one template and differ
-only in content. Both are drawn on the shared artboard, labelled, so an implementer sees the
-template and its variants together rather than inferring one from the other.
+Two pairs cover two page types each — our guarantee with delivery and payment, blog index with blog
+post — because in each case the two pages share one template and differ only in content. Both are drawn
+on the shared artboard, labelled, so an implementer sees the template and its variants together rather
+than inferring one from the other. Contact is not a page of its own (spec 041 §2): it is the first block
+of help, so rows 32 and 34 name the same pair, and about has its own.
 
 ### Also wireframed, from outside §1–§2
 
@@ -332,7 +339,8 @@ template and its variants together rather than inferring one from the other.
 |---|---|---|---|
 | 41, 42, 43 | For florists: landing, application, walkthrough | `wireframes/for-florists-desktop.dc.html` · `wireframes/for-florists-mobile.dc.html` | 011 |
 | 45 | Demo vendor inbox (mock) | `flows/florist-journey.dc.html` (steps 03–04) | 011 |
-| 46–51, 54 | Legal page template: terms, privacy, cookies + settings, cancellation, Impressum, company information | `wireframes/legal-template-desktop.dc.html` · `wireframes/legal-template-mobile.dc.html` | 007 + founder/lawyer content |
+| 46–50, 54 | Legal documents: terms, privacy, cookies and the register, cancellation (withdrawal and refunds), imprint with company information. Terms, privacy and the imprint exist only after the company is registered (spec 041 §13 Q1) | `wireframes/legal-template-desktop.dc.html` · `wireframes/legal-template-mobile.dc.html` · `wireframes/cookies-desktop.dc.html` · `wireframes/cookies-mobile.dc.html` | 041 + founder and lawyer content (Appendix B, batch 2) |
+| 51 | Substitution policy (a section of the guarantee, no URL) | `wireframes/guarantee-and-delivery-desktop.dc.html` · `wireframes/guarantee-and-delivery-mobile.dc.html` | 041 |
 | 68 | 404 / 410 / 500 | `wireframes/errors-desktop.dc.html` · `wireframes/errors-mobile.dc.html` | 003 (shipped) + 004 |
 | 20, 21, 22 | Order confirmation, track order, track lookup — **Phase 1** in `plan/05`, drawn now because the 16 October demo shows them and because designing them after the checkout is how the two disagree | `wireframes/confirmation-desktop.dc.html` · `wireframes/confirmation-mobile.dc.html` · `wireframes/track-order-desktop.dc.html` · `wireframes/track-order-mobile.dc.html` | 010 · 015 |
 
