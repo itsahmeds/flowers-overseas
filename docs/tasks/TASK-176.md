@@ -45,10 +45,11 @@ Row: `TASKS.md` → TASK-176. This brief is the task's long form (spec 001 §14 
 
 - 2026-10-04 · Header, notice bar and footer rebuilt from `chrome-{desktop,mobile}.dc.html` (commit 1390b313); unit contracts moved (c66d27f0); e2e/a11y header and footer specs moved to the v2 heights (measured on a production build: notice 36/62, banner 121/83, identical in en/de/pl at 390–1 920 px, no horizontal overflow anywhere). Next: visual baselines through the `visual:baselines` label, then `ci:full` once PR 168 merges and this branch is rebased.
 - 2026-10-04 · Baselines committed from visual-baselines run 37153534704 (whole change list, verified). A4 ruling applied (notice bar second row on mobile, 80 px); founder copy batch and the home-less price claim (`@notice` slot) applied; baselines from run 37156816415. Left: when PR 168 merges, `git rebase --onto origin/main 2a1d1489` (expect conflicts in `SiteHeader`/`SiteFooter` with the TASK-175 finisher's header/footer fixes: keep this branch's markup), re-take baselines, ready, `ci:full`.
+- 2026-10-04 · Rebased onto main after PR 168 (`git rebase --onto origin/main 2a1d1489`): this branch's header, footer and e2e chrome markup kept; TASK-175's tokens, fonts and primitives taken from main. HOLE 1 and HOLE 2 carry-forwards done (see Result). Baselines from visual-baselines run 37172063082 (six images, all opened). Ready with `ci:full`.
 
 ## Result
 
-**PR:** https://github.com/itsahmeds/flowers-overseas/pull/172 (draft until PR 168 merges; its diff includes TASK-175).
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/172 (rebased onto main after PR 168 merged as `df5cab72`; the diff is this task alone).
 
 **What shipped** (spec 004 §14 A20, A21; AC-7, AC-8, AC-9, AC-14):
 - `SiteHeader`: `NoticeBar` (dates line gated by A19, "Prices include delivery and VAT", the guarantee; from `lg` the `tel:`
@@ -82,3 +83,19 @@ founder as reviewer): `nav.send` "Send flowers"; `nav.utility.guarantee` "Fresh-
 62 px desktop with or without the claim (measured, CLS 0).
 
 `en` unreviewed share after this task: 23 / 543 = 4.2 % (every chrome key it added is attested).
+
+**Carry-forwards from PR 168 breaker round 2 (done on the rebase):**
+- HOLE 1: `tests/e2e/header.spec.ts` — the 390 px switcher-and-currency case now runs in `/en`, `/en-gb`, `/de`, `/pl`;
+  a new 320 × 568 case per locale asserts `[data-fo-utility]` and `[data-fo-header]` have `scrollWidth === clientWidth`,
+  the document does not scroll sideways, and the switcher, each of its links and the currency lie inside the notice
+  bar's gutters. Mutation: deleting `max-lg:[&>div>div]:flex-wrap` from the `NoticeBar` wrapper turned the case red in
+  all four locales (2–3 elements outside the gutters) on a production build; a viewport-only check survived it on macOS
+  (the unwrapped row is 310 px in a 280 px box but still inside 320 px), hence the gutter check. Restored: header spec
+  64/64 on a production build (local, inside the build slot, load average 14–20; run only to watch the mutation go red).
+- HOLE 2: `tests/unit/fonts.test.ts`, "the metric-matched Linux fallback faces" (6 cases) recomputes the four overrides of
+  each Liberation face with Next's `getFallbackMetricsFromFontFile` over the file Next's
+  `pickFontFileForFallbackGeneration` picks from the call's `src`, checks each face's `src` and that each Latin call names
+  its face first. FB1–FB6 each turned it red. The comments at `globals.css` and `fonts/index.ts` now name that case.
+- Finding: `§` is not in the font repertoire, so it renders from the fallback (now the size-adjusted Liberation face on
+  Linux). It appears only on `/dev/components`; that is why `dev-components-desktop.png` moved.
+
