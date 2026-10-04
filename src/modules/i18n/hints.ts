@@ -35,8 +35,9 @@
  * schemas are: `LANGUAGE_RANGE_PATTERN` below *is* what `AcceptLanguageSchema` is built from, and
  * `isLaunchLocaleCode` reads `src/config/locales.data.ts`, the zod-free constants
  * `LocaleCookieSchema`'s enum is also built from. Nothing server-side lost its zod parse:
- * `AcceptLanguageSchema` and `LocaleCookieSchema` are unchanged, still exported, still the
- * boundary schemas, and `tests/unit/i18n-hints-zod-free.test.ts` proves that they and the
+ * `AcceptLanguageSchema` and `LocaleCookieSchema` are unchanged and still exported —
+ * `AcceptLanguageSchema` now as a test-only oracle, since nothing in production parses with it
+ * (`/review 26` nit, TASK-058) — and `tests/unit/i18n-hints-zod-free.test.ts` proves that they and the
  * predicates here accept and reject the same values — plus that no import path from the island
  * reaches zod, which is the assertion whose absence let the regression ship.
  *

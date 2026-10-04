@@ -25,8 +25,9 @@
  * TASK-041 adds the two boundaries of the suggestion banner, which are the only ones in this
  * module that a *browser* crosses: `LocaleCookieSchema` (the `fo_locale` value read back from
  * `document.cookie`) and `AcceptLanguageSchema` (the `{ tag, quality }[]` shape `hints.ts`
- * returns). Both are at the bottom of the file, both are parsed at the boundary rather than at
- * module load, and neither carries a provider — see their own headers.
+ * returns). Both are at the bottom of the file and neither carries a provider. Since the island
+ * went zod-free, the browser checks both rules with the zod-free predicates in `hints.ts`, and
+ * `AcceptLanguageSchema` is the test oracle those predicates are held to — see its own header.
  */
 import { type LocaleCode, launchLocales } from "../../config/locales.ts";
 
@@ -150,9 +151,16 @@ export const LocaleCookieSchema = z.enum(
 
 /**
  * The parsed `Accept-Language` shape `hints.ts` returns (§5.2): one entry per language range,
- * `quality` being the RFC 7231 q-value. `parseAcceptLanguage()` validates its own output against
- * this schema, which is what keeps "quality is a weight between 0 and 1" true for the caller
- * rather than merely intended by the parser.
+ * `quality` being the RFC 7231 q-value.
+ *
+ * **Test-only today** (`/review 26` nit, TASK-058). No production code parses with it:
+ * `parseAcceptLanguage()` stopped importing it when the suggestion banner's island went zod-free
+ * (spec 004 §13 Q13), and now checks its output with `isLanguagePreference()` in `hints.ts`. This
+ * schema stays exported as the **oracle** that predicate is held to:
+ * `tests/unit/i18n-hints-zod-free.test.ts` asserts the two accept and reject the same values, so
+ * the rule cannot drift in one place only. A server-side boundary that ever reads an
+ * `Accept-Language` header parses with this schema; none exists, because no response varies by
+ * that header (spec 003 AC-9, ADR-0006).
  */
 export const AcceptLanguageSchema = z.array(
   z
