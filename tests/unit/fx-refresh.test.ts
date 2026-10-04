@@ -164,6 +164,8 @@ interface RailwayCall {
 let railwayCalls: RailwayCall[] = [];
 /** Which Railway environment each token reaches: the project token's scope. */
 let tokenEnvironment: Record<string, string> = {};
+/** A recorded `data` answer that replaces the default for one operation (malformed-answer cases). */
+let railwayOverrides: Record<string, unknown> = {};
 let reported: string[] = [];
 
 /** Railway answers in the shape its public API documents, one project and environment per token. */
@@ -185,6 +187,8 @@ function railwayHandler() {
             : "unknown";
     railwayCalls.push({ token, operation, variables });
     const environmentId = tokenEnvironment[token ?? ""] ?? "env-unknown";
+    const override = railwayOverrides[operation];
+    if (override !== undefined) return HttpResponse.json({ data: override });
     switch (operation) {
       case "projectToken":
         return HttpResponse.json({
@@ -265,6 +269,7 @@ function deploys(): readonly (readonly [string | null, unknown])[] {
 }
 
 beforeEach(() => {
+  railwayOverrides = {};
   tokenEnvironment = {
     [STAGING_TOKEN]: "env-staging",
     [PRODUCTION_TOKEN]: "env-production",
@@ -609,8 +614,10 @@ describe("a token or URL for the wrong environment deploys nothing (/break 177 h
       state: "failed",
     });
     expect(printed()).toContain(
-      "FX_REFRESH_STAGING_URL answers as `production`, not `staging`",
+      "FX_REFRESH_STAGING_URL does not answer as `staging`",
     );
+    // Only the variable and the expected name are printed, never the body's own value.
+    expect(printed()).not.toContain("`production`");
     expect(railwayCalls).toEqual([]);
   });
 
@@ -678,6 +685,104 @@ describe("no token is ever printed, on any path (/break 177 hole 8)", () => {
     );
     expect(printed()).toMatch(
       /- production: FAILED, rebuild request refused: Railway API: Not Authorized/u,
+    );
+    expect(printed()).not.toMatch(TOKENS);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Round 2 of `/break 177` and `/review 177`.                                 */
+/* -------------------------------------------------------------------------- */
+
+/** Staging behind, production current: exactly one rebuild would be requested. */
+function stagingBehind(): void {
+  server.use(
+    health(STAGING_URL, healthBody(STAGING_SHA, "2026-10-01")),
+    health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+  );
+}
+
+describe("an appEnv outside the five known values is refused, not echoed (/review 177 r2 nit 1)", () => {
+  it("skips staging whose health names a made-up environment, printing none of it", async () => {
+    server.use(
+      health(STAGING_URL, {
+        ...healthBody(STAGING_SHA, "2026-10-01"),
+        appEnv: "::warning::staging\n- production: current",
+      }),
+      health(PRODUCTION_URL, healthBody(PRODUCTION_SHA, ECB_DATE)),
+    );
+    const outcome = await run();
+    expect(outcome.results[0]).toMatchObject({
+      env: "staging",
+      state: "skipped",
+    });
+    expect(printed()).not.toContain("::warning::");
+    expect(railwayCalls).toEqual([]);
+  });
+});
+
+describe("an environment with no `web` instance writes nothing (/break 177 r2 hole 3, N4)", () => {
+  it("fails naming `web`, with no variableUpsert and no deploy", async () => {
+    railwayOverrides.environment = {
+      environment: {
+        name: "staging",
+        serviceInstances: {
+          edges: [
+            { node: { serviceId: "service-worker", serviceName: "worker" } },
+          ],
+        },
+      },
+    };
+    stagingBehind();
+    const outcome = await run();
+    expect(outcome.exitCode).toBe(1);
+    expect(railwayCalls.map((call) => call.operation)).toEqual([
+      "projectToken",
+      "environment",
+    ]);
+    expect(printed()).toContain(
+      "- staging: FAILED, rebuild request refused: Railway API: no service named `web` in `staging`",
+    );
+  });
+});
+
+describe("malformed Railway answers fail, naming the call, with no write after them (/break 177 r2 hole 4, N6)", () => {
+  it.each([
+    [
+      "a projectToken without an environmentId",
+      "projectToken",
+      { projectToken: { projectId: "project-1" } },
+      ["projectToken"],
+    ],
+    [
+      "an environment without serviceInstances",
+      "environment",
+      { environment: { name: "staging" } },
+      ["projectToken", "environment"],
+    ],
+    [
+      "a deploy answer of the wrong type",
+      "serviceInstanceDeployV2",
+      { serviceInstanceDeployV2: 42 },
+      [
+        "projectToken",
+        "environment",
+        "variableUpsert",
+        "serviceInstanceDeployV2",
+      ],
+    ],
+  ])("fails on %s", async (_name, operation, answer, calls) => {
+    railwayOverrides[operation] = answer;
+    stagingBehind();
+    const outcome = await run();
+    expect(outcome.exitCode).toBe(1);
+    expect(outcome.results[0]).toMatchObject({
+      env: "staging",
+      state: "failed",
+    });
+    expect(railwayCalls.map((call) => call.operation)).toEqual(calls);
+    expect(printed()).toContain(
+      `Railway API: unexpected response shape for ${operation}`,
     );
     expect(printed()).not.toMatch(TOKENS);
   });

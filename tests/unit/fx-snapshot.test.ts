@@ -419,10 +419,13 @@ describe("where the fetch is off, and where it cannot be (A7 Corrected 2 (i); TA
     // Any instruction, any case, any position (an `ENV` continuation line, a lowercase `env`, a
     // second name on an `ARG` line) would either turn every Railway build into the committed
     // fallback or let a Railway service variable do it (`/break 177` hole 3).
+    // Comment lines dropped, then `\` continuations joined with nothing in between, as Docker
+    // joins them: a name split across two lines is one name (`/break 177` r2 hole 5, N16).
     const instructions = read("Dockerfile")
       .split("\n")
       .filter((line) => !line.trim().startsWith("#"))
-      .join("\n");
+      .join("\n")
+      .replace(/\\\r?\n[ \t]*/gu, "");
     expect(instructions).not.toMatch(/FX_SNAPSHOT_FETCH/iu);
     expect(read("config/railway.json")).not.toContain("FX_SNAPSHOT_FETCH");
   });
@@ -433,10 +436,17 @@ describe("where the fetch is off, and where it cannot be (A7 Corrected 2 (i); TA
     };
     expect(manifest.scripts.build).toBe("node scripts/build.ts");
     const build = read("scripts/build.ts");
-    expect(build.indexOf("await fxBuildStep()")).toBeLessThan(
-      build.indexOf('spawnSync("next", ["build"'),
-    );
-    expect(build).toContain("process.exit(result.status ?? 1)");
+    const code = build.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gmu, "");
+    // The exact call, present (`indexOf` is -1 when it is rewritten: `/break 177` r2 hole 2).
+    const step = code.indexOf("const outcome = await fxBuildStep();");
+    const next = code.indexOf('spawnSync("next", ["build"');
+    expect(step).toBeGreaterThanOrEqual(0);
+    expect(next).toBeGreaterThan(step);
+    expect(code.match(/fxBuildStep\(/gu)).toHaveLength(1);
+    // `build.ts` never names the fetch switch, in any spelling, and writes no environment key.
+    expect(code).not.toMatch(/FX_SNAPSHOT|_FETCH/u);
+    expect(code).not.toMatch(/process\.env(?:\.\w+|\[[^\]]*\])\s*=(?!=)/u);
+    expect(code).toContain("process.exit(result.status ?? 1)");
   });
 });
 

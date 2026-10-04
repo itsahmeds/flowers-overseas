@@ -133,7 +133,9 @@ const SHA = /^[0-9a-f]{40}$/u;
 export const HealthBodySchema = z.object({
   status: z.literal("ok"),
   commit: z.string().regex(SHA),
-  appEnv: z.string().min(1),
+  // The five values `appEnvironment()` can return (`src/lib/env.schema.ts`); anything else is not a
+  // health body this job trusts, and it is never echoed into the log (`/review 177` round 2 nit 1).
+  appEnv: z.enum(["development", "test", "preview", "staging", "production"]),
   fxAsOf: IsoCalendarDaySchema.optional(),
 });
 
@@ -212,7 +214,12 @@ async function railway<T>(
     );
   }
   const data = schema.safeParse(envelope.data.data);
-  if (!data.success) throw new Error("Railway API: unexpected response shape");
+  if (!data.success) {
+    // Named by the call (`projectToken`, `environment`, `variableUpsert`,
+    // `serviceInstanceDeployV2`), so a red run says which answer Railway changed.
+    const operation = /\{\s*(\w+)/u.exec(query)?.[1] ?? "query";
+    throw new Error(`Railway API: unexpected response shape for ${operation}`);
+  }
   return data.data;
 }
 
@@ -410,7 +417,7 @@ async function refreshOne(
     return {
       env,
       state: "failed",
-      reason: `${environment.urlVariable} answers as \`${health.appEnv}\`, not \`${env}\``,
+      reason: `${environment.urlVariable} does not answer as \`${env}\` (its health names another environment)`,
     };
   }
   if (health.fxAsOf === undefined) {
@@ -501,7 +508,7 @@ function lsRemoteRelease(): string | null {
   }
 }
 
-/* c8 ignore start — the process entry point; every decision above is unit-tested. */
+/* The process entry point. Tested by importing this file as the entry (`fx-refresh-entry.test.ts`). */
 if (
   process.argv[1] !== undefined &&
   import.meta.url === pathToFileURL(process.argv[1]).href
@@ -521,4 +528,3 @@ if (
   });
   process.exit(outcome.exitCode);
 }
-/* c8 ignore stop */
