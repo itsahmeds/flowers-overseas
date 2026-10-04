@@ -12,7 +12,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   - Money is integer minor units and every rate integer **ppm**; no float anywhere on the decimal → ppm path (`fo/no-float-money`).
   - The 2.5% buffer is applied **at conversion**, never stored in a snapshot row or a bundled rate.
   - **Fail closed:** a rate past the age bound is refused; the page shows the destination-currency price, the `fxUnavailable` sentence and no equivalents (AC-15, spec 004 §14 A21 clause 6(d)).
-  - **Price shown = price charged = schema price:** `Offer.price` and the visible price come from one projection; `priceValidUntil` stays `rateValidUntil(as_of)` (A3).
+  - **Price shown = price charged = schema price:** `Offer.price` and the visible price come from one projection; `priceValidUntil` is omitted when the exchange rate is its only source (A7 fix c, T-36; supersedes A3's `rateValidUntil(as_of)`).
   - One source (ECB); no client-side or request-time network call; no PII in any log line.
 - **Class:** not review-only. It touches money, so it keeps `/break` beside `/review` (DoD §4).
 - **Grouping:** `/plan-tasks` may give TASK-180 and TASK-181 to one agent as one feature PR (A7 "Tasks"); the branch and title then carry TASK-180.
@@ -21,6 +21,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **Corrected 5 — rate age counts weekdays only.** Still 48 h, still from `as_of T00:00Z`, still fails closed; only Monday-to-Friday UTC time adds age. A rate dated D is stale at every instant **after 00:00Z on the second Mon–Fri day after D** (Mon→Wed, Tue→Thu, Wed→Fri, Thu→Mon, Fri→Tue); exactly at that instant it is still usable. `rateValidUntil(D)` is the calendar day before (Thu→Sun, Fri→Mon). Weekday TARGET holidays **count** as days. Only `isRateStale` and `rateValidUntil` in `pricing/fx.ts` change; `fxSnapshotAgeHours` / `isFxSnapshotStale` in `fx.data.ts` follow the same rule, and no other file restates it. `MAX_FX_AGE_HOURS` stays 48.
 - **Runbook.** `docs/runbooks/pricing.md` "what happens when FX is stale" gains A7's window table (A7 "Tasks"; Corrected 7).
 - **Carry-forward closed here:** `/review 56`'s "`fx_stale` fires per conversion with no dedupe" (TASK-071 brief) is A7 Corrected 4.
+
+- **A7 fixes (founder approval 2026-10-04, "approve A7"):** T-36 belongs here: `priceValidUntil` is absent from the product `Offer` when the exchange rate is its only source; a mutation that emits it must go red. Fixes a (the `ARG FX_REFRESH_AT` cache-bust) and b (a red 19:30 UTC run naming the environment) belong to TASK-181.
 
 ## Read
 
