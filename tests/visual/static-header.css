@@ -1,0 +1,13 @@
+/*
+ * Unsticks the site header for the listing pages' `main` shots (`country-shop.spec.ts`,
+ * `country-occasion.spec.ts`, `hubs.spec.ts`).
+ *
+ * `[data-fo-header]` is `position: sticky; top: 0` (`SiteHeader.tsx`). To photograph a `main` taller
+ * than the viewport, Playwright scrolls, and the sticky header then paints over the top of `main`,
+ * hiding the breadcrumb on the mobile shots (`/review` round 1 carry-forward on PR 169). A sticky box
+ * keeps its place in the flow, so making it static moves nothing in `main`; it only stops the
+ * header painting over it. The header has its own baselines (`header.spec.ts`).
+ */
+[data-fo-header] {
+  position: static !important;
+}

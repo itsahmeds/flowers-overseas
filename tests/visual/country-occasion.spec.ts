@@ -5,9 +5,9 @@
  * Two PNGs, one per artboard width. The **geometry** is the assertion: a grid that stopped being
  * 2-up at 390 px or 4-up at 1440, a card box that stopped being 4∶5, or a block order that put the
  * links row before the products would all pass the text assertions in
- * `tests/e2e/country-occasion.spec.ts` and fail here. The dated line is not photographed: it comes
- * from today's date (`./dated-blocks.css`); its text and its place above the grid are pinned by
- * `tests/unit/catalog-occasion-page.test.tsx`.
+ * `tests/e2e/country-occasion.spec.ts` and fail here. The sentence that prints the date is not
+ * photographed, because it comes from today's date (`./dated-blocks.css`); the note under it is.
+ * Its text and its place above the grid are pinned by `tests/unit/catalog-occasion-page.test.tsx`.
  *
  * `main` rather than the whole document: the header and footer have their own baselines (TASK-050,
  * TASK-051), and a shared-chrome change should fail one file rather than every page's.
@@ -47,6 +47,11 @@ const DATES_STYLE = fileURLToPath(
   new URL("./dated-blocks.css", import.meta.url),
 );
 
+/** Keeps the sticky header from painting over the top of `main` (see `./static-header.css`). */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
+
 const OCCASION_URL = "/en/poland/occasions/mothers-day";
 
 const CASES = [
@@ -72,10 +77,11 @@ for (const { name, viewport } of CASES) {
     const response = await page.goto(OCCASION_URL);
     expect(response?.status(), OCCASION_URL).toBe(200);
     await expect(page.locator("[data-fo-listing-grid]")).toBeVisible();
-    // The dated line comes from today's date; out of the layout, the grid below it sits at the
-    // same offset on every day (`./dated-blocks.css`).
+    // The dated sentence comes from today's date; out of the layout, the grid below it sits at
+    // the same offset on every day (`./dated-blocks.css`). The header stays put so the breadcrumb
+    // is in the picture (`./static-header.css`).
     await expect(page.locator("main")).toHaveScreenshot(`${name}.png`, {
-      stylePath: DATES_STYLE,
+      stylePath: [DATES_STYLE, HEADER_STYLE],
     });
   });
 }

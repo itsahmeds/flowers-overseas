@@ -262,8 +262,9 @@ test.describe("the 500 documents and the gallery", () => {
     // all (runs 35698369912 and 35700517643). The wait is longer here, and only here; nothing
     // about what is compared changes.
     test.slow();
-    // The home's "Coming up" band is computed from today's date; out of the layout, every
-    // section below it sits at the same offset each day (`./dated-blocks.css`).
+    // The home's "Coming up" band lists dates computed from today's date; with the list out of
+    // the layout (its heading stays), every section below it sits at the same offset each day
+    // (`./dated-blocks.css`).
     await expect(page).toHaveScreenshot("dev-components-desktop.png", {
       fullPage: true,
       timeout: 60_000,

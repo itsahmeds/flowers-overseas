@@ -65,8 +65,9 @@ for (const { name, viewport } of CASES) {
       // all, and the only thing that used to start this one was `toHaveScreenshot`'s own
       // scroll-and-retry racing the origin (`/review 94` round 2's 2-in-9 flake).
       await settleImages(page, selector);
-      // The gallery draws the home's "Coming up" band above these parts; its dates come from
-      // today's date, so it leaves the layout and every part sits at the same offset each day.
+      // The gallery draws the home's "Coming up" band above these parts; its list of dates comes
+      // from today's date, so the list leaves the layout and every part sits at the same offset
+      // each day (`./dated-blocks.css`).
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
         { stylePath: DATES_STYLE },

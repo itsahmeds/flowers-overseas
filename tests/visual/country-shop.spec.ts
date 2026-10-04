@@ -5,9 +5,9 @@
  * Two PNGs, one per artboard width. The **geometry** is the assertion: a grid that stopped being
  * 2-up at 390 px or 4-up at 1440, a card box that stopped being 4∶5, or a block order that put
  * prose before the priced row would all pass the text assertions in `tests/e2e/country-shop.spec.ts`
- * and fail here. The occasion table is not photographed: its dates come from today's date
- * (`./dated-blocks.css`); its rows and its place in the order are pinned by
- * `tests/unit/catalog-shop-page.test.tsx`.
+ * and fail here. The occasion table's eyebrow, heading, caption and column headers are photographed;
+ * its body rows are not, because their dates come from today's date (`./dated-blocks.css`). The
+ * rows and the table's place in the order are pinned by `tests/unit/catalog-shop-page.test.tsx`.
  *
  * `main` rather than the whole document: the header and footer have their own baselines (TASK-050,
  * TASK-051), and a shared-chrome change should fail one file rather than every page's.
@@ -49,6 +49,11 @@ const DATES_STYLE = fileURLToPath(
   new URL("./dated-blocks.css", import.meta.url),
 );
 
+/** Keeps the sticky header from painting over the top of `main` (see `./static-header.css`). */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
+
 const SHOP_URL = "/en/poland/flowers";
 
 const CASES = [
@@ -77,10 +82,11 @@ for (const { name, viewport } of CASES) {
     // The photographs come from the media bucket since TASK-138, so they have to be waited for
     // rather than assumed painted.
     await settleImages(page);
-    // The occasion table's dates come from today's date; out of the layout, the intro below it
-    // sits at the same offset on every day (`./dated-blocks.css`).
+    // The occasion table's body rows come from today's date; out of the layout, the intro below
+    // it sits at the same offset on every day (`./dated-blocks.css`). The header stays put so the
+    // breadcrumb is in the picture (`./static-header.css`).
     await expect(page.locator("main")).toHaveScreenshot(`${name}.png`, {
-      stylePath: DATES_STYLE,
+      stylePath: [DATES_STYLE, HEADER_STYLE],
     });
   });
 }
