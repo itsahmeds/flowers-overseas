@@ -314,57 +314,73 @@
     },
     {
       "file": "wireframes/how-it-works-desktop.dc.html",
-      "title": "How it works · desktop",
+      "title": "How it works · desktop · v2",
       "x": 0,
       "y": 166816,
       "w": 1440,
-      "h": 2500
+      "h": 4118
     },
     {
       "file": "wireframes/how-it-works-mobile.dc.html",
-      "title": "How it works · mobile",
+      "title": "How it works · mobile · v2",
       "x": 1520,
       "y": 166816,
       "w": 390,
-      "h": 5060
+      "h": 7540
     },
     {
       "file": "wireframes/guarantee-and-delivery-desktop.dc.html",
-      "title": "Guarantee and delivery · desktop",
+      "title": "Our guarantee · Delivery and payment · desktop · v2",
       "x": 0,
-      "y": 172076,
+      "y": 174556,
       "w": 1440,
-      "h": 2620
+      "h": 6941
     },
     {
       "file": "wireframes/guarantee-and-delivery-mobile.dc.html",
-      "title": "Guarantee and delivery · mobile",
+      "title": "Our guarantee · Delivery and payment · mobile · v2",
       "x": 1520,
-      "y": 172076,
+      "y": 174556,
       "w": 390,
-      "h": 5400
+      "h": 11127
     },
     {
-      "file": "wireframes/about-contact-help-desktop.dc.html",
-      "title": "About · contact · help · desktop",
+      "file": "wireframes/help-and-contact-desktop.dc.html",
+      "title": "Help and contact · desktop · v2",
       "x": 0,
-      "y": 177676,
+      "y": 185883,
       "w": 1440,
-      "h": 2760
+      "h": 5399
     },
     {
-      "file": "wireframes/about-contact-help-mobile.dc.html",
-      "title": "About · contact · help · mobile",
+      "file": "wireframes/help-and-contact-mobile.dc.html",
+      "title": "Help and contact · mobile · v2",
       "x": 1520,
-      "y": 177676,
+      "y": 185883,
       "w": 390,
-      "h": 5620
+      "h": 9409
+    },
+    {
+      "file": "wireframes/about-desktop.dc.html",
+      "title": "About us · desktop · v2",
+      "x": 0,
+      "y": 195492,
+      "w": 1440,
+      "h": 3456
+    },
+    {
+      "file": "wireframes/about-mobile.dc.html",
+      "title": "About us · mobile · v2",
+      "x": 1520,
+      "y": 195492,
+      "w": 390,
+      "h": 6189
     },
     {
       "file": "wireframes/for-florists-desktop.dc.html",
       "title": "For florists · desktop",
       "x": 0,
-      "y": 183496,
+      "y": 201881,
       "w": 1440,
       "h": 3500
     },
@@ -372,7 +388,7 @@
       "file": "wireframes/for-florists-mobile.dc.html",
       "title": "For florists · mobile",
       "x": 1520,
-      "y": 183496,
+      "y": 201881,
       "w": 390,
       "h": 7760
     },
@@ -380,7 +396,7 @@
       "file": "wireframes/blog-desktop.dc.html",
       "title": "Blog index and post · desktop",
       "x": 0,
-      "y": 191456,
+      "y": 209841,
       "w": 1440,
       "h": 2740
     },
@@ -388,31 +404,47 @@
       "file": "wireframes/blog-mobile.dc.html",
       "title": "Blog index and post · mobile",
       "x": 1520,
-      "y": 191456,
+      "y": 209841,
       "w": 390,
       "h": 5560
     },
     {
       "file": "wireframes/legal-template-desktop.dc.html",
-      "title": "Legal page template · desktop",
+      "title": "Legal document template · Withdrawal and refunds · desktop · v2",
       "x": 0,
-      "y": 197216,
+      "y": 215601,
       "w": 1440,
-      "h": 2840
+      "h": 4562
     },
     {
       "file": "wireframes/legal-template-mobile.dc.html",
-      "title": "Legal page template · mobile",
+      "title": "Legal document template · Withdrawal and refunds · mobile · v2",
       "x": 1520,
-      "y": 197216,
+      "y": 215601,
       "w": 390,
-      "h": 5380
+      "h": 8214
+    },
+    {
+      "file": "wireframes/cookies-desktop.dc.html",
+      "title": "Cookies · the register · desktop · v2",
+      "x": 0,
+      "y": 224015,
+      "w": 1440,
+      "h": 5760
+    },
+    {
+      "file": "wireframes/cookies-mobile.dc.html",
+      "title": "Cookies · the register · mobile · v2",
+      "x": 1520,
+      "y": 224015,
+      "w": 390,
+      "h": 9569
     },
     {
       "file": "wireframes/errors-desktop.dc.html",
       "title": "404 · 410 · 500 · desktop · v2",
       "x": 0,
-      "y": 202796,
+      "y": 233784,
       "w": 1440,
       "h": 2348
     },
@@ -420,7 +452,7 @@
       "file": "wireframes/errors-mobile.dc.html",
       "title": "404 · 410 · 500 · mobile · v2",
       "x": 1520,
-      "y": 202796,
+      "y": 233784,
       "w": 390,
       "h": 2541
     }
@@ -452,7 +484,7 @@
       "x": 0,
       "y": 24424,
       "w": 1400,
-      "text": "v2 (2026-10-03, founder-locked): redrawn in the letter-home look — home, the country shop root, country category, country occasion, the two hubs, the occasions index, the destinations hub, the country guide, the product page, not-found and the chrome. The rest (locale chooser, checkout, confirmation, track, for florists, legal, how it works, guarantee, about, blog) are still drawn in v1 and are redrawn by the task that next builds them. wireframes — one desktop (1440) and one mobile (390) artboard per Phase 0 page type, in buyer-journey order. Round 2 (TASK-059, 2026-09-09): every page reworked against docs/design/benchmarks/. Spec 008 added the six listing and hub artboards; spec 009's round rebuilds product-desktop and product-mobile around the three date-picker states — unavailable, preview and live — and takes the countdown, the relative “today” chip, the Continue button, the add-on checkboxes, the withdrawal notice and the photo-on-delivery promise out of them. benchmarks/README.md records what each page type took and dropped, and the questions left for the founder."
+      "text": "v2 (2026-10-03, founder-locked): redrawn in the letter-home look — home, the country shop root, country category, country occasion, the two hubs, the occasions index, the destinations hub, the country guide, the product page, not-found and the chrome. Spec 041 (2026-10-04) redrew how it works, the guarantee with delivery and payment, help and contact, about, the legal template and the cookie register. The rest (locale chooser, checkout, confirmation, track, for florists, blog) are still drawn in v1 and are redrawn by the task that next builds them. wireframes — one desktop (1440) and one mobile (390) artboard per Phase 0 page type, in buyer-journey order. Round 2 (TASK-059, 2026-09-09): every page reworked against docs/design/benchmarks/. Spec 008 added the six listing and hub artboards; spec 009's round rebuilds product-desktop and product-mobile around the three date-picker states — unavailable, preview and live — and takes the countdown, the relative “today” chip, the Continue button, the add-on checkboxes, the withdrawal notice and the photo-on-delivery promise out of them. benchmarks/README.md records what each page type took and dropped, and the questions left for the founder."
     },
     {
       "id": "wf-home-v2",
@@ -564,47 +596,61 @@
       "x": 0,
       "y": 166770,
       "w": 1200,
-      "text": "How it works — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. How it works — desktop 1440 and mobile 390. The four steps, why we work this way, what we promise and do not; the not-open line under the H1."
     },
     {
       "id": "wf-guarantee-and-delivery",
       "x": 0,
-      "y": 172030,
+      "y": 174510,
       "w": 1200,
-      "text": "Guarantee and delivery — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. Our guarantee and Delivery and payment — two trust pages on one template, desktop 1440 and mobile 390: the fresh-flower promise (72 hours, no number of days), the seven-country table with each state, no payment method until one is available."
     },
     {
-      "id": "wf-about-contact-help",
+      "id": "wf-help-and-contact",
       "x": 0,
-      "y": 177630,
+      "y": 185837,
       "w": 1200,
-      "text": "About · contact · help — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. Help and contact — desktop 1440 and mobile 390. Contact first (phone, WhatsApp, the 24/7 line; no email until the mailbox exists), then twelve questions as visible headings. Replaces about-contact-help-*."
+    },
+    {
+      "id": "wf-about",
+      "x": 0,
+      "y": 195446,
+      "w": 1200,
+      "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. About us — desktop 1440 and mobile 390. Who runs it (the founder's name) and the company block before registration: no address, the not-registered sentence."
     },
     {
       "id": "wf-for-florists",
       "x": 0,
-      "y": 183450,
+      "y": 201835,
       "w": 1200,
       "text": "For florists — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-blog",
       "x": 0,
-      "y": 191410,
+      "y": 209795,
       "w": 1200,
       "text": "Blog index and post — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     },
     {
       "id": "wf-legal-template",
       "x": 0,
-      "y": 197170,
+      "y": 215555,
       "w": 1200,
-      "text": "Legal page template — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. Legal document template — desktop 1440 and mobile 390, drawn with Withdrawal and refunds (not in force). Version header, draft lines, contents, change log; the imprint and the gated documents as states. The document text is spec 041 batch 2, so it is slotted."
+    },
+    {
+      "id": "wf-cookies",
+      "x": 0,
+      "y": 223969,
+      "w": 1200,
+      "text": "v2 (2026-10-04, spec 041): redrawn in the letter-home look, text only (no photograph exists for these pages), every state annotated. Cookies — desktop 1440 and mobile 390. The register table from src/config/cookies.ts, Change cookie settings, and until the privacy notice exists the two interim sections; the consent banner's controller sentence as a state."
     },
     {
       "id": "wf-errors",
       "x": 0,
-      "y": 202750,
+      "y": 233738,
       "w": 1200,
       "text": "v2 (2026-10-03): redrawn in the letter-home look, real photographs, every state annotated. 404 · 410 · 500 — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
     }

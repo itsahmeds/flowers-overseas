@@ -133,10 +133,11 @@
           <div class="ph2" style="opacity: 0.35;">page dimmed, not hidden</div>
           <div class="box" style="border-color: var(--color-ink);">
             <span class="slot" style="color: var(--color-ink-3); font-style: italic;">[slot] What cookies we would like to set, and why</span>
+            <span style="display: block; margin-block-start: 4px;">This website is run by Sheikh Ahmad Hameed. For questions about your cookie choices or your personal data, call or WhatsApp +1 (213) 592-5150.</span>
             <div style="display: flex; gap: 6px; margin-block-start: 5px;"><span style="border: var(--rule); padding: 3px 7px;">[slot] Reject</span><span style="border: var(--rule); padding: 3px 7px;">[slot] Choose</span><span style="background: var(--color-ink); color: var(--color-accent-ink); padding: 3px 7px;">[slot] Accept</span></div>
           </div>
         </div>
-        <dl class="meta"><dt>Copy</dt><dd><b>None exists.</b> Every string is <code>[slot]</code> until the owning spec writes <code>consent.*</code> keys.</dd><dt>Rules it must keep</dt><dd>Reject is as easy to reach and as prominent as Accept; nothing non-essential is set before a choice; the choice is logged with its version; re-openable from the footer's “Cookie settings” link, which already exists as <code>footer.cookieSettings</code>.</dd><dt>Focus</dt><dd>Focus moves into the sheet, is trapped while it is open, and returns to the trigger on close. The skip link shares this layer so a keyboard visitor is never behind it.</dd></dl>
+        <dl class="meta"><dt>Copy</dt><dd><b>None exists.</b> Every string is <code>[slot]</code> until the owning spec writes <code>consent.*</code> keys.</dd><dt>Rules it must keep</dt><dd>Reject is as easy to reach and as prominent as Accept; nothing non-essential is set before a choice; the choice is logged with its version; re-openable from the footer's “Cookie settings” link, which already exists as <code>footer.cookieSettings</code>.</dd><dt>Spec 041</dt><dd>Until the privacy notice exists (it waits for the company's registration), the body ends with <code>company.controller</code>, drawn above; once it exists, <code>consent.privacyLink</code> (“How we use your personal data”) replaces it, chosen on the server by <code>consentView()</code>. The shipped <code>consent.*</code> strings are drawn on <code>wireframes/cookies-*</code>.</dd><dt>Focus</dt><dd>Focus moves into the sheet, is trapped while it is open, and returns to the trigger on close. The skip link shares this layer so a keyboard visitor is never behind it.</dd></dl>
       </div>
     </div>
 
@@ -153,7 +154,7 @@
           <div class="box">Your current choice, recorded <span class="slot" style="color: var(--color-ink-3); font-style: italic;">[slot date]</span></div>
           <div class="acc" style="height: 16px;"></div>
         </div>
-        <dl class="meta"><dt>Purpose</dt><dd>The same categories as the sheet, always reachable, plus the cookie table the policy needs. Withdrawing consent is one control, in the same place as giving it.</dd><dt>Index</dt><dd>yes — it is a legal page.</dd><dt>Wireframe</dt><dd><code>wireframes/legal-template-{desktop,mobile}.dc.html</code> is the page shell; this is its one interactive block.</dd></dl>
+        <dl class="meta"><dt>Purpose</dt><dd>The same categories as the sheet, always reachable, plus the cookie table the policy needs. Withdrawing consent is one control, in the same place as giving it.</dd><dt>Index</dt><dd><code>noindex,follow</code> until a lawyer has reviewed it (spec 041 AC-17); linked from every footer either way.</dd><dt>Wireframe</dt><dd><code>wireframes/cookies-{desktop,mobile}.dc.html</code> (spec 041) is the page, on the <code>legal-template-*</code> shell; this is its one interactive block.</dd></dl>
       </div>
       <div class="step" style="grid-column: span 2;">
         <header><span class="i">—</span><b>Z-order and first-visit sequence</b></header>

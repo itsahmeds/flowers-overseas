@@ -14,7 +14,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   - Money is integer minor units and every rate integer **ppm**; no float anywhere on the decimal → ppm path (`fo/no-float-money`).
   - The 2.5% buffer is applied **at conversion**, never stored in a snapshot row or a bundled rate.
   - **Fail closed:** a rate past the age bound is refused; the page shows the destination-currency price, the `fxUnavailable` sentence and no equivalents (AC-15, spec 004 §14 A21 clause 6(d)).
-  - **Price shown = price charged = schema price:** `Offer.price` and the visible price come from one projection; `priceValidUntil` stays `rateValidUntil(as_of)` (A3).
+  - **Price shown = price charged = schema price:** `Offer.price` and the visible price come from one projection; `priceValidUntil` is omitted when the exchange rate is its only source (A7 fix c, T-36; supersedes A3's `rateValidUntil(as_of)`).
   - One source (ECB); no client-side or request-time network call; no PII in any log line.
 - **Class:** not review-only. It touches money and CI workflows, so it keeps `/break` beside `/review` (DoD §4).
 - **Grouping:** `/plan-tasks` may give TASK-180 and TASK-181 to one agent as one feature PR (A7 "Tasks"); the branch and title then carry TASK-180.
@@ -23,6 +23,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **Corrected 6 — spec text replaced** (§2 L66/L68, §5.4 (a), §13 Q2) as A7 words it. **Exit:** TASK-071's PR deletes this build-time fetch and the workflow when `dbFxRateProvider` goes live.
 - **Runbook.** `docs/runbooks/pricing.md` gains the manual trigger (run `fx-refresh.yml` by hand; it is not `ci.yml`) and how to read `fxSource`.
 - **Record in `## Result`:** the first measured Railway build time (Q-A7.1) and the verified Railway API mutation name.
+
+- **A7 fixes (founder approval 2026-10-04, "approve A7"):** fix a: the `Dockerfile` declares `ARG FX_REFRESH_AT` on the line just before `RUN pnpm build`, the workflow passes a new value on every rebuild, and T-30 pins it in `tests/unit/container.test.ts` (`NO_CACHE=1` on `web` is the fallback). Fix b: the 19:30 UTC run still requests the rebuild for an environment that is behind ECB's latest rate, then exits non-zero naming it (AC-34, T-34). The repo secrets `RAILWAY_TOKEN_STAGING` / `RAILWAY_TOKEN_PRODUCTION` exist (founder, 2026-10-04: "tokens done").
 
 ## Read
 
