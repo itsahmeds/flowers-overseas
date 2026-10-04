@@ -30,7 +30,9 @@ Row: `TASKS.md` → TASK-179. This brief is the task's long form (spec 001 §14 
 
 _None._
 - **From PR 168 (TASK-175) breaker round 2, HOLE 3 ACCEPTABLE (reviewer, PR 168 comment 5974924179):** the Caveat walk exempts all of `src/modules/ui/product/` (`tests/unit/fonts.test.ts` L352), and the `ui` barrel re-exports `ProductPage`. Narrow the exemption to the card-preview file, make sure the barrel cannot reach it, and add a check that nothing reachable from `src/modules/ui/index.ts` imports `fonts/hand`.
+  **Done** (`4e3399da`, `63061ab1`): `ProductPage` is no longer re-exported (the route imports `@/modules/ui/product/ProductPage`), the walk exempts `PrintedCardPreview.tsx` alone, and `tests/unit/fonts.test.ts` checks the barrel's import closure (`tests/unit/support/import-closure.ts`) for the preview and `fonts/hand.ts`, with a self-check from `ProductPage.tsx`. Watched red: a `ProductPage` re-export, a type-only re-export of the preview, and a `fonts/hand` import in `CardMessageField.tsx` (which the old directory exemption let through, confirmed green under it).
 - **Orchestrator check, 2026-10-04:** `product.eyebrow` ("{descriptor} · for {country}") is attested as founder-approved, but it is not in the 14-item batch. Set it to `reviewed: false`.
+  **Done** (`8d0248ea`): `reviewed: false`, no `reviewedBy`, and listed in `AWAITING_FOUNDER_REVIEW`.
 
 ## Escalations
 
@@ -58,12 +60,13 @@ _None._
 - 2026-10-04 00:50 — country guide v2 (`CorridorSection`), printed-card wording in five authored guides; copy cut to the 5 % budget.
 - 2026-10-04 00:55 — 404/500 letter (`NoticeDocument letter`, `noticeShell` letter constants), price tests, e2e spec, design README row, contrast pairs.
 - 2026-10-04 07:47 — rebased onto `main` after PR 168 merged (`git rebase --onto origin/main d8fffadb`; `TASKS.md` and `docs/codebase-map.md` were the only conflicts). HOLE 3 closed: `ProductPage` leaves the `ui` barrel (the route imports `@/modules/ui/product/ProductPage`), the Caveat walk's exemption is `PrintedCardPreview.tsx` alone, and a new case walks the barrel's runtime import graph (red on a `ProductPage` re-export, and on a `fonts/hand` import in `Gallery.tsx` or `CardMessageField.tsx`). `product.eyebrow` back to `reviewed: false`. Sitemap fixtures regenerated (lastmod 2026-10-04 from the copy batch) and the two accent-strong contrast pairs pinned. Date-driven layout checked: corridor hero/facts sit above the calendar, the 404/500 letters carry no date, and every product block shot already loads `product-blocks.css` (grid out of layout); nothing else to hide.
+- 2026-10-04 08:15 — baselines: run 37172243586 (32 changed PNGs, every one inspected) showed two defects of this task, fixed before the commit: the 500 letter's two-line heading took the body's 1.55 leading (`NOTICE_LETTER_HEADING` now `text-title-fluid`, 0.98) and the sticky header lay over `product-desktop-gallery-photos` (`product-blocks.css` hides `[data-fo-header]`). Run 37173017441 at `7885219a`: 25 files byte-identical to run 1, the 7 expected ones changed and inspected; the whole change list (32 PNGs) plus the manifest committed; `--verify` and `--check` pass. The ten listing shots move only because two contrast rows were added above them on `/dev/components`. Rebased again onto `0043ba5a` (spec 004 A22, docs only). Present-tense check (A22): no new florist sentence in the diff; `catalog.floristSentence` byte-identical; the guides' "We will print it on our card" is about us, not a florist, and is founder-approved item 11.
 - 2026-10-04 07:47 — price equivalents **not wired**: TASK-178 (PR 169) is still open. Wire them when it merges.
 - **Left:** (1) rebase onto `main` once PR #168 merges (`git rebase --onto origin/main d8fffadb`), then `gh pr ready` + `ci:full`; the PR conflicts with `main` until then, so no CI has run. (2) The visual baselines this task moves (product, product blocks, corridor, 404/500, `/dev/components` product cells) through the `visual:baselines` label flow — commit every file in the run's change list. (3) Once TASK-178 merges, wire `priceEquivalents()` (`@/modules/catalog`) and `equivalentsMessageValues()` (`@/modules/ui`) into the PDP route and pass the finished line as `ProductPage`'s `equivalents` (`Price` and `PriceSummary` already render it). (4) Render the fresh-on-arrival guarantee once its remedy wording is approved.
 
 ## Result
 
-**Status: partial** — pages built; CI, baselines and the equivalents wiring wait on #168 and TASK-178.
+**Status: partial** — pages built, rebased on `main`, baselines committed, PR ready with `ci:full`; the equivalents wiring waits on TASK-178 (PR 169).
 
 **Copy (founder, 2026-10-04, in chat: "ok from my end", copy batch for TASK-176–179; transcribed
 as `reviewed: true` in `messages/en.meta.json`; de/pl drafted and `reviewed: false`):**
