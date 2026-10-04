@@ -4,14 +4,17 @@
  * `occasion-hub-{desktop,mobile}.dc.html`; TASK-112).
  *
  * Four PNGs, one per artboard. The **geometry** is the assertion: a destination picker that stopped
- * being 3-up at 1440 or 1-up at 390, a card box that stopped being 4∶5, a date table that stopped
- * being a table, or a block order that put the products before the destinations would all pass the
- * text assertions in `tests/e2e/hubs.spec.ts` and fail here.
+ * being 3-up at 1440 or 1-up at 390, a card box that stopped being 4∶5, or a block order that put
+ * the products before the destinations would all pass the text assertions in
+ * `tests/e2e/hubs.spec.ts` and fail here. The occasion hub's date table is not photographed: its
+ * dates come from today's date (`./listing-dates.css`); its rows are pinned by
+ * `tests/unit/catalog-hub-pages.test.tsx` and `tests/e2e/hubs.spec.ts`.
  *
  * `main` rather than the whole document: the header and footer have their own baselines (TASK-050,
  * TASK-051), and a shared-chrome change should fail one file rather than every page's.
  */
 import type { BrowserContext } from "@playwright/test";
+import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 
 /**
@@ -39,6 +42,11 @@ async function recordConsentRefusal(
     },
   ]);
 }
+
+/** Takes the date-driven blocks out of the layout (see `./listing-dates.css`). */
+const DATES_STYLE = fileURLToPath(
+  new URL("./listing-dates.css", import.meta.url),
+);
 
 const CASES = [
   {
@@ -81,6 +89,11 @@ for (const { name, url, viewport } of CASES) {
     const response = await page.goto(url);
     expect(response?.status(), url).toBe(200);
     await expect(page.locator("[data-fo-listing-grid]")).toBeVisible();
-    await expect(page.locator("main")).toHaveScreenshot(`${name}.png`);
+    // The occasion hub's date table comes from today's date; out of the layout, the products
+    // below it sit at the same offset on every day (`./listing-dates.css`). The category hub
+    // draws no date block, so the stylesheet changes nothing there.
+    await expect(page.locator("main")).toHaveScreenshot(`${name}.png`, {
+      stylePath: DATES_STYLE,
+    });
   });
 }

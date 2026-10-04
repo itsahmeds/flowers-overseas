@@ -1,0 +1,24 @@
+/*
+ * Applied to the listing pages' visual baselines (`country-shop.spec.ts`, `country-occasion.spec.ts`,
+ * `hubs.spec.ts`), for the reason `product-blocks.css` takes the product date grid out of the
+ * layout: every block below takes its offset from the build date.
+ *
+ * Each of these blocks is computed on the server from today's date — the next occurrence of an
+ * occasion in each destination (`occasionDate(rule, year)`, spec 008 §14 A6), formatted by
+ * `formatDate`. When an occasion passes, its date moves to the next year, a row's text changes
+ * width, and the block's height can change by a fraction of a pixel; the rasteriser then rounds
+ * each text line below it to a different pixel row and the shot fails with no change to the code
+ * (seen on PR 168, 2026-10-04). Out of the layout, every other block sits at the same offset on
+ * every day.
+ *
+ * The blocks themselves are pinned elsewhere, not here: the country occasion's dated line by
+ * `tests/e2e/country-occasion.spec.ts` (one `[data-fo-occasion-date]`, an ISO date that the
+ * sentence renders) and `tests/unit/catalog-occasion-page.test.tsx`; the hub's date table by
+ * `tests/e2e/hubs.spec.ts` and `tests/unit/catalog-hub-pages.test.tsx`; the shop root's occasion
+ * table by `tests/unit/catalog-shop-page.test.tsx`.
+ */
+[data-fo-occasion-date],
+[data-fo-hub-dates],
+[data-fo-shop-occasions] {
+  display: none !important;
+}
