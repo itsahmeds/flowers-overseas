@@ -892,6 +892,21 @@ describe("the token's five scopes and the allow-list (AC-24, spec 040 §14 A5)",
     );
   });
 
+  it("a 403 on a rules phase whose scope the token is meant to hold is an error, not unverified", async () => {
+    const { transport } = createRecordedTransport(beforeCutover);
+    const failure = await checkEdge(declared, transport, beforeCutover.zoneId, [
+      ...TOKEN_SCOPES,
+      "Zone → Cache Rules → Read",
+    ]).then(
+      () => undefined,
+      (error: unknown) => error,
+    );
+    expect(failure).toBeInstanceOf(MissingScopeError);
+    expect((failure as Error).message).toBe(
+      "the token is missing scope Zone → Cache Rules → Read (GET /zones/{zone_id}/rulesets/phases/http_request_cache_settings/entrypoint answered 403)",
+    );
+  });
+
   it("issues GETs only, across a check of every phase", async () => {
     const { calls } = await check(beforeCutover, declared);
     expect(calls.every((call) => call.startsWith("GET "))).toBe(true);
