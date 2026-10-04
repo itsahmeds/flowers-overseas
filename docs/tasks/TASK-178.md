@@ -66,6 +66,18 @@ _None recorded._
   `notices.spec.ts`; `product-blocks.css` hides the band for the placeholder block. Run **37172651614**: 29 PNGs +
   manifest, every image inspected (14 listing-page shots byte-identical to run 1), committed whole;
   `--verify` and `--check` green. Rebased onto `0043ba5a` (spec 004 A22, docs only). Ready, `ci:full`.
+- 2026-10-04 10:20 — **Breaker round 1 (39e7bd61), three holes closed.** (1) One stale or missing leg:
+  `tests/unit/catalog-pricing-equivalents-legs.test.ts` (each leg in turn, provider seam); `return null` → `continue`
+  at `equivalents.ts:140` turns 6 cases red. (2) Page-level renders over a fixed fresh clock:
+  `tests/unit/catalog-listing-pages-equivalents.test.tsx` (one line per priced card on the shop root, category and
+  occasion pages; none on the hubs; none plus the fallback past the age bound). Stripping at `ListingGrid.tsx` (3 red)
+  or `CountryOccasionPage.tsx` (1 red) is caught; `pageFxFallback` now reads the injected clock (it took the wall
+  clock; dropping it turns 3 red). `tests/e2e/listing-v2.spec.ts` asserts the stale state outright behind an
+  `isFxSnapshotStale` precondition. (3) `tests/visual/dated-blocks.css` hides only date rows (`tbody`, the band's
+  list, the dated sentence); headings, captions and column headers stay in the shots, and the two date `<h2>`s are
+  pinned as text in `catalog-shop-page` / `catalog-hub-pages` (blanking either turns 1 red). Review carry-forward:
+  `tests/visual/static-header.css` unsticks the header for the three retaken listing specs, so the breadcrumb is in
+  the shot. Baselines: run 37177780753, 21 PNGs + manifest, all inspected.
 
 ## Result
 
