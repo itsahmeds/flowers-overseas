@@ -165,6 +165,10 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
      - A day count in de `home.destinations.body`, in the pl hero proposition, or in the de sentence heading: red at "promises no day count anywhere on the home".
   5. **A22 guards.** Cases for the token's lookbehind (`xpartner {my partner}`, `mypartner {…}`) and its case sensitivity (`Partner {My Partner}`, `PARTNER {MY PARTNER}`).
      - Dropping the lookbehind, or adding the `i` flag, in `src/config/voice.ts`: red at "matches the token only as a whole case".
+- 2026-10-04: baselines for item 6 and breaker round 2, visual-baselines run 37200904366: the whole change list (15 PNGs) plus the manifest. `--verify` and `--check` exit 0. I looked at all 15.
+  - Every one moves because Poland's chip is now neutral with "Guide · not delivering yet". The desktop destinations band grows 35 px because the chips re-wrap.
+  - The footer, `/dev/components` and the full-page shots move only below that band.
+  - origin/main (spec 041, spec 005 A7) was merged first. Its README differ row and mine are both kept.
 - 2026-10-04: PR 174 item 6, an honesty defect found by the live crawl. Poland's home chip said "Delivering now" because it was decided on `status === "live"`, while no florist is signed.
   - The claim now follows `deliveryDatesOpen()`, the site's "You cannot order yet" predicate. That covers both the state word (`destinationStateKey()` in `src/config/countries.ts`) and the poppy tone (`delivering` in the home's destination provider).
   - Poland keeps its first place and its R2 link (guide, or the shop root on /de and /pl) through a separate `featured` flag, which stays `status === "live"`.
