@@ -456,9 +456,9 @@ Banner, pseudo-locale, CI, docs
 - **Shape, as amended by A16 (founder ruling 2026-10-04; binding).** The popup is the site's only language chooser.
   - **When.** It opens after hydration on the first view of any localised page while the browser holds no valid `fo_locale` (a missing or forged value counts as none), whatever the hint says. Every visitor who enters through `/` lands on `/en`, so direct traffic sees it over the English site. Once `fo_locale` is set it never opens again.
   - **Content.** The heading is *"Choose your preferred language"*, in the page's language (A8). Below it are the four launch locales, each listed once by its `nativeName` with its own `lang`, in registry order. Each option is a real `<a>` to the same path in that locale. English carries a visible mark as the default.
-  - **Hint.** The best match of `navigator.languages`, then the edge country header (Signal, above), **only highlights** one option. It never navigates, never sets the cookie and never reorders the list. With no usable hint, nothing is highlighted beyond English's default mark.
+  - **Hint.** The best match of `navigator.languages`, then the edge country header (Signal, above), **only highlights** one option. It never navigates, never sets the cookie and never reorders the list. With no usable hint, nothing is highlighted beyond English's default mark. *Whether the edge country header stays in the hint is a founder decision pending (A16 clause 2, "Open item"); until it is taken, this sentence is not binding on that point.*
   - **Closing.** The popup is easily closable three ways: a large close button (target at least 44 × 44 CSS px, with an accessible name from the catalogue), `Esc`, and a tap or click outside it. Closing sets `fo_locale` to the page's locale and does not navigate. Choosing an option sets `fo_locale` to that locale and follows its link; choosing the page's own locale only closes. Either way the popup does not show again. `fo_locale` stays strictly necessary (§13 Q4), because closing is an explicit act.
-  - **Size.** On desktop it is a centred card over a dimmed page. On mobile it is a bottom sheet no taller than 35 % of the viewport height, and it never covers the home hero's CTA (`HomeHero`) or the sentence card (`SentencePicker`). It is an overlay, so the layout does not shift.
+  - **Size.** On desktop it is a centred card over a dimmed page. On mobile it is a **top sheet**: its top edge sits at the top of the viewport and it is at most 260 CSS px tall (spec 004 §14 A23 AC-39), with anything taller scrolling inside the sheet. At 390 × 844 it covers only the notice bar, the header and the category row, so the sentence card (`SentencePicker`) stays uncovered. The page under it is not scroll-locked: content below the sheet stays reachable by scrolling. It is an overlay, so the layout does not shift.
   - **Order.** It shows before the consent sheet and never stacks on it: the consent sheet waits until the popup has closed.
   - **Accessibility.** It is a native `<dialog>` opened modally and labelled by its heading (`aria-labelledby`). Focus moves into it on open and returns on close. Neither the highlight nor the default mark relies on colour alone (WCAG 1.4.1).
   - **The old slide-in strip is removed:** `LocaleSuggestionBanner*`, its two-action copy, and A9's per-tab `fo_locale_suggestion_dismissed` (`sessionStorage`). The cookie register loses that row.
@@ -584,7 +584,10 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
 
 ### A16 — No chooser page: `/` serves English; the language popup is the only chooser (founder ruling 2026-10-04; TASK-119)
 - **Ruling, verbatim.** The founder sent a phone screenshot of the `/` chooser with the question "will everyone who lands on the site will be shown this?", and answered it themselves: *"no bro no one should see this page... even direct traffic.. they should be shown the site in english.. but a popup appears saying choose your preffered langaue enmghlish is default and popup is easily closable"*.
-- **Status.** **Approved** by that ruling on 2026-10-04 (decisions log, same date). It is the founder's own direct ruling. This amendment adds nothing beyond it except the two points marked *Reading* in clause 2, which the founder can overrule in one word.
+- **Status.** **Approved** by that ruling on 2026-10-04 (decisions log, same date). It is the founder's own direct ruling. This amendment adds three things beyond it:
+  - the two points marked *Reading* in clause 2, which the founder can overrule in one word;
+  - the mobile **top sheet** (clause 2), set by review round 1 on PR 186. The first draft asked for a bottom sheet of at most 35 % that never covers the sentence card. At 390 × 844 the sentence card starts at about y 720, so no bottom sheet can meet both limits. The design sweep drew both shapes and left the choice open (audit R10, `docs/design/audits/2026-10-04-site-sweep.md` on `docs/design-sweep-2026-10-04`). The top sheet is the only shape that meets the spec's limits, and it matches `docs/design/wireframes/locale-popup-mobile.dc.html` and spec 004 §14 A23 AC-39. The founder has not ruled on the shape, and can overrule it in one word;
+  - one **open founder decision**, the country hint (clause 2, "Open item"). TASK-119 is not dispatched until it is answered.
 
 1. **`/` is a permanent 308 to `/en`.**
    - `GET /` and `HEAD /` answer **308** with `Location: /en`. The response is the same for every request: it depends on no IP, country header, cookie (`fo_locale` included), `Accept-Language`, user agent or anything else. Googlebot gets the same 308 as a person in Warsaw.
@@ -606,11 +609,19 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
    - The hint only highlights an option. It never navigates.
    - The popup closes by a large button, by `Esc` or by a tap outside. Closing sets `fo_locale`, as choosing does.
    - It opens on every first visit (no valid `fo_locale`) whatever the hint says, because the founder's "a popup appears" covers direct traffic.
-   - On mobile it is a bottom sheet of at most 35 % of the viewport, and it never covers the hero CTA or the sentence card.
+   - On mobile it is a top sheet: top edge at the top of the viewport, at most 260 CSS px tall, anything taller scrolling inside it. On desktop it is a centred card. The 2026-09-16 bottom sheet is withdrawn (Status, above).
+   - The page under the mobile sheet is not scroll-locked. Content below it stays reachable by scrolling, and one tap on the close button, one `Esc` or one tap outside dismisses it.
+   - It appears once: after a close or a choice, `fo_locale` is set and the popup never opens again.
    - It shows before the consent sheet and never stacks on it.
    - The slide-in strip is removed.
 
-   The Signal (`navigator.languages`, then the edge country header through `/api/geo`) and A14's RoPA row are unchanged.
+   The Signal starts with `navigator.languages`. Whether the edge country header (through `/api/geo`) follows it, and whether A14's RoPA row is needed, is the open item below.
+
+   - **Open item: founder decision pending on the IP/country hint.** Keep it (A14's Signal, recorded in the RoPA as A14's row or as a note on row 2) or drop it (browser language only). **Recommended: drop.** The hint now only highlights an option, so the country adds little. Dropping it also removes the only personal-data processing this popup does. The design artboards (audit R9) and spec 004 §14 A23 already assume it is dropped. Consequences:
+     - *Keep:* `/api/geo` (`no-store`, logs no IP or country) and the `src/config/` country table ship as A14 says, `docs/compliance/ropa.md` records the processing (A14's row, or a note on row 2), and T-28's unit table spans languages × country.
+     - *Drop:* the hint reads `navigator.languages` only. `/api/geo`, the country table and A14's RoPA row are not built (or are removed if they exist), `hints.ts` reads no country header for the popup, and T-28 asserts that no request goes to `/api/geo`.
+
+     TASK-119 is not dispatched until this is answered. Clauses 5 and 6 carry both outcomes, marked *(keep)* and *(drop)*.
    - *Reading 1, not ruled.* A visitor can land on a page in another locale, such as `/de/…` from a search result. There, the popup marks the option for the page's own locale as current, and English keeps its default mark. On `/en`, where every visitor through `/` lands, both marks fall on the same option. Reason: the URL is authoritative (ADR-0006, A14), so the popup must not call English "current" on a German page.
    - *Reading 2, not ruled.* The popup opens on any localised page, not only the home, because a visitor's first page can be any page.
 
@@ -623,16 +634,20 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
    - Indexability is unchanged in Phase 0: nothing is indexable until spec 007's flip (ADR-0007).
 
 4. **i18n.**
-   - The popup's copy is in the page's language (A8). The heading is the founder's text, *"Choose your preferred language"*. The default mark's label and the close button's accessible name are new English strings. They go to the founder for exact-text approval in one batch (decisions log 2026-10-03, "Copy review, the 5 % gate") and ship `reviewed: false` until then. Native names come from `nativeName` and are never translated.
+   - The popup's copy is in the page's language (A8). The heading is the founder's text, *"Choose your preferred language"*. Native names come from `nativeName` and are never translated.
+   - **Founder copy pending (exact text, one batch).** These are new English strings. They go to the founder for exact-text approval in one batch (decisions log 2026-10-03, "Copy review, the 5 % gate"), and they ship `reviewed: false` until then:
+     - the English option's **default mark**: its visible label, and its accessible label if that differs;
+     - the **close button's accessible name**;
+     - the labels of the **current** mark (Reading 1) and the **hint** highlight. Both need text so that neither relies on colour alone. The design draws them as slots L3 and L4, and spec 004 §14 A23 AC-38 holds their approved text.
    - `chooser.*` is deleted. The strip's `banner.*` keys are replaced by the popup's keys in one namespace, and `i18n:check`'s unused-key rule catches leftovers. The `de` and `pl` values follow the draft policy in force when TASK-119 merges, `reviewed: false`.
    - RTL: the sheet and the card use logical properties only. `/ar-XB` with the popup open is in the visual set.
 
 5. **Compliance.**
    - `fo_locale` stays strictly necessary (§13 Q4): it is set only on an explicit act (closing is one), lasts 365 days, is `SameSite=Lax` and `Secure` outside development, and holds a launch code only. There is no consent gate. The cookie register loses `fo_locale_suggestion_dismissed` (A9).
-   - A14's RoPA row stands: an IP-derived country code, held in memory, never stored or logged. The country now only highlights an option.
+   - The RoPA depends on the open item in clause 2. *(Keep)* A14's RoPA entry stands (its own row, or a note on row 2): an IP-derived country code, held in memory, never stored or logged, which now only highlights an option. *(Drop)* The popup processes no personal data and needs no RoPA row, and `docs/compliance/ropa.md` gains nothing.
    - EU 2018/302: nothing is blocked, and the only redirect is the same for everyone. The popup and the header switcher list every launch locale, so every locale stays reachable.
-   - Accessibility (WCAG 2.1 AA): the popup is a modal native `<dialog>`, labelled by its heading. Focus moves in on open and is restored on close, and `Esc` closes it. The close button is a large target with an accessible name. The highlight and the default mark do not rely on colour alone. The 35 % cap and the uncovered hero CTA and sentence card meet Google's intrusive-interstitial guidance.
-   - Logs and PII are unchanged. `/api/geo` logs no IP and no country.
+   - Accessibility (WCAG 2.1 AA): the popup is a modal native `<dialog>`, labelled by its heading. Focus moves in on open and is restored on close, and `Esc` closes it. The close button is a large target with an accessible name. The highlight and the default mark do not rely on colour alone. Under Google's intrusive-interstitial guidance, the mobile top sheet is a banner of reasonable size. It is at most 260 px tall, covers only the site chrome at 390 × 844, closes in one tap and leaves the page scrollable beneath it.
+   - Logs and PII are unchanged. *(Keep)* `/api/geo` logs no IP and no country. *(Drop)* There is no `/api/geo` call from the popup.
 
 6. **What changes in §9 and §10.** Each original line carries an inline marker pointing here.
    - **Unchanged:**
@@ -655,12 +670,12 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
    - AC-27: `/` leaves the measured set (Lighthouse and `pnpm budget:client-js`), and "`/` ships zero application JS" is withdrawn. The other clauses stand as A12 left them. The popup's delta stays +≤ 3 KB Brotli (A14).
    - AC-28 now reads, on `/en` reached through `/` with no `fo_locale`:
      - (a) after hydration the popup opens with the heading "Choose your preferred language". It lists the four launch locales' `nativeName`s once each in registry order, and English carries the default mark.
-     - (b) with `navigator.languages = ["de-DE","de"]` the Deutsch option is highlighted and no navigation happens: the URL stays `/en`, and no main-frame `framenavigated` event fires until the visitor acts. With `["en-US"]` and no country, no option other than English carries any mark.
+     - (b) with `navigator.languages = ["de-DE","de"]` the Deutsch option is highlighted and no navigation happens: the URL stays `/en`, and no main-frame `framenavigated` event fires until the visitor acts. With `["en-US"]` (and, *(keep)*, no country), no option other than English carries any mark. *(Drop)* With `cf-ipcountry: PL` sent and `["en-US"]`, Polski carries no mark and no request goes to `/api/geo`.
      - (c) the close button, `Esc` and a tap outside each close the popup, leave the URL at `/en` and set `fo_locale=en`. On reload the popup does not open.
      - (d) choosing Deutsch follows its link to `/de` and sets `fo_locale=de`. On reload no popup opens and nothing redirects.
      - (e) with a valid `fo_locale` already set, the popup never renders.
      - (f) the consent sheet is not visible while the popup is open, and it appears only after the popup closes.
-     - (g) at 360 × 640 and 390 × 844 the sheet's height is ≤ 35 % of the viewport height. Its box intersects neither the hero CTA's box nor the sentence card's box, and CLS stays 0 across opening and closing.
+     - (g) at 360 × 640 and 390 × 844 the open popup is a top sheet. Its box's top edge is at y 0 and its height is ≤ 260 CSS px. At 390 × 844 its box does not intersect the sentence card's (`SentencePicker`) box. The document is not scroll-locked: with the popup open, a wheel or touch scroll over the page increases `window.scrollY`, and the sheet's top edge stays at y 0. At 1280 × 800 the popup is a centred card: its box's horizontal and vertical centres are each within 2 px of the viewport's. CLS stays 0 across opening and closing at every size.
      - (h) the close button's box is at least 44 × 44 CSS px, no `LocaleSuggestionBanner*` file exists, and no element of the old strip is in the DOM.
    - AC-30: the `visual` project drops `/` and deletes its baselines. It adds the popup open on `/en` at desktop and mobile widths, and on `/ar-XB`. `/en` and `/de` stay, and the rest stands.
    - T-05: renders the locale home and the popup's option list with the fake five-locale registry. The list shows five options.
@@ -673,7 +688,7 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
    - T-12: checks the cookie attributes after each of choose, close button, `Esc` and tap outside, plus the forged-value case.
    - T-25: runs axe on the AC-25 set.
    - T-27: runs Lighthouse and the client-JS budget on the AC-27 set, without `/`.
-   - T-28 (e2e + unit): the e2e runs the AC-28 matrix (a)–(h). The unit table drives the hint function (`decideSuggestion()` or its successor) over languages × country. The function returns one launch code or none, and its return type has no URL field and no navigation field.
+   - T-28 (e2e + unit): the e2e runs the AC-28 matrix (a)–(h). The unit table drives the hint function (`decideSuggestion()` or its successor) over languages (*(keep)* × country; *(drop)* the function takes no country input, and the case asserts its signature). The function returns one launch code or none, and its return type has no URL field and no navigation field.
    - T-30: visual baselines per AC-30.
    - **Each assertion goes red with its subject removed** (CLAUDE.md DoD §4). The breaker runs at least these mutations and watches the named case fail:
      - delete the redirect rule (`/` then 404s): T-07 fails;
@@ -684,7 +699,9 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
      - make the hint navigate (`location.assign`, or an auto-followed link): T-28 (b) fails;
      - drop the cookie write from any one of the three close paths: T-12 and T-28 (c) fail;
      - stop the consent sheet waiting: T-28 (f) fails;
-     - make the sheet 40 % tall: T-28 (g) fails;
+     - anchor the mobile sheet at the bottom of the viewport, or make it 300 px tall: T-28 (g) fails;
+     - lock the page's scroll while the popup is open (`overflow: hidden` on `html` or `body`): T-28 (g) fails;
+     - *(drop)* fetch `/api/geo` from the popup: T-28 (b) fails;
      - shrink the close button below 44 px: T-28 (h) fails.
 
 7. **Other specs and the plan.** The same ruling supersedes these clauses of other approved specs:
@@ -696,5 +713,5 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
 
    TASK-119 changes the tests that carry them. The orchestrator adds a one-line pointer to A16 in each of those specs' §14. The plan still describes the chooser at `plan/02` L59 and L177, `plan/03` L39, `plan/05` row 1 and `plan/07` L101. The orchestrator brings those lines into step, as it did for `plan/03` §7 under A4; spec writers do not edit the plan.
 
-8. **Owner.** TASK-119 owns this as one feature: the 308, the chooser's deletion and the popup ship in one PR, with `/break`. The PR touches a redirect, sitemaps, indexability and a cookie, so it is not review-only. Design comes first: `/design` on this amendment draws the popup and retires the chooser wireframes before the component is built. The popup artboards cover the desktop card, the mobile sheet over the home hero at 360 × 640 and 390 × 844, and the default, hint-highlighted and RTL states. Brief: `docs/tasks/TASK-119.md`.
+8. **Owner.** TASK-119 owns this as one feature: the 308, the chooser's deletion and the popup ship in one PR, with `/break`. The PR touches a redirect, sitemaps, indexability and a cookie, so it is not review-only. Design comes first: `/design` on this amendment draws the popup and retires the chooser wireframes before the component is built. The popup artboards cover the desktop card, the mobile top sheet over the home hero at 360 × 640 and 390 × 844, and the default, hint-highlighted and RTL states. The 390 top sheet and the desktop card are drawn in `docs/design/wireframes/locale-popup-mobile.dc.html` and `locale-popup-desktop.dc.html` on `docs/design-sweep-2026-10-04`. The 360 × 640 artboard is still to be drawn. Dispatch also waits on the open item in clause 2. Brief: `docs/tasks/TASK-119.md`.
 
