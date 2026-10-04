@@ -399,6 +399,230 @@
       "y": 219463,
       "w": 390,
       "h": 2917
+    },
+    {
+      "file": "for-florists-walkthrough-desktop.dc.html",
+      "title": "for florists walkthrough · desktop · spec 011",
+      "x": 0,
+      "y": 222580,
+      "w": 1440,
+      "h": 3548
+    },
+    {
+      "file": "for-florists-walkthrough-mobile.dc.html",
+      "title": "for florists walkthrough · mobile · spec 011",
+      "x": 1520,
+      "y": 222580,
+      "w": 390,
+      "h": 6976
+    },
+    {
+      "file": "for-florists-apply-desktop.dc.html",
+      "title": "for florists apply · desktop · spec 011",
+      "x": 0,
+      "y": 229756,
+      "w": 1440,
+      "h": 6986
+    },
+    {
+      "file": "for-florists-apply-mobile.dc.html",
+      "title": "for florists apply · mobile · spec 011",
+      "x": 1520,
+      "y": 229756,
+      "w": 390,
+      "h": 10407
+    },
+    {
+      "file": "florist-sign-in-desktop.dc.html",
+      "title": "florist sign in · desktop · spec 011",
+      "x": 0,
+      "y": 240363,
+      "w": 1440,
+      "h": 3710
+    },
+    {
+      "file": "florist-sign-in-mobile.dc.html",
+      "title": "florist sign in · mobile · spec 011",
+      "x": 1520,
+      "y": 240363,
+      "w": 390,
+      "h": 4113
+    },
+    {
+      "file": "florist-inbox-desktop.dc.html",
+      "title": "florist inbox · desktop · spec 011",
+      "x": 0,
+      "y": 244676,
+      "w": 1440,
+      "h": 12271
+    },
+    {
+      "file": "florist-inbox-mobile.dc.html",
+      "title": "florist inbox · mobile · spec 011",
+      "x": 1520,
+      "y": 244676,
+      "w": 390,
+      "h": 15337
+    },
+    {
+      "file": "admin-sign-in-desktop.dc.html",
+      "title": "admin sign in · desktop · spec 012",
+      "x": 0,
+      "y": 260213,
+      "w": 1440,
+      "h": 4193
+    },
+    {
+      "file": "admin-sign-in-mobile.dc.html",
+      "title": "admin sign in · mobile · spec 012",
+      "x": 1520,
+      "y": 260213,
+      "w": 390,
+      "h": 4256
+    },
+    {
+      "file": "admin-home-desktop.dc.html",
+      "title": "admin home · desktop · spec 012",
+      "x": 0,
+      "y": 264669,
+      "w": 1440,
+      "h": 4237
+    },
+    {
+      "file": "admin-home-mobile.dc.html",
+      "title": "admin home · mobile · spec 012",
+      "x": 1520,
+      "y": 264669,
+      "w": 390,
+      "h": 6191
+    },
+    {
+      "file": "admin-orders-desktop.dc.html",
+      "title": "admin orders · desktop · spec 012",
+      "x": 0,
+      "y": 271060,
+      "w": 1440,
+      "h": 3953
+    },
+    {
+      "file": "admin-orders-mobile.dc.html",
+      "title": "admin orders · mobile · spec 012",
+      "x": 1520,
+      "y": 271060,
+      "w": 390,
+      "h": 5194
+    },
+    {
+      "file": "admin-order-detail-desktop.dc.html",
+      "title": "admin order detail · desktop · spec 012",
+      "x": 0,
+      "y": 276454,
+      "w": 1440,
+      "h": 4196
+    },
+    {
+      "file": "admin-order-detail-mobile.dc.html",
+      "title": "admin order detail · mobile · spec 012",
+      "x": 1520,
+      "y": 276454,
+      "w": 390,
+      "h": 6167
+    },
+    {
+      "file": "admin-flags-desktop.dc.html",
+      "title": "admin flags · desktop · spec 012",
+      "x": 0,
+      "y": 282821,
+      "w": 1440,
+      "h": 2996
+    },
+    {
+      "file": "admin-flags-mobile.dc.html",
+      "title": "admin flags · mobile · spec 012",
+      "x": 1520,
+      "y": 282821,
+      "w": 390,
+      "h": 3873
+    },
+    {
+      "file": "admin-partners-desktop.dc.html",
+      "title": "admin partners · desktop · spec 012",
+      "x": 0,
+      "y": 286894,
+      "w": 1440,
+      "h": 2150
+    },
+    {
+      "file": "admin-partners-mobile.dc.html",
+      "title": "admin partners · mobile · spec 012",
+      "x": 1520,
+      "y": 286894,
+      "w": 390,
+      "h": 2777
+    },
+    {
+      "file": "admin-partner-detail-desktop.dc.html",
+      "title": "admin partner detail · desktop · spec 012",
+      "x": 0,
+      "y": 289871,
+      "w": 1440,
+      "h": 4544
+    },
+    {
+      "file": "admin-partner-detail-mobile.dc.html",
+      "title": "admin partner detail · mobile · spec 012",
+      "x": 1520,
+      "y": 289871,
+      "w": 390,
+      "h": 7313
+    },
+    {
+      "file": "admin-applications-desktop.dc.html",
+      "title": "admin applications · desktop · spec 012",
+      "x": 0,
+      "y": 297384,
+      "w": 1440,
+      "h": 4518
+    },
+    {
+      "file": "admin-applications-mobile.dc.html",
+      "title": "admin applications · mobile · spec 012",
+      "x": 1520,
+      "y": 297384,
+      "w": 390,
+      "h": 5758
+    },
+    {
+      "file": "admin-audit-desktop.dc.html",
+      "title": "admin audit · desktop · spec 012",
+      "x": 0,
+      "y": 303342,
+      "w": 1440,
+      "h": 2100
+    },
+    {
+      "file": "admin-audit-mobile.dc.html",
+      "title": "admin audit · mobile · spec 012",
+      "x": 1520,
+      "y": 303342,
+      "w": 390,
+      "h": 2531
+    },
+    {
+      "file": "admin-users-desktop.dc.html",
+      "title": "admin users · desktop · spec 012",
+      "x": 0,
+      "y": 306073,
+      "w": 1440,
+      "h": 2150
+    },
+    {
+      "file": "admin-users-mobile.dc.html",
+      "title": "admin users · mobile · spec 012",
+      "x": 1520,
+      "y": 306073,
+      "w": 390,
+      "h": 2869
     }
   ],
   "annotations": [
@@ -583,6 +807,104 @@
       "y": 20122,
       "w": 1200,
       "text": "Language popup (sweep 2026-10-04) — the founder's ruling replaces the / chooser with one fixed redirect to /en and this first-visit popup; the old “Would you rather read this page in English?” strip goes. Desktop card, 390 top sheet (ruling R10)."
+    },
+    {
+      "id": "s011-walk",
+      "x": 0,
+      "y": 222534,
+      "w": 1400,
+      "text": "Spec 011 (2026-10-05) · For florists: how an order reaches you (walkthrough). Desktop 1440 and mobile 390; the four screens are the real inbox components in phone frames. Founder copy pending."
+    },
+    {
+      "id": "s011-apply",
+      "x": 0,
+      "y": 229710,
+      "w": 1400,
+      "text": "Spec 011 · Apply and sent: the form (no upload, no bank details), what happens next, the notice at collection; errors, send failed, too many, form off, the sent page."
+    },
+    {
+      "id": "s011-signin",
+      "x": 0,
+      "y": 240317,
+      "w": 1400,
+      "text": "Spec 011 · Florist sign-in: the one email link on spec 012's shared core; request, check your email, confirm, expired, the email."
+    },
+    {
+      "id": "s011-inbox",
+      "x": 0,
+      "y": 244630,
+      "w": 1400,
+      "text": "Spec 011 · Florist inbox v0 (/demo/vendor-inbox on staging): list, every order stage with only the allowed action, the photo step. Phone first: minimal header, 56 px docked actions."
+    },
+    {
+      "id": "s012-signin",
+      "x": 0,
+      "y": 260167,
+      "w": 1400,
+      "text": "Spec 012 · Admin v0 · sign-in (shared core, admin instance). Every admin artboard: desktop-first and dense, works at 390. Founder copy pending; English only."
+    },
+    {
+      "id": "s012-home",
+      "x": 0,
+      "y": 264623,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Today: three counters, navigation per role, zero state, 403 and 404."
+    },
+    {
+      "id": "s012-orders",
+      "x": 0,
+      "y": 271014,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Orders (read only): filters, the 3 s live check and its pause, demo marker, new-arrival highlight, empty and filtered-empty."
+    },
+    {
+      "id": "s012-order",
+      "x": 0,
+      "y": 276408,
+      "w": 1400,
+      "text": "Spec 012 · Admin · One order: lines and VAT, recipient by role, the event timeline with raw payloads, assignments, payments. No action panel in v0 (spec 020)."
+    },
+    {
+      "id": "s012-flags",
+      "x": 0,
+      "y": 282775,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Flags: checkout.open per country, checkout.demo_guard with the typed-key confirmation, an orphaned key."
+    },
+    {
+      "id": "s012-partners",
+      "x": 0,
+      "y": 286848,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Florists: list by status."
+    },
+    {
+      "id": "s012-partner",
+      "x": 0,
+      "y": 289825,
+      "w": 1400,
+      "text": "Spec 012 · Admin · One florist: profile, terms, zones, days off, products and payouts; status with the missing conditions (Make active absent until all are met); demo florist."
+    },
+    {
+      "id": "s012-apps",
+      "x": 0,
+      "y": 297338,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Applications: list, one application, mark contacted, convert, reject with a reason."
+    },
+    {
+      "id": "s012-audit",
+      "x": 0,
+      "y": 303296,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Audit log: filters, before/after diff with masked values."
+    },
+    {
+      "id": "s012-users",
+      "x": 0,
+      "y": 306027,
+      "w": 1400,
+      "text": "Spec 012 · Admin · Users: roles, deactivate, your own last admin role."
     }
   ],
   "launch": {

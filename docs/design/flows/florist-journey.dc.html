@@ -85,14 +85,14 @@
     code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: var(--text-xs); color: var(--color-ink-2); }
   </style>
 </helmet>
-<div style="width: 1440px; min-height: 1600px; background: var(--color-paper); display: flex; flex-direction: column;">
+<div style="width: 1440px; min-height: 1500px; background: var(--color-paper); display: flex; flex-direction: column;">
   <section class="note" style="margin: var(--space-lg) 56px 0;">
-    <span class="label">Florist journey · landing → first order · [internal]</span>
+    <span class="label">Florist journey · landing → sign-in → first order · updated for spec 011, 2026-10-05 · [internal]</span>
     <dl>
-      <dt>Purpose</dt><dd>The other side of the shop: how a Warsaw florist meets us, applies, and sees their first order. This is the flow the 16 October demo walks a florist through, so the florist inbox is a real screen even though it is seeded data behind a password.</dd>
-      <dt>Why it matters more than it looks</dt><dd>Phase 0's exit signal is “≥3 Warsaw florists verbally committed after seeing the demo”. The florist's journey is therefore a Phase 0 <em>product</em>, not a Phase 2 portal — but only these four screens, and the inbox is a mock.</dd>
-      <dt>What is honest here</dt><dd>No florist testimonials, no shop logos, no “200 florists in 7 countries”, no payout figures presented as averages. Live stats render as a <code>Placeholder</code> bar until real florists exist; the payout example is labelled as an example with its own arithmetic shown.</dd>
-      <dt>Owning spec</dt><dd>011 (for-florists landing, application, walkthrough, demo florist inbox) · <code>plan/05</code> rows 41, 42, 43, 45</dd>
+      <dt>Purpose</dt><dd>How a Warsaw florist meets us, applies, and on a demo call signs in on staging and handles a first example order on their phone. Phase 0 exit signal 9 depends on it.</dd>
+      <dt>What changed (spec 011 Appendix B item 6)</dt><dd>Step 03 is the staging inbox reached through the one email sign-in (spec 011 §13 Q2, accepted): there is no per-order <code>/v/{token}</code> link. Step 04 drops the public-use consent question (§13 Q6: photos stay private until spec 029's recipient consent) and the substitution field (spec 027). The walkthrough has its own page now. “Not in Phase 0” names specs 026 and 027.</dd>
+      <dt>What is honest here</dt><dd>No count of florists, no testimonial, no shop logo. The status line is drawn as “We are opening country by country, starting in Poland.” (founder copy pending; it replaces spec 011's “choosing” line, which the founder's ruling bans). The payout example is two lines, the buyer's price from the catalogue and the agreed amount, labelled as one example. Every inbox order on staging is synthetic.</dd>
+      <dt>Owning spec</dt><dd>011 · <code>plan/05</code> rows 41, 42, 43, 45 · artboards <code>wireframes/for-florists-*</code>, <code>for-florists-walkthrough-*</code>, <code>for-florists-apply-*</code>, <code>florist-sign-in-*</code>, <code>florist-inbox-*</code></dd>
     </dl>
   </section>
   <div class="sheet">
@@ -100,46 +100,43 @@
       <div class="step">
         <header><span class="i">01</span><b>For florists</b></header>
         <code>/en-gb/for-florists · /pl/dla-kwiaciarni · /de/fuer-floristen</code>
-        <div class="thumb"><div class="ink"></div><div class="bar"></div><span>Orders from abroad, made by you</span><div class="ph2">workshop photo slot</div><div class="row2"><div class="box" style="flex:1">We handle the buyer, the language, the payment</div><div class="box" style="flex:1">You make it and deliver it locally</div></div><div class="box">Example order: retail 219 zł → your payout 149 zł</div><div class="acc"></div><span>Apply to join</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Is this worth a form? The page has to answer “who are you, what do I get, what do you take” above the fold.</dd><dt>Trust</dt><dd><span class="trust">The payout arithmetic shown as an example with every line visible, not as an average. No testimonial we do not have.</span></dd><dt>Reads</dt><dd>static copy + live florist stats (placeholder in Phase 0). Localised slug per market.</dd><dt>Index</dt><dd>yes — a recruiting page in three languages</dd><dt>Spec</dt><dd>011</dd></dl>
+        <div class="thumb"><div class="ink"></div><span>Orders from abroad, made by you</span><div class="box">We are opening country by country, starting in Poland. <span class="slot">founder copy pending</span></div><div class="row2"><div class="box" style="flex:1">What we do</div><div class="box" style="flex:1">What you do</div></div><div class="box">An example from Poland: the buyer pays · you receive, agreed before you start</div><div class="box">How an order reaches you · FAQ · talk to us first</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Is this worth a call or a form? Apply, see how an order reaches you, or phone first.</dd><dt>Trust</dt><dd><span class="trust">The payout example's buyer price is resolved from the catalogue, never copied; no count of florists or orders anywhere.</span></dd><dt>Reads</dt><dd><code>content/pages/{locale}/for-florists.md</code>; <code>src/config/florists.ts</code> (the example); no database.</dd><dt>Index</dt><dd>yes, by rule (reviewed locales only)</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">02</span><b>Application</b></header>
-        <code>/en-gb/for-florists/apply</code>
-        <div class="thumb"><div class="ink"></div><span>Tell us about your shop</span><div class="box">Business name · registration</div><div class="box">City and the districts you cover</div><div class="box">Orders a day you can take</div><div class="box">Photos of your work (optional)</div><div class="box">Contact: email · phone · WhatsApp</div><div class="box">What we do with this — and what we don't</div><div class="acc"></div></div>
-        <dl class="meta"><dt>Decision</dt><dd>Apply. Payout details are deliberately <em>not</em> asked here — bank details before a conversation is a reason not to finish the form.</dd><dt>Trust</dt><dd><span class="trust">A plain sentence about what happens next and in how long; the data-protection line saying what is stored and for how long.</span></dd><dt>Reads</dt><dd>writes <code>partner_application</code>. Nothing is read.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011</dd></dl>
+        <header><span class="i">02</span><b>Walkthrough, then apply</b></header>
+        <code>…/for-florists/how-orders-work → …/for-florists/apply → …/apply/sent</code>
+        <div class="thumb"><div class="ink"></div><span>How an order reaches you · four screens</span><div class="row2"><div class="box" style="flex:1">1 It arrives</div><div class="box" style="flex:1">2 You answer</div></div><div class="row2"><div class="box" style="flex:1">3 You make and deliver it</div><div class="box" style="flex:1">4 You add one photo</div></div><span>Apply to work with us</span><div class="box">13 fields, no upload, no bank details</div><div class="box">What happens next · what we do with your details</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Send the application, or call instead (the form-off state is contact first).</dd><dt>Trust</dt><dd><span class="trust">The walkthrough's screens are the real inbox components; the notice at collection sits beside the form.</span></dd><dt>Reads</dt><dd>writes one <code>partner_application</code> row (insert only) and one alert email to the founder.</dd><dt>Index</dt><dd>walkthrough by rule; apply and sent never</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">03</span><b>Florist inbox (mock)</b></header>
-        <code>/demo/vendor-inbox — password-protected</code>
-        <div class="thumb"><div class="ink"></div><span>New order · Warszawa · Thu 10 Sep</span><div class="box">Amber Hour · 18 stems · + chocolates</div><div class="box">Recipient: first name, phone, street — <b>no buyer details</b></div><div class="box">Card message (print)</div><div class="box">Your payout: 149 zł</div><div class="row2"><div class="acc" style="flex:1"></div><div class="box" style="flex:1">Decline</div></div><span>Accept by 14:00 · then upload the photo</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Accept or decline, with the payout and the deadline both visible before the choice.</dd><dt>Trust</dt><dd><span class="trust">Recipient data is minimised to what delivery needs: first name, phone, address, message. The buyer's identity is not in the florist's view at all.</span></dd><dt>Reads</dt><dd>seeded demo order. In production this is the magic-link view at <code>/v/{token}</code> — no login to accept.</dd><dt>Index</dt><dd>noindex, protected</dd><dt>Spec</dt><dd>011 (demo) · 016 routing · 027 florist portal</dd></dl>
+        <header><span class="i">03</span><b>Sign in on staging (demo call)</b></header>
+        <code>/demo/vendor-inbox/sign-in → email link → …/sign-in/confirm?t=… → /demo/vendor-inbox</code>
+        <div class="thumb"><div class="ink"></div><span>Sign in to see your orders</span><div class="box">Email · Send me a link</div><div class="box">Check your email (same page for every address)</div><div class="box">Continue to your orders (one button; the GET uses nothing)</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>The founder adds the florist's email to a demo shop before the call (<code>pnpm florists:demo-member add</code>); the florist types the staging password, then signs in by email.</dd><dt>Trust</dt><dd><span class="trust">No email address in any URL; the link works once, for one hour.</span></dd><dt>Reads</dt><dd>the shared sign-in core (spec 012 task 1), florist instance; <code>partner_member</code>.</dd><dt>Index</dt><dd>noindex, 404 in production</dd><dt>Spec</dt><dd>011 on 012's core</dd></dl>
       </div>
     </div>
 
-    <div class="steps" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+    <div class="steps">
       <div class="step">
-        <header><span class="i">04</span><b>Photo upload</b></header>
-        <code>/v/{token} — from the email or WhatsApp link</code>
-        <div class="thumb"><div class="ink"></div><span>Delivered — add the photo</span><div class="ph2">the florist's photo of the delivered bouquet</div><div class="box">Substitution note (if any)</div><div class="box">Consent: may we show this photo publicly?</div><div class="acc"></div><span>The buyer is emailed the photo automatically</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Upload, and separately: may the photo be shown publicly. Two different questions, asked separately.</dd><dt>Trust</dt><dd><span class="trust">The photo is the product's proof, so the step is one tap from a link with no login. A substitution is disclosed rather than hidden.</span></dd><dt>Reads</dt><dd>writes <code>delivery_proof</code> with its consent flag. Only a consented photo can ever appear on a public page.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011 · 018 · consent per <code>plan/07</code> §1.2</dd></dl>
+        <header><span class="i">04</span><b>The offer, then the order</b></header>
+        <code>/demo/vendor-inbox · …/orders/{assignmentId}</code>
+        <div class="thumb"><div class="ink"></div><span>Waiting for your answer · Answer by 15:40</span><div class="box">Amber Hour · 18 stems · + Vase · For Thu 8 Oct · Warszawa</div><div class="box">You receive 149 zł</div><div class="row2"><div class="box" style="flex:1">Decline</div><div class="acc" style="flex:2"></div></div><span>After Accept: recipient, phone, address, card message to print · Out for delivery</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Accept, or decline with one of five reasons. A “Send a test order” control on the list makes the offer appear within 5 seconds.</dd><dt>Trust</dt><dd><span class="trust">No buyer field exists in the view; the recipient's details appear only from acceptance to the photo.</span></dd><dt>Reads</dt><dd><code>floristOrderView</code> under row-level security; every action through spec 010's <code>orderService.transition</code>.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">—</span><b>Not in Phase 0</b></header>
-        <div class="stub" style="border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm);">
-          <span>A real florist portal with a login (<code>/vendor/*</code>) — Phase 2.</span>
-          <span>Capacity and blackout calendars, ratings, staff accounts — Phase 2.</span>
-          <span>Payouts in the portal — Phase 2; Phase 0 pays by weekly batch outside the product.</span>
-          <span>Terms for florists as a legal page — Phase 1.</span>
-          <span>A public “our florists” page and florist profiles — Phase 1/2, and only for florists who opt in and have delivered at least one order.</span>
-        </div>
+        <header><span class="i">05</span><b>Delivered, add the photo</b></header>
+        <code>…/orders/{assignmentId}/photo</code>
+        <div class="thumb"><div class="ink"></div><span>Take or choose a photo of the delivered bouquet</span><div class="ph2">the florist's photo, metadata removed, private bucket</div><div class="acc"></div><span>Photo received. Thank you.</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Take the photo; nothing else is asked. No public-use question (§13 Q6) and no substitution field (spec 027).</dd><dt>Trust</dt><dd><span class="trust">The photo is re-encoded with every metadata field dropped, stored privately, shown back through a 5-minute signed URL.</span></dd><dt>Reads</dt><dd>writes <code>media_asset</code> and <code>delivery_proof</code> (<code>public_use_consent = false</code>).</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">—</span><b>Walkthrough page</b></header>
-        <code>/en-gb/for-florists/how-orders-work</code>
-        <div class="stub" style="border: 1px dashed var(--color-ink-3); border-radius: var(--radius-sm); padding: var(--space-md); display: flex; flex-direction: column; gap: 6px; color: var(--color-ink-2); font-size: var(--text-sm);">
-          <span>A Phase 0 page (<code>plan/05</code> row 43) that shows steps 03 and 04 as static screens, so a florist can read the mechanics without a password.</span>
-          <span>It is the same two thumbnails above, rendered as page content with captions — which is why it has no wireframe of its own: it is <code>for-florists.dc.html</code>'s third section.</span>
+        <header><span class="i">·</span><b>Not in Phase 0</b></header>
+        <div class="stub">
+          <span><b>Spec 026:</b> florists sign in on the live site (a small slice in Phase 1, at the first signed florist), owner and staff permissions, staff invites, a shop switcher for chains.</span>
+          <span><b>Spec 027:</b> capacity and days-off calendar, substitution notes, the printed card PDF, payout history, ratings, coverage editing, availability toggles, photo hints.</span>
+          <span><b>Spec 017:</b> order emails that sign the florist in and open the order in one tap. <b>028:</b> WhatsApp. <b>029:</b> recipient consent for public photos. <b>030:</b> payouts.</span>
+          <span>Florist terms as a legal page (Phase 1); “our florists” pages only for florists who opt in.</span>
         </div>
       </div>
     </div>
