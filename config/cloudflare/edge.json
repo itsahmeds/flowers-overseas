@@ -1,0 +1,142 @@
+{
+  "$comment": "The declared Cloudflare edge of flowersoverseas.com: DNS records, cache rules, the www → apex redirect, the rate limit and the response-header rules (spec 040 §5.4, §12, AC-14, AC-16, AC-21; TASK-101). Parsed and linted by scripts/cloudflare/edge.ts; `pnpm cloudflare:check` lints it on every run and, with the token, diffs the live zone against it. The token cannot write rules (spec 040 §14 A5 keeps its scopes to five), so every difference is printed with the step of docs/runbooks/railway-cloudflare-setup.md, section \"Founder steps in the Cloudflare and Railway dashboards\", that fixes it by hand. Rule `description` is the rule name in the dashboard and is how a live rule is matched to its declaration.",
+  "zone": "flowersoverseas.com",
+  "hosts": {
+    "production": "flowersoverseas.com",
+    "www": "www.flowersoverseas.com",
+    "staging": "staging.flowersoverseas.com",
+    "foreign": ["media.flowersoverseas.com"],
+    "reason": "`foreign` hosts are served by Cloudflare R2, not by the app (spec 006 §14 A8): a rule that names only them is not this file’s and is not linted against it"
+  },
+  "cutover": {
+    "state": "pending",
+    "owner": "TASK-104",
+    "reason": "until the cutover (spec 040 §12 step 6) the apex and www still serve the old GoDaddy Website Builder page. Records and rules with stage `cutover` are reported as pending, not as failures, until TASK-104 sets this to `done` in the same PR that flips the records"
+  },
+  "dns": {
+    "records": [
+      {
+        "name": "flowersoverseas.com",
+        "type": "CNAME",
+        "target": "railway",
+        "proxied": true,
+        "stage": "cutover",
+        "founderStep": "C3",
+        "reason": "the apex, CNAME-flattened by Cloudflare, to the target Railway shows for the production custom domain; proxied so every §5.4 setting and rule applies"
+      },
+      {
+        "name": "www.flowersoverseas.com",
+        "type": "CNAME",
+        "target": "railway",
+        "proxied": true,
+        "stage": "cutover",
+        "founderStep": "C3",
+        "reason": "proxied so the www → apex 301 runs at the edge (plan/02 §7)"
+      },
+      {
+        "name": "staging.flowersoverseas.com",
+        "type": "CNAME",
+        "target": "railway",
+        "proxied": true,
+        "stage": "now",
+        "founderStep": "E2",
+        "reason": "staging behind the same edge as production, so the rules are proven on staging first (spec 040 §12 step 4)"
+      }
+    ],
+    "keep": [
+      {
+        "name": "_dmarc.flowersoverseas.com",
+        "type": "TXT",
+        "reason": "the domain’s DMARC policy; spec 040 §5.4 keeps it when the GoDaddy records go"
+      }
+    ]
+  },
+  "bypass": {
+    "paths": ["/api/", "/checkout", "/account", "/admin", "/vendor", "/track"],
+    "reason": "never cache a dynamic path, bare or under any locale prefix of src/config/locales.data.ts (launch and pseudo). The origin already answers these `no-store`; the rule makes it so even if one day it does not"
+  },
+  "phases": [
+    {
+      "phase": "http_request_cache_settings",
+      "scope": "Zone → Cache Rules → Read",
+      "rules": [
+        {
+          "description": "fo: cache documents",
+          "stage": "cutover",
+          "founderStep": "C1",
+          "reason": "HTML is not cached by Cloudflare without a rule. Eligible for cache, edge and browser TTL from the origin’s Cache-Control (ISR’s s-maxage), so `no-store` is never cached: this is not Cache Everything. Production host only: staging and PR hosts sit behind the basic-auth wall, and a shared cache would serve their pages to anyone",
+          "expression": "(http.host eq \"flowersoverseas.com\")",
+          "action": "set_cache_settings",
+          "action_parameters": {
+            "cache": true,
+            "edge_ttl": {
+              "mode": "respect_origin"
+            },
+            "browser_ttl": {
+              "mode": "respect_origin"
+            }
+          }
+        },
+        {
+          "description": "fo: bypass dynamic paths",
+          "stage": "now",
+          "founderStep": "E4",
+          "reason": "spec 040 §5.4 rule 1. Last in the phase, because a later cache rule wins over an earlier one",
+          "expression": "(starts_with(http.request.uri.path, \"/api/\") or starts_with(http.request.uri.path, \"/checkout\") or starts_with(http.request.uri.path, \"/account\") or starts_with(http.request.uri.path, \"/admin\") or starts_with(http.request.uri.path, \"/vendor\") or starts_with(http.request.uri.path, \"/track\") or starts_with(http.request.uri.path, \"/en/api/\") or starts_with(http.request.uri.path, \"/en/checkout\") or starts_with(http.request.uri.path, \"/en/account\") or starts_with(http.request.uri.path, \"/en/admin\") or starts_with(http.request.uri.path, \"/en/vendor\") or starts_with(http.request.uri.path, \"/en/track\") or starts_with(http.request.uri.path, \"/en-gb/api/\") or starts_with(http.request.uri.path, \"/en-gb/checkout\") or starts_with(http.request.uri.path, \"/en-gb/account\") or starts_with(http.request.uri.path, \"/en-gb/admin\") or starts_with(http.request.uri.path, \"/en-gb/vendor\") or starts_with(http.request.uri.path, \"/en-gb/track\") or starts_with(http.request.uri.path, \"/de/api/\") or starts_with(http.request.uri.path, \"/de/checkout\") or starts_with(http.request.uri.path, \"/de/account\") or starts_with(http.request.uri.path, \"/de/admin\") or starts_with(http.request.uri.path, \"/de/vendor\") or starts_with(http.request.uri.path, \"/de/track\") or starts_with(http.request.uri.path, \"/pl/api/\") or starts_with(http.request.uri.path, \"/pl/checkout\") or starts_with(http.request.uri.path, \"/pl/account\") or starts_with(http.request.uri.path, \"/pl/admin\") or starts_with(http.request.uri.path, \"/pl/vendor\") or starts_with(http.request.uri.path, \"/pl/track\") or starts_with(http.request.uri.path, \"/en-XA/api/\") or starts_with(http.request.uri.path, \"/en-XA/checkout\") or starts_with(http.request.uri.path, \"/en-XA/account\") or starts_with(http.request.uri.path, \"/en-XA/admin\") or starts_with(http.request.uri.path, \"/en-XA/vendor\") or starts_with(http.request.uri.path, \"/en-XA/track\") or starts_with(http.request.uri.path, \"/ar-XB/api/\") or starts_with(http.request.uri.path, \"/ar-XB/checkout\") or starts_with(http.request.uri.path, \"/ar-XB/account\") or starts_with(http.request.uri.path, \"/ar-XB/admin\") or starts_with(http.request.uri.path, \"/ar-XB/vendor\") or starts_with(http.request.uri.path, \"/ar-XB/track\"))",
+          "action": "set_cache_settings",
+          "action_parameters": {
+            "cache": false
+          }
+        }
+      ]
+    },
+    {
+      "phase": "http_request_dynamic_redirect",
+      "scope": "Zone → Single Redirect → Read",
+      "rules": [
+        {
+          "description": "fo: www to apex",
+          "stage": "cutover",
+          "founderStep": "C2",
+          "reason": "plan/02 §7: www → apex, 301 at the edge, path and query kept",
+          "expression": "(http.host eq \"www.flowersoverseas.com\")",
+          "action": "redirect",
+          "action_parameters": {
+            "from_value": {
+              "status_code": 301,
+              "target_url": {
+                "expression": "concat(\"https://flowersoverseas.com\", http.request.uri.path)"
+              },
+              "preserve_query_string": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "phase": "http_ratelimit",
+      "scope": "Zone → Zone WAF → Read",
+      "rules": [
+        {
+          "description": "fo: api rate limit",
+          "stage": "now",
+          "founderStep": "E5",
+          "reason": "spec 040 §5.4 rule 3 in the Free plan’s terms: the plan allows one rule, the path field only (no request method), a 10-second period and a 10-second timeout, so 60 a minute becomes 10 per 10 seconds per IP, then 429 (TASK-101 escalation E-2). Documents are never counted (AC-21)",
+          "expression": "(starts_with(http.request.uri.path, \"/api/\"))",
+          "action": "block",
+          "ratelimit": {
+            "characteristics": ["cf.colo.id", "ip.src"],
+            "period": 10,
+            "requests_per_period": 10,
+            "mitigation_timeout": 10
+          }
+        }
+      ]
+    },
+    {
+      "phase": "http_response_headers_transform",
+      "scope": "Zone → Transform Rules → Read",
+      "rules": []
+    }
+  ]
+}

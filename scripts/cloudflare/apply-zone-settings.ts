@@ -23,6 +23,17 @@
  * apply against a fixture writes to an in-memory copy only. That is how the contract tests run
  * the whole comparison without a token, and how a reviewer reproduces a failure.
  *
+ * The edge (TASK-101: DNS records, cache rules, the `www` redirect, the rate limit, declared in
+ * `config/cloudflare/edge.json`, logic in `./edge.ts`):
+ *
+ *  - The declaration is linted on **every** run, before the token is looked at: a lint problem
+ *    exits 1 even where the zone itself is `skipped: no token`.
+ *  - With the token, after the zone settings, the live edge is read (GETs only) and diffed. Both
+ *    `--check` and the default mode only report it: the token holds no rules scope, so each
+ *    difference names the founder step of the runbook that fixes it, and the default mode prints
+ *    it as `manual:`. With `--fixture`, the edge is diffed only when `--edge-fixture <path>` names
+ *    its own recording (the zone-settings recordings carry no DNS or ruleset answers).
+ *
  * Exit codes: 0 match (or skipped) · 1 drift · 2 missing credentials · 3 the API refused or the
  * request was not allow-listed (a 403 names the missing token scope).
  */
@@ -46,6 +57,14 @@ import {
   recordedZoneSchema,
   zoneSettingsSchema,
 } from "../../src/lib/cloudflare-zone.ts";
+import {
+  EDGE_PATH,
+  type EdgeDeclaration,
+  type EdgeReport,
+  checkEdge,
+  edgeSchema,
+  lintEdge,
+} from "./edge.ts";
 
 export const TOKEN_KEY = "CLOUDFLARE_API_TOKEN";
 export const ZONE_ID_KEY = "CLOUDFLARE_ZONE_ID";
@@ -54,6 +73,12 @@ export const ZONE_ID_KEY = "CLOUDFLARE_ZONE_ID";
 export function loadDeclaredZone(repoRoot: string): ZoneSettings {
   const path = resolve(repoRoot, ZONE_SETTINGS_PATH);
   return zoneSettingsSchema.parse(JSON.parse(readFileSync(path, "utf8")));
+}
+
+/** Parse `config/cloudflare/edge.json`. Throws a zod error naming the offending field. */
+export function loadDeclaredEdge(repoRoot: string): EdgeDeclaration {
+  const path = resolve(repoRoot, EDGE_PATH);
+  return edgeSchema.parse(JSON.parse(readFileSync(path, "utf8")));
 }
 
 /** The live API. The only `fetch` in the Cloudflare scripts, and the only holder of the token. */
@@ -93,14 +118,19 @@ export interface CliOptions {
   readonly check: boolean;
   readonly requireToken: boolean;
   readonly fixture: string | undefined;
+  readonly edgeFixture: string | undefined;
 }
 
 export function parseArgs(argv: readonly string[]): CliOptions {
-  const fixtureIndex = argv.indexOf("--fixture");
+  const valueOf = (flag: string): string | undefined => {
+    const index = argv.indexOf(flag);
+    return index === -1 ? undefined : argv[index + 1];
+  };
   return {
     check: argv.includes("--check"),
     requireToken: argv.includes("--require-token"),
-    fixture: fixtureIndex === -1 ? undefined : argv[fixtureIndex + 1],
+    fixture: valueOf("--fixture"),
+    edgeFixture: valueOf("--edge-fixture"),
   };
 }
 
@@ -126,19 +156,45 @@ function command(options: CliOptions): string {
   return options.check ? "cloudflare:check" : "cloudflare:apply";
 }
 
+/** Where the answers come from: the zone's, and the edge's when there is one to read. */
+interface Source {
+  readonly transport: Transport;
+  readonly zoneId: string;
+  readonly edge:
+    { readonly transport: Transport; readonly zoneId: string } | undefined;
+}
+
 /** The source of the answers: a recorded file, the live API, or a reason not to run. */
 function resolveTransport(
   options: CliOptions,
   env: Readonly<Record<string, string | undefined>>,
   cwd: string,
-): { transport: Transport; zoneId: string } | CliResult {
+): Source | CliResult {
   if (options.fixture !== undefined) {
     const recorded = recordedZoneSchema.parse(
       JSON.parse(readFileSync(resolve(cwd, options.fixture), "utf8")),
     );
+    let edge: Source["edge"];
+    if (options.edgeFixture !== undefined) {
+      const edgeRecorded = recordedZoneSchema.parse(
+        JSON.parse(readFileSync(resolve(cwd, options.edgeFixture), "utf8")),
+      );
+      edge = {
+        transport: createRecordedTransport(edgeRecorded).transport,
+        zoneId: edgeRecorded.zoneId,
+      };
+    }
     return {
       transport: createRecordedTransport(recorded).transport,
       zoneId: recorded.zoneId,
+      edge,
+    };
+  }
+  if (options.edgeFixture !== undefined) {
+    return {
+      code: 2,
+      stdout: "",
+      stderr: `${command(options)}: --edge-fixture needs --fixture: a recorded edge is replayed beside a recorded zone, never beside the live one\n`,
     };
   }
   const token = env[TOKEN_KEY];
@@ -176,7 +232,8 @@ function resolveTransport(
       };
     }
   }
-  return { transport: fetchTransport(token), zoneId };
+  const live = fetchTransport(token);
+  return { transport: live, zoneId, edge: { transport: live, zoneId } };
 }
 
 /** The whole run, without touching `process`: what the CLI prints and the code it exits with. */
@@ -186,6 +243,15 @@ export async function run(
   cwd: string,
 ): Promise<CliResult> {
   const options = parseArgs(argv);
+  const edge = loadDeclaredEdge(cwd);
+  const problems = lintEdge(edge);
+  if (problems.length > 0) {
+    return {
+      code: 1,
+      stdout: `${problems.map((problem) => `${EDGE_PATH} · ${problem}`).join("\n")}\n`,
+      stderr: `${command(options)} failed: ${EDGE_PATH} is unsafe to apply; each line above names the rule it breaks.\n`,
+    };
+  }
   const source = resolveTransport(options, env, cwd);
   if ("code" in source) return source;
 
@@ -199,13 +265,20 @@ export async function run(
     const report = options.check
       ? await checkZone(declared, client)
       : await applyZone(declared, client);
-    const stdout = `${report.lines.join("\n")}\n`;
-    if (report.ok) return { code: 0, stdout, stderr: "" };
-    return {
-      code: 1,
-      stdout,
-      stderr: `${command(options)} failed: each line above names a setting that differs from ${ZONE_SETTINGS_PATH}.\n`,
-    };
+    const edgeReport =
+      source.edge === undefined
+        ? undefined
+        : await checkEdge(edge, source.edge.transport, source.edge.zoneId);
+    const stdout = `${[...report.lines, ...edgeLines(edgeReport, options)].join("\n")}\n`;
+    const stderr = [
+      report.ok
+        ? ""
+        : `${command(options)} failed: each line above names a setting that differs from ${ZONE_SETTINGS_PATH}.\n`,
+      edgeReport === undefined || edgeReport.ok
+        ? ""
+        : `${command(options)} failed: the edge differs from ${EDGE_PATH}; the token cannot change it, so each line names the founder step that does.\n`,
+    ].join("");
+    return { code: stderr === "" ? 0 : 1, stdout, stderr };
   } catch (error) {
     if (
       error instanceof MissingScopeError ||
@@ -221,6 +294,19 @@ export async function run(
     }
     throw error;
   }
+}
+
+/** The edge's lines: in the default mode a difference is printed `manual:`, as the zone's are. */
+function edgeLines(
+  report: EdgeReport | undefined,
+  options: CliOptions,
+): readonly string[] {
+  if (report === undefined) return [];
+  if (options.check) return report.lines;
+  return [
+    ...report.drifts.map((line) => `manual: ${line}`),
+    ...report.lines.slice(report.drifts.length),
+  ];
 }
 
 const isMain =

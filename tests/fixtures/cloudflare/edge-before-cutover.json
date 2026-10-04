@@ -1,0 +1,154 @@
+{
+  "$comment": "The edge between TASK-101 and the cutover, read with the five-scope token of spec 040 §14 A5 (TASK-101). The apex still carries the GoDaddy Website Builder records: their real addresses are not recorded, so 192.0.2.10 and .11 (RFC 5737 documentation addresses) stand for them. staging. is the record of founder steps E1–E3. Every ruleset read answers 403, because the token holds no rules scope. Shaped after Cloudflare's documented v4 envelopes.",
+  "zoneId": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+  "responses": {
+    "GET /zones/{zone_id}/dns_records": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": [
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa13",
+            "name": "flowersoverseas.com",
+            "type": "A",
+            "content": "192.0.2.10",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa14",
+            "name": "flowersoverseas.com",
+            "type": "A",
+            "content": "192.0.2.11",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa15",
+            "name": "www.flowersoverseas.com",
+            "type": "CNAME",
+            "content": "flowersoverseas.com",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa16",
+            "name": "staging.flowersoverseas.com",
+            "type": "CNAME",
+            "content": "g05ns7.up.railway.app",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1",
+            "name": "_dmarc.flowersoverseas.com",
+            "type": "TXT",
+            "content": "\"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;\"",
+            "proxiable": false,
+            "proxied": false,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          }
+        ],
+        "result_info": {
+          "page": 1,
+          "per_page": 100,
+          "count": 5,
+          "total_count": 5,
+          "total_pages": 1
+        }
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_request_cache_settings/entrypoint": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "errors": [
+          {
+            "code": 10000,
+            "message": "Authentication error"
+          }
+        ],
+        "messages": [],
+        "result": null
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_request_dynamic_redirect/entrypoint": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "errors": [
+          {
+            "code": 10000,
+            "message": "Authentication error"
+          }
+        ],
+        "messages": [],
+        "result": null
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_ratelimit/entrypoint": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "errors": [
+          {
+            "code": 10000,
+            "message": "Authentication error"
+          }
+        ],
+        "messages": [],
+        "result": null
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_response_headers_transform/entrypoint": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "errors": [
+          {
+            "code": 10000,
+            "message": "Authentication error"
+          }
+        ],
+        "messages": [],
+        "result": null
+      }
+    }
+  }
+}
