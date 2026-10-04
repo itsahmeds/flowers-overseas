@@ -371,8 +371,10 @@
  * there the swap fell back to an unmatched system face and a late font moved boxes. These two faces
  * are the first named fallbacks of the Latin calls (`src/modules/ui/fonts/index.ts`) and carry the
  * same overrides over the metric-compatible clones — Liberation and the ChromeOS Croscore fonts.
- * The numbers are Next's own computation for the committed 400 Latin files, and
- * `tests/unit/fonts.test.ts` recomputes them, so a re-subset that moves them fails a test.
+ * The numbers are Next's own computation (`getFallbackMetricsFromFontFile`) for the 400 Latin file
+ * each call falls back from. `tests/unit/fonts.test.ts`, "the metric-matched Linux fallback faces",
+ * recomputes the four overrides with that function, checks each `src` and that each Latin call
+ * names its face first, so a re-subset, a hand edit or a renamed face fails a unit test.
  */
 @font-face {
   font-family: "Alegreya Sans Fallback Liberation";
