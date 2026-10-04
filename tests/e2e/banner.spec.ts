@@ -666,6 +666,10 @@ test.describe("the two overlays (AC-13)", () => {
     await context.clearCookies();
     await page.goto("/en");
     await expect(page.locator(BANNER)).toBeVisible();
+    // Both islands mount after hydration, in no fixed order: read the layers only once the consent
+    // sheet is up too, or its wrapper is not in the document yet and reads as "" (CI run
+    // 37195581138, e2e-mobile; a retry-pass on run 37182787523).
+    await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
 
     const layers = await page.evaluate(() => {
       const read = (selector: string): string => {
