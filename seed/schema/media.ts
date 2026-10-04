@@ -305,13 +305,14 @@ export type MediaVariantManifest = z.infer<typeof MediaVariantManifestSchema>;
 /* -------------------------------------------------------------------------- */
 
 /**
- * A character that is not blank: not ASCII whitespace, NEL, NBSP, U+1680, U+180E, U+2000-U+200D
- * (the typographic spaces and the zero-width ones), the line and paragraph separators, U+202F,
- * U+205F, the word joiner, U+3000 or the BOM. The same set as `product_media_alt_alt_check`
- * (migration `0004`, `ALT_VISIBLE_PATTERN` in `db/schema/media.ts`).
+ * A letter or a digit (Unicode L or Nd) that is not one of the four Hangul fillers, which are
+ * letters that render as nothing. An allowlist, because the characters a screen reader announces
+ * as nothing (spaces, zero-width and bidi controls, soft hyphens, braille blanks, variation
+ * selectors, lone combining marks) have no end. The same rule as `product_media_alt_alt_check`
+ * (migration `0004`, `ALT_CHECK_SQL` in `db/schema/media.ts`): ICU's `[[:alnum:]]` is L or Nd.
  */
-const VISIBLE_CHARACTER =
-  /[^\t\n\v\f\r \u0085\u00a0\u1680\u180e\u2000-\u200d\u2028\u2029\u202f\u205f\u2060\u3000\ufeff]/;
+export const ALT_LETTER_OR_DIGIT =
+  /(?![\u115f\u1160\u3164\uffa0])[\p{L}\p{Nd}]/u;
 
 /**
  * One alt-text entry, keyed by asset id (spec 006 §2.1 "Alt text").
@@ -319,7 +320,7 @@ const VISIBLE_CHARACTER =
  * `alt` has a minimum length because an **empty** alt on a product image is the failure spec 006
  * AC-8 and AC-18 name explicitly: an informative image with `alt=""` is announced as nothing at
  * all (WCAG 1.1.1), and the honest fallback is to render the placeholder instead of the image.
- * Eight characters of whitespace are just as empty, so it must also hold a visible one. The upper
+ * Eight invisible characters are just as empty, so it must also hold a letter or a digit. The upper
  * bound is the screen-reader courtesy limit; a description belongs in the copy file.
  */
 export const AltEntrySchema = z
@@ -329,7 +330,7 @@ export const AltEntrySchema = z
       .string()
       .min(8)
       .max(220)
-      .regex(VISIBLE_CHARACTER, "alt text must hold a visible character"),
+      .regex(ALT_LETTER_OR_DIGIT, "alt text must hold a letter or a digit"),
   })
   .strict();
 

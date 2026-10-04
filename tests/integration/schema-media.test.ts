@@ -24,6 +24,10 @@ import { join } from "node:path";
 import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
+import { ALT_CHECK_SQL } from "../../db/schema/media.ts";
+import { ALT_LETTER_OR_DIGIT } from "../../seed/schema/media.ts";
+import { REAL_ALTS, UNANNOUNCED_ALTS } from "../fixtures/alt-text.ts";
+
 function readDotEnv(path: string): Record<string, string> {
   if (!existsSync(path)) return {};
   const entries: Record<string, string> = {};
@@ -82,31 +86,6 @@ function rejectedBy(error: unknown): string {
     : "(no constraint name)";
 }
 
-/**
- * Alt texts a screen reader announces as nothing (hole 3, PR 184): each blank character on its
- * own, a CRLF and a mix. The database must refuse every one with `product_media_alt_alt_check`.
- * Built from code points so this file stays ASCII.
- */
-const BLANK_ALTS: readonly (readonly [string, string])[] = [
-  ["tab", "\t"],
-  ["line feed", "\n"],
-  ["carriage return", "\r"],
-  ["CRLF", "\r\n"],
-  ["space, tab, space", " \t "],
-  ...[
-    0x85, 0xa0, 0x1680, 0x180e, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005,
-    0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x200b, 0x200c, 0x200d, 0x2028,
-    0x2029, 0x202f, 0x205f, 0x2060, 0x3000, 0xfeff,
-  ].map((code): readonly [string, string] => [
-    `U+${code.toString(16).toUpperCase().padStart(4, "0")}`,
-    String.fromCodePoint(code, code),
-  ]),
-  [
-    "NBSP, ZWSP, U+3000, BOM",
-    String.fromCodePoint(0xa0, 0x200b, 0x3000, 0xfeff),
-  ],
-];
-
 /** Keys outside the alphabet (hole 4, PR 184): dot segments, empty segments, edge slashes. */
 const BAD_KEYS: readonly string[] = [
   "/originals/product/x",
@@ -160,6 +139,36 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
       expect(row?.indexdef).toMatch(
         /^CREATE UNIQUE INDEX product_media_primary_idx ON public\.product_media USING btree \(product_id\) WHERE is_primary$/,
       );
+    });
+
+    it("AC-11 — checks alt for a letter or a digit under ICU, not under the database's LC_CTYPE", async () => {
+      const [row] = await db<{ definition: string }[]>`
+        SELECT pg_get_constraintdef(oid) AS definition FROM pg_constraint
+        WHERE conname = 'product_media_alt_alt_check'
+      `;
+      expect(row?.definition).toContain(
+        "COLLATE \"und-x-icu\") ~ '[[:alnum:]]'",
+      );
+    });
+
+    it("AC-11 — accepts no single character as alt text that the seed's AltEntrySchema refuses", async () => {
+      // Every code point the deployed rule calls a letter or a digit must be one to the seed too,
+      // so nothing invisible gets into the table by a route the seed would have stopped. The
+      // other direction differs only by letters newer than the server's ICU.
+      const [row] = await db.unsafe<{ accepted: number[] | null }[]>(`
+        SELECT array_agg(cp ORDER BY cp) AS accepted
+        FROM generate_series(1, 1114111) AS cp, LATERAL (SELECT chr(cp) AS alt) AS probe
+        WHERE (cp < 55296 OR cp > 57343) AND ${ALT_CHECK_SQL}
+      `);
+      const accepted = row?.accepted ?? [];
+      expect(accepted.length).toBeGreaterThan(100_000);
+      expect(
+        accepted
+          .filter(
+            (code) => !ALT_LETTER_OR_DIGIT.test(String.fromCodePoint(code)),
+          )
+          .map((code) => code.toString(16)),
+      ).toEqual([]);
     });
 
     it("AC-11 — declares product_media_alt.alt NOT NULL", async () => {
@@ -351,7 +360,7 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
             VALUES (${heroImageId}, 'zz', '   ')
           `,
           );
-          for (const [name, alt] of BLANK_ALTS) {
+          for (const [name, alt] of UNANNOUNCED_ALTS) {
             await refuse(
               `product_media_alt blank alt (${name})`,
               (sp) => sp`
@@ -369,6 +378,27 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
             VALUES (${heroImageId}, 'zy', 'Dwanaście czerwonych róż')
           `;
           accepted.push("product_media_alt one row per locale");
+          for (const [index, alt] of REAL_ALTS.entries()) {
+            await tx
+              .savepoint(async (sp) => {
+                await sp`
+                  UPDATE product_media_alt SET alt = ${alt}
+                  WHERE product_media_id = ${heroImageId} AND locale_code = 'zz'
+                `;
+                accepted.push(`product_media_alt real alt ${String(index)}`);
+                throw new Error("undo the probe");
+              })
+              .catch((error: unknown) => {
+                if (
+                  !(error instanceof Error) ||
+                  error.message !== "undo the probe"
+                ) {
+                  failures.push(
+                    `product_media_alt real alt ${String(index)}: ${rejectedBy(error)}`,
+                  );
+                }
+              });
+          }
           await refuse(
             "product_media_alt second row for a locale",
             (sp) => sp`
@@ -570,7 +600,7 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
           "product_media same asset twice: product_media_product_asset_key",
           "product_media second primary: product_media_primary_idx",
           "product_media_alt blank alt: product_media_alt_alt_check",
-          ...BLANK_ALTS.map(
+          ...UNANNOUNCED_ALTS.map(
             ([name]) =>
               `product_media_alt blank alt (${name}): product_media_alt_alt_check`,
           ),
@@ -579,15 +609,20 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
           "product_media_alt without alt: not-null alt",
         ].sort(),
       );
-      expect(accepted.sort()).toEqual([
-        "media_asset a PDF with no pixel size",
-        "media_asset approved with reviewer and date",
-        "media_variant two formats of one width",
-        "product_media primary moved",
-        "product_media primary of another product",
-        "product_media second image, not primary",
-        "product_media_alt one row per locale",
-      ]);
+      expect(accepted.sort()).toEqual(
+        [
+          "media_asset a PDF with no pixel size",
+          "media_asset approved with reviewer and date",
+          "media_variant two formats of one width",
+          "product_media primary moved",
+          "product_media primary of another product",
+          "product_media second image, not primary",
+          "product_media_alt one row per locale",
+          ...REAL_ALTS.map(
+            (_alt, index) => `product_media_alt real alt ${String(index)}`,
+          ),
+        ].sort(),
+      );
       expect(primaries).toEqual([
         "originals/product/zz-901-detail",
         "originals/product/zz-902-hero",

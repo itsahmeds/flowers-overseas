@@ -24,14 +24,17 @@
 --      cannot slip past the predicate. Spec 009's `Product.image[0]` and the listing card read this
 --      row, so two primaries would make the page's image depend on row order.
 --   3. **Alt text is stored per locale and never blank** (§8, `plan/01` §6, AC-11).
---      `product_media_alt.alt` is `NOT NULL`, and on top it must hold one visible character: not
---      only ASCII whitespace but also NBSP, the U+2000 spaces, the zero-width characters, U+3000
---      and the BOM are blank, each named in the bracket because `[:space:]` is locale-dependent
---      beyond ASCII. An empty or blank `alt` on a product image tells a screen reader the image is
---      decorative, which is the failure AC-11 exists to prevent and which `NOT NULL` alone lets
---      through. A locale with no row is simply
---      absent — spec 006 AC-18 renders the placeholder and §6 keeps that locale's PDP out of the
---      index — rather than falling back to another locale's words.
+--      `product_media_alt.alt` is `NOT NULL`, and on top it must hold a letter or a digit: an
+--      allowlist, because the list of characters a screen reader announces as nothing (spaces,
+--      zero-width and bidi controls, soft hyphens, braille blanks, variation selectors, lone
+--      combining marks) has no end. `[[:alnum:]]` is evaluated under the ICU collation
+--      `und-x-icu`, where it means Unicode L or Nd whatever the database's LC_CTYPE (under the C
+--      locale it is ASCII only). The four Hangul fillers are letters that render as nothing, so
+--      `translate` removes them first. `AltEntrySchema` in `seed/schema/media.ts` is the same rule.
+--      An empty or blank `alt` on a product image tells a screen reader the image is decorative,
+--      which is the failure AC-11 exists to prevent and which `NOT NULL` alone lets through. A
+--      locale with no row is simply absent — spec 006 AC-18 renders the placeholder and §6 keeps
+--      that locale's PDP out of the index — rather than falling back to another locale's words.
 --
 -- Column sets are §5.1's in §5.1's order, then §14 A1 (c)'s six `media_asset` columns
 -- (`generator_model`, `credit`, `licence`, `depicts`, `reviewed_by`, `reviewed_at`) and
@@ -224,7 +227,7 @@ CREATE TABLE public.product_media_alt (
     REFERENCES public.product_media (id) ON DELETE CASCADE,
   CONSTRAINT product_media_alt_locale_code_locale_code_fk FOREIGN KEY (locale_code)
     REFERENCES public.locale (code) ON DELETE RESTRICT,
-  CONSTRAINT product_media_alt_alt_check CHECK (alt ~ '[^[:space:]\u0085\u00a0\u1680\u180e\u2000-\u200d\u2028\u2029\u202f\u205f\u2060\u3000\ufeff]')
+  CONSTRAINT product_media_alt_alt_check CHECK ((translate(alt, U&'\115F\1160\3164\FFA0', '') COLLATE "und-x-icu") ~ '[[:alnum:]]')
 );
 
 COMMENT ON COLUMN public.product_media_alt.alt IS

@@ -3282,7 +3282,7 @@
       "checkConstraints": {
         "product_media_alt_alt_check": {
           "name": "product_media_alt_alt_check",
-          "value": "\"product_media_alt\".\"alt\" ~ '[^[:space:]\\u0085\\u00a0\\u1680\\u180e\\u2000-\\u200d\\u2028\\u2029\\u202f\\u205f\\u2060\\u3000\\ufeff]'"
+          "value": "(translate(alt, U&'\\115F\\1160\\3164\\FFA0', '') COLLATE \"und-x-icu\") ~ '[[:alnum:]]'"
         }
       },
       "isRLSEnabled": false

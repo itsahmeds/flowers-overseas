@@ -17,9 +17,14 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { getTableConfig, PgDialect } from "drizzle-orm/pg-core";
 import {
-  ALT_VISIBLE_PATTERN,
+  ALT_CHECK_SQL,
+  OBJECT_KEY_PATTERN as MIRROR_OBJECT_KEY_PATTERN,
+  mediaAsset,
   mediaAssetVisibilities,
+  mediaVariant,
+  productMediaAlt,
   mediaDepicts as mirrorDepicts,
   mediaFormats as mirrorFormats,
   mediaAssetKinds as mirrorKinds,
@@ -27,6 +32,7 @@ import {
   mediaSources as mirrorSources,
 } from "../../db/schema/media.ts";
 import {
+  ALT_LETTER_OR_DIGIT,
   AltEntrySchema,
   MEDIA_ASSET_ROW_COLUMNS,
   MEDIA_VARIANT_ROW_COLUMNS,
@@ -41,56 +47,7 @@ import {
   mediaVisibilities,
 } from "../../seed/schema/media.ts";
 import { mediaFormats, OBJECT_KEY_PATTERN } from "../../src/lib/storage.ts";
-
-/**
- * Alt texts made only of characters a screen reader announces as nothing (hole 3, PR 184): each
- * blank character alone, a CRLF, and a mix. Built from code points so this file stays ASCII.
- */
-const BLANK_CHARACTERS: readonly (readonly [string, number])[] = [
-  ["tab", 0x09],
-  ["line feed", 0x0a],
-  ["vertical tab", 0x0b],
-  ["form feed", 0x0c],
-  ["carriage return", 0x0d],
-  ["space", 0x20],
-  ["NEL U+0085", 0x85],
-  ["NBSP U+00A0", 0xa0],
-  ["ogham space U+1680", 0x1680],
-  ["Mongolian vowel separator U+180E", 0x180e],
-  ...Array.from(
-    { length: 0x200d - 0x2000 + 1 },
-    (_, index): readonly [string, number] => [
-      `U+${(0x2000 + index).toString(16).toUpperCase()}`,
-      0x2000 + index,
-    ],
-  ),
-  ["line separator U+2028", 0x2028],
-  ["paragraph separator U+2029", 0x2029],
-  ["narrow NBSP U+202F", 0x202f],
-  ["medium math space U+205F", 0x205f],
-  ["word joiner U+2060", 0x2060],
-  ["ideographic space U+3000", 0x3000],
-  ["BOM / ZWNBSP U+FEFF", 0xfeff],
-];
-const BLANK_ALTS: readonly (readonly [string, string])[] = [
-  ...BLANK_CHARACTERS.map(([name, code]): readonly [string, string] => [
-    name,
-    String.fromCodePoint(code).repeat(8),
-  ]),
-  ["CRLF", "\r\n".repeat(4)],
-  ["space, tab, space", " \t ".repeat(3)],
-  [
-    "NBSP, ZWSP, U+3000, BOM",
-    String.fromCodePoint(0xa0, 0x200b, 0x3000, 0xfeff).repeat(2),
-  ],
-];
-const REAL_ALTS = [
-  "Twelve red roses in a kraft wrap",
-  `Twelve${String.fromCodePoint(0xa0)}red roses`,
-  "Dwana\u015bcie czerwonych r\u00f3\u017c",
-  "\u8d64\u3044\u30d0\u30e9\u306e\u82b1\u675f\u3067\u3059",
-  `${String.fromCodePoint(0x3000)}   roses   ${String.fromCodePoint(0xfeff)}`,
-];
+import { REAL_ALTS, UNANNOUNCED_ALTS } from "../fixtures/alt-text.ts";
 
 const MIGRATIONS_DIR = join(process.cwd(), "db", "migrations");
 const SCHEMA_DIR = join(process.cwd(), "db", "schema");
@@ -239,49 +196,72 @@ describe("migration 0004 — media (AC-11, AC-22, §14 A1 (c))", () => {
       );
     });
 
-    it("declares alt NOT NULL and refuses a blank alt", () => {
+    it("declares alt NOT NULL and requires a letter or a digit", () => {
       const body = tableBody("product_media_alt");
       expect(body).toMatch(/\n\s+alt\s+text\s+NOT NULL,/);
       expect(body).toContain(
-        `product_media_alt_alt_check CHECK (alt ~ '${ALT_VISIBLE_PATTERN}')`,
+        `product_media_alt_alt_check CHECK (${ALT_CHECK_SQL})`,
       );
     });
 
-    describe("refuses an alt made only of whitespace, ASCII or Unicode (hole 3)", () => {
-      // The migration's own pattern, read from the SQL and run as the same bracket in JS:
-      // `[:space:]` is ASCII whitespace in the C locale; every other character is named.
-      const sqlPattern =
-        /product_media_alt_alt_check CHECK \(alt ~ '([^']*)'\)/.exec(
-          tableBody("product_media_alt"),
-        )?.[1] ?? "";
-      const visible = new RegExp(
-        sqlPattern.replace("[:space:]", "\\t\\n\\v\\f\\r "),
+    it("evaluates [[:alnum:]] under ICU, so it means Unicode letters whatever LC_CTYPE is", () => {
+      // Under the C locale `[[:alnum:]]` is ASCII only and would refuse every Polish or Japanese
+      // alt; under ICU it is L or Nd, which is what the seed's schema checks.
+      expect(ALT_CHECK_SQL).toMatch(
+        / COLLATE "und-x-icu"\) ~ '\[\[:alnum:\]\]'$/,
       );
+      expect(ALT_LETTER_OR_DIGIT.source).toContain("[\\p{L}\\p{Nd}]");
+      expect(ALT_LETTER_OR_DIGIT.unicode).toBe(true);
+    });
 
-      it("reads the pattern from the migration", () => {
-        expect(sqlPattern).toBe(ALT_VISIBLE_PATTERN);
+    it("drops the same four Hangul fillers in the SQL and in the seed's schema", () => {
+      const sqlFillers = [
+        ...(
+          /translate\(alt, U&'([^']*)', ''\)/.exec(ALT_CHECK_SQL)?.[1] ?? ""
+        ).matchAll(/\\([0-9A-F]{4})/g),
+      ].map((match) => Number.parseInt(match[1] ?? "", 16));
+      expect(sqlFillers).toEqual([0x115f, 0x1160, 0x3164, 0xffa0]);
+      for (const code of sqlFillers) {
+        expect(
+          ALT_LETTER_OR_DIGIT.test(String.fromCodePoint(code)),
+          code.toString(16),
+        ).toBe(false);
+      }
+    });
+
+    describe("the seed's AltEntrySchema refuses an alt a screen reader announces as nothing (holes 3, 7)", () => {
+      it.each(UNANNOUNCED_ALTS)("refuses %s", (_name, alt) => {
+        expect(
+          AltEntrySchema.safeParse({ assetId: "fo-bq-001-hero", alt }).success,
+        ).toBe(false);
       });
 
-      it.each(BLANK_ALTS)("the database pattern refuses %s", (_name, alt) => {
-        expect(visible.test(alt)).toBe(false);
-      });
-
-      it.each(BLANK_ALTS)(
-        "the seed's AltEntrySchema refuses %s",
-        (_name, alt) => {
-          expect(
-            AltEntrySchema.safeParse({ assetId: "fo-bq-001-hero", alt })
-              .success,
-          ).toBe(false);
-        },
-      );
-
-      it.each(REAL_ALTS)("both accept a real alt: %s", (alt) => {
-        expect(visible.test(alt)).toBe(true);
+      it.each(REAL_ALTS)("accepts a real alt: %s", (alt) => {
         expect(
           AltEntrySchema.safeParse({ assetId: "fo-bq-001-hero", alt }).success,
         ).toBe(true);
       });
+    });
+
+    it("mirrors the alt and key checks in Drizzle exactly as the migration writes them (hole 8)", () => {
+      expect(MIRROR_OBJECT_KEY_PATTERN).toBe(OBJECT_KEY_PATTERN);
+      const dialect = new PgDialect();
+      const checksOf = (table: Parameters<typeof getTableConfig>[0]) =>
+        Object.fromEntries(
+          getTableConfig(table).checks.map((check) => [
+            check.name,
+            dialect.sqlToQuery(check.value).sql,
+          ]),
+        );
+      expect(checksOf(productMediaAlt)["product_media_alt_alt_check"]).toBe(
+        ALT_CHECK_SQL,
+      );
+      expect(checksOf(mediaAsset)["media_asset_object_key_check"]).toBe(
+        `object_key ~ '${OBJECT_KEY_PATTERN}'`,
+      );
+      expect(checksOf(mediaVariant)["media_variant_object_key_check"]).toBe(
+        `object_key ~ '${OBJECT_KEY_PATTERN}'`,
+      );
     });
 
     it("keys alt text per (image, locale)", () => {

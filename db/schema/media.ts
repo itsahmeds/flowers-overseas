@@ -14,8 +14,7 @@
  *  - **one primary image per product** (AC-11) — `product_media_primary_idx`, unique on
  *    `product_id` where `is_primary`;
  *  - **alt text is authored per locale and never blank** (AC-11, §8) — `productMediaAlt.alt` is
- *    `notNull()` and must hold a visible character (`ALT_VISIBLE_PATTERN`; tab, NBSP, the
- *    zero-width characters and U+3000 are all blank).
+ *    `notNull()` and must hold a letter or a digit (`ALT_CHECK_SQL`).
  *
  * The value tuples below repeat spec 006's (`seed/schema/media.ts`) rather than import them:
  * `db/schema/` depends on nothing outside itself, and `tests/unit/schema-media.test.ts` asserts the
@@ -77,17 +76,16 @@ function valueList(values: readonly string[]): string {
   return `(${values.map((value) => `'${value}'`).join(", ")})`;
 }
 
-/** `objectKey()`'s alphabet (`src/lib/storage.ts` `OBJECT_KEY_PATTERN`). */
-const OBJECT_KEY_PATTERN =
+/** `objectKey()`'s alphabet; `tests/unit/schema-media.test.ts` holds it equal to `src/lib/storage.ts`'s. */
+export const OBJECT_KEY_PATTERN =
   "^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$";
 /**
- * An alt text holds at least one character that is not blank: ASCII whitespace (`[:space:]`) and,
- * named one by one because `[:space:]` is locale-dependent beyond ASCII, NEL, NBSP, U+1680,
- * U+180E, U+2000-U+200D (the typographic spaces and the zero-width ones), the line and paragraph
- * separators, U+202F, U+205F, the word joiner, U+3000 and the BOM. A Postgres ARE: the `\u`
- * escapes are the regex engine's, so the SQL literal stays ASCII.
+ * `product_media_alt_alt_check`: an alt text holds a letter or a digit (AC-11, §8). `[[:alnum:]]`
+ * under the ICU collation `und-x-icu` is Unicode L or Nd, whatever the database's LC_CTYPE; the
+ * four Hangul fillers (U+115F, U+1160, U+3164, U+FFA0) are letters that render as nothing, so
+ * `translate` drops them first. An allowlist, because invisible characters have no end.
  */
-export const ALT_VISIBLE_PATTERN = String.raw`[^[:space:]\u0085\u00a0\u1680\u180e\u2000-\u200d\u2028\u2029\u202f\u205f\u2060\u3000\ufeff]`;
+export const ALT_CHECK_SQL = String.raw`(translate(alt, U&'\115F\1160\3164\FFA0', '') COLLATE "und-x-icu") ~ '[[:alnum:]]'`;
 /** A lowercase hex SHA-256. */
 const SHA256_PATTERN = "^[0-9a-f]{64}$";
 
@@ -286,9 +284,6 @@ export const productMediaAlt = pgTable(
       name: "product_media_alt_pkey",
       columns: [table.productMediaId, table.localeCode],
     }),
-    check(
-      "product_media_alt_alt_check",
-      sql`${table.alt} ~ ${sql.raw(`'${ALT_VISIBLE_PATTERN}'`)}`,
-    ),
+    check("product_media_alt_alt_check", sql.raw(ALT_CHECK_SQL)),
   ],
 );
