@@ -39,9 +39,15 @@ Branch `task/TASK-017-schema-media-storage-seam`. Keys, never bytes (ADR-0015): 
   `information_schema` across every schema.
 
 - **Accepted holes, review and breaker round 1 (PR 184).**
-  - HOLE 5 ACCEPTABLE (reviewer, PR 184): column-level Drizzle↔SQL drift is AC-26, owned by TASK-027.
-  - HOLE 6 ACCEPTABLE (reviewer): head already copies; test optional.
   - T-11 runs nowhere in CI until TASK-022 (known; accepted).
+  - The reviewer's round-1 rulings on PR 184, verbatim:
+    - **HOLE 5 ACCEPTABLE:** this is column-level mirror drift, which is AC-26. The `scripts/db-check.ts` header (L22-28) assigns that to TASK-027's live introspection, and the SQL itself is pinned (M1-M15 red). Carry-forward to the TASK-027 brief: its drift check must cover `product_media_alt.alt` NOT NULL and its check, `product_media_primary_idx` uniqueness and predicate, `product_media.is_primary` NOT NULL, and the FK actions of `0004`.
+    - **HOLE 6 ACCEPTABLE:** `head` already returns a copy (`{ ...entry.facts }`, storage.ts:331). Only a test is missing, no AC covers copy semantics, and an R2 implementation returns a fresh object on every call. Adding a line to the fake-only block is optional.
+- **For TASK-027 (hole 8, breaker round 2).** The mirror's key pattern is now held equal to
+  `src/lib/storage.ts`'s, and the mirror's three checks are rendered and compared with the SQL
+  (`tests/unit/schema-media.test.ts`). The snapshot `db/migrations/meta/0003_snapshot.json`
+  (`*_object_key_check` and `product_media_alt_alt_check`) is not compared by anything, and no CI
+  job runs `drizzle-kit check`: that is AC-26 drift, TASK-027's.
 - **For TASK-082.** The key alphabet is now segment-wise: lowercase words with dots only between
   them, so no leading or trailing `/`, no `//`, no `.` or `..` segment and no `..` anywhere. Every
   minted key and every Phase 0 key in `seed/data/media-variants.json` (868) still passes. `put`
@@ -59,10 +65,32 @@ _None recorded._
   (table in `## Result`). The cheap gates flagged the fake's query-string URL (URL-PII and
   zod-boundary gates), so the signature moved into the path.
 
+- 2026-10-05: round-2 fixes (holes 7, 8, nit 3) and the TASK-022 / TASK-027 carry-forwards. Pushed
+  `2b95a9ab`.
 - 2026-10-05: round-1 fixes (holes 1-4, R4, the 0-byte nit, hole 6's optional test). Pushed
   `64a8c9f8` and `fea097c0`.
 
 ## Result
+
+### Round 2 fixes (breaker HOLES on `9e5930a7`: holes 7 and 8)
+
+| Item | Fix | Mutation, and the case that went red |
+|---|---|---|
+| Hole 7 | `product_media_alt_alt_check` is an allowlist: `(translate(alt, U&'\115F\1160\3164\FFA0', '') COLLATE "und-x-icu") ~ '[[:alnum:]]'`. Under ICU `[[:alnum:]]` is Unicode L or Nd whatever LC_CTYPE (under C it is ASCII only, measured: `é` false); `translate` drops the four Hangul fillers, which are letters that render as nothing. The mirror's `ALT_CHECK_SQL`, the snapshot and the seed's `ALT_LETTER_OR_DIGIT` (`/(?![fillers])[\p{L}\p{Nd}]/u`) are the same rule. `tests/fixtures/alt-text.ts` feeds both layers: 65 unannounced alts (the round-1 blanks, plus LRM/RLM, ALM, soft hyphen, CGJ, braille blank, the Hangul fillers, the invisible operators, the bidi controls, U+206A, the Mongolian FVS, VS16, the tag space, U+0301 alone, U+001F, and mixes) and 10 real alts in six scripts | unit: the old blocklist in SQL, mirror and zod (33 red); in the SQL only (1 red: the SQL equals `ALT_CHECK_SQL`); zod without the filler lookahead (6 red); SQL and mirror without `COLLATE` (1 red). Postgres 16, live: the old blocklist makes T-11 list U+001F, U+00AD, U+0301… as `ACCEPTED`; without `COLLATE` the Japanese, Korean, Arabic and Hindi alts are refused; without `translate` the four fillers are `ACCEPTED` |
+| Hole 8 | the mirror exports `OBJECT_KEY_PATTERN`; a unit test holds it equal to storage's and renders the mirror's three checks with `PgDialect`, equal to the SQL | the old key pattern in the mirror only: "mirrors the alt and key checks in Drizzle" |
+| Nit 3 | the alt paragraph's early line break in the `0004` header | — |
+
+**Parity, measured on PostgreSQL 16.14 over every code point:** the deployed rule accepts 131 887
+single characters, the seed's 146 438, and the database accepts **none** the seed refuses (the new
+integration case asserts this). The 14 551 the other way are letters newer than that server's ICU
+(they start at U+0870, Unicode 14), so a seed alt written only in such letters would be refused
+at load, never an invisible one admitted.
+
+**Tests.** Unit `schema-media.test.ts`: 3 rule cases, 65 + 10 fixture cases, the mirror case.
+Integration: two catalogue cases (the deployed definition uses `und-x-icu`; the code-point scan),
+T-11 with 65 unannounced-alt rejections and 10 real-alt acceptances. Local run on PostgreSQL 16.14:
+8/8, then the three live mutations above, then `db:rollback --to 0000`, `db:migrate`, 8/8; all exit
+0; the server stopped with `pg_ctl stop`.
 
 ### Round 1 fixes (review FAIL and breaker HOLES on `aeb60c78`)
 
