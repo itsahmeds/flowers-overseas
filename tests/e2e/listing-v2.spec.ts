@@ -3,13 +3,21 @@
  * amended, AC-7; TASK-178).
  *
  * What a browser can see that the unit suite cannot: the served page, in each locale, has one
- * `<h1>` in the v2 intro, one priced grid, and an equivalents line that is **all or nothing** —
- * either every card carries one (a current FX snapshot) and the stale-rate sentence is absent, or
- * no card carries one and the page says which currency it is quoting (A21 clause 6 (d)). The test
- * does not hard-code which of the two it expects, because the committed snapshot ages with the
- * calendar and a refresh must not turn it red. Neither state ever puts the line into JSON-LD.
+ * `<h1>` in the v2 intro, one priced grid, and the **stale** state of the equivalents line: no card
+ * carries one, and a converted page says once which currency it is quoting (A21 clause 6 (d)).
+ *
+ * Why the stale state, asserted outright: every served build reads the committed snapshot
+ * (`src/config/catalogue/fx.data.ts`, `as_of` 2026-09-08), which is past `MAX_FX_AGE_HOURS` for
+ * any clock CI runs on. The precondition below says so, so that the day a build serves a current
+ * snapshot (spec 005 §14 A7, TASK-180/181) this file fails on that fact and gets its fresh-state
+ * half, rather than passing on either state. The fresh state — exactly one line per priced card,
+ * no fallback — is asserted page by page over a fixed clock in
+ * `tests/unit/catalog-listing-pages-equivalents.test.tsx`. Neither state ever puts the line into
+ * JSON-LD.
  */
 import { expect, test } from "@playwright/test";
+
+import { isFxSnapshotStale } from "../../src/config/catalogue/fx.data.ts";
 
 /** `native`: the charged currency is the catalogue's (PLN to Poland), so no fallback exists. */
 const SHOP_ROOTS = [
@@ -26,9 +34,13 @@ const HUBS = [
 ] as const;
 
 for (const [locale, url, native] of SHOP_ROOTS) {
-  test(`${locale}: the shop root renders the v2 intro and an all-or-nothing equivalents line`, async ({
+  test(`${locale}: the shop root renders the v2 intro and, at the stale snapshot, no equivalents line`, async ({
     page,
   }) => {
+    expect(
+      isFxSnapshotStale(new Date()),
+      "the served snapshot is current: add the fresh-state assertions (one line per priced card, no fallback)",
+    ).toBe(true);
     const response = await page.goto(url);
     expect(response?.status()).toBe(200);
 
@@ -46,13 +58,12 @@ for (const [locale, url, native] of SHOP_ROOTS) {
       .locator("[data-fo-product-card-money='priced']")
       .count();
     expect(cards).toBeGreaterThan(0);
-    const lines = await page.locator("[data-fo-price-equivalents]").count();
-    const fallback = await page.locator("main [data-fo-fx-fallback]").count();
-    // Fresh rate: a line on every card and no fallback sentence. Stale rate: no line anywhere,
-    // and a converted page says once which currency it is quoting (A21 clause 6 (d)); a native
+    // No line anywhere; a converted page says once which currency it is quoting, and a native
     // page (`/pl`) converted nothing, so it has no fallback to announce.
-    expect([0, cards]).toContain(lines);
-    expect(fallback).toBe(lines === 0 && !native ? 1 : 0);
+    await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(0);
+    await expect(page.locator("main [data-fo-fx-fallback]")).toHaveCount(
+      native ? 0 : 1,
+    );
 
     // JSON-LD never carries the line, whichever state the page is in.
     const ld = await page

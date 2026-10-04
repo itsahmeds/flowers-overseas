@@ -1552,7 +1552,7 @@ export async function listingView(
               }),
         }
       : {}),
-    fxFallback: await pageFxFallback(locale, iso2, ordered[0]),
+    fxFallback: await pageFxFallback(locale, iso2, ordered[0], options.now),
     resultCount: total,
     page,
     pageCount,
@@ -1578,11 +1578,14 @@ async function pageFxFallback(
   locale: LocaleCode,
   iso2: CountryIso2 | undefined,
   product: Product | undefined,
+  now: Date | undefined,
 ): Promise<boolean> {
   if (iso2 === undefined || product === undefined) return false;
+  // The cards' clock (`ListingViewOptions.now`), so the sentence and the cards it explains agree.
   const projection = await fromPriceProjection(locale, {
     productId: product.sku,
     countryIso: iso2,
+    ...(now === undefined ? {} : { now }),
   });
   return projection.fxReasonKey !== undefined;
 }
