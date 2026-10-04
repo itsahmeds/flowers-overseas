@@ -1,0 +1,238 @@
+{
+  "$comment": "The edge as config/cloudflare/edge.json declares it after the cutover, with every ruleset readable (TASK-101). Shaped after Cloudflare's documented v4 envelopes for GET /zones/{zone_id}/dns_records and GET /zones/{zone_id}/rulesets/phases/{phase}/entrypoint; no agent holds a token. The *.up.railway.app targets are illustrative values of the shape Railway documents (g05ns7.up.railway.app is Railway's own example); the real ones are shown by Railway when the custom domain is added. The first cache rule stands for the R2 media host's rule, which this file does not own: its exact live form is not recorded.",
+  "zoneId": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+  "responses": {
+    "GET /zones/{zone_id}/dns_records": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": [
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2",
+            "name": "flowersoverseas.com",
+            "type": "CNAME",
+            "content": "k4m2x9.up.railway.app",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa3",
+            "name": "www.flowersoverseas.com",
+            "type": "CNAME",
+            "content": "p7q3w1.up.railway.app",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa4",
+            "name": "staging.flowersoverseas.com",
+            "type": "CNAME",
+            "content": "g05ns7.up.railway.app",
+            "proxiable": true,
+            "proxied": true,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          },
+          {
+            "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1",
+            "name": "_dmarc.flowersoverseas.com",
+            "type": "TXT",
+            "content": "\"v=DMARC1; p=quarantine; adkim=r; aspf=r; rua=mailto:dmarc_rua@onsecureserver.net;\"",
+            "proxiable": false,
+            "proxied": false,
+            "ttl": 1,
+            "settings": {},
+            "meta": {},
+            "comment": null,
+            "tags": [],
+            "created_on": "2026-10-04T09:00:00.000000Z",
+            "modified_on": "2026-10-04T09:00:00.000000Z"
+          }
+        ],
+        "result_info": {
+          "page": 1,
+          "per_page": 100,
+          "count": 4,
+          "total_count": 4,
+          "total_pages": 1
+        }
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_request_cache_settings/entrypoint": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa5",
+          "name": "default",
+          "kind": "zone",
+          "version": "3",
+          "phase": "http_request_cache_settings",
+          "last_updated": "2026-10-04T09:00:00.000000Z",
+          "rules": [
+            {
+              "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa6",
+              "version": "1",
+              "enabled": true,
+              "last_updated": "2026-10-04T09:00:00.000000Z",
+              "ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa7",
+              "description": "media.flowersoverseas.com cache",
+              "expression": "(http.host eq \"media.flowersoverseas.com\")",
+              "action": "set_cache_settings",
+              "action_parameters": {
+                "cache": true,
+                "edge_ttl": {
+                  "mode": "override_origin",
+                  "default": 31536000
+                }
+              }
+            },
+            {
+              "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa8",
+              "version": "1",
+              "enabled": true,
+              "last_updated": "2026-10-04T09:00:00.000000Z",
+              "ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa9",
+              "description": "fo: cache documents",
+              "expression": "(http.host eq \"flowersoverseas.com\")",
+              "action": "set_cache_settings",
+              "action_parameters": {
+                "cache": true,
+                "edge_ttl": {
+                  "mode": "respect_origin"
+                },
+                "browser_ttl": {
+                  "mode": "respect_origin"
+                }
+              }
+            },
+            {
+              "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "version": "1",
+              "enabled": true,
+              "last_updated": "2026-10-04T09:00:00.000000Z",
+              "ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab",
+              "description": "fo: bypass dynamic paths",
+              "expression": "(starts_with(http.request.uri.path, \"/api/\") or starts_with(http.request.uri.path, \"/checkout\") or starts_with(http.request.uri.path, \"/account\") or starts_with(http.request.uri.path, \"/admin\") or starts_with(http.request.uri.path, \"/vendor\") or starts_with(http.request.uri.path, \"/track\") or starts_with(http.request.uri.path, \"/en/api/\") or starts_with(http.request.uri.path, \"/en/checkout\") or starts_with(http.request.uri.path, \"/en/account\") or starts_with(http.request.uri.path, \"/en/admin\") or starts_with(http.request.uri.path, \"/en/vendor\") or starts_with(http.request.uri.path, \"/en/track\") or starts_with(http.request.uri.path, \"/en-gb/api/\") or starts_with(http.request.uri.path, \"/en-gb/checkout\") or starts_with(http.request.uri.path, \"/en-gb/account\") or starts_with(http.request.uri.path, \"/en-gb/admin\") or starts_with(http.request.uri.path, \"/en-gb/vendor\") or starts_with(http.request.uri.path, \"/en-gb/track\") or starts_with(http.request.uri.path, \"/de/api/\") or starts_with(http.request.uri.path, \"/de/checkout\") or starts_with(http.request.uri.path, \"/de/account\") or starts_with(http.request.uri.path, \"/de/admin\") or starts_with(http.request.uri.path, \"/de/vendor\") or starts_with(http.request.uri.path, \"/de/track\") or starts_with(http.request.uri.path, \"/pl/api/\") or starts_with(http.request.uri.path, \"/pl/checkout\") or starts_with(http.request.uri.path, \"/pl/account\") or starts_with(http.request.uri.path, \"/pl/admin\") or starts_with(http.request.uri.path, \"/pl/vendor\") or starts_with(http.request.uri.path, \"/pl/track\") or starts_with(http.request.uri.path, \"/en-XA/api/\") or starts_with(http.request.uri.path, \"/en-XA/checkout\") or starts_with(http.request.uri.path, \"/en-XA/account\") or starts_with(http.request.uri.path, \"/en-XA/admin\") or starts_with(http.request.uri.path, \"/en-XA/vendor\") or starts_with(http.request.uri.path, \"/en-XA/track\") or starts_with(http.request.uri.path, \"/ar-XB/api/\") or starts_with(http.request.uri.path, \"/ar-XB/checkout\") or starts_with(http.request.uri.path, \"/ar-XB/account\") or starts_with(http.request.uri.path, \"/ar-XB/admin\") or starts_with(http.request.uri.path, \"/ar-XB/vendor\") or starts_with(http.request.uri.path, \"/ar-XB/track\"))",
+              "action": "set_cache_settings",
+              "action_parameters": {
+                "cache": false
+              }
+            }
+          ]
+        }
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_request_dynamic_redirect/entrypoint": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaac",
+          "name": "default",
+          "kind": "zone",
+          "version": "3",
+          "phase": "http_request_dynamic_redirect",
+          "last_updated": "2026-10-04T09:00:00.000000Z",
+          "rules": [
+            {
+              "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaad",
+              "version": "1",
+              "enabled": true,
+              "last_updated": "2026-10-04T09:00:00.000000Z",
+              "ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaae",
+              "description": "fo: www to apex",
+              "expression": "(http.host eq \"www.flowersoverseas.com\")",
+              "action": "redirect",
+              "action_parameters": {
+                "from_value": {
+                  "status_code": 301,
+                  "target_url": {
+                    "expression": "concat(\"https://flowersoverseas.com\", http.request.uri.path)"
+                  },
+                  "preserve_query_string": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_ratelimit/entrypoint": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaf",
+          "name": "default",
+          "kind": "zone",
+          "version": "3",
+          "phase": "http_ratelimit",
+          "last_updated": "2026-10-04T09:00:00.000000Z",
+          "rules": [
+            {
+              "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa10",
+              "version": "1",
+              "enabled": true,
+              "last_updated": "2026-10-04T09:00:00.000000Z",
+              "ref": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa11",
+              "description": "fo: api rate limit",
+              "expression": "(starts_with(http.request.uri.path, \"/api/\"))",
+              "action": "block",
+              "ratelimit": {
+                "characteristics": ["cf.colo.id", "ip.src"],
+                "period": 10,
+                "requests_per_period": 10,
+                "mitigation_timeout": 10
+              }
+            }
+          ]
+        }
+      }
+    },
+    "GET /zones/{zone_id}/rulesets/phases/http_response_headers_transform/entrypoint": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "errors": [],
+        "messages": [],
+        "result": {
+          "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa12",
+          "name": "default",
+          "kind": "zone",
+          "version": "3",
+          "phase": "http_response_headers_transform",
+          "last_updated": "2026-10-04T09:00:00.000000Z",
+          "rules": []
+        }
+      }
+    }
+  }
+}
