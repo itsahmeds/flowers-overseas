@@ -1,6 +1,7 @@
 /**
- * T-12 / AC-10's above-the-fold half and **T-13 / AC-11** (TASK-052): the locale home's hero,
- * finder and proof row, served.
+ * T-12 / AC-10 and **T-13 / AC-11** (TASK-052, v2 by TASK-177): the locale home's hero,
+ * sentence picker and promise band, served. The v1 finder, its type-ahead and their tests were
+ * retired with the island; the sentence picker's JavaScript-off submission is the last block.
  *
  * Everything here needs a browser, a real response or both, which is what separates it from
  * `tests/unit/ui-home.test.tsx`:
@@ -19,7 +20,7 @@
  *    document order, and each is focusable;
  *  - **no cookie is written** by any of it — the finder is a `get` form, and the document is one
  *    cache entry (`plan/02` §14, spec 001 AC-15, spec 003 AC-12);
- *  - **the four-fact proof row** renders four facts and no photograph (AC-15's trap: "We
+ *  - **the promise band** renders three facts and no photograph (AC-15's trap: "We
  *    photograph it at the door" is a promise, not a gallery).
  *
  * Both projects run every test: `e2e-desktop` is 1280 px and `e2e-mobile` is a Pixel 7 at 412 px,
@@ -27,11 +28,17 @@
  */
 import { expect, test } from "@playwright/test";
 
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftInside,
+} from "../support/layout-shift.ts";
+
 const LOCALES = ["/en", "/en-gb", "/de", "/pl"] as const;
 
 const HERO = "[data-fo-hero]";
-const FINDER = "[data-fo-finder]";
-const FORM = "[data-fo-finder-form]";
+/** The v2 sentence picker (spec 004 §14 A21 clause 4; TASK-177), which replaced the finder. */
+const SENTENCE = "[data-fo-sentence]";
 const PROOF = "[data-fo-proof-row]";
 /** TASK-054 replaced TASK-052's stand-in list with the artboards' grid, at the same id. */
 const DESTINATIONS = "[data-fo-destinations]";
@@ -42,9 +49,8 @@ const OCCASION_DATES = "[data-fo-occasion-dates]";
 const OCCASIONS = "[data-fo-occasions]";
 const HOW_IT_WORKS = "[data-fo-how-it-works]";
 const FAQ = "[data-fo-faq]";
+/** v2: the promise band carries AC-10's trust strip (`data-fo-trust-strip`). */
 const TRUST = "[data-fo-trust-strip]";
-const MATCHES = "[data-fo-finder-matches]";
-const ANNOUNCE = "[data-fo-finder-announce]";
 
 /** The seven Phase-0 destinations of `src/config/countries.ts`, restated (AC-11). */
 /**
@@ -76,9 +82,6 @@ const TRENDING_COPY = {
 const DESTINATION_CODES = ["PL", "DE", "FR", "ES", "IT", "RO", "NL"] as const;
 const DESTINATIONS_COUNT = DESTINATION_CODES.length;
 
-/** The field ids of `finder-model.ts`, restated so a rename is a visible diff. */
-const FIELDS = ["finder-country", "finder-town", "finder-date"] as const;
-
 test.describe("the locale home, above the fold", () => {
   for (const path of LOCALES) {
     test(`${path} renders one h1 and the hero band's photograph`, async ({
@@ -99,7 +102,6 @@ test.describe("the locale home, above the fold", () => {
       await expect(hero).toHaveCount(1);
       await expect(hero).toHaveAttribute("loading", "eager");
       await expect(hero).toHaveAttribute("fetchpriority", "high");
-      await expect(hero).toHaveAttribute("sizes", "100vw");
       // Alt text is per-locale data, so it is never empty and never the same in two languages by
       // accident; the assertion here is the WCAG 1.1.1 one — it says something.
       expect(((await hero.getAttribute("alt")) ?? "").length).toBeGreaterThan(
@@ -128,23 +130,38 @@ test.describe("the locale home, above the fold", () => {
           page.locator(`${DESTINATIONS} [data-fo-destination="${iso2}"]`),
         ).toHaveCount(1);
       }
-      // The finder card itself never links: its `Continue` is a form submission (spec 004 §5.3).
-      await expect(page.locator(`${FINDER} a[href]`)).toHaveCount(0);
+      // The sentence picker itself never links: it is a form submission (A21 clause 4).
+      await expect(page.locator(`${SENTENCE} a[href]`)).toHaveCount(0);
       // Spec 007 AC-20: a destination is a link exactly where its guide exists in this locale.
       // `/de` and `/pl` have none (§13 Q1), so they still link nothing at all — same markup,
       // one element different.
-      const expected = path === "/de" || path === "/pl" ? 0 : 7;
+      // v2 (TASK-177, review R2): every chip links its guide where the guide exists; on `/de` and
+      // `/pl`, which have none, Poland's chip links its shop root instead, so the delivering
+      // destination is never a dead end.
+      const expected = path === "/de" || path === "/pl" ? 1 : 7;
       await expect(page.locator(`${DESTINATIONS} a[href]`)).toHaveCount(
         expected,
       );
+      const poland = page.locator(
+        `${DESTINATIONS} [data-fo-destination="PL"] a`,
+      );
+      await expect(poland).toHaveAttribute(
+        "href",
+        path === "/en" || path === "/en-gb"
+          ? `${path}/send-flowers-to/poland`
+          : path === "/de"
+            ? "/de/polen/blumen"
+            : "/pl/polska/kwiaty",
+      );
     });
 
-    test(`${path} renders the four-fact proof row and no photo in it`, async ({
+    test(`${path} renders the three-fact promise band and no photo in it`, async ({
       page,
     }) => {
       await page.goto(path);
 
-      await expect(page.locator(`${PROOF} li`)).toHaveCount(4);
+      // v2 (TASK-177): three facts; the price fact left the home (founder, 2026-10-04).
+      await expect(page.locator(`${PROOF} li`)).toHaveCount(3);
       await expect(page.locator(`${PROOF} img`)).toHaveCount(0);
       await expect(page.locator(`${PROOF} [data-fo-media-slot]`)).toHaveCount(
         0,
@@ -176,13 +193,24 @@ test.describe("the locale home, above the fold", () => {
       }
     });
 
-    test(`${path} renders six occasion tiles, none of them a link`, async ({
+    test(`${path} renders six occasion tiles, each a link to a hub that answers 200`, async ({
       page,
+      request,
     }) => {
       await page.goto(path);
 
       await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
-      await expect(page.locator(`${OCCASIONS} a[href]`)).toHaveCount(0);
+      // Spec 004 §14 A20 (TASK-177): a tile whose occasion hub exists is a link to it.
+      const tiles = await page
+        .locator(`${OCCASIONS} a[href]`)
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(tiles).toHaveLength(6);
+      for (const href of tiles) {
+        const response = await request.get(href, { maxRedirects: 0 });
+        expect(response.status(), href).toBe(200);
+      }
       // Six photographs since TASK-080, every one of them lazy: the grid is below the fold on
       // both artboards, so none of them may compete with the hero for the LCP.
       await expect(page.locator(`${OCCASIONS} img`)).toHaveCount(6);
@@ -202,8 +230,8 @@ test.describe("the locale home, above the fold", () => {
       await expect(page.locator(`${OCCASION_DATES} li`)).toHaveCount(4);
       await expect(page.locator("[data-fo-how-it-works-step]")).toHaveCount(3);
       await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
-      // Nothing in any of the three is a link: every target belongs to an unpublished spec.
-      for (const selector of [OCCASION_DATES, HOW_IT_WORKS, TRUST]) {
+      // Neither the explainer nor the promise band links anywhere (no page for the guarantee).
+      for (const selector of [HOW_IT_WORKS, TRUST]) {
         await expect(page.locator(`${selector} a[href]`), selector).toHaveCount(
           0,
         );
@@ -284,23 +312,20 @@ test.describe("the locale home, above the fold", () => {
       await page.goto(path);
 
       await expect(page.locator(`${DESTINATIONS} li`)).toHaveCount(
-        DESTINATIONS_COUNT + 1,
+        DESTINATIONS_COUNT,
       );
       // Every link in the grid is a corridor page that exists; `tests/e2e/links.spec.ts` and
       // `tests/e2e/destinations-hub.spec.ts` crawl them for their status (spec 007 AC-17).
       await expect(
         page.locator(`${DESTINATIONS} a[href^="/"]:not([href*="#"])`),
-      ).toHaveCount(path === "/de" || path === "/pl" ? 0 : 7);
-      await expect(
-        page.locator("[data-fo-destinations-elsewhere]"),
-      ).toHaveCount(1);
+      ).toHaveCount(path === "/de" || path === "/pl" ? 1 : 7);
       // Copy only: a waiting-list capture is a personal-data flow spec 010/016 owns, and an
       // inert field would be a dark pattern.
       await expect(
         page.locator(`${DESTINATIONS} input, ${DESTINATIONS} form`),
       ).toHaveCount(0);
-      // Only the delivering destination names cities (`plan/10` §3).
-      await expect(page.locator(DESTINATIONS)).toContainText("Warszawa");
+      // The v2 chips name no city at all (`plan/10` §3).
+      await expect(page.locator(DESTINATIONS)).not.toContainText("Warszawa");
     });
 
     test(`${path} opens and closes an FAQ answer with no JavaScript of ours`, async ({
@@ -309,7 +334,7 @@ test.describe("the locale home, above the fold", () => {
       await page.goto(path);
 
       const entries = page.locator(`${FAQ} details`);
-      await expect(entries).toHaveCount(5);
+      await expect(entries).toHaveCount(3);
       // All closed on arrival: an answer visible in the served HTML would be five paragraphs of
       // copy above the fold of the section.
       await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
@@ -333,272 +358,182 @@ test.describe("the locale home, above the fold", () => {
         .map((header) => header.name.toLowerCase())
         .filter((name) => name === "set-cookie"),
     ).toEqual([]);
-    // Typing into the finder writes nothing either: no island stores a preference.
-    await page.locator("#finder-country").fill("Pol");
-    await page.locator("#finder-town").fill("Warszawa");
+    // Choosing in the sentence writes nothing either: no island stores a preference.
+    await page.locator('select[name="occasion"]').selectOption("sympathy");
     expect(await context.cookies()).toEqual([]);
   });
 });
 
-test.describe("the finder's fields", () => {
-  test("labels every field and reaches each one from the keyboard", async ({
+test.describe("the sentence picker (A21 clause 4, T-12, T-13)", () => {
+  test("names only `country` and `occasion`, and lists seven destinations, six not yet", async ({
     page,
   }) => {
     await page.goto("/en");
 
-    for (const id of FIELDS) {
-      const field = page.locator(`#${id}`);
-      await expect(field).toHaveCount(1);
-      // A label bound by `for`, which is what gives the control its accessible name.
-      await expect(page.locator(`label[for="${id}"]`)).toHaveCount(1);
-      await field.focus();
-      await expect(field).toBeFocused();
-    }
-
-    // The submit control is reachable and is a real submit.
-    const submit = page.locator(`${FORM} button[type="submit"]`);
-    await expect(submit).toHaveCount(1);
-    await submit.focus();
-    await expect(submit).toBeFocused();
+    const names = await page
+      .locator(`${SENTENCE} [name]`)
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute("name")));
+    expect(names).toEqual(["country", "occasion"]);
+    await expect(
+      page.locator(`${SENTENCE} select[name="country"] option`),
+    ).toHaveCount(7);
+    await expect(
+      page.locator(`${SENTENCE} select[name="country"] option[disabled]`),
+    ).toHaveCount(6);
+    await expect(
+      page.locator(`${SENTENCE} option[value="PL"]:not([disabled])`),
+    ).toHaveCount(1);
   });
 
-  test("submits to a 200 document and carries the answers in the query", async ({
-    page,
+  test("its route answers 303, no-store and noindex, and sends an unknown country to the hub", async ({
+    request,
   }) => {
-    await page.goto("/en");
-    await page.locator("#finder-country").fill("Poland");
-    await page.locator("#finder-town").fill("Warszawa");
-
-    await Promise.all([
-      page.waitForURL(/\/en\?/),
-      page.locator(`${FORM} button[type="submit"]`).click(),
-    ]);
-
-    const url = new URL(page.url());
-    expect(url.pathname).toBe("/en");
-    expect(url.searchParams.get("country")).toBe("Poland");
-    expect(url.searchParams.get("town")).toBe("Warszawa");
-    // The destination list is what `Continue` shows while no corridor page is published.
-    expect(url.hash).toBe("#destinations");
-    await expect(page.locator("#destinations")).toBeVisible();
-  });
-
-  test("the date field carries no prefilled value, because the page is cached", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    await expect(page.locator("#finder-date")).toHaveValue("");
-    await expect(page.locator("#finder-date")).toHaveAttribute("type", "date");
-  });
-});
-
-test.describe("the type-ahead enhancement (design round 7)", () => {
-  test("filters to the matching country and announces the count", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    const field = page.locator("#finder-country");
-
-    // Nothing is shown before anything is typed.
-    await expect(page.locator(MATCHES)).toHaveCount(0);
-    await expect(page.locator(ANNOUNCE)).toHaveText("");
-
-    await field.fill("pol");
-
-    const matches = page.locator(`${MATCHES} li`);
-    await expect(matches).toHaveCount(1);
-    await expect(matches.first()).toContainText("Poland");
-    // The matched prefix in bold, as the artboards draw it — in the destination's own casing,
-    // which is what the visitor is about to accept into the field.
-    await expect(page.locator(`${MATCHES} strong`).first()).toHaveText("Pol");
-    await expect(page.locator(ANNOUNCE)).toHaveText("1 country matches");
-    await expect(page.locator(ANNOUNCE)).toHaveAttribute("aria-live", "polite");
-
-    // A prefix nothing starts with says so rather than showing an empty box.
-    await field.fill("zz");
-    await expect(page.locator(MATCHES)).toHaveCount(0);
-    await expect(page.locator(ANNOUNCE)).toHaveText(
-      "No country matches what you typed",
-    );
-  });
-
-  test("picks a match by keyboard, fills the field and closes the list", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    await page.locator("#finder-country").fill("net");
-
-    const option = page.locator(`${MATCHES} button`).first();
-    await option.focus();
-    await expect(option).toBeFocused();
-    // Focus inside the widget must not dismiss it — that is the difference between the blur rule
-    // and a list that cannot be reached by keyboard at all.
-    await expect(page.locator(MATCHES)).toHaveCount(1);
-    await option.press("Enter");
-
-    await expect(page.locator("#finder-country")).toHaveValue("Netherlands");
-    // The picked option's button has just been unmounted, so focus is put back on the field the
-    // visitor was filling in; the town field is next in the tab order from there.
-    await expect(page.locator(MATCHES)).toHaveCount(0);
-    await expect(page.locator("#finder-country")).toBeFocused();
-  });
-
-  test("picks a match by mouse, closes the list and uncovers the town field", async ({
-    context,
-    page,
-  }) => {
-    // 390 px is where `/review 40` measured the un-dismissed list over the town label and the top
-    // 12 px of its input.
-    //
-    // A recorded consent refusal is seeded first (TASK-080), the same helper the visual suite
-    // carries and for the same reason: on the mobile artboard the consent sheet is a **bottom
-    // sheet that paints over the finder card**, so a hit test at the town field measures whether
-    // the island's chunk had arrived yet rather than whether the type-ahead list closed. It passed
-    // only because the sheet had not painted by the time the hit test ran, and the imagery landing
-    // in the hero changed that timing. Measured with and without the hero photograph, the finder's
-    // geometry is identical to the pixel — the sheet was always the thing on top.
-    await context.addCookies([
+    const response = await request.get(
+      "/api/send/en?country=XX&occasion=birthday",
       {
-        name: "fo_consent",
-        value: encodeURIComponent(
-          JSON.stringify({
-            v: 1,
-            a: false,
-            m: false,
-            ts: "2026-09-09T00:00:00.000Z",
-            cid: "6f1e6e6a-1d3a-4b5e-9c2f-8f0a1b2c3d4e",
-          }),
-        ),
-        url: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
+        maxRedirects: 0,
       },
-    ]);
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/en");
-    await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
-    await page.locator("#finder-country").fill("pol");
-
-    await page.locator(`${MATCHES} button`).first().click();
-
-    await expect(page.locator("#finder-country")).toHaveValue("Poland");
-    // The query now matches the picked country exactly, which is precisely the state the first
-    // cut left the list open in.
-    await expect(page.locator(MATCHES)).toHaveCount(0);
-    await expect(page.locator(ANNOUNCE)).toHaveText("");
-
-    // Nothing paints over the town label or the top of its input any more: hit-test both.
-    for (const selector of ['label[for="finder-town"]', "#finder-town"]) {
-      const box = await page.locator(selector).boundingBox();
-      expect(box, selector).not.toBeNull();
-      const topmost = await page.evaluate(
-        ([x, y]) => {
-          const element = document.elementFromPoint(x as number, y as number);
-          return element === null
-            ? null
-            : (element.closest("label, input")?.outerHTML.slice(0, 80) ??
-                element.outerHTML.slice(0, 80));
-        },
-        [(box?.x ?? 0) + 4, (box?.y ?? 0) + 2] as const,
-      );
-      expect(topmost, selector).toContain("finder-town");
-    }
-  });
-
-  test("Escape dismisses the list, keeps what was typed and re-opens on the next keystroke", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    const field = page.locator("#finder-country");
-    await field.fill("pol");
-    await expect(page.locator(MATCHES)).toHaveCount(1);
-
-    await field.press("Escape");
-
-    await expect(page.locator(MATCHES)).toHaveCount(0);
-    // The first Escape dismisses the suggestions only — a browser that also cleared the field
-    // would throw away the visitor's typing.
-    await expect(field).toHaveValue("pol");
-    await expect(field).toBeFocused();
-    await expect(page.locator(ANNOUNCE)).toHaveText("");
-
-    await field.pressSequentially("a");
-    await expect(page.locator(MATCHES)).toHaveCount(1);
-  });
-
-  test("moving focus out of the field closes the list", async ({ page }) => {
-    await page.goto("/en");
-    await page.locator("#finder-country").fill("pol");
-    await expect(page.locator(MATCHES)).toHaveCount(1);
-
-    await page.locator("#finder-town").focus();
-
-    await expect(page.locator(MATCHES)).toHaveCount(0);
-  });
-
-  test("hands the native list over on hydration, so there are never two pop-ups", async ({
-    page,
-  }) => {
-    await page.goto("/en");
-    // The island removes `list` once it is alive; the `<datalist>` itself stays in the document
-    // for a visitor whose JavaScript never runs.
-    await expect(page.locator("#finder-country")).not.toHaveAttribute(
-      "list",
-      /.+/,
     );
-    await expect(page.locator("datalist#finder-country-options")).toHaveCount(
-      1,
-    );
+
+    expect(response.status()).toBe(303);
+    expect(response.headers()["location"]).toBe("/en/send-flowers-to");
+    expect(response.headers()["cache-control"]).toBe("no-store");
+    expect(response.headers()["x-robots-tag"]).toBe("noindex");
   });
 });
 
-test.describe("the finder with JavaScript disabled (AC-11)", () => {
-  test.use({ javaScriptEnabled: false });
-
+test.describe("the home names no VAT or delivery inclusion (founder, 2026-10-04)", () => {
   for (const path of LOCALES) {
-    test(`${path} is a native type-ahead over all seven destinations`, async ({
+    test(`${path} carries no inclusion sentence anywhere in main`, async ({
       page,
     }) => {
-      const response = await page.goto(path);
-      expect(response?.status()).toBe(200);
-
-      // The country field is the platform's own combobox: `list` pointing at a `<datalist>` of
-      // the seven destinations, which types, filters and picks with no script at all.
-      await expect(page.locator("#finder-country")).toHaveAttribute(
-        "list",
-        "finder-country-options",
-      );
-      await expect(
-        page.locator("datalist#finder-country-options option"),
-      ).toHaveCount(DESTINATIONS_COUNT);
-      for (const id of FIELDS) {
-        await expect(page.locator(`label[for="${id}"]`)).toHaveCount(1);
-      }
-      await expect(page.locator("h1")).toHaveCount(1);
-      // The five lower sections are server-rendered too: with JavaScript off the page is still
-      // the whole page, and the FAQ still opens, because the disclosure is the platform's.
-      await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
-      await expect(page.locator(`${FAQ} details`)).toHaveCount(5);
-      await expect(page.locator("[data-fo-trust-claim]")).toHaveCount(3);
-      // The gated sections are server-rendered too, and the gate is a server decision: the
-      // trending row is there and the reviews section is not, with no script involved.
-      await expect(page.locator(`${TRENDING} li`)).toHaveCount(5);
-      await expect(page.locator(REVIEWS)).toHaveCount(0);
-      await expect(page.locator(`${DESTINATIONS} li`)).toHaveCount(
-        DESTINATIONS_COUNT + 1,
+      await page.goto(path);
+      // "Every price includes VAT and delivery. dont write this on home." The header strip is
+      // the chrome's (TASK-176), so the assertion is over the page's own content.
+      const main = await page.locator("main#main").innerText();
+      expect(main).not.toMatch(
+        /\bVAT\b|MwSt|Mehrwertsteuer|delivery and VAT|VAT and delivery/iu,
       );
     });
   }
+});
 
-  test("Continue still submits to a 200 document", async ({ page }) => {
+test.describe("the sentence keeps its possessive in step (the home's one island)", () => {
+  test("choosing my dad relabels the occasions his …; choosing a friend, their …", async ({
+    page,
+  }) => {
     await page.goto("/en");
-    await page.locator("#finder-country").fill("Poland");
+    const birthday = page.locator('#send-occasion option[value="birthday"]');
+    await expect(birthday).toHaveText("her birthday");
 
-    const [response] = await Promise.all([
-      page.waitForNavigation(),
-      page.locator(`${FORM} button[type="submit"]`).click(),
-    ]);
-
-    expect(response?.status()).toBe(200);
-    expect(new URL(page.url()).pathname).toBe("/en");
-    await expect(page.locator("#destinations")).toBeVisible();
+    await page.locator("#send-who").selectOption("dad");
+    await expect(birthday).toHaveText("his birthday");
+    await page.locator("#send-who").selectOption("partner");
+    await expect(birthday).toHaveText("their birthday");
+    await page.locator("#send-who").selectOption("friend");
+    await expect(birthday).toHaveText("their birthday");
+    // A neutral occasion has one form for everybody.
+    await expect(
+      page.locator('#send-occasion option[value="newBaby"]'),
+    ).toHaveText("a new baby");
+    // Nothing the reader chose about the person is submitted.
+    await expect(page.locator("#send-who")).not.toHaveAttribute("name");
   });
+});
+
+test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("Poland + birthday lands on Poland's birthday page, with no query string", async ({
+    page,
+  }) => {
+    await page.goto("/pl");
+    // With no script the default person's possessive is the server's (moja mama → "jej").
+    await expect(
+      page.locator('#send-occasion option[value="birthday"]'),
+    ).toHaveText("na jej urodziny");
+    await page.locator('select[name="country"]').selectOption("PL");
+    await page.locator('select[name="occasion"]').selectOption("birthday");
+    await page.locator(`${SENTENCE} button[type="submit"]`).click();
+
+    await page.waitForURL("**/pl/polska/kwiaty/kwiaty-na-urodziny");
+    const landed = new URL(page.url());
+    expect(landed.pathname).toBe("/pl/polska/kwiaty/kwiaty-na-urodziny");
+    expect(landed.search).toBe("");
+    await expect(page.locator("h1")).toHaveCount(1);
+  });
+});
+
+/**
+ * The sentence's webfont swap stays small (spec 004 §14 A21 clause 3; TASK-177 escalation 7,
+ * orchestrator ruling 2026-10-04).
+ *
+ * The selects are set in Fraunces 300 italic and the frame in Fraunces roman, neither of which
+ * A21 clause 3 lets the home preload, and each select sizes to its choice
+ * (`field-sizing: content`). When the webfont swaps in, a select whose fallback is not
+ * metric-matched changes width and moves the words after it. `src/app/globals.css` gives both
+ * styles a matched fallback, so the swap moves them by a fraction of a pixel; this case pins that
+ * the shift attributed to the sentence stays at or below 0.001 on every home, at both artboard
+ * widths. The header, banner and consent tests exclude the sentence, so this is the one place its
+ * swap is measured.
+ *
+ * Why 0.001 and not the ruling's 0.005 (measured on `next start`, 2026-10-04, at 1280 and 390):
+ * - matched fallbacks: at most 0.000055;
+ * - the italic falling back to the roman face, i.e. main's fallbacks: up to 0.0030 (/pl at 1280);
+ * - the selects set in an unmatched stack (Georgia): up to 0.0033;
+ * - one select widened by 40 px after load: 0.0004 to 0.0158.
+ * At 0.005 the second and third stay green, so the bound would not notice the fallback metrics
+ * going away; at 0.001 all three go red on at least one home, with 18 times headroom over the
+ * matched value.
+ */
+const SENTENCE_SHIFT_BOUND = 0.001;
+const SENTENCE_VIEWPORTS = [
+  { width: 1280, height: 720 },
+  { width: 390, height: 844 },
+] as const;
+
+test.describe("the home sentence's font swap stays small", () => {
+  for (const path of LOCALES) {
+    for (const viewport of SENTENCE_VIEWPORTS) {
+      test(`${path} at ${String(viewport.width)} px: the sentence shifts by at most ${String(SENTENCE_SHIFT_BOUND)}`, async ({
+        page,
+      }, testInfo) => {
+        await page.setViewportSize(viewport);
+        await page.addInitScript(() => {
+          Object.defineProperty(navigator, "languages", {
+            configurable: true,
+            get: () => [],
+          });
+        });
+        await recordLayoutShifts(page);
+
+        const response = await page.goto(path);
+        expect(response?.status()).toBe(200);
+        await expect(page.locator(SENTENCE_REGION)).toBeVisible();
+        // Every face the page asked for has arrived, so the swap has happened, then two frames
+        // and a settle for the entries to be reported.
+        await page.evaluate(async () => {
+          await document.fonts.ready;
+          await new Promise<void>((resolve) => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                setTimeout(resolve, 500);
+              });
+            });
+          });
+        });
+
+        const shift = await shiftInside(page, SENTENCE_REGION);
+        testInfo.annotations.push({
+          type: "sentence-shift",
+          description: `${path} ${String(viewport.width)}: ${String(shift)}`,
+        });
+        // The measured value, in the log CI keeps, for the escalation's before/after record.
+        console.log(
+          `sentence-shift ${path} ${String(viewport.width)} ${String(shift)}`,
+        );
+        expect(shift).toBeLessThanOrEqual(SENTENCE_SHIFT_BOUND);
+      });
+    }
+  }
 });

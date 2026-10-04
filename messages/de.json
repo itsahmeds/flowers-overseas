@@ -468,10 +468,6 @@
     "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
     "eyebrow": "Before you order",
     "heading": "Questions people ask first",
-    "lasting": {
-      "answer": "Seven days from delivery. Tell us and we redeliver or refund, your choice, no photo required.",
-      "question": "What if the flowers do not last?"
-    },
     "nobodyHome": {
       "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge.",
       "question": "What if nobody is home?"
@@ -479,10 +475,6 @@
     "photo": {
       "answer": "Close, not identical. Our florists work with what is fresh that morning and substitute like for like in colour and value. Every change is noted on your delivery photo.",
       "question": "Will the bouquet look like the photo?"
-    },
-    "price": {
-      "answer": "Yes. Delivery and VAT are inside the price you see. Your card is charged in your currency for exactly that amount.",
-      "question": "Is the price really final?"
     },
     "whoDelivers": {
       "answer": "Our own florist in the recipient's town, by hand, on the day you choose.",
@@ -494,21 +486,7 @@
     "country": {
       "label": "Country"
     },
-    "cutoff": "Order by 14:00 in Warsaw for delivery today",
-    "date": {
-      "label": "Delivery date"
-    },
-    "datesPending": "Delivery dates open when we confirm our first florist",
-    "destinations": {
-      "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
-      "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
-    },
-    "help": "Continue shows you where we deliver and where we are still choosing florists.",
-    "submit": "Continue",
-    "town": {
-      "label": "Town, city or postcode",
-      "placeholder": "Warszawa or 00-001"
-    }
+    "submit": "Continue"
   },
   "footer": {
     "cookieSettings": "Cookie-Einstellungen",
@@ -551,19 +529,12 @@
       "orderBy": "Order by {date}, {time}"
     },
     "destinations": {
-      "body": "We open a country only when we have met enough florists there to stand behind every order — across Europe, and only where we really are.",
-      "elsewhere": {
-        "body": "We are choosing florists in six more countries. When we open one, it appears here first.",
-        "title": "Somewhere else?"
-      },
-      "eyebrow": "Destinations",
-      "heading": "Poland today. Six more countries as we choose florists."
+      "body": "We open each country only once we have local florists there we can stand behind.",
+      "eyebrow": "Destinations"
     },
     "hero": {
       "eyebrow": "International flower delivery",
       "heading": "Flowers for someone far away.",
-      "photoCaption": "Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed",
-      "photoCaptionMobile": "Photography to supply · Warsaw florist, morning light",
       "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
     },
     "howItWorks": {
@@ -576,8 +547,6 @@
         "title": "Delivered by hand. You get the photo."
       },
       "eyebrow": "How we send your flowers",
-      "guarantee": "Read the guarantee in full",
-      "guaranteePending": "The full terms go up with our help pages. Until they do, the promise above is the whole of it.",
       "heading": "Three people touch your order. None of them is a courier.",
       "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
       "make": {
@@ -591,8 +560,8 @@
     },
     "proof": {
       "guarantee": {
-        "body": "We redeliver or refund, your choice",
-        "title": "7-day freshness guarantee"
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
+        "title": "Fresh-flower promise"
       },
       "local": {
         "body": "Independent shops we chose ourselves",
@@ -601,10 +570,6 @@
       "photo": {
         "body": "We email you the picture of what was handed over",
         "title": "We photograph it at the door"
-      },
-      "price": {
-        "body": "Delivery and VAT already in it",
-        "title": "The price you see is what we charge"
       }
     },
     "reviews": {
@@ -619,9 +584,15 @@
         "order": "verified order"
       }
     },
+    "sentence": {
+      "frame": "Einen Strauß an <who></who> in <country></country> <occasion></occasion> schicken.",
+      "heading": "Für wen ist der Strauß?",
+      "notYet": "{country} (not yet)",
+      "occasion": "{occasion, select, birthday {{pronoun, select, other {zum Geburtstag}}} nameDay {zum Namenstag} anniversary {zum Jahrestag} sympathy {zum Trost} justBecause {einfach so} newBaby {zur Geburt} other {zu einem Anlass}}",
+      "who": "{who, select, mum {meine Mama} dad {meinen Papa} grandma {meine Oma} grandad {meinen Opa} friend {jemanden aus dem Freundeskreis} someoneILove {einen lieben Menschen} other {meinen Schatz}}"
+    },
     "trending": {
       "basis": "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
-      "eyebrow": "Trending now",
       "heading": "Beliebte Auswahl"
     }
   },

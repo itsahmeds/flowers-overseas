@@ -302,14 +302,14 @@ describe("T-21: the dataset still claims nothing it cannot back (AC-21)", () => 
     }
   });
 
-  it("leaves the home's delivery band a placeholder, because we have no delivery photograph", () => {
-    // §2.4, explicitly: the band renders the placeholder in Phase 0 *in every case*. The proof is
-    // that the dataset contains no asset for it — `HowItWorks` still renders the reserved box.
+  it("shows no delivery photograph on the home, because we have none", () => {
+    // §2.4, explicitly: no delivery photograph exists in Phase 0. The v2 how-it-works band
+    // (TASK-177) draws no photo slot at all, and the dataset contains no asset for one.
     const source = readFileSync(
       join(repoRoot, "src/modules/ui/home/HowItWorks.tsx"),
       "utf8",
     );
-    expect(source).toContain('slot="band"');
+    expect(source).not.toContain('slot="band"');
     expect(source).not.toContain("MediaAsset");
     expect(assets.some((asset) => asset.slot === ("band" as MediaSlot))).toBe(
       false,

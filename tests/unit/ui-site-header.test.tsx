@@ -37,6 +37,7 @@ import {
 } from "../../src/config/site-links.ts";
 import { listingAlternatePaths } from "../../src/modules/catalog";
 import { loadMessages, localePath } from "../../src/modules/i18n";
+import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   HEADER_BAND_HEIGHTS,
   HEADER_STICKY_HEIGHTS,
@@ -50,6 +51,8 @@ import {
   headerSearchHref,
   headerSendHref,
 } from "../../src/modules/ui/layout/header-model.ts";
+import { SiteFooter } from "../../src/modules/ui/layout/SiteFooter.tsx";
+import { dayCountIn } from "../support/day-count.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
@@ -100,6 +103,33 @@ function render(
     </NextIntlClientProvider>,
   );
 }
+
+/** The footer, with every namespace it reads (`MESSAGE_NAMESPACES`), for the N-day sweep. */
+function renderFooter(locale: string): string {
+  return renderToStaticMarkup(
+    <NextIntlClientProvider
+      locale={locale}
+      messages={loadMessages(locale, MESSAGE_NAMESPACES)}
+      timeZone="UTC"
+    >
+      <SiteFooter locale={locale} />
+    </NextIntlClientProvider>,
+  );
+}
+
+/** Markup to the text a reader sees: tags out, entities for the spaces back. */
+function textOf(markup: string): string {
+  return markup
+    .replaceAll(/<[^>]+>/g, " ")
+    .replaceAll("&nbsp;", " ")
+    .replaceAll("&#x27;", "'");
+}
+
+/** The exact de/pl price claims (carry-forward a). */
+const EXACT_CLAIM = {
+  de: "Preise inkl. MwSt. und Versand",
+  pl: "Ceny zawierają dostawę i VAT",
+} as const;
 
 /** The opening tag of every element carrying `data-fo-header-item`, with its id. */
 function headerItems(html: string): { id: string; tag: string }[] {
@@ -568,9 +598,13 @@ describe("the rendered header (AC-7, AC-14)", () => {
       for (const pattern of must)
         expect(claim, String(pattern)).toMatch(pattern);
       expect(claim).not.toMatch(mustNot);
-      // The de/pl catalogues carry their own sentence, not the English one.
+      // The de/pl catalogues carry their own sentence, not the English one, and exactly the one
+      // that says both are included (PR 172 breaker round 2, accepted carry-forward a): a claim
+      // that adds "Versand wird extra berechnet" or "dostawa płatna osobno" keeps every stem the
+      // patterns above look for, so the sentence itself is pinned.
       if (locale === "de" || locale === "pl") {
         expect(claim).not.toBe("Prices include delivery and VAT");
+        expect(claim).toBe(EXACT_CLAIM[locale]);
       }
       expect(render(locale)).toContain(claim);
     });
@@ -586,9 +620,81 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(guarantee).not.toMatch(/\d/u);
       const html = render(locale);
       expect(html).toContain(guarantee);
-      expect(html).not.toMatch(
-        /\d+\s*[-‑–]?\s*(?:day|days|Tag|Tage|Tagen|dni|dnia|dzień)(?!\p{L})/iu,
-      );
+      // The rendered header and footer, as text (carry-forward b: the footer too).
+      for (const [part, markup] of [
+        ["header", html],
+        ["footer", renderFooter(locale)],
+      ] as const) {
+        expect(dayCountIn(textOf(markup)), `${locale} ${part}`).toBeUndefined();
+      }
+    });
+  }
+
+  it("the day-count matcher catches every form the breakers found, and allows exactly 24/7", () => {
+    for (const phrase of [
+      "Unsere 7-tägige Frische-Garantie:",
+      "Mit Liebe und 7 Tage Frische.",
+      "7 days fresh",
+      "7-day freshness guarantee",
+      "Świeżość przez 7 dni",
+      "7-dniowa gwarancja",
+      "7 dzień",
+      "7\u00a0Tage",
+      // PR 174 breaker H4.
+      "Fresh for 7 full days",
+      "7 Kalendertage frisch",
+      "sieben Tage Frische",
+      "tydzień świeżości",
+      "fresh for a week",
+      "seven days of freshness",
+      "siedem dni świeżości",
+      // PR 174 breaker round 2, hole 3.
+      "Unsere siebentägigen Frische-Garantie",
+      "Siedmiodniowa gwarancja świeżości",
+      "fresh for a fortnight",
+      "Vierzehn Tage frisch",
+      "fresh for fourteen days",
+      "Świeże przez 7 dób",
+      "a 14-day promise",
+      "14-dniowa gwarancja",
+    ]) {
+      expect(dayCountIn(phrase), phrase).toBeDefined();
+    }
+    for (const phrase of [
+      "Message us any time, 24/7 — we reply within a few hours.",
+      "Schreiben Sie uns rund um die Uhr, 24/7.",
+      "Order by 14:00 in Warsaw",
+      "send us a photo within 72 hours of delivery",
+      // The slash guard: without it, the "7" after "24/" would start "7 days".
+      "We answer 24/7 days and nights.",
+      // Not a count of days.
+      "Order by Friday for the weekend",
+      "Blumen fürs Wochenende",
+    ]) {
+      expect(dayCountIn(phrase), phrase).toBeUndefined();
+    }
+  });
+
+  for (const [locale, rejected] of [
+    [
+      "de",
+      [
+        "Preise inkl. MwSt., Versand wird extra berechnet",
+        "Preise inkl. MwSt. und Versand nicht enthalten",
+      ],
+    ],
+    [
+      "pl",
+      [
+        "Ceny zawierają VAT, dostawa płatna osobno",
+        "Ceny zawierają dostawę i VAT, koszt dostawy doliczamy",
+      ],
+    ],
+  ] as const) {
+    it(`${locale}: the pinned claim rejects the breaker's reworded sentences`, () => {
+      for (const claim of rejected) {
+        expect(claim, claim).not.toBe(EXACT_CLAIM[locale]);
+      }
     });
   }
 

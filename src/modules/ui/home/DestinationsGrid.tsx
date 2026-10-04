@@ -1,4 +1,13 @@
 /**
+ * **v2** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.dest-chips`): the intro beside a wrap of
+ * chips. Every chip links to its destination's **guide** (plan/02 §11, spec 004 Q11/A2; PR 174
+ * review R2); the guide links the shop root. Where a locale has no guide, the featured (`live`)
+ * destination's chip links its **shop root** (`shopHref`, from the page) instead. Only a
+ * destination taking delivery dates (`deliveryDatesOpen()`) is poppy and says "Delivering now";
+ * until a florist is signed, Poland's chip is neutral and says "Guide · not delivering yet". A
+ * destination with neither page is a chip-shaped label with no link (never a dead control, A20).
+ * The artboard draws Poland's chip to the shop root: recorded in `docs/design/README.md`.
+ *
  * `DestinationsGrid` — the artboards' destinations grid (spec 004 §13's 2026-09-08 resolution
  * note "destinations grid with live/guide status", §5.3 `DestinationPicker`, §14 A5, **AC-11**,
  * **AC-14**; TASK-054; `docs/design/homepage-v1/homepage-desktop.dc.html`,
@@ -31,136 +40,94 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Grid, Stack } from "../primitives/layout.tsx";
-import { Display, Label, Text } from "../primitives/typography.tsx";
+import { Chip } from "../primitives/Chip.tsx";
+import { Display, Eyebrow } from "../primitives/typography.tsx";
 
-import { DESTINATIONS_ANCHOR } from "./finder-model.ts";
 import {
   type DestinationStatusProvider,
   getDestinationStatusProvider,
 } from "./destination-status-provider.ts";
-import { HOME_BLEED } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
-/** See `SiteHeader`'s twin: the registries hold dotted keys, not typed literals. */
-type Translator = ReturnType<typeof useTranslations>;
 type LabelTranslator = (key: string) => string;
 
-/** Resolve a registry key (`destinations.pl.cities`). The one cast in this file. */
-function registryLabel(t: Translator, key: string): string {
-  return (t as unknown as LabelTranslator)(key);
-}
+/** The id of the locale home's destinations section (the hub of every "where" question). */
+export const DESTINATIONS_ANCHOR = "destinations";
 
 const HEADING_ID = "destinations-heading";
 
 export interface DestinationsGridProps {
   readonly locale: string;
-  /** `h2` on the locale home; `h3` in `/dev/components`, where the section is nested. */
   readonly headingLevel?: "h2" | "h3";
-  /** The gallery's populated state — see `TrendingRow`'s twin for why it is a prop. */
   readonly provider?: DestinationStatusProvider;
+  /**
+   * The delivering destination's shop root in this locale (`corridorShopEntry()`, from the
+   * page), used only where that destination has no guide in this locale.
+   */
+  readonly shopHref?: string;
 }
 
 export function DestinationsGrid({
   locale,
   headingLevel = "h2",
   provider,
+  shopHref,
 }: DestinationsGridProps): ReactElement {
-  const t = useTranslations();
+  const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
   const source = provider ?? getDestinationStatusProvider();
-  const destinations = source.list(locale, (nameKey) =>
-    registryLabel(t, nameKey),
-  );
+  // The provider owns the order (featured first, then collated); the grid does not re-sort.
+  const destinations = source.list(locale, (nameKey) => t(nameKey));
 
   return (
-    <Grid
-      as="section"
-      columns="1-aside"
-      gap="2xl"
-      className={`border-rule py-2xl border-t ${HOME_BLEED}`}
+    <section
+      className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-destinations
       id={DESTINATIONS_ANCHOR}
     >
-      <Stack gap="md">
-        <Label>{home("destinations.eyebrow")}</Label>
-        <Display as={headingLevel} id={HEADING_ID} size="2xl">
-          {home("destinations.heading")}
-        </Display>
-        <Text measure size="sm" tone="muted">
-          {home("destinations.body")}
-        </Text>
-      </Stack>
-      {/* The artboard's rule-bounded cells: the grid draws its own block-start and inline-start
-          rules and every cell closes itself, so the table of countries needs no table. */}
-      <Grid
-        as="ul"
-        columns="2-3"
-        gap="none"
-        className="border-rule border-s border-t"
-      >
-        {destinations.map((destination) => (
-          <Stack
-            as="li"
-            gap="xs"
-            key={destination.iso2}
-            className={[
-              "border-rule p-lg border-e border-b",
-              // Poland spans the row on the mobile artboard, because it is the one destination
-              // with cities to name and they do not fit in half a 390 px viewport.
-              destination.delivering ? "col-span-2 md:col-span-1" : "",
-              destination.delivering ? "bg-surface-muted" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            data-fo-destination={destination.iso2}
-          >
-            {destination.href === undefined ? (
-              <Display as="span" size="xl">
-                {registryLabel(t, destination.nameKey)}
-              </Display>
-            ) : (
-              // The published branch: a link, from the same loop, with no template edit — the
-              // "a country is data" proof of AC-11.
-              <a
-                className="underline underline-offset-4"
-                href={destination.href}
-              >
-                <Display as="span" size="xl">
-                  {registryLabel(t, destination.nameKey)}
-                </Display>
-              </a>
-            )}
-            <Text
-              as="span"
-              size="sm"
-              tone={destination.delivering ? "accent" : "subtle"}
-              className={destination.delivering ? "font-medium" : ""}
-            >
-              {registryLabel(t, destination.stateKey)}
-            </Text>
-            {destination.citiesKey === undefined ? null : (
-              <Text as="span" size="xs" tone="subtle">
-                {registryLabel(t, destination.citiesKey)}
-              </Text>
-            )}
-          </Stack>
-        ))}
-        {/* Copy only: no field, no button, nothing to submit. */}
-        <Stack
-          as="li"
-          gap="xs"
-          className="border-rule p-lg col-span-2 justify-center border-e border-b"
-          data-fo-destinations-elsewhere
-        >
-          <Text as="span" size="sm" className="font-medium">
-            {home("destinations.elsewhere.title")}
-          </Text>
-          <Text as="span" size="sm" tone="subtle">
-            {home("destinations.elsewhere.body")}
-          </Text>
-        </Stack>
-      </Grid>
-    </Grid>
+      <div className="md:gap-2xl grid grid-cols-1 items-center gap-[32px] md:grid-cols-[5fr_6fr]">
+        <div>
+          <Eyebrow className="mb-[14px]">
+            {home("destinations.eyebrow")}
+          </Eyebrow>
+          <Display as={headingLevel} id={HEADING_ID} size="display-s">
+            {t("destinationsHub.h1")}
+          </Display>
+          <p className="text-ink-muted text-body mt-[18px] max-w-[40ch] leading-[1.5] md:text-[21px]">
+            {home("destinations.body")}
+          </p>
+        </div>
+        <ul className="flex flex-wrap gap-[10px]">
+          {destinations.map((destination) => {
+            // Every chip leads to its guide (plan/02 §11, spec 004 Q11/A2): the guide is the
+            // page that ranks for "send flowers to Poland", and it links the shop root. Only
+            // where a locale has no guide does the featured (`live`) chip go to the shop root.
+            const href =
+              destination.href ?? (destination.featured ? shopHref : undefined);
+            return (
+              <li key={destination.iso2} data-fo-destination={destination.iso2}>
+                <Chip
+                  tone={destination.delivering ? "accent" : "neutral"}
+                  {...(href === undefined ? {} : { href })}
+                >
+                  {t(destination.nameKey)}
+                  <small
+                    className={[
+                      "text-fine font-normal",
+                      destination.delivering
+                        ? "text-on-accent"
+                        : "text-ink-subtle",
+                    ].join(" ")}
+                  >
+                    {t(destination.stateKey)}
+                  </small>
+                </Chip>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
   );
 }

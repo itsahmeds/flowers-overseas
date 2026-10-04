@@ -12,7 +12,18 @@
  * flag. A 404 here therefore means the target is missing the variable, which is why the status is
  * asserted before the screenshot — a missing baseline and a missing env var must not look alike.
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, expect, test } from "@playwright/test";
+
+/**
+ * The home's occasion-dates band leaves the layout in every home shot here (`./home-dates.css`
+ * says why): the band prints a calendar, and a calendar edit must not move the rest of the page.
+ * The band keeps its own baselines in `./home.spec.ts`.
+ */
+const HOME_DATES_STYLE = fileURLToPath(
+  new URL("./home-dates.css", import.meta.url),
+);
 
 /**
  * A recorded consent decision, seeded before the first navigation (TASK-051).
@@ -64,5 +75,8 @@ test(`${PSEUDO_RTL_PATH} matches the committed right-to-left baseline`, async ({
   await expect(page.locator("html")).toHaveAttribute("lang", "ar-XB");
   await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
-  await expect(page).toHaveScreenshot("ar-XB.png", { fullPage: true });
+  await expect(page).toHaveScreenshot("ar-XB.png", {
+    fullPage: true,
+    stylePath: HOME_DATES_STYLE,
+  });
 });

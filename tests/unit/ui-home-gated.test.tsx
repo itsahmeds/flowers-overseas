@@ -19,6 +19,7 @@ import { describe, expect, it, vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import { COUNTRIES } from "../../src/config/countries.ts";
+import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { TRENDING_PICKS } from "../../src/config/trending.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
@@ -51,6 +52,8 @@ const NAMESPACES = [
   "home",
   "finder",
   "destinations",
+  "destinationsHub",
+  "nav",
   "media",
   "a11y",
   "common",
@@ -120,7 +123,10 @@ function trendingHeading(html: string): string | undefined {
 
 /** The basis line after the picks' list, or `undefined` when the row renders none. */
 function trendingBasis(html: string): string | undefined {
-  const inner = /<\/ul><p[^>]*>([^<]*)<\/p><\/section>$/u.exec(html)?.[1];
+  // v2 (TASK-177): the basis line sits under the heading, as the artboard draws it.
+  const inner = /<p[^>]*data-fo-trending-basis-line[^>]*>([^<]*)<\/p>/u.exec(
+    html,
+  )?.[1];
   return inner === undefined ? undefined : text(inner).trim();
 }
 
@@ -130,7 +136,8 @@ describe("the trending row is gated on real orders", () => {
     const rendered = text(html);
 
     expect([...html.matchAll(/<li/g)]).toHaveLength(TRENDING_PICKS.length);
-    expect(rendered).toContain("Trending now");
+    // v2 (TASK-177): the eyebrow is the destination, in the catalogue's own word ("For Poland").
+    expect(html).toMatch(/<p class="eyebrow[^"]*">Poland<\/p>/);
     // Spec §3/§8: nothing here knows what a product is and no price is rendered — not a figure,
     // not a "starting at", not a currency symbol, not the canvas's grey price bar.
     expect(rendered).not.toMatch(/starting at|from\s*€|€|zł|£|\bfrom \d/iu);
@@ -254,7 +261,7 @@ describe("the trending row is gated on real orders", () => {
           html.indexOf(`data-fo-trending-pick="${pick.id}"`),
         );
         expect(card.slice(0, card.indexOf("</li>")), pick.id).toMatch(
-          /<a class="gap-sm flex flex-col" href="[^"]+">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
+          /<a class="block no-underline[^"]*" href="[^"]+">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
         );
       }
     }
@@ -415,8 +422,11 @@ describe("the destinations grid", () => {
         `data-fo-destination="${country.iso2}"`,
       );
     }
-    expect(rendered).toContain("Delivering now");
-    expect(rendered).toContain("Guide · not delivering yet");
+    // PR 174 item 6: nobody can order yet (no florist signed), so no chip claims delivery.
+    expect(rendered).not.toContain("Delivering now");
+    expect(rendered.split("Guide · not delivering yet")).toHaveLength(
+      COUNTRIES.length + 1,
+    );
     // TASK-092 published the seven corridor targets: every destination whose guide exists in
     // this locale is a link, from the same loop and with no markup change (spec 007 AC-20).
     expect(hrefs(html).length).toBe(COUNTRIES.length);
@@ -439,21 +449,21 @@ describe("the destinations grid", () => {
     }
   });
 
-  it("names Poland's five cities and no city anywhere else (plan/10 §3)", () => {
+  it("names no city at all: the v2 chips claim no coverage (plan/10 §3)", () => {
     const rendered = text(grid("en"));
 
-    expect(rendered).toContain("Warszawa · Kraków · Wrocław · Gdańsk · Poznań");
-    // A city line exists exactly once, because exactly one destination is `live`.
-    expect(
-      [...grid("en").matchAll(/Warszawa/g)],
-      "one city line only",
-    ).toHaveLength(1);
-    for (const city of ["Berlin", "Paris", "Madrid", "Rome", "Amsterdam"]) {
+    // The opening rule is stated as a rule, not as a fact Poland already meets (2026-10-04).
+    expect(rendered).toContain(
+      "We open each country only once we have local florists there we can stand behind.",
+    );
+    expect(rendered).not.toContain("met enough florists");
+
+    for (const city of ["Warszawa", "Kraków", "Berlin", "Paris", "Madrid"]) {
       expect(rendered, city).not.toContain(city);
     }
   });
 
-  it("puts the delivering destination first and collates the rest per locale", () => {
+  it("puts the featured (`live`) destination first and collates the rest per locale", () => {
     const order = (locale: string): string[] =>
       [...grid(locale).matchAll(/data-fo-destination="([A-Z]{2})"/g)].map(
         (match) => match[1] ?? "",
@@ -466,19 +476,68 @@ describe("the destinations grid", () => {
     expect(order("en")).toHaveLength(COUNTRIES.length);
   });
 
-  it("ships the artboard's copy-only 'Somewhere else?' cell with no input at all", () => {
-    const html = grid("en");
+  it("links Poland's chip to its guide, even when the page hands in a shop root (R2)", () => {
+    const html = render(
+      <DestinationsGrid locale="en" shopHref="/en/poland/flowers" />,
+      "en",
+    );
+    const poland = html.slice(html.indexOf('data-fo-destination="PL"'));
 
-    expect(html).toContain("data-fo-destinations-elsewhere");
-    expect(text(html)).toContain("Somewhere else?");
-    // A waiting-list capture is a new personal-data flow (010/016 own it); an inert field would
-    // be a dark pattern, so there is no field, no button and nothing to submit.
+    // plan/02 §11, spec 004 Q11/A2: the chip feeds the guide, which links the shop root.
+    // Neutral, not poppy, until delivery dates open (PR 174 item 6); still first, still linked.
+    expect(poland.slice(0, poland.indexOf("</li>"))).toMatch(
+      /<a class="(?![^"]*bg-accent)[^"]*" href="\/en\/send-flowers-to\/poland">Poland/u,
+    );
+    expect(html).not.toContain('href="/en/poland/flowers"');
+    // All seven chips go to their guides, and nothing on the section asks for input.
+    expect(
+      hrefs(html).filter((href) => href.includes("send-flowers-to")),
+    ).toHaveLength(7);
     for (const tag of ["<input", "<form", "<button", "<select", "<textarea"]) {
       expect(html, tag).not.toContain(tag);
     }
   });
 
-  it("inherits the finder's `destinations` id, so `Continue` still lands somewhere", () => {
+  it("links the featured chip to its shop root only where its guide does not exist in the locale", () => {
+    const html = render(
+      <DestinationsGrid locale="de" shopHref="/de/polen/blumen" />,
+      "de",
+    );
+    // `/de` has no guides (spec 007 §13 Q1): Poland's chip is the one link, to the shop root.
+    expect(hrefs(html)).toEqual(["/de/polen/blumen"]);
+  });
+
+  /**
+   * The day a florist is signed (PR 174 breaker round 3, hole 3): the same grid, with Poland's
+   * delivery dates open through the partners seam, claims delivery for Poland — the poppy chip and
+   * the reviewed "Delivering now" word, once — and for nobody else. The other half of item 6's pin:
+   * a claim that can never render is no better than one that always does.
+   */
+  it("claims delivery for Poland alone, in word and tone, once a florist is signed", async () => {
+    const html = await withActivePartnersProvider(
+      { hasActivePartners: (iso2) => iso2 === "PL" },
+      () => grid("en"),
+    );
+    const item = (iso2: string): string => {
+      const start = html.indexOf(`data-fo-destination="${iso2}"`);
+      return html.slice(start, html.indexOf("</li>", start));
+    };
+
+    expect(item("PL")).toMatch(/<a class="[^"]*\bbg-accent\b[^"]*"/u);
+    expect(item("PL")).toMatch(/class="[^"]*\btext-on-accent\b[^"]*"/u);
+    expect(text(item("PL"))).toContain("Delivering now");
+    expect(text(html).split("Delivering now")).toHaveLength(2);
+    const others = COUNTRIES.filter((country) => country.iso2 !== "PL");
+    expect(others).toHaveLength(6);
+    for (const country of others) {
+      expect(text(item(country.iso2)), country.iso2).toContain(
+        "Guide · not delivering yet",
+      );
+      expect(item(country.iso2), country.iso2).not.toContain("bg-accent");
+    }
+  });
+
+  it('keeps the `destinations` id, the home\'s anchor for every "where" question', () => {
     expect(grid("en")).toContain('id="destinations"');
   });
 

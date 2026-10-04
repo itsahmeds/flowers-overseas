@@ -95,10 +95,10 @@ function offences(
  * adding a message.
  */
 const GATED_PROMISE_KEYS: readonly string[] = [
-  // Header utility strip and home finder — `anyDeliveryDatesOpen()` in `SiteHeader`/`FinderCard`.
+  // Header utility strip — `anyDeliveryDatesOpen()` in `SiteHeader` (the home finder that also
+  // carried `finder.cutoff` was retired by TASK-177).
   "nav.utility.cutoff",
   "nav.utility.cutoffShort",
-  "finder.cutoff",
   // Header category row — `requiresDeliveryDates` in `headerCategoryItems()`.
   "nav.category.sameDayDelivery",
   "nav.category.sameDayShort",

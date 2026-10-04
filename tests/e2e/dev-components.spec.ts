@@ -85,7 +85,7 @@ test.describe("/dev/components", () => {
           nodes.filter(
             (node) =>
               node.textContent?.trim() === "Continue" &&
-              node.closest("[data-fo-finder]") === null,
+              node.closest("[data-fo-sentence]") === null,
           ).length,
       );
     expect(primitiveContinueButtons).toBe(40);
@@ -139,7 +139,7 @@ test.describe("/dev/components", () => {
             (node) =>
               node.closest("footer") === null &&
               node.closest("[data-fo-consent-panel]") === null &&
-              node.closest("[data-fo-finder]") === null &&
+              node.closest("[data-fo-sentence]") === null &&
               node.closest("[data-fo-hero]") === null &&
               // TASK-108 narrows it by one more component, for the reason the footer, the finder
               // and the hero narrowed it before: the listing toolbar is a *component's own* form

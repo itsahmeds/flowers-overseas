@@ -20,10 +20,15 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { COUNTRIES, countryRegions } from "../../src/config/countries.ts";
+import {
+  COUNTRIES,
+  countryRegions,
+  deliveryDatesOpen,
+} from "../../src/config/countries.ts";
 import { isPublished } from "../../src/config/site-links.ts";
 import { DestinationsHubPage, hubView } from "../../src/modules/geo/index.ts";
 import { loadMessages } from "../../src/modules/i18n/messages.ts";
+import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
@@ -315,4 +320,37 @@ describe("a new country is data (AC-7; T-08)", () => {
       ).toBeGreaterThan(0);
     }
   });
+});
+
+/**
+ * PR 174 item 6 (the live crawl, 2026-10-04): the home's Poland chip said "Delivering now" while
+ * nobody can order. Delivery is claimed only where delivery dates are open
+ * (`deliveryDatesOpen()`), on the home and on this hub alike, never on `status: "live"` alone.
+ */
+describe("no destination claims delivery before a florist is signed (PR 174 item 6)", () => {
+  it.each(["en", "en-gb", "de", "pl"])(
+    "%s: neither the home's destinations nor the hub print the delivering-now word",
+    (locale) => {
+      const messages = loadMessages(locale, [
+        "meta",
+        "a11y",
+        "common",
+        "breadcrumb",
+        "destinations",
+        "destinationsHub",
+        "home",
+      ]) as { destinations: { state: { deliveringNow: string } } };
+      const claim = messages.destinations.state.deliveringNow;
+      expect(claim, locale).not.toBe("");
+      expect(deliveryDatesOpen("PL")).toBe(false);
+      const home = renderToStaticMarkup(
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <DestinationsGrid locale={locale} />
+        </NextIntlClientProvider>,
+      );
+      expect(home, `${locale} home`).toContain('data-fo-destination="PL"');
+      expect(home, `${locale} home`).not.toContain(claim);
+      expect(render(locale), `${locale} hub`).not.toContain(claim);
+    },
+  );
 });

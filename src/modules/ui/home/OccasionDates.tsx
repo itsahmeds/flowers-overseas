@@ -15,128 +15,156 @@
  * rendered at revalidation time is a wrong number served for an hour (the reasoning
  * `FinderCard`'s date field records).
  *
- * Two things the artboards draw that are deliberately not here:
- *
- *  - **the rows are not links.** They point at occasion pages spec 008 has not published, and the
- *    "unpublished target renders as text" rule holds here as everywhere else (AC-14);
- *  - **the mobile artboard's shortened names.** It prints "All Saints' Day" where the desktop one
- *    prints "All Saints' Day · Wszystkich Świętych". Rendering both and hiding one would put the
- *    string in the accessibility tree twice; one name is rendered, and the endonym stays in it,
- *    because the endonym is the half a Polish recipient's family would use.
- *
- * The band is the desktop artboard's two-column shape — a 300 px "Coming up in Poland" heading
- * column beside the 4-up date grid, vertically centred (`Grid columns="1-aside"`, the width
- * written once in the primitive) — and the mobile artboard's stack of the same two parts, 2-up
- * (`/review 53` required change 2).
- *
- * The cutoff line itself is hidden below the `md` breakpoint, exactly as the mobile artboard
- * omits it — the one responsive difference in this section, and it removes no information the
- * page does not carry elsewhere (the finder prints the standing cutoff above it).
+ * **v2: Poland's dates as stamps** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.stamps`). Each
+ * date is a perforated stamp on its tint — a big day numeral (decorative: the formatted date
+ * under it says the same thing to a screen reader), the date, the name and the fact or cutoff.
+ * A stamp whose occasion has a hub that exists is **one link** ending in a cornflower arrow; one
+ * without (Andrzejki) is a `<div>` with no arrow and no hover (A20). The mobile artboard's
+ * 232 px rail is a horizontal scroll. The artboard's fifth "name days" stamp and the dates lede
+ * are new copy and wait for the founder's batch (the brief's `## Result`).
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
-import { Grid, Stack } from "../primitives/layout.tsx";
-import { Display, Label, Text } from "../primitives/typography.tsx";
+import { Display, Eyebrow } from "../primitives/typography.tsx";
 
-import { HOME_BLEED } from "./HomeHero.tsx";
-import { occasionDateViews } from "./occasion-model.ts";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
+import { type OccasionDateView, occasionDateViews } from "./occasion-model.ts";
 
-/** See `SiteHeader`'s twin: the registries hold dotted keys, not typed literals. */
-type Translator = ReturnType<typeof useTranslations>;
-type LabelTranslator = (key: string) => string;
+type LabelTranslator = (key: string, values?: Record<string, string>) => string;
 
-function registryLabel(t: Translator, key: string): string {
-  return (t as unknown as LabelTranslator)(key);
-}
-
-/**
- * The destination whose calendar the Phase-0 home prints. One country is live
- * (`src/config/countries.ts`), so one calendar is honest; spec 007 gives each corridor page its
- * own strip from the same projection.
- */
+/** The destination whose calendar the band prints: Poland, the one live destination. */
 const DATED_DESTINATION = "PL";
 
 const HEADING_ID = "occasion-dates-heading";
 
+/** The four stamp tints, in the artboard's order (leaf, butter, blush, sage). */
+const STAMP_TINTS = [
+  "bg-leaf-wash",
+  "bg-butter",
+  "bg-blush",
+  "bg-sage-wash",
+] as const;
+
+/** The stamp's perforated edge: the artboard's `.stamp` mask, a radial bite every 18 px. */
+const PERFORATION =
+  "[mask:linear-gradient(black_0_0)_content-box,radial-gradient(circle,transparent_5px,black_5.5px)_-9px_-9px/18px_18px_round]";
+
 export interface OccasionDatesProps {
   readonly locale: string;
-  /** `h2` on the locale home; `h3` in `/dev/components`, where the section is nested. */
   readonly headingLevel?: "h2" | "h3";
+  /**
+   * Catalogue occasion key → its hub's URL in this locale, for the hubs that exist and may be
+   * linked (from the page; `src/modules/ui` may not read the catalogue). A stamp whose occasion
+   * has no entry is information, not a control (spec 004 §14 A20).
+   */
+  readonly hubHrefs?: Readonly<Record<string, string>>;
+}
+
+function StampFace({
+  date,
+  tint,
+  linked,
+  children,
+}: {
+  readonly date: OccasionDateView;
+  readonly tint: string;
+  readonly linked: boolean;
+  readonly children: ReactNode;
+}): ReactElement {
+  return (
+    <div
+      className={`border-rule flex flex-1 flex-col gap-[4px] border px-[18px] pt-[18px] pb-[16px] ${tint}`}
+    >
+      <span
+        aria-hidden="true"
+        className="display text-stamp leading-[0.9] tracking-(--tracking-hero) [font-variation-settings:var(--font-variation-display-hero)]"
+      >
+        {date.day}
+      </span>
+      <span className="label text-ink-muted">{date.date}</span>
+      {children}
+      {linked ? (
+        <span
+          aria-hidden="true"
+          className="text-link mt-auto pt-[16px] font-bold after:content-['→'] rtl:after:content-['←']"
+        />
+      ) : null}
+    </div>
+  );
 }
 
 export function OccasionDates({
   locale,
   headingLevel = "h2",
+  hubHrefs = {},
 }: OccasionDatesProps): ReactElement {
-  const t = useTranslations();
+  const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
   const datesOpen = anyDeliveryDatesOpen();
   const dates = occasionDateViews(locale, DATED_DESTINATION);
+  const NameHeading = headingLevel === "h2" ? "h3" : "h4";
 
   return (
-    <Grid
-      as="section"
-      columns="1-aside"
-      gap="md"
-      className={`bg-surface-raised border-rule py-lg md:gap-xl border-y md:items-center ${HOME_BLEED}`}
+    <section
+      className={`bg-surface-raised ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-occasion-dates
+      id="dates"
     >
-      <Stack gap="xs">
-        <Label>{home("dates.eyebrow")}</Label>
-        <Display as={headingLevel} id={HEADING_ID} size="xl">
+      <div className="mb-[28px] md:mb-[48px]">
+        <Eyebrow className="mb-[14px]">{home("dates.eyebrow")}</Eyebrow>
+        <Display as={headingLevel} id={HEADING_ID} size="display-s">
           {home("dates.heading")}
         </Display>
-      </Stack>
-      <Grid as="ul" columns="2-4" gap="md">
-        {dates.map((date) => (
-          <Stack
-            as="li"
-            gap="none"
-            key={date.id}
-            className="border-rule ps-md border-s"
-            data-fo-occasion-date={date.id}
-          >
-            <Text as="span" size="sm" className="font-semibold">
-              {date.date}
-            </Text>
-            <Text as="span" size="sm" tone="muted">
-              {registryLabel(t, date.nameKey)}
-            </Text>
-            {date.orderBy === undefined || !datesOpen ? (
-              // The schema guarantees exactly one of the two, so the note is present here; the
-              // guard is the type system's, not a fallback that could print an empty line.
-              date.noteKey === undefined ? null : (
-                <Text as="span" size="xs" tone="subtle">
-                  {registryLabel(t, date.noteKey)}
-                </Text>
-              )
-            ) : (
-              // Gated by TASK-120 (spec 004 §14 A19, `/review 70`): `occasions.ts` carries a
-              // hand-authored `orderBy` instant per date, and printing it while no florist has
-              // agreed a cutoff put a fabricated order-by time on the home page of every locale.
-              // The row falls back to two lines — the date and its name, both facts — rather
-              // than to a second sentence, because there is nothing true to say in its place.
-              // The artboards print the cutoff on the desktop band only; the mobile band is two
-              // lines per date. Hidden rather than omitted so the two breakpoints render the same
-              // component and the same data.
-              <Text
-                as="span"
-                size="xs"
-                tone="subtle"
-                className="hidden md:block"
-              >
-                {home("dates.orderBy", {
-                  date: date.orderBy.date,
-                  time: date.orderBy.time,
-                })}
-              </Text>
-            )}
-          </Stack>
-        ))}
-      </Grid>
-    </Grid>
+      </div>
+      <ul className="-mx-[20px] grid auto-cols-[232px] grid-flow-col gap-[20px] overflow-x-auto px-[20px] md:mx-0 md:grid-flow-row md:grid-cols-5 md:overflow-visible md:px-0">
+        {dates.map((date, index) => {
+          const href =
+            date.occasionKey === undefined
+              ? undefined
+              : hubHrefs[date.occasionKey];
+          const tint = STAMP_TINTS[index % STAMP_TINTS.length] ?? "bg-blush";
+          const face = (
+            <StampFace date={date} tint={tint} linked={href !== undefined}>
+              <NameHeading className="display text-md mt-[18px]">
+                {t(date.nameKey)}
+              </NameHeading>
+              {date.orderBy === undefined || !datesOpen ? (
+                date.noteKey === undefined ? null : (
+                  <span className="text-ink-muted mt-[8px] text-sm leading-(--line-height-tight)">
+                    {t(date.noteKey)}
+                  </span>
+                )
+              ) : (
+                <span className="text-ink-muted mt-[8px] text-sm leading-(--line-height-tight)">
+                  {home("dates.orderBy", {
+                    date: date.orderBy.date,
+                    time: date.orderBy.time,
+                  })}
+                </span>
+              )}
+            </StampFace>
+          );
+          const stamp = `bg-surface-card text-ink flex h-full flex-col p-[12px] no-underline ${PERFORATION}`;
+          return (
+            <li
+              key={date.id}
+              className="drop-shadow-[0_8px_14px_var(--color-shade)]"
+              data-fo-occasion-date={date.id}
+            >
+              {href === undefined ? (
+                <div className={stamp}>{face}</div>
+              ) : (
+                <a className={`${stamp} group`} href={href}>
+                  {face}
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

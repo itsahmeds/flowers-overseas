@@ -437,22 +437,16 @@
     "hero": {
       "eyebrow": "International flower delivery",
       "heading": "Flowers for someone far away.",
-      "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box.",
-      "photoCaption": "Photography to supply · a Warsaw florist finishing a hand-tied bouquet, morning light, full bleed",
-      "photoCaptionMobile": "Photography to supply · Warsaw florist, morning light"
+      "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
     },
     "proof": {
       "guarantee": {
-        "title": "7-day freshness guarantee",
-        "body": "We redeliver or refund, your choice"
+        "title": "Fresh-flower promise",
+        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full."
       },
       "local": {
         "title": "We make it in their own town",
         "body": "Independent shops we chose ourselves"
-      },
-      "price": {
-        "title": "The price you see is what we charge",
-        "body": "Delivery and VAT already in it"
       },
       "photo": {
         "title": "We photograph it at the door",
@@ -460,7 +454,6 @@
       }
     },
     "trending": {
-      "eyebrow": "Trending now",
       "heading": "Popular choices",
       "basis": "Our picks until real orders start."
     },
@@ -500,39 +493,25 @@
       "deliver": {
         "title": "Delivered by hand. You get the photo.",
         "body": "A picture arrives when the flowers do, so you know it happened."
-      },
-      "guarantee": "Read the guarantee in full",
-      "guaranteePending": "The full terms go up with our help pages. Until they do, the promise above is the whole of it."
+      }
     },
     "destinations": {
       "eyebrow": "Destinations",
-      "heading": "Poland today. Six more countries as we choose florists.",
-      "body": "We open a country only when we have met enough florists there to stand behind every order — across Europe, and only where we really are.",
-      "elsewhere": {
-        "title": "Somewhere else?",
-        "body": "We are choosing florists in six more countries. When we open one, it appears here first."
-      }
+      "body": "We open each country only once we have local florists there we can stand behind."
+    },
+    "sentence": {
+      "notYet": "{country} (not yet)",
+      "frame": "Send flowers to <who></who> in <country></country> for <occasion></occasion>.",
+      "who": "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
+      "occasion": "{occasion, select, birthday {{pronoun, select, her {her birthday} his {his birthday} other {their birthday}}} nameDay {{pronoun, select, her {her name day} his {his name day} other {their name day}}} anniversary {{pronoun, select, her {her anniversary} his {his anniversary} other {their anniversary}}} sympathy {a loss} justBecause {no reason at all} newBaby {a new baby} other {an occasion}}",
+      "heading": "Start with who it's for"
     }
   },
   "finder": {
     "country": {
       "label": "Country"
     },
-    "town": {
-      "label": "Town, city or postcode",
-      "placeholder": "Warszawa or 00-001"
-    },
-    "date": {
-      "label": "Delivery date"
-    },
-    "submit": "Continue",
-    "help": "Continue shows you where we deliver and where we are still choosing florists.",
-    "cutoff": "Order by 14:00 in Warsaw for delivery today",
-    "destinations": {
-      "matches": "{count, plural, =0 {No country matches what you typed} one {# country matches} other {# countries match}}",
-      "summary": "We deliver in {delivering} today. In {onboarding} we are still choosing florists."
-    },
-    "datesPending": "Delivery dates open when we confirm our first florist"
+    "submit": "Continue"
   },
   "occasions": {
     "birthday": {
@@ -603,18 +582,10 @@
       "question": "What if nobody is home?",
       "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge."
     },
-    "price": {
-      "question": "Is the price really final?",
-      "answer": "Yes. Delivery and VAT are inside the price you see. Your card is charged in your currency for exactly that amount."
-    },
     "whoDelivers": {
       "question": "Who delivers, and when?",
       "answer": "Our own florist in the recipient's town, by hand, on the day you choose.",
       "answerCutoff": "Order by 14:00 in Warsaw, the recipient's own time, for delivery today."
-    },
-    "lasting": {
-      "question": "What if the flowers do not last?",
-      "answer": "Seven days from delivery. Tell us and we redeliver or refund, your choice, no photo required."
     }
   },
   "breadcrumb": {

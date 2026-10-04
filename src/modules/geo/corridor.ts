@@ -102,11 +102,11 @@ export function contentLocaleOf(locale: string): string | undefined {
  * The status chip's message key — **from the corridor state, never from `countries.ts`'s
  * `status`**.
  *
- * `destinationStateKey()` answers from the registry label, which is right on the home page (the
- * founder-approved canvas prints "Delivering now" for Poland there) and wrong here: a corridor
- * page that renders a guide with a "Delivering now" chip claims a delivery it then refuses to
- * describe, which is exactly the claim AC-19 forbids. The chip therefore says what the page says.
- * The two converge the day `corridorState()` answers `live`, which is the same data flip.
+ * `destinationStateKey()` answers from `deliveryDatesOpen()` (TASK-177, PR 174 item 6), which needs
+ * a signed florist; this key answers from the corridor's own state, which needs one too. A chip
+ * that says "Delivering now" on a guide that then refuses to describe a delivery is exactly the
+ * claim AC-19 forbids, so the chip says what the page says. Both turn on the same data flip: the
+ * day a florist is signed for the destination.
  */
 export function corridorStateKey(state: CorridorState): string {
   return state === "live"

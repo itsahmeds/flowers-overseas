@@ -1,5 +1,6 @@
 /**
- * `OccasionTiles` — the artboards' "Shop by occasion" grid (spec 004 §13's 2026-09-08 resolution
+ * `OccasionTiles` — the "Shop by occasion" arches (v2: spec 004 §14 A20, A21; TASK-177: six arched
+ * photographs, each a link to its occasion hub where that page exists), first drawn as the grid (spec 004 §13's 2026-09-08 resolution
  * note "occasion tiles", §14 A5, AC-14, AC-15; TASK-053;
  * `docs/design/homepage-v1/homepage-desktop.dc.html`, `homepage-mobile.dc.html`).
  *
@@ -36,87 +37,94 @@
  * `tests/unit/ui-media.test.ts`.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { Grid, Stack } from "../primitives/layout.tsx";
-import { Display, Label, Text } from "../primitives/typography.tsx";
+import { Display, Eyebrow } from "../primitives/typography.tsx";
 
-import { HOME_BLEED } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 import { OCCASIONS_ANCHOR, occasionTiles } from "./occasion-model.ts";
 
-/** See `SiteHeader`'s twin: the registries hold dotted keys, not typed literals. */
-type Translator = ReturnType<typeof useTranslations>;
 type LabelTranslator = (key: string) => string;
-
-/** Resolve a registry key (`occasions.nameDay.subtitle`). The one cast in this file. */
-function registryLabel(t: Translator, key: string): string {
-  return (t as unknown as LabelTranslator)(key);
-}
 
 export interface OccasionTilesProps {
   readonly locale: string;
-  /** `h2` on the locale home; `h3` in `/dev/components`, where the section is nested. */
   readonly headingLevel?: "h2" | "h3";
+  /**
+   * Catalogue occasion key → its hub's URL in this locale, for the hubs that exist and may be
+   * linked (from the page; `src/modules/ui` may not read the catalogue). A tile with no entry
+   * is a photograph and a name, not a control (spec 004 §14 A20).
+   */
+  readonly hubHrefs?: Readonly<Record<string, string>>;
 }
 
 const HEADING_ID = "occasions-heading";
 
+function TileLink({
+  href,
+  children,
+}: {
+  readonly href: string | undefined;
+  readonly children: ReactNode;
+}): ReactNode {
+  if (href === undefined) return children;
+  return (
+    <a
+      className="block no-underline hover:[&_h3]:underline hover:[&_h4]:underline"
+      href={href}
+    >
+      {children}
+    </a>
+  );
+}
+
 export function OccasionTiles({
   locale,
   headingLevel = "h2",
+  hubHrefs = {},
 }: OccasionTilesProps): ReactElement {
-  const t = useTranslations();
+  const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
-  const tiles = occasionTiles(locale);
+  const tiles = occasionTiles(locale, hubHrefs);
+  const NameHeading = headingLevel === "h2" ? "h3" : "h4";
 
   return (
-    <Stack
-      as="section"
-      gap="lg"
-      className={`py-2xl ${HOME_BLEED}`}
+    <section
+      className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-occasions
       id={OCCASIONS_ANCHOR}
     >
-      <Stack gap="sm">
-        <Label>{home("occasions.eyebrow")}</Label>
-        <Display as={headingLevel} id={HEADING_ID} size="2xl">
+      <div className="mb-[28px] md:mb-[48px]">
+        <Eyebrow className="mb-[14px]">{home("occasions.eyebrow")}</Eyebrow>
+        <Display as={headingLevel} id={HEADING_ID} size="display-s">
           {home("occasions.heading")}
         </Display>
-      </Stack>
-      <Grid as="ul" columns="2-6" gap="lg">
+      </div>
+      <ul className="grid grid-cols-2 gap-x-[16px] gap-y-[28px] md:grid-cols-6 md:gap-[24px]">
         {tiles.map((tile) => (
-          <Stack as="li" gap="sm" key={tile.id} data-fo-occasion={tile.id}>
-            {/*
-              The tile's photograph, or the captioned placeholder — one component, one reserved
-              box, and the gate of `media/resolve.ts` deciding which (spec 006 AC-18). There is no
-              `alt` prop: alt text is per-locale data from `seed/data/alt/{locale}.json`, so a
-              locale with none renders the box rather than an English alt on a Polish page
-              (TASK-080). `media.placeholder.occasion` is still the caption in the placeholder
-              state — `MediaAsset` reads it from the same key this call site used to pass.
-            */}
-            <MediaAsset assetId={tile.assetId} locale={locale} slot="tile" />
-            {tile.href === undefined ? (
-              <Text as="span" size="sm" className="font-medium">
-                {registryLabel(t, tile.nameKey)}
-              </Text>
-            ) : (
-              // The published branch: a link, from the same loop, with no template edit — the
-              // "an occasion is data" half of AC-14's promise.
-              <a
-                className="text-sm font-medium underline underline-offset-4"
-                href={tile.href}
-              >
-                {registryLabel(t, tile.nameKey)}
-              </a>
-            )}
-            <Text as="span" size="xs" tone="subtle">
-              {registryLabel(t, tile.subtitleKey)}
-            </Text>
-          </Stack>
+          <li key={tile.id} data-fo-occasion={tile.id}>
+            <TileLink href={tile.href}>
+              {/*
+                The tile's photograph in the arch, or the captioned placeholder in the same box
+                (spec 006 AC-18); alt text is per-locale data (TASK-080).
+              */}
+              <MediaAsset
+                assetId={tile.assetId}
+                locale={locale}
+                slot="tile"
+                ratio="arch"
+              />
+              <NameHeading className="display text-h3-s md:text-h3 mt-[12px] text-center">
+                {t(tile.nameKey)}
+              </NameHeading>
+              <p className="text-ink-subtle text-center text-sm">
+                {t(tile.subtitleKey)}
+              </p>
+            </TileLink>
+          </li>
         ))}
-      </Grid>
-    </Stack>
+      </ul>
+    </section>
   );
 }

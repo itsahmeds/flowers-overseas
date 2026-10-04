@@ -7,6 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 
 import { devUiEnabled } from "@/lib/env.schema";
 import { isLocaleCode } from "@/config/locales";
+import { DEMO_DESTINATION_ISO2 } from "@/config/site-links";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   AddonPriceList,
@@ -37,7 +38,6 @@ import {
   Grid,
   Icon,
   ICON_NAMES,
-  FinderCard,
   FromPriceChip,
   HomeFaq,
   HomeHero,
@@ -793,10 +793,13 @@ export default function DevComponentsPage(): ReactElement {
                     key="hero"
                     locale={galleryLocale}
                     priority={false}
+                    // The live home's state: the demo destination's shop exists, so its option
+                    // is the selected one. With no shop countries every option is "not yet" and
+                    // the select draws blank (baseline run 37171984787).
+                    shopCountries={[DEMO_DESTINATION_ISO2]}
                   />,
                 ],
-                ["finder", <FinderCard key="finder" locale={galleryLocale} />],
-                ["proof", <ProofRow key="proof" />],
+                ["proof", <ProofRow headingLevel="h3" key="proof" />],
               ] as const
             ).map(([state, element]) => (
               <Stack gap="sm" key={state}>

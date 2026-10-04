@@ -1,5 +1,5 @@
 /**
- * `TrendingRow` — the artboards' "Most sent this week" row, gated on real orders (spec 004 §13's
+ * `TrendingRow` — the home's "Popular choices" row (v2: spec 004 §14 A21 clause 7, TASK-177), gated on real orders (spec 004 §13's
  * 2026-09-08 resolution note, §3, §14 A5, AC-14, AC-15; TASK-054;
  * `docs/design/homepage-v1/homepage-desktop.dc.html`, `homepage-mobile.dc.html`).
  *
@@ -37,10 +37,9 @@ import {
 } from "../../../config/site-links.ts";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { Grid, Stack } from "../primitives/layout.tsx";
-import { Display, Label, Text } from "../primitives/typography.tsx";
+import { Display, Eyebrow, TextLink } from "../primitives/typography.tsx";
 
-import { HOME_BLEED } from "./HomeHero.tsx";
+import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 import {
   type TrendingProvider,
   getTrendingProvider,
@@ -67,6 +66,12 @@ export interface TrendingRowProps {
    * runtime import of `src/modules/catalog`. Absent → no card links.
    */
   readonly productPages?: readonly TrendingProductPage[];
+  /**
+   * The demo destination's shop root, or `undefined` while it may not be linked
+   * (`corridorShopEntry()`, from the page). It is the row's "see every bouquet" link, worded
+   * with the header's reviewed "Our selection"; absent → no link at all (A20).
+   */
+  readonly shopHref?: string;
 }
 
 /** The three fields of a catalogue `ProductPageRecord` a card needs to link to its page. */
@@ -103,7 +108,10 @@ function CardLink({
 }): ReactNode {
   if (href === undefined) return children;
   return (
-    <a className="gap-sm flex flex-col" href={href}>
+    <a
+      className="block no-underline hover:[&_h3]:underline hover:[&_h4]:underline"
+      href={href}
+    >
       {children}
     </a>
   );
@@ -119,7 +127,9 @@ export function TrendingRow({
   headingLevel = "h2",
   provider,
   productPages = [],
+  shopHref,
 }: TrendingRowProps): ReactElement | null {
+  const t = useTranslations() as unknown as (key: string) => string;
   const home = useTranslations("home");
   const source = provider ?? getTrendingProvider();
   const picks = source.list();
@@ -127,54 +137,66 @@ export function TrendingRow({
   // Nothing to show is a section that is not there: no heading, no empty grid, no reserved hole
   // in the page (the `TrustMarks` rule of §5.3, applied to a row).
   if (picks.length === 0) return null;
+  const CardHeading = headingLevel === "h2" ? "h3" : "h4";
 
   return (
-    <Stack
-      as="section"
-      gap="lg"
-      className={`border-rule py-2xl border-t ${HOME_BLEED}`}
+    <section
+      className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-trending
       data-fo-trending-basis={source.basis()}
       id={TRENDING_ANCHOR}
     >
-      <Stack gap="sm">
-        <Label>{home("trending.eyebrow")}</Label>
-        <Display as={headingLevel} id={HEADING_ID} size="2xl">
-          {home("trending.heading")}
-        </Display>
-      </Stack>
-      <Grid as="ul" columns="2-5" gap="lg">
+      <div className="mb-[28px] flex flex-wrap items-end justify-between gap-x-[40px] gap-y-[16px] md:mb-[48px]">
+        <div>
+          {/* The row's destination, in the catalogue's own word for it (the artboard's "For
+              Poland"); the picks are the demo destination's products. */}
+          <Eyebrow className="mb-[14px]">
+            {t(`destinations.${DEMO_DESTINATION_ISO2.toLowerCase()}.name`)}
+          </Eyebrow>
+          <Display as={headingLevel} id={HEADING_ID} size="display-s">
+            {home("trending.heading")}
+          </Display>
+          {source.basis() === "picks" ? (
+            <p
+              className="text-ink-subtle mt-[12px] text-sm"
+              data-fo-trending-basis-line
+            >
+              {home("trending.basis")}
+            </p>
+          ) : null}
+        </div>
+        {shopHref === undefined ? null : (
+          <TextLink href={shopHref} arrow>
+            {t("nav.category.ourSelection")}
+          </TextLink>
+        )}
+      </div>
+      <ul className="-mx-[20px] grid auto-cols-[72%] grid-flow-col gap-[16px] overflow-x-auto px-[20px] md:mx-0 md:grid-flow-row md:grid-cols-5 md:gap-x-[24px] md:gap-y-[40px] md:overflow-visible md:px-0">
         {picks.map((pick) => (
-          <Stack as="li" gap="sm" key={pick.id} data-fo-trending-pick={pick.id}>
+          <li key={pick.id} data-fo-trending-pick={pick.id}>
             <CardLink href={trendingPickHref(pick.sku, productPages)}>
               {/*
-              The pick's photograph, or the captioned placeholder — whichever the dataset earns.
-              Since TASK-168 every product has approved, derived, alt-texted imagery; one that
-              loses it renders the `--color-photo` box with `media.placeholder.product` and no
-              `<img>`, which is `plan/10` §3's honesty rule and not a gap. The box is the
-              `trending` slot, whose `sizes` states this row's own card width (`../media/slots.ts`). The pick's name
-              is the heading the screen reader already announces, so it is handed to `MediaAsset`:
-              an alt that merely repeats it is refused and degrades to the box (AC-18).
+              The pick's photograph, or the captioned placeholder — whichever the dataset earns
+              (spec 006 AC-18). The box is the `trending` slot, whose `sizes` states this row's
+              own card width (`../media/slots.ts`). The pick's name is the heading the screen
+              reader already announces, so it is handed to `MediaAsset`: an alt that merely
+              repeats it is refused and degrades to the box.
             */}
               <MediaAsset
                 assetId={pick.assetId}
                 locale={locale}
                 slot="trending"
+                ratio="card"
                 productName={pick.name}
               />
-              <Text as="span" size="sm" className="font-medium">
+              <CardHeading className="display text-h3-s md:text-h3 mt-[10px] leading-(--line-height-title) md:mt-[14px]">
                 {pick.name}
-              </Text>
+              </CardHeading>
             </CardLink>
-          </Stack>
+          </li>
         ))}
-      </Grid>
-      {source.basis() === "picks" ? (
-        <Text measure size="xs" tone="subtle">
-          {home("trending.basis")}
-        </Text>
-      ) : null}
-    </Stack>
+      </ul>
+    </section>
   );
 }

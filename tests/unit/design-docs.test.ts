@@ -39,6 +39,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   BANNED_VOICE_WORDS,
+  VOICE_EXCEPTIONS,
   bannedVoiceWordsIn,
 } from "../../src/config/voice.ts";
 import { parseTables } from "../../scripts/tasks-open-decisions.ts";
@@ -462,6 +463,17 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
     expect(readme).toContain("## Density");
     for (const word of BANNED) expect(readme.toLowerCase()).toContain(word);
   });
+
+  it("records every voice exception in the README's Voice section (spec 004 §14 A22 clause 2)", () => {
+    const voice = readme.slice(
+      readme.indexOf("## Voice"),
+      readme.indexOf("## Density"),
+    );
+    for (const { messageKey, token } of VOICE_EXCEPTIONS) {
+      expect(voice, messageKey).toContain(`\`${messageKey}\``);
+      expect(voice, token).toContain(`\`${token}\``);
+    }
+  });
 });
 
 /* ------------------------------------- 5b. the same ban, on the copy that actually ships */
@@ -492,9 +504,23 @@ const CUSTOMER_COPY_EXEMPT_PATHS = [
   "src/config/voice.ts",
 ];
 
-/** The banned words that appear in one piece of prose, each named once. */
-export function bannedWordsIn(prose: string): string[] {
-  return [...bannedVoiceWordsIn(prose)];
+/**
+ * The banned words that appear in one piece of prose, each named once. A message value passes its
+ * catalogue locale and key, which is the only way spec 004 §14 A22's one exception (the case
+ * `partner {my partner}` of the home sentence's who option, English only) can apply.
+ */
+export function bannedWordsIn(
+  prose: string,
+  message?: { readonly locale: string; readonly key: string },
+): string[] {
+  return [
+    ...bannedVoiceWordsIn(
+      prose,
+      message === undefined
+        ? {}
+        : { locale: message.locale, messageKey: message.key },
+    ),
+  ];
 }
 
 /** Leaf values of a message catalogue, flattened to `dot.path` -> value. */
@@ -549,8 +575,9 @@ describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TAS
     const tree = JSON.parse(
       readFileSync(resolve(repoRoot, "messages", file), "utf8"),
     ) as Record<string, unknown>;
+    const locale = file.replace(/\.json$/u, "");
     const found = flattenMessages(tree).flatMap(([key, value]) => {
-      const words = bannedWordsIn(value);
+      const words = bannedWordsIn(value, { locale, key });
       return words.length === 0 ? [] : [`${key}: ${words.join(", ")}`];
     });
     expect(
@@ -589,6 +616,124 @@ describe("the shipped copy speaks in the first person too (spec 004 §14 A5; TAS
         "Our partner florist relays your order to a third party — a third-party vendor in our network, anywhere in the world, super fresh, through the corridor.",
       ),
     ).toStrictEqual([...BANNED]);
+  });
+
+  /**
+   * T-17, spec 004 §14 A22 clause 2 (founder, 2026-10-04: "Allow \"my partner\""), as narrowed by
+   * PR 174's review round 1 (R1): the exact case `partner {my partner}` of `home.sentence.who`, in
+   * the English catalogues, passes; nothing broader does.
+   */
+  it("passes exactly the case `partner {my partner}` in the English who option, and nothing else (A22, T-17)", () => {
+    const en = { locale: "en", key: "home.sentence.who" } as const;
+    expect(
+      bannedWordsIn(
+        "{who, select, mum {my mum} partner {my partner} other {someone I love}}",
+        en,
+      ),
+    ).toStrictEqual([]);
+    expect(
+      bannedWordsIn("{who, select, partner {my partner} other {x}}", {
+        locale: "en-gb",
+        key: "home.sentence.who",
+      }),
+    ).toStrictEqual([]);
+    for (const prose of [
+      // The phrase outside the select, or with anything after it.
+      "Send flowers to my partner in Poland.",
+      "my partner",
+      "my partner's florist",
+      "my partner, our florist",
+      "{who, select, partner {my partner's florist} other {x}}",
+      "{who, select, partner {my partner florist} other {x}}",
+      "{who, select, partner {my partner  florist} other {x}}",
+      // Another case, another wording, another plural.
+      "{who, select, friend {my partner} other {x}}",
+      "{who, select, partner {our partner} other {x}}",
+      "{who, select, partners {my partners} other {x}}",
+      "our partner",
+      "partner florist",
+      "Our partner florist will make it.",
+    ]) {
+      expect(bannedWordsIn(prose, en), prose).toStrictEqual(["partner"]);
+    }
+    // The exact case, under any other key or in any other catalogue, still fails.
+    const token = "{who, select, partner {my partner} other {x}}";
+    expect(
+      bannedWordsIn(token, { locale: "en", key: "home.hero.proposition" }),
+    ).toStrictEqual(["partner"]);
+    for (const locale of ["de", "pl"]) {
+      expect(
+        bannedWordsIn(token, { locale, key: "home.sentence.who" }),
+        locale,
+      ).toStrictEqual(["partner"]);
+    }
+    expect(
+      bannedWordsIn("{who, select, partner {my partner  florist} other {x}}", {
+        locale: "pl",
+        key: "home.sentence.who",
+      }),
+    ).toStrictEqual(["partner"]);
+    expect(bannedWordsIn(token)).toStrictEqual(["partner"]);
+  });
+
+  /**
+   * The two guards of the token match in `src/config/voice.ts` (PR 174 breaker round 2, hole 5),
+   * each with a case that passes only while the guard is there.
+   */
+  it("matches the token only as a whole case: a letter before it, or another capitalisation, fails", () => {
+    const en = { locale: "en", key: "home.sentence.who" } as const;
+    // The lookbehind: `xpartner {my partner}` is not the case `partner`.
+    for (const prose of [
+      "{who, select, xpartner {my partner} other {x}}",
+      "{who, select, mypartner {my partner} other {x}}",
+    ]) {
+      expect(bannedWordsIn(prose, en), prose).toStrictEqual(["partner"]);
+    }
+    // Case sensitivity: the exception is the lower-case token, nothing else.
+    for (const prose of [
+      "{who, select, Partner {My Partner} other {x}}",
+      "{who, select, partner {My partner} other {x}}",
+      "{who, select, PARTNER {MY PARTNER} other {x}}",
+    ]) {
+      expect(bannedWordsIn(prose, en), prose).toStrictEqual(["partner"]);
+    }
+    // And the guards do not over-reach: the token after a brace or at the start still passes.
+    expect(
+      bannedWordsIn("{who, select,\npartner {my partner} other {x}}", en),
+    ).toStrictEqual([]);
+  });
+
+  it('goes red on the who option the moment the exception is removed, and de/pl carry no "partner" at all (A22 (i))', () => {
+    const who = (locale: string): string =>
+      (
+        JSON.parse(
+          readFileSync(resolve(repoRoot, "messages", `${locale}.json`), "utf8"),
+        ) as { home: { sentence: { who: string } } }
+      ).home.sentence.who;
+    expect(VOICE_EXCEPTIONS).toStrictEqual([
+      {
+        locales: ["en", "en-gb"],
+        messageKey: "home.sentence.who",
+        token: "partner {my partner}",
+      },
+    ]);
+    expect(who("en")).toContain(" partner {my partner} ");
+    expect(
+      bannedVoiceWordsIn(who("en"), {
+        locale: "en",
+        messageKey: "home.sentence.who",
+      }),
+    ).toStrictEqual([]);
+    expect(
+      bannedVoiceWordsIn(who("en"), {
+        locale: "en",
+        messageKey: "home.sentence.who",
+        exceptions: [],
+      }),
+    ).toStrictEqual(["partner"]);
+    for (const locale of ["de", "pl"]) {
+      expect(who(locale).toLowerCase(), locale).not.toContain("partner");
+    }
   });
 
   it("bites on a banned word written into JSX text, and spares the identifiers around it", () => {

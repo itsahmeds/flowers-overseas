@@ -2170,20 +2170,6 @@
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "fe04113c65cbba9e7d625f3cde3e7e92c2011bcfd3c56b4a5a8a4e9f0aa86724"
   },
-  "faq.lasting.answer": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "87f7986af28499a84aaefecf2006eeb051a0b5588bb217557f0e3be828edc0db"
-  },
-  "faq.lasting.question": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "20d65f248a1ab26dd3ac1013530d6bee288ce0c89eebbe961bd88de11c743f94"
-  },
   "faq.nobodyHome.answer": {
     "source": "human",
     "reviewed": true,
@@ -2212,20 +2198,6 @@
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "44ad9cb7673a02f02607de65351573a9aa0af5521983cb88eba9af662c9a5da6"
   },
-  "faq.price.answer": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "cbd3d661af454cc0f4bc1253eb6cd7bf7f04d9f777a402e150adb2c90986c65b"
-  },
-  "faq.price.question": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "234a4d774aa3370a02efa6d2d8af38b4b56084683fe93f8b2250ce65346b965b"
-  },
   "faq.whoDelivers.answer": {
     "source": "human",
     "reviewed": false,
@@ -2250,64 +2222,12 @@
     "source": "human",
     "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
   },
-  "finder.cutoff": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "cd97c8c6aa325c5dbdfc6459243c12152315031633a9acc18ce413ccf30a80cf"
-  },
-  "finder.date.label": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
-  },
-  "finder.datesPending": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "reviewedBy": "founder"
-  },
-  "finder.destinations.matches": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "4c200ec3fdae9e4fb9761fdd541c34283e812bad21cd7525cb238da7493a7ef8"
-  },
-  "finder.destinations.summary": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "f86e629b8cf4c32fc69ba0b49358a8485fd93b95d076735ae33d7976e179c89a"
-  },
-  "finder.help": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "e4a0b26739c6bf8ad5f6627425fa6891dbebe26b1ce2bbb9286c8599d33fcb37"
-  },
   "finder.submit": {
     "reviewed": true,
     "reviewedAt": "2026-09-09T00:00:00Z",
     "reviewedBy": "founder",
     "source": "human",
     "sourceHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
-  },
-  "finder.town.label": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "cc0cc038887dee5b5a4ebee46c486ec8f2b47e0ca3962d827bc0258aa0626bec"
-  },
-  "finder.town.placeholder": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "833817fdc5ea86f092d6129e30f13d0865952d6142ffc9a2df3382695e562958"
   },
   "footer.cookieSettings": {
     "source": "human",
@@ -2504,21 +2424,9 @@
   "home.destinations.body": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 — the mobile artboard’s shorter body; the desktop artboard’s trailing \"read the guide and join the waiting list\" is cut because neither exists yet; TASK-054)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "e560a5d80b5733c023d0d0a3013025995086bf7768efa10912d3e170df68a289"
-  },
-  "home.destinations.elsewhere.body": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "88978b80a5f74521f1e5491c28d2e5a6700fec285b4fbb13a846e6b8c61f80bf"
-  },
-  "home.destinations.elsewhere.title": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2; TASK-054)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "78ff14a0290c183547f89e7f6238526d7d4be78ecf4a0c5020b8631906751bf9"
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "18caa7bb0f6e2efe5927fade6ab683292d8faec856548c3f03263d1e0963c408"
   },
   "home.destinations.eyebrow": {
     "source": "human",
@@ -2526,13 +2434,6 @@
     "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2; TASK-054)",
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
-  },
-  "home.destinations.heading": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2; TASK-054)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "9d60b32a7748922813fec11ef880c06414f304e826627a072902ecb7ad978000"
   },
   "home.hero.eyebrow": {
     "reviewed": true,
@@ -2547,20 +2448,6 @@
     "reviewedBy": "founder",
     "source": "human",
     "sourceHash": "73a20c92dbe3d09ab0cedb63cdcbfd4df9cc14912da0c9498fc0df7094a20e63"
-  },
-  "home.hero.photoCaption": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "daffee2767b483e8ae0094d6712b3beb82cd805b3d55a7275737c18581398d77"
-  },
-  "home.hero.photoCaptionMobile": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2; TASK-054)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "b2f903f9738ba2a045a750708010bc793479628f616ae3d0dc420746207f11a7"
   },
   "home.hero.proposition": {
     "reviewed": true,
@@ -2601,20 +2488,6 @@
     "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "355c83a326f0d8f94b961acf40f99347dc75ede34e2040bd4fbdd38cc1f2ea55"
-  },
-  "home.howItWorks.guarantee": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "55c69a3f7a06b7a5fe27b48062d7e5ad9aa49c8d1b4ec0e2b20fdbc08dadca09"
-  },
-  "home.howItWorks.guaranteePending": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "fc0d3d2e7e47213d5f8cf2542c854bc16ad09747ecfeee6314b7b33c347ef18a"
   },
   "home.howItWorks.heading": {
     "source": "human",
@@ -2659,18 +2532,18 @@
     "sourceHash": "d2d90f63ab3544d2bb372d496a6646e38595bf374ce5284d7a9ec26ea3145f37"
   },
   "home.proof.guarantee.body": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "a66dbf1079d0f1bf1e284cd252e2034fe842b40687048cfa7cda1e675f7c6a8d"
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "6bbe0a4f46e1092adfefce555fdb06464f4b20b42e0c3c13cfaf27a417ad518b"
   },
   "home.proof.guarantee.title": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "home.proof.local.body": {
     "reviewed": true,
@@ -2697,20 +2570,6 @@
     "reviewedBy": "founder",
     "source": "human",
     "sourceHash": "1203a047b3d40418d796e95dd092b080baadfa3362a800748543a659475806b3"
-  },
-  "home.proof.price.body": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "afc99b9fe991c4d96462cde23beac38447681c3d990770b4218d49f181f623f6"
-  },
-  "home.proof.price.title": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
-    "source": "human",
-    "sourceHash": "b1ef109f8581002fe89edd5675631e42f491fc6dda6f763b948adb939bcbb444"
   },
   "home.reviews.attribution": {
     "source": "human",
@@ -2768,19 +2627,45 @@
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "0b18b4e5da28f63c02361fcb1fee3f1a80478a190445cfe27e09abf1c1dd8641"
   },
+  "home.sentence.frame": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "1b271dcd9a0ab236b82d19012f7be81c23421fada9cc4327920d9639eea12ba6"
+  },
+  "home.sentence.heading": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "a2c59c8497626547689e48d772b644fd11ec870943b82daf6c4306ec6365aab6"
+  },
+  "home.sentence.notYet": {
+    "source": "human",
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
+    "reviewedAt": "2026-10-04T00:00:00Z",
+    "sourceHash": "5c2509052b7380caea5338f54a20cde12d3eec84fc2616dcbca52df28a8f6622"
+  },
+  "home.sentence.occasion": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e967f7b81145e520e1f6f0a2eec50164054de8f806cf9c899152cd3e2c12a94b"
+  },
+  "home.sentence.who": {
+    "source": "human",
+    "reviewed": true,
+    "sourceHash": "526e571518eec8e7b51a3fabcc07471446b472c3139fa043643ca2f4adaa2c28",
+    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
+    "reviewedAt": "2026-10-04T09:54:22Z"
+  },
   "home.trending.basis": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder (2026-10-03 chat, \"ok go with popular choices\"; docs/decisions-log.md \"The trending row reads Popular choices\"; transcribed by TASK-140)",
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "cfb95d40d9acf66ba69e41d5744494603d57428a2e3bb6af0ea55fa26c66b498"
-  },
-  "home.trending.eyebrow": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2; TASK-054)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "ce8f9204d29668274289df2ffd515eba3b9c044c9de3feb461c1d106d6e8f77f"
   },
   "home.trending.heading": {
     "source": "human",

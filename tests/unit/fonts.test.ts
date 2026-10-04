@@ -460,7 +460,10 @@ function fontFaceBlocks(): Map<string, Map<string, string>> {
       );
     }
     const family = props.get("font-family")?.replaceAll('"', "");
-    if (family) blocks.set(family, props);
+    // The roman face of each family; the Fraunces italic fallbacks (TASK-177) have their own
+    // recompute in `./fonts-italic-fallback.test.ts`.
+    if (family && props.get("font-style") !== "italic")
+      blocks.set(family, props);
   }
   return blocks;
 }

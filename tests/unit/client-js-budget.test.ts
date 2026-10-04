@@ -793,7 +793,7 @@ describe("catalogueLeaks — no client chunk carries server-only copy (§14 A1 a
     out.length = 0;
     expect(main(["--dist", dist, "--url", "/"], { write }, { write })).toBe(0);
     expect(out.join("")).toContain(
-      "no fetched chunk contains home.*, finder.*, catalog.*, media.* catalogue copy",
+      "no fetched chunk contains home.*, catalog.*, media.* catalogue copy",
     );
   });
 });

@@ -29,6 +29,8 @@ import {
   TrustStrip,
 } from "../../src/modules/ui/trust/TrustStrip.tsx";
 
+import { dayCountIn } from "../support/day-count.ts";
+
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
 /** The namespaces these five sections read. */
@@ -106,7 +108,7 @@ describe("the occasion tiles", () => {
     }
   });
 
-  it("links none of them while spec 008 has not published the pages (AC-14)", () => {
+  it("links none of them without the catalogue's hub set (AC-14)", () => {
     expect(hrefs(tiles("en"))).toEqual([]);
     for (const tile of OCCASION_TILES) {
       expect(tiles("en")).toContain(`data-fo-occasion="${tile.id}"`);
@@ -139,7 +141,8 @@ describe("the occasion tiles", () => {
     expect([
       ...html.matchAll(/data-fo-media-placeholder="noAlt"/g),
     ]).toHaveLength(OCCASION_TILES.length);
-    expect(html).toContain("aspect-square");
+    expect(html).toContain("aspect-[4/5]");
+    expect(html).toContain("rounded-arch");
   });
 
   it("renders a link per tile once `published` is flipped, from the same loop", async () => {
@@ -164,6 +167,24 @@ describe("the occasion tiles", () => {
     ]);
     expect(hrefs(render(<Tiles locale="pl" />, "pl"))).toEqual([
       "/pl/okazje/imieniny",
+    ]);
+  });
+
+  it("links each tile to its occasion hub when the page hands the hub in (A20; TASK-177)", () => {
+    const html = render(
+      <OccasionTiles
+        locale="en"
+        hubHrefs={{
+          birthday: "/en/occasions/birthday",
+          new_baby: "/en/occasions/new-baby",
+        }}
+      />,
+      "en",
+    );
+
+    expect(hrefs(html)).toEqual([
+      "/en/occasions/birthday",
+      "/en/occasions/new-baby",
     ]);
   });
 
@@ -217,16 +238,43 @@ describe("the 'Coming up in Poland' strip", () => {
     expect(text(dates("pl"))).toContain("1 lis");
   });
 
-  it("is the desktop artboard's 300 px heading column beside the date grid (`/review 53`)", () => {
+  it("draws each date as a stamp on its tint, with the day as a decorative numeral (v2)", () => {
     const html = dates("en");
 
-    // Stacked on mobile, two columns from `md` up — the artboard's
-    // `grid-template-columns: 300px minmax(0, 1fr)`, owned by the primitive, not the call site.
-    expect(html).toContain("grid-cols-1");
-    expect(html).toContain("md:grid-cols-[300px_minmax(0,1fr)]");
-    expect(html).toContain("md:items-center");
-    // The dates themselves stay 2-up mobile / 4-up desktop inside the fluid column.
-    expect(html).toContain("grid-cols-2 md:grid-cols-4");
+    expect([...html.matchAll(/data-fo-occasion-date=/g)]).toHaveLength(4);
+    for (const tint of [
+      "bg-leaf-wash",
+      "bg-butter",
+      "bg-blush",
+      "bg-sage-wash",
+    ]) {
+      expect(html, tint).toContain(tint);
+    }
+    expect(html).toMatch(/<span aria-hidden="true"[^>]*>1<\/span>/);
+  });
+
+  it("links a stamp to its occasion hub where one exists, and leaves Andrzejki as text (A20)", () => {
+    const html = render(
+      <OccasionDates
+        locale="en"
+        hubHrefs={{
+          all_saints: "/en/occasions/all-saints-day",
+          christmas: "/en/occasions/christmas",
+          womens_day: "/en/occasions/womens-day",
+        }}
+      />,
+      "en",
+    );
+    const andrzejki = html.slice(
+      html.indexOf('data-fo-occasion-date="andrzejki"'),
+    );
+
+    expect(hrefs(html)).toEqual([
+      "/en/occasions/all-saints-day",
+      "/en/occasions/christmas",
+      "/en/occasions/womens-day",
+    ]);
+    expect(andrzejki.slice(0, andrzejki.indexOf("</li>"))).not.toContain("<a ");
   });
 
   it("links nothing and computes nothing", () => {
@@ -253,15 +301,14 @@ describe("the how-it-works explainer", () => {
     }
   });
 
-  it("renders the three numbered steps as an ordered list, with the ordinals decorative", () => {
+  it("renders the three steps as an ordered list, numbered by CSS counters", () => {
     const html = explainer("en");
     const rendered = text(html);
 
     expect(HOW_IT_WORKS_STEPS).toHaveLength(3);
     expect([...html.matchAll(/<li/g)]).toHaveLength(3);
     expect(html).toContain("<ol");
-    // "01" is drawn beside a list the reader is already told the position of.
-    expect([...html.matchAll(/aria-hidden="true"/g)]).toHaveLength(3);
+    expect(html).toContain("before:content-[counter(step)]");
     for (const fragment of [
       "You choose the town, the day and a bouquet.",
       "any order-by time we show is on the recipient's clock, not yours.",
@@ -274,43 +321,32 @@ describe("the how-it-works explainer", () => {
     }
   });
 
-  it("renders the guarantee control as text, because 007 has not published the page", () => {
+  it("draws no guarantee control and no photo slot: neither has a page or a photograph (A20)", () => {
     const html = explainer("en");
 
-    expect(text(html)).toContain("Read the guarantee in full");
-    expect(text(html)).toContain("The full terms go up with our help pages");
+    expect(text(html)).not.toContain("Read the guarantee in full");
     expect(hrefs(html)).toEqual([]);
-  });
-
-  it("reserves the band's photo slot and renders no `<img>`, with the resolved caption", () => {
-    const html = explainer("en");
-
-    expect(html).toContain('data-fo-media-slot="band"');
-    expect(html).toContain(
-      'data-fo-media-sizes="(min-width: 768px) 50vw, 100vw"',
-    );
-    // `/review 41`: the caption describes the photograph the slot will hold and asserts no
-    // consent-gated feature of spec 027.
-    expect(text(html)).toContain(
-      "Photography to supply · a bouquet handed over at the recipient's door",
-    );
-    expect(text(html)).not.toContain("the delivery photo we send you");
+    expect(html).not.toContain("data-fo-media-slot");
     expect(html).not.toContain("<img");
   });
 });
 
 describe("the FAQ", () => {
-  it("renders five native disclosures, all closed, and no JSON-LD (AC-16)", () => {
+  it("renders three native disclosures, all closed, and no JSON-LD (AC-16)", () => {
     const html = faq("en");
 
-    expect(FAQ_ENTRIES).toHaveLength(5);
-    expect([...html.matchAll(/<details/g)]).toHaveLength(5);
-    expect([...html.matchAll(/<summary/g)]).toHaveLength(5);
+    // Three since TASK-177, two founder rulings of 2026-10-04: "What if the flowers do not
+    // last?" answered "Seven days from delivery" (a day-count freshness promise, withdrawn), and
+    // "Is the price really final?" answered with the VAT-and-delivery sentence the founder ruled
+    // off the home ("dont write this on home").
+    expect(FAQ_ENTRIES).toHaveLength(3);
+    expect([...html.matchAll(/<details/g)]).toHaveLength(3);
+    expect([...html.matchAll(/<summary/g)]).toHaveLength(3);
     expect(html).not.toContain(" open");
     expect(html).not.toContain("application/ld+json");
   });
 
-  it("asks the five questions the artboards ask, and answers them", () => {
+  it("asks three questions and answers them, promising no day count and naming no VAT", () => {
     const rendered = text(faq("en"));
 
     for (const fragment of [
@@ -319,13 +355,14 @@ describe("the FAQ", () => {
       "Will the bouquet look like the photo?",
       "substitute like for like in colour and value",
       "What if nobody is home?",
-      "Is the price really final?",
-      "Delivery and VAT are inside the price you see.",
       "Who delivers, and when?",
-      "What if the flowers do not last?",
-      "we redeliver or refund, your choice",
     ]) {
       expect(rendered, fragment).toContain(fragment);
+    }
+    expect(rendered).not.toMatch(/\bVAT\b/u);
+    // No day count in any locale: spelled numbers, words between and week words too (H4).
+    for (const locale of LOCALES) {
+      expect(dayCountIn(text(faq(locale))), locale).toBeUndefined();
     }
   });
 

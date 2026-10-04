@@ -20,7 +20,7 @@
  *    through unchanged rather than deciding again, so the honesty rule (`plan/10` §3) lives in
  *    one place.
  *
- * Ordering is the artboard's: the delivering destination first, then the guide destinations in
+ * Ordering is the artboard's: the featured (`live`) destination first, then the guide destinations in
  * `collator(locale)` order over their **translated** names, which is why `nameOf` is a parameter
  * — this module reads no catalogue, exactly like `./finder-model.ts`.
  */
@@ -28,6 +28,7 @@ import {
   COUNTRIES,
   type CountryConfig,
   type CountryIso2,
+  deliveryDatesOpen,
   destinationStateKey,
 } from "../../../config/countries.ts";
 import type { LocaleCode } from "../../../config/locales.ts";
@@ -51,8 +52,16 @@ export interface DestinationStatus {
   readonly citiesKey: string | undefined;
   /** `destinations.state.deliveringNow` | `destinations.state.guideNotDelivering`. */
   readonly stateKey: string;
-  /** True for a `status: "live"` destination. The state **word** carries the meaning, not a colour. */
+  /**
+   * True only where delivery dates are open (`deliveryDatesOpen()`): the one destination state that
+   * may claim delivery, in the word and the accent tone. The state **word** carries the meaning.
+   */
   readonly delivering: boolean;
+  /**
+   * True for a `status: "live"` destination — the one the site is built around (Poland), listed
+   * first and, where a locale has no guide, linked to its shop root. Says nothing about delivery.
+   */
+  readonly featured: boolean;
   /** The corridor page, or `undefined` while unpublished — AC-14's "never a dead link". */
   readonly href: string | undefined;
 }
@@ -101,7 +110,8 @@ function project(
     nameKey: country.nameKey,
     citiesKey: country.citiesKey,
     stateKey: destinationStateKey(country),
-    delivering: country.status === "live",
+    delivering: deliveryDatesOpen(country.iso2),
+    featured: country.status === "live",
     href: hrefOf(country.iso2, locale),
   };
 }
@@ -123,12 +133,12 @@ export function destinationStatusProviderOf(
       const named = countries.map((country) => ({
         country,
         name: nameOf(country.nameKey),
-        delivering: country.status === "live",
+        featured: country.status === "live",
       }));
       const collated = sortBy(named, localeCode(locale), (entry) => entry.name);
       return [
-        ...collated.filter((entry) => entry.delivering),
-        ...collated.filter((entry) => !entry.delivering),
+        ...collated.filter((entry) => entry.featured),
+        ...collated.filter((entry) => !entry.featured),
       ].map(({ country }) => project(country, locale, hrefOf));
     },
   };

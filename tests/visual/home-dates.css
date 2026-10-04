@@ -1,0 +1,17 @@
+/*
+ * Applied to every home shot that sits below the occasion-dates band, or contains it, other than
+ * the band's own shot (`home.spec.ts`, the home full-page shots of `shell.spec.ts` and
+ * `pseudo-rtl.spec.ts`, and the footer shots of `footer.spec.ts`). The band leaves the layout, so no photographed block's position depends
+ * on which dates it prints.
+ *
+ * The band is a destination's calendar (`src/config/occasions.ts`), and rolling it forward when a
+ * date passes is a data edit that changes the band's height. Every section below it would then be
+ * drawn at a different sub-pixel offset, and the rasteriser rounds each text line to the pixel grid
+ * on its own, so a shot of the FAQ or the footer would fail for a change in Poland's calendar
+ * (the hazard `product-blocks.css` records for the product page's date grid, 2026-10-04). Without
+ * the band each such shot pictures only its own section. The band keeps its own baselines,
+ * `home-{desktop,mobile}-dates.png`, taken without this sheet.
+ */
+[data-fo-occasion-dates] {
+  display: none !important;
+}

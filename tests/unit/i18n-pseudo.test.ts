@@ -120,6 +120,20 @@ describe(`${PSEUDO_ACCENT_LOCALE}: accented, expanded, bracketed (AC-29)`, () =>
     expect(pseudoAccent("Read this in {language}?")).toContain("{language}");
   });
 
+  it("never touches a rich-text tag, so next-intl still pairs it (TASK-177)", () => {
+    const source = "Send flowers to <who></who> in <country></country>.";
+    const accented = pseudoAccent(source);
+    const mirrored = pseudoRtl(source);
+
+    for (const pseudo of [accented, mirrored]) {
+      expect(pseudo).toContain("<who></who>");
+      expect(pseudo).toContain("<country></country>");
+      expect(() => parse(pseudo)).not.toThrow();
+    }
+    // The words around the tags are still pseudo-localised.
+    expect(accented).toContain("Šéñð");
+  });
+
   it("keeps an ICU quoted run verbatim and treats a lone apostrophe as text", () => {
     expect(pseudoAccent("a '{literal}' b")).toContain("'{literal}'");
     // `don't` is ordinary text in ICU 4.8: the rest of the sentence must still be transformed.

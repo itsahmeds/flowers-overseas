@@ -371,6 +371,7 @@
  * there the swap fell back to an unmatched system face and a late font moved boxes. These two faces
  * are the first named fallbacks of the Latin calls (`src/modules/ui/fonts/index.ts`) and carry the
  * same overrides over the metric-compatible clones — Liberation and the ChromeOS Croscore fonts.
+ * The roman display face has an italic sibling, below.
  * The numbers are Next's own computation (`getFallbackMetricsFromFontFile`) for the 400 Latin file
  * each call falls back from. `tests/unit/fonts.test.ts`, "the metric-matched Linux fallback faces",
  * recomputes the four overrides with that function, checks each `src` and that each Latin call
@@ -392,6 +393,48 @@
   descent-override: 26.79%;
   line-gap-override: 0%;
   size-adjust: 95.19%;
+}
+
+/*
+ * The italic of the same fallback family (A21 clause 3 "on every face"; TASK-177, escalation 7).
+ * Without it, italic text fell back to the roman face above, slanted by the browser and sized for
+ * the roman: about 12 % wider than Fraunces 300 italic. The home's sentence selects are that
+ * italic, sized to their choice, so each one changed width when the webfont swapped in and moved
+ * the words after it (CLS 0.003 on /pl in CI). This face matches the italic file instead. Next's
+ * computation, over the italic Liberation and Croscore clones: `size-adjust` is the Fraunces
+ * italic's a–z average width over Times New Roman Italic's (846.558 / 2048 units, which Liberation
+ * Serif Italic and Tinos Italic share), and the overrides are the italic file's ascent and descent
+ * over that. `tests/unit/fonts-italic-fallback.test.ts` recomputes them from the committed file.
+ * The Latin-Ext roman needs no face of its own: its characters fall through to the roman face
+ * above, which is already matched.
+ */
+/*
+ * The same italic for machines that do have Times New Roman (macOS, Windows): there the display
+ * stack reaches `next/font`'s own fallback first, the family it generates for the `displayFont`
+ * call ("displayFont Fallback", a roman face over `local("Times New Roman")`), and italic text took
+ * that roman face too. This adds the family's italic, over Times New Roman Italic, with the same
+ * overrides as the Liberation italic below (the clones share its metrics). The family name is
+ * Next's, derived from the call's export name; `tests/unit/fonts-italic-fallback.test.ts` pins
+ * both the name and the values.
+ */
+@font-face {
+  font-family: "displayFont Fallback";
+  font-style: italic;
+  src: local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT");
+  ascent-override: 114.64%;
+  descent-override: 29.89%;
+  line-gap-override: 0%;
+  size-adjust: 85.31%;
+}
+
+@font-face {
+  font-family: "Fraunces Fallback Liberation";
+  font-style: italic;
+  src: local("Liberation Serif Italic"), local("Tinos Italic");
+  ascent-override: 114.64%;
+  descent-override: 29.89%;
+  line-gap-override: 0%;
+  size-adjust: 85.31%;
 }
 
 /*

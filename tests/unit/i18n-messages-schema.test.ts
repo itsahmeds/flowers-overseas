@@ -293,12 +293,14 @@ describe("the shipped catalogues and manifests", () => {
     // same day ("approve 3"), so none of the page's keys waits here.
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
-    "finder.cutoff",
-    "finder.help",
     "footer.payment.methods",
-    "home.destinations.elsewhere.body",
     "home.howItWorks.choose.body",
     "home.proof.photo.body",
+    // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
+    // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
+    // `home.sentence.who`, with "my partner" (§14 A22), was attested by the founder on 2026-10-04
+    // (09:54:22Z) and left this queue.
+    "home.sentence.occasion",
     "meta.chooser.description",
     "meta.home.description",
     "nav.utility.cutoff",
@@ -474,8 +476,8 @@ describe("the shipped catalogues and manifests", () => {
       enSource.trust.guarantee.name;
     const occasionSubtitle: Messages["occasions"]["nameDay"]["subtitle"] =
       enSource.occasions.nameDay.subtitle;
-    const faqQuestion: Messages["faq"]["price"]["question"] =
-      enSource.faq.price.question;
+    const faqQuestion: Messages["faq"]["photo"]["question"] =
+      enSource.faq.photo.question;
 
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
@@ -484,7 +486,7 @@ describe("the shipped catalogues and manifests", () => {
     expect(finderSubmit).toBe("Continue");
     expect(guaranteeName).toBe("7-day freshness guarantee");
     expect(occasionSubtitle).toContain("Imieniny");
-    expect(faqQuestion).toBe("Is the price really final?");
+    expect(faqQuestion).toBe("Will the bouquet look like the photo?");
     expect(headline).toContain("{language}");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");

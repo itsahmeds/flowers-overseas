@@ -31,6 +31,12 @@ import { createHash } from "node:crypto";
 
 import { expect, test } from "@playwright/test";
 
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftOutside,
+} from "../support/layout-shift.ts";
+
 /** The sticky part: masthead + category row, and the `banner` landmark. */
 const HEADER = "[data-fo-header]";
 
@@ -93,26 +99,21 @@ const LOCALES = [
  */
 const XL_BREAKPOINT = 1280;
 
-/** Sum of every layout-shift entry the page reported (the banner suite's measurement, locally). */
-async function cumulativeLayoutShift(page: import("@playwright/test").Page) {
-  return page.evaluate(
+/**
+ * The shift the header can cause: every entry not wholly inside the home's sentence picker
+ * (`../support/layout-shift.ts`), after a 500 ms settle. A header that changes height moves what
+ * is below it, and the browser names those nodes (`<main>`), not the header, as the sources, so the
+ * test excludes the one region whose shift another test owns rather than including the header's
+ * own box. The sentence re-measures when its webfont swaps in; `./home.spec.ts` bounds that.
+ */
+async function headerShift(page: import("@playwright/test").Page) {
+  await page.evaluate(
     () =>
-      new Promise<number>((resolve) => {
-        let total = 0;
-        new PerformanceObserver((list) => {
-          for (const entry of list.getEntries()) {
-            const shift = entry as PerformanceEntry & {
-              value: number;
-              hadRecentInput: boolean;
-            };
-            if (!shift.hadRecentInput) total += shift.value;
-          }
-        }).observe({ type: "layout-shift", buffered: true });
-        setTimeout(() => {
-          resolve(total);
-        }, 500);
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, 500);
       }),
   );
+  return shiftOutside(page, SENTENCE_REGION);
 }
 
 test.describe("the site header (AC-7)", () => {
@@ -128,6 +129,7 @@ test.describe("the site header (AC-7)", () => {
           get: () => [],
         });
       });
+      await recordLayoutShifts(page);
       const response = await page.goto(path);
       expect(response?.status()).toBe(200);
 
@@ -159,7 +161,7 @@ test.describe("the site header (AC-7)", () => {
       await expect(utility).toHaveCSS("position", "static");
 
       // Nothing the header does shifts the page.
-      expect(await cumulativeLayoutShift(page)).toBe(0);
+      expect(await headerShift(page)).toBe(0);
     });
   }
 
@@ -592,11 +594,12 @@ test.describe("the notice bar's price claim follows the route", () => {
       page,
     }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
+      await recordLayoutShifts(page);
       await page.goto(path);
       const notice = page.locator(UTILITY);
       await expect(notice.locator("[data-fo-price-claim]")).toHaveCount(0);
       await expect(notice).toBeVisible();
-      expect(await cumulativeLayoutShift(page)).toBe(0);
+      expect(await headerShift(page)).toBe(0);
 
       const product = await page
         .locator("[data-fo-trending] li a[href]")
@@ -612,7 +615,7 @@ test.describe("the notice bar's price claim follows the route", () => {
       expect(Math.round((await notice.boundingBox())?.height ?? 0)).toBe(
         UTILITY_HEIGHTS.desktop,
       );
-      expect(await cumulativeLayoutShift(page)).toBe(0);
+      expect(await headerShift(page)).toBe(0);
     });
   }
 });
@@ -640,6 +643,16 @@ const CLAIM_PAGES = [
   { path: "/pl/polska/kwiaty", kind: "shop root", token: "VAT" },
 ] as const;
 
+/**
+ * The de and pl shop roots' claim, as the whole sentence (PR 172 breaker round 2, accepted
+ * carry-forward a). A token would survive "Preise inkl. MwSt. und Versand nicht enthalten" or
+ * "Ceny zawierają dostawę i VAT, koszt dostawy doliczamy"; the exact text does not.
+ */
+const EXACT_CLAIM: Readonly<Record<string, string>> = {
+  "/de/polen/blumen": "Preise inkl. MwSt. und Versand",
+  "/pl/polska/kwiaty": "Ceny zawierają dostawę i VAT",
+};
+
 test.describe("the notice bar's price claim on listing and guide pages", () => {
   for (const { path, kind, token } of CLAIM_PAGES) {
     test(`${path} (${kind}) carries the price claim`, async ({ page }) => {
@@ -650,6 +663,15 @@ test.describe("the notice bar's price claim on listing and guide pages", () => {
       await expect(claim).toHaveCount(1);
       await expect(claim).toBeVisible();
       await expect(claim).toContainText(token);
+      const exact = EXACT_CLAIM[path];
+      if (exact !== undefined) {
+        // The claim's own words, after its decorative " · " separator.
+        const words = ((await claim.textContent()) ?? "").replace(
+          /^[\s·]+/u,
+          "",
+        );
+        expect(words, path).toBe(exact);
+      }
     });
   }
 });

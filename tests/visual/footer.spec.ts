@@ -17,7 +17,18 @@
  * `navigator.languages` is emptied for the reason `./shell.spec.ts` documents: the suggestion
  * island would otherwise put the runner's language configuration into a committed PNG.
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, expect, test } from "@playwright/test";
+
+/**
+ * The footer is photographed on the locale home, below its occasion-dates band, so the band leaves
+ * the layout (`./home-dates.css` says why): a calendar edit must not move the footer's pixels
+ * (TASK-177).
+ */
+const HOME_DATES_STYLE = fileURLToPath(
+  new URL("./home-dates.css", import.meta.url),
+);
 
 /**
  * A recorded consent decision, seeded before the first navigation (TASK-051).
@@ -85,6 +96,7 @@ for (const locale of LOCALES) {
       await expect(footer).toBeVisible();
       await expect(footer).toHaveScreenshot(
         `footer-${locale}-${viewport.name}.png`,
+        { stylePath: HOME_DATES_STYLE },
       );
     });
   }

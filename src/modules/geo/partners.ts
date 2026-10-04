@@ -1,9 +1,11 @@
 /**
  * The active-partners seam (spec 007 §2 "The page, in its two states", §13 Q3, AC-8; TASK-091).
  *
- * `src/config/countries.ts` labels Poland `status: "live"` because the founder-approved homepage
- * prints a "Delivering now" chip for it. That label is a *design* fact; whether a florist in
- * Poland is taking our orders is an *operational* one, and no florist has been signed. §13 Q3's
+ * `src/config/countries.ts` labels Poland `status: "live"` because it is the destination the site is
+ * built around (first in every list, its shop root linked). That label is a *design* fact, and no
+ * page may read "Delivering now" from it (`destinationStateKey()` asks `deliveryDatesOpen()`,
+ * TASK-177). Whether a florist in Poland is taking our orders is an *operational* one, and no
+ * florist has been signed. §13 Q3's
  * accepted default is this seam: the corridor's live state is gated on a provider that answers
  * `false` for every destination in Phase 0, so the registry's label cannot make a page print a
  * cutoff nobody agreed to.

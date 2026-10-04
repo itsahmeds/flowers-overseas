@@ -6,30 +6,27 @@
  * at the `visual` project's 1280 px, while the artboards are drawn at 1440 px and 390 px, and a
  * full-page shot of a growing page hides a 4 px change in an 820 px band.
  *
- *  - `home-hero-*` — the whole band clipped to its own box: the reserved photo slot with its
- *    caption, the paper card at the inline start (desktop) or overlapping the slot by 56 px
- *    (mobile), the eyebrow, the `H1` and the proposition;
- *  - `home-finder-*` — the finder card: three labelled fields, the neutral `Continue`, the help
- *    and cutoff lines and the destination list with its seven states;
- *  - `home-proof-*` — the four-fact strip, 4-up on the desktop artboard and 2-up on the mobile
- *    one;
- *  - `home-dates-*` — the "Coming up in Poland" band, with the cutoff line the mobile artboard
- *    omits;
- *  - `home-occasions-*` — the six occasion tiles with their square photo placeholders, 2-up
- *    mobile and 3-up desktop;
- *  - `home-how-it-works-*` — the explainer band, its photo placeholder and the three steps;
- *  - `home-faq-*` — the five disclosures, all closed;
- *  - `home-trust-*` — the three claims, 1-up mobile and 3-up desktop;
- *  - `home-trending-*` — the florists' picks with the honesty label, 2-up mobile and 5-up
- *    desktop, and no price element anywhere in the row (TASK-054);
- *  - `home-destinations-*` — the destinations grid: Poland with its five cities, the six guides
- *    and the copy-only "Somewhere else?" cell (TASK-054).
+ *  - `home-hero-*` — the v2 hero band clipped to its own box: the copy, the photograph and the
+ *    sentence picker;
+ *  - `home-sentence-*` — the sentence picker (spec 004 §14 A21 clause 4; TASK-177), which
+ *    replaced the finder card;
+ *  - `home-proof-*` — the promise band, v2's form of the proof row and AC-10's trust strip;
+ *  - `home-dates-*` — Poland's dates as stamps;
+ *  - `home-occasions-*` — the occasion tiles, 2-up mobile and 3-up desktop;
+ *  - `home-how-it-works-*` — the explainer band and its steps;
+ *  - `home-faq-*` — the disclosures, all closed;
+ *  - `home-trending-*` — Popular choices with the honesty label, and no price element anywhere in
+ *    the row (TASK-054);
+ *  - `home-destinations-*` — the destinations grid (TASK-054).
  *
- * The type-ahead's open state is deliberately **not** a baseline: it is a hydrated, transient
- * state whose contents depend on what was typed, and it is pinned by DOM assertions in
- * `tests/e2e/home.spec.ts` and by axe in `tests/a11y/home.spec.ts` instead. `navigator.languages`
- * is emptied first, for the reason `./shell.spec.ts` documents.
+ * **Every shot below the dates band is taken without it** (`./home-dates.css`, the reason in its
+ * header): the band prints a calendar, and a calendar edit must not move the FAQ's pixels. The
+ * band's own shot, and the hero, sentence and trending shots above it, are taken as rendered.
+ *
+ * `navigator.languages` is emptied first, for the reason `./shell.spec.ts` documents.
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, expect, test } from "@playwright/test";
 
 /**
@@ -63,23 +60,42 @@ async function recordConsentRefusal(
   ]);
 }
 
+/**
+ * Each section, clipped to its own box. `belowDates` marks a section the page renders under the
+ * occasion-dates band, photographed with the band out of the layout (the header).
+ */
 const PARTS = [
-  { suffix: "hero", selector: "[data-fo-hero]" },
-  { suffix: "finder", selector: "[data-fo-finder]" },
-  { suffix: "proof", selector: "[data-fo-proof-row]" },
+  { suffix: "hero", selector: "[data-fo-hero]", belowDates: false },
+  // v2 (TASK-177): the sentence picker replaced the finder, and the promise band is both the
+  // proof row and AC-10's trust strip, so it has one baseline, `proof`.
+  { suffix: "sentence", selector: "[data-fo-sentence]", belowDates: false },
+  { suffix: "proof", selector: "[data-fo-proof-row]", belowDates: true },
   // TASK-053's five sections, each clipped to its own box for the reason the header gives: a
   // full-page shot at 1280 px shows none of them at the geometry the artboards were drawn at.
-  { suffix: "dates", selector: "[data-fo-occasion-dates]" },
-  { suffix: "occasions", selector: "[data-fo-occasions]" },
-  { suffix: "how-it-works", selector: "[data-fo-how-it-works]" },
-  { suffix: "faq", selector: "[data-fo-faq]" },
-  { suffix: "trust", selector: "[data-fo-trust-strip]" },
+  { suffix: "dates", selector: "[data-fo-occasion-dates]", belowDates: false },
+  { suffix: "occasions", selector: "[data-fo-occasions]", belowDates: true },
+  {
+    suffix: "how-it-works",
+    selector: "[data-fo-how-it-works]",
+    belowDates: true,
+  },
+  { suffix: "faq", selector: "[data-fo-faq]", belowDates: true },
   // TASK-054's two rendered gated sections. The verified-reviews band has **no** baseline,
   // because in Phase 0 it renders nothing and a screenshot of nothing is not a baseline; its
-  // populated branch is covered by `/dev/components` and by the unit tests.
-  { suffix: "trending", selector: "[data-fo-trending]" },
-  { suffix: "destinations", selector: "[data-fo-destinations]" },
+  // populated branch is covered by `/dev/components` and by the unit tests. Popular choices sits
+  // above the dates band (v2 order); the destinations grid closes the page.
+  { suffix: "trending", selector: "[data-fo-trending]", belowDates: false },
+  {
+    suffix: "destinations",
+    selector: "[data-fo-destinations]",
+    belowDates: true,
+  },
 ] as const;
+
+/** Takes the occasion-dates band out of the layout (`./home-dates.css`). */
+const HOME_DATES_STYLE = fileURLToPath(
+  new URL("./home-dates.css", import.meta.url),
+);
 
 /** The two artboard widths, so a baseline is comparable with the design source. */
 const CASES = [
@@ -107,9 +123,10 @@ for (const { name, path, viewport } of CASES) {
     await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
     await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
-    for (const { suffix, selector } of PARTS) {
+    for (const { suffix, selector, belowDates } of PARTS) {
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
+        belowDates ? { stylePath: HOME_DATES_STYLE } : {},
       );
     }
   });
