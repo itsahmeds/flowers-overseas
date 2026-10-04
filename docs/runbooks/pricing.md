@@ -148,6 +148,13 @@ Expected fail-closed windows with the weekday rebuild job (§4.1) running:
   leave it alone (`docs/runbooks/railway-cloudflare-setup.md`).
 - **Manual trigger:** Actions → **fx-refresh** → *Run workflow* (tick `verify` to get the 19:30
   behaviour). This is not the CI workflow, so CLAUDE.md's ban on dispatching it does not apply.
+- **The production URL must be Railway's.** `FX_REFRESH_PRODUCTION_URL` is production's Railway
+  address, never the Vercel one: the job rebuilds Railway, so with Vercel's URL `fxAsOf` would never
+  move and every 19:30 run would go red. The job also refuses a URL that is not `https://`, and an
+  environment whose `/api/health` `appEnv` or whose token's Railway environment is not the one named.
+- **Vercel is never refreshed** (A7: "Vercel gets nothing"). A `main` merge's Vercel build fetches
+  once, so `flowers-overseas.vercel.app` shows converted prices until 00:00Z on the second weekday
+  after that merge, and then the PLN fallback again until the next merge.
 - **CI's builds do not fetch**: `ci.yml` and `visual-baselines.yml` set `FX_SNAPSHOT_FETCH=off`, so
   the browser suites see one stable state (the committed snapshot's fallback) instead of a rate
   that moves every weekday. A Railway build cannot receive that switch (the `Dockerfile` has no

@@ -50,6 +50,7 @@ here.
 - 2026-10-04: started on branch `task/TASK-180-fx-bridge` (feature PR with TASK-180/181), based on main b1ea7f03 (TASK-178 merged).
 - 2026-10-04: fixture captured (`tests/fixtures/fx/ecb-eurofxref-2026-09-08.xml`, the 2026-09-08 `Cube` verbatim from `eurofxref-hist-90d.xml`, sha256 of the 90-day file on capture 9a0eaee2…); committed rows corrected; weekday rule, dedupe and the T-36 `priceValidUntil` rule landed with T-28, T-32, T-35, T-36 (commit e6b9ee82); rate-dependent expectations recomputed independently (integer Python), not recorded from the code.
 - 2026-10-04: rebased onto PR 178 (A7 approved text); PR 177 ready with `ci:full`.
+- 2026-10-04: round 1 (`/break 177`): hole 4 (the stale-fallback `Offer` keeps only the row's `active_to`), hole 5 (30 Sep, 31 Dec, 29 Feb 2028 accepted; 29 Feb 2027, 31 Sep refused) and hole 12 (T-32's fresh case in a fresh module graph) closed, each red under the breaker's mutation.
 
 ## Result
 

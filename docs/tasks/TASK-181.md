@@ -37,6 +37,17 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - **From spec 005 §14 A7 Corrected 3 (2026-10-04):** a same-commit staging rebuild during a `/launch` gate run changes staging's rates without changing `commit`. Spec 040 §14 A3 step 3.2 should also read staging's `fxAsOf` at the start and end of visit 1 and halt if it changed. Owed by a spec 040 amendment, not by this task.
 
+- **From `/review 177` round 1 (2026-10-04), nits not done here:**
+  - (a) Staging commit provenance: staging is rebuilt at whatever SHA its health reports (now a
+    zod-checked full SHA, in an environment whose `appEnv` and token both say `staging`). Skipping
+    staging unless that SHA is `main`'s tip or reachable from it would mirror production's guard.
+    **Founder's call.**
+  - (f) One CI job (the `container` job fits) that builds with the captured daily fixture injected
+    and asserts `/api/health` → `fxSource: "ecb-build"`, so the build-time inlining is proven on
+    every PR rather than by a source pin plus one local build.
+  - (c) is done (`pathToFileURL` for the entry check) but untested: the entry point would fetch the
+    ECB, and tests make no network call.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -63,6 +74,7 @@ here.
 - 2026-10-04: started on branch `task/TASK-180-fx-bridge` (feature PR with TASK-180/181), based on main b1ea7f03 (TASK-178 merged).
 - 2026-10-04: build step, bundle boundary, health fields, workflow and decision script landed with T-29…T-31, T-33, T-34 (commit 5ee4d51a); one local build (build slot) proved the inlining: `fx.snapshot` `ecb-build` 2026-10-02, `/api/health` `fxSource: ecb-build`, `/en/poland/flowers` in EUR with the equivalents line, listing-v2 e2e 7/7 on the fresh state.
 - 2026-10-04: rebased onto PR 178 (A7 approved text); PR 177 ready with `ci:full`.
+- 2026-10-04: round 1 (`/review 177` FAIL, 2 changes; `/break 177` 12 holes). Changes 1 and 2 and holes 1, 2, 3, 6–11 fixed here (holes 4, 5, 12 in TASK-180's brief); nits b, c, d, e done; a and f carried forward above. The Railway calls now read `environment(id) { name serviceInstances { … serviceId serviceName } }` (the shape `railway:check` reads live) instead of the unverified `project.services` query, and refuse a token whose environment is not the one named.
 
 ## Result
 
