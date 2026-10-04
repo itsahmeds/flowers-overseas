@@ -152,6 +152,7 @@ Row: `TASKS.md` → TASK-177. This brief is the task's long form (spec 001 §14 
       - "seven full days" (en, no digit), "7 Kalendertage" (de), "Sieben Tage" (de) and "Tydzień świeżości" (pl) in `home.proof.local.body`. Red in `ui-home.test.tsx`.
       - "a week" in `faq.photo.answer`. Red in `ui-home-sections.test.tsx`.
     - H4, in the chrome: "seven full days" (en sign-off), "7 Kalendertage" (de sign-off), "Sieben Tage" (de notice lead), "Tydzień świeżości" (pl notice lead) and "a week" (en notice lead). Red in `ui-site-header.test.tsx`.
+- 2026-10-04: round 1 baselines, visual-baselines run 37194900542: the whole change list (15 PNGs, the listing and product shots on `/dev/components` plus the gallery itself) plus the manifest. `--verify` and `--check` exit 0. They had conflicted in the TASK-178 merge and had been taken from this branch. Their geometry now matches main's (the toolbar is 256 px, the mobile grid 727 px); against main they differ only by the sub-pixel offset of the gallery's home section. I looked at all 15, the 43,000 px gallery only as an overview.
 - 2026-10-04: CI on 2a39015a (run 37182787523): green.
   - e2e: 1309 passed. One test was flaky and unrelated: `banner.spec.ts:662`, the overlay z-scale, which passed on retry.
   - Sentence-sourced shift on Linux: at most 0.00044 (/en and /en-gb at 390); the rest are at most 0.00022.
