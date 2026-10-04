@@ -13,6 +13,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **Admin queries for spec 012 (the only application queries in the codebase):** `listFloristApplications(adminCtx, { status? })` and `setFloristApplicationStatus(adminCtx, id, status)` (sets `decided_at` for `rejected` and `converted`, runs inside spec 012's `withAdminContext`, writes no audit row itself).
 - **The switch:** `applicationForm: "on"` only once the migration is applied to the production database (§12).
 - **Logs:** counters only; the redaction list gains the §8 keys.
+- **Env keys (DoD §5; `/review 191` item 2):** this task is the first reader of `FLORIST_APPLICATIONS_NOTIFY_EMAIL` (required in production once the form is on, §12), so it declares it in `.env.example` and `src/lib/env.schema.ts` (validated by `lib/env.ts`) in its own PR and reads it only through `lib/env`. TASK-216 adds it to `config/railway.json` and runs `pnpm env:check` and `pnpm railway:check`.
 - **Class:** not review-only (`CLAUDE.md` DoD §4): a new personal-data flow, the Art. 13 notice and email. `/review` and `/break` both run.
 
 ## Read
@@ -25,7 +26,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** the founder names the alert address (§13 Q8, prerequisite 5) before the form flips on; TASK-216 declares the key in env and Railway.
+- **From `/plan-tasks` (2026-10-05):** the founder names the alert address (§13 Q8, prerequisite 5) before the form flips on; TASK-216 adds the key to `config/railway.json`.
 
 ## Escalations
 

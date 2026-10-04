@@ -87,6 +87,7 @@ Every architectural or business decision below has an ADR in `docs/adr/`. ADRs a
 | [ADR-0016](../docs/adr/ADR-0016-csp-allowlist-hash-on-cached-html.md) | CSP on cached HTML: per-environment allowlist + inline-script hash; nonce + `'strict-dynamic'` reserved for `no-store` routes; Report-Only first | accepted | 2026-09-08 |
 | [ADR-0017](../docs/adr/ADR-0017-catalogue-dataset-ownership.md) | Catalogue dataset ownership: `src/config/catalogue/*.data.ts` is the single authored source; `seed/data/` are generated projections | accepted | 2026-09-09 |
 | [ADR-0018](../docs/adr/ADR-0018-hosting-railway-behind-cloudflare.md) | Hosting: Railway (Amsterdam, single replica) behind Cloudflare as primary; Vercel Hobby retained as cold fallback until spec 040's exit signal | accepted | 2026-09-16 |
+| [ADR-0019](../docs/adr/ADR-0019-one-florist-email-sign-in.md) | One email sign-in core for florists and admin from Phase 0 (Auth.js email link, database sessions, one adapter and mailer); no per-order link scheme | accepted | 2026-10-05 |
 
 ## 7. Document map
 

@@ -11,6 +11,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **PII (AC-34):** across the journey in two locales no URL, captured log line or scrubbed Sentry event carries the token, an email, a name, a phone, an address line, a postcode, the card message or the signature; `step` is the only query parameter.
 - **Cloudflare (AC-31):** on staging the three checkout paths answer `cf-cache-status` `BYPASS` or `DYNAMIC`, and a cached PDP answers `HIT` with no `Set-Cookie`.
 - CI gains the checkout e2e, a11y, visual and budget suites as required checks. Take the build slot only for the new baselines, and say so in `## Result`.
+- **The 5-second p95 (spec 010 §12 task 8; `/review 191` nit 5):** re-record it here from the real place-order submit on staging, 20 runs, in the PR. AC-25 stays TASK-202's, measured from `place()`.
 - **Class:** not review-only (`CLAUDE.md` DoD §4): CI gates and the PII scan. `/review` and `/break` both run.
 
 ## Read

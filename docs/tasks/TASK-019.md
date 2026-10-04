@@ -15,7 +15,7 @@ Branch `task/TASK-019-schema-orders-payments`. Reference rows are data, not code
 
 ## Carry-forwards
 
-_None recorded._
+- **From `/plan-tasks` of specs 010–012 (2026-10-05, ruling R8; `/review 191` nit 8):** `order_transition.event` holds the `plan/11` §2 catalogue names (`order.authorised`, `order.routed`, `assignment.accepted`, `order.captured`…), never the diagram's arrow labels; and migration `0007` carries spec 010 §5.1 A's `"order".mode text NOT NULL CHECK (mode IN ('demo','test','live'))` with no default, `"order".buyer_snapshot jsonb NOT NULL`, and a nullable `"order".terms_version` with `CHECK (mode <> 'live' OR terms_version IS NOT NULL)`, each with §5.1 A's rollback line.
 
 ## Escalations
 

@@ -9,6 +9,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `specs/012-admin-v0.md` §12 task 10 (page half). Owns **AC-14 (page half: `/admin/flags` lists and toggles registry keys only and refuses an unknown or orphaned key; `checkout.demo_guard` needs the admin role and the typed key; a `checkout.open` toggle for a country calls `invalidate()` once with exactly `catalog:{iso2}`)**; tests **T-16 (integration half), T-24 and T-25 for `/admin/flags`**.
 - **Scope:** the page on TASK-219's registry and reader; toggles inside `withAdminContext` with an action (audited by TASK-218's trigger); `urlsForTag` learns `catalog:{iso2}` in `src/lib/cache.ts`; `invalidate` revalidates the origin and then purges the edge, and a failure is `warn` + Sentry with the tags. The locale and site-link overlays are spec 012b's and are not built.
 - **Design.** `docs/design/` is the source of truth: match the artboards named under Read pixel for pixel, and keep `system/components.dc.html` in step with `src/modules/ui` in the same PR.
+- **Why TASK-202 is a dependency** (spec 012 task 10 does not list it): the `checkout.open` flag and its `PL` scope row come from spec 010 §5.1 A, seeded by TASK-021 or, if TASK-021 merged without them, by TASK-202's fallback migration; the page needs the rows to exist.
 - **Class:** not review-only (`CLAUDE.md` DoD §4): cache invalidation and a high-risk switch over the checkout's mode. `/review` and `/break` both run.
 
 ## Read

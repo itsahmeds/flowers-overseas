@@ -16,7 +16,7 @@ Branch `task/TASK-021-schema-notifications-ops`. Flags live in the database with
 
 ## Carry-forwards
 
-_None recorded._
+- **From `/plan-tasks` of specs 010–012 (2026-10-05, ruling R8; `/review 191` nit 8):** migration `0009` seeds spec 010 §5.1 A's `retention_policy` rows `checkout_draft` (delete 1 day after last activity) and `demo_order_personal` (pseudonymise `order.mode IN ('demo','test')`, 24 hours after placement in production and 7 days on staging and PR environments), and the `feature_flag` `checkout.open` (default `false`) with a `PL` country scope row, each with §5.1 A's rollback line.
 
 ## Escalations
 

@@ -7,7 +7,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Binding
 
 - `specs/011-for-florists-vendor-inbox.md` §12 task 4. Owns **spec 011 AC-18, AC-19, AC-20, AC-21, AC-22, AC-32** and, by ruling R7 (decisions log 2026-10-05, "Specs 010, 011 and 012: cross-spec ownership"), **spec 012 AC-9 (florist-route half: an admin session cookie sent to a `{FLORIST_BASE_PATH}` route authenticates nothing)**; tests **011 T-18–T-22, T-32; 012 T-11 (florist-route half)**.
-- **Ruling R2: one core.** Build the florist instance with TASK-217's `createAuthSurface`; no second Auth.js configuration, adapter or mailer (AC-22's scan). `src/lib/auth/florist.ts`: `basePath` `{FLORIST_BASE_PATH}/api/auth`, pages under `{FLORIST_BASE_PATH}/sign-in`, database sessions, 30 days rolling, cookies `__Secure-fo-florist.session-token`, `.csrf-token`, `.callback-url`, each `Path={FLORIST_BASE_PATH}`, `Secure`, `HttpOnly`, `SameSite=Lax`, no `__Host-` name; the allow predicate is `signInPolicy(environment)` with the `partner_member` lookup (`production` → `[]`). Same page for every address; no enumeration.
+- **ADR-0019 and ruling R2: one core.** Build the florist instance with TASK-217's `createAuthSurface`; no second Auth.js configuration, adapter or mailer (AC-22's scan). `src/lib/auth/florist.ts`: `basePath` `{FLORIST_BASE_PATH}/api/auth`, pages under `{FLORIST_BASE_PATH}/sign-in`, database sessions, 30 days rolling, cookies `__Secure-fo-florist.session-token`, `.csrf-token`, `.callback-url`, each `Path={FLORIST_BASE_PATH}`, `Secure`, `HttpOnly`, `SameSite=Lax`, no `__Host-` name; the allow predicate is `signInPolicy(environment)` with the `partner_member` lookup (`production` → `[]`). Same page for every address; no enumeration.
 - **The link (the core's design):** no email address in any URL; a `GET` renders one "Continue" and consumes nothing; the `POST` consumes; single-use, one hour.
 - **Context:** `requireFloristContext()` reads memberships on every request; `toDbContext` gives `role: "partner"`, `userId`, `partnerIds`; no membership sends to sign-in.
 - **Routes:** every `{base}` path built from `FLORIST_BASE_PATH`; `Cache-Control: private, no-store` and `X-Robots-Tag: noindex`; 404 under `APP_ENV=production`; no GA4 or consent analytics path; Cloudflare bypass for `{base}/*` (add the rule if `pnpm cloudflare:check` shows it missing). Public responses are identical with and without a florist cookie (AC-21).
@@ -17,7 +17,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 ## Read
 
 - `specs/011-for-florists-vendor-inbox.md`: `## 0. Index`; §2 "Florist sign-in"; §5.2 (sign-in, mail); §5.4; §6; §8 (cookies, logs, security); §9 AC-18–AC-22, AC-32; §12 task 4; §13 Q2, Q4.
-- `specs/012-admin-v0.md` §2.2 and AC-9; `docs/tasks/TASK-217.md`.
+- `specs/012-admin-v0.md` §2.2 and AC-9; `docs/adr/ADR-0019-one-florist-email-sign-in.md`; `docs/tasks/TASK-217.md`.
 - Artboard: `docs/design/wireframes/florist-sign-in-mobile.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
 - `docs/codebase-map.md`; `src/lib/basic-auth.ts`, `src/config/cookies.ts`, `src/config/url-keys.ts`.
 
@@ -25,7 +25,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-05):** ready when TASK-217 has merged, the one-sign-in ADR named in spec 011's header (§13 Q2, "Florists sign in with an Auth.js email link from Phase 0") is written through `/adr`, and the sign-in artboard has merged.
+- **From `/plan-tasks` (2026-10-05):** ready when TASK-217 has merged and the sign-in artboard has merged. The one-sign-in decision of spec 011 §13 Q2 is recorded in `docs/adr/ADR-0019-one-florist-email-sign-in.md`; its spec 017 condition (order emails sign the florist in with one tap) is a requirement this task's link design must keep possible.
 
 ## Escalations
 

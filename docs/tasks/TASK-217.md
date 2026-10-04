@@ -13,12 +13,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **Guard and shell:** `requirePermission(…)` is the first statement of every admin server action and handler (T-02's scan); `ADMIN_PERMISSIONS` is §5.2's v0 matrix; the layout redirects by session state (`redirect()`), never by location, and `src/proxy.ts` stays redirect-free. Every `/admin` response carries `X-Robots-Tag: noindex, nofollow` and `Cache-Control: no-store, private`, plus the meta; `Disallow: /admin/` stays. `/admin` (three counters as links), `/admin/users` (grant, revoke, deactivate, each deleting sessions in the same transaction; the own last admin role cannot be removed), `pnpm admin:grant`.
 - **Admin copy** in `messages/admin/en.json` (+ meta), English only, loaded only by the admin layout, outside public reviewed shares; the banned-word scan in `tests/unit/design-docs.test.ts` exempts `messages/admin/` and `docs/design/wireframes/admin-*`, and only those. Auth.js's logger goes through `src/lib/logger.ts`; the redaction list gains `identifier`, `email`, `token`, `display_name`. WCAG 2.2 AA; targets at least 24 × 24 px.
 - **Design.** `docs/design/` is the source of truth: match the artboards named under Read pixel for pixel, and keep `system/components.dc.html` in step with `src/modules/ui` in the same PR.
+- **Env keys (DoD §5; `/review 191` item 2):** this task is the first reader of `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM` and `MAILER`, so it declares them in `.env.example` and `src/lib/env.schema.ts` (validated by `lib/env.ts`) in its own PR and reads them only through `lib/env`. TASK-223 adds them to `config/railway.json` and runs `pnpm env:check` and `pnpm railway:check`.
 - **Class:** not review-only (`CLAUDE.md` DoD §4): auth, a migration and security. `/review` and `/break` both run.
 
 ## Read
 
 - `specs/012-admin-v0.md`: `## 0. Index`; §2.2; §5.1 (`NNNN_admin_identity`); §5.2 (the ownership table, the permission matrix); §5.3; §5.4; §6; §7; §8 (logs, security, accessibility); §9 AC-1–AC-9; §10; §12 task 1 and "Founder actions".
-- `specs/011-for-florists-vendor-inbox.md` §2 "Florist sign-in" and §5.2 (the link design the core adopts); ADR-0013; ADR-0015; `docs/tasks/TASK-022.md`.
+- `specs/011-for-florists-vendor-inbox.md` §2 "Florist sign-in" and §5.2 (the link design the core adopts); ADR-0019 (one email sign-in for florists and admin); ADR-0013; ADR-0015; `docs/tasks/TASK-022.md`.
 - Artboards: `docs/design/wireframes/admin-sign-in-{desktop,mobile}.dc.html`, `admin-home-{desktop,mobile}.dc.html`, `admin-users-{desktop,mobile}.dc.html`, and the Admin group of `system/components.dc.html` (not drawn yet; `/design` draws it before this task is dispatched).
 - `docs/codebase-map.md`; `src/lib/db.ts`, `src/lib/env.schema.ts`, `src/proxy.ts`, `src/lib/logger.ts`, `tests/unit/design-docs.test.ts`.
 
