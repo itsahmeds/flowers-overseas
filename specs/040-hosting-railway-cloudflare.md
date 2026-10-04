@@ -1312,6 +1312,65 @@ distinct, and removing the `schedule` branch turns the case red. The PR that add
 trigger (TASK-100) carries the change.
 Raised by: TASK-100 `## Escalations` E-2 (2026-09-30).
 
+**A7 — The edge rules on Cloudflare's Free plan: marketing parameters stay in the cache key, the rate limit is `/api/` only, and staging is never cached (§5.4 rules 2 and 3; §6; §9 AC-16, AC-21; §10 T-16, T-21; TASK-101, 2026-10-04).**
+Original: AC-16 (L588–591) says "`utm_*`, `gclid` and `fbclid` do not change the cache key", and
+that a corridor document returns `cf-cache-status: HIT` on a second request. AC-21 (L602–604) says
+"the rate-limit rule applies to `/api/*` and POSTs only". §5.4's rule 3 (L299) is
+`starts_with(path,"/api/") or (http.request.method eq "POST")`, 60 requests per minute per IP, with a
+managed challenge and then a block. T-16 (L667) asserts the HIT and "`?utm_source=x` → same cache
+entry". T-21 (L672) rate-limits "200 `POST /api/consent` in a minute". §12 step 4 applies the "cache
+rules, rate limit, `staging.` record" before the cutover of step 6.
+Trigger: three escalations in TASK-101's brief. **E-1:** custom cache-key query handling ("all
+query string parameters except") is Enterprise only, and a Free-plan rewrite cannot strip only some
+parameters. **E-2:** the Free plan's single rate-limit rule matches on path and verified bot only,
+with no request method, and counts over 10 s. **E-4:** staging sits behind the basic-auth wall
+(AC-25), ISR documents answer `public, s-maxage=…`, and `Authorization` is not in the cache key, so
+a cache rule on the staging host would serve walled pages to anyone.
+Ruled by: the founder, 2026-10-04, in chat: "accept all three" (TASK-101 E-1, E-2 and E-4, each
+as its recommendation).
+Corrected:
+- **Marketing parameters (E-1).** On the Free plan, `utm_*`, `gclid` and `fbclid` **stay in the
+  cache key**. A URL carrying one is a separate edge entry. Its first request is a MISS, served from
+  the origin's ISR cache. Correctness rests on body identity. A marketing parameter changes no byte
+  of the document (T-18's sha256 equality through Cloudflare against the origin), and the canonical
+  never carries the parameter (spec 007). The cost is a lower HIT rate on ad-click URLs, not a wrong
+  page. AC-16's last clause now reads: "`utm_*`, `gclid` and `fbclid` may change the cache key on
+  the Free plan; a URL carrying one returns the same body as the URL without it". §5.4 rule 2's
+  "**cache key ignores** `utm_*`, `gclid`, `fbclid`" is superseded. Moving to a plan with custom
+  cache keys restores the original clause and needs its own amendment.
+- **Rate limit (E-2).** The single rule is `starts_with(http.request.uri.path, "/api/")`, **10
+  requests per 10 s per IP**, action **Block (429)** for 10 s, with **no method match**. Document
+  paths are **never** rate-limited at the edge, whatever the method. POSTs to page paths (server
+  actions) rely on the app-level limits of `plan/01` §9, which are unchanged. A managed challenge
+  means nothing to an API caller, so Block replaces it. This supersedes §5.4 rule 3, AC-21's "and
+  POSTs only", and the "`/api/*` and form POSTs" wording of §2 (L93), §6 (L441) and §8 (L530). AC-21
+  now reads: "The rate-limit rule applies to paths starting `/api/` only, with no method condition;
+  100 sequential GETs of distinct document URLs from one IP within a minute are all answered 200;
+  the app-level limits of `plan/01` §9 are unchanged."
+- **Staging is never cached (E-4).** The rule that makes documents cache-eligible, taking edge and
+  browser TTL from the origin (so it is not Cache Everything), matches **only the production host**:
+  `http.host eq "flowersoverseas.com"`. It is applied at TASK-104's cutover. No staging or PR host
+  is ever cache-eligible, and `pnpm cloudflare:check`'s lint refuses a cache-eligibility rule naming
+  any other host. §12 step 4 now applies the bypass rule and the rate limit. The cache-eligibility
+  rule waits for step 6, the cutover. §5.4's sentence that Cloudflare by default "respect[s]
+  origin `Cache-Control` for HTML" is corrected: Cloudflare does not cache HTML by default, so the
+  production-host rule is what makes any HIT possible.
+- **T-16** splits:
+  - on staging (TASK-101): `/api/health` and `/checkout`, bare and under a locale prefix, answer
+    `BYPASS`;
+  - production (TASK-104, through `EDGE_HIT_URL`): the second request to a corridor URL answers
+    `cf-cache-status: HIT`, with no `Set-Cookie` and no `Vary`. TASK-104's brief carries this half,
+    and it runs at the cutover against the production host;
+  - the clause "`?utm_source=x` → same cache entry" is replaced: `?utm_source=x` on a corridor URL
+  returns a body whose sha256 equals the bare URL's. That joins T-18's byte-identity case.
+- **T-21** now reads: "100 document GETs in a minute → all 200; 11 or more requests to `/api/`
+  paths within 10 s from one IP → 429; 100 POSTs to a document path in a minute → none answered 429
+  by the edge".
+- **TASK-101's contract cases** pin the three rules: the cache-eligibility host equals the
+  production host, the rate-limit expression has no method term, and its period and action are
+  10 s and Block. Each is red when its subject is mutated.
+Raised by: TASK-101 `## Escalations` E-1, E-2 and E-4 (2026-10-04).
+
 ## 15. Task estimate (input to `/plan-tasks`)
 
 Eight one-day tasks. Dependencies in brackets; tasks 3 and 4 are independent of each other, and 6
