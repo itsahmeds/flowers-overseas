@@ -11,7 +11,9 @@
  *  - every `en` key that carries the batch's attestation equals its approved string, and the set
  *    of attested keys is exactly the pinned set, so an attestation cannot move to another key;
  *  - item 11, the guide card answer's approved sentence, stands byte for byte in each of the five
- *    authored guides that answer the card question.
+ *    authored guides that answer the card question;
+ *  - the founder's own `record-approval-179` run (2026-10-04T18:02:20Z; TASK-192) attests exactly
+ *    one message key, `catalog.floristSentence`, over its exact present-tense string.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -115,6 +117,38 @@ describe("the 2026-10-04 founder batch carries its attestation on its exact word
     (path) => {
       const guide = readFileSync(resolve(repoRoot, path), "utf8");
       expect(guide.split(CARD_SENTENCE)).toHaveLength(2);
+    },
+  );
+});
+
+/** The founder's `record-approval-179` run: the present-tense florist sentence (TASK-179, TASK-192). */
+const RECORD_179 = /record-approval-179/u;
+const APPROVED_179: Readonly<Record<string, string>> = {
+  "catalog.floristSentence":
+    "Every order is made by hand and delivered in person by our florist in the recipient's city.",
+};
+
+describe("the founder's present-tense attestation carries over its exact words only", () => {
+  const catalogue = readJson("messages/en.json");
+  const meta = readJson("messages/en.meta.json") as Record<
+    string,
+    { reviewed?: boolean; reviewedBy?: string; reviewedAt?: string }
+  >;
+
+  it("attests exactly `catalog.floristSentence`", () => {
+    const attested = Object.entries(meta)
+      .filter(([, record]) => RECORD_179.test(record.reviewedBy ?? ""))
+      .map(([key]) => key)
+      .sort();
+    expect(attested).toEqual(["catalog.floristSentence"]);
+  });
+
+  it.each(Object.entries(APPROVED_179))(
+    "`%s` is the attested string, reviewed at the recorded instant",
+    (key, approved) => {
+      expect(valueAt(catalogue, key)).toBe(approved);
+      expect(meta[key]?.reviewed).toBe(true);
+      expect(meta[key]?.reviewedAt).toBe("2026-10-04T18:02:20Z");
     },
   );
 });

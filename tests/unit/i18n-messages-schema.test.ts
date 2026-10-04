@@ -283,10 +283,7 @@ describe("the shipped catalogues and manifests", () => {
     // `docs/design/README.md`'s TASK-112 row, clauses (c), (d) and (e).
     // TASK-178's `catalog.price.equivalents` left this queue when the founder's attestation was
     // recorded (2026-10-04).
-    // TASK-179, spec 004 §14 A22 open item (iii) closed by the founder on 2026-10-04 ("yes use
-    // present tense"): the closing florist sentence moves from "will be made" to "is made". The
-    // wording is new, so it waits here until the founder attests the exact string.
-    "catalog.floristSentence",
+    // TASK-179's `catalog.floristSentence` left this queue on the founder's attestation, 2026-10-04.
     "categoryHub.destinationLink",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
