@@ -142,7 +142,7 @@
       "x": 0,
       "y": 54109,
       "w": 1440,
-      "h": 4193
+      "h": 4157
     },
     {
       "file": "wireframes/all-destinations-mobile.dc.html",
@@ -174,7 +174,7 @@
       "x": 0,
       "y": 81222,
       "w": 1440,
-      "h": 9526
+      "h": 8989
     },
     {
       "file": "wireframes/country-shop-mobile.dc.html",
@@ -206,7 +206,7 @@
       "x": 0,
       "y": 108610,
       "w": 1440,
-      "h": 4322
+      "h": 4298
     },
     {
       "file": "wireframes/country-occasion-mobile.dc.html",
@@ -238,7 +238,7 @@
       "x": 0,
       "y": 134725,
       "w": 1440,
-      "h": 2807
+      "h": 2828
     },
     {
       "file": "wireframes/checkout-mobile.dc.html",
@@ -246,7 +246,7 @@
       "x": 1520,
       "y": 134725,
       "w": 390,
-      "h": 4968
+      "h": 5007
     },
     {
       "file": "wireframes/confirmation-desktop.dc.html",
@@ -254,7 +254,7 @@
       "x": 0,
       "y": 142505,
       "w": 1440,
-      "h": 2933
+      "h": 2874
     },
     {
       "file": "wireframes/confirmation-mobile.dc.html",
@@ -262,7 +262,7 @@
       "x": 1520,
       "y": 142505,
       "w": 390,
-      "h": 4304
+      "h": 4280
     },
     {
       "file": "wireframes/track-order-desktop.dc.html",
@@ -286,7 +286,7 @@
       "x": 0,
       "y": 152825,
       "w": 1440,
-      "h": 6158
+      "h": 6011
     },
     {
       "file": "wireframes/category-hub-mobile.dc.html",
@@ -302,7 +302,7 @@
       "x": 0,
       "y": 163070,
       "w": 1440,
-      "h": 6143
+      "h": 6039
     },
     {
       "file": "wireframes/occasion-hub-mobile.dc.html",
@@ -318,7 +318,7 @@
       "x": 0,
       "y": 173354,
       "w": 1440,
-      "h": 3753
+      "h": 3717
     },
     {
       "file": "wireframes/occasions-index-mobile.dc.html",
@@ -334,7 +334,7 @@
       "x": 0,
       "y": 180535,
       "w": 1440,
-      "h": 3365
+      "h": 3359
     },
     {
       "file": "wireframes/how-it-works-mobile.dc.html",
@@ -342,7 +342,7 @@
       "x": 1520,
       "y": 180535,
       "w": 390,
-      "h": 6601
+      "h": 6617
     },
     {
       "file": "wireframes/guarantee-and-delivery-desktop.dc.html",
@@ -350,7 +350,7 @@
       "x": 0,
       "y": 188275,
       "w": 1440,
-      "h": 6034
+      "h": 5989
     },
     {
       "file": "wireframes/guarantee-and-delivery-mobile.dc.html",
@@ -358,7 +358,7 @@
       "x": 1520,
       "y": 188275,
       "w": 390,
-      "h": 9604
+      "h": 9600
     },
     {
       "file": "wireframes/help-and-contact-desktop.dc.html",
@@ -366,7 +366,7 @@
       "x": 0,
       "y": 199602,
       "w": 1440,
-      "h": 4719
+      "h": 4717
     },
     {
       "file": "wireframes/help-and-contact-mobile.dc.html",
@@ -374,7 +374,7 @@
       "x": 1520,
       "y": 199602,
       "w": 390,
-      "h": 8856
+      "h": 8877
     },
     {
       "file": "wireframes/about-desktop.dc.html",
@@ -382,7 +382,7 @@
       "x": 0,
       "y": 209211,
       "w": 1440,
-      "h": 3223
+      "h": 3217
     },
     {
       "file": "wireframes/about-mobile.dc.html",
@@ -390,7 +390,7 @@
       "x": 1520,
       "y": 209211,
       "w": 390,
-      "h": 5709
+      "h": 5725
     },
     {
       "file": "wireframes/for-florists-desktop.dc.html",
@@ -398,7 +398,7 @@
       "x": 0,
       "y": 215600,
       "w": 1440,
-      "h": 3809
+      "h": 3739
     },
     {
       "file": "wireframes/for-florists-mobile.dc.html",
@@ -406,7 +406,7 @@
       "x": 1520,
       "y": 215600,
       "w": 390,
-      "h": 5839
+      "h": 5867
     },
     {
       "file": "wireframes/blog-desktop.dc.html",

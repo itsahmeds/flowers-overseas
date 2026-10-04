@@ -70,7 +70,7 @@
       "x": 0,
       "y": 25885,
       "w": 1440,
-      "h": 4193
+      "h": 4157
     },
     {
       "file": "all-destinations-mobile.dc.html",
@@ -102,7 +102,7 @@
       "x": 0,
       "y": 52998,
       "w": 1440,
-      "h": 9526
+      "h": 8989
     },
     {
       "file": "country-shop-mobile.dc.html",
@@ -134,7 +134,7 @@
       "x": 0,
       "y": 80386,
       "w": 1440,
-      "h": 4322
+      "h": 4298
     },
     {
       "file": "country-occasion-mobile.dc.html",
@@ -166,7 +166,7 @@
       "x": 0,
       "y": 106501,
       "w": 1440,
-      "h": 2807
+      "h": 2828
     },
     {
       "file": "checkout-mobile.dc.html",
@@ -174,7 +174,7 @@
       "x": 1520,
       "y": 106501,
       "w": 390,
-      "h": 4968
+      "h": 5007
     },
     {
       "file": "confirmation-desktop.dc.html",
@@ -182,7 +182,7 @@
       "x": 0,
       "y": 114281,
       "w": 1440,
-      "h": 2933
+      "h": 2874
     },
     {
       "file": "confirmation-mobile.dc.html",
@@ -190,7 +190,7 @@
       "x": 1520,
       "y": 114281,
       "w": 390,
-      "h": 4304
+      "h": 4280
     },
     {
       "file": "track-order-desktop.dc.html",
@@ -214,7 +214,7 @@
       "x": 0,
       "y": 124601,
       "w": 1440,
-      "h": 6158
+      "h": 6011
     },
     {
       "file": "category-hub-mobile.dc.html",
@@ -230,7 +230,7 @@
       "x": 0,
       "y": 134846,
       "w": 1440,
-      "h": 6143
+      "h": 6039
     },
     {
       "file": "occasion-hub-mobile.dc.html",
@@ -246,7 +246,7 @@
       "x": 0,
       "y": 145130,
       "w": 1440,
-      "h": 3753
+      "h": 3717
     },
     {
       "file": "occasions-index-mobile.dc.html",
@@ -262,7 +262,7 @@
       "x": 0,
       "y": 152311,
       "w": 1440,
-      "h": 3365
+      "h": 3359
     },
     {
       "file": "how-it-works-mobile.dc.html",
@@ -270,7 +270,7 @@
       "x": 1520,
       "y": 152311,
       "w": 390,
-      "h": 6601
+      "h": 6617
     },
     {
       "file": "guarantee-and-delivery-desktop.dc.html",
@@ -278,7 +278,7 @@
       "x": 0,
       "y": 160051,
       "w": 1440,
-      "h": 6034
+      "h": 5989
     },
     {
       "file": "guarantee-and-delivery-mobile.dc.html",
@@ -286,7 +286,7 @@
       "x": 1520,
       "y": 160051,
       "w": 390,
-      "h": 9604
+      "h": 9600
     },
     {
       "file": "help-and-contact-desktop.dc.html",
@@ -294,7 +294,7 @@
       "x": 0,
       "y": 171378,
       "w": 1440,
-      "h": 4719
+      "h": 4717
     },
     {
       "file": "help-and-contact-mobile.dc.html",
@@ -302,7 +302,7 @@
       "x": 1520,
       "y": 171378,
       "w": 390,
-      "h": 8856
+      "h": 8877
     },
     {
       "file": "about-desktop.dc.html",
@@ -310,7 +310,7 @@
       "x": 0,
       "y": 180987,
       "w": 1440,
-      "h": 3223
+      "h": 3217
     },
     {
       "file": "about-mobile.dc.html",
@@ -318,7 +318,7 @@
       "x": 1520,
       "y": 180987,
       "w": 390,
-      "h": 5709
+      "h": 5725
     },
     {
       "file": "for-florists-desktop.dc.html",
@@ -326,7 +326,7 @@
       "x": 0,
       "y": 187376,
       "w": 1440,
-      "h": 3809
+      "h": 3739
     },
     {
       "file": "for-florists-mobile.dc.html",
@@ -334,7 +334,7 @@
       "x": 1520,
       "y": 187376,
       "w": 390,
-      "h": 5839
+      "h": 5867
     },
     {
       "file": "blog-desktop.dc.html",
