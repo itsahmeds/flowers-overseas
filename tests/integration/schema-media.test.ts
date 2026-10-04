@@ -82,6 +82,44 @@ function rejectedBy(error: unknown): string {
     : "(no constraint name)";
 }
 
+/**
+ * Alt texts a screen reader announces as nothing (hole 3, PR 184): each blank character on its
+ * own, a CRLF and a mix. The database must refuse every one with `product_media_alt_alt_check`.
+ * Built from code points so this file stays ASCII.
+ */
+const BLANK_ALTS: readonly (readonly [string, string])[] = [
+  ["tab", "\t"],
+  ["line feed", "\n"],
+  ["carriage return", "\r"],
+  ["CRLF", "\r\n"],
+  ["space, tab, space", " \t "],
+  ...[
+    0x85, 0xa0, 0x1680, 0x180e, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005,
+    0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x200b, 0x200c, 0x200d, 0x2028,
+    0x2029, 0x202f, 0x205f, 0x2060, 0x3000, 0xfeff,
+  ].map((code): readonly [string, string] => [
+    `U+${code.toString(16).toUpperCase().padStart(4, "0")}`,
+    String.fromCodePoint(code, code),
+  ]),
+  [
+    "NBSP, ZWSP, U+3000, BOM",
+    String.fromCodePoint(0xa0, 0x200b, 0x3000, 0xfeff),
+  ],
+];
+
+/** Keys outside the alphabet (hole 4, PR 184): dot segments, empty segments, edge slashes. */
+const BAD_KEYS: readonly string[] = [
+  "/originals/product/x",
+  "originals/../../etc/passwd",
+  "media/product/..",
+  "a/./b",
+  "./a",
+  "media//x",
+  "media//x/",
+  "a/",
+  "media/product/a..b/640.avif",
+];
+
 const SHA_A = "a".repeat(64);
 const SHA_B = "b".repeat(64);
 const SHA_C = "c".repeat(64);
@@ -313,6 +351,15 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
             VALUES (${heroImageId}, 'zz', '   ')
           `,
           );
+          for (const [name, alt] of BLANK_ALTS) {
+            await refuse(
+              `product_media_alt blank alt (${name})`,
+              (sp) => sp`
+              INSERT INTO product_media_alt (product_media_id, locale_code, alt)
+              VALUES (${heroImageId}, 'zz', ${alt})
+            `,
+            );
+          }
           await tx`
             INSERT INTO product_media_alt (product_media_id, locale_code, alt)
             VALUES (${heroImageId}, 'zz', 'Twelve red roses in a kraft wrap')
@@ -332,19 +379,32 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
 
           /* ----------------------------------------- AC-22: keys and facts */
 
-          await refuse(
-            "media_asset leading-slash key",
-            (sp) => sp`
-            INSERT INTO media_asset (
-              kind, bucket, object_key, mime, width, height, bytes, checksum_sha256,
-              visibility, source, depicts
-            )
-            VALUES (
-              'product', 'fo-media-test', '/originals/product/x', 'image/avif', 1, 1, 1,
-              ${SHA_D}, 'public', 'ai', 'product'
-            )
-          `,
-          );
+          for (const [index, key] of BAD_KEYS.entries()) {
+            const variant = `bad-${String(index)}`;
+            await refuse(
+              `media_asset key ${key}`,
+              (sp) => sp`
+              INSERT INTO media_asset (
+                kind, bucket, object_key, mime, width, height, bytes, checksum_sha256,
+                visibility, source, depicts
+              )
+              VALUES (
+                'product', 'fo-media-test', ${key}, 'image/avif', 1, 1, 1,
+                ${SHA_D}, 'public', 'ai', 'product'
+              )
+            `,
+            );
+            await refuse(
+              `media_variant key ${key}`,
+              (sp) => sp`
+              INSERT INTO media_variant (
+                media_asset_id, variant, object_key, format, width, height, bytes,
+                checksum_sha256
+              )
+              VALUES (${hero}, ${variant}, ${key}, 'avif', 1, 1, 1, ${SHA_C})
+            `,
+            );
+          }
           await refuse(
             "media_asset duplicate key",
             (sp) => sp`
@@ -490,24 +550,35 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
           }
         });
 
-      expect(failures.sort()).toEqual([
-        "media_asset approved without reviewer: media_asset_reviewed_check",
-        "media_asset delete while shown on a product: product_media_media_asset_id_media_asset_id_fk",
-        "media_asset duplicate key: media_asset_object_key_key",
-        "media_asset image without dimensions: media_asset_image_dimensions_check",
-        "media_asset leading-slash key: media_asset_object_key_check",
-        "media_asset upper-case checksum: media_asset_checksum_sha256_check",
-        "media_asset without visibility: not-null visibility",
-        "media_variant same (asset, variant, format): media_variant_pkey",
-        "media_variant unknown format: media_variant_format_check",
-        "product_media promote a second primary: product_media_primary_idx",
-        "product_media same asset twice: product_media_product_asset_key",
-        "product_media second primary: product_media_primary_idx",
-        "product_media_alt blank alt: product_media_alt_alt_check",
-        "product_media_alt null alt: not-null alt",
-        "product_media_alt second row for a locale: product_media_alt_pkey",
-        "product_media_alt without alt: not-null alt",
-      ]);
+      expect(failures.sort()).toEqual(
+        [
+          "media_asset approved without reviewer: media_asset_reviewed_check",
+          "media_asset delete while shown on a product: product_media_media_asset_id_media_asset_id_fk",
+          "media_asset duplicate key: media_asset_object_key_key",
+          "media_asset image without dimensions: media_asset_image_dimensions_check",
+          ...BAD_KEYS.map(
+            (key) => `media_asset key ${key}: media_asset_object_key_check`,
+          ),
+          "media_asset upper-case checksum: media_asset_checksum_sha256_check",
+          "media_asset without visibility: not-null visibility",
+          "media_variant same (asset, variant, format): media_variant_pkey",
+          ...BAD_KEYS.map(
+            (key) => `media_variant key ${key}: media_variant_object_key_check`,
+          ),
+          "media_variant unknown format: media_variant_format_check",
+          "product_media promote a second primary: product_media_primary_idx",
+          "product_media same asset twice: product_media_product_asset_key",
+          "product_media second primary: product_media_primary_idx",
+          "product_media_alt blank alt: product_media_alt_alt_check",
+          ...BLANK_ALTS.map(
+            ([name]) =>
+              `product_media_alt blank alt (${name}): product_media_alt_alt_check`,
+          ),
+          "product_media_alt null alt: not-null alt",
+          "product_media_alt second row for a locale: product_media_alt_pkey",
+          "product_media_alt without alt: not-null alt",
+        ].sort(),
+      );
       expect(accepted.sort()).toEqual([
         "media_asset a PDF with no pixel size",
         "media_asset approved with reviewer and date",

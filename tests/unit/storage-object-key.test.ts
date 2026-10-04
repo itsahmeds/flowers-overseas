@@ -21,10 +21,11 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ObjectKeySchema } from "../../seed/schema/media.ts";
+import { ObjectKeySchema as SeedObjectKeySchema } from "../../seed/schema/media.ts";
 import {
   InMemoryStorage,
   OBJECT_KEY_PATTERN,
+  ObjectKeySchema,
   objectKey,
   objectKinds,
   StorageKeyError,
@@ -233,9 +234,45 @@ describe("objectKey — the convention of spec 002 §5.2 (AC-22, T-22)", () => {
       );
     });
 
+    it.each([
+      ["a parent segment", "originals/../../etc/passwd"],
+      ["a trailing parent segment", "media/product/.."],
+      ["a current-directory segment", "a/./b"],
+      ["a leading current-directory segment", "./a"],
+      ["an empty segment", "media//x"],
+      ["an empty segment and a trailing slash", "media//x/"],
+      ["a trailing slash", "a/"],
+      ["a leading slash", "/originals/product/x"],
+      ["a double dot inside a segment", "media/product/a..b/640.avif"],
+      ["a segment that starts with a dot", "media/.hidden/640.avif"],
+      ["a segment that ends with a dot", "media/product/a./640.avif"],
+    ])(
+      "refuses a key with %s in the database pattern and both ObjectKeySchemas: %s",
+      (_name, key) => {
+        expect(new RegExp(OBJECT_KEY_PATTERN).test(key)).toBe(false);
+        expect(ObjectKeySchema.safeParse(key).success).toBe(false);
+        expect(SeedObjectKeySchema.safeParse(key).success).toBe(false);
+      },
+    );
+
+    it("still accepts the Phase 0 keys already in R2", () => {
+      for (const key of [
+        "media/fo-bq-001-hero/640.avif",
+        "originals/fo-bq-001-hero",
+        "backups/2026/10/05/dump.sql.gz",
+      ]) {
+        expect(new RegExp(OBJECT_KEY_PATTERN).test(key), key).toBe(true);
+        expect(ObjectKeySchema.safeParse(key).success, key).toBe(true);
+        expect(SeedObjectKeySchema.safeParse(key).success, key).toBe(true);
+      }
+    });
+
     it("mints only keys that ObjectKeySchema and the database pattern accept", () => {
       const pattern = new RegExp(OBJECT_KEY_PATTERN);
       for (const row of OBJECT_KEY_FIXTURES) {
+        expect(SeedObjectKeySchema.safeParse(row.key).success, row.key).toBe(
+          true,
+        );
         expect(ObjectKeySchema.safeParse(row.key).success, row.key).toBe(true);
         expect(pattern.test(row.key), row.key).toBe(true);
       }

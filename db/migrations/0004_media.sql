@@ -17,15 +17,19 @@
 --      anywhere else, which `db:check` will assert across the whole database (TASK-027). Keys are
 --      minted by `objectKey()` in `src/lib/storage.ts`; the `*_object_key_check` pattern below is
 --      that function's alphabet, so a key the seam can produce is a key this table accepts, and a
---      key with a leading slash, an upper-case letter or a space is refused at the door.
+--      key with a leading or trailing slash, an empty segment (`//`), a dot segment (`.`, `..`),
+--      an upper-case letter or a space is refused at the door.
 --   2. **One primary image per product** (AC-11, T-11). `product_media_primary_idx` is a partial
 --      unique index on `(product_id) WHERE is_primary`, and `is_primary` is `NOT NULL` so a null
 --      cannot slip past the predicate. Spec 009's `Product.image[0]` and the listing card read this
 --      row, so two primaries would make the page's image depend on row order.
 --   3. **Alt text is stored per locale and never blank** (§8, `plan/01` §6, AC-11).
---      `product_media_alt.alt` is `NOT NULL`, and `btrim(alt) <> ''` on top: an empty `alt` on a
---      product image tells a screen reader the image is decorative, which is the failure AC-11
---      exists to prevent and which `NOT NULL` alone lets through. A locale with no row is simply
+--      `product_media_alt.alt` is `NOT NULL`, and on top it must hold one visible character: not
+--      only ASCII whitespace but also NBSP, the U+2000 spaces, the zero-width characters, U+3000
+--      and the BOM are blank, each named in the bracket because `[:space:]` is locale-dependent
+--      beyond ASCII. An empty or blank `alt` on a product image tells a screen reader the image is
+--      decorative, which is the failure AC-11 exists to prevent and which `NOT NULL` alone lets
+--      through. A locale with no row is simply
 --      absent — spec 006 AC-18 renders the placeholder and §6 keeps that locale's PDP out of the
 --      index — rather than falling back to another locale's words.
 --
@@ -109,7 +113,7 @@ CREATE TABLE public.media_asset (
   created_at            timestamptz NOT NULL DEFAULT now(),
   updated_at            timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT media_asset_object_key_key UNIQUE (object_key),
-  CONSTRAINT media_asset_object_key_check CHECK (object_key ~ '^[a-z0-9][a-z0-9/_.-]*$'),
+  CONSTRAINT media_asset_object_key_check CHECK (object_key ~ '^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$'),
   CONSTRAINT media_asset_bucket_check CHECK (bucket ~ '^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$'),
   CONSTRAINT media_asset_mime_check CHECK (mime ~ '^[a-z]+/[a-z0-9.+-]+$'),
   CONSTRAINT media_asset_dimensions_check CHECK (
@@ -167,7 +171,7 @@ CREATE TABLE public.media_variant (
   CONSTRAINT media_variant_media_asset_id_media_asset_id_fk FOREIGN KEY (media_asset_id)
     REFERENCES public.media_asset (id) ON DELETE CASCADE,
   CONSTRAINT media_variant_object_key_key UNIQUE (object_key),
-  CONSTRAINT media_variant_object_key_check CHECK (object_key ~ '^[a-z0-9][a-z0-9/_.-]*$'),
+  CONSTRAINT media_variant_object_key_check CHECK (object_key ~ '^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$'),
   CONSTRAINT media_variant_variant_check CHECK (variant ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   CONSTRAINT media_variant_format_check CHECK (format IN ('avif', 'webp', 'jpeg')),
   CONSTRAINT media_variant_dimensions_check CHECK (width > 0 AND height > 0),
@@ -220,7 +224,7 @@ CREATE TABLE public.product_media_alt (
     REFERENCES public.product_media (id) ON DELETE CASCADE,
   CONSTRAINT product_media_alt_locale_code_locale_code_fk FOREIGN KEY (locale_code)
     REFERENCES public.locale (code) ON DELETE RESTRICT,
-  CONSTRAINT product_media_alt_alt_check CHECK (btrim(alt) <> '')
+  CONSTRAINT product_media_alt_alt_check CHECK (alt ~ '[^[:space:]\u0085\u00a0\u1680\u180e\u2000-\u200d\u2028\u2029\u202f\u205f\u2060\u3000\ufeff]')
 );
 
 COMMENT ON COLUMN public.product_media_alt.alt IS

@@ -14,7 +14,8 @@
  *  - **one primary image per product** (AC-11) — `product_media_primary_idx`, unique on
  *    `product_id` where `is_primary`;
  *  - **alt text is authored per locale and never blank** (AC-11, §8) — `productMediaAlt.alt` is
- *    `notNull()` and checked against `btrim(alt) <> ''`.
+ *    `notNull()` and must hold a visible character (`ALT_VISIBLE_PATTERN`; tab, NBSP, the
+ *    zero-width characters and U+3000 are all blank).
  *
  * The value tuples below repeat spec 006's (`seed/schema/media.ts`) rather than import them:
  * `db/schema/` depends on nothing outside itself, and `tests/unit/schema-media.test.ts` asserts the
@@ -77,7 +78,16 @@ function valueList(values: readonly string[]): string {
 }
 
 /** `objectKey()`'s alphabet (`src/lib/storage.ts` `OBJECT_KEY_PATTERN`). */
-const OBJECT_KEY_PATTERN = "^[a-z0-9][a-z0-9/_.-]*$";
+const OBJECT_KEY_PATTERN =
+  "^[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*(/[a-z0-9][a-z0-9_-]*([.][a-z0-9_-]+)*)*$";
+/**
+ * An alt text holds at least one character that is not blank: ASCII whitespace (`[:space:]`) and,
+ * named one by one because `[:space:]` is locale-dependent beyond ASCII, NEL, NBSP, U+1680,
+ * U+180E, U+2000-U+200D (the typographic spaces and the zero-width ones), the line and paragraph
+ * separators, U+202F, U+205F, the word joiner, U+3000 and the BOM. A Postgres ARE: the `\u`
+ * escapes are the regex engine's, so the SQL literal stays ASCII.
+ */
+export const ALT_VISIBLE_PATTERN = String.raw`[^[:space:]\u0085\u00a0\u1680\u180e\u2000-\u200d\u2028\u2029\u202f\u205f\u2060\u3000\ufeff]`;
 /** A lowercase hex SHA-256. */
 const SHA256_PATTERN = "^[0-9a-f]{64}$";
 
@@ -276,6 +286,9 @@ export const productMediaAlt = pgTable(
       name: "product_media_alt_pkey",
       columns: [table.productMediaId, table.localeCode],
     }),
-    check("product_media_alt_alt_check", sql`btrim(${table.alt}) <> ''`),
+    check(
+      "product_media_alt_alt_check",
+      sql`${table.alt} ~ ${sql.raw(`'${ALT_VISIBLE_PATTERN}'`)}`,
+    ),
   ],
 );
