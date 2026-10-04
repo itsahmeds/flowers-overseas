@@ -1,6 +1,6 @@
 /*
- * Unsticks the site header for the listing pages' `main` shots (`country-shop.spec.ts`,
- * `country-occasion.spec.ts`, `hubs.spec.ts`).
+ * Unsticks the site header for the listing pages' shots (`country-shop.spec.ts`,
+ * `country-category.spec.ts`, `country-occasion.spec.ts`, `hubs.spec.ts`, `destinations-hub.spec.ts`).
  *
  * `[data-fo-header]` is `position: sticky; top: 0` (`SiteHeader.tsx`). To photograph a `main` taller
  * than the viewport, Playwright scrolls, and the sticky header then paints over the top of `main`,

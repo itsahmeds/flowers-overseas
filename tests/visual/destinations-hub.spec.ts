@@ -11,7 +11,14 @@
  * same tile at a different element, and its content is text asserted in
  * `tests/unit/destinations-hub.test.tsx` and `tests/e2e/destinations-hub.spec.ts`.
  */
+import { fileURLToPath } from "node:url";
+
 import { type BrowserContext, expect, test } from "@playwright/test";
+
+/** Keeps the sticky header from painting over the top of the shot (see `./static-header.css`). */
+const HEADER_STYLE = fileURLToPath(
+  new URL("./static-header.css", import.meta.url),
+);
 
 /** The recorded refusal `./home.spec.ts` carries: no consent sheet on top of the screenshot. */
 async function recordConsentRefusal(
@@ -74,8 +81,11 @@ for (const { name, viewport } of CASES) {
     await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
     for (const { suffix, selector } of PARTS) {
+      // The sticky header's chip row would paint over the top of a region taller than the
+      // viewport (`./static-header.css`).
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
+        { stylePath: HEADER_STYLE },
       );
     }
   });
