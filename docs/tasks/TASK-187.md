@@ -53,8 +53,16 @@ file, not the row.
     florists"; pagination is 12 products a page (`items[0]`–`items[11]` on page 1) with no hero
     on page 2 and later; honesty (A23 clause 7) and tokens only.
 - **The phone (spec 008 §14 A16; spec 004 A24 clause 4).**
-  - Use TASK-195's primitives: the back link (`‹ Parent`) in place of the trail, one horizontal
-    chip scroller, and the two-column grid of image, name and price from the first product.
+  - Use TASK-195's primitives: the back link (`‹ Parent`) in place of the trail and one horizontal
+    chip scroller.
+  - The two-column grid runs from the first product. **Spec 008's card contract holds (AC-6):**
+    each card is the image, the name and the price, with `catalog.price.inclusive` ("all in")
+    beside every price. Never a bare number. T-49 is red with the marker removed from a phone
+    card.
+  - **The state line is required although the phone artboards omit it** (spec 004 §14 A24
+    clause 1; rebound AC-34). Put it directly under the H1 on all three country types, in the
+    artboard's muted-line style. Add a dated row to `docs/design/README.md` so the designer
+    updates the artboards.
   - **The "Example arrangement" label is once per grid, directly above the grid**, inside the
     first viewport. The artboard draws it under the grid: record the difference in
     `docs/design/README.md`. The per-card labels stay in the HTML, hidden by CSS below `md`.

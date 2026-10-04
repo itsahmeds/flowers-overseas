@@ -25,9 +25,9 @@ file, not the row.
   - §14 A9: alt is required for every asset that can render.
 
   No new AC: this is explicit scope, as TASK-166 was.
-- **Dependency.** PR 185, because the audit that records the finding is there, and the round-2
-  design PR, PR 189: no TASK-186 to TASK-191 build starts before it merges (spec 004 §14 A23 clause 10;
-  founder, 2026-10-05). The founder's photograph decision below may be asked earlier.
+- **Dependency.** PR 185, because the audit that records the finding is there. This task draws
+  nothing, so spec 004 §14 A24 clause 11 releases it from A23 clause 10's wait for the round-2
+  design PR (PR 189). The founder's photograph decision below may be asked at any time.
 - **The decision is the founder's; ask it first** (through the orchestrator, recorded under
   `## Escalations`): replace the two photographs, or withdraw them.
   - **Default if unanswered: withdraw.** Set both hero assets (and any `-detail` asset that shows the

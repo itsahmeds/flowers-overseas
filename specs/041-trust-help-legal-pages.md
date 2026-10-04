@@ -414,7 +414,7 @@ Corrected:
    |---|---|---|
    | How it works, *Every country yet* (L441) | We will open each one when a florist there has agreed to work with us, and not before. | We will open them one at a time. |
    | Help Q2 (L470) | Not yet. We are choosing our first florists and will open one country at a time. | Not yet. We will open one country at a time. (The rest of the answer is unchanged.) |
-   | About, *Where we are today* (L490) | … and are choosing our first florists, starting in Poland. We will open each country when a florist there has agreed to work with us. | … and will open them one at a time, starting with Poland. We will open each country in turn. |
+   | About, *Where we are today* (L490) | … and are choosing our first florists, starting in Poland. We will open each country when a florist there has agreed to work with us. | … and will open them one at a time, starting with Poland. (The designer's second sentence, "We will open each country in turn.", is dropped because it repeats the first.) |
    | Delivery, *Where we are preparing to deliver* (L501) | We open a country when a florist there has agreed to work with us. Until then each country has a guide, and no dates. | Until a country opens, it has a guide and no dates. |
 
    AC-7 reads with an exception: every new `en` key is `reviewed: true` with the founder's batch named, **except** the keys spec 004 §14 A24 clause 10 lists (P6, P7, P9), which ship `reviewed: false`. `unreviewedShare("en")` may rise by those keys only. Every page is `noindex` in Phase 0, so nothing unattested reaches an index.

@@ -37,7 +37,15 @@ file, not the row.
       `docs/design/README.md`.
     - The **docked bar** (AC-48) holds the size, the price and the status pill. Its price equals
       the sheet's selected price, from the same projection.
-    - The trail is displayed below the buy section (AC-50).
+    - **The full trail is displayed below the buy section**, before the "More about this
+      bouquet" blocks, styled as the desktop trail at phone size (AC-50). This is **required
+      although `product-mobile` omits it** (spec 004 §14 A24 clause 1). `BreadcrumbList` must
+      equal a visible trail, and the product page has no back link, so this trail is the only
+      visible breadcrumb at 390.
+    - **`product.demo.body` (N2) renders under the status pill in the sheet**, also required
+      although the artboard omits it (A24 clause 1; spec 009 §14 A12: the spec wins where the
+      phone drops required content; AC-46).
+    - Record both in `docs/design/README.md` so the designer updates the artboard.
     - At 390 × 844, the H1, the price and the size control are inside the viewport above the bar.
   - **The phone gallery.**
     - A real horizontal scroller (AC-49). Its dots are drawn only as in-page links with targets
@@ -47,15 +55,15 @@ file, not the row.
     "{category} · {country}" (P2), both spec 004 §14 A24 clause 10. The printed card keeps B1's
     approved "printed on a card" (A24 open item (ii)) unless the founder picks the other wording
     first.
-- **Blocked on a spec 009 ruling (A24 open item (v)).** The desktop annotation moves three things
-  spec 009 does not yet allow:
-  - the card message and the add-ons go after the primary action;
-  - the equivalents line leaves the price line for "The price" section below;
-  - the description shows three lines plus "Read more", with JavaScript off still showing the
-    whole text.
+- **Spec 009 §14 A12 (PR 195) is the ruling** (A24 open item (v)). It binds three things:
+  - the block order, with the card message and the add-ons after the primary action;
+  - "The price" section, which takes the equivalents line off the price line;
+  - the description clamp: three lines plus "Read more", with the full text in the server HTML
+    with JavaScript off.
 
-  Do not build those three until the orchestrator records the spec 009 amendment. Everything
-  else may proceed.
+  A12 owns its own ACs and tests (AC-30 to AC-33, T-33 to T-37 of spec 009) and its pending "Show
+  less" copy. Build to A12 as merged; where A12 and A24 touch, A12 governs behaviour and content,
+  and A24 governs geometry.
 - **Unchanged.**
   - Price shown = price charged, and the schema price equals the visible price.
   - The PDP's one island (the printed-card preview).
@@ -63,7 +71,8 @@ file, not the row.
     CSS, never a new island.
   - LCP under 2 000 ms, image transfer ≤ 204 800 B, CLS under 0.05.
   - Spec 008 §14 A11's zero preload when the product has no approved photograph.
-- **Dependencies.** Blocked until **PR 189** merges and until the spec 009 amendment above.
+- **Dependencies.** Blocked until **PR 189** (design round 2) and **PR 195** (spec 009 A12)
+  merge.
   After **TASK-179** (PR 170: the same product files), **TASK-186** (the frame and tokens) and
   **TASK-195** (the bar, the segmented control, the scroller, the back-link switch). **TASK-128**
   edits the same PDP form (`?tier=`, `?date=`). The two never run at the same time: whichever
@@ -73,17 +82,19 @@ file, not the row.
   LCP image.
 - **Tests** (watch each go red by mutating its subject):
   - **T-51**, the product half (e2e). Red with the buy column's action pushed below 800 at
-    1280 × 800, and red with a grip element drawn.
+    1280 × 800, red with a grip element drawn, and red with N2 removed from the phone sheet.
   - **T-53** on the product page at 390 × 844. Red with the bar's price taken from a different
     tier than the sheet's selected one.
   - **T-54** on the sizes and the date scroller. Red with the date row at `overflow: hidden`.
   - **T-55** on the product page: the trail below the buy section at 390 and on top at 1440;
-    `BreadcrumbList` equal to the trail.
+    `BreadcrumbList` equal to the trail. Red with the trail `display: none` at 390.
+  - Spec 009 A12's tests (T-33 to T-37 there) re-run green.
   - Spec 009's existing tests re-run green; the visual baselines are re-taken through `ci:full`.
 
 ## Read
 
-- `specs/009-product-page-date-picker.md` — `## 0. Index`, §2 (states), §5.3, §14 A8, A10, A11
+- `specs/009-product-page-date-picker.md` — `## 0. Index`, §2 (states), §5.3, §14 A8, A10, A11,
+  **A12** (PR 195)
 - `specs/004-design-system-layout.md` — §14 A21 clauses 1, 2, 5 and 6 (c); A24 clauses 4, 5 and
   10, AC-46, AC-48 to AC-50
 - `docs/design/audits/2026-10-05-round-2.md` (PR 189): the Product rows and "Left edges"
@@ -101,7 +112,8 @@ _None._
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - **2026-10-05 (from the spec writer, at planning):** the spec 009 amendment for the card step,
-  the add-ons, the equivalents line and "Read more". Goes to the orchestrator. `open`.
+  the add-ons, the equivalents line and "Read more". Goes to the orchestrator. **Answered
+  2026-10-05:** spec 009 §14 A12 (PR 195). This task dispatches once PR 195 merges.
 
 ## Progress
 

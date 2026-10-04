@@ -501,7 +501,7 @@ Each carries the default this spec is written against; the spec stays `draft` un
 
   **(a) The "Example arrangement" label (amends A2 and the reading of AC-6; spec 006 AC-17 unchanged).**
   - **From `md` up, A2 stands.** The label renders once per card that shows an `ai` asset.
-  - **Below `md`, it renders once per grid**, as the founder's phone list asks (2026-10-05: "the phone versions of these feel cluttered").
+  - **Below `md`, it renders once per grid.** Source: the round-2 audit's "Phone listings" row ("the honesty note and ranking disclosure once under the grid"). That row is the designer's answer to the founder's "the phone versions of these feel cluttered. i saw country category phone" (2026-10-05). Those words do not themselves ask for once per grid.
   - **The honesty intent binds: the label is visible on the first screen of every grid.** Below `md` it sits directly above the grid, between the count line and the first row, inside the first viewport. The phone artboards draw it under the grid and the pager. The spec wins, and TASK-187 records the difference in `docs/design/README.md`.
   - **The per-card labels stay in the server HTML** at every width and are hidden only by CSS below `md`. So AC-6's "renders exactly" reads per card in the HTML, and spec 006 AC-17's pre-hydration assertion is unchanged.
   - **The grid-level label is one element per grid.** It renders only where at least one card in that grid shows an `ai` asset.

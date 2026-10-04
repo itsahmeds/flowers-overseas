@@ -50,6 +50,11 @@ file, not the row.
       ourselves." (P4), shown below `md`; `destinationsHub.intro` stays from `md` up.
     - `shop.card.noPrice` becomes "No price here. The price depends on the destination." (P5,
       no em dash).
+  - **The back link is required although two phone artboards omit it** (spec 004 §14 A24
+    clause 1; AC-50; spec 007 §14 A12 (b)). `occasions-index-mobile` and
+    `all-destinations-mobile` draw none. Below `md`, both pages show the `‹ Parent` back link to
+    the home, placed and styled as on `country-shop-mobile`. Add a dated row to
+    `docs/design/README.md` so the designer updates the artboards. T-55 covers both pages.
 - **Measurable rules that hold whatever round 2 draws** (A23 clause 10): the laptop band
   (clause 9); first-screen content order (the H1 first, then the way to a price, with the lead
   photograph visible on the occasion and category hubs); honesty (clause 7, AC-37); tokens only.
