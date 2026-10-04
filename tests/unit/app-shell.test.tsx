@@ -279,11 +279,11 @@ describe("the `[locale]` document (AC-6)", () => {
     for (const href of ['href="/en"', 'href="/en-gb"', 'href="/pl"']) {
       expect(html).toContain(href);
     }
-    // The header's and the footer's logos link to the locale home (AC-7; the v2 chrome draws the
-    // logo in both, TASK-176), so `/de` appears exactly twice on the `/de` document — and **not**
-    // from the switcher, whose current entry is the `<span aria-current="page">` asserted above
-    // (spec 003 §5.3).
-    expect(html.match(/href="\/de"/g)).toHaveLength(2);
+    // The masthead lockup links to the locale home (AC-7) and is the only element that may: the
+    // v2 footer draws the logo but links it nowhere (TASK-176), and the switcher's current entry
+    // is the `<span aria-current="page">` asserted above (spec 003 §5.3). So `/de` appears exactly
+    // once on the `/de` document, as `tests/e2e/locale-routing.spec.ts` asserts on the build.
+    expect(html.match(/href="\/de"/g)).toHaveLength(1);
     expect(html).toContain('lang="pl" hrefLang="pl">Polski</a>');
   });
 
