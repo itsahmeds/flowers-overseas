@@ -40,6 +40,20 @@ changes.
 
 ## Progress
 
+- 2026-10-05: decisions-log row committed. Test changes written and green locally (6 files, 387
+  tests) but **not committed**: see Escalations.
+
 ## Result
 
 ## Escalations
+
+1. **The edit guard does not open for TASK-192 in this worktree.** `.claude/hooks/guarded_paths.py`
+   reads the task's status from the **main checkout's** `TASKS.md`, and the TASK-192 row exists
+   only on this branch (commit `5136f4e1`), not on `main`. So the branch counts as "no task" and
+   shell writes under `tests/` are refused ("TASK-192, which has no row in TASKS.md"). Before the
+   refusal fired, five test files had already been edited through a Python heredoc the guard does
+   not parse; those edits are left **uncommitted** in the worktree and saved as a patch, not
+   committed past the guard. Needed from the orchestrator: land the TASK-192 row on `main` (or
+   otherwise open the guard), then re-dispatch; the patch applies as is. The mutations (queue key
+   back → schema test red; FO-BQ-001 `reviewed: false` → seed-copy red) have not been run, since
+   they need guarded writes.
