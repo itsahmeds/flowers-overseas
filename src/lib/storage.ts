@@ -280,6 +280,9 @@ export interface InMemoryStorageOptions {
 /** The reserved TLD (RFC 2606): a fake URL that leaks can never resolve to a real bucket. */
 const FAKE_HOST_SUFFIX = ".storage.invalid";
 
+/** `/{expires}/{signature}/{objectKey}` — the path of a URL the fake signed. */
+const SIGNED_PATH = /^\/(\d{1,16})\/([0-9a-f]{64})\/(.+)$/;
+
 /**
  * An in-process `Storage` for tests. It signs read URLs with a per-instance HMAC key and serves
  * them itself through `fetch`, answering as R2 does: 200 with the bytes, 403 for an edited or
@@ -335,12 +338,8 @@ export class InMemoryStorage implements Storage {
     const parsed = parseLocation(location);
     assertTtl(ttlSeconds);
     const expires = this.#now().getTime() + ttlSeconds * 1000;
-    const url = new URL(
-      `https://${parsed.bucket}${FAKE_HOST_SUFFIX}/${parsed.objectKey}`,
-    );
-    url.searchParams.set("expires", String(expires));
-    url.searchParams.set("signature", this.#sign(parsed, expires));
-    return url.toString();
+    // Expiry and signature ride in the path, not the query: the fake has no query string at all.
+    return `https://${parsed.bucket}${FAKE_HOST_SUFFIX}/${String(expires)}/${this.#sign(parsed, expires)}/${parsed.objectKey}`;
   }
 
   async delete(location: ObjectLocation): Promise<void> {
@@ -353,20 +352,20 @@ export class InMemoryStorage implements Storage {
     if (parsed?.hostname.endsWith(FAKE_HOST_SUFFIX) !== true) {
       return new Response(null, { status: 400 });
     }
-    const location = {
+    const path = SIGNED_PATH.exec(parsed.pathname);
+    const location = ObjectLocation.safeParse({
       bucket: parsed.hostname.slice(0, -FAKE_HOST_SUFFIX.length),
-      objectKey: decodeURI(parsed.pathname.slice(1)),
-    };
-    const expires = Number(parsed.searchParams.get("expires"));
-    const signature = parsed.searchParams.get("signature") ?? "";
+      objectKey: path?.[3] ?? "",
+    });
+    const expires = Number(path?.[1]);
     const valid =
-      ObjectLocation.safeParse(location).success &&
+      location.success &&
       Number.isSafeInteger(expires) &&
-      this.#verify(location, expires, signature) &&
+      this.#verify(location.data, expires, path?.[2] ?? "") &&
       this.#now().getTime() <= expires;
     if (!valid) return new Response(null, { status: 403 });
 
-    const entry = this.#objects.get(InMemoryStorage.#slot(location));
+    const entry = this.#objects.get(InMemoryStorage.#slot(location.data));
     if (entry === undefined) {
       return new Response(null, { status: 404 });
     }

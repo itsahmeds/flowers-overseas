@@ -29,6 +29,7 @@ Owners of the first real tests:
 | Resend send + delivery webhook | Resend test payload | 017 |
 | Partner payout provider | provider sandbox | Phase 2 |
 | Catalogue providers (`static*` / `db*`) | the authored dataset; a migrated, seeded Postgres | 005 (TASK-069 static, TASK-070 db) |
+| Object storage (`InMemoryStorage` / R2) | `support/storage-contract.ts` and `support/object-key-fixtures.ts`; a real bucket | 002 (TASK-017 fake), 006 (TASK-082 R2) |
 
 Conventions when the first one lands:
 
