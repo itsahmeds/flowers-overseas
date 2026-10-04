@@ -476,6 +476,37 @@ describe("the brief shape (TASK-141)", () => {
     ]);
   });
 
+  describe("fences after `## Result` hide what is inside them, and only that", () => {
+    const after = (fenced: string): string =>
+      `${brief(BRIEF_HEADINGS)}\n${fenced}`;
+
+    it("closes a CRLF fence", () => {
+      const markdown = after("```text\n## Inside\n```\nDone.\n").replace(
+        /\n/g,
+        "\r\n",
+      );
+      expect(briefShapeProblems(markdown)).toEqual([]);
+    });
+
+    it("opens a fence indented by up to three spaces", () => {
+      expect(briefShapeProblems(after("   ```\n## Inside\n   ```\n"))).toEqual(
+        [],
+      );
+    });
+
+    it("does not close a `~~~` fence on backticks", () => {
+      expect(briefShapeProblems(after("~~~\n```\n## Inside\n~~~\n"))).toEqual(
+        [],
+      );
+    });
+
+    it("does not close a fence on a shorter closer", () => {
+      expect(briefShapeProblems(after("````\n```\n## Inside\n````\n"))).toEqual(
+        [],
+      );
+    });
+  });
+
   it("passes what `pnpm tasks:migrate` writes", () => {
     const root = fixtureRepo();
     migrate(root);

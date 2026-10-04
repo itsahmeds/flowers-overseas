@@ -63,6 +63,8 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 192` round 2 (2026-10-05):** HOLE 1 ACCEPTABLE: setext heading below Result. Briefs are ATX-only, so nobody misfiles that way by accident. Catching it needs multi-line parser state that risks false positives on committed briefs.
+- **From `/review 192` round 2 (2026-10-05):** HOLE 2 ACCEPTABLE: `<h2>Carry-forwards</h2>` below Result. Neither the template nor the tooling ever produces raw HTML headings in a brief, so it is not a realistic misfile.
 
 ## Escalations
 
@@ -80,6 +82,9 @@ _None recorded._
 - 2026-10-05 (round 1 fixes): rebased onto `origin/main` (PR 190 had rewritten TASK-192; it was reshaped
   again by moves only). The breaker's three holes are closed: CRLF and trailing-space headings, template
   names at any level inside `## Result`, and CommonMark headings and fences. 9 cases added, 8 mutants red.
+- 2026-10-05 (breaker round 2): four fence cases added (CRLF closer, indented opener, `~~~` holding
+  backticks, shorter closer); each goes red under its mutant. The reviewer accepted setext and `<h2>` holes
+  (Carry-forwards).
 
 ## Result
 
