@@ -159,14 +159,14 @@ compare order as a set, and allow `#` sections after Result.
 **Gates.** No expensive gate run locally: the diff renders nothing.
 
 ```
-gates:cheap · a6326667daea3077f53c265a26c39dfc9447697f · tree clean · base origin/main · 2026-10-04T21:56:37.827Z
-typecheck             exit 0 · 2.8 s
-lint                  exit 0 · 19.7 s
-format:check          exit 0 · 13.2 s
+gates:cheap · 2aaefcff63778e64d9f9d7f8f031bf0754fe54ba · tree clean · base origin/main · 2026-10-04T22:43:50.670Z
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 17.3 s
+format:check          exit 0 · 11.4 s
 i18n:check            exit 0 · 0.5 s
 check:no-db           exit 0 · 0.2 s
-codebase:map --check  exit 0 · 0.3 s
-tests                 exit 0 · 29.5 s · changed 5 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 20.4 s · changed 5 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
