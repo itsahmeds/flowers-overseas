@@ -245,8 +245,10 @@ test.describe("the colophon's canvas metrics (`/review 30` item 4)", () => {
     expect(metrics.padBlockEnd).toBe(wide ? "24px" : "20px");
     // The colophon wordmark is the one place the canvas fixes both ends of the type scale.
     expect(metrics.wordmark).toBe(wide ? "26px" : "22px");
-    // `--text-xs`: one size for the whole legal row, links and language list alike.
-    expect(metrics.legal).toBe("11px");
+    // `--text-xs`: one size for the whole legal row, links and language list alike. v2 sets the
+    // token to 13 px (`docs/design/system/tokens.css` `--text-xs: 13px`, spec 004 §14 A21; was
+    // 11 px in v1). TASK-176 moves the row to the chrome artboard's `--text-fine`.
+    expect(metrics.legal).toBe("13px");
     // 40 px between the desktop columns; 16 px between the two mobile link columns, with the
     // stacked blocks a scale step (24 px) apart — the artboard's 22 px rounded to the token.
     expect(metrics.gridColumnGap).toBe(wide ? "40px" : "16px");

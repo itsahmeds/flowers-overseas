@@ -44,8 +44,9 @@
  * and the two constants the consent island and the reminder stub share with it.
  */
 
-// Fonts (AC-4). `fontVariables` goes on `<html>`; the two font objects are exported for the
-// preload assertions and for a document that needs one family alone.
+// Fonts (AC-4, §14 A21 clause 3). `fontVariables` goes on `<html>`; the two Latin font objects
+// are exported for the preload assertions. Caveat (`./fonts/hand`) is deliberately not exported:
+// only the product page's card preview may import it.
 export { bodyFont, displayFont, fontVariables } from "./fonts";
 
 // Icons (AC-5). `MIRRORED_IN_RTL` is exported so the mirroring intent is assertable, not so a call
@@ -54,6 +55,10 @@ export { Icon, ICON_NAMES, MIRRORED_IN_RTL } from "./icons/Icon";
 export type { IconName, IconProps } from "./icons/Icon";
 export { Mark } from "./icons/Mark";
 export type { MarkProps } from "./icons/Mark";
+// The outlined wordmark (§14 A21 clause 3; TASK-175). The header and footer swap onto it in
+// TASK-176.
+export { Wordmark } from "./icons/Wordmark";
+export type { WordmarkProps } from "./icons/Wordmark";
 
 // Chrome (spec 004 §5.3; TASK-048). `SiteHeader` is a synchronous Server Component: it takes the
 // locale as a prop and reads its copy through `useTranslations`, so it renders wherever a request
@@ -102,15 +107,21 @@ export type {
 export {
   Display,
   DISPLAY_SIZES,
+  Eyebrow,
   Label,
   Text,
+  TEXT_LINK_VARIANTS,
   TEXT_SIZES,
   TEXT_TONES,
+  TextLink,
 } from "./primitives/typography";
 export type {
   DisplayProps,
   DisplaySize,
+  EyebrowProps,
   LabelTextProps,
+  TextLinkProps,
+  TextLinkVariant,
   TextProps,
   TextSize,
   TextTone,
@@ -137,6 +148,20 @@ export type {
   PhotoRatio,
   PlaceholderProps,
 } from "./primitives/Photo";
+// v2 primitives (§14 A21; TASK-175): the price with its equivalents slot, the facts list, the
+// breadcrumb trail and the notice bar's look.
+export { Price, PRICE_VARIANTS } from "./primitives/Price";
+export type { PriceProps, PriceVariant } from "./primitives/Price";
+export { Fact, FACTS_DENSITIES, FactsList } from "./primitives/FactsList";
+export type {
+  FactProps,
+  FactsDensity,
+  FactsListProps,
+} from "./primitives/FactsList";
+export { Breadcrumbs } from "./primitives/Breadcrumbs";
+export type { BreadcrumbsProps, Crumb } from "./primitives/Breadcrumbs";
+export { NoticeBar } from "./primitives/NoticeBar";
+export type { NoticeBarProps } from "./primitives/NoticeBar";
 
 // Chrome (AC-9, AC-14; TASK-049). `SiteFooter` is a synchronous Server Component and adds no
 // client JavaScript; `CONSENT_REOPEN_ATTRIBUTE` is the attribute TASK-051's island binds its

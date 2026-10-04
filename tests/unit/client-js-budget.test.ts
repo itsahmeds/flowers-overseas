@@ -67,7 +67,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -96,6 +96,8 @@ import {
   REGRESSION_ALLOWANCE_BYTES,
   ZERO_APP_JS_URL,
   applicationCodeHits,
+  fontBreaches,
+  fontBytesFor,
   fontTransfer,
   readBaseline,
   regressions,
@@ -349,7 +351,11 @@ describe("measurePages against a fake build output", () => {
     // spec 004 §11's table has a Fonts column and a budget line; a budget printed nowhere is a
     // budget nobody reads (TASK-056).
     expect(table).toContain("fonts");
-    expect(table).toMatch(/Fonts: .* budget 45\.0 KB/);
+    // A21 clause 3's four font budgets, each printed with its measurement.
+    expect(table).toMatch(/Fonts: en\/en-gb\/de page .* budget 90\.0 KB/);
+    expect(table).toMatch(/pl page .* budget 120\.0 KB/);
+    expect(table).toMatch(/Caveat \(product page only\) .* budget 30\.0 KB/);
+    expect(table).toMatch(/preloaded .* budget 50\.0 KB/);
     expect(table).toContain("Regression allowance");
   });
 
@@ -811,15 +817,116 @@ describe("`/` carries no Client Component of its own (AC-7, AC-27)", () => {
  * application JavaScript" — a claim spec 003 AC-7 made and nothing measured until now.
  */
 describe("the AC-25 clauses TASK-056 added", () => {
-  describe("font transfer (AC-4's ≤45 KB, printed in the §11 table)", () => {
-    it("reads the committed manifest and is inside the budget", () => {
+  describe("font transfer (spec 004 §14 A21 clause 3's budgets, printed in the §11 table)", () => {
+    it("reads the committed manifest and is inside every budget", () => {
       const fonts = fontTransfer(repoRoot);
-      expect(fonts.faces.length).toBeGreaterThan(0);
-      expect(fonts.transferBytes).toBe(
-        fonts.faces.reduce((sum, face) => sum + face.bytes, 0),
+      expect(fonts.faces.length).toBe(10);
+      expect(fonts.lines.map((line) => [line.label, line.budgetBytes])).toEqual(
+        [
+          ["en/en-gb/de page", 90 * 1024],
+          ["pl page", 120 * 1024],
+          ["Caveat (product page only)", 30 * 1024],
+          ["preloaded", 50 * 1024],
+        ],
       );
-      expect(fonts.budgetBytes).toBe(45 * 1024);
+      expect(fonts.preloadCount).toBe(2);
       expect(fonts.withinBudget).toBe(true);
+      expect(fontBreaches(fonts)).toEqual([]);
+    });
+
+    it("charges every page the worst case, because /en names Polish places too", () => {
+      const fonts = fontTransfer(repoRoot);
+      const [latin, latinExt] = fonts.lines;
+      // Both lines count the Latin and the Latin-Ext files of the four page faces.
+      expect(latin?.bytes).toBe(latinExt?.bytes);
+      expect(latin?.bytes).toBe(
+        fonts.faces
+          .filter((face) => !face.file.startsWith("caveat"))
+          .reduce((sum, face) => sum + face.bytes, 0),
+      );
+      expect(fontBytesFor("/en", fonts)).toBe(latin?.bytes);
+      expect(fontBytesFor("/pl/kwiaty", fonts)).toBe(latinExt?.bytes);
+    });
+
+    it("charges the Caveat line both Caveat files (breaker hole 4)", () => {
+      const fonts = fontTransfer(repoRoot);
+      const caveat = fonts.faces.filter((face) =>
+        face.file.startsWith("caveat-"),
+      );
+      expect(caveat.map((face) => face.file).sort()).toEqual([
+        "caveat-500-latin-ext.woff2",
+        "caveat-500-latin.woff2",
+      ]);
+      expect(fonts.lines[2]?.label).toBe("Caveat (product page only)");
+      expect(fonts.lines[2]?.bytes).toBe(
+        caveat.reduce((sum, face) => sum + face.bytes, 0),
+      );
+    });
+
+    it("picks the pl line for a /pl URL and the en line elsewhere, when the two differ (breaker hole 5)", () => {
+      const fixture = {
+        lines: [
+          { label: "en/en-gb/de page", bytes: 1000, budgetBytes: 90 * 1024 },
+          { label: "pl page", bytes: 2000, budgetBytes: 120 * 1024 },
+          {
+            label: "Caveat (product page only)",
+            bytes: 3,
+            budgetBytes: 30 * 1024,
+          },
+          { label: "preloaded", bytes: 4, budgetBytes: 50 * 1024 },
+        ],
+        preloadCount: 2,
+        withinBudget: true,
+        faces: [],
+      };
+      expect(fontBytesFor("/en", fixture)).toBe(1000);
+      expect(fontBytesFor("/de/blumen", fixture)).toBe(1000);
+      expect(fontBytesFor("/plants", fixture)).toBe(1000);
+      expect(fontBytesFor("/pl", fixture)).toBe(2000);
+      expect(fontBytesFor("/pl/kwiaty", fixture)).toBe(2000);
+    });
+
+    it("is not within budget when a listed preload file is missing from the manifest (breaker hole 6)", () => {
+      const root = mkdtempSync(join(tmpdir(), "fo-fonts-"));
+      const manifestPath = join(root, "src/modules/ui/fonts/subset.json");
+      mkdirSync(dirname(manifestPath), { recursive: true });
+      const manifest = JSON.parse(
+        readFileSync(
+          resolve(repoRoot, "src/modules/ui/fonts/subset.json"),
+          "utf8",
+        ),
+      ) as { faces: { file: string }[] };
+      writeFileSync(
+        manifestPath,
+        JSON.stringify({
+          ...manifest,
+          faces: manifest.faces.filter(
+            (face) => face.file !== "alegreya-sans-700-latin.woff2",
+          ),
+        }),
+      );
+      const fonts = fontTransfer(root);
+      expect(fonts.preloadCount).toBe(1);
+      expect(fonts.withinBudget).toBe(false);
+      rmSync(root, { recursive: true, force: true });
+    });
+
+    it("names the budget a line breaks, and a third preload", () => {
+      const fonts = fontTransfer(repoRoot);
+      const over = {
+        ...fonts,
+        lines: fonts.lines.map((line) =>
+          line.label === "pl page"
+            ? { ...line, bytes: line.budgetBytes + 1 }
+            : line,
+        ),
+        preloadCount: 3,
+      };
+      const breaches = fontBreaches(over);
+      expect(breaches).toHaveLength(2);
+      expect(breaches[0]).toContain("pl page");
+      expect(breaches[0]).toContain("120.0 KB");
+      expect(breaches[1]).toContain("3 font files are preloaded");
     });
   });
 

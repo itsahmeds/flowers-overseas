@@ -7,3 +7,19 @@
 [data-fo-summary-total] {
   visibility: hidden !important;
 }
+
+/*
+ * The date grid leaves the layout, so no photographed block's position depends on the build date.
+ * The grid is a fourteen-day window from today: which chip carries a Sunday or an occasion reason
+ * moves every day, and with it the height of each chip row, which is fractional (at 390 px the
+ * rows measure 82, 99.09375, 111.1875 and 132.1875 px, by how many lines a chip's reason wraps
+ * to). Every block below the picker — the facts, the add-ons, the summary — was therefore drawn
+ * at a different sub-pixel offset each day, and the rasteriser rounds each text line to the pixel
+ * grid on its own: on 2026-10-04 one line of `product-mobile-summary.png` moved by a pixel and
+ * the shot failed, with no change to the code. Without the grid every block sits at the same
+ * offset on every day. The grid itself is never photographed (`product.spec.ts`'s header), and
+ * the `unavailable` picker has no grid, so its shot is unchanged.
+ */
+[data-fo-date-grid] {
+  display: none !important;
+}

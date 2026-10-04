@@ -25,6 +25,7 @@ import {
   evaluateContrastPairs,
   formatContrastTable,
   formatRatio,
+  NON_SINGLE_COLOUR_TOKENS,
   parseOklch,
   parseThemeTokens,
   relativeLuminance,
@@ -103,9 +104,8 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
         resolveColorToken(foreground, tokens),
         resolveColorToken(background, tokens),
       );
-    // The `label` voice on paper: 11 px text, so the 4.5:1 body threshold applies. It passes at
-    // 5.39:1, which is why no token was darkened (TASK-045 row: "if a canvas pair fails AC-3,
-    // darken the token and record the delta").
+    // The `label` voice on paper: 13 px text, so the 4.5:1 body threshold applies. v2's plum-navy
+    // ink-3 passes at 6.0:1 (the colour sheet's figure), so no token was darkened.
     expect(ratioOf("--color-ink-3", "--color-paper")).toBeGreaterThanOrEqual(
       4.5,
     );
@@ -113,7 +113,7 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
     expect(
       ratioOf("--color-photo-ink", "--color-photo-stop-1"),
     ).toBeGreaterThanOrEqual(4.5);
-    // A button label on the accent fill.
+    // A button label on the poppy fill (5.6:1).
     expect(
       ratioOf("--color-accent-ink", "--color-accent"),
     ).toBeGreaterThanOrEqual(4.5);
@@ -121,8 +121,8 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
 
   it("fails with the pair named when a token is darkened past its threshold", () => {
     const broken = css.replace(
-      "--color-ink-3: oklch(52% 0.008 250);",
-      "--color-ink-3: oklch(78% 0.008 250);",
+      "--color-ink-3: oklch(50% 0.04 285);",
+      "--color-ink-3: oklch(78% 0.04 285);",
     );
     expect(broken).not.toBe(css);
     const brokenResults = evaluateContrastPairs(broken);
@@ -148,10 +148,158 @@ describe("the declared contrast manifest (T-04 / AC-3)", () => {
       // A pure alias of a token that is itself paired is covered by that pair.
       const alias = /^var\(\s*(--[\w-]+)\s*\)$/.exec(colour)?.[1];
       if (alias !== undefined && used.has(alias)) return false;
-      // The gradient composite is not a colour a pair can name; its stops are paired.
-      return token !== "--color-photo";
+      // A gradient or a translucent shade is not a colour a pair can name; each such token is
+      // declared, with its reason, in `NON_SINGLE_COLOUR_TOKENS`.
+      return !(token in NON_SINGLE_COLOUR_TOKENS);
     });
     expect(unpaired).toEqual([]);
+  });
+
+  it("exempts only tokens that really are not one opaque colour, each with a reason", () => {
+    for (const [token, reason] of Object.entries(NON_SINGLE_COLOUR_TOKENS)) {
+      expect(tokens.get(token), token).toBeDefined();
+      expect(() => resolveColorToken(token, tokens), token).toThrow(
+        /not a single OKLCH colour/,
+      );
+      expect(reason.length, token).toBeGreaterThan(40);
+    }
+  });
+
+  it("gives the inverse surface a focus ring that clears 3:1 where poppy does not (v2)", () => {
+    const ratioOf = (foreground: string, background: string): number =>
+      contrastRatio(
+        resolveColorToken(foreground, tokens),
+        resolveColorToken(background, tokens),
+      );
+    // Why `surface-inverse` swaps the ring: poppy on ink is under the focus threshold…
+    expect(ratioOf("--color-focus", "--color-surface-inverse")).toBeLessThan(3);
+    // …and the sunflower that replaces it is a declared focus pair.
+    expect(
+      CONTRAST_PAIRS.some(
+        (pair) =>
+          pair.kind === "focus" &&
+          pair.foreground === "--color-on-inverse-accent" &&
+          pair.background === "--color-surface-inverse",
+      ),
+    ).toBe(true);
+    expect(css).toMatch(
+      /@utility surface-inverse \{[\s\S]*?outline-color: var\(--color-on-inverse-accent\)/,
+    );
+  });
+
+  /**
+   * The manifest, pinned pair for pair with its class (breaker hole 7, PR 168). The every-token-
+   * is-paired check alone lets a pair be dropped or downgraded as long as both tokens still appear
+   * elsewhere (`ink-3 on butter` deleted, or reclassified as `large-text` at 3:1, passed). Adding
+   * a pair means adding its line here; removing or reclassifying one goes red.
+   */
+  const PINNED_PAIRS = [
+    "--color-ink on --color-paper: body-text",
+    "--color-ink-2 on --color-paper: body-text",
+    "--color-ink-3 on --color-paper: body-text",
+    "--color-ink on --color-paper-2: body-text",
+    "--color-ink-2 on --color-paper-2: body-text",
+    "--color-ink-3 on --color-paper-2: body-text",
+    "--color-ink on --color-paper-3: body-text",
+    "--color-ink-2 on --color-paper-3: body-text",
+    "--color-ink-3 on --color-paper-3: body-text",
+    "--color-ink on --color-card: body-text",
+    "--color-ink-2 on --color-card: body-text",
+    "--color-ink-3 on --color-card: body-text",
+    "--color-ink on --color-blush: body-text",
+    "--color-ink-2 on --color-blush: body-text",
+    "--color-ink-3 on --color-blush: body-text",
+    "--color-ink on --color-butter: body-text",
+    "--color-ink-2 on --color-butter: body-text",
+    "--color-ink-3 on --color-butter: body-text",
+    "--color-ink on --color-sage-wash: body-text",
+    "--color-ink-2 on --color-sage-wash: body-text",
+    "--color-ink-3 on --color-sage-wash: body-text",
+    "--color-ink on --color-leaf-wash: body-text",
+    "--color-ink-2 on --color-leaf-wash: body-text",
+    "--color-ink-3 on --color-leaf-wash: body-text",
+    "--color-accent on --color-paper: body-text",
+    "--color-accent on --color-paper-2: body-text",
+    "--color-accent on --color-card: body-text",
+    "--color-accent on --color-blush: body-text",
+    "--color-accent-ink on --color-accent: body-text",
+    "--color-on-accent on --color-accent-strong: body-text",
+    "--color-sky on --color-paper: body-text",
+    "--color-sky-strong on --color-paper: body-text",
+    "--color-sky on --color-paper-2: body-text",
+    "--color-sky-strong on --color-paper-2: body-text",
+    "--color-sky on --color-card: body-text",
+    "--color-sky-strong on --color-card: body-text",
+    "--color-on-selected on --color-selected: body-text",
+    "--color-stem on --color-paper: body-text",
+    "--color-stem on --color-card: body-text",
+    "--color-stem on --color-butter: body-text",
+    "--color-on-inverse on --color-surface-inverse: body-text",
+    "--color-on-inverse-accent on --color-surface-inverse: body-text",
+    "--color-on-inverse-accent on --color-surface-inverse: focus",
+    "--color-photo-ink on --color-photo-stop-1: body-text",
+    "--color-photo-ink on --color-photo-stop-3: body-text",
+    "--color-field-edge on --color-card: boundary",
+    "--color-field-edge on --color-paper: boundary",
+    "--color-border-strong on --color-paper: boundary",
+    "--color-border-emphasis on --color-paper: boundary",
+    "--color-surface-inverse on --color-paper: boundary",
+    "--color-logo-ink on --color-paper: boundary",
+    "--color-logo-accent on --color-paper: boundary",
+    "--color-focus on --color-paper: focus",
+    "--color-focus on --color-paper-2: focus",
+    "--color-focus on --color-paper-3: focus",
+    "--color-focus on --color-card: focus",
+    "--color-success on --color-paper: body-text",
+    "--color-warning on --color-paper: body-text",
+    "--color-danger on --color-paper: body-text",
+    "--color-on-success on --color-success: body-text",
+    "--color-on-warning on --color-warning: body-text",
+    "--color-on-danger on --color-danger: body-text",
+    "--color-on-danger on --color-danger-strong: body-text",
+    "--color-rule on --color-paper: decorative",
+    "--color-photo-stop-2 on --color-paper: decorative",
+    "--color-sun on --color-paper: decorative",
+  ];
+
+  it("declares exactly the pinned pairs, each with its pinned class", () => {
+    expect(
+      CONTRAST_PAIRS.map(
+        (pair) => `${pair.foreground} on ${pair.background}: ${pair.kind}`,
+      ),
+    ).toEqual(PINNED_PAIRS);
+  });
+
+  it("holds the colour sheet's body-text set: every ink on every ground and tint, and the four voices", () => {
+    const declared = new Set(
+      CONTRAST_PAIRS.filter((pair) => pair.kind === "body-text").map(
+        (pair) => `${pair.foreground} on ${pair.background}`,
+      ),
+    );
+    const grounds = [
+      "--color-paper",
+      "--color-paper-2",
+      "--color-paper-3",
+      "--color-card",
+      "--color-blush",
+      "--color-butter",
+      "--color-sage-wash",
+      "--color-leaf-wash",
+    ];
+    const required = [
+      ...["--color-ink", "--color-ink-2", "--color-ink-3"].flatMap((ink) =>
+        grounds.map((ground) => `${ink} on ${ground}`),
+      ),
+      "--color-accent on --color-paper",
+      "--color-accent on --color-card",
+      "--color-sky on --color-paper",
+      "--color-sky on --color-card",
+      "--color-stem on --color-paper",
+      "--color-stem on --color-card",
+      "--color-photo-ink on --color-photo-stop-1",
+      "--color-photo-ink on --color-photo-stop-3",
+    ];
+    expect(required.filter((pair) => !declared.has(pair))).toEqual([]);
   });
 
   it("requires a written reason for every decorative pair", () => {

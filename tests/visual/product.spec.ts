@@ -15,6 +15,11 @@
  * of a phone at 390 px, with the summary's own total row docked at its bottom edge. In `preview`
  * the bar names the size and no date. `live` needs a florist, which no served build has; it is the
  * same template, asserted in the unit suite.
+ *
+ * **A block below the grid is not date-free by itself.** The grid's rows have fractional heights
+ * that change with the window, so every block under it moved by a sub-pixel amount each day and a
+ * line of text could round to a different pixel row. `product-blocks.css` takes the grid out of the
+ * layout for the block shots, which fixes every block's offset; see that file for the measurement.
  */
 import type { BrowserContext, Page } from "@playwright/test";
 import { fileURLToPath } from "node:url";

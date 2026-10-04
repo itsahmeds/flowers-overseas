@@ -215,7 +215,7 @@ describe("the `/` locale chooser (AC-7, AC-25)", () => {
   it("names its navigation landmark and its heading from the catalogue", () => {
     expect(html).toContain('<nav aria-label="Languages">');
     expect(html).toMatch(
-      /<h1 class="display text-display-s">Choose your language<\/h1>/,
+      /<h1 class="display text-title-fluid">Choose your language<\/h1>/,
     );
     expect(html).toContain("Choose a language to continue.");
   });
@@ -355,7 +355,7 @@ describe("the 404 document (AC-8)", () => {
 
     expect(html).toContain('<html lang="en" dir="ltr" class=');
     expect(html).toMatch(
-      /<h1 class="display text-display-s">Page not found<\/h1>/,
+      /<h1 class="display text-title-fluid">Page not found<\/h1>/,
     );
     // The `.label` metadata line is the status this document is served with (TASK-055).
     expect(html).toContain(">404</p>");
@@ -380,7 +380,7 @@ describe("the localised 500 boundary (TASK-085: strings as data, no provider)", 
     const html = renderBoundary();
 
     expect(html).toMatch(
-      /<h1 class="display text-display-s">Something went wrong<\/h1>/,
+      /<h1 class="display text-title-fluid">Something went wrong<\/h1>/,
     );
     expect(html).toContain("Try again");
     // `en-gb`'s thin override, so this is the *locale's* copy and not the x-default's: the one

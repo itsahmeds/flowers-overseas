@@ -10,169 +10,260 @@
  * margin/alignment utilities — three of them invalid CSS — and every gate that says "no colour
  * literal and no physical utility ships" was quietly false.
  *
- * Only `src/**` renders in a browser (Playwright drives the real app; the design canvases under
- * `docs/design/` are static hand-written HTML with their own inline styles), and only `.ts`/`.tsx`
- * there carry class names, so that is the whole source set. A new class name in a new file type
- * would produce no CSS, which the `/dev/components` gallery and the visual baselines catch
- * immediately; a leaked fixture would not have been caught at all. `tests/unit/tokens.test.ts`
- * asserts the outcome on the **built** CSS, scanning exactly as the build scans, so the hole
- * cannot reopen.
+ * Only `src/**` renders in a browser, and only `.ts`/`.tsx` there carry class names, so that is the
+ * whole source set. `tests/unit/tokens.test.ts` asserts the outcome on the **built** CSS, scanning
+ * exactly as the build scans, so the hole cannot reopen.
  */
 @import "tailwindcss" source(none);
 @source "../../src/**/*.{ts,tsx}";
 
 /*
- * Design tokens (spec 004 §2 "Tokens", §13 Q1/Q3, AC-1, AC-3; TASK-045).
+ * Design tokens, v2 — "the letter home" (spec 004 §2 "Tokens", §14 A21 clauses 2–3, AC-1, AC-3;
+ * TASK-045, TASK-175).
  *
  * **This file is the only place in the repository where a colour is written as a literal.**
- * `fo/no-raw-color` (ESLint) bans hex/`rgb()`/`hsl()`/`oklch()` in components and Stylelint's
- * `color-no-hex` plus the colour-property `declaration-property-value-disallowed-list` ban them in
- * every CSS declaration — the `@theme` block below is exempt by construction, because its
- * properties are custom properties (`--color-*`) and not `color`/`background`/`border-*`. So a
- * founder palette swap is one diff here, re-running `tests/unit/contrast.test.ts` and the visual
- * baselines, and touching no component.
+ * `fo/no-raw-color` (ESLint) bans hex/`rgb()`/`hsl()`/`oklch()` in components and Stylelint bans
+ * them in every CSS declaration outside this `@theme` block. A founder palette swap is one diff
+ * here, re-running `tests/unit/contrast.test.ts` and the visual baselines, and touching no
+ * component.
  *
- * The values are the founder-approved canvas verbatim (`docs/design/homepage-v1/tokens.css`,
- * §13's 2026-09-08 resolution note): white paper, cool-grey inks, one forest-green accent, in
- * OKLCH. The *semantic* aliases §2 asks for (`--color-surface*`, `--color-border*`,
- * `--color-focus`, `--color-success|warning|danger` with their `--color-on-*` partners) are mapped
- * on top of that primitive ramp rather than replacing it, so a component names an intent
- * (`bg-surface-raised`, `text-ink-muted`) and the canvas names stay readable next to the design
- * source.
+ * **The token set is `docs/design/system/tokens.css`, name for name and value for value** — the
+ * founder locked it on 2026-10-03 (direction A's layout in direction C's colours, on a lighter
+ * ground). `tests/unit/tokens.test.ts` (T-01) reads that file and fails on any token it declares
+ * that this block does not, or declares with another value. The only differences are the three
+ * family stacks, whose heads are the `next/font/local` variables (the design file names the
+ * families as strings because its artboards load them from Google Fonts, which nothing here ever
+ * does), and the code-side additions at the end of the block, which Tailwind needs and the design
+ * file has no use for.
  *
- * No dark mode in Phase 0 (§13 Q3): `color-scheme: light` is declared explicitly in `@layer base`
- * and the token names are semantic, so a later `@media (prefers-color-scheme: dark)` block is one
- * addition here and zero component edits.
- */
-/*
- * `static` (Tailwind v4): emit **every** declared custom property into the stylesheet, not only
- * the ones a generated utility happens to reference. Two reasons, both load-bearing here: AC-1
- * asks that "every documented token name resolves to a non-empty value in the built CSS", which
- * tree-shaken variables would make false for the semantic aliases no utility uses yet
- * (`--color-brand`, `--color-on-warning`); and `@utility photo`, `@layer base` and the one
- * legitimate inline `var(--color-…)` read the variables directly, which is only sound if they are
- * always present. The cost is about a kilobyte of CSS before compression.
+ * `static` (Tailwind v4): emit **every** declared custom property, not only the ones a generated
+ * utility references — AC-1 asks that every documented token resolves in the built CSS, and the
+ * base layer and utilities below read the variables directly.
+ *
+ * No dark mode in Phase 0 (§13 Q3): `color-scheme: light` is declared in `@layer base`.
  */
 @theme static {
-  /* --- Colour: the canvas ramp, verbatim --------------------------------------------------- */
+  /* --- 1. Palette ------------------------------------------------------------------------- */
 
-  /* Paper: the white surface the whole design rests on. */
-  --color-paper: oklch(99.3% 0.002 90);
-  --color-paper-2: oklch(97.2% 0.004 90);
-  --color-paper-3: oklch(94.5% 0.005 90);
+  /* Paper. Milk ground, cream bands, white cards and fields. Lightened twice by the founder. */
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  /* White, as the warm-c pages render it and as warm-c's README table reads since its 2026-10-03
+     correction (99.6 % sat below the 99.8 % paper and lost the letter's lift). */
+  --color-card: oklch(100% 0 0);
 
-  /* Ink: three cool greys. `ink-3` is the lightest text weight the design uses and it clears
-     4.5:1 on paper (5.39:1, `tests/unit/contrast.test.ts`), so no darkening was needed. */
-  --color-ink: oklch(19% 0.01 250);
-  --color-ink-2: oklch(36% 0.01 250);
-  --color-ink-3: oklch(52% 0.008 250);
+  /* Ink. Plum-navy, three steps. 16.1, 8.5 and 6.0 : 1 on paper. */
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
 
-  /* The hairline that separates every section of the canvas. Decorative, never a component
-     boundary — see `src/modules/ui/tokens/contrast.ts` for why that distinction is in the
-     manifest rather than in a comment. */
-  --color-rule: oklch(90% 0.004 250);
+  /* Poppy: Send, prices, the one emotional phrase in a heading. 5.6 : 1 on paper; white on it 5.6. */
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
 
-  /* The single accent: forest green, hue 155. `-strong` is the pointer state — a darker
-     instance of the same hue rather than an opacity, so its contrast with `--color-accent-ink`
-     is a manifest pair and not an accident of what happens to be behind it. */
-  --color-accent: oklch(42% 0.1 155);
-  --color-accent-strong: oklch(34% 0.09 155);
-  --color-accent-ink: oklch(99% 0.002 90);
+  /* Cornflower: links, eyebrows, the postmark, selected chip / day / tier. 6.7 : 1 on paper. */
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
 
-  /* The photography placeholder (`plan/10` §3 honesty rule: no `<img>` we do not have). A
-     gradient, so it is a token and not a colour utility; `@utility photo` below is the only
-     consumer. The three stops are declared separately as well, because the caption's ink is
-     contrast-tested against the lightest of them. */
-  --color-photo-stop-1: oklch(93% 0.02 120);
-  --color-photo-stop-2: oklch(88% 0.03 140);
-  --color-photo-stop-3: oklch(80% 0.04 150);
-  --color-photo-ink: oklch(40% 0.03 150);
-  --color-photo: linear-gradient(
-    160deg,
-    var(--color-photo-stop-1) 0%,
-    var(--color-photo-stop-2) 45%,
-    var(--color-photo-stop-3) 100%
-  );
+  /* Sunflower: highlight only. On ink (10.9 : 1), as a tape, as an underline. Never text on paper. */
+  --color-sun: oklch(87% 0.15 92);
 
-  /* --- Colour: status, added by this spec ------------------------------------------------- */
+  /* Leaf: "included". 7.4 : 1 on paper. */
+  --color-stem: oklch(44% 0.1 155);
 
-  /* The canvas has no status colours; these three are the smallest honest addition, kept in the
-     same lightness band as the accent so white text clears 4.5:1 on each fill and each clears
-     4.5:1 as text on paper (both directions are pairs in the contrast manifest). */
-  --color-success: oklch(42% 0.1 150);
-  --color-warning: oklch(45% 0.12 75);
-  --color-danger: oklch(45% 0.17 25);
-  --color-danger-strong: oklch(38% 0.15 25);
+  /* The four stamp tints. ink-3 clears 4.9 : 1 on every one; ink-2 clears 6.9. Names follow spec 004
+     §14 A21 clause 2 (warm-c's table): `sage-wash` is warm-c's name for the cornflower wash, hue 250,
+     exactly as the approved pages render it. */
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+
+  /* The logo, exactly as it ships (content/brand/mark.svg). Not re-coloured by v2. */
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+
+  /* Shadow ink: plum-navy at 12 %, so shadows read as paper on paper, never grey. */
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+
+  /* A field's edge: WCAG 1.4.11 wants 3 : 1 for a control boundary; --color-rule is 1.4. 3.65 : 1. */
+  --color-field-edge: oklch(62% 0.035 285);
+
+  /* Status. Danger is the poppy's strong step, warning a deep ochre, success the leaf. */
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
   --color-on-success: var(--color-accent-ink);
   --color-on-warning: var(--color-accent-ink);
   --color-on-danger: var(--color-accent-ink);
 
-  /* --- Colour: semantic aliases (§2) ------------------------------------------------------ */
+  /* The photo slot's no-photo state (spec 006 AC-18): warm paper, not v1's green. Caption ink is
+     6.6 : 1 on the darkest stop. */
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(
+    160deg,
+    var(--color-photo-stop-1) 0%,
+    var(--color-photo-stop-2) 50%,
+    var(--color-photo-stop-3) 100%
+  );
+
+  /* --- 2. Semantic aliases: a component names an intent, not a swatch -------------------- */
 
   --color-surface: var(--color-paper);
   --color-surface-raised: var(--color-paper-2);
   --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
   --color-surface-inverse: var(--color-ink);
   --color-ink-muted: var(--color-ink-2);
   --color-ink-subtle: var(--color-ink-3);
-  --color-on-inverse: var(--color-accent-ink);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
   --color-brand: var(--color-accent);
   --color-on-brand: var(--color-accent-ink);
   --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
   --color-border: var(--color-rule);
   --color-border-strong: var(--color-ink-3);
   --color-border-emphasis: var(--color-ink);
-  /* The focus ring. The accent clears 3:1 against paper (7.90:1) and against both raised
-     surfaces, which is AC-3's focus-indicator threshold; the ring also carries a 2 px offset in
-     `@layer base` so it stays visible on an inked button. */
   --color-focus: var(--color-accent);
 
-  /* --- Type ------------------------------------------------------------------------------- */
+  /* The airmail edge: poppy, white and cornflower at 135°. Three places only — the top of the
+     sentence letter, the top of the "Here is what will arrive" recap, the top of the footer. */
+  --airmail-edge: repeating-linear-gradient(
+    135deg,
+    var(--color-accent) 0 12px,
+    var(--color-card) 12px 18px,
+    var(--color-sky) 18px 30px,
+    var(--color-card) 30px 36px
+  );
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
 
-  /* Both families are self-hosted and declared in `src/modules/ui/fonts/index.ts`; the variables
-     below are what `next/font/local` publishes, so no component names a font (AC-4). */
-  --font-display:
-    var(--font-newsreader), "Iowan Old Style", Georgia, "Times New Roman", serif;
-  --font-body: var(--font-plex-sans), "Helvetica Neue", Arial, sans-serif;
+  /* Lined letter paper: one rule every 48 px under the sentence; 38 px in the card field. */
+  --letter-lines: repeating-linear-gradient(
+    to bottom,
+    transparent 0 47px,
+    var(--color-rule) 47px 48px
+  );
+  --card-lines: repeating-linear-gradient(
+    to bottom,
+    transparent 0 37px,
+    var(--color-rule) 37px 38px
+  );
 
-  /* The canvas steps, fluid between the two artboards (390 px mobile, 1440 px desktop) so a
-     headline does not need a breakpoint utility to stop overflowing a phone. The `clamp()` floor
-     is the mobile artboard's size and the ceiling the desktop artboard's; `lg`/`md`/`sm`/`xs` are
-     identical on both artboards and are therefore fixed. */
-  --text-display: clamp(2.125rem, 1.325rem + 3.2vw, 4.25rem);
-  --text-display--line-height: 1.04;
-  --text-display--letter-spacing: -0.015em;
-  --text-display-s: clamp(1.75rem, 1.4rem + 1.4vw, 2.625rem);
-  --text-display-s--line-height: 1.08;
-  --text-display-s--letter-spacing: -0.015em;
-  --text-2xl: clamp(1.375rem, 1.1rem + 1.1vw, 2.125rem);
-  --text-2xl--line-height: 1.15;
-  --text-2xl--letter-spacing: -0.01em;
-  --text-xl: clamp(1.1875rem, 1.1rem + 0.35vw, 1.5rem);
-  --text-xl--line-height: 1.25;
-  --text-lg: 1.125rem;
-  --text-lg--line-height: 1.5;
-  --text-md: 0.9375rem;
-  --text-md--line-height: 1.6;
-  --text-sm: 0.8125rem;
-  --text-sm--line-height: 1.55;
-  --text-xs: 0.6875rem;
-  --text-xs--line-height: 1.45;
+  /* --- 3. Type ------------------------------------------------------------------------------ */
 
-  /* Two weights of IBM Plex Sans are shipped (400, 600) because a third face would break AC-4's
-     45 KB budget. The canvas's medium (500) therefore resolves to 600 through this token instead
-     of being matched down to 400 by the CSS font-matching algorithm. */
-  --font-weight-medium: 600;
+  /* The self-hosted faces (`src/modules/ui/fonts/`) publish one variable per subset; the
+     Latin-Ext family comes first because it covers none of the Latin code points, so a page
+     without Polish text never downloads it. The named fallbacks ("Iowan Old Style", Georgia,
+     serif) and the metric-matched one ride on the Latin variable (`next/font/local`). */
+  --font-display: var(--font-fraunces-ext), var(--font-fraunces);
+  --font-body: var(--font-alegreya-ext), var(--font-alegreya);
+  /* Caveat's variables exist only inside the product page's printed-card preview
+     (`src/modules/ui/fonts/hand.ts`); anywhere else the `var()` fallbacks name local faces. */
+  --font-hand:
+    var(--font-caveat-ext, "Caveat"), var(--font-caveat, "Bradley Hand"),
+    "Segoe Print", cursive;
+  /* No Newsreader file ships (A21 clause 3): the wordmark is the outlined SVG `Wordmark`
+     renders. The token stays so the set matches `docs/design/system/tokens.css` name for name. */
+  --font-logo: "Newsreader", Georgia, serif;
 
-  /* Max line length (§2's `--measure`), and the container name Tailwind generates `max-w-prose`
-     from, so the two cannot drift. */
-  --measure: 68ch;
-  --container-prose: 68ch;
+  /* Weights, as spec 004 §14 A21 clause 3 ships them: Fraunces roman 400 (SOFT 100, opsz pinned)
+     and italic 300; Alegreya Sans 400 and 700 (warm-c's 500 renders at 400); Caveat 500, only in
+     the product page's printed-card preview. Newsreader ships as no file: the wordmark is the
+     committed SVG, outlined to paths. */
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
 
-  /* --- Space ------------------------------------------------------------------------------- */
+  /* Fixed artboard steps: desktop (1440) and, where it differs, the `-s` step drawn at 390.
+     A template uses the clamp() between them (block 4). */
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
 
-  /* The canvas scale. Tailwind's numeric `--spacing` base is left untouched, so `p-4` still means
-     16 px; these named steps are what the primitives expose (`<Stack gap="lg">`). */
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+
+  --measure: 58ch;
+  --measure-lede: 46ch;
+
+  /* --- 4. The shipped fluid steps (what a template writes) ------------------------------- */
+
+  --text-hero-fluid: clamp(50px, 6.2vw, 90px);
+  --text-display-fluid: clamp(42px, 6vw, 84px);
+  --text-title-fluid: clamp(44px, 5vw, 68px);
+  --text-3xl-fluid: clamp(32px, 4.2vw, 54px);
+  --text-2xl-fluid: clamp(30px, 3.4vw, 44px);
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, 9vw, 128px);
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+
+  /* --- 5. Space, size, radius, shadow, motion, layers ----------------------------------- */
+
+  /* v1's seven names keep their values; v2 adds the in-between steps the warm-c pages use. */
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -181,56 +272,139 @@
   --spacing-2xl: 72px;
   --spacing-3xl: 128px;
 
-  /* --- Radii, rules, shadows -------------------------------------------------------------- */
+  /* Page frame: 1328 content inside 56 px gutters at 1440; 20 px gutters at 390. */
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+
+  /* Targets. Every control clears 44 px; the primary pill is 54, Send is 60. */
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
 
   --radius-none: 0px;
   --radius-sm: 2px;
   --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
   --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
 
-  /* The composite hairline the canvas writes as `var(--rule)`. */
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter:
+    0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper:
+    0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
   --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
 
-  /* Three steps, built from the ink token through `color-mix` so a palette swap moves them too. */
-  --shadow-xs: 0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent);
-  --shadow-sm:
-    0 1px 2px color-mix(in oklab, var(--color-ink) 6%, transparent),
-    0 2px 8px color-mix(in oklab, var(--color-ink) 6%, transparent);
-  --shadow-md:
-    0 2px 4px color-mix(in oklab, var(--color-ink) 6%, transparent),
-    0 8px 24px color-mix(in oklab, var(--color-ink) 8%, transparent);
-
-  /* --- Motion ----------------------------------------------------------------------------- */
+  /* Paper is set down by hand: the letter, the P.S. and the card sit a little off true. */
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
 
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
+  --duration-photo: 700ms;
   --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
   --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
 
-  /* --- Layers ----------------------------------------------------------------------------- */
-
-  /* The three elements of this spec that overlap: a sticky header, the language-suggestion
-     banner and the consent sheet. Named, so they cannot fight (§2). */
   --layer-header: 100;
   --layer-banner: 200;
   --layer-overlay: 300;
+
+  /* --- Code-side additions (Tailwind's namespaces; not design tokens) --------------------- */
+
+  /* `max-w-prose`, `max-w-lede` and `max-w-page` from the measure and frame tokens. */
+  --container-prose: 58ch;
+  --container-lede: 46ch;
+  --container-page: 1328px;
+
+  /* Each fluid step carries its line height and tracking (the typography sheet's ramp), so a
+     `text-*-fluid` utility sets all three and no template restates them. */
+  --text-hero-fluid--line-height: 0.96;
+  --text-hero-fluid--letter-spacing: -0.03em;
+  --text-display-fluid--line-height: 0.98;
+  --text-display-fluid--letter-spacing: -0.03em;
+  --text-title-fluid--line-height: 0.98;
+  --text-title-fluid--letter-spacing: -0.025em;
+  --text-3xl-fluid--line-height: 1.04;
+  --text-3xl-fluid--letter-spacing: -0.015em;
+  --text-2xl-fluid--line-height: 1.08;
+  --text-2xl-fluid--letter-spacing: -0.015em;
+  --text-lede-fluid--line-height: 1.5;
+  --text-xl--line-height: 1.1;
+  --text-md--line-height: 1.2;
+  --text-h3--line-height: 1.2;
+  --text-h3-s--line-height: 1.2;
+  --text-body--line-height: 1.55;
+  --text-body-s--line-height: 1.55;
+  --text-ui--line-height: 1.4;
+  --text-sm--line-height: 1.4;
+  --text-fine--line-height: 1.4;
+  --text-xs--line-height: 1.35;
+}
+
+/*
+ * Metric-matched fallbacks for machines without Arial or Times New Roman (spec 004 §14 A21 clause 3
+ * "matched fallback metrics on every face"; AC-7, AC-28's CLS 0; TASK-175).
+ *
+ * `next/font/local`'s `adjustFontFallback` matches its fallback face to `local("Arial")` and
+ * `local("Times New Roman")` only. Linux (the CI runners, a share of real visitors) has neither, so
+ * there the swap fell back to an unmatched system face and a late font moved boxes. These two faces
+ * are the first named fallbacks of the Latin calls (`src/modules/ui/fonts/index.ts`) and carry the
+ * same overrides over the metric-compatible clones — Liberation and the ChromeOS Croscore fonts.
+ * The numbers are Next's own computation for the committed 400 Latin files, and
+ * `tests/unit/fonts.test.ts` recomputes them, so a re-subset that moves them fails a test.
+ */
+@font-face {
+  font-family: "Alegreya Sans Fallback Liberation";
+  src: local("Liberation Sans"), local("Arimo");
+  ascent-override: 103.05%;
+  descent-override: 34.35%;
+  line-gap-override: 0%;
+  size-adjust: 87.34%;
+}
+
+@font-face {
+  font-family: "Fraunces Fallback Liberation";
+  src: local("Liberation Serif"), local("Tinos");
+  ascent-override: 102.74%;
+  descent-override: 26.79%;
+  line-gap-override: 0%;
+  size-adjust: 95.19%;
 }
 
 /*
  * Base reset (spec 004 §2 "Logical CSS and RTL readiness", §5.3 accessibility rules, AC-5, AC-6).
  *
  * Tailwind's preflight already normalises margins, borders and headings; this layer adds only what
- * the design system decides: the two families, the paper/ink pair, the focus ring, the
- * reduced-motion contract and `color-scheme`.
+ * the design system decides: the two families, the paper/ink pair, the v2 body size, the focus
+ * ring, the reduced-motion contract and `color-scheme`.
  */
 @layer base {
   :root {
     /* §2 / §13 Q3: declared explicitly so form controls and scrollbars are not rendered dark on a
        light page while dark mode is token-ready but unshipped. */
     color-scheme: light;
-    /* The sticky header must not obscure a focused element (§5.3, WCAG 2.4.11). One declaration
-       here beats a `scroll-mt-*` utility on every anchor target. */
+    /* The sticky header must not obscure a focused element (§5.3, WCAG 2.4.11). */
     scroll-padding-block-start: var(--spacing-2xl);
   }
 
@@ -239,32 +413,40 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* Running text: Alegreya Sans 17 px on the 390 artboard, 18 px from `md` up, at 1.55. */
   body {
     background-color: var(--color-surface);
     color: var(--color-ink);
-    font-size: var(--text-md);
-    line-height: 1.6;
+    font-size: var(--text-body-s);
+    line-height: var(--line-height-body);
     -webkit-font-smoothing: antialiased;
   }
 
-  /* The canvas's link treatment: inherit the ink, no underline in chrome, accent on hover. A link
-     inside prose opts back into an underline through the `Text` primitive, so a link in a
-     paragraph is never distinguished by colour alone (§5.3 "no colour-only meaning"). */
+  @media (min-width: 48rem) {
+    body {
+      font-size: var(--text-body);
+    }
+  }
+
+  /* Chrome links inherit the ink and carry no underline; cornflower means "you can go there", so
+     the pointer state is the strong cornflower. A link inside prose opts into the underline
+     through the `link-inline` utility (`TextLink`), so no link is distinguished by colour alone
+     (§5.3). */
   a {
     color: inherit;
     text-decoration: none;
   }
 
   a:hover {
-    color: var(--color-accent);
+    color: var(--color-link-strong);
   }
 
-  /* One focus ring for the whole application, from the token AC-3 contrast-tests (3:1 against
-     both adjacent surfaces). `:focus-visible` only, so a mouse click on a button does not ring;
-     `outline-offset` keeps it clear of an inked fill. */
+  /* One focus ring for the whole application: poppy, 2.5 px, 3 px clear of the control
+     (`--focus-ring`, `--focus-offset`; contrast-tested as a focus pair on every surface).
+     `:focus-visible` only, so a mouse click on a button does not ring. */
   :focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
     border-radius: var(--radius-sm);
   }
 
@@ -284,31 +466,87 @@
 }
 
 /*
- * The canvas's own utility classes, lifted verbatim (TASK-045 row: they are used by every later
- * 004 task, so they must not be re-invented per component).
+ * The design system's own utility classes (components sheet v2). Each one is a voice the sheet
+ * names, so it is written once here and never re-invented per component.
  */
 
-/* Newsreader 500 with the canvas's tracking: every heading and the wordmark. */
+/* Fraunces roman 400 — every heading. The one italic phrase a heading may carry (`<em>`) is
+   Fraunces 300 italic in poppy (typography sheet "One italic phrase"). */
 @utility display {
   font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.015em;
+  font-weight: var(--font-weight-display);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+
+  & em {
+    font-style: italic;
+    font-weight: var(--font-weight-display-em);
+    color: var(--color-accent);
+  }
 }
 
-/* The printed-label voice: 11 px, 600, wide tracking, uppercase, subtle ink. */
+/* Fraunces 300 italic in poppy: the emotional phrase and every note warm-c drew in Caveat (the
+   sentence's choices, the P.S., the margin note, the sign-off, occasion tags). */
+@utility display-em {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: var(--font-weight-display-em);
+  color: var(--color-accent);
+  line-height: 1.15;
+}
+
+/* The printed-label voice: 13 px, 700, 0.14em, uppercase, subtle ink (field labels, the facts
+   list's terms, day names). */
 @utility label {
   font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--color-ink-subtle);
 }
 
+/* The eyebrow over a section: the label voice in cornflower. */
+@utility eyebrow {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-eyebrow);
+}
+
+/* Prices and dates line up (typography sheet "Numbers line up"). */
+@utility num {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* A standalone link: cornflower, 700, a 1.5 px underline 5 px below the baseline. */
+@utility link {
+  color: var(--color-link);
+  font-weight: var(--font-weight-bold);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 5px;
+
+  &:hover {
+    color: var(--color-link-strong);
+  }
+}
+
+/* A link inside running text: cornflower, regular weight, underlined at 4 px. */
+@utility link-inline {
+  color: var(--color-link);
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+
+  &:hover {
+    color: var(--color-link-strong);
+  }
+}
+
 /*
- * The photography placeholder: the token gradient with a caption at the block end. Renders **no**
- * `<img>` — Phase 0 has no imagery and inventing one is a `plan/10` §3 offence. `Photo` is the
- * component that uses it; the caption's ink is a contrast-manifest pair against the gradient's
- * lightest stop.
+ * The photography placeholder: the warm-paper gradient with a caption at the block end. Renders
+ * **no** `<img>` — inventing one is a `plan/10` §3 offence. `Photo` is the component that uses it;
+ * the caption's ink is a contrast-manifest pair against both ends of the gradient.
  */
 @utility photo {
   display: flex;
@@ -317,16 +555,14 @@
   padding: var(--spacing-md);
   color: var(--color-photo-ink);
   font-size: var(--text-xs);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 
   /*
    * The image state (spec 006 §2.5, AC-18; TASK-079): when the box holds a photograph rather
    * than a caption it holds nothing else, so the padding that insets the caption goes and the
-   * `<picture>` fills the box the placeholder was reserving — which is what keeps the CLS delta
-   * of landing imagery at 0. Expressed here rather than as a class at the call site so the two
-   * states of one box cannot be styled inconsistently, and so no utility-order accident can
-   * leave a 16 px gradient frame around a photograph.
+   * `<picture>` fills the box the placeholder was reserving — which keeps the CLS delta of
+   * landing imagery at 0.
    */
   &:has(> picture) {
     padding: 0;
@@ -334,10 +570,56 @@
 }
 
 /*
+ * The airmail edge (A21 clause 2): poppy, white and cornflower stripes along the block start of
+ * the element. Three places only — the top of the home's sentence letter, the top of the product
+ * page's "Here is what will arrive" recap (`airmail-edge`, 7 px) and the top of the footer
+ * (`airmail-edge-footer`, 9 px). The stripe follows the element's own start corners.
+ */
+@utility airmail-edge {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: var(--airmail-edge-size);
+    background: var(--airmail-edge);
+    border-start-start-radius: inherit;
+    border-start-end-radius: inherit;
+  }
+}
+
+@utility airmail-edge-footer {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    block-size: var(--airmail-edge-size-footer);
+    background: var(--airmail-edge);
+  }
+}
+
+/*
+ * The inverse surface (the notice bar, the promise band): ink ground, paper text, and a sunflower
+ * focus ring, because the poppy ring is 2.90:1 on ink and a focus indicator needs 3:1 (both are
+ * pairs in `src/modules/ui/tokens/contrast.ts`).
+ */
+@utility surface-inverse {
+  background-color: var(--color-surface-inverse);
+  color: var(--color-on-inverse);
+
+  & :focus-visible {
+    outline-color: var(--color-on-inverse-accent);
+  }
+}
+
+/*
  * `mirror-in-rtl` (§2, AC-5): flips direction-carrying icons under `dir="rtl"`. Applied by the
- * icon set from each icon's declared `mirrorInRtl` intent — never decided at a call site, so an
- * arrow cannot be shipped unmirrored and a clock, a check or the wordmark cannot be shipped
- * mirrored.
+ * icon set from each icon's declared `mirrorInRtl` intent — never decided at a call site.
  */
 @utility mirror-in-rtl {
   [dir="rtl"] & {
@@ -359,11 +641,9 @@
 }
 
 /*
- * The motion scale as utilities. Tailwind v4 has an `--ease-*` theme namespace (so `ease-standard`
- * is generated for free) but no duration namespace — its own `duration-*` utility takes a number
- * of milliseconds and would swallow the name `duration-fast`. These three keep the **token** as
- * the only place a duration is written, instead of scattering `duration-[120ms]` across
- * components, and `@layer base` overrides all of them under `prefers-reduced-motion` (AC-6).
+ * The motion scale as utilities. Tailwind's own `duration-*` takes a number of milliseconds and
+ * would swallow the name `duration-fast`; these keep the token as the only place a duration is
+ * written, and `@layer base` overrides all of them under `prefers-reduced-motion` (AC-6).
  */
 @utility motion-fast {
   transition-duration: var(--duration-fast);

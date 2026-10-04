@@ -86,7 +86,7 @@ describe("noticeShell.ts", () => {
     // The `.display` and `.label` utilities of `src/app/globals.css`, so the notice documents
     // inherit a change to the type system instead of pinning a size.
     expect(NOTICE_HEADING).toContain("display");
-    expect(NOTICE_HEADING).toContain("text-display-s");
+    expect(NOTICE_HEADING).toContain("text-title-fluid");
     expect(NOTICE_META).toBe("label");
     expect(NOTICE_WORDMARK).toContain("display");
   });

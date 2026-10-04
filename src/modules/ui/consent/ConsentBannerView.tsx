@@ -73,15 +73,18 @@ const PANEL =
   "bg-surface border-border-strong text-ink max-h-[85dvh] overflow-y-auto overscroll-contain border-t p-md shadow-md sm:rounded-sm sm:border";
 
 /**
- * The canvas's `.btn.secondary`, verbatim and once: ink on paper, a strong hairline, 50 px tall
- * (44 px at `sm`), medium weight, tracked 0.02em. Identical for all three sheet controls, which
- * is what makes AC-20's computed-style assertion pass by construction.
+ * `Button`'s `secondary` skin (components sheet v2: the 1.5 px ink outline pill, Alegreya Sans
+ * 700, 54 px tall — 44 px at `sm`), written once, on a **paper fill** rather than transparent: the
+ * sheet is itself paper, so the look is the sheet's, and AC-20's computed-style contrast reads a
+ * real ink-on-paper pair (16.1:1) instead of ink on `transparent`. Identical for all three sheet controls, which is
+ * what makes AC-20's computed-style assertion pass by construction; `tests/unit/consent-islands`
+ * pins it to `Button` class for class.
  */
 const CONTROL =
-  "inline-flex min-h-[50px] w-full cursor-pointer items-center justify-center rounded-sm border border-border-strong bg-surface px-[26px] text-md font-medium tracking-[0.02em] text-ink transition-colors motion-fast ease-standard select-none hover:border-border-emphasis active:bg-surface-muted";
+  "inline-flex min-h-(--control-md) w-full cursor-pointer items-center justify-center gap-[10px] rounded-full bg-surface px-[28px] text-body-s font-bold leading-[1.1] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] transition-colors motion-fast ease-standard select-none hover:bg-surface-raised active:bg-surface-muted active:translate-y-px";
 /** The `saved` state's dismiss control: the same skin, one step smaller, not full width. */
 export const CONSENT_CONTROL_SM =
-  "inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-sm border border-border-strong bg-surface px-md text-sm font-medium tracking-[0.02em] text-ink transition-colors motion-fast ease-standard select-none hover:border-border-emphasis active:bg-surface-muted";
+  "inline-flex min-h-(--control-sm) cursor-pointer items-center justify-center gap-[10px] rounded-full bg-surface px-[20px] text-ui font-bold leading-[1.1] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] transition-colors motion-fast ease-standard select-none hover:bg-surface-raised active:bg-surface-muted active:translate-y-px";
 
 interface ControlProps {
   readonly action: string;

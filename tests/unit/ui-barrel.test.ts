@@ -8,6 +8,9 @@
  * grant it an exception. Second, that the module is registered where the boundary system can see
  * it: `MODULES` in `scripts/check-layout.ts`, whose zones `eslint/modules.js` generates.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { MODULES } from "../../scripts/check-layout.ts";
@@ -30,6 +33,7 @@ describe("src/modules/ui barrel", () => {
         "Icon",
         "MIRRORED_IN_RTL",
         "Mark",
+        "Wordmark",
         // chrome (TASK-048), and the header's listing targets the layout resolves (TASK-173)
         "SiteHeader",
         "headerListingTargets",
@@ -47,11 +51,22 @@ describe("src/modules/ui barrel", () => {
         // type primitives
         "DISPLAY_SIZES",
         "Display",
+        "Eyebrow",
         "Label",
         "LiveRegion",
         "TEXT_SIZES",
+        "TEXT_LINK_VARIANTS",
         "TEXT_TONES",
         "Text",
+        "TextLink",
+        // v2 primitives (§14 A21; TASK-175)
+        "Breadcrumbs",
+        "FACTS_DENSITIES",
+        "Fact",
+        "FactsList",
+        "NoticeBar",
+        "PRICE_VARIANTS",
+        "Price",
         // controls and content
         "BUTTON_SIZES",
         "BUTTON_STATES",
@@ -245,7 +260,7 @@ describe("src/modules/ui barrel", () => {
    * written and removed; this is what stops them, or a differently-named equivalent, coming back
    * before the task that owns the real fields (010/013) and the real money (005/008/009).
    */
-  it("exports no form control and no price block (spec §3, §8)", () => {
+  it("exports no form control, and no price block that could format money (spec §3, §8; §14 A21 clause 8)", () => {
     const exported = Object.keys(ui);
     for (const banned of [
       "Field",
@@ -256,12 +271,21 @@ describe("src/modules/ui barrel", () => {
       "Textarea",
       "Checkbox",
       "Radio",
-      "Price",
       "PRICE_SIZES",
       "Money",
     ]) {
       expect(exported, banned).not.toContain(banned);
     }
+    // A21 clause 8 adds `Price` to TASK-175's primitives "with the equivalents slot empty". It is a
+    // presentation block only: it takes `formatMoney`'s output as a string and never imports the
+    // formatter, so money is still formatted in exactly one place (CLAUDE.md).
+    expect(exported).toContain("Price");
+    const priceSource = readFileSync(
+      resolve(__dirname, "../../src/modules/ui/primitives/Price.tsx"),
+      "utf8",
+    );
+    expect(priceSource).not.toMatch(/from "[^"]*i18n[^"]*"/);
+    expect(priceSource).not.toMatch(/formatMoney\(|Intl\./);
   });
 
   it("exports no colour, size or duration value (the tokens stay in globals.css)", () => {

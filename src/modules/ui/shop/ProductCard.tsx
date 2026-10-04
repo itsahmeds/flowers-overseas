@@ -45,6 +45,7 @@ import { MediaAsset } from "../media/MediaAsset.tsx";
 import type { MediaManifest } from "../media/manifest.ts";
 import { MediaProvenanceNote } from "../media/MediaProvenanceNote.tsx";
 import { Photo } from "../primitives/Photo.tsx";
+import { Price } from "../primitives/Price.tsx";
 import { Stack } from "../primitives/layout.tsx";
 import { Display, Text } from "../primitives/typography.tsx";
 
@@ -110,27 +111,33 @@ export function ProductCard({
   const body: ReactNode = (
     <>
       {photo}
-      {/* `.card .nm` on the sheet: the display voice at `lg`, and a real heading, because §5.3
-          requires the card's name to *be* its heading and the price to be adjacent text. */}
-      <Display as={headingLevel} size="lg">
+      {/* The card name: Fraunces at the `h3` step (21/18), 14 px under the photograph (10 on a
+          phone), and a real heading, because §5.3 requires the card's name to *be* its heading
+          and the price to be adjacent text. Underlined on the card link's hover. */}
+      <Display
+        as={headingLevel}
+        size="lg"
+        className="mt-[10px] decoration-1 underline-offset-[5px] group-hover:underline md:mt-[14px]"
+      >
         <bdi>{card.name}</bdi>
       </Display>
       {hasCardPrice(card) ? (
-        <>
-          <Text as="span" size="lg" className="font-semibold">
-            <bdi>{formatMoney(card.price, locale)}</bdi>
-          </Text>
-          <Text as="span" size="xs" tone="muted">
-            {catalog("price.inclusive")}
-          </Text>
-        </>
+        <Price
+          className="mt-[6px]"
+          amount={formatMoney(card.price, locale)}
+          qualifier={catalog("price.inclusive")}
+        />
       ) : (
         /* The hub card's one line, in the place the price would be and drawn there on both hub
-           artboards: the claim stands beside the thing it is about, so a card lifted into another
-           surface carries its own explanation (the reasoning of spec 008 §14 A2, applied to the
-           absence of a price rather than to the provenance of a photograph). The page also carries
-           the fuller sentence once, above the grid (AC-7). */
-        <Text as="span" size="xs" tone="muted">
+           artboards: the claim stands beside the thing it is about (spec 008 §14 A2's reasoning,
+           applied to the absence of a price). The page also carries the fuller sentence once,
+           above the grid (AC-7). */
+        <Text
+          as="span"
+          size="sm"
+          tone="muted"
+          className="mt-[6px] leading-(--line-height-tight)"
+        >
           {shop("card.noPrice")}
         </Text>
       )}
@@ -140,7 +147,7 @@ export function ProductCard({
   return (
     <Stack
       as="article"
-      gap="sm"
+      gap="xs"
       data-fo-product-card={card.productId}
       data-fo-product-card-kind={card.href === undefined ? "tile" : "link"}
       data-fo-product-card-money={hasCardPrice(card) ? "priced" : "none"}
@@ -148,7 +155,10 @@ export function ProductCard({
       {card.href === undefined ? (
         body
       ) : (
-        <a className="gap-sm flex flex-col" href={card.href}>
+        <a
+          className="group ease-photo flex flex-col [&_img]:transition-transform [&_img]:duration-(--duration-photo) motion-safe:hover:[&_img]:scale-[1.035]"
+          href={card.href}
+        >
           {body}
         </a>
       )}

@@ -10,6 +10,14 @@ import { isLocaleCode } from "@/config/locales";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   AddonPriceList,
+  Breadcrumbs,
+  Eyebrow,
+  Fact,
+  FactsList,
+  NoticeBar,
+  Price,
+  TextLink,
+  Wordmark,
   Button,
   BUTTON_VARIANTS,
   DateChip,
@@ -127,6 +135,7 @@ import {
   sectionId,
   SPACE_STEPS,
   TYPE_SAMPLES,
+  V2_SAMPLES,
 } from "./catalog";
 import {
   PRODUCT_ADDONS,
@@ -1336,6 +1345,69 @@ export default function DevComponentsPage(): ReactElement {
                 </div>
               </Stack>
             ))}
+          </Stack>
+        </Section>
+
+        <Section title={SECTIONS[21]}>
+          <Stack gap="lg">
+            <NoticeBar utilities={<a href="#main">{V2_SAMPLES.noticeLink}</a>}>
+              {V2_SAMPLES.notice} <strong>{V2_SAMPLES.noticeStrong}</strong>
+            </NoticeBar>
+            <Wordmark className="h-[25px]" label={V2_SAMPLES.wordmark} />
+            <Breadcrumbs
+              label={V2_SAMPLES.crumbLabel}
+              crumbs={V2_SAMPLES.crumbs.map((crumb, index, all) => ({
+                key: crumb,
+                label: crumb,
+                ...(index === all.length - 1
+                  ? { current: true }
+                  : index === 1
+                    ? {}
+                    : { href: "#main" }),
+              }))}
+            />
+            <Eyebrow>{V2_SAMPLES.eyebrow}</Eyebrow>
+            <Cluster gap="lg">
+              <TextLink href="#main" arrow>
+                {V2_SAMPLES.link}
+              </TextLink>
+              <Text>
+                <TextLink href="#main" variant="inline">
+                  {V2_SAMPLES.inlineLink}
+                </TextLink>
+              </Text>
+            </Cluster>
+            <Cluster gap="xl">
+              <Price
+                amount={V2_SAMPLES.price}
+                qualifier={V2_SAMPLES.priceQualifier}
+                equivalents={V2_SAMPLES.equivalents}
+              />
+              <Price
+                amount={V2_SAMPLES.price}
+                qualifier={V2_SAMPLES.priceQualifier}
+              />
+              <Price
+                variant="page"
+                amount={V2_SAMPLES.price}
+                qualifier={V2_SAMPLES.pageQualifier}
+                equivalents={V2_SAMPLES.equivalents}
+              />
+              <Price variant="from" amount={V2_SAMPLES.fromPrice} />
+            </Cluster>
+            <FactsList>
+              <Fact label={V2_SAMPLES.factOrderBy} none>
+                {V2_SAMPLES.factOrderByValue}
+              </Fact>
+              <Fact label={V2_SAMPLES.factDays}>
+                {V2_SAMPLES.factDaysValue}
+              </Fact>
+            </FactsList>
+            <div className="max-w-[420px]">
+              <Button size="send" variant="accent">
+                {V2_SAMPLES.send}
+              </Button>
+            </div>
           </Stack>
         </Section>
       </Container>
