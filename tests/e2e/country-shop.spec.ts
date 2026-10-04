@@ -116,7 +116,11 @@ test.describe("what the page renders (AC-6, AC-24)", () => {
     // form and the one button in `<main>` are TASK-114's sort control — a `GET` form whose
     // submit re-renders the same bouquets in another order, which *can* act and needs no
     // JavaScript. Counted exactly, so a basket, an email capture or a second form fails here.
-    await expect(page.getByText("You cannot order yet")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+      ),
+    ).toBeVisible();
     await expect(page.locator('main form[method="get"]')).toHaveCount(1);
     await expect(page.locator("main form")).toHaveCount(1);
     await expect(page.locator("main button")).toHaveCount(1);

@@ -141,7 +141,10 @@ describe("the country occasion page (§5.3 row 2)", () => {
   });
 
   it("carries the demo sentence and no purchase affordance (§13 Q8)", () => {
-    expect(text).toContain("You cannot order yet");
+    // N1 (spec 004 §14 A23 clause 12; TASK-193): the whole sentence, so a reworded notice is red.
+    expect(text).toContain(
+      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+    );
     expect(html).not.toMatch(/<button/iu);
     // The toolbar's sort form and the pagination nav are TASK-114's (§14 A8 (c)).
     expect(html).not.toMatch(/<form/iu);

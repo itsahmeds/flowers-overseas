@@ -112,7 +112,10 @@ describe("the populated shop root (§5.3 row 1)", () => {
   });
 
   it("carries the demo sentence — the whole of the Phase 0 state (§13 Q8)", () => {
-    expect(text).toContain("You cannot order yet");
+    // N1 (spec 004 §14 A23 clause 12; TASK-193): the whole sentence, so a reworded notice is red.
+    expect(text).toContain(
+      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+    );
     // No **purchase** affordance of any kind, disabled or otherwise. The one `<form>` and the one
     // `<button>` on the page are the sort control TASK-114 added (`method="get"`, submit): a
     // control that only re-renders the same twelve bouquets in another order, and the only way to
@@ -358,7 +361,7 @@ describe("the empty state (AC-8, §14 A8 (b))", () => {
   it("keeps one `<h1>` and does not promise a catalogue", () => {
     expect(html.match(/<h1/gu)).toHaveLength(1);
     expect(text).not.toContain("Everything we can make for Poland");
-    expect(text).not.toContain("You cannot order yet");
+    expect(text).not.toContain("Ordering opens soon");
     expect(html).toContain('data-fo-listing-state="empty"');
   });
 });

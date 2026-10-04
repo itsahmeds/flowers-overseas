@@ -58,9 +58,12 @@ const inChrome = (selector: string): string =>
  * agrees with the component by construction. Measured on a production build at 390, 412, 768,
  * 1 023, 1 024, 1 280 and 1 440 px in `en`, `de` and `pl`, identical in all three:
  *
- * notice bar mobile  = 80 (8 + one 14 px line at 1.4 + the 44 px row of the language switcher and
- *                      the currency + 8; 79.6 rounded). Spec 004 §14 A4 binds over the mobile
- *                      artboard (coordinator ruling, 2026-10-04): both are reachable at 390 px
+ * notice bar mobile  = 60 (8 + the 44 px row of the language switcher and the currency + 8). Spec
+ *                      004 §14 A4 binds over the mobile artboard (coordinator ruling, 2026-10-04):
+ *                      both are reachable at 390 px. The 14 px sentence line above that row (80
+ *                      before) printed the dates-pending line, which spec 004 §14 A23 clause 12
+ *                      removed with nothing in its place (TASK-193); it returns with the short
+ *                      cutoff once a destination takes delivery dates
  * notice bar desktop = 62 (9 + the 44 px utility links + 9) from `lg` (1 024 px)
  * sticky mobile      = 64 masthead + 56 chip row (44 px chips + 12) + 1 rule = 121, below `xl`
  * sticky desktop     = 82 masthead (logo, the eight links, the pill) + 1 rule = 83, from `xl`
@@ -68,7 +71,7 @@ const inChrome = (selector: string): string =>
  * v1 was 113 + 96 = 209 on mobile and 45 + 138 = 183 on desktop (TASK-173). Both boxes are
  * server-rendered with no island, so they are the same before and after hydration (AC-7).
  */
-const UTILITY_HEIGHTS = { mobile: 80, desktop: 62 } as const;
+const UTILITY_HEIGHTS = { mobile: 60, desktop: 62 } as const;
 const STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
 const HEADER_HEIGHTS = {
   mobile: UTILITY_HEIGHTS.mobile + STICKY_HEIGHTS.mobile,

@@ -188,9 +188,7 @@ test.describe("the picker is the data's state, in one template (AC-8, T-08)", ()
     await expect(page.locator("[data-fo-date]")).toHaveCount(0);
     await expect(page.locator("[data-fo-cutoff]")).toHaveCount(0);
     await expect(
-      page.getByText(
-        "We are still choosing florists in Germany, so we cannot offer delivery dates yet.",
-      ),
+      page.getByText("Delivery dates for Germany open when ordering does."),
     ).toBeVisible();
   });
 });

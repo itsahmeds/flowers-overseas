@@ -216,12 +216,13 @@ describe("the rendered chrome promises nothing (A19, AC-6)", () => {
     }
   }
 
-  it("prints the honest forms in their place, in every locale", () => {
+  it("prints no cutoff and no dates-pending line in its place, in every locale", () => {
     for (const locale of launchLocales) {
       const header = text(render(locale, <SiteHeader locale={locale} />));
-      expect(header, locale).toContain(
-        "Delivery dates open when we confirm our first florist",
-      );
+      // Spec 004 §14 A23 clause 12 (TASK-193): the "first florist" line left every catalogue
+      // and nothing took its place, so the gated line prints nothing until dates open.
+      expect(header, locale).not.toContain("first florist");
+      expect(header, locale).not.toContain("Delivery dates");
       // "Same-day delivery" and "Delivery times and cutoffs" carry no pattern-matchable promise
       // on their own ("Delivery times and cutoffs" is a page title), so their absence is asserted
       // by name: both rows are gated on `requiresDeliveryDates` and neither renders today.
@@ -267,8 +268,8 @@ describe("the sweep itself", () => {
 
   it("passes the honest sentences this sweep put in their place", () => {
     for (const honest of [
-      "Delivery dates open when we confirm our first florist",
-      "Delivery dates are not open yet",
+      "Delivery dates for Poland open when ordering does.",
+      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
       "Our selection",
       "— no cutoff, because no florist has agreed to one",
       "Continue shows you where we deliver and where we are still choosing florists.",

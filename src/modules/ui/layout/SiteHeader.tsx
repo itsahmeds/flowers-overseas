@@ -252,7 +252,7 @@ export function SiteHeader({
             className={
               datesOpen
                 ? "hidden md:inline"
-                : "hidden md:inline [&>[data-fo-price-claim]:first-child>[data-fo-sep]]:hidden [&>[data-fo-sep]:first-child]:hidden"
+                : "hidden md:inline [&>:first-child>[data-fo-sep]]:hidden [&>[data-fo-sep]:first-child]:hidden"
             }
             data-fo-notice-claims
           >
