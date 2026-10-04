@@ -60,10 +60,16 @@ _None recorded._
   Listing shots take the date-driven blocks out of the layout: `tests/visual/dated-blocks.css`
   (`[data-fo-occasion-date]`, `[data-fo-hub-dates]`, `[data-fo-shop-occasions]`) on `country-shop`,
   `country-occasion` and `hubs`. `visual:baselines` run 37172008153 requested.
+- 2026-10-04 08:20 — Run 37172008153 showed the listing primitives and the product gallery placeholder sit under the
+  home's "Coming up" band on `/dev/components` (date-driven): the stylesheet became `tests/visual/dated-blocks.css`
+  (adds `[data-fo-occasion-dates]`), loaded by `listing.spec.ts` and the gallery's full-page shot in
+  `notices.spec.ts`; `product-blocks.css` hides the band for the placeholder block. Run **37172651614**: 29 PNGs +
+  manifest, every image inspected (14 listing-page shots byte-identical to run 1), committed whole;
+  `--verify` and `--check` green. Rebased onto `0043ba5a` (spec 004 A22, docs only). Ready, `ci:full`.
 
 ## Result
 
-**PR:** https://github.com/itsahmeds/flowers-overseas/pull/169 (draft; base includes TASK-175's commits until the rebase).
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/169 (rebased onto main after PR 168; ready, `ci:full`).
 
 **Equivalents (A21 clause 6) — the helper for the whole site (TASK-179 uses the same two calls):**
 - `priceEquivalents(projection, now)` in `src/modules/catalog/pricing/equivalents.ts`, exported from
@@ -174,6 +180,13 @@ meta descriptions keep their reviewed present-tense wording (founder, 2026-10-04
 `catalog-category-page`; e2e `tests/e2e/listing-v2.spec.ts` (four locales + three hubs). Mutations watched red: buffer
 applied (5 red), charged currency not skipped (6 red), snapshot check removed (1 red), equivalents dropped from the
 card view (5 red), one de seed string restored to "handgeschriebener" (1 red).
+
+**Rebase (2026-10-04):** `en` unreviewed 23/546 = 4.21 %. The seven attested records (`catalog.price.allIn`,
+`catalog.price.equivalents`, `shop.cardNote.heading`, `shop.listing.eyebrow`, `shop.note.label`, `shop.note.mark`,
+`shop.root.tilesSubheading`) and the six restored present-tense keys are byte-identical to their pre-rebase records.
+Visual baselines from run 37172651614 (29 PNGs, all inspected). Date-driven blocks leave the photographed layout
+through `tests/visual/dated-blocks.css` on `country-shop`, `country-occasion`, `hubs`, `listing` and the gallery's
+full-page shot; the blocks stay pinned by unit and e2e tests (listed in the stylesheet's header).
 
 **Found (not mine to fix):** the committed snapshot's GBP and PLN rates are not the ECB's for 2026-09-08 (ECB:
 GBP 0.8574, PLN 4.3178; committed 0.8465, 4.268); USD here is the real ECB figure. The snapshot is stale today, so
