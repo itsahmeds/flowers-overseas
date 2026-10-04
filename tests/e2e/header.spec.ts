@@ -462,11 +462,12 @@ test.describe("the site header (AC-7)", () => {
    * WCAG 1.4.10 reflow at 320 × 568, in every locale (PR 168 breaker round 2, HOLE 1, carried to
    * TASK-176). Below the 390 px artboard the notice bar's second row (the languages and the
    * currency) wraps instead of widening the page: `max-lg:[&>div>div]:flex-wrap` on the
-   * `NoticeBar` wrapper in `SiteHeader`. Without the wrap the row runs past 320 px and the bar
-   * scrolls sideways.
+   * `NoticeBar` wrapper in `SiteHeader`. Without the wrap the row runs over the bar's gutters
+   * (measured on macOS: 310 px of row in a 280 px box) and, with Linux's wider rendering, past
+   * 320 px so that the bar scrolls sideways.
    */
   for (const { path } of LOCALES) {
-    test(`${path}: at 320 px nothing in the header scrolls sideways and the switcher and the currency lie inside the viewport`, async ({
+    test(`${path}: at 320 px nothing in the header scrolls sideways and the switcher and the currency lie inside the notice bar's gutters`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: 320, height: 568 });
@@ -482,20 +483,34 @@ test.describe("the site header (AC-7)", () => {
             client: node?.clientWidth ?? Number.NaN,
           };
         };
+        // The notice bar's content box: its frame minus the gutters. A row that does not wrap
+        // still fits the 320 px viewport on a narrow rasteriser, centred over the gutters, so
+        // "inside the viewport" alone cannot tell a wrapped row from one that overflows its box.
+        const frame = document.querySelector("[data-fo-notice-bar] > div");
+        const frameBox = frame?.getBoundingClientRect();
+        const frameStyle = frame === null ? null : getComputedStyle(frame);
+        const start =
+          (frameBox?.left ?? Number.NaN) +
+          Number.parseFloat(frameStyle?.paddingInlineStart ?? "");
+        const end =
+          (frameBox?.right ?? Number.NaN) -
+          Number.parseFloat(frameStyle?.paddingInlineEnd ?? "");
         const outside = (selector: string) =>
           [...document.querySelectorAll(selector)]
             .map((node) => node.getBoundingClientRect())
             .filter(
               (box) =>
                 box.width === 0 ||
-                Math.round(box.left) < 0 ||
+                !(Math.round(box.left) >= Math.floor(start)) ||
+                !(Math.round(box.right) <= Math.ceil(end)) ||
                 Math.round(box.right) > window.innerWidth,
             ).length;
         return {
           utility: widths("[data-fo-utility]"),
           header: widths("[data-fo-header]"),
           document: document.documentElement.scrollWidth - window.innerWidth,
-          // The switcher, each of its links, and the currency, all inside the 320 px viewport.
+          // The switcher, each of its links, and the currency, inside the bar's gutters and so
+          // inside the 320 px viewport.
           outside:
             outside("[data-fo-header-switcher]") +
             outside("[data-fo-header-switcher] a") +
