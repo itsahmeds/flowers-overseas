@@ -563,6 +563,17 @@ describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
     expect([...html.matchAll(/<li/g)]).toHaveLength(3);
     expect(html).not.toContain("<img");
   });
+
+  it("draws as many desktop columns as it has facts, so no empty cell shows the rule colour", () => {
+    // Baseline run 37171984787: with the price fact gone, a four-column grid left a blank
+    // ink-muted cell at the inline end of the band.
+    const list = /<ul class="([^"]*)"/.exec(band("en"))?.[1] ?? "";
+
+    expect(list.split(/\s+/).filter((c) => /grid-cols-\d/.test(c))).toEqual([
+      "grid-cols-1",
+      `md:grid-cols-${String(PROOF_FACTS.length)}`,
+    ]);
+  });
 });
 
 describe("the home says nothing about VAT or delivery being included (founder, 2026-10-04)", () => {

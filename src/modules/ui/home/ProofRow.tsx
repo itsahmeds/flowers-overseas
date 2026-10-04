@@ -42,7 +42,7 @@ import { Display } from "../primitives/typography.tsx";
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
 /**
- * The four facts, in the artboards' order, each with the canvas's icon. Keys, not strings — the
+ * The three facts, in the artboards' order, each with the canvas's icon. Keys, not strings — the
  * copy lives in `messages/*.json` under `home.proof.*` so `pl` reads it in Polish and a founder
  * rewording is a catalogue edit. The two keys are written out per fact rather than built from
  * `id` with a template literal: `pnpm i18n:check`'s usage scan is a text scan (by design — see
@@ -102,7 +102,7 @@ export function ProofRow({
       >
         {trust("heading")}
       </Display>
-      <ul className="rounded-photo bg-ink-muted grid grid-cols-1 gap-px overflow-hidden md:grid-cols-4">
+      <ul className="rounded-photo bg-ink-muted grid grid-cols-1 gap-px overflow-hidden md:grid-cols-3">
         {PROOF_FACTS.map((fact) => (
           <li
             key={fact.id}
