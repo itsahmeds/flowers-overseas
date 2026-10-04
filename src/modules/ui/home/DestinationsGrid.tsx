@@ -76,9 +76,8 @@ export function DestinationsGrid({
   const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
   const source = provider ?? getDestinationStatusProvider();
-  const destinations = [...source.list(locale, (nameKey) => t(nameKey))].sort(
-    (a, b) => Number(b.featured) - Number(a.featured),
-  );
+  // The provider owns the order (featured first, then collated); the grid does not re-sort.
+  const destinations = source.list(locale, (nameKey) => t(nameKey));
 
   return (
     <section
@@ -103,7 +102,7 @@ export function DestinationsGrid({
           {destinations.map((destination) => {
             // Every chip leads to its guide (plan/02 §11, spec 004 Q11/A2): the guide is the
             // page that ranks for "send flowers to Poland", and it links the shop root. Only
-            // where a locale has no guide does the delivering chip go straight to the shop.
+            // where a locale has no guide does the featured (`live`) chip go to the shop root.
             const href =
               destination.href ?? (destination.featured ? shopHref : undefined);
             return (

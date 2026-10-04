@@ -716,9 +716,9 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
    * does ("72 hours of delivery"), so delivery is denied only in the charge and inclusion forms.
    */
   const PRICE_TALK: Record<(typeof LOCALES)[number], RegExp> = {
-    en: /\b(?:vat|tax|taxes|taxed|delivery (?:charge|fee|cost)s?|shipping|postage|includ(?:e|es|ed|ing) delivery|delivery (?:is |are )?included)\b/iu,
+    en: /\b(?:vat|tax|taxes|taxed|duty|duties|delivery (?:charge|fee|cost)s?|shipping|postage|includ\w* (?:\w+ )?delivery|delivery(?:'s| is| are)? included)\b/iu,
     "en-gb":
-      /\b(?:vat|tax|taxes|taxed|delivery (?:charge|fee|cost)s?|shipping|postage|includ(?:e|es|ed|ing) delivery|delivery (?:is |are )?included)\b/iu,
+      /\b(?:vat|tax|taxes|taxed|duty|duties|delivery (?:charge|fee|cost)s?|shipping|postage|includ\w* (?:\w+ )?delivery|delivery(?:'s| is| are)? included)\b/iu,
     de: /MwSt|Mehrwertsteuer|Steuer|Abgabe|inkl\.|inklusive|inbegriffen|einschließlich|enthalten|zzgl|zuzüglich|Endpreis|Gesamtpreis|Versand|Zustellung|Porto|Gebühr|Lieferung(?:skosten)?\b|Lieferkosten/iu,
     pl: /\bVAT\b|podat|dostaw|wliczon|w cenie|opłat|koszt|zawiera(?:ją)? (?:dostaw|VAT)/iu,
   };
@@ -782,11 +782,30 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
     }
   });
 
+  /**
+   * The dates band is left out of the whole-home sweep because its stamps print real dates; its
+   * own copy is not (PR 174 breaker round 3, hole 2): the eyebrow and the heading are swept here.
+   */
+  it("promises no day count in the dates band's eyebrow and heading, in any locale", () => {
+    for (const locale of LOCALES) {
+      const html = render(<OccasionDates locale={locale} />, locale);
+      const head = html.slice(0, html.indexOf("<ul"));
+      const words = text(head);
+      expect(words.length, locale).toBeGreaterThan(10);
+      expect(dayCountIn(words), locale).toBeUndefined();
+    }
+  });
+
   it("the denylist bites on the breaker's sentences and spares the guarantee's own words", () => {
     expect("Lieferung und Steuern inklusive").toMatch(PRICE_TALK.de);
     expect("Cena obejmuje dostawę i podatek").toMatch(PRICE_TALK.pl);
     expect("delivery and tax included").toMatch(PRICE_TALK.en);
     expect("Prices include delivery and VAT").toMatch(PRICE_TALK.en);
+    // PR 174 breaker round 3, hole 1.
+    expect("every price includes local delivery and duties").toMatch(
+      PRICE_TALK.en,
+    );
+    expect("Delivery's included.").toMatch(PRICE_TALK["en-gb"]);
     // PR 174 breaker round 2, hole 2: the paraphrases.
     expect("Endpreis: Zustellung und Abgaben inbegriffen.").toMatch(
       PRICE_TALK.de,

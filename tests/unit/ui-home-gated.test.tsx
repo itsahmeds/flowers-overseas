@@ -19,6 +19,7 @@ import { describe, expect, it, vi } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import { COUNTRIES } from "../../src/config/countries.ts";
+import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { TRENDING_PICKS } from "../../src/config/trending.ts";
 import { loadMessages } from "../../src/modules/i18n";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
@@ -462,7 +463,7 @@ describe("the destinations grid", () => {
     }
   });
 
-  it("puts the delivering destination first and collates the rest per locale", () => {
+  it("puts the featured (`live`) destination first and collates the rest per locale", () => {
     const order = (locale: string): string[] =>
       [...grid(locale).matchAll(/data-fo-destination="([A-Z]{2})"/g)].map(
         (match) => match[1] ?? "",
@@ -497,13 +498,43 @@ describe("the destinations grid", () => {
     }
   });
 
-  it("links the delivering chip to its shop root only where its guide does not exist in the locale", () => {
+  it("links the featured chip to its shop root only where its guide does not exist in the locale", () => {
     const html = render(
       <DestinationsGrid locale="de" shopHref="/de/polen/blumen" />,
       "de",
     );
     // `/de` has no guides (spec 007 §13 Q1): Poland's chip is the one link, to the shop root.
     expect(hrefs(html)).toEqual(["/de/polen/blumen"]);
+  });
+
+  /**
+   * The day a florist is signed (PR 174 breaker round 3, hole 3): the same grid, with Poland's
+   * delivery dates open through the partners seam, claims delivery for Poland — the poppy chip and
+   * the reviewed "Delivering now" word, once — and for nobody else. The other half of item 6's pin:
+   * a claim that can never render is no better than one that always does.
+   */
+  it("claims delivery for Poland alone, in word and tone, once a florist is signed", async () => {
+    const html = await withActivePartnersProvider(
+      { hasActivePartners: (iso2) => iso2 === "PL" },
+      () => grid("en"),
+    );
+    const item = (iso2: string): string => {
+      const start = html.indexOf(`data-fo-destination="${iso2}"`);
+      return html.slice(start, html.indexOf("</li>", start));
+    };
+
+    expect(item("PL")).toMatch(/<a class="[^"]*\bbg-accent\b[^"]*"/u);
+    expect(item("PL")).toMatch(/class="[^"]*\btext-on-accent\b[^"]*"/u);
+    expect(text(item("PL"))).toContain("Delivering now");
+    expect(text(html).split("Delivering now")).toHaveLength(2);
+    const others = COUNTRIES.filter((country) => country.iso2 !== "PL");
+    expect(others).toHaveLength(6);
+    for (const country of others) {
+      expect(text(item(country.iso2)), country.iso2).toContain(
+        "Guide · not delivering yet",
+      );
+      expect(item(country.iso2), country.iso2).not.toContain("bg-accent");
+    }
   });
 
   it('keeps the `destinations` id, the home\'s anchor for every "where" question', () => {
