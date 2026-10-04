@@ -1187,8 +1187,9 @@ const H1_KEYS: Readonly<Record<ListingPageType, string>> = {
   occasionsIndex: "occasionsIndex.h1",
 };
 
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+/** The UTC calendar date of the view's one clock reading. */
+function todayIso(now: Date): string {
+  return now.toISOString().slice(0, 10);
 }
 
 /** The next date of an occasion in a destination, or `null` — §14 Q6's honest blank. */
@@ -1359,8 +1360,17 @@ export async function listingView(
   };
   if (!(await listingExists(identity))) return undefined;
 
+  /*
+   * **One clock for the whole view.** The cards, their equivalents, the page's stale-rate
+   * sentence, the category tiles' from-prices and the default date window all read this single
+   * instant. Two readings could straddle the 48-hour FX bound and render cards with equivalents
+   * under a sentence saying the rate is stale, or tiles in one currency beside cards in another
+   * (`/break` round 2 holes 4 and 5 on PR 169).
+   */
+  const now = options.now ?? new Date();
+
   // The date window is a boundary value like any other: parsed, not asserted (`/review 76`).
-  const fromParse = IsoDateSchema.safeParse(options.from ?? todayIso());
+  const fromParse = IsoDateSchema.safeParse(options.from ?? todayIso(now));
   if (!fromParse.success) return undefined;
   const from: IsoDate = fromParse.data;
   const page = options.page ?? 1;
@@ -1397,7 +1407,6 @@ export async function listingView(
     );
   } else {
     const productLinks = options.productLinks ?? false;
-    const now = options.now ?? new Date();
     const cards = async (
       list: readonly Product[],
     ): Promise<readonly ProductCardView[]> =>
@@ -1426,7 +1435,7 @@ export async function listingView(
 
   const tiles =
     pageType === "countryShopRoot" && iso2 !== undefined
-      ? await tilesFor(locale, iso2)
+      ? await tilesFor(locale, iso2, now)
       : [];
 
   const reviewed = entityRow?.reviewed ?? true;
@@ -1552,7 +1561,7 @@ export async function listingView(
               }),
         }
       : {}),
-    fxFallback: await pageFxFallback(locale, iso2, ordered[0], options.now),
+    fxFallback: await pageFxFallback(locale, iso2, ordered[0], now),
     resultCount: total,
     page,
     pageCount,
@@ -1578,14 +1587,14 @@ async function pageFxFallback(
   locale: LocaleCode,
   iso2: CountryIso2 | undefined,
   product: Product | undefined,
-  now: Date | undefined,
+  now: Date,
 ): Promise<boolean> {
   if (iso2 === undefined || product === undefined) return false;
-  // The cards' clock (`ListingViewOptions.now`), so the sentence and the cards it explains agree.
+  // The view's one clock, so the sentence and the cards it explains agree.
   const projection = await fromPriceProjection(locale, {
     productId: product.sku,
     countryIso: iso2,
-    ...(now === undefined ? {} : { now }),
+    now,
   });
   return projection.fxReasonKey !== undefined;
 }
@@ -1660,6 +1669,7 @@ function familyPublished(pageType: ListingLinkPageType): boolean {
 async function tilesFor(
   locale: LocaleCode,
   iso2: CountryIso2,
+  now: Date,
 ): Promise<readonly CategoryTileView[]> {
   // A tile *is* a link into the country-category family, so an unpublished family draws none.
   if (!familyPublished("countryCategory")) return [];
@@ -1669,7 +1679,7 @@ async function tilesFor(
     if (!(await countryCategoryExists(row.key, iso2, locale, memo))) continue;
     const category = await getCategory(row.key);
     if (category === null) continue;
-    const tile = await categoryTileView(category, locale, iso2);
+    const tile = await categoryTileView(category, locale, iso2, { now });
     // `undefined` is "no tile" (no product here, or no authored slug in this locale). The
     // existence rule above already excludes both, so this is the type agreeing with it.
     if (tile === undefined) continue;
