@@ -476,6 +476,14 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     ).toEqual([TYPED()]);
   });
 
+  it("B: ALTER TABLE … OF a type on its own, even with no email attribute yet", () => {
+    expect(
+      gate(
+        "CREATE TYPE recipient_row AS (id uuid); ALTER TABLE recipient OF recipient_row;",
+      ),
+    ).toEqual([TYPED()]);
+  });
+
   it("B: CREATE TABLE … OF a type, and ALTER TYPE … CASCADE on its own", () => {
     expect(
       gate(
@@ -519,6 +527,22 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     ).toEqual([
       `9999_fixture.sql: column \`x.who.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
+  });
+
+  it("B: a type that gains an email attribute after a recipient column uses it", () => {
+    for (const change of [
+      "ALTER TYPE contact_t ADD ATTRIBUTE email text",
+      "ALTER TYPE contact_t RENAME ATTRIBUTE phone TO email",
+    ]) {
+      expect(
+        gate(
+          `CREATE TYPE contact_t AS (phone text); ALTER TABLE recipient ADD COLUMN contact contact_t; ${change};`,
+        ),
+        change,
+      ).toEqual([
+        `9999_fixture.sql: column \`contact.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+      ]);
+    }
   });
 
   it("B: a composite type with no email attribute passes", () => {

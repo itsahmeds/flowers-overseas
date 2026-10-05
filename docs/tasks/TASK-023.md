@@ -31,6 +31,11 @@ _None recorded._
   are, so the same note about `FORCE ROW LEVEL SECURITY` applies. `partner_application_media_check()`
   now locks the listed `media_asset` rows `FOR SHARE`. Under RLS, its locking query must still see
   every row: as the owner it does, and with `FORCE ROW LEVEL SECURITY` it would need a policy.
+- **From TASK-018, round 2 of PR 200.** Two more `SECURITY DEFINER` functions are owned by
+  `app_owner`, with the same note about `FORCE ROW LEVEL SECURITY`:
+  - `partner_coverage_country_check()`, which reads `fulfillment_partner` `FOR SHARE`, plus `city`
+    and `postcode_zone`;
+  - `fulfillment_partner_coverage_country_guard()`, which reads `partner_coverage`.
 
 ## Escalations
 

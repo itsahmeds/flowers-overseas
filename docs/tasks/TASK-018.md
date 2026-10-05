@@ -39,8 +39,35 @@ _None recorded._
 
   Local PostgreSQL 16.14, fresh data directory, PID 41893, stopped by PID: the round trip,
   13 live mutations, and 24 gate/unit mutations.
+- 2026-10-05: round 2 of PR 200 (reviewer r2 PASS; breaker r2 HOLES on `42be2786`). Pushed:
+  - `84f7102b`: holes A, B, C and B6, plus the ENOENT fix;
+  - then the propagation and standalone-`OF` cases.
+
+  Local PostgreSQL 16.14, fresh data directory, PID 99523, stopped by PID: round trip, 6 live
+  mutations, 13 gate/unit mutations.
 
 ## Result
+
+### Round 2 fixes (breaker HOLES on `42be2786`)
+
+| Hole | Fix | Mutation, and the case that went red |
+|---|---|---|
+| A (depth) | `dynamicSqlCount` and the table model read every string at **every** depth. A quoted body is strictly shorter than its quote, so the recursion ends, and no limit is left for a statement to hide behind. A plpgsql statement (`BEGIN …`, `IF … THEN …`) is read from its first DDL word. Fixtures: an `EXECUTE` four and six `$qN$` levels deep, and literal `ALTER TABLE … ADD COLUMN email` six function bodies deep. | Limit 3 restored (1 red). Limit 1 (1 red). Model limit 3 (1 red). Statements read only from index 0 (1 red). |
+| B (typed tables) | Refused outright in migrations: `CREATE TABLE … OF`, `ALTER TABLE … OF` and `ALTER TYPE … CASCADE`. Composite types are modelled: a column of a type carrying an email attribute (nested, as an array, carried by `LIKE`, or gaining the attribute later by `ADD` or `RENAME ATTRIBUTE`) is reported as `column.attribute`. Live: the AC-27 case walks composite column types recursively and asserts neither recipient table is typed (`reloftype = 0`). | Each refusal removed (1 red each; `ALTER TABLE … OF` needed its own fixture, now added). Composite attributes not carried (2). Added attribute not propagated (1). Live: the breaker's typed-table route (3 red), a composite column with an email attribute (1), a typed table with no email (1). |
+| C (CLI) | `scripts/db-check.ts` takes `--migrations-dir` and `--schema-dir`; `pnpm db:check` passes neither. A test spawns the CLI against a mirror copy that spreads in an email column (exit 1, the line), and against the committed tree (exit 0). The scratch copy lives in `test-results/` with its parent created, which fixes the ENOENT on a fresh install. Node does not strip types under `node_modules/`, so the copy cannot live there. | CLI back to `runDbCheck` (1 red). |
+| B6 (partner country) | `partner_coverage_country_check()` (`SECURITY DEFINER`, locks the partner `FOR SHARE`) refuses a coverage row whose city or zone is outside the partner's country, on insert and on update. `fulfillment_partner_coverage_country_guard()` refuses moving a partner to another country while it covers the old one. No new column. The rollback drops both functions. | Live: either trigger dropped, or the zone branch removed (red each). Unit: `FOR SHARE` removed, guard trigger renamed (1 red each). |
+
+**B4, not fixed, by instruction.** Mirror-side CHECK expression drift stays a carry-forward to
+TASK-027's AC-26 drift check, for the reviewer to accept.
+
+**Evidence, local.** PostgreSQL 16.14 (127.1:54320, PID 99523, stopped by PID, no `postmaster.pid`
+left).
+- Suites: partners-customers 12/12, i18n-geo 10/10, media 8/8.
+- Round trip: `--to 0004` left 31 tables with only `set_updated_at`; `--to 0000` left only
+  `schema_migrations`; re-migrate restored 45 tables and six functions. All exited 0.
+
+**Tests now:** unit `db-check-recipient-email.test.ts` 82, `schema-partners-customers.test.ts` 68;
+integration `schema-partners-customers.test.ts` 12.
 
 ### Round 1 fixes (review FAIL and breaker HOLES on `283daf3a`)
 
