@@ -156,14 +156,21 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
     });
   }
 
-  test("the header prints the honest form and the gated rows are absent", async ({
+  test("the header prints no dates line and the gated rows are absent", async ({
     page,
   }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/en");
 
+    // Spec 004 §14 A23 clause 12 (TASK-193): the dates-pending line is gone with nothing in its
+    // place, so on the home (no price claim) the claims read the promise alone, with no stray
+    // leading `·`, and on a page with prices they open at the price claim.
     const header = await page.locator("[data-fo-header-band]").first();
-    await expect(header).toContainText(
-      "Delivery dates open when we confirm our first florist",
+    await expect(header).not.toContainText("first florist");
+    await expect(header).not.toContainText("Delivery dates");
+    await expect(page.locator("[data-fo-notice-claims]")).toHaveText(
+      "Fresh-flower promise",
+      { useInnerText: true },
     );
     await expect(page.locator('[data-fo-header-item="same-day-delivery"]')) //
       .toHaveCount(0);
@@ -171,6 +178,11 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
       .toHaveCount(1);
     await expect(page.locator("footer")).not.toContainText(
       "Delivery times and cutoffs",
+    );
+    await page.goto("/en/poland/flowers");
+    await expect(page.locator("[data-fo-notice-claims]")).toHaveText(
+      "Prices include delivery and VAT · Fresh-flower promise",
+      { useInnerText: true },
     );
   });
 

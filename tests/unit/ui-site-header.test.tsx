@@ -544,14 +544,19 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(html).not.toContain(`>${COMPANY.tradingName}<`);
   });
 
-  it('prints the honest notice: "A note from us:", the dates line, the price claim and "Fresh-flower promise"', () => {
+  it('prints the honest notice: "A note from us:", the price claim and "Fresh-flower promise", and no dates line', () => {
     const html = render("en");
     const strip = html.slice(0, html.indexOf("data-fo-header="));
     expect(strip).toContain("<strong>A note from us:</strong>");
-    expect(strip).toContain(
-      "Delivery dates open when we confirm our first florist",
+    // Spec 004 §14 A23 clause 12 (TASK-193): the dates-pending line is gone with nothing in its
+    // place, so the claims open at the price claim and, below `md`, the sentence row is empty.
+    expect(strip).not.toContain("first florist");
+    expect(strip).not.toContain("Delivery dates");
+    // The claims open at the price claim, whose leading `·` the claims span hides.
+    const claims = strip.slice(strip.indexOf("data-fo-notice-claims"));
+    expect(claims.slice(claims.indexOf(">") + 1)).toMatch(
+      /^<span data-fo-price-claim="true"> <span aria-hidden="true" class="opacity-45" data-fo-sep="true">·<\/span> Prices include delivery and VAT<\/span>/u,
     );
-    expect(strip).toContain("Delivery dates are not open yet");
     expect(strip).toContain("Prices include delivery and VAT");
     expect(strip).toContain("Fresh-flower promise");
     // Founder, 2026-10-04: "cant promise staying fresh" — no N-day freshness promise at all.
@@ -723,7 +728,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(page, locale).toContain("data-fo-price-claim");
       expect(home, locale).not.toContain(claim);
       expect(home, locale).not.toContain("data-fo-price-claim");
-      // The guarantee and the dates line stay; only the one claim goes.
+      // The guarantee stays; only the one claim goes.
       expect(home, locale).toContain(messages.nav.utility.guarantee ?? "");
     }
   });

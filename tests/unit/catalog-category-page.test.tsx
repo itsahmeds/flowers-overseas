@@ -97,7 +97,10 @@ describe("the populated country category (§5.3 row 2)", () => {
   it("carries the counted lede and the demo sentence", () => {
     expect(roses.resultCount).toBeGreaterThan(1);
     expect(text).toContain(`${String(roses.resultCount)} of ours`);
-    expect(text).toContain("You cannot order yet");
+    // N1 (spec 004 §14 A23 clause 12; TASK-193): the whole sentence, so a reworded notice is red.
+    expect(text).toContain(
+      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+    );
   });
 
   it("prices every card, through `formatMoney` and nowhere else", () => {

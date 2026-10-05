@@ -227,9 +227,9 @@
   "catalog.availability.noPartner": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "backend-implementer (spec 005 §14 A4: the predicate is destination-level; TASK-069)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "3eacb45b31960ff2c71e1ae46b2c6f9f2a9a34db9258c7d064393aeef3bd6877"
+    "sourceHash": "44bbc0c4c0399193f3cad38717071f2632b37de5eb46a92dba9fd5042370ff05",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "catalog.availability.outOfStock": {
     "source": "human",
@@ -1065,9 +1065,9 @@
   "categoryHub.destinationPending": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/category-hub-{desktop,mobile}.dc.html and occasion-hub-{desktop,mobile}.dc.html, 2026-09-16 design round; transcribed by TASK-112)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "a7f43dcda945f6c232ec97de479c3fb79673155a168dc40cbb2ebac16b8a44f9"
+    "sourceHash": "8747594d0ba5fa6b00f21845df3a1f77eb21ad319439a3aee67fabfe9b700f73",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "categoryHub.destinationsEyebrow": {
     "source": "human",
@@ -1452,9 +1452,9 @@
   "corridor.coverage.bodyNone": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/corridor-country-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-091)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "477efacd1eac6bbcdfbd8d981631d5cd567987ccddae8758bd967095cab921bd"
+    "sourceHash": "1f0704f4c1ded24026c5cb7cb253850697bd61de9ae28f1c5cf9339a369108f4",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "corridor.coverage.eyebrow": {
     "source": "human",
@@ -1501,9 +1501,9 @@
   "corridor.facts.delivering.none": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/corridor-country-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-091)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "4bf3221cff0edba467e998675f85dbde5800c3b540df759d9548c99b82d350d7"
+    "sourceHash": "ef201c53fe44cb17363d9b183e8750bb66fe3a94478c6c9db4af1c1fab3714b5",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "corridor.facts.deliveryDays.label": {
     "source": "human",
@@ -1907,9 +1907,9 @@
   "delivery.picker.unavailable": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "56c88a5e2d3aace8d86e8b4fc888ccc2885c00c55d8937ff7e25009cce97b1cb"
+    "sourceHash": "b4898cbf9fccfc3355294e30bbf98deb6206670641b55bf2bfedbb9261e336ab",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "delivery.reason.beforeEarliest": {
     "source": "human",
@@ -2947,20 +2947,6 @@
     "reviewed": false,
     "sourceHash": "bad21fbae17ec6d6a7769ec0e51a852218691bf82a71af6c9a19c297ead08b6e"
   },
-  "nav.utility.datesPending": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "9a67a6d3d1965934676bf27c1f266853f041ac96a7bea0ba848c7d398efdf8ab",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "reviewedBy": "founder"
-  },
-  "nav.utility.datesPendingShort": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "70abcb4a801e65818911a6b064d13bf6a5f2a5b5d4ea17c3166abb9f2ef5351d",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "reviewedBy": "founder"
-  },
   "nav.utility.guarantee": {
     "source": "human",
     "reviewed": true,
@@ -3278,9 +3264,9 @@
   "product.demo.body": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "b6196e35e2eb0ef59fb9e701efa592162cb0c8358647e9eedeb69fd351edfc93"
+    "sourceHash": "0bf6242934d55e95419fbcfb9826937b74ba07b320bb18542d5defeb4811bed8",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "product.demo.heading": {
     "source": "human",
@@ -3630,9 +3616,9 @@
   "shop.root.demoNotice": {
     "source": "human",
     "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "498b1004f4743400efa65ca434c167fd593c9b2c8e3a94dad4a2479cd798926a"
+    "sourceHash": "592087225e8329d8b935b6ad1798e82fbce6e93664621d52f40588ba9816d193",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "shop.root.introBody": {
     "source": "human",

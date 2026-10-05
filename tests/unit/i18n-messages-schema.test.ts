@@ -265,9 +265,10 @@ describe("the shipped catalogues and manifests", () => {
     // and they wait here until he attests them — the same rule §14 A5 applied to TASK-084.
     //
     // On 2026-09-18 the founder attested four of them and they left this queue:
-    // `nav.utility.datesPending` and `finder.datesPending` ("Delivery dates open when we confirm
-    // our first florist"), `nav.utility.datesPendingShort` ("Delivery dates are not open yet")
-    // and `nav.category.ourSelection` ("Our selection", id `our-selection`). The decision is in
+    // `nav.utility.datesPending` and `finder.datesPending`, `nav.utility.datesPendingShort` and
+    // `nav.category.ourSelection` ("Our selection", id `our-selection`). The two
+    // `nav.utility.datesPending*` keys left every catalogue with spec 004 §14 A23 clause 12
+    // (TASK-193). The decision is in
     // `docs/decisions-log.md`; their `en` manifest entries carry `reviewedBy: "founder"` and
     // `reviewedAt: "2026-09-18T00:00:00Z"`. The `de` and `pl` entries stay `source: "machine"`
     // and unreviewed: what he attested is the English wording, not a German or Polish rendering
@@ -284,6 +285,8 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-178's `catalog.price.equivalents` left this queue when the founder's attestation was
     // recorded (2026-10-04).
     // TASK-179's `catalog.floristSentence` left this queue on the founder's attestation, 2026-10-04.
+    // TASK-193's neutral batch, N1–N7 (spec 004 §14 A23 clause 12), left this queue on the
+    // founder's `record-approval-193.py` run, 2026-10-05.
     "categoryHub.destinationLink",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
@@ -431,7 +434,7 @@ describe("the shipped catalogues and manifests", () => {
       "trust",
       "faq",
       // Spec 007 §7's namespaces (TASK-091): the corridor page's section headings, fact labels,
-      // calendar caption and the honest "we are choosing florists here" line, plus the
+      // calendar caption and the honest "not delivering here yet" line, plus the
       // breadcrumb's hub label. The corridor *content* is not here and never will be — it lives
       // in `content/corridors/` where a machine draft is forbidden (`plan/02` §12).
       "breadcrumb",

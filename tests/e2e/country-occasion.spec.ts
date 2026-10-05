@@ -135,7 +135,11 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
     await expect(page.locator("[data-fo-listing-grid]")).toHaveCount(1);
     const cards = await page.locator("[data-fo-product-card]").count();
     expect(cards).toBeGreaterThanOrEqual(6);
-    await expect(page.getByText("You cannot order yet")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+      ),
+    ).toBeVisible();
     // No control that cannot act: the sort form and the pagination are TASK-114's (§14 A8 (c)).
     await expect(page.locator("main button")).toHaveCount(0);
     await expect(page.locator("main form")).toHaveCount(0);

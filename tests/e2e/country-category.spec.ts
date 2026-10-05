@@ -153,7 +153,11 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
     // The demo sentence, the whole of the Phase 0 state.
-    await expect(page.getByText("You cannot order yet")).toBeVisible();
+    await expect(
+      page.getByText(
+        "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+      ),
+    ).toBeVisible();
     // Toolbar and pagination wait for TASK-114's `searchParams` (§14 A8 (c)).
     await expect(page.locator("main form")).toHaveCount(0);
     await expect(page.locator("main button")).toHaveCount(0);
