@@ -62,13 +62,12 @@ test.describe("indexability, observed (AC-9, T-10)", () => {
     });
   }
 
-  test("the locale chooser stays noindex whatever the environment (plan/02 §7)", async ({
+  test("`/` is a 308 to /en for crawlers too, with no document to index (spec 003 §14 A16)", async ({
     request,
   }) => {
     const response = await request.get("/", { maxRedirects: 0 });
-    const html = await response.text();
-    for (const directive of metaRobots(html)) {
-      expect(directive).toContain("noindex");
-    }
+    expect(response.status()).toBe(308);
+    expect(response.headers()["location"]).toMatch(/\/en$/u);
+    expect(metaRobots(await response.text())).toEqual([]);
   });
 });

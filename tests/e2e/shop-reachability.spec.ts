@@ -410,15 +410,18 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
     });
   }
 
-  test("`/` links every locale home at depth 1, so the shop is ≤4 clicks from the root", async ({
+  test("`/` lands on /en, which links every locale home at depth 1, so the shop is ≤4 clicks from the root", async ({
     request,
   }) => {
-    // The per-locale bound above starts at the locale home; a visitor with no locale starts at
-    // the chooser. Asserting the one hop in between — a rendered `<a href>` to each home, each
-    // answering 200 — is what turns "≤3 from every locale home" into "≤4 from `/`" without a
-    // fifth crawl. Asserted as the exact set of homes, not "some links exist".
-    const root = await get(request, "/");
-    expect(root.status, "/").toBe(200);
+    // The per-locale bound above starts at the locale home. Since spec 003 §14 A16 `/` is one
+    // permanent 308 to `/en` (a hop, not a click), and `/en`'s switcher links every home —
+    // itself included as the current entry or not — so "≤3 from every locale home" still means
+    // "≤4 from `/`". Asserted as the exact set of homes, not "some links exist".
+    const redirect = await request.get("/", { maxRedirects: 0 });
+    expect(redirect.status(), "/").toBe(308);
+    expect(redirect.headers()["location"]).toMatch(/\/en$/u);
+    const root = await get(request, "/en");
+    expect(root.status, "/en").toBe(200);
     const homes = new Set(
       hrefsIn(root.html).filter((href) =>
         locales.some((locale) => href === `/${locale}`),

@@ -22,6 +22,8 @@ import { createHash } from "node:crypto";
 
 import { type Page, expect, test } from "@playwright/test";
 
+import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
+
 import { COOKIE_REGISTRY, isRegisteredCookie } from "../../src/config/cookies";
 import { CONSENT_BOOTSTRAP_ID } from "../../src/lib/consent-bootstrap";
 import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
@@ -139,7 +141,7 @@ test.describe("Consent Mode v2 defaults (AC-18)", () => {
 });
 
 test.describe("the GA4 loader is dark until configured (AC-21)", () => {
-  for (const path of ["/", "/en"] as const) {
+  for (const path of ["/en", "/de"] as const) {
     test(`\`${path}\` makes no request to googletagmanager.com and carries no tag`, async ({
       page,
       baseURL,
@@ -189,6 +191,9 @@ test.describe("the GA4 loader is dark until configured (AC-21)", () => {
 });
 
 test.describe("no cookie outside the register (AC-22)", () => {
+  // A first visit: nothing seeded, so "before any decision nothing is set" is about this browser.
+  test.use({ storageState: NO_LOCALE_CHOICE });
+
   test("a session across `/` and all four locales stores only registered cookies", async ({
     page,
     context,

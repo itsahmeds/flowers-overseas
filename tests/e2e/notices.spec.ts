@@ -1,17 +1,14 @@
 /**
- * T-14 / AC-12 (TASK-055): the three documents a visitor can reach without having chosen anything
- * — the `/` chooser, the 404 and, through its shared skin, the 500 — are styled with the design
- * system and still keep every spec 003 contract they were given.
+ * T-14 / AC-12 (TASK-055): the failure documents (the 404 and, through its shared skin, the 500)
+ * are styled with the design system and still keep every spec 003 contract they were given. The
+ * `/` chooser this file also covered was deleted by spec 003 §14 A16: `/` is a 308 to `/en`
+ * (`./root-redirect.spec.ts`).
  *
  * The contracts are the point. A styling pass is exactly the change that quietly turns a
  * script-free page into a hydrated one, a 404 into a soft 404 and a cacheable response into a
  * cookie-setting one, so each of them is asserted here against the built application rather than
  * described in a PR body:
  *
- *  - `/` — 200, `noindex,follow`, **no client component of its own**, no `Set-Cookie`, no
- *    negotiation `Vary`, and no consent or suggestion overlay (it has no locale to suggest, and
- *    the chooser is the one document that must work with scripting off — `./shell.spec.ts` proves
- *    that half);
  *  - the 404 — status **404**, the x-default document, and a way back that is a real link;
  *  - all of them — the same lockup (the masthead's outlined wordmark since TASK-176), the same
  *    `.display` heading and the same `--measure` column,
@@ -32,7 +29,6 @@ import { type Page, expect, test } from "@playwright/test";
 
 /** Every notice document, as a visitor reaches it. */
 const NOTICES = [
-  { name: "the chooser", path: "/", status: 200 },
   { name: "the 404", path: "/does-not-exist", status: 404 },
   { name: "a 404 below a real locale", path: "/en/nope", status: 404 },
 ] as const;
@@ -118,58 +114,6 @@ for (const { name, path, status } of NOTICES) {
     });
   });
 }
-
-test.describe("the chooser's contracts survive the styling pass (AC-12)", () => {
-  test("is 200, `noindex,follow`, cookie-free and varies on no negotiation header", async ({
-    page,
-  }) => {
-    const response = await page.goto("/");
-    const headers = (await response?.headersArray()) ?? [];
-    const named = (header: string): string[] =>
-      headers
-        .filter((entry) => entry.name.toLowerCase() === header)
-        .map((entry) => entry.value.toLowerCase());
-
-    expect(response?.status()).toBe(200);
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
-      "content",
-      "noindex,follow",
-    );
-    expect(named("set-cookie")).toEqual([]);
-    expect(named("location")).toEqual([]);
-    for (const vary of named("vary")) {
-      expect(vary).not.toContain("accept-language");
-      expect(vary).not.toContain("cookie");
-      expect(vary).not.toContain("user-agent");
-    }
-  });
-
-  test("ships no island: no consent sheet, no language suggestion, no hydrated control", async ({
-    page,
-  }) => {
-    await page.goto("/");
-    // Give hydration and any lazy chunk the same chance they get on `/en`, then assert that
-    // nothing arrived: the assertion is "still zero after the page settled", not "zero at once".
-    await expect(page.locator("main#main h1")).toBeVisible();
-    await page.waitForLoadState("networkidle");
-
-    await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
-    await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
-    await expect(page.locator("[data-fo-live-region]")).toHaveCount(0);
-    // The chooser renders no control at all — every affordance on it is a link.
-    await expect(page.locator("button")).toHaveCount(0);
-  });
-
-  test("writes no cookie into the jar, however long it is left open", async ({
-    page,
-    context,
-  }) => {
-    await page.goto("/");
-    await page.waitForLoadState("networkidle");
-
-    expect(await context.cookies()).toEqual([]);
-  });
-});
 
 test.describe("the 404 (AC-12, AC-14)", () => {
   test("is the x-default document with a localised title, and never a soft 404", async ({

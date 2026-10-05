@@ -155,6 +155,22 @@ describe("the tree a crawler walks (AC-13, T-14)", () => {
     expect(crawl(INDEXING)).toHaveLength(16);
   });
 
+  it("lists the bare origin nowhere: `/` is a 308 to `/en` (spec 003 §14 A16 clause 3, T-07)", () => {
+    const urls = crawl(INDEXING);
+    // The control: the crawl reached real URLs, so the absence below is not vacuous.
+    expect(urls.length).toBeGreaterThan(0);
+    const bare = new Set([ORIGIN, `${ORIGIN}/`]);
+    for (const url of urls) {
+      expect(bare.has(url.loc), url.loc).toBe(false);
+      for (const alternate of url.alternates) {
+        expect(bare.has(alternate.href), alternate.href).toBe(false);
+      }
+    }
+    for (const entry of parseIndex(sitemapIndexDocument(INDEXING))) {
+      expect(bare.has(entry.loc), entry.loc).toBe(false);
+    }
+  });
+
   it("carries a real <lastmod> on every URL and every child, never the clock", () => {
     const today = new Date().toISOString().slice(0, 10);
     for (const url of crawl(INDEXING)) {

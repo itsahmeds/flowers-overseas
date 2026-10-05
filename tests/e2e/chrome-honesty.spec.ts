@@ -7,8 +7,8 @@
  * `<main>` — which is exactly the hole `/review 70` found: TASK-091's AC-19 scan was scoped to
  * `<main>` and passed while the header promised same-day delivery two bands above it.
  *
- * Every page type that exists in Phase 0 is covered, in every locale it exists in: the locale
- * chooser, the four locale homes, the all-destinations hub in all four locales (TASK-092's
+ * Every page type that exists in Phase 0 is covered, in every locale it exists in: the four
+ * locale homes, the all-destinations hub in all four locales (TASK-092's
  * `destinationsHub`, whose segment is localised: `send-flowers-to` / `blumen-verschicken` /
  * `wyslij-kwiaty`), the corridor guides (`en` and `en-gb`, the two locales with authored guide
  * files) and the component gallery, which renders every chrome surface in every state and is
@@ -30,12 +30,11 @@ const PATTERNS = [
 ];
 
 /**
- * Every Phase 0 document, by page type. The locale chooser is the site root (spec 003),
+ * Every Phase 0 document, by page type (`/` is a 308 to `/en` since spec 003 §14 A16),
  * `destinations hub` is TASK-092's all-destinations page (spec 007 AC-20), `country shop root` is
  * TASK-109's, the two **hubs** are TASK-112's and `/dev/components` is the component gallery.
  */
 const PAGES: readonly { readonly type: string; readonly path: string }[] = [
-  { type: "hub (locale chooser)", path: "/" },
   { type: "home", path: "/en" },
   { type: "home", path: "/en-gb" },
   { type: "home", path: "/de" },
