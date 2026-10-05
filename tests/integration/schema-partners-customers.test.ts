@@ -24,6 +24,7 @@ import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { recipientEmailViolations } from "../../scripts/db-check.ts";
+import { FOREIGN_KEYS } from "../fixtures/schema-foreign-keys.ts";
 
 function readDotEnv(path: string): Record<string, string> {
   if (!existsSync(path)) return {};
@@ -154,6 +155,52 @@ describe.skipIf(sql === undefined)(
         ]);
       });
 
+      it("AC-27 after a full migrate: in every schema, recipient tables are plain tables with no email-like column (B1)", async () => {
+        const kinds = await db<{ where: string; relkind: string }[]>`
+          SELECT n.nspname || '.' || c.relname AS where, c.relkind::text AS relkind
+          FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE c.relname IN ('recipient', 'recipient_address')
+            AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+          ORDER BY 1
+        `;
+        expect(kinds).toEqual([
+          { where: "public.recipient", relkind: "r" },
+          { where: "public.recipient_address", relkind: "r" },
+        ]);
+        const columns = await db<{ table: string; column: string }[]>`
+          SELECT a.attrelid::regclass::text AS table, a.attname AS column
+          FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid
+          WHERE c.relname IN ('recipient', 'recipient_address') AND a.attnum > 0
+            AND NOT a.attisdropped
+        `;
+        expect(columns.length).toBeGreaterThan(10);
+        expect(
+          recipientEmailViolations(
+            columns.map(({ table, column }) => ({
+              table: table.replace(/^public\./, "").replace(/^"|"$/g, ""),
+              column,
+            })),
+          ),
+        ).toEqual([]);
+      });
+
+      it("pins every foreign key of 0005 and 0006 with its delete rule (B3)", async () => {
+        const rows = await db<{ fk: string; rule: string }[]>`
+          SELECT con.conname AS fk, con.confdeltype::text AS rule
+          FROM pg_constraint con
+          JOIN pg_class rel ON rel.oid = con.conrelid
+          WHERE con.contype = 'f' AND rel.relname IN ${db([...TABLES])}
+          ORDER BY con.conname
+        `;
+        const RULE: Record<string, string> = { RESTRICT: "r", CASCADE: "c" };
+        expect(rows).toEqual(
+          FOREIGN_KEYS.map(([fk, , , , rule]) => ({
+            fk,
+            rule: RULE[rule] ?? rule,
+          })).sort((a, b) => (a.fk < b.fk ? -1 : 1)),
+        );
+      });
+
       it("holds an IP only as consent_log's truncated cidr", async () => {
         const rows = await db<{ where: string }[]>`
           SELECT table_name || '.' || column_name || ':' || data_type AS where
@@ -215,6 +262,151 @@ describe.skipIf(sql === undefined)(
         >`SELECT extname FROM pg_extension`;
         expect(rows.map((row) => row.extname)).toEqual(["plpgsql"]);
       });
+    });
+
+    /**
+     * Review R1 (PR 200): the media reference must hold across two sessions, as a foreign key
+     * would. These cases need committed rows a second session can see, so they write a locale,
+     * two assets and the applications under distinctive keys and delete them in `finally`.
+     */
+    describe("media_asset_ids across two sessions (review R1)", () => {
+      const KEY = "zz-two-session";
+      const url = databaseUrl as string;
+      const options = { max: 1, connection: { lock_timeout: 10_000 } } as const;
+
+      /** True once `pid` is waiting on a lock; false if it never does within five seconds. */
+      const waitsOnLock = async (pid: number): Promise<boolean> => {
+        for (let attempt = 0; attempt < 100; attempt += 1) {
+          const [row] = await db<
+            { wait: string | null; state: string | null }[]
+          >`
+            SELECT wait_event_type AS wait, state FROM pg_stat_activity WHERE pid = ${pid}
+          `;
+          if (row?.wait === "Lock") return true;
+          if (row?.state === "idle") return false;
+          await new Promise((done) => setTimeout(done, 50));
+        }
+        return false;
+      };
+
+      const setup = async (): Promise<string> => {
+        await db`INSERT INTO locale (code, bcp47, name) VALUES ('zw', 'zw', 'Two sessions')
+                 ON CONFLICT DO NOTHING`;
+        const [row] = await db<{ id: string }[]>`
+          INSERT INTO media_asset (
+            kind, bucket, object_key, mime, bytes, checksum_sha256, visibility, source, depicts
+          )
+          VALUES (
+            'partner', 'fo-media-test', ${`originals/partner/${KEY}-${String(Date.now())}`},
+            'application/pdf', 1, ${SHA}, 'private', 'partner', 'context'
+          )
+          RETURNING id
+        `;
+        return row?.id ?? "";
+      };
+      const cleanup = async (): Promise<void> => {
+        await db`DELETE FROM partner_application WHERE business_name = ${KEY}`;
+        await db`DELETE FROM media_asset WHERE object_key LIKE ${`originals/partner/${KEY}-%`}`;
+        await db`DELETE FROM locale WHERE code = 'zw'`;
+      };
+      const listing = (
+        sql: postgres.Sql | postgres.TransactionSql,
+        asset: string,
+      ) =>
+        sql`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids)
+            VALUES (${KEY}, 'Zed', 'zw', ${`{${asset}}`}::uuid[])`;
+
+      /** Session A lists the asset and holds its transaction open while session B runs `change`. */
+      const changeWhileListed = async (
+        change: (b: postgres.Sql, asset: string) => Promise<unknown>,
+      ): Promise<{ waited: boolean; outcome: string; listed: number }> => {
+        const a = postgres(url, options);
+        const b = postgres(url, options);
+        try {
+          const asset = await setup();
+          const [pidRow] = await b<
+            { pid: number }[]
+          >`SELECT pg_backend_pid() AS pid`;
+          let waited = false;
+          let pending: Promise<string> = Promise.resolve("not started");
+          await a.begin(async (tx) => {
+            await listing(tx, asset);
+            pending = change(b, asset).then(
+              () => "CHANGED",
+              (error: unknown) => rejectedBy(error),
+            );
+            waited = await waitsOnLock(pidRow?.pid ?? 0);
+          });
+          const outcome = await pending;
+          const [count] = await db<{ n: number }[]>`
+            SELECT count(*)::int AS n FROM media_asset
+            WHERE id = ${asset} AND kind = 'partner' AND visibility = 'private'
+          `;
+          return { waited, outcome, listed: count?.n ?? 0 };
+        } finally {
+          await a.end();
+          await b.end();
+          await cleanup();
+        }
+      };
+
+      it(
+        "a delete of a listed asset waits for the listing and is then refused",
+        { timeout: 30_000 },
+        async () => {
+          expect(
+            await changeWhileListed(
+              (b, asset) => b`DELETE FROM media_asset WHERE id = ${asset}`,
+            ),
+          ).toEqual({ waited: true, outcome: MEDIA_GUARD, listed: 1 });
+        },
+      );
+
+      it(
+        "making a listed asset public waits for the listing and is then refused",
+        { timeout: 30_000 },
+        async () => {
+          expect(
+            await changeWhileListed(
+              (b, asset) =>
+                b`UPDATE media_asset SET visibility = 'public' WHERE id = ${asset}`,
+            ),
+          ).toEqual({ waited: true, outcome: MEDIA_GUARD, listed: 1 });
+        },
+      );
+
+      it(
+        "a listing written while the asset is being made public waits, re-reads and is refused",
+        { timeout: 30_000 },
+        async () => {
+          const a = postgres(url, options);
+          const b = postgres(url, options);
+          try {
+            const asset = await setup();
+            const [pidRow] = await a<
+              { pid: number }[]
+            >`SELECT pg_backend_pid() AS pid`;
+            let waited = false;
+            let pending: Promise<string> = Promise.resolve("not started");
+            await b.begin(async (tx) => {
+              await tx`UPDATE media_asset SET visibility = 'public' WHERE id = ${asset}`;
+              pending = listing(a, asset).then(
+                () => "LISTED",
+                (error: unknown) => rejectedBy(error),
+              );
+              waited = await waitsOnLock(pidRow?.pid ?? 0);
+            });
+            expect({ waited, outcome: await pending }).toEqual({
+              waited: true,
+              outcome: MEDIA_GUARD,
+            });
+          } finally {
+            await a.end();
+            await b.end();
+            await cleanup();
+          }
+        },
+      );
     });
 
     it(
@@ -475,6 +667,18 @@ describe.skipIf(sql === undefined)(
                 sp`INSERT INTO partner_coverage (partner_id, city_id, capacity_per_day)
                  VALUES (${partner}, ${cityB}, 0)`,
             );
+            await refuse(
+              "partner_coverage a zone outside its city (B6)",
+              (sp) =>
+                sp`INSERT INTO partner_coverage (partner_id, city_id, postcode_zone_id)
+                 VALUES (${partner}, ${cityA}, ${zoneB})`,
+            );
+            await accept(
+              "partner_coverage a city with a zone in it",
+              () =>
+                tx`INSERT INTO partner_coverage (partner_id, city_id, postcode_zone_id)
+                 VALUES (${partner}, ${cityA}, ${zoneA})`,
+            );
             await accept(
               "partner_blackout a date",
               () =>
@@ -527,6 +731,25 @@ describe.skipIf(sql === undefined)(
                    partner_id, product_id, partner_payout_minor, currency_code
                  ) VALUES (${partnerB}, ${product}, 1, 'zzz')`,
             );
+
+            await refuse(
+              "partner_catalog_mapping in another currency than the partner's (B6)",
+              (sp) =>
+                sp`INSERT INTO partner_catalog_mapping (
+                   partner_id, product_id, tier_key, partner_payout_minor, currency_code
+                 ) VALUES (${partnerB}, ${product}, NULL, 2500, 'ZZY')`,
+            );
+            await refuse(
+              "fulfillment_partner currency changed under its mappings (B6)",
+              (sp) =>
+                sp`UPDATE fulfillment_partner SET payout_currency_code = 'ZZY' WHERE id = ${partner}`,
+            );
+            await accept(
+              "fulfillment_partner currency changed with no mapping in the old one",
+              () =>
+                tx`UPDATE fulfillment_partner SET payout_currency_code = 'ZZY' WHERE id = ${partnerB}`,
+            );
+            await tx`UPDATE fulfillment_partner SET payout_currency_code = 'ZZZ' WHERE id = ${partnerB}`;
 
             /* --------------------------------------------- application media */
 
@@ -630,6 +853,17 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE payout SET status = 'sent' WHERE id = ${payoutId}`,
             );
+            await refuse(
+              "payout in another currency than the partner's (B6)",
+              (sp) =>
+                sp`INSERT INTO payout (partner_id, period_start, period_end, total_minor, currency_code)
+                 VALUES (${partner}, '2026-12-01', '2026-12-31', 1, 'ZZY')`,
+            );
+            await refuse(
+              "payout moved to another currency (B6)",
+              (sp) =>
+                sp`UPDATE payout SET currency_code = 'ZZY' WHERE id = ${payoutId}`,
+            );
             const order = "00000000-0000-4000-8000-0000000000bb";
             const line = (
               sp: postgres.TransactionSql,
@@ -666,6 +900,18 @@ describe.skipIf(sql === undefined)(
             );
             await refuse("payout_line kind refund", (sp) =>
               line(sp, "refund", 1),
+            );
+            await refuse("payout_line a zero goodwill (B5)", (sp) =>
+              line(sp, "goodwill", 0),
+            );
+            await refuse("payout_line a zero order line (B5)", (sp) =>
+              line(
+                sp,
+                "order",
+                0,
+                "ZZZ",
+                "00000000-0000-4000-8000-0000000000bc",
+              ),
             );
             await refuse(
               "payout delete with lines",
@@ -791,6 +1037,52 @@ describe.skipIf(sql === undefined)(
               },
             );
 
+            /* ------------------------------- a buyer's data never goes with them (B3) */
+
+            const buyerWithRecipient = await one(
+              tx`INSERT INTO customer (email_normalised) VALUES ('ola@example.test') RETURNING id`,
+            );
+            const kept = await one(tx`
+              INSERT INTO recipient (customer_id, full_name, phone_e164)
+              VALUES (${buyerWithRecipient}, 'Kept', '+48600000003') RETURNING id
+            `);
+            const buyerWithAddress = await one(
+              tx`INSERT INTO customer (email_normalised) VALUES ('jan@example.test') RETURNING id`,
+            );
+            await tx`INSERT INTO address (customer_id, kind, lines, city, country_iso2)
+                     VALUES (${buyerWithAddress}, 'billing', ${"{x}"}::text[], 'Zed', 'GB')`;
+            const linked = await one(
+              tx`INSERT INTO customer (email_normalised) VALUES ('linked@example.test') RETURNING id`,
+            );
+            await tx`UPDATE recipient SET linked_customer_id = ${linked} WHERE id = ${kept}`;
+            await tx`INSERT INTO recipient_address (recipient_id, lines, city, country_id)
+                     VALUES (${kept}, ${"{x}"}::text[], 'Zed', ${countryA})`;
+            await refuse(
+              "customer deleted while it has a recipient",
+              (sp) => sp`DELETE FROM customer WHERE id = ${buyerWithRecipient}`,
+            );
+            await refuse(
+              "customer deleted while it has an address",
+              (sp) => sp`DELETE FROM customer WHERE id = ${buyerWithAddress}`,
+            );
+            await refuse(
+              "customer deleted while a recipient is linked to it",
+              (sp) => sp`DELETE FROM customer WHERE id = ${linked}`,
+            );
+            await refuse(
+              "recipient deleted while it has an address",
+              (sp) => sp`DELETE FROM recipient WHERE id = ${kept}`,
+            );
+            const [survivors] = await tx<{ n: number }[]>`
+              SELECT (SELECT count(*) FROM recipient WHERE id = ${kept})::int
+                   + (SELECT count(*) FROM address WHERE customer_id = ${buyerWithAddress})::int
+                   + (SELECT count(*) FROM recipient_address WHERE recipient_id = ${kept})::int AS n
+            `;
+            if (survivors?.n === 3)
+              accepted.push(
+                "every refused delete left the buyer's rows in place",
+              );
+
             /* ---------------------------------------------------- consent_log */
 
             const consent = (
@@ -890,6 +1182,17 @@ describe.skipIf(sql === undefined)(
             "partner_coverage neither city nor zone: partner_coverage_target_check",
             "partner_coverage the same city twice: partner_coverage_partner_target_idx",
             "partner_coverage zero capacity: partner_coverage_capacity_per_day_check",
+            "partner_coverage a zone outside its city (B6): partner_coverage_zone_city_fkey",
+            "partner_catalog_mapping in another currency than the partner's (B6): partner_catalog_mapping_partner_currency_fkey",
+            "fulfillment_partner currency changed under its mappings (B6): partner_catalog_mapping_partner_currency_fkey",
+            "payout in another currency than the partner's (B6): PAYOUT_CURRENCY_MISMATCH (23514)",
+            "payout moved to another currency (B6): PAYOUT_CURRENCY_MISMATCH (23514)",
+            "payout_line a zero goodwill (B5): payout_line_amount_minor_check",
+            "payout_line a zero order line (B5): payout_line_amount_minor_check",
+            "customer deleted while it has a recipient: recipient_customer_id_customer_id_fk",
+            "customer deleted while it has an address: address_customer_id_customer_id_fk",
+            "customer deleted while a recipient is linked to it: recipient_linked_customer_id_customer_id_fk",
+            "recipient deleted while it has an address: recipient_address_recipient_id_recipient_id_fk",
             "partner_blackout the same date twice: partner_blackout_pkey",
             "partner_catalog_mapping a second base row: partner_catalog_mapping_partner_product_tier_idx",
             "partner_catalog_mapping a tier the product lacks: partner_catalog_mapping_tier_fkey",
@@ -948,6 +1251,9 @@ describe.skipIf(sql === undefined)(
             "partner_translation one row per locale",
             "partner_member one user in two partners (a chain)",
             "partner_coverage a city and a zone",
+            "partner_coverage a city with a zone in it",
+            "fulfillment_partner currency changed with no mapping in the old one",
+            "every refused delete left the buyer's rows in place",
             "partner_blackout a date",
             "partner_catalog_mapping a base row and a tier row",
             "partner_application listing a private partner asset",
