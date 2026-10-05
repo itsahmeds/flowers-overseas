@@ -37,7 +37,7 @@ export const PAGE_TYPES: readonly PageType[] = ["home", ...PATH_SEGMENT_KEYS];
 const TRAILING_SEGMENT_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
- * The live locales, in registry order — the set the chooser lists, the switcher links to and
+ * The live locales, in registry order — the set the language popup lists, the switcher links to and
  * `generateStaticParams` prerenders. Full `LocaleConfig` objects because every consumer needs the
  * `nativeName`, `bcp47` and `dir` alongside the code (spec 003 §2, AC-7), and because reading them
  * back one by one through `launchLocale()` would invite a caller to filter `isLaunch` itself.

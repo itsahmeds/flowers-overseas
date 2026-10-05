@@ -18,7 +18,7 @@ import {
   corridorAlternatePaths,
   corridorView,
 } from "@/modules/geo";
-import { alternatesFor } from "@/modules/i18n";
+import { LanguageAlternates, alternatesFor } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
   JsonLd,
@@ -272,6 +272,7 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
     return (
       <>
         <CorridorPage view={view} />
+        <LanguageAlternates paths={corridorAlternatePaths(view.iso2)} />
         <JsonLd
           nodes={
             options === undefined
@@ -297,10 +298,25 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
     );
     if (view === undefined) notFound();
     setRequestLocale(match.locale);
+    const alternates = (
+      <LanguageAlternates
+        paths={await listingAlternatePaths({
+          pageType: match.kind,
+          locale: match.locale,
+          ...(view.entity === undefined ? {} : { entityKey: view.entity.key }),
+        })}
+      />
+    );
     return match.kind === "categoryHub" ? (
-      <CategoryHubPage view={view} />
+      <>
+        <CategoryHubPage view={view} />
+        {alternates}
+      </>
     ) : (
-      <OccasionHubPage view={view} />
+      <>
+        <OccasionHubPage view={view} />
+        {alternates}
+      </>
     );
   }
 

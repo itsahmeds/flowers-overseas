@@ -2,9 +2,9 @@
  * T-25, served half (spec 004 AC-23, ADR-0016; TASK-046).
  *
  * `tests/unit/csp.test.ts` asserts the two policy *strings*; this file asserts that the deployment
- * actually sends them, on the three response classes that exist today — the chooser (`/`, a static
- * document), a locale home (`/en`, SSG through `generateStaticParams`) and an API route
- * (`/api/health`, `force-dynamic`). The unit test cannot tell whether `next.config.ts`'s
+ * actually sends them, on the response classes that exist today — two locale homes (`/en`,
+ * `/de`, SSG through `generateStaticParams`) and an API route (`/api/health`, `force-dynamic`).
+ * `/` is a 308 since spec 003 §14 A16 and has no document to protect. The unit test cannot tell whether `next.config.ts`'s
  * `headers()` reached a cached edge response, which is the only thing that matters about a policy
  * on an SSG site.
  *
@@ -20,7 +20,7 @@ import { expect, test } from "@playwright/test";
 import { MEDIA_ORIGIN } from "../../src/lib/media-origin";
 
 /** Every path that must carry the headers, one per response class. */
-const PATHS = ["/", "/en", "/api/health"] as const;
+const PATHS = ["/en", "/de", "/api/health"] as const;
 
 const REPORT_ONLY = "content-security-policy-report-only";
 

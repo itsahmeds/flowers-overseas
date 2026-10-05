@@ -1,9 +1,5 @@
 {
   "meta": {
-    "chooser": {
-      "title": "Flowers Overseas — choose your language",
-      "description": "We send flowers across Europe: our florist in the recipient's town makes the bouquet and hands it over in person. Choose your language."
-    },
     "home": {
       "title": "Flowers Overseas — send flowers to Europe",
       "description": "Order flowers for someone in another European country. Our florist in their town makes the bouquet by hand and hands it over in person."
@@ -16,10 +12,6 @@
       "title": "Something went wrong — Flowers Overseas",
       "description": "The page could not be loaded. Nothing you were doing was lost."
     }
-  },
-  "chooser": {
-    "heading": "Choose your language",
-    "intro": "We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue."
   },
   "errors": {
     "notFound": {
@@ -47,11 +39,14 @@
     "homeLink": "Home",
     "floristCount": "{count, plural, one {# florist} other {# florists}}"
   },
-  "banner": {
-    "headline": "Would you rather read this page in {language}?",
-    "switch": "Switch to {language}",
-    "stay": "Stay on this page",
-    "dismiss": "Dismiss the language suggestion"
+  "languagePopup": {
+    "heading": "Choose your preferred language",
+    "current": "Current",
+    "default": "Default",
+    "browserMatch": "Matches your browser",
+    "browserMatchShort": "Your browser",
+    "close": "Close",
+    "foot": "You can change it any time at the top of every page."
   },
   "consent": {
     "headline": "Cookies, and what we set them for",
@@ -87,9 +82,6 @@
     "cookies": {
       "locale": {
         "purpose": "Remembers the language you chose, so we do not ask again."
-      },
-      "localeSuggestionDismissed": {
-        "purpose": "Remembers that you closed the language suggestion, for this visit only."
       },
       "consent": {
         "purpose": "Remembers these cookie choices and when you made them: 12 months if you accept anything, 6 months if you refuse everything."

@@ -25,9 +25,9 @@
  *  9. the footer's "Cookie settings" control re-opens the sheet after a decision (AC-9's clause);
  * 10. a forged `fo_consent` is treated as no consent **and deleted**.
  *
- * `navigator.languages` is emptied in every test: the language-suggestion island would otherwise
- * paint over the same corner of the viewport and its own dismissal would be part of these
- * assertions. The two banners' z-order is TASK-055's (AC-13).
+ * Every test but the order block starts as a returning visitor (`fo_locale` seeded by
+ * `playwright.config.ts`), so the language popup does not open; the order block starts from a
+ * first visit and asserts the popup comes first and never stacks (spec 003 §14 A16).
  */
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
@@ -36,6 +36,7 @@ import {
   recordLayoutShifts,
   shiftOutside,
 } from "../support/layout-shift.ts";
+import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 import { COOKIE_REGISTRY, isRegisteredCookie } from "../../src/config/cookies";
 import { ConsentDecisionSchema } from "../../src/lib/consent";
@@ -197,13 +198,14 @@ test.describe("the sheet appears without disturbing the page (AC-17)", () => {
         await page.evaluate(() => document.activeElement?.tagName ?? ""),
       ).toBe("BODY");
 
-      // And nothing is stored before a decision (§8, AC-18's post-hydration half).
+      // And nothing is stored before a decision (§8, AC-18's post-hydration half). The one `fo_*`
+      // cookie is the returning visitor's `fo_locale=en` the config seeds, unchanged.
       expect(await readConsentCookie(context)).toBeNull();
       expect(
         (await context.cookies())
-          .map((cookie) => cookie.name)
-          .filter((name) => name.startsWith("fo_")),
-      ).toEqual([]);
+          .filter((cookie) => cookie.name.startsWith("fo_"))
+          .map(({ name, value }) => ({ name, value })),
+      ).toEqual([{ name: "fo_locale", value: "en" }]);
     });
   }
 
@@ -684,13 +686,42 @@ test.describe("a forged or stale cookie is no consent (AC-19)", () => {
   }
 });
 
-test.describe("the chooser has no consent sheet (spec 003 AC-7)", () => {
-  test("`/` renders no sheet and stores nothing", async ({ page, context }) => {
+test.describe("the language popup is asked first (spec 003 §14 A14 as amended by A16, AC-28 (f))", () => {
+  // A first visit: no `fo_locale`, so the popup opens and the sheet must wait for it.
+  test.use({ storageState: NO_LOCALE_CHOICE });
+
+  test("the sheet stays off screen while the popup is open, and appears once it closes", async ({
+    page,
+  }) => {
     await emptyLanguages(page);
     await page.goto("/");
+    const popup = page.locator("dialog[data-fo-language-popup][open]");
+    await expect(popup).toBeVisible();
+    // Long enough for the consent island's chunk to have loaded and decided.
     await page.waitForLoadState("networkidle");
-    expect(await page.locator(SHEET).count()).toBe(0);
-    expect(await context.cookies()).toEqual([]);
+    await expect(page.locator(SHOWN)).toHaveCount(0);
+
+    await page.locator("[data-fo-language-popup-close]").click();
+    await expect(popup).toHaveCount(0);
+    await expect(page.locator(SHOWN)).toBeVisible();
+  });
+
+  test("a returning visitor gets the sheet straight away, with no popup in front of it", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await context.addCookies([
+      {
+        name: "fo_locale",
+        value: "de",
+        url: baseURL ?? "http://localhost:3000",
+      },
+    ]);
+    await emptyLanguages(page);
+    await page.goto("/de");
+    await expect(page.locator(SHOWN)).toBeVisible();
+    await expect(page.locator("dialog[data-fo-language-popup]")).toHaveCount(0);
   });
 });
 

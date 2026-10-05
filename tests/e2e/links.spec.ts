@@ -39,8 +39,8 @@ import { localePath } from "@/modules/i18n/routing";
  */
 const LAUNCH_LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
-/** The four locale homes plus the `x-default` chooser — AC-14's page set, verbatim. */
-const PAGES = [...LAUNCH_LOCALES.map((locale) => `/${locale}`), "/"] as const;
+/** The four locale homes — AC-14's page set, less `/`, which is a 308 since spec 003 §14 A16. */
+const PAGES = LAUNCH_LOCALES.map((locale) => `/${locale}`);
 
 /** A path that is a link target rather than a page fetch. */
 function isFetchable(href: string): boolean {
@@ -160,13 +160,12 @@ test.describe("AC-14: the site links to nothing that is not there", () => {
     });
   }
 
-  test("/ is still noindex,follow — the chooser passes authority on", async ({
-    page,
+  test("/ passes authority on as a permanent redirect to /en (spec 003 §14 A16)", async ({
+    request,
   }) => {
-    await page.goto("/");
-    const robots = page.locator('meta[name="robots"]');
-    await expect(robots).toHaveAttribute("content", /noindex/);
-    await expect(robots).not.toHaveAttribute("content", /nofollow/);
+    const response = await request.get("/", { maxRedirects: 0 });
+    expect(response.status()).toBe(308);
+    expect(response.headers()["location"]).toMatch(/\/en$/u);
   });
 });
 

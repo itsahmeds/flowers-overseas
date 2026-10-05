@@ -2,23 +2,22 @@
  * The notice shell's class list, as plain strings and **nothing else** (spec 004 §5.3, AC-12;
  * TASK-055).
  *
- * Four documents render the same one-column notice: the `/` chooser, the 404, the localised 500
- * boundary and the last-resort 500 document. Three of them may not share a *component*:
+ * Three documents render the same notice: the 404, the localised 500 boundary and the
+ * last-resort 500 document (`/` has none since spec 003 §14 A16: it is a 308 to `/en`). Two of
+ * them may not share a *component*:
  *
  *  - `src/app/[locale]/error.tsx` and `src/app/global-error.tsx` are Client Components, because
  *    Next requires an error boundary to be one, and whatever they import is compiled into a client
  *    chunk that Next attaches to every document — the growth vector `error-copy.data.ts` and
  *    `error-document.ts` exist to keep closed (spec 004 §14 A1, TASK-046, TASK-085). A React
  *    component from `src/modules/ui` would drag the design system's islands in behind it.
- *  - the same is true in reverse for `/`: the chooser must reach no client module at all, which is
- *    why `(chooser)/layout.tsx` deep-imports `@/modules/ui/fonts` instead of the barrel.
  *
  * So the *markup* is written per document and the **skin is this module**: no import, no JSX, no
  * runtime — a handful of Tailwind class strings that Tailwind's source scan picks up from `src/**`
  * exactly as it picks up a `className` in a component (`ConsentBannerView`'s `CONTROL` is the same
- * trade). One edit changes all four documents, `tests/unit/ui-notice-shell.test.ts` asserts the
+ * trade). One edit changes all three documents, `tests/unit/ui-notice-shell.test.ts` asserts the
  * file imports nothing, and `tests/unit/error-document.test.ts`'s siblings assert each document
- * actually uses it, so the three cannot drift into looking like three different sites.
+ * actually uses it, so they cannot drift into looking like different sites.
  *
  * Everything here is logical (`ms-`/`me-`, `start`/`end`, `px`/`py`), so the shell is correct under
  * `dir="rtl"` with no second rule (`fo/no-physical-css`, AC-5), and every colour is a semantic
@@ -35,12 +34,12 @@ export const NOTICE_MAIN =
 
 /**
  * The header's lockup, at the v2 header's own metrics (`SiteHeader`: 28/38 px mark, the wordmark
- * 19/25 px tall), so the chooser, the 404 and the 500 read as the same site as `/en`.
+ * 19/25 px tall), so the 404 and the 500 read as the same site as `/en`.
  */
 export const NOTICE_LOCKUP =
   "gap-[10px] text-logo-ink flex min-h-(--target-min) items-center";
 export const NOTICE_MARK = "h-[28px] w-[28px] md:h-[38px] md:w-[38px]";
-/** The outlined `Wordmark`'s block size: the chooser and the 404 (server documents). */
+/** The outlined `Wordmark`'s block size: the 404 (a server document). */
 export const NOTICE_WORDMARK_OUTLINED = "h-[19px] md:h-[25px]";
 /**
  * The wordmark in live type, for the two 500 boundaries only: they are Client Components, and the
@@ -76,38 +75,11 @@ export const NOTICE_ACTION_BASE =
 export const NOTICE_ACTION_PRIMARY = `${NOTICE_ACTION_BASE} bg-accent text-on-accent hover:bg-accent-strong active:bg-accent-strong active:translate-y-px`;
 export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] hover:bg-surface-raised active:bg-surface-muted active:translate-y-px`;
 
-/**
- * The chooser's locale list — `docs/design/wireframes/locale-chooser-desktop.dc.html`'s two-column
- * bordered grid, collapsing to one column below `sm` so a 320 px viewport gets full-width rows.
- * The hairline is drawn on the block-start and inline-start of the list and the block-end and
- * inline-end of each cell, which is the wireframe's construction and is direction-agnostic.
- */
-export const NOTICE_LOCALE_LIST =
-  "border-rule grid list-none grid-cols-1 border-t border-s p-0 sm:grid-cols-2";
-/**
- * The list item, which is the grid cell. `flex` so its single child fills it: without it a row
- * whose neighbour wrapped to two lines (`English (UK)` at 390 px) leaves a blank strip of paper
- * under the shorter one, and the hairline grid stops looking like a grid.
- */
-export const NOTICE_LOCALE_ITEM = "flex";
-/** One row: the endonym and the path it leads to, 44 px minimum tap target (§5.3, §8). */
-export const NOTICE_LOCALE_LINK =
-  "border-rule bg-surface-raised gap-md p-lg hover:bg-surface-muted flex w-full min-h-[44px] items-baseline justify-between border-b border-e transition-colors motion-fast ease-standard";
-/** The language, in its own language, in the `.display` voice at the `--text-xl` step. */
-export const NOTICE_LOCALE_NAME = "display text-md";
-/**
- * The path, in the `.label` voice **minus its uppercase**: `.label` would print `/EN-GB`, and a
- * URL is not a word — the locale segments of `src/config/locales.ts` are lowercase and the page
- * must not suggest otherwise. `whitespace-nowrap` for the same reason: `/en-gb` is one token.
- */
-export const NOTICE_LOCALE_PATH =
-  "text-ink-subtle text-xs font-medium tracking-[0.14em] whitespace-nowrap";
-
 /*
  * The v2 error letter (`docs/design/wireframes/errors-{desktop,mobile}.dc.html`; TASK-179): the
  * 404 and the two 500s are a white letter, tilted, on the paper ground under the lockup — the
  * status as the eyebrow, the `<h1>` at the title step, one sentence and the two actions. The
- * chooser keeps the column above (its artboard is still v1). Three of the artboard's marks are
+ * column above is `NoticeDocument`'s mode without a letter. Three of the artboard's marks are
  * left out on purpose: the airmail edge (spec 004 §14 A21 clause 2 allows it in three places
  * only), the postmark (an SVG a client boundary would ship on every document) and the italic
  * split of the heading (a copy change in every locale).

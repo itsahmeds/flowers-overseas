@@ -50,18 +50,19 @@
  * derivation. The flag itself is read in one place (`src/config/locales.ts`) and no export lets a
  * caller move it, so AC-3 holds unchanged.
  *
- * The suggestion banner (TASK-041) adds two functions, one component and one schema.
+ * The suggestion banner (TASK-041) added two functions, one component and one schema; the
+ * language popup (TASK-119, spec 003 §14 A16) replaced the component.
  * `parseAcceptLanguage` and `preferredLocale` are pure functions over a string and a plain locale
  * list — the second argument is structural (`LocaleConfig[]` satisfies it), which is what lets the
  * client island decide from props instead of importing the registry into the browser.
- * `LocaleSuggestionBanner` is a Server Component like `LocaleSwitcher`, and it is the *only* entry
+ * `LanguagePopup` is a Server Component like `LocaleSwitcher`, and it is the *only* entry
  * to the island: the `next/dynamic` boundary and the `"use client"` files stay inside the module,
- * so `app/` renders one element and nothing under `src/app/` knows how the banner is code-split.
+ * so `app/` renders one element and nothing under `src/app/` knows how the popup is code-split.
  * `LocaleCookieSchema` joins the pinned schemas for the `MoneySchema` reason — `fo_locale` is read
  * back from `document.cookie`, and spec 004's currency UI and spec 007's alternates will both want
  * "is this a locale code the application offers?" without hand-writing the enum again. The
- * decision function (`decideSuggestion`), the cookie serialiser and `suggestionCandidates()` stay
- * module-internal: they are the island's own seams, not a caller API.
+ * decision function (`decideLanguagePopup`), the hint (`popupHint`), the cookie serialiser and
+ * `popupCandidates()` stay module-internal: they are the island's own seams, not a caller API.
  */
 export {
   type LocaleConfig,
@@ -122,10 +123,14 @@ export {
   type LocaleSwitcherProps,
 } from "./ui/LocaleSwitcher.tsx";
 
+export { LanguagePopup, type LanguagePopupProps } from "./ui/LanguagePopup.tsx";
+
+export { localeGateDocumentAttributes } from "./ui/localeGate.ts";
+
 export {
-  LocaleSuggestionBanner,
-  type LocaleSuggestionBannerProps,
-} from "./ui/LocaleSuggestionBanner.tsx";
+  LanguageAlternates,
+  type LanguageAlternatesProps,
+} from "./ui/LanguageAlternates.tsx";
 
 export {
   type LanguagePreference,

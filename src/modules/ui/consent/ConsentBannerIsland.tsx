@@ -34,9 +34,17 @@
  *    reading reaches the endpoint (§8, `docs/compliance/ropa.md` row 3).
  */
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { ConsentBannerView, ConsentSavedView } from "./ConsentBannerView";
+import { localeGateHeld, subscribeLocaleGate } from "./localeGateReader";
 import {
   type ConsentChoices,
   type StoredConsent,
@@ -123,7 +131,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   const trigger = useRef<HTMLElement | null>(null);
 
   // The stored decision is the island's **initial** state, read lazily on mount — the pattern and
-  // the reasoning of `LocaleSuggestionBannerIsland`: this component has no server pass to
+  // the reasoning of `LanguagePopupIsland`: this component has no server pass to
   // disagree with, and an effect would render twice for no benefit.
   const [stored, setStored] = useState<StoredConsent | null>(() => {
     try {
@@ -137,6 +145,12 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   });
   const [phase, setPhase] = useState<Phase>(() =>
     stored === null ? "shown" : "hidden",
+  );
+  // The language popup is asked first (`./localeGateReader.ts`; spec 003 §14 A16).
+  const localeGated = useSyncExternalStore(
+    subscribeLocaleGate,
+    localeGateHeld,
+    () => false,
   );
   const [choices, setChoices] = useState<ConsentChoices>(() =>
     stored === null ? NO_CHOICES : choicesOf(stored),
@@ -278,6 +292,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   );
 
   if (phase === "hidden") return null;
+  if (localeGated) return null;
 
   if (phase === "saved") {
     return (

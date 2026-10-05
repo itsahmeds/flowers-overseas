@@ -20,6 +20,32 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
+
+/**
+ * A returning visitor's recorded language choice, `fo_locale=en`, with the attributes the language
+ * popup itself writes (spec 003 §14 A16; TASK-119). Inline rather than imported from `tests/`:
+ * `next build` typechecks this file, and the container's build context carries no `tests/`.
+ * `tests/support/locale-choice.ts` explains why every suite starts from it and how the popup
+ * suites opt back into a first visit.
+ */
+function recordedLocaleChoice(target: string) {
+  const url = new URL(target);
+  return {
+    cookies: [
+      {
+        name: "fo_locale",
+        value: "en",
+        domain: url.hostname,
+        path: "/",
+        expires: Math.floor(Date.now() / 1000) + 31_536_000,
+        httpOnly: false,
+        secure: url.protocol === "https:",
+        sameSite: "Lax" as const,
+      },
+    ],
+    origins: [],
+  };
+}
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const isCI = process.env.CI === "true" || process.env.CI === "1";
 
@@ -78,6 +104,10 @@ export default defineConfig({
     "{testDir}/{testFileDir}/__screenshots__/{projectName}/{platform}/{arg}{ext}",
   use: {
     baseURL,
+    // A returning visitor by default: the language popup (spec 003 §14 A16) is a modal dialog on
+    // a first visit, and the popup's own suites opt back into a first visit with
+    // `NO_LOCALE_CHOICE` (`tests/support/locale-choice.ts`).
+    storageState: recordedLocaleChoice(baseURL),
     extraHTTPHeaders: protectionBypassHeaders,
     trace: "on-first-retry",
     screenshot: "only-on-failure",

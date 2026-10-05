@@ -164,6 +164,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 - **2026-10-05, to the founder, answered:** the IP/country hint (A16 clause 2). Answer, in chat: "browser language only". Drop: no `/api/geo`, no country table, no RoPA row. A16 now states that variant alone, and dispatch is no longer blocked on it.
 - **2026-10-05, to the founder, open and non-blocking:** the mobile shape. The spec says top sheet, because no bottom sheet can meet the size limits (A16 Status; audit R10 drew both). A one-word overrule changes the spec first.
+- **2026-10-05, to the founder, answered:** the English option's visible "Default" mark (A16 clause 4). Answer, in chat (relayed by the orchestrator): "3 yes", approving `languagePopup.default` = "Default" verbatim. It still ships `reviewed: false`; only the founder's own `record-approval` run sets `reviewed`.
+- **2026-10-05, to the orchestrator and the founder, answered (founder's `record-approval-119.py`, commit `ec3e4ffb`; `en` back to 21/535, 3.9 %):** `en`'s unreviewed share. The seven `languagePopup.*` keys ship `reviewed: false` as the Binding requires, and the deleted `chooser.*`/`banner.*` keys were reviewed, so `en` goes from 22/537 (4.1 %) to 28/536 (5.2 %), above the 5 % gate of spec 003 §2 / AC-24. `isLocaleIndexable("en")` turns `false`, `alternatesFor()` returns `[]` (A7) and the sitemaps empty, which breaks A16 clause 3's "byte-identical" and goes red in `tests/unit/i18n-review.test.ts` ("the founder's warning light") and the suites derived from it. Not routed around: no key is reused or merged to dodge the count. The fix the process already defines is the founder's own `record-approval` run for the six founder-approved strings (L1 `heading`, L3 `current`, L4 `browserMatch` and `browserMatchShort`, L5 `close`, L6 `foot`; and `default` now too), which brings `en` back to 21/536 (3.9 %). A script in the shape of `.claude/state/record-approval-193.py`, pointed at `/Users/ahmed/dev/fo-wt-119b`, is the orchestrator's to write. Locally, a simulated attestation (never committed) leaves every one of those suites green. The same run moves the sitemap fixtures' `<lastmod>` (it follows the newest `reviewedAt`), so the attestation commit needs `UPDATE_SEO_FIXTURES=1 pnpm test tests/unit/sitemap-fixtures.test.ts` beside it.
 - **2026-10-04, to the founder, open and non-blocking:** A16 clause 2's two Readings. Reading 1: on a non-English page the page's own locale is marked current and English keeps the default mark. Reading 2: the popup opens on any localised page. Build as written. A one-word overrule changes the spec first, then this task.
 
 ## Progress
@@ -172,11 +174,37 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-05: work moved to branch `task/TASK-119-language-popup` (worktree `fo-wt-119b`, from `origin/main` 22a2d110), replacing `task/TASK-119-locale-suggestion-popup` / PR 86; this overrides the Binding's branch line. Draft PR 205.
+- 2026-10-05: step 1 pushed (`fde7b267`): `src/lib/root-redirect.ts` and `redirects()`, the `(chooser)` deletion (route group, keys, route kind, page type), the popup (server half, loader with the consent gate, island), the consent island's wait, unit tests (root redirect deep-equal on the real `next.config.ts`, T-40 literals, markup, hint table, T-05). Next: scripts and fixtures that list `/`, the remaining unit suites, e2e/a11y/visual, docs. Blocked for merge on the 5 % escalation below.
+- 2026-10-05: step 2: `/` out of the client-JS budget (the zero-app-JS check withdrawn), the Lighthouse set, the bundle baseline and `noindex.json`; the strip's `sessionStorage` key out of `src/config/cookies.ts`, the catalogues and the cookie register; chooser comments and the dead `NOTICE_LOCALE_*` classes gone; `docs/architecture.md` §2 and README. Next: e2e (root redirect, popup matrix), a11y, visual, then the budget measurement in the build slot.
+- 2026-10-05: step 3: browser suites (`root-redirect.spec.ts`, `language-popup.spec.ts`, the consent order, the `/` cases of eleven e2e files, a11y with the popup open, visual popup baselines at 390/1440 and `/ar-XB`, the bare-origin integration case); every browser suite now starts as a returning visitor (`tests/support/locale-choice.ts`). Rebased on `origin/main` 9bc90368 (conflict in `next.config.ts` kept both sides: TASK-058's `cacheHandler` and the `redirects()` rule; `docs/codebase-map.md` regenerated). PR 205 ready with `ci:full` and `visual:baselines`. No local build: load average 23, and CI's `build` job prints `budget:client-js`, so the delta is read from CI on the head SHA.
+- 2026-10-05: step 4, after the founder's `ec3e4ffb`: `en` 21/535 (3.9 %); the two pins assert the attestation; sitemap fixtures regenerated; popup options link to the same page in each locale (`LanguageAlternates`, unit + e2e); rebased on `origin/main` (baseline manifest taken from main minus the five retired entries; the brief's lost sections restored).
+- 2026-10-05: `/break 205` round 1 holes: (1) `tests/unit/no-suggestion-dismissal.test.ts` scans `src/` for the key and any `sessionStorage` write; (2) `tests/unit/locale-gate.test.ts` drives the popup's writer and the consent sheet's new reader (`src/modules/ui/consent/localeGateReader.ts`) against one document; (3) the gate is now pending from the first byte (the layout renders `localeGateDocumentAttributes()` on `<html>`, asserted in `app-shell`), and e2e (f) samples every frame and waits past the 4 s fail-open timer. Each unit case was red under its mutation; the e2e hold-drop mutation is checked in CI, not locally (the build slot was held by another owner).
+- 2026-10-05: `/break 205` round 2: hole 4, the gate's fail-open is `guardLocaleGate()` (released at once when the island's import rejects, after 4 s when it never settles, never under an open popup), and hole 3, `syncLocaleGate()` holds the gate before `showModal()`. A rejected import now releases inside the one `next/dynamic` import (`withGateRelease()`, which also renders nothing instead of the error page; a second `import()` had added an unmodelled chunk). Both are unit-tested with fake timers and a fake document in `locale-gate.test.ts`, and the components' wiring is pinned from source. Timer, rejection release, hold and both wirings were each red under mutation. The `sessionStorage` scan now catches aliases.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**What shipped (PR 205).**
+- **The redirect.** `/` answers one unconditional 308 to `/en`: one `redirects()` rule from `src/lib/root-redirect.ts`, with no `has` and no `missing`.
+- **The chooser is deleted:** the route group, `chooser.*`, the route kind, `localeChooser`, the comments and the architecture §2 rows.
+- **The popup replaces the strip.** It is a modal native `<dialog>`: a top sheet below `md` and a 620 px centred card from `md`. The hint reads `navigator.languages` only. The close button, `Esc` and a tap outside all set `fo_locale`. The consent sheet waits for it through a gate on `<html>`.
+- **Cookie register.** `fo_locale_suggestion_dismissed` is gone from the register, the catalogues and `cookies.ts`.
+- **Measured sets.** `/` is out of the client-JS budget, the Lighthouse set and `noindex.json`.
 
-_Pending._
+**Tests by layer.**
+- **Unit:** `root-redirect` (6, deep-equal on the real `next.config.ts`; red with a `has` cookie condition, checked), `i18n-language-popup` (27), the `popupHint` table and `decideLanguagePopup` matrix in `i18n-hints`, and T-05 in `app-shell`. Fourteen other suites were updated.
+- **Integration:** `sitemap.test.ts` gains the bare-origin case.
+- **e2e:** `root-redirect.spec.ts` (GET and HEAD × 5 variants, query pass-through, no `href="/"`), `language-popup.spec.ts` (AC-28 (a)–(h), T-12, T-41), the consent order, and the `/` cases of eleven files.
+- **a11y:** `/en` with the popup open at 360 and 1280.
+- **Visual:** the popup at 390 and 1440 and on `/ar-XB`. The `/` and strip baselines are deleted.
+
+**Numbers.**
+- `pnpm gates:cheap` on `088858f7`: typecheck, lint, format:check, i18n:check, check:no-db and codebase:map all exit 0. Tests exit 1, all from the 5 % cascade plus timeouts at load 23. With the attestation simulated, the unit suite fails only the two tests that pin `reviewed: false`.
+- **Budget**, local build in the slot at `3b2eaa96` (load average 8.8 at the start, 58 at the end; byte counts do not depend on load): `/en` is 122.4 KB br, **+1.0 KB** against the committed baseline. That includes main's changes since the baseline, so the popup's delta is ≤ 1.0 KB, inside 3 KB.
+- **CI on `e0d85bb2`.** Green: lint, typecheck, contract, i18n-check, seo-validate, a11y, seed and audit. Red: unit, integration, e2e and visual. Unit and integration are the cascade. e2e is the cascade (English "Beta" and the 320 px header) plus four test errors, fixed in `3b2eaa96`. Visual is the cascade's header and footer change plus the three new baselines.
+
+**Handed on.**
+1. Done: the founder attested the seven `languagePopup.*` keys (`ec3e4ffb`); the two pins now assert the attestation, and the sitemap fixtures are regenerated (`<lastmod>` only).
+2. The `visual:baselines` run for the three new linux PNGs, on the head after the attestation (English carries no "Beta" there).
+3. Popup links now go to the same page in each locale (orchestrator, 2026-10-05): every route renders `LanguageAlternates` with its hreflang path map, and the island reads it from the DOM. Product pages have no alternates builder and keep the locale home.
+4. `ConsentBannerView.tsx` comments still mention the strip (outside the fence).
