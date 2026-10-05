@@ -28,6 +28,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** dispatch after TASK-182 (the content module and `info-pages.ts`) merges. Appendix B items 2–7 merged in PR 197 (`docs/design/audits/2026-10-05-specs-011-012.md`). Two of that audit's escalations bind here: (1) the landing was not redrawn for spec 011, and the round-2 `for-florists-*` (PR 189) draws a docket, "Apply to join" and draft copy where Appendix A says "Apply to work with us", so the landing needs one redraw pass, or the founder approves the round-2 version and Appendix A follows it, before this task is dispatched; (2) the walkthrough is drawn with two short sections (declining folded into step 2, as Appendix A writes it), not §2's three. The phone frame's `zoom` is an implementation note on the artboard.
+- **From the orchestrator (2026-10-05):** a sticky bar appears only after the hero has scrolled out of view, never over the first screen (the same rule as TASK-197's product bar).
 
 ## Escalations
 

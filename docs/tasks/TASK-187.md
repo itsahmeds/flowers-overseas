@@ -157,7 +157,7 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- **From `/review 202` (2026-10-05, TASK-190):** once the country listings land, check the `leadSku` (`listing-presentation.ts`) for FO-PT-004 (Peace Lily) and FO-PT-006 (Olive Sapling): their hero photographs were withdrawn, so a listing that leads with either must render the honest placeholder, not a stale image. The PR 202 reviewer could not check it because `leadSku` is not on main yet.
 
 ## Escalations
 

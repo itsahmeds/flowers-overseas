@@ -105,7 +105,8 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- **From the orchestrator (2026-10-05):** the product trail in T-55 is the `BreadcrumbList` (the visible trail and its structured data are one list, not two).
+- **From the orchestrator (2026-10-05):** the phone sticky price-and-button bar appears only after the hero has scrolled out of view, never over the first screen; TASK-210 carries the same rule for its sticky bar.
 
 ## Escalations
 

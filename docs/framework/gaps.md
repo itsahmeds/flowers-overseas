@@ -53,6 +53,7 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 
 **Orphan carry-forwards (no open task owns them yet):**
 - From `/review 90` round 2, rescued in PR 105: the commitlint resolver has five test cases (`tests/unit/ci-workflow.test.ts` L730–830; the fifth case starts at L800) and the review asked for a sixth. See `docs/tasks/TASK-137.md`.
+- 2026-10-05, from `/review 184` round 3 (TASK-017), for the spec 006 owner: the seed's alt-text floor `.min(8)` counts UTF-16 units, so it refuses a complete 7-character Japanese alt such as `赤いバラの花束` that the database accepts. The reviewer ruled it ACCEPTABLE (the stricter side; the limit predates PR 184). Decide whether the floor counts graphemes or depends on the script. Until then authors pad, or the seed fails loudly at load. Suggested home: TASK-082's brief (spec 006, `blocked`) or a spec 006 amendment.
 
 **Found in wave 1 (PRs 106–108):**
 - Shell-guard evasions outside A19 AC-37's list (`/break 107`): `timeout N` as a prefix; kills via `ps|grep`, `pgrep|while read`, `xargs sh -c`, `fuser -k`; writes via `rsync`, `curl -o`, `tar -C`, `patch`, `git restore`, and `rm -rf` from the repo root; `gh workflow run ./path` or a numeric id; `echo … | bash`, `bash <<< …`. Candidates for an A19 amendment.
