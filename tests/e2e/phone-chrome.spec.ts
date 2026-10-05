@@ -47,10 +47,14 @@ const MIN_TARGET = 44;
 async function displayedControls(page: Page): Promise<string[]> {
   return page.locator(`${HEADER} a, ${HEADER} summary`).evaluateAll((nodes) =>
     nodes
-      .filter((node) => {
-        const box = node.getBoundingClientRect();
-        return box.width > 0 && box.height > 0;
-      })
+      // Rendered and not inside a closed disclosure (`checkVisibility` is false there: the
+      // closed `<details>` hides its content with `content-visibility`, which a rect does not).
+      .filter((node) =>
+        node.checkVisibility({
+          contentVisibilityAuto: true,
+          visibilityProperty: true,
+        }),
+      )
       .map((node) =>
         node.tagName === "SUMMARY"
           ? "summary"
@@ -229,6 +233,13 @@ const WITH_BREADCRUMB = {
   product: "/en-gb/poland/product/anthurium",
 } as const;
 
+/**
+ * The types whose trail's last ancestor has **no page** today: the category hub's "Flowers" crumb
+ * is text (spec 008: no flowers index). A back link would link to nothing, so the phone keeps the
+ * trail there (`Breadcrumbs`; escalated in `docs/tasks/TASK-195.md`).
+ */
+const ANCESTOR_WITHOUT_PAGE = new Set(["categoryHub"]);
+
 /** The types whose route serves `BreadcrumbList` today (spec 007 AC-15). */
 const SERVES_BREADCRUMB_LIST = new Set(["destinationsHub", "guide"]);
 
@@ -304,7 +315,9 @@ test.describe("T-55: the back link and the trail (AC-50, AC-32's phone half)", (
       expect(trail.length, `${path} trail`).toBeGreaterThanOrEqual(2);
       const ancestor = trail.at(-2);
 
-      if (type === "product") {
+      if (type === "product" || ANCESTOR_WITHOUT_PAGE.has(type)) {
+        // The pinned reason, so the branch cannot hide a missing back link elsewhere.
+        if (type !== "product") expect(ancestor?.href).toBeNull();
         // The product page displays its trail and draws no back link.
         await expect(page.locator("main [data-fo-back-link]")).toHaveCount(0);
         expect(
@@ -354,7 +367,7 @@ test.describe("T-55: the back link and the trail (AC-50, AC-32's phone half)", (
       await expect(
         page.locator("main [data-fo-breadcrumb-trail]"),
       ).toBeVisible();
-      if (type !== "product") {
+      if (type !== "product" && !ANCESTOR_WITHOUT_PAGE.has(type)) {
         expect(await displayOf(page, "main [data-fo-back-link]")).toBe("none");
       }
       expect(await htmlTrail(page)).toEqual(trail);

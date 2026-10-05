@@ -137,7 +137,10 @@ const EXACT_CLAIM = {
  * `tests/unit/ui-phone-chrome.test.tsx` asserts it on its own.
  */
 function withoutMenu(html: string): string {
-  const out = html.replace(/<details[^>]*data-fo-menu[\s\S]*?<\/details>/u, "");
+  const out = html.replace(
+    /<details[^>]*\sdata-fo-menu=""[\s\S]*?<\/details>/u,
+    "",
+  );
   if (out === html) throw new Error("the header drew no Menu");
   return out;
 }

@@ -207,8 +207,10 @@ describe("the hub, rendered (T-08, AC-19, AC-20)", () => {
     expect([...html.matchAll(/data-fo-hub-linked="false"/g)]).toHaveLength(
       COUNTRIES.length,
     );
-    // The only link on the German hub is the breadcrumb's home crumb.
-    expect(hrefs(html)).toEqual(["/de"]);
+    // The only link target on the German hub is the breadcrumb's home crumb: in the trail, and
+    // in the phone's back link to it (spec 004 §14 A24 clause 4 (e); TASK-195).
+    expect(hrefs(html)).toEqual(["/de", "/de"]);
+    expect(html).toMatch(/data-fo-back-link[^>]*href="\/de"/u);
     expect(text(html)).toContain("We have not written a guide to");
     // No region heading for a group with nothing to link to (§5.3's empty-group state).
     for (const region of countryRegions) {

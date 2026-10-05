@@ -28,7 +28,7 @@
 import type { ReactElement, ReactNode } from "react";
 
 import { Button } from "../primitives/Button.tsx";
-import { MENU_ATTRIBUTE, MenuEscape } from "./MenuEscape.tsx";
+import { MenuEscape } from "./MenuEscape.tsx";
 
 export interface MenuSheetLink {
   readonly id: string;
@@ -69,7 +69,9 @@ export function MenuSheet({
   return (
     <details
       className={["group", className].filter(Boolean).join(" ")}
-      {...{ [MENU_ATTRIBUTE]: true }}
+      // Written here, not imported from `./MenuEscape.tsx`: an export of a `"use client"` module
+      // is a client reference on the server, not its value, and the attribute would be lost.
+      data-fo-menu=""
     >
       <summary
         className="text-ink text-ui inline-flex min-h-(--target-min) cursor-pointer list-none items-center gap-[10px] rounded-full px-[16px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)] select-none [&::-webkit-details-marker]:hidden"

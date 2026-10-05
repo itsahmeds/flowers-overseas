@@ -574,9 +574,16 @@ test.describe("the switcher's beta markers (TASK-039, verified here)", () => {
     try {
       await page.goto("/en");
 
-      // No island, so no banner — and the switcher is still four plain links.
+      // No island, so no banner — and the switcher is still four plain links. Below `md` it is
+      // in the phone's Menu, which opens with no script (spec 004 §14 A24 clause 3; TASK-195).
       await expect(page.locator(BANNER)).toHaveCount(0);
-      await page.locator(`${SWITCHER} a[href="/pl"]`).click();
+      const menu = page.locator("[data-fo-menu-summary]");
+      if (await menu.isVisible()) {
+        await menu.click();
+        await page.locator('[data-fo-menu-switcher] nav a[href="/pl"]').click();
+      } else {
+        await page.locator(`${SWITCHER} a[href="/pl"]`).click();
+      }
 
       await expect(page).toHaveURL(/\/pl$/);
       await expect(page.locator("html")).toHaveAttribute("lang", "pl");

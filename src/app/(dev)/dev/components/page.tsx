@@ -1419,7 +1419,8 @@ export default function DevComponentsPage(): ReactElement {
         </Section>
 
         <Section title={SECTIONS[22]}>
-          <Stack gap="lg">
+          {/* The section's own hook: `Section` puts its id on the heading, not around the states. */}
+          <Stack data-fo-gallery-phone-patterns="" gap="lg">
             <div data-fo-gallery-phone="back-link">
               <Breadcrumbs
                 label={PHONE_SAMPLES.crumbLabel}

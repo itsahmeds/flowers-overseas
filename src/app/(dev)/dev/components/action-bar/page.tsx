@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactElement } from "react";
 
 import { setRequestLocale } from "next-intl/server";
+import { z } from "zod";
 
 import { devUiEnabled } from "@/lib/env.schema";
 import { documentFallbackLocale } from "@/modules/i18n";
@@ -43,15 +44,20 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/** `?bar=hidden` or nothing; anything else is the shown state (Zod at the boundary). */
+const FixtureParamsSchema = z
+  .object({ bar: z.enum(["hidden"]).optional().catch(undefined) })
+  .catch({ bar: undefined });
+
 export default async function ActionBarFixturePage({
   searchParams,
 }: {
-  readonly searchParams: Promise<{ readonly bar?: string }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   if (!devUiEnabled(process.env)) notFound();
   const locale = documentFallbackLocale().code;
   setRequestLocale(locale);
-  const { bar } = await searchParams;
+  const { bar } = FixtureParamsSchema.parse(await searchParams);
   const fixture = ACTION_BAR_FIXTURE;
   const fillers = Array.from(
     { length: fixture.fillerCount },

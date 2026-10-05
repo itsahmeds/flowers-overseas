@@ -153,7 +153,11 @@ test.describe("/dev/components", () => {
               // fieldset of the page's one `GET` form (spec 009 §2), never a checkbox, never an
               // add-on input — and not a reusable form layer. AC-23's "no input in an add-on row"
               // is asserted on its own below.
-              node.closest("[data-fo-product-state]") === null,
+              node.closest("[data-fo-product-state]") === null &&
+              // TASK-195 narrows it by the segmented control's gallery state, for the same
+              // reason: native radios in its own fieldset and legend (spec 004 §14 A24 clause
+              // 4 (b), AC-49), the product page's size control on the phone, not a form layer.
+              node.closest("[data-fo-segmented]") === null,
           ).length,
       );
     expect(controlsOutsideKnownForms).toBe(0);

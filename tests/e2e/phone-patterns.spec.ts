@@ -10,14 +10,15 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 const GALLERY = "/dev/components";
-const SECTION = "#phone-patterns";
+/** The gallery's "Phone patterns" states (`Section` puts its `id` on the heading). */
+const SECTION = "[data-fo-gallery-phone-patterns]";
 const PHONE = { width: 390, height: 844 } as const;
 
 test.describe("T-54: segmented controls and horizontal scrollers (AC-49)", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(PHONE);
     expect((await page.goto(GALLERY))?.status()).toBe(200);
-    await page.locator(SECTION).scrollIntoViewIfNeeded();
+    await page.locator(SECTION).first().scrollIntoViewIfNeeded();
   });
 
   test("a segmented control is a fieldset with a legend and native radios or links, the selection exposed, each segment ≥ 44 px", async ({
@@ -80,9 +81,12 @@ test.describe("T-54: segmented controls and horizontal scrollers (AC-49)", () =>
         // Keyboard: Tab to the last item's link scrolls it into view.
         await scroller.locator(":scope > li:last-child a").focus();
       } else {
-        // Keyboard: the row takes focus, and End scrolls it to its last item.
+        // Keyboard: the row takes focus, and the arrow key scrolls it to its last item.
         await scroller.focus();
-        await page.keyboard.press("End");
+        await expect(async () => {
+          await page.keyboard.press("ArrowRight");
+          await expect(last).toBeInViewport({ ratio: 1, timeout: 100 });
+        }).toPass({ timeout: 10_000 });
       }
       await expect(last).toBeInViewport({ ratio: 1 });
 

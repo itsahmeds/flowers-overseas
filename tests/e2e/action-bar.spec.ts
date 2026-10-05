@@ -108,8 +108,9 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
       window.scrollTo(0, document.documentElement.scrollHeight);
     });
     const bar = await rectOf(page, BAR);
-    const under = await page.evaluate((barRect) => {
+    const { under, lowest } = await page.evaluate((barRect) => {
       const hits: string[] = [];
+      let bottom = Number.NEGATIVE_INFINITY;
       const walker = document.createTreeWalker(
         document.body,
         NodeFilter.SHOW_TEXT,
@@ -129,6 +130,7 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
         range.selectNodeContents(node);
         for (const box of range.getClientRects()) {
           if (box.width === 0 || box.height === 0) continue;
+          bottom = Math.max(bottom, box.bottom);
           if (
             box.left < barRect.right &&
             barRect.left < box.right &&
@@ -139,13 +141,12 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
           }
         }
       }
-      return hits;
+      return { under: hits, lowest: bottom };
     }, bar);
     expect(under).toEqual([]);
-    // The page's last line is above the bar, so the case is not vacuous.
-    const last = await rectOf(page, "[data-fo-fixture-last]");
-    expect(last.bottom).toBeLessThanOrEqual(bar.top);
-    expect(last.bottom).toBeGreaterThan(0);
+    // Not vacuous: the document's lowest text sits just above the bar, inside the viewport.
+    expect(lowest).toBeLessThanOrEqual(bar.top);
+    expect(lowest).toBeGreaterThan(bar.top - 160);
   });
 
   test("repeats, never replaces: its action is an in-page link to a twin that is reachable with JavaScript off", async ({
@@ -206,6 +207,12 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
     const before = await page.evaluate(
       () => document.documentElement.scrollHeight,
     );
+    // Only the shifts the bar's own toggling causes: the load (fonts, the consent island) is
+    // other suites' business, so the record starts here.
+    await page.waitForTimeout(500);
+    await page.evaluate(() => {
+      (window as unknown as { __foShifts: unknown[] }).__foShifts = [];
+    });
     for (const state of ["hidden", "shown", "hidden", "shown"]) {
       await page.evaluate((next) => {
         document
