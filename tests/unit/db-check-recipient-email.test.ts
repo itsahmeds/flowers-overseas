@@ -21,6 +21,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -420,24 +421,40 @@ function mirrorScratch(): string {
   return root;
 }
 
-/** A copy of the committed mirror whose `recipient` spreads in an `e_mail` column. */
-function spreadMirror(): string {
-  const schemaDir = join(mirrorScratch(), "schema");
+/**
+ * A copy of `scripts/db-check.ts`, `db/migrations/` and `db/schema/` in a scratch tree, with
+ * `recipient` spreading in an `e_mail` column when `spread` is set. The copied script imports
+ * `../db/schema/index.ts` statically, so running it reads the copied mirror: that is how the CLI
+ * entry point itself is tested (breaker r2 hole C) without a computed `import()` in `scripts/`.
+ */
+function mirrorTree(spread: boolean): { root: string; schemaDir: string } {
+  const root = mirrorScratch();
+  mkdirSync(join(root, "scripts"), { recursive: true });
+  cpSync(
+    join(repoRoot, "scripts/db-check.ts"),
+    join(root, "scripts/db-check.ts"),
+  );
+  cpSync(join(repoRoot, MIGRATIONS_DIR), join(root, MIGRATIONS_DIR), {
+    recursive: true,
+  });
+  const schemaDir = join(root, SCHEMA_DIR);
   cpSync(join(repoRoot, SCHEMA_DIR), schemaDir, { recursive: true });
-  const file = join(schemaDir, "customers.ts");
-  const original = readFileSync(file, "utf8");
-  const mutated = original
-    .replace(
-      "export const recipient = pgTable(",
-      'const contactColumns = { contact: text("e_mail") };\n\nexport const recipient = pgTable(',
-    )
-    .replace(
-      '    fullName: text("full_name").notNull(),',
-      '    fullName: text("full_name").notNull(),\n    ...contactColumns,',
-    );
-  expect(mutated).not.toBe(original);
-  writeFileSync(file, mutated);
-  return schemaDir;
+  if (spread) {
+    const file = join(schemaDir, "customers.ts");
+    const original = readFileSync(file, "utf8");
+    const mutated = original
+      .replace(
+        "export const recipient = pgTable(",
+        'const contactColumns = { contact: text("e_mail") };\n\nexport const recipient = pgTable(',
+      )
+      .replace(
+        '    fullName: text("full_name").notNull(),',
+        '    fullName: text("full_name").notNull(),\n    ...contactColumns,',
+      );
+    expect(mutated).not.toBe(original);
+    writeFileSync(file, mutated);
+  }
+  return { root, schemaDir };
 }
 
 /** Nests `inner` in `levels` function bodies, each with its own `$qN$` tag. */
@@ -622,17 +639,14 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
   });
 
   it("C: the CLI runs the evaluated mirror (a spread email column fails `node scripts/db-check.ts`)", () => {
-    const schemaDir = spreadMirror();
+    const { root } = mirrorTree(true);
     const run = spawnSync(
       process.execPath,
-      [
-        "scripts/db-check.ts",
-        "--migrations-dir",
-        join(repoRoot, MIGRATIONS_DIR),
-        "--schema-dir",
-        schemaDir,
-      ],
-      { cwd: repoRoot, encoding: "utf8" },
+      [join(root, "scripts/db-check.ts")],
+      {
+        cwd: root,
+        encoding: "utf8",
+      },
     );
     expect(run.status).toBe(1);
     expect(run.stderr.trim().split("\n")).toEqual([
@@ -640,17 +654,15 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     ]);
   });
 
-  it("C: the CLI passes the committed tree with the same flags", () => {
+  it("C: the same copied CLI passes the unmutated tree", () => {
+    const { root } = mirrorTree(false);
     const run = spawnSync(
       process.execPath,
-      [
-        "scripts/db-check.ts",
-        "--migrations-dir",
-        join(repoRoot, MIGRATIONS_DIR),
-        "--schema-dir",
-        join(repoRoot, SCHEMA_DIR),
-      ],
-      { cwd: repoRoot, encoding: "utf8" },
+      [join(root, "scripts/db-check.ts")],
+      {
+        cwd: root,
+        encoding: "utf8",
+      },
     );
     expect({ status: run.status, stdout: run.stdout.trim() }).toEqual({
       status: 0,
@@ -825,10 +837,14 @@ describe("AC-27 — the evaluated mirror (breaker hole 2, PR 200)", () => {
   });
 
   it("runDbCheckWithMirror fails a mirror whose recipient spreads in an email column", async () => {
-    const schemaDir = spreadMirror();
+    const { schemaDir } = mirrorTree(true);
+    const mirror = (await import(
+      pathToFileURL(join(schemaDir, "index.ts")).href
+    )) as Record<string, unknown>;
     const { ok, output } = await runDbCheckWithMirror(
       join(repoRoot, MIGRATIONS_DIR),
       schemaDir,
+      mirror,
     );
     expect(ok).toBe(false);
     expect(output).toEqual([

@@ -49,10 +49,14 @@
 import type { Dirent } from "node:fs";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 
 import { is } from "drizzle-orm";
 import { getTableConfig, PgTable } from "drizzle-orm/pg-core";
+
+// The committed mirror, imported statically: a computed `import()` would name a module no scan
+// can read (spec 010's checkout-mode reader scan refuses one anywhere under `scripts/`).
+import * as committedMirror from "../db/schema/index.ts";
 
 /**
  * One entry of the migrations directory. `checkMigrations` stays pure and name-driven, but it has
@@ -1479,23 +1483,22 @@ export function runDbCheck(
 }
 
 /**
- * {@link runDbCheck} plus AC-27 on the mirror as Drizzle evaluates it: `schemaDir/index.ts` is
- * imported and its exported tables read with `getTableConfig`, so a column reached through a
- * spread or a constant — invisible to the text rules — is still refused. What `pnpm db:check` runs.
+ * {@link runDbCheck} plus AC-27 on the mirror as Drizzle evaluates it: the mirror module's exported
+ * tables are read with `getTableConfig`, so a column reached through a spread or a constant,
+ * invisible to the text rules, is still refused. `pnpm db:check` runs it on the committed mirror,
+ * imported statically; a test passes a mutated copy it imported itself.
  */
 export async function runDbCheckWithMirror(
   migrationsDir: string,
   schemaDir: string,
+  mirror: Readonly<Record<string, unknown>> = committedMirror,
 ): Promise<{ ok: boolean; output: string[] }> {
   const report = runDbCheck(migrationsDir, schemaDir);
-  const schemaModule = (await import(
-    pathToFileURL(resolve(schemaDir, "index.ts")).href
-  )) as Record<string, unknown>;
-  const mirror = recipientEmailInTables(Object.values(schemaModule));
-  if (report.ok && mirror.length === 0) return report;
+  const lines = recipientEmailInTables(Object.values(mirror));
+  if (report.ok && lines.length === 0) return report;
   return {
     ok: false,
-    output: [...(report.ok ? [] : report.output), ...mirror],
+    output: [...(report.ok ? [] : report.output), ...lines],
   };
 }
 
@@ -1506,16 +1509,9 @@ export const SCHEMA_DIR = "db/schema";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-  // `--migrations-dir` / `--schema-dir` exist so a test can run this exact entry point against a
-  // mutated copy (breaker r2 hole C); `pnpm db:check` passes neither.
-  const flag = (name: string, fallback: string): string => {
-    const index = process.argv.indexOf(name);
-    const value = index === -1 ? undefined : process.argv[index + 1];
-    return value === undefined ? resolve(repoRoot, fallback) : resolve(value);
-  };
   const { ok, output } = await runDbCheckWithMirror(
-    flag("--migrations-dir", MIGRATIONS_DIR),
-    flag("--schema-dir", SCHEMA_DIR),
+    resolve(repoRoot, MIGRATIONS_DIR),
+    resolve(repoRoot, SCHEMA_DIR),
   );
   for (const line of output) {
     if (ok) console.log(line);
