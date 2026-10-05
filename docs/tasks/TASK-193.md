@@ -145,37 +145,41 @@ One line per coherent step, newest last.
 
 ## Result
 
-**Partial, blocked on E1 to E4.** PR: https://github.com/itsahmeds/flowers-overseas/pull/194
-(draft; not ready, no `ci:full`, because the tree is red by construction until E2 and E3 are
-answered).
+**Ready for review.** PR: https://github.com/itsahmeds/flowers-overseas/pull/194, rebased onto
+`main` ee50223d. The founder's commit is carried unchanged (range-diff `=`).
 
-- AC-38 for N1 to N7 (T-40) holds. AC-37's phrase bullet (T-47) is written and red on `main`'s own
-  `en/pl-guide.md` intro (E3).
+- AC-38 for N1 to N7 (T-40) holds:
+  - each `en` value matches its approved text byte for byte;
+  - the implementer commit shipped each one `reviewed: false`, and the founder's
+    `record-approval-193.py` run attests exactly those values;
+  - there is no em dash in any locale;
+  - `nav.utility.datesPending*` is absent everywhere.
+- AC-37's phrase bullet (T-47) holds:
+  - the unit scan over the en/en-gb catalogues, the seed copy and the corridor files finds exactly
+    the six named exceptions;
+  - the `en/pl-guide.md` intro now carries the founder's sentence (E3);
+  - the e2e scan is `tests/e2e/phrase-scan.spec.ts`, judged by CI.
+- `unreviewedShare("en")` is 22 of 535 keys (4.11 %), so `en` and `en-gb` stay indexable.
 - Mutations watched red:
-  - one character changed in N1 `en` makes T-40 N1 red;
-  - an em dash in N1 `de` makes the de em-dash case and the de draft case red;
-  - the old N3 sentence restored makes the T-47 scan red;
-  - an added exception makes the scan and the "never grows" case red.
-  The two T-47 runs used a local, uncommitted exception for the E3 intro.
+  - one character changed in N1 `en`;
+  - an em dash in N1 `de`;
+  - the old N3 sentence restored;
+  - an added exception, which also turns the "never grows" case red.
 - Tests:
-  - unit: `neutral-ordering-copy.test.ts`, 18 new cases (17 green, 1 red on E3);
-  - e2e: `phrase-scan.spec.ts`, 22 new cases, not run locally (CI's);
-  - pins moved in 6 unit files and 6 e2e files.
-- No build slot was taken.
+  - unit: `neutral-ordering-copy.test.ts`, 19 cases;
+  - e2e: `phrase-scan.spec.ts`, 22 cases;
+  - pins moved in 6 unit files and 6 e2e files;
+  - sitemap fixtures regenerated, because the `<lastmod>` moves to 2026-10-05.
+- Visual baselines (E4): refreshed through the `visual:baselines` label flow on the PR. No local
+  build slot was taken.
 
-`pnpm gates:cheap` (load average 24.6 at the time; `tests` is red only for the E2 cascade, the E3
-scan and one `url-pii` timeout under that load):
+**Follow-up, not this task.** The founder approved the other exception-list rewrites ("2–6 yes",
+2026-10-05) for a follow-up task:
+- `corridor.facts.orderBy.none`;
+- the five FAQ answers in `en/pl-guide.md`, `en-gb/pl-guide.md`, `en/es-guide.md`,
+  `en-gb/es-guide.md` and `en-gb/fr-guide.md`.
+Each changed key ships `reviewed: false` and needs its own founder record run. Each entry leaves
+T-47's exception list in the PR that ships its replacement. The em-dash proposals for
+`company.support.hours` and `shop.card.noPrice` are in PR 194's description.
 
-```
-gates:cheap · a38f7fb4f83ad8cccfcd9e2097b152dc21efd3bd · tree clean · base origin/main · 2026-10-04T21:56:50.332Z
-typecheck             exit 0 · 2.8 s
-lint                  exit 0 · 20.1 s
-format:check          exit 0 · 15.5 s
-i18n:check            exit 0 · 0.5 s
-check:no-db           exit 0 · 0.2 s
-codebase:map --check  exit 0 · 0.2 s
-tests                 exit 1 · 91.9 s · changed 126 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
-format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
-RESULT: FAIL (1 of 7 red: tests)
-[ELIFECYCLE] Command failed with exit code 1.
-```
+`pnpm gates:cheap`: see the block below.
