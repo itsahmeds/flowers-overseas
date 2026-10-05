@@ -49,10 +49,11 @@ here.
 - 2026-10-05 `e3b83bf9`: tests T-01, T-04, T-08 (unit half), T-09, T-10 (unit half), T-18, plus config, samples and the quote key. The shared `phones` fixture's AT row was corrected: `+43 1 1234567` fails the full metadata, so it is now `+43 1 5123456`.
 - 2026-10-05 `681b4485`: the `en` keys were taken out (see Escalations); pins updated (railway contract 29/25, i18n barrel, Minor lists, no-db list); map cap set to 17 KB. 22 of 22 mutations of AC-carrying subjects went red. **Next (finisher):** `git fetch && git rebase origin/main`, `pnpm codebase:map` if the map conflicts, `pnpm gates:cheap` (the last full run's only reds were the en-indexability cascade, fixed in `681b4485`, and load timeouts: `dev-os`, `url-pii`, a load average of 30 to 40), push, `gh pr ready 201`, `gh pr edit 201 --add-label ci:full`, then set the TASKS row to `in_review` with PR 201. The row is still `in_progress`: the time limit blocked the `TASKS.md` edit.
 - 2026-10-05 `29621c27`, `079cac31`: round 1 (`/review 201`, `/break 201`) answered: holes 1–5 and changes 2, 7–9; spec 001 A16 note; PR link in TASKS; gates PASS on `079cac31`.
+- 2026-10-05 `7a36ade0`: `/break 201` round 2 holes 1–5 closed; gates PASS on `7a36ade0`.
 
 ## Result
 
-**Ready for round 2.** PR 201, branch `task/TASK-200-checkout-core`. The code head is `079cac31`; the commit after it changes this brief only. Round 1 (`/review 201` FAIL, `/break 201` HOLES 1–5 on `22a5c780`, where CI was green) is answered in `29621c27` and `079cac31`.
+**Ready for round 3.** PR 201, branch `task/TASK-200-checkout-core`. The code head is `7a36ade0`; the commit after it changes this brief only. Round 1 (`/review 201` FAIL, `/break 201` HOLES 1–5 on `22a5c780`, where CI was green) is answered in `29621c27` and `079cac31`.
 
 What shipped:
 - **Mode:** `checkoutMode()`, `legalReadiness()`, `checkoutEntryFor()`, and inside `mode.ts` only `stripeKeyKind()` and `CHECKOUT_FLAG_KEYS`, both now off the barrel (AC-1, AC-4, AC-8's closed row).
@@ -87,15 +88,26 @@ Nit a (one converted literal pinned) and nit b (AT sample and cited file) are do
 - TASK-205 pins `addonPriceProjection().priceVersion` and the "PL lists no wine" rule in `listAddons()`.
 - Pin `DEMO_ENTRY_ENVIRONMENTS` when §13 Q1 can change.
 
+**Round 2 (breaker holes 1–5 of comment 5989137462)**, answered in `7a36ade0`:
+1. The raw-ceiling test now overruns by one code unit while staying within 200 graphemes.
+2. The 64-unit short-field cap is tested at 64 and 65 with values the parsers accept.
+3. U+2028/U+2029 are refused, except in the card and the note, which turn them into `\n`.
+4. The bidi embedding, override and isolate controls (U+202A–202E, U+2066–2069) are refused in all free text; the LRM/RLM marks are kept.
+5. The AC-1 scan also flags `import = require`, `require`, `eval`, `new Function`, any computed `import()` and `.js`-suffixed routes to `mode.ts`.
+
+Round-2 mutations, 12 of 12 red: R1 (raw cap +3), R2/R2b (short cap 640 and 65), R3/R3b (Zl/Zp allowed, no normalising), R4/R4b (bidi allowed, isolates half-covered), R5–R5e (each scan rule removed).
+
+Tests: `checkout-boundary` 51 and `checkout-mode` 58; 235 checkout cases in all.
+
 ```
-gates:cheap · 079cac31b5c9b64326daf86c31fe10f53ff4a939 · tree clean · base origin/main · 2026-10-05T05:56:28.068Z
-typecheck             exit 0 · 2.5 s
-lint                  exit 0 · 17.6 s
-format:check          exit 0 · 11.6 s
+gates:cheap · 7a36ade09f9313e959834d786dbc50f0e7856fff · tree clean · base origin/main · 2026-10-05T06:18:50.445Z
+typecheck             exit 0 · 2.2 s
+lint                  exit 0 · 15.7 s
+format:check          exit 0 · 10.5 s
 i18n:check            exit 0 · 0.4 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 245.0 s · changed 258 + map 0 + always 0 · always run: zod-boundaries, lint-coverage, url-pii
+tests                 exit 0 · 222.3 s · changed 258 + map 0 + always 0 · always run: zod-boundaries, lint-coverage, url-pii
 RESULT: PASS
 ```
-(load average 5.7 at the start of the run.) No expensive gate was run locally; CI is the gate of record.
+(load average 4.3 at the start of the run.) No expensive gate was run locally; CI is the gate of record.
