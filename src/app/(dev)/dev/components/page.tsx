@@ -12,6 +12,9 @@ import { documentFallbackLocale, localePath } from "@/modules/i18n";
 import {
   AddonPriceList,
   Breadcrumbs,
+  GalleryDots,
+  HorizontalScroller,
+  SegmentedControl,
   Eyebrow,
   Fact,
   FactsList,
@@ -136,6 +139,7 @@ import {
   SPACE_STEPS,
   TYPE_SAMPLES,
   V2_SAMPLES,
+  PHONE_SAMPLES,
 } from "./catalog";
 import {
   PRODUCT_ADDONS,
@@ -1411,6 +1415,80 @@ export default function DevComponentsPage(): ReactElement {
                 {V2_SAMPLES.send}
               </Button>
             </div>
+          </Stack>
+        </Section>
+
+        <Section title={SECTIONS[22]}>
+          <Stack gap="lg">
+            <div data-fo-gallery-phone="back-link">
+              <Breadcrumbs
+                label={PHONE_SAMPLES.crumbLabel}
+                crumbs={PHONE_SAMPLES.crumbs.map((crumb, index, all) => ({
+                  key: crumb,
+                  label: crumb,
+                  ...(index === all.length - 1
+                    ? { current: true }
+                    : { href: "#main" }),
+                }))}
+              />
+              <Text size="xs" tone="subtle">
+                {PHONE_SAMPLES.backNote}
+              </Text>
+            </div>
+            <SegmentedControl
+              legend={PHONE_SAMPLES.segLegend}
+              name={PHONE_SAMPLES.segName}
+              options={PHONE_SAMPLES.segOptions}
+              selected="medium"
+            />
+            <SegmentedControl
+              legend={PHONE_SAMPLES.segLinksLegend}
+              options={PHONE_SAMPLES.segOptions.map((option) => ({
+                ...option,
+                href: `#seg-${option.value}`,
+              }))}
+              selected="medium"
+            />
+            <HorizontalScroller
+              itemsFocusable
+              items={PHONE_SAMPLES.scrollerLinks.map((label) => ({
+                key: label,
+                node: (
+                  <Chip href="#main" tone="muted">
+                    {label}
+                  </Chip>
+                ),
+              }))}
+              label={PHONE_SAMPLES.scrollerLinksLabel}
+            />
+            <HorizontalScroller
+              itemsFocusable={false}
+              items={PHONE_SAMPLES.scrollerText.map((label) => ({
+                key: label,
+                node: (
+                  <span className="bg-card rounded-field grid h-[64px] w-[58px] place-items-center text-sm shadow-[inset_0_0_0_1px_var(--color-rule)]">
+                    {label}
+                  </span>
+                ),
+              }))}
+              label={PHONE_SAMPLES.scrollerTextLabel}
+            />
+            <div>
+              {PHONE_SAMPLES.dots.map((label, index) => (
+                <span id={`gallery-dot-${String(index)}`} key={label} />
+              ))}
+              <GalleryDots
+                current={0}
+                label={PHONE_SAMPLES.dotsLabel}
+                links={PHONE_SAMPLES.dots.map((label, index) => ({
+                  href: `#gallery-dot-${String(index)}` as const,
+                  label,
+                }))}
+              />
+            </div>
+            <TextLink href="/dev/components/action-bar">
+              {PHONE_SAMPLES.barLink}
+            </TextLink>
           </Stack>
         </Section>
       </Container>

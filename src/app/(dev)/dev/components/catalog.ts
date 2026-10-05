@@ -77,6 +77,11 @@ export const SECTIONS = [
   // the outlined wordmark, the two link voices, the eyebrow and the send button. The header and
   // pages adopt them in TASK-176 to TASK-179, so this is their visual and axe surface until then.
   "Design system v2 primitives",
+  // TASK-195: the phone patterns of spec 004 §14 A24 clause 4 (AC-48 to AC-50): the back link in
+  // place of the trail below `md`, the segmented control in its radio and link forms, the two
+  // sideways rows (with and without focusable items) and the gallery's in-page dots. The docked
+  // action bar is `position: fixed`, so its state is its own fixture page, linked from here.
+  "Phone patterns",
 ] as const;
 
 /** TASK-175's gallery samples. Developer copy, never shipped on a public page. */
@@ -725,4 +730,63 @@ export const MEDIA_ASSET_STATES = {
     "MediaProvenanceNote \u00b7 ai \u2014 rendered whenever a page displays a generated asset; server-rendered, crawlable, in the page's locale, and with no prop that can switch it off (ADR-0014, spec 006 AC-17).",
   provenanceHidden:
     "MediaProvenanceNote \u00b7 hidden \u2014 the same component on a page whose only displayed image is a photograph: no label, because none is owed.",
+} as const;
+
+/** TASK-195: the phone patterns' gallery copy (developer-facing, see this file's header). */
+export const PHONE_SAMPLES = {
+  crumbLabel: "Breadcrumb",
+  crumbs: ["Home", "Destinations", "Poland", "Flowers"],
+  backNote:
+    "Below md the trail is display: none and the back link names its last ancestor; from md up the trail shows and the back link is display: none. The trail is in the HTML at every width.",
+  segLegend: "Size",
+  segName: "gallery-size",
+  segOptions: [
+    { value: "small", label: "Small", detail: "9 stems" },
+    { value: "medium", label: "Medium", detail: "15 stems" },
+    { value: "large", label: "Large", detail: "25 stems" },
+  ],
+  segLinksLegend: "Size (links form)",
+  scrollerLinksLabel: "Occasions (focusable items)",
+  scrollerLinks: [
+    "Birthday",
+    "Sympathy",
+    "Thank you",
+    "Anniversary",
+    "New baby",
+    "Get well",
+    "Congratulations",
+  ],
+  scrollerTextLabel: "Delivery facts (no focusable item)",
+  scrollerText: [
+    "Mon 12",
+    "Tue 13",
+    "Wed 14",
+    "Thu 15",
+    "Fri 16",
+    "Sat 17",
+    "Mon 19",
+    "Tue 20",
+    "Wed 21",
+  ],
+  dotsLabel: "Photos",
+  dots: ["Photo 1", "Photo 2", "Photo 3"],
+  barLink: "The sticky action bar's fixture page (390 px)",
+} as const;
+
+/** TASK-195: the action-bar fixture page (`/dev/components/action-bar`), T-53's surface. */
+export const ACTION_BAR_FIXTURE = {
+  title: "Sticky action bar fixture",
+  intro:
+    "A page with a docked primary action below md. The bar repeats the page's own action and price; it never replaces them.",
+  eyebrow: "Rose bouquet",
+  name: "Amber hour",
+  /** The selected price: one string, printed in the flow and in the bar (one projection). */
+  price: "\u20ac55.90",
+  caption: "Medium",
+  qualifier: "Includes VAT and delivery",
+  action: "Continue",
+  filler:
+    "Filler paragraph, so the page is long enough to scroll past the bar and to land at its foot.",
+  fillerCount: 14,
+  last: "The last line of the page, which must sit above the bar when scrolled to the bottom.",
 } as const;

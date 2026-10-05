@@ -137,7 +137,13 @@ export function ConsentSheet({
   inline = false,
 }: ConsentSheetProps): ReactElement {
   return (
-    <div className={inline ? INLINE_SHEET : SHEET} ref={sheetRef}>
+    <div
+      className={inline ? INLINE_SHEET : SHEET}
+      // The viewport-anchored form only: `globals.css` stands it on the phone's sticky action bar
+      // while one is on the page (spec 004 AC-48; TASK-195).
+      {...(inline ? {} : { "data-fo-consent-sheet": "fixed" })}
+      ref={sheetRef}
+    >
       <section
         aria-labelledby={labelledBy}
         aria-live="polite"

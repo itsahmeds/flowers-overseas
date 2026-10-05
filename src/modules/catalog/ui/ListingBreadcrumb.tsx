@@ -21,7 +21,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Breadcrumbs } from "@/modules/ui";
+import { Breadcrumbs, type BreadcrumbsPhone } from "@/modules/ui";
 
 import type { ListingCrumb } from "../listing";
 
@@ -29,15 +29,19 @@ import { registryLabel } from "./labels";
 
 export interface ListingBreadcrumbProps {
   readonly crumbs: readonly ListingCrumb[];
+  /** Below `md`: the back link (default) or the trail (the product page; spec 004 AC-50). */
+  readonly phone?: BreadcrumbsPhone;
 }
 
 export function ListingBreadcrumb({
   crumbs,
+  phone,
 }: ListingBreadcrumbProps): ReactElement {
   const t = useTranslations();
 
   return (
     <Breadcrumbs
+      {...(phone === undefined ? {} : { phone })}
       label={registryLabel(t, "a11y.breadcrumb")}
       crumbs={crumbs.map((crumb) => ({
         key: crumb.labelKey,
