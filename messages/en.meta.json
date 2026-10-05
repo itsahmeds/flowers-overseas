@@ -2627,38 +2627,52 @@
   },
   "languagePopup.browserMatch": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "7969e6f70bb3a40abeaa3d14662a0242b181b3be791bd15bb5b8328d6a1c6ae7"
+    "reviewed": true,
+    "sourceHash": "7969e6f70bb3a40abeaa3d14662a0242b181b3be791bd15bb5b8328d6a1c6ae7",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "languagePopup.browserMatchShort": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "42d3cbd0ef8d2f8ad54e43d4557165a2c476f3db4a8b7b50d745ec0e8c1122e0"
+    "reviewed": true,
+    "sourceHash": "42d3cbd0ef8d2f8ad54e43d4557165a2c476f3db4a8b7b50d745ec0e8c1122e0",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "languagePopup.close": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
+    "reviewed": true,
+    "sourceHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "languagePopup.current": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "e0d1b68224bf0b31ef16b206c65b5f8f6b89d18161f4a7cdcb8d0ac8d952549a"
+    "reviewed": true,
+    "sourceHash": "e0d1b68224bf0b31ef16b206c65b5f8f6b89d18161f4a7cdcb8d0ac8d952549a",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "languagePopup.default": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+    "reviewed": true,
+    "sourceHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "languagePopup.foot": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "b5d622da4436c7cb7e598c767478a01a414dec105e43020c7e94814cb4c46563"
+    "reviewed": true,
+    "sourceHash": "b5d622da4436c7cb7e598c767478a01a414dec105e43020c7e94814cb4c46563",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "languagePopup.heading": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "e7feca4457ad0eaa266b4d90ba3f46de2a6c8ad51c029a688e1ddf41112587a6"
+    "reviewed": true,
+    "sourceHash": "e7feca4457ad0eaa266b4d90ba3f46de2a6c8ad51c029a688e1ddf41112587a6",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
+    "reviewedAt": "2026-10-05T11:15:46Z"
   },
   "media.placeholder.delivery": {
     "source": "human",
