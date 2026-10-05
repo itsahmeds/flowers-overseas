@@ -49,8 +49,36 @@ _None recorded._
   plpgsql statement slipped past the gate. Each statement is now read from every DDL word. Nine
   fixtures; two mutations red. B4 was accepted by the reviewer and carried to TASK-027, with the
   five trigger functions. B6 agreed.
+- 2026-10-05: breaker r3 (D, E, F) together with R2-1, closed as a class:
+  - a type allow-list for recipient columns;
+  - no DDL in procedural bodies;
+  - no `search_path` change;
+  - the zone-half test.
+
+  PostgreSQL 16.14 (PID 81878, stopped by PID): 4 live mutations; 5 static mutations.
 
 ## Result
+
+### Breaker r3 and R2-1: the class, closed
+
+The coordinator's instruction was: stop chasing routes one at a time; close the class.
+
+| Rule | What it refuses | Mutation, and what went red |
+|---|---|---|
+| **Type allow-list** (`RECIPIENT_COLUMN_TYPE`) | Any `recipient`/`recipient_address` column whose type is not a built-in scalar or an array of one (`text`, `varchar[(n)]`, `char(2|3)`, `uuid`, `int2/4/8`, `bool`, `timestamptz`, `date`, `numeric[(p,s)]`, unqualified or `pg_catalog.`). Refused: domains (E), composites, table and view row types (F), arrays of those, user types, `public.text`. The gate tracks column types through `LIKE`, `INHERITS`, renames and `ALTER COLUMN … TYPE`. A view's or a query's columns have an unseen type and are refused. The same rule runs on the evaluated mirror (`getSQLType`) and live, by OID (domain `typtype = 'd'` refused). | Gate off: 9 red. Mirror check off: 1. View columns typed as `text`: 1. Live: a domain over an email composite (E), a `public.customer` column (F), a domain over `text`: each red. |
+| **No DDL in procedural bodies** (R2-1) | Any DDL word, or a nested `DO`, inside a `DO` block or a function/procedure body, outside `DYNAMIC_SQL_ALLOWED` (`0001`). Control flow is refused, not parsed. The every-word reading from R2-1 stays as defence in depth. | Off: 11 red. |
+| **No `search_path` change** | `SET … search_path`, `set_config('search_path', …)`, `ALTER ROLE … SET search_path`, or the same inside a body. These would let an unqualified type resolve to a user type, which the allow-list assumes cannot happen. A function's own `SET search_path` header attribute is allowed. | Off: 1 red. |
+| **D** | A partner with zone-only coverage moved to another country (behaviour case). | Live: zone half of the guard removed, red. |
+
+Fixtures in `db-check-recipient-email.test.ts`, "the class, closed": E (a domain over a composite,
+over `text`, and `public.text`); F (a table row type, a view row type, a renamed type, a composite
+array, `ALTER COLUMN … TYPE`); a view renamed into `recipient`; procedural DDL without `EXECUTE`;
+a `DO` inside a body; four `search_path` routes; and a near-miss case with every allow-listed
+scalar, a function header's `SET search_path`, and `ON CONFLICT DO NOTHING` in a body.
+
+Live check: every recipient column resolves to a `pg_catalog` base type on the list, or to an
+array of one. Round trip clean: `--to 0000` left `schema_migrations` only, and re-migrate
+restored 45 tables. Suites: 12/12, 10/10, 8/8. Unit files now: gate 100, schema 68.
 
 ### Reviewer R2-1 (scoped, on `4ce8d093`)
 
