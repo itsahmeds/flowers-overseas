@@ -292,6 +292,43 @@ test.describe("one priority image with its preload, and none without a photograp
   });
 });
 
+/**
+ * The two products whose photographs showed another plant (TASK-190; audit 2026-10-04 finding 15).
+ * Both pairs are `rejected` in `seed/data/media.json`, so each page renders the gallery's
+ * placeholder: no `<img>`, `<source>` or preload names the withdrawn assets, and nothing is
+ * nominated (spec 008 §14 A11's zero, which binds the product page).
+ */
+const WITHDRAWN_PDPS = [
+  { url: "/en/poland/product/peace-lily", asset: "fo-pt-004-" },
+  { url: "/en/poland/product/olive-sapling", asset: "fo-pt-006-" },
+] as const;
+
+test.describe("a withdrawn photograph is not served, and nothing is preloaded (TASK-190; spec 006 AC-18)", () => {
+  for (const { url, asset } of WITHDRAWN_PDPS) {
+    test(`${url} renders the placeholder gallery, no ${asset}* image and zero preloads`, async ({
+      page,
+    }) => {
+      const response = await page.goto(url);
+      expect(response?.status()).toBe(200);
+      await expect(page.locator('[data-fo-gallery="placeholder"]')).toHaveCount(
+        1,
+      );
+      await expect(page.locator('[data-fo-gallery="photos"]')).toHaveCount(0);
+      // The asset id is the URL segment of every variant (`/media/{assetId}/…`), so no `src`,
+      // `srcset`, `imagesrcset` or `href` on the page may carry it.
+      await expect(
+        page.locator(
+          `img[src*="${asset}"], img[srcset*="${asset}"], source[srcset*="${asset}"], link[imagesrcset*="${asset}"], link[href*="${asset}"]`,
+        ),
+      ).toHaveCount(0);
+      await expect(
+        page.locator('head link[rel="preload"][as="image"]'),
+      ).toHaveCount(0);
+      await expect(page.locator('img[fetchpriority="high"]')).toHaveCount(0);
+    });
+  }
+});
+
 test.describe("the sticky summary is the summary's own total, docked (AC-9, the 390 px artboard)", () => {
   test("at 390 px the one total row docks at the bottom edge and the page keeps room for it", async ({
     page,
