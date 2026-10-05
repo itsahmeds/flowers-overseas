@@ -115,7 +115,26 @@ _None._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-05: AC-41's and AC-43's primary-action bullets on first screens TASK-186 does not own**
+  (to: orchestrator, in PR 199; answer: `open`). AC-41 asks that "the page's primary action (clause
+  9)" lie inside the viewport at 1280 × 800 and 1512 × 945, and AC-43 that it be at least 44 px
+  tall at 390. Both ACs are labelled TASK-186, but on today's first screens the action sits where
+  another task's rebuild puts it, and the fence keeps this task off those pages. Measured on the
+  TASK-186 build:
+  - country shop, category and occasion: the first price is in the second card row, y 1,027 to
+    1,249 at 1280 × 800 and 1,092 to 1,231 at 1512 × 945 (TASK-187, "the first priced row in view");
+  - the `en-gb` birthday hub renders no way to a price in `<main>`; the destinations hub's first
+    destination ends at y 813 at 1280 × 800 (in view at 1512 × 945); at 390 the occasions index's
+    occasion links are 21 px inline links and the category hub's destination link is 26 px tall
+    (TASK-188, the hub first screens);
+  - the guide's way into the shop is at y 7,166 (TASK-189, the guide's first screen).
+
+  What this PR does meanwhile: T-43 and T-45 check the primary action in a test of its own per page,
+  and each case above is declared `test.fail` with its owner (`PENDING` in
+  `tests/e2e/frame-laptop-band.spec.ts`). The case still runs; the day the owner's rebuild makes it
+  pass, Playwright reports the unexpected pass and that task must delete the row. Every other
+  bullet of AC-41 and AC-43 is asserted strictly on all nine pages. The question: is this the
+  intended split (the owning task closes its row), or must TASK-186 rebuild those first screens?
 
 ## Progress
 
@@ -155,6 +174,14 @@ One line per coherent step, newest last.
   guide and the notice letter on it, sections on `--section-fluid`, `Photo lead` cap on the guide's
   slot (fb894607); the breadcrumb offset in `Breadcrumbs` (5847f7e4). The founder's laptop shut
   down mid-run; resumed with every edit intact, the build slot re-acquired.
+- 2026-10-05: T-33, T-34, T-43, T-45 and T-46 written; the header's "Beta" label to `--text-xs`
+  (11 to 13 px) and the trail's links to a 24 px target, both demanded by AC-43 (7c1330f1).
+  Local build (load 12 to 24): `frame-laptop-band.spec.ts` 134 passed, 0 failed in `e2e-desktop`.
+  Mutation build (old `Container` padding, a `pt-[20px]` wrapper over the guide's trail, the old
+  hero and display `clamp()`s, `--text-xs: 12px`): 59 red, each for its own reason (T-33 the 28
+  `Container` cases, T-34 the guide at three widths, T-43 all 18 size cases, T-45 all nine). A
+  second build with only the photo cap removed: T-43 red on the guide at both sizes (498 > 480,
+  571 > 520). Measured after, on the local build, same script: table in `## Result`.
 
 ## Result
 
