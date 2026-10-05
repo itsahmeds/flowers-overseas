@@ -8,7 +8,15 @@
  * column and `.claude/bin/task.sh` stops finding the row. Both are asserted here, and the parser
  * is driven from fixture markdown so the failure paths are proven, not assumed.
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  cpSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -302,5 +310,43 @@ describe("the CLI", () => {
       /^TASKS\.md ok: \d+ task row\(s\), 10 open-decision row\(s\)/,
     );
     expect(out).toContain(OPEN_DECISIONS_DUE);
+    expect(out).toMatch(/\d+ brief\(s\) in the template's shape/);
+  });
+
+  it("exits 1 when a committed brief carries a section below `## Result` (TASK-141)", () => {
+    const root = mkdtempSync(join(tmpdir(), "fo-tasks-check-"));
+    try {
+      cpSync(join(repoRoot, "TASKS.md"), join(root, "TASKS.md"));
+      cpSync(join(repoRoot, "docs/tasks"), join(root, "docs/tasks"), {
+        recursive: true,
+      });
+      const cli = (): ReturnType<typeof spawnSync> =>
+        spawnSync(
+          process.execPath,
+          [join(repoRoot, "scripts/tasks-open-decisions.ts"), root],
+          { encoding: "utf8" },
+        );
+      expect(cli().status).toBe(0);
+
+      // Move TASK-086's carry-forwards below its result, the shape that cost PR 90 a round.
+      const path = join(root, "docs/tasks/TASK-086.md");
+      const markdown = readFileSync(path, "utf8");
+      const start = markdown.indexOf("## Carry-forwards");
+      const end = markdown.indexOf("## Escalations");
+      expect(start).toBeGreaterThan(-1);
+      const section = markdown.slice(start, end);
+      writeFileSync(
+        path,
+        `${markdown.slice(0, start)}${markdown.slice(end).trimEnd()}\n\n${section}`,
+        "utf8",
+      );
+      const run = cli();
+      expect(run.status).toBe(1);
+      expect(run.stderr).toContain(
+        'docs/tasks/TASK-086.md: "## Carry-forwards" sits below "## Result"',
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

@@ -63,6 +63,8 @@ be green. One paragraph or a short list — no restatement of the spec.
 One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 192` round 2 (2026-10-05):** HOLE 1 ACCEPTABLE: setext heading below Result. Briefs are ATX-only, so nobody misfiles that way by accident. Catching it needs multi-line parser state that risks false positives on committed briefs.
+- **From `/review 192` round 2 (2026-10-05):** HOLE 2 ACCEPTABLE: `<h2>Carry-forwards</h2>` below Result. Neither the template nor the tooling ever produces raw HTML headings in a brief, so it is not a realistic misfile.
 
 ## Escalations
 
@@ -70,9 +72,109 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+- 2026-10-05: row `in_progress`, draft PR 192 opened.
+- 2026-10-05: tests written red (11 unit cases, 2 CLI cases), then `briefShapeProblems` /
+  `checkBriefShapes` in `scripts/tasks-brief.ts` and the call in `pnpm tasks:check`. On main the
+  gate failed five briefs (TASK-112, 135, 136, 137, 192).
+- 2026-10-05: the five briefs reshaped (placement only, verified line by line), gates green, PR ready.
+- 2026-10-05 (round 1 fixes): rebased onto `origin/main` (PR 190 had rewritten TASK-192; it was reshaped
+  again by moves only). The breaker's three holes are closed: CRLF and trailing-space headings, template
+  names at any level inside `## Result`, and CommonMark headings and fences. 9 cases added, 8 mutants red.
+- 2026-10-05 (breaker round 2): four fence cases added (CRLF closer, indented opener, `~~~` holding
+  backticks, shorter closer); each goes red under its mutant. The reviewer accepted setext and `<h2>` holes
+  (Carry-forwards).
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**PR:** https://github.com/itsahmeds/flowers-overseas/pull/192. `pnpm tasks:check` now also
+checks every committed `docs/tasks/TASK-*.md` (192 on main) and exits 1 on any brief out of shape,
+naming the file. The heading list is read from `BRIEF_HEADINGS` in `scripts/tasks-brief.ts`; it is
+not restated anywhere. `tasks-open-decisions.ts` loads `tasks-brief.ts` with a dynamic import,
+because `tasks-brief.ts` already imports it and a static import back would read
+`TASK_NOTES_LIMIT` before it is set.
+
+**Where the line sits, and why.** A brief passes when (1) each `BRIEF_HEADINGS` heading appears
+exactly once, (2) they appear in `BRIEF_HEADINGS` order, compared as a sequence, and (3) no
+heading of any kind comes after `## Result`. Any other heading **above** `## Result` is allowed
+(`## Progress`, `## Done when`, `## Class`, `## Files`, a narrative round), because briefs
+legitimately grow and a gate that forbids that would be fought and switched off. The rule is
+"nothing below Result" and not "nothing the review process writes below Result", because
+heading text cannot tell review output from narrative: TASK-137's stranded section was titled
+"Round 2", and it was the answer to a review. A reader who reaches the result stops there; that
+is the whole defect. A template heading written twice also fails: `sectionOf` and a reader
+both stop at the first one, so the second is never read. Headings inside fenced code are ignored.
+The same reasoning is in the doc comment on `briefShapeProblems`.
+
+**Briefs reshaped (on main):**
+- TASK-112: `## Carry-forwards` moved from below `## Result` to above it; empty `## Escalations` added.
+- TASK-135: everything sat under `## Binding`. `## Result` inserted before its `**PR:**` line; empty
+  `## Read`, `## Carry-forwards`, `## Escalations` added between them.
+- TASK-136: empty `## Read` added.
+- TASK-137: `## Round 2 (finisher, 2026-09-21) …` moved from below `## Result` to just above it.
+- TASK-192: `## Escalations` moved from below `## Result` to above `## Progress`; empty
+  `## Carry-forwards` added.
+
+"Empty" means the heading plus `_None recorded._` (`EMPTY_SECTION`), except TASK-192's
+`## Escalations`, which was already empty and moved as is. **How content was proved unchanged:**
+for each file, the non-blank lines were counted against `origin/main`. No line was lost; the only
+lines added are the new headings and `_None recorded._`. For 112, 136, 137 and 192 every original
+section (heading to next heading) appears verbatim in the new file. For 135, removing the one
+inserted block gives back main's file byte for byte. None of the five has content that does not
+fit the template. PR 191's new briefs (TASK-200 to 223) were run through the check from its
+head and all pass. It needs nothing after rebasing, except taking these five files from main.
+
+**Tests (unit layer).** `tests/unit/tasks-brief.test.ts` +12: template order passes; extra
+heading above Result passes; a section below Result fails; a template section moved below Result
+fails (order + below); missing heading fails; same set in the wrong order fails; duplicate fails;
+fenced `## ` ignored; `tasks:migrate` output and `renderBrief` pass; `tasks:brief` scaffold
+(with its `## Progress`) passes; `checkBriefShapes` names only the failing file; every committed
+brief passes. `tests/unit/tasks-open-decisions.test.ts` +1, and one case extended: the CLI over a
+copy of the repo exits 0, then exits 1 naming `docs/tasks/TASK-086.md` once its carry-forwards are
+moved below Result. Every case asserts the exact problem list.
+
+**Proof that the gate can fail.** (a) In this worktree, TASK-137's `## Round 2` was moved back
+below `## Result`: `node scripts/tasks-open-decisions.ts` exited 1 naming it; the file was
+restored and `cmp` showed it identical; exit 0 again. (b) Mutants in `briefShapeProblems`, each
+restored after (`cmp`): order compared as a sorted set → "wrong order" and "moved below Result"
+cases red (2 failed); below-Result loop emptied → 4 red; missing check disabled → 1 red.
+
+**Round 1 (breaker holes, all closed).** The headings are now read as CommonMark ATX headings at
+every level (`briefOutline`): up to three spaces of indent, a space or a tab after the `#`s, an
+optional closing `#` sequence, CRLF line endings and trailing spaces trimmed. Fenced code needs a
+matching closing fence. Three rules were added to the ones above. First, a `#` heading after
+`## Result` fails like a `##` one. Second, a sub-heading of any level inside `## Result` fails
+when its text names another template section: case-insensitive, and the name may be followed by
+a non-letter (`### Carry-forwards`, `#### escalations (round 2)`). The result's own sub-headings
+(`### Evidence`) stay allowed. Third, a code fence left unclosed fails, because it hides every
+heading after it. All committed briefs pass the stricter rules unchanged. Main's TASK-192 was
+rewritten by PR 190 and reshaped again: only `## Carry-forwards` plus `_None recorded._` were
+added, and every original section appears verbatim. Tests: `tasks-brief.test.ts` +9 (CRLF,
+trailing spaces, `###` and `####` inside Result, sub-headings allowed, `#` after Result, unclosed
+fence, 3 vs 4 spaces of indent, tab and closing `#`s). Eight mutants were run and each turned at
+least one case red; the source was restored and checked with `cmp`. The mutants: drop `.trim()`
+(CRLF and trailing-space cases), drop the sub-heading check (`###`, `####`), drop the
+unclosed-fence error, allow no indent, allow a space only (no tab), match names case-sensitively,
+compare order as a set, and allow `#` sections after Result.
+
+**Gates.** No expensive gate run locally: the diff renders nothing.
+
+```
+gates:cheap · 2aaefcff63778e64d9f9d7f8f031bf0754fe54ba · tree clean · base origin/main · 2026-10-04T22:43:50.670Z
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 17.3 s
+format:check          exit 0 · 11.4 s
+i18n:check            exit 0 · 0.5 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 20.4 s · changed 5 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
+**Deviation from the brief.** The brief says not to touch `TASKS.md`, including this row. The work
+order put the row in scope for its status and PR cells, so only those two cells changed.

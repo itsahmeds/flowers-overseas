@@ -14,7 +14,10 @@
  *     This has been broken and repaired once already (row 26, `/review 8`), so it is a test now;
  *  4. no "Blockers / notes" cell is longer than `TASK_NOTES_LIMIT` characters, and
  *  5. every `todo`/`in_progress`/`in_review` row has its brief at `docs/tasks/TASK-NNN.md`
- *     (spec 001 §14 A15, AC-34 — `scripts/tasks-brief.ts` writes and migrates them).
+ *     (spec 001 §14 A15, AC-34 — `scripts/tasks-brief.ts` writes and migrates them), and
+ *  6. every committed brief carries `BRIEF_HEADINGS` once each, in order, with nothing below
+ *     `## Result` (TASK-141; the rule and its reasoning are on `briefShapeProblems` in
+ *     `scripts/tasks-brief.ts`, which owns the heading list).
  *
  * Pipes inside a cell must be escaped (`\|`) per GFM, including inside a code span; the parser
  * splits on unescaped pipes only, so an unescaped one shows up as a cell-count failure rather
@@ -335,24 +338,45 @@ const isMain =
   typeof process.argv[1] === "string" &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
-if (isMain) {
-  const root = resolve(process.argv[2] ?? process.cwd());
+/** The CLI: the ledger's problems, then every committed brief's shape problems; exit 1 on any. */
+function runCli(
+  root: string,
+  checkBriefShapes: (root: string) => string[],
+  briefCount: number,
+): void {
   const markdown = readLedger(root);
   const problems = checkLedger(markdown, {
     briefExists: (id) => existsSync(resolve(root, `docs/tasks/${id}.md`)),
   });
+  const shapeProblems = checkBriefShapes(root);
   const decisions = parseOpenDecisions(markdown);
   const tasks = parseTaskRows(markdown);
-  if (problems.length > 0) {
-    for (const problem of problems)
-      process.stderr.write(`TASKS.md: ${problem}\n`);
-    process.exit(1);
-  }
+  for (const problem of problems)
+    process.stderr.write(`TASKS.md: ${problem}\n`);
+  for (const problem of shapeProblems) process.stderr.write(`${problem}\n`);
+  if (problems.length > 0 || shapeProblems.length > 0) process.exit(1);
   const open = decisions.filter((decision) =>
     decision.status.startsWith("open"),
   ).length;
   process.stdout.write(
     `TASKS.md ok: ${String(tasks.length)} task row(s), ${String(decisions.length)} open-decision ` +
-      `row(s) (${String(open)} still open, due ${OPEN_DECISIONS_DUE})\n`,
+      `row(s) (${String(open)} still open, due ${OPEN_DECISIONS_DUE}); ` +
+      `${String(briefCount)} brief(s) in the template's shape\n`,
+  );
+}
+
+if (isMain) {
+  const root = resolve(process.argv[2] ?? process.cwd());
+  // `tasks-brief.ts` owns `BRIEF_HEADINGS` and imports this module. A static import back would
+  // make it evaluate first and read `TASK_NOTES_LIMIT` before this module had initialised it, so
+  // it is loaded here, after this module has finished evaluating.
+  import("./tasks-brief.ts").then(
+    ({ checkBriefShapes, committedBriefs }) => {
+      runCli(root, checkBriefShapes, committedBriefs(root).length);
+    },
+    (error: unknown) => {
+      process.stderr.write(`tasks:check: ${String(error)}\n`);
+      process.exit(1);
+    },
   );
 }

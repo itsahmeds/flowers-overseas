@@ -26,13 +26,19 @@ import { describe, expect, it } from "vitest";
 
 import {
   BRIEF_HEADINGS,
+  briefHeadings,
+  briefOutline,
   briefPath,
+  briefShapeProblems,
+  checkBriefShapes,
+  committedBriefs,
   concatNotes,
   isMigrated,
   migrate,
   notesCell,
   NOTES_LIMIT,
   parseBrief,
+  renderBrief,
   scaffold,
   splitNotes,
   summarise,
@@ -292,6 +298,257 @@ describe("`pnpm tasks:brief`", () => {
   });
 });
 
+/**
+ * The brief shape (TASK-141). A carry-forward written below `## Result` passed every gate and cost
+ * PR 90 a review round, because nothing read a *committed* brief's headings. The rule: every
+ * `BRIEF_HEADINGS` heading exactly once, in that order, and nothing after `## Result`. Other
+ * headings above `## Result` (`## Progress`, `## Done when`, a narrative round) are allowed.
+ */
+function brief(headings: readonly string[]): string {
+  return [
+    "# TASK-900 — fixture",
+    "",
+    "Row: `TASKS.md` → TASK-900.",
+    "",
+    ...headings.flatMap((heading) => [
+      `## ${heading}`,
+      "",
+      `Body of ${heading}.`,
+      "",
+    ]),
+  ].join("\n");
+}
+
+describe("the brief shape (TASK-141)", () => {
+  it("accepts the template headings in order", () => {
+    expect(briefShapeProblems(brief(BRIEF_HEADINGS))).toEqual([]);
+  });
+
+  it("accepts an extra heading above `## Result`", () => {
+    expect(
+      briefShapeProblems(
+        brief([
+          "Binding",
+          "Read",
+          "Done when",
+          "Carry-forwards",
+          "Escalations",
+          "Progress",
+          "Result",
+        ]),
+      ),
+    ).toEqual([]);
+  });
+
+  it("fails a section below `## Result`", () => {
+    expect(
+      briefShapeProblems(brief([...BRIEF_HEADINGS, "Round 2 (finisher)"])),
+    ).toEqual([
+      '"## Round 2 (finisher)" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+  });
+
+  it("fails a template section moved below `## Result`", () => {
+    expect(
+      briefShapeProblems(
+        brief(["Binding", "Read", "Escalations", "Result", "Carry-forwards"]),
+      ),
+    ).toEqual([
+      "template headings out of order: Binding, Read, Escalations, Result, Carry-forwards; " +
+        "expected Binding, Read, Carry-forwards, Escalations, Result",
+      '"## Carry-forwards" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+  });
+
+  it("fails a brief missing a heading", () => {
+    expect(
+      briefShapeProblems(
+        brief(["Binding", "Read", "Carry-forwards", "Result"]),
+      ),
+    ).toEqual(['missing "## Escalations"']);
+  });
+
+  it("fails headings in the wrong order, even with the same set", () => {
+    expect(
+      briefShapeProblems(
+        brief(["Binding", "Read", "Escalations", "Carry-forwards", "Result"]),
+      ),
+    ).toEqual([
+      "template headings out of order: Binding, Read, Escalations, Carry-forwards, Result; " +
+        "expected Binding, Read, Carry-forwards, Escalations, Result",
+    ]);
+  });
+
+  it("fails a template heading written twice, because the reader stops at the first", () => {
+    expect(
+      briefShapeProblems(
+        brief([
+          "Binding",
+          "Read",
+          "Carry-forwards",
+          "Carry-forwards",
+          "Escalations",
+          "Result",
+        ]),
+      ),
+    ).toEqual([
+      '"## Carry-forwards" appears 2 times; a reader stops at the first',
+    ]);
+  });
+
+  it("reads only real headings: a `## ` line inside a code fence is not one", () => {
+    const markdown = `${brief(BRIEF_HEADINGS)}\n\`\`\`md\n## Not a heading\n\`\`\`\n`;
+    expect(briefHeadings(markdown)).toEqual([...BRIEF_HEADINGS]);
+    expect(briefShapeProblems(markdown)).toEqual([]);
+  });
+
+  it("reads a CRLF brief: its headings, and a section below `## Result`", () => {
+    const crlf = (markdown: string): string => markdown.replace(/\n/g, "\r\n");
+    expect(briefHeadings(crlf(brief(BRIEF_HEADINGS)))).toEqual([
+      ...BRIEF_HEADINGS,
+    ]);
+    expect(briefShapeProblems(crlf(brief(BRIEF_HEADINGS)))).toEqual([]);
+    expect(
+      briefShapeProblems(crlf(brief([...BRIEF_HEADINGS, "Late note"]))),
+    ).toEqual([
+      '"## Late note" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+  });
+
+  it("reads headings with trailing spaces", () => {
+    const markdown = brief(BRIEF_HEADINGS).replace(/^(## .+)$/gm, "$1   ");
+    expect(markdown).toContain("## Result   \n");
+    expect(briefHeadings(markdown)).toEqual([...BRIEF_HEADINGS]);
+    expect(briefShapeProblems(markdown)).toEqual([]);
+  });
+
+  it("fails a `### Carry-forwards` written inside `## Result`", () => {
+    const markdown = `${brief(BRIEF_HEADINGS)}\n### Carry-forwards\n\n- **From \`/review 90\`:** fix it.\n`;
+    expect(briefShapeProblems(markdown)).toEqual([
+      '"### Carry-forwards" (line 25) repeats "## Carry-forwards" inside "## Result", where nobody reads it; move it under "## Carry-forwards"',
+    ]);
+  });
+
+  it("fails a `####` template name inside `## Result`, in any case and with a suffix", () => {
+    const markdown = `${brief(BRIEF_HEADINGS)}\n#### escalations (round 2)\n\nAsked.\n`;
+    expect(briefShapeProblems(markdown)).toEqual([
+      '"#### escalations (round 2)" (line 25) repeats "## Escalations" inside "## Result", where nobody reads it; move it under "## Escalations"',
+    ]);
+  });
+
+  it("allows the result's own sub-headings inside `## Result`", () => {
+    const markdown = `${brief(BRIEF_HEADINGS)}\n### Evidence\n\n#### Readiness\n\nNumbers.\n`;
+    expect(briefShapeProblems(markdown)).toEqual([]);
+  });
+
+  it("fails a `#` section below `## Result`", () => {
+    expect(
+      briefShapeProblems(`${brief(BRIEF_HEADINGS)}\n# Round 2\n\nNotes.\n`),
+    ).toEqual([
+      '"# Round 2" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+  });
+
+  it("fails an unclosed code fence after `## Result`, which would hide what follows", () => {
+    const markdown = `${brief(BRIEF_HEADINGS)}\n\`\`\`text\nlog\n\n## Late note\n`;
+    expect(briefShapeProblems(markdown)).toEqual([
+      "the code fence opened at line 25 is never closed, so every heading after it is hidden",
+    ]);
+  });
+
+  it("counts a `##` indented by up to three spaces as a heading, and not four", () => {
+    const three = `${brief(BRIEF_HEADINGS)}\n   ## Late note\n`;
+    expect(briefShapeProblems(three)).toEqual([
+      '"## Late note" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+    const four = `${brief(BRIEF_HEADINGS)}\n    ## Indented code, not a heading\n`;
+    expect(briefShapeProblems(four)).toEqual([]);
+  });
+
+  it("counts `##<tab>Heading` and a closing `#` sequence as a heading", () => {
+    expect(
+      briefShapeProblems(`${brief(BRIEF_HEADINGS)}\n##\tLate note\n`),
+    ).toEqual([
+      '"## Late note" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+    expect(briefOutline("## Result ##\n").headings).toEqual([
+      { level: 2, text: "Result", line: 1 },
+    ]);
+  });
+
+  describe("fences after `## Result` hide what is inside them, and only that", () => {
+    const after = (fenced: string): string =>
+      `${brief(BRIEF_HEADINGS)}\n${fenced}`;
+
+    it("closes a CRLF fence", () => {
+      const markdown = after("```text\n## Inside\n```\nDone.\n").replace(
+        /\n/g,
+        "\r\n",
+      );
+      expect(briefShapeProblems(markdown)).toEqual([]);
+    });
+
+    it("opens a fence indented by up to three spaces", () => {
+      expect(briefShapeProblems(after("   ```\n## Inside\n   ```\n"))).toEqual(
+        [],
+      );
+    });
+
+    it("does not close a `~~~` fence on backticks", () => {
+      expect(briefShapeProblems(after("~~~\n```\n## Inside\n~~~\n"))).toEqual(
+        [],
+      );
+    });
+
+    it("does not close a fence on a shorter closer", () => {
+      expect(briefShapeProblems(after("````\n```\n## Inside\n````\n"))).toEqual(
+        [],
+      );
+    });
+  });
+
+  it("passes what `pnpm tasks:migrate` writes", () => {
+    const root = fixtureRepo();
+    migrate(root);
+    for (const id of Object.keys(NOTES)) {
+      const markdown = readFileSync(join(root, briefPath(id)), "utf8");
+      expect(briefShapeProblems(markdown), id).toEqual([]);
+    }
+    const [row] = parseTaskRows(fixtureLedger({}));
+    if (row === undefined) throw new Error("fixture ledger has no row");
+    expect(briefShapeProblems(renderBrief(row, splitNotes(row.notes)))).toEqual(
+      [],
+    );
+  });
+
+  it("passes what `pnpm tasks:brief` scaffolds from the template", () => {
+    const root = fixtureRepo();
+    const markdown = readFileSync(
+      join(root, scaffold(root, "TASK-004")),
+      "utf8",
+    );
+    expect(briefShapeProblems(markdown)).toEqual([]);
+  });
+
+  it("names the file of every brief that fails, and only those", () => {
+    const root = fixtureRepo();
+    writeFileSync(
+      join(root, "docs/tasks/TASK-001.md"),
+      brief(BRIEF_HEADINGS),
+      "utf8",
+    );
+    writeFileSync(
+      join(root, "docs/tasks/TASK-002.md"),
+      brief([...BRIEF_HEADINGS, "Late note"]),
+      "utf8",
+    );
+    expect(committedBriefs(root)).toEqual(["TASK-001.md", "TASK-002.md"]);
+    expect(checkBriefShapes(root)).toEqual([
+      'docs/tasks/TASK-002.md: "## Late note" sits below "## Result", where nobody reads it; move it above "## Result"',
+    ]);
+  });
+});
+
 describe("the summary that stays in the row", () => {
   it("takes whole sentences and stops at the budget", () => {
     expect(summarise("One. Two. Three.", 8)).toBe("One.");
@@ -320,6 +577,11 @@ describe("the committed repository", () => {
       expect(row.notes.length, row.id).toBeLessThanOrEqual(TASK_NOTES_LIMIT);
       expect(row.notes, row.id).toContain(briefPath(row.id));
     }
+  });
+
+  it("keeps every committed brief in the template's shape (TASK-141)", () => {
+    expect(committedBriefs(repoRoot).length).toBeGreaterThan(0);
+    expect(checkBriefShapes(repoRoot)).toEqual([]);
   });
 
   it("passes the whole ledger check with the brief probe wired in", () => {

@@ -185,51 +185,6 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `pseudo-rtl` `/ar-XB` and `shell` `/de`) — while `e2e` (828 passed) and `a11y` (83 passed) are
   green.
 
-## Result
-
-PR: **#90** (run 35611605977, label `ci:full`). `preview` no longer waits on Vercel: it builds the app on the runner from the
-committed `.env.example` placeholders (no credential in scope — the same `env | grep` assertion
-the `container` job makes), packages `.next` minus `cache` and `standalone` into a 17 MB
-`preview-build` artifact, serves it with `next start` and refuses to succeed until
-`GET /api/health` answers 200 with `"status":"ok"`. `e2e`, `visual` and `a11y` unpack that same
-build through the new composite action `.github/actions/preview-origin`, which applies the same
-gate, and consume `preview_url` (`http://localhost:3000` — the origin `.env.example`'s
-`NEXT_PUBLIC_SITE_URL` inlines, so every canonical under test matches the host serving it)
-exactly as before. `VERCEL_AUTOMATION_BYPASS_SECRET` is gone from the three jobs; the AC-29
-probe stays in `preview` as `continue-on-error` evidence. `hostPlatform()` and the
-`BUILD_ENV_KEYS`/runtime split are untouched.
-
-Tests (unit layer only — this task's deliverable is a workflow): 7 new cases in
-`tests/unit/ci-workflow.test.ts` ("the preview job serves an origin CI owns") pinning the
-on-runner build, the placeholder-only environment, the `/api/health` gate inside `serve.sh`, the
-`preview_url` output, the published artifact, the shared action in all three browser jobs, and
-the probe's non-blocking status; `tests/unit/vercel-config.test.ts`'s preview block rewritten to
-scope AC-29 / T-30 to the evidence step. Full unit suite: 180 files, 4 349 passed, 5 skipped.
-Rehearsed locally against `pnpm start` on :3215 (build slot held): `serve.sh` green end to end,
-`a11y` 83/83, `e2e` 824 passed / 2 failed (macOS case-insensitivity only) / 8 skipped, `visual`
-42 passed / 3 failed (pre-existing on `main`).
-
-**What CI reported — the number this task exists for.** On run 35611605977 the three suites gave
-a real conclusion for the first time on this project:
-
-| job | before (PRs 84, 85, 87) | this PR |
-|---|---|---|
-| `preview` | failure after a 15-minute wait | **success in 69 s** (build, 17 MB artifact, `/api/health` 200) |
-| `e2e` | skipped | **success** — 828 passed, 6 skipped, 3.8 min |
-| `a11y` | skipped | **success** — 83 passed, 42 s |
-| `visual` | skipped | **failure** — 45 specs, all red: 42 have no `linux/` baseline, 3 mismatch the 3 stale ones |
-
-Every other job of the run is green, including `container`, `build` and `lighthouse`. The two
-macOS-only `e2e` failures of the local rehearsal passed on the runner's case-sensitive
-filesystem, as expected. The Vercel evidence step recorded exactly the defect the task named and
-did not block anything: deployment present, `302` to `vercel.com/sso-api` (protected),
-`x-vercel-id: sfo1::fra1::…`, `X-Robots-Tag: noindex`, **`/api/health` with the bypass: 500**.
-
-Handed to later tasks: the findings in `## Escalations`, and the `linux/` baselines inside the
-`playwright-report-visual` artifact of this run (104 MB) — the screenshots the job wrote are what
-`playwright.config.ts` says the Linux baselines are produced from. **None was committed here.**
-
-
 ## Round 2 (finisher, 2026-09-21) — the required change and the spec amendment
 
 **1. `commitlint` is runnable on a `workflow_dispatch` run.** The job's three scripts are now free
@@ -287,3 +242,47 @@ The run is green end to end: `lint`, `typecheck`, `test-unit` (the five new case
 `corridor-check`, `seed-check`, `dev-os-check`, `lighthouse`. `preview` and the three browser jobs
 are `skipped`, as they must be: `preview`'s `if` is `pull_request`-only, which is why the origin
 work was proved on run 35611605977 and the commitlint fix here.
+
+## Result
+
+PR: **#90** (run 35611605977, label `ci:full`). `preview` no longer waits on Vercel: it builds the app on the runner from the
+committed `.env.example` placeholders (no credential in scope — the same `env | grep` assertion
+the `container` job makes), packages `.next` minus `cache` and `standalone` into a 17 MB
+`preview-build` artifact, serves it with `next start` and refuses to succeed until
+`GET /api/health` answers 200 with `"status":"ok"`. `e2e`, `visual` and `a11y` unpack that same
+build through the new composite action `.github/actions/preview-origin`, which applies the same
+gate, and consume `preview_url` (`http://localhost:3000` — the origin `.env.example`'s
+`NEXT_PUBLIC_SITE_URL` inlines, so every canonical under test matches the host serving it)
+exactly as before. `VERCEL_AUTOMATION_BYPASS_SECRET` is gone from the three jobs; the AC-29
+probe stays in `preview` as `continue-on-error` evidence. `hostPlatform()` and the
+`BUILD_ENV_KEYS`/runtime split are untouched.
+
+Tests (unit layer only — this task's deliverable is a workflow): 7 new cases in
+`tests/unit/ci-workflow.test.ts` ("the preview job serves an origin CI owns") pinning the
+on-runner build, the placeholder-only environment, the `/api/health` gate inside `serve.sh`, the
+`preview_url` output, the published artifact, the shared action in all three browser jobs, and
+the probe's non-blocking status; `tests/unit/vercel-config.test.ts`'s preview block rewritten to
+scope AC-29 / T-30 to the evidence step. Full unit suite: 180 files, 4 349 passed, 5 skipped.
+Rehearsed locally against `pnpm start` on :3215 (build slot held): `serve.sh` green end to end,
+`a11y` 83/83, `e2e` 824 passed / 2 failed (macOS case-insensitivity only) / 8 skipped, `visual`
+42 passed / 3 failed (pre-existing on `main`).
+
+**What CI reported — the number this task exists for.** On run 35611605977 the three suites gave
+a real conclusion for the first time on this project:
+
+| job | before (PRs 84, 85, 87) | this PR |
+|---|---|---|
+| `preview` | failure after a 15-minute wait | **success in 69 s** (build, 17 MB artifact, `/api/health` 200) |
+| `e2e` | skipped | **success** — 828 passed, 6 skipped, 3.8 min |
+| `a11y` | skipped | **success** — 83 passed, 42 s |
+| `visual` | skipped | **failure** — 45 specs, all red: 42 have no `linux/` baseline, 3 mismatch the 3 stale ones |
+
+Every other job of the run is green, including `container`, `build` and `lighthouse`. The two
+macOS-only `e2e` failures of the local rehearsal passed on the runner's case-sensitive
+filesystem, as expected. The Vercel evidence step recorded exactly the defect the task named and
+did not block anything: deployment present, `302` to `vercel.com/sso-api` (protected),
+`x-vercel-id: sfo1::fra1::…`, `X-Robots-Tag: noindex`, **`/api/health` with the bypass: 500**.
+
+Handed to later tasks: the findings in `## Escalations`, and the `linux/` baselines inside the
+`playwright-report-visual` artifact of this run (104 MB) — the screenshots the job wrote are what
+`playwright.config.ts` says the Linux baselines are produced from. **None was committed here.**
