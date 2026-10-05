@@ -232,6 +232,73 @@ describe("a raw code-unit ceiling stops what a grapheme count cannot (hole 3)", 
     ).toBe(false);
   });
 
+  it("refuses one code unit over the ceiling that stays within 200 graphemes (round 2 hole 1)", () => {
+    // 199 letters with three marks and one with four: still 200 graphemes, 801 units.
+    const overByOne = [
+      ...Array.from({ length: 199 }, () => zalgo(3)),
+      zalgo(4),
+    ].join("");
+    expect(overByOne.length).toBe(801);
+    expect(
+      firstIssue(buyer().safeParse({ ...BUYER, cardMessage: overByOne })),
+    ).toEqual({ path: ["cardMessage"], message: CHECKOUT_ERROR_KEYS.tooLong });
+    // The same field at 120 graphemes for the note: 480 units pass, 481 do not.
+    const note = Array.from({ length: 120 }, () => zalgo(3)).join("");
+    expect(
+      recipient().safeParse({ ...DE_STEP, deliveryNote: note }).success,
+    ).toBe(true);
+    const noteOver = `${note.slice(0, -4)}${zalgo(4)}`;
+    expect(noteOver.length).toBe(481);
+    expect(
+      firstIssue(recipient().safeParse({ ...DE_STEP, deliveryNote: noteOver })),
+    ).toEqual({ path: ["deliveryNote"], message: CHECKOUT_ERROR_KEYS.tooLong });
+  });
+
+  it.each([
+    ["phone", "030", "12345678", CHECKOUT_ERROR_KEYS.phoneInvalid],
+    ["postcode", "10", "115", CHECKOUT_ERROR_KEYS.postcodeFormat],
+  ] as const)(
+    "caps %s at 64 code units with a value its parser would accept (round 2 hole 2)",
+    (field, head, tail, message) => {
+      const padded = (units: number) =>
+        `${head}${" ".repeat(units - head.length - tail.length)}${tail}`;
+      expect(padded(64)).toHaveLength(64);
+      expect(
+        recipient().safeParse({ ...DE_STEP, [field]: padded(64) }).success,
+        "64 units",
+      ).toBe(true);
+      expect(
+        firstIssue(recipient().safeParse({ ...DE_STEP, [field]: padded(65) })),
+        "65 units",
+      ).toEqual({ path: [field], message });
+    },
+  );
+
+  it("caps the country of residence and the buyer's phone at 64 code units (round 2 hole 2)", () => {
+    const country = (units: number) => `GB${" ".repeat(units - 2)}`;
+    expect(
+      buyer().safeParse({ ...BUYER, residenceCountry: country(64) }).success,
+    ).toBe(true);
+    expect(
+      firstIssue(
+        buyer().safeParse({ ...BUYER, residenceCountry: country(65) }),
+      ),
+    ).toEqual({
+      path: ["residenceCountry"],
+      message: CHECKOUT_ERROR_KEYS.countryInvalid,
+    });
+    const phone = (units: number) => `020${" ".repeat(units - 11)}79250918`;
+    expect(buyer().safeParse({ ...BUYER, buyerPhone: phone(64) }).success).toBe(
+      true,
+    );
+    expect(
+      firstIssue(buyer().safeParse({ ...BUYER, buyerPhone: phone(65) })),
+    ).toEqual({
+      path: ["buyerPhone"],
+      message: CHECKOUT_ERROR_KEYS.phoneInvalid,
+    });
+  });
+
   it("caps the short fields at 64 units too", () => {
     expect(
       firstIssue(recipient().safeParse({ ...DE_STEP, phone: "1".repeat(65) })),
@@ -249,6 +316,13 @@ describe("a raw code-unit ceiling stops what a grapheme count cannot (hole 3)", 
 /* -------------------------------------------------------------------------- */
 
 const CONTROLS = [
+  ["line separator U+2028", "\u2028"],
+  ["paragraph separator U+2029", "\u2029"],
+  ["right-to-left override U+202E", "\u202e"],
+  ["left-to-right embedding U+202A", "\u202a"],
+  ["pop directional formatting U+202C", "\u202c"],
+  ["right-to-left isolate U+2067", "\u2067"],
+  ["pop directional isolate U+2069", "\u2069"],
   ["NUL", "\u0000"],
   ["ESC sequence", "\u001b[2J"],
   ["tab", "\t"],
@@ -282,7 +356,12 @@ describe("control characters are refused (hole 4)", () => {
   );
 
   it.each(CONTROLS)("%s in the card and 'sign as'", (_l, c) => {
-    for (const field of ["cardMessage", "signAs"] as const) {
+    // The card reads U+2028/U+2029 as a line break (asserted below); 'sign as' is one line.
+    const lineSeparator = /[\u2028\u2029]/u.test(c);
+    const fields = lineSeparator
+      ? (["signAs"] as const)
+      : (["cardMessage", "signAs"] as const);
+    for (const field of fields) {
       expect(
         firstIssue(buyer().safeParse({ ...BUYER, [field]: `Love${c}you` })),
         field,
@@ -309,6 +388,42 @@ describe("control characters are refused (hole 4)", () => {
       firstIssue(recipient().safeParse({ ...DE_STEP, fullName: "Erika\nM" }))
         ?.message,
     ).toBe(CHECKOUT_ERROR_KEYS.invalidCharacters);
+  });
+
+  it("turns U+2028 and U+2029 into a line break in the card and the note (round 2 hole 3)", () => {
+    expect(
+      buyer().parse({ ...BUYER, cardMessage: "Happy birthday\u2028Mum\u2029x" })
+        .cardMessage,
+    ).toBe("Happy birthday\nMum\nx");
+    expect(
+      recipient().parse({
+        ...DE_STEP,
+        deliveryNote: "Ring twice\u20283rd floor",
+      }).deliveryNote,
+    ).toBe("Ring twice\n3rd floor");
+  });
+
+  it("refuses the bidi overrides in the card and the note too, and keeps the RTL marks (round 2 hole 4)", () => {
+    expect(
+      firstIssue(
+        buyer().safeParse({ ...BUYER, cardMessage: "Love \u202emum" }),
+      ),
+    ).toEqual({
+      path: ["cardMessage"],
+      message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+    });
+    expect(
+      firstIssue(
+        recipient().safeParse({ ...DE_STEP, deliveryNote: "a\u2066b" }),
+      ),
+    ).toEqual({
+      path: ["deliveryNote"],
+      message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+    });
+    const arabic = "\u0645\u0631\u064a\u0645 \u200fSam\u200e";
+    expect(buyer().parse({ ...BUYER, buyerName: arabic }).buyerName).toBe(
+      arabic,
+    );
   });
 
   it("treats a card of only invisible characters as no card", () => {

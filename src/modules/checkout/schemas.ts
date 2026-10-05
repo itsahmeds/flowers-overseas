@@ -79,13 +79,29 @@ const PHONE_REJECTION_KEYS: Readonly<Record<PhoneRejection, string>> = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * C0 and C1 controls (`\p{Cc}`, U+0000 included) and lone surrogates (`\p{Cs}`). Refused in every
- * free-text field: Postgres `text` cannot store U+0000, so it would turn into a 500 at the write
- * instead of a field error, and an escape sequence has no business on a printed card. The card
- * message and the delivery note may still carry a line break.
+ * The characters refused in every free-text field:
+ *
+ *  - C0 and C1 controls (`\p{Cc}`, U+0000 included) and lone surrogates (`\p{Cs}`). Postgres
+ *    `text` cannot store U+0000, so it would turn into a 500 at the write instead of a field
+ *    error, and an escape sequence has no business on a printed card;
+ *  - the line and paragraph separators U+2028/U+2029 (`\p{Zl}`, `\p{Zp}`), which break a line
+ *    without being a control (`/break 201` round 2 hole 3). The card message and the delivery
+ *    note turn them into `\n` first, since a line break is allowed there;
+ *  - the bidirectional embedding, override and isolate controls U+202A–U+202E and U+2066–U+2069
+ *    (round 2 hole 4), which can make a florist read a name backwards. The marks U+200E/U+200F
+ *    stay allowed: right-to-left text needs no override.
+ *
+ * The card message and the delivery note may still carry `\n` and `\r`.
  */
-const CONTROL_CHARACTER = /[\p{Cc}\p{Cs}]/u;
-const CONTROL_CHARACTER_EXCEPT_LINE_BREAK = /(?![\n\r])[\p{Cc}\p{Cs}]/u;
+const REFUSED = "\\p{Cc}\\p{Cs}\\p{Zl}\\p{Zp}\\u202A-\\u202E\\u2066-\\u2069";
+const CONTROL_CHARACTER = new RegExp(`[${REFUSED}]`, "u");
+const CONTROL_CHARACTER_EXCEPT_LINE_BREAK = new RegExp(
+  `(?![\\n\\r])[${REFUSED}]`,
+  "u",
+);
+
+/** U+2028 and U+2029, which a multi-line field reads as an ordinary line break. */
+const LINE_SEPARATORS = /[\u2028\u2029]/gu;
 
 /** Format characters (`\p{Cf}`: zero-width space, joiners, direction marks) and whitespace. */
 const INVISIBLE = /[\p{Cf}\s]/gu;
@@ -161,7 +177,11 @@ function textField(options: {
   return formString({
     maxCodeUnits: options.max * CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME,
     ...tooLong,
-  }).transform((value, ctx) => {
+  }).transform((posted, ctx) => {
+    const value =
+      options.multiline === true
+        ? posted.replace(LINE_SEPARATORS, "\n")
+        : posted;
     if (control.test(value)) {
       ctx.addIssue({
         code: "custom",

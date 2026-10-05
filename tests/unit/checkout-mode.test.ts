@@ -335,7 +335,7 @@ const DECISION_NAMES: ReadonlySet<string> = new Set([
 ]);
 
 /** A module specifier that reaches `mode.ts` (`./mode`, `@/modules/checkout/mode`, …). */
-const MODE_SPECIFIER = /(?:^\.\/|\/checkout\/)mode(?:\.ts)?$/u;
+const MODE_SPECIFIER = /(?:^\.\/|\/checkout\/)mode(?:\.[cm]?[jt]sx?)?$/u;
 
 const SOURCE_FILE = /\.(?:[cm]?[jt]sx?)$/u;
 
@@ -403,12 +403,41 @@ function decisionImportsIn(fileName: string, text: string): string[] {
       at(node, `spells ${node.text}`);
     } else if (
       ts.isCallExpression(node) &&
-      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
-      node.arguments[0] !== undefined &&
-      ts.isStringLiteral(node.arguments[0]) &&
-      MODE_SPECIFIER.test(node.arguments[0].text)
+      node.expression.kind === ts.SyntaxKind.ImportKeyword
     ) {
-      at(node, `imports ${node.arguments[0].text} dynamically`);
+      const [specifier] = node.arguments;
+      if (
+        specifier === undefined ||
+        !(
+          ts.isStringLiteral(specifier) ||
+          ts.isNoSubstitutionTemplateLiteral(specifier)
+        )
+      ) {
+        // Blanket rule (round 2 hole 5): a computed `import()` names a module no scan can read.
+        at(node, "imports a computed module");
+      } else if (MODE_SPECIFIER.test(specifier.text)) {
+        at(node, `imports ${specifier.text} dynamically`);
+      }
+    } else if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === "require"
+    ) {
+      // Blanket rule: the codebase is ES modules; a `require` is a side door around the scan.
+      at(node, "calls require");
+    } else if (
+      ts.isIdentifier(node) &&
+      (node.text === "eval" || node.text === "Function") &&
+      !isKeyPosition(node) &&
+      !ts.isPropertyAccessExpression(node.parent) &&
+      (ts.isCallExpression(node.parent) || ts.isNewExpression(node.parent))
+    ) {
+      // Blanket rule: code built from a string is invisible to any syntax tree.
+      at(node, `calls ${node.text}`);
+    } else if (ts.isImportEqualsDeclaration(node)) {
+      if (ts.isExternalModuleReference(node.moduleReference)) {
+        at(node, "import = require");
+      }
     }
     ts.forEachChild(node, visit);
   };
@@ -473,6 +502,37 @@ describe("only mode.ts reads the decision's inputs (AC-1, T-01, ruling R5)", () 
       'declare const m: Record<string, (k: string) => string>;\nexport const k = m["stripeKeyKind"];',
     ],
     [
+      "import = require of mode.ts",
+      'import m = require("./mode");\nexport const live = (k: string) => m.stripeKeyKind(k) === "live";',
+    ],
+    [
+      "import = require of any module",
+      'import m = require("../somewhere");\nexport const x = m;',
+    ],
+    [
+      "a bare require",
+      'const m = require("@/modules/checkout/mode");\nexport const x = m;',
+    ],
+    [
+      "a .js-suffixed namespace import",
+      'import * as m from "../checkout/mode.js";\nexport const x = m;',
+    ],
+    ["a .js-suffixed export *", 'export * from "./mode.js";'],
+    [
+      "a concatenated import()",
+      'export const load = () => import("./mo" + "de");',
+    ],
+    [
+      "a templated import()",
+      'const name = "mode";\nexport const load = () => import(`./${name}`);',
+    ],
+    [
+      "a computed member on a computed import",
+      'export const load = async () => (await import("./" + "mode"))["strip" + "eKeyKind"];',
+    ],
+    ["eval", 'export const k = eval("1");'],
+    ["new Function", 'export const f = new Function("return 1");'],
+    [
       "a branch on the built inputs",
       'declare const inputs: { stripeKeyKind: string };\nexport const live = inputs.stripeKeyKind === "live";',
     ],
@@ -480,6 +540,12 @@ describe("only mode.ts reads the decision's inputs (AC-1, T-01, ruling R5)", () 
     expect(
       decisionImportsIn("src/lib/planted.ts", text).length,
     ).toBeGreaterThan(0);
+  });
+
+  it("lets a literal import() of another module and the word eval in a string through", () => {
+    const text =
+      'export const load = () => import("./ConsentSettingsPanel");\nexport const t = () => import(`node:fs`);\nexport const csp = ["eval", "wasm-eval"];\ndeclare const o: { eval: () => void };\no.eval();';
+    expect(decisionImportsIn("src/lib/literal.ts", text)).toEqual([]);
   });
 
   it("lets a caller build the inputs without reading them", () => {
