@@ -38,13 +38,12 @@ describe("no per-tab language dismissal (/break 205 hole 1)", () => {
     expect(hits).toEqual([]);
   });
 
-  it("writes to sessionStorage nowhere under src/", () => {
+  it("touches sessionStorage nowhere under src/ (no alias, no write)", () => {
+    // Any mention outside the cookie register's storage-kind enum: an alias
+    // (`const s = window.sessionStorage; s.setItem(…)`) still has to name it once.
     const hits = files
-      .filter((file) =>
-        /sessionStorage\s*\.\s*setItem|sessionStorage\s*\[/u.test(
-          readFileSync(file, "utf8"),
-        ),
-      )
+      .filter((file) => !file.endsWith("src/config/cookies.ts"))
+      .filter((file) => readFileSync(file, "utf8").includes("sessionStorage"))
       .map((file) => relative(repoRoot, file));
     expect(hits).toEqual([]);
   });

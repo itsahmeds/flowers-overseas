@@ -14,12 +14,18 @@
  *    fail-open timer releases only a gate still pending);
  *  - **release** clears it and tells the sheet.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   LOCALE_GATE_ATTRIBUTE,
   LOCALE_GATE_EVENT,
+  LOCALE_GATE_TIMEOUT_MS,
+  guardLocaleGate,
   holdLocaleGate,
+  syncLocaleGate,
   localeGateDocumentAttributes,
   releaseAbandonedLocaleGate,
   releaseLocaleGate,
@@ -124,5 +130,101 @@ describe("the gate's states, read by the consent sheet", () => {
     renderDocument();
     releaseAbandonedLocaleGate();
     expect(localeGateHeld()).toBe(false);
+  });
+});
+
+describe("the loader never hides the consent sheet for good (/break 205 hole 4)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("releases at once when the island's chunk fails to load", async () => {
+    renderDocument();
+    const failed = Promise.reject(new Error("ChunkLoadError"));
+    guardLocaleGate(failed);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(localeGateHeld()).toBe(false);
+  });
+
+  it("releases after the timeout when the chunk never arrives", async () => {
+    renderDocument();
+    guardLocaleGate(new Promise<never>(() => undefined));
+    await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS - 1);
+    expect(localeGateHeld()).toBe(true);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(localeGateHeld()).toBe(false);
+    expect(LOCALE_GATE_TIMEOUT_MS).toBeLessThanOrEqual(4000);
+  });
+
+  it("never releases a gate the open popup holds", async () => {
+    renderDocument();
+    guardLocaleGate(Promise.resolve({}));
+    holdLocaleGate();
+    await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS * 2);
+    expect(localeGateHeld()).toBe(true);
+  });
+
+  it("stops its timer on cleanup", async () => {
+    renderDocument();
+    const cleanup = guardLocaleGate(new Promise<never>(() => undefined));
+    cleanup();
+    await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS * 2);
+    expect(localeGateHeld()).toBe(true);
+  });
+});
+
+describe("the island holds the gate before the dialog opens (/break 205 hole 3)", () => {
+  function fakeDialog(): {
+    open: boolean;
+    showModal: () => void;
+    heldAtOpen: string | null;
+  } {
+    const dialog = {
+      open: false,
+      heldAtOpen: null as string | null,
+      showModal(): void {
+        dialog.heldAtOpen = root.getAttribute(LOCALE_GATE_ATTRIBUTE);
+        dialog.open = true;
+      },
+    };
+    return dialog;
+  }
+
+  it("holds, then opens: the sheet has stepped back before the popup paints", () => {
+    renderDocument();
+    const dialog = fakeDialog();
+    syncLocaleGate(dialog, true);
+    expect(dialog.open).toBe(true);
+    expect(dialog.heldAtOpen).toBe("open");
+    expect(root.getAttribute(LOCALE_GATE_ATTRIBUTE)).toBe("open");
+  });
+
+  it("releases when the popup is not to be open (a valid cookie, or after closing)", () => {
+    renderDocument();
+    syncLocaleGate(fakeDialog(), false);
+    expect(localeGateHeld()).toBe(false);
+    holdLocaleGate();
+    syncLocaleGate(null, true);
+    expect(localeGateHeld()).toBe(false);
+  });
+});
+
+describe("the components call the two effects (their wiring, pinned from source)", () => {
+  const source = (path: string): string =>
+    readFileSync(resolve(import.meta.dirname, "../..", path), "utf8");
+
+  it("the loader guards the island's own import from an effect that runs once", () => {
+    expect(source("src/modules/i18n/ui/LanguagePopupLoader.tsx")).toMatch(
+      /useEffect\(\s*\(\)\s*=>\s*guardLocaleGate\(\s*import\("\.\/LanguagePopupIsland\.tsx"\)\s*\),\s*\[\],?\s*\)/u,
+    );
+  });
+
+  it("the island syncs the gate with its decision on every change", () => {
+    expect(source("src/modules/i18n/ui/LanguagePopupIsland.tsx")).toMatch(
+      /useEffect\(\(\)\s*=>\s*\{\s*syncLocaleGate\(dialogRef\.current,\s*open\);\s*\},\s*\[open\]\)/u,
+    );
   });
 });

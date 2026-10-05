@@ -85,3 +85,45 @@ export function releaseAbandonedLocaleGate(): void {
   }
   releaseLocaleGate();
 }
+
+/**
+ * The loader's effect (`LanguagePopupLoader.tsx`): give the screen back to the consent sheet if
+ * the popup's island never takes the gate. The document is served with the gate pending, so a
+ * chunk that fails or never arrives would otherwise hide the sheet for good (`/break 205` hole 4).
+ *
+ *  - the import **rejects**: released at once, because no popup can open;
+ *  - the import **never settles**, or the island never runs: released after
+ *    `LOCALE_GATE_TIMEOUT_MS`.
+ *
+ * Both release only a gate still pending, never one an open popup holds. Returns the cleanup.
+ */
+export function guardLocaleGate(island: Promise<unknown>): () => void {
+  const timer = setTimeout(releaseAbandonedLocaleGate, LOCALE_GATE_TIMEOUT_MS);
+  island.catch(() => {
+    releaseAbandonedLocaleGate();
+  });
+  return () => {
+    clearTimeout(timer);
+  };
+}
+
+/** The part of `<dialog>` the island's effect drives. */
+export interface GateDialog {
+  readonly open: boolean;
+  showModal(): void;
+}
+
+/**
+ * The island's effect (`LanguagePopupIsland.tsx`): while the popup is to be open the gate is
+ * **held**, then the dialog opens, so the consent sheet steps back before the popup paints; when
+ * it is not, the gate is released. Holding first is what keeps the loader's timer from releasing
+ * the gate under an open popup.
+ */
+export function syncLocaleGate(dialog: GateDialog | null, open: boolean): void {
+  if (!open || dialog === null) {
+    releaseLocaleGate();
+    return;
+  }
+  holdLocaleGate();
+  if (!dialog.open) dialog.showModal();
+}

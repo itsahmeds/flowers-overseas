@@ -15,24 +15,15 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
 import type { LanguagePopupIslandProps } from "./LanguagePopupIsland.tsx";
-import {
-  LOCALE_GATE_TIMEOUT_MS,
-  releaseAbandonedLocaleGate,
-} from "./localeGate.ts";
+import { guardLocaleGate } from "./localeGate.ts";
 
 const Island = dynamic(async () => import("./LanguagePopupIsland.tsx"), {
   ssr: false,
 });
 
 export function LanguagePopupLoader(props: LanguagePopupIslandProps) {
-  useEffect(() => {
-    const timer = window.setTimeout(
-      releaseAbandonedLocaleGate,
-      LOCALE_GATE_TIMEOUT_MS,
-    );
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, []);
+  // The same module `dynamic()` loads (one chunk, one request): released at once if it rejects,
+  // and after the timeout if the island never takes the gate (`guardLocaleGate`).
+  useEffect(() => guardLocaleGate(import("./LanguagePopupIsland.tsx")), []);
   return <Island {...props} />;
 }
