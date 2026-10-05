@@ -44,6 +44,7 @@ import {
 } from "react";
 
 import { ConsentBannerView, ConsentSavedView } from "./ConsentBannerView";
+import { localeGateHeld, subscribeLocaleGate } from "./localeGateReader";
 import {
   type ConsentChoices,
   type StoredConsent,
@@ -65,38 +66,6 @@ import type { ConsentView } from "./consentTypes";
 const SettingsPanel = dynamic(() => import("./ConsentSettingsPanel"), {
   ssr: false,
 });
-
-/**
- * The language popup's gate (spec 003 §14 A14 Shape as amended by A16: "it shows before the
- * consent sheet and never stacks on it"; AC-28 (f); spec 004 §14 A23 AC-39; TASK-119).
- *
- * The popup's loader sets this attribute on `<html>` during hydration, before any `ssr: false`
- * chunk can resolve, and the popup removes it when it closes or decides not to open; every change
- * fires the event. The sheet is simply not painted while the attribute is there: nothing is
- * decided, written or recorded. The names are restated rather than imported, because the only
- * legal path from here to `src/modules/i18n/ui/localeGate.ts` is the i18n barrel, which would pull
- * the locale registry and its validator into this chunk (spec 004 §14 A1);
- * `tests/unit/locale-gate.test.ts` pins the two copies equal. It fails open: the loader releases a
- * gate its island never took.
- */
-const LOCALE_GATE_ATTRIBUTE = "data-fo-locale-gate";
-const LOCALE_GATE_EVENT = "fo:locale-gate";
-
-function subscribeLocaleGate(onChange: () => void): () => void {
-  window.addEventListener(LOCALE_GATE_EVENT, onChange);
-  return () => {
-    window.removeEventListener(LOCALE_GATE_EVENT, onChange);
-  };
-}
-
-/** True while the language popup is pending or open. A hostile DOM fails open. */
-function localeGateHeld(): boolean {
-  try {
-    return document.documentElement.hasAttribute(LOCALE_GATE_ATTRIBUTE);
-  } catch {
-    return false;
-  }
-}
 
 const NO_CHOICES: ConsentChoices = { analytics: false, marketing: false };
 
@@ -177,7 +146,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   const [phase, setPhase] = useState<Phase>(() =>
     stored === null ? "shown" : "hidden",
   );
-  // The language popup is asked first (see `LOCALE_GATE_ATTRIBUTE`).
+  // The language popup is asked first (`./localeGateReader.ts`; spec 003 §14 A16).
   const localeGated = useSyncExternalStore(
     subscribeLocaleGate,
     localeGateHeld,

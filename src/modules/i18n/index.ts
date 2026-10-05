@@ -125,6 +125,8 @@ export {
 
 export { LanguagePopup, type LanguagePopupProps } from "./ui/LanguagePopup.tsx";
 
+export { localeGateDocumentAttributes } from "./ui/localeGate.ts";
+
 export {
   LanguageAlternates,
   type LanguageAlternatesProps,

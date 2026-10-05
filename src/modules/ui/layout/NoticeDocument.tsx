@@ -1,8 +1,7 @@
 /**
  * The notice document (spec 004 §5.3, AC-12; TASK-055).
  *
- * The page the site shows when there is nothing to sell: the 404 (the `/` chooser it also served
- * was deleted by spec 003 §14 A16). It is a **Server Component** with no state, no effect and no
+ * The page the site shows when there is nothing to sell: the 404. It is a **Server Component** with no state, no effect and no
  * client import, so the 404 stays HTML with a status code (AC-8).
  *
  * The two 500 boundaries render the same shell without this component, because Next requires an

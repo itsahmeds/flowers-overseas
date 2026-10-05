@@ -18,13 +18,13 @@ task actually touches.
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +29 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +70 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +71 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +16 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +34 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/chrome-honesty.test.tsx`, `unit/consent-cookie.test.ts` +35 |
 
 ## Config (`src/config/`)
 
@@ -148,7 +148,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 269 |
+| `tests/unit/` | 271 |
 | `tests/integration/` | 12 |
 | `tests/contract/` | 11 |
 | `tests/e2e/` | 42 |

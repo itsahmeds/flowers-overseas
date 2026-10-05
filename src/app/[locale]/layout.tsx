@@ -7,6 +7,7 @@ import { setLocaleTag } from "@/lib/sentry";
 import { AnalyticsScripts } from "@/modules/analytics";
 import {
   LanguagePopup,
+  localeGateDocumentAttributes,
   documentFallbackLocale,
   routableLocale,
   routableLocaleCodes,
@@ -139,7 +140,15 @@ export default async function LocaleLayout({
 
   return (
     // `fontVariables`: the two self-hosted families and their preload links (spec 004 AC-4).
-    <html lang={locale.bcp47} dir={locale.dir} className={fontVariables}>
+    // `localeGateDocumentAttributes()`: the language popup's gate, pending from the first byte, so
+    // the consent sheet waits for the popup whichever chunk arrives first (spec 003 §14 A16). The
+    // same value for every visitor: the document stays one cache entry.
+    <html
+      lang={locale.bcp47}
+      dir={locale.dir}
+      className={fontVariables}
+      {...localeGateDocumentAttributes()}
+    >
       <head>
         {/* The only inline script in the application and the first thing in the document: the
             Consent Mode v2 **default-denied** block, plus the GA4 tag when — and only when —
