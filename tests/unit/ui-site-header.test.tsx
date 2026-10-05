@@ -131,6 +131,17 @@ const EXACT_CLAIM = {
   pl: "Ceny zawierają dostawę i VAT",
 } as const;
 
+/**
+ * The header without its phone Menu (spec 004 §14 A24 clause 3; TASK-195): the strip, the row and
+ * the pill that draw the chrome from `md` up. The Menu repeats their links below `md`, and
+ * `tests/unit/ui-phone-chrome.test.tsx` asserts it on its own.
+ */
+function withoutMenu(html: string): string {
+  const out = html.replace(/<details[^>]*data-fo-menu[\s\S]*?<\/details>/u, "");
+  if (out === html) throw new Error("the header drew no Menu");
+  return out;
+}
+
 /** The opening tag of every element carrying `data-fo-header-item`, with its id. */
 function headerItems(html: string): { id: string; tag: string }[] {
   return [
@@ -337,7 +348,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
 
   it("links every category row entry with a page, and draws no element for any target without one", () => {
     for (const locale of LOCALES) {
-      const html = render(locale);
+      const html = withoutMenu(render(locale));
       const internal = hrefs(html).filter((href) => href.startsWith("/"));
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
 
@@ -432,7 +443,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
     }
   });
 
-  it("draws no search band and no menu glyph: nothing that looks like a control and is not (§14 A20)", () => {
+  it("draws no search band and no glyph that opens nothing: nothing that looks like a control and is not (§14 A20)", () => {
     const html = render("en");
     // No search band while search has no page — not even the text shaped like a field that §14
     // A4 drew — and no form control of any kind.
@@ -449,13 +460,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
     ]) {
       expect(html, control).not.toContain(control);
     }
-    // No menu glyph: it opened nothing (`/review 31` made it decoration; §14 A20 removes it).
+    // No dead menu glyph (`/review 31`, §14 A20). The phone's Menu is a native `<details>` that
+    // opens a real panel (A24 clause 3 lifts A20's omission), never a `<button>` or a labelled icon.
     expect(html).not.toContain("data-fo-header-menu");
     expect(html).not.toContain('aria-label="Menu"');
+    expect([...html.matchAll(/<details\b/g)]).toHaveLength(1);
   });
 
   it("hosts spec 003's `LocaleSwitcher` unchanged: four entries, the current one not a link", () => {
-    const html = render("de");
+    const html = withoutMenu(render("de"));
     expect(html).toContain("data-fo-header-switcher");
     expect(html).toContain('aria-current="page"');
     expect([...html.matchAll(/<li>/g)]).toHaveLength(4);
@@ -475,11 +488,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(banner).toContain('data-fo-header-item="roses"');
   });
 
-  it("keeps the switcher and the currency on the phone as a second notice row (§14 A4)", () => {
+  it("draws no strip below `md`, and keeps the switcher and the currency as a second notice row from `md` to `lg` (§14 A4, A24 clause 3)", () => {
     const html = render("en");
+    // Below `md` the strip is `display: none`: the Menu carries the languages, the currency and
+    // the help line there (spec 004 §14 A24 clause 3, AC-47; TASK-195) …
+    const stripTag = tagAt(html, html.indexOf("data-fo-utility"));
+    expect(stripTag).toMatch(/class="[^"]*\bmax-md:hidden\b/u);
     const bar = tagAt(html, html.indexOf("data-fo-notice-bar"));
-    // Below `lg` the primitive's hidden utilities slot is shown as its own centred, wrapping row
-    // (coordinator ruling 2026-10-04: A4 binds over the mobile artboard) …
+    // … and from `md` to `lg` the primitive's hidden utilities slot is shown as its own centred,
+    // wrapping row (coordinator ruling 2026-10-04: A4 binds over the mobile artboard) …
     expect(bar).toContain("max-lg:[&amp;&gt;div&gt;div]:flex");
     expect(bar).toContain("max-lg:[&amp;&gt;div]:flex-col");
     expect(bar).not.toContain("max-lg:[&amp;&gt;div&gt;div]:hidden");
@@ -521,7 +538,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
 
   it("links the Send pill to the home's sentence, and draws it as the one pill", () => {
     for (const locale of LOCALES) {
-      const html = render(locale);
+      const html = withoutMenu(render(locale));
       expect(headerSendHref(locale)).toBe(`${localePath(locale, "home")}#send`);
       const send = [...html.matchAll(/<a\s[^>]*>/g)]
         .map((match) => match[0])
@@ -752,11 +769,15 @@ describe("the rendered header (AC-7, AC-14)", () => {
       categoryMobile: 56,
     });
     // The sticky part: 64 + 56 + 1 rule on mobile, 82 + 1 rule on desktop.
-    expect(HEADER_STICKY_HEIGHTS).toEqual({ mobile: 121, desktop: 83 });
+    expect(HEADER_STICKY_HEIGHTS).toEqual({
+      phone: 65,
+      mobile: 121,
+      desktop: 83,
+    });
   });
 
   it("gives every link the header draws itself the 44 px target", () => {
-    const html = render("en");
+    const html = withoutMenu(render("en"));
     const banner = html.slice(html.indexOf("data-fo-header="));
     const anchors = [...banner.matchAll(/<a\s[^>]*>/g)].map(
       (match) => match[0],
