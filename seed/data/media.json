@@ -3014,9 +3014,7 @@
       "generatorSeed": 180833913,
       "originalSha256": "2244aaec8a89d1df441e86598553a158c7ac4ff08ecd4da4568d0b9fedbb8462",
       "derivativeC2pa": "stripped",
-      "reviewState": "approved",
-      "reviewedBy": "founder",
-      "reviewedAt": "2026-10-03T09:21:10Z",
+      "reviewState": "rejected",
       "productSku": "FO-PT-004",
       "sortOrder": 0,
       "isPrimary": true
@@ -3032,9 +3030,7 @@
       "generatorSeed": 67880747,
       "originalSha256": "1c857abaac926848fafeb6247708396ce8cc2ad4b5f45c79c25f31a36b51c8a2",
       "derivativeC2pa": "stripped",
-      "reviewState": "approved",
-      "reviewedBy": "founder",
-      "reviewedAt": "2026-10-03T09:21:10Z",
+      "reviewState": "rejected",
       "productSku": "FO-PT-004",
       "sortOrder": 1,
       "isPrimary": false
@@ -3086,9 +3082,7 @@
       "generatorSeed": 155607178,
       "originalSha256": "9097d3cadf9593a887bddabcf0ced0191737d590c4ec771d938d82b70321f484",
       "derivativeC2pa": "stripped",
-      "reviewState": "approved",
-      "reviewedBy": "founder",
-      "reviewedAt": "2026-10-03T09:21:10Z",
+      "reviewState": "rejected",
       "productSku": "FO-PT-006",
       "sortOrder": 0,
       "isPrimary": true
@@ -3104,9 +3098,7 @@
       "generatorSeed": 123767745,
       "originalSha256": "c983c3e7f3561427583247861a4cac22ad3f3e652ce0a023a0a03231a59b322e",
       "derivativeC2pa": "stripped",
-      "reviewState": "approved",
-      "reviewedBy": "founder",
-      "reviewedAt": "2026-10-03T09:21:10Z",
+      "reviewState": "rejected",
       "productSku": "FO-PT-006",
       "sortOrder": 1,
       "isPrimary": false

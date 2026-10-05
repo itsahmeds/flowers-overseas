@@ -308,7 +308,9 @@ describe("spec 006 AC-13: the encoder is pinned and recorded, not defaulted", ()
       (asset) =>
         asset.slot === "productHero" && asset.reviewState === "approved",
     );
-    expect(heroes).toHaveLength(84);
+    // 84 products, less the two whose hero TASK-190 rejected (FO-PT-004, FO-PT-006). Their
+    // variant rows stay committed: the resolver never reaches them for a rejected asset (AC-18).
+    expect(heroes).toHaveLength(82);
     for (const hero of heroes) {
       for (const format of ["avif", "webp"] as const) {
         const widths = (committed?.rows ?? [])

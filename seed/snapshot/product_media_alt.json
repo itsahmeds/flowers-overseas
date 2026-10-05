@@ -1765,28 +1765,6 @@
     },
     {
       "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-hero",
-        "locale": "de"
-      },
-      "values": {
-        "locale_code": "de",
-        "alt": "Eine blühende weiße Lilienpflanze mit Knospen und aufrechten Blättern in einem schlichten weißen Keramiktopf"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-detail",
-        "locale": "de"
-      },
-      "values": {
-        "locale_code": "de",
-        "alt": "Nahaufnahme geöffneter weißer Lilien mit dunkelroten Staubblättern über dem Topfrand"
-      }
-    },
-    {
-      "key": {
         "sku": "FO-PT-005",
         "asset": "fo-pt-005-hero",
         "locale": "de"
@@ -1805,28 +1783,6 @@
       "values": {
         "locale_code": "de",
         "alt": "Nahaufnahme geöffneter dunkelroter Amaryllisblüten mit hellen Staubblättern und einer geschlossenen Knospe"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-hero",
-        "locale": "de"
-      },
-      "values": {
-        "locale_code": "de",
-        "alt": "Eine Hortensie mit rosa, blauen, violetten, cremefarbenen und hellgrünen Blütenköpfen in einem schlichten weißen Keramiktopf"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-detail",
-        "locale": "de"
-      },
-      "values": {
-        "locale_code": "de",
-        "alt": "Nahaufnahme eines pinken, eines blauen und eines cremefarbenen Hortensienblütenkopfs über dem Topf"
       }
     },
     {
@@ -3613,28 +3569,6 @@
     },
     {
       "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-hero",
-        "locale": "en"
-      },
-      "values": {
-        "locale_code": "en",
-        "alt": "A white lily plant in flower, with buds and upright leaves, in a plain white ceramic pot"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-detail",
-        "locale": "en"
-      },
-      "values": {
-        "locale_code": "en",
-        "alt": "Close view of open white lilies with dark red stamens above the rim of the pot"
-      }
-    },
-    {
-      "key": {
         "sku": "FO-PT-005",
         "asset": "fo-pt-005-hero",
         "locale": "en"
@@ -3653,28 +3587,6 @@
       "values": {
         "locale_code": "en",
         "alt": "Close view of open deep red amaryllis flowers with pale stamens and a closed bud"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-hero",
-        "locale": "en"
-      },
-      "values": {
-        "locale_code": "en",
-        "alt": "A hydrangea plant with pink, blue, purple, cream and lime green flower heads in a plain white ceramic pot"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-detail",
-        "locale": "en"
-      },
-      "values": {
-        "locale_code": "en",
-        "alt": "Close view of a bright pink, a blue and a cream hydrangea flower head above the pot"
       }
     },
     {
@@ -5461,28 +5373,6 @@
     },
     {
       "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-hero",
-        "locale": "en-gb"
-      },
-      "values": {
-        "locale_code": "en-gb",
-        "alt": "A white lily plant in flower, with buds and upright leaves, in a plain white ceramic pot"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-detail",
-        "locale": "en-gb"
-      },
-      "values": {
-        "locale_code": "en-gb",
-        "alt": "Close view of open white lilies with dark red stamens above the rim of the pot"
-      }
-    },
-    {
-      "key": {
         "sku": "FO-PT-005",
         "asset": "fo-pt-005-hero",
         "locale": "en-gb"
@@ -5501,28 +5391,6 @@
       "values": {
         "locale_code": "en-gb",
         "alt": "Close view of open deep red amaryllis flowers with pale stamens and a closed bud"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-hero",
-        "locale": "en-gb"
-      },
-      "values": {
-        "locale_code": "en-gb",
-        "alt": "A hydrangea plant with pink, blue, purple, cream and lime green flower heads in a plain white ceramic pot"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-detail",
-        "locale": "en-gb"
-      },
-      "values": {
-        "locale_code": "en-gb",
-        "alt": "Close view of a bright pink, a blue and a cream hydrangea flower head above the pot"
       }
     },
     {
@@ -7309,28 +7177,6 @@
     },
     {
       "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-hero",
-        "locale": "pl"
-      },
-      "values": {
-        "locale_code": "pl",
-        "alt": "Kwitnąca biała lilia doniczkowa z pąkami i wzniesionymi liśćmi w prostej białej ceramicznej doniczce"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-004",
-        "asset": "fo-pt-004-detail",
-        "locale": "pl"
-      },
-      "values": {
-        "locale_code": "pl",
-        "alt": "Zbliżenie rozwiniętych białych lilii z ciemnoczerwonymi pręcikami nad brzegiem doniczki"
-      }
-    },
-    {
-      "key": {
         "sku": "FO-PT-005",
         "asset": "fo-pt-005-hero",
         "locale": "pl"
@@ -7349,28 +7195,6 @@
       "values": {
         "locale_code": "pl",
         "alt": "Zbliżenie rozwiniętych ciemnoczerwonych kwiatów amarylisa z jasnymi pręcikami i zamkniętego pąka"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-hero",
-        "locale": "pl"
-      },
-      "values": {
-        "locale_code": "pl",
-        "alt": "Hortensja doniczkowa z różowymi, niebieskimi, fioletowymi, kremowymi i jasnozielonymi kwiatostanami w prostej białej ceramicznej doniczce"
-      }
-    },
-    {
-      "key": {
-        "sku": "FO-PT-006",
-        "asset": "fo-pt-006-detail",
-        "locale": "pl"
-      },
-      "values": {
-        "locale_code": "pl",
-        "alt": "Zbliżenie różowego, niebieskiego i kremowego kwiatostanu hortensji nad doniczką"
       }
     },
     {
