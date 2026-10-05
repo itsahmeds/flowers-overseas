@@ -15,15 +15,18 @@ import dynamic from "next/dynamic";
 import { useEffect } from "react";
 
 import type { LanguagePopupIslandProps } from "./LanguagePopupIsland.tsx";
-import { guardLocaleGate } from "./localeGate.ts";
+import { guardLocaleGate, withGateRelease } from "./localeGate.ts";
 
-const Island = dynamic(async () => import("./LanguagePopupIsland.tsx"), {
-  ssr: false,
-});
+// The one `import()` of the island. A rejected chunk releases the consent gate at once and renders
+// nothing (`withGateRelease`), rather than reaching the page's error boundary.
+const Island = dynamic(
+  async () => withGateRelease(import("./LanguagePopupIsland.tsx")),
+  { ssr: false },
+);
 
 export function LanguagePopupLoader(props: LanguagePopupIslandProps) {
-  // The same module `dynamic()` loads (one chunk, one request): released at once if it rejects,
-  // and after the timeout if the island never takes the gate (`guardLocaleGate`).
-  useEffect(() => guardLocaleGate(import("./LanguagePopupIsland.tsx")), []);
+  // The island never took the gate (its chunk never arrived, or never ran): give the screen back
+  // to the consent sheet after the timeout (`guardLocaleGate`).
+  useEffect(() => guardLocaleGate(), []);
   return <Island {...props} />;
 }

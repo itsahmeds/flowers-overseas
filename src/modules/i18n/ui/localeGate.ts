@@ -87,21 +87,32 @@ export function releaseAbandonedLocaleGate(): void {
 }
 
 /**
- * The loader's effect (`LanguagePopupLoader.tsx`): give the screen back to the consent sheet if
- * the popup's island never takes the gate. The document is served with the gate pending, so a
- * chunk that fails or never arrives would otherwise hide the sheet for good (`/break 205` hole 4).
+ * The loader's two fail-open paths (`LanguagePopupLoader.tsx`). The document is served with the
+ * gate pending, so a popup chunk that fails or never arrives would otherwise hide the consent
+ * sheet for good (`/break 205` hole 4).
  *
- *  - the import **rejects**: released at once, because no popup can open;
- *  - the import **never settles**, or the island never runs: released after
- *    `LOCALE_GATE_TIMEOUT_MS`.
+ *  - `withGateRelease()` wraps the one `import()` inside `next/dynamic`: when it **rejects**, the
+ *    gate is released at once and the popup renders nothing, instead of the failure reaching the
+ *    page's error boundary.
+ *  - `guardLocaleGate()` is the effect: when the import **never settles**, or the island never
+ *    runs, the gate is released after `LOCALE_GATE_TIMEOUT_MS`. Returns the cleanup.
  *
- * Both release only a gate still pending, never one an open popup holds. Returns the cleanup.
+ * Both release only a gate still pending, never one an open popup holds. One `import()` only: a
+ * second one outside `next/dynamic` is a second fetch path the client-JS budget does not model.
  */
-export function guardLocaleGate(island: Promise<unknown>): () => void {
-  const timer = setTimeout(releaseAbandonedLocaleGate, LOCALE_GATE_TIMEOUT_MS);
-  island.catch(() => {
+export async function withGateRelease<T>(
+  island: Promise<{ default: T }>,
+): Promise<{ default: T | (() => null) }> {
+  try {
+    return await island;
+  } catch {
     releaseAbandonedLocaleGate();
-  });
+    return { default: () => null };
+  }
+}
+
+export function guardLocaleGate(): () => void {
+  const timer = setTimeout(releaseAbandonedLocaleGate, LOCALE_GATE_TIMEOUT_MS);
   return () => {
     clearTimeout(timer);
   };

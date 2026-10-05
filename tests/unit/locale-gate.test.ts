@@ -26,6 +26,7 @@ import {
   guardLocaleGate,
   holdLocaleGate,
   syncLocaleGate,
+  withGateRelease,
   localeGateDocumentAttributes,
   releaseAbandonedLocaleGate,
   releaseLocaleGate,
@@ -141,17 +142,27 @@ describe("the loader never hides the consent sheet for good (/break 205 hole 4)"
     vi.useRealTimers();
   });
 
-  it("releases at once when the island's chunk fails to load", async () => {
+  it("releases at once when the island's chunk fails to load, and renders nothing", async () => {
     renderDocument();
-    const failed = Promise.reject(new Error("ChunkLoadError"));
-    guardLocaleGate(failed);
-    await vi.advanceTimersByTimeAsync(0);
+    const loaded = await withGateRelease(
+      Promise.reject(new Error("ChunkLoadError")),
+    );
     expect(localeGateHeld()).toBe(false);
+    expect(loaded.default).toBeTypeOf("function");
+    expect((loaded.default as () => null)()).toBeNull();
+  });
+
+  it("passes a loaded island through and leaves the gate to it", async () => {
+    renderDocument();
+    const island = (): string => "island";
+    const loaded = await withGateRelease(Promise.resolve({ default: island }));
+    expect(loaded.default).toBe(island);
+    expect(localeGateHeld()).toBe(true);
   });
 
   it("releases after the timeout when the chunk never arrives", async () => {
     renderDocument();
-    guardLocaleGate(new Promise<never>(() => undefined));
+    guardLocaleGate();
     await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS - 1);
     expect(localeGateHeld()).toBe(true);
     await vi.advanceTimersByTimeAsync(1);
@@ -161,7 +172,7 @@ describe("the loader never hides the consent sheet for good (/break 205 hole 4)"
 
   it("never releases a gate the open popup holds", async () => {
     renderDocument();
-    guardLocaleGate(Promise.resolve({}));
+    guardLocaleGate();
     holdLocaleGate();
     await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS * 2);
     expect(localeGateHeld()).toBe(true);
@@ -169,7 +180,7 @@ describe("the loader never hides the consent sheet for good (/break 205 hole 4)"
 
   it("stops its timer on cleanup", async () => {
     renderDocument();
-    const cleanup = guardLocaleGate(new Promise<never>(() => undefined));
+    const cleanup = guardLocaleGate();
     cleanup();
     await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS * 2);
     expect(localeGateHeld()).toBe(true);
@@ -216,10 +227,18 @@ describe("the components call the two effects (their wiring, pinned from source)
   const source = (path: string): string =>
     readFileSync(resolve(import.meta.dirname, "../..", path), "utf8");
 
-  it("the loader guards the island's own import from an effect that runs once", () => {
-    expect(source("src/modules/i18n/ui/LanguagePopupLoader.tsx")).toMatch(
-      /useEffect\(\s*\(\)\s*=>\s*guardLocaleGate\(\s*import\("\.\/LanguagePopupIsland\.tsx"\)\s*\),\s*\[\],?\s*\)/u,
+  it("the loader wraps its one import and runs the timer from an effect that runs once", () => {
+    const loader = source("src/modules/i18n/ui/LanguagePopupLoader.tsx");
+    expect(loader).toMatch(
+      /dynamic\(\s*async \(\) => withGateRelease\(import\("\.\/LanguagePopupIsland\.tsx"\)\),/u,
     );
+    expect(loader).toMatch(
+      /useEffect\(\(\)\s*=>\s*guardLocaleGate\(\),\s*\[\]\)/u,
+    );
+    // One `import()` of the island: a second is a fetch path the client-JS budget does not model.
+    expect(
+      loader.match(/import\("\.\/LanguagePopupIsland\.tsx"\)/gu),
+    ).toHaveLength(1);
   });
 
   it("the island syncs the gate with its decision on every change", () => {
