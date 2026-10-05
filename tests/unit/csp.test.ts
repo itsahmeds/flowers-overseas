@@ -284,21 +284,21 @@ describe("the inline-script hash slot (the seam TASK-050 uses)", () => {
 });
 
 describe("report-only versus enforce", () => {
-  it("defaults to Report-Only, so a forgotten variable reports rather than blocks", () => {
+  it("sends the static policy as Report-Only, always: enforcing it would block hydration (TASK-058)", () => {
     expect(cspHeader("production").key).toBe(CSP_REPORT_ONLY_HEADER);
     expect(cspHeader("production", {}).key).toBe(CSP_REPORT_ONLY_HEADER);
-  });
-
-  it("enforces only when explicitly told to", () => {
-    expect(cspHeader("production", { reportOnly: false }).key).toBe(CSP_HEADER);
-  });
-
-  it("sends the same policy either way, so the evidence is about the policy that will enforce", () => {
-    expect(
-      cspHeader("preview", { reportOnly: true, platform: "vercel" }).value,
-    ).toBe(
-      cspHeader("preview", { reportOnly: false, platform: "vercel" }).value,
+    expect(cspHeader("preview", { platform: "vercel" }).key).toBe(
+      CSP_REPORT_ONLY_HEADER,
     );
+  });
+
+  it("leaves the enforcing name to the per-document policy of the cache handler", () => {
+    for (const environment of deploymentEnvironments) {
+      const names = (securityHeaderRules(environment)[0]?.headers ?? []).map(
+        (header) => header.key,
+      );
+      expect(names, environment).not.toContain(CSP_HEADER);
+    }
   });
 
   it("reads `CSP_REPORT_ONLY` asymmetrically: only the exact string `false` enforces", () => {
@@ -407,7 +407,9 @@ describe("next.config.ts wiring", () => {
   it("emits the security headers alongside the noindex rules", () => {
     expect(source).toContain("securityHeaderRules(environment");
     expect(source).toContain("noindexHeaderRules(environment)");
-    expect(source).toContain("reportOnly: cspReportOnly(process.env)");
+    // The static header no longer reads the flag; the cache handler reads it at run time.
+    expect(source).not.toContain("reportOnly:");
+    expect(source).toContain('"src/lib/csp-cache-handler.ts"');
   });
 
   it("passes the consent bootstrap's hash and the GA4 gate (TASK-050)", () => {

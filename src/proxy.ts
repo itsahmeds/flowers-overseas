@@ -87,11 +87,14 @@ export function proxy(request: NextRequest): NextResponse {
   const response = NextResponse.next({ request: { headers } });
   response.headers.set(REQUEST_ID_HEADER, requestId);
 
+  // No `status` here (`/review 26` nit, TASK-058): `NextResponse.next()` is always 200, because
+  // the proxy runs **before** the route, so logging `response.status` reported 200 for every 204,
+  // 404 and 415 the route went on to answer. A field the proxy cannot know is omitted rather than
+  // invented; the one response the proxy does answer itself, the 401 above, still logs its status.
   log.info(
     {
       method,
       path,
-      status: response.status,
       duration_ms: Date.now() - started,
     },
     "request end",

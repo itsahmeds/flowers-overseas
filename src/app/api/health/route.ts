@@ -10,7 +10,8 @@ import {
   deploymentRegion,
   environment,
 } from "@/lib/env";
-import { healthResponse } from "@/lib/health";
+import { cspEnforceState } from "@/lib/csp-state";
+import { healthResponse, reportCspEnforce } from "@/lib/health";
 import { fxSnapshotStatus } from "@/modules/catalog";
 
 /** Never cached, never prerendered: the body reports the running deployment (spec 001 §5.4). */
@@ -26,7 +27,13 @@ export function GET(request: Request): Response {
   // observable at the endpoint Railway actually polls, whatever a future Next release does with a
   // throwing `register()`. The error names keys and prints no value.
   assertRuntimeEnv(process.env);
+  // TASK-058 (`/review 196` item 4): the cache handler fails open and cannot log, so the state it
+  // records is reported here and a `degraded` one is logged at `warn` — the line a scheduled
+  // check or a log alert keys on (`docs/runbooks/csp-enforce.md` §3). Still a 200: a policy that
+  // failed open is a security signal, not a reason to take the site out of rotation.
+  const cspEnforce = reportCspEnforce(cspEnforceState(process.env));
   return healthResponse(request, {
+    cspEnforce,
     environment,
     // Host-agnostic since spec 040 §5.2 (TASK-097): Railway's SHA, else Vercel's, else the
     // browser mirror. The resolution lives in `src/lib/env.schema.ts` because that is one of the

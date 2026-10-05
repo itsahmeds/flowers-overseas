@@ -146,10 +146,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 253 |
+| `tests/unit/` | 254 |
 | `tests/integration/` | 11 |
 | `tests/contract/` | 11 |
-| `tests/e2e/` | 38 |
+| `tests/e2e/` | 39 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 20 |
 | `tests/dev-os/` | 1 |

@@ -272,13 +272,20 @@ export const serverEnvSchema = z.object({
     z.enum(["true", "false"]).optional(),
   ),
   /**
-   * Send the Content-Security-Policy as `Content-Security-Policy-Report-Only` instead of
-   * enforcing it (spec 004 §5.2, AC-23, ADR-0016; TASK-046).
+   * Whether the Content-Security-Policy stays report-only (spec 004 §5.2 and §14 A2, AC-23,
+   * ADR-0016; TASK-046, TASK-058).
    *
    * **Absent means `true`**, so report-only is what a forgotten variable gets: the policy is
-   * collected as evidence at `/api/csp-report` first and enforced once the reports are empty. Only
-   * the exact string `"false"` enforces, so a typo cannot half-enable enforcement, and the flip is
-   * one env-store edit per environment rather than a deploy.
+   * collected as evidence at `/api/csp-report` first and enforced once the reports are clean. Only
+   * the exact string `"false"` enforces, so a typo cannot half-enable enforcement.
+   *
+   * Since TASK-058 it is a **run-time** key: the static `Content-Security-Policy-Report-Only`
+   * header is always sent and does not read it; `src/lib/csp-cache-handler.ts` reads it at server
+   * start and, on `"false"`, adds an enforcing `Content-Security-Policy` to every cached HTML
+   * document — the static policy plus the hashes of that document's flight blocks. So it is not a build
+   * argument, the flip needs a restart and no rebuild, and `docs/runbooks/csp-enforce.md` is the
+   * procedure. `cspEnforced()` in `src/lib/csp-response.ts` is its run-time mirror, pinned
+   * against `cspReportOnly()` below by `tests/unit/csp-response.test.ts`.
    */
   CSP_REPORT_ONLY: z.preprocess(
     emptyToUndefined,
@@ -507,7 +514,10 @@ export function ga4MeasurementId(source: EnvSource): string | undefined {
 }
 
 /**
- * Whether the CSP is sent as `Content-Security-Policy-Report-Only` (spec 004 AC-23, ADR-0016).
+ * Whether the CSP stays report-only (spec 004 AC-23, ADR-0016). The server reads the same key
+ * through `cspEnforced()` in `src/lib/csp-response.ts`, which a cache handler loaded outside the
+ * bundle can import; the two are pinned to the same answer by `tests/unit/csp-response.test.ts`
+ * (TASK-058).
  *
  * Pure: the caller passes the environment. **Only the exact string `"false"` enforces**; anything
  * else — absent, blank, `"true"`, a typo — reports. That asymmetry is deliberate: a

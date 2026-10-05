@@ -12,6 +12,7 @@ area. `tests/unit/docs.test.ts` fails if a runbook exists but is not listed here
 | [branch-protection](branch-protection.md) | Required checks, merge method and review policy on `main`, and the verifier |
 | [payment-webhook-down](payment-webhook-down.md) | Stripe/Mollie webhooks failing or delayed |
 | [florist-declines-peak](florist-declines-peak.md) | A partner declines during a peak day |
+| [csp-enforce](csp-enforce.md) | Enforcing the Content-Security-Policy: what `CSP_REPORT_ONLY=false` enforces and where, reading the Report-Only evidence with the flight-block noise filtered, the per-instance rate-limit caveat, the staging-first flip and the rollback with a Cloudflare purge |
 | [analytics-consent](analytics-consent.md) | Turning GA4 on: the consent plumbing, the RoPA-affecting env variable, the verification order, turning it off again |
 | [imagery](imagery.md) | Generating, reviewing, deriving and committing product imagery: the Phase-0 ladder and its byte caps, the 2026-09-18 review record, the C2PA carry-forward, replacing an image |
 | [visual-baselines](visual-baselines.md) | Which platform's screenshots decide pass or fail, refreshing the Linux set from a Mac, the measured 0.1 % threshold, and how a reviewer judges a baseline commit |

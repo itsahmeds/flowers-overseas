@@ -104,10 +104,21 @@ describe("request-id proxy", () => {
       msg: "request end",
       method: "GET",
       path: "/api/health",
-      status: 200,
       request_id: INCOMING,
     });
     expect(typeof lines[1]?.["duration_ms"]).toBe("number");
+    // The proxy runs before the route, so it cannot know the final status; it used to log the
+    // pass-through's constant 200 for every 204 and 4xx (`/review 26` nit, TASK-058).
+    expect(lines[1]).not.toHaveProperty("status");
+    expect(Object.keys(lines[1] ?? {}).sort()).toEqual([
+      "duration_ms",
+      "level",
+      "method",
+      "msg",
+      "path",
+      "request_id",
+      "time",
+    ]);
     // No query string, therefore no PII, in any log line (spec 001 §8).
     expect(capture.lines.join("")).not.toContain("a@b.c");
   });

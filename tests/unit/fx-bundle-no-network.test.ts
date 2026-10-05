@@ -169,6 +169,8 @@ describe("GET /api/health reports the bundled FX snapshot (AC-33, T-33)", () => 
       expect(Object.keys(body).sort()).toEqual([
         "appEnv",
         "commit",
+        // TASK-058 (`/review 196` item 4): the CSP enforcement state, a closed-set value.
+        "cspEnforce",
         "env",
         "fxAsOf",
         "fxSource",
@@ -176,6 +178,8 @@ describe("GET /api/health reports the bundled FX snapshot (AC-33, T-33)", () => 
         "status",
         "version",
       ]);
+      // `tests/fixtures/env/valid.env` sets `CSP_REPORT_ONLY=true`.
+      expect(body["cspEnforce"]).toBe("report-only");
       expect(fxSnapshotStatus()).toEqual({
         fxAsOf: "2026-10-02",
         fxSource: "ecb-build",

@@ -16,17 +16,22 @@ import { describe, expect, it } from "vitest";
 
 import {
   CSP_DIRECTIVES,
+  CSP_DISPOSITIONS,
   CSP_REPORT_CONTENT_TYPES,
   CSP_REPORT_HEADERS,
   CSP_REPORT_MAX_BYTES,
   CSP_REPORT_RATE_LIMIT,
+  CSP_REPORT_REQUEST_LIMIT,
   CSP_REPORT_WINDOW_MS,
   UNKNOWN_ORIGIN,
   acceptsContentType,
   blockedOrigin,
+  createCspReportLimits,
   createRateLimiter,
   cspReportResponse,
   declaredTooLarge,
+  normaliseDisposition,
+  resetCspReportLimitsForTests,
 } from "../../src/lib/csp-report";
 import { createLogger, type Logger } from "../../src/lib/logger";
 
@@ -191,14 +196,71 @@ describe("what reaches the log (AC-23)", () => {
     expect(line["blocked_origin"]).toBe("https://cdn.evil.test");
   });
 
-  it("logs nothing but those two fields plus the logger's own reserved keys", async () => {
+  it("logs nothing but those three fields plus the logger's own reserved keys", async () => {
     const capture = capturingLogger();
     await cspReportResponse(reportRequest(reportUriBody), {
       logger: capture.logger,
     });
     expect(
       Object.keys(JSON.parse(capture.lines[0] ?? "{}") as object).sort(),
-    ).toEqual(["blocked_origin", "directive", "level", "msg", "time"]);
+    ).toEqual([
+      "blocked_origin",
+      "directive",
+      "disposition",
+      "level",
+      "msg",
+      "time",
+    ]);
+  });
+
+  // TASK-058: after the enforce flip the static Report-Only policy still reports Next's flight
+  // blocks on every cached page; the disposition is what tells that noise from a real block.
+  it("logs the disposition of both report shapes, so enforce and report never read alike", async () => {
+    const capture = capturingLogger();
+    await cspReportResponse(
+      reportRequest({
+        "csp-report": {
+          "effective-directive": "script-src-elem",
+          "blocked-uri": "inline",
+          disposition: "enforce",
+        },
+      }),
+      { logger: capture.logger },
+    );
+    await cspReportResponse(
+      reportRequest(reportingApiBody, CSP_REPORT_CONTENT_TYPES[1]),
+      { logger: capture.logger },
+    );
+    const lines = capture.lines.map(
+      (line) => JSON.parse(line) as Record<string, unknown>,
+    );
+    expect(lines.map((line) => line["disposition"])).toEqual([
+      "enforce",
+      "report",
+    ]);
+    expect(lines[0]?.["directive"]).toBe("script-src-elem");
+    expect(lines[0]?.["blocked_origin"]).toBe("inline");
+  });
+
+  it("logs an absent or unrecognised disposition as `unknown`, never as its text", async () => {
+    expect(normaliseDisposition(undefined)).toBe("unknown");
+    expect(normaliseDisposition("")).toBe("unknown");
+    expect(normaliseDisposition(`enforce-${SECRET}`)).toBe("unknown");
+    expect(normaliseDisposition(" Report ")).toBe("report");
+    const capture = capturingLogger();
+    await cspReportResponse(
+      reportRequest({
+        "csp-report": { "effective-directive": "img-src", disposition: SECRET },
+      }),
+      { logger: capture.logger },
+    );
+    expect(capture.text()).not.toContain(SECRET);
+    expect(
+      (JSON.parse(capture.lines[0] ?? "{}") as Record<string, unknown>)[
+        "disposition"
+      ],
+    ).toBe("unknown");
+    expect(CSP_DISPOSITIONS).toEqual(["enforce", "report", "unknown"]);
   });
 
   it("never writes document-uri, script-sample, a query string or a user agent", async () => {
@@ -314,23 +376,167 @@ describe("it never fails, and it never floods (AC-23)", () => {
 
   it("drops reports past the per-minute allowance and lets the next window through", async () => {
     let now = 0;
-    const limiter = createRateLimiter(3, 1000, () => now);
+    const clock = () => now;
+    const limits = {
+      ...createCspReportLimits(clock),
+      gate: createRateLimiter(3, 1000, clock),
+    };
     const capture = capturingLogger();
+    const violationLines = () =>
+      capture.lines.filter((line) => line.includes('"csp violation"'));
     for (let index = 0; index < 5; index += 1) {
       const response = await cspReportResponse(reportRequest(reportUriBody), {
         logger: capture.logger,
-        limiter,
+        limits,
       });
       expect(response.status).toBe(204);
     }
-    // Three logged, two dropped silently.
-    expect(capture.lines).toHaveLength(3);
+    // Three logged, two dropped unread — announced once, not per drop.
+    expect(violationLines()).toHaveLength(3);
+    expect(
+      capture.lines.filter((line) =>
+        line.includes('"csp_report_dropped":"unread"'),
+      ),
+    ).toHaveLength(1);
     now = 1001;
     await cspReportResponse(reportRequest(reportUriBody), {
       logger: capture.logger,
-      limiter,
+      limits,
     });
-    expect(capture.lines).toHaveLength(4);
+    expect(violationLines()).toHaveLength(4);
+  });
+
+  // `/break 196` hole 2: after the enforce flip the static Report-Only policy's flight-block noise
+  // must not spend the allowance an `enforce` report needs.
+  it("logs an enforce report that arrives after a full minute of report-only noise", async () => {
+    const options = { limits: createCspReportLimits(() => 0) };
+    const capture = capturingLogger();
+    const report = (disposition: string) =>
+      cspReportResponse(
+        reportRequest({
+          "csp-report": {
+            "effective-directive": "script-src-elem",
+            "blocked-uri": "inline",
+            disposition,
+          },
+        }),
+        { logger: capture.logger, ...options },
+      );
+    for (let index = 0; index < CSP_REPORT_RATE_LIMIT + 40; index += 1) {
+      await report("report");
+    }
+    await report("enforce");
+    const dispositions = capture.lines.map(
+      (line) => (JSON.parse(line) as Record<string, unknown>)["disposition"],
+    );
+    // The noise is capped at its own budget, and the enforce report is still logged.
+    expect(dispositions.filter((value) => value === "report")).toHaveLength(
+      CSP_REPORT_RATE_LIMIT,
+    );
+    expect(dispositions.filter((value) => value === "enforce")).toHaveLength(1);
+    expect(dispositions.at(-1)).toBe("enforce");
+  });
+
+  // `/break 196` round 2 holes 2 and 3: the same claim through the **default** options — the
+  // limits the route really uses, built by `createCspReportLimits()` — so a production wiring
+  // with one shared budget, or a request gate no wider than the log budget, goes red.
+  it("through the production wiring, an enforce report after the noise is still logged", async () => {
+    resetCspReportLimitsForTests(() => 0);
+    try {
+      const capture = capturingLogger();
+      const report = (disposition: string) =>
+        cspReportResponse(
+          reportRequest({
+            "csp-report": {
+              "effective-directive": "script-src-elem",
+              "blocked-uri": "inline",
+              disposition,
+            },
+          }),
+          { logger: capture.logger },
+        );
+      // Two allowances' worth of report-only noise, then one real block.
+      for (let index = 0; index < CSP_REPORT_RATE_LIMIT * 2; index += 1) {
+        await report("report");
+      }
+      await report("enforce");
+      const lines = capture.lines.map(
+        (line) => JSON.parse(line) as Record<string, unknown>,
+      );
+      expect(
+        lines.filter((line) => line["disposition"] === "enforce"),
+      ).toHaveLength(1);
+      // Report-only drops are expected noise and are never announced; nothing was read unread.
+      expect(lines.filter((line) => "csp_report_dropped" in line)).toEqual([]);
+    } finally {
+      resetCspReportLimitsForTests();
+    }
+  });
+
+  it("announces requests dropped unread past the gate, once a minute, with no other field", async () => {
+    let now = 0;
+    resetCspReportLimitsForTests(() => now);
+    try {
+      const capture = capturingLogger();
+      for (let index = 0; index <= CSP_REPORT_REQUEST_LIMIT + 5; index += 1) {
+        await cspReportResponse(reportRequest(reportUriBody), {
+          logger: capture.logger,
+        });
+      }
+      const notices = capture.lines
+        .map((line) => JSON.parse(line) as Record<string, unknown>)
+        .filter((line) => "csp_report_dropped" in line);
+      expect(notices).toHaveLength(1);
+      expect(Object.keys(notices[0] ?? {}).sort()).toEqual([
+        "csp_report_dropped",
+        "level",
+        "msg",
+        "time",
+      ]);
+      expect(notices[0]).toMatchObject({
+        level: "warn",
+        msg: "csp reports dropped",
+        csp_report_dropped: "unread",
+      });
+      now = CSP_REPORT_WINDOW_MS + 1;
+      await cspReportResponse(reportRequest(reportUriBody), {
+        logger: capture.logger,
+      });
+      expect(capture.lines.at(-1)).toContain('"csp violation"');
+    } finally {
+      resetCspReportLimitsForTests();
+    }
+  });
+
+  it("announces a dropped enforce report, which is a real block nobody would see", async () => {
+    const capture = capturingLogger();
+    const options = {
+      logger: capture.logger,
+      limits: createCspReportLimits(() => 0),
+    };
+    for (let index = 0; index < CSP_REPORT_RATE_LIMIT + 3; index += 1) {
+      await cspReportResponse(
+        reportRequest({
+          "csp-report": {
+            "effective-directive": "script-src-elem",
+            "blocked-uri": "inline",
+            disposition: "enforce",
+          },
+        }),
+        options,
+      );
+    }
+    const notices = capture.lines.filter((line) =>
+      line.includes('"csp_report_dropped":"enforce"'),
+    );
+    expect(notices).toHaveLength(1);
+  });
+
+  it("keeps the request gate well above the log budget (the ceiling the runbook states)", () => {
+    expect(CSP_REPORT_REQUEST_LIMIT).toBe(600);
+    expect(CSP_REPORT_REQUEST_LIMIT).toBeGreaterThanOrEqual(
+      CSP_REPORT_RATE_LIMIT * 10,
+    );
   });
 
   it("states its allowance in minutes and reports, not in magic numbers", () => {

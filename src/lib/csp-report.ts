@@ -8,14 +8,19 @@
  * ## What is logged, and what is deliberately thrown away
  *
  * A violation report is attacker-influenced data about a page a real person was looking at, so
- * §8's "no PII in logs" is not advice here. Exactly two fields survive:
+ * §8's "no PII in logs" is not advice here. Exactly three fields survive:
  *
  *  - `directive` — the `effective-directive` (or `violated-directive`, which is what older
  *    Chromium sends), from a **closed set**: an unrecognised value is logged as `other`, so a
  *    report cannot write arbitrary text into a log line;
  *  - `blocked_origin` — the **origin** of `blocked-uri`, never the path and never the query. The
  *    CSP keyword forms (`inline`, `eval`, `data`, `blob`, `wasm-eval`) pass through as themselves
- *    because they are not URLs.
+ *    because they are not URLs;
+ *  - `disposition` — `enforce` or `report`, from a closed set (`unknown` otherwise). Added by
+ *    TASK-058: once the per-document policy enforces, the static Report-Only policy still reports
+ *    Next's flight blocks as `script-src-elem` / `inline` on every cached page, and this field is
+ *    what separates that known noise (`report`) from a script the browser actually refused
+ *    (`enforce`). `docs/runbooks/csp-enforce.md` reads the log by it.
  *
  * Dropped without being read: `document-uri` / `documentURL` (the page URL, which in this product
  * can carry a recipient's town in a path segment and always could carry a query), `referrer`,
@@ -35,6 +40,16 @@
  * enforce" is a judgement over a period of real traffic and not the absence of 60 lines in a
  * minute.
  *
+ * **Two log budgets, one per disposition** (`/break 196` hole 2, TASK-058). Once the per-document
+ * policy enforces, the static Report-Only policy still reports Next's flight blocks on every
+ * cached page view — two or more `disposition: report` lines each. With one shared budget that
+ * noise spent the minute's allowance and a real `enforce` block arriving after it was dropped
+ * unseen. So `enforce` reports draw on their own `CSP_REPORT_RATE_LIMIT` a minute and everything
+ * else on another; the request gate in front of both (`CSP_REPORT_REQUEST_LIMIT`) only bounds the
+ * parsing work, and is ten times wider. Above the gate, reports are dropped unread, `enforce`
+ * included — a ceiling, announced by one `csp reports dropped` line a minute, as is an `enforce`
+ * budget overflow. Report-only drops are expected noise and are not announced.
+ *
  * A body that declares more than `CSP_REPORT_MAX_BYTES` is answered `204` without being read
  * (`/review 26`): `request.json()` would otherwise parse a megabyte before the schema rejected
  * it. A request that declares no length is still parsed, and is bounded by the counter above.
@@ -51,7 +66,6 @@ export const CSP_REPORT_CONTENT_TYPES = [
   "application/reports+json",
 ] as const;
 
-/** Reports dropped after this many in one window, per running instance. */
 /**
  * The largest body this endpoint will read, in bytes (`/review 26`, non-blocking note 1).
  *
@@ -59,11 +73,27 @@ export const CSP_REPORT_CONTENT_TYPES = [
  * would happily parse megabytes before the parse rejects them. So an oversized declared
  * `Content-Length` is answered `204` — like every other unusable report — without reading the
  * body. It is a bound on work, not a security boundary: a chunked request declares no length and
- * is still parsed, which the rate limiter above bounds to 60 bodies a minute per instance.
+ * is still parsed, which the request gate bounds to `CSP_REPORT_REQUEST_LIMIT` bodies a minute per
+ * instance.
  */
 export const CSP_REPORT_MAX_BYTES = 16 * 1024;
 
+/**
+ * Violations **logged** per window, per running instance, **per disposition bucket**: `enforce`
+ * has its own allowance and `report`/`unknown` share the other (TASK-058).
+ */
 export const CSP_REPORT_RATE_LIMIT = 60;
+
+/**
+ * Requests **parsed** per window, per running instance: the bound on work for a body that
+ * declares no length. Ten times the log budget, so ordinary report-only noise (two or three
+ * reports per page view) does not close the gate on an `enforce` report before its body is read
+ * — up to roughly 200 cached page views a minute per instance (TASK-058). Above it, reports are
+ * answered unread, `enforce` ones included; that is a ceiling, not "never", and each minute it is
+ * hit writes one `csp reports dropped` line with `csp_report_dropped: "unread"`
+ * (`docs/runbooks/csp-enforce.md` §2, `/break 196` round 2 hole 3).
+ */
+export const CSP_REPORT_REQUEST_LIMIT = 600;
 export const CSP_REPORT_WINDOW_MS = 60_000;
 
 export const CSP_REPORT_HEADERS: Readonly<Record<string, string>> =
@@ -108,6 +138,10 @@ export const CSP_BLOCKED_KEYWORDS = [
   "self",
 ] as const;
 
+/** What the browser did: `enforce` blocked, `report` only reported (TASK-058). */
+export const CSP_DISPOSITIONS = ["enforce", "report", "unknown"] as const;
+export type CspDisposition = (typeof CSP_DISPOSITIONS)[number];
+
 /** Reported when `blocked-uri` is absent, unparsable or not a keyword. */
 export const UNKNOWN_ORIGIN = "unknown";
 
@@ -120,6 +154,7 @@ const ReportUriBody = z.object({
     "effective-directive": z.string().optional(),
     "violated-directive": z.string().optional(),
     "blocked-uri": z.string().optional(),
+    disposition: z.string().optional(),
   }),
 });
 
@@ -132,6 +167,7 @@ const ReportingApiBody = z.array(
         effectiveDirective: z.string().optional(),
         violatedDirective: z.string().optional(),
         blockedURL: z.string().optional(),
+        disposition: z.string().optional(),
       })
       .optional(),
   }),
@@ -139,10 +175,19 @@ const ReportingApiBody = z.array(
 
 export const CspReportSchema = z.union([ReportUriBody, ReportingApiBody]);
 
-/** One log-worthy violation: two fields, both from closed or normalised vocabularies. */
+/** One log-worthy violation: three fields, all from closed or normalised vocabularies. */
 export interface RedactedViolation {
   readonly directive: CspDirective;
   readonly blocked_origin: string;
+  readonly disposition: CspDisposition;
+}
+
+/** `enforce` or `report` verbatim; anything else — absent, other text — is `unknown`. */
+export function normaliseDisposition(
+  value: string | undefined,
+): CspDisposition {
+  const raw = (value ?? "").trim().toLowerCase();
+  return raw === "enforce" || raw === "report" ? raw : "unknown";
 }
 
 function normaliseDirective(value: string | undefined): CspDirective {
@@ -183,6 +228,7 @@ export function redactCspReport(
           entry.body?.effectiveDirective ?? entry.body?.violatedDirective,
         ),
         blocked_origin: blockedOrigin(entry.body?.blockedURL),
+        disposition: normaliseDisposition(entry.body?.disposition),
       }));
   }
   const body = report["csp-report"];
@@ -192,6 +238,7 @@ export function redactCspReport(
         body["effective-directive"] ?? body["violated-directive"],
       ),
       blocked_origin: blockedOrigin(body["blocked-uri"]),
+      disposition: normaliseDisposition(body.disposition),
     },
   ];
 }
@@ -243,12 +290,70 @@ export function declaredTooLarge(contentLength: string | null): boolean {
   return declared > CSP_REPORT_MAX_BYTES;
 }
 
-/** The process-wide limiter the route uses. */
-const limiter = createRateLimiter();
+/** Separate log budgets, so report-only noise never spends an `enforce` report's allowance. */
+export interface CspReportBudgets {
+  readonly enforce: RateLimiter;
+  readonly report: RateLimiter;
+}
+
+/**
+ * Everything the route rate-limits, in one place: the request gate, the two log budgets, and two
+ * one-a-minute notices that say when the gate or the `enforce` budget dropped something. The
+ * module default below is built by this function, so a test of the default options is a test of
+ * the production wiring (`/break 196` round 2 holes 2 and 3).
+ */
+export interface CspReportLimits {
+  readonly gate: RateLimiter;
+  readonly budgets: CspReportBudgets;
+  readonly dropNotices: {
+    readonly unread: RateLimiter;
+    readonly enforce: RateLimiter;
+  };
+}
+
+export function createCspReportLimits(
+  now: () => number = () => Date.now(),
+): CspReportLimits {
+  return {
+    gate: createRateLimiter(
+      CSP_REPORT_REQUEST_LIMIT,
+      CSP_REPORT_WINDOW_MS,
+      now,
+    ),
+    budgets: {
+      enforce: createRateLimiter(
+        CSP_REPORT_RATE_LIMIT,
+        CSP_REPORT_WINDOW_MS,
+        now,
+      ),
+      report: createRateLimiter(
+        CSP_REPORT_RATE_LIMIT,
+        CSP_REPORT_WINDOW_MS,
+        now,
+      ),
+    },
+    dropNotices: {
+      unread: createRateLimiter(1, CSP_REPORT_WINDOW_MS, now),
+      enforce: createRateLimiter(1, CSP_REPORT_WINDOW_MS, now),
+    },
+  };
+}
+
+/** The process-wide limits the route uses. */
+let limits = createCspReportLimits();
+
+/** Tests only: start the production limits afresh, built exactly as the route builds them. */
+export function resetCspReportLimitsForTests(now?: () => number): void {
+  limits = createCspReportLimits(now);
+}
+
+/** Which kind of drop a `csp reports dropped` line records. A closed set; nothing else is logged. */
+export type CspReportDrop = "unread" | "enforce";
 
 export interface CspReportOptions {
   readonly logger?: Logger;
-  readonly limiter?: RateLimiter;
+  /** Every limit the route applies; the production default is `createCspReportLimits()`. */
+  readonly limits?: CspReportLimits;
 }
 
 /**
@@ -260,13 +365,24 @@ export async function cspReportResponse(
   options: CspReportOptions = {},
 ): Promise<Response> {
   const log = options.logger ?? defaultLogger;
-  const gate = options.limiter ?? limiter;
+  const {
+    gate,
+    budgets: buckets,
+    dropNotices: notices,
+  } = options.limits ?? limits;
+  const noteDrop = (drop: CspReportDrop, notice: RateLimiter): void => {
+    // At most one line a minute per kind: a count of minutes with drops, not a flood of its own.
+    if (notice.allow()) {
+      log.warn({ csp_report_dropped: drop }, "csp reports dropped");
+    }
+  };
   const headers = { ...CSP_REPORT_HEADERS };
 
   if (!acceptsContentType(request.headers.get("content-type"))) {
     return new Response(null, { status: 415, headers });
   }
   if (!gate.allow()) {
+    noteDrop("unread", notices.unread);
     return new Response(null, { status: 204, headers });
   }
   if (declaredTooLarge(request.headers.get("content-length"))) {
@@ -284,12 +400,23 @@ export async function cspReportResponse(
   }
 
   for (const violation of redactCspReport(parsed)) {
+    const bucket =
+      violation.disposition === "enforce" ? buckets.enforce : buckets.report;
+    if (!bucket.allow()) {
+      // Report-only drops are the expected flight-block noise and are not announced; an `enforce`
+      // drop is a real block nobody will see, so it is.
+      if (violation.disposition === "enforce") {
+        noteDrop("enforce", notices.enforce);
+      }
+      continue;
+    }
     // Spread into a fresh record: `LogFields` is an index signature, and passing the interface
     // straight through would need a cast, which is the kind of thing that later hides a field.
     log.warn(
       {
         directive: violation.directive,
         blocked_origin: violation.blocked_origin,
+        disposition: violation.disposition,
       },
       "csp violation",
     );
