@@ -706,3 +706,54 @@
 @utility motion-slow {
   transition-duration: var(--duration-slow);
 }
+
+/*
+ * The phone's sticky primary-action bar (spec 004 §14 A24 clause 4 (a), AC-48; TASK-195;
+ * `StickyActionBar`). The artboards' `.dock`: 76 px on a 390 × 844 screen, 10 px above the action
+ * and 14 px below it, on card white with a rule and the sticky shadow. Every number that keeps it
+ * honest is here and only here:
+ *
+ *  - opaque card white (computed alpha 1), never the artboard's 96 % mix;
+ *  - its block size and its block-end padding both add the safe area;
+ *  - `hidden` is a transform, so showing or hiding it moves no layout (CLS 0).
+ */
+@utility action-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: var(--layer-banner);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  block-size: calc(76px + env(safe-area-inset-bottom));
+  padding-block: 10px calc(14px + env(safe-area-inset-bottom));
+  padding-inline: var(--gutter-s);
+  background-color: var(--color-card);
+  border-block-start: var(--rule);
+  box-shadow: var(--shadow-sticky);
+  transition-property: translate;
+  transition-duration: var(--duration-base);
+
+  &[data-fo-action-bar="hidden"] {
+    translate: 0 100%;
+    visibility: hidden;
+  }
+}
+
+/*
+ * While a bar is on the page, below `md` (where it is drawn): the document's foot is padded by the
+ * bar's block size plus the safe area, so scrolled to the bottom no content box sits under it (a
+ * hidden bar keeps the padding on purpose, so showing it changes no scroll height); and while the
+ * bar is shown the consent sheet stands on it instead of over its action. Unlayered on purpose, so it wins
+ * over the sheet's own `bottom-0` utility (`data-fo-consent-sheet`, `ConsentBannerView`).
+ */
+@media (width < 48rem) {
+  body:has([data-fo-action-bar]) {
+    padding-block-end: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  body:has([data-fo-action-bar="shown"]) [data-fo-consent-sheet="fixed"] {
+    inset-block-end: calc(76px + env(safe-area-inset-bottom));
+  }
+}

@@ -65,14 +65,20 @@ const inChrome = (selector: string): string =>
  *                      removed with nothing in its place (TASK-193); it returns with the short
  *                      cutoff once a destination takes delivery dates
  * notice bar desktop = 62 (9 + the 44 px utility links + 9) from `lg` (1 024 px)
- * sticky mobile      = 64 masthead + 56 chip row (44 px chips + 12) + 1 rule = 121, below `xl`
+ * sticky mobile      = 64 masthead + 56 chip row (44 px chips + 12) + 1 rule = 121, `md` to `xl`
  * sticky desktop     = 82 masthead (logo, the eight links, the pill) + 1 rule = 83, from `xl`
+ * sticky phone       = 64 masthead (the logo and the Menu) + 1 rule = 65, below `md`, with no
+ *                      notice bar at all (spec 004 §14 A24 clause 3, AC-47; TASK-195). The
+ *                      `e2e-mobile` project's 412 px is a phone; the 80 px strip row above is
+ *                      what `md` to `lg` still draws
  *
  * v1 was 113 + 96 = 209 on mobile and 45 + 138 = 183 on desktop (TASK-173). Both boxes are
  * server-rendered with no island, so they are the same before and after hydration (AC-7).
  */
 const UTILITY_HEIGHTS = { mobile: 60, desktop: 62 } as const;
 const STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
+/** Below `md`: the logo and the Menu, 64 px and the rule (AC-47: 65 ± 1). */
+const PHONE_STICKY_HEIGHT = 65;
 const HEADER_HEIGHTS = {
   mobile: UTILITY_HEIGHTS.mobile + STICKY_HEIGHTS.mobile,
   desktop: UTILITY_HEIGHTS.desktop + STICKY_HEIGHTS.desktop,
@@ -101,6 +107,13 @@ const LOCALES = [
  * it: `e2e-mobile` (412 px) and `e2e-desktop` (1 280 px).
  */
 const XL_BREAKPOINT = 1280;
+
+/** Tailwind's `md` (48rem): below it the phone header and no strip (§14 A24 clause 3). */
+const MD_BREAKPOINT = 768;
+
+/** The phone's Menu: the disclosure, its summary and its panel (`MenuSheet`). */
+const MENU = "[data-fo-menu]";
+const MENU_SUMMARY = "[data-fo-menu-summary]";
 
 /**
  * The shift the header can cause: every entry not wholly inside the home's sentence picker
@@ -139,12 +152,21 @@ test.describe("the site header (AC-7)", () => {
       const header = page.locator(HEADER);
       const utility = page.locator(UTILITY);
       await expect(header).toBeVisible();
-      await expect(utility).toBeVisible();
 
       const viewport = page.viewportSize();
       const wide = (viewport?.width ?? 0) >= XL_BREAKPOINT;
       const height = async (locator: import("@playwright/test").Locator) =>
         Math.round((await locator.boundingBox())?.height ?? 0);
+
+      // A phone (the `e2e-mobile` project's 412 px): no strip, and the logo-and-Menu row.
+      if ((viewport?.width ?? 0) < MD_BREAKPOINT) {
+        await expect(utility).toBeHidden();
+        expect(await height(header)).toBe(PHONE_STICKY_HEIGHT);
+        await expect(header).toHaveCSS("position", "sticky");
+        expect(await headerShift(page)).toBe(0);
+        return;
+      }
+      await expect(utility).toBeVisible();
 
       // Reserved, not measured after paint: the same two boxes in every locale, to the pixel …
       expect(await height(utility)).toBe(
@@ -362,16 +384,29 @@ test.describe("the site header (AC-7)", () => {
             return {
               href: node.getAttribute("href") ?? "",
               height: Math.round(box.height),
-              width: Math.round(box.width),
+              // Rendered and not inside the closed Menu, whose content keeps its rects under
+              // `content-visibility` (§14 A24 clause 3).
+              rendered: node.checkVisibility({
+                contentVisibilityAuto: true,
+                visibilityProperty: true,
+              }),
             };
           }),
         )
-      ).filter((link) => link.width > 0);
+      ).filter((link) => link.rendered);
 
-      // The logo, the eight category links, the Send pill and the switcher's three siblings at
-      // both widths (§14 A4); at 1 440 px also the help line.
-      const notice = viewport.width >= XL_BREAKPOINT ? 4 : 3;
-      expect(measured.length, String(viewport.width)).toBe(10 + notice);
+      // At 1 440 px the logo, the eight category links, the Send pill, the help line and the
+      // switcher's three siblings (§14 A4). At 390 px only the logo is a rendered link: the Menu
+      // is closed, and its summary is measured below (§14 A24 clause 3).
+      expect(measured.length, String(viewport.width)).toBe(
+        viewport.width >= XL_BREAKPOINT ? 14 : 1,
+      );
+      if (viewport.width < MD_BREAKPOINT) {
+        const summary = await page.locator(MENU_SUMMARY).boundingBox();
+        expect(Math.round(summary?.height ?? 0)).toBeGreaterThanOrEqual(
+          MIN_TARGET,
+        );
+      }
       for (const link of measured) {
         expect(
           link.height,
@@ -381,10 +416,45 @@ test.describe("the site header (AC-7)", () => {
     }
   });
 
-  test("nothing in the chrome overflows the viewport at 390 px; only the chip row scrolls", async ({
+  test("nothing in the chrome overflows the viewport at 390 px, and the phone draws no chip row, no pill and no strip", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/en");
+    const phone = await page.evaluate(() => {
+      const shown = (selector: string) => {
+        const node = document.querySelector(selector);
+        return node !== null && getComputedStyle(node).display !== "none";
+      };
+      const summary = document
+        .querySelector("[data-fo-menu-summary]")
+        ?.getBoundingClientRect();
+      return {
+        document: document.documentElement.scrollWidth <= window.innerWidth,
+        header:
+          (document.querySelector("[data-fo-header]")?.scrollWidth ?? 0) <=
+          (document.querySelector("[data-fo-header]")?.clientWidth ?? -1),
+        row: shown('[data-fo-header-band="categories"]'),
+        strip: shown("[data-fo-utility]"),
+        send: shown('[data-fo-header] > div > a[href$="#send"]'),
+        summaryInside:
+          summary !== undefined && summary.right <= window.innerWidth,
+      };
+    });
+    expect(phone).toEqual({
+      document: true,
+      header: true,
+      row: false,
+      strip: false,
+      send: false,
+      summaryInside: true,
+    });
+  });
+
+  test("from `md` up nothing in the chrome overflows the viewport; only the chip row scrolls", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 768, height: 1024 });
     await page.goto("/en");
 
     const boxes = await page.evaluate(() => {
@@ -411,6 +481,7 @@ test.describe("the site header (AC-7)", () => {
         sendInside: send !== undefined && send.right <= window.innerWidth,
       };
     });
+    // 768 px: the strip's own languages row and the chip row, side by side with nothing else.
     expect(boxes).toEqual({
       document: true,
       utility: true,
@@ -422,10 +493,39 @@ test.describe("the site header (AC-7)", () => {
   });
 
   for (const { path } of LOCALES) {
-    test(`${path}: the currency and the switcher are visible at 390 px without scrolling (AC-8, §14 A4)`, async ({
+    test(`${path}: the currency and the switcher are in the Menu at 390 px and in the strip at 1440 px (AC-8, §14 A4, A24 clause 3)`, async ({
       page,
     }) => {
-      for (const viewport of ARTBOARDS) {
+      // 390 × 844: one tap on Menu, and both are inside the open panel and the viewport.
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(path);
+      await page.locator(MENU_SUMMARY).click();
+      await expect(page.locator(`${MENU}[open]`)).toHaveCount(1);
+      for (const selector of [
+        "[data-fo-menu-switcher]",
+        "[data-fo-menu-currency]",
+      ]) {
+        await expect(page.locator(selector), selector).toBeVisible();
+        const inside = await page.evaluate((target) => {
+          const box = document.querySelector(target)?.getBoundingClientRect();
+          const panel = document
+            .querySelector("[data-fo-menu-panel]")
+            ?.getBoundingClientRect();
+          return (
+            box !== undefined &&
+            panel !== undefined &&
+            box.left >= 0 &&
+            box.right <= window.innerWidth &&
+            box.top >= panel.top &&
+            box.bottom <= Math.min(panel.bottom, window.innerHeight)
+          );
+        }, selector);
+        expect(inside, selector).toBe(true);
+      }
+
+      for (const viewport of ARTBOARDS.filter(
+        ({ width }) => width >= MD_BREAKPOINT,
+      )) {
         await page.setViewportSize(viewport);
         await page.goto(path);
         await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
@@ -465,20 +565,20 @@ test.describe("the site header (AC-7)", () => {
 
   /**
    * WCAG 1.4.10 reflow at 320 × 568, in every locale (PR 168 breaker round 2, HOLE 1, carried to
-   * TASK-176). Below the 390 px artboard the notice bar's second row (the languages and the
-   * currency) wraps instead of widening the page: `max-lg:[&>div>div]:flex-wrap` on the
-   * `NoticeBar` wrapper in `SiteHeader`. Without the wrap the row runs over the bar's gutters
-   * (measured on macOS: 310 px of row in a 280 px box) and, with Linux's wider rendering, past
-   * 320 px so that the bar scrolls sideways.
+   * TASK-176). Since spec 004 §14 A24 clause 3 (TASK-195) a phone has no notice bar: the
+   * languages and the currency are in the Menu, whose switcher row wraps (`[&_ul]:flex-wrap` on
+   * `MenuSheet`'s wrapper) instead of running past the panel's gutters or widening the page.
    */
   for (const { path } of LOCALES) {
-    test(`${path}: at 320 px nothing in the header scrolls sideways and the switcher and the currency lie inside the notice bar's gutters`, async ({
+    test(`${path}: at 320 px nothing in the header scrolls sideways and the Menu's switcher and currency lie inside its gutters`, async ({
       page,
     }) => {
       await page.setViewportSize({ width: 320, height: 568 });
       await page.goto(path);
-      await expect(page.locator("[data-fo-header-switcher]")).toBeVisible();
-      await expect(page.locator("[data-fo-header-currency]")).toBeVisible();
+      // Below `md` the switcher and the currency are in the Menu (§14 A24 clause 3).
+      await page.locator(MENU_SUMMARY).click();
+      await expect(page.locator("[data-fo-menu-switcher]")).toBeVisible();
+      await expect(page.locator("[data-fo-menu-currency]")).toBeVisible();
 
       const measured = await page.evaluate(() => {
         const widths = (selector: string) => {
@@ -488,10 +588,10 @@ test.describe("the site header (AC-7)", () => {
             client: node?.clientWidth ?? Number.NaN,
           };
         };
-        // The notice bar's content box: its frame minus the gutters. A row that does not wrap
-        // still fits the 320 px viewport on a narrow rasteriser, centred over the gutters, so
-        // "inside the viewport" alone cannot tell a wrapped row from one that overflows its box.
-        const frame = document.querySelector("[data-fo-notice-bar] > div");
+        // The Menu panel's content box: its box minus the gutters. A row that does not wrap
+        // still fits the 320 px viewport on a narrow rasteriser, so "inside the viewport" alone
+        // cannot tell a wrapped row from one that overflows its box.
+        const frame = document.querySelector("[data-fo-menu-panel]");
         const frameBox = frame?.getBoundingClientRect();
         const frameStyle = frame === null ? null : getComputedStyle(frame);
         const start =
@@ -511,20 +611,19 @@ test.describe("the site header (AC-7)", () => {
                 Math.round(box.right) > window.innerWidth,
             ).length;
         return {
-          utility: widths("[data-fo-utility]"),
+          panel: widths("[data-fo-menu-panel]"),
           header: widths("[data-fo-header]"),
           document: document.documentElement.scrollWidth - window.innerWidth,
-          // The switcher, each of its links, and the currency, inside the bar's gutters and so
+          // The switcher, each of its links, and the currency, inside the panel's gutters and so
           // inside the 320 px viewport.
           outside:
-            outside("[data-fo-header-switcher]") +
-            outside("[data-fo-header-switcher] a") +
-            outside("[data-fo-header-currency]"),
-          links: document.querySelectorAll("[data-fo-header-switcher] a")
-            .length,
+            outside("[data-fo-menu-switcher]") +
+            outside("[data-fo-menu-switcher] a") +
+            outside("[data-fo-menu-currency]"),
+          links: document.querySelectorAll("[data-fo-menu-switcher] a").length,
         };
       });
-      expect(measured.utility.scroll).toBe(measured.utility.client);
+      expect(measured.panel.scroll).toBe(measured.panel.client);
       expect(measured.header.scroll).toBe(measured.header.client);
       expect(measured.document).toBeLessThanOrEqual(0);
       expect(measured.links).toBeGreaterThan(0);
@@ -532,13 +631,15 @@ test.describe("the site header (AC-7)", () => {
     });
   }
 
-  test("draws no menu glyph, because it opened nothing (§14 A20)", async ({
+  test("draws no dead menu glyph: the one Menu is a disclosure that opens a real panel (§14 A20, A24 clause 3)", async ({
     page,
   }) => {
     await page.goto("/en");
     // `/review 31` turned a dead button into decoration; spec 004 §14 A20 removes the decoration
-    // too, because a glyph that looks like a menu and opens nothing is the defect itself.
+    // too, because a glyph that looks like a menu and opens nothing is the defect itself. A24
+    // clause 3 brings a Menu back as a native `<details>` with something real inside it.
     await expect(page.locator("[data-fo-header-menu]")).toHaveCount(0);
+    await expect(page.locator(`${HEADER} details${MENU}`)).toHaveCount(1);
     // No button in the header at all: nothing that looks pressable and is not.
     await expect(page.locator("[data-fo-header] button")).toHaveCount(0);
   });

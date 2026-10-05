@@ -78,7 +78,17 @@ export const HEADER_BAND_HEIGHTS = {
  * and currency that spec 004 §14 A4 keeps reachable at 390 px), 62 px from `lg`. It is server-
  * rendered with no island, so nothing below it moves after the first paint.
  */
-export const HEADER_STICKY_HEIGHTS = { mobile: 121, desktop: 83 } as const;
+export const HEADER_STICKY_HEIGHTS = {
+  /**
+   * Below `md` (spec 004 §14 A24 clause 3, AC-47; TASK-195): the logo and the Menu in the 64 px
+   * row plus the 1 px rule. The chip row is not drawn there, and neither is the strip.
+   */
+  phone: 65,
+  /** From `md` to `xl`: the 64 px row, the 56 px chip row and the rule. */
+  mobile: 121,
+  /** From `xl`: the one 82 px row and the rule. */
+  desktop: 83,
+} as const;
 
 /**
  * The id of the home's sentence picker (spec 004 §14 A21 clause 4; TASK-177 renders the form), the
