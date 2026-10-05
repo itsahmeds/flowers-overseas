@@ -119,7 +119,7 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     }
   });
 
-  it("measures the chooser, four homes, both hubs, one corridor, one shop root and one occasion hub per English locale", () => {
+  it("measures four homes, both hubs, one corridor, one shop root and one occasion hub per English locale, and not `/`", () => {
     // AC-27 words the budget as "`/` and `/en`"; `/de` is measured too because it is the locale
     // whose catalogue is an unreviewed echo — the one whose document could differ from `/en` by
     // accident rather than by design. Spec 004 §2 extends the list to all four launch locales,
@@ -127,8 +127,9 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
     // today is the two locales with an authored guide (TASK-091, TASK-092). The German and Polish
     // hubs are deliberately absent: they are the same template in its empty state, and the two
     // locale homes already measure that chrome.
+    // `/` left the set with spec 003 §14 A16 (AC-27 as restated): it is one 308 to `/en`, and a
+    // redirect has no document to measure.
     expect(parseUrlList(raw)).toEqual([
-      "/",
       "/en",
       "/en-gb",
       "/de",

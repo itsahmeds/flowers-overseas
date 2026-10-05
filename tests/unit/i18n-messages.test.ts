@@ -34,10 +34,6 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
-      // `banner` is the suggestion overlay's four strings (TASK-041), resolved on the server by
-      // `suggestionCopy()` and handed to the island as props since TASK-085 — so, like `consent`,
-      // it is deliberately absent from `namespacesFor("localeDocument")` below.
-      "banner",
       // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
       // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no
@@ -49,7 +45,6 @@ describe("the shell catalogue", () => {
       // date table's caption, columns and "omitted" cell. Server Components again, so they are in
       // no `ROUTE_NAMESPACES` entry and cost no client bytes.
       "categoryHub",
-      "chooser",
       "common",
       // `company`, `destinations`, `footer` and `nav` are spec 004 §7's chrome namespaces, added
       // with the config registries that name their keys (TASK-047); the components that render
@@ -84,6 +79,10 @@ describe("the shell catalogue", () => {
       "finder",
       "footer",
       "home",
+      // `languagePopup` is the language popup's seven strings (spec 003 §14 A16, TASK-119), which
+      // replaced the suggestion strip's `banner`: resolved on the server by `languagePopupCopy()`
+      // and handed to the island as props, so it is in no `ROUTE_NAMESPACES` entry.
+      "languagePopup",
       // `media` is spec 006 §7's namespace: the AI-provenance label, the placeholder captions and
       // the demo watermark label (TASK-073). Like `catalog`, it is in no `ROUTE_NAMESPACES` entry
       // — the gallery and the provenance note are Server Components (spec 006 AC-22).

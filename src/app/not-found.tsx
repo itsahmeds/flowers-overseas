@@ -4,9 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { COMPANY } from "@/config/company";
 import { isPublished } from "@/config/site-links";
 import { documentFallbackLocale, localePath } from "@/modules/i18n";
-// Deep imports rather than the `@/modules/ui` barrel, for the reason `(chooser)/layout.tsx`
-// records: the barrel re-exports the module's client islands and a route that reaches them
-// downloads them. The 404 renders no island either.
+// Deep imports rather than the `@/modules/ui` barrel: the barrel re-exports the module's client
+// islands and a route that reaches them downloads them. The 404 renders no island either.
 import { fontVariables } from "@/modules/ui/fonts";
 import { NoticeDocument } from "@/modules/ui/layout/NoticeDocument";
 import {

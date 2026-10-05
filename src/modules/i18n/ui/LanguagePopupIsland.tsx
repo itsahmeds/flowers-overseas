@@ -195,9 +195,11 @@ export function LanguagePopupIsland({
 const DIALOG = [
   "text-ink bg-card shadow-md m-0 border-0 overflow-y-auto open:grid",
   // Mobile: a top sheet. `bottom-auto` frees the UA's `inset-block: 0`, so the box sits at y 0.
-  "fixed top-0 bottom-auto start-0 end-0 w-full max-w-none max-h-[260px] rounded-es-photo rounded-ee-photo gap-[12px] px-[20px] pt-[14px] pb-[10px] backdrop:bg-scrim/50",
+  // The artboard's lighter scrim (ink at 22 %) is `--color-scrim` (ink at 45 %) at half opacity:
+  // an opacity modifier on the colour would compile to a `color-mix()` literal (spec 004 AC-1).
+  "fixed top-0 bottom-auto start-0 end-0 w-full max-w-none max-h-[260px] rounded-es-photo rounded-ee-photo gap-[12px] px-[20px] pt-[14px] pb-[10px] backdrop:bg-scrim backdrop:opacity-50",
   // Desktop: a centred card over the dimmed page.
-  "md:bottom-0 md:m-auto md:h-fit md:w-[620px] md:max-w-[calc(100%-2*var(--gutter))] md:max-h-[calc(100dvh-48px)] md:rounded-photo md:gap-[18px] md:px-[32px] md:pt-[30px] md:pb-[26px] md:backdrop:bg-scrim",
+  "md:bottom-0 md:m-auto md:h-fit md:w-[620px] md:max-w-[calc(100%-2*var(--gutter))] md:max-h-[calc(100dvh-48px)] md:rounded-photo md:gap-[18px] md:px-[32px] md:pt-[30px] md:pb-[26px] md:backdrop:opacity-100",
 ].join(" ");
 const HEAD = "flex items-start justify-between gap-[16px]";
 const HEADING =

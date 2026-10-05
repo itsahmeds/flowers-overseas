@@ -35,7 +35,8 @@
  * live one.
  *
  * `noindex.json` is generated from the same engine over the URLs the sitemap did *not* take: the
- * locale chooser and the hub of every locale that is not announced. `validate-sitemap` intersects
+ * hub of every locale that is not announced. `/` is in neither list: it is one 308 to `/en` with
+ * no document (spec 003 §14 A16 clause 3). `validate-sitemap` intersects
  * it with every `<loc>` it reads, which is AC-14's first half as a CI gate rather than an
  * argument.
  */
@@ -98,8 +99,6 @@ export function noindexUrlSet(
 ): readonly string[] {
   const announced = new Set(sitemapLocales(deployment));
   const urls = [
-    // `plan/02` §7: the locale chooser is `noindex` whatever the environment.
-    absoluteUrl("/", { baseUrl: deployment.siteUrl }),
     ...routableLocaleCodes()
       .filter((locale) => !announced.has(locale))
       .map((locale) =>

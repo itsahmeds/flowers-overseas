@@ -6,12 +6,12 @@ import type { ReactNode } from "react";
  *
  * **It renders no document.** It is a pass-through whose only job is to be the single root of the
  * route tree, so that the *document* — `<html lang dir>`, `<body>` — is rendered by whichever leaf
- * knows the language: `(chooser)/layout.tsx` for `/` in the x-default locale, `[locale]/layout.tsx`
- * for every localised URL in its own locale, and `not-found.tsx` for the 404 in the x-default
- * locale. The hard-coded English `lang` attribute that spec 001 §7 left here is therefore gone,
+ * knows the language: `[locale]/layout.tsx` for every localised URL in its own locale, and
+ * `not-found.tsx` for the 404 in the x-default locale. `/` renders no document at all: it is one
+ * 308 to `/en` in `next.config.ts` (spec 003 §14 A16). The hard-coded English `lang` attribute that spec 001 §7 left here is therefore gone,
  * replaced by registry data rather than by another literal (spec 003 §7, AC-6).
  *
- * Why not the two *root* layouts §5.3 recommends (`(chooser)` and `[locale]` with no
+ * Why not the two *root* layouts §5.3 recommended (a `/` group and `[locale]` with no
  * `src/app/layout.tsx` at all)? That shape was implemented first and measured on Next 16.3.4:
  * with two root layouts `src/app/not-found.tsx` *is* reached, but the framework wraps it in a
  * bare `<html>` of its own, so the response has nested `html`/`body` elements and the effective

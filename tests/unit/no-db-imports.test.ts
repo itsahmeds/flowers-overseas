@@ -78,7 +78,6 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       // the gated GA4 loader. `src/app` is **not** listed as a whole: `src/app/api/` grows
       // handlers that will import the client on purpose from spec 013.
       "src/modules/ui",
-      "src/app/(chooser)",
       "src/app/(dev)",
       "src/app/[locale]",
       "src/app/layout.tsx",

@@ -86,7 +86,8 @@ export function localeRegistryOf(
 }
 
 /**
- * The locale a non-localised document (the chooser, an unknown-locale 404) declares: the
+ * The locale a non-localised document (an unknown-locale 404, the dev gallery) declares, and
+ * the target of the `/` redirect (`src/lib/root-redirect.ts`): the
  * `x-default` locale, resolved through the registry so a hydrated registry moves it too (AC-8).
  */
 export function documentFallbackLocale(): LocaleConfig {

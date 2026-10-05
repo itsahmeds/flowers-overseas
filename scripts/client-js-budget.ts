@@ -120,12 +120,12 @@ export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
 export const MESSAGES_PAYLOAD_BUDGET_BYTES = 4 * 1024;
 
 /**
- * The URLs measured by default: AC-24's five — the chooser and all four launch locale homes
- * (TASK-056 widened the list from spec 003's `/`, `/en`, `/de`; `lighthouse` measures the same
- * five, from `tests/fixtures/seo/lighthouse-urls.json`).
+ * The URLs measured by default: the four launch locale homes (TASK-056 widened the list from
+ * spec 003's `/en`, `/de`; `lighthouse` measures the same set, from
+ * `tests/fixtures/seo/lighthouse-urls.json`). `/` left the set with spec 003 §14 A16: it is one
+ * 308 to `/en` and has no document to measure.
  */
 export const DEFAULT_URLS = [
-  "/",
   "/en",
   "/en-gb",
   "/de",
@@ -303,12 +303,12 @@ export function documentPathFor(dist: string, url: string): string {
 }
 
 /**
- * The app-router entry key of a URL, e.g. `/` -> `/(chooser)/page` and `/de` -> `/[locale]/page`.
+ * The app-router entry key of a URL, e.g. `/dev/components` -> `/(dev)/dev/components/page` and `/de` -> `/[locale]/page`.
  *
  * Read from `.next/app-path-routes-manifest.json`, which maps every entry directory under
  * `.next/server/app/` to the route it serves. Matching is exact first, then segment by segment so
  * a `[param]` or `[...param]` segment matches — the manifest is the only place that mapping
- * exists, and a route group like `(chooser)` means the directory name cannot be derived from the
+ * exists, and a route group like `(dev)` means the directory name cannot be derived from the
  * URL.
  */
 export function routeEntryFor(dist: string, url: string): string | null {
@@ -769,56 +769,6 @@ export function catalogueLeaks(
   return leaks;
 }
 
-/**
- * The application-code markers no chunk of `/` may contain (spec 004 AC-12, AC-25; TASK-056).
- *
- * "`/` ships zero application JavaScript" is a claim spec 003 AC-7 made and every later spec
- * repeated, and until now nothing measured it: the chooser's byte total is the framework floor,
- * and a framework floor plus a small island looks like a framework floor. What separates the two
- * is *content*. Every component of the design system renders a `data-fo-*` attribute — it is how
- * the e2e, a11y and visual suites select anything at all — so a chunk that carries one carries
- * rendered application UI.
- *
- * The attribute, not a component name: Turbopack writes a `next/dynamic` module's *name* into the
- * loader stub of the entry that declares it, so `/`'s 1 434 B loader chunk mentions
- * `LocaleSuggestionBannerIsland` although the chooser never mounts it and the browser never
- * fetches the island (`/review 36`, §14 A1 addendum). A name proves nothing; markup does.
- */
-export const APPLICATION_MARKUP_MARKER = /data-fo-[a-z-]+=/;
-
-/** The route that must stay free of it, and the reason, so a failure explains itself. */
-export const ZERO_APP_JS_URL = "/";
-
-export interface ApplicationCodeHit {
-  readonly url: string;
-  readonly asset: string;
-}
-
-/**
- * Application markup found in a script `/` fetches, and the `next/dynamic` chunks it fetches at
- * all — either one contradicts AC-12's "zero application JS" for the chooser.
- */
-export function applicationCodeHits(
-  dist: string,
-  pages: readonly PageMeasurement[],
-): ApplicationCodeHit[] {
-  const page = pages.find((candidate) => candidate.url === ZERO_APP_JS_URL);
-  if (page === undefined) return [];
-  const hits: ApplicationCodeHit[] = [];
-  for (const asset of page.assets) {
-    if (asset.noModule) continue;
-    if (asset.kind === "lazy") {
-      hits.push({ url: page.url, asset: asset.asset });
-      continue;
-    }
-    const source = readFileSync(join(dist, asset.asset), "utf8");
-    if (APPLICATION_MARKUP_MARKER.test(source)) {
-      hits.push({ url: page.url, asset: asset.asset });
-    }
-  }
-  return hits;
-}
-
 /** One of A21 clause 3's font budgets, measured. */
 export interface FontBudgetLine {
   readonly label: string;
@@ -1169,7 +1119,6 @@ export function main(
     const forbidden = forbiddenModuleHits(dist, pages);
     const leaks = catalogueLeaks(dist, pages);
     const fonts = fontTransfer(root);
-    const applicationCode = applicationCodeHits(dist, pages);
 
     if (argv.includes("--update-baseline")) {
       const path = writeBaseline(root, pages);
@@ -1203,10 +1152,6 @@ export function main(
           `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
       ),
       ...fontBreaches(fonts),
-      ...applicationCode.map(
-        (hit) =>
-          `${hit.url} fetches ${hit.asset}, which is application JavaScript — the chooser ships none (spec 003 AC-7, spec 004 AC-12, AC-25)`,
-      ),
       ...grown.map(
         (regression) =>
           `${regression.url} grew ${kb(regression.deltaBytes)} against \`${BASELINE_FILE}\` (${kb(
@@ -1232,9 +1177,6 @@ export function main(
           : "",
         leaks.length === 0
           ? `client-js-budget: no fetched chunk contains ${CLIENT_FORBIDDEN_NAMESPACES.map((namespace) => `${namespace}.*`).join(", ")} catalogue copy`
-          : "",
-        applicationCode.length === 0
-          ? `client-js-budget: ${ZERO_APP_JS_URL} fetches no application JavaScript and no next/dynamic chunk`
           : "",
         "",
         breaches.length === 0
