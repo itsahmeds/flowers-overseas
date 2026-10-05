@@ -410,14 +410,16 @@ describe("FactsList, Breadcrumbs, NoticeBar and the wordmark (TASK-175)", () => 
       />,
     );
     expect(html).toContain('<nav aria-label="Breadcrumb"');
-    expect(html.match(/<a /g)).toHaveLength(1);
-    expect(html).toContain('href="/en"');
+    // The trail itself; the phone's back link after it is TASK-195's (`ui-phone-chrome.test.tsx`).
+    const trail = html.slice(html.indexOf("<ol"), html.indexOf("</ol>"));
+    expect(trail.match(/<a /g)).toHaveLength(1);
+    expect(trail).toContain('href="/en"');
     expect(html).not.toContain('href="/en/roses"');
     expect(html).toContain(
       '<span aria-current="page" class="text-ink">Roses</span>',
     );
     expect(html).toContain("<span>Flowers</span>");
-    expect(html.match(/aria-hidden="true"/g)).toHaveLength(2);
+    expect(trail.match(/aria-hidden="true"/g)).toHaveLength(2);
   });
 
   it("draws the notice bar on the inverse surface, its phrase in sunflower", () => {
