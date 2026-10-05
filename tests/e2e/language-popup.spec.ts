@@ -26,7 +26,11 @@
  */
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
-import { recordLayoutShifts } from "../support/layout-shift.ts";
+import {
+  SENTENCE_REGION,
+  recordLayoutShifts,
+  shiftOutside,
+} from "../support/layout-shift.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 test.use({ storageState: NO_LOCALE_CHOICE });
@@ -68,6 +72,12 @@ async function expectLocaleCookie(
     (candidate) => candidate.name === "fo_locale",
   );
   expect(cookie, "fo_locale is in the browser cookie jar").toBeDefined();
+  // One value, rewritten in place: a second `fo_locale` beside a forged one would not be a rewrite.
+  expect(
+    (await context.cookies()).filter(
+      (candidate) => candidate.name === "fo_locale",
+    ),
+  ).toHaveLength(1);
   expect(cookie!.value).toBe(value);
   expect(cookie!.path).toBe("/");
   expect(cookie!.sameSite).toBe("Lax");
@@ -87,6 +97,23 @@ async function marksOn(page: Page, code: string): Promise<string[]> {
     .evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("data-fo-mark") ?? ""),
     );
+}
+
+/** The layout shifts recorded since the last `clearShifts()`. */
+async function sumOfShifts(page: Page): Promise<number> {
+  return page.evaluate(() =>
+    (
+      (window as unknown as { __foShifts?: { value: number }[] }).__foShifts ??
+      []
+    ).reduce((total, entry) => total + entry.value, 0),
+  );
+}
+
+async function clearShifts(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const store = window as unknown as { __foShifts?: unknown[] };
+    if (store.__foShifts !== undefined) store.__foShifts.length = 0;
+  });
 }
 
 async function openFromRoot(page: Page): Promise<void> {
@@ -305,13 +332,13 @@ test.describe("(e) the cookie decides whether it opens", () => {
     context,
     baseURL,
   }) => {
-    await context.addCookies([
-      {
-        name: "fo_locale",
-        value: "zz",
-        url: baseURL ?? "http://localhost:3000",
-      },
-    ]);
+    // Forged the way any script on the page can, before the island reads it: once, on the first
+    // document only, so the rewrite is what the jar holds afterwards.
+    await page.addInitScript(() => {
+      if (window.sessionStorage.getItem("forged") !== null) return;
+      window.sessionStorage.setItem("forged", "1");
+      document.cookie = "fo_locale=zz; Path=/; SameSite=Lax";
+    });
     await openFromRoot(page);
     await page.locator(CLOSE).click();
     await expectLocaleCookie(context, "en", baseURL);
@@ -372,16 +399,16 @@ test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
       const after = await page.locator(OPEN).boundingBox();
       expect(after!.y).toBe(0);
 
+      // Opening: nothing moved but the home's own sentence island, which every overlay test of
+      // this repo excludes (`SENTENCE_REGION`) under the same 0.001 the consent sheet's AC-17
+      // uses. Closing: exactly zero, measured from a cleared record.
+      expect(await shiftOutside(page, SENTENCE_REGION)).toBeLessThanOrEqual(
+        0.001,
+      );
+      await clearShifts(page);
       await page.locator(CLOSE).click();
       await expect(page.locator(POPUP)).toHaveCount(0);
-      expect(
-        await page.evaluate(() =>
-          (
-            (window as unknown as { __foShifts?: { value: number }[] })
-              .__foShifts ?? []
-          ).reduce((total, entry) => total + entry.value, 0),
-        ),
-      ).toBe(0);
+      expect(await sumOfShifts(page), "shifts while closing").toBe(0);
     });
   }
 
@@ -406,16 +433,16 @@ test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
       ).toBeLessThanOrEqual(2);
       expect(box!.width).toBe(620);
 
+      // Opening: nothing moved but the home's own sentence island, which every overlay test of
+      // this repo excludes (`SENTENCE_REGION`) under the same 0.001 the consent sheet's AC-17
+      // uses. Closing: exactly zero, measured from a cleared record.
+      expect(await shiftOutside(page, SENTENCE_REGION)).toBeLessThanOrEqual(
+        0.001,
+      );
+      await clearShifts(page);
       await page.keyboard.press("Escape");
       await expect(page.locator(POPUP)).toHaveCount(0);
-      expect(
-        await page.evaluate(() =>
-          (
-            (window as unknown as { __foShifts?: { value: number }[] })
-              .__foShifts ?? []
-          ).reduce((total, entry) => total + entry.value, 0),
-        ),
-      ).toBe(0);
+      expect(await sumOfShifts(page), "shifts while closing").toBe(0);
     });
   }
 });
@@ -470,13 +497,11 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
     await expect(
       page.locator(`${option("en")} [data-fo-mark="current"]`),
     ).toHaveText("Current");
+    // Both L4 wordings are in the DOM and CSS shows one: assert the visible one's text (the
+    // marks are `text-transform: uppercase`, so `innerText` would read capitals).
     await expect(
-      page.locator(`${option("de")} [data-fo-mark="hint"]`),
-    ).toHaveText(
-      "Matches your browser",
-      // Both L4 wordings are in the DOM and CSS shows one: assert what is rendered.
-      { useInnerText: true },
-    );
+      page.locator(`${option("de")} [data-fo-mark="hint"] > span:visible`),
+    ).toHaveText("Matches your browser");
     await expect(page.locator(`${OPEN} p`).last()).toHaveText(
       "You can change it any time at the top of every page.",
     );
@@ -492,8 +517,8 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
     expect(box!.y).toBe(0);
     expect(box!.height).toBeLessThanOrEqual(260);
     await expect(
-      page.locator(`${option("de")} [data-fo-mark="hint"]`),
-    ).toHaveText("Your browser", { useInnerText: true });
+      page.locator(`${option("de")} [data-fo-mark="hint"] > span:visible`),
+    ).toHaveText("Your browser");
     await page.waitForLoadState("networkidle");
     await expect(page.locator(CONSENT_SHOWN)).toHaveCount(0);
   });

@@ -198,13 +198,14 @@ test.describe("the sheet appears without disturbing the page (AC-17)", () => {
         await page.evaluate(() => document.activeElement?.tagName ?? ""),
       ).toBe("BODY");
 
-      // And nothing is stored before a decision (§8, AC-18's post-hydration half).
+      // And nothing is stored before a decision (§8, AC-18's post-hydration half). The one `fo_*`
+      // cookie is the returning visitor's `fo_locale=en` the config seeds, unchanged.
       expect(await readConsentCookie(context)).toBeNull();
       expect(
         (await context.cookies())
-          .map((cookie) => cookie.name)
-          .filter((name) => name.startsWith("fo_")),
-      ).toEqual([]);
+          .filter((cookie) => cookie.name.startsWith("fo_"))
+          .map(({ name, value }) => ({ name, value })),
+      ).toEqual([{ name: "fo_locale", value: "en" }]);
     });
   }
 
