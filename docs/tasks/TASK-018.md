@@ -45,8 +45,31 @@ _None recorded._
 
   Local PostgreSQL 16.14, fresh data directory, PID 99523, stopped by PID: round trip, 6 live
   mutations, 13 gate/unit mutations.
+- 2026-10-05: reviewer R2-1 (scoped review on `4ce8d093`): DDL after a `SELECT` condition in a
+  plpgsql statement slipped past the gate. Each statement is now read from every DDL word. Nine
+  fixtures; two mutations red. B4 was accepted by the reviewer and carried to TASK-027, with the
+  five trigger functions. B6 agreed.
 
 ## Result
+
+### Reviewer R2-1 (scoped, on `4ce8d093`)
+
+`DO $$ BEGIN IF (SELECT true) THEN ALTER TABLE recipient ADD COLUMN email text; END IF; END $$;`
+passed `db:check`. Each statement was read only from its first DDL word, here the `SELECT` in
+the condition. `applyStatement` now reads the statement from **every** `create`, `alter`, `drop`,
+`select` and `with` word; a recognised statement read again from a later word matches nothing new.
+Fixtures in `db-check-recipient-email.test.ts` ("R2-1"):
+- the reviewer's case;
+- `ELSE`;
+- `ELSIF` after a `SELECT`;
+- `CASE WHEN … THEN`;
+- a `FOR … IN SELECT` loop;
+- a `WHILE (SELECT …)` loop;
+- a nested `BEGIN`;
+- a labelled block after `SELECT … INTO`;
+- a no-change case (a view, `ADD`/`DROP COLUMN`, `GRANT SELECT`).
+
+Mutations: back to the first DDL word, 5 red; index 0 only, 8 red. Unit file: 91 cases.
 
 ### Round 2 fixes (breaker HOLES on `42be2786`)
 
