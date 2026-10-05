@@ -13,8 +13,11 @@
  */
 import { useEffect } from "react";
 
-/** The attribute `MenuSheet` puts on its `<details>`; the e2e and unit suites read the same. */
-export const MENU_ATTRIBUTE = "data-fo-menu";
+/**
+ * The attribute `MenuSheet` writes on its `<details>`. Not exported: a server component that
+ * imported it from this `"use client"` module would receive a client reference, not the string.
+ */
+const MENU_ATTRIBUTE = "data-fo-menu";
 
 export function MenuEscape(): null {
   useEffect(() => {

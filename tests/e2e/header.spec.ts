@@ -384,11 +384,16 @@ test.describe("the site header (AC-7)", () => {
             return {
               href: node.getAttribute("href") ?? "",
               height: Math.round(box.height),
-              width: Math.round(box.width),
+              // Rendered and not inside the closed Menu, whose content keeps its rects under
+              // `content-visibility` (§14 A24 clause 3).
+              rendered: node.checkVisibility({
+                contentVisibilityAuto: true,
+                visibilityProperty: true,
+              }),
             };
           }),
         )
-      ).filter((link) => link.width > 0);
+      ).filter((link) => link.rendered);
 
       // At 1 440 px the logo, the eight category links, the Send pill, the help line and the
       // switcher's three siblings (§14 A4). At 390 px only the logo is a rendered link: the Menu

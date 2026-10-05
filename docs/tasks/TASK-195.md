@@ -102,14 +102,45 @@ _None._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-05 — **A trail whose last ancestor has no page.** AC-50 says every type but the product
+  page shows the back link, "its `href` and its text equal the trail's last ancestor". The category
+  hub's trail is Home / Flowers / Roses, and "Flowers" is text (no flowers index exists), so a back
+  link to it would link to nothing (A20). Built: no back link there, and the trail stays displayed
+  on the phone (exactly one of the two is still displayed; `BreadcrumbList` is unaffected). The
+  alternative is `‹ Home` (the nearest ancestor with a page), which breaks "text equals the last
+  ancestor". To the orchestrator and reviewer in PR 208: **open**. Not blocking: the shipped reading
+  is the safe one and flips with one line in `Breadcrumbs.tsx`.
+- 2026-10-05 — **The language popup (TASK-119, PR 205) is not merged**, so AC-48's "the popup never
+  intersects the bar's action" cannot be tested here. Carry-forward for TASK-119: stand the popup on
+  `[data-fo-action-bar]` the way `globals.css` stands the consent sheet on it, and add the case to
+  `tests/e2e/action-bar.spec.ts`.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-05 — Phone header with the `<details>` Menu, no strip below `md`, back link in `Breadcrumbs`, the four primitives, gallery states and the bar fixture page (74f45a8c).
+- 2026-10-05 — Unit and e2e for T-52 to T-55, header e2e moved to the phone header (8d4df088).
+- 2026-10-05 — Local production build in the build slot: fixed the lost `data-fo-menu` attribute (a `"use client"` export is a client reference on the server), the gallery hook, the category hub case; screenshots taken.
 
 ## Result
 
-_Pending._
+PR [#208](https://github.com/itsahmeds/flowers-overseas/pull/208). AC-47, AC-48 (the primitive), AC-49,
+AC-50 and AC-32's phone half; T-52 to T-55.
+
+- **Built.** Below `md`: the logo and a native `<details>` Menu (65 px with the rule), no strip;
+  the Menu holds the header's links, Send flowers, spec 003's `LocaleSwitcher`, the currency and
+  the help line, and `MenuEscape` (an island that renders nothing) adds `Esc`. `Breadcrumbs` draws
+  the `‹ Parent` back link below `md` (14 px under the header, 44 px), keeps the trail in the HTML
+  and takes `phone="trail"` for the product page. `StickyActionBar`, `SegmentedControl`,
+  `HorizontalScroller` and `GalleryDots` with gallery states and the `/dev/components/action-bar`
+  fixture page. No new message key.
+- **Local build** (build slot, load average 7.6 to 13.3 during the run): needed to measure the 65 px
+  header, the 14 px offset and the safe-area emulation and to take the founder's screenshots. It
+  found a real bug a server render could not: an export of a `"use client"` module is a client
+  reference on the server, so `data-fo-menu` was lost. e2e-mobile and e2e-desktop: 651 + 178
+  passed locally on the touched and neighbouring suites; a11y header and phone: 15 passed.
+- **Mutations watched red:** the strip shown below `md` (unit T-52 half); the trail's `max-md:hidden`
+  removed (unit T-55 half); `data-fo-menu` lost (unit and e2e).
+- **Not done here:** the popup case of AC-48 (TASK-119 unmerged), the product trail "below the buy
+  section" (TASK-197 places it), and the category hub's back link (escalation above).

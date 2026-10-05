@@ -87,7 +87,7 @@ function renderHeader(locale: string): string {
 
 /** The `<details data-fo-menu>` element, whole. */
 function menuOf(html: string): string {
-  const match = /<details[^>]*data-fo-menu[\s\S]*?<\/details>/u.exec(html);
+  const match = /<details[^>]*\sdata-fo-menu=""[\s\S]*?<\/details>/u.exec(html);
   if (match === null) throw new Error("no Menu in the header");
   return match[0];
 }
@@ -113,7 +113,8 @@ function hrefsOf(html: string): string[] {
 describe("the phone header (AC-47, T-52's contract half)", () => {
   it("is a native disclosure: `<details>` and `<summary>`, from `md` up not drawn", () => {
     const html = renderHeader("en");
-    const details = tagWith(html, "data-fo-menu");
+    // The attribute itself, not a prefix of `data-fo-menu-summary` (React drops `true`).
+    const details = tagWith(html, 'data-fo-menu=""');
     expect(details.startsWith("<details")).toBe(true);
     expect(classOf(details).split(" ")).toContain("md:hidden");
     // Closed on the server: it opens on activation, with or without JavaScript.
