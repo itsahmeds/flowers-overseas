@@ -47,7 +47,7 @@ import {
 } from "../hints.ts";
 
 import type { LanguagePopupCopy } from "./languagePopupTypes.ts";
-import { holdLocaleGate, releaseLocaleGate } from "./localeGate.ts";
+import { syncLocaleGate } from "./localeGate.ts";
 
 export interface LanguagePopupIslandProps {
   /** The locale of the URL being viewed, from the path segment and nothing else. */
@@ -177,14 +177,7 @@ export function LanguagePopupIsland({
   const open = decision.open;
 
   useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!open || dialog === null) {
-      releaseLocaleGate();
-      return undefined;
-    }
-    holdLocaleGate();
-    if (!dialog.open) dialog.showModal();
-    return undefined;
+    syncLocaleGate(dialogRef.current, open);
   }, [open]);
 
   // Every way out ends here: the close button and a tap outside call `close()`, and `Esc` is the
