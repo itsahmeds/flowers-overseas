@@ -242,6 +242,76 @@ describe("check 11 names the entry and the file for each seeded fault (AC-41)", 
     expect(result.stderr).toContain("src/modules/checkout/Summary.tsx");
   });
 
+  it("treats every file under src/app/ outside the entry's paths as an indexable root", () => {
+    for (const path of [
+      "src/app/layout.tsx",
+      "src/app/(chooser)/page.tsx",
+      "src/app/global-error.tsx",
+    ]) {
+      const result = check({
+        [path]:
+          'import { Picker } from "@/modules/checkout/Picker";\nexport const r = Picker;\n',
+        "src/modules/checkout/Picker.tsx": "export const Picker = 1;\n",
+      });
+      expect(result.status, path).toBe(1);
+      expect(result.stderr, path).toContain(
+        `${path} -> src/modules/checkout/Picker.tsx`,
+      );
+    }
+  });
+
+  it("refuses a paths glob on each shared directory", () => {
+    for (const directory of ["seo", "i18n", "catalog", "ui"]) {
+      const result = check({
+        "scope.json": JSON.stringify([
+          {
+            ...ENTRY,
+            paths: [...CHECKOUT_PATHS, `src/modules/${directory}/**`],
+          },
+        ]),
+      });
+      expect(result.status, directory).toBe(1);
+      expect(result.stderr, directory).toContain(
+        `paths glob "src/modules/${directory}/**"`,
+      );
+    }
+  });
+
+  it("treats a file in seo/ or i18n/ that imports a checkout file as a fault", () => {
+    for (const directory of ["seo", "i18n"]) {
+      const path = `src/modules/${directory}/Leak.ts`;
+      const result = check({
+        [path]:
+          'import { Picker } from "@/modules/checkout/Picker";\nexport const l = Picker;\n',
+        "src/modules/checkout/Picker.tsx": "export const Picker = 1;\n",
+      });
+      expect(result.status, directory).toBe(1);
+      expect(result.stderr, directory).toContain(
+        `${path} -> src/modules/checkout/Picker.tsx`,
+      );
+    }
+  });
+
+  it("resolves a directory import to its index file and a .js specifier to its .ts source", () => {
+    const cases: Files[] = [
+      {
+        "src/app/[locale]/product/page.tsx":
+          'import { Picker } from "@/modules/checkout/picker";\nexport const a = ["common.back", Picker];\n',
+        "src/modules/checkout/picker/index.ts": "export const Picker = 1;\n",
+      },
+      {
+        "src/app/[locale]/product/page.tsx":
+          'import { Picker } from "../../../modules/checkout/Picker.js";\nexport const a = ["common.back", Picker];\n',
+        "src/modules/checkout/Picker.ts": "export const Picker = 1;\n",
+      },
+    ];
+    for (const files of cases) {
+      const result = check(files);
+      expect(result.status, Object.keys(files)[1]).toBe(1);
+      expect(result.stderr).toContain("src/modules/checkout/");
+    }
+  });
+
   it("does not flag a checkout page that imports a checkout file", () => {
     const result = check({
       "src/app/[locale]/(checkout)/confirm/page.tsx":
@@ -334,6 +404,20 @@ describe("the summary prints the counted columns and the unapproved list (AC-43)
     ).sort();
     expect(listed).toEqual(expected);
     expect(result.stdout).not.toMatch(/\bnone\b/);
+  });
+
+  it("lists a buyer-facing key that has no review record at all", () => {
+    const files = fixtureTree({ unreviewedCounted: 4, checkoutReviewed: true });
+    const meta = JSON.parse(files["messages/en.meta.json"] as string) as Record<
+      string,
+      unknown
+    >;
+    delete meta["checkout.s7"];
+    const result = summary({
+      ...files,
+      "messages/en.meta.json": JSON.stringify(meta),
+    });
+    expect(result.stdout).toContain("- `checkout.s7`");
   });
 
   it("lists buyer-facing surfaces only: an unreviewed florist key is not on it", () => {

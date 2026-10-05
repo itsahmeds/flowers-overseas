@@ -14,7 +14,7 @@
  *  - a `paths` glob that matches a shared file (`SHARED_DIRECTORIES`, `SHARED_FILES`): a glob that
  *    covers a file every page uses would let the whole site count as one surface;
  *  - **the import rule**: a file under any entry's `paths` that a shared file, or a file under
- *    `src/app/[locale]/` outside every entry's `paths`, imports, directly or through other files.
+ *    `src/app/` outside every entry's `paths`, imports, directly or through other files.
  *    Without it a checkout component placed on a product page shows `checkout.*` copy on an
  *    indexable page while the key is named only inside a checkout file. The graph is the static
  *    `import`, `export ... from` and `import()` with a literal path of `src/`, read by
@@ -54,8 +54,8 @@ export const SHARED_FILES: readonly string[] = [
   "src/app/[locale]/page.tsx",
   "src/app/not-found.tsx",
 ];
-/** Pages under here are indexable unless an entry's `paths` covers them. */
-const LOCALISED_APP = "src/app/[locale]/";
+/** Everything under here (root layout, chooser, error documents, localised pages) can render on an indexable page unless an entry's `paths` covers it. */
+const APP_DIRECTORY = "src/app/";
 
 const SOURCE_EXTENSIONS = [".ts", ".tsx"];
 
@@ -271,7 +271,7 @@ export function scopeProblems(input: ScopeCheckInput): ScopeProblem[] {
     const queue: string[] = allFiles.filter((file) => {
       const path = rel(file);
       return (
-        isShared(path) || (path.startsWith(LOCALISED_APP) && !inAnyPaths(path))
+        isShared(path) || (path.startsWith(APP_DIRECTORY) && !inAnyPaths(path))
       );
     });
     const seen = new Set(queue);

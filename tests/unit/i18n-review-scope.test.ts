@@ -202,6 +202,24 @@ describe("the share counts only keys an indexable page can render (AC-40)", () =
     );
   });
 
+  it("never answers from a cache built under another registry", async () => {
+    resetReviewCache();
+    try {
+      await withMessageSource(fixtureA.source, async () => {
+        await withReviewScope(CHECKOUT, () => {
+          expect(reviewBreakdown("en").counted).toBe(100);
+        });
+        // No resetReviewCache() between the two scopes: the cache must key on the registry.
+        await withReviewScope([], () => {
+          expect(reviewBreakdown("en").counted).toBe(150);
+          expect(unreviewedShare("en")).toBe(54 / 150);
+        });
+      });
+    } finally {
+      resetReviewCache();
+    }
+  });
+
   it("answers from the committed registry again after a scope has been swapped", async () => {
     const before = unreviewedShare("en");
     await within(fixtureA, CHECKOUT, () => {
