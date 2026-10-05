@@ -185,4 +185,85 @@ One line per coherent step, newest last.
 
 ## Result
 
-_Pending._
+PR [#199](https://github.com/itsahmeds/flowers-overseas/pull/199). Partial on one bullet: AC-41's
+and AC-43's primary-action checks on first screens owned by TASK-187/188/189 are declared
+expected failures with their owner (`## Escalations`, open). Everything else the brief binds is
+built and asserted strictly.
+
+**What changed.**
+- **Tokens (AC-42, T-44).** Clause 9's seven values in `src/app/globals.css`,
+  `docs/design/system/tokens.css` and the embedded `:root` of the three system sheets
+  (`colour`, `typography`, `components`). `tests/unit/laptop-band-tokens.test.ts` pins each value
+  once per file, their agreement, and the unchanged minima, lede, body steps and gutters.
+- **The frame (AC-31, T-33).** `PAGE_FRAME` in `src/modules/ui/primitives/layout.tsx`: the
+  1,328 px column inside `--gutter`/`--gutter-s`. `Container` uses it (the `inline` prop is gone,
+  so no page can set its own padding), the header's `CHROME_WRAP` is the same string, and the
+  product page, the guide and the notice letter (404, 500) use it instead of their own
+  `max-w-page` plus padding.
+- **The breadcrumb (AC-32 from `md`, T-34).** `Breadcrumbs` owns the 20 px (`mt-(--space-md2)`);
+  the product page's and the guide's wrappers are removed. Its links get a 24 px target (AC-43).
+- **The rhythm and the cap (clause 9).** Listing, hub, guide, product and home sections take
+  `--section-fluid` instead of 72/96/128 px (the phone's 48 px subsection top stays). `Photo lead`
+  caps a hero or lead photograph at `--hero-photo-max` by narrowing its inline size; the guide's
+  photo slot uses it. The home hero and the product gallery are not capped (A24 clause 5).
+- **AC-43 fix outside the page frame.** The header switcher's "Beta" was 11 px; it is `--text-xs`
+  (13 px) now. Noted for TASK-197: `DateChip.tsx` sets 11 px text on the product page, which is
+  outside AC-43's page set.
+- **Design README.** A dated row for `locale-popup-*`, still drawn at the old maxima (they use no
+  fluid step, so nothing looks different), and the round-2 row no longer says the code lags.
+
+**Tests.** e2e `tests/e2e/frame-laptop-band.spec.ts`: T-33 44 cases, T-34 27, T-43 36, T-45 27,
+134 in `e2e-desktop` (the Pixel 7 project skips them: every case sets its own viewport), green on
+the local build. Of those, 13 are declared `test.fail` with an owner (T-43 primary action: three
+country pages at two sizes, the birthday hub at two, the destinations hub at 1280, the guide at
+two; T-45: occasions index targets, three 44 px primary checks). Unit: T-44, 17 cases. Visual
+`tests/visual/laptop-band.spec.ts` (T-46): 6 baselines at 1280 × 800.
+
+**Mutations, each watched red.** T-44: `tokens.css` hero step reverted alone, 2 red. One mutant
+build (old `Container` padding, a `pt-[20px]` wrapper over the guide's trail, the old hero and
+display `clamp()`s, `--text-xs: 12px`): T-33 red on the 28 `Container` cases, T-34 on the guide at
+1440, 1024 and 768 (40 px, not 20), T-43 on all 18 size cases (79.36 px against 66.6 at
+1280 × 800; the home's submit also left the viewport), T-45 on all nine pages (12 px text). A
+second build with only the photo cap removed: T-43 red on the guide, 498 > 480 at 1280 × 800 and
+571 > 520 at 1512 × 945.
+
+**Measured after** (local build of this branch, same script as `## Progress`, load 12 to 24):
+
+| Viewport | URL | H1 px (before) | H1 y–bottom | First price / action | Trail top − header | First block x / logo x |
+|---|---|---|---|---|---|---|
+| 1280 × 800 | `/en-gb` | 66.56 (79.36) | 235–363 | submit 671–727 (was 772–828) | — | 56 / 56 |
+| 1280 × 800 | country shop and category | 64 (76.8) | 263–337 | price 1,027–1,090 | 20 (was 0) | 56 / 56 (was 72) |
+| 1280 × 800 | country occasion | 64 (76.8) | 263–399 | price 1,186–1,249 | 20 | 56 / 56 |
+| 1280 × 800 | birthday hub | 64 (76.8) | 229–292 | none in `<main>` | 20 | 56 / 56 |
+| 1280 × 800 | category hub, index, destinations | 64 (76.8) | 229–337 | | 20 | 56 / 56 |
+| 1280 × 800 | guide | 64 (76.8) | 229–354 | shop link 7,166 | 20 | 56 / 56 |
+| 1512 × 945 | `/en-gb` | 76 (90) | 235–381 | submit 690–746 | — | 56 (home kept) / 92 |
+| 1512 × 945 | listings and guide | 70 (84) | 229–366 | prices 1,092 to 1,231 | 20 | 92 / 92 (was 164) |
+
+**Visual baselines.** Linux set from the `visual-baselines` workflow run 37262529276 on 7c1330f1,
+manifest committed and `--verify` green (108 match). 81 images looked at, old beside new: 75
+moved, 6 new. The darwin set is not refreshed: this Mac already differs from the committed
+darwin PNGs on shots this diff does not touch (consent sheet), so it is not evidence here.
+
+**Local heavy runs, and why.** Three production builds and `next start` inside the build slot,
+for T-33/T-34/T-43/T-45 (a DOM probe needs a served page), the two mutation builds, and the
+after-measurement the brief asks for. Playwright visual once, to see which baselines moved. Slot
+released; no server left running.
+
+**Gates.** `pnpm gates:cheap` exits 0 (block below; "DIRTY" is this brief, uncommitted at the
+time). Two earlier runs at load 17 to 18 timed out at 5 s in `tests/unit/product-route.test.tsx`
+and `tests/unit/url-pii.test.ts`, files this diff does not touch; both pass alone (21/21).
+
+```
+gates:cheap · 3497f8f45814466b94cfe651549b0cebe0e2cf6a · tree DIRTY · base origin/main · 2026-10-05T04:34:01.679Z
+typecheck             exit 0 · 2.8 s
+lint                  exit 0 · 23.6 s
+format:check          exit 0 · 14.2 s
+i18n:check            exit 0 · 0.5 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 48.1 s · changed 82 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
