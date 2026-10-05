@@ -47,9 +47,9 @@ taboos: >-
   exactly what they say here: send them on purpose, not by accident.
 relatedIso2: ["DE", "RO", "NL"]
 source: human
-reviewed: true
+reviewed: false
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-10-05
+reviewedAt: 2026-09-16
 version: 2
 updatedAt: "2026-10-05"
 ---
