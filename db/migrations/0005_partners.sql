@@ -382,10 +382,11 @@ DECLARE
 BEGIN
   SELECT listed INTO missing
   FROM unnest(NEW.media_asset_ids) AS listed
-  WHERE NOT EXISTS (
-    SELECT 1 FROM public.media_asset AS asset
-    WHERE asset.id = listed AND asset.kind = 'partner' AND asset.visibility = 'private'
-  )
+  WHERE listed IS NOT NULL  -- a null element is partner_application_media_asset_ids_check's
+    AND NOT EXISTS (
+      SELECT 1 FROM public.media_asset AS asset
+      WHERE asset.id = listed AND asset.kind = 'partner' AND asset.visibility = 'private'
+    )
   LIMIT 1;
   IF FOUND THEN
     RAISE EXCEPTION 'PARTNER_APPLICATION_MEDIA_ASSET: % is not a private partner media_asset', missing

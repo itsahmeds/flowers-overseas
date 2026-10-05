@@ -313,6 +313,8 @@ describe.skipIf(sql === undefined)(
           "occasion_translation: UNIQUE (locale_code, slug)",
           "postcode_zone: PRIMARY KEY (id)",
           "postcode_zone: UNIQUE (country_id, prefix)",
+          // Migration 0006's (TASK-018): the key recipient_address's (zone, country) reference needs.
+          "postcode_zone: UNIQUE (id, country_id)",
           "region: PRIMARY KEY (id)",
           "region: UNIQUE (country_id, code)",
           "region: UNIQUE (id, country_id)",
