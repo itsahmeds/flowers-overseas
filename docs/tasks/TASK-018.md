@@ -32,8 +32,46 @@ _None recorded._
 - 2026-10-05: unit and integration tests; local PostgreSQL 16.14 (fresh data directory, PID 53795,
   stopped by PID): round trip and 14 live mutations; 13 SQL-text mutations. Pushed `90323003`.
 - 2026-10-05: carry-forwards written into the briefs of TASK-019, 022, 023, 026 and 027.
+- 2026-10-05: round 1 of PR 200 (review FAIL, breaker HOLES on `283daf3a`). Pushed:
+  - `c1b98413`: the lock, the currency and coverage keys, the fail-closed gate, the evaluated
+    mirror, and the unit pins;
+  - `9da97605`: the two-session, delete-rule, currency and zero-line integration cases.
+
+  Local PostgreSQL 16.14, fresh data directory, PID 41893, stopped by PID: the round trip,
+  13 live mutations, and 24 gate/unit mutations.
 
 ## Result
+
+### Round 1 fixes (review FAIL and breaker HOLES on `283daf3a`)
+
+| Item | Fix | Mutation, and the case that went red |
+|---|---|---|
+| R1 (race) | `partner_application_media_check()` locks the listed assets `FOR SHARE`, with `kind = 'partner' AND visibility = 'private'` in the locking query. Three two-session integration cases: a delete during a listing, a make-public during a listing, and a listing during a make-public. Each one waits on the lock, then is refused with `PARTNER_APPLICATION_MEDIA_ASSET (23503)`. Plus a unit pin on the SQL. | Live, lock removed: all three red. Live, `FOR KEY SHARE`: the two make-public cases red (the delete still conflicts, as the reviewer predicted). SQL text `FOR KEY SHARE`: 2 unit red. |
+| B1 (dynamic SQL, views) | `db:check` refuses any dynamic-SQL `EXECUTE` (one not followed by `FUNCTION`, `PROCEDURE` or `ON`), at any quoting depth, outside `DYNAMIC_SQL_ALLOWED`: only `0001` and its rollback, each with a reason. It refuses a view, materialized or not, named like a recipient table. A view renamed into a recipient name (`ALTER VIEW`, `ALTER TABLE` or `ALTER MATERIALIZED VIEW`) brings every name in its text. A foreign table counts as a table. Integration: after a full migrate, `recipient` and `recipient_address` exist only as `public` plain tables (`relkind = 'r'`), with no email-like column in `pg_attribute`. | Gate: ban off (4 red); allow-list admits every file (4); `ON` not excluded (61: the committed tree fails); view not flagged (2); `ALTER VIEW` not followed (1). Live: `recipient` swapped for a view (3 red). |
+| B2 (mirror forms) | `recipientEmailInTables` reads the evaluated mirror through `getTableConfig`. `pnpm db:check` runs it (`runDbCheckWithMirror`). Unit cases: a spread, a constant, a template literal, a computed name with a key-named column, `pgSchema(...).table`, and end to end a copied mirror with a spread email column. | Reads nothing (6 red). `runDbCheckWithMirror` ignores the mirror (1). |
+| B3 (delete rules) | `tests/fixtures/schema-foreign-keys.ts` pins all 29 FKs with their delete rule. Only `partner_translation` cascades: §5.1 allows `CASCADE` only to a parent's own translation rows. Asserted against the SQL, the mirror (`onDelete`) and the live `confdeltype`. Behaviour: a buyer with a recipient, an address or a linked recipient cannot be deleted, a recipient with an address cannot be deleted, and the rows survive. | Live `CASCADE` on `recipient.customer_id`, `address.customer_id`, `recipient_address.recipient_id`, `partner_coverage.partner_id` or `payout.partner_id`, and `SET NULL` on `linked_customer_id`: each red. SQL `CASCADE` (1 red). Mirror `onDelete: "cascade"` (1). |
+| B4 (parity) | The unit test now holds the mirror equal to the SQL on column types, FKs, CHECK names, unique keys, primary keys and index names. Expressions, `NULLS NOT DISTINCT`, predicates and the triggers are AC-26 live drift, carried to TASK-027. | Mirror: `lines` not `.array()`; zone FK renamed; `recipient_phone_check` renamed; an index removed (1 red each). |
+| B5 (zero line) | Behaviour: a zero `goodwill` and a zero `order` line are refused. Unit pin on the check text. | Live `>= 0` (red). SQL text `>= 0` (1 red). |
+| B6 (currency, coverage) | Currency: `fulfillment_partner_id_payout_currency_key` plus `partner_catalog_mapping_partner_currency_fkey`, so a mapping is in its partner's currency, and the partner's currency cannot change under its mappings. `payout_currency_check()` (`SECURITY DEFINER`, locks the partner `FOR SHARE`) refuses a payout written in another currency. Coverage: `postcode_zone_id_city_key` (on `0002`'s table, dropped by the rollback) plus `partner_coverage_zone_city_fkey`, so a zone named with a city must be in that city. Coverage against the partner's own country stays declared and not enforced: it needs a column §5.1 lacks. | Live: mapping FK dropped, payout trigger dropped, coverage FK dropped (each red). SQL mapping FK removed (1 red). |
+| Nit 1 | The PR description: test counts (71, 66 and 12) and the rollback wording (`--to 0000` leaves `schema_migrations`). | — |
+| Nit 2 | RoPA row 3 now says that `consent_log.source_ip_truncated` exists, why (spec 002 §5.1, §8), and that the writer moving the consent sink onto the table must leave it null, or rewrite the row first. No task in `TASKS.md` writes `consent_log` yet, so the rule lives in the RoPA row. | — |
+| Nit 3 | A unit tripwire: each deferred column exists, TASK-019's or TASK-022's brief names its constraint, and once the parent table exists, a migration must add the constraint. The briefs also ask for the live assertion. | Constraint name removed from the TASK-022 brief (1 red). |
+
+**Integration evidence, local.** PostgreSQL 16.14 (fresh ICU data directory, 127.1:54319, PID 41893,
+stopped by PID with `kill -INT`, no `postmaster.pid` left). `db:migrate` 0001-0006, then:
+- the suites: partners-customers 12/12, i18n-geo 10/10 (updated for `postcode_zone_id_city_key`),
+  media 8/8, catalog-pricing 8/9 (the known first-query case);
+- rollbacks, probed after each step:
+  - `--to 0005` left 40 tables, with the zone keys `country_prefix` and `id_city`;
+  - `--to 0004` left 31 tables, only `set_updated_at`, no guard trigger, only the `country_prefix`
+    key;
+  - `--to 0000` left only `schema_migrations`;
+- re-migrate: 45 tables and all four functions back. Every step exited 0.
+
+**Tests now:** unit `db-check-recipient-email.test.ts` 71, `schema-partners-customers.test.ts` 66,
+`db-check.test.ts` 29; integration `schema-partners-customers.test.ts` 12.
+
+### Round 0
 
 **PR 200.** Spec 002 §5.1 `partners` and `customers` and AC-27, with T-27.
 
@@ -82,7 +120,7 @@ directory in the scratchpad, 127.0.0.1 reached as `127.1`, PID 53795, stopped by
 - `db:migrate` 0001-0006.
 - Rollbacks, checked after each step: `--to 0005` left 39 tables and no `postcode_zone` key;
   `--to 0004` left 30 tables, no functions of `0005` and no guard trigger on `media_asset`;
-  `--to 0000` left 0 tables and no function.
+  `--to 0000` left no table except the runner's own `schema_migrations`, and no function.
 - `db:migrate` again restored the same state. All steps exited 0.
 - Suites: partners-customers 7/7, media 8/8, i18n-geo 10/10. Catalog-pricing was 8/9: the failing
   case is the pre-existing `= ANY(db.array)` first-query issue that TASK-017 recorded, not this

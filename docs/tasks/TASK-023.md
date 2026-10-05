@@ -26,6 +26,11 @@ _None recorded._
   DEFINER` as `app_owner` so they see every row whatever the caller's policy shows. That holds
   because the table owner bypasses RLS; if `0011` uses `FORCE ROW LEVEL SECURITY`, give them an
   explicit policy or revisit. `consent_log` is written once: no `UPDATE` policy is needed for it.
+- **From TASK-018, round 1 of PR 200.** A third `SECURITY DEFINER` function, `payout_currency_check()`,
+  reads `fulfillment_partner` `FOR SHARE`. It is owned by `app_owner`, as the two media functions
+  are, so the same note about `FORCE ROW LEVEL SECURITY` applies. `partner_application_media_check()`
+  now locks the listed `media_asset` rows `FOR SHARE`. Under RLS, its locking query must still see
+  every row: as the owner it does, and with `FORCE ROW LEVEL SECURITY` it would need a policy.
 
 ## Escalations
 

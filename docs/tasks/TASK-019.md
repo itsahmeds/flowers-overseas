@@ -24,6 +24,11 @@ Branch `task/TASK-019-schema-orders-payments`. Reference rows are data, not code
   once spec 011's demo-order deletes run. Spec 010 §5.1 A's `ASSIGNMENT_MODE_MISMATCH` trigger can
   rely on `fulfillment_partner.status` being one of `demo`, `onboarding`, `active`, `paused`,
   `offboarded`, with no default.
+- **From TASK-018, round 1 of PR 200 (review nit 3).** A tripwire is already in
+  `tests/unit/schema-partners-customers.test.ts` ("the deferred foreign keys cannot be forgotten").
+  Once a migration creates the parent table, that test fails until a migration adds payout_line_order_id_order_id_fk. When you
+  add it, also add the live catalogue assertion (`pg_constraint` by name, with its delete rule) to
+  the integration suite, and add the row to `tests/fixtures/schema-foreign-keys.ts`.
 
 ## Escalations
 
