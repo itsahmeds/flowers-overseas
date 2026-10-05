@@ -28,6 +28,11 @@ export interface StickyTotalBarProps {
   readonly total: Money;
   /** The step's primary action. */
   readonly action?: ReactNode;
+  /**
+   * Gallery only (`/dev/components`): draw the bar in the flow at every width, without the
+   * spacer, so the desktop screenshot shows it. Never set on a checkout step.
+   */
+  readonly inPlace?: boolean;
 }
 
 export function StickyTotalBar({
@@ -35,12 +40,18 @@ export function StickyTotalBar({
   totalLabel,
   total,
   action,
+  inPlace = false,
 }: StickyTotalBarProps): ReactElement {
+  const position = inPlace
+    ? "relative max-w-[390px]"
+    : "fixed start-0 end-0 bottom-0 z-40 lg:hidden";
   return (
     <>
-      <div aria-hidden="true" className="h-[76px] lg:hidden" />
+      {inPlace ? null : (
+        <div aria-hidden="true" className="h-[76px] lg:hidden" />
+      )}
       <div
-        className="bg-card/96 border-rule shadow-sticky fixed start-0 end-0 bottom-0 z-40 flex min-h-[76px] items-center gap-[12px] border-t border-solid px-(--gutter-s) pt-[10px] pb-[calc(14px+env(safe-area-inset-bottom))] lg:hidden"
+        className={`bg-card/96 border-rule shadow-sticky flex min-h-[76px] items-center gap-[12px] border-t border-solid px-(--gutter-s) pt-[10px] pb-[calc(14px+env(safe-area-inset-bottom))] ${position}`}
         data-fo-sticky-total=""
       >
         <p className="m-0 grid leading-[1.15]">

@@ -87,6 +87,8 @@ import {
 // the one route that is neither public nor budgeted, so it is the one place this import belongs.
 import { ConsentGallery } from "@/modules/ui/consent/ConsentGallery";
 
+import { CheckoutGallery } from "./checkout.tsx";
+
 import {
   GALLERY_DESTINATIONS_PUBLISHED,
   GALLERY_REVIEWS,
@@ -1491,6 +1493,10 @@ export default function DevComponentsPage(): ReactElement {
               {PHONE_SAMPLES.barLink}
             </TextLink>
           </Stack>
+        </Section>
+
+        <Section title={SECTIONS[23]}>
+          <CheckoutGallery locale={galleryLocale} />
         </Section>
       </Container>
     </>
