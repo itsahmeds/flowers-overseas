@@ -369,6 +369,10 @@ Each has a recommended default; the spec stays `draft` until the founder answers
 - **Q11 — A live country can go back to demo but not to "disabled" (012b's go-live).** Disabling a country that was once public needs a "gone" (410) page that is scheduled for Phase 1. **Recommended: accept.**
 - **Q12 — Vendor portal timing.** Your 2026-10-04 message asks for vendor portals too. **Recommended: the full portal (027) in Phase 2; florist sign-in on the live site at the first signed florist.** That is a small slice of 026 in Phase 1, on this spec's sign-in core. Florists then have accept, decline and the photo from their first real order, and the per-order links are never built. Until then you edit their coverage, capacity and days off here.
 
+## 14. Amendments (post-approval corrections)
+
+- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. Admin needs no registry entry while AC-7 holds (admin copy is not in a public catalogue). If that changes, the admin keys take an `admin` surface in `src/modules/i18n/review-scope.ts` in the same PR.
+
 ## 15. Deferred to spec 012b (re-advised before go-live)
 
 This section keeps the deferred half of the pre-split draft so that nothing is lost. **None of it is approved with 012 v0.** Its criteria (`D-n`) and tests (`DT-n`) are not part of §9 or §10. `/plan-tasks` plans none of it from this spec. Spec 012b is written from this text, gets its own `/advise` before the first go-live (Phase 1, before 18 Dec), and proposes ADR-0019 and ADR-0020 then, if at all. Pre-split numbers are given as "pre-split n" for traceability.

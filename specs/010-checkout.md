@@ -481,6 +481,10 @@ The spec stays `draft` until the founder answers; each question has the default 
 - **Q11 — One bouquet per order in Phase 0.** Default: **yes**, no basket; the header basket link stays hidden. Alternative: build the basket now (`plan/04` §8 says it is never a required step).
 - **Q12 — The demo's sample details.** Default: the founder approves one sample recipient and buyer per destination, plainly fictional and labelled "Sample" (for Poland: a Warsaw street from the address format's example, a `@example.com` email), in `checkout-samples.ts` with the Appendix A copy batch. Alternative: no sample button, which makes it more likely that people type real details.
 
+## 14. Amendments (post-approval corrections)
+
+- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. Here, `checkout.*` and the confirmation keys take the `checkout` and `orderConfirmation` surfaces in `src/modules/i18n/review-scope.ts`, added in the PR that adds the keys, and A17 clause 5 governs their approval: not being counted is no exemption, and price-display and legal text need the founder's approval before they ship.
+
 ## Appendix A — English copy for the founder's batch approval
 
 Present tense for how our florists work; no number of days for freshness; "printed", never "handwritten"; none of the nine banned words. Every string becomes a message key; `de` and `pl` are drafted after approval.

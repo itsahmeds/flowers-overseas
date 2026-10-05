@@ -422,6 +422,10 @@ Each has a recommended default, which this spec is written against; the founder'
 12. **A copy of the application to the applicant by email.** Anyone could type someone else's address into the form, so this would let strangers make us email that person. *Default:* no copy. The confirmation page says what happens next, and you reply personally.
 13. **The application fields.** *Default:* shop name, your name, email, phone or WhatsApp, country, town, where you deliver, orders a day, weekend delivery, registration number (optional), Instagram or website (optional), how to contact you, and language. No bank details, no ID, no photos.
 
+## 14. Amendments (post-approval corrections)
+
+- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. Here, `floristAuth.*`, `floristInbox.*` and `emails.florist*` take the `florist` and `email` surfaces in `src/modules/i18n/review-scope.ts`. `forFlorists.*` stays counted, because the landing is indexable (AC-5), unless a prefix such as `forFlorists.apply.*` reaches only the `noindex` apply pages, which check 11 decides. A17 clause 5 governs approval.
+
 ## Appendix A — Copy (`en`; `en-gb` extends it)
 
 Every florist sentence is in the present tense (spec 004 §14 A22 clause 1). None states a number of days, a count of florists, orders or countries, or uses the nine banned words. `{…}` is data, never copy. Sentences marked **[allow]** trip a claim pattern on purpose and go into the file's `honestyAllow` with the reason given.
