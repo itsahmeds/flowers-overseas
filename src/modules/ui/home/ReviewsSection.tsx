@@ -75,7 +75,7 @@ export function ReviewsSection({
       as="section"
       columns="1-aside"
       gap="2xl"
-      className={`py-3xl ${HOME_BLEED}`}
+      className={`py-(--section-fluid) ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-reviews
       id={REVIEWS_ANCHOR}

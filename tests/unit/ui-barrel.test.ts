@@ -45,6 +45,7 @@ describe("src/modules/ui barrel", () => {
         "Container",
         "GAPS",
         "Grid",
+        "PAGE_FRAME",
         "Row",
         "Stack",
         // accessibility primitives
@@ -333,6 +334,9 @@ describe("src/modules/ui barrel", () => {
       // TASK-054: the ids of the two gated sections — DOM contracts, like the three above.
       "REVIEWS_ANCHOR",
       "TRENDING_ANCHOR",
+      // TASK-186: the page frame, a utility list like `HOME_BLEED`, shared by the header and every
+      // page's `Container` so the two cannot drift (spec 004 §14 A23 clause 2).
+      "PAGE_FRAME",
       "fontVariables",
     ];
     for (const [name, value] of Object.entries(ui)) {

@@ -95,7 +95,7 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
       data-fo-hub="occasion"
       data-fo-hub-entity={view.entity?.key ?? ""}
     >
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         <ListingIntro
@@ -155,7 +155,7 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
              data is missing renders nothing at all (§5.2). */
           <section
             aria-labelledby="hub-pages-heading"
-            className="md:pt-2xl pt-[48px]"
+            className="pt-[48px] md:pt-(--section-fluid)"
             data-fo-hub-destinations
           >
             <Eyebrow className="mb-[14px]">

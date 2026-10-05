@@ -186,7 +186,11 @@ export function ListingSubsection({
     </div>
   );
   return (
-    <section aria-labelledby={id} className="md:pt-2xl pt-[48px]" {...dataHook}>
+    <section
+      aria-labelledby={id}
+      className="pt-[48px] md:pt-(--section-fluid)"
+      {...dataHook}
+    >
       {split ? (
         <div className="gap-lg md:gap-2xl grid grid-cols-1 items-start md:grid-cols-[4fr_7fr]">
           {head}

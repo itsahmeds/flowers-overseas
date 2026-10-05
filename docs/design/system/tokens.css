@@ -190,13 +190,18 @@
 
   /* --- 4. The shipped fluid steps (what a template writes) ------------------------------- */
 
-  --text-hero-fluid: clamp(50px, 6.2vw, 90px);
-  --text-display-fluid: clamp(42px, 6vw, 84px);
-  --text-title-fluid: clamp(44px, 5vw, 68px);
-  --text-3xl-fluid: clamp(32px, 4.2vw, 54px);
-  --text-2xl-fluid: clamp(30px, 3.4vw, 44px);
+  /* The laptop band (spec 004 §14 A23 clause 9): each step gains a height term and a lower
+     maximum, so a 13-14" laptop window does not get the 1440 artboard's type. The px minima are
+     the phone sizes and do not change, so 200 % text resize still holds. */
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px);
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px);
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px);
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px);
+  --text-2xl-fluid: clamp(30px, 3vw, 38px);
   --text-lede-fluid: clamp(18px, 1.5vw, 21px);
-  --section-fluid: clamp(64px, 9vw, 128px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px);
+  /* The hero or lead photograph's block size; its inline size narrows to keep the ratio. */
+  --hero-photo-max: min(520px, 60svh);
   --gutter-fluid: clamp(20px, 4vw, 56px);
 
   /* --- 5. Space, size, radius, shadow, motion, layers ----------------------------------- */

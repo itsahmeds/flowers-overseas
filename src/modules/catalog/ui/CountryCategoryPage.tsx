@@ -92,7 +92,7 @@ export function CountryCategoryPage({
       data-fo-shop-category={view.entity?.key ?? ""}
       data-fo-listing-state="populated"
     >
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         {/* v2 `.shop-intro`: the one `<h1>` with the destination in the poppy italic, the
@@ -139,7 +139,7 @@ export function CountryCategoryPage({
             collated by `CategoryChipRow` in this locale's order, the current one marked and not a
             link to the page the reader is already on. */}
         {view.links.chips.length === 0 ? null : (
-          <div className="md:pt-2xl pt-[48px]">
+          <div className="pt-[48px] md:pt-(--section-fluid)">
             <CategoryChipRow
               heading={shop("category.siblingsHeading", { country })}
               id="sibling-categories"

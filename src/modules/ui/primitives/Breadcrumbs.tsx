@@ -19,6 +19,14 @@ export interface Crumb {
   readonly current?: boolean;
 }
 
+/**
+ * The one place the breadcrumb's distance from the sticky header is decided (spec 004 §14 A23
+ * clause 3, AC-32): its top edge sits `--space-md2`, 20 px, under the header's bottom edge on every
+ * page, so no page sets a margin above it. A margin rather than a padding, because AC-32 measures
+ * the trail's own box. Below `md` the phone back link replaces the trail (A24 clause 4 (e), TASK-195).
+ */
+const BREADCRUMB_OFFSET = "mt-(--space-md2)";
+
 export interface BreadcrumbsProps {
   readonly crumbs: readonly Crumb[];
   /** The `<nav>`'s accessible name, from the message catalogue (`a11y.breadcrumb`). */
@@ -32,7 +40,11 @@ export function Breadcrumbs({
   className,
 }: BreadcrumbsProps): ReactElement {
   return (
-    <nav aria-label={label} className={className} data-fo-breadcrumb>
+    <nav
+      aria-label={label}
+      className={[BREADCRUMB_OFFSET, className].filter(Boolean).join(" ")}
+      data-fo-breadcrumb
+    >
       <ol className="text-ink-subtle m-0 flex list-none flex-wrap items-center gap-[6px] p-0 text-sm">
         {crumbs.map((crumb, index) => (
           <li className="flex items-center gap-[6px]" key={crumb.key}>
@@ -51,8 +63,10 @@ export function Breadcrumbs({
                 {crumb.label}
               </span>
             ) : (
+              /* At least 24 px tall: every link in `<main>` clears WCAG 2.2's 24 × 24 target
+                 (spec 004 §14 A23 clause 9, AC-43); the text alone is 21 px. */
               <a
-                className="text-ink-muted hover:text-link-strong underline underline-offset-4"
+                className="text-ink-muted hover:text-link-strong inline-flex min-h-[24px] items-center underline underline-offset-4"
                 href={crumb.href}
               >
                 {crumb.label}

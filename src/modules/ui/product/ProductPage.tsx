@@ -37,6 +37,7 @@ import type { ProductView } from "@/modules/catalog";
 import { formatMoney, formatNumber, localePath } from "@/modules/i18n";
 
 import { Icon } from "../icons/Icon.tsx";
+import { PAGE_FRAME } from "../primitives/layout.tsx";
 import { Price } from "../primitives/Price.tsx";
 import { Display, Eyebrow } from "../primitives/typography.tsx";
 import { equivalentsMessageValues } from "../shop/equivalents.ts";
@@ -114,12 +115,12 @@ export function ProductPage({
 
   return (
     <main
-      className="max-w-page mx-auto w-full px-(--gutter-s) md:px-(--gutter)"
+      className={PAGE_FRAME}
       id="main"
       data-fo-pdp={view.product.sku}
       data-fo-pdp-picker={view.delivery.state}
     >
-      <div className="pt-[20px]">{breadcrumb}</div>
+      {breadcrumb}
 
       <div className="grid items-start gap-[24px] pt-[16px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-[64px] lg:pt-[28px]">
         <div className="lg:sticky lg:top-[24px]">
@@ -272,7 +273,7 @@ export function ProductPage({
         </div>
       </div>
 
-      <div className="border-rule mt-[32px] grid gap-[40px] border-t py-[48px] lg:grid-cols-[7fr_5fr] lg:gap-[64px] lg:py-[96px]">
+      <div className="border-rule mt-[32px] grid gap-[40px] border-t py-[48px] lg:grid-cols-[7fr_5fr] lg:gap-[64px] lg:py-(--section-fluid)">
         {/* The artboard heads this "Good to know"; the heading waits for the founder's copy
             batch, and the sentence stands on its own (TASK-179 Result). */}
         <div>
@@ -311,7 +312,7 @@ export function ProductPage({
       {view.related.length === 0 ? null : (
         <section
           aria-labelledby="pdp-related"
-          className="pb-[64px] lg:pb-[96px]"
+          className="pb-(--section-fluid)"
           data-fo-pdp-related
         >
           <div className="mb-[28px] flex flex-wrap items-end justify-between gap-x-[40px] gap-y-[16px] md:mb-[48px]">

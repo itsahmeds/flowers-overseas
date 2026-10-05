@@ -81,6 +81,7 @@ export {
   CONTAINER_WIDTHS,
   GAPS,
   Grid,
+  PAGE_FRAME,
   Row,
   Stack,
 } from "./primitives/layout";

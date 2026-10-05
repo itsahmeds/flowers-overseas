@@ -85,7 +85,9 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-05 (carry-in from TASK-186, orchestrator ruling): AC-41 primary-action case for the
+  country guide (T-43 "the primary action in view" at 1280 × 800 and 1512 × 945) is an expected
+  failure in TASK-186's suite; this task flips it, by deleting its `PENDING` row in `tests/e2e/frame-laptop-band.spec.ts`.
 
 ## Escalations
 

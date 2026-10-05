@@ -149,12 +149,12 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 261 |
+| `tests/unit/` | 262 |
 | `tests/integration/` | 11 |
 | `tests/contract/` | 11 |
-| `tests/e2e/` | 39 |
+| `tests/e2e/` | 40 |
 | `tests/a11y/` | 15 |
-| `tests/visual/` | 20 |
+| `tests/visual/` | 21 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 310 |
 | `tests/msw/` | 4 |

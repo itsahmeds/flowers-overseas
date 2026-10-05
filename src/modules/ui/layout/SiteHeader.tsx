@@ -42,6 +42,7 @@ import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 import { Button } from "../primitives/Button.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
+import { PAGE_FRAME } from "../primitives/layout.tsx";
 import {
   type HeaderItem,
   type HeaderListingHrefs,
@@ -70,10 +71,11 @@ function registryLabel(t: Translator, key: string): string {
 
 /**
  * The artboards' `.wrap`: the 20 px / 56 px gutter, and the 1 328 px frame centred on a screen
- * wider than the 1 440 px artboard (so at 1 440 px the content starts 56 px in, as drawn).
+ * wider than the 1 440 px artboard (so at 1 440 px the content starts 56 px in, as drawn). It is
+ * `PAGE_FRAME`, the frame every page's `Container` uses (spec 004 §14 A23 clause 2), so the header
+ * and the page cannot drift apart.
  */
-export const CHROME_WRAP =
-  "mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+export const CHROME_WRAP = PAGE_FRAME;
 
 /*
  * The desktop artboard's one-row header applies from `xl` (1 280 px), written as literal `xl:`
@@ -213,9 +215,11 @@ export function SiteHeader({
               </span>
               {/* Spec 003's switcher, mounted rather than restyled (AC-7, spec 003 AC-3): its
                   row layout, the 44 px target, the bold current entry and the small "Beta" are
-                  applied from this wrapper. */}
+                  applied from this wrapper. "Beta" is `--text-xs`, the 13 px floor (spec 004
+                  AC-43), so below `lg` the list wraps rather than running past the bar's
+                  gutters at 320 px (WCAG 1.4.10; `tests/e2e/header.spec.ts`). */}
               <div
-                className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-[11px] [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 lg:[&_ul]:gap-[14px]"
+                className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-xs [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 max-lg:[&_ul]:flex-wrap max-lg:[&_ul]:justify-center lg:[&_ul]:gap-[14px]"
                 data-fo-header-switcher
               >
                 <LocaleSwitcher locale={locale} />

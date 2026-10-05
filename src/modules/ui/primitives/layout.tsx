@@ -89,40 +89,46 @@ function render(
   );
 }
 
+/**
+ * The page frame (spec 004 §14 A23 clause 2): a 1,328 px content column (`--container-page`) inside
+ * the `--gutter` of 56 px from `md` up and `--gutter-s` of 20 px below it, centred on a screen wider
+ * than the 1,440 px artboard. The header, the footer and every page's `Container` use this one
+ * string, so the inline-start edge of `<main>`'s content equals the header logo's at every width
+ * (x 56 at 1,440, x 20 at 390; AC-31). The max width is the *outer* box (column plus both gutters),
+ * which is what makes the column, not the box, 1,328 px wide.
+ */
+export const PAGE_FRAME =
+  "mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+
 /** The three widths this design uses: the full canvas grid, the prose measure, and narrow forms. */
 export const CONTAINER_WIDTHS = ["page", "prose", "narrow"] as const;
 export type ContainerWidth = (typeof CONTAINER_WIDTHS)[number];
 
 const WIDTH_CLASS: Readonly<Record<ContainerWidth, string>> = {
-  // 1440 px artboard minus its 56 px side margins.
-  page: "max-w-[1328px]",
-  // `--measure`: the maximum comfortable line length (§2).
-  prose: "max-w-prose",
-  narrow: "max-w-[560px]",
+  // The header's frame: 1,328 px of content inside the gutters.
+  page: PAGE_FRAME,
+  // `--measure`: the maximum comfortable line length (§2), centred, with the page gutters.
+  prose: "mx-auto w-full max-w-prose px-(--gutter-s) md:px-(--gutter)",
+  narrow: "mx-auto w-full max-w-[560px] px-(--gutter-s) md:px-(--gutter)",
 };
 
 export interface ContainerProps extends BaseProps {
   readonly width?: ContainerWidth;
-  /** Inline padding. The canvas uses 16 px on mobile and 56 px on desktop; `md` is that pair. */
-  readonly inline?: "none" | "md";
 }
 
 /**
- * Centred max-width box with the canvas's inline padding. The one place a page width is decided.
+ * The page frame, or a centred measure inside the same gutters. The one place a page width and a
+ * page's inline padding are decided: no page sets its own (A23 clause 2).
  */
 export function Container({
   width = "page",
-  inline = "md",
   as = "div",
   className,
   ...rest
 }: ContainerProps): ReactElement {
-  const padding = inline === "none" ? "" : "px-md md:px-2xl";
   return render(
     as,
-    ["mx-auto w-full", WIDTH_CLASS[width], padding, className]
-      .filter(Boolean)
-      .join(" "),
+    [WIDTH_CLASS[width], className].filter(Boolean).join(" "),
     rest,
   );
 }

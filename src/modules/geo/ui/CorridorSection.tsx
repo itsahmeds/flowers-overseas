@@ -38,7 +38,7 @@ export function CorridorSection({
   return (
     <section
       aria-labelledby={id}
-      className="pt-[48px] md:pt-[72px]"
+      className="pt-[48px] md:pt-(--section-fluid)"
       {...{ [marker]: true }}
     >
       <div className="grid items-start gap-[24px] md:grid-cols-[4fr_7fr] md:gap-[72px]">

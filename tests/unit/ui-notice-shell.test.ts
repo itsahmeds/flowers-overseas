@@ -24,12 +24,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { Button } from "../../src/modules/ui/primitives/Button.tsx";
+import { PAGE_FRAME } from "../../src/modules/ui/primitives/layout.tsx";
 import {
   NOTICE_ACTION_PRIMARY,
   NOTICE_ACTION_SECONDARY,
   NOTICE_BODY,
   NOTICE_HEADING,
   NOTICE_LETTER_HEADING,
+  NOTICE_LETTER_MAIN,
   NOTICE_LOCKUP,
   NOTICE_MAIN,
   NOTICE_META,
@@ -106,6 +108,19 @@ describe("noticeShell.ts", () => {
       /\b(?:bg|text|border)-(?:white|black|neutral|gray|slate|zinc|stone)\b/,
     );
     expect(all).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+  });
+});
+
+/*
+ * The 404 and 500 letters sit on the page frame (spec 004 §14 A23 clause 2, AC-31; TASK-186). The
+ * shell may import nothing, so it cannot reuse `PAGE_FRAME` by reference; it restates it, and
+ * this case holds the two together class for class (`/review` round 1 on PR 199).
+ */
+describe("the notice letter's page is `PAGE_FRAME`", () => {
+  it("carries every class of `PAGE_FRAME`, so the 404 frame cannot drift from the header's", () => {
+    const letter = new Set(NOTICE_LETTER_MAIN.split(" "));
+    const missing = PAGE_FRAME.split(" ").filter((name) => !letter.has(name));
+    expect(missing).toEqual([]);
   });
 });
 
