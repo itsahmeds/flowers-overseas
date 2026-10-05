@@ -121,7 +121,40 @@ _None recorded._
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-05: measured production (`flowers-overseas.vercel.app`, commit 30b2c2ee, load 3.9) before
+  any change; table below. H1 = `main h1` computed size and box; photo = first `main img` wider
+  than 200 px; action = first price (`data-fo-price`), or the home sentence's submit; header = the
+  sticky header's bottom; trail = the breadcrumb `<nav>`'s top. All y in CSS px from the top.
+
+  | Viewport | URL | H1 px | H1 y–bottom | Photo h | Action y–bottom | Header / trail | First block x / logo x |
+  |---|---|---|---|---|---|---|---|
+  | 1280 × 800 | `/en-gb` | 79.4 | 235–464 | 753 (hero) | 772–828 (submit) | 145 / — | 56 (H1) / 56 |
+  | 1280 × 800 | `/en-gb/poland/flowers` | 76.8 | 240–404 | 329 (card) | price below 1,100 (card 710–1,193) | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/poland/flowers/roses` | 76.8 | 240–404 | 329 | card 710–1,193 | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/poland/occasions/mothers-day` | 76.8 | 240–404 | 329 | card 806–1,289 | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/occasions/birthday` | 76.8 | 206–357 | 329 | card 948–1,418 | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/flowers/roses` | 76.8 | 240–328 | 329 | card 1,627–2,097 | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/occasions` | 76.8 | 206–281 | — | — | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/send-flowers-to` | 76.8 | 206–281 | — | — | 145 / 145 | 72 / 56 |
+  | 1280 × 800 | `/en-gb/send-flowers-to/poland` | 76.8 | 226–377 | — (slot) | — | 145 / 165 | 56 / 56 |
+  | 1512 × 945 | `/en-gb` | 90 | 235–408 | 911 (hero) | 717–773 (submit) | 145 / — | 56 (H1) / 92 |
+  | 1512 × 945 | `/en-gb/poland/flowers` | 84 | 240–419 | 344 | card 733–1,232 | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/poland/flowers/roses` | 84 | 240–419 | 344 | card 733–1,232 | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/poland/occasions/mothers-day` | 84 | 240–419 | 344 | card 827–1,325 | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/occasions/birthday` | 84 | 206–371 | 344 | card 982–1,467 | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/flowers/roses` | 84 | 240–337 | 344 | card 1,626–2,111 | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/occasions` | 84 | 206–288 | — | — | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/send-flowers-to` | 84 | 206–288 | — | — | 145 / 145 | 164 / 92 |
+  | 1512 × 945 | `/en-gb/send-flowers-to/poland` | 84 | 226–391 | — (slot) | — | 145 / 165 | 148 / 92 |
+
+  (Logo x is the header logo link's; the first pass read the wordmark inside it, 48 px further in.)
+- 2026-10-05: tokens (clause 9) in `globals.css`, `system/tokens.css` and the three system sheets;
+  T-44 written red first, green, and red again with `tokens.css` changed alone. Commit f7fb3ef1,
+  draft PR 199.
+- 2026-10-05: the frame (`PAGE_FRAME`, shared by `Container` and the chrome), the product page, the
+  guide and the notice letter on it, sections on `--section-fluid`, `Photo lead` cap on the guide's
+  slot (fb894607); the breadcrumb offset in `Breadcrumbs` (5847f7e4). The founder's laptop shut
+  down mid-run; resumed with every edit intact, the build slot re-acquired.
 
 ## Result
 

@@ -217,7 +217,7 @@ export function SiteHeader({
                   row layout, the 44 px target, the bold current entry and the small "Beta" are
                   applied from this wrapper. */}
               <div
-                className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-[11px] [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 lg:[&_ul]:gap-[14px]"
+                className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-xs [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 lg:[&_ul]:gap-[14px]"
                 data-fo-header-switcher
               >
                 <LocaleSwitcher locale={locale} />

@@ -63,8 +63,10 @@ export function Breadcrumbs({
                 {crumb.label}
               </span>
             ) : (
+              /* At least 24 px tall: every link in `<main>` clears WCAG 2.2's 24 × 24 target
+                 (spec 004 §14 A23 clause 9, AC-43); the text alone is 21 px. */
               <a
-                className="text-ink-muted hover:text-link-strong underline underline-offset-4"
+                className="text-ink-muted hover:text-link-strong inline-flex min-h-[24px] items-center underline underline-offset-4"
                 href={crumb.href}
               >
                 {crumb.label}
