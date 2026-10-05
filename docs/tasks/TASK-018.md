@@ -66,6 +66,20 @@ left).
 - Round trip: `--to 0004` left 31 tables with only `set_updated_at`; `--to 0000` left only
   `schema_migrations`; re-migrate restored 45 tables and six functions. All exited 0.
 
+**Gates** on `850ac7d3` (rebased on `origin/main`; the next commit changes only this brief). Load average 53:
+
+```
+gates:cheap · 850ac7d3edca768b99be4052d11b307914a47e3e · tree clean · base origin/main · 2026-10-05T07:12:19.864Z
+typecheck             exit 0 · 45.4 s
+lint                  exit 0 · 33.9 s
+format:check          exit 0 · 23.0 s
+i18n:check            exit 0 · 0.7 s
+check:no-db           exit 0 · 0.3 s
+codebase:map --check  exit 0 · 0.5 s
+tests                 exit 0 · 31.6 s · changed 7 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
 **Tests now:** unit `db-check-recipient-email.test.ts` 82, `schema-partners-customers.test.ts` 68;
 integration `schema-partners-customers.test.ts` 12.
 
