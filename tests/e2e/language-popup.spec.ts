@@ -341,6 +341,8 @@ test.describe("(e) the cookie decides whether it opens", () => {
     });
     await openFromRoot(page);
     await page.locator(CLOSE).click();
+    // The cookie is written in the dialog's `close` event, which the browser fires after the click.
+    await expect(page.locator(POPUP)).toHaveCount(0);
     await expectLocaleCookie(context, "en", baseURL);
   });
 });
@@ -542,9 +544,9 @@ test.describe("each option is the same page in that locale (A14 Shape)", () => {
       "href",
       "/en-gb/send-flowers-to/poland",
     );
-    // Deutsch: the German corridor URL (localised segments), never the bare locale root.
-    const german = await page.locator(option("de")).getAttribute("href");
-    expect(german).toMatch(/^\/de\/[a-z-]+\/[a-z-]+$/u);
+    // Deutsch: no German Poland guide exists (`corridorAlternatePaths()` lists `en` and `en-gb`
+    // only), so the option falls back to the German home rather than linking a 404.
+    await expect(page.locator(option("de"))).toHaveAttribute("href", "/de");
 
     await Promise.all([
       page.waitForURL(/\/en-gb\/send-flowers-to\/poland$/u),
