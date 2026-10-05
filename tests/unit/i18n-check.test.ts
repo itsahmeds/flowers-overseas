@@ -95,14 +95,14 @@ describe("the committed tree (AC-22, first clause)", () => {
     for (const locale of ["en", "en-gb"]) {
       expect(result.stdout, locale).toMatch(
         new RegExp(
-          `\\| \`${locale}\` \\| \\d+ \\| 0 \\| \\d+ \\| [0-4]\\.\\d% \\| 0 \\| yes \\|`,
+          `\\| \`${locale}\` \\| \\d+ \\| \\d+ \\| \\d+ \\| 0 \\| \\d+ \\| [0-4]\\.\\d% \\| 0 \\| yes \\|`,
         ),
       );
     }
     for (const locale of ["de", "pl"]) {
       expect(result.stdout).toMatch(
         new RegExp(
-          `\\| \`${locale}\` \\| \\d+ \\| 0 \\| \\d+ \\| 100\\.0% \\| 0 \\| no \\|`,
+          `\\| \`${locale}\` \\| \\d+ \\| \\d+ \\| \\d+ \\| 0 \\| \\d+ \\| 100\\.0% \\| 0 \\| no \\|`,
         ),
       );
     }
@@ -490,14 +490,18 @@ describe("the summary formatter (§11)", () => {
       {
         locale: "de",
         keys: 26,
+        counted: 24,
+        notCounted: 2,
         missing: 0,
-        unreviewed: 26,
+        unreviewed: 24,
         share: 1,
         stale: 0,
         indexable: false,
       },
     ]);
-    expect(summary).toContain("| `de` | 26 | 0 | 26 | 100.0% | 0 | no |");
+    expect(summary).toContain(
+      "| `de` | 26 | 24 | 2 | 0 | 24 | 100.0% | 0 | no |",
+    );
     expect(summary).toContain("### i18n:check");
   });
 

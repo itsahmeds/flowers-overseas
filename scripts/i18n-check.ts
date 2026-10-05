@@ -9,14 +9,15 @@
  * without opening an editor (AC-22).
  *
  * ```
- * pnpm i18n:check [--messages-dir messages] [--src src] [--registry <file.json>] [--summary]
+ * pnpm i18n:check [--messages-dir messages] [--src src] [--registry <file.json>]
+ *                   [--scope <file.json>] [--summary]
  * ```
  *
  * Exit 0 when the tree is clean; exit 1 with one line per problem otherwise. The flags exist so
  * the unit suite can point the checks at a fixture tree in a child process (the spec 001 validator
  * style, `tests/fixtures/i18n/_cases/`) instead of mutating the committed catalogues.
  *
- * ## The eight checks
+ * ## The eleven checks
  *
  * 1. **Key sets agree after fallback resolution** — every `en` key must resolve to a string for
  *    every registry locale, and no locale may define a key `en` does not have. Resolution is
@@ -62,6 +63,14 @@
  *    because a human reading `/en-XA` in a diff would be reading copy the routes do not render.
  *    The pseudo-locales themselves take no part in checks 1–7: they have no authored catalogue
  *    and no review manifest to be complete, missing or stale against.
+ * 10. **Drafts** (spec 003 §14 A15; TASK-185) — owned by that task; not in this file yet.
+ * 11. **Scope** (spec 003 §14 A17, AC-41; TASK-224) — the scope registry
+ *    (`src/modules/i18n/review-scope.ts`) says which keys the 5 % unreviewed share does not
+ *    count. Check 11 holds each entry to it: it matches an `en` key, it is well formed, its keys
+ *    are read only from its `paths`, its `paths` claim no shared file, and no indexable page
+ *    imports a file under its `paths`, directly or through other files. The rules and their
+ *    limits are in `scripts/i18n-check-scope.ts`. `--scope <file.json>` swaps the registry for a
+ *    fixture, as `--registry` does for check 8.
  *
  * ## The usage heuristic (check 2) and its limits
  *
@@ -93,7 +102,7 @@ import {
   readdirSync,
   statSync,
 } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { TYPE, parse } from "@formatjs/icu-messageformat-parser";
@@ -104,6 +113,7 @@ import {
   LocaleRegistrySchema,
   type LocaleConfig,
 } from "../src/config/locales.ts";
+import { scopeProblems, validScopeEntries } from "./i18n-check-scope.ts";
 import {
   SOURCE_LOCALE as PSEUDO_SOURCE_LOCALE,
   pseudoFileProblems,
@@ -121,8 +131,16 @@ import {
 import {
   isLocaleIndexable,
   resetReviewCache,
+  reviewBreakdown,
   unreviewedShare,
 } from "../src/modules/i18n/review.ts";
+import {
+  BUYER_FACING_SURFACES,
+  NON_INDEXABLE_SCOPE,
+  matchReaches,
+  scopeEntryFor,
+  withReviewScope,
+} from "../src/modules/i18n/review-scope.ts";
 import {
   type MessageMetaManifest,
   MessageMetaManifestSchema,
@@ -145,8 +163,13 @@ export interface Problem {
 
 export interface LocaleSummaryRow {
   readonly locale: string;
+  /** Every key of the resolved catalogue. */
   readonly keys: number;
+  /** Keys the share counts (A17): the rest are in neither number. */
+  readonly counted: number;
+  readonly notCounted: number;
   readonly missing: number;
+  /** Counted keys not reviewed in the locale's language. */
   readonly unreviewed: number;
   readonly share: number;
   readonly stale: number;
@@ -156,6 +179,11 @@ export interface LocaleSummaryRow {
 export interface CheckResult {
   readonly problems: readonly Problem[];
   readonly rows: readonly LocaleSummaryRow[];
+  /**
+   * `en` keys under a buyer-facing scope entry that are still `reviewed: false` (A17 clause 5,
+   * AC-43): not counted, and not yet approved by the founder.
+   */
+  readonly unapproved: readonly string[];
 }
 
 export interface CheckOptions {
@@ -163,6 +191,8 @@ export interface CheckOptions {
   readonly messagesDir?: string;
   readonly srcDir?: string;
   readonly registryFile?: string;
+  /** A fixture scope registry (a JSON array of entries) in place of `review-scope.ts`. */
+  readonly scopeFile?: string;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -427,6 +457,66 @@ function sourceFiles(dir: string): string[] {
   return files.sort();
 }
 
+/** The namespace-aware rule for one file: `<bound namespace>.<key-shaped literal>`. */
+function namespaceRuleKeys(content: string): Set<string> {
+  const used = new Set<string>();
+  const namespaces = new Set<string>();
+  for (const pattern of NAMESPACE_PATTERNS) {
+    for (const match of content.matchAll(pattern)) {
+      if (match[1] !== undefined) namespaces.add(match[1]);
+    }
+  }
+  if (namespaces.size === 0) return used;
+  const literals = new Set(
+    [...content.matchAll(KEY_LITERAL)].flatMap((match) =>
+      match[1] === undefined ? [] : [match[1]],
+    ),
+  );
+  for (const namespace of namespaces) {
+    for (const literal of literals) used.add(`${namespace}.${literal}`);
+  }
+  return used;
+}
+
+/** Every scanned source file of a tree, absolute path to text. */
+export function sourceFileContents(dir: string): Map<string, string> {
+  return new Map(
+    sourceFiles(dir).map((path) => [path, readFileSync(path, "utf8")]),
+  );
+}
+
+/**
+ * Check 2's two rules, per file and for the given `keys` only: which of them each file reaches.
+ * Check 11 reads it to find a scoped key read from outside the entry's `paths`.
+ */
+export function usedKeysByFile(
+  files: ReadonlyMap<string, string>,
+  keys: readonly string[],
+): Map<string, ReadonlySet<string>> {
+  const wanted = new Set(keys);
+  const patterns = keys.map(
+    (key) =>
+      [
+        key,
+        new RegExp(
+          `(?<![A-Za-z0-9_])${key.replace(/\./g, "\\.")}(?![A-Za-z0-9_])`,
+        ),
+      ] as const,
+  );
+  const result = new Map<string, ReadonlySet<string>>();
+  for (const [file, content] of files) {
+    const used = new Set<string>();
+    for (const key of namespaceRuleKeys(content)) {
+      if (wanted.has(key)) used.add(key);
+    }
+    for (const [key, pattern] of patterns) {
+      if (!used.has(key) && pattern.test(content)) used.add(key);
+    }
+    if (used.size > 0) result.set(file, used);
+  }
+  return result;
+}
+
 /** The two-rule heuristic of the header, applied to a whole tree. */
 export function usedKeys(
   dir: string,
@@ -436,21 +526,7 @@ export function usedKeys(
   const contents = sourceFiles(dir).map((path) => readFileSync(path, "utf8"));
 
   for (const content of contents) {
-    const namespaces = new Set<string>();
-    for (const pattern of NAMESPACE_PATTERNS) {
-      for (const match of content.matchAll(pattern)) {
-        if (match[1] !== undefined) namespaces.add(match[1]);
-      }
-    }
-    if (namespaces.size === 0) continue;
-    const literals = new Set(
-      [...content.matchAll(KEY_LITERAL)].flatMap((match) =>
-        match[1] === undefined ? [] : [match[1]],
-      ),
-    );
-    for (const namespace of namespaces) {
-      for (const literal of literals) used.add(`${namespace}.${literal}`);
-    }
+    for (const key of namespaceRuleKeys(content)) used.add(key);
   }
 
   for (const key of keys) {
@@ -591,6 +667,10 @@ interface CatalogueCheckInput {
   readonly locales: readonly LoadedLocale[];
   readonly srcDir: string;
   readonly srcFile: string;
+  readonly root: string;
+  /** Check 11: the registry as written, and the file it came from. */
+  readonly scopeRaw: readonly unknown[];
+  readonly scopeFile: string;
 }
 
 function catalogueChecks(input: CatalogueCheckInput): CheckResult {
@@ -604,7 +684,7 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
       file: source?.cataloguePath ?? `${SOURCE_LOCALE}.json`,
       reason: `the source catalogue \`${SOURCE_LOCALE}\` is missing: every other locale is a translation of it (spec 003 §2)`,
     });
-    return { problems, rows };
+    return { problems, rows, unapproved: [] };
   }
   const sourceFlat = source.flat;
 
@@ -745,11 +825,33 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
     });
   }
 
+  // 11: the scope registry holds to its claim (A17).
+  const sourceKeys = [...sourceFlat.keys()];
+  const files = sourceFileContents(input.srcDir);
+  const scoped = sourceKeys.filter((key) =>
+    validScopeEntries(input.scopeRaw).some((entry) =>
+      matchReaches(entry.match, key),
+    ),
+  );
+  for (const problem of scopeProblems({
+    base: dirname(input.srcDir),
+    srcDir: input.srcDir,
+    display: (absolute) => displayPath(absolute, input.root),
+    scopeFile: input.scopeFile,
+    raw: input.scopeRaw,
+    sourceKeys,
+    files,
+    usageByFile: usedKeysByFile(files, scoped),
+  })) {
+    problems.push(problem);
+  }
+
   // §11: the per-locale table, from the same functions `isLocaleIndexable()` uses.
   for (const locale of input.locales) {
     const resolved = resolveCatalogue(locale.code);
     const keys = flatten(resolved).size;
     const share = unreviewedShare(locale.code);
+    const breakdown = reviewBreakdown(locale.code);
     const missing = [...sourceFlat.keys()].filter(
       (key) => valueAt(resolved, key) === undefined,
     ).length;
@@ -766,22 +868,57 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
     rows.push({
       locale: locale.code,
       keys,
+      counted: breakdown.counted,
+      notCounted: breakdown.notCounted,
       missing,
-      // The module exposes the share, not the count; the count is the share of the resolved
-      // catalogue, which is exactly how `unreviewedShare()` computes it.
-      unreviewed: Math.round(share * keys),
+      // The counts and the share come from the one function `isLocaleIndexable()` reads, never
+      // from a second computation here (AC-43).
+      unreviewed: breakdown.unreviewedCounted,
       share,
       stale,
       indexable: isLocaleIndexable(locale.code),
     });
   }
 
-  return { problems, rows };
+  const unapproved = [...sourceFlat.keys()].filter((key) => {
+    const entry = scopeEntryFor(key);
+    return (
+      entry !== undefined &&
+      BUYER_FACING_SURFACES.includes(entry.surface) &&
+      source.meta?.[key]?.reviewed !== true
+    );
+  });
+
+  return { problems, rows, unapproved };
 }
 
 // ---------------------------------------------------------------------------------------------
 // orchestration
 // ---------------------------------------------------------------------------------------------
+
+const COMMITTED_SCOPE_FILE = "src/modules/i18n/review-scope.ts";
+
+/** The registry check 11 reads: `--scope <file.json>` when given, the committed one otherwise. */
+function readScope(
+  options: CheckOptions,
+  problems: Problem[],
+): { raw: readonly unknown[]; file: string } {
+  if (options.scopeFile === undefined) {
+    return { raw: NON_INDEXABLE_SCOPE, file: COMMITTED_SCOPE_FILE };
+  }
+  const path = resolve(options.root, options.scopeFile);
+  const file = displayPath(path, options.root);
+  const raw = readJson(path, file, problems);
+  if (raw === undefined) return { raw: [], file };
+  if (!Array.isArray(raw)) {
+    problems.push({
+      file,
+      reason: "is not a scope registry (expected a JSON array of entries)",
+    });
+    return { raw: [], file };
+  }
+  return { raw, file };
+}
 
 /**
  * Run every check. The catalogue half runs **inside** `withLocaleRegistry` and
@@ -793,7 +930,7 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
 export async function runCheck(options: CheckOptions): Promise<CheckResult> {
   const problems: Problem[] = [];
   const registry = checkRegistry(options, problems);
-  if (registry === undefined) return { problems, rows: [] };
+  if (registry === undefined) return { problems, rows: [], unapproved: [] };
 
   const messagesDir = resolve(
     options.root,
@@ -808,7 +945,7 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
   const codes = authored.map((locale) => locale.code);
   const loaded = loadLocales(messagesDir, codes, options.root);
   problems.push(...loaded.problems);
-  if (!loaded.usable) return { problems, rows: [] };
+  if (!loaded.usable) return { problems, rows: [], unapproved: [] };
 
   // Check 9: the generated pseudo catalogues, when present, are current (§2, AC-29).
   if (existsSync(join(messagesDir, `${PSEUDO_SOURCE_LOCALE}.json`))) {
@@ -826,22 +963,35 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
       loaded.locales.find((entry) => entry.code === locale)?.meta,
   };
 
-  const result = await withLocaleRegistry(localeRegistryOf(authored), () =>
-    withMessageSource(diskSource, () => {
-      resetReviewCache();
-      try {
-        return catalogueChecks({
-          locales: loaded.locales,
-          srcDir,
-          srcFile: displayPath(srcDir, options.root),
-        });
-      } finally {
+  // Check 11 reads the registry as written; the share and the summary run under the entries that
+  // parse, so a malformed entry is reported once and, being unmatched, counts (it fails safe).
+  const scope = readScope(options, problems);
+
+  const result = await withReviewScope(validScopeEntries(scope.raw), () =>
+    withLocaleRegistry(localeRegistryOf(authored), () =>
+      withMessageSource(diskSource, () => {
         resetReviewCache();
-      }
-    }),
+        try {
+          return catalogueChecks({
+            locales: loaded.locales,
+            srcDir,
+            srcFile: displayPath(srcDir, options.root),
+            root: options.root,
+            scopeRaw: scope.raw,
+            scopeFile: scope.file,
+          });
+        } finally {
+          resetReviewCache();
+        }
+      }),
+    ),
   );
 
-  return { problems: [...problems, ...result.problems], rows: result.rows };
+  return {
+    problems: [...problems, ...result.problems],
+    rows: result.rows,
+    unapproved: result.unapproved,
+  };
 }
 
 export function formatProblems(problems: readonly Problem[]): string {
@@ -860,28 +1010,45 @@ export function formatShare(share: number): string {
 }
 
 /**
- * The §11 step-summary table: per locale the total keys it renders, how many are missing after
- * fallback, the unreviewed count and share, the stale count, and whether it is indexable.
+ * The §11 step-summary table: per locale the keys it renders, how many of them the share counts
+ * and how many it does not (A17), how many are missing after fallback, the unreviewed count and
+ * share over the counted keys, the stale count, and whether it is indexable. Below it, the `en`
+ * keys under a buyer-facing scope entry that are still unreviewed (A17 clause 5, AC-43): not
+ * counted is not approved.
  */
-export function formatSummary(rows: readonly LocaleSummaryRow[]): string {
+export function formatSummary(
+  rows: readonly LocaleSummaryRow[],
+  unapproved: readonly string[] = [],
+): string {
   const lines = [
     `### ${CLI_NAME}`,
     "",
-    "| locale | keys | missing after fallback | unreviewed | unreviewed share | stale | indexable |",
-    "|---|---|---|---|---|---|---|",
+    "| locale | keys | counted | not counted | missing after fallback | unreviewed (counted) | unreviewed share | stale | indexable |",
+    "|---|---|---|---|---|---|---|---|---|",
   ];
   for (const row of rows) {
     lines.push(
-      `| \`${row.locale}\` | ${String(row.keys)} | ${String(row.missing)} | ${String(row.unreviewed)} | ${formatShare(row.share)} | ${String(row.stale)} | ${row.indexable ? "yes" : "no"} |`,
+      `| \`${row.locale}\` | ${String(row.keys)} | ${String(row.counted)} | ${String(row.notCounted)} | ${String(row.missing)} | ${String(row.unreviewed)} | ${formatShare(row.share)} | ${String(row.stale)} | ${row.indexable ? "yes" : "no"} |`,
     );
   }
   lines.push(
     "",
     "`indexable` is `isLocaleIndexable()` itself (`src/modules/i18n/review.ts`): a launch locale",
-    "whose unreviewed share is at or below 5 % (`plan/03` §6). A locale that reads `no` here is",
-    "excluded from hreflang, sitemaps and robots-meta lifting by spec 007, which is the correct",
-    "answer while `de` and `pl` are machine-drafted echoes of English.",
+    "whose unreviewed share is at or below 5 % (`plan/03` §6). The share counts the keys a page",
+    "that can be indexed may render; a key under an entry of `src/modules/i18n/review-scope.ts`",
+    "(checkout, florist portal, email and the like) is in neither number. A locale that reads",
+    "`no` here is excluded from hreflang, sitemaps and robots-meta lifting by spec 007, which is",
+    "the correct answer while `de` and `pl` are machine-drafted.",
+    "",
+    "#### Buyer-facing keys not yet approved (not counted, not exempt)",
+    "",
+    "Checkout, order confirmation, order tracking and email keys still `reviewed: false` in `en`.",
+    "The founder approves each exact text before the PR that ships it merges (spec 003 §14 A17",
+    "clause 5).",
+    "",
   );
+  if (unapproved.length === 0) lines.push("none");
+  else for (const key of unapproved) lines.push(`- \`${key}\``);
   return lines.join("\n");
 }
 
@@ -904,17 +1071,19 @@ export async function main(
   const messagesDir = argValue(argv, "--messages-dir");
   const srcDir = argValue(argv, "--src");
   const registryFile = argValue(argv, "--registry");
+  const scopeFile = argValue(argv, "--scope");
   const options: CheckOptions = {
     root: process.cwd(),
     ...(messagesDir === undefined ? {} : { messagesDir }),
     ...(srcDir === undefined ? {} : { srcDir }),
     ...(registryFile === undefined ? {} : { registryFile }),
+    ...(scopeFile === undefined ? {} : { scopeFile }),
   };
 
-  const { problems, rows } = await runCheck(options);
+  const { problems, rows, unapproved } = await runCheck(options);
 
   if (argv.includes("--summary") && rows.length > 0) {
-    const summary = formatSummary(rows);
+    const summary = formatSummary(rows, unapproved);
     streams.out.write(`${summary}\n`);
     streams.appendSummary?.(summary);
   }
