@@ -1,7 +1,7 @@
 /** Public barrel for `checkout` (the checkout: mode, steps, schemas, address forms, phones). Owned by: spec 010. */
 
 /**
- * The only import path into the checkout module (spec 010 §5.2; TASK-200).
+ * Checkout's import path (spec 010; TASK-200).
  *
  * TASK-200 ships the database-free core: the one decision of what a checkout may do
  * (`checkoutMode`, `legalReadiness`, `checkoutEntryFor`), the boundary schemas of the start route

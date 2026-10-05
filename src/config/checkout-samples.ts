@@ -1,6 +1,7 @@
 /**
- * The demo's sample details (spec 010 §2 "Compliance and honesty in the demo", §13 Q12, AC-33;
- * TASK-200).
+ * Demo samples (spec 010; TASK-200).
+ *
+ * Spec 010 §2 "Compliance and honesty in the demo", §13 Q12, AC-33.
  *
  * A demo checkout on the live site collects personal data from strangers unless it gives them
  * something better to type. The "Use sample details" button (TASK-208) fills step 1 and step 2

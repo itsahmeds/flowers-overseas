@@ -1,7 +1,7 @@
 /**
  * The checkout's configuration, its sample details, its `en` copy and the quote-signing key
  * (spec 010 §2, §5.2 `src/config/checkout.ts` and `checkout-samples.ts`, §7, §8 "Security",
- * §13 Q9, Q12, Appendix A; ruling R9 of the decisions log 2026-10-05; spec 005 §13 Q5; TASK-200).
+ * §13 Q9, Q12, Appendix A; spec 005 §13 Q5; TASK-200).
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -26,7 +26,6 @@ import {
   SAMPLE_LABEL_KEY,
   checkoutSample,
 } from "../../src/config/checkout-samples.ts";
-import { BANNED_VOICE_WORDS } from "../../src/config/voice.ts";
 import {
   DEVELOPMENT_QUOTE_SIGNING_SECRET,
   EnvValidationError,
@@ -65,7 +64,6 @@ function flatten(
 }
 
 const en = flatten(readJson("messages/en.json"));
-const enGb = flatten(readJson("messages/en-gb.json"));
 const enMeta = readJson("messages/en.meta.json") as Record<
   string,
   { reviewed: boolean; reviewedBy?: string; source: string }
@@ -110,7 +108,9 @@ describe("src/config/checkout.ts states spec 010's numbers once", () => {
       "church",
     ]);
     for (const kind of PLACE_KINDS) {
-      expect(en[PLACE_KIND_LABEL_KEYS[kind]], kind).toBeTypeOf("string");
+      expect(PLACE_KIND_LABEL_KEYS[kind], kind).toMatch(
+        /^checkout\.placeKind\./u,
+      );
     }
   });
 });
@@ -159,107 +159,39 @@ describe("the demo's sample details (§13 Q12, AC-33's data)", () => {
     }
   });
 
-  it("is labelled 'Sample' through a message key", () => {
-    expect(en[SAMPLE_LABEL_KEY]).toBe("Sample");
+  it("is labelled through a message key", () => {
+    expect(SAMPLE_LABEL_KEY).toBe("checkout.demo.sampleLabel");
   });
 });
 
-describe("the en checkout copy (Appendix A; ruling R9)", () => {
-  it("ships Appendix A's keys", () => {
-    for (const key of [
-      "checkout.demo.bannerTitle",
-      "checkout.demo.bannerBody",
-      "checkout.privacy.demoNotice",
-      "checkout.demo.useSample",
-      "checkout.step.recipient",
-      "checkout.step.card",
-      "checkout.step.review",
-      "checkout.demo.dateHeading",
-      "checkout.recipient.phoneReason",
-      "checkout.card.preview",
-      "checkout.card.counter",
-      "checkout.card.blank",
-      "checkout.price.changed",
-      "checkout.price.confirm",
-      "checkout.price.currencyLine",
-      "checkout.date.gone",
-      "checkout.demo.place",
-      "checkout.demo.cap",
-      "checkout.closed.title",
-      "checkout.expired.title",
-      "confirmation.demo.title",
-      "confirmation.demo.body",
-      "confirmation.demo.next",
-      "confirmation.promise",
-      "confirmation.gone",
-    ]) {
-      expect(en[key], key).toBeTypeOf("string");
-    }
-  });
+describe("the message keys the checkout names (Appendix A pending the founder)", () => {
+  /**
+   * The `en` strings are not in `messages/en.json` yet: shipped `reviewed: false`, the 65 keys
+   * would lift `en`'s unreviewed share from 4.1 % to 14.5 %, past spec 003's 5 % threshold, and
+   * `isLocaleIndexable()` would turn `en` and `en-gb` to `noindex`. They wait for the founder's
+   * batch approval (escalation in `docs/tasks/TASK-200.md`). What ships is the key names.
+   */
+  const KEY =
+    /^(?:checkout|confirmation)\.[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*)+$/u;
 
-  it("replaces the em dash of the place-order label with a full stop (R9)", () => {
-    expect(en["checkout.demo.place"]).toBe(
-      "Place demo order. Nothing is charged.",
-    );
-  });
-
-  it("carries no em dash and no banned word in any checkout or confirmation string, in en or en-gb", () => {
-    expect(checkoutKeys.length).toBeGreaterThan(60);
-    const strings = [
-      ...checkoutKeys.map((key) => [key, en[key]] as const),
-      ...Object.entries(enGb).filter(([key]) => key.startsWith("checkout.")),
-    ];
-    for (const [key, value] of strings) {
-      expect(value, key).not.toContain("—");
-      for (const word of BANNED_VOICE_WORDS) {
-        expect(value?.toLowerCase(), `${key}: ${word}`).not.toContain(word);
-      }
-    }
-  });
-
-  it("says 'printed', never 'handwritten'", () => {
-    expect(en["checkout.card.preview"]).toBe("Printed on our card · included");
-    for (const key of checkoutKeys) {
-      expect(en[key]?.toLowerCase(), key).not.toContain("handwritten");
-    }
-  });
-
-  it("marks every checkout key unreviewed until the founder approves the batch", () => {
-    for (const key of checkoutKeys) {
-      expect(enMeta[key]?.reviewed, key).toBe(false);
-      expect(enMeta[key]?.reviewedBy, key).toBeUndefined();
-    }
-  });
-
-  it("overrides only 'postcode' and 'mobile' in en-gb", () => {
-    expect(
-      Object.fromEntries(
-        Object.entries(enGb).filter(([key]) => key.startsWith("checkout.")),
-      ),
-    ).toEqual({
-      "checkout.address.postcode": "Postcode",
-      "checkout.buyer.phone": "Your mobile number",
-    });
-  });
-
-  it("has a string for every error key and the non-local warning the schemas emit", () => {
-    for (const key of [
+  it("names every key in the checkout namespace, in catalogue key shape", () => {
+    const keys = [
       ...Object.values(CHECKOUT_ERROR_KEYS),
       PHONE_NON_LOCAL_KEY,
-    ]) {
-      expect(en[key], key).toBeTypeOf("string");
-    }
-  });
-
-  it("has a label for every field and placeholder every address format names", () => {
-    for (const format of Object.values(ADDRESS_FORMATS)) {
-      for (const key of [
+      SAMPLE_LABEL_KEY,
+      ...Object.values(PLACE_KIND_LABEL_KEYS),
+      ...Object.values(ADDRESS_FORMATS).flatMap((format) => [
         ...Object.values(format.labelKeys),
         format.placeholderKey,
-      ]) {
-        expect(en[key ?? ""], key).toBeTypeOf("string");
-      }
-    }
+      ]),
+    ];
+    expect(keys.length).toBeGreaterThan(30);
+    for (const key of keys) expect(key, key).toMatch(KEY);
+  });
+
+  it("adds no checkout or confirmation string to the catalogue before the founder's approval", () => {
+    expect(checkoutKeys).toEqual([]);
+    expect(Object.keys(enMeta).filter((key) => KEY.test(key))).toEqual([]);
   });
 });
 

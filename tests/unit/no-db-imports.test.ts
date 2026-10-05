@@ -102,6 +102,12 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
       "src/app/sitemaps",
       "scripts/corridor-check.ts",
       "scripts/corridor-check-cases.ts",
+      // spec 010 §12 task 1 (TASK-200): the checkout's database-free core, file by file.
+      "src/modules/checkout/mode.ts",
+      "src/modules/checkout/schemas.ts",
+      "src/modules/checkout/address.ts",
+      "src/modules/checkout/phone.ts",
+      "src/modules/checkout/currency.ts",
     ]);
   });
 

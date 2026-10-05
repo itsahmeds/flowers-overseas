@@ -15,7 +15,7 @@ task actually touches.
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +67 |
-| `checkout` | The only import path into the checkout module (spec 010 §5.2; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-config.test.ts`, `unit/checkout-currency.test.ts` +3 |
+| `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-config.test.ts`, `unit/checkout-currency.test.ts` +3 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `unit/cache-cloudflare.test.ts`, `unit/catalog-country-occasion.test.ts` +28 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +67 |
@@ -41,8 +41,8 @@ task actually touches.
 | `catalogue/schemas.ts` | The catalogue dataset's closed taxonomy and its zod schemas (spec 005 §2 "The… | spec 005 |
 | `catalogue/tiers.data.ts` | The tier structure of the 84 seeded products (spec 005 §2 "Tiers and add-ons",… | spec 005 |
 | `categories.ts` | Category-row registry (spec 004 §2 "Everything data-gated is config", §5.1;… | spec 004 |
-| `checkout-samples.ts` | The demo's sample details (spec 010 §2 "Compliance and honesty in the demo",… | spec 010 |
-| `checkout.ts` | Checkout configuration (spec 010 §2, §5.2 `src/config/checkout.ts`, §13 Q1, Q8,… | spec 010 |
+| `checkout-samples.ts` | Demo samples (spec 010; TASK-200) | spec 010 |
+| `checkout.ts` | Checkout limits (spec 010; TASK-200) | spec 010 |
 | `company.data.ts` | The trading name as a plain constant, with **no imports at all** (spec 004 §14… | spec 004 |
 | `company.ts` | Company identity (spec 004 §2 "Everything data-gated is config", §5.1, §5.3… | spec 004 |
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |

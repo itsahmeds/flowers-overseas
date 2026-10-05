@@ -1,5 +1,7 @@
 /**
- * Checkout configuration (spec 010 §2, §5.2 `src/config/checkout.ts`, §13 Q1, Q8, Q9; TASK-200).
+ * Checkout limits (spec 010; TASK-200).
+ *
+ * Spec 010 §2, §5.2 `src/config/checkout.ts`, §13 Q1, Q8, Q9.
  *
  * The numbers the checkout is built around, as data, so a limit is changed here and nowhere else:
  *
