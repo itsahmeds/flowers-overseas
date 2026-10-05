@@ -146,6 +146,7 @@ export {
   MoneySchema,
   type ZoneNameStyle,
   type ZonedClock,
+  countGraphemes,
   formatDate,
   formatList,
   formatMoney,

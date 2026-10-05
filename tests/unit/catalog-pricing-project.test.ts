@@ -151,6 +151,8 @@ describe("the display currency is the locale's default (AC-9, T-07)", () => {
       ...source.matchAll(/export (?:async )?function (\w+)\(([\s\S]*?)\): /gu),
     ].map(([, name, params]) => ({ name: name ?? "", params: params ?? "" }));
     expect(signatures.map((signature) => signature.name).sort()).toEqual([
+      // spec 010 §5.2's amendment to spec 005 (TASK-200): the add-on twin, same locale rule
+      "addonPriceProjection",
       "fromPriceProjection",
       "offerProjection",
       "priceProjection",

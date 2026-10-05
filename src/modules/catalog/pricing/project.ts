@@ -59,6 +59,8 @@ import {
 import { availability } from "../availability";
 import { isFlagEnabled } from "../flags";
 import {
+  AddonPriceProjectionQuerySchema,
+  AddonPriceProjectionSchema,
   FromPriceProjectionQuerySchema,
   OfferProjectionSchema,
   PriceProjectionQuerySchema,
@@ -68,6 +70,7 @@ import {
   currencyFlagKey,
 } from "../schemas";
 import {
+  type AddonPriceProjection,
   type CatalogAvailabilityKey,
   type IntegerMoney,
   type IsoDate,
@@ -80,7 +83,12 @@ import {
 } from "../types";
 
 import { convertForDisplay } from "./fx";
-import { fromPrice, resolvePrice, tierPrices } from "./resolve";
+import {
+  fromPrice,
+  resolveAddonPrice,
+  resolvePrice,
+  tierPrices,
+} from "./resolve";
 
 /**
  * The VAT-and-delivery wording key (`plan/07` §4, `plan/02` §13, spec 005 §7).
@@ -293,6 +301,85 @@ export async function fromPriceProjection(
     FromPriceProjectionQuerySchema.parse(query);
   const price = await fromPrice({ productId, countryIso });
   return projectionOf(price, productId, locale, countryIso, now ?? new Date());
+}
+
+/**
+ * One add-on's price, to one destination, as the buyer's locale displays it (spec 010 §5.2's
+ * amendment to spec 005; TASK-200).
+ *
+ * The add-on twin of `priceProjection()`, and deliberately the same path: the add-on's whole
+ * destination-currency price from `resolveAddonPrice()` (gross, at **the add-on's own VAT rate**,
+ * spec 005 §13 Q3), converted by `convertForDisplay()` into the locale's currency with the same
+ * FX snapshot, the same 250 bp buffer and the same upward rounding onto the currency's ending, in
+ * integer minor units. When the rate is too old the add-on falls back to the destination's own
+ * currency exactly as the bouquet does (spec 005 §14 A3), so an add-on and the bouquet it rides
+ * with are always in **one** currency and the checkout total is a sum of like amounts (spec 010
+ * AC-11, AC-18). This replaces spec 009 design round Q4's interim "add-on prices in the
+ * destination currency".
+ *
+ * The locale decides the currency and nothing else does: there is no buyer-country parameter
+ * (EU 2018/302, ADR-0006, spec 005 AC-18). Zero is a price (the card is 0) and stays 0 through
+ * the rounding. Throws, like `priceProjection()`, when the add-on has no single active price for
+ * the destination: a missing or ambiguous add-on price is never shown.
+ *
+ * Additive: rollback deletes this function, its two schemas and its type.
+ */
+export async function addonPriceProjection(
+  addonKey: string,
+  countryIso: CountryIso2,
+  locale: LocaleCode,
+  options: { readonly now?: Date } = {},
+): Promise<AddonPriceProjection> {
+  const query = AddonPriceProjectionQuerySchema.parse({
+    addonKey,
+    countryIso,
+    locale,
+    ...(options.now === undefined ? {} : { now: options.now }),
+  });
+  const price = await resolveAddonPrice({
+    addonKey: query.addonKey,
+    countryIso: query.countryIso,
+  });
+  const destinationCurrencyPrice: IntegerMoney = {
+    amountMinor: price.amountMinor,
+    currency: price.currency,
+  };
+  const conversion = await convertForDisplay(
+    destinationCurrencyPrice,
+    displayCurrencyFor(query.locale),
+    query.now ?? new Date(),
+  );
+
+  const base = {
+    addonKey: query.addonKey,
+    displayLocale: query.locale,
+    destinationCountry: query.countryIso,
+    destinationCurrencyPrice,
+    vatRateBp: price.vatRateBp,
+    vatRateText: formatPercentFromBasisPoints(price.vatRateBp, query.locale),
+    vatLabelKey: PRICE_INCLUSIVE_KEY,
+    deliveryIncluded: true,
+    priceVersion: price.priceVersion,
+    priceValidUntil: price.activeTo,
+  } as const;
+
+  const projection =
+    conversion.status === "native"
+      ? { ...base, displayPrice: conversion.price }
+      : conversion.status === "converted"
+        ? {
+            ...base,
+            displayPrice: conversion.price,
+            fxAsOf: conversion.rate.asOf,
+            ratePpm: conversion.rate.ratePpm,
+          }
+        : {
+            ...base,
+            displayPrice: destinationCurrencyPrice,
+            fxReasonKey: conversion.reasonKey,
+          };
+
+  return AddonPriceProjectionSchema.parse(projection);
 }
 
 /* -------------------------------------------------------------------------- */

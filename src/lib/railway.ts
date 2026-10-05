@@ -161,11 +161,11 @@ export function findServiceInstance(
     .find((node) => node.serviceName === serviceName);
 }
 
-/** The declared contract: AC-11's 28 keys, straight from the zod schemas. */
+/** The declared contract: AC-11's 29 keys, straight from the zod schemas. */
 export const CONTRACT_VARIABLE_KEYS: readonly string[] = [...ENV_KEYS].sort();
 
 /**
- * Four of the 28 are **platform-injected, not pasted**: Vercel sets them itself and
+ * Four of the 29 are **platform-injected, not pasted**: Vercel sets them itself and
  * `docs/runbooks/vercel-setup.md` §6 says in as many words that they must stay unset in the env
  * store. Nothing on Railway injects them and nobody should type them there either, so they are
  * part of the declared contract but not required to be present — required-and-absent and
@@ -196,7 +196,7 @@ export const FX_REFRESH_AT_KEY = "FX_REFRESH_AT";
 
 /**
  * Keys an environment **may** carry beyond the contract. `STAGING_BASIC_AUTH` is spec 040 §12's
- * absent-means-off access switch: it is deliberately not one of the 28 (it is not read by the env
+ * absent-means-off access switch: it is deliberately not one of the 29 (it is not read by the env
  * schemas and `pnpm env:check` therefore never asks for it), and it is expected on `staging` and
  * on every PR environment, where AC-25 requires the 401 wall. `FX_REFRESH_AT` (above) appears on
  * `staging` and `production` after the first weekday FX rebuild; no PR environment is rebuilt.

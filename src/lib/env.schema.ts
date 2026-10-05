@@ -236,6 +236,24 @@ export const serverEnvSchema = z.object({
   SENTRY_AUTH_TOKEN: optionalText,
   /** Shared secret for internal cron/job endpoints. Placeholder until jobs exist. */
   INTERNAL_CRON_SECRET: requiredSecret,
+  /**
+   * The HMAC key spec 005's signed price quotes are signed with (spec 005 §13 Q5, spec 010 §2
+   * "Money", §8 "Security"; TASK-200). SECRET — never logged, never in an error message, never in
+   * a URL. At least 32 characters (`openssl rand -hex 32` gives 64).
+   *
+   * **Optional at server start, required at use.** Absent in `development` and `test`, quotes are
+   * signed with a clearly-named development key; absent in a deployed environment, the first quote
+   * throws naming this key (`quoteSigningSecret()` below). It is not a boot requirement because
+   * no request issues a quote until spec 010's start route (TASK-203): making it one now would
+   * fail every deployment's healthcheck before the key has a reader.
+   */
+  QUOTE_SIGNING_SECRET: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .min(32, "must be at least 32 characters (`openssl rand -hex 32`)")
+      .optional(),
+  ),
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**
@@ -718,7 +736,7 @@ export function validateRuntimeEnv(source: EnvSource): {
 
 /**
  * Validate a raw environment, both halves at once. Pure: no `process.env` read, no throw, no value
- * in the output. This is the whole 28-key contract — what `pnpm env:check`, `envReport()` and the
+ * in the output. This is the whole 29-key contract — what `pnpm env:check`, `envReport()` and the
  * module-load parse of `env.server.ts` use; the *build* uses `validateBuildEnv()` alone.
  */
 export function validateEnv(source: EnvSource): EnvValidationResult {
@@ -748,6 +766,63 @@ export function assertRuntimeEnv(source: EnvSource): void {
     const { environment } = resolveEnvironment(source);
     throw new EnvValidationError(issues, environment);
   }
+}
+
+/** The quote-signing key's name (spec 005 §13 Q5, spec 010 §8; TASK-200). */
+export const QUOTE_SIGNING_SECRET_KEY = "QUOTE_SIGNING_SECRET" as const;
+
+/**
+ * The key quotes are signed with where no real one is configured: `development` and `test` only.
+ * **Not a secret, and named so it cannot be mistaken for one.** A quote signed with it authorises
+ * nothing outside a laptop or a test run, and `quoteSigningSecret()` refuses it everywhere else.
+ */
+export const DEVELOPMENT_QUOTE_SIGNING_SECRET =
+  "phase-0-development-quote-secret-not-a-production-key";
+
+/**
+ * The key spec 005's `quote()` and `verifyQuote()` sign with (spec 005 §13 Q5, spec 010 §2
+ * "Money", §8 "Security"; TASK-200). Pure apart from the throw: the caller passes the source.
+ *
+ *  - `QUOTE_SIGNING_SECRET` set and well-formed: that value, in every environment.
+ *  - set but malformed (shorter than 32 characters): throws `EnvValidationError` naming the key.
+ *  - unset in `development` or `test`: `DEVELOPMENT_QUOTE_SIGNING_SECRET`.
+ *  - unset, or set to the development key, in `preview`, `staging` or `production`: throws
+ *    `EnvValidationError` naming the key. A deployed checkout never signs a price with a key
+ *    that is committed to the repository.
+ *
+ * No value is ever printed: the errors name the key and the environment only.
+ */
+export function quoteSigningSecret(source: EnvSource): string {
+  const { environment } = resolveEnvironment(source);
+  const parsed = serverEnvSchema.shape.QUOTE_SIGNING_SECRET.safeParse(
+    source[QUOTE_SIGNING_SECRET_KEY],
+  );
+  if (!parsed.success) {
+    throw new EnvValidationError(
+      collect(parsed.error, source).map((issue) => ({
+        key: QUOTE_SIGNING_SECRET_KEY,
+        message: issue.message,
+      })),
+      environment,
+    );
+  }
+  const deployed = DEPLOYED_ENVIRONMENTS.includes(environment);
+  if (
+    parsed.data !== undefined &&
+    !(deployed && parsed.data === DEVELOPMENT_QUOTE_SIGNING_SECRET)
+  ) {
+    return parsed.data;
+  }
+  if (!deployed) return DEVELOPMENT_QUOTE_SIGNING_SECRET;
+  throw new EnvValidationError(
+    [
+      {
+        key: QUOTE_SIGNING_SECRET_KEY,
+        message: `must be set to a real secret in ${environment} before a price quote is signed (\`openssl rand -hex 32\`; spec 005 §13 Q5, spec 010 §8)`,
+      },
+    ],
+    environment,
+  );
 }
 
 /** Human-readable, value-free report (AC-10). */

@@ -208,6 +208,11 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "offerProjection",
         "priceProjection",
         "priceTable",
+        // an add-on's display price by the bouquet's FX rule (spec 010 §5.2's amendment to spec
+        // 005; TASK-200): one function and its two schemas
+        "AddonPriceProjectionQuerySchema",
+        "AddonPriceProjectionSchema",
+        "addonPriceProjection",
         // approximate equivalents under a charged price (spec 004 §14 A21 clause 6; TASK-178)
         "EQUIVALENT_CURRENCIES",
         "priceEquivalents",

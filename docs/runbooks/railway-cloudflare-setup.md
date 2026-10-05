@@ -52,7 +52,7 @@ Do **not** create the `worker` service here: it is TASK-103's seat, at zero repl
 ## 2. Paste the variables (`staging`)
 
 Service → **Variables** → **Raw Editor** and paste the block below in one go, filling each value.
-The key set is exactly the 28 keys of `.env.example`; `pnpm env:check` keeps that file and the zod
+The key set is exactly the 29 keys of `.env.example`; `pnpm env:check` keeps that file and the zod
 schemas in step, and `pnpm railway:check --env staging` (step 6) verifies the live key set — key
 **names** only, never a value.
 
@@ -63,6 +63,7 @@ NEXT_PUBLIC_SITE_URL=https://<the Railway domain from step 1, https, no trailing
 DATABASE_URL=<Neon → branch `staging` → pooled connection string>
 DATABASE_URL_UNPOOLED=<the same dialog, direct connection string>
 INTERNAL_CRON_SECRET=<openssl rand -hex 32>
+QUOTE_SIGNING_SECRET=<openssl rand -hex 32, a different value per environment>
 LOG_LEVEL=info
 CSP_REPORT_ONLY=true
 ENABLE_PSEUDO_LOCALES=false
