@@ -25,7 +25,7 @@
  *    or the job that asked for it.
  *
  * **Absent means off** (§12 "Feature flags"). `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID`
- * are environment-scoped switches like `STAGING_BASIC_AUTH`, not members of the 28-key contract
+ * are environment-scoped switches like `STAGING_BASIC_AUTH`, not members of the 29-key contract
  * (`ENV_KEYS`, spec 040 AC-11): adding them to the zod env schemas would make every environment
  * *require* them. `parseCloudflarePurgeConfig()` is their validation, re-exported by
  * `src/lib/env.ts`; with either key absent or blank, `src/lib/cache.ts` keeps the no-op. A pair

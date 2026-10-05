@@ -27,9 +27,8 @@
  *     a length check, so verification leaks no information about how much of a forged digest was
  *     right.
  *
- * `QUOTE_SIGNING_SECRET` **lands in spec 010's env schema, not here** (the task row and §13 Q5):
- * Phase 0 charges nothing and has no checkout, so this file carries a clearly-named development
- * secret and adds no `.env.example` key. `signingSecret()` is the one line spec 010 replaces.
+ * `QUOTE_SIGNING_SECRET` **lives in spec 010's env schema** (§13 Q5; TASK-200), and
+ * `signingSecret()` below reads it through `quoteSigningSecret()`.
  *
  * There is no `Date.now()` in this file: `now` is a parameter of both functions, so the expiry
  * window is testable to the millisecond and a cached page cannot depend on when a process started.
@@ -37,6 +36,7 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 
 import type { CurrencyCode } from "@/config/currencies";
+import { quoteSigningSecret } from "@/lib/env.schema";
 
 import {
   QUOTE_TTL_MINUTES,
@@ -59,21 +59,17 @@ import { resolveByPriceVersion } from "./resolve";
 import { roundToStyle } from "./round";
 
 /**
- * The Phase 0 signing secret (spec 005 §13 Q5; TASK-068).
+ * The signing key (spec 005 §13 Q5; TASK-068, wired to the environment by spec 010's TASK-200).
  *
- * **Not a secret at all, and named so it cannot be mistaken for one.** Phase 0 has no checkout,
- * no payment and no money movement (specs 010/013), so a quote signed here authorises nothing;
- * what the HMAC buys today is that the *shape* of the guarantee — sign the amount, verify it in
- * constant time, refuse the stale ones — is built and tested before there is money behind it.
- * Spec 010 adds `QUOTE_SIGNING_SECRET` to `src/lib/env.schema.ts` and `.env.example` and changes
- * `signingSecret()` below to read it; nothing else in this file moves.
+ * `QUOTE_SIGNING_SECRET`, read through `quoteSigningSecret()` in `src/lib/env.schema.ts`: the
+ * configured key in every environment that has one, a clearly-named development key in
+ * `development` and `test`, and a thrown `EnvValidationError` naming the key in a deployed
+ * environment that has none. Read on every call rather than at module load, so a module that
+ * imports the catalogue at build time never needs the secret and a rotated key takes effect on
+ * the next quote. The caller-facing contract of this file is unchanged.
  */
-const PHASE_0_DEVELOPMENT_QUOTE_SECRET =
-  "phase-0-development-quote-secret-not-a-production-key";
-
-/** The one place the signing key is chosen; spec 010 replaces the body, not the callers. */
 function signingSecret(): string {
-  return PHASE_0_DEVELOPMENT_QUOTE_SECRET;
+  return quoteSigningSecret(process.env);
 }
 
 /** Milliseconds in a minute — the quote TTL is stated in minutes (§13 Q5). */

@@ -14,7 +14,7 @@
  *     has no second opinion about which environment it is in.
  *  2. **Absent means off** (§12 "Feature flags"): with no `STAGING_BASIC_AUTH` variable the gate
  *     allows everything, which is what a laptop and CI want. `STAGING_BASIC_AUTH` is therefore
- *     *not* part of the 28-key environment contract (`ENV_KEYS`); it is an environment-scoped
+ *     *not* part of the 29-key environment contract (`ENV_KEYS`); it is an environment-scoped
  *     switch declared in `config/railway.json` and checked by `pnpm railway:check --env`.
  *  3. **`/api/health` is exempt in every environment** — the Railway healthcheck, the CI preview
  *     probe and the uptime monitor all call it unauthenticated (AC-31, §11).

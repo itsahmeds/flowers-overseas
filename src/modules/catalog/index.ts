@@ -189,11 +189,19 @@ export {
 // and the barrel exports schemas, value sets and functions only (AC-2). Spec 008's card asks its
 // translator for `catalog.price.from` the way every other component asks for its own copy.
 export {
+  addonPriceProjection,
   fromPriceProjection,
   offerProjection,
   priceProjection,
   priceTable,
 } from "./pricing/project";
+// Spec 010 §5.2's amendment to spec 005 (TASK-200): an add-on's display price, by the bouquet's
+// FX rule, so a checkout's add-on lines and its bouquet line are always in one currency.
+export type { AddonPriceProjection } from "./types";
+export {
+  AddonPriceProjectionQuerySchema,
+  AddonPriceProjectionSchema,
+} from "./schemas";
 
 // Approximate equivalents under a charged price (spec 004 §14 A21 clause 6; TASK-178): the other
 // currencies of {EUR, GBP, PLN, USD} at the charged price's own FX snapshot, mid rate, no buffer,

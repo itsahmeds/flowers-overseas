@@ -28,6 +28,11 @@ export const MODULES = [
   // are rendered by every route group. Registered here and in `docs/architecture.md` §3 in the
   // same PR, as the rule above requires.
   "ui",
+  // spec 010 §5.2 (TASK-200): the checkout. It orchestrates `catalog`, `geo`, `customers` and
+  // `orders` through their barrels and owns the one decision of whether a checkout is closed, a
+  // demo, a test or live (`checkoutMode()`); registered here and in `docs/architecture.md` §3 in
+  // the same PR, as the rule above requires.
+  "checkout",
 ] as const;
 
 export const REQUIRED_DIRS = [

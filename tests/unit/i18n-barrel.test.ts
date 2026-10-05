@@ -69,6 +69,7 @@ const PINNED_EXPORTS = [
   "launchLocale",
   "launchLocaleCodes",
   "launchLocales",
+  "countGraphemes",
   "formatDate",
   "formatList",
   "formatMoney",

@@ -74,8 +74,14 @@ const FORBIDDEN_FILES = [
   ["src/config/locales.ts", "zod, and the whole locale registry"],
 ] as const;
 
-/** Packages a client graph may not reach: the translator, the formatter and the provider. */
-const FORBIDDEN_PACKAGES = [/^next-intl(\/|$)/, /^zod(\/|$)/, /^@sentry\//];
+/** Packages a client graph may not reach: the translator, the formatter, the provider, phone metadata. */
+const FORBIDDEN_PACKAGES = [
+  /^next-intl(\/|$)/,
+  /^zod(\/|$)/,
+  /^@sentry\//,
+  // spec 010 §5.2 (TASK-200): phone metadata is server-only, ~150 kB with the full plans.
+  /^libphonenumber-js(\/|$)/,
+];
 
 /** Source text no `"use client"` module may contain (the hooks, wherever they came from). */
 const FORBIDDEN_SYMBOLS = [

@@ -50,6 +50,12 @@ export const postcodeNormalisers = [
 ] as const;
 export type PostcodeNormaliser = (typeof postcodeNormalisers)[number];
 
+/** The fields every format must order and require: the recipient's name and phone. */
+export const RECIPIENT_FIELDS = [
+  "fullName",
+  "phone",
+] as const satisfies readonly AddressField[];
+
 /** A message key such as `checkout.address.postcode` — never a literal label (plan/03 §5). */
 const MessageKeySchema = z
   .string()
@@ -102,6 +108,18 @@ export const AddressFormatSchema = z
           code: "custom",
           path: ["labelKeys", field],
           message: `field \`${field}\` has no label key`,
+        });
+      }
+    }
+    // Spec 010 §2 and `plan/03` §8 (`/review 201` change 2): every format collects the
+    // recipient's name and a phone, and both are required, because florists call ahead. A row
+    // that forgot either would otherwise let step 1 through without it.
+    for (const field of RECIPIENT_FIELDS) {
+      if (!order.has(field) || !format.required.includes(field)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["required"],
+          message: `\`${field}\` must be in fieldOrder and required in every format (plan/03 §8: florists call ahead)`,
         });
       }
     }

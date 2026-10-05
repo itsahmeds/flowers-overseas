@@ -122,6 +122,7 @@ const numberFormats = new Map<string, Intl.NumberFormat>();
 const dateTimeFormats = new Map<string, Intl.DateTimeFormat>();
 const listFormats = new Map<string, Intl.ListFormat>();
 const relativeTimeFormats = new Map<string, Intl.RelativeTimeFormat>();
+const graphemeSegmenters = new Map<string, Intl.Segmenter>();
 
 function cacheKey(tag: string, options: object): string {
   return `${tag}|${JSON.stringify(options)}`;
@@ -172,6 +173,14 @@ function relativeTimeFormat(
   if (cached !== undefined) return cached;
   const created = new Intl.RelativeTimeFormat(tag, options);
   relativeTimeFormats.set(key, created);
+  return created;
+}
+
+function graphemeSegmenter(tag: string): Intl.Segmenter {
+  const cached = graphemeSegmenters.get(tag);
+  if (cached !== undefined) return cached;
+  const created = new Intl.Segmenter(tag, { granularity: "grapheme" });
+  graphemeSegmenters.set(tag, created);
   return created;
 }
 
@@ -577,4 +586,22 @@ export function formatRange(
     ...DATE_STYLE_OPTIONS[style],
     timeZone: zone,
   }).formatRange(from, until);
+}
+
+/**
+ * How many letters a reader sees in `text` (spec 010 §2, §7, AC-10, §13 Q9; TASK-200).
+ *
+ * The card message, "sign as", the delivery note and the names are limited in **graphemes**, not
+ * in UTF-16 code units: "ł" is one letter whether it arrives precomposed or as `l` plus a
+ * combining stroke, "Ж" is one, and a family emoji built from four people and three zero-width
+ * joiners is one. `text.length` would count that emoji as eleven and refuse a card a buyer can
+ * see is well inside the limit.
+ *
+ * The text is normalised to NFC first, which is the form the checkout stores (§7), so the count
+ * is the count of what is kept. `Intl.Segmenter` is constructed here and nowhere else
+ * (`fo/no-adhoc-intl`), cached per locale like every other formatter in this file.
+ */
+export function countGraphemes(text: string, locale: LocaleCode): number {
+  const value = z.string().parse(text).normalize("NFC");
+  return Array.from(graphemeSegmenter(tagFor(locale)).segment(value)).length;
 }

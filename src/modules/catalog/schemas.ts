@@ -657,6 +657,70 @@ export const PriceProjectionSchema = z
     },
   );
 
+/** `addonPriceProjection()`'s arguments (spec 010 §5.2's amendment to spec 005; TASK-200). */
+export const AddonPriceProjectionQuerySchema = z
+  .object({
+    addonKey: z.enum(addonKeys),
+    countryIso: DestinationIsoSchema,
+    locale: LocaleCodeSchema,
+    now: z.date().optional(),
+  })
+  .strict();
+
+/**
+ * One add-on's display price (spec 010 §5.2's amendment to spec 005; TASK-200): the add-on twin
+ * of `PriceProjectionSchema`, with the same three provenance refinements, so a converted add-on
+ * amount can no more appear without its rate than a bouquet's can (spec 005 §5.4).
+ */
+export const AddonPriceProjectionSchema = z
+  .object({
+    addonKey: z.enum(addonKeys),
+    displayPrice: IntegerMoneySchema,
+    displayLocale: LocaleCodeSchema,
+    destinationCountry: DestinationIsoSchema,
+    destinationCurrencyPrice: IntegerMoneySchema,
+    vatRateBp: BasisPointsSchema,
+    vatRateText: z.string().min(1),
+    vatLabelKey: z.literal("catalog.price.inclusive"),
+    deliveryIncluded: z.literal(true),
+    fxAsOf: IsoDateSchema.optional(),
+    ratePpm: z.number().int().positive().optional(),
+    fxReasonKey: z.literal("catalog.availability.fxUnavailable").optional(),
+    priceVersion: z.string().min(1),
+    priceValidUntil: IsoDateSchema.nullable(),
+  })
+  .strict()
+  .refine(
+    (projection) =>
+      (projection.fxAsOf === undefined) === (projection.ratePpm === undefined),
+    {
+      error:
+        "a converted amount carries both `fxAsOf` and `ratePpm`, or neither (spec 005 §5.4)",
+      path: ["fxAsOf"],
+    },
+  )
+  .refine(
+    (projection) =>
+      projection.fxReasonKey === undefined || projection.ratePpm === undefined,
+    {
+      error:
+        "`fxReasonKey` means no rate was usable, so no rate may be stamped (spec 005 AC-15)",
+      path: ["fxReasonKey"],
+    },
+  )
+  .refine(
+    (projection) =>
+      projection.displayPrice.currency ===
+        projection.destinationCurrencyPrice.currency ||
+      projection.ratePpm !== undefined ||
+      projection.fxReasonKey !== undefined,
+    {
+      error:
+        "a display currency other than the destination's is either converted (rate stamped) or a fallback (reason key), never an unstamped amount (spec 005 §5.4)",
+      path: ["displayPrice"],
+    },
+  );
+
 /**
  * The maximum number of currencies one embedded price table may carry (spec 005 §5.2, §6).
  *

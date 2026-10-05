@@ -120,6 +120,16 @@ export const SCANNED_PATHS = [
   "src/app/sitemaps",
   "scripts/corridor-check.ts",
   "scripts/corridor-check-cases.ts",
+  // spec 010 §12 task 1 (TASK-200): the checkout's database-free core. Named file by file, for the
+  // `src/app/api/` reason above: `draft.ts`, `place.ts` and the server actions join the same
+  // directory with TASK-203 and *will* read the database, so a blanket `src/modules/checkout`
+  // entry would fail then or be quietly widened. The barrel is not listed for the same reason.
+  // `src/config/checkout.ts` and `checkout-samples.ts` are covered by `src/config`.
+  "src/modules/checkout/mode.ts",
+  "src/modules/checkout/schemas.ts",
+  "src/modules/checkout/address.ts",
+  "src/modules/checkout/phone.ts",
+  "src/modules/checkout/currency.ts",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];

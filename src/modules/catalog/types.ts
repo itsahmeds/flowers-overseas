@@ -533,6 +533,35 @@ export interface PriceProjection {
 }
 
 /**
+ * One add-on's price as the buyer's locale displays it (spec 010 §5.2's amendment to spec 005;
+ * TASK-200).
+ *
+ * The add-on twin of `PriceProjection`, built by `addonPriceProjection()` from the same FX
+ * snapshot, buffer and rounding, so an add-on's displayed price and the bouquet's are in the same
+ * currency on the same page and the checkout total is a sum of like amounts. It differs only
+ * where an add-on differs from a bouquet: it is keyed on the add-on, it carries the add-on's own
+ * VAT rate (PL chocolates 2 300 bp beside flowers 800 bp, spec 005 §13 Q3), it has no surcharge
+ * (a surcharge is a delivery-date fact, and the add-on rides the bouquet's delivery), no
+ * availability (whether an add-on is offered is `listAddons()`'s question) and no `Offer`.
+ */
+export interface AddonPriceProjection {
+  readonly addonKey: AddonKey;
+  readonly displayPrice: IntegerMoney;
+  readonly displayLocale: LocaleCode;
+  readonly destinationCountry: CountryIso2;
+  readonly destinationCurrencyPrice: IntegerMoney;
+  readonly vatRateBp: number;
+  readonly vatRateText: string;
+  readonly vatLabelKey: "catalog.price.inclusive";
+  readonly deliveryIncluded: true;
+  readonly fxAsOf?: IsoDate | undefined;
+  readonly ratePpm?: number | undefined;
+  readonly fxReasonKey?: "catalog.availability.fxUnavailable" | undefined;
+  readonly priceVersion: string;
+  readonly priceValidUntil: IsoDate | null;
+}
+
+/**
  * The embedded per-tier price table spec 008's currency-repaint island reads (spec 005 §5.2
  * `PriceTableSchema`, §6 "CWV budget").
  *
