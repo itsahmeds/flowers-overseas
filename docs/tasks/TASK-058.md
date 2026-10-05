@@ -77,6 +77,7 @@ The escalations as first raised:
 - 2026-10-05 · `tests/e2e/csp-enforced.spec.ts` green (4 per project); both mutations red; disposition logged by `/api/csp-report`; carried nits fixed.
 - 2026-10-05 · Modules moved from `.mjs` to erasable `.ts` (Node 24 strips types) so the `src/` lint locks hold; standalone output verified enforcing; runbook written; `gates:cheap` PASS.
 - 2026-10-05 · Round 2 (`/review 196` FAIL, `/break 196` HOLES). Only Next's flight statements are hashed now: exact shape plus a `JSON.parse` of the argument, so a stored inline script stays unauthorised. Added the e2e stored-XSS case, the `cspEnforce` health signal with its `warn` line, and separate `enforce` and `report` log budgets. ADR-0020 written as proposed; runbook preconditions and canary count added. Each new mutation seen red.
+- 2026-10-05 · Round 3 (breaker round 2 HOLES on `841ed46f`, reviewer round 2 PASS on condition of ADR-0020): flight array shapes pinned by refusal cases; report limits built by one factory `createCspReportLimits()` and tested through the route's default wiring; drops past the 600/min gate, and `enforce` budget overflows, logged once a minute (`csp_report_dropped`); runbook and ADR-0020 state the ceiling; review nits done (JSDoc moved, typed global, decisions-log line pending ADR-0020, `cspEnforce` kept public with the reason).
 
 ## Result
 
@@ -223,3 +224,44 @@ tests                 exit 0 · 102.1 s · changed 168 + map 0 + always 2 · alw
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
+
+### Round 3 (breaker round 2 HOLES on `841ed46f`; reviewer round 2 PASS, conditional on ADR-0020)
+
+- **Hole 1, the exact array shape.** New unit case "refuses a wrong arity, a wrong element type
+  and a non-array argument". It runs 14 bodies, among them `[1,"x","y"]`, the bootstrap followed
+  by `[5,1]`, `[1,null]` and `push("x")`.
+- **Hole 2, the production budget wiring.** The route's limits are built by one factory,
+  `createCspReportLimits()`, which builds the request gate, both log budgets and two drop notices.
+  A test through the default options resets the production limits with that same factory. It logs
+  `enforce` after two allowances of noise.
+- **Hole 3, the ceiling.** The rejected option was raising the `enforce` budget. Instead,
+  requests dropped unread past the 600-a-minute gate, and `enforce` budget overflows, each write
+  one `warn "csp reports dropped"` line a minute. The field is `csp_report_dropped`, valued
+  `unread` or `enforce`, and nothing else is logged. The runbook (§2, §3 step 5) and ADR-0020 R-4
+  now state the ceiling instead of "never". A test pins the gate at 600, which is at least ten
+  times the log budget.
+- **Nits:** the stray JSDoc moved onto `CSP_REPORT_RATE_LIMIT`; a typed `declare global` replaces
+  the cast in `csp-state.ts`; `docs/decisions-log.md` has a row for ADR-0020, marked proposed and
+  pending approval. `cspEnforce` stays public, because any page's own headers already show whether
+  an enforcing CSP is present (comment in `health.ts`).
+
+**Round-3 mutations, each run and seen red:**
+
+| Mutation | Red at |
+|---|---|
+| `value.length === 2` changed to `>= 2` (S3) | "refuses a wrong arity, a wrong element type and a non-array argument" |
+| Form-state tail accepts any JSON (S4) | same |
+| Form-state tail checks only the arity, not `[0] === 2` | same |
+| Production budgets share one limiter (H2b) | "through the production wiring, an enforce report after the noise is still logged", plus the injected-limits case |
+| Production gate set to 60, not 600 (H2d) | the production-wiring case, the injected-limits case, and "announces a dropped enforce report" |
+| No notice when the gate drops a request | "announces requests dropped unread past the gate…", and the per-minute allowance case |
+
+The handler modules load on plain Node type stripping with the typed global (checked by importing
+`csp-state.ts` and `csp-cache-handler.ts` directly). No local build this round: the build slot was
+held by another agent, and my request timed out without acquiring it, so there was nothing to
+release. CI run 37261832599 on `260df1a9` is green on every job, and e2e ran all 12
+`csp-enforced` cases. `pnpm gates:cheap` on `260df1a9`: all checks exit 0 except `tests`, where
+2 cases in files this diff does not touch (`product-route.test.tsx`, `url-pii.test.ts`) timed out
+at load average 12. Rerun on their own, those files pass (21/21), and CI `test-unit` is green on
+the same head.
+
