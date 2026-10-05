@@ -246,9 +246,6 @@
       "locale": {
         "purpose": "Remembers the language you chose, so we do not ask again."
       },
-      "localeSuggestionDismissed": {
-        "purpose": "Remembers that you closed the language suggestion, for this visit only."
-      },
       "session": {
         "purpose": "Keeps you signed in while you order. Not set yet — there is no sign-in."
       },

@@ -10,7 +10,7 @@ import { devUiEnabled } from "@/lib/env.schema";
  * `src/app/global-error.tsx` is what it reaches, because the `(dev)` group has no `error.tsx`.
  *
  * `tests/unit/ui-notice-shell.test.ts` asserts the two 500 documents render the same skin as the
- * chooser and the 404, class for class, and `tests/e2e/notices.spec.ts` recorded why that was as
+ * 404, class for class, and `tests/e2e/notices.spec.ts` recorded why that was as
  * far as it could go: "reaching an error boundary in a browser needs a route that throws on
  * purpose, which this task was not asked to add… TASK-056's AC-26/AC-27 matrix, which already
  * lists 'the 500 boundary', is where a reachable one belongs" (`/review 55`). This is that route.

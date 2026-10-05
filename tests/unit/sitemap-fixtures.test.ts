@@ -71,9 +71,8 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
     ]);
   });
 
-  it("lists the unannounced hubs and the chooser as noindex, and none of them as a <loc>", () => {
+  it("lists the unannounced hubs as noindex, and none of them as a <loc>", () => {
     const noindex = noindexUrlSet();
-    expect(noindex).toContain("https://flowersoverseas.com/");
     expect(noindex).toContain(
       "https://flowersoverseas.com/de/blumen-verschicken",
     );
@@ -87,5 +86,19 @@ describe(`${FIXTURE_DIR} is generated, not written`, () => {
         ),
       );
     for (const url of noindex) expect(locs).not.toContain(url);
+  });
+
+  it("lists the bare origin in no sitemap and as no noindex page (spec 003 §14 A16 clause 3)", () => {
+    // `/` is a 308 to `/en`: neither a `<loc>` nor a document with a robots answer.
+    const origin = "https://flowersoverseas.com/";
+    expect(noindexUrlSet()).not.toContain(origin);
+    for (const fixture of fixtures) {
+      expect(fixture.contents, fixture.file).not.toContain(
+        `<loc>${origin}</loc>`,
+      );
+      expect(fixture.contents, fixture.file).not.toMatch(
+        /<loc>https:\/\/flowersoverseas\.com\/?<\/loc>/u,
+      );
+    }
   });
 });

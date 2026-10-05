@@ -10,11 +10,10 @@ import "../globals.css";
  * Document layout for the `(dev)` route group — today only `/dev/components` (spec 004 §2
  * "Component gallery", §13 Q10, AC-28; TASK-045).
  *
- * A fourth document layout next to `(chooser)`, `[locale]` and `not-found.tsx`, for the same
- * reason they exist: the app-root layout renders no document (see `src/app/layout.tsx`), so
+ * A third document layout next to `[locale]` and `not-found.tsx`, for the same reason they exist: the app-root layout renders no document (see `src/app/layout.tsx`), so
  * whichever leaf knows the language renders `<html>`/`<body>` itself. The gallery has no locale of
  * its own — it renders components, not copy — so its language is the **x-default locale from the
- * registry**, exactly as `/` and the 404 do, and no locale literal is introduced (spec 003 AC-6).
+ * registry**, exactly as the 404 does, and no locale literal is introduced (spec 003 AC-6).
  *
  * `noindex,nofollow` is inherited from the pass-through root layout and restated on the page with
  * the reason. The route's *existence* is gated by `ENABLE_DEV_UI` in `page.tsx`, and the env

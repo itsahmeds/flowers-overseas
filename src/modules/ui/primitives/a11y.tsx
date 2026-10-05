@@ -88,13 +88,11 @@ export function SkipLink({
  *  - It **never takes focus** and it is not a `dialog`: an announcement interrupts nothing (WCAG
  *    4.1.3, 2.2.2).
  *
- * The language-suggestion banner is the pattern's reference implementation and cannot import this
- * component — it lives in `src/modules/i18n` and is a Client Component, so the cross-module import
- * would have to go through this module's public barrel, which re-exports the design system's
- * islands and would put all of them in the banner's chunk (spec 004 §14 A1; the same measurement
- * that made `(chooser)/layout.tsx` deep-import `@/modules/ui/fonts`). It renders the same three
- * attributes instead, and `tests/unit/i18n-suggestion-banner.test.tsx` asserts them against what
- * this component renders, so "the same pattern" is a test rather than a claim.
+ * A Client Component outside this module cannot import it without going through this module's
+ * public barrel, which re-exports the design system's islands and would put all of them in that
+ * chunk (spec 004 §14 A1). The language suggestion strip that used to restate its three attributes
+ * was replaced by the language popup (spec 003 §14 A16), a modal `<dialog>` that takes focus and
+ * so is not a live region.
  */
 export interface LiveRegionProps {
   /** The announcement, or nothing at all. The region itself is always rendered. */

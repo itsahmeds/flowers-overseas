@@ -153,7 +153,8 @@ describe("every notice document reads its skin from the shell", () => {
       expect(text).toMatch(
         /from "(?:@\/modules\/ui\/layout\/noticeShell|\.\/noticeShell\.ts)"/,
       );
-      // The column (the chooser) or the v2 letter (the 404 and the 500s, TASK-179).
+      // The v2 letter (the 404 and the 500s, TASK-179); the column has no page since `/` became
+      // a 308 (spec 003 §14 A16).
       expect(text).toMatch(/NOTICE_(?:LETTER_)?MAIN/);
       expect(text).toMatch(/NOTICE_(?:LETTER_)?HEADING/);
 
@@ -168,11 +169,8 @@ describe("every notice document reads its skin from the shell", () => {
     });
   }
 
-  it("the 404 and the chooser render it through `NoticeDocument`", () => {
-    for (const path of [
-      "src/app/not-found.tsx",
-      "src/app/(chooser)/page.tsx",
-    ]) {
+  it("the 404 renders it through `NoticeDocument`", () => {
+    for (const path of ["src/app/not-found.tsx"]) {
       expect(source(path), path).toContain(
         'from "@/modules/ui/layout/NoticeDocument"',
       );

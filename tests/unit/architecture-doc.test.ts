@@ -256,7 +256,8 @@ describe("docs/architecture.md (AC-30)", () => {
    */
   it("no longer defers the locale literal, and records the chosen document shape (AC-6)", () => {
     expect(doc).not.toContain('lang="en"');
-    expect(doc).toContain("src/app/(chooser)/layout.tsx");
+    expect(doc).not.toContain("src/app/(chooser)/layout.tsx");
+    expect(doc).toContain("src/lib/root-redirect.ts");
     expect(doc).toContain("src/app/[locale]/layout.tsx");
     for (const group of ["(marketing)", "(shop)", "(checkout)", "(account)"]) {
       expect(doc, group).toContain(group);
@@ -282,9 +283,10 @@ describe("docs/architecture.md (AC-30)", () => {
       expect(section).toContain("noindex,nofollow");
     });
 
-    it("names all three documents, the 404 included", () => {
+    it("names the documents, the 404 included, and `/` as a redirect with none (spec 003 §14 A16)", () => {
+      expect(section).toMatch(/`\/` has \*\*no document\*\*/u);
+      expect(section).not.toContain("src/app/(chooser)/");
       for (const file of [
-        "src/app/(chooser)/layout.tsx",
         "src/app/[locale]/layout.tsx",
         "src/app/not-found.tsx",
       ]) {

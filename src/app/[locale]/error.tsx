@@ -30,7 +30,7 @@ import { errorCopyFor } from "@/modules/i18n/error-copy.data";
 // document may reach neither the registry nor zod (`error-document.ts`'s header).
 import { TRADING_NAME, errorHomePath } from "@/modules/i18n/error-document";
 // Class strings and nothing else — no component, no runtime — so the failure page looks like the
-// 404 and the chooser without importing the design system into the root error boundary's chunk
+// 404 without importing the design system into the root error boundary's chunk
 // (`noticeShell.ts`'s header; spec 004 §14 A1).
 import {
   NOTICE_ACTION_PRIMARY,

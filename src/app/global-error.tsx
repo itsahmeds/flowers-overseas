@@ -7,10 +7,8 @@
  * It replaces Next's built-in global error shell, which is an untranslated, `lang`-less English
  * page. This one is a real document in the **x-default** locale from the registry, with `lang`,
  * `dir` and a non-empty localised `<title>`, so WCAG 3.1.1 and 2.4.2 hold even on the failure path
- * (§8). It is reached when the root layout or a document layout itself throws — including at `/`,
- * whose own `error.tsx` boundary TASK-035 deleted so that the chooser contains no Client Component
- * at all and keeps AC-7's "served without JavaScript" and AC-27's "`/` ships zero application JS"
- * true. Every localised URL still has the nearer, per-locale boundary of
+ * (§8). It is reached when the root layout or a document layout itself throws. (`/` has no
+ * document since spec 003 §14 A16: it is a 308 to `/en`.) Every localised URL still has the nearer, per-locale boundary of
  * `src/app/[locale]/error.tsx`; this file only answers when that boundary's own document failed.
  *
  * Next requires `global-error.tsx` to be a Client Component and to render `<html>`/`<body>`

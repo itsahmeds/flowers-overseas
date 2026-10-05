@@ -32,7 +32,8 @@
  * seams are in `FORBIDDEN_EXPORTS`: `decideSuggestion`, `languagePreferences`, `readLocaleCookie`,
  * `serialiseLocaleCookie` and `suggestionCandidates` are how the banner is assembled, and the two
  * cookie constants are exported configuration of exactly the kind AC-3 forbids. `LocaleSwitcher`
- * and `LocaleSuggestionBanner` are the two components in the list.
+ * and `LocaleSuggestionBanner` were the two components in the list; TASK-119 replaced the second
+ * with `LanguagePopup` and its seams (`decideLanguagePopup`, `popupHint`, `popupCandidates`).
  *
  * `LocaleSwitcher` (TASK-035) is the first component in the list. It is still a function and still
  * carries no configuration — a Server Component reading the registry through the same accessor as
@@ -51,8 +52,8 @@ const repoRoot = resolve(__dirname, "../..");
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
   "AddressInputSchema",
+  "LanguagePopup",
   "LocaleCookieSchema",
-  "LocaleSuggestionBanner",
   "LocaleSwitcher",
   "MessageMetaManifestSchema",
   "MessageMetaSchema",
@@ -137,11 +138,12 @@ const FORBIDDEN_EXPORTS = [
   "AcceptLanguageSchema",
   "FO_LOCALE_COOKIE",
   "FO_LOCALE_MAX_AGE",
-  "decideSuggestion",
+  "decideLanguagePopup",
   "languagePreferences",
+  "popupCandidates",
+  "popupHint",
   "readLocaleCookie",
   "serialiseLocaleCookie",
-  "suggestionCandidates",
   "UNREVIEWED_SHARE_THRESHOLD",
   "resetReviewCache",
   "emitInHreflang",

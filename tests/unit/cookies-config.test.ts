@@ -64,7 +64,6 @@ describe("the register itself (AC-22)", () => {
   it("parses at module load and carries every Phase 0 row the task names", () => {
     for (const name of [
       "fo_locale",
-      "fo_locale_suggestion_dismissed",
       "fo_consent",
       "fo_session",
       "fo_csrf",

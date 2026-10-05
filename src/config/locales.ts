@@ -131,7 +131,7 @@ const LocaleConfigObjectSchema = z
     formattingTag: z.string().optional(),
     /** English name, as spec 002 §5.1's `locale.name` stores it. */
     name: z.string().min(1),
-    /** Endonym shown in the chooser and the switcher — language names, never flags (plan/03 §2). */
+    /** Endonym shown in the language popup and the switcher — language names, never flags (plan/03 §2). */
     nativeName: z.string().min(1),
     dir: z.enum(textDirections),
     isLaunch: z.boolean(),

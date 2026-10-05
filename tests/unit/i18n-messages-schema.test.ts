@@ -305,7 +305,15 @@ describe("the shipped catalogues and manifests", () => {
     // `home.sentence.who`, with "my partner" (§14 A22), was attested by the founder on 2026-10-04
     // (09:54:22Z) and left this queue.
     "home.sentence.occasion",
-    "meta.chooser.description",
+    // TASK-119, the language popup (spec 004 §14 A23 clause 6, L1, L3–L6; and the "Default"
+    // mark): founder-approved text, unattested until the founder's own `record-approval` run.
+    "languagePopup.browserMatch",
+    "languagePopup.browserMatchShort",
+    "languagePopup.close",
+    "languagePopup.current",
+    "languagePopup.default",
+    "languagePopup.foot",
+    "languagePopup.heading",
     "meta.home.description",
     "nav.utility.cutoff",
     "nav.utility.cutoffShort",
@@ -497,7 +505,7 @@ describe("the shipped catalogues and manifests", () => {
     expect(guaranteeName).toBe("7-day freshness guarantee");
     expect(occasionSubtitle).toContain("Imieniny");
     expect(faqQuestion).toBe("Will the bouquet look like the photo?");
-    expect(headline).toContain("{language}");
+    expect(headline).toBe("Choose your preferred language");
     expect(floristCount).toContain("plural");
     expect(tierLabel).toContain("plural");
     expect(provenanceLabel).toContain("our florist");
