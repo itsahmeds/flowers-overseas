@@ -109,7 +109,12 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-05 (orchestrator ruling on the primary-action escalation): the split is intended. Spec
+  004 A23/A24 give the country, hub and guide first screens to TASK-187, TASK-188 and TASK-189.
+  Their AC-41 and AC-43 primary-action cases stay `test.fail` in `tests/e2e/frame-laptop-band.spec.ts`
+  (`PENDING`, each naming its owner). A case that passes unexpectedly goes red, so the owner must
+  delete its row in the PR that makes it pass. The carry-ins are in the TASK-187, TASK-188 and
+  TASK-189 briefs.
 
 ## Escalations
 
@@ -134,7 +139,8 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `tests/e2e/frame-laptop-band.spec.ts`). The case still runs; the day the owner's rebuild makes it
   pass, Playwright reports the unexpected pass and that task must delete the row. Every other
   bullet of AC-41 and AC-43 is asserted strictly on all nine pages. The question: is this the
-  intended split (the owning task closes its row), or must TASK-186 rebuild those first screens?
+  intended split (the owning task closes its row), or must TASK-186 rebuild those first screens? **Answer (orchestrator, 2026-10-05): the intended split.** Recorded under
+  `## Carry-forwards` and as carry-ins in the TASK-187, TASK-188 and TASK-189 briefs.
 
 ## Progress
 
@@ -192,9 +198,9 @@ One line per coherent step, newest last.
 
 ## Result
 
-PR [#199](https://github.com/itsahmeds/flowers-overseas/pull/199). Partial on one bullet: AC-41's
-and AC-43's primary-action checks on first screens owned by TASK-187/188/189 are declared
-expected failures with their owner (`## Escalations`, open). Everything else the brief binds is
+PR [#199](https://github.com/itsahmeds/flowers-overseas/pull/199). AC-41's and AC-43's
+primary-action checks on first screens owned by TASK-187/188/189 are declared expected failures
+with their owner, the split the orchestrator ruled intended (`## Escalations`, `## Carry-forwards`). Everything else the brief binds is
 built and asserted strictly.
 
 **What changed.**

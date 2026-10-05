@@ -125,7 +125,11 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-05 (carry-in from TASK-186, orchestrator ruling): AC-41 primary-action case for the
+  birthday occasion hub (T-43, both sizes) and the destinations hub (T-43 at 1280 × 800), and the
+  AC-43 cases for the birthday hub and the category hub (T-45, primary action at least 44 px) and
+  the occasions index (T-45, 24 px targets and the 44 px primary action), are expected failures in
+  TASK-186's suite; this task flips them, by deleting their `PENDING` rows in `tests/e2e/frame-laptop-band.spec.ts`.
 
 ## Escalations
 

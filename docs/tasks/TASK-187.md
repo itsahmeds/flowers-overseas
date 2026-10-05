@@ -158,6 +158,10 @@ file, not the row.
 One dated bullet per `/review`, newest last.
 
 - **From `/review 202` (2026-10-05, TASK-190):** once the country listings land, check the `leadSku` (`listing-presentation.ts`) for FO-PT-004 (Peace Lily) and FO-PT-006 (Olive Sapling): their hero photographs were withdrawn, so a listing that leads with either must render the honest placeholder, not a stale image. The PR 202 reviewer could not check it because `leadSku` is not on main yet.
+- 2026-10-05 (carry-in from TASK-186, orchestrator ruling): AC-41 primary-action case for the
+  country shop, country category and country occasion pages (T-43 "the primary action in view" at
+  1280 × 800 and 1512 × 945) is an expected failure in TASK-186's suite; this task flips it, by
+  deleting their `PENDING` rows in `tests/e2e/frame-laptop-band.spec.ts`.
 
 ## Escalations
 
