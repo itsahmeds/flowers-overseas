@@ -138,6 +138,27 @@ directory in the scratchpad, 127.0.0.1 reached as `127.1`, PID 53795, stopped by
 - TASK-026: no status default, the natural keys.
 - TASK-027: the connected AC-27 rule, and drift on `NULLS NOT DISTINCT`, the triggers and the snapshots.
 
+**Gates** on `1be34e8e` (the commit after it changes only this brief and the row). Load average
+28, rising to 65 during the run:
+
+```
+gates:cheap · 1be34e8e195f3827007df4695549be13df65e1e8 · tree clean · base origin/main · 2026-10-05T03:53:54.136Z
+typecheck             exit 0 · 11.3 s
+lint                  exit 0 · 35.8 s
+format:check          exit 0 · 14.4 s
+i18n:check            exit 0 · 0.7 s
+check:no-db           exit 0 · 0.3 s
+codebase:map --check  exit 0 · 0.4 s
+tests                 exit 1 · 68.2 s · changed 7 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: FAIL (1 of 7 red: tests)
+```
+
+The one red case is `tests/unit/url-pii.test.ts` "the real tree", which hit its 5 s timeout. Run
+alone at load 65, it took 7.8 s; the other 356 tests, including all of this task's, pass. The test
+builds a TypeScript program over `src/` only, and this PR changes nothing under `src/`. TASK-017
+recorded the same timeout at loads of 7.4 and 11.9. CI is the gate of record (DoD §3).
+
 **Work order note.** The work order named a carry-forward for spec 010 §5.1 A and an event-name pin.
 This brief has neither; both sit in TASK-019's brief. Of §5.1 A, only the partner status values
 touch this task, and they are in place.
