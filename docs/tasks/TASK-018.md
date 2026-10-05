@@ -68,6 +68,20 @@ stopped by PID with `kill -INT`, no `postmaster.pid` left). `db:migrate` 0001-00
   - `--to 0000` left only `schema_migrations`;
 - re-migrate: 45 tables and all four functions back. Every step exited 0.
 
+**Gates** on `fdfc632c` (rebased on `origin/main` `22a2d110`; the next commit changes only this brief). Load average 11:
+
+```
+gates:cheap · fdfc632c8109fbebbb6f62562ae67d55faa1eeff · tree clean · base origin/main · 2026-10-05T06:04:00.534Z
+typecheck             exit 0 · 5.5 s
+lint                  exit 0 · 17.3 s
+format:check          exit 0 · 11.6 s
+i18n:check            exit 0 · 0.5 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 28.0 s · changed 7 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
 **Tests now:** unit `db-check-recipient-email.test.ts` 71, `schema-partners-customers.test.ts` 66,
 `db-check.test.ts` 29; integration `schema-partners-customers.test.ts` 12.
 
