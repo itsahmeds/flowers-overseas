@@ -4,8 +4,8 @@
  *
  * Three pure, synchronous functions over the review manifests, and one rule each:
  *
- *  - `unreviewedShare(locale)` — how much of the copy a visitor to `/{locale}` would read is not
- *    reviewed in that language, as a fraction in `[0, 1]`.
+ *  - `unreviewedShare(locale)` — how much of the copy a visitor to `/{locale}` would read on a
+ *    page that can be indexed is not reviewed in that language, as a fraction in `[0, 1]`.
  *  - `localeBetaTag(locale)` — `plan/03` §6's 5 % rule: above the threshold the locale is marked
  *    "beta" in the switcher, because the buyer deserves to know the page is machine-drafted.
  *  - `isLocaleIndexable(locale)` — the hard gate of `plan/03` §6.4 and `plan/02` §12: `isLaunch`
@@ -19,7 +19,8 @@
  * ## What counts as reviewed (the definition AC-24 measures)
  *
  * The share is computed over the **resolved** catalogue — the keys the locale actually renders
- * after the `fallbackCode` chain is merged — because that is what a visitor reads. For each key,
+ * after the `fallbackCode` chain is merged — because that is what a visitor reads, **counted
+ * keys only** (the scope rule below). For each key,
  * the nearest locale in the chain that provides it is the one whose manifest is consulted, and
  * the key counts as reviewed only when **both** hold:
  *
@@ -34,7 +35,20 @@
  * indexable nor unmarked — no special case, no "missing catalogue" branch, the same rule.
  *
  * A locale that is not in the registry, or whose resolved catalogue is empty, scores 1: nothing
- * about it has been reviewed, and the gate must fail closed.
+ * about it has been reviewed, and the gate must fail closed. So does a locale with no counted key.
+ *
+ * ## The scope rule (spec 003 §14 A17; `review-scope.ts`)
+ *
+ * The share measures what a crawler can read, so a key that only a page that is never indexed
+ * (checkout, order confirmation, the florist portal, admin, the demo and development pages) or no
+ * page at all (an email body) renders is **not counted**: it is in neither the numerator nor the
+ * denominator. `NON_INDEXABLE_SCOPE` in `review-scope.ts` is the one list of such keys, and a key
+ * that no entry matches **counts**, so a forgotten entry or a typo can only push a locale toward
+ * `noindex`, never unreviewed copy toward the index. Shared chrome and any key that renders on at
+ * least one indexable page type is always counted; `pnpm i18n:check` check 11 holds the entries
+ * to that. Not counted is not exempt: buyer-facing, price-display and legal copy still needs the
+ * founder's approval (`docs/runbooks/i18n-translations.md` §5.1). The threshold, what "reviewed"
+ * means, who attests and `de`/`pl` staying out of the index are unchanged.
  *
  * `en` is not special-cased either. It scores 0 because `messages/en.meta.json` says every key is
  * human-authored and reviewed; if a hand-edit ever set `reviewed: false` on an `en` key, the
@@ -54,6 +68,11 @@ import {
   resolveCatalogue,
 } from "./messages.ts";
 import { getLocaleRegistry } from "./registry.ts";
+import {
+  type ScopeEntry,
+  getReviewScope,
+  scopeEntryFor,
+} from "./review-scope.ts";
 
 /**
  * `plan/03` §6's threshold: at or below 5 % unreviewed a locale is indexable and unmarked, above
@@ -94,13 +113,27 @@ function provides(
   return typeof value === "string";
 }
 
-function computeUnreviewedShare(locale: string): number {
+/**
+ * How a locale's resolved catalogue splits under the scope registry (A17): the keys that count,
+ * the keys that do not, and how many counted keys are not reviewed in the locale's language.
+ */
+export interface ReviewBreakdown {
+  readonly counted: number;
+  readonly notCounted: number;
+  readonly unreviewedCounted: number;
+}
+
+const FAIL_CLOSED: ReviewBreakdown = {
+  counted: 0,
+  notCounted: 0,
+  unreviewedCounted: 0,
+};
+
+function computeBreakdown(locale: string): ReviewBreakdown {
   const chain = fallbackChain(locale);
-  if (chain.length === 0) return 1;
+  if (chain.length === 0) return FAIL_CLOSED;
 
   const keys = flattenKeys(resolveCatalogue(locale));
-  if (keys.length === 0) return 1;
-
   const language = primaryLanguage(locale);
   const source = getMessageSource();
   // Read each provider's catalogue and manifest once: `meta()` parses the manifest with zod on
@@ -110,33 +143,59 @@ function computeUnreviewedShare(locale: string): number {
     catalogue: source.catalogue(code),
     meta: source.meta(code),
   }));
-  let unreviewed = 0;
+  const scope = getReviewScope();
+  let counted = 0;
+  let notCounted = 0;
+  let unreviewedCounted = 0;
 
   for (const key of keys) {
+    // A key no entry matches counts: the default fails toward `noindex`.
+    if (scopeEntryFor(key, scope) !== undefined) {
+      notCounted += 1;
+      continue;
+    }
+    counted += 1;
     // The nearest locale in the chain that defines the key is the one that renders it.
     const provider = chainData.find((entry) => provides(entry.catalogue, key));
     const reviewed =
       provider !== undefined &&
       primaryLanguage(provider.code) === language &&
       provider.meta?.[key]?.reviewed === true;
-    if (!reviewed) unreviewed += 1;
+    if (!reviewed) unreviewedCounted += 1;
   }
 
-  return unreviewed / keys.length;
+  return { counted, notCounted, unreviewedCounted };
 }
 
-const cache = new Map<string, number>();
+let cache = new Map<string, ReviewBreakdown>();
+let cacheScope: readonly ScopeEntry[] | undefined;
 
 /**
- * The share of the locale's rendered keys that are not reviewed in its language, in `[0, 1]`
- * (see the header for the definition). Memoised; pure; synchronous.
+ * The split behind `unreviewedShare()`, for the `i18n:check` summary (AC-43), which prints these
+ * counts beside the share and must not compute a second number. Module-internal: not in the
+ * barrel (AC-3). Memoised per locale, and per registry in force, so a `withReviewScope` swap
+ * never reads a stale answer.
  */
-export function unreviewedShare(locale: string): number {
+export function reviewBreakdown(locale: string): ReviewBreakdown {
+  const inForce = getReviewScope();
+  if (cacheScope !== inForce) {
+    cache = new Map();
+    cacheScope = inForce;
+  }
   const cached = cache.get(locale);
   if (cached !== undefined) return cached;
-  const share = computeUnreviewedShare(locale);
-  cache.set(locale, share);
-  return share;
+  const breakdown = computeBreakdown(locale);
+  cache.set(locale, breakdown);
+  return breakdown;
+}
+
+/**
+ * The share of the locale's counted keys that are not reviewed in its language, in `[0, 1]`
+ * (see the header for the definition and the scope rule). Memoised; pure; synchronous.
+ */
+export function unreviewedShare(locale: string): number {
+  const { counted, unreviewedCounted } = reviewBreakdown(locale);
+  return counted === 0 ? 1 : unreviewedCounted / counted;
 }
 
 /**
@@ -163,7 +222,8 @@ export function isLocaleIndexable(locale: string): boolean {
  * registry or the message source calls it inside the injected scope, and again after it.
  */
 export function resetReviewCache(): void {
-  cache.clear();
+  cache = new Map();
+  cacheScope = undefined;
 }
 
 /**

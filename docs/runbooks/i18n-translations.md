@@ -79,8 +79,10 @@ exactly what the reviewed-share table below reports.
 pnpm i18n:check --summary
 ```
 
-One row per locale: total keys, missing after fallback resolution, unreviewed count and share,
-stale (`sourceHash` drift) count, and `indexable` yes/no. The `i18n-check` CI job appends the same
+One row per locale: total keys, how many the share counts and how many it does not (§5.1), missing
+after fallback resolution, the unreviewed count and share over the counted keys, stale
+(`sourceHash` drift) count, and `indexable` yes/no. Below the table is the list of buyer-facing
+keys not yet approved (§5.1), or "none". The `i18n-check` CI job appends the same
 table to the GitHub step summary on every PR, and it is the **same number `isLocaleIndexable()`
 uses** — a locale cannot look ready in CI and be gated in code, or the reverse.
 
@@ -111,7 +113,7 @@ All five, or it stays out of the index:
 
 1. `isLaunch: true` in `src/config/locales.ts` (in Phase 0 a code flip; spec 002/012 move the
    authority to the database with no caller change).
-2. Unreviewed share ≤ 5% in its review manifest.
+2. Unreviewed share ≤ 5% in its review manifest, over the keys the share counts (§5.1).
 3. A localised, non-empty `<title>` and description on every document (`meta` namespace).
 4. Its own `pathSegments` set — authored URL segments, never a machine-translated slug.
 5. Spec 007's site-wide indexability lift. Until then **everything** is `noindex`, so a green
@@ -119,6 +121,43 @@ All five, or it stays out of the index:
 
 Pseudo-locales (`en-XA`, `ar-XB`) are never indexable, never in `alternatesFor()` and never in the
 switcher; the env schema refuses `ENABLE_PSEUDO_LOCALES` in production.
+
+### 5.1 What the share counts (spec 003 §14 A17)
+
+The share measures what a crawler can read. It counts a key unless the scope registry classifies
+it as non-indexable: a key that only checkout, order confirmation, order tracking, the florist
+portal, admin, `/demo/` or the development pages renders, or an email body, which renders on no
+page. Such a key is in neither the unreviewed count nor the total. Without this rule the first
+checkout PR would push `en` over 5% and turn the whole English site `noindex`.
+
+- **The registry** is `src/modules/i18n/review-scope.ts`. Each entry has a `match` (a top-level
+  namespace such as `checkout`, or a dot prefix ending in `.*` such as `meta.checkout.*`), a
+  `surface` from a closed list, and `paths`, the source globs that alone may reach the matched
+  keys. The task that adds the keys adds their entry in the same PR. It is empty until the first
+  such key exists.
+- **Counted by default.** A key that no entry matches counts. A new namespace, a typo in `match` or
+  a forgotten entry therefore raises the share and moves a locale toward `noindex`; no mistake in
+  the registry can move unreviewed copy toward the index. Shared chrome (`nav`, `footer`, `common`,
+  `consent`, `a11y`, the `meta` titles of indexable pages) and any key that renders on at least one
+  indexable page type always count. `errors.*` counts too.
+- `pnpm i18n:check` **check 11** holds each entry to its claim. It is an error and names the
+  entry and the file. It fails an entry whose `match` reaches no `en` key, a `surface` outside the
+  closed list, a matched key read from a file outside the entry's `paths`, a `paths` glob that
+  matches a shared file (`src/modules/ui/`, `seo/`, `catalog/`, `i18n/`, the localised shell), and
+  a file under an entry's `paths` that an indexable page imports, directly or through other files.
+  When it fails the last one, move the piece out of the entry's `paths`; its keys then count.
+  Keys built at run time (`` t(`checkout.${step}`) ``) are invisible to it. Spec 007 adds a
+  built-HTML marker check before the indexing flip.
+- **Not counted is not exempt from review.** Checkout, confirmation, tracking and buyer emails
+  state prices, dates, cutoffs, withdrawal terms and what the buyer agrees to. Every such key a
+  buyer can read needs the founder's exact-text approval, recorded by the founder's own
+  `record-approval` run, before the merge that ships it to buyers. Price-display text and every
+  `legal.*`, `infoPages.legal.*` and `consent.*` key stay reviewed wherever they render. The
+  summary's list of unapproved buyer-facing keys is what the reviewer reads; it becomes a blocking
+  CI gate before the first real-money order. Founder approval is not the lawyer sign-off that spec
+  041 owns.
+- **Who attests.** Only the founder's `record-approval` run, or a native reviewer by §4, writes
+  `reviewed: true`. An agent never does, and no key is marked reviewed to tidy the summary.
 
 ## 6. Bidi and RTL: the `<bdi>` rule
 
@@ -193,6 +232,7 @@ wants a "site time zone", it is wrong.
 | `i18n:check` reports a key `missing after fallback` | the key exists in a translation but not in `messages/en.json`. English is the source of truth: add it there (§1) or delete the orphan |
 | `unused key` on a key you just added | its consumer is not merged yet: either use it in this PR or mark `"retained": true` with a note (§1.5) |
 | `stale sourceHash` on many keys after an English edit | expected: that is the review queue. Re-run `pnpm i18n:draft --locale <code>` for machine copy, or send the list to the reviewer for human copy |
+| `i18n:check` reports a scope entry and a file | an entry claims keys that an indexable page can render. Read the reason: move the reader into the entry's `paths`, move the key to a counted namespace, or move the piece out of the entry's `paths` (§5.1) |
 | `redundant en-gb override` | the British value is identical to the American one. Delete the override; the fallback chain already answers |
 | `argument-set mismatch` | a translation dropped or renamed a `{placeholder}`. The braces are code — restore the exact name |
 | ICU syntax error naming a file and key | usually an unclosed `{` or a plural category that does not exist in that language. Polish needs `one/few/many/other`; English needs `one/other` |
