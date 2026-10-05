@@ -1,4 +1,9 @@
 {
+  "checkout.address.postcode": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ae53cea8228bcfc350fef961189a32a592e06ccffa52a8b991f88841cbac8de4"
+  },
   "errors.serverError.body": {
     "source": "human",
     "reviewed": true,

@@ -197,6 +197,96 @@
     "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}"
   },
+  "checkout": {
+    "action": {
+      "toCard": "Continue to your details",
+      "toReview": "Continue to check"
+    },
+    "address": {
+      "city": "Town or city",
+      "fullName": "Recipient's name",
+      "phone": "Recipient's phone",
+      "postcode": "Postal code",
+      "street": "Street and number"
+    },
+    "buyer": {
+      "country": "Country you live in",
+      "email": "Email",
+      "fullName": "Your name",
+      "phone": "Your phone"
+    },
+    "card": {
+      "blank": "Leave it blank and we send the flowers without a card.",
+      "counter": "{count} of {max} characters",
+      "label": "Card message",
+      "preview": "Printed on our card · included",
+      "previewLabel": "Preview of the printed card",
+      "signAs": "Sign as",
+      "signAsHint": "Up to {max} characters"
+    },
+    "demo": {
+      "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
+      "bannerTitle": "This is a demo order.",
+      "place": "Place demo order. Nothing is charged.",
+      "placing": "Placing your demo order…",
+      "useSample": "Use sample details"
+    },
+    "error": {
+      "addonUnavailable": "This extra is not available for this delivery. Please remove it.",
+      "countryInvalid": "Please choose a country from the list.",
+      "dateInvalid": "Please pick a date from the calendar.",
+      "emailInvalid": "Please enter an email address in the form name@example.com.",
+      "invalidCharacters": "Please remove the special characters from this text.",
+      "phoneInvalid": "Please enter the full phone number, with the country code.",
+      "placeKindInvalid": "Please choose where the flowers are going.",
+      "postcodeFormat": "Please enter it in the form {example}.",
+      "required": "Please fill this in to continue.",
+      "summaryItem": "{field}: {message}",
+      "summaryTitle": "Please check these details",
+      "tooLong": "Please shorten this to {max} characters or fewer."
+    },
+    "field": {
+      "optional": "optional"
+    },
+    "placeKind": {
+      "cemetery": "A cemetery",
+      "church": "A church",
+      "funeralHome": "A funeral home",
+      "home": "A home",
+      "hospital": "A hospital",
+      "hotel": "A hotel",
+      "legend": "Where is it going?",
+      "work": "A workplace"
+    },
+    "price": {
+      "changed": "<b>The price changed from {old} to {new} since you opened the product page.</b> Please check it before you continue.",
+      "confirm": "Continue at {new}",
+      "currencyLine": "You pay in {buyerCurrency}. Our florist is paid in {destinationCurrency}."
+    },
+    "privacy": {
+      "demoNotice": "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how an order reaches our florist, then we delete the personal details. {controllerLine}"
+    },
+    "progress": {
+      "card": "Card and you",
+      "compact": "Step {current} of {total} · {name}",
+      "label": "Checkout steps",
+      "recipient": "Recipient",
+      "review": "Check"
+    },
+    "recipient": {
+      "phoneNonLocal": "This does not look like a phone number in {country}. Our florist may not be able to call it.",
+      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only."
+    },
+    "summary": {
+      "delivery": "Delivery",
+      "included": "included",
+      "mini": "Your order · {product}",
+      "title": "Your order",
+      "total": "You pay",
+      "vat": "VAT {rate}",
+      "vatOf": "Of which VAT {rate}"
+    }
+  },
   "chooser": {
     "heading": "Choose your language",
     "intro": "We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue."
@@ -213,6 +303,14 @@
       "hours": "Napisz do nas o każdej porze, 24/7 – odpowiadamy w ciągu kilku godzin.",
       "label": "Pomoc i WhatsApp",
       "whatsapp": "WhatsApp"
+    }
+  },
+  "confirmation": {
+    "recap": {
+      "card": "Card",
+      "date": "Date",
+      "nothingCharged": "Nothing was charged.",
+      "recipient": "Recipient"
     }
   },
   "consent": {
