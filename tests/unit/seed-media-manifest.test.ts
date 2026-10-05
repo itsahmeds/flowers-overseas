@@ -34,6 +34,7 @@ import {
   promptHash,
 } from "../../seed/schema/prompts.ts";
 import { PRODUCTS } from "../../src/config/catalogue/products.data.ts";
+import { resolveMedia } from "../../src/modules/ui/media/resolve.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 
@@ -81,6 +82,37 @@ const BQ004_PAIR_A = [
   "28bbb259a475979a81c65ddcf7f5a86f651c07042c3a6d3806babc4ac343f196",
   "c1d2c5f1555fca1ae660de4a84c6c782123747bbf875c7464c562468b69eee6a",
 ] as const;
+
+/**
+ * The four photographs TASK-190 withdrew (audit `docs/design/audits/2026-10-04-site-sweep.md` §1
+ * finding 15). Each was approved with batch 2, and each shows another plant than the product it is
+ * filed under: FO-PT-004 is Peace Lily, and its pair shows a white lily (*Lilium*); FO-PT-006 is
+ * Olive Sapling, and its pair shows hydrangeas. `depicts: "product"` was therefore untrue of them
+ * (spec 006 AC-8). The founder has not yet supplied replacements, so the brief's default applies:
+ * withdraw, and let the honest placeholder render (AC-18). Never rename a product to fit a photo.
+ */
+const WITHDRAWN = [
+  { id: "fo-pt-004-hero", sku: "FO-PT-004", slug: "peace-lily", primary: true },
+  {
+    id: "fo-pt-004-detail",
+    sku: "FO-PT-004",
+    slug: "peace-lily",
+    primary: false,
+  },
+  {
+    id: "fo-pt-006-hero",
+    sku: "FO-PT-006",
+    slug: "olive-sapling",
+    primary: true,
+  },
+  {
+    id: "fo-pt-006-detail",
+    sku: "FO-PT-006",
+    slug: "olive-sapling",
+    primary: false,
+  },
+] as const;
+const WITHDRAWN_IDS = new Set<string>(WITHDRAWN.map((entry) => entry.id));
 
 const batch1 = assets.filter((asset) => !sheetIds.has(asset.id));
 const batch2 = assets.filter((asset) => sheetIds.has(asset.id));
@@ -272,31 +304,35 @@ describe("spec 006 AC-8: provenance is complete on every committed asset", () =>
     }
   });
 
-  it("records the founder's 2026-10-03 sign-off: exactly the 144 batch-2 assets are approved, by the founder role, at the instant of the founder's message (§14 A7 clause 5; TASK-168)", () => {
+  it("records the founder's 2026-10-03 sign-off: the 144 batch-2 assets less TASK-190's four withdrawn ones are approved, by the founder role, at the instant of the founder's message (§14 A7 clause 5; TASK-168)", () => {
     // The founder's words, recorded in `docs/tasks/TASK-168.md` (Escalations): "approve all the
-    // batch 2 photos", at 2026-10-03T09:21:10Z. Nothing was to be redone, so nothing stays pending.
+    // batch 2 photos", at 2026-10-03T09:21:10Z. TASK-190 later withdrew the four photographs that
+    // show another plant than the product they are filed under (the block below).
     const approved = batch2.filter(
       (asset) =>
         asset.reviewState === "approved" &&
         asset.reviewedBy === "founder" &&
         asset.reviewedAt === "2026-10-03T09:21:10Z",
     );
-    expect(approved).toHaveLength(144);
+    expect(approved).toHaveLength(140);
     expect(batch2).toHaveLength(144);
     for (const asset of batch2) {
+      if (WITHDRAWN_IDS.has(asset.id)) continue;
       expect(asset.reviewState, asset.id).toBe("approved");
       expect(asset.reviewedBy, asset.id).toBe("founder");
       expect(asset.reviewedAt, asset.id).toBe("2026-10-03T09:21:10Z");
     }
   });
 
-  it("approves exactly the 175 assets the founder signed off, and no other (both sign-offs together)", () => {
+  it("approves exactly the 171 assets the founder signed off and nobody withdrew, and rejects exactly TASK-190's four (both sign-offs together)", () => {
     expect(
       assets.filter((asset) => asset.reviewState === "approved"),
-    ).toHaveLength(175);
-    expect(assets.filter((asset) => asset.reviewState !== "approved")).toEqual(
-      [],
-    );
+    ).toHaveLength(171);
+    expect(
+      assets
+        .filter((asset) => asset.reviewState !== "approved")
+        .map((asset) => [asset.id, asset.reviewState]),
+    ).toEqual(WITHDRAWN.map((entry) => [entry.id, "rejected"]));
   });
 
   it("claims no photographic credit or licence, because nothing here is a photograph", () => {
@@ -343,4 +379,78 @@ describe("the whole-file gate: a bad asset cannot hide inside a good manifest", 
     expect(paths.some((path) => path.endsWith("reviewedBy"))).toBe(true);
     expect(paths.some((path) => path.endsWith("reviewedAt"))).toBe(true);
   });
+});
+
+describe("TASK-190: the photographs of another plant are withdrawn, and the products keep their names (spec 006 AC-8, AC-18, §14 A9)", () => {
+  const altFiles = ["en", "en-gb", "de", "pl"].map((locale) => ({
+    locale,
+    ids: new Set(
+      (
+        JSON.parse(
+          readFileSync(
+            join(repoRoot, "seed/data/alt", `${locale}.json`),
+            "utf8",
+          ),
+        ) as { rows: { assetId: string }[] }
+      ).rows.map((row) => row.assetId),
+    ),
+  }));
+
+  it.each(WITHDRAWN.filter((entry) => entry.primary))(
+    "$sku's primary asset is $id, and it is rejected, not approved",
+    ({ id, sku }) => {
+      const primary = assets.find(
+        (asset) => asset.productSku === sku && asset.isPrimary,
+      );
+      expect(primary?.id).toBe(id);
+      expect(primary?.reviewState).toBe("rejected");
+    },
+  );
+
+  it.each(WITHDRAWN)(
+    "$id is rejected, keeps its provenance, and claims no founder approval",
+    ({ id, sku, primary }) => {
+      const asset = assets.find((row) => row.id === id);
+      expect(asset?.reviewState).toBe("rejected");
+      // The rejection is TASK-190's, not the founder's: the 2026-10-03 approval record goes with
+      // the approval, so no row says the founder signed off on a hydrangea as an olive sapling.
+      expect(asset?.reviewedBy).toBeUndefined();
+      expect(asset?.reviewedAt).toBeUndefined();
+      // The asset is still the product's, so its place and its provenance are unchanged (AC-8).
+      expect(asset?.productSku).toBe(sku);
+      expect(asset?.isPrimary).toBe(primary);
+      expect(asset?.depicts).toBe("product");
+      const record = promptRecords.get(id);
+      expect(record).toBeDefined();
+      expect(asset?.promptHash).toBe(record && promptHash(record));
+    },
+  );
+
+  it.each(WITHDRAWN)(
+    "$id carries no alt text in any launch locale (§14 A9 clause 4: none for a rejected asset)",
+    ({ id }) => {
+      expect(
+        altFiles.filter((file) => file.ids.has(id)).map((file) => file.locale),
+      ).toEqual([]);
+    },
+  );
+
+  it.each(WITHDRAWN)(
+    "$id renders the placeholder in every launch locale, never an <img> (AC-18)",
+    ({ id }) => {
+      for (const { locale } of altFiles) {
+        expect(resolveMedia({ assetId: id, locale }), locale).toEqual({
+          kind: "placeholder",
+          reason: "unapproved",
+        });
+      }
+    },
+  );
+
+  it.each(WITHDRAWN.filter((entry) => entry.primary))(
+    "$sku keeps its name and slug `$slug`: a product is never renamed to fit a photograph",
+    ({ sku, slug }) => {
+      expect(PRODUCTS.find((product) => product.sku === sku)?.slug).toBe(slug);
+    },
+  );
 });
