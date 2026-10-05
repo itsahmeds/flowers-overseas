@@ -158,5 +158,5 @@ The binding list is A16 clause 6. Each case names its layer and must go red when
 **Handed on.**
 1. The founder's `record-approval` run for the seven `languagePopup.*` keys (Escalations). Its commit must also flip the two `reviewed: false` pins in `i18n-language-popup.test.tsx` and `i18n-messages-schema.test.ts`, and regenerate the sitemap fixtures.
 2. After that, the `visual:baselines` run for the linux PNGs. Baselines taken now would show the cascade's "Beta" tags.
-3. Popup links go to the locale home, as the switcher's do (open, non-blocking).
+3. Popup links now go to the same page in each locale (orchestrator, 2026-10-05): every route renders `LanguageAlternates` with its hreflang path map, and the island reads it from the DOM. Product pages have no alternates builder and keep the locale home.
 4. `ConsentBannerView.tsx` comments still mention the strip (outside the fence).

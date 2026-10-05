@@ -126,6 +126,11 @@ export {
 export { LanguagePopup, type LanguagePopupProps } from "./ui/LanguagePopup.tsx";
 
 export {
+  LanguageAlternates,
+  type LanguageAlternatesProps,
+} from "./ui/LanguageAlternates.tsx";
+
+export {
   type LanguagePreference,
   type LocaleHint,
   parseAcceptLanguage,

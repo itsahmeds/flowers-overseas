@@ -52,6 +52,7 @@ const repoRoot = resolve(__dirname, "../..");
 /** Every runtime export of `src/modules/i18n/index.ts`, in alphabetical order. */
 const PINNED_EXPORTS = [
   "AddressInputSchema",
+  "LanguageAlternates",
   "LanguagePopup",
   "LocaleCookieSchema",
   "LocaleSwitcher",
