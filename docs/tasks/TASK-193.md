@@ -182,4 +182,17 @@ Each changed key ships `reviewed: false` and needs its own founder record run. E
 T-47's exception list in the PR that ships its replacement. The em-dash proposals for
 `company.support.hours` and `shop.card.noPrice` are in PR 194's description.
 
-`pnpm gates:cheap`: see the block below.
+`pnpm gates:cheap` at 96e97a49 exits 0. The load average was 16 to 43, from other agents. Earlier runs at loads of 25 to 100 timed out on five heavy files that pass on their own:
+
+```
+gates:cheap · 96e97a49c8a4ff63aa3224fba64a4926452d0bba · tree clean · base origin/main · 2026-10-05T06:57:06.224Z
+typecheck             exit 0 · 3.5 s
+lint                  exit 0 · 17.0 s
+format:check          exit 0 · 11.1 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 116.3 s · changed 128 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
