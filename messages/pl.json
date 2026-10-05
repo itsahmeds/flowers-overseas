@@ -197,6 +197,96 @@
     "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}"
   },
+  "checkout": {
+    "address": {
+      "addressLine1": "Address line 1",
+      "addressLine2": "Address line 2",
+      "apartment": "Apartment or floor",
+      "careOf": "c/o, floor or company",
+      "city": "Town or city",
+      "fullName": "Full name",
+      "houseNumber": "House number",
+      "phone": "Phone number",
+      "placeholder": {
+        "at": "For example: {street}, {postcode}",
+        "de": "For example: {street}, {postcode}",
+        "gb": "For example: {street}, {postcode}",
+        "generic": "For example: {street}, {postcode}",
+        "pl": "For example: {street}, {postcode}"
+      },
+      "postcode": "Postal code",
+      "region": "Region",
+      "street": "Street and number"
+    },
+    "buyer": {
+      "email": "Your email",
+      "name": "Your full name",
+      "phone": "Your phone number",
+      "residenceCountry": "Your country"
+    },
+    "card": {
+      "blank": "Leave it blank and we send the flowers without a card.",
+      "counter": "{count} of {max} characters",
+      "message": "Card message",
+      "preview": "Printed on our card · included",
+      "signAs": "Sign as"
+    },
+    "closed": {
+      "title": "We are not taking orders for {country} yet."
+    },
+    "date": {
+      "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}."
+    },
+    "demo": {
+      "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
+      "bannerTitle": "This is a demo order.",
+      "cap": "The demo has had a lot of orders today. Please try again tomorrow.",
+      "dateHeading": "Pick any date to see how it works. In the demo, nothing is delivered.",
+      "place": "Place demo order. Nothing is charged.",
+      "sampleLabel": "Sample",
+      "useSample": "Use sample details"
+    },
+    "error": {
+      "addonUnavailable": "One of the extras is not available for this destination. Remove it to continue.",
+      "countryInvalid": "Choose your country from the list.",
+      "dateInvalid": "Choose a delivery date from the calendar.",
+      "emailInvalid": "Enter an email address, such as name@example.com.",
+      "phoneInvalid": "Enter a phone number we can call, with its area code.",
+      "placeKindInvalid": "Choose the kind of place the flowers go to.",
+      "postcodeFormat": "Enter the postcode in this format: {example}.",
+      "required": "Fill in this field to continue.",
+      "tooLong": "{max, plural, one {Shorten this to # character.} other {Shorten this to # characters or fewer.}}"
+    },
+    "expired": {
+      "title": "This order was not started, or it has expired."
+    },
+    "placeKind": {
+      "cemetery": "Cemetery",
+      "church": "Church",
+      "funeralHome": "Funeral home",
+      "home": "Home",
+      "hospital": "Hospital",
+      "hotel": "Hotel",
+      "work": "Work"
+    },
+    "price": {
+      "changed": "The price changed from {old} to {new} since you opened the product page. Please check it before you continue.",
+      "confirm": "Continue at {new}",
+      "currencyLine": "You pay in {buyerCurrency}. Our florist is paid in {destinationCurrency}."
+    },
+    "privacy": {
+      "demoNotice": "Please use sample details, not a real person's. We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how an order reaches our florist, then we delete the personal details. {controllerLine}"
+    },
+    "recipient": {
+      "phoneNonLocal": "This does not look like a number in {country}. Our florist may not be able to call it.",
+      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only."
+    },
+    "step": {
+      "card": "Your card and your details",
+      "recipient": "Who are the flowers for?",
+      "review": "Check and place your order"
+    }
+  },
   "chooser": {
     "heading": "Choose your language",
     "intro": "We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue."
@@ -214,6 +304,15 @@
       "label": "Pomoc i WhatsApp",
       "whatsapp": "WhatsApp"
     }
+  },
+  "confirmation": {
+    "demo": {
+      "body": "Order {reference}. Nothing was charged and nothing will be delivered.",
+      "next": "In the real service, our florist in {city} accepts the order, makes the bouquet on the morning of delivery and hands it over in person.",
+      "title": "Your demo order is in."
+    },
+    "gone": "This confirmation is no longer available.",
+    "promise": "Our fresh-flower promise covers the flowers when they arrive."
   },
   "consent": {
     "accept": "Accept all",

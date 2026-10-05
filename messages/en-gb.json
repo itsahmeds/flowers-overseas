@@ -3,5 +3,13 @@
     "serverError": {
       "body": "The page could not be loaded. Nothing you were doing was lost. We apologise for the interruption."
     }
+  },
+  "checkout": {
+    "address": {
+      "postcode": "Postcode"
+    },
+    "buyer": {
+      "phone": "Your mobile number"
+    }
   }
 }

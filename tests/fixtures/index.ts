@@ -557,10 +557,12 @@ export const phones: readonly PhoneFixture[] = [
     national: "0151 12345678",
   },
   {
+    // TASK-200: was `+43 1 1234567`, which the full numbering-plan metadata refuses (Vienna's
+    // `11…` block is service numbers); `+43 1 5123456` is an ordinary Vienna landline shape.
     label: "AT landline (Vienna)",
     country: "AT",
-    e164: "+4311234567",
-    national: "01 1234567",
+    e164: "+4315123456",
+    national: "01 5123456",
   },
   {
     label: "GB landline (London)",
