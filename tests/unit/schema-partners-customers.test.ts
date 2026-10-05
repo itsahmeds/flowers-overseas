@@ -385,6 +385,12 @@ describe("the rollbacks", () => {
       /DROP FUNCTION IF EXISTS public\.payout_currency_check\(\);/,
     );
     expect(partnersDown).toMatch(
+      /DROP FUNCTION IF EXISTS public\.partner_coverage_country_check\(\);/,
+    );
+    expect(partnersDown).toMatch(
+      /DROP FUNCTION IF EXISTS public\.fulfillment_partner_coverage_country_guard\(\);/,
+    );
+    expect(partnersDown).toMatch(
       /ALTER TABLE public\.postcode_zone DROP CONSTRAINT IF EXISTS postcode_zone_id_city_key;/,
     );
     expect(customersDown).toMatch(
@@ -395,8 +401,8 @@ describe("the rollbacks", () => {
         .split(";")
         .map((s) => s.trim())
         .filter((s) => s !== "");
-    // preamble, guard trigger, nine tables, the zone key, three functions, RESET ROLE
-    expect(statements(partnersDown)).toHaveLength(1 + 1 + 9 + 1 + 3 + 1);
+    // preamble, guard trigger, nine tables, the zone key, five functions, RESET ROLE
+    expect(statements(partnersDown)).toHaveLength(1 + 1 + 9 + 1 + 5 + 1);
     expect(statements(customersDown)).toHaveLength(1 + 5 + 1 + 1);
   });
 
@@ -553,6 +559,36 @@ describe("money stays in the partner's currency, and no line is zero (breaker ho
   it("an order or goodwill line is strictly positive; an adjustment is non-zero", () => {
     expect(tableBody("payout_line")).toMatch(
       /payout_line_amount_minor_check CHECK \(\s*CASE kind WHEN 'adjustment' THEN amount_minor <> 0 ELSE amount_minor > 0 END\s*\)/,
+    );
+  });
+});
+
+describe("coverage stays in the partner's country (breaker r2, B6)", () => {
+  it("checks a coverage row's city and zone against the partner's country, locking the partner", () => {
+    expect(partners).toMatch(
+      /CREATE TRIGGER partner_coverage_country_check\s+BEFORE INSERT OR UPDATE OF partner_id, city_id, postcode_zone_id ON public\.partner_coverage/,
+    );
+    const fn = partners.slice(
+      partners.indexOf(
+        "CREATE FUNCTION public.partner_coverage_country_check()",
+      ),
+      partners.indexOf("CREATE TRIGGER partner_coverage_country_check"),
+    );
+    expect(fn).toMatch(
+      /FROM public\.fulfillment_partner WHERE id = NEW\.partner_id\s+FOR SHARE;/,
+    );
+    expect(fn).toMatch(/FROM public\.city WHERE id = NEW\.city_id/);
+    expect(fn).toMatch(
+      /FROM public\.postcode_zone WHERE id = NEW\.postcode_zone_id/,
+    );
+    expect(fn).toMatch(
+      /SECURITY DEFINER\s+SET search_path = pg_catalog, public/,
+    );
+  });
+
+  it("refuses moving a partner to another country while it covers this one", () => {
+    expect(partners).toMatch(
+      /CREATE TRIGGER fulfillment_partner_coverage_country_guard\s+BEFORE UPDATE OF country_id ON public\.fulfillment_partner/,
     );
   });
 });

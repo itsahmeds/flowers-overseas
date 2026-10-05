@@ -167,21 +167,33 @@ describe.skipIf(sql === undefined)(
           { where: "public.recipient", relkind: "r" },
           { where: "public.recipient_address", relkind: "r" },
         ]);
+        // Every column, and every attribute of a composite-typed column (arrays too), as
+        // `column.attribute`, recursively (breaker r2 hole B), and whether the table is typed.
         const columns = await db<{ table: string; column: string }[]>`
-          SELECT a.attrelid::regclass::text AS table, a.attname AS column
-          FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid
-          WHERE c.relname IN ('recipient', 'recipient_address') AND a.attnum > 0
-            AND NOT a.attisdropped
+          WITH RECURSIVE walk AS (
+            SELECT c.relname::text AS table, a.attname::text AS column, a.atttypid AS type, 1 AS depth
+            FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid
+            WHERE c.relname IN ('recipient', 'recipient_address') AND a.attnum > 0
+              AND NOT a.attisdropped
+            UNION ALL
+            SELECT walk.table, walk.column || '.' || inner_a.attname, inner_a.atttypid, walk.depth + 1
+            FROM walk
+            JOIN pg_type t ON t.oid = walk.type
+            JOIN pg_type base ON base.oid = CASE WHEN t.typelem <> 0 AND t.typlen = -1
+                                                 THEN t.typelem ELSE t.oid END
+            JOIN pg_attribute inner_a ON inner_a.attrelid = base.typrelid
+            WHERE base.typrelid <> 0 AND inner_a.attnum > 0 AND NOT inner_a.attisdropped
+              AND walk.depth < 10
+          )
+          SELECT walk.table, walk.column FROM walk
         `;
         expect(columns.length).toBeGreaterThan(10);
-        expect(
-          recipientEmailViolations(
-            columns.map(({ table, column }) => ({
-              table: table.replace(/^public\./, "").replace(/^"|"$/g, ""),
-              column,
-            })),
-          ),
-        ).toEqual([]);
+        const typed = await db<{ table: string }[]>`
+          SELECT relname::text AS table FROM pg_class
+          WHERE relname IN ('recipient', 'recipient_address') AND reloftype <> 0
+        `;
+        expect(typed).toEqual([]);
+        expect(recipientEmailViolations(columns)).toEqual([]);
       });
 
       it("pins every foreign key of 0005 and 0006 with its delete rule (B3)", async () => {
@@ -665,13 +677,48 @@ describe.skipIf(sql === undefined)(
               "partner_coverage zero capacity",
               (sp) =>
                 sp`INSERT INTO partner_coverage (partner_id, city_id, capacity_per_day)
-                 VALUES (${partner}, ${cityB}, 0)`,
+                 VALUES (${partner}, ${cityA}, 0)`,
             );
+            const cityA2 = await one(
+              tx`INSERT INTO city (country_id) VALUES (${countryA}) RETURNING id`,
+            );
+            const zoneA2 = await one(tx`
+              INSERT INTO postcode_zone (country_id, prefix, city_id)
+              VALUES (${countryA}, 'Z2', ${cityA2}) RETURNING id
+            `);
             await refuse(
               "partner_coverage a zone outside its city (B6)",
               (sp) =>
                 sp`INSERT INTO partner_coverage (partner_id, city_id, postcode_zone_id)
-                 VALUES (${partner}, ${cityA}, ${zoneB})`,
+                 VALUES (${partner}, ${cityA}, ${zoneA2})`,
+            );
+            await refuse(
+              "partner_coverage a city in another country than the partner's (B6 r2)",
+              (sp) =>
+                sp`INSERT INTO partner_coverage (partner_id, city_id) VALUES (${partner}, ${cityB})`,
+            );
+            await refuse(
+              "partner_coverage a zone in another country than the partner's (B6 r2)",
+              (sp) =>
+                sp`INSERT INTO partner_coverage (partner_id, postcode_zone_id) VALUES (${partner}, ${zoneB})`,
+            );
+            await refuse(
+              "partner_coverage moved to another country's city (B6 r2)",
+              (sp) =>
+                sp`UPDATE partner_coverage SET city_id = ${cityB}
+                 WHERE partner_id = ${partner} AND city_id = ${cityA} AND postcode_zone_id IS NULL`,
+            );
+            await refuse(
+              "fulfillment_partner moved to another country under its coverage (B6 r2)",
+              (sp) =>
+                sp`UPDATE fulfillment_partner SET country_id = ${countryB} WHERE id = ${partner}`,
+            );
+            await accept(
+              "fulfillment_partner with no coverage moved to another country",
+              async () => {
+                await tx`UPDATE fulfillment_partner SET country_id = ${countryB} WHERE id = ${partnerB}`;
+                await tx`UPDATE fulfillment_partner SET country_id = ${countryA} WHERE id = ${partnerB}`;
+              },
             );
             await accept(
               "partner_coverage a city with a zone in it",
@@ -1183,6 +1230,10 @@ describe.skipIf(sql === undefined)(
             "partner_coverage the same city twice: partner_coverage_partner_target_idx",
             "partner_coverage zero capacity: partner_coverage_capacity_per_day_check",
             "partner_coverage a zone outside its city (B6): partner_coverage_zone_city_fkey",
+            "partner_coverage a city in another country than the partner's (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
+            "partner_coverage a zone in another country than the partner's (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
+            "partner_coverage moved to another country's city (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
+            "fulfillment_partner moved to another country under its coverage (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "partner_catalog_mapping in another currency than the partner's (B6): partner_catalog_mapping_partner_currency_fkey",
             "fulfillment_partner currency changed under its mappings (B6): partner_catalog_mapping_partner_currency_fkey",
             "payout in another currency than the partner's (B6): PAYOUT_CURRENCY_MISMATCH (23514)",
@@ -1252,6 +1303,7 @@ describe.skipIf(sql === undefined)(
             "partner_member one user in two partners (a chain)",
             "partner_coverage a city and a zone",
             "partner_coverage a city with a zone in it",
+            "fulfillment_partner with no coverage moved to another country",
             "fulfillment_partner currency changed with no mapping in the old one",
             "every refused delete left the buyer's rows in place",
             "partner_blackout a date",

@@ -9,8 +9,10 @@
  * `recipient_address` (the gate replays the chain through a table model, `checkRecipientEmail` in
  * `scripts/db-check.ts`), and the near misses that must stay green.
  */
+import { spawnSync } from "node:child_process";
 import {
   cpSync,
+  mkdirSync,
   mkdtempSync,
   readdirSync,
   readFileSync,
@@ -404,6 +406,167 @@ CREATE FUNCTION f() RETURNS SETOF int LANGUAGE plpgsql AS $f$ BEGIN RETURN QUERY
   });
 });
 
+/**
+ * A scratch directory under the repository, so a copied mirror resolves `drizzle-orm` from the
+ * repository's `node_modules`. It lives in `test-results/` (ignored by git, the formatter and
+ * lint), not under `node_modules/`: Node does not strip types there, and `node_modules/.cache`
+ * does not exist on a fresh install (breaker r2 observation). Created with its parent.
+ */
+function mirrorScratch(): string {
+  const parent = join(repoRoot, "test-results");
+  mkdirSync(parent, { recursive: true });
+  const root = mkdtempSync(join(parent, "t27-mirror-"));
+  scratch.push(root);
+  return root;
+}
+
+/** A copy of the committed mirror whose `recipient` spreads in an `e_mail` column. */
+function spreadMirror(): string {
+  const schemaDir = join(mirrorScratch(), "schema");
+  cpSync(join(repoRoot, SCHEMA_DIR), schemaDir, { recursive: true });
+  const file = join(schemaDir, "customers.ts");
+  const original = readFileSync(file, "utf8");
+  const mutated = original
+    .replace(
+      "export const recipient = pgTable(",
+      'const contactColumns = { contact: text("e_mail") };\n\nexport const recipient = pgTable(',
+    )
+    .replace(
+      '    fullName: text("full_name").notNull(),',
+      '    fullName: text("full_name").notNull(),\n    ...contactColumns,',
+    );
+  expect(mutated).not.toBe(original);
+  writeFileSync(file, mutated);
+  return schemaDir;
+}
+
+/** Nests `inner` in `levels` function bodies, each with its own `$qN$` tag. */
+function nested(levels: number, inner: string): string {
+  let body = inner;
+  for (let level = levels; level >= 1; level -= 1) {
+    body = `CREATE FUNCTION f${String(level)}() RETURNS void LANGUAGE plpgsql AS $q${String(level)}$ BEGIN ${body}; END $q${String(level)}$`;
+  }
+  return `${body};`;
+}
+
+const TYPED = (file = "9999_fixture.sql"): string =>
+  `${file}: a typed table (\`OF\` a type, or \`ALTER TYPE … CASCADE\`) takes its columns from a type db:check does not follow, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); give the table its columns directly`;
+
+describe("AC-27 — breaker round 2 (PR 200)", () => {
+  it("A: an EXECUTE nested four and six $qN$ levels deep is still refused", () => {
+    const execute =
+      "EXECUTE 'ALTER TABLE public.recipient ADD COLUMN ' || 'e' || 'mail text'";
+    expect(gate(nested(4, execute))).toEqual([DYNAMIC(1)]);
+    expect(gate(nested(6, execute))).toEqual([DYNAMIC(1)]);
+  });
+
+  it("A: literal DDL nested six function bodies deep is still read", () => {
+    expect(
+      gate(nested(6, "ALTER TABLE recipient ADD COLUMN email text")),
+    ).toEqual([
+      `9999_fixture.sql: column \`email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
+  });
+
+  it("B: ALTER TABLE … OF a type, then ALTER TYPE … ADD ATTRIBUTE … CASCADE (the breaker's route)", () => {
+    expect(
+      gate(
+        "CREATE TYPE recipient_row AS (id uuid, full_name text); ALTER TABLE recipient OF recipient_row; ALTER TYPE recipient_row ADD ATTRIBUTE email text CASCADE;",
+      ),
+    ).toEqual([TYPED()]);
+  });
+
+  it("B: CREATE TABLE … OF a type, and ALTER TYPE … CASCADE on its own", () => {
+    expect(
+      gate(
+        "DROP TABLE recipient_address; CREATE TABLE recipient_address OF contact_row;",
+      ),
+    ).toEqual([TYPED()]);
+    expect(
+      gate("ALTER TYPE contact_row RENAME ATTRIBUTE phone TO email CASCADE;"),
+    ).toEqual([TYPED()]);
+  });
+
+  it("B: a column of a composite type that carries an email attribute", () => {
+    expect(
+      gate(
+        "CREATE TYPE contact_t AS (phone text, email text); ALTER TABLE recipient ADD COLUMN contact contact_t;",
+      ),
+    ).toEqual([
+      `9999_fixture.sql: column \`contact.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
+    expect(
+      gate(
+        "CREATE TYPE contact_t AS (phone text); ALTER TYPE contact_t ADD ATTRIBUTE e_mail text; ALTER TABLE recipient_address ADD COLUMN contacts public.contact_t[];",
+      ),
+    ).toEqual([
+      `9999_fixture.sql: column \`contacts.e_mail\` on \`recipient_address\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
+  });
+
+  it("B: a composite column carried into recipient by LIKE, and a nested composite", () => {
+    expect(
+      gate(
+        "CREATE TYPE contact_t AS (email text); CREATE TABLE contact_book (c contact_t); DROP TABLE recipient; CREATE TABLE recipient (LIKE contact_book);",
+      ),
+    ).toEqual([
+      `9999_fixture.sql: column \`c.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
+    expect(
+      gate(
+        "CREATE TYPE inner_t AS (email text); CREATE TYPE outer_t AS (who inner_t); ALTER TABLE recipient ADD COLUMN x outer_t;",
+      ),
+    ).toEqual([
+      `9999_fixture.sql: column \`x.who.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
+  });
+
+  it("B: a composite type with no email attribute passes", () => {
+    expect(
+      gate(
+        "CREATE TYPE money_t AS (amount_minor bigint, currency text); ALTER TABLE recipient ADD COLUMN m money_t;",
+      ),
+    ).toEqual([]);
+  });
+
+  it("C: the CLI runs the evaluated mirror (a spread email column fails `node scripts/db-check.ts`)", () => {
+    const schemaDir = spreadMirror();
+    const run = spawnSync(
+      process.execPath,
+      [
+        "scripts/db-check.ts",
+        "--migrations-dir",
+        join(repoRoot, MIGRATIONS_DIR),
+        "--schema-dir",
+        schemaDir,
+      ],
+      { cwd: repoRoot, encoding: "utf8" },
+    );
+    expect(run.status).toBe(1);
+    expect(run.stderr.trim().split("\n")).toEqual([
+      `db:check: db/schema: column \`e_mail\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
+  });
+
+  it("C: the CLI passes the committed tree with the same flags", () => {
+    const run = spawnSync(
+      process.execPath,
+      [
+        "scripts/db-check.ts",
+        "--migrations-dir",
+        join(repoRoot, MIGRATIONS_DIR),
+        "--schema-dir",
+        join(repoRoot, SCHEMA_DIR),
+      ],
+      { cwd: repoRoot, encoding: "utf8" },
+    );
+    expect({ status: run.status, stdout: run.stdout.trim() }).toEqual({
+      status: 0,
+      stdout: "6 migration(s), each with a rollback",
+    });
+  });
+});
+
 describe("AC-27 — the evaluated mirror (breaker hole 2, PR 200)", () => {
   const contactColumns = { contact: text("e_mail") };
   const COLUMN = "email";
@@ -459,23 +622,7 @@ describe("AC-27 — the evaluated mirror (breaker hole 2, PR 200)", () => {
   });
 
   it("runDbCheckWithMirror fails a mirror whose recipient spreads in an email column", async () => {
-    const root = mkdtempSync(join(repoRoot, "node_modules/.cache/t27-mirror-"));
-    scratch.push(root);
-    const schemaDir = join(root, "schema");
-    cpSync(join(repoRoot, SCHEMA_DIR), schemaDir, { recursive: true });
-    const file = join(schemaDir, "customers.ts");
-    const original = readFileSync(file, "utf8");
-    const mutated = original
-      .replace(
-        "export const recipient = pgTable(",
-        'const contactColumns = { contact: text("e_mail") };\n\nexport const recipient = pgTable(',
-      )
-      .replace(
-        '    fullName: text("full_name").notNull(),',
-        '    fullName: text("full_name").notNull(),\n    ...contactColumns,',
-      );
-    expect(mutated).not.toBe(original);
-    writeFileSync(file, mutated);
+    const schemaDir = spreadMirror();
     const { ok, output } = await runDbCheckWithMirror(
       join(repoRoot, MIGRATIONS_DIR),
       schemaDir,

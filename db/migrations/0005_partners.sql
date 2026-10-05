@@ -5,7 +5,7 @@
 -- Nine tables — `fulfillment_partner`, `partner_translation`, `partner_member`,
 -- `partner_coverage`, `partner_blackout`, `partner_catalog_mapping`, `partner_application`,
 -- `payout`, `payout_line` — their `updated_at` triggers, the trigger that keeps a payout in its
--- partner's currency, and the trigger pair that makes `partner_application.media_asset_ids` a real
+-- partner's currency, the pair that keeps coverage in the partner's country, and the trigger pair that makes `partner_application.media_asset_ids` a real
 -- reference to `0004`'s `media_asset`. No policy (RLS
 -- is `0011`, TASK-023: AC-16's partner scoping keys on `partner_member`, written there), no seed row
 -- (the demo partners are TASK-026's).
@@ -80,8 +80,13 @@
 --     amounts are in that currency, and re-labelling them would be a money bug. Admin replaces the
 --     mappings and the currency in one transaction. Payouts are history: they are checked when
 --     written, not when the partner later changes currency.
---   - *Not enforced, recorded.* A coverage row's city or zone is not checked against the partner's
---     own country: that needs a column §5.1 does not have. Admin (spec 012) writes these rows.
+--   - *Coverage stays in the partner's country* (breaker r2 on PR 200). There is no extra column:
+--     `partner_coverage_country_check()` compares the row's city and zone with the partner's
+--     `country_id`, locking the partner row `FOR SHARE`. `fulfillment_partner_coverage_country_guard()`
+--     refuses moving a partner to another country while it still covers the old one. A mis-entered
+--     admin row would otherwise route one country's orders to another country's florist. Moving a
+--     city or zone between countries is not checked; `0002`'s composite keys make that a data fix,
+--     never an admin action.
 --   - *Shape checks* beyond §5.1, each one line: `code` is a lowercase slug (the seed's natural
 --     key), phones are E.164, basis-point rates are 0..10000, capacities are positive, a payout
 --     period ends on or after it starts, an accepted invitation was accepted after it was sent.
@@ -426,6 +431,76 @@ CREATE TRIGGER payout_currency_check
   FOR EACH ROW EXECUTE FUNCTION public.payout_currency_check();
 
 REVOKE EXECUTE ON FUNCTION public.payout_currency_check() FROM PUBLIC;
+
+/* ---------------------------------------------------------------------------
+ * coverage country — a partner covers only its own country
+ * ------------------------------------------------------------------------ */
+
+CREATE FUNCTION public.partner_coverage_country_check() RETURNS trigger
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+DECLARE
+  partner_country uuid;
+  area_country    uuid;
+BEGIN
+  -- FOR SHARE: the partner's country cannot change under a coverage row being written.
+  SELECT country_id INTO partner_country
+  FROM public.fulfillment_partner WHERE id = NEW.partner_id
+  FOR SHARE;
+  IF NOT FOUND THEN
+    RETURN NEW;  -- a missing partner is the foreign key's to report
+  END IF;
+  IF NEW.city_id IS NOT NULL THEN
+    SELECT country_id INTO area_country FROM public.city WHERE id = NEW.city_id;
+    IF FOUND AND area_country <> partner_country THEN
+      RAISE EXCEPTION 'PARTNER_COVERAGE_COUNTRY_MISMATCH: city % is not in partner %''s country', NEW.city_id, NEW.partner_id
+        USING ERRCODE = 'check_violation';
+    END IF;
+  END IF;
+  IF NEW.postcode_zone_id IS NOT NULL THEN
+    SELECT country_id INTO area_country FROM public.postcode_zone WHERE id = NEW.postcode_zone_id;
+    IF FOUND AND area_country <> partner_country THEN
+      RAISE EXCEPTION 'PARTNER_COVERAGE_COUNTRY_MISMATCH: zone % is not in partner %''s country', NEW.postcode_zone_id, NEW.partner_id
+        USING ERRCODE = 'check_violation';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$fn$;
+
+CREATE TRIGGER partner_coverage_country_check
+  BEFORE INSERT OR UPDATE OF partner_id, city_id, postcode_zone_id ON public.partner_coverage
+  FOR EACH ROW EXECUTE FUNCTION public.partner_coverage_country_check();
+
+CREATE FUNCTION public.fulfillment_partner_coverage_country_guard() RETURNS trigger
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+BEGIN
+  IF NEW.country_id IS DISTINCT FROM OLD.country_id AND EXISTS (
+    SELECT 1
+    FROM public.partner_coverage AS coverage
+    LEFT JOIN public.city AS city ON city.id = coverage.city_id
+    LEFT JOIN public.postcode_zone AS zone ON zone.id = coverage.postcode_zone_id
+    WHERE coverage.partner_id = NEW.id
+      AND (city.country_id <> NEW.country_id OR zone.country_id <> NEW.country_id)
+  ) THEN
+    RAISE EXCEPTION 'PARTNER_COVERAGE_COUNTRY_MISMATCH: partner % still covers areas outside its new country', NEW.id
+      USING ERRCODE = 'check_violation';
+  END IF;
+  RETURN NEW;
+END;
+$fn$;
+
+CREATE TRIGGER fulfillment_partner_coverage_country_guard
+  BEFORE UPDATE OF country_id ON public.fulfillment_partner
+  FOR EACH ROW EXECUTE FUNCTION public.fulfillment_partner_coverage_country_guard();
+
+REVOKE EXECUTE ON FUNCTION public.partner_coverage_country_check() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.fulfillment_partner_coverage_country_guard() FROM PUBLIC;
 
 /* ---------------------------------------------------------------------------
  * media_asset_ids — the reference an array cannot declare

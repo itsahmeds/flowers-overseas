@@ -551,6 +551,10 @@ const TABLE_CONSTRAINT_HEADS = [
 class TableModel {
   readonly columns = new Map<string, Set<string>>();
   readonly parents = new Map<string, Set<string>>();
+  /** Composite types: their attribute names, nested ones flattened as `who.email`. */
+  readonly types = new Map<string, Set<string>>();
+  /** Where each composite type is used as a column type: `[table, column]`. */
+  readonly typeUses = new Map<string, [string, string][]>();
   readonly problems: string[] = [];
 
   private readonly file: string;
@@ -566,6 +570,15 @@ class TableModel {
     }
     for (const [table, parents] of this.parents) {
       model.parents.set(table, new Set(parents));
+    }
+    for (const [type, attributes] of this.types) {
+      model.types.set(type, new Set(attributes));
+    }
+    for (const [type, uses] of this.typeUses) {
+      model.typeUses.set(
+        type,
+        uses.map(([t, c]) => [t, c]),
+      );
     }
     return model;
   }
@@ -599,6 +612,84 @@ class TableModel {
   copyColumns(from: string, to: string): void {
     for (const column of this.columns.get(from) ?? [])
       this.addColumn(to, column);
+  }
+
+  /** A typed table, or a type change cascaded into one: refused outright (breaker r2 hole B). */
+  typed(): void {
+    this.problems.push(
+      `${this.file}: a typed table (\`OF\` a type, or \`ALTER TYPE … CASCADE\`) takes its columns from a type db:check does not follow, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); give the table its columns directly`,
+    );
+  }
+
+  /** The composite types named in a column's type tokens, with their flattened attributes. */
+  private compositesIn(
+    typeTokens: readonly SqlToken[],
+  ): [string, Set<string>][] {
+    const found: [string, Set<string>][] = [];
+    for (const token of typeTokens) {
+      const name = nameOf(token);
+      const attributes = name === undefined ? undefined : this.types.get(name);
+      if (name !== undefined && attributes !== undefined)
+        found.push([name, attributes]);
+    }
+    return found;
+  }
+
+  /** A column, plus `column.attribute` for every attribute of a composite type it is declared with. */
+  addTypedColumn(
+    table: string,
+    column: string,
+    typeTokens: readonly SqlToken[],
+  ): void {
+    this.addColumn(table, column);
+    for (const [type, attributes] of this.compositesIn(typeTokens)) {
+      const uses = this.typeUses.get(type) ?? [];
+      uses.push([table, column]);
+      this.typeUses.set(type, uses);
+      for (const attribute of attributes)
+        this.addColumn(table, `${column}.${attribute}`);
+    }
+  }
+
+  dropColumn(table: string, column: string): void {
+    const set = this.columns.get(table);
+    if (set === undefined) return;
+    for (const name of [...set]) {
+      if (name === column || name.startsWith(`${column}.`)) set.delete(name);
+    }
+  }
+
+  renameColumn(table: string, from: string, to: string): void {
+    const set = this.columns.get(table) ?? new Set<string>();
+    const carried = [...set].filter((name) => name.startsWith(`${from}.`));
+    this.dropColumn(table, from);
+    this.addColumn(table, to);
+    for (const name of carried)
+      this.addColumn(table, `${to}${name.slice(from.length)}`);
+  }
+
+  /** `CREATE TYPE name AS (attribute type, …)`. */
+  defineType(type: string, elements: readonly SqlToken[][]): void {
+    const attributes = new Set<string>();
+    for (const element of elements) {
+      const name = nameOf(element[0]);
+      if (name === undefined) continue;
+      attributes.add(name);
+      for (const [, nested] of this.compositesIn(element.slice(1))) {
+        for (const inner of nested) attributes.add(`${name}.${inner}`);
+      }
+    }
+    this.types.set(type, attributes);
+  }
+
+  /** `ALTER TYPE … ADD ATTRIBUTE`: every column already of that type gains the attribute. */
+  addAttribute(type: string, attribute: string): void {
+    const attributes = this.types.get(type) ?? new Set<string>();
+    attributes.add(attribute);
+    this.types.set(type, attributes);
+    for (const [table, column] of this.typeUses.get(type) ?? []) {
+      this.addColumn(table, `${column}.${attribute}`);
+    }
   }
 
   /** A view: it cannot hold a recipient name, and its columns are every name in its text. */
@@ -653,8 +744,22 @@ class TableModel {
   }
 }
 
-/** Applies one statement to the model. */
-function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
+/** The words a statement the model follows can start with. */
+const STATEMENT_HEADS = ["create", "alter", "drop", "select", "with"];
+
+/**
+ * Applies one statement to the model. A plpgsql body splits into statements that open with
+ * `BEGIN`, `IF … THEN`, a label and the like, so the statement is read from its first DDL word.
+ */
+function applyStatement(
+  model: TableModel,
+  statement: readonly SqlToken[],
+): void {
+  const head = statement.findIndex((token) =>
+    isWord(token, ...STATEMENT_HEADS),
+  );
+  if (head === -1) return;
+  const tokens = statement.slice(head);
   let i = 0;
   if (isWord(tokens[i], "create")) {
     i += 1;
@@ -673,6 +778,18 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
       )
     ) {
       i += 1;
+    }
+    if (isWord(tokens[i], "type")) {
+      const type = qualifiedName(tokens, i + 1);
+      if (
+        type !== undefined &&
+        isWord(tokens[type.end], "as") &&
+        isPunct(tokens[type.end + 1], "(")
+      ) {
+        const { inner } = parenthesised(tokens, type.end + 1);
+        model.defineType(type.name, topLevelCommaSplit(inner));
+      }
+      return;
     }
     if (isWord(tokens[i], "view")) {
       i += 1;
@@ -697,7 +814,7 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
       return;
     }
     if (isWord(tokens[i], "of")) {
-      model.opaque(table, tokens.slice(i));
+      model.typed();
       return;
     }
     if (isPunct(tokens[i], "(")) {
@@ -717,7 +834,8 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
           continue;
         }
         const column = nameOf(head);
-        if (column !== undefined) model.addColumn(table, column);
+        if (column !== undefined)
+          model.addTypedColumn(table, column, element.slice(1));
       }
       i = end;
     }
@@ -731,6 +849,24 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
     }
     if (tokens.slice(i).some((token) => isWord(token, "as"))) {
       model.opaque(table, tokens.slice(i));
+    }
+    return;
+  }
+
+  if (isWord(tokens[0], "alter") && isWord(tokens[1], "type")) {
+    const type = qualifiedName(tokens, 2);
+    if (type === undefined) return;
+    if (tokens.some((token) => isWord(token, "cascade"))) model.typed();
+    for (const action of topLevelCommaSplit(tokens.slice(type.end))) {
+      if (isWord(action[0], "add") && isWord(action[1], "attribute")) {
+        const attribute = nameOf(action[2]);
+        if (attribute !== undefined) model.addAttribute(type.name, attribute);
+      }
+      if (isWord(action[0], "rename") && isWord(action[1], "attribute")) {
+        const to = nameOf(action[4]);
+        if (to !== undefined && isWord(action[3], "to"))
+          model.addAttribute(type.name, to);
+      }
     }
     return;
   }
@@ -805,7 +941,12 @@ function applyAlterAction(
     if (isWord(action[k], "column")) k += 1;
     if (isWord(action[k], "if") && isWord(action[k + 1], "not")) k += 3;
     const column = nameOf(action[k]);
-    if (column !== undefined) model.addColumn(table, column);
+    if (column !== undefined)
+      model.addTypedColumn(table, column, action.slice(k + 1));
+    return;
+  }
+  if (isWord(action[k], "of")) {
+    model.typed();
     return;
   }
   if (isWord(action[k], "drop")) {
@@ -814,7 +955,7 @@ function applyAlterAction(
     if (isWord(action[k], "column")) k += 1;
     if (isWord(action[k], "if") && isWord(action[k + 1], "exists")) k += 2;
     const column = nameOf(action[k]);
-    if (column !== undefined) model.columns.get(table)?.delete(column);
+    if (column !== undefined) model.dropColumn(table, column);
     return;
   }
   if (isWord(action[k], "rename")) {
@@ -829,8 +970,7 @@ function applyAlterAction(
     const from = nameOf(action[k]);
     const to = nameOf(action[k + 2]);
     if (from !== undefined && to !== undefined && isWord(action[k + 1], "to")) {
-      model.columns.get(table)?.delete(from);
-      model.addColumn(table, to);
+      model.renameColumn(table, from, to);
     }
     return;
   }
@@ -842,17 +982,16 @@ function applyAlterAction(
 
 /**
  * Runs every statement of a body through the model, then every string and dollar-quoted body in
- * it as SQL of its own (`DO $$ … EXECUTE '…' … $$`, a function body), up to three levels deep.
+ * it as SQL of its own (`DO $$ … $$`, a function body), **at every depth**: a body is strictly
+ * shorter than the text that quotes it, so the recursion ends, and a limit would be a place for a
+ * statement to hide (breaker r2 hole A).
  */
-function applySql(model: TableModel, sql: string, depth = 0): void {
+function applySql(model: TableModel, sql: string): void {
   const tokens = lexSql(sql);
   for (const statement of statementsOf(tokens))
     applyStatement(model, statement);
-  if (depth >= 3) return;
   for (const token of tokens) {
-    if (token.kind === "string" && /\b(table|into)\b/i.test(token.value)) {
-      applySql(model, token.value, depth + 1);
-    }
+    if (token.kind === "string") applySql(model, token.value);
   }
 }
 
@@ -895,11 +1034,11 @@ export const DYNAMIC_SQL_ALLOWED: ReadonlyMap<string, string> = new Map([
 ]);
 
 /**
- * Every dynamic-SQL `EXECUTE` in a body, at any depth of string or dollar quoting: an `EXECUTE`
+ * Every dynamic-SQL `EXECUTE` in a body, at every depth of string or dollar quoting: an `EXECUTE`
  * word not followed by `FUNCTION` or `PROCEDURE` (a trigger's action) or `ON` (the privilege, as in
  * `GRANT EXECUTE ON FUNCTION`).
  */
-export function dynamicSqlCount(sql: string, depth = 0): number {
+export function dynamicSqlCount(sql: string): number {
   const tokens = lexSql(sql);
   let count = 0;
   tokens.forEach((token, index) => {
@@ -909,9 +1048,8 @@ export function dynamicSqlCount(sql: string, depth = 0): number {
     ) {
       count += 1;
     }
-    if (token.kind === "string" && depth < 3) {
-      count += dynamicSqlCount(token.value, depth + 1);
-    }
+    // Every depth (breaker r2 hole A): a quoted body is strictly shorter, so this ends.
+    if (token.kind === "string") count += dynamicSqlCount(token.value);
   });
   return count;
 }
@@ -1176,9 +1314,16 @@ export const SCHEMA_DIR = "db/schema";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
+  // `--migrations-dir` / `--schema-dir` exist so a test can run this exact entry point against a
+  // mutated copy (breaker r2 hole C); `pnpm db:check` passes neither.
+  const flag = (name: string, fallback: string): string => {
+    const index = process.argv.indexOf(name);
+    const value = index === -1 ? undefined : process.argv[index + 1];
+    return value === undefined ? resolve(repoRoot, fallback) : resolve(value);
+  };
   const { ok, output } = await runDbCheckWithMirror(
-    resolve(repoRoot, MIGRATIONS_DIR),
-    resolve(repoRoot, SCHEMA_DIR),
+    flag("--migrations-dir", MIGRATIONS_DIR),
+    flag("--schema-dir", SCHEMA_DIR),
   );
   for (const line of output) {
     if (ok) console.log(line);
