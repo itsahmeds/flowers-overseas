@@ -26,6 +26,7 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** the founder sets `QUOTE_SIGNING_SECRET` per environment on Railway (a secret: founder action) before this runs on staging; say so in the PR.
 - **From `/plan-tasks` (2026-10-05):** same backend agent as TASK-200, TASK-205 and TASK-207.
+- **From `/break 201` round 3 (2026-10-05, HOLDS on `ae480772`):** residual AC-1 scan evasions to close here: `globalThis.eval`, `(0,eval)`, `constructor.constructor` and `createRequire` slip past the source scan. Plus nits on the text validators: U+2065, U+2060, U+FEFF and the Unicode tag characters (U+E0000 block) are not refused.
 
 ## Escalations
 
