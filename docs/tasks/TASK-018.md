@@ -62,6 +62,15 @@ _None recorded._
   evaluated module, and the CLI test copies `scripts/db-check.ts` with `db/` into a scratch tree
   and runs it. TASK-200's test is untouched. Hole C stays red: the CLI on `runDbCheck` (1 red),
   mirror lines ignored (2 red).
+- 2026-10-05: breaker r4 on `cab6f8f1`: two test gaps closed, no new code.
+  - D2: a live case moves a partner with city-only coverage to another country. With the city
+    half of the guard removed, it goes red.
+  - Nit: a unit fixture pins `CREATE [OR REPLACE] PROCEDURE`. With the `procedure` branch
+    removed, it goes red.
+  - Hole G (an obfuscated `search_path` route to `CREATE DOMAIN public.text`) goes to the
+    reviewer for acceptance, with a carry to TASK-022.
+
+  Local PostgreSQL 16.14, PID 46387, stopped by PID.
 
 ## Result
 

@@ -752,6 +752,13 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE fulfillment_partner SET country_id = ${countryB} WHERE id = ${partner}`,
             );
+            const partnerD = await one(partnerRow("zz-demo-4"));
+            await tx`INSERT INTO partner_coverage (partner_id, city_id) VALUES (${partnerD}, ${cityA})`;
+            await refuse(
+              "fulfillment_partner with city-only coverage moved to another country (D2)",
+              (sp) =>
+                sp`UPDATE fulfillment_partner SET country_id = ${countryB} WHERE id = ${partnerD}`,
+            );
             const partnerC = await one(partnerRow("zz-demo-3"));
             await tx`INSERT INTO partner_coverage (partner_id, postcode_zone_id) VALUES (${partnerC}, ${zoneA})`;
             await refuse(
@@ -1281,6 +1288,7 @@ describe.skipIf(sql === undefined)(
             "partner_coverage moved to another country's city (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "fulfillment_partner moved to another country under its coverage (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "fulfillment_partner with zone-only coverage moved to another country (D): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
+            "fulfillment_partner with city-only coverage moved to another country (D2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "partner_catalog_mapping in another currency than the partner's (B6): partner_catalog_mapping_partner_currency_fkey",
             "fulfillment_partner currency changed under its mappings (B6): partner_catalog_mapping_partner_currency_fkey",
             "payout in another currency than the partner's (B6): PAYOUT_CURRENCY_MISMATCH (23514)",

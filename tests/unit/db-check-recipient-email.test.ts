@@ -744,6 +744,17 @@ describe("AC-27 — the class, closed (breaker r3, PR 200)", () => {
     ).toEqual([PROCEDURAL()]);
   });
 
+  it("R2-1: DDL in a CREATE PROCEDURE body, and in CREATE OR REPLACE PROCEDURE", () => {
+    for (const head of ["CREATE PROCEDURE", "CREATE OR REPLACE PROCEDURE"]) {
+      expect(
+        gate(
+          `${head} p() LANGUAGE plpgsql AS $p$ BEGIN DROP TABLE recipient; END $p$;`,
+        ),
+        head,
+      ).toEqual([PROCEDURAL()]);
+    }
+  });
+
   it("search_path changes: SET, set_config, ALTER ROLE, and inside a body", () => {
     expect(gate("SET LOCAL search_path TO evil, pg_catalog;")).toEqual([
       SEARCH_PATH,
