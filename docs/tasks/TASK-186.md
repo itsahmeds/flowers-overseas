@@ -182,6 +182,13 @@ One line per coherent step, newest last.
   `Container` cases, T-34 the guide at three widths, T-43 all 18 size cases, T-45 all nine). A
   second build with only the photo cap removed: T-43 red on the guide at both sizes (498 > 480,
   571 > 520). Measured after, on the local build, same script: table in `## Result`.
+- 2026-10-05: CI run 37264269655 on 7ed8ff07: `e2e` red on `tests/e2e/header.spec.ts` "at 320 px
+  ... inside the notice bar's gutters", 4 locales x 2 projects, red on retry too, so not a flake.
+  Cause: this PR's 13 px "Beta" widened the switcher's `<ul>`, a flex row that never wrapped, past
+  the bar's 280 px box on Linux. Fix: the list wraps below `lg`. Local build: at 320 it wraps
+  inside 20 to 300; at 360 and 390 it stays one 44 px row; `header.spec.ts` and this task's spec
+  green on both projects. The one other red case, `consent-banner.spec.ts:662` on `e2e-mobile`,
+  passed on its retry (flaky) and is outside this diff.
 
 ## Result
 
