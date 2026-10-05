@@ -10,8 +10,9 @@
  * function refuses a set of lines that is not, rather than adding unlike amounts.
  *
  * No approximate-equivalents line belongs to the checkout (spec 004 §14 A21 clause 6(c) lists
- * where one appears, and checkout is not among them): nothing in `src/modules/checkout` imports
- * `priceEquivalents()`, which `tests/unit/checkout-currency.test.ts` asserts.
+ * where one appears, and checkout is not among them): nothing in `src/modules/checkout` names the
+ * catalogue's equivalents function or its label key, which `tests/unit/checkout-currency.test.ts`
+ * asserts.
  */
 import type { CurrencyCode } from "@/config/currencies";
 import type { AddonPriceProjection, PriceProjection } from "@/modules/catalog";
