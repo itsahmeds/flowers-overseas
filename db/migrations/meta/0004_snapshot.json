@@ -1,5 +1,5 @@
 {
-  "id": "3a19e853-7cd1-4507-bd3e-7df10e3586bf",
+  "id": "0c0c9242-d103-492d-bdf3-3c9db382a711",
   "prevId": "7c42dc45-2a6e-4bf9-8324-b99d90d9619b",
   "version": "7",
   "dialect": "postgresql",
@@ -2468,6 +2468,11 @@
           "name": "postcode_zone_country_prefix_key",
           "nullsNotDistinct": false,
           "columns": ["country_id", "prefix"]
+        },
+        "postcode_zone_id_city_key": {
+          "name": "postcode_zone_id_city_key",
+          "nullsNotDistinct": false,
+          "columns": ["id", "city_id"]
         }
       },
       "policies": {},
@@ -3427,6 +3432,11 @@
           "name": "fulfillment_partner_code_key",
           "nullsNotDistinct": false,
           "columns": ["code"]
+        },
+        "fulfillment_partner_id_payout_currency_key": {
+          "name": "fulfillment_partner_id_payout_currency_key",
+          "nullsNotDistinct": false,
+          "columns": ["id", "payout_currency_code"]
         }
       },
       "policies": {},
@@ -3856,6 +3866,15 @@
           "columnsTo": ["product_id", "tier_key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
+        },
+        "partner_catalog_mapping_partner_currency_fkey": {
+          "name": "partner_catalog_mapping_partner_currency_fkey",
+          "tableFrom": "partner_catalog_mapping",
+          "tableTo": "fulfillment_partner",
+          "columnsFrom": ["partner_id", "currency_code"],
+          "columnsTo": ["id", "payout_currency_code"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3981,6 +4000,15 @@
           "tableTo": "postcode_zone",
           "columnsFrom": ["postcode_zone_id"],
           "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "partner_coverage_zone_city_fkey": {
+          "name": "partner_coverage_zone_city_fkey",
+          "tableFrom": "partner_coverage",
+          "tableTo": "postcode_zone",
+          "columnsFrom": ["postcode_zone_id", "city_id"],
+          "columnsTo": ["id", "city_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }

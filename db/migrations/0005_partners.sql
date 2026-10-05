@@ -4,8 +4,9 @@
 --
 -- Nine tables — `fulfillment_partner`, `partner_translation`, `partner_member`,
 -- `partner_coverage`, `partner_blackout`, `partner_catalog_mapping`, `partner_application`,
--- `payout`, `payout_line` — their `updated_at` triggers, and the trigger pair that makes
--- `partner_application.media_asset_ids` a real reference to `0004`'s `media_asset`. No policy (RLS
+-- `payout`, `payout_line` — their `updated_at` triggers, the trigger that keeps a payout in its
+-- partner's currency, and the trigger pair that makes `partner_application.media_asset_ids` a real
+-- reference to `0004`'s `media_asset`. No policy (RLS
 -- is `0011`, TASK-023: AC-16's partner scoping keys on `partner_member`, written there), no seed row
 -- (the demo partners are TASK-026's).
 --
@@ -25,17 +26,23 @@
 --      every request, and TASK-023's policies read the resulting `app.partner_ids`.
 --   3. **Money is integer minor units plus a currency** (§2, AC-5). `partner_payout_minor`,
 --      `total_minor` and `amount_minor` are `bigint`, each beside a `currency_code` foreign-keyed
---      to `currency` and shape-checked. A payout statement is in one currency: `payout_line`
---      references its payout by `(payout_id, currency_code)`, so a line cannot be in a currency
---      its payout is not. An order is paid once: `payout_line_order_once_idx` admits one `order`
---      line per order across every payout.
+--      to `currency` and shape-checked. Everything a partner is paid is in the partner's
+--      `payout_currency_code`: a mapping references the partner by `(partner_id, currency_code)`,
+--      a payout is checked against the partner's currency when it is written
+--      (`payout_currency_check()`, which locks the partner row `FOR SHARE`), and a `payout_line`
+--      references its payout by `(payout_id, currency_code)`. An order is paid once:
+--      `payout_line_order_once_idx` admits one `order` line per order across every payout.
 --   4. **`media_asset_ids` references `0004`'s assets** (TASK-018 brief). Postgres has no foreign
 --      key from an array element, so two triggers stand in for one: an application may list only
 --      existing `kind = 'partner'`, `visibility = 'private'` assets (raised as `23503`, the
 --      foreign-key SQLSTATE), and such an asset can be neither deleted nor made public or
---      re-kinded while an application lists it. Both functions are `SECURITY DEFINER` as
---      `app_owner` with a pinned `search_path`, so the check sees every row whatever policy the
---      caller's role reads through once TASK-023 enables RLS.
+--      re-kinded while an application lists it. The check **locks the listed assets `FOR SHARE`**,
+--      as a real foreign key locks its parent row: a concurrent delete, or an update of `kind` or
+--      `visibility` (which takes `FOR NO KEY UPDATE`, and so would not wait for `FOR KEY SHARE`),
+--      waits for the application's transaction and then meets the guard; an application written
+--      while such an update is in flight waits for it and re-reads the row. Both functions are
+--      `SECURITY DEFINER` as `app_owner` with a pinned `search_path`, so the check sees every row
+--      whatever policy the caller's role reads through once TASK-023 enables RLS.
 --
 -- Column sets are §5.1's, in §5.1's order, then `created_at` / `updated_at`. The value lists are
 -- the tuples in `db/schema/partners.ts`, pinned against this file by
@@ -63,16 +70,24 @@
 --   - *`partner_catalog_mapping (product_id, tier_key)`* references `product_tier`, `MATCH SIMPLE`,
 --     exactly as `country_price` does in `0003`: a null tier skips the check, a named tier must be
 --     one the product offers.
+--   - *Two supporting keys on parent tables.* `fulfillment_partner_id_payout_currency_key UNIQUE
+--     (id, payout_currency_code)` for the mapping's composite reference, and, on `0002`'s
+--     `postcode_zone`, `postcode_zone_id_city_key UNIQUE (id, city_id)`, so that a coverage row
+--     naming both a city and a zone names a zone *in* that city (`partner_coverage_zone_city_fkey`,
+--     `MATCH SIMPLE`: a row with only one of the two skips it). The rollback drops both.
+--   - *Currency changes.* Because a mapping references the partner's currency (`NO ACTION`), a
+--     partner's `payout_currency_code` cannot change while mappings exist in the old one: the
+--     amounts are in that currency, and re-labelling them would be a money bug. Admin replaces the
+--     mappings and the currency in one transaction. Payouts are history: they are checked when
+--     written, not when the partner later changes currency.
 --   - *Not enforced, recorded.* A coverage row's city or zone is not checked against the partner's
---     country, and a payout or a mapping is not checked against the partner's
---     `payout_currency_code`: each needs a column §5.1 does not have or would freeze the partner's
---     currency for ever. Admin (spec 012) writes these rows; its forms carry the rule.
+--     own country: that needs a column §5.1 does not have. Admin (spec 012) writes these rows.
 --   - *Shape checks* beyond §5.1, each one line: `code` is a lowercase slug (the seed's natural
 --     key), phones are E.164, basis-point rates are 0..10000, capacities are positive, a payout
 --     period ends on or after it starts, an accepted invitation was accepted after it was sent.
 --
 -- **Indexes, measured rather than copied** (as in `0003`/`0004`). Beyond primary keys and unique
--- constraints, exactly three:
+-- constraints (the two supporting keys above included), exactly three:
 --
 --   - `payout_line_payout_id_idx (payout_id)` — a statement's lines, the `RESTRICT` check on a
 --     payout delete, and TASK-023's policy that reaches a line's partner through its payout.
@@ -112,6 +127,8 @@ CREATE TABLE public.fulfillment_partner (
   created_at            timestamptz NOT NULL DEFAULT now(),
   updated_at            timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT fulfillment_partner_code_key UNIQUE (code),
+  -- (id, payout_currency_code) so a mapping can only be in its partner's currency.
+  CONSTRAINT fulfillment_partner_id_payout_currency_key UNIQUE (id, payout_currency_code),
   CONSTRAINT fulfillment_partner_country_id_country_id_fk FOREIGN KEY (country_id)
     REFERENCES public.country (id) ON DELETE RESTRICT,
   CONSTRAINT fulfillment_partner_payout_currency_code_currency_code_fk FOREIGN KEY (payout_currency_code)
@@ -183,6 +200,10 @@ COMMENT ON TABLE public.partner_member IS
  * partner_coverage — where a partner delivers: a city, a postcode zone, or both
  * ------------------------------------------------------------------------ */
 
+-- The supporting key for `partner_coverage_zone_city_fkey` (header: "Two supporting keys").
+ALTER TABLE public.postcode_zone
+  ADD CONSTRAINT postcode_zone_id_city_key UNIQUE (id, city_id);
+
 CREATE TABLE public.partner_coverage (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   partner_id       uuid        NOT NULL,
@@ -197,6 +218,9 @@ CREATE TABLE public.partner_coverage (
     REFERENCES public.city (id) ON DELETE RESTRICT,
   CONSTRAINT partner_coverage_postcode_zone_id_postcode_zone_id_fk FOREIGN KEY (postcode_zone_id)
     REFERENCES public.postcode_zone (id) ON DELETE RESTRICT,
+  -- MATCH SIMPLE (the default): only a row naming both is checked; its zone must be in its city.
+  CONSTRAINT partner_coverage_zone_city_fkey FOREIGN KEY (postcode_zone_id, city_id)
+    REFERENCES public.postcode_zone (id, city_id) ON DELETE RESTRICT,
   CONSTRAINT partner_coverage_target_check CHECK (city_id IS NOT NULL OR postcode_zone_id IS NOT NULL),
   CONSTRAINT partner_coverage_capacity_per_day_check CHECK (capacity_per_day > 0)
 );
@@ -248,6 +272,9 @@ CREATE TABLE public.partner_catalog_mapping (
     REFERENCES public.product_tier (product_id, tier_key) ON DELETE RESTRICT,
   CONSTRAINT partner_catalog_mapping_currency_code_currency_code_fk FOREIGN KEY (currency_code)
     REFERENCES public.currency (code) ON DELETE RESTRICT,
+  -- A mapping is in its partner's payout currency.
+  CONSTRAINT partner_catalog_mapping_partner_currency_fkey FOREIGN KEY (partner_id, currency_code)
+    REFERENCES public.fulfillment_partner (id, payout_currency_code) ON DELETE RESTRICT,
   CONSTRAINT partner_catalog_mapping_currency_code_check CHECK (currency_code ~ '^[A-Z]{3}$'),
   CONSTRAINT partner_catalog_mapping_partner_payout_minor_check CHECK (partner_payout_minor >= 0),
   CONSTRAINT partner_catalog_mapping_source_check CHECK (source IN ('seed', 'real'))
@@ -369,6 +396,38 @@ CREATE UNIQUE INDEX payout_line_order_once_idx
   ON public.payout_line USING btree (order_id) WHERE kind = 'order';
 
 /* ---------------------------------------------------------------------------
+ * payout currency — a payout is in its partner's payout currency when it is written
+ * ------------------------------------------------------------------------ */
+
+CREATE FUNCTION public.payout_currency_check() RETURNS trigger
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+DECLARE
+  expected text;
+BEGIN
+  -- FOR SHARE: the partner's currency cannot change under a payout being written.
+  SELECT payout_currency_code INTO expected
+  FROM public.fulfillment_partner WHERE id = NEW.partner_id
+  FOR SHARE;
+  IF FOUND AND NEW.currency_code IS DISTINCT FROM expected THEN
+    RAISE EXCEPTION 'PAYOUT_CURRENCY_MISMATCH: a payout in % for a partner paid in %',
+      NEW.currency_code, expected
+      USING ERRCODE = 'check_violation';
+  END IF;
+  -- A missing partner is the foreign key's to report.
+  RETURN NEW;
+END;
+$fn$;
+
+CREATE TRIGGER payout_currency_check
+  BEFORE INSERT OR UPDATE OF partner_id, currency_code ON public.payout
+  FOR EACH ROW EXECUTE FUNCTION public.payout_currency_check();
+
+REVOKE EXECUTE ON FUNCTION public.payout_currency_check() FROM PUBLIC;
+
+/* ---------------------------------------------------------------------------
  * media_asset_ids — the reference an array cannot declare
  * ------------------------------------------------------------------------ */
 
@@ -378,15 +437,22 @@ CREATE FUNCTION public.partner_application_media_check() RETURNS trigger
   SET search_path = pg_catalog, public
 AS $fn$
 DECLARE
+  locked  uuid[];
   missing uuid;
 BEGIN
+  -- FOR SHARE, as a foreign key locks its parent: a concurrent DELETE (FOR UPDATE) or an UPDATE
+  -- of kind/visibility (FOR NO KEY UPDATE) waits for this transaction, then meets the guard. The
+  -- predicate is inside the locking query, so a row changed while we waited is re-read.
+  SELECT coalesce(array_agg(asset.id), '{}') INTO locked
+  FROM (
+    SELECT id FROM public.media_asset
+    WHERE id = ANY (NEW.media_asset_ids) AND kind = 'partner' AND visibility = 'private'
+    FOR SHARE
+  ) AS asset;
   SELECT listed INTO missing
   FROM unnest(NEW.media_asset_ids) AS listed
   WHERE listed IS NOT NULL  -- a null element is partner_application_media_asset_ids_check's
-    AND NOT EXISTS (
-      SELECT 1 FROM public.media_asset AS asset
-      WHERE asset.id = listed AND asset.kind = 'partner' AND asset.visibility = 'private'
-    )
+    AND NOT (listed = ANY (locked))
   LIMIT 1;
   IF FOUND THEN
     RAISE EXCEPTION 'PARTNER_APPLICATION_MEDIA_ASSET: % is not a private partner media_asset', missing

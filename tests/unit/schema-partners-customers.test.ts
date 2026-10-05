@@ -8,7 +8,7 @@
  * both sides, the CHECK lists equal to the mirror's tuples, the money pairs, the minimisation
  * properties of §8, the `updated_at` triggers and the rollbacks.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
@@ -328,7 +328,7 @@ describe("partner_application.media_asset_ids references media_asset (brief)", (
       /CREATE FUNCTION public\.partner_application_media_check\(\) RETURNS trigger\s+LANGUAGE plpgsql\s+SECURITY DEFINER\s+SET search_path = pg_catalog, public/,
     );
     expect(partners).toMatch(
-      /asset\.kind = 'partner' AND asset\.visibility = 'private'/,
+      /kind = 'partner' AND visibility = 'private'\s+FOR SHARE/,
     );
     expect(partners).toMatch(
       /CREATE TRIGGER partner_application_media_check\s+BEFORE INSERT OR UPDATE OF media_asset_ids ON public\.partner_application/,
@@ -370,7 +370,7 @@ describe("the rollbacks", () => {
     expect(`${partnersDown}${customersDown}`).not.toMatch(/CASCADE/i);
   });
 
-  it("drop the media guard, both functions and the postcode_zone key, and nothing else", () => {
+  it("drop the media guard, the three functions and the two postcode_zone keys, and nothing else", () => {
     expect(partnersDown).toMatch(
       /^DROP TRIGGER IF EXISTS media_asset_partner_application_guard ON public\.media_asset;$/m,
     );
@@ -380,6 +380,12 @@ describe("the rollbacks", () => {
     expect(partnersDown).toMatch(
       /DROP FUNCTION IF EXISTS public\.partner_application_media_check\(\);/,
     );
+    expect(partnersDown).toMatch(
+      /DROP FUNCTION IF EXISTS public\.payout_currency_check\(\);/,
+    );
+    expect(partnersDown).toMatch(
+      /ALTER TABLE public\.postcode_zone DROP CONSTRAINT IF EXISTS postcode_zone_id_city_key;/,
+    );
     expect(customersDown).toMatch(
       /ALTER TABLE public\.postcode_zone DROP CONSTRAINT IF EXISTS postcode_zone_id_country_key;/,
     );
@@ -388,16 +394,407 @@ describe("the rollbacks", () => {
         .split(";")
         .map((s) => s.trim())
         .filter((s) => s !== "");
-    expect(statements(partnersDown)).toHaveLength(1 + 1 + 9 + 2 + 1);
+    // preamble, guard trigger, nine tables, the zone key, three functions, RESET ROLE
+    expect(statements(partnersDown)).toHaveLength(1 + 1 + 9 + 1 + 3 + 1);
     expect(statements(customersDown)).toHaveLength(1 + 5 + 1 + 1);
   });
 
-  it("add, in 0006, the one key on another migration's table that the rollback removes", () => {
+  it("add one key each to another migration's table (postcode_zone), which the rollbacks remove", () => {
     expect(
-      [...both.matchAll(/ALTER TABLE public\.(\w+)/g)].map((m) => m[1]),
+      [...partners.matchAll(/ALTER TABLE public\.(\w+)/g)].map((m) => m[1]),
+    ).toEqual(["postcode_zone"]);
+    expect(
+      [...customers.matchAll(/ALTER TABLE public\.(\w+)/g)].map((m) => m[1]),
     ).toEqual(["postcode_zone"]);
     expect(
       [...both.matchAll(/ON public\.(\w+)\s+FOR EACH ROW/g)].map((m) => m[1]),
     ).not.toContain("postcode_zone");
   });
+});
+
+/* ------------------------------------------------------------------------------------------ */
+/* Round 1 (PR 200): delete rules, mirror parity, the lock, currency, deferred FKs            */
+/* ------------------------------------------------------------------------------------------ */
+
+/**
+ * Every foreign key of 0005 and 0006: name, columns, parent, parent columns, delete rule. Pinned
+ * here and checked against both the SQL and the mirror (breaker hole 3): §5.1 says deletes
+ * RESTRICT and CASCADE only from a parent to its own translation rows, so the one CASCADE is
+ * `partner_translation`. A buyer's recipients and addresses never go with the buyer.
+ */
+const FOREIGN_KEYS: readonly (readonly [
+  string,
+  string,
+  string,
+  string,
+  string,
+])[] = [
+  [
+    "fulfillment_partner_country_id_country_id_fk",
+    "country_id",
+    "country",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "fulfillment_partner_payout_currency_code_currency_code_fk",
+    "payout_currency_code",
+    "currency",
+    "code",
+    "RESTRICT",
+  ],
+  [
+    "partner_translation_partner_id_fulfillment_partner_id_fk",
+    "partner_id",
+    "fulfillment_partner",
+    "id",
+    "CASCADE",
+  ],
+  [
+    "partner_translation_locale_code_locale_code_fk",
+    "locale_code",
+    "locale",
+    "code",
+    "RESTRICT",
+  ],
+  [
+    "partner_member_partner_id_fulfillment_partner_id_fk",
+    "partner_id",
+    "fulfillment_partner",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "partner_coverage_partner_id_fulfillment_partner_id_fk",
+    "partner_id",
+    "fulfillment_partner",
+    "id",
+    "RESTRICT",
+  ],
+  ["partner_coverage_city_id_city_id_fk", "city_id", "city", "id", "RESTRICT"],
+  [
+    "partner_coverage_postcode_zone_id_postcode_zone_id_fk",
+    "postcode_zone_id",
+    "postcode_zone",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "partner_coverage_zone_city_fkey",
+    "postcode_zone_id, city_id",
+    "postcode_zone",
+    "id, city_id",
+    "RESTRICT",
+  ],
+  [
+    "partner_blackout_partner_id_fulfillment_partner_id_fk",
+    "partner_id",
+    "fulfillment_partner",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "partner_catalog_mapping_partner_id_fulfillment_partner_id_fk",
+    "partner_id",
+    "fulfillment_partner",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "partner_catalog_mapping_product_id_product_id_fk",
+    "product_id",
+    "product",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "partner_catalog_mapping_tier_fkey",
+    "product_id, tier_key",
+    "product_tier",
+    "product_id, tier_key",
+    "RESTRICT",
+  ],
+  [
+    "partner_catalog_mapping_currency_code_currency_code_fk",
+    "currency_code",
+    "currency",
+    "code",
+    "RESTRICT",
+  ],
+  [
+    "partner_catalog_mapping_partner_currency_fkey",
+    "partner_id, currency_code",
+    "fulfillment_partner",
+    "id, payout_currency_code",
+    "RESTRICT",
+  ],
+  [
+    "partner_application_country_id_country_id_fk",
+    "country_id",
+    "country",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "partner_application_language_code_locale_code_fk",
+    "language_code",
+    "locale",
+    "code",
+    "RESTRICT",
+  ],
+  [
+    "partner_application_converted_partner_fkey",
+    "converted_partner_id",
+    "fulfillment_partner",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "payout_partner_id_fulfillment_partner_id_fk",
+    "partner_id",
+    "fulfillment_partner",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "payout_currency_code_currency_code_fk",
+    "currency_code",
+    "currency",
+    "code",
+    "RESTRICT",
+  ],
+  [
+    "payout_statement_media_asset_id_media_asset_id_fk",
+    "statement_media_asset_id",
+    "media_asset",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "payout_line_payout_fkey",
+    "payout_id, currency_code",
+    "payout",
+    "id, currency_code",
+    "RESTRICT",
+  ],
+  [
+    "payout_line_currency_code_currency_code_fk",
+    "currency_code",
+    "currency",
+    "code",
+    "RESTRICT",
+  ],
+  [
+    "address_customer_id_customer_id_fk",
+    "customer_id",
+    "customer",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "recipient_customer_id_customer_id_fk",
+    "customer_id",
+    "customer",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "recipient_linked_customer_id_customer_id_fk",
+    "linked_customer_id",
+    "customer",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "recipient_address_recipient_id_recipient_id_fk",
+    "recipient_id",
+    "recipient",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "recipient_address_country_id_country_id_fk",
+    "country_id",
+    "country",
+    "id",
+    "RESTRICT",
+  ],
+  [
+    "recipient_address_postcode_zone_fkey",
+    "postcode_zone_id, country_id",
+    "postcode_zone",
+    "id, country_id",
+    "RESTRICT",
+  ],
+];
+
+describe("foreign keys and their delete rules (breaker hole 3)", () => {
+  it("the SQL declares exactly the pinned foreign keys, with the pinned delete rule", () => {
+    const declared = [
+      ...both.matchAll(
+        /CONSTRAINT (\w+) FOREIGN KEY \(([^)]*)\)\s+REFERENCES public\.(\w+) \(([^)]*)\) ON DELETE (\w+)/g,
+      ),
+    ].map((m) => [m[1], m[2], m[3], m[4], m[5]]);
+    expect(declared).toEqual(FOREIGN_KEYS.map((fk) => [...fk]));
+    expect([...both.matchAll(/FOREIGN KEY/g)]).toHaveLength(
+      FOREIGN_KEYS.length,
+    );
+  });
+
+  it("the mirror declares the same foreign keys with the same delete rule (B4)", () => {
+    const mirrored: string[][] = [];
+    for (const table of [...PARTNER_TABLES, ...CUSTOMER_TABLES]) {
+      const config = getTableConfig(mirrorTables.get(table) as PgTable);
+      for (const fk of config.foreignKeys) {
+        const reference = fk.reference();
+        mirrored.push([
+          fk.getName(),
+          reference.columns.map((column) => column.name).join(", "),
+          getTableConfig(reference.foreignTable).name,
+          reference.foreignColumns.map((column) => column.name).join(", "),
+          (fk.onDelete ?? "no action").toUpperCase(),
+        ]);
+      }
+    }
+    expect(mirrored.sort()).toEqual(FOREIGN_KEYS.map((fk) => [...fk]).sort());
+  });
+});
+
+describe("mirror parity beyond names and nullability (breaker hole 4)", () => {
+  const SQL_TYPE: Record<string, string> = {
+    timestamptz: "timestamp with time zone",
+  };
+  const sqlNames = (table: string, kind: string): string[] =>
+    [
+      ...tableBody(table).matchAll(
+        new RegExp(`CONSTRAINT (\\w+) ${kind}`, "g"),
+      ),
+    ].map((m) => m[1] ?? "");
+  const indexNames = (table: string, unique: boolean): string[] =>
+    [
+      ...both.matchAll(
+        new RegExp(
+          `CREATE ${unique ? "UNIQUE " : ""}INDEX (\\w+)\\s+ON public\\.${table} `,
+          "g",
+        ),
+      ),
+    ].map((m) => m[1] ?? "");
+
+  for (const table of [...PARTNER_TABLES, ...CUSTOMER_TABLES]) {
+    it(`${table}: column types, CHECK names, unique keys and indexes agree`, () => {
+      const config = getTableConfig(mirrorTables.get(table) as PgTable);
+      expect(
+        config.columns.map((column) => [column.name, column.getSQLType()]),
+      ).toEqual(
+        columnsOf(table).map(([name, type]) => [name, SQL_TYPE[type] ?? type]),
+      );
+      expect(config.checks.map((c) => c.name).sort()).toEqual(
+        sqlNames(table, "CHECK").sort(),
+      );
+      expect(config.uniqueConstraints.map((u) => u.getName()).sort()).toEqual(
+        sqlNames(table, "UNIQUE").sort(),
+      );
+      expect(config.primaryKeys.map((pk) => pk.getName()).sort()).toEqual(
+        sqlNames(table, "PRIMARY KEY").sort(),
+      );
+      expect(
+        config.indexes
+          .filter((ix) => ix.config.unique)
+          .map((ix) => ix.config.name)
+          .sort(),
+      ).toEqual(indexNames(table, true).sort());
+      expect(
+        config.indexes
+          .filter((ix) => !ix.config.unique)
+          .map((ix) => ix.config.name)
+          .sort(),
+      ).toEqual(indexNames(table, false).sort());
+    });
+  }
+
+  it("the two keys added to 0002's postcode_zone are in the geo mirror and in a migration", () => {
+    const zone = getTableConfig(mirrorTables.get("postcode_zone") as PgTable);
+    const names = zone.uniqueConstraints.map((u) => u.getName());
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "postcode_zone_id_city_key",
+        "postcode_zone_id_country_key",
+      ]),
+    );
+    expect(partners).toMatch(
+      /ALTER TABLE public\.postcode_zone\s+ADD CONSTRAINT postcode_zone_id_city_key UNIQUE \(id, city_id\);/,
+    );
+    expect(customers).toMatch(
+      /ALTER TABLE public\.postcode_zone\s+ADD CONSTRAINT postcode_zone_id_country_key UNIQUE \(id, country_id\);/,
+    );
+  });
+});
+
+describe("the media check locks what it checks (review R1)", () => {
+  it("locks the listed assets FOR SHARE, with the kind and visibility predicate in the locking query", () => {
+    const fn = partners.slice(
+      partners.indexOf(
+        "CREATE FUNCTION public.partner_application_media_check()",
+      ),
+      partners.indexOf("CREATE TRIGGER partner_application_media_check"),
+    );
+    expect(fn).toMatch(
+      /SELECT id FROM public\.media_asset\s+WHERE id = ANY \(NEW\.media_asset_ids\) AND kind = 'partner' AND visibility = 'private'\s+FOR SHARE\s*\)/,
+    );
+    expect(fn).not.toMatch(/KEY SHARE/);
+  });
+});
+
+describe("money stays in the partner's currency, and no line is zero (breaker holes 5, 6)", () => {
+  it("a mapping references the partner's (id, payout_currency_code)", () => {
+    expect(tableBody("fulfillment_partner")).toMatch(
+      /fulfillment_partner_id_payout_currency_key UNIQUE \(id, payout_currency_code\)/,
+    );
+  });
+
+  it("a payout is checked against the partner's currency, locking the partner row", () => {
+    expect(partners).toMatch(
+      /SELECT payout_currency_code INTO expected\s+FROM public\.fulfillment_partner WHERE id = NEW\.partner_id\s+FOR SHARE;/,
+    );
+    expect(partners).toMatch(
+      /CREATE TRIGGER payout_currency_check\s+BEFORE INSERT OR UPDATE OF partner_id, currency_code ON public\.payout/,
+    );
+  });
+
+  it("an order or goodwill line is strictly positive; an adjustment is non-zero", () => {
+    expect(tableBody("payout_line")).toMatch(
+      /payout_line_amount_minor_check CHECK \(\s*CASE kind WHEN 'adjustment' THEN amount_minor <> 0 ELSE amount_minor > 0 END\s*\)/,
+    );
+  });
+});
+
+describe("the deferred foreign keys cannot be forgotten (review nit 3)", () => {
+  const DEFERRED: readonly (readonly [string, string, string, string])[] = [
+    [
+      "partner_member",
+      "user_id",
+      "users",
+      "partner_member_user_id_users_id_fk",
+    ],
+    ["customer", "user_id", "users", "customer_user_id_users_id_fk"],
+    ["payout_line", "order_id", "order", "payout_line_order_id_order_id_fk"],
+  ];
+  const allSql = [...readdirSync(MIGRATIONS_DIR)]
+    .filter((file) => file.endsWith(".sql") && !file.endsWith(".down.sql"))
+    .map((file) => read(file))
+    .join("\n");
+  const briefs = `${readFileSync(join(process.cwd(), "docs/tasks/TASK-019.md"), "utf8")}\n${readFileSync(join(process.cwd(), "docs/tasks/TASK-022.md"), "utf8")}`;
+
+  for (const [table, column, parent, constraint] of DEFERRED) {
+    it(`${table}.${column} → ${parent}: the column exists, its task's brief names ${constraint}, and once ${parent} exists a migration adds it`, () => {
+      expect(columnsOf(table).map(([name]) => name)).toContain(column);
+      expect(briefs).toContain(constraint);
+      const parentExists = new RegExp(
+        `CREATE TABLE (public\\.)?"?${parent}"? \\(`,
+      ).test(allSql);
+      if (parentExists)
+        expect(allSql).toContain(`CONSTRAINT ${constraint} FOREIGN KEY`);
+      else expect(allSql).not.toContain(constraint);
+    });
+  }
 });

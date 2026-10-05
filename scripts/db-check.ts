@@ -27,10 +27,14 @@
  *    no Drizzle module gives `recipient` or `recipient_address` a column matching
  *    `/e[-_]?mail/i`, and each problem line cites `plan/07` §1.3. The migrations are replayed in
  *    order through a small table model, so the column is caught however it arrives: `ADD`,
- *    `RENAME COLUMN`, a table renamed into a recipient name, `LIKE`, `INHERITS`/`INHERIT`,
- *    `PARTITION OF`, `CREATE TABLE … AS`, `SELECT … INTO`, or the same DDL inside a `DO` block's
- *    `EXECUTE` string. `recipientEmailViolations` is the same rule over a live catalogue, for
- *    TASK-027's connected half.
+ *    `RENAME COLUMN`, a table or view renamed into a recipient name, `LIKE`,
+ *    `INHERITS`/`INHERIT`, `PARTITION OF`, `CREATE TABLE … AS`, `SELECT … INTO`, or literal DDL
+ *    inside a string. It fails closed on what it cannot read: a view named like a recipient table,
+ *    and **any dynamic-SQL `EXECUTE`** outside `DYNAMIC_SQL_ALLOWED` (only `0001`'s role
+ *    bootstrap). The mirror is read twice: as text, and evaluated through `getTableConfig`
+ *    (`runDbCheckWithMirror`), so a spread or a constant column name is seen.
+ *    `recipientEmailViolations` is the same rule over a live catalogue, for TASK-027's connected
+ *    half.
  *
  * What it deliberately does not do yet — **AC-26 proper is TASK-027's**, and needs a live
  * database over `DATABASE_URL_UNPOOLED` (§13 Q6): column-level drift by introspection, RLS
@@ -45,7 +49,10 @@
 import type { Dirent } from "node:fs";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+import { is } from "drizzle-orm";
+import { getTableConfig, PgTable } from "drizzle-orm/pg-core";
 
 /**
  * One entry of the migrations directory. `checkMigrations` stays pure and name-driven, but it has
@@ -594,6 +601,22 @@ class TableModel {
       this.addColumn(to, column);
   }
 
+  /** A view: it cannot hold a recipient name, and its columns are every name in its text. */
+  defineView(view: string, tokens: readonly SqlToken[]): void {
+    if (RECIPIENT_TABLES.includes(view)) {
+      this.problems.push(
+        `${this.file}: \`${view}\` is created as a view, whose columns db:check cannot read — a recipient table must be a table, and ${RECIPIENT_EMAIL_CITATION}`,
+      );
+    }
+    const names = new Set<string>();
+    for (const token of tokens) {
+      if (token.kind === "word" || token.kind === "ident")
+        names.add(token.value);
+    }
+    this.columns.set(view, names);
+    this.parents.delete(view);
+  }
+
   /** A statement the model cannot follow: any matching identifier in it counts. */
   opaque(table: string, tokens: readonly SqlToken[]): void {
     if (!RECIPIENT_TABLES.includes(table)) return;
@@ -637,9 +660,27 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
     i += 1;
     if (isWord(tokens[i], "or") && isWord(tokens[i + 1], "replace")) i += 2;
     while (
-      isWord(tokens[i], "global", "local", "temp", "temporary", "unlogged")
+      isWord(
+        tokens[i],
+        "global",
+        "local",
+        "temp",
+        "temporary",
+        "unlogged",
+        "foreign",
+        "recursive",
+        "materialized",
+      )
     ) {
       i += 1;
+    }
+    if (isWord(tokens[i], "view")) {
+      i += 1;
+      if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "not")) i += 3;
+      const view = qualifiedName(tokens, i);
+      if (view !== undefined)
+        model.defineView(view.name, tokens.slice(view.end));
+      return;
     }
     if (!isWord(tokens[i], "table")) return;
     i += 1;
@@ -694,8 +735,16 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
     return;
   }
 
-  if (isWord(tokens[0], "alter") && isWord(tokens[1], "table")) {
-    i = 2;
+  const alterOf = isWord(tokens[0], "alter")
+    ? isWord(tokens[1], "table", "view")
+      ? 2
+      : isWord(tokens[1], "materialized", "foreign") &&
+          isWord(tokens[2], "view", "table")
+        ? 3
+        : 0
+    : 0;
+  if (alterOf > 0) {
+    i = alterOf;
     if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "exists")) i += 2;
     if (isWord(tokens[i], "only")) i += 1;
     const target = qualifiedName(tokens, i);
@@ -709,8 +758,16 @@ function applyStatement(model: TableModel, tokens: readonly SqlToken[]): void {
     return;
   }
 
-  if (isWord(tokens[0], "drop") && isWord(tokens[1], "table")) {
-    i = 2;
+  const dropOf = isWord(tokens[0], "drop")
+    ? isWord(tokens[1], "table", "view")
+      ? 2
+      : isWord(tokens[1], "materialized", "foreign") &&
+          isWord(tokens[2], "view", "table")
+        ? 3
+        : 0
+    : 0;
+  if (dropOf > 0) {
+    i = dropOf;
     if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "exists")) i += 2;
     for (const part of topLevelCommaSplit(tokens.slice(i))) {
       const name = qualifiedName(part, 0);
@@ -820,6 +877,69 @@ function drizzleTableBodies(source: string): { table: string; body: string }[] {
 }
 
 /**
+ * Migrations allowed to run dynamic SQL, each with the reason. Everything else is refused (below),
+ * because a statement assembled at run time — `EXECUTE format('… %I …', 'e' || 'mail')`, a
+ * concatenation, a variable — is text no static reader can see, and AC-27 must fail closed
+ * (breaker hole 1, PR 200). An entry here is a reviewed change to this file, never a comment in
+ * the migration.
+ */
+export const DYNAMIC_SQL_ALLOWED: ReadonlyMap<string, string> = new Map([
+  [
+    "0001_roles_grants_updated_at.sql",
+    "GRANT … TO CURRENT_USER: a role name known only at run time",
+  ],
+  [
+    "0001_roles_grants_updated_at.down.sql",
+    "ALTER DEFAULT PRIVILEGES / REASSIGN OWNED / DROP ROLE, guarded by role-existence checks",
+  ],
+]);
+
+/**
+ * Every dynamic-SQL `EXECUTE` in a body, at any depth of string or dollar quoting: an `EXECUTE`
+ * word not followed by `FUNCTION` or `PROCEDURE` (a trigger's action) or `ON` (the privilege, as in
+ * `GRANT EXECUTE ON FUNCTION`).
+ */
+export function dynamicSqlCount(sql: string, depth = 0): number {
+  const tokens = lexSql(sql);
+  let count = 0;
+  tokens.forEach((token, index) => {
+    if (
+      isWord(token, "execute") &&
+      !isWord(tokens[index + 1], "function", "procedure", "on")
+    ) {
+      count += 1;
+    }
+    if (token.kind === "string" && depth < 3) {
+      count += dynamicSqlCount(token.value, depth + 1);
+    }
+  });
+  return count;
+}
+
+/**
+ * AC-27 over the **evaluated** Drizzle mirror: every exported table whose name is a recipient
+ * table, read with `getTableConfig`, so a column reached through a spread, a constant, a template
+ * literal or a generic `pgTable<…>()` is seen as Drizzle itself sees it (breaker hole 2, PR 200).
+ */
+export function recipientEmailInTables(
+  exported: Iterable<unknown>,
+  where = "db/schema",
+): string[] {
+  const problems: string[] = [];
+  for (const value of exported) {
+    if (!is(value, PgTable)) continue;
+    const config = getTableConfig(value);
+    if (!RECIPIENT_TABLES.includes(config.name)) continue;
+    for (const column of config.columns) {
+      if (RECIPIENT_EMAIL_COLUMN.test(column.name)) {
+        problems.push(recipientEmailLine(where, config.name, column.name));
+      }
+    }
+  }
+  return [...new Set(problems)];
+}
+
+/**
  * AC-27, offline: the problem lines for every way a committed migration or the Drizzle mirror
  * gives `recipient` or `recipient_address` a column matching `/e[-_]?mail/i`. Forward migrations
  * are replayed in version order through one {@link TableModel}, so a column added to another
@@ -833,6 +953,14 @@ export function checkRecipientEmail(
 ): string[] {
   const problems: string[] = [];
   const ordered = [...migrationSources].sort(([a], [b]) => a.localeCompare(b));
+  for (const [file, body] of ordered) {
+    const dynamic = dynamicSqlCount(body);
+    if (dynamic > 0 && !DYNAMIC_SQL_ALLOWED.has(file)) {
+      problems.push(
+        `${file}: ${String(dynamic)} dynamic-SQL EXECUTE statement(s) — db:check cannot read SQL assembled at run time, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); write the DDL literally, or add the file to DYNAMIC_SQL_ALLOWED with a reason`,
+      );
+    }
+  }
   let chain = new TableModel("");
   for (const [file, body] of ordered) {
     if (file.endsWith(".down.sql")) continue;
@@ -1020,6 +1148,27 @@ export function runDbCheck(
   };
 }
 
+/**
+ * {@link runDbCheck} plus AC-27 on the mirror as Drizzle evaluates it: `schemaDir/index.ts` is
+ * imported and its exported tables read with `getTableConfig`, so a column reached through a
+ * spread or a constant — invisible to the text rules — is still refused. What `pnpm db:check` runs.
+ */
+export async function runDbCheckWithMirror(
+  migrationsDir: string,
+  schemaDir: string,
+): Promise<{ ok: boolean; output: string[] }> {
+  const report = runDbCheck(migrationsDir, schemaDir);
+  const schemaModule = (await import(
+    pathToFileURL(resolve(schemaDir, "index.ts")).href
+  )) as Record<string, unknown>;
+  const mirror = recipientEmailInTables(Object.values(schemaModule));
+  if (report.ok && mirror.length === 0) return report;
+  return {
+    ok: false,
+    output: [...(report.ok ? [] : report.output), ...mirror],
+  };
+}
+
 /** Spec 002 §13 Q2 option A (ADR-0015): migrations live in `db/`, not in a vendor's directory. */
 export const MIGRATIONS_DIR = "db/migrations";
 /** The Drizzle table definitions the drift rule reads. Empty until TASK-015 writes `0002`. */
@@ -1027,7 +1176,7 @@ export const SCHEMA_DIR = "db/schema";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-  const { ok, output } = runDbCheck(
+  const { ok, output } = await runDbCheckWithMirror(
     resolve(repoRoot, MIGRATIONS_DIR),
     resolve(repoRoot, SCHEMA_DIR),
   );

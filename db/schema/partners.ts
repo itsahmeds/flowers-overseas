@@ -10,8 +10,10 @@
  *  - **status is data** — `partnerStatuses` includes `demo`, which spec 010 §5.1 A's assignment
  *    trigger routes demo and test orders to; the column has no default;
  *  - **`partnerMember` is the org scope** of `plan/11` §1 (AC-16's policies, migration `0011`);
- *  - **money is `bigint` minor units beside a currency** (AC-5), and a `payoutLine` references its
- *    payout by `(payout_id, currency_code)`, so a statement is in one currency;
+ *  - **money is `bigint` minor units beside a currency** (AC-5), always the partner's: a mapping
+ *    references the partner by `(partner_id, currency_code)`, a payout is checked by the
+ *    migration's `payout_currency_check()` trigger, and a `payoutLine` references its payout by
+ *    `(payout_id, currency_code)`;
  *  - **`partnerApplication.mediaAssetIds`** references `media_asset` through the two trigger
  *    functions in the migration, which Drizzle does not model (an array element has no foreign key).
  *
@@ -125,6 +127,11 @@ export const fulfillmentPartner = pgTable(
   },
   (table) => [
     unique("fulfillment_partner_code_key").on(table.code),
+    /** The key `partner_catalog_mapping_partner_currency_fkey` references. */
+    unique("fulfillment_partner_id_payout_currency_key").on(
+      table.id,
+      table.payoutCurrencyCode,
+    ),
     check(
       "fulfillment_partner_code_check",
       sql.raw(`code ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
@@ -254,6 +261,12 @@ export const partnerCoverage = pgTable(
     ...timestamps,
   },
   (table) => [
+    /** A row naming both a city and a zone names a zone in that city. */
+    foreignKey({
+      name: "partner_coverage_zone_city_fkey",
+      columns: [table.postcodeZoneId, table.cityId],
+      foreignColumns: [postcodeZone.id, postcodeZone.cityId],
+    }).onDelete("restrict"),
     check(
       "partner_coverage_target_check",
       sql`${table.cityId} is not null or ${table.postcodeZoneId} is not null`,
@@ -324,6 +337,15 @@ export const partnerCatalogMapping = pgTable(
       name: "partner_catalog_mapping_tier_fkey",
       columns: [table.productId, table.tierKey],
       foreignColumns: [productTier.productId, productTier.tierKey],
+    }).onDelete("restrict"),
+    /** A mapping is in its partner's payout currency. */
+    foreignKey({
+      name: "partner_catalog_mapping_partner_currency_fkey",
+      columns: [table.partnerId, table.currencyCode],
+      foreignColumns: [
+        fulfillmentPartner.id,
+        fulfillmentPartner.payoutCurrencyCode,
+      ],
     }).onDelete("restrict"),
     check(
       "partner_catalog_mapping_currency_code_check",
