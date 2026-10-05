@@ -16,6 +16,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
 import { deploymentEnvironments } from "../../src/lib/env.schema.ts";
@@ -33,9 +34,9 @@ import {
   legalReadinessReport,
   legalReadinessTerms,
   legalRegimeFor,
-  stripeKeyKind,
   stripeKeyKinds,
 } from "../../src/modules/checkout/index.ts";
+import { stripeKeyKind } from "../../src/modules/checkout/mode.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 
@@ -315,9 +316,104 @@ function readersOutsideTheDecision(): string[] {
     .filter((file) => !ALLOW_LIST.some((allowed) => allowed.test(file)))
     .filter((file) => {
       const text = readFileSync(join(repoRoot, file), "utf8");
-      return DECISION_INPUTS.some((pattern) => pattern.test(text));
+      return (
+        DECISION_INPUTS.some((pattern) => pattern.test(text)) ||
+        (SOURCE_FILE.test(file) && decisionImportsIn(file, text).length > 0)
+      );
     })
     .sort();
+}
+
+/* The import half (`/break 201` hole 1): a literal grep cannot see a file that imports the keys
+ * or the key-kind reader and decides from them, so every source file is also parsed and its
+ * syntax tree searched for the two names and for any whole-module route to `mode.ts`. */
+
+/** The two names that carry the decision's inputs out of `mode.ts`. */
+const DECISION_NAMES: ReadonlySet<string> = new Set([
+  "CHECKOUT_FLAG_KEYS",
+  "stripeKeyKind",
+]);
+
+/** A module specifier that reaches `mode.ts` (`./mode`, `@/modules/checkout/mode`, …). */
+const MODE_SPECIFIER = /(?:^\.\/|\/checkout\/)mode(?:\.ts)?$/u;
+
+const SOURCE_FILE = /\.(?:[cm]?[jt]sx?)$/u;
+
+/**
+ * Every place a source file names a decision input, as `line:what`. Counted: an import or export
+ * of either name (renamed or not), any use of either name as a value or a member, a string
+ * literal spelling either name (`m["stripeKeyKind"]`), and a namespace import, `export *` or
+ * dynamic `import()` of `mode.ts`. Not counted: an object-literal key or an interface member
+ * named `stripeKeyKind`, which is how a caller *builds* `CheckoutModeInputs` without reading it.
+ */
+function decisionImportsIn(fileName: string, text: string): string[] {
+  const source = ts.createSourceFile(
+    fileName,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+    fileName.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  );
+  const found: string[] = [];
+  const at = (node: ts.Node, what: string): void => {
+    const { line } = source.getLineAndCharacterOfPosition(node.getStart());
+    found.push(`${String(line + 1)}:${what}`);
+  };
+  const isKeyPosition = (node: ts.Identifier): boolean => {
+    const parent = node.parent;
+    return (
+      (ts.isPropertyAssignment(parent) ||
+        ts.isPropertySignature(parent) ||
+        ts.isShorthandPropertyAssignment(parent)) &&
+      parent.name === node &&
+      !ts.isShorthandPropertyAssignment(parent)
+    );
+  };
+  const visit = (node: ts.Node): void => {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      const specifier = node.moduleSpecifier;
+      if (
+        specifier !== undefined &&
+        ts.isStringLiteral(specifier) &&
+        MODE_SPECIFIER.test(specifier.text)
+      ) {
+        const clause = ts.isImportDeclaration(node)
+          ? node.importClause?.namedBindings
+          : node.exportClause;
+        if (
+          clause === undefined ||
+          ts.isNamespaceImport(clause) ||
+          ts.isNamespaceExport(clause)
+        ) {
+          at(node, `whole module ${specifier.text}`);
+        }
+      }
+    }
+    if (ts.isImportSpecifier(node) || ts.isExportSpecifier(node)) {
+      const imported = (node.propertyName ?? node.name).text;
+      if (DECISION_NAMES.has(imported)) at(node, `imports ${imported}`);
+    } else if (ts.isIdentifier(node) && DECISION_NAMES.has(node.text)) {
+      if (!isKeyPosition(node) && !ts.isImportSpecifier(node.parent)) {
+        at(node, `uses ${node.text}`);
+      }
+    } else if (
+      (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) &&
+      DECISION_NAMES.has(node.text)
+    ) {
+      at(node, `spells ${node.text}`);
+    } else if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword &&
+      node.arguments[0] !== undefined &&
+      ts.isStringLiteral(node.arguments[0]) &&
+      MODE_SPECIFIER.test(node.arguments[0].text)
+    ) {
+      at(node, `imports ${node.arguments[0].text} dynamically`);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return found;
 }
 
 describe("only mode.ts reads the decision's inputs (AC-1, T-01, ruling R5)", () => {
@@ -330,10 +426,21 @@ describe("only mode.ts reads the decision's inputs (AC-1, T-01, ruling R5)", () 
     for (const pattern of DECISION_INPUTS) {
       expect(pattern.test(text), String(pattern)).toBe(true);
     }
+    expect(decisionImportsIn(DECISION_FILE, text).length).toBeGreaterThan(2);
   });
 
   it("finds no other reader of checkout.demo_guard, checkout.open or a Stripe key's kind", () => {
     expect(readersOutsideTheDecision()).toEqual([]);
+  });
+
+  it("keeps both names off the checkout barrel", () => {
+    const barrel = readFileSync(
+      join(repoRoot, "src/modules/checkout/index.ts"),
+      "utf8",
+    );
+    expect(decisionImportsIn("src/modules/checkout/index.ts", barrel)).toEqual(
+      [],
+    );
   });
 
   it("does not count another key that merely starts with checkout.open", () => {
@@ -341,6 +448,44 @@ describe("only mode.ts reads the decision's inputs (AC-1, T-01, ruling R5)", () 
     expect(pattern?.test('"checkout.openingHours"')).toBe(false);
     expect(pattern?.test('"checkout.open"')).toBe(true);
     expect(pattern?.test("checkout.open.PL")).toBe(true);
+  });
+
+  it.each([
+    [
+      "the flag keys through a deep import",
+      'import { CHECKOUT_FLAG_KEYS } from "@/modules/checkout/mode";\nexport const on = (f: (k: string) => boolean) => f(CHECKOUT_FLAG_KEYS.demoGuard) ? "demo" : "live";',
+    ],
+    [
+      "the key reader, renamed",
+      'import { stripeKeyKind as kind } from "../checkout/mode.ts";\nexport const live = (k: string) => kind(k) === "live";',
+    ],
+    [
+      "the whole module",
+      'import * as m from "./mode";\nexport const live = (k: string) => m.stripeKeyKind(k) === "live";',
+    ],
+    ["a re-export", 'export { CHECKOUT_FLAG_KEYS } from "./mode";'],
+    [
+      "a dynamic import",
+      'export const load = () => import("@/modules/checkout/mode");',
+    ],
+    [
+      "a string-keyed member",
+      'declare const m: Record<string, (k: string) => string>;\nexport const k = m["stripeKeyKind"];',
+    ],
+    [
+      "a branch on the built inputs",
+      'declare const inputs: { stripeKeyKind: string };\nexport const live = inputs.stripeKeyKind === "live";',
+    ],
+  ])("catches a planted reader: %s", (_label, text) => {
+    expect(
+      decisionImportsIn("src/lib/planted.ts", text).length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("lets a caller build the inputs without reading them", () => {
+    const text =
+      'export const inputs = { stripeKeyKind: "absent" as const, demoGuard: true };\ninterface I { stripeKeyKind: string }';
+    expect(decisionImportsIn("src/lib/builder.ts", text)).toEqual([]);
   });
 });
 

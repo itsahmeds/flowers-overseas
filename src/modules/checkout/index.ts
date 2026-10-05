@@ -8,9 +8,13 @@
  * and the three steps, the recipient form model, phone parsing and the checkout's one currency.
  * Drafts, pricing over the quote, placement, the payment-step seam and the server actions arrive
  * with TASK-203 onwards, behind this same barrel.
+ *
+ * `CHECKOUT_FLAG_KEYS` and `stripeKeyKind()` are deliberately **not** exported (spec 010 AC-1,
+ * `/break 201` hole 1): they are the inputs of the mode decision, and a file that could import
+ * them could decide a mode outside `mode.ts`. TASK-203 wires the flag and key reads inside
+ * `mode.ts`; `tests/unit/checkout-mode.test.ts` fails on any other file that names them.
  */
 export {
-  CHECKOUT_FLAG_KEYS,
   CheckoutModeInputsSchema,
   PHASE_0_LEGAL_SOURCES,
   addressFormatKinds,
@@ -24,7 +28,6 @@ export {
   legalReadinessTerms,
   legalRegimeFor,
   legalRegimes,
-  stripeKeyKind,
   stripeKeyKinds,
   type AddressFormatKind,
   type CheckoutDeployment,

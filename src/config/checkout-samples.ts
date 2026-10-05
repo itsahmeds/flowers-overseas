@@ -13,8 +13,10 @@
  * format's example"), the names are each language's stock placeholder name, every email is at
  * `example.com` (reserved by RFC 2606, so it can never reach a person), and the phones are
  * drama-range numbers where the regulator publishes one (Ofcom's 020 7946 0xxx, the
- * Bundesnetzagentur's 030 23125 xxx) and an all-zero subscriber part elsewhere. Every row parses
- * through the destination's own step schemas (`tests/unit/checkout-samples.test.ts`).
+ * Bundesnetzagentur's 030 23125 xxx), an all-zero subscriber part for Poland, and a repeated-digit
+ * Vienna number for Austria, whose regulator publishes no fictional range and whose numbering plan
+ * refuses an all-zero one (`/review 201` nit b). Every row parses
+ * through the destination's own step schemas (`tests/unit/checkout-config.test.ts`).
  *
  * There is one row per destination with an **authored** address format: a destination with only
  * the generic format is `closed` (AC-8) and has no form to fill. The founder approves these rows
@@ -95,7 +97,7 @@ export const CHECKOUT_SAMPLES = {
         houseNumber: "1",
         postcode: "1010",
         city: "Wien",
-        phone: "+43 1 5000000",
+        phone: "+43 1 9999999",
       },
       placeKind: "home",
       deliveryNote: "",

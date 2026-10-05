@@ -46,6 +46,17 @@ export const CHECKOUT_LIMITS = {
 } as const satisfies Readonly<Record<string, number>>;
 export type CheckoutLimitKey = keyof typeof CHECKOUT_LIMITS;
 
+/**
+ * The raw ceiling of a free-text field, in UTF-16 code units per grapheme of its limit, checked
+ * before the text is normalised or counted (`/break 201` hole 3). Four units cover any letter
+ * with two combining marks, a flag or a surrogate-pair emoji with a modifier; a card of 200
+ * family emoji (eleven units each) is refused, which no printed card can carry anyway.
+ */
+export const CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME = 4;
+
+/** The raw ceiling of a short, machine-shaped field: a phone, a postcode, a country code. */
+export const CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS = 64;
+
 /** At most this many demo orders per UTC calendar day, across the whole deployment (§2, §13 Q1). */
 export const DEMO_DAILY_ORDER_CAP = 200;
 

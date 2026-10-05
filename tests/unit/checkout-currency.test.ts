@@ -178,6 +178,15 @@ describe("addonPriceProjection() applies the bouquet's FX rule to an add-on (spe
     },
   );
 
+  it("pins one converted literal: a Polish vase (35.00 zł) for en-gb at the snapshot rate", async () => {
+    const vase = await addonPriceProjection("vase", "PL", "en-gb", {
+      now: FRESH,
+    });
+    // 3 500 gr × the PLN→GBP snapshot rate (≈ 0.202) = £7.08; × 1.025 buffer = £7.26; up to the
+    // GBP `x90` ending = £7.90 (`/review 201` nit a: a literal, not convertForDisplay as its own oracle).
+    expect(vase.displayPrice).toEqual({ amountMinor: 790, currency: "GBP" });
+  });
+
   it("keeps the free card at zero through the rounding", async () => {
     const card = await addonPriceProjection("card", "PL", "en-gb", {
       now: FRESH,

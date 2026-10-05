@@ -30,6 +30,7 @@ import {
   DEVELOPMENT_QUOTE_SIGNING_SECRET,
   EnvValidationError,
   quoteSigningSecret,
+  validateRuntimeEnv,
 } from "../../src/lib/env.schema.ts";
 import { QUOTE_TTL_MINUTES } from "../../src/modules/catalog/schemas.ts";
 import { quote, verifyQuote } from "../../src/modules/catalog/index.ts";
@@ -224,6 +225,53 @@ describe("QUOTE_SIGNING_SECRET signs the quote (spec 005 §13 Q5, spec 010 §8)"
     expect(
       quoteSigningSecret({ NODE_ENV: "test", QUOTE_SIGNING_SECRET: "" }),
     ).toBe(DEVELOPMENT_QUOTE_SIGNING_SECRET);
+  });
+
+  it.each([
+    ["a production Node process with no APP_ENV", { NODE_ENV: "production" }],
+    [
+      "Railway production with APP_ENV lost",
+      { NODE_ENV: "production", RAILWAY_ENVIRONMENT_NAME: "production" },
+    ],
+    [
+      "a production Node process claiming development",
+      { NODE_ENV: "production", APP_ENV: "development" },
+    ],
+    ["an unparseable APP_ENV", { APP_ENV: "prod" }],
+  ])("fails closed for %s (/break 201 hole 5)", (_label, source) => {
+    expect(() => quoteSigningSecret(source)).toThrow(EnvValidationError);
+    expect(() =>
+      quoteSigningSecret({
+        ...source,
+        QUOTE_SIGNING_SECRET: DEVELOPMENT_QUOTE_SIGNING_SECRET,
+      }),
+    ).toThrow(EnvValidationError);
+    expect(quoteSigningSecret({ ...source, QUOTE_SIGNING_SECRET: REAL })).toBe(
+      REAL,
+    );
+  });
+
+  it("refuses the committed development key at server start in production-like processes", () => {
+    const base = {
+      ...Object.fromEntries(
+        readFileSync(resolve(repoRoot, ".env.example"), "utf8")
+          .split("\n")
+          .filter((line) => /^[A-Z_]+=/u.test(line))
+          .map((line) => [
+            line.slice(0, line.indexOf("=")),
+            line.slice(line.indexOf("=") + 1),
+          ]),
+      ),
+      QUOTE_SIGNING_SECRET: DEVELOPMENT_QUOTE_SIGNING_SECRET,
+    };
+    const keysOf = (source: Record<string, string>) =>
+      validateRuntimeEnv(source).issues.map((issue) => issue.key);
+    expect(keysOf({ ...base, NODE_ENV: "production" })).toContain(
+      "QUOTE_SIGNING_SECRET",
+    );
+    expect(keysOf({ ...base, NODE_ENV: "development" })).not.toContain(
+      "QUOTE_SIGNING_SECRET",
+    );
   });
 
   it.each(["preview", "staging", "production"])(

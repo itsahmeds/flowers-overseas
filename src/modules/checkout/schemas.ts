@@ -27,14 +27,15 @@ import { isCountryIso2 } from "@/config/countries";
 import { SkuSchema } from "@/config/catalogue/schemas";
 import {
   CHECKOUT_LIMITS,
+  CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME,
+  CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS,
   PLACE_KINDS,
   type PlaceKind,
 } from "@/config/checkout";
-import { CURRENCY_CODES, type CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
-import { countGraphemes } from "@/modules/i18n";
+import { MoneySchema, countGraphemes } from "@/modules/i18n";
 
-import { addressFormModel } from "./address";
+import { type AddressFormModel, addressFormModel } from "./address";
 import {
   type PhoneRejection,
   hasNumberingPlan,
@@ -60,6 +61,7 @@ export const CHECKOUT_ERROR_KEYS = {
   placeKindInvalid: "checkout.error.placeKindInvalid",
   addonUnavailable: "checkout.error.addonUnavailable",
   countryInvalid: "checkout.error.countryInvalid",
+  invalidCharacters: "checkout.error.invalidCharacters",
 } as const;
 
 /** The warning a valid non-local recipient phone shows (`plan/03` §8); takes `{country}`. */
@@ -76,47 +78,122 @@ const PHONE_REJECTION_KEYS: Readonly<Record<PhoneRejection, string>> = {
 /* Building blocks                                                             */
 /* -------------------------------------------------------------------------- */
 
-/** A form posts strings; an absent optional field is the empty string. */
-const formString = z
-  .string({ error: CHECKOUT_ERROR_KEYS.required })
-  .optional()
-  .transform((value) => (value ?? "").normalize("NFC").trim());
+/**
+ * C0 and C1 controls (`\p{Cc}`, U+0000 included) and lone surrogates (`\p{Cs}`). Refused in every
+ * free-text field: Postgres `text` cannot store U+0000, so it would turn into a 500 at the write
+ * instead of a field error, and an escape sequence has no business on a printed card. The card
+ * message and the delivery note may still carry a line break.
+ */
+const CONTROL_CHARACTER = /[\p{Cc}\p{Cs}]/u;
+const CONTROL_CHARACTER_EXCEPT_LINE_BREAK = /(?![\n\r])[\p{Cc}\p{Cs}]/u;
+
+/** Format characters (`\p{Cf}`: zero-width space, joiners, direction marks) and whitespace. */
+const INVISIBLE = /[\p{Cf}\s]/gu;
+
+/** A value with nothing visible in it is blank: a card of only U+200B is no card (§2). */
+function isBlank(value: string): boolean {
+  return value.replace(INVISIBLE, "") === "";
+}
+
+/** The issue a too-long raw value raises, before anything else reads it. */
+interface Overflow {
+  readonly maxCodeUnits: number;
+  readonly message: string;
+  readonly params?: Readonly<Record<string, unknown>>;
+}
 
 /**
- * Free text: NFC, trimmed, at most `max` graphemes, and non-empty when `required`. The empty
- * string is the value of a blank optional field ("blank means no card", §2).
+ * A form posts strings; an absent optional field is the empty string. The raw value is bounded in
+ * UTF-16 code units **before** it is normalised or counted (`/break 201` hole 3): a grapheme limit
+ * alone admits a 200-grapheme card of a megabyte of combining marks, or one "grapheme" of a
+ * 60 000-unit joiner chain.
+ */
+function formString(overflow: Overflow) {
+  return z
+    .string({ error: CHECKOUT_ERROR_KEYS.required })
+    .optional()
+    .transform((raw, ctx) => {
+      const value = raw ?? "";
+      if (value.length > overflow.maxCodeUnits) {
+        ctx.addIssue({
+          code: "custom",
+          message: overflow.message,
+          ...(overflow.params === undefined ? {} : { params: overflow.params }),
+        });
+        return z.NEVER;
+      }
+      return value.normalize("NFC").trim();
+    });
+}
+
+/** A short, machine-shaped field (a phone, a postcode, a country code), bounded at 64 units. */
+function shortField(
+  message: string,
+  params?: Readonly<Record<string, unknown>>,
+) {
+  return formString({
+    maxCodeUnits: CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS,
+    message,
+    ...(params === undefined ? {} : { params }),
+  });
+}
+
+/**
+ * Free text: at most `max × CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME` code units raw, then NFC and
+ * trimmed, no control character (a line break allowed when `multiline`), blank when nothing
+ * visible is left, non-empty when `required`, and at most `max` graphemes. The empty string is
+ * the value of a blank optional field ("blank means no card", §2).
  */
 function textField(options: {
   readonly required: boolean;
   readonly max: number;
   readonly locale: LocaleCode;
+  readonly multiline?: boolean;
 }) {
-  return formString.transform((value, ctx) => {
-    if (value === "") {
+  const tooLong = {
+    message: CHECKOUT_ERROR_KEYS.tooLong,
+    params: { max: options.max },
+  } as const;
+  const control =
+    options.multiline === true
+      ? CONTROL_CHARACTER_EXCEPT_LINE_BREAK
+      : CONTROL_CHARACTER;
+  return formString({
+    maxCodeUnits: options.max * CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME,
+    ...tooLong,
+  }).transform((value, ctx) => {
+    if (control.test(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+      });
+      return z.NEVER;
+    }
+    if (isBlank(value)) {
       if (options.required) {
         ctx.addIssue({ code: "custom", message: CHECKOUT_ERROR_KEYS.required });
         return z.NEVER;
       }
-      return value;
+      return "";
     }
     if (countGraphemes(value, options.locale) > options.max) {
-      ctx.addIssue({
-        code: "custom",
-        message: CHECKOUT_ERROR_KEYS.tooLong,
-        params: { max: options.max },
-      });
+      ctx.addIssue({ code: "custom", ...tooLong });
       return z.NEVER;
     }
     return value;
   });
 }
 
+/** RFC 5321's path limit, which is also the longest address a mail server accepts. */
+const EMAIL_MAX_CODE_UNITS = 254;
+
 const LocaleSchema = z.custom<LocaleCode>(
   (value) => typeof value === "string" && isLocaleCode(value),
   { error: "must be a locale configured in src/config/locales.ts" },
 );
 
-const CurrencySchema = z.enum(CURRENCY_CODES as readonly CurrencyCode[]);
+/** A configured currency: spec 003's money schema owns the list. */
+const CurrencySchema = MoneySchema.shape.currency;
 
 /** Integer minor units, from a number or from the decimal-digit string a form posts. */
 const MinorUnitsInputSchema = z.union([
@@ -194,82 +271,117 @@ export function RecipientStepSchema(countryIso: string, locale: LocaleCode) {
       `${countryIso} has only the generic address format, so its checkout is closed and it has no recipient form (spec 010 AC-8)`,
     );
   }
+  return recipientStepSchemaFor(model, locale);
+}
 
-  const shape: Record<string, z.ZodType> = {
-    deliveryDate: IsoDateInputSchema,
-    placeKind: z.enum(PLACE_KINDS, {
-      error: CHECKOUT_ERROR_KEYS.placeKindInvalid,
-    }),
-    deliveryNote: textField({
-      required: false,
-      max: CHECKOUT_LIMITS.deliveryNote,
-      locale,
-    }),
-  };
-
+/**
+ * Step 1's schema for a given form model. Not on the barrel: `RecipientStepSchema()` is the
+ * caller's entry point, and this exists so a test can hand it a model that lacks a field.
+ *
+ * **The recipient's full name and phone are fixed fields, whatever the format row says**
+ * (`/review 201` change 2): `plan/03` §8 requires the phone for every country because florists
+ * call ahead, so a format row that forgot `phone` cannot produce a form without one. The
+ * format's other fields are the address.
+ */
+export function recipientStepSchemaFor(
+  model: AddressFormModel,
+  locale: LocaleCode,
+) {
+  const addressShape: Record<string, z.ZodType<string, unknown>> = {};
   for (const field of model.fields) {
-    if (field.field === "phone") {
-      shape[field.field] = formString.transform((value, ctx) => {
-        const result = parseRecipientPhone(value, countryIso);
-        if (!result.ok) {
-          ctx.addIssue({
-            code: "custom",
-            message: PHONE_REJECTION_KEYS[result.reason],
+    if (field.field === "fullName" || field.field === "phone") continue;
+    addressShape[field.field] =
+      field.field === "postcode"
+        ? postcodeField(model, field.required)
+        : textField({
+            required: field.required,
+            max: field.maxGraphemes ?? CHECKOUT_LIMITS.addressLine,
+            locale,
           });
-          return z.NEVER;
-        }
-        return {
-          e164: result.e164,
-          national: result.national,
-          nonLocal: result.nonLocal,
-        };
-      });
-    } else if (field.field === "postcode") {
-      shape[field.field] = formString.transform((value, ctx) => {
-        if (value === "" && !field.required) return value;
-        const result = model.checkPostcode(value);
-        if (!result.ok) {
-          ctx.addIssue(
-            result.reason === "empty"
-              ? { code: "custom", message: CHECKOUT_ERROR_KEYS.required }
-              : {
-                  code: "custom",
-                  message: CHECKOUT_ERROR_KEYS.postcodeFormat,
-                  params: { example: model.example.postcode },
-                },
-          );
-          return z.NEVER;
-        }
-        return result.value;
-      });
-    } else {
-      shape[field.field] = textField({
-        required: field.required,
-        max: field.maxGraphemes ?? CHECKOUT_LIMITS.addressLine,
-        locale,
-      });
-    }
   }
 
   return z
-    .object(shape)
+    .object({
+      ...addressShape,
+      deliveryDate: IsoDateInputSchema,
+      fullName: textField({
+        required: true,
+        max: CHECKOUT_LIMITS.fullName,
+        locale,
+      }),
+      phone: recipientPhoneField(model.countryIso),
+      placeKind: z.enum(PLACE_KINDS, {
+        error: CHECKOUT_ERROR_KEYS.placeKindInvalid,
+      }),
+      deliveryNote: textField({
+        required: false,
+        max: CHECKOUT_LIMITS.deliveryNote,
+        locale,
+        multiline: true,
+      }),
+    })
     .strict()
     .transform((values): RecipientStep => {
+      const posted: Readonly<Record<string, unknown>> = values;
       const address: Record<string, string> = {};
-      for (const { field } of model.fields) {
-        if (field === "fullName" || field === "phone") continue;
-        const value = values[field];
+      for (const field of Object.keys(addressShape)) {
+        const value = posted[field];
         if (typeof value === "string" && value !== "") address[field] = value;
       }
       return {
-        deliveryDate: values["deliveryDate"] as string,
-        fullName: values["fullName"] as string,
-        phone: values["phone"] as RecipientStep["phone"],
+        deliveryDate: values.deliveryDate,
+        fullName: values.fullName,
+        phone: values.phone,
         address,
-        placeKind: values["placeKind"] as PlaceKind,
-        deliveryNote: values["deliveryNote"] as string,
+        placeKind: values.placeKind,
+        deliveryNote: values.deliveryNote,
       };
     });
+}
+
+/** The recipient phone, parsed against the destination's numbering plan (AC-9). */
+function recipientPhoneField(countryIso: string) {
+  return shortField(CHECKOUT_ERROR_KEYS.phoneInvalid).transform(
+    (value, ctx) => {
+      const result = parseRecipientPhone(value, countryIso);
+      if (!result.ok) {
+        ctx.addIssue({
+          code: "custom",
+          message: PHONE_REJECTION_KEYS[result.reason],
+        });
+        return z.NEVER;
+      }
+      return {
+        e164: result.e164,
+        national: result.national,
+        nonLocal: result.nonLocal,
+      };
+    },
+  );
+}
+
+/** The postcode, normalised then matched; a failure carries the format's example (AC-8). */
+function postcodeField(model: AddressFormModel, required: boolean) {
+  const params = { example: model.example.postcode } as const;
+  return shortField(CHECKOUT_ERROR_KEYS.postcodeFormat, params).transform(
+    (value, ctx) => {
+      if (value === "" && !required) return value;
+      const result = model.checkPostcode(value);
+      if (!result.ok) {
+        ctx.addIssue(
+          result.reason === "empty"
+            ? { code: "custom", message: CHECKOUT_ERROR_KEYS.required }
+            : {
+                code: "custom",
+                message: CHECKOUT_ERROR_KEYS.postcodeFormat,
+                params,
+              },
+        );
+        return z.NEVER;
+      }
+      return result.value;
+    },
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -300,6 +412,7 @@ export function CardAndBuyerStepSchema(context: {
         required: false,
         max: CHECKOUT_LIMITS.cardMessage,
         locale: context.locale,
+        multiline: true,
       }),
       signAs: textField({
         required: false,
@@ -323,11 +436,14 @@ export function CardAndBuyerStepSchema(context: {
           }
           return list;
         }),
-      email: formString.pipe(
+      email: formString({
+        maxCodeUnits: EMAIL_MAX_CODE_UNITS,
+        message: CHECKOUT_ERROR_KEYS.emailInvalid,
+      }).pipe(
         z
           .string()
           .min(1, CHECKOUT_ERROR_KEYS.required)
-          .max(254, CHECKOUT_ERROR_KEYS.emailInvalid)
+          .max(EMAIL_MAX_CODE_UNITS, CHECKOUT_ERROR_KEYS.emailInvalid)
           .pipe(z.email({ error: CHECKOUT_ERROR_KEYS.emailInvalid })),
       ),
       buyerName: textField({
@@ -335,8 +451,8 @@ export function CardAndBuyerStepSchema(context: {
         max: CHECKOUT_LIMITS.fullName,
         locale: context.locale,
       }),
-      buyerPhone: formString,
-      residenceCountry: formString.refine(
+      buyerPhone: shortField(CHECKOUT_ERROR_KEYS.phoneInvalid),
+      residenceCountry: shortField(CHECKOUT_ERROR_KEYS.countryInvalid).refine(
         (value) => /^[A-Z]{2}$/u.test(value) && hasNumberingPlan(value),
         CHECKOUT_ERROR_KEYS.countryInvalid,
       ),
