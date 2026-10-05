@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed (founder approval pending) |
+| Status | accepted (founder, 2026-10-05, in chat: "2–6 yes", answering "Approve the security decision record (ADR-0020)") |
 | Date | 2026-10-05 |
 | Deciders | Ahmed |
 | Supersedes | ADR-0016, **in part**: its "Decision" sentence on *how* the policy is emitted and enforced, and its rejection of option 3. Everything else in ADR-0016 stands. |
