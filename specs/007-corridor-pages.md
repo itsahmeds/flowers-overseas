@@ -463,3 +463,4 @@ this section as its condition.
 
   Tests: spec 004 T-50 (AC-45) and T-55 (AC-50) cover (a) and (b) on `/en-gb/send-flowers-to` and `/en-gb/send-flowers-to/poland`. T-16 re-runs green. No AC or T row of this spec changes.
 
+- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. This spec owns A17 clause 4: a built-HTML marker check, run before the indexing flip, that fails when an excluded key renders on an indexable page.
