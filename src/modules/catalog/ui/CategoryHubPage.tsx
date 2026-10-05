@@ -84,7 +84,7 @@ export function CategoryHubPage({ view }: CategoryHubPageProps): ReactElement {
       data-fo-hub="category"
       data-fo-hub-entity={view.entity?.key ?? ""}
     >
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         {/* v2 `.shop-intro`: the subject as the eyebrow and in the poppy italic, and the authored

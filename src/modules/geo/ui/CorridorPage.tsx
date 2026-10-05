@@ -26,7 +26,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Button, Chip, Photo } from "../../ui/index.ts";
+import { Button, Chip, PAGE_FRAME, Photo } from "../../ui/index.ts";
 import type { CorridorView } from "../corridor.ts";
 
 import { CorridorBreadcrumb } from "./CorridorBreadcrumb.tsx";
@@ -78,7 +78,7 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
     view.liveSlots.shopEntryHref === undefined ? null : (
       <section
         aria-label={c("shop.cta", { country })}
-        className={`gap-sm flex flex-col ${view.related === undefined ? "pt-[48px] md:pt-[72px]" : "mt-[40px]"}`}
+        className={`gap-sm flex flex-col ${view.related === undefined ? "pt-[48px] md:pt-(--section-fluid)" : "mt-[40px]"}`}
         data-fo-corridor-shop
       >
         {live ? (
@@ -99,14 +99,12 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
 
   return (
     <main
-      className="max-w-page mx-auto w-full px-(--gutter-s) pb-[64px] md:px-(--gutter) md:pb-[96px]"
+      className={`${PAGE_FRAME} pb-(--section-fluid)`}
       id="main"
       data-fo-corridor={view.iso2}
       data-fo-corridor-state={view.state}
     >
-      <div className="pt-[20px]">
-        <CorridorBreadcrumb crumbs={view.breadcrumb} />
-      </div>
+      <CorridorBreadcrumb crumbs={view.breadcrumb} />
 
       {/* Hero: the one `<h1>` (the text LCP element — there is no photography of any destination,
           so the slot is spec 004's placeholder and the LCP stays server-rendered text), the
@@ -123,7 +121,12 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
             {view.intro}
           </p>
         </div>
-        <Photo caption={c("photo.caption", { country })} ratio="card" />
+        <Photo
+          caption={c("photo.caption", { country })}
+          className="md:justify-self-end"
+          lead
+          ratio="card"
+        />
       </div>
 
       {/* Delivery facts, in the form the data allows. */}

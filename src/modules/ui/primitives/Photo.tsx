@@ -59,6 +59,22 @@ const RADIUS_CLASS: Readonly<Record<PhotoRatio, string>> = {
   arch: "rounded-arch",
 };
 
+/**
+ * The hero or lead photograph's cap (spec 004 §14 A23 clause 9): its block size is at most
+ * `--hero-photo-max`, and the ratio is kept by narrowing the **inline** size to the cap times the
+ * box's width-to-height ratio, never by cropping differently. Written per ratio as literal classes
+ * so Tailwind can read them. The home hero and the product gallery are exempt (A24 clause 5) and
+ * never pass `lead`.
+ */
+const LEAD_CAP_CLASS: Readonly<Record<PhotoRatio, string>> = {
+  hero: "max-w-[calc(var(--hero-photo-max)*3/2)]",
+  landscape: "max-w-[calc(var(--hero-photo-max)*4/3)]",
+  portrait: "max-w-[calc(var(--hero-photo-max)*3/4)]",
+  card: "max-w-[calc(var(--hero-photo-max)*4/5)]",
+  square: "max-w-(--hero-photo-max)",
+  arch: "max-w-[calc(var(--hero-photo-max)*4/5)]",
+};
+
 export interface PhotoProps {
   /**
    * What the slot will hold, from the message catalogue. Rendered as the sheet's small
@@ -78,6 +94,11 @@ export interface PhotoProps {
    * Typed to the `data-` prefix, so this cannot become a general attribute escape hatch.
    */
   readonly dataset?: Readonly<Record<`data-${string}`, string>>;
+  /**
+   * The page's hero or lead photograph: capped at `--hero-photo-max` (A23 clause 9) and marked
+   * `data-fo-lead-photo` for the laptop-band probe (T-43).
+   */
+  readonly lead?: boolean;
 }
 
 export function Photo({
@@ -86,6 +107,7 @@ export function Photo({
   className,
   children,
   dataset,
+  lead = false,
 }: PhotoProps): ReactElement {
   return (
     <div
@@ -94,11 +116,13 @@ export function Photo({
         RATIO_CLASS[ratio],
         RADIUS_CLASS[ratio],
         "w-full",
+        lead ? LEAD_CAP_CLASS[ratio] : undefined,
         className,
       ]
         .filter(Boolean)
         .join(" ")}
       {...dataset}
+      {...(lead ? { "data-fo-lead-photo": "" } : {})}
     >
       {children}
       {caption === undefined ? null : (

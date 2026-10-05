@@ -99,7 +99,7 @@ export function CountryShopRootPage({
       data-fo-shop-root={view.country?.iso2 ?? ""}
       data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
     >
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         {view.items.length === 0 ? (

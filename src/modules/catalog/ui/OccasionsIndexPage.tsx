@@ -115,7 +115,7 @@ export function OccasionsIndexPage({
 
   return (
     <Container as="main" id="main" data-fo-occasions-index>
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         <ListingIntro heading={index("h1")} lede={index("intro")} />

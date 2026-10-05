@@ -115,7 +115,7 @@ export const NOTICE_LOCALE_PATH =
 
 /** The page: the lockup at the top, the letter centred under it. */
 export const NOTICE_LETTER_MAIN =
-  "mx-auto flex min-h-dvh w-full max-w-page flex-col gap-[56px] px-(--gutter-s) pt-[24px] pb-[72px] md:gap-[112px] md:px-(--gutter) md:pb-[160px]";
+  "mx-auto flex min-h-dvh w-full max-w-[calc(var(--container-page)+2*var(--gutter))] flex-col gap-[56px] px-(--gutter-s) pt-[24px] pb-[72px] md:gap-[112px] md:px-(--gutter) md:pb-[160px]";
 
 /** The letter: card white, the letter shadow and tilt, 640 px at most. */
 export const NOTICE_LETTER =

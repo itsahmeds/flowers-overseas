@@ -116,7 +116,7 @@ export function DestinationsHubPage({
 
   return (
     <Container as="main" id="main" data-fo-destinations-hub={view.locale}>
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <CorridorBreadcrumb crumbs={view.breadcrumb} />
 
         {/* v2 `.shop-intro`: the one `<h1>` and the lede. */}
@@ -164,7 +164,7 @@ export function DestinationsHubPage({
         {view.regions.map((region, index) => (
           <section
             aria-labelledby={`hub-region-${region.region}`}
-            className={index === 0 ? "" : "md:pt-2xl pt-[48px]"}
+            className={index === 0 ? "" : "pt-[48px] md:pt-(--section-fluid)"}
             data-fo-hub-region={region.region}
             key={region.region}
           >

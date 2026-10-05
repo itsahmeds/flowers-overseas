@@ -33,8 +33,11 @@ import { SentencePicker } from "./SentencePicker.tsx";
  */
 export const HOME_BLEED = "px-[20px] md:px-[56px]";
 
-/** The two artboard section rhythms: `--space-section-s` 64 on mobile, `--space-3xl` 128. */
-export const HOME_SECTION = "py-[64px] md:py-3xl";
+/**
+ * The section rhythm: `--section-fluid`, 64 px on a phone and at most 104 px, with a height term so a
+ * laptop window gets less (spec 004 §14 A23 clause 9).
+ */
+export const HOME_SECTION = "py-(--section-fluid)";
 
 /** The band's photograph in `seed/data/media.json` (spec 006 §2.4; TASK-080). */
 export const HOME_HERO_ASSET = "home-hero";

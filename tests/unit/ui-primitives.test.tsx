@@ -73,11 +73,7 @@ const RENDERED: readonly [string, string][] = [
   ["Container/page", renderToStaticMarkup(<Container>x</Container>)],
   [
     "Container/prose",
-    renderToStaticMarkup(
-      <Container width="prose" inline="none">
-        x
-      </Container>,
-    ),
+    renderToStaticMarkup(<Container width="prose">x</Container>),
   ],
   [
     "Container/narrow",

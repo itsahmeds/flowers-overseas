@@ -42,6 +42,7 @@ import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 import { Button } from "../primitives/Button.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
+import { PAGE_FRAME } from "../primitives/layout.tsx";
 import {
   type HeaderItem,
   type HeaderListingHrefs,
@@ -70,10 +71,11 @@ function registryLabel(t: Translator, key: string): string {
 
 /**
  * The artboards' `.wrap`: the 20 px / 56 px gutter, and the 1 328 px frame centred on a screen
- * wider than the 1 440 px artboard (so at 1 440 px the content starts 56 px in, as drawn).
+ * wider than the 1 440 px artboard (so at 1 440 px the content starts 56 px in, as drawn). It is
+ * `PAGE_FRAME`, the frame every page's `Container` uses (spec 004 §14 A23 clause 2), so the header
+ * and the page cannot drift apart.
  */
-export const CHROME_WRAP =
-  "mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+export const CHROME_WRAP = PAGE_FRAME;
 
 /*
  * The desktop artboard's one-row header applies from `xl` (1 280 px), written as literal `xl:`

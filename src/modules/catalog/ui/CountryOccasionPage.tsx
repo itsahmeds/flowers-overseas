@@ -120,7 +120,7 @@ export function CountryOccasionPage({
       data-fo-country-occasion={view.entity?.key ?? ""}
       data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
     >
-      <div className="pb-2xl">
+      <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
         {/* v2 `.shop-intro`: the `<h1>` with the destination in the poppy italic, then the dated
@@ -196,7 +196,7 @@ export function CountryOccasionPage({
             below the floor is absent rather than disabled. The occasions index is not repeated
             here — the breadcrumb already carries it. */}
         {alsoIn.length === 0 ? null : (
-          <div className="md:pt-2xl pt-[48px]">
+          <div className="pt-[48px] md:pt-(--section-fluid)">
             <CategoryChipRow
               heading={shop("occasion.siblingsHeading", { country })}
               id="occasion-siblings"
