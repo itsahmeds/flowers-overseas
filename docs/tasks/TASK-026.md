@@ -15,7 +15,18 @@ Branch `task/TASK-026-seed-and-fixtures`. §13 Q8 resolved: A3 and A4 defaults a
 
 ## Carry-forwards
 
-_None recorded._
+- **From TASK-018 (PR 200).** `fulfillment_partner.status` has **no default**: every seeded partner
+  states `demo`. `code` must be a lowercase slug (`^[a-z0-9]+(-[a-z0-9]+)*$`). The natural keys to
+  upsert on are `partner_coverage (partner_id, city_id, postcode_zone_id)` and
+  `partner_catalog_mapping (partner_id, product_id, tier_key)`, both unique `NULLS NOT DISTINCT`;
+  a named `tier_key` must exist in `product_tier`. A coverage row needs a city or a zone.
+- **From TASK-018, round 1 of PR 200.**
+  - A mapping's `currency_code` must be its partner's `payout_currency_code`
+    (`partner_catalog_mapping_partner_currency_fkey`).
+  - A payout's `currency_code` must be the partner's currency when it is written
+    (`payout_currency_check`).
+  - A coverage row naming both a city and a zone must name a zone in that city
+    (`partner_coverage_zone_city_fkey`).
 
 ## Escalations
 

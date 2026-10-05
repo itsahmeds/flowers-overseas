@@ -22,12 +22,25 @@
  *  - **drift, table level** — every table declared in the Drizzle schema (`db/schema/*.ts`) has a
  *    `CREATE TABLE` in some migration, and every `CREATE TABLE` in a migration has a Drizzle
  *    declaration. This is the offline half of AC-26's "a column added in TS but not in a
- *    migration, and the reverse".
+ *    migration, and the reverse";
+ *  - **no recipient email** (AC-27, TASK-018) — no committed migration, forward or rollback, and
+ *    no Drizzle module gives `recipient` or `recipient_address` a column matching
+ *    `/e[-_]?mail/i`, and each problem line cites `plan/07` §1.3. The migrations are replayed in
+ *    order through a small table model, so the column is caught however it arrives: `ADD`,
+ *    `RENAME COLUMN`, a table or view renamed into a recipient name, `LIKE`,
+ *    `INHERITS`/`INHERIT`, `PARTITION OF`, `CREATE TABLE … AS`, `SELECT … INTO`, or literal DDL
+ *    inside a string. It fails closed on what it cannot read: a view named like a recipient table,
+ *    and **any dynamic-SQL `EXECUTE`** outside `DYNAMIC_SQL_ALLOWED` (only `0001`'s role
+ *    bootstrap). The mirror is read twice: as text, and evaluated through `getTableConfig`
+ *    (`runDbCheckWithMirror`), so a spread or a constant column name is seen.
+ *    `recipientEmailViolations` is the same rule over a live catalogue, for TASK-027's connected
+ *    half.
  *
  * What it deliberately does not do yet — **AC-26 proper is TASK-027's**, and needs a live
  * database over `DATABASE_URL_UNPOOLED` (§13 Q6): column-level drift by introspection, RLS
  * enabled and policy-present per table, the `*_minor`/currency pairing, the `bytea` ban, the
- * recipient-email ban (AC-27) and the applied-migration/RLS-coverage summary. Each of those is a
+ * live-catalogue run of the recipient-email ban (AC-27, through `recipientEmailViolations`) and
+ * the applied-migration/RLS-coverage summary. Each of those is a
  * rule over a connected catalogue, and each gets its own fixture there.
  *
  * Exit codes: 0 = the migration set is consistent (or empty); 1 = a problem, one line per
@@ -37,6 +50,13 @@ import type { Dirent } from "node:fs";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import { is } from "drizzle-orm";
+import { getTableConfig, PgTable } from "drizzle-orm/pg-core";
+
+// The committed mirror, imported statically: a computed `import()` would name a module no scan
+// can read (spec 010's checkout-mode reader scan refuses one anywhere under `scripts/`).
+import * as committedMirror from "../db/schema/index.ts";
 
 /**
  * One entry of the migrations directory. `checkMigrations` stays pure and name-driven, but it has
@@ -276,6 +296,1042 @@ function tableNames(body: string, pattern: RegExp): string[] {
   return [...names].sort();
 }
 
+/* -------------------------------------------------------------------------- */
+/* AC-27 — no recipient email column (plan/07 §1.3)                           */
+/* -------------------------------------------------------------------------- */
+
+/** The tables that hold recipient data, which may never hold an email (spec 002 §8, AC-27). */
+export const RECIPIENT_TABLES: readonly string[] = [
+  "recipient",
+  "recipient_address",
+];
+
+/** AC-27's pattern, verbatim: `email`, `e_mail`, `e-mail`, any case, anywhere in the name. */
+export const RECIPIENT_EMAIL_COLUMN = /e[-_]?mail/i;
+
+/** The citation every AC-27 line carries. */
+export const RECIPIENT_EMAIL_CITATION =
+  'plan/07 §1.3: "no recipient email at all" (spec 002 §8, AC-27)';
+
+/** One AC-27 problem line. */
+function recipientEmailLine(
+  file: string,
+  table: string,
+  column: string,
+): string {
+  return `${file}: column \`${column}\` on \`${table}\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`;
+}
+
+/**
+ * The connected half of AC-27, for TASK-027's live `db:check`: given `information_schema.columns`
+ * rows (or any `{ table, column }` list), the offending pairs as problem lines. Pure, so the
+ * integration test drives it against a real catalogue and the unit test against a list.
+ */
+export function recipientEmailViolations(
+  columns: readonly { readonly table: string; readonly column: string }[],
+  where = "database",
+): string[] {
+  return columns
+    .filter(
+      ({ table, column }) =>
+        RECIPIENT_TABLES.includes(table) && RECIPIENT_EMAIL_COLUMN.test(column),
+    )
+    .map(({ table, column }) => recipientEmailLine(where, table, column));
+}
+
+type SqlToken =
+  | { readonly kind: "word"; readonly value: string }
+  | { readonly kind: "ident"; readonly value: string }
+  | { readonly kind: "string"; readonly value: string }
+  | { readonly kind: "punct"; readonly value: string };
+
+/**
+ * A Postgres lexer just good enough to read DDL: comments (nested block comments too) are
+ * dropped, string and dollar-quoted bodies are kept whole as `string` tokens (so the caller can
+ * read dynamic SQL inside them), `"quoted"` and `U&"…"` identifiers keep their case, and bare
+ * words are folded to lower case as Postgres folds them.
+ */
+const DOLLAR_TAG = /\$([A-Za-z_][A-Za-z0-9_]*)?\$/y;
+const BARE_WORD = /[A-Za-z_\u0080-\uFFFF][A-Za-z0-9_$\u0080-\uFFFF]*/y;
+
+export function lexSql(sql: string): SqlToken[] {
+  const tokens: SqlToken[] = [];
+  let i = 0;
+  const n = sql.length;
+  while (i < n) {
+    const c = sql[i] ?? "";
+    const next = sql[i + 1] ?? "";
+    if (/\s/.test(c)) {
+      i += 1;
+      continue;
+    }
+    if (c === "-" && next === "-") {
+      while (i < n && sql[i] !== "\n") i += 1;
+      continue;
+    }
+    if (c === "/" && next === "*") {
+      let depth = 1;
+      i += 2;
+      while (i < n && depth > 0) {
+        if (sql[i] === "/" && sql[i + 1] === "*") {
+          depth += 1;
+          i += 2;
+        } else if (sql[i] === "*" && sql[i + 1] === "/") {
+          depth -= 1;
+          i += 2;
+        } else i += 1;
+      }
+      continue;
+    }
+    DOLLAR_TAG.lastIndex = i;
+    const dollar = DOLLAR_TAG.exec(sql);
+    if (dollar !== null) {
+      const tag = dollar[0];
+      const end = sql.indexOf(tag, i + tag.length);
+      const stop = end === -1 ? n : end;
+      tokens.push({ kind: "string", value: sql.slice(i + tag.length, stop) });
+      i = end === -1 ? n : end + tag.length;
+      continue;
+    }
+    const escapeString = (c === "E" || c === "e") && next === "'";
+    if (c === "'" || escapeString) {
+      i += escapeString ? 2 : 1;
+      let value = "";
+      while (i < n) {
+        const d = sql[i] ?? "";
+        if (escapeString && d === "\\") {
+          value += sql[i + 1] ?? "";
+          i += 2;
+          continue;
+        }
+        if (d === "'") {
+          if (sql[i + 1] === "'") {
+            value += "'";
+            i += 2;
+            continue;
+          }
+          i += 1;
+          break;
+        }
+        value += d;
+        i += 1;
+      }
+      tokens.push({ kind: "string", value });
+      continue;
+    }
+    const unicode =
+      (c === "U" || c === "u") && next === "&" && sql[i + 2] === '"';
+    if (c === '"' || unicode) {
+      i += unicode ? 3 : 1;
+      let value = "";
+      while (i < n) {
+        const d = sql[i] ?? "";
+        if (d === '"') {
+          if (sql[i + 1] === '"') {
+            value += '"';
+            i += 2;
+            continue;
+          }
+          i += 1;
+          break;
+        }
+        value += d;
+        i += 1;
+      }
+      if (unicode) {
+        value = value
+          .replace(/\\\+([0-9A-Fa-f]{6})/g, (_, hex: string) =>
+            String.fromCodePoint(Number.parseInt(hex, 16)),
+          )
+          .replace(/\\([0-9A-Fa-f]{4})/g, (_, hex: string) =>
+            String.fromCodePoint(Number.parseInt(hex, 16)),
+          )
+          .replace(/\\\\/g, "\\");
+      }
+      tokens.push({ kind: "ident", value });
+      continue;
+    }
+    BARE_WORD.lastIndex = i;
+    const word = BARE_WORD.exec(sql);
+    if (word !== null) {
+      tokens.push({ kind: "word", value: word[0].toLowerCase() });
+      i += word[0].length;
+      continue;
+    }
+    tokens.push({ kind: "punct", value: c });
+    i += 1;
+  }
+  return tokens;
+}
+
+/** Tokens split at top-level `;`. */
+function statementsOf(tokens: readonly SqlToken[]): SqlToken[][] {
+  const statements: SqlToken[][] = [];
+  let current: SqlToken[] = [];
+  for (const token of tokens) {
+    if (token.kind === "punct" && token.value === ";") {
+      if (current.length > 0) statements.push(current);
+      current = [];
+    } else current.push(token);
+  }
+  if (current.length > 0) statements.push(current);
+  return statements;
+}
+
+/** Splits at commas that are not inside parentheses. */
+function topLevelCommaSplit(tokens: readonly SqlToken[]): SqlToken[][] {
+  const parts: SqlToken[][] = [];
+  let depth = 0;
+  let current: SqlToken[] = [];
+  for (const token of tokens) {
+    if (token.kind === "punct" && token.value === "(") depth += 1;
+    if (token.kind === "punct" && token.value === ")") depth -= 1;
+    if (depth === 0 && token.kind === "punct" && token.value === ",") {
+      parts.push(current);
+      current = [];
+    } else current.push(token);
+  }
+  if (current.length > 0) parts.push(current);
+  return parts;
+}
+
+const isWord = (token: SqlToken | undefined, ...values: string[]): boolean =>
+  token?.kind === "word" && values.includes(token.value);
+const isPunct = (token: SqlToken | undefined, value: string): boolean =>
+  token?.kind === "punct" && token.value === value;
+const nameOf = (token: SqlToken | undefined): string | undefined =>
+  token?.kind === "word" || token?.kind === "ident" ? token.value : undefined;
+
+/**
+ * A possibly schema-qualified name at `start`; returns the unqualified part (a recipient table
+ * in any schema is still a recipient table) and the index after it.
+ */
+function qualifiedName(
+  tokens: readonly SqlToken[],
+  start: number,
+): { name: string; end: number } | undefined {
+  let name = nameOf(tokens[start]);
+  if (name === undefined) return undefined;
+  let end = start + 1;
+  while (isPunct(tokens[end], ".") && nameOf(tokens[end + 1]) !== undefined) {
+    name = nameOf(tokens[end + 1]) ?? name;
+    end += 2;
+  }
+  return { name, end };
+}
+
+/** The tokens inside the parenthesis that opens at `open`, and the index after its close. */
+function parenthesised(
+  tokens: readonly SqlToken[],
+  open: number,
+): { inner: SqlToken[]; end: number } {
+  let depth = 0;
+  for (let j = open; j < tokens.length; j += 1) {
+    if (isPunct(tokens[j], "(")) depth += 1;
+    if (isPunct(tokens[j], ")")) {
+      depth -= 1;
+      if (depth === 0) return { inner: tokens.slice(open + 1, j), end: j + 1 };
+    }
+  }
+  return { inner: tokens.slice(open + 1), end: tokens.length };
+}
+
+const TABLE_CONSTRAINT_HEADS = [
+  "constraint",
+  "primary",
+  "unique",
+  "check",
+  "foreign",
+  "exclude",
+];
+
+/**
+ * The tables a migration chain builds, column by column, as far as AC-27 needs: `CREATE TABLE`
+ * (with `LIKE`, `INHERITS` and `PARTITION OF`), `ALTER TABLE … ADD | DROP | RENAME [COLUMN]`,
+ * `RENAME TO`, `INHERIT`, `DROP TABLE`. A column that reaches a recipient table by any of those
+ * routes is reported where it arrives, and a table renamed *into* a recipient name brings its
+ * columns with it.
+ */
+/**
+ * The column types a recipient table may use (breaker r3, PR 200: close the class, not the
+ * route). Built-in scalars only, unqualified or `pg_catalog.`-qualified, and arrays of them. A
+ * domain, a composite, a table or view row type, an array of any of those, or any user type is
+ * refused whatever it is called, because its fields are invisible to a column-name rule.
+ */
+export const RECIPIENT_COLUMN_TYPE =
+  /^(pg_catalog\.)?(text|varchar|character varying|uuid|integer|int|int4|bigint|int8|smallint|int2|boolean|bool|timestamptz|timestamp with time zone|date|numeric|varchar\(\d+\)|character varying\(\d+\)|numeric\(\d+(,\d+)?\)|char\([23]\)|character\([23]\))(\[\])?$/;
+
+/** The type of a column the model cannot see (a view's, or a query's). */
+const UNKNOWN_TYPE = "?";
+/** A `column.attribute` name: its parent column's type is what is checked. */
+const ATTRIBUTE_TYPE = "(attribute)";
+
+/** Words that end a column's type in a definition. */
+const TYPE_STOP_WORDS = [
+  "not",
+  "null",
+  "default",
+  "constraint",
+  "primary",
+  "references",
+  "check",
+  "unique",
+  "collate",
+  "generated",
+  "compression",
+  "storage",
+  "using",
+];
+
+/** A column's type as written, canonicalised: `character varying(200)`, `pg_catalog.text[]`. */
+export function canonicalType(typeTokens: readonly SqlToken[]): string {
+  let out = "";
+  let previousWord = false;
+  for (const token of typeTokens) {
+    if (token.kind === "word" && TYPE_STOP_WORDS.includes(token.value)) break;
+    if (token.kind === "string") break;
+    const word = token.kind === "word" || token.kind === "ident";
+    if (word && previousWord) out += " ";
+    out += token.kind === "ident" ? `"${token.value}"` : token.value;
+    previousWord = word;
+  }
+  return out;
+}
+
+class TableModel {
+  readonly columns = new Map<string, Set<string>>();
+  /** Each modelled column's canonical type, or `?` where the model cannot see it. */
+  readonly columnTypes = new Map<string, Map<string, string>>();
+  readonly parents = new Map<string, Set<string>>();
+  /** Composite types: their attribute names, nested ones flattened as `who.email`. */
+  readonly types = new Map<string, Set<string>>();
+  /** Where each composite type is used as a column type: `[table, column]`. */
+  readonly typeUses = new Map<string, [string, string][]>();
+  readonly problems: string[] = [];
+
+  private readonly file: string;
+
+  constructor(file: string) {
+    this.file = file;
+  }
+
+  withFile(file: string): TableModel {
+    const model = new TableModel(file);
+    for (const [table, columns] of this.columns) {
+      model.columns.set(table, new Set(columns));
+    }
+    for (const [table, types] of this.columnTypes) {
+      model.columnTypes.set(table, new Map(types));
+    }
+    for (const [table, parents] of this.parents) {
+      model.parents.set(table, new Set(parents));
+    }
+    for (const [type, attributes] of this.types) {
+      model.types.set(type, new Set(attributes));
+    }
+    for (const [type, uses] of this.typeUses) {
+      model.typeUses.set(
+        type,
+        uses.map(([t, c]) => [t, c]),
+      );
+    }
+    return model;
+  }
+
+  private children(table: string): string[] {
+    const out: string[] = [];
+    for (const [child, parents] of this.parents) {
+      if (parents.has(table)) out.push(child, ...this.children(child));
+    }
+    return out;
+  }
+
+  private check(table: string, column: string): void {
+    if (
+      RECIPIENT_TABLES.includes(table) &&
+      RECIPIENT_EMAIL_COLUMN.test(column)
+    ) {
+      this.problems.push(recipientEmailLine(this.file, table, column));
+    }
+  }
+
+  private checkType(table: string, column: string, type: string): void {
+    if (!RECIPIENT_TABLES.includes(table) || type === ATTRIBUTE_TYPE) return;
+    if (RECIPIENT_COLUMN_TYPE.test(type)) return;
+    this.problems.push(
+      type === UNKNOWN_TYPE
+        ? `${this.file}: column \`${column}\` on \`${table}\` has a type db:check cannot see (taken from a view or a query) — a recipient table holds built-in scalar types only, and ${RECIPIENT_EMAIL_CITATION}`
+        : `${this.file}: column \`${column}\` on \`${table}\` has type \`${type}\`, which is not a built-in scalar on RECIPIENT_COLUMN_TYPE — a domain, composite or row type hides its fields, and ${RECIPIENT_EMAIL_CITATION}`,
+    );
+  }
+
+  private typeOf(table: string, column: string): string {
+    return this.columnTypes.get(table)?.get(column) ?? UNKNOWN_TYPE;
+  }
+
+  addColumn(table: string, column: string, type: string = UNKNOWN_TYPE): void {
+    for (const target of [table, ...this.children(table)]) {
+      const set = this.columns.get(target) ?? new Set<string>();
+      set.add(column);
+      this.columns.set(target, set);
+      const types = this.columnTypes.get(target) ?? new Map<string, string>();
+      types.set(column, type);
+      this.columnTypes.set(target, types);
+      this.check(target, column);
+      this.checkType(target, column, type);
+    }
+  }
+
+  /** `ALTER TABLE … ALTER COLUMN … TYPE`. */
+  setColumnType(table: string, column: string, type: string): void {
+    this.addColumn(table, column, type);
+  }
+
+  copyColumns(from: string, to: string): void {
+    for (const column of this.columns.get(from) ?? [])
+      this.addColumn(to, column, this.typeOf(from, column));
+  }
+
+  /** A typed table, or a type change cascaded into one: refused outright (breaker r2 hole B). */
+  typed(): void {
+    this.problems.push(
+      `${this.file}: a typed table (\`OF\` a type, or \`ALTER TYPE … CASCADE\`) takes its columns from a type db:check does not follow, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); give the table its columns directly`,
+    );
+  }
+
+  /** The composite types named in a column's type tokens, with their flattened attributes. */
+  private compositesIn(
+    typeTokens: readonly SqlToken[],
+  ): [string, Set<string>][] {
+    const found: [string, Set<string>][] = [];
+    for (const token of typeTokens) {
+      const name = nameOf(token);
+      const attributes = name === undefined ? undefined : this.types.get(name);
+      if (name !== undefined && attributes !== undefined)
+        found.push([name, attributes]);
+    }
+    return found;
+  }
+
+  /** A column, plus `column.attribute` for every attribute of a composite type it is declared with. */
+  addTypedColumn(
+    table: string,
+    column: string,
+    typeTokens: readonly SqlToken[],
+  ): void {
+    this.addColumn(table, column, canonicalType(typeTokens));
+    for (const [type, attributes] of this.compositesIn(typeTokens)) {
+      const uses = this.typeUses.get(type) ?? [];
+      uses.push([table, column]);
+      this.typeUses.set(type, uses);
+      for (const attribute of attributes)
+        this.addColumn(table, `${column}.${attribute}`, ATTRIBUTE_TYPE);
+    }
+  }
+
+  dropColumn(table: string, column: string): void {
+    const set = this.columns.get(table);
+    if (set === undefined) return;
+    for (const name of [...set]) {
+      if (name === column || name.startsWith(`${column}.`)) {
+        set.delete(name);
+        this.columnTypes.get(table)?.delete(name);
+      }
+    }
+  }
+
+  renameColumn(table: string, from: string, to: string): void {
+    const set = this.columns.get(table) ?? new Set<string>();
+    const carried = [...set].filter((name) => name.startsWith(`${from}.`));
+    const type = this.typeOf(table, from);
+    this.dropColumn(table, from);
+    this.addColumn(table, to, type);
+    for (const name of carried)
+      this.addColumn(table, `${to}${name.slice(from.length)}`, ATTRIBUTE_TYPE);
+  }
+
+  /** `CREATE TYPE name AS (attribute type, …)`. */
+  defineType(type: string, elements: readonly SqlToken[][]): void {
+    const attributes = new Set<string>();
+    for (const element of elements) {
+      const name = nameOf(element[0]);
+      if (name === undefined) continue;
+      attributes.add(name);
+      for (const [, nested] of this.compositesIn(element.slice(1))) {
+        for (const inner of nested) attributes.add(`${name}.${inner}`);
+      }
+    }
+    this.types.set(type, attributes);
+  }
+
+  /** `ALTER TYPE … ADD ATTRIBUTE`: every column already of that type gains the attribute. */
+  addAttribute(type: string, attribute: string): void {
+    const attributes = this.types.get(type) ?? new Set<string>();
+    attributes.add(attribute);
+    this.types.set(type, attributes);
+    for (const [table, column] of this.typeUses.get(type) ?? []) {
+      this.addColumn(table, `${column}.${attribute}`, ATTRIBUTE_TYPE);
+    }
+  }
+
+  /** A view: it cannot hold a recipient name, and its columns are every name in its text. */
+  defineView(view: string, tokens: readonly SqlToken[]): void {
+    if (RECIPIENT_TABLES.includes(view)) {
+      this.problems.push(
+        `${this.file}: \`${view}\` is created as a view, whose columns db:check cannot read — a recipient table must be a table, and ${RECIPIENT_EMAIL_CITATION}`,
+      );
+    }
+    const names = new Set<string>();
+    for (const token of tokens) {
+      if (token.kind === "word" || token.kind === "ident")
+        names.add(token.value);
+    }
+    this.columns.set(view, names);
+    this.columnTypes.set(
+      view,
+      new Map([...names].map((name) => [name, UNKNOWN_TYPE])),
+    );
+    this.parents.delete(view);
+  }
+
+  /** A statement the model cannot follow: any matching identifier in it counts. */
+  opaque(table: string, tokens: readonly SqlToken[]): void {
+    if (!RECIPIENT_TABLES.includes(table)) return;
+    this.problems.push(
+      `${this.file}: \`${table}\` gets columns db:check cannot see (\`CREATE TABLE … AS\`, \`SELECT … INTO\`) — a recipient table holds built-in scalar types only, and ${RECIPIENT_EMAIL_CITATION}`,
+    );
+    for (const token of tokens) {
+      if (token.kind === "word" || token.kind === "ident") {
+        this.check(table, token.value);
+      }
+    }
+  }
+
+  renameTable(from: string, to: string): void {
+    const columns = this.columns.get(from) ?? new Set<string>();
+    const types = this.columnTypes.get(from) ?? new Map<string, string>();
+    this.columns.delete(from);
+    this.columnTypes.delete(from);
+    this.columns.set(to, new Set<string>());
+    this.columnTypes.set(to, new Map<string, string>());
+    for (const column of columns)
+      this.addColumn(to, column, types.get(column) ?? UNKNOWN_TYPE);
+    const parents = this.parents.get(from);
+    this.parents.delete(from);
+    if (parents !== undefined) this.parents.set(to, parents);
+    for (const set of this.parents.values()) {
+      if (set.delete(from)) set.add(to);
+    }
+  }
+
+  dropTable(table: string): void {
+    this.columns.delete(table);
+    this.columnTypes.delete(table);
+    this.parents.delete(table);
+  }
+
+  inherit(child: string, parent: string): void {
+    const set = this.parents.get(child) ?? new Set<string>();
+    set.add(parent);
+    this.parents.set(child, set);
+    this.copyColumns(parent, child);
+  }
+}
+
+/** The words a statement the model follows can start with. */
+const STATEMENT_HEADS = ["create", "alter", "drop", "select", "with"];
+
+/**
+ * Applies one statement to the model, read from **every** DDL word in it. A plpgsql body splits
+ * into statements that open with `BEGIN`, `IF (SELECT …) THEN`, `ELSE`, `CASE WHEN`, a loop header
+ * or a label, and a `SELECT` in a condition can come before the DDL (reviewer R2-1, PR 200). Read
+ * from each occurrence, a statement the model recognises is applied wherever it starts. A
+ * recognised statement read again from a later word (`… AS SELECT`, `… DROP COLUMN`) matches
+ * nothing new, and any repeated problem line is collapsed by the caller.
+ */
+function applyStatement(
+  model: TableModel,
+  statement: readonly SqlToken[],
+): void {
+  statement.forEach((token, index) => {
+    if (isWord(token, ...STATEMENT_HEADS)) {
+      applyFrom(model, statement.slice(index));
+    }
+  });
+}
+
+/** The statement model, for a statement that starts at a DDL word. */
+function applyFrom(model: TableModel, tokens: readonly SqlToken[]): void {
+  let i = 0;
+  if (isWord(tokens[i], "create")) {
+    i += 1;
+    if (isWord(tokens[i], "or") && isWord(tokens[i + 1], "replace")) i += 2;
+    while (
+      isWord(
+        tokens[i],
+        "global",
+        "local",
+        "temp",
+        "temporary",
+        "unlogged",
+        "foreign",
+        "recursive",
+        "materialized",
+      )
+    ) {
+      i += 1;
+    }
+    if (isWord(tokens[i], "type")) {
+      const type = qualifiedName(tokens, i + 1);
+      if (
+        type !== undefined &&
+        isWord(tokens[type.end], "as") &&
+        isPunct(tokens[type.end + 1], "(")
+      ) {
+        const { inner } = parenthesised(tokens, type.end + 1);
+        model.defineType(type.name, topLevelCommaSplit(inner));
+      }
+      return;
+    }
+    if (isWord(tokens[i], "view")) {
+      i += 1;
+      if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "not")) i += 3;
+      const view = qualifiedName(tokens, i);
+      if (view !== undefined)
+        model.defineView(view.name, tokens.slice(view.end));
+      return;
+    }
+    if (!isWord(tokens[i], "table")) return;
+    i += 1;
+    if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "not")) i += 3;
+    const target = qualifiedName(tokens, i);
+    if (target === undefined) return;
+    const table = target.name;
+    model.columns.set(table, new Set<string>());
+    model.columnTypes.set(table, new Map<string, string>());
+    model.parents.delete(table);
+    i = target.end;
+    if (isWord(tokens[i], "partition") && isWord(tokens[i + 1], "of")) {
+      const parent = qualifiedName(tokens, i + 2);
+      if (parent !== undefined) model.inherit(table, parent.name);
+      return;
+    }
+    if (isWord(tokens[i], "of")) {
+      model.typed();
+      return;
+    }
+    if (isPunct(tokens[i], "(")) {
+      const { inner, end } = parenthesised(tokens, i);
+      for (const element of topLevelCommaSplit(inner)) {
+        const head = element[0];
+        if (head === undefined) continue;
+        if (
+          head.kind === "word" &&
+          TABLE_CONSTRAINT_HEADS.includes(head.value)
+        ) {
+          continue;
+        }
+        if (isWord(head, "like")) {
+          const source = qualifiedName(element, 1);
+          if (source !== undefined) model.copyColumns(source.name, table);
+          continue;
+        }
+        const column = nameOf(head);
+        if (column !== undefined)
+          model.addTypedColumn(table, column, element.slice(1));
+      }
+      i = end;
+    }
+    if (isWord(tokens[i], "inherits") && isPunct(tokens[i + 1], "(")) {
+      const { inner } = parenthesised(tokens, i + 1);
+      for (const parent of topLevelCommaSplit(inner)) {
+        const name = qualifiedName(parent, 0);
+        if (name !== undefined) model.inherit(table, name.name);
+      }
+      return;
+    }
+    if (tokens.slice(i).some((token) => isWord(token, "as"))) {
+      model.opaque(table, tokens.slice(i));
+    }
+    return;
+  }
+
+  if (isWord(tokens[0], "alter") && isWord(tokens[1], "type")) {
+    const type = qualifiedName(tokens, 2);
+    if (type === undefined) return;
+    if (tokens.some((token) => isWord(token, "cascade"))) model.typed();
+    for (const action of topLevelCommaSplit(tokens.slice(type.end))) {
+      if (isWord(action[0], "add") && isWord(action[1], "attribute")) {
+        const attribute = nameOf(action[2]);
+        if (attribute !== undefined) model.addAttribute(type.name, attribute);
+      }
+      if (isWord(action[0], "rename") && isWord(action[1], "attribute")) {
+        const to = nameOf(action[4]);
+        if (to !== undefined && isWord(action[3], "to"))
+          model.addAttribute(type.name, to);
+      }
+    }
+    return;
+  }
+
+  const alterOf = isWord(tokens[0], "alter")
+    ? isWord(tokens[1], "table", "view")
+      ? 2
+      : isWord(tokens[1], "materialized", "foreign") &&
+          isWord(tokens[2], "view", "table")
+        ? 3
+        : 0
+    : 0;
+  if (alterOf > 0) {
+    i = alterOf;
+    if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "exists")) i += 2;
+    if (isWord(tokens[i], "only")) i += 1;
+    const target = qualifiedName(tokens, i);
+    if (target === undefined) return;
+    const table = target.name;
+    i = target.end;
+    if (isPunct(tokens[i], "*")) i += 1;
+    for (const action of topLevelCommaSplit(tokens.slice(i))) {
+      applyAlterAction(model, table, action);
+    }
+    return;
+  }
+
+  const dropOf = isWord(tokens[0], "drop")
+    ? isWord(tokens[1], "table", "view")
+      ? 2
+      : isWord(tokens[1], "materialized", "foreign") &&
+          isWord(tokens[2], "view", "table")
+        ? 3
+        : 0
+    : 0;
+  if (dropOf > 0) {
+    i = dropOf;
+    if (isWord(tokens[i], "if") && isWord(tokens[i + 1], "exists")) i += 2;
+    for (const part of topLevelCommaSplit(tokens.slice(i))) {
+      const name = qualifiedName(part, 0);
+      if (name !== undefined) model.dropTable(name.name);
+    }
+    return;
+  }
+
+  // `SELECT … INTO recipient …` creates a table the model cannot follow.
+  if (isWord(tokens[0], "select", "with")) {
+    const into = tokens.findIndex((token) => isWord(token, "into"));
+    if (into === -1) return;
+    let k = into + 1;
+    while (isWord(tokens[k], "temp", "temporary", "unlogged", "table")) k += 1;
+    const target = qualifiedName(tokens, k);
+    if (target !== undefined) model.opaque(target.name, tokens);
+  }
+}
+
+/** One `ALTER TABLE` action. */
+function applyAlterAction(
+  model: TableModel,
+  table: string,
+  action: readonly SqlToken[],
+): void {
+  let k = 0;
+  if (isWord(action[k], "add")) {
+    k += 1;
+    if (
+      action[k]?.kind === "word" &&
+      TABLE_CONSTRAINT_HEADS.includes(action[k]?.value ?? "")
+    ) {
+      return;
+    }
+    if (isWord(action[k], "column")) k += 1;
+    if (isWord(action[k], "if") && isWord(action[k + 1], "not")) k += 3;
+    const column = nameOf(action[k]);
+    if (column !== undefined)
+      model.addTypedColumn(table, column, action.slice(k + 1));
+    return;
+  }
+  if (isWord(action[k], "of")) {
+    model.typed();
+    return;
+  }
+  if (isWord(action[k], "drop")) {
+    k += 1;
+    if (isWord(action[k], "constraint")) return;
+    if (isWord(action[k], "column")) k += 1;
+    if (isWord(action[k], "if") && isWord(action[k + 1], "exists")) k += 2;
+    const column = nameOf(action[k]);
+    if (column !== undefined) model.dropColumn(table, column);
+    return;
+  }
+  if (isWord(action[k], "rename")) {
+    k += 1;
+    if (isWord(action[k], "constraint")) return;
+    if (isWord(action[k], "to")) {
+      const target = qualifiedName(action, k + 1);
+      if (target !== undefined) model.renameTable(table, target.name);
+      return;
+    }
+    if (isWord(action[k], "column")) k += 1;
+    const from = nameOf(action[k]);
+    const to = nameOf(action[k + 2]);
+    if (from !== undefined && to !== undefined && isWord(action[k + 1], "to")) {
+      model.renameColumn(table, from, to);
+    }
+    return;
+  }
+  // `ALTER [COLUMN] name [SET DATA] TYPE t`: the new type is checked like an added column's.
+  if (isWord(action[k], "alter")) {
+    k += 1;
+    if (isWord(action[k], "column")) k += 1;
+    const column = nameOf(action[k]);
+    let t = k + 1;
+    if (isWord(action[t], "set") && isWord(action[t + 1], "data")) t += 2;
+    if (column !== undefined && isWord(action[t], "type")) {
+      model.setColumnType(table, column, canonicalType(action.slice(t + 1)));
+    }
+    return;
+  }
+  if (isWord(action[k], "inherit")) {
+    const parent = qualifiedName(action, k + 1);
+    if (parent !== undefined) model.inherit(table, parent.name);
+  }
+}
+
+/**
+ * Runs every statement of a body through the model, then every string and dollar-quoted body in
+ * it as SQL of its own (`DO $$ … $$`, a function body), **at every depth**: a body is strictly
+ * shorter than the text that quotes it, so the recursion ends, and a limit would be a place for a
+ * statement to hide (breaker r2 hole A).
+ */
+function applySql(model: TableModel, sql: string): void {
+  const tokens = lexSql(sql);
+  for (const statement of statementsOf(tokens))
+    applyStatement(model, statement);
+  for (const token of tokens) {
+    if (token.kind === "string") applySql(model, token.value);
+  }
+}
+
+/** `pgTable("recipient", { … })` blocks in a Drizzle module: the table and its object body. */
+function drizzleTableBodies(source: string): { table: string; body: string }[] {
+  const out: { table: string; body: string }[] = [];
+  for (const match of source.matchAll(
+    /pgTable\s*\(\s*["'`]([a-z_][a-z0-9_]*)["'`]\s*,\s*\{/g,
+  )) {
+    const table = match[1] ?? "";
+    let depth = 1;
+    let j = (match.index ?? 0) + match[0].length;
+    const start = j;
+    while (j < source.length && depth > 0) {
+      if (source[j] === "{") depth += 1;
+      if (source[j] === "}") depth -= 1;
+      j += 1;
+    }
+    out.push({ table, body: source.slice(start, j - 1) });
+  }
+  return out;
+}
+
+/**
+ * Migrations allowed to run dynamic SQL, each with the reason. Everything else is refused (below),
+ * because a statement assembled at run time — `EXECUTE format('… %I …', 'e' || 'mail')`, a
+ * concatenation, a variable — is text no static reader can see, and AC-27 must fail closed
+ * (breaker hole 1, PR 200). An entry here is a reviewed change to this file, never a comment in
+ * the migration.
+ */
+export const DYNAMIC_SQL_ALLOWED: ReadonlyMap<string, string> = new Map([
+  [
+    "0001_roles_grants_updated_at.sql",
+    "GRANT … TO CURRENT_USER: a role name known only at run time",
+  ],
+  [
+    "0001_roles_grants_updated_at.down.sql",
+    "ALTER DEFAULT PRIVILEGES / REASSIGN OWNED / DROP ROLE, guarded by role-existence checks",
+  ],
+]);
+
+/**
+ * Every dynamic-SQL `EXECUTE` in a body, at every depth of string or dollar quoting: an `EXECUTE`
+ * word not followed by `FUNCTION` or `PROCEDURE` (a trigger's action) or `ON` (the privilege, as in
+ * `GRANT EXECUTE ON FUNCTION`).
+ */
+export function dynamicSqlCount(sql: string): number {
+  const tokens = lexSql(sql);
+  let count = 0;
+  tokens.forEach((token, index) => {
+    if (
+      isWord(token, "execute") &&
+      !isWord(tokens[index + 1], "function", "procedure", "on")
+    ) {
+      count += 1;
+    }
+    // Every depth (breaker r2 hole A): a quoted body is strictly shorter, so this ends.
+    if (token.kind === "string") count += dynamicSqlCount(token.value);
+  });
+  return count;
+}
+
+/** Statement words that make a procedural body DDL (reviewer R2-1, breaker r3, PR 200). */
+const PROCEDURAL_DDL_WORDS = [
+  "create",
+  "alter",
+  "drop",
+  "truncate",
+  "grant",
+  "revoke",
+  "comment",
+  "import",
+  "refresh",
+  "reindex",
+  "cluster",
+];
+
+/** True when a statement is `DO …` or `CREATE [OR REPLACE] FUNCTION | PROCEDURE …`. */
+function isProceduralStatement(statement: readonly SqlToken[]): boolean {
+  if (isWord(statement[0], "do")) return true;
+  if (!isWord(statement[0], "create")) return false;
+  const kind =
+    isWord(statement[1], "or") && isWord(statement[2], "replace") ? 3 : 1;
+  return isWord(statement[kind], "function", "procedure");
+}
+
+/**
+ * DDL anywhere inside a `DO` block or a function or procedure body, and any change to
+ * `search_path`, in a migration. The model reads DDL at the top level of a migration; inside a
+ * body, control flow (`IF (SELECT …) THEN`, `CASE`, loops) decides what runs, so the gate refuses
+ * the DDL instead of parsing the control flow. A nested `DO` inside a body counts, as does a body
+ * that changes `search_path`. At the top level, `SET … search_path`, `set_config('search_path', …)`
+ * or `ALTER ROLE … SET search_path` would let an unqualified `text` resolve to a user type, which
+ * the type allow-list assumes it cannot; a function's own `SET search_path` attribute is its
+ * header, not a change, and is allowed.
+ */
+export function proceduralProblems(file: string, sql: string): string[] {
+  let ddl = 0;
+  let searchPath = 0;
+  const mentionsSearchPath = (tokens: readonly SqlToken[]): boolean =>
+    tokens.some(
+      (token) =>
+        (token.kind === "word" && token.value === "search_path") ||
+        (token.kind === "string" &&
+          token.value.trim().toLowerCase() === "search_path"),
+    );
+  for (const statement of statementsOf(lexSql(sql))) {
+    if (!isProceduralStatement(statement)) {
+      if (mentionsSearchPath(statement)) searchPath += 1;
+      continue;
+    }
+    for (const token of statement) {
+      if (token.kind !== "string") continue;
+      const body = lexSql(token.value);
+      body.forEach((word, index) => {
+        if (isWord(word, ...PROCEDURAL_DDL_WORDS)) ddl += 1;
+        if (isWord(word, "do") && body[index + 1]?.kind === "string") ddl += 1;
+      });
+      if (mentionsSearchPath(body)) searchPath += 1;
+    }
+  }
+  const lines: string[] = [];
+  if (ddl > 0) {
+    lines.push(
+      `${file}: DDL inside a DO block or a function body — db:check reads DDL at the top level of a migration only, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); write the statement at the top level, or add the file to DYNAMIC_SQL_ALLOWED with a reason`,
+    );
+  }
+  if (searchPath > 0) {
+    lines.push(
+      `${file}: a search_path change — an unqualified type could then resolve to a user type, and the recipient type allow-list (${RECIPIENT_EMAIL_CITATION}) assumes it cannot; qualify names instead`,
+    );
+  }
+  return lines;
+}
+
+/**
+ * AC-27 over the **evaluated** Drizzle mirror: every exported table whose name is a recipient
+ * table, read with `getTableConfig`, so a column reached through a spread, a constant, a template
+ * literal or a generic `pgTable<…>()` is seen as Drizzle itself sees it (breaker hole 2, PR 200).
+ */
+export function recipientEmailInTables(
+  exported: Iterable<unknown>,
+  where = "db/schema",
+): string[] {
+  const problems: string[] = [];
+  for (const value of exported) {
+    if (!is(value, PgTable)) continue;
+    const config = getTableConfig(value);
+    if (!RECIPIENT_TABLES.includes(config.name)) continue;
+    for (const column of config.columns) {
+      if (RECIPIENT_EMAIL_COLUMN.test(column.name)) {
+        problems.push(recipientEmailLine(where, config.name, column.name));
+      }
+      if (!RECIPIENT_COLUMN_TYPE.test(column.getSQLType())) {
+        problems.push(
+          `${where}: column \`${column.name}\` on \`${config.name}\` has type \`${column.getSQLType()}\`, which is not a built-in scalar on RECIPIENT_COLUMN_TYPE — a domain, composite or row type hides its fields, and ${RECIPIENT_EMAIL_CITATION}`,
+        );
+      }
+    }
+  }
+  return [...new Set(problems)];
+}
+
+/**
+ * AC-27, offline: the problem lines for every way a committed migration or the Drizzle mirror
+ * gives `recipient` or `recipient_address` a column matching `/e[-_]?mail/i`. Forward migrations
+ * are replayed in version order through one {@link TableModel}, so a column added to another
+ * table that later becomes (or is inherited by) a recipient table is caught where it arrives;
+ * each rollback is read on its own against the chain's final state. Every line cites
+ * `plan/07` §1.3.
+ */
+export function checkRecipientEmail(
+  migrationSources: ReadonlyMap<string, string>,
+  schemaSources: ReadonlyMap<string, string> = new Map(),
+): string[] {
+  const problems: string[] = [];
+  const ordered = [...migrationSources].sort(([a], [b]) => a.localeCompare(b));
+  for (const [file, body] of ordered) {
+    const dynamic = dynamicSqlCount(body);
+    if (!DYNAMIC_SQL_ALLOWED.has(file)) {
+      problems.push(...proceduralProblems(file, body));
+    }
+    if (dynamic > 0 && !DYNAMIC_SQL_ALLOWED.has(file)) {
+      problems.push(
+        `${file}: ${String(dynamic)} dynamic-SQL EXECUTE statement(s) — db:check cannot read SQL assembled at run time, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); write the DDL literally, or add the file to DYNAMIC_SQL_ALLOWED with a reason`,
+      );
+    }
+  }
+  let chain = new TableModel("");
+  for (const [file, body] of ordered) {
+    if (file.endsWith(".down.sql")) continue;
+    chain = chain.withFile(file);
+    applySql(chain, body);
+    problems.push(...chain.problems);
+  }
+  for (const [file, body] of ordered) {
+    if (!file.endsWith(".down.sql")) continue;
+    const model = chain.withFile(file);
+    applySql(model, body);
+    problems.push(...model.problems);
+  }
+  for (const [file, source] of [...schemaSources].sort(([a], [b]) =>
+    a.localeCompare(b),
+  )) {
+    for (const { table, body } of drizzleTableBodies(source)) {
+      if (!RECIPIENT_TABLES.includes(table)) continue;
+      const names = new Set<string>();
+      for (const key of body.matchAll(
+        /^\s*["'`]?([A-Za-z_$][\w$-]*)["'`]?\s*:/gm,
+      )) {
+        names.add(key[1] ?? "");
+      }
+      for (const arg of body.matchAll(/\b\w+\s*\(\s*["'`]([^"'`]+)["'`]/g)) {
+        names.add(arg[1] ?? "");
+      }
+      for (const name of [...names].sort()) {
+        if (RECIPIENT_EMAIL_COLUMN.test(name)) {
+          problems.push(recipientEmailLine(file, table, name));
+        }
+      }
+    }
+  }
+  return [...new Set(problems)];
+}
+
 export interface SourceReport {
   /** Forward migrations that do not open with `SET LOCAL ROLE app_owner;`. */
   readonly missingOwnerPreamble: readonly string[];
@@ -283,6 +1339,8 @@ export interface SourceReport {
   readonly driftMissingInMigrations: readonly string[];
   /** Tables created by a migration with no Drizzle declaration. */
   readonly driftMissingInSchema: readonly string[];
+  /** AC-27: a recipient table given an email column, by a migration or by the mirror. */
+  readonly recipientEmailColumns: readonly string[];
   readonly ok: boolean;
 }
 
@@ -344,14 +1402,21 @@ export function checkSources(
     )
     .sort();
 
+  const recipientEmailColumns = checkRecipientEmail(
+    migrationSources,
+    schemaSources,
+  );
+
   return {
     missingOwnerPreamble,
     driftMissingInMigrations,
     driftMissingInSchema,
+    recipientEmailColumns,
     ok:
       missingOwnerPreamble.length === 0 &&
       driftMissingInMigrations.length === 0 &&
-      driftMissingInSchema.length === 0,
+      driftMissingInSchema.length === 0 &&
+      recipientEmailColumns.length === 0,
   };
 }
 
@@ -361,6 +1426,7 @@ export function formatSourceProblems(report: SourceReport): string[] {
     ...report.missingOwnerPreamble,
     ...report.driftMissingInMigrations,
     ...report.driftMissingInSchema,
+    ...report.recipientEmailColumns,
   ];
 }
 
@@ -416,6 +1482,26 @@ export function runDbCheck(
   };
 }
 
+/**
+ * {@link runDbCheck} plus AC-27 on the mirror as Drizzle evaluates it: the mirror module's exported
+ * tables are read with `getTableConfig`, so a column reached through a spread or a constant,
+ * invisible to the text rules, is still refused. `pnpm db:check` runs it on the committed mirror,
+ * imported statically; a test passes a mutated copy it imported itself.
+ */
+export async function runDbCheckWithMirror(
+  migrationsDir: string,
+  schemaDir: string,
+  mirror: Readonly<Record<string, unknown>> = committedMirror,
+): Promise<{ ok: boolean; output: string[] }> {
+  const report = runDbCheck(migrationsDir, schemaDir);
+  const lines = recipientEmailInTables(Object.values(mirror));
+  if (report.ok && lines.length === 0) return report;
+  return {
+    ok: false,
+    output: [...(report.ok ? [] : report.output), ...lines],
+  };
+}
+
 /** Spec 002 §13 Q2 option A (ADR-0015): migrations live in `db/`, not in a vendor's directory. */
 export const MIGRATIONS_DIR = "db/migrations";
 /** The Drizzle table definitions the drift rule reads. Empty until TASK-015 writes `0002`. */
@@ -423,7 +1509,7 @@ export const SCHEMA_DIR = "db/schema";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-  const { ok, output } = runDbCheck(
+  const { ok, output } = await runDbCheckWithMirror(
     resolve(repoRoot, MIGRATIONS_DIR),
     resolve(repoRoot, SCHEMA_DIR),
   );
@@ -433,6 +1519,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   }
   // TODO(spec 002 AC-26, TASK-027): the connected half — column-level drift, RLS enabled and a
   // policy present per table, the `*_minor`/currency pairing, the `bytea` ban and AC-27's
-  // recipient-email ban — over `DATABASE_URL_UNPOOLED` (§13 Q6).
+  // recipient-email ban over the live catalogue (`recipientEmailViolations`) — over
+  // `DATABASE_URL_UNPOOLED` (§13 Q6).
   process.exit(ok ? 0 : 1);
 }

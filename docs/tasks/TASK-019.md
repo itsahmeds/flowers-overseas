@@ -16,6 +16,19 @@ Branch `task/TASK-019-schema-orders-payments`. Reference rows are data, not code
 ## Carry-forwards
 
 - **From `/plan-tasks` of specs 010–012 (2026-10-05, ruling R8; `/review 191` nit 8):** `order_transition.event` holds the `plan/11` §2 catalogue names (`order.authorised`, `order.routed`, `assignment.accepted`, `order.captured`…), never the diagram's arrow labels; and migration `0007` carries spec 010 §5.1 A's `"order".mode text NOT NULL CHECK (mode IN ('demo','test','live'))` with no default, `"order".buyer_snapshot jsonb NOT NULL`, and a nullable `"order".terms_version` with `CHECK (mode <> 'live' OR terms_version IS NOT NULL)`, each with §5.1 A's rollback line.
+- **From TASK-018 (PR 200).** `payout_line.order_id` (migration `0005`) has no foreign key, because
+  `"order"` did not exist yet. Migration `0007` adds `payout_line_order_id_order_id_fk` (`ON DELETE
+  RESTRICT`) and its rollback drops it; `db/schema/partners.ts` gains `.references(() => order.id)`
+  in the same commit. `payout_line_order_once_idx` is a partial unique index (`WHERE kind = 'order'`):
+  it cannot serve that FK's `RESTRICT` check, so measure whether a plain `(order_id)` index is needed
+  once spec 011's demo-order deletes run. Spec 010 §5.1 A's `ASSIGNMENT_MODE_MISMATCH` trigger can
+  rely on `fulfillment_partner.status` being one of `demo`, `onboarding`, `active`, `paused`,
+  `offboarded`, with no default.
+- **From TASK-018, round 1 of PR 200 (review nit 3).** A tripwire is already in
+  `tests/unit/schema-partners-customers.test.ts` ("the deferred foreign keys cannot be forgotten").
+  Once a migration creates the parent table, that test fails until a migration adds payout_line_order_id_order_id_fk. When you
+  add it, also add the live catalogue assertion (`pg_constraint` by name, with its delete rule) to
+  the integration suite, and add the row to `tests/fixtures/schema-foreign-keys.ts`.
 
 ## Escalations
 

@@ -18,6 +18,24 @@ Branch `task/TASK-023-rls-policies`. §13 Q4 resolved: session-variable RLS, adm
 
 _None recorded._
 - **From `/review 71` (2026-09-16, TASK-014):** both Neon URLs connect as `neondb_owner`, which has `rolbypassrls = true`; `SET LOCAL ROLE app_web` is the isolation and a `RESET ROLE` in the same transaction restores bypass. AC-18 must assert on the **connecting** role (a dedicated `app_web` login without `BYPASSRLS`, or a proof that no code path can `RESET ROLE`), not only on `current_user` inside the helper.
+- **From TASK-018 (PR 200).** For AC-16 and the customer scope: `payout_line` has no `partner_id`, so
+  its policy reaches the partner through `payout` (`payout_line_payout_id_idx` serves the join);
+  `partner_member`'s primary key leads with `user_id`; customer-scoped tables key on
+  `customer.user_id` (`customer_user_id_idx`). Two trigger functions in `0005`,
+  `partner_application_media_check()` and `media_asset_partner_application_guard()`, are `SECURITY
+  DEFINER` as `app_owner` so they see every row whatever the caller's policy shows. That holds
+  because the table owner bypasses RLS; if `0011` uses `FORCE ROW LEVEL SECURITY`, give them an
+  explicit policy or revisit. `consent_log` is written once: no `UPDATE` policy is needed for it.
+- **From TASK-018, round 1 of PR 200.** A third `SECURITY DEFINER` function, `payout_currency_check()`,
+  reads `fulfillment_partner` `FOR SHARE`. It is owned by `app_owner`, as the two media functions
+  are, so the same note about `FORCE ROW LEVEL SECURITY` applies. `partner_application_media_check()`
+  now locks the listed `media_asset` rows `FOR SHARE`. Under RLS, its locking query must still see
+  every row: as the owner it does, and with `FORCE ROW LEVEL SECURITY` it would need a policy.
+- **From TASK-018, round 2 of PR 200.** Two more `SECURITY DEFINER` functions are owned by
+  `app_owner`, with the same note about `FORCE ROW LEVEL SECURITY`:
+  - `partner_coverage_country_check()`, which reads `fulfillment_partner` `FOR SHARE`, plus `city`
+    and `postcode_zone`;
+  - `fulfillment_partner_coverage_country_guard()`, which reads `partner_coverage`.
 
 ## Escalations
 

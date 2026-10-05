@@ -21,6 +21,24 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
   and the Drizzle snapshot `db/migrations/meta/0003_snapshot.json` against the mirror: no CI job
   runs `drizzle-kit check` today, so a snapshot that drifts would make the next `db:generate` emit a
   migration that loosens a check.
+- **From TASK-018 (PR 200).** AC-27's offline half is in `scripts/db-check.ts`
+  (`checkRecipientEmail`: migrations replayed through a table model, plus the Drizzle mirror). The
+  connected half is `recipientEmailViolations(columns)`: feed it `information_schema.columns` for
+  the live database. The drift check must also cover what the mirror cannot express: `NULLS NOT
+  DISTINCT` on `partner_coverage_partner_target_idx` and `partner_catalog_mapping_partner_product_tier_idx`,
+  the two trigger functions and the `media_asset` guard trigger of `0005`, and the snapshots
+  `meta/0004_snapshot.json` and `meta/0005_snapshot.json`.
+- **From TASK-018, round 1 of PR 200 (breaker holes 2 and 4).** What is already covered:
+  - `db:check` now also reads the mirror evaluated, through `getTableConfig` (`runDbCheckWithMirror`).
+  - `tests/unit/schema-partners-customers.test.ts` holds the mirror equal to the SQL on column types,
+    foreign keys and their delete rules, CHECK names, unique keys, primary keys and index names.
+
+  Still open for AC-26's live drift check, which no offline test can see:
+  - CHECK **expressions**, not only their names;
+  - `NULLS NOT DISTINCT`;
+  - index predicates;
+  - the three trigger functions of `0005` (`partner_application_media_check`,
+    `media_asset_partner_application_guard`, `payout_currency_check`) and their triggers.
 
 ## Escalations
 
