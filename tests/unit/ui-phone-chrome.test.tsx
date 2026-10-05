@@ -18,8 +18,8 @@
  *  - **the segmented control** is a fieldset with a legend and native radios (or links with
  *    `aria-current`), and **the scroller** scrolls and is focusable when its items are not.
  */
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -190,24 +190,37 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
     }
   });
 
-  it("gives every target in the panel at least 44 px", () => {
+  it("gives every interactive element in the panel at least 44 px, the switcher's current entry included", () => {
     const menu = menuOf(renderHeader("en"));
-    const anchors = [...menu.matchAll(/<a\s[^>]*>/g)].map((match) => match[0]);
-    // Eight links, Send, three sibling locales, the help line.
-    expect(anchors).toHaveLength(8 + 1 + 3 + 1);
-    for (const anchor of anchors) {
-      const own = classOf(anchor);
-      const fromWrapper = /data-fo-menu-switcher/u.test(
-        menu.slice(0, menu.indexOf(anchor)),
-      );
-      expect(
+    const panel = menu.slice(menu.indexOf("data-fo-menu-panel"));
+    const switcherAt = panel.indexOf("data-fo-menu-switcher");
+    const switcherEnd = panel.indexOf("</nav>", switcherAt);
+    const wrapper = classOf(tagWith(panel, "data-fo-menu-switcher"));
+    // Every link and the current-locale entry, each with where it sits in the panel.
+    const elements = [
+      ...panel.matchAll(
+        /<(?:a\s[^>]*|[a-z]+\s[^>]*aria-current="[^"]*"[^>]*)>/gu,
+      ),
+    ].map((match) => ({ tag: match[0], at: match.index }));
+    // Eight links, Send, three sibling locales, the current locale, the help line.
+    expect(elements).toHaveLength(8 + 1 + 3 + 1 + 1);
+    expect(elements.filter(({ tag }) => tag.includes("tel:"))).toHaveLength(1);
+    expect(
+      elements.filter(({ tag }) => tag.includes("aria-current")),
+    ).toHaveLength(1);
+    for (const { tag, at } of elements) {
+      const own =
         /min-h-\[52px\]|min-h-\(--target-min\)|min-h-\(--control-send\)/u.test(
-          own,
-        ) || fromWrapper,
-        anchor,
-      ).toBe(true);
+          classOf(tag),
+        );
+      const inSwitcher = at > switcherAt && at < switcherEnd;
+      // Inside the switcher the size comes from the wrapper's rule for that element kind.
+      // (`&` arrives HTML-escaped in the class attribute.)
+      const rule = tag.includes("aria-current")
+        ? "[&amp;_[aria-current]]:min-h-(--target-min)"
+        : "[&amp;_a]:min-h-(--target-min)";
+      expect(own || (inSwitcher && wrapper.includes(rule)), tag).toBe(true);
     }
-    expect(menu).toContain("[&amp;_a]:min-h-(--target-min)");
   });
 
   it("is a panel that scrolls inside itself under the 65 px header", () => {
@@ -241,6 +254,14 @@ function renderTrail(
 describe("the back link and the trail (AC-50, AC-32's phone half, T-55's contract half)", () => {
   it("names and links the trail's last ancestor", () => {
     expect(breadcrumbAncestor(TRAIL)?.key).toBe("poland");
+    // The last ancestor **with a page**: a text crumb is passed over (review ruling, PR 208).
+    expect(
+      breadcrumbAncestor([
+        { key: "home", label: "Home", href: "/en" },
+        { key: "flowers", label: "Flowers" },
+        { key: "roses", label: "Roses", current: true },
+      ])?.key,
+    ).toBe("home");
     const html = renderTrail(TRAIL);
     const back = tagWith(html, "data-fo-back-link");
     expect(back).toContain('href="/en/send-flowers-to/poland"');
@@ -286,11 +307,23 @@ describe("the back link and the trail (AC-50, AC-32's phone half, T-55's contrac
     );
   });
 
-  it("draws no back link when the last ancestor has no page, and keeps the trail displayed", () => {
+  it("links back to the last ancestor that has a page when the nearest one is text (the category hub)", () => {
     const html = renderTrail([
       { key: "home", label: "Home", href: "/en" },
-      { key: "poland", label: "Poland" },
-      { key: "flowers", label: "Flowers", current: true },
+      { key: "flowers", label: "Flowers" },
+      { key: "roses", label: "Roses", current: true },
+    ]);
+    expect(tagWith(html, "data-fo-back-link")).toContain('href="/en"');
+    expect(html).toMatch(/data-fo-back-link[^>]*>[\s\S]*?Home<\/a>/u);
+    expect(
+      classOf(tagWith(html, "data-fo-breadcrumb-trail")).split(" "),
+    ).toContain("max-md:hidden");
+  });
+
+  it("keeps the trail displayed only when no ancestor has a page", () => {
+    const html = renderTrail([
+      { key: "flowers", label: "Flowers" },
+      { key: "roses", label: "Roses", current: true },
     ]);
     expect(html).not.toContain("data-fo-back-link");
     expect(classOf(tagWith(html, "data-fo-breadcrumb-trail"))).not.toContain(
@@ -341,15 +374,16 @@ describe("the sticky action bar (AC-48, T-53's stylesheet half)", () => {
       /body:has\(\[data-fo-action-bar\]\) \{\s*padding-block-end: calc\(76px \+ env\(safe-area-inset-bottom\)\);/u,
     );
     expect(phone).toMatch(
-      /body:has\(\[data-fo-action-bar\]\) \[data-fo-consent-sheet="fixed"\] \{\s*inset-block-end: calc\(76px \+ env\(safe-area-inset-bottom\)\);/u,
+      /body:has\(\[data-fo-action-bar="shown"\]\) \[data-fo-consent-sheet="fixed"\] \{\s*inset-block-end: calc\(76px \+ env\(safe-area-inset-bottom\)\);/u,
     );
   });
 
   it("renders the action and the caller's price, phone only, and formats nothing", () => {
     const html = renderToStaticMarkup(
-      <StickyActionBar price={{ amount: "€55.90", caption: "Medium" }}>
-        <a href="#buy">Continue</a>
-      </StickyActionBar>,
+      <StickyActionBar
+        action={{ href: "#buy", label: "Continue" }}
+        price={{ amount: "€55.90", caption: "Medium" }}
+      />,
     );
     const root = classOf(tagWith(html, "data-fo-action-bar"));
     expect(root.split(" ")).toEqual(
@@ -370,11 +404,41 @@ describe("the sticky action bar (AC-48, T-53's stylesheet half)", () => {
 
   it("marks the hidden state for the stylesheet", () => {
     const html = renderToStaticMarkup(
-      <StickyActionBar hidden>
-        <a href="#buy">Continue</a>
-      </StickyActionBar>,
+      <StickyActionBar action={{ href: "#buy", label: "Continue" }} hidden />,
     );
     expect(html).toContain('data-fo-action-bar="hidden"');
+  });
+
+  it("refuses an action that is not an in-page link to its twin in the flow (repeats, never replaces)", () => {
+    // The contract is the prop's type (`#${string}`) and a render-time refusal for a value
+    // that slips past it, so a bar can never carry the page's only way to an action.
+    for (const href of ["/en/checkout", "https://example.com/#buy", "#", ""]) {
+      expect(
+        () =>
+          renderToStaticMarkup(
+            <StickyActionBar
+              action={{ href: href as `#${string}`, label: "Continue" }}
+            />,
+          ),
+        href,
+      ).toThrow(/in-page link/u);
+    }
+    const html = renderToStaticMarkup(
+      <StickyActionBar action={{ href: "#buy", label: "Continue" }} />,
+    );
+    const links = [...html.matchAll(/<a\s[^>]*href="([^"]*)"/gu)].map(
+      (match) => match[1],
+    );
+    expect(links).toEqual(["#buy"]);
+    // No slot for arbitrary children: the action is the one in-page link above.
+    const source = readFileSync(
+      resolve(
+        import.meta.dirname,
+        "../../src/modules/ui/primitives/StickyActionBar.tsx",
+      ),
+      "utf8",
+    );
+    expect(source).not.toMatch(/readonly children/u);
   });
 });
 
@@ -477,5 +541,94 @@ describe("the horizontal scroller and the gallery dots (AC-49, T-54's contract h
         <GalleryDots current={0} label="Photos" links={links.slice(0, 1)} />,
       ),
     ).toBe("");
+  });
+});
+
+/** Every `.ts`/`.tsx` under `src/`, with its source. */
+function sources(dir: string): { path: string; text: string }[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return sources(path);
+    return /\.tsx?$/u.test(entry.name)
+      ? [{ path, text: readFileSync(path, "utf8") }]
+      : [];
+  });
+}
+
+/** Whether the module's first statement is the `"use client"` directive (comments skipped). */
+function isClientModule(text: string): boolean {
+  let rest = text.trimStart();
+  for (;;) {
+    if (rest.startsWith("//")) {
+      const end = rest.indexOf("\n");
+      rest = end < 0 ? "" : rest.slice(end + 1).trimStart();
+    } else if (rest.startsWith("/*")) {
+      const end = rest.indexOf("*/");
+      rest = end < 0 ? "" : rest.slice(end + 2).trimStart();
+    } else {
+      return rest.startsWith('"use client"') || rest.startsWith("'use client'");
+    }
+  }
+}
+
+describe("the Menu's hook survives the server render (PR 208 breaker hole 2)", () => {
+  it("writes `data-fo-menu` literally in the server component, never from a client module's export", () => {
+    const sheet = readFileSync(
+      resolve(import.meta.dirname, "../../src/modules/ui/layout/MenuSheet.tsx"),
+      "utf8",
+    );
+    expect(sheet).toMatch(/^\s*data-fo-menu=""$/mu);
+    const escape = readFileSync(
+      resolve(
+        import.meta.dirname,
+        "../../src/modules/ui/layout/MenuEscape.tsx",
+      ),
+      "utf8",
+    );
+    expect(isClientModule(escape)).toBe(true);
+    // The client module exports the component and nothing else.
+    expect(
+      [...escape.matchAll(/^export\s+(?:const|function|let)\s+(\w+)/gmu)].map(
+        (m) => m[1],
+      ),
+    ).toEqual(["MenuEscape"]);
+  });
+
+  it('no server module under src/ imports a non-component value from a `"use client"` module', () => {
+    const root = resolve(import.meta.dirname, "../../src");
+    const all = sources(root);
+    const clients = new Set(
+      all.filter(({ text }) => isClientModule(text)).map(({ path }) => path),
+    );
+    const offences: string[] = [];
+    for (const { path, text } of all) {
+      if (clients.has(path)) continue;
+      for (const match of text.matchAll(
+        /^import\s+(?!type\b)\{([^}]*)\}\s+from\s+"(\.{1,2}\/[^"]+)";/gmu,
+      )) {
+        const spec = match[2] ?? "";
+        const base = resolve(dirname(path), spec);
+        const target = [base, `${base}.ts`, `${base}.tsx`].find((candidate) =>
+          clients.has(candidate),
+        );
+        if (target === undefined) continue;
+        for (const raw of (match[1] ?? "").split(",")) {
+          const name =
+            raw
+              .trim()
+              .replace(/^type\s+/u, "")
+              .split(/\s+as\s+/u)[0] ?? "";
+          if (name === "" || raw.trim().startsWith("type ")) continue;
+          // A component (PascalCase with a lower-case letter) crosses as a client reference,
+          // which is what it is for; a constant or a function value does not survive.
+          if (!/^[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*$/u.test(name)) {
+            offences.push(
+              `${path.slice(root.length + 1)}: ${name} from ${spec}`,
+            );
+          }
+        }
+      }
+    }
+    expect(offences).toEqual([]);
   });
 });

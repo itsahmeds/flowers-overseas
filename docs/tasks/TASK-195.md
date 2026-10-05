@@ -96,7 +96,13 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-05 (PR 208 round 1, fixed in the same PR) — back link to the last ancestor with a page
+  (category hub `‹ Home`); the panel's 44 px unit case checks every interactive element, the
+  current-locale entry and the help link included (hole 1); a source guard fails a server module
+  that imports a non-component value from a `"use client"` module (hole 2); `StickyActionBar`
+  takes `action: { href: "#…" }` and refuses anything but an in-page link, with no `children`
+  slot (hole 3); the consent sheet stands on the bar only while it is shown (nit). A hidden bar
+  keeps the foot padding on purpose, so showing it changes no scroll height.
 
 ## Escalations
 
@@ -108,8 +114,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   link to it would link to nothing (A20). Built: no back link there, and the trail stays displayed
   on the phone (exactly one of the two is still displayed; `BreadcrumbList` is unaffected). The
   alternative is `‹ Home` (the nearest ancestor with a page), which breaks "text equals the last
-  ancestor". To the orchestrator and reviewer in PR 208: **open**. Not blocking: the shipped reading
-  is the safe one and flips with one line in `Breadcrumbs.tsx`.
+  ancestor". To the orchestrator and reviewer in PR 208. **Ruled 2026-10-05 (PR 208 review,
+  round 1):** the back link goes to the trail's last ancestor **that has a page**, so the category
+  hub shows `‹ Home`; T-55 has no exception (a missing back link on any non-product page is red).
+  The orchestrator amends spec 004 AC-50's wording.
 - 2026-10-05 — **The language popup (TASK-119, PR 205) is not merged**, so AC-48's "the popup never
   intersects the bar's action" cannot be tested here. Carry-forward for TASK-119: stand the popup on
   `[data-fo-action-bar]` the way `globals.css` stands the consent sheet on it, and add the case to

@@ -16,9 +16,9 @@
  * `display: none`, out of the accessibility tree. **The trail stays in the server HTML at every
  * width**, so `BreadcrumbList`, built from the same crumbs, equals it item for item (spec 007
  * AC-15, spec 008 AC-17, spec 041 AC-19). The product page passes `phone="trail"`: no back link,
- * and its trail stays displayed on the phone (TASK-197 places it below the buy section). A trail
- * whose last ancestor has no page draws no back link either (it would be a link to nothing), and
- * keeps its trail on the phone.
+ * and its trail stays displayed on the phone (TASK-197 places it below the buy section). The back
+ * link goes to the last ancestor **with a page**; only a trail with no linked ancestor at all keeps
+ * its trail on the phone.
  */
 import type { ReactElement, ReactNode } from "react";
 
@@ -50,14 +50,17 @@ const BACK_LINK_OFFSET = "mt-[14px] md:mt-(--space-md2)";
 export type BreadcrumbsPhone = "back" | "trail";
 
 /**
- * The trail's last ancestor: the crumb before the current page (or the last crumb, for a trail
- * with no current entry). The back link names it and links to it.
+ * The trail's last ancestor **that has a page**: the nearest crumb above the current page with an
+ * `href`. A text crumb (a level with no page, like the category hub's "Flowers") is passed over,
+ * so the back link always goes somewhere real (review ruling, PR 208: the category hub shows
+ * `‹ Home`). The back link names it and links to it.
  */
 export function breadcrumbAncestor(
   crumbs: readonly Crumb[],
 ): Crumb | undefined {
-  const ancestors = crumbs.filter((crumb) => crumb.current !== true);
-  return ancestors.at(-1);
+  return crumbs
+    .filter((crumb) => crumb.current !== true && crumb.href !== undefined)
+    .at(-1);
 }
 
 export interface BreadcrumbsProps {
