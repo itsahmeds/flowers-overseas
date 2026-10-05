@@ -121,6 +121,7 @@ One line per coherent step, newest last.
 
 - 2026-10-05 — Phone header with the `<details>` Menu, no strip below `md`, back link in `Breadcrumbs`, the four primitives, gallery states and the bar fixture page (74f45a8c).
 - 2026-10-05 — Unit and e2e for T-52 to T-55, header e2e moved to the phone header (8d4df088).
+- 2026-10-05 — CI round 1: corridor `<details>` count scoped to `main`; header visual case photographs the phone banner and Menu; baselines from CI.
 - 2026-10-05 — Local production build in the build slot: fixed the lost `data-fo-menu` attribute (a `"use client"` export is a client reference on the server), the gallery hook, the category hub case; screenshots taken.
 
 ## Result
@@ -140,6 +141,9 @@ AC-50 and AC-32's phone half; T-52 to T-55.
   found a real bug a server render could not: an export of a `"use client"` module is a client
   reference on the server, so `data-fo-menu` was lost. e2e-mobile and e2e-desktop: 651 + 178
   passed locally on the touched and neighbouring suites; a11y header and phone: 15 passed.
+- **Visual baselines** from CI run 37324416769 (43 linux images, verified against its manifest);
+  `header-mobile-utility` removed (linux and darwin), `header-mobile-menu` added. CI round 1 also
+  caught `corridor.spec.ts` counting the header Menu's `<details>`; it now counts the page body's.
 - **Mutations watched red:** the strip shown below `md` (unit T-52 half); the trail's `max-md:hidden`
   removed (unit T-55 half); `data-fo-menu` lost (unit and e2e).
 - **Not done here:** the popup case of AC-48 (TASK-119 unmerged), the product trail "below the buy
