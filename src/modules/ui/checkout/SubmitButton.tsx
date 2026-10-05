@@ -59,7 +59,7 @@ export function SubmitButton({
 export const SAMPLE_INTENT = { name: "intent", value: "sample" } as const;
 
 export interface SampleDetailsButtonProps {
-  /** `checkout.demo.useSample`. */
+  /** `demo.useSample` (checkout catalogue). */
   readonly label: string;
   readonly formAction?: FormActionValue;
   readonly form?: string;

@@ -1,7 +1,7 @@
 /**
  * `PriceChangedNotice` and `InlinePrivacyNotice` (spec 010 §5.3 Step 1, §8 "Price display",
- * §8 "Transparency at collection"; Appendix A `checkout.price.changed`, `checkout.price.confirm`,
- * `checkout.privacy.demoNotice`; `docs/design/wireframes/checkout-desktop.dc.html` `.s10-alert`,
+ * §8 "Transparency at collection"; Appendix A `price.changed` (checkout catalogue), `price.confirm` (checkout catalogue),
+ * `privacy.demoNotice` (checkout catalogue); `docs/design/wireframes/checkout-desktop.dc.html` `.s10-alert`,
  * `.s10-priv`; TASK-201).
  *
  * **Price changed.** "Any price change between pages is named and confirmed, never silent" (§8):
@@ -31,12 +31,12 @@ export interface PriceChangedNoticeProps {
   readonly previous: Money;
   /** The total of the current quote. */
   readonly current: Money;
-  /** `checkout.price.changed`, given the two formatted amounts (rich: the first sentence bold). */
+  /** `price.changed` (checkout catalogue), given the two formatted amounts (rich: the first sentence bold). */
   readonly message: (amounts: {
     readonly previous: string;
     readonly current: string;
   }) => ReactNode;
-  /** `checkout.price.confirm`, given the new formatted amount. */
+  /** `price.confirm` (checkout catalogue), given the new formatted amount. */
   readonly confirmLabel: (current: string) => string;
   readonly formAction?: FormActionValue;
 }
@@ -70,7 +70,7 @@ export function PriceChangedNotice({
 }
 
 export interface InlinePrivacyNoticeProps {
-  /** `checkout.privacy.demoNotice`, resolved (rich), with the controller line inside it. */
+  /** `privacy.demoNotice` (checkout catalogue), resolved (rich), with the controller line inside it. */
   readonly message: ReactNode;
   /** The sample-details button, in demo; nothing in live, where the notice links the policy. */
   readonly action?: ReactNode;

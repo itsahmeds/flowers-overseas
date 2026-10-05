@@ -10,7 +10,7 @@
  * gallery import this file.
  *
  * **Copy arrives as props.** No file here names a message key or calls `next-intl`: spec 003 §14
- * A17 clause 2 (check 11) refuses `checkout.*` keys reached from `src/modules/ui/`, and the
+ * A17 clause 2 (check 11) refuses checkout keys reached from `src/modules/ui/`, and the
  * islands may not carry a catalogue (§5.4). The checkout route resolves the keys and passes the
  * strings; amounts arrive as `Money` and are formatted here by `formatMoney`.
  *

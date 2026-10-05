@@ -28,7 +28,7 @@ import { FIELD, FIELD_LABEL, FIELD_OPTIONAL, INPUT } from "./styles.ts";
 export interface CardPreviewContent {
   /** "Preview of the printed card" (the figure's accessible name). */
   readonly label: string;
-  /** "Printed on our card · included" (`checkout.card.preview`). */
+  /** "Printed on our card · included" (`card.preview` (checkout catalogue)). */
   readonly printed: string;
   /** The signature the preview shows under the message ("Love, Anna"). */
   readonly signature?: string;

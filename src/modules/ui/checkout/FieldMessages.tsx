@@ -33,9 +33,9 @@ export function fieldMessageIds(id: string): {
 }
 
 export interface FieldMessageContent {
-  /** Help shown under the control (`checkout.recipient.phoneReason`). */
+  /** Help shown under the control (`recipient.phoneReason` (checkout catalogue)). */
   readonly hint?: ReactNode;
-  /** A non-blocking caution (`checkout.recipient.phoneNonLocal`). */
+  /** A non-blocking caution (`recipient.phoneNonLocal` (checkout catalogue)). */
   readonly warning?: ReactNode;
   /** The server's message for this field after a submit, already translated. */
   readonly error?: ReactNode;

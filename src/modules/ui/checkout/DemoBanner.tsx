@@ -1,7 +1,7 @@
 /**
  * `DemoBanner` — "This is a demo order." on every demo screen (spec 010 §5.3 "Checkout shell":
  * "Banner is server-rendered, non-dismissible, first in `<main>`"; Appendix A
- * `checkout.demo.bannerTitle`, `bannerBody`; `docs/design/wireframes/checkout-desktop.dc.html`
+ * `demo.bannerTitle` (checkout catalogue), `bannerBody`; `docs/design/wireframes/checkout-desktop.dc.html`
  * `.guard.s10-banner`; TASK-201).
  *
  * A server component with **no control of any kind**: it cannot be closed, hidden or remembered
@@ -11,9 +11,9 @@
 import type { ReactElement } from "react";
 
 export interface DemoBannerProps {
-  /** `checkout.demo.bannerTitle`. */
+  /** `demo.bannerTitle` (checkout catalogue). */
   readonly title: string;
-  /** `checkout.demo.bannerBody`. */
+  /** `demo.bannerBody` (checkout catalogue). */
   readonly body: string;
   readonly className?: string;
 }

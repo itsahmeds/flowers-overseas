@@ -12,7 +12,7 @@
  * It stays focusable, so focus does not drop to the document. The pending label sits in a polite
  * live region, so a screen reader hears that the order is being placed.
  *
- * Both labels arrive as props (`checkout.demo.place`, `checkout.demo.placing`): no message
+ * Both labels arrive as props (`demo.place` (checkout catalogue), `demo.placing` (checkout catalogue)): no message
  * catalogue reaches the browser.
  */
 import type { ReactElement } from "react";
