@@ -4,9 +4,9 @@
  *
  *  - **`popupCandidates()`**: the projection the Server Component hands to the island, with
  *    `localePath()`-built links.
- *  - **The copy (T-40)**: each `en` value equals its founder-approved literal byte for byte, every
- *    `languagePopup.*` key is `reviewed: false` in every catalogue, and no `en` value carries an
- *    em dash. The "Default" mark ships pending the founder's approval, also `reviewed: false`.
+ *  - **The copy (T-40)**: each `en` value equals its founder-approved literal byte for byte, the
+ *    `en` keys carry the founder's own attestation (record-approval-119), the `de`/`pl` drafts stay
+ *    `reviewed: false`, and no `en` value carries an em dash.
  *  - **`PopupBody`**: the markup, rendered with `react-dom/server` from the shipped strings.
  *
  * What needs a browser (the dialog opening after hydration, the cookie, the boxes, CLS, `Esc`, the
@@ -27,7 +27,15 @@ import en from "../../messages/en.json";
 import plMeta from "../../messages/pl.meta.json";
 import { loadMessages } from "../../src/modules/i18n";
 import { popupCandidates } from "../../src/modules/i18n/ui/LanguagePopup.tsx";
-import { PopupBody } from "../../src/modules/i18n/ui/LanguagePopupIsland.tsx";
+import {
+  ALTERNATES_ATTRIBUTE,
+  PopupBody,
+  linkedCandidates,
+} from "../../src/modules/i18n/ui/LanguagePopupIsland.tsx";
+import {
+  LANGUAGE_ALTERNATES_ATTRIBUTE,
+  LanguageAlternates,
+} from "../../src/modules/i18n/ui/LanguageAlternates.tsx";
 import {
   type LanguagePopupKey,
   languagePopupCopy,
@@ -71,7 +79,7 @@ describe("the popup's copy (spec 004 T-40 for L1, L3–L6)", () => {
     },
   );
 
-  it("ships the default mark as `Default`, pending the founder's exact-text approval", () => {
+  it('ships the default mark as `Default` (founder, 2026-10-05: "3 yes")', () => {
     expect(en.languagePopup.default).toBe("Default");
   });
 
@@ -84,12 +92,30 @@ describe("the popup's copy (spec 004 T-40 for L1, L3–L6)", () => {
     expect(Object.keys(en.meta)).not.toContain("chooser");
   });
 
+  it("every English `languagePopup.*` key carries the founder's own attestation (record-approval-119)", () => {
+    const keys = Object.keys(enMeta).filter((key) =>
+      key.startsWith("languagePopup."),
+    );
+    expect(keys).toHaveLength(7);
+    for (const key of keys) {
+      const record = (
+        enMeta as Record<
+          string,
+          { reviewed: boolean; reviewedBy?: string; sourceHash: string }
+        >
+      )[key];
+      expect(record?.reviewed, key).toBe(true);
+      expect(record?.reviewedBy, key).toMatch(
+        /^founder, 2026-10-05: ran record-approval-119\.py/u,
+      );
+    }
+  });
+
   it.each([
-    ["en", enMeta],
     ["de", deMeta],
     ["pl", plMeta],
   ] as const)(
-    "every `languagePopup.*` key is `reviewed: false` in %s",
+    "every `languagePopup.*` draft is `reviewed: false` in %s (no native review yet)",
     (_locale, meta) => {
       const keys = Object.keys(meta).filter((key) =>
         key.startsWith("languagePopup."),
@@ -267,5 +293,55 @@ describe("the old strip is gone (AC-28 (h))", () => {
     expect(files.filter((file) => file.startsWith("LocaleSuggestion"))).toEqual(
       [],
     );
+  });
+});
+
+describe('the same path in every locale (A14 Shape: "a real `<a>` to the same path")', () => {
+  const corridor = {
+    en: "/en/send-flowers-to/poland",
+    "en-gb": "/en-gb/send-flowers-to/poland",
+    de: "/de/blumen-verschicken/polen",
+  };
+
+  it("links each option to the page's own path in that locale, not to its home", () => {
+    const linked = linkedCandidates(
+      popupCandidates(),
+      JSON.stringify(corridor),
+    );
+    expect(linked.map((c) => [c.code, c.href])).toEqual([
+      ["en", "/en/send-flowers-to/poland"],
+      ["en-gb", "/en-gb/send-flowers-to/poland"],
+      ["de", "/de/blumen-verschicken/polen"],
+      // No such page in Polish: the locale home, never a 404.
+      ["pl", "/pl"],
+    ]);
+  });
+
+  it("keeps the homes when the page rendered no map, or a broken one", () => {
+    const homes = popupCandidates().map((c) => c.href);
+    expect(
+      linkedCandidates(popupCandidates(), null).map((c) => c.href),
+    ).toEqual(homes);
+    expect(
+      linkedCandidates(popupCandidates(), "{not json").map((c) => c.href),
+    ).toEqual(homes);
+  });
+
+  it("refuses a path outside the option's own locale prefix", () => {
+    const linked = linkedCandidates(
+      popupCandidates(),
+      JSON.stringify({ de: "https://evil.example/", pl: "/de/x", en: "/enx" }),
+    );
+    expect(linked.map((c) => c.href)).toEqual(["/en", "/en-gb", "/de", "/pl"]);
+  });
+
+  it("is fed by `LanguageAlternates`, which filters to launch locales under their own prefix", () => {
+    expect(ALTERNATES_ATTRIBUTE).toBe(LANGUAGE_ALTERNATES_ATTRIBUTE);
+    const html = renderToStaticMarkup(
+      <LanguageAlternates paths={{ ...corridor, fr: "/fr/x", pl: "/de/x" }} />,
+    );
+    expect(html).toContain('<span hidden="" data-fo-language-alternates=');
+    const raw = /data-fo-language-alternates="([^"]*)"/u.exec(html)?.[1] ?? "";
+    expect(JSON.parse(raw.replaceAll("&quot;", '"'))).toEqual(corridor);
   });
 });

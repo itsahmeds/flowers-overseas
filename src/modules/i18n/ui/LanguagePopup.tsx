@@ -9,10 +9,11 @@
  * to `src/config/locales.ts` appears in the popup with no edit here (AC-5, AC-31; T-05 renders it
  * with a fake five-locale registry).
  *
- * **Links go to the locale home**, as the header switcher's do: the layout that renders the popup
- * does not know the page, and reading the path would make every document per-request. `pageType`
- * is the seam for a page that passes its own, exactly as `LocaleSwitcher` has it (spec 003 §2
- * "falling back to the locale home").
+ * **Links go to the same page in each locale.** The layout that renders the popup does not know
+ * the page, and reading the path would make every document per-request, so the links built here
+ * are the locale homes. Each route renders `LanguageAlternates` with the per-locale paths its
+ * hreflang cluster already uses, and the island swaps them in from the DOM. A locale with no such
+ * page (and the product page, which has no alternates builder yet) keeps the home.
  */
 import { useTranslations } from "next-intl";
 

@@ -19,7 +19,7 @@ import {
   writeProductExistenceSummary,
 } from "@/modules/catalog";
 import { DeliveryFacts } from "@/modules/geo";
-import { alternatesFor } from "@/modules/i18n";
+import { LanguageAlternates, alternatesFor } from "@/modules/i18n";
 import {
   canonicalFor,
   deploymentDescriptor,
@@ -348,10 +348,26 @@ export default async function LocaleGrandchildRoute({
     productLinks: isPublished("product"),
   });
   setRequestLocale(match.locale);
+  const alternates = (
+    <LanguageAlternates
+      paths={await listingAlternatePaths({
+        pageType: match.kind,
+        locale: match.locale,
+        countryIso: match.iso2,
+        ...(view.entity === undefined ? {} : { entityKey: view.entity.key }),
+      })}
+    />
+  );
 
   return match.kind === "countryCategory" ? (
-    <CountryCategoryPage view={view} />
+    <>
+      <CountryCategoryPage view={view} />
+      {alternates}
+    </>
   ) : (
-    <CountryOccasionPage view={view} />
+    <>
+      <CountryOccasionPage view={view} />
+      {alternates}
+    </>
   );
 }

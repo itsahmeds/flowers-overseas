@@ -11,7 +11,12 @@ import {
   resolveLocalePath,
 } from "@/modules/catalog";
 import { DestinationsHubPage, hubView } from "@/modules/geo";
-import { alternatesFor } from "@/modules/i18n";
+import {
+  LanguageAlternates,
+  alternatesFor,
+  launchLocaleCodes,
+  localePath,
+} from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
   JsonLd,
@@ -195,7 +200,18 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
     setRequestLocale(match.locale);
     // `BreadcrumbList` is TASK-115's, from this same `view.breadcrumb`; the slot is the empty
     // `JsonLd` below on the hub branch and is deliberately not duplicated here.
-    return <OccasionsIndexPage view={view} />;
+    // `LanguageAlternates`: this page in the other locales, for the language popup (TASK-119).
+    return (
+      <>
+        <OccasionsIndexPage view={view} />
+        <LanguageAlternates
+          paths={await listingAlternatePaths({
+            pageType: "occasionsIndex",
+            locale: match.locale,
+          })}
+        />
+      </>
+    );
   }
 
   if (match.kind !== "destinationsHub") notFound();
@@ -207,6 +223,14 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
   return (
     <>
       <DestinationsHubPage locale={match.locale} />
+      <LanguageAlternates
+        paths={Object.fromEntries(
+          launchLocaleCodes().map((code) => [
+            code,
+            localePath(code, "destinations"),
+          ]),
+        )}
+      />
       <JsonLd
         nodes={
           options === undefined

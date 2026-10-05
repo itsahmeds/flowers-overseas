@@ -78,6 +78,40 @@ function writeLocaleCookie(
   });
 }
 
+/**
+ * `LanguageAlternates`' attribute, restated rather than imported: that Server Component reads the
+ * locale registry, which would bring the registry and its validator into this chunk.
+ * `tests/unit/i18n-language-popup.test.tsx` pins the two equal.
+ */
+export const ALTERNATES_ATTRIBUTE = "data-fo-language-alternates";
+
+/**
+ * Each option's link: the page's own path in that locale where the page rendered one
+ * (`LanguageAlternates`), else the locale home the server built. Read from the DOM, so nothing is
+ * fetched or sent. A value that is not a string under that locale's own prefix is ignored.
+ */
+export function linkedCandidates(
+  candidates: readonly PopupCandidate[],
+  raw: string | null,
+): readonly PopupCandidate[] {
+  if (raw === null) return candidates;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return candidates;
+  }
+  if (typeof parsed !== "object" || parsed === null) return candidates;
+  const paths = parsed as Record<string, unknown>;
+  return candidates.map((candidate) => {
+    const path = paths[candidate.code];
+    return typeof path === "string" &&
+      (path === `/${candidate.code}` || path.startsWith(`/${candidate.code}/`))
+      ? { ...candidate, href: path }
+      : candidate;
+  });
+}
+
 /** True when a click landed on the backdrop: the dialog's own box does not contain the point. */
 function outsideBox(dialog: HTMLDialogElement, event: MouseEvent): boolean {
   if (event.target !== dialog) return false;
@@ -123,6 +157,19 @@ export function LanguagePopupIsland({
       return { open: false, reason: "error" };
     }
   });
+  // The links, read once on mount for the reason the decision is: no server pass to disagree with.
+  const [linked] = useState<readonly PopupCandidate[]>(() => {
+    try {
+      return linkedCandidates(
+        candidates,
+        document
+          .querySelector(`[${ALTERNATES_ATTRIBUTE}]`)
+          ?.getAttribute(ALTERNATES_ATTRIBUTE) ?? null,
+      );
+    } catch {
+      return candidates;
+    }
+  });
   const headingId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
   /** Set when an option was chosen, so the `close` that may follow does not overwrite it. */
@@ -163,7 +210,7 @@ export function LanguagePopupIsland({
       ref={dialogRef}
     >
       <PopupBody
-        candidates={candidates}
+        candidates={linked}
         copy={copy}
         current={current}
         defaultLocale={defaultLocale}

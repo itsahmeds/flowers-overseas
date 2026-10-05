@@ -11,7 +11,7 @@ import {
   listingAlternatePaths,
   listingView,
 } from "@/modules/catalog";
-import { alternatesFor } from "@/modules/i18n";
+import { LanguageAlternates, alternatesFor } from "@/modules/i18n";
 import {
   canonicalFor,
   deploymentDescriptor,
@@ -178,5 +178,16 @@ export async function CountryShopRoot({
   if (view === undefined) notFound();
   redirectToBare(request, view.path);
   setRequestLocale(match.locale);
-  return <CountryShopRootPage view={view} />;
+  return (
+    <>
+      <CountryShopRootPage view={view} />
+      <LanguageAlternates
+        paths={await listingAlternatePaths({
+          pageType: "countryShopRoot",
+          locale: match.locale,
+          countryIso: match.iso2,
+        })}
+      />
+    </>
+  );
 }

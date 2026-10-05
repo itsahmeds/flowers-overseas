@@ -523,3 +523,34 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
     await expect(page.locator(CONSENT_SHOWN)).toHaveCount(0);
   });
 });
+
+test.describe("each option is the same page in that locale (A14 Shape)", () => {
+  test("on the Poland corridor, the options point at its own path, and English (UK) follows there", async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await forceLanguages(page, ["en-US"]);
+    await page.goto("/en/send-flowers-to/poland");
+    await expect(page.locator(OPEN)).toBeVisible();
+
+    await expect(page.locator(option("en"))).toHaveAttribute(
+      "href",
+      "/en/send-flowers-to/poland",
+    );
+    await expect(page.locator(option("en-gb"))).toHaveAttribute(
+      "href",
+      "/en-gb/send-flowers-to/poland",
+    );
+    // Deutsch: the German corridor URL (localised segments), never the bare locale root.
+    const german = await page.locator(option("de")).getAttribute("href");
+    expect(german).toMatch(/^\/de\/[a-z-]+\/[a-z-]+$/u);
+
+    await Promise.all([
+      page.waitForURL(/\/en-gb\/send-flowers-to\/poland$/u),
+      page.locator(option("en-gb")).click(),
+    ]);
+    await expectLocaleCookie(context, "en-gb", baseURL);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en-GB");
+  });
+});
