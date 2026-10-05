@@ -13,6 +13,9 @@
  *    category row first;
  *  - `header-rtl.png` — `/ar-XB`, where the whole header mirrors and the mirroring intent of the
  *    icon set becomes observable.
+ *  - since spec 004 §14 A24 clause 3 (TASK-195) a phone has **no strip**: `header-mobile` is the
+ *    65 px logo-and-Menu banner closed (`-banner`) and the Menu's panel open (`-menu`), the two
+ *    states `chrome-mobile.dc.html` draws.
  *
  * `navigator.languages` is emptied first, for the reason `./shell.spec.ts` documents: the
  * suggestion banner is a client island that decides from the runner's language list, and a
@@ -29,6 +32,12 @@ const PARTS = [
 /** The two artboard widths, so a baseline is comparable with the design source. */
 const DESKTOP = { width: 1440, height: 900 } as const;
 const MOBILE = { width: 390, height: 844 } as const;
+
+/** Below `md`: the banner closed, then the Menu's panel open (§14 A24 clause 3). */
+const PHONE_PARTS = [
+  { suffix: "banner", selector: "[data-fo-header]", open: false },
+  { suffix: "menu", selector: "[data-fo-menu-panel]", open: true },
+] as const;
 
 const CASES = [
   { name: "header-desktop", path: "/en", viewport: DESKTOP },
@@ -56,6 +65,15 @@ for (const { name, path, viewport } of CASES) {
     ).toBe(200);
     await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
 
+    if (viewport.width < 768) {
+      for (const { suffix, selector, open } of PHONE_PARTS) {
+        if (open) await page.locator("[data-fo-menu-summary]").click();
+        await expect(page.locator(selector)).toHaveScreenshot(
+          `${name}-${suffix}.png`,
+        );
+      }
+      return;
+    }
     for (const { suffix, selector } of PARTS) {
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
