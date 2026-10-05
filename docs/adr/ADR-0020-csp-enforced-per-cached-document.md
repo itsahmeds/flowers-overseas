@@ -99,7 +99,9 @@ Harder, and the residual risks stated so no reviewer has to infer them:
   `ci:full`.** A new flight shape that is not hashed blocks hydration under enforcement, and that
   e2e catches it before merge.
 - **R-4 (E-4). After the flip the static Report-Only header still reports the flight blocks** on
-  every cached page view. The separate budgets keep `enforce` reports flowing. Stamping the
+  every cached page view. The separate budgets keep `enforce` reports flowing up to a ceiling: the
+  endpoint reads at most 600 requests a minute per instance, and above that it drops reports
+  unread, `enforce` ones included, and logs one `csp reports dropped` line a minute. Stamping the
   Report-Only header with the same hashes, or dropping it from cached documents, is a precondition
   of the **production** flip (`docs/runbooks/csp-enforce.md`). It does not gate this ADR.
 - **R-5. Vercel cannot enforce.** The cold fallback serves prerenders without the handler, so it

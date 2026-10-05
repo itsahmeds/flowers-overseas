@@ -11,9 +11,10 @@
  *
  * Same constraints as `src/lib/csp-response.ts`, because the handler imports this file too: Node
  * type stripping, erasable syntax, `.ts` specifiers, no alias, no app imports. The record lives on
- * `globalThis` under a registered symbol because the handler (loaded by Next with a bare
+ * `globalThis` because the handler (loaded by Next with a bare
  * `import()`) and the health route (compiled into the server bundle) are two module instances in
- * one process; a module-level variable would be two variables.
+ * one process; a module-level variable would be two variables. It is a typed global
+ * (`__flowersOverseasCspEnforce`), declared below.
  */
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -24,25 +25,26 @@ import { cspEnforced, staticPolicyFromRoutesManifest } from "./csp-response.ts";
 export const CSP_ENFORCE_STATES = ["report-only", "ok", "degraded"] as const;
 export type CspEnforceState = (typeof CSP_ENFORCE_STATES)[number];
 
-interface CspRuntimeRecord {
+export interface CspRuntimeRecord {
   /** `.next/server` as the handler was given it; set on the handler's first construction. */
   serverDistDir: string | undefined;
   /** Cached documents served without the enforcing header while enforcement was asked for. */
   failedOpen: number;
 }
 
-const RECORD_KEY = Symbol.for("flowersoverseas.csp-enforce");
+declare global {
+  // One record per process, shared by the handler and the health route (see the header). A
+  // typed global rather than a cast (`/review 196` round 2 nit 2); the long name is the
+  // collision guard a registered symbol used to be.
+  var __flowersOverseasCspEnforce: CspRuntimeRecord | undefined;
+}
 
 function record(): CspRuntimeRecord {
-  const store = globalThis as unknown as Record<
-    symbol,
-    CspRuntimeRecord | undefined
-  >;
-  const existing = store[RECORD_KEY];
-  if (existing !== undefined) return existing;
-  const created: CspRuntimeRecord = { serverDistDir: undefined, failedOpen: 0 };
-  store[RECORD_KEY] = created;
-  return created;
+  globalThis.__flowersOverseasCspEnforce ??= {
+    serverDistDir: undefined,
+    failedOpen: 0,
+  };
+  return globalThis.__flowersOverseasCspEnforce;
 }
 
 const staticPolicies = new Map<string, string>();

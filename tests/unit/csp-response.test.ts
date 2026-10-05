@@ -122,6 +122,33 @@ describe("flightScriptHashes", () => {
     }
   });
 
+  // `/break 196` round 2 hole 1: the exact array shape is pinned, not just "some JSON".
+  it("refuses a wrong arity, a wrong element type and a non-array argument", () => {
+    const refused = [
+      // Wrong arity.
+      'self.__next_f.push([1,"x","y"])',
+      "self.__next_f.push([1])",
+      "self.__next_f.push([])",
+      "(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2])",
+      '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([2,{},"x"])',
+      // Wrong element type.
+      "self.__next_f.push([1,null])",
+      "self.__next_f.push([3,7])",
+      'self.__next_f.push([0,"x"])',
+      'self.__next_f.push([4,"x"])',
+      "(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push([5,1])",
+      '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push(["2",null])',
+      // Not an array.
+      'self.__next_f.push("x")',
+      "self.__next_f.push(1)",
+      '(self.__next_f=self.__next_f||[]).push([0]);self.__next_f.push({"0":2})',
+    ];
+    for (const body of refused) {
+      expect(isFlightScript(body), body).toBe(false);
+      expect(flightScriptHashes(`<script>${body}</script>`), body).toEqual([]);
+    }
+  });
+
   it("accepts the other shapes Next emits: binary chunks and the form-state bootstrap", () => {
     expect(isFlightScript('self.__next_f.push([3,"AAEC"])')).toBe(true);
     expect(isFlightScript('self.__next_f.push([1,""])')).toBe(true);

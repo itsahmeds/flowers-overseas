@@ -46,7 +46,9 @@ export const HealthResponse = z.object({
   // `report-only`, `ok`, or `degraded` when the cache handler has failed open
   // (`src/lib/csp-state.ts`). A closed set; no policy text, no path, no PII. Optional so a body
   // from a deployment before TASK-058 still parses; the route always sends it, and a scheduled
-  // check that finds it absent while enforcing must treat that as `degraded`.
+  // check that finds it absent while enforcing must treat that as `degraded`. Public on purpose
+  // (`/review 196` round 2 nit 4): any page's own response headers already show whether an
+  // enforcing `Content-Security-Policy` is present, so `degraded` discloses nothing new.
   cspEnforce: z.enum(CSP_ENFORCE_STATES).optional(),
 });
 export type HealthResponse = z.infer<typeof HealthResponse>;

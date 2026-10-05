@@ -75,12 +75,23 @@ What is left is the evidence. It is clean when, over **at least seven days of re
 
 **Two limits on this evidence:**
 
-- **The log is a floor, not a count.** The endpoint logs at most 60 reports a minute per running
-  instance (ADR-0016). Since TASK-058 there are **two separate allowances**, one for
-  `disposition: enforce` and one for everything else, so the flight-block noise can fill its own
-  allowance but never the `enforce` one. Before the flip everything is `report`, and the noise
-  (two or more lines per page view) fills that allowance at about 30 page views a minute. Read the
-  whole period, not a busy minute.
+- **The log is a floor, not a count.** Per running instance, the endpoint reads at most 600
+  report requests a minute, and of those it logs at most 60 `disposition: enforce` lines and 60
+  others (ADR-0016, ADR-0020 R-4). The two log allowances are separate, so the flight-block noise
+  fills its own allowance and does not touch the `enforce` one. Before the flip everything is
+  `report`, and the noise (two or more lines per page view) fills that allowance at about 30 page
+  views a minute. Read the whole period, not a busy minute.
+- **Above 600 requests a minute on one instance, reports are dropped unread, `enforce` ones
+  included.** That is roughly 200 cached page views a minute while the noise lasts. It is a
+  ceiling, not something that cannot happen. Each minute it is hit, the endpoint writes one line:
+
+  ```json
+  {"level":"warn","msg":"csp reports dropped","csp_report_dropped":"unread"}
+  ```
+
+  A minute with that line, or with `"csp_report_dropped":"enforce"` (more than 60 real blocks in
+  a minute), may have lost `enforce` reports. Count those minutes next to the `enforce` count in
+  §3 step 5. Report-only drops are expected and are not announced.
 - **The filter also hides a real injected inline script.** Before the flip it cannot be told apart
   from a flight block, so inline scripts are not judged from these reports at all. Their evidence
   is `tests/e2e/csp-enforced.spec.ts`, which runs on every PR with `ci:full`. It starts a server
@@ -152,9 +163,18 @@ What is left is the evidence. It is clean when, over **at least seven days of re
    - Each line beyond the canary is something a browser actually refused. `blocked_origin: inline`
      with `disposition: enforce` is either an attack or a script added without its hash: read it at
      once.
+   - Count the minutes with a `csp reports dropped` line too:
+
+     ```
+     "csp reports dropped"
+     ```
+
+     Zero is the clean answer. Any other number means `enforce` reports may have been lost in those
+     minutes (§2), so the `enforce` count is a floor for them.
    - The static policy's flight-block noise (`disposition: report`) keeps arriving after the flip.
-     It is expected, the filter in §2 still removes it, and it cannot use up the `enforce`
-     allowance.
+     It is expected, the filter in §2 still removes it, and it has its own log allowance. Only above
+     the 600-requests-a-minute ceiling can it crowd out an `enforce` report, and then the
+     `csp reports dropped` line says so.
 6. **Production.** Repeat steps 1 to 5 on `production`, at a quiet hour, never on a peak day
    (`peak-day.md`), and only once the production precondition above holds.
 
