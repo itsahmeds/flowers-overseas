@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-05: read the brief, spec 010 §5.3/§5.4/§7/§8, the round-2 + spec 010 boards and spec 003 A17 (PR 204). Design choice: the components take resolved copy as props and name no message key, because A17 check 11 refuses `checkout.*` keys read from `src/modules/ui/**`; the gallery's `checkout.tsx` resolves them. Next: components, islands, budget test.
 
 ## Result
 
