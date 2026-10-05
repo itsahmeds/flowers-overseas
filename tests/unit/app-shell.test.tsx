@@ -203,6 +203,14 @@ describe("the `[locale]` document (AC-6)", () => {
     expect(pl).toContain('dir="ltr"');
   });
 
+  it("serves the language popup's gate pending on `<html>`, so the consent sheet waits from the first byte (/break 205 hole 3)", async () => {
+    for (const locale of ["en", "de"]) {
+      expect(await renderLocaleDocument(locale)).toMatch(
+        /<html [^>]*data-fo-locale-gate="pending"[^>]*>/u,
+      );
+    }
+  });
+
   it("renders the shipped `meta` and `a11y` copy, never a literal", async () => {
     const html = await renderLocaleDocument("en");
     // TASK-052: the placeholder `<h1>` is gone — the locale home's heading is `home.hero.heading`,

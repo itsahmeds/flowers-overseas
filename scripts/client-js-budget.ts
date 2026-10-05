@@ -38,7 +38,7 @@
  * `/review 36` found what that fix over-counted, and TASK-085 fixed it. Turbopack writes the
  * **same** `next/dynamic` module ids into every route's loadable manifest — it is an app-level
  * list, not a per-route one — so `/` was charged the banner, consent and settings-panel chunk
- * groups although `(chooser)` mounts no island and a browser fetches none of them (`/review 36`:
+ * groups although the `/` document of the time (deleted by spec 003 §14 A16) mounted no island and a browser fetches none of them (`/review 36`:
  * 131 672 B charged against 116 429 B fetched; on TASK-085's base commit, 135 357 B charged
  * against 120 116 B fetched — 15 241 B of fiction). The route's manifest is now a *candidate*
  * list, filtered by reachability from what the document really loads:
@@ -57,7 +57,7 @@
  * The closure starts from the **mounted** references rather than from every script the document
  * lists, and that is the whole of the fix: `/`'s HTML does list the banner loader's chunk, because
  * Turbopack puts an entry's client modules in the entry's script set, and that chunk does name the
- * island chunks — but `(chooser)` never mounts the loader, so the import never runs.
+ * island chunks — but a document that never mounts the loader never runs the import.
  *
  * The result is checked against a real browser rather than trusted:
  * `tests/e2e/client-js-budget.spec.ts` records every script response Chromium makes for the five
@@ -85,7 +85,7 @@
  * `lighthouse`. It stays informational until then because the framework floor is almost the whole
  * budget: after TASK-085 took the client provider and the catalogue import out, `/` measures
  * 116 778 B Brotli (14 294 B spare) and every locale document 122 360 B (8 712 B spare) against
- * 131 072 B — and 114 KB of the chooser's total is react-dom plus the App Router runtime, with no
+ * 131 072 B — and 114 KB of that `/` total was react-dom plus the App Router runtime, with no
  * application byte left to remove. TASK-056 owns the flip and the Lighthouse reconciliation (a
  * protected preview also runs `vercel.live`, which is not in this build output).
  *
@@ -407,8 +407,9 @@ export function loadableAssetsFor(dist: string, url: string): ScriptTag[] {
  * than to every emitted chunk name: the candidate list is what Next wrote for this graph, and an
  * unrestricted search would count a chunk merely *named* in a manifest blob.
  *
- * This is the whole fix for `/`: `(chooser)` shares the app's loadable manifest with `[locale]`,
- * but nothing `/` loads mentions the island chunks, so `/` is charged none of them.
+ * A document that mounts no island shares the app's loadable manifest with `[locale]`, but
+ * nothing it loads mentions the island chunks, so it is charged none of them (the `/review 36`
+ * case was the `/` document spec 003 §14 A16 later deleted).
  */
 export function reachableAssets(
   dist: string,
@@ -572,8 +573,8 @@ export function measurePages(
     // The closure starts from the chunks of the **mounted** client references, not from every
     // script the document lists. That distinction is the `/review 36` over-count: `/`'s HTML does
     // list the banner loader's 1 434 B chunk (Turbopack puts an entry's client modules in the
-    // entry's script set), and that chunk names the island chunks — but `(chooser)` never mounts
-    // the loader, so the dynamic import never runs and the browser fetches none of them. A
+    // entry's script set), and that chunk names the island chunks — but a document that never mounts
+    // the loader (the then `/`, since deleted), so the dynamic import never runs and the browser fetches none of them. A
     // `next/dynamic` chunk is requested by the component that mounts, so the mounted set is the
     // honest seed.
     const loaded = references.flatMap((reference) => [...reference.chunks]);

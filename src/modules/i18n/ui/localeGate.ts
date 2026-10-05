@@ -7,9 +7,10 @@
  * Client Component in `src/modules/i18n` may reach `src/modules/ui` only through its barrel, which
  * would pull the design system's islands into this chunk, spec 004 §14 A1):
  *
- *  - `claimLocaleGate()` — the popup **loader** runs it in an effect during hydration, before any
- *    `next/dynamic({ ssr: false })` chunk can resolve, so the attribute is in place before the
- *    consent island first reads it.
+ *  - **pending from the first byte** — `src/app/[locale]/layout.tsx` renders
+ *    `localeGateDocumentAttributes()` on `<html>`, the same for every visitor, so the gate is held
+ *    before either island's chunk exists (`/break 205` hole 3: a claim made from a client effect
+ *    could be dropped with nothing but a race to show it).
  *  - `holdLocaleGate()` — the popup is open.
  *  - `releaseLocaleGate()` — no popup is open or pending: the visitor closed or chose, or a valid
  *    `fo_locale` means it never opens.
@@ -22,8 +23,8 @@
  * popup then opens late after all, it holds the gate again and the consent sheet steps back until
  * it closes, so "never stacked" holds in that case too.
  *
- * The two names are restated in `src/modules/ui/consent/ConsentBannerIsland.tsx` for the
- * boundary reason above; `tests/unit/locale-gate.test.ts` pins the two copies equal.
+ * The two names are restated in `src/modules/ui/consent/localeGateReader.ts` for the boundary
+ * reason above; `tests/unit/locale-gate.test.ts` drives both ends against one document.
  */
 
 /** The attribute on `<html>` while the language popup is pending (`pending`) or open (`open`). */
@@ -37,6 +38,12 @@ export const LOCALE_GATE_TIMEOUT_MS = 4000;
 
 type GateState = "pending" | "open";
 
+/** The gate as every locale document is served: pending. Rendered by the layout on `<html>`. */
+export function localeGateDocumentAttributes(): Record<string, string> {
+  const pending: GateState = "pending";
+  return { [LOCALE_GATE_ATTRIBUTE]: pending };
+}
+
 function announce(): void {
   window.dispatchEvent(new Event(LOCALE_GATE_EVENT));
 }
@@ -48,11 +55,6 @@ function setGate(state: GateState): void {
   } catch {
     // A DOM that refuses an attribute is not a reason to lose a page.
   }
-}
-
-/** Claimed by the loader during hydration: the popup may be about to open. */
-export function claimLocaleGate(): void {
-  setGate("pending");
 }
 
 /** Held by the island while the dialog is open. */
