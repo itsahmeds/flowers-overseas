@@ -226,8 +226,10 @@
   },
   "catalog.availability.noPartner": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "44bbc0c4c0399193f3cad38717071f2632b37de5eb46a92dba9fd5042370ff05"
+    "reviewed": true,
+    "sourceHash": "44bbc0c4c0399193f3cad38717071f2632b37de5eb46a92dba9fd5042370ff05",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "catalog.availability.outOfStock": {
     "source": "human",
@@ -1062,8 +1064,10 @@
   },
   "categoryHub.destinationPending": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "8747594d0ba5fa6b00f21845df3a1f77eb21ad319439a3aee67fabfe9b700f73"
+    "reviewed": true,
+    "sourceHash": "8747594d0ba5fa6b00f21845df3a1f77eb21ad319439a3aee67fabfe9b700f73",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "categoryHub.destinationsEyebrow": {
     "source": "human",
@@ -1447,8 +1451,10 @@
   },
   "corridor.coverage.bodyNone": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "1f0704f4c1ded24026c5cb7cb253850697bd61de9ae28f1c5cf9339a369108f4"
+    "reviewed": true,
+    "sourceHash": "1f0704f4c1ded24026c5cb7cb253850697bd61de9ae28f1c5cf9339a369108f4",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "corridor.coverage.eyebrow": {
     "source": "human",
@@ -1494,8 +1500,10 @@
   },
   "corridor.facts.delivering.none": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "ef201c53fe44cb17363d9b183e8750bb66fe3a94478c6c9db4af1c1fab3714b5"
+    "reviewed": true,
+    "sourceHash": "ef201c53fe44cb17363d9b183e8750bb66fe3a94478c6c9db4af1c1fab3714b5",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "corridor.facts.deliveryDays.label": {
     "source": "human",
@@ -1898,8 +1906,10 @@
   },
   "delivery.picker.unavailable": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "b4898cbf9fccfc3355294e30bbf98deb6206670641b55bf2bfedbb9261e336ab"
+    "reviewed": true,
+    "sourceHash": "b4898cbf9fccfc3355294e30bbf98deb6206670641b55bf2bfedbb9261e336ab",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "delivery.reason.beforeEarliest": {
     "source": "human",
@@ -3253,8 +3263,10 @@
   },
   "product.demo.body": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "0bf6242934d55e95419fbcfb9826937b74ba07b320bb18542d5defeb4811bed8"
+    "reviewed": true,
+    "sourceHash": "0bf6242934d55e95419fbcfb9826937b74ba07b320bb18542d5defeb4811bed8",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "product.demo.heading": {
     "source": "human",
@@ -3603,8 +3615,10 @@
   },
   "shop.root.demoNotice": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "592087225e8329d8b935b6ad1798e82fbce6e93664621d52f40588ba9816d193"
+    "reviewed": true,
+    "sourceHash": "592087225e8329d8b935b6ad1798e82fbce6e93664621d52f40588ba9816d193",
+    "reviewedBy": "founder, 2026-10-05: ran record-approval-193.py after reading the exact text it printed (chat: 'approve the wording just no em dash')",
+    "reviewedAt": "2026-10-05T06:22:50Z"
   },
   "shop.root.introBody": {
     "source": "human",
