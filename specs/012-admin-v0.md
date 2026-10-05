@@ -371,7 +371,7 @@ Each has a recommended default; the spec stays `draft` until the founder answers
 
 ## 14. Amendments (post-approval corrections)
 
-- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. This spec's checkout, florist and admin keys are registered in `src/modules/i18n/review-scope.ts` in the PR that adds them (A17 clause 7), and not being counted is no exemption from review: price-display, legal and every buyer-facing string still need the founder's approval before they ship (A17 clause 5).
+- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. Admin needs no registry entry while AC-7 holds (admin copy is not in a public catalogue). If that changes, the admin keys take an `admin` surface in `src/modules/i18n/review-scope.ts` in the same PR.
 
 ## 15. Deferred to spec 012b (re-advised before go-live)
 

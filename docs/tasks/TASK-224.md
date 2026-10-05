@@ -6,7 +6,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-- **Spec 003 §14 A17 is the whole task**, approved by the founder on 2026-10-05 (the rule: "yes"; the mechanism and recommendations (a) to (d): "2 approve all"). Read A17 verbatim, with §2's `review.ts` bullet, AC-23, AC-24 and A15.
+- **Spec 003 §14 A17 is the whole task**, approved by the founder on 2026-10-05: the rule in clause 1 ("yes") and recommendations (a) to (d) ("2 approve all"). The mechanism (clauses 2 to 7) is the spec writer's, checked by the advisor (GO WITH FIXES, fixes applied) and the reviewer. Read A17 verbatim, with §2's `review.ts` bullet, AC-23, AC-24 and A15.
 - **ACs owned:** spec 003 AC-40, AC-41, AC-42, AC-43, AC-44; **tests owned:** T-40 to T-44, each with the mutation A17 names.
 - **Fails safe:** a key no registry entry matches is counted. A mistake may cause a needless `noindex`, never index unreviewed copy.
 - **Check 11** covers the source scan **and** the transitive import rule (advisor fix 1): a file whose keys are excluded may not be reached, directly or through other files, from a file that renders an indexable page.

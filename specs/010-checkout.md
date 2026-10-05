@@ -483,7 +483,7 @@ The spec stays `draft` until the founder answers; each question has the default 
 
 ## 14. Amendments (post-approval corrections)
 
-- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. This spec's checkout, florist and admin keys are registered in `src/modules/i18n/review-scope.ts` in the PR that adds them (A17 clause 7), and not being counted is no exemption from review: price-display, legal and every buyer-facing string still need the founder's approval before they ship (A17 clause 5).
+- **Pointer: spec 003 §14 A17 (approved 2026-10-05).** The 5 % unreviewed-English share counts only keys that can render on an indexable page. Here, `checkout.*` and the confirmation keys take the `checkout` and `orderConfirmation` surfaces in `src/modules/i18n/review-scope.ts`, added in the PR that adds the keys, and A17 clause 5 governs their approval: not being counted is no exemption, and price-display and legal text need the founder's approval before they ship.
 
 ## Appendix A — English copy for the founder's batch approval
 
