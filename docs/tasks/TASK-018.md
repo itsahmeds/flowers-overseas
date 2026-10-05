@@ -56,6 +56,12 @@ _None recorded._
   - the zone-half test.
 
   PostgreSQL 16.14 (PID 81878, stopped by PID): 4 live mutations; 5 static mutations.
+- 2026-10-05: CI on `0f30fdbb` failed `checkout-mode.test.ts` (TASK-200, on main). Its reader scan
+  refuses a computed `import()` anywhere under `scripts/`, and `runDbCheckWithMirror` used one.
+  Fix: `db-check.ts` imports the committed mirror statically, `runDbCheckWithMirror` takes the
+  evaluated module, and the CLI test copies `scripts/db-check.ts` with `db/` into a scratch tree
+  and runs it. TASK-200's test is untouched. Hole C stays red: the CLI on `runDbCheck` (1 red),
+  mirror lines ignored (2 red).
 
 ## Result
 
@@ -105,7 +111,7 @@ Mutations: back to the first DDL word, 5 red; index 0 only, 8 red. Unit file: 91
 |---|---|---|
 | A (depth) | `dynamicSqlCount` and the table model read every string at **every** depth. A quoted body is strictly shorter than its quote, so the recursion ends, and no limit is left for a statement to hide behind. A plpgsql statement (`BEGIN …`, `IF … THEN …`) is read from its first DDL word. Fixtures: an `EXECUTE` four and six `$qN$` levels deep, and literal `ALTER TABLE … ADD COLUMN email` six function bodies deep. | Limit 3 restored (1 red). Limit 1 (1 red). Model limit 3 (1 red). Statements read only from index 0 (1 red). |
 | B (typed tables) | Refused outright in migrations: `CREATE TABLE … OF`, `ALTER TABLE … OF` and `ALTER TYPE … CASCADE`. Composite types are modelled: a column of a type carrying an email attribute (nested, as an array, carried by `LIKE`, or gaining the attribute later by `ADD` or `RENAME ATTRIBUTE`) is reported as `column.attribute`. Live: the AC-27 case walks composite column types recursively and asserts neither recipient table is typed (`reloftype = 0`). | Each refusal removed (1 red each; `ALTER TABLE … OF` needed its own fixture, now added). Composite attributes not carried (2). Added attribute not propagated (1). Live: the breaker's typed-table route (3 red), a composite column with an email attribute (1), a typed table with no email (1). |
-| C (CLI) | `scripts/db-check.ts` takes `--migrations-dir` and `--schema-dir`; `pnpm db:check` passes neither. A test spawns the CLI against a mirror copy that spreads in an email column (exit 1, the line), and against the committed tree (exit 0). The scratch copy lives in `test-results/` with its parent created, which fixes the ENOENT on a fresh install. Node does not strip types under `node_modules/`, so the copy cannot live there. | CLI back to `runDbCheck` (1 red). |
+| C (CLI) | *(Superseded after `0f30fdbb`: no flags; the mirror is imported statically and the test runs a copied `scripts/` + `db/` tree.)* A test spawns the CLI against a mirror copy that spreads in an email column (exit 1, the line), and against an unmutated copy (exit 0). The scratch copy lives in `test-results/` with its parent created, which fixes the ENOENT on a fresh install. Node does not strip types under `node_modules/`, so the copy cannot live there. | CLI back to `runDbCheck` (1 red). |
 | B6 (partner country) | `partner_coverage_country_check()` (`SECURITY DEFINER`, locks the partner `FOR SHARE`) refuses a coverage row whose city or zone is outside the partner's country, on insert and on update. `fulfillment_partner_coverage_country_guard()` refuses moving a partner to another country while it covers the old one. No new column. The rollback drops both functions. | Live: either trigger dropped, or the zone branch removed (red each). Unit: `FOR SHARE` removed, guard trigger renamed (1 red each). |
 
 **B4, not fixed, by instruction.** Mirror-side CHECK expression drift stays a carry-forward to
