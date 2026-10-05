@@ -748,18 +748,26 @@ class TableModel {
 const STATEMENT_HEADS = ["create", "alter", "drop", "select", "with"];
 
 /**
- * Applies one statement to the model. A plpgsql body splits into statements that open with
- * `BEGIN`, `IF … THEN`, a label and the like, so the statement is read from its first DDL word.
+ * Applies one statement to the model, read from **every** DDL word in it. A plpgsql body splits
+ * into statements that open with `BEGIN`, `IF (SELECT …) THEN`, `ELSE`, `CASE WHEN`, a loop header
+ * or a label, and a `SELECT` in a condition can come before the DDL (reviewer R2-1, PR 200). Read
+ * from each occurrence, a statement the model recognises is applied wherever it starts. A
+ * recognised statement read again from a later word (`… AS SELECT`, `… DROP COLUMN`) matches
+ * nothing new, and any repeated problem line is collapsed by the caller.
  */
 function applyStatement(
   model: TableModel,
   statement: readonly SqlToken[],
 ): void {
-  const head = statement.findIndex((token) =>
-    isWord(token, ...STATEMENT_HEADS),
-  );
-  if (head === -1) return;
-  const tokens = statement.slice(head);
+  statement.forEach((token, index) => {
+    if (isWord(token, ...STATEMENT_HEADS)) {
+      applyFrom(model, statement.slice(index));
+    }
+  });
+}
+
+/** The statement model, for a statement that starts at a DDL word. */
+function applyFrom(model: TableModel, tokens: readonly SqlToken[]): void {
   let i = 0;
   if (isWord(tokens[i], "create")) {
     i += 1;

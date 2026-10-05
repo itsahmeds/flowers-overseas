@@ -476,6 +476,57 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     ).toEqual([TYPED()]);
   });
 
+  describe("R2-1: DDL inside plpgsql control flow is read wherever it sits", () => {
+    const COLUMN_LINE = `9999_fixture.sql: column \`email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`;
+    const bodies: readonly [string, string][] = [
+      [
+        "IF (SELECT …) THEN (the reviewer's case)",
+        "IF (SELECT true) THEN ALTER TABLE recipient ADD COLUMN email text; END IF;",
+      ],
+      [
+        "the ELSE branch",
+        "IF false THEN NULL; ELSE ALTER TABLE recipient ADD COLUMN email text; END IF;",
+      ],
+      [
+        "an ELSIF after a SELECT condition",
+        "IF (SELECT false) THEN NULL; ELSIF (SELECT true) THEN ALTER TABLE recipient ADD COLUMN email text; END IF;",
+      ],
+      [
+        "CASE … WHEN … THEN",
+        "CASE WHEN (SELECT 1) = 1 THEN ALTER TABLE recipient ADD COLUMN email text; END CASE;",
+      ],
+      [
+        "a LOOP",
+        "FOR i IN SELECT 1 LOOP ALTER TABLE recipient ADD COLUMN email text; END LOOP;",
+      ],
+      [
+        "a WHILE loop on a SELECT",
+        "WHILE (SELECT false) LOOP NULL; END LOOP; PERFORM 1; ALTER TABLE recipient ADD COLUMN email text;",
+      ],
+      [
+        "a nested BEGIN block",
+        "BEGIN BEGIN IF (SELECT true) THEN ALTER TABLE recipient ADD COLUMN email text; END IF; END; END;",
+      ],
+      [
+        "a labelled block after a SELECT INTO",
+        "<<outer>> DECLARE n int; BEGIN SELECT 1 INTO n; IF n = 1 THEN ALTER TABLE recipient ADD COLUMN email text; END IF; END;",
+      ],
+    ];
+    for (const [label, body] of bodies) {
+      it(label, () => {
+        expect(gate(`DO $$ BEGIN ${body} END $$;`)).toEqual([COLUMN_LINE]);
+      });
+    }
+
+    it("a recognised statement read again from a later keyword changes nothing", () => {
+      expect(
+        gate(
+          "CREATE VIEW buyer_contact AS SELECT email_normalised AS email FROM customer; ALTER TABLE recipient ADD COLUMN note text, DROP COLUMN note; GRANT SELECT ON recipient TO app_web;",
+        ),
+      ).toEqual([]);
+    });
+  });
+
   it("B: ALTER TABLE … OF a type on its own, even with no email attribute yet", () => {
     expect(
       gate(
