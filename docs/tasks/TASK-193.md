@@ -196,3 +196,10 @@ tests                 exit 0 · 116.3 s · changed 128 + map 0 + always 2 · alw
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
+
+After the rebase onto `main` 9bc90368 (TASK-200): the range-diff shows `=` for every commit,
+including the founder's 61dba4ff. Only `docs/codebase-map.md` was regenerated. Two
+`gates:cheap` runs at e5e9f92c, at load averages of 35 to 36 from other agents, failed on the
+`tests` gate only. All 9 failures were 5 s timeouts in files this diff does not touch
+(`catalog-listing`, `catalog-product-routes`, `checkout-currency`, `product-route`, `url-pii`).
+The other six gates exited 0. CI on the head SHA is the gate of record.
