@@ -21,6 +21,13 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
   and the Drizzle snapshot `db/migrations/meta/0003_snapshot.json` against the mirror: no CI job
   runs `drizzle-kit check` today, so a snapshot that drifts would make the next `db:generate` emit a
   migration that loosens a check.
+- **From TASK-018 (PR 200).** AC-27's offline half is in `scripts/db-check.ts`
+  (`checkRecipientEmail`: migrations replayed through a table model, plus the Drizzle mirror). The
+  connected half is `recipientEmailViolations(columns)`: feed it `information_schema.columns` for
+  the live database. The drift check must also cover what the mirror cannot express: `NULLS NOT
+  DISTINCT` on `partner_coverage_partner_target_idx` and `partner_catalog_mapping_partner_product_tier_idx`,
+  the two trigger functions and the `media_asset` guard trigger of `0005`, and the snapshots
+  `meta/0004_snapshot.json` and `meta/0005_snapshot.json`.
 
 ## Escalations
 

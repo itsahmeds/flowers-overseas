@@ -20,6 +20,12 @@ Branch `task/TASK-022-schema-auth-roundtrip`. §13 Q1 resolved: Auth.js v5 + Dri
   applied. This task's round trip, which migrates the container, is what turns it on; add it to the
   suites that must run. It needs a Postgres built with ICU (the `und-x-icu` collation), as the
   official `postgres:16` image and Neon are. TASK-017's local evidence: PostgreSQL 16.14, 8/8.
+- **From TASK-018 (PR 200).** `partner_member.user_id` (`0005`) and `customer.user_id` (`0006`) have no
+  foreign key, because `users` did not exist yet. Migration `0010` adds
+  `partner_member_user_id_users_id_fk` and `customer_user_id_users_id_fk` (choose the `ON DELETE`
+  action: a deleted user's memberships go with them, a buyer's `customer` row stays for the invoice
+  and loses its `user_id`); the rollback drops both, and `db/schema/partners.ts` and
+  `customers.ts` gain the `.references`. `customer_user_id_idx` already exists for the delete check.
 
 ## Escalations
 
