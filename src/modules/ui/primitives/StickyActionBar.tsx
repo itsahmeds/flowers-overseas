@@ -26,9 +26,16 @@
  */
 import type { ReactElement, ReactNode } from "react";
 
+import { Button } from "./Button.tsx";
+
 export interface StickyActionBarProps {
-  /** The action: a `Button` with an `href` to the page's own twin, or the twin's anchor. */
-  readonly children: ReactNode;
+  /**
+   * The action, **an in-page link to its twin in the flow** (`#buy`, `#send`): the bar repeats the
+   * page's action and never replaces it, so the type admits nothing but a fragment and the render
+   * refuses anything else that slips past it (PR 208 breaker hole 3). There is no `children`
+   * slot, so a bar cannot carry a control the page lacks.
+   */
+  readonly action: { readonly href: `#${string}`; readonly label: ReactNode };
   /**
    * The selected price, already formatted by `formatMoney` from the same view the page prints it
    * from, and its caption (e.g. the size). Omitted on a bar with no price (the home).
@@ -41,11 +48,16 @@ export interface StickyActionBarProps {
 }
 
 export function StickyActionBar({
-  children,
+  action,
   price,
   hidden = false,
   className,
 }: StickyActionBarProps): ReactElement {
+  if (!/^#[^\s#]+$/u.test(action.href)) {
+    throw new Error(
+      `StickyActionBar: the action must be an in-page link to its twin in the flow (#id), got "${action.href}"`,
+    );
+  }
   return (
     <div
       className={["action-bar md:hidden", className].filter(Boolean).join(" ")}
@@ -60,7 +72,9 @@ export function StickyActionBar({
         </p>
       )}
       <div className="flex min-w-0 flex-1 [&>*]:min-h-[52px] [&>*]:flex-1">
-        {children}
+        <Button href={action.href} variant="accent">
+          {action.label}
+        </Button>
       </div>
     </div>
   );

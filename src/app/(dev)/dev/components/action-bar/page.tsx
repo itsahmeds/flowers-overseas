@@ -101,13 +101,10 @@ export default async function ActionBarFixturePage({
       </Container>
       <SiteFooter locale={locale} />
       <StickyActionBar
+        action={{ href: "#buy", label: fixture.action }}
         hidden={bar === "hidden"}
         price={{ amount: fixture.price, caption: fixture.caption }}
-      >
-        <Button href="#buy" variant="accent">
-          {fixture.action}
-        </Button>
-      </StickyActionBar>
+      />
       <ConsentBanner />
     </>
   );

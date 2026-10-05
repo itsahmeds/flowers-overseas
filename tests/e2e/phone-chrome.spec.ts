@@ -233,13 +233,6 @@ const WITH_BREADCRUMB = {
   product: "/en-gb/poland/product/anthurium",
 } as const;
 
-/**
- * The types whose trail's last ancestor has **no page** today: the category hub's "Flowers" crumb
- * is text (spec 008: no flowers index). A back link would link to nothing, so the phone keeps the
- * trail there (`Breadcrumbs`; escalated in `docs/tasks/TASK-195.md`).
- */
-const ANCESTOR_WITHOUT_PAGE = new Set(["categoryHub"]);
-
 /** The types whose route serves `BreadcrumbList` today (spec 007 AC-15). */
 const SERVES_BREADCRUMB_LIST = new Set(["destinationsHub", "guide"]);
 
@@ -313,11 +306,15 @@ test.describe("T-55: the back link and the trail (AC-50, AC-32's phone half)", (
       const trail = await htmlTrail(page);
       // The trail is in the server HTML at this width: its ancestors and its current page.
       expect(trail.length, `${path} trail`).toBeGreaterThanOrEqual(2);
-      const ancestor = trail.at(-2);
+      // The last ancestor **with a page** (review ruling, PR 208): on the category hub "Flowers"
+      // is text, so the back link is `‹ Home` there.
+      const ancestor = trail
+        .slice(0, -1)
+        .filter(({ href }) => href !== null)
+        .at(-1);
+      expect(ancestor, `${path} has a linked ancestor`).toBeDefined();
 
-      if (type === "product" || ANCESTOR_WITHOUT_PAGE.has(type)) {
-        // The pinned reason, so the branch cannot hide a missing back link elsewhere.
-        if (type !== "product") expect(ancestor?.href).toBeNull();
+      if (type === "product") {
         // The product page displays its trail and draws no back link.
         await expect(page.locator("main [data-fo-back-link]")).toHaveCount(0);
         expect(
@@ -367,7 +364,7 @@ test.describe("T-55: the back link and the trail (AC-50, AC-32's phone half)", (
       await expect(
         page.locator("main [data-fo-breadcrumb-trail]"),
       ).toBeVisible();
-      if (type !== "product" && !ANCESTOR_WITHOUT_PAGE.has(type)) {
+      if (type !== "product") {
         expect(await displayOf(page, "main [data-fo-back-link]")).toBe("none");
       }
       expect(await htmlTrail(page)).toEqual(trail);
