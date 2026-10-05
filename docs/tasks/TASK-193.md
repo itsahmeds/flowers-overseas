@@ -107,7 +107,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `<meta name="description">` to `shop.root.demoNotice`, but the brief says no N string feeds one.
   Product pages are `noindex` in Phase 0. Options: (a) accept the description becoming N1 (the
   current diff does this); (b) give the product page its own description key, which is new copy.
-  `open`.
+  Answered 2026-10-05 (coordinator): accepted. N1 is approved, honest text, and TASK-197 carries a proper product meta.
 - 2026-10-05, E2, to the orchestrator and founder (PR 194): `unreviewedShare("en")` goes over the
   5 % gate. With the 7 N keys `reviewed: false` it is 30/535 (5.61 %), or 29/535 (5.42 %) once
   PR 190 lands; the gate allows 26.75. `en` and `en-gb` become non-indexable, and about 48 unit
@@ -115,20 +115,20 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   requires both `reviewed: false` and a share at or under 5 %, and those cannot both hold.
   Options: (a) the founder's `record-approval.py` run for N1 to N7 lands on this branch, as its
   own commit, before ready (recommended); (b) the founder attests at least 3 other queued keys
-  first. `open`.
+  first. Answered 2026-10-05: the founder ran `record-approval-193.py`, commit d76e6fa3, rebased as 8446dc8c (range-diff `=`). `en` now has 22 of 535 keys unreviewed (4.11 %), at or under the gate.
 - 2026-10-05, E3, to the orchestrator and founder (PR 194): a match outside the exception list.
   The `intro` of `content/corridors/en/pl-guide.md` says "We are still choosing the florists we
   want to work with in Poland". A YAML fold splits "still" and "choosing" across two lines, so a
   line grep misses it, but it renders on `/en/send-flowers-to/poland`. Open item (vii) lists only
   the FAQ answers, and the list never grows. Options: (a) a spec amendment adds `en/pl-guide.md ›
   intro`; (b) the founder approves the replacement proposed in PR 194 and this task applies it.
-  T-47's unit and e2e scans are red on it until then. `open`.
+  T-47's unit and e2e scans are red on it until then. Answered 2026-10-05: the founder approved the replacement ("2–6 yes"), and the intro now reads "Ordering for Poland is not open yet, so this page makes no promise about when a bouquet would arrive." Corridor review is file-level (`reviewed`/`reviewedBy`/`reviewedAt`, no per-string hash), and the 2026-09-16 decisions-log row accepted the founder's chat words for it. So the file stays `reviewed: true` by the founder, with `reviewedAt` 2026-10-05, `version` 2 and `updatedAt` 2026-10-05; the sitemap fixtures were regenerated.
 - 2026-10-05, E4, to the orchestrator (PR 194): the mobile notice bar loses its sentence row.
   "Nothing takes the line's place" leaves the row empty below `md`, so the lone lead is hidden
   there too, and the bar goes from 80 to 60 px (`tests/e2e/header.spec.ts` updated). CLS stays 0,
   because the change is static, but the box is permanently 20 px smaller. Confirm this reading of
   "the strip's layout must not shift". The visual baselines need a `visual:baselines` refresh.
-  `open`.
+  Answered 2026-10-05 (coordinator): accepted. The baselines are refreshed through the `visual:baselines` label flow.
 
 ## Progress
 
@@ -138,6 +138,10 @@ One line per coherent step, newest last.
   and their notice line removed; N1/N2 call sites drop `{country}` (aa69c5f5).
 - 2026-10-05: T-40 and T-47 (unit and e2e) written, old pins moved, mutations watched red
   (a38f7fb4). Draft PR 194 opened. Four escalations raised, so the task is `blocked`.
+- 2026-10-05: the founder's `record-approval-193.py` commit landed. The branch was rebased onto
+  `main` 22a2d110, with the founder's commit unchanged (range-diff `=`). E1 to E4 are answered.
+  The `en/pl-guide.md` intro takes the approved sentence, and T-40 and the review queue move to
+  the attested state (93621550).
 
 ## Result
 
