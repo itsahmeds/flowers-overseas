@@ -26,7 +26,10 @@ test.describe("the non-production access gate (AC-25)", () => {
   test("answers 401 with WWW-Authenticate to an unauthenticated document request", async ({
     request,
   }) => {
-    const response = await request.get("/", { maxRedirects: 0 });
+    // `/en`, not `/`: since spec 003 §14 A16, `/` is a `redirects()` rule, which Next evaluates
+    // before `src/proxy.ts`, so it answers its 308 to `/en` (no body, nothing rendered) and the
+    // gate answers at the first document.
+    const response = await request.get("/en", { maxRedirects: 0 });
     expect(response.status()).toBe(401);
     expect(response.headers()["www-authenticate"]).toMatch(/^Basic realm=/);
   });
@@ -36,7 +39,7 @@ test.describe("the non-production access gate (AC-25)", () => {
       baseURL: process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000",
       httpCredentials: { username, password },
     });
-    const response = await context.get("/");
+    const response = await context.get("/en");
     expect(response.status()).toBe(200);
     expect(await response.text()).toContain("<html");
     await context.dispose();

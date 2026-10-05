@@ -19,6 +19,8 @@
  */
 import { defineConfig, devices } from "@playwright/test";
 
+import { recordedLocaleChoice } from "./tests/support/locale-choice.ts";
+
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 const isCI = process.env.CI === "true" || process.env.CI === "1";
@@ -78,6 +80,10 @@ export default defineConfig({
     "{testDir}/{testFileDir}/__screenshots__/{projectName}/{platform}/{arg}{ext}",
   use: {
     baseURL,
+    // A returning visitor by default: the language popup (spec 003 §14 A16) is a modal dialog on
+    // a first visit, and the popup's own suites opt back into a first visit with
+    // `NO_LOCALE_CHOICE` (`tests/support/locale-choice.ts`).
+    storageState: recordedLocaleChoice(baseURL),
     extraHTTPHeaders: protectionBypassHeaders,
     trace: "on-first-retry",
     screenshot: "only-on-failure",

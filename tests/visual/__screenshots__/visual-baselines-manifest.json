@@ -8,8 +8,6 @@
     "visual/all-destinations-mobile-region.png": "ad926b7760a43606e91dcdd1f9b5d2e3e680bcc9f0fbd2cf485870b64c41d032",
     "visual/category-hub-desktop.png": "0439fd8bda4ab95780d120847033bed7349a47e7eb6509b682a150e0e2343437",
     "visual/category-hub-mobile.png": "ed9a0fbaa3ee77ed64b717f10fbd7a28ef9bd521ae61e38f3299d1c286cb70a0",
-    "visual/chooser-desktop.png": "2e13fabf0e873a1729dca5b613b7d74b8171c7285024550eeb6a2df8f06d2b37",
-    "visual/chooser-mobile.png": "eee6533b1107cbfc2bb1b2c5fd231c840436d40e9d08ae33ff8b4ed8c413fc52",
     "visual/consent-settings-de-desktop.png": "9d68e01d1c11526da48801ff0f60a6f1ad642113aa288628b6337ffe0f6dfd2e",
     "visual/consent-settings-de-mobile.png": "ba1f4488796b68ea4dafb36841290c027fe4f6d0fda03ad9f3d0ee52d1d42caa",
     "visual/consent-settings-en-desktop.png": "9d68e01d1c11526da48801ff0f60a6f1ad642113aa288628b6337ffe0f6dfd2e",
@@ -73,7 +71,6 @@
     "visual/home-mobile-trending.png": "1484c3c21df3eb3453e001d58fe84dd61bf65e1ec3cc252c6c73f371d244b9c0",
     "visual/home-pl-desktop.png": "ce197964e73108c8f5cb6c1f1ecd60cbf7b17503ae7e67f2a480661b27b4b2f4",
     "visual/home-pl-mobile.png": "50905bc8390a85a2ffa3779e57f190c7569cbca6677ded177db9efa2c064a8db",
-    "visual/home.png": "b90c0faad3a33c06e17fb540884c8f6816acbde32a40f9f95cac4545bb317ae0",
     "visual/laptop-category-hub.png": "14a34d1f5afced701d121dc98428f42516eb8f4ea61164690202aff8d0a2c4e0",
     "visual/laptop-country-category.png": "56ae4af1a2e8c869d2304ccf60a2b2537752622c039a5f4022b3351420bb8ff5",
     "visual/laptop-country-shop.png": "f104a295e4e0eec8766d20df47b8506fd378e5e72a82ee7bd056e2fe0ab2e14f",
@@ -106,8 +103,6 @@
     "visual/product-mobile-gallery-placeholder.png": "3abc81735504fda736a92b73a4c12a456be8197cf2b47d04f9112500b4f5795f",
     "visual/product-mobile-picker-unavailable.png": "a65a11ae328933736fb182f0b95eff94452ef4dc82c128268474c7f4ea3e5f71",
     "visual/product-mobile-sticky.png": "de6f893a091dd4c46842d7090c5596446ccdc6e5d4869599209ff6563214171f",
-    "visual/product-mobile-summary.png": "4a3132b22a7be68ad903643701ff5f15af932d77d3009ade76adad206c024a7f",
-    "visual/suggestion-banner-desktop.png": "5f12f44b793838f74a49e56c8fdcb3a0c489e39e93f82b01e4bb2eddf33cdb86",
-    "visual/suggestion-banner-mobile.png": "74cdd472ef343cded814c8ae1a4cb99662a3f9b6990431d98fe66423b56cd517"
+    "visual/product-mobile-summary.png": "4a3132b22a7be68ad903643701ff5f15af932d77d3009ade76adad206c024a7f"
   }
 }

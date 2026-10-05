@@ -39,7 +39,7 @@ import {
 
 const DIST = resolve(import.meta.dirname, "../../.next");
 const URLS = [
-  "/",
+  // `/` left the measured set with spec 003 §14 A16: it is a 308 with no document.
   "/en",
   "/en-gb",
   "/de",
