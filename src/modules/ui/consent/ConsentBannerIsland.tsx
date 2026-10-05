@@ -34,7 +34,14 @@
  *    reading reaches the endpoint (§8, `docs/compliance/ropa.md` row 3).
  */
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { ConsentBannerView, ConsentSavedView } from "./ConsentBannerView";
 import {
@@ -58,6 +65,38 @@ import type { ConsentView } from "./consentTypes";
 const SettingsPanel = dynamic(() => import("./ConsentSettingsPanel"), {
   ssr: false,
 });
+
+/**
+ * The language popup's gate (spec 003 §14 A14 Shape as amended by A16: "it shows before the
+ * consent sheet and never stacks on it"; AC-28 (f); spec 004 §14 A23 AC-39; TASK-119).
+ *
+ * The popup's loader sets this attribute on `<html>` during hydration, before any `ssr: false`
+ * chunk can resolve, and the popup removes it when it closes or decides not to open; every change
+ * fires the event. The sheet is simply not painted while the attribute is there: nothing is
+ * decided, written or recorded. The names are restated rather than imported, because the only
+ * legal path from here to `src/modules/i18n/ui/localeGate.ts` is the i18n barrel, which would pull
+ * the locale registry and its validator into this chunk (spec 004 §14 A1);
+ * `tests/unit/locale-gate.test.ts` pins the two copies equal. It fails open: the loader releases a
+ * gate its island never took.
+ */
+const LOCALE_GATE_ATTRIBUTE = "data-fo-locale-gate";
+const LOCALE_GATE_EVENT = "fo:locale-gate";
+
+function subscribeLocaleGate(onChange: () => void): () => void {
+  window.addEventListener(LOCALE_GATE_EVENT, onChange);
+  return () => {
+    window.removeEventListener(LOCALE_GATE_EVENT, onChange);
+  };
+}
+
+/** True while the language popup is pending or open. A hostile DOM fails open. */
+function localeGateHeld(): boolean {
+  try {
+    return document.documentElement.hasAttribute(LOCALE_GATE_ATTRIBUTE);
+  } catch {
+    return false;
+  }
+}
 
 const NO_CHOICES: ConsentChoices = { analytics: false, marketing: false };
 
@@ -123,7 +162,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   const trigger = useRef<HTMLElement | null>(null);
 
   // The stored decision is the island's **initial** state, read lazily on mount — the pattern and
-  // the reasoning of `LocaleSuggestionBannerIsland`: this component has no server pass to
+  // the reasoning of `LanguagePopupIsland`: this component has no server pass to
   // disagree with, and an effect would render twice for no benefit.
   const [stored, setStored] = useState<StoredConsent | null>(() => {
     try {
@@ -137,6 +176,12 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   });
   const [phase, setPhase] = useState<Phase>(() =>
     stored === null ? "shown" : "hidden",
+  );
+  // The language popup is asked first (see `LOCALE_GATE_ATTRIBUTE`).
+  const localeGated = useSyncExternalStore(
+    subscribeLocaleGate,
+    localeGateHeld,
+    () => false,
   );
   const [choices, setChoices] = useState<ConsentChoices>(() =>
     stored === null ? NO_CHOICES : choicesOf(stored),
@@ -278,6 +323,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   );
 
   if (phase === "hidden") return null;
+  if (localeGated) return null;
 
   if (phase === "saved") {
     return (

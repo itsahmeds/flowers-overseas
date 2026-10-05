@@ -36,6 +36,22 @@ import {
   staticLocaleRegistry,
   withLocaleRegistry,
 } from "../../src/modules/i18n/registry.ts";
+import { popupCandidates } from "../../src/modules/i18n/ui/LanguagePopup.tsx";
+import { PopupBody } from "../../src/modules/i18n/ui/LanguagePopupIsland.tsx";
+import type { LanguagePopupCopy } from "../../src/modules/i18n/ui/languagePopupTypes.ts";
+
+/** Placeholder strings: T-05 counts options, and the copy is asserted in its own file. */
+const POPUP_COPY: LanguagePopupCopy = {
+  heading: "h",
+  current: "c",
+  default: "d",
+  browserMatch: "b",
+  browserMatchShort: "s",
+  close: "x",
+  foot: "f",
+  listLabel: "l",
+  beta: "β",
+};
 
 /**
  * The router params the 500 boundary reads (`src/app/[locale]/error.tsx`). Mutable so the tests
@@ -76,10 +92,6 @@ vi.mock("next-intl/server", () => ({
   },
 }));
 
-const { default: ChooserLayout, metadata: chooserMetadata } =
-  await import("../../src/app/(chooser)/layout");
-const { default: ChooserPage, generateMetadata: chooserPageMetadata } =
-  await import("../../src/app/(chooser)/page");
 const {
   default: LocaleLayout,
   dynamicParams,
@@ -95,18 +107,13 @@ const { default: RootLayout, metadata: rootMetadata } =
   await import("../../src/app/layout");
 
 /**
- * The `meta` strings of the document fallback locale (`en`), which the chooser and the 404 title
- * themselves from — read from the catalogue so a description is asserted as the authored words.
+ * The `meta` strings of the document fallback locale (`en`), which the 404 titles itself from —
+ * read from the catalogue so a description is asserted as the authored words.
  */
-function fallbackMeta(): {
-  chooser: { description: string };
-  notFound: { description: string };
-} {
+function fallbackMeta(): { notFound: { description: string } } {
   const meta = loadMessages("en", ["meta"])["meta"] as {
-    chooser: { description: string };
     notFound: { description: string };
   };
-  expect(meta.chooser.description).not.toBe("");
   expect(meta.notFound.description).not.toBe("");
   return meta;
 }
@@ -144,9 +151,6 @@ const fiveLocaleRegistry = localeRegistryOf([
   FAKE_FIFTH,
 ]);
 
-/** The chooser page is `async` (it awaits its catalogue), so it is resolved once, up front. */
-const chooserPage = (await ChooserPage()) as ReactElement;
-
 /**
  * Wrap a rendered document in a message provider **for this test environment only**.
  *
@@ -180,66 +184,12 @@ async function renderLocaleDocument(locale: string): Promise<string> {
   );
 }
 
-describe("the `/` locale chooser (AC-7, AC-25)", () => {
-  const html = renderToStaticMarkup(
-    <ChooserLayout>{chooserPage}</ChooserLayout>,
-  );
-
-  it("takes `lang`/`dir` from the x-default locale, with no literal in the file", () => {
-    expect(html).toContain('<html lang="en" dir="ltr" class=');
-    expect(html).not.toContain('lang="en-GB" dir');
-  });
-
-  it("renders one crawlable link per launch locale, in registry order", () => {
-    const hrefs = [...html.matchAll(/<a [^>]*href="([^"]+)"/g)].map(
-      (match) => match[1],
+describe("no `/` document (spec 003 §14 A16 clause 1, AC-7 as restated)", () => {
+  it("has no `(chooser)` route group: `/` is the one 308 of `next.config.ts`", () => {
+    // `tests/unit/root-redirect.test.ts` deep-equals the rule; this pins that no page shadows it.
+    expect(readdirSync(resolve(__dirname, "../../src/app"))).not.toContain(
+      "(chooser)",
     );
-
-    expect(hrefs).toEqual(["/en", "/en-gb", "/de", "/pl"]);
-  });
-
-  it("labels every link with its `nativeName` and declares its language twice", () => {
-    // AC-7 asks for `hreflang` *and* `lang` on each link, and `plan/03` §2 for language names
-    // rather than flags. React 19 serialises the `hrefLang` prop with its JSX spelling; HTML
-    // attribute names are case-insensitive, so the browser and every crawler read `hreflang`
-    // (asserted through the DOM in `tests/e2e/shell.spec.ts`).
-    for (const { bcp47, nativeName } of staticLocaleRegistry.list()) {
-      // TASK-055 gave each row the endonym in the `.display` voice and the path it leads to in
-      // the `.label` voice; the two attributes AC-7 asks for are still on the `<a>` itself.
-      expect(html).toContain(`lang="${bcp47}" hrefLang="${bcp47}">`);
-      expect(html).toContain(`>${nativeName}</span>`);
-    }
-    expect(html).not.toMatch(/[\u{1F1E6}-\u{1F1FF}]/u);
-  });
-
-  it("names its navigation landmark and its heading from the catalogue", () => {
-    expect(html).toContain('<nav aria-label="Languages">');
-    expect(html).toMatch(
-      /<h1 class="display text-title-fluid">Choose your language<\/h1>/,
-    );
-    expect(html).toContain("Choose a language to continue.");
-  });
-
-  it("is the only `follow` document in Phase 0, and still `noindex`", async () => {
-    // The layout keeps the group default; the page overrides it, and page metadata wins.
-    expect(chooserMetadata.robots).toBe("noindex,nofollow");
-    expect((await chooserPageMetadata()).robots).toBe("noindex,follow");
-  });
-
-  it("has a non-empty localised `<title>` and description (AC-25)", async () => {
-    const metadata = await chooserPageMetadata();
-
-    expect(metadata.title).toBe("Flowers Overseas — choose your language");
-    // The authored string, not `String(…).length > 0`, which `undefined` passes (TASK-143).
-    expect(metadata.description).toBe(fallbackMeta().chooser.description);
-  });
-
-  it("contains no Client Component boundary, so `/` needs no JavaScript", () => {
-    // The `(chooser)` group ships `layout.tsx` and `page.tsx` and nothing else: its spec 001
-    // `error.tsx` was deleted in TASK-035 and `src/app/global-error.tsx` answers instead.
-    expect(
-      readdirSync(resolve(__dirname, "../../src/app/(chooser)")).sort(),
-    ).toEqual(["layout.tsx", "page.tsx"]);
   });
 });
 
@@ -336,10 +286,11 @@ describe("the `[locale]` document (AC-6)", () => {
 
 describe("the app-root layout (spec 003 §5.3's accepted alternative)", () => {
   it("renders no document of its own, so each leaf renders its own language", () => {
-    // Same children, no `<html>`/`<body>` added: the root is a pass-through, so the chooser's
-    // own markup is the entire response.
-    expect(renderToStaticMarkup(<RootLayout>{chooserPage}</RootLayout>)).toBe(
-      renderToStaticMarkup(chooserPage),
+    // Same children, no `<html>`/`<body>` added: the root is a pass-through, so each leaf's
+    // own document is the entire response.
+    const leaf = <main>leaf</main>;
+    expect(renderToStaticMarkup(<RootLayout>{leaf}</RootLayout>)).toBe(
+      renderToStaticMarkup(leaf),
     );
   });
 
@@ -462,6 +413,31 @@ describe("the AC-5 registry seam", () => {
     // One `<h1>` (its copy is `home.hero.heading`, out of this helper's catalogue scope — see
     // the note above).
     expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
+  });
+
+  it("lists five options in the language popup once the fake provider is injected (T-05)", async () => {
+    // Spec 003 §14 A16 clause 6: T-05 renders the popup's option list instead of the chooser.
+    const candidates = await withLocaleRegistry(fiveLocaleRegistry, () =>
+      popupCandidates(),
+    );
+    const html = renderToStaticMarkup(
+      <PopupBody
+        candidates={candidates}
+        copy={POPUP_COPY}
+        current="en"
+        defaultLocale="en"
+        headingId="h"
+        hint={null}
+        onChoose={() => undefined}
+        onDismiss={() => undefined}
+        pageLang="en"
+      />,
+    );
+    const options = [
+      ...html.matchAll(/data-fo-language-option="([^"]+)"/g),
+    ].map((match) => match[1]);
+    expect(options).toEqual(["en", "en-gb", "de", "pl", "ar-xb"]);
+    expect(popupCandidates()).toHaveLength(4);
   });
 
   it("adds the fifth locale to `generateStaticParams` with no change under `src/app/`", async () => {

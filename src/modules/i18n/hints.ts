@@ -1,6 +1,7 @@
 /**
- * Language-preference hints and the `fo_locale` cookie (spec 003 §2 "Suggestion banner", §5.2,
- * §5.3, §7 "Deliberate narrowing", §8, AC-12, AC-28, §13 Q4/Q9; TASK-041).
+ * Language-preference hints and the `fo_locale` cookie (spec 003 §2, §5.2, §7 "Deliberate
+ * narrowing", §8, AC-12, AC-28, §13 Q4/Q9; TASK-041; the language popup of §14 A14 as amended by
+ * A16, TASK-119).
  *
  * This is the file `fo/no-geo-redirect` allows to read a location hint, and it reads **only
  * language preferences**: `navigator.languages` in the browser, or an `Accept-Language`-shaped
@@ -24,9 +25,9 @@
  *    the browser.
  *
  * **This module imports no validator (TASK-046, `/review 26`).** It is reachable from the
- * suggestion-banner island, which `LocaleSuggestionBannerLoader.tsx` renders on every locale
- * document through `next/dynamic({ ssr: false })` — so whatever it imports is a chunk the browser
- * fetches right after hydration, whether or not a banner is ever shown. Until this change it
+ * language-popup island, which `LanguagePopupLoader.tsx` renders on every locale document
+ * through `next/dynamic({ ssr: false })` — so whatever it imports is a chunk the browser fetches
+ * right after hydration, whether or not the popup ever opens. Until this change it
  * imported `./schemas.ts` for two schemas, which reaches zod: ~70 KB Brotli of validator fetched
  * by every visitor of `/en`, `/de`, `/en-gb` and `/pl` to decide a courtesy link (spec 004 §13
  * Q13, AC-25's precondition). The two rules those schemas carried — "a language range is
@@ -42,7 +43,7 @@
  * reaches zod, which is the assertion whose absence let the regression ship.
  *
  * The `fo_locale` half is here for the same reason: the cookie *is* a stored language preference,
- * and §2 names `document.cookie` alongside `navigator.languages` as the two things the banner
+ * and §2 names `document.cookie` alongside `navigator.languages` as the two things the popup
  * decides from. Reading and serialising it are pure string functions; the two lines that touch
  * `document.cookie` live in the island.
  */
@@ -144,7 +145,7 @@ function primaryLanguage(tag: string): string {
  *  - **`q=0` means "not acceptable"** (RFC 7231 §5.3.1) and is therefore excluded from the
  *    result, not returned with a zero weight for a caller to remember to filter.
  *  - **The wildcard `*` is dropped.** It cannot name a language, so it cannot produce a locale
- *    suggestion; keeping it would only invite a caller to treat "anything" as "the first locale".
+ *    hint; keeping it would only invite a caller to treat "anything" as "the first locale".
  *  - **The sort is stable**, so equal q-values keep header order — which is what makes
  *    `navigator.languages` (no q-values at all) resolve in the order the browser gave.
  */
@@ -219,8 +220,8 @@ export function languagePreferences(
  *     `en` — the x-default, which is first in the registry — and `de-CH` on `de`.
  *
  * `fr` matches nothing and returns `null`: "there is no better launch locale" is an answer, not a
- * fallback to the default (§2 "hidden … when there is no better launch locale"). The caller
- * decides what that means; `decideSuggestion` treats it as "show nothing".
+ * fallback to the default. The caller decides what that means; `decideLanguagePopup` treats it as
+ * "highlight nothing".
  */
 export function preferredLocale<T extends LocaleHint>(
   preferences: readonly LanguagePreference[],
@@ -246,8 +247,8 @@ export function preferredLocale<T extends LocaleHint>(
  * The `fo_locale` value in a `document.cookie` string, or `null` when there is none and when the
  * one there is not a launch locale code.
  *
- * The forged-value half of AC-12 is this function: `fo_locale=zz` parses as `null`, so the banner
- * behaves exactly as it does for a first-time visitor and the next explicit choice overwrites the
+ * The forged-value half of AC-12 is this function: `fo_locale=zz` parses as `null`, so the popup
+ * opens exactly as it does for a first-time visitor and the next explicit choice overwrites the
  * cookie. Nothing is written on load — writing on read would set a cookie without a user action,
  * which is the one thing §8 and §13 Q4 forbid.
  *
@@ -309,73 +310,93 @@ export function serialiseLocaleCookie(
   return attributes.join("; ");
 }
 
-/** A launch locale as the banner needs it: matchable, renderable and linkable. */
-export interface SuggestionCandidate extends LocaleHint {
+/**
+ * A launch locale as the language popup needs it: matchable, renderable and linkable (spec 003
+ * §14 A14 Shape as amended by A16; TASK-119).
+ */
+export interface PopupCandidate extends LocaleHint {
   /** The locale's own name in its own language — never a country flag (`plan/03` §2). */
   readonly nativeName: string;
   /** Built by `localePath()` on the server; the island never concatenates a URL (§6, AC-13). */
   readonly href: string;
+  /** `localeBetaTag()` for this locale, decided on the server ("Beta", `plan/03` §6). */
+  readonly beta: boolean;
 }
 
-export interface SuggestionInput {
+/**
+ * The popup's highlight: the launch locale `navigator.languages` asks for, or `null` (spec 003
+ * §14 A16 clause 2, resolved by the founder on 2026-10-05: "browser language only").
+ *
+ * **Two inputs, and neither is a country.** The signature is the contract T-28's unit case
+ * asserts: the browser's language list and the candidate list, nothing else — no IP, no country
+ * header, no `/api/geo` answer can reach the highlight because there is no parameter to pass one
+ * through. It returns one launch code or none: no URL, no navigation instruction, nothing a caller
+ * could follow. What the popup does with the code is mark one option; it never navigates, never
+ * writes the cookie and never reorders the list.
+ */
+export function popupHint(
+  languages: readonly unknown[],
+  candidates: readonly LocaleHint[],
+): string | null {
+  return preferredLocale(languagePreferences(languages), candidates);
+}
+
+export interface PopupInput {
   /** The locale of the URL being viewed, from the path segment and nothing else. */
   readonly urlLocale: string;
   /** `navigator.languages`, in the browser's order. */
   readonly languages: readonly unknown[];
   /** The raw `document.cookie` string, or `null` when there is none. */
   readonly cookie: string | null;
-  /** Whether the visitor already dismissed the banner in this tab (see the island). */
-  readonly dismissed?: boolean;
   /** The launch locales, in registry order, projected by the Server Component parent. */
-  readonly candidates: readonly SuggestionCandidate[];
+  readonly candidates: readonly PopupCandidate[];
 }
 
 /**
- * Why the banner is not shown — one reason per hidden branch of §2, all of them observable, plus
- * `"error"`, which no branch of `decideSuggestion` returns: it is the island's fail-closed value
- * for "reading the three browser facts threw". A suggestion is an optional courtesy, so the only
- * defensible behaviour when deciding it fails is to render nothing; see the island's
- * `useState` initialiser.
+ * Why the popup stays closed. `"cookie"` is the only branch `decideLanguagePopup` returns: a valid
+ * `fo_locale` means the visitor already chose or closed, and the popup never opens again. `"error"`
+ * is the island's fail-closed value for "reading the browser facts threw" — a page with no popup is
+ * a better answer than an error document.
  */
-export type SuggestionHiddenReason =
-  | "cookie"
-  | "dismissed"
-  | "unknownUrlLocale"
-  | "noBetterLocale"
-  | "sameLocale"
-  | "error";
+export type PopupClosedReason = "cookie" | "error";
 
-export type SuggestionDecision =
-  | { readonly show: false; readonly reason: SuggestionHiddenReason }
-  | { readonly show: true; readonly target: SuggestionCandidate };
+export type PopupDecision =
+  | { readonly open: false; readonly reason: PopupClosedReason }
+  | {
+      readonly open: true;
+      /**
+       * The URL's locale when it is one of the candidates, else `null` (a pseudo-locale preview
+       * page): the option marked "Current" (A16 Reading 1).
+       */
+      readonly current: string | null;
+      /**
+       * The highlighted option, or `null`. Never the current one: on `/en` with an English
+       * browser there is nothing to point at, so nothing beyond the current and default marks
+       * shows (AC-28 (b), "no option other than English carries any mark").
+       */
+      readonly hint: string | null;
+    };
 
 /**
- * The whole banner decision, as a pure function of the three browser facts and the locale list
- * (§2 "Behaviour", §5.3, AC-28). `tests/unit/i18n-hints.test.ts` walks the matrix; the island
- * adds only the two `document` reads, the render and the cookie write.
+ * The whole popup decision, as a pure function of the browser facts and the locale list (spec 003
+ * §14 A14 Shape as amended by A16, AC-12, AC-28; TASK-119). `tests/unit/i18n-hints.test.ts` walks
+ * the matrix; the island adds the two `document` reads, the dialog and the cookie write.
  *
- * Order matters and is the order §2 states: an existing choice wins over everything (a returning
- * visitor is never asked again), then this tab's dismissal, then the hint. `hidden` is the
- * default in every branch that is not "the visitor's languages name a launch locale that is not
- * the one they are looking at".
+ * It opens on any localised page while there is no valid `fo_locale`, **whatever the hint says**
+ * (A16 clause 2, Reading 2): a missing cookie and a forged one (`fo_locale=zz`) are the same
+ * first visit. The hint changes which option is highlighted and nothing else.
  */
-export function decideSuggestion(input: SuggestionInput): SuggestionDecision {
+export function decideLanguagePopup(input: PopupInput): PopupDecision {
   if (readLocaleCookie(input.cookie) !== null) {
-    return { show: false, reason: "cookie" };
+    return { open: false, reason: "cookie" };
   }
-  if (input.dismissed === true) return { show: false, reason: "dismissed" };
-  if (!input.candidates.some((c) => c.code === input.urlLocale)) {
-    return { show: false, reason: "unknownUrlLocale" };
-  }
-
-  const hint = preferredLocale(
-    languagePreferences(input.languages),
-    input.candidates,
-  );
-  if (hint === null) return { show: false, reason: "noBetterLocale" };
-  if (hint === input.urlLocale) return { show: false, reason: "sameLocale" };
-
-  const target = input.candidates.find((c) => c.code === hint);
-  if (target === undefined) return { show: false, reason: "noBetterLocale" };
-  return { show: true, target };
+  const current = input.candidates.some((c) => c.code === input.urlLocale)
+    ? input.urlLocale
+    : null;
+  const hinted = popupHint(input.languages, input.candidates);
+  return {
+    open: true,
+    current,
+    hint: hinted === current ? null : hinted,
+  };
 }

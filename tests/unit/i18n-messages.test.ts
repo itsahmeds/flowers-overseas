@@ -25,6 +25,7 @@ import {
 import {
   type MessageSource,
   MESSAGE_NAMESPACES,
+  ROUTE_KINDS,
   resolveCatalogue,
   withMessageSource,
 } from "../../src/modules/i18n/messages.ts";
@@ -238,18 +239,12 @@ describe("namespacesFor", () => {
     ]);
   });
 
-  it("gives `/` its titles, its copy and its landmark name (TASK-035)", () => {
-    // Read on the server and handed to no client provider, so `/` still ships zero application
-    // JS (AC-27) while rendering real copy (AC-7).
-    expect([...namespacesFor("chooser")].sort()).toEqual([
-      "a11y",
-      "chooser",
-      "meta",
-    ]);
+  it("has no route kind for `/`, which is a 308 with no document (spec 003 §14 A16)", () => {
+    expect([...ROUTE_KINDS]).toEqual(["localeHome", "localeDocument"]);
   });
 
   it("names only namespaces the catalogue actually ships", () => {
-    for (const kind of ["localeHome", "localeDocument", "chooser"] as const) {
+    for (const kind of ROUTE_KINDS) {
       for (const namespace of namespacesFor(kind)) {
         expect(MESSAGE_NAMESPACES, `${kind}/${namespace}`).toContain(namespace);
       }

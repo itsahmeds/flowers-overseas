@@ -156,10 +156,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     .filter(([, policy]) => policy === "never")
     .map(([pageType]) => pageType as SeoPageType);
 
-  it("keeps the locale chooser and the dev gallery permanently out of the index", () => {
-    expect(never).toEqual(
-      expect.arrayContaining(["localeChooser", "devGallery"]),
-    );
+  it("keeps the dev gallery permanently out of the index, and only it", () => {
+    // `/` was the other one until spec 003 §14 A16 made it a 308 with no document.
+    expect(never).toEqual(["devGallery"]);
   });
 
   it("answers `noindex,follow` for a never-indexable page type in all sixteen cases", () => {
@@ -174,9 +173,6 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     // `[200, 404]` shape. Flipping `categoryHub` to `"never"` or deleting `corridor` left it green.
     // The expected map is the specs' own answer per page type, not a copy of the module's.
     expect(PAGE_TYPE_POLICY).toStrictEqual({
-      // `plan/02` §7 table: "Locale chooser `/` | `noindex,follow`"; spec 007 §6 "`/` stays
-      // `noindex,follow`".
-      localeChooser: "never",
       // spec 004 AC-28 / spec 007 §6: "`/dev/components` … stay `noindex`".
       devGallery: "never",
       // spec 007 §6: "The locale home lifts to `index,follow` under the same engine".
@@ -254,17 +250,7 @@ describe("pageIndexability(): the terms are gathered, not asked for (AC-9)", () 
     }
   });
 
-  it("refuses the locale chooser even with every data term true", () => {
-    expect(
-      pageIndexability(
-        {
-          pageType: "localeChooser",
-          locale: "en",
-          exists: true,
-          reviewed: true,
-        },
-        indexingHost,
-      ).directive,
-    ).toBe(NOINDEX_FOLLOW);
+  it("has no page type for `/`, which is a 308 and not a document (spec 003 §14 A16)", () => {
+    expect(Object.keys(PAGE_TYPE_POLICY)).not.toContain("localeChooser");
   });
 });
