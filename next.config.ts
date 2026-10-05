@@ -22,6 +22,7 @@ import {
   mediaHeaderRules,
 } from "./src/lib/media-headers";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
+import { rootRedirectRules } from "./src/lib/root-redirect";
 
 // Fail the build before compiling anything when a variable **the build consumes** is missing or
 // malformed. The error names the offending keys and prints no value (spec 001 AC-10, TASK-005).
@@ -140,6 +141,12 @@ const nextConfig: NextConfig = {
     : {
         cacheHandler: path.join(process.cwd(), "src/lib/csp-cache-handler.ts"),
       }),
+  // `/` answers one permanent 308 to the x-default locale home, identical for every request: no
+  // `has`, no `missing`, nothing read about the visitor, so it is not a geo-redirect (ADR-0006)
+  // and the response needs no `Vary` (spec 003 §14 A16 clause 1; TASK-119). It is the only
+  // redirect in the application, and `src/lib/root-redirect.ts` says why it lives here and not in
+  // `src/proxy.ts` or at the edge.
+  redirects: () => Promise.resolve(rootRedirectRules()),
   // A country shop root request carrying a parameter the listing honours is answered by the
   // internal parameter route, so no route file reads the query string and the depth-3 route stays
   // prebuilt — which is what keeps the router's `dynamicParams = false` gate, and so the localised

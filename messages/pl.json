@@ -9,12 +9,6 @@
     },
     "skipToContent": "Skip to content"
   },
-  "banner": {
-    "dismiss": "Dismiss the language suggestion",
-    "headline": "Would you rather read this page in {language}?",
-    "stay": "Stay on this page",
-    "switch": "Switch to {language}"
-  },
   "breadcrumb": {
     "destinations": "Send flowers to",
     "entity": "{name}",
@@ -196,10 +190,6 @@
     "h1": "Sending {entity}",
     "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}"
-  },
-  "chooser": {
-    "heading": "Choose your language",
-    "intro": "We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue."
   },
   "common": {
     "beta": "Beta",
@@ -596,6 +586,15 @@
       "heading": "Popularne wybory"
     }
   },
+  "languagePopup": {
+    "browserMatch": "Zgodny z Twoją przeglądarką",
+    "browserMatchShort": "Twoja przeglądarka",
+    "close": "Zamknij",
+    "current": "Bieżący",
+    "default": "Domyślny",
+    "foot": "Możesz go zmienić w każdej chwili u góry każdej strony.",
+    "heading": "Wybierz preferowany język"
+  },
   "media": {
     "placeholder": {
       "delivery": "Photography to supply · a bouquet handed over at the recipient's door",
@@ -611,10 +610,6 @@
     }
   },
   "meta": {
-    "chooser": {
-      "description": "We send flowers across Europe: our florist in the recipient's town makes the bouquet and hands it over in person. Choose your language.",
-      "title": "Flowers Overseas — choose your language"
-    },
     "error": {
       "description": "The page could not be loaded. Nothing you were doing was lost.",
       "title": "Something went wrong — Flowers Overseas"

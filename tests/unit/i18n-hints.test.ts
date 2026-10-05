@@ -15,12 +15,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
-  type SuggestionCandidate,
-  decideSuggestion,
+  type LocaleHint,
+  type PopupCandidate,
+  decideLanguagePopup,
   languagePreferences,
+  popupHint,
   parseAcceptLanguage,
   preferredLocale,
   readLocaleCookie,
@@ -33,12 +35,13 @@ const repoRoot = resolve(__dirname, "../..");
 /** The real launch locales — the matcher must work against the shipped registry, not a fake. */
 const REGISTRY = launchLocales();
 
-const CANDIDATES: readonly SuggestionCandidate[] = REGISTRY.map((locale) => ({
+const CANDIDATES: readonly PopupCandidate[] = REGISTRY.map((locale) => ({
   code: locale.code,
   bcp47: locale.bcp47,
   hreflangAliases: locale.hreflangAliases,
   nativeName: locale.nativeName,
   href: `/${locale.code}`,
+  beta: false,
 }));
 
 describe("parseAcceptLanguage (RFC 7231 §5.3.5)", () => {
@@ -211,86 +214,110 @@ describe("preferredLocale (the launch-locale matcher)", () => {
   });
 });
 
-describe("decideSuggestion (the AC-28 matrix)", () => {
-  const base = { urlLocale: "en", candidates: CANDIDATES } as const;
-
-  it("shows the German banner on /en for a de-DE browser with no cookie", () => {
-    const decision = decideSuggestion({
-      ...base,
-      languages: ["de-DE", "de"],
-      cookie: null,
-    });
-
-    expect(decision.show).toBe(true);
-    expect(decision.show && decision.target.code).toBe("de");
-    expect(decision.show && decision.target.nativeName).toBe("Deutsch");
-    expect(decision.show && decision.target.href).toBe("/de");
+describe("popupHint (T-28's unit table: browser languages only)", () => {
+  it.each([
+    [["de-DE", "de"], "de"],
+    [["de-AT"], "de"],
+    [["en-GB", "en"], "en-gb"],
+    [["en-US"], "en"],
+    [["pl-PL"], "pl"],
+    [["fr-FR", "pl"], "pl"],
+    [["fr-FR"], null],
+    [[], null],
+    [[42, null, "not a tag!"], null],
+  ] as const)("%j → %s", (languages, expected) => {
+    expect(popupHint(languages, CANDIDATES)).toBe(expected);
   });
 
-  it("never renders once `fo_locale` is set, whatever the languages say", () => {
+  it("takes no country input: two parameters, a language list and the candidates", () => {
+    // Spec 003 §14 A16 clause 2 (founder, 2026-10-05: "browser language only"): there is no
+    // parameter a country header, an IP or an `/api/geo` answer could be passed through.
+    expect(popupHint).toHaveLength(2);
+    expectTypeOf(popupHint).parameters.toEqualTypeOf<
+      [readonly unknown[], readonly LocaleHint[]]
+    >();
+  });
+
+  it("returns one launch code or none: no URL, no navigation field", () => {
+    expectTypeOf(popupHint).returns.toEqualTypeOf<string | null>();
+    const hint = popupHint(["de-DE"], CANDIDATES);
+    expect(typeof hint).toBe("string");
+    expect(CANDIDATES.map((c) => c.code)).toContain(hint);
+  });
+});
+
+describe("decideLanguagePopup (the AC-28 matrix)", () => {
+  const base = { urlLocale: "en", candidates: CANDIDATES } as const;
+
+  it("opens on /en with no cookie and highlights Deutsch for a de-DE browser", () => {
     expect(
-      decideSuggestion({
+      decideLanguagePopup({
+        ...base,
+        languages: ["de-DE", "de"],
+        cookie: null,
+      }),
+    ).toEqual({ open: true, current: "en", hint: "de" });
+  });
+
+  it("opens whatever the hint says: an English browser on /en highlights nothing", () => {
+    // AC-28 (b): with `["en-US"]` no option other than English carries any mark.
+    expect(
+      decideLanguagePopup({ ...base, languages: ["en-US"], cookie: null }),
+    ).toEqual({ open: true, current: "en", hint: null });
+  });
+
+  it("opens with no usable hint at all", () => {
+    expect(
+      decideLanguagePopup({ ...base, languages: ["fr-FR"], cookie: null }),
+    ).toEqual({ open: true, current: "en", hint: null });
+  });
+
+  it("marks the URL's own locale current on /de, and English stays the default (Reading 1)", () => {
+    expect(
+      decideLanguagePopup({
+        urlLocale: "de",
+        candidates: CANDIDATES,
+        languages: ["en-GB"],
+        cookie: null,
+      }),
+    ).toEqual({ open: true, current: "de", hint: "en-gb" });
+  });
+
+  it("opens on a pseudo-locale preview page with no current option", () => {
+    expect(
+      decideLanguagePopup({
+        urlLocale: "ar-XB",
+        candidates: CANDIDATES,
+        languages: ["de"],
+        cookie: null,
+      }),
+    ).toEqual({ open: true, current: null, hint: "de" });
+  });
+
+  it("never opens once `fo_locale` is set, whatever the languages say", () => {
+    expect(
+      decideLanguagePopup({
         ...base,
         languages: ["de-DE"],
         cookie: "fo_locale=en",
       }),
-    ).toEqual({ show: false, reason: "cookie" });
+    ).toEqual({ open: false, reason: "cookie" });
   });
 
-  it("never renders when the hint is the locale already being viewed", () => {
+  it("ignores a forged `fo_locale=zz` and opens as for a first visit (AC-12)", () => {
     expect(
-      decideSuggestion({ ...base, languages: ["en-US"], cookie: null }),
-    ).toEqual({ show: false, reason: "sameLocale" });
-  });
-
-  it("never renders when no launch locale is a better answer", () => {
-    expect(
-      decideSuggestion({ ...base, languages: ["fr-FR"], cookie: null }),
-    ).toEqual({ show: false, reason: "noBetterLocale" });
-  });
-
-  it("never renders after a dismissal in this tab", () => {
-    expect(
-      decideSuggestion({
+      decideLanguagePopup({
         ...base,
         languages: ["de-DE"],
-        cookie: null,
-        dismissed: true,
+        cookie: "fo_locale=zz",
       }),
-    ).toEqual({ show: false, reason: "dismissed" });
-  });
-
-  it("renders nothing on a URL whose locale is not a launch locale", () => {
-    expect(
-      decideSuggestion({
-        urlLocale: "fr",
-        candidates: CANDIDATES,
-        languages: ["de-DE"],
-        cookie: null,
-      }),
-    ).toEqual({ show: false, reason: "unknownUrlLocale" });
-  });
-
-  it("ignores a forged `fo_locale=zz` and decides as for a first visit (AC-12)", () => {
-    const decision = decideSuggestion({
-      ...base,
-      languages: ["de-DE"],
-      cookie: "fo_locale=zz",
-    });
-
-    expect(decision).toEqual({
-      show: true,
-      target: expect.objectContaining({ code: "de" }),
-    });
+    ).toEqual({ open: true, current: "en", hint: "de" });
   });
 
   /**
-   * `/review 23`'s blocker, at the decision level. `readLocaleCookie` used to decode the value,
-   * so `fo_locale=%` threw `URIError` inside the island's `useState` initialiser and React
-   * replaced the entire document with the error page — for every load, for the cookie's year.
-   * A malformed escape is now what it always should have been: a value that is not a launch
-   * locale code, indistinguishable from `zz`, so the visitor is treated as a first-time one and
-   * their next explicit choice overwrites it (AC-12).
+   * `/review 23`'s blocker, at the decision level: a malformed escape is a value that is not a
+   * launch locale code, indistinguishable from `zz`, so the popup opens and the visitor's next act
+   * overwrites it (AC-12). Nothing throws inside the island's `useState` initialiser.
    */
   it.each([
     ["a lone percent", "fo_locale=%"],
@@ -301,53 +328,28 @@ describe("decideSuggestion (the AC-28 matrix)", () => {
   ])("treats %s as a first visit rather than throwing", (_name, cookie) => {
     expect(() => readLocaleCookie(cookie)).not.toThrow();
     expect(readLocaleCookie(cookie)).toBeNull();
-
-    expect(() =>
-      decideSuggestion({ ...base, languages: ["de-DE"], cookie }),
-    ).not.toThrow();
-    expect(decideSuggestion({ ...base, languages: ["de-DE"], cookie })).toEqual(
-      { show: true, target: expect.objectContaining({ code: "de" }) },
-    );
-  });
-
-  it("ignores a forged value among real cookies and does not write one on read", () => {
-    const cookie = "other=1; fo_locale=../../etc/passwd; theme=dark";
-
-    expect(decideSuggestion({ ...base, languages: ["de"], cookie }).show).toBe(
-      true,
-    );
+    expect(
+      decideLanguagePopup({ ...base, languages: ["de-DE"], cookie }),
+    ).toEqual({ open: true, current: "en", hint: "de" });
   });
 
   it("reads the cookie out of a multi-cookie string", () => {
     expect(
-      decideSuggestion({
+      decideLanguagePopup({
         ...base,
         languages: ["de"],
         cookie: "a=1; fo_locale=pl; b=2",
       }),
-    ).toEqual({ show: false, reason: "cookie" });
+    ).toEqual({ open: false, reason: "cookie" });
   });
 
-  it("offers `en-gb` on `/en` to a British browser (the alias case)", () => {
-    const decision = decideSuggestion({
-      ...base,
-      languages: ["en-GB", "en"],
-      cookie: null,
-    });
-
-    expect(decision.show && decision.target.code).toBe("en-gb");
-  });
-
-  it("is pure: no cookie is produced by deciding", () => {
-    const input = {
+  it("carries no URL and no navigation in its answer", () => {
+    const decision = decideLanguagePopup({
       ...base,
       languages: ["de-DE"],
       cookie: null,
-    } as const;
-    const first = decideSuggestion(input);
-    const second = decideSuggestion(input);
-
-    expect(first).toEqual(second);
+    });
+    expect(Object.keys(decision).sort()).toEqual(["current", "hint", "open"]);
   });
 });
 

@@ -6,7 +6,7 @@ import { ga4MeasurementId } from "@/lib/env.schema";
 import { setLocaleTag } from "@/lib/sentry";
 import { AnalyticsScripts } from "@/modules/analytics";
 import {
-  LocaleSuggestionBanner,
+  LanguagePopup,
   documentFallbackLocale,
   routableLocale,
   routableLocaleCodes,
@@ -155,8 +155,8 @@ export default async function LocaleLayout({
         {/* No `NextIntlClientProvider`, and that is the point of TASK-085 (spec 004 §13 Q13
             option (b), §14 A1 addendum). The provider plus its `localeDocument` message payload
             measured 10 705 B Brotli in the initial script set of every locale document — 8% of
-            the 131 072 B budget — to translate two Client Components: the suggestion banner and
-            the 500 boundary. Both now take their strings as data (`suggestionCopy()` and
+            the 131 072 B budget — to translate two Client Components: the language island and
+            the 500 boundary. Both now take their strings as data (`languagePopupCopy()` and
             `error-copy.data.ts`), so every string in this document is resolved on the server and
             no message catalogue, formatter or provider crosses into the browser. `useTranslations`
             is server-only from here on; `tests/unit/client-message-graph.test.ts` fails the build
@@ -209,20 +209,17 @@ export default async function LocaleLayout({
             Server Component resolves the copy and projects the cookie register, and a client
             loader imports the island after hydration (`ssr: false`), so this document's HTML is
             identical for every visitor, carries no `Vary` and sets no cookie — the decision is
-            read from and written to `document.cookie` in the browser, only on a press. It is
-            rendered **before** the language suggestion so a keyboard visitor reaches the
-            consent question first, and it paints **above** it because `--layer-overlay` is the
-            step over `--layer-banner` (AC-13). `/` has no locale layout and therefore no sheet:
-            the chooser stays at zero application JavaScript (spec 003 AC-7). */}
+            read from and written to `document.cookie` in the browser, only on a press. It waits
+            for the language popup: the popup is asked first and the two are never on screen
+            together (spec 003 §14 A14 as amended by A16; `localeGate.ts`). */}
         <ConsentBanner />
-        {/* Last in the document and out of flow: the language suggestion of ADR-0006 in its
-            positive form. `LocaleSuggestionBanner` is a Server Component that projects the
-            locale registry *and the resolved copy*, and hands both to a client loader, which
-            imports the island itself after hydration (`ssr: false`) — so this document's HTML is
-            identical for every visitor, carries no `Vary` and sets no cookie (spec 003 §5.4,
-            AC-12, AC-28), and the banner is reached by continuing to tab rather than by stealing
-            focus (§8). */}
-        <LocaleSuggestionBanner locale={locale.code} />
+        {/* Last in the document: the language popup, the site's only language chooser (spec 003
+            §14 A14 as amended by A16). A Server Component projects the registry and the resolved
+            copy and hands both to a client loader, which imports the island after hydration
+            (`ssr: false`), so this document's HTML is identical for every visitor, carries no
+            `Vary` and sets no cookie (AC-9, AC-12). The island opens a modal `<dialog>` only
+            while the browser holds no valid `fo_locale`. */}
+        <LanguagePopup locale={locale.code} pageLang={locale.bcp47} />
       </body>
     </html>
   );

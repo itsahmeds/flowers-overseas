@@ -401,8 +401,9 @@ describe("the shipped catalogues and manifests", () => {
     // and `Messages` is the same type next-intl checks `t()` against.
     const namespaces: readonly (keyof Messages)[] = [
       "meta",
-      "chooser",
-      "banner",
+      // The language popup's copy (spec 003 §14 A16, spec 004 §14 A23 L1, L3–L6; TASK-119),
+      // which replaced `banner`; `chooser` is gone with the `/` page.
+      "languagePopup",
       "errors",
       "a11y",
       "common",
@@ -464,13 +465,14 @@ describe("the shipped catalogues and manifests", () => {
       enSource.media.provenance.aiExample;
     const tierLabel: Messages["catalog"]["tier"]["stems"] =
       enSource.catalog.tier.stems;
-    const headline: Messages["banner"]["headline"] = enSource.banner.headline;
+    const headline: Messages["languagePopup"]["heading"] =
+      enSource.languagePopup.heading;
     const floristCount: Messages["common"]["floristCount"] =
       enSource.common.floristCount;
     const bannerActions: readonly string[] = [
-      enSource.banner.switch,
-      enSource.banner.stay,
-      enSource.banner.dismiss,
+      enSource.languagePopup.close,
+      enSource.languagePopup.current,
+      enSource.languagePopup.default,
     ];
 
     const destinationName: Messages["destinations"]["pl"]["name"] =
