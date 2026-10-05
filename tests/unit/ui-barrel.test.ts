@@ -63,6 +63,12 @@ describe("src/modules/ui barrel", () => {
         "Text",
         "TextLink",
         // v2 primitives (§14 A21; TASK-175)
+        // the phone primitives and the back link's ancestor (TASK-195)
+        "breadcrumbAncestor",
+        "GalleryDots",
+        "HorizontalScroller",
+        "SegmentedControl",
+        "StickyActionBar",
         "Breadcrumbs",
         "FACTS_DENSITIES",
         "Fact",

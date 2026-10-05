@@ -159,8 +159,29 @@ export type {
   FactsDensity,
   FactsListProps,
 } from "./primitives/FactsList";
-export { Breadcrumbs } from "./primitives/Breadcrumbs";
-export type { BreadcrumbsProps, Crumb } from "./primitives/Breadcrumbs";
+export { Breadcrumbs, breadcrumbAncestor } from "./primitives/Breadcrumbs";
+export type {
+  BreadcrumbsPhone,
+  BreadcrumbsProps,
+  Crumb,
+} from "./primitives/Breadcrumbs";
+// The phone primitives (spec 004 §14 A24 clause 4, AC-48, AC-49; TASK-195): the docked action,
+// the segmented control, the sideways row and the gallery's in-page dots.
+export { StickyActionBar } from "./primitives/StickyActionBar";
+export type { StickyActionBarProps } from "./primitives/StickyActionBar";
+export { SegmentedControl } from "./primitives/SegmentedControl";
+export type {
+  SegmentedControlProps,
+  SegmentOption,
+} from "./primitives/SegmentedControl";
+export {
+  GalleryDots,
+  HorizontalScroller,
+} from "./primitives/HorizontalScroller";
+export type {
+  GalleryDotsProps,
+  HorizontalScrollerProps,
+} from "./primitives/HorizontalScroller";
 export { NoticeBar } from "./primitives/NoticeBar";
 export type { NoticeBarProps } from "./primitives/NoticeBar";
 
