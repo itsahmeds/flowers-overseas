@@ -35,7 +35,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 - **2026-10-05, em dash in `checkout.demo.place` ("Place demo order — nothing is charged") and the live "Continue — {total}":** to the founder through the PR. Default applied until answered: a full stop ("Place demo order. Nothing is charged."). `open`.
 - **2026-10-05, the `en` checkout keys cannot ship `reviewed: false` (TASK-200 implementer):** spec 003's gate (`isLocaleIndexable()`, 5 % threshold, `src/modules/i18n/review.ts`) counts every `en` key. `en` is at 22 of 537 unreviewed (4.1 %, room for about 6 more); the 65 checkout and confirmation keys take it to 87 of 602 (14.5 %), which turned `en` and `en-gb` `noindex` and failed about 30 SEO tests. An agent may not mark copy reviewed, so the keys are **not in `messages/`** in PR 201. The code names them (`CHECKOUT_ERROR_KEYS`, `PHONE_NON_LOCAL_KEY`, `PLACE_KIND_LABEL_KEYS`, `SAMPLE_LABEL_KEY`, the address label and placeholder keys). Two ways forward, for the founder or orchestrator: (a) the founder approves the batch below, and the keys ship `reviewed: true` with `reviewedBy` naming that approval; or (b) a spec 003 amendment excludes `noindex`-only namespaces (`checkout.*`, `confirmation.*`) from the share. The drafted `en` batch (Appendix A plus the strings the schemas and form need) is listed in full in PR 201's description, ready to paste. `en-gb` overrides: `checkout.address.postcode` "Postcode", `checkout.buyer.phone` "Your mobile number". `open`.
-- **2026-10-05, codebase-map size cap (TASK-200 implementer):** `docs/codebase-map.md` was 16 239 B on main against `tests/unit/codebase-map.test.ts`'s 16 KB hard cap (145 B left). The new `checkout` module and two config files need about 320 B even with the shortest purpose lines. PR 201 raises the cap to 17 KB, with a cited comment. TASK-095's generator compression is the remedy. The reviewer accepts or rejects this. `open`.
+- **2026-10-05, codebase-map size cap (TASK-200 implementer):** `docs/codebase-map.md` was 16 239 B on main against `tests/unit/codebase-map.test.ts`'s 16 KB hard cap (145 B left). The new `checkout` module and two config files need about 320 B even with the shortest purpose lines. PR 201 raises the cap to 17 KB, with a cited comment. TASK-095's generator compression is the remedy. **Accepted** by `/review 201` round 1: a dated note in spec 001 §14 A16, and no further raise before TASK-095. `closed`.
 - **2026-10-05, `QUOTE_SIGNING_SECRET` on Railway (founder step):** the key is optional at server start and required at use: a deployed environment without it throws on the first quote, and nothing issues one before TASK-203. Before TASK-203 merges, set `QUOTE_SIGNING_SECRET=$(openssl rand -hex 32)` on Railway `staging`, `production` and the PR environments, a different value per environment. `pnpm railway:check` reports it missing until then. `open`.
 
 ## Progress
@@ -48,7 +48,54 @@ here.
 - 2026-10-05 `13dba8f3`: the `checkout` module (`mode`, `schemas`, `address`, `phone`, `currency`, `index`), registered in `MODULES` and `docs/architecture.md` §3; `checkout-samples.ts`; the module files added to `check:no-db`.
 - 2026-10-05 `e3b83bf9`: tests T-01, T-04, T-08 (unit half), T-09, T-10 (unit half), T-18, plus config, samples and the quote key. The shared `phones` fixture's AT row was corrected: `+43 1 1234567` fails the full metadata, so it is now `+43 1 5123456`.
 - 2026-10-05 `681b4485`: the `en` keys were taken out (see Escalations); pins updated (railway contract 29/25, i18n barrel, Minor lists, no-db list); map cap set to 17 KB. 22 of 22 mutations of AC-carrying subjects went red. **Next (finisher):** `git fetch && git rebase origin/main`, `pnpm codebase:map` if the map conflicts, `pnpm gates:cheap` (the last full run's only reds were the en-indexability cascade, fixed in `681b4485`, and load timeouts: `dev-os`, `url-pii`, a load average of 30 to 40), push, `gh pr ready 201`, `gh pr edit 201 --add-label ci:full`, then set the TASKS row to `in_review` with PR 201. The row is still `in_progress`: the time limit blocked the `TASKS.md` edit.
+- 2026-10-05 `29621c27`, `079cac31`: round 1 (`/review 201`, `/break 201`) answered: holes 1–5 and changes 2, 7–9; spec 001 A16 note; PR link in TASKS; gates PASS on `079cac31`.
 
 ## Result
 
-**Partial (time limit).** PR 201 (`task/TASK-200-checkout-core`, head `681b4485`, still draft, not yet rebased, no CI run on the head). What shipped: `checkoutMode()` / `legalReadiness()` / `checkoutEntryFor()` / `stripeKeyKind()` (AC-1, AC-4, AC-8's closed row); `addressFormModel()` (AC-8 model half); `parseRecipientPhone()` / `parseBuyerPhone()` on `libphonenumber-js/max`, with "local" meaning the destination's calling code, because `+44 7911…` is filed under GG in the metadata (AC-9); `countGraphemes()` and the 200/40/120 grapheme limits in the step schemas (AC-10 count half); `checkoutCurrency()` plus `addonPriceProjection()` (AC-18; spec 005 amendment); `CheckoutStartSchema`, `RecipientStepSchema(country, locale)`, `CardAndBuyerStepSchema({locale, offeredAddonKeys})`, `ReviewStepSchema`; `QUOTE_SIGNING_SECRET`. Tests: 6 new unit files with 148 cases: `checkout-mode` 38 (7 680-combination table), `checkout-address` 22, `checkout-phone` 31, `checkout-graphemes` 23, `checkout-currency` 18, `checkout-config` 21 (count before prettier). Existing pins were extended: barrel, geo surface, env 29, railway contract, i18n barrel, no-db, client graph forbids `libphonenumber-js`. Not shipped: the `en`/`de`/`pl` checkout keys (Escalations). The `gates:cheap` block on the final head is owed by the finisher.
+**Ready for round 2.** PR 201, branch `task/TASK-200-checkout-core`. The code head is `079cac31`; the commit after it changes this brief only. Round 1 (`/review 201` FAIL, `/break 201` HOLES 1–5 on `22a5c780`, where CI was green) is answered in `29621c27` and `079cac31`.
+
+What shipped:
+- **Mode:** `checkoutMode()`, `legalReadiness()`, `checkoutEntryFor()`, and inside `mode.ts` only `stripeKeyKind()` and `CHECKOUT_FLAG_KEYS`, both now off the barrel (AC-1, AC-4, AC-8's closed row).
+- **Address:** `addressFormModel()` (AC-8 model half).
+- **Phones:** `parseRecipientPhone()` / `parseBuyerPhone()` on `libphonenumber-js/max`. "Local" means the destination's calling code (AC-9).
+- **Graphemes:** `countGraphemes()`, and the 200/40/120 limits in the step schemas (AC-10 count half).
+- **Currency:** `checkoutCurrency()` and `addonPriceProjection()` (AC-18; spec 005 amendment).
+- **Schemas:** `CheckoutStartSchema`, `RecipientStepSchema`, `CardAndBuyerStepSchema`, `ReviewStepSchema`.
+- **Env:** `QUOTE_SIGNING_SECRET`.
+
+Round 1 fixes, one per finding:
+1. The AC-1 scan parses every source file's syntax tree. It catches imports, renames, whole-module routes and string keys, not only literals.
+2. Step 1 always requires the recipient's name and phone, and `AddressFormatSchema` refuses a row without them. No casts remain.
+3. Each 120-grapheme limit is tested through the schemas.
+4. Free text has a raw ceiling of 4 code units per grapheme, and 64 for short fields.
+5. Controls and lone surrogates are refused. Invisible-only text counts as blank.
+6. The development quote key is refused under `NODE_ENV=production` or an unparseable `APP_ENV`, and at boot when it is configured as the value.
+
+Nit a (one converted literal pinned) and nit b (AT sample and cited file) are done.
+
+**Tests:** 7 checkout unit files, 205 cases: `checkout-mode` 47, `checkout-address` 22, `checkout-phone` 31, `checkout-graphemes` 23, `checkout-currency` 19, `checkout-config` 26, `checkout-boundary` 31. Existing pins were extended: catalog barrel, project signatures, geo surface, env 29, railway contract 29/25, i18n barrel, no-db list, Minor lists, client graph.
+
+**Mutations:** 22 of 22 red in round 0. In round 1, 19 of 19 red: M11/M11b/M11c (planted readers), G9/G11/G12/G12b (schema limits), H3/H3b (raw ceiling), H4–H4d (controls, invisible, line breaks), C2/C2b (missing phone), H5–H5c (signing key), N-a (literal).
+
+**Rulings (`/review 201`):**
+- The English checkout copy waits. It must land, founder-approved and `reviewed: true`, before TASK-201 or TASK-204 merges.
+- The 17 KB map cap is accepted. The dated note is in spec 001 §14 A16, and there is no further raise before TASK-095.
+- `QUOTE_SIGNING_SECRET` is optional at boot. The founder sets it on Railway before TASK-203 merges.
+
+**Carry-forwards to later tasks:**
+- TASK-203 wires the flag and key reads inside `mode.ts`.
+- TASK-205 pins `addonPriceProjection().priceVersion` and the "PL lists no wine" rule in `listAddons()`.
+- Pin `DEMO_ENTRY_ENVIRONMENTS` when §13 Q1 can change.
+
+```
+gates:cheap · 079cac31b5c9b64326daf86c31fe10f53ff4a939 · tree clean · base origin/main · 2026-10-05T05:56:28.068Z
+typecheck             exit 0 · 2.5 s
+lint                  exit 0 · 17.6 s
+format:check          exit 0 · 11.6 s
+i18n:check            exit 0 · 0.4 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 245.0 s · changed 258 + map 0 + always 0 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+(load average 5.7 at the start of the run.) No expensive gate was run locally; CI is the gate of record.
