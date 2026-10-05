@@ -129,6 +129,14 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   because the change is static, but the box is permanently 20 px smaller. Confirm this reading of
   "the strip's layout must not shift". The visual baselines need a `visual:baselines` refresh.
   Answered 2026-10-05 (coordinator): accepted. The baselines are refreshed through the `visual:baselines` label flow.
+- 2026-10-05, E5, to the orchestrator (after `/review 194`): the ruling to set `en/pl-guide.md`
+  to `reviewed: false` makes `/en/send-flowers-to/poland` noindex, drops it from `en-corridors.xml`,
+  and turns `seo:validate` red. The en-gb Poland guide still lists the en page as its `en`,
+  `en-IE`, `en-NL` and `x-default` alternates, so reciprocity fails (4 problems). Seven unit cases
+  that pin an indexable en Poland guide also go red. The change is parked uncommitted as a patch,
+  not pushed. Options: (a) the founder's record run sets `reviewed: true`, `reviewedBy` and
+  `reviewedAt` in the same PR, so there is no noindex window; (b) accept the window and fix the
+  corridor cluster builder in an SEO task first. `open`.
 
 ## Progress
 
@@ -203,3 +211,8 @@ including the founder's 61dba4ff. Only `docs/codebase-map.md` was regenerated. T
 `tests` gate only. All 9 failures were 5 s timeouts in files this diff does not touch
 (`catalog-listing`, `catalog-product-routes`, `checkout-currency`, `product-route`, `url-pii`).
 The other six gates exited 0. CI on the head SHA is the gate of record.
+
+`/break 194` round 1 HOLE 1 (no test read the product page's meta description) is closed by
+`tests/unit/product-meta-description.test.ts`. It asserts N1 exactly for the Poland and Germany
+Amber Hour pages through the real catalogue. With `shop("root.demoNoticeOLD")` swapped in, the
+case is red (2 of 2), while `product-route.test.tsx` stays green.
