@@ -6,9 +6,10 @@
  * have no florists yet, so the seven strings below replace the "still choosing florists" wording,
  * and the "first florist" line in the notice bar is gone with its keys.
  *
- *  - **T-40.** Each N id's `en` value equals its approved text byte for byte; each is
- *    `reviewed: false` with no `reviewedBy` (the founder's own `record-approval.py` run attests it,
- *    never an agent); no N value in `en`, `en-gb`, `de` or `pl` carries an em dash (U+2014); the
+ *  - **T-40.** Each N id's `en` value equals its approved text byte for byte. The implementer's
+ *    commit shipped each `reviewed: false`, unattributed; the founder's own `record-approval-193.py`
+ *    run (its own commit, never an agent's) attests exactly these values, so each now carries his
+ *    record and the hash of the approved text. No N value in `en`, `en-gb`, `de` or `pl` carries an em dash (U+2014); the
  *    `de`/`pl` values are the drafts of the new English; `nav.utility.datesPending*` is in no
  *    catalogue and no meta sidecar.
  *  - **T-47 (unit).** Every `en`/`en-gb` catalogue value, seed copy record and corridor file is
@@ -88,11 +89,14 @@ describe("T-40: the neutral copy batch N1–N7 (AC-38)", () => {
   const enMeta = MessageMetaManifestSchema.parse(readMessages("en.meta.json"));
 
   for (const [id, [key, text]] of Object.entries(APPROVED)) {
-    it(`${id} \`${key}\` is the approved English, byte for byte, and waits for the founder`, () => {
+    it(`${id} \`${key}\` is the approved English, byte for byte, attested by the founder's run`, () => {
       expect(at(en, key)).toBe(text);
-      // Unreviewed and unattributed: the founder's record-approval run is the only attestation.
-      expect(enMeta[key]?.reviewed).toBe(false);
-      expect(enMeta[key]?.reviewedBy).toBeUndefined();
+      // The founder's record-approval run is the only attestation, and it is of this value.
+      expect(enMeta[key]?.reviewed).toBe(true);
+      expect(enMeta[key]?.reviewedBy).toMatch(
+        /^founder, 2026-10-05: ran record-approval-193\.py /u,
+      );
+      expect(enMeta[key]?.reviewedAt).toBe("2026-10-05T06:22:50Z");
       expect(enMeta[key]?.sourceHash).toBe(
         createHash("sha256").update(text).digest("hex"),
       );
@@ -168,6 +172,18 @@ describe("T-47: AC-37's phrases in the English copy (unit)", () => {
     expect(phraseMatches(englishCopy())).toStrictEqual(
       [...PHRASE_EXCEPTIONS].sort(),
     );
+  });
+
+  it("`en/pl-guide.md`'s intro carries the founder's replacement sentence (2026-10-05, \"2–6 yes\")", () => {
+    const intro = corridorCopy().filter(
+      ({ id }) => id === "content/corridors/en/pl-guide.md › intro",
+    );
+    expect(intro).toHaveLength(1);
+    expect(
+      intro[0]?.text.split(
+        "Ordering for Poland is not open yet, so this page makes no promise about when a bouquet would arrive.",
+      ),
+    ).toHaveLength(2);
   });
 
   it("names exactly open item (vii)'s entries, and the list never grows", () => {

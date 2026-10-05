@@ -285,18 +285,9 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-178's `catalog.price.equivalents` left this queue when the founder's attestation was
     // recorded (2026-10-04).
     // TASK-179's `catalog.floristSentence` left this queue on the founder's attestation, 2026-10-04.
-    // TASK-193, spec 004 §14 A23 clause 12: the neutral "ordering opens" batch, N1–N7. The
-    // founder approved the wording in chat on 2026-10-05 ("approve the wording just no em
-    // dash"); each key waits here until his own `record-approval.py` run attests the exact
-    // catalogue value: `catalog.availability.noPartner` (N7), `categoryHub.destinationPending`
-    // (N6), `corridor.coverage.bodyNone` (N5), `corridor.facts.delivering.none` (N4),
-    // `delivery.picker.unavailable` (N3), `product.demo.body` (N2), `shop.root.demoNotice` (N1).
-    "catalog.availability.noPartner",
+    // TASK-193's neutral batch, N1–N7 (spec 004 §14 A23 clause 12), left this queue on the
+    // founder's `record-approval-193.py` run, 2026-10-05.
     "categoryHub.destinationLink",
-    "categoryHub.destinationPending",
-    "corridor.coverage.bodyNone",
-    "corridor.facts.delivering.none",
-    "delivery.picker.unavailable",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -340,7 +331,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-179, the v2 product page: the eyebrow "{descriptor} · for {country}" was attested with
     // the 2026-10-04 copy batch by mistake. It is not one of the batch's 14 items (orchestrator
     // check, 2026-10-04), so it waits here for the founder.
-    "product.demo.body",
     "product.eyebrow",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
@@ -354,7 +344,6 @@ describe("the shipped catalogues and manifests", () => {
     "shop.occasion.seoDescription",
     "shop.occasion.seoTitle",
     "shop.occasion.undatedLine",
-    "shop.root.demoNotice",
     "shop.root.occasionPageLink",
   ];
 

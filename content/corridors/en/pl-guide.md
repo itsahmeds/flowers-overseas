@@ -11,10 +11,10 @@ intro: >-
   more than a birthday, and which days of the year every good shop in Warsaw
   sells out by lunchtime. We wrote all of it ourselves and a Polish speaker
   will read it before we translate it, because a guide written by a machine is
-  worth nothing to you and we would rather say less and mean it. We are still
-  choosing the florists we want to work with in Poland, so this page makes no
-  promise about when a bouquet would arrive. When that changes, this page
-  changes with it, and we will say so plainly.
+  worth nothing to you and we would rather say less and mean it. Ordering for
+  Poland is not open yet, so this page makes no promise about when a bouquet
+  would arrive. When that changes, this page changes with it, and we will say
+  so plainly.
 faq:
   - q: "Which flowers should I not send in Poland?"
     a: "Chrysanthemums, above all. They belong on a grave there, and a beautiful bunch of them sent to a birthday will land as a shock rather than a gift. We would also avoid lilies for anything cheerful, for the same reason."
@@ -49,9 +49,9 @@ relatedIso2: ["DE", "RO", "NL"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-05
+version: 2
+updatedAt: "2026-10-05"
 ---
 
 ## Why we started here
