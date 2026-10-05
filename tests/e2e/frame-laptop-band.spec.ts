@@ -5,6 +5,8 @@
  *  - **T-33 / AC-31.** On the eleven page types at 1440, 1024, 768 and 390 px, the inline-start
  *    edge of the first block in `<main>` equals the header logo's within 0.5 px (x 56 at 1440, x 20
  *    at 390), skipping full-bleed media (A24 clause 4 (f)); at 1440 a listing's column is 1,328 px.
+ *    Above the frame's maximum (1512 and 1920) the frame itself is measured: 1,440 px box, 1,328 px
+ *    column, logo and first block centred with it.
  *  - **T-34 / AC-32.** On every page type with a breadcrumb, at 1440 × 900, 1024 and 768, the
  *    trail's top edge is 20 ± 1 px under the sticky header's bottom edge. The 390 case is T-55's
  *    (TASK-195), because below `md` a back link replaces the trail.
@@ -84,6 +86,17 @@ function resolveStep(step: Step, width: number, height: number): number {
   const preferred = Math.min((vw * width) / 100, (vh * height) / 100);
   return Math.min(Math.max(preferred, min), max);
 }
+
+/**
+ * The page's hero or lead photograph, found by its **place** in the page, not by the
+ * `data-fo-lead-photo` marker the cap adds: a test that finds the photo through the same prop that
+ * caps it goes green when the prop is removed (`/break` round 1, hole 1). Today only the guide draws
+ * one, the photo box beside its `<h1>` (the home hero is exempt, A24 clause 5); TASK-187 and TASK-188
+ * add their lead figures here when they build them.
+ */
+const LEAD_PHOTO: Readonly<Partial<Record<PageType, string>>> = {
+  guide: "main div:has(> div > h1) > .photo",
+};
 
 /** `--hero-photo-max`: `min(520px, 60svh)`. No browser chrome in a headless window, so svh = vh. */
 const heroPhotoMax = (height: number): number => Math.min(520, 0.6 * height);
@@ -279,6 +292,57 @@ test.describe("T-33: the first block in <main> starts at the logo's edge (AC-31)
   }
 });
 
+/**
+ * Above the frame's maximum (`/break` round 1, hole 2; `/review` round 1). At 1440 and below the
+ * frame's max width never binds, so a `PAGE_FRAME` without it measures the same; at 1512 and 1920
+ * it must: the frame box is 1,440 px (`--container-page` plus both gutters), its column 1,328 px,
+ * centred, so the logo and the first block sit at x 92 and x 296. The home is not in this set: its sections are full-bleed bands on
+ * `HOME_BLEED`, not the frame, and TASK-196 rebuilds it.
+ */
+test.describe("T-33: above the frame's maximum, at 1512 and 1920 px (AC-31)", () => {
+  for (const width of [1512, 1920] as const) {
+    const frameX = (width - 1328) / 2;
+    for (const type of (Object.keys(PAGE_TYPES) as PageType[]).filter(
+      (candidate) => candidate !== "home",
+    )) {
+      test(`${PAGE_TYPES[type]} at ${String(width)} px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 945 });
+        await open(page, type);
+        const frame = await page.locator("main").evaluate((main) => {
+          const box = main.getBoundingClientRect();
+          const style = getComputedStyle(main);
+          return {
+            width: box.width,
+            content:
+              box.width -
+              Number.parseFloat(style.paddingInlineStart) -
+              Number.parseFloat(style.paddingInlineEnd),
+          };
+        });
+        expect(frame.width, "<main>'s frame box").toBeCloseTo(1328 + 2 * 56, 0);
+        expect(frame.content, "<main>'s column").toBeCloseTo(1328, 0);
+        if (type !== "notFound") {
+          const masthead = await boxOf(
+            page,
+            '[data-fo-header-band="masthead"]',
+          );
+          expect(masthead.width, "the header's frame").toBeCloseTo(
+            1328 + 2 * 56,
+            0,
+          );
+        }
+        const logo = await boxOf(page, logoOf(type));
+        expect(logo.left, "logo x").toBeCloseTo(frameX, 0);
+        const block = await firstBlock(page);
+        expect(
+          Math.abs(block.left - logo.left),
+          `${block.tag} x ${String(block.left)} vs logo x ${String(logo.left)}`,
+        ).toBeLessThanOrEqual(0.5);
+      });
+    }
+  }
+});
+
 test.describe("T-34: the breadcrumb is 20 px under the sticky header (AC-32, md and up)", () => {
   for (const viewport of [
     { width: 1440, height: 900 },
@@ -341,6 +405,17 @@ test.describe("T-43: the laptop band's first screen (AC-41)", () => {
         // A24 clause 5: the home hero has its own bound (AC-46, TASK-196).
         if (type !== "home") {
           const cap = heroPhotoMax(viewport.height);
+          const lead = LEAD_PHOTO[type];
+          if (lead !== undefined) {
+            await expect(
+              page.locator(lead),
+              `${type}'s lead photograph`,
+            ).toHaveCount(1);
+            const box = await boxOf(page, lead);
+            expect(box.height, `${type}'s lead photograph`).toBeLessThanOrEqual(
+              cap + 0.5,
+            );
+          }
           const heights = await page
             .locator("main [data-fo-lead-photo], main img")
             .evaluateAll(

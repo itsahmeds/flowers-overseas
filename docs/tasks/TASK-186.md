@@ -115,6 +115,21 @@ One dated bullet per `/review`, newest last.
   (`PENDING`, each naming its owner). A case that passes unexpectedly goes red, so the owner must
   delete its row in the PR that makes it pass. The carry-ins are in the TASK-187, TASK-188 and
   TASK-189 briefs.
+- 2026-10-05 (`/break` round 1 and `/review` round 1 on 6c7c2dd9, both closed in the next push):
+  hole 1, T-43 found the guide's photo only through the `data-fo-lead-photo` marker its own cap
+  adds; it now finds each page's lead photograph by its place (`LEAD_PHOTO`) and asserts it exists.
+  Hole 2, nothing in T-33 was wider than the frame's maximum; it now measures the frame at 1512
+  and 1920. The PR description's "13 expected failures" was a miscount, it is 15.
+- 2026-10-05 (`/review` round 1, carried, not built): the darwin (Mac) set has no `laptop-*`
+  baselines and lags the Linux set elsewhere; darwin is advisory (`docs/runbooks/visual-baselines.md`
+  §1.1), so it is left for a later local refresh.
+- 2026-10-05 (for TASK-196): above 1440 px the home's sections are not on the frame (`HOME_BLEED`
+  is a bare 56 px padding with no max width), so at 1512 its content starts at x 56 while the logo
+  is at x 92. AC-31's widths stop at 1440, so T-33's above-max case leaves the home out; the
+  rebuilt home should sit on `PAGE_FRAME` and join that case.
+- 2026-10-05 (`/review` round 1): the 404 letter cannot import `PAGE_FRAME`, because
+  `noticeShell.ts` must import nothing (client error boundaries; `ui-notice-shell.test.ts`). It
+  restates the frame, and a unit case now holds the two together class for class.
 
 ## Escalations
 
@@ -195,6 +210,14 @@ One line per coherent step, newest last.
   inside 20 to 300; at 360 and 390 it stays one 44 px row; `header.spec.ts` and this task's spec
   green on both projects. The one other red case, `consent-banner.spec.ts:662` on `e2e-mobile`,
   passed on its retry (flaky) and is outside this diff.
+- 2026-10-05: breaker and reviewer round 1 on 6c7c2dd9, two holes, closed test-first. T-43 now finds
+  the guide's lead photo by place; T-33 gains 1512 and 1920 (frame box 1,440, column 1,328, logo
+  and first block at x 92 and 296); a unit case holds the 404 letter's frame to `PAGE_FRAME`.
+  Real build: 154 passed. Mutant build (`lead` removed from the guide's photo, the max width
+  removed from `PAGE_FRAME`): T-43 red on the guide at both sizes (cap 480.5 and 520.5 exceeded),
+  T-33 red on 18 of the 20 above-max cases (`<main>`'s frame box not 1,440); the two 404 cases
+  stay green because the letter restates its frame, and the new unit case goes red when that
+  string is reverted to `max-w-page`.
 
 ## Result
 
@@ -225,11 +248,14 @@ built and asserted strictly.
 - **Design README.** A dated row for `locale-popup-*`, still drawn at the old maxima (they use no
   fluid step, so nothing looks different), and the round-2 row no longer says the code lags.
 
-**Tests.** e2e `tests/e2e/frame-laptop-band.spec.ts`: T-33 44 cases, T-34 27, T-43 36, T-45 27,
-134 in `e2e-desktop` (the Pixel 7 project skips them: every case sets its own viewport), green on
-the local build. Of those, 13 are declared `test.fail` with an owner (T-43 primary action: three
-country pages at two sizes, the birthday hub at two, the destinations hub at 1280, the guide at
-two; T-45: occasions index targets, three 44 px primary checks). Unit: T-44, 17 cases. Visual
+**Tests.** e2e `tests/e2e/frame-laptop-band.spec.ts`: T-33 64 cases (44 at the four AC widths,
+20 above the frame's maximum at 1512 and 1920), T-34 27, T-43 36, T-45 27, 154 in `e2e-desktop`
+(the Pixel 7 project skips them: every case sets its own viewport), green on the local build. Of
+those, 15 are declared `test.fail` with an owner: T-43 primary action, 11 (three country pages at
+two sizes, the birthday hub at two, the destinations hub at 1280, the guide at two); T-45, 4 (the
+occasions index's 24 px targets, and the 44 px primary action on the birthday hub, the category
+hub and the occasions index). Unit: T-44, 17 cases; `ui-notice-shell.test.ts` gains the case
+that holds the 404 letter's frame to `PAGE_FRAME` class for class. Visual
 `tests/visual/laptop-band.spec.ts` (T-46): 6 baselines at 1280 × 800.
 
 **Mutations, each watched red.** T-44: `tokens.css` hero step reverted alone, 2 red. One mutant
