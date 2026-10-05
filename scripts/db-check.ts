@@ -548,8 +548,56 @@ const TABLE_CONSTRAINT_HEADS = [
  * routes is reported where it arrives, and a table renamed *into* a recipient name brings its
  * columns with it.
  */
+/**
+ * The column types a recipient table may use (breaker r3, PR 200: close the class, not the
+ * route). Built-in scalars only, unqualified or `pg_catalog.`-qualified, and arrays of them. A
+ * domain, a composite, a table or view row type, an array of any of those, or any user type is
+ * refused whatever it is called, because its fields are invisible to a column-name rule.
+ */
+export const RECIPIENT_COLUMN_TYPE =
+  /^(pg_catalog\.)?(text|varchar|character varying|uuid|integer|int|int4|bigint|int8|smallint|int2|boolean|bool|timestamptz|timestamp with time zone|date|numeric|varchar\(\d+\)|character varying\(\d+\)|numeric\(\d+(,\d+)?\)|char\([23]\)|character\([23]\))(\[\])?$/;
+
+/** The type of a column the model cannot see (a view's, or a query's). */
+const UNKNOWN_TYPE = "?";
+/** A `column.attribute` name: its parent column's type is what is checked. */
+const ATTRIBUTE_TYPE = "(attribute)";
+
+/** Words that end a column's type in a definition. */
+const TYPE_STOP_WORDS = [
+  "not",
+  "null",
+  "default",
+  "constraint",
+  "primary",
+  "references",
+  "check",
+  "unique",
+  "collate",
+  "generated",
+  "compression",
+  "storage",
+  "using",
+];
+
+/** A column's type as written, canonicalised: `character varying(200)`, `pg_catalog.text[]`. */
+export function canonicalType(typeTokens: readonly SqlToken[]): string {
+  let out = "";
+  let previousWord = false;
+  for (const token of typeTokens) {
+    if (token.kind === "word" && TYPE_STOP_WORDS.includes(token.value)) break;
+    if (token.kind === "string") break;
+    const word = token.kind === "word" || token.kind === "ident";
+    if (word && previousWord) out += " ";
+    out += token.kind === "ident" ? `"${token.value}"` : token.value;
+    previousWord = word;
+  }
+  return out;
+}
+
 class TableModel {
   readonly columns = new Map<string, Set<string>>();
+  /** Each modelled column's canonical type, or `?` where the model cannot see it. */
+  readonly columnTypes = new Map<string, Map<string, string>>();
   readonly parents = new Map<string, Set<string>>();
   /** Composite types: their attribute names, nested ones flattened as `who.email`. */
   readonly types = new Map<string, Set<string>>();
@@ -567,6 +615,9 @@ class TableModel {
     const model = new TableModel(file);
     for (const [table, columns] of this.columns) {
       model.columns.set(table, new Set(columns));
+    }
+    for (const [table, types] of this.columnTypes) {
+      model.columnTypes.set(table, new Map(types));
     }
     for (const [table, parents] of this.parents) {
       model.parents.set(table, new Set(parents));
@@ -600,18 +651,41 @@ class TableModel {
     }
   }
 
-  addColumn(table: string, column: string): void {
+  private checkType(table: string, column: string, type: string): void {
+    if (!RECIPIENT_TABLES.includes(table) || type === ATTRIBUTE_TYPE) return;
+    if (RECIPIENT_COLUMN_TYPE.test(type)) return;
+    this.problems.push(
+      type === UNKNOWN_TYPE
+        ? `${this.file}: column \`${column}\` on \`${table}\` has a type db:check cannot see (taken from a view or a query) — a recipient table holds built-in scalar types only, and ${RECIPIENT_EMAIL_CITATION}`
+        : `${this.file}: column \`${column}\` on \`${table}\` has type \`${type}\`, which is not a built-in scalar on RECIPIENT_COLUMN_TYPE — a domain, composite or row type hides its fields, and ${RECIPIENT_EMAIL_CITATION}`,
+    );
+  }
+
+  private typeOf(table: string, column: string): string {
+    return this.columnTypes.get(table)?.get(column) ?? UNKNOWN_TYPE;
+  }
+
+  addColumn(table: string, column: string, type: string = UNKNOWN_TYPE): void {
     for (const target of [table, ...this.children(table)]) {
       const set = this.columns.get(target) ?? new Set<string>();
       set.add(column);
       this.columns.set(target, set);
+      const types = this.columnTypes.get(target) ?? new Map<string, string>();
+      types.set(column, type);
+      this.columnTypes.set(target, types);
       this.check(target, column);
+      this.checkType(target, column, type);
     }
+  }
+
+  /** `ALTER TABLE … ALTER COLUMN … TYPE`. */
+  setColumnType(table: string, column: string, type: string): void {
+    this.addColumn(table, column, type);
   }
 
   copyColumns(from: string, to: string): void {
     for (const column of this.columns.get(from) ?? [])
-      this.addColumn(to, column);
+      this.addColumn(to, column, this.typeOf(from, column));
   }
 
   /** A typed table, or a type change cascaded into one: refused outright (breaker r2 hole B). */
@@ -641,13 +715,13 @@ class TableModel {
     column: string,
     typeTokens: readonly SqlToken[],
   ): void {
-    this.addColumn(table, column);
+    this.addColumn(table, column, canonicalType(typeTokens));
     for (const [type, attributes] of this.compositesIn(typeTokens)) {
       const uses = this.typeUses.get(type) ?? [];
       uses.push([table, column]);
       this.typeUses.set(type, uses);
       for (const attribute of attributes)
-        this.addColumn(table, `${column}.${attribute}`);
+        this.addColumn(table, `${column}.${attribute}`, ATTRIBUTE_TYPE);
     }
   }
 
@@ -655,17 +729,21 @@ class TableModel {
     const set = this.columns.get(table);
     if (set === undefined) return;
     for (const name of [...set]) {
-      if (name === column || name.startsWith(`${column}.`)) set.delete(name);
+      if (name === column || name.startsWith(`${column}.`)) {
+        set.delete(name);
+        this.columnTypes.get(table)?.delete(name);
+      }
     }
   }
 
   renameColumn(table: string, from: string, to: string): void {
     const set = this.columns.get(table) ?? new Set<string>();
     const carried = [...set].filter((name) => name.startsWith(`${from}.`));
+    const type = this.typeOf(table, from);
     this.dropColumn(table, from);
-    this.addColumn(table, to);
+    this.addColumn(table, to, type);
     for (const name of carried)
-      this.addColumn(table, `${to}${name.slice(from.length)}`);
+      this.addColumn(table, `${to}${name.slice(from.length)}`, ATTRIBUTE_TYPE);
   }
 
   /** `CREATE TYPE name AS (attribute type, …)`. */
@@ -688,7 +766,7 @@ class TableModel {
     attributes.add(attribute);
     this.types.set(type, attributes);
     for (const [table, column] of this.typeUses.get(type) ?? []) {
-      this.addColumn(table, `${column}.${attribute}`);
+      this.addColumn(table, `${column}.${attribute}`, ATTRIBUTE_TYPE);
     }
   }
 
@@ -705,12 +783,19 @@ class TableModel {
         names.add(token.value);
     }
     this.columns.set(view, names);
+    this.columnTypes.set(
+      view,
+      new Map([...names].map((name) => [name, UNKNOWN_TYPE])),
+    );
     this.parents.delete(view);
   }
 
   /** A statement the model cannot follow: any matching identifier in it counts. */
   opaque(table: string, tokens: readonly SqlToken[]): void {
     if (!RECIPIENT_TABLES.includes(table)) return;
+    this.problems.push(
+      `${this.file}: \`${table}\` gets columns db:check cannot see (\`CREATE TABLE … AS\`, \`SELECT … INTO\`) — a recipient table holds built-in scalar types only, and ${RECIPIENT_EMAIL_CITATION}`,
+    );
     for (const token of tokens) {
       if (token.kind === "word" || token.kind === "ident") {
         this.check(table, token.value);
@@ -720,9 +805,13 @@ class TableModel {
 
   renameTable(from: string, to: string): void {
     const columns = this.columns.get(from) ?? new Set<string>();
+    const types = this.columnTypes.get(from) ?? new Map<string, string>();
     this.columns.delete(from);
+    this.columnTypes.delete(from);
     this.columns.set(to, new Set<string>());
-    for (const column of columns) this.addColumn(to, column);
+    this.columnTypes.set(to, new Map<string, string>());
+    for (const column of columns)
+      this.addColumn(to, column, types.get(column) ?? UNKNOWN_TYPE);
     const parents = this.parents.get(from);
     this.parents.delete(from);
     if (parents !== undefined) this.parents.set(to, parents);
@@ -733,6 +822,7 @@ class TableModel {
 
   dropTable(table: string): void {
     this.columns.delete(table);
+    this.columnTypes.delete(table);
     this.parents.delete(table);
   }
 
@@ -814,6 +904,7 @@ function applyFrom(model: TableModel, tokens: readonly SqlToken[]): void {
     if (target === undefined) return;
     const table = target.name;
     model.columns.set(table, new Set<string>());
+    model.columnTypes.set(table, new Map<string, string>());
     model.parents.delete(table);
     i = target.end;
     if (isWord(tokens[i], "partition") && isWord(tokens[i + 1], "of")) {
@@ -982,6 +1073,18 @@ function applyAlterAction(
     }
     return;
   }
+  // `ALTER [COLUMN] name [SET DATA] TYPE t`: the new type is checked like an added column's.
+  if (isWord(action[k], "alter")) {
+    k += 1;
+    if (isWord(action[k], "column")) k += 1;
+    const column = nameOf(action[k]);
+    let t = k + 1;
+    if (isWord(action[t], "set") && isWord(action[t + 1], "data")) t += 2;
+    if (column !== undefined && isWord(action[t], "type")) {
+      model.setColumnType(table, column, canonicalType(action.slice(t + 1)));
+    }
+    return;
+  }
   if (isWord(action[k], "inherit")) {
     const parent = qualifiedName(action, k + 1);
     if (parent !== undefined) model.inherit(table, parent.name);
@@ -1062,6 +1165,79 @@ export function dynamicSqlCount(sql: string): number {
   return count;
 }
 
+/** Statement words that make a procedural body DDL (reviewer R2-1, breaker r3, PR 200). */
+const PROCEDURAL_DDL_WORDS = [
+  "create",
+  "alter",
+  "drop",
+  "truncate",
+  "grant",
+  "revoke",
+  "comment",
+  "import",
+  "refresh",
+  "reindex",
+  "cluster",
+];
+
+/** True when a statement is `DO …` or `CREATE [OR REPLACE] FUNCTION | PROCEDURE …`. */
+function isProceduralStatement(statement: readonly SqlToken[]): boolean {
+  if (isWord(statement[0], "do")) return true;
+  if (!isWord(statement[0], "create")) return false;
+  const kind =
+    isWord(statement[1], "or") && isWord(statement[2], "replace") ? 3 : 1;
+  return isWord(statement[kind], "function", "procedure");
+}
+
+/**
+ * DDL anywhere inside a `DO` block or a function or procedure body, and any change to
+ * `search_path`, in a migration. The model reads DDL at the top level of a migration; inside a
+ * body, control flow (`IF (SELECT …) THEN`, `CASE`, loops) decides what runs, so the gate refuses
+ * the DDL instead of parsing the control flow. A nested `DO` inside a body counts, as does a body
+ * that changes `search_path`. At the top level, `SET … search_path`, `set_config('search_path', …)`
+ * or `ALTER ROLE … SET search_path` would let an unqualified `text` resolve to a user type, which
+ * the type allow-list assumes it cannot; a function's own `SET search_path` attribute is its
+ * header, not a change, and is allowed.
+ */
+export function proceduralProblems(file: string, sql: string): string[] {
+  let ddl = 0;
+  let searchPath = 0;
+  const mentionsSearchPath = (tokens: readonly SqlToken[]): boolean =>
+    tokens.some(
+      (token) =>
+        (token.kind === "word" && token.value === "search_path") ||
+        (token.kind === "string" &&
+          token.value.trim().toLowerCase() === "search_path"),
+    );
+  for (const statement of statementsOf(lexSql(sql))) {
+    if (!isProceduralStatement(statement)) {
+      if (mentionsSearchPath(statement)) searchPath += 1;
+      continue;
+    }
+    for (const token of statement) {
+      if (token.kind !== "string") continue;
+      const body = lexSql(token.value);
+      body.forEach((word, index) => {
+        if (isWord(word, ...PROCEDURAL_DDL_WORDS)) ddl += 1;
+        if (isWord(word, "do") && body[index + 1]?.kind === "string") ddl += 1;
+      });
+      if (mentionsSearchPath(body)) searchPath += 1;
+    }
+  }
+  const lines: string[] = [];
+  if (ddl > 0) {
+    lines.push(
+      `${file}: DDL inside a DO block or a function body — db:check reads DDL at the top level of a migration only, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); write the statement at the top level, or add the file to DYNAMIC_SQL_ALLOWED with a reason`,
+    );
+  }
+  if (searchPath > 0) {
+    lines.push(
+      `${file}: a search_path change — an unqualified type could then resolve to a user type, and the recipient type allow-list (${RECIPIENT_EMAIL_CITATION}) assumes it cannot; qualify names instead`,
+    );
+  }
+  return lines;
+}
+
 /**
  * AC-27 over the **evaluated** Drizzle mirror: every exported table whose name is a recipient
  * table, read with `getTableConfig`, so a column reached through a spread, a constant, a template
@@ -1079,6 +1255,11 @@ export function recipientEmailInTables(
     for (const column of config.columns) {
       if (RECIPIENT_EMAIL_COLUMN.test(column.name)) {
         problems.push(recipientEmailLine(where, config.name, column.name));
+      }
+      if (!RECIPIENT_COLUMN_TYPE.test(column.getSQLType())) {
+        problems.push(
+          `${where}: column \`${column.name}\` on \`${config.name}\` has type \`${column.getSQLType()}\`, which is not a built-in scalar on RECIPIENT_COLUMN_TYPE — a domain, composite or row type hides its fields, and ${RECIPIENT_EMAIL_CITATION}`,
+        );
       }
     }
   }
@@ -1101,6 +1282,9 @@ export function checkRecipientEmail(
   const ordered = [...migrationSources].sort(([a], [b]) => a.localeCompare(b));
   for (const [file, body] of ordered) {
     const dynamic = dynamicSqlCount(body);
+    if (!DYNAMIC_SQL_ALLOWED.has(file)) {
+      problems.push(...proceduralProblems(file, body));
+    }
     if (dynamic > 0 && !DYNAMIC_SQL_ALLOWED.has(file)) {
       problems.push(
         `${file}: ${String(dynamic)} dynamic-SQL EXECUTE statement(s) — db:check cannot read SQL assembled at run time, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); write the DDL literally, or add the file to DYNAMIC_SQL_ALLOWED with a reason`,

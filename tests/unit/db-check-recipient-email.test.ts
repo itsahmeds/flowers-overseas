@@ -24,7 +24,7 @@ import { join, resolve } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { pgSchema, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { jsonb, pgSchema, pgTable, text, uuid } from "drizzle-orm/pg-core";
 
 import {
   checkRecipientEmail,
@@ -260,7 +260,7 @@ describe("AC-27 — the routes by which a column can arrive", () => {
       ).toBe(true);
       for (const line of lines) {
         expect(line).toMatch(
-          /^9999_fixture\.sql: (column `[^`]+` on `recipient(_address)?`|1 dynamic-SQL EXECUTE)/,
+          /^9999_fixture\.sql: (column `[^`]+` on `recipient(_address)?`|1 dynamic-SQL EXECUTE|`recipient(_address)?` gets columns db:check cannot see|DDL inside a DO block)/,
         );
         expect(line).toMatch(CITATION);
       }
@@ -449,6 +449,13 @@ function nested(levels: number, inner: string): string {
   return `${body};`;
 }
 
+/** The procedural-body line (breaker r3 / reviewer R2-1): DDL inside a DO block or function body. */
+const PROCEDURAL = (file = "9999_fixture.sql"): string =>
+  `${file}: DDL inside a DO block or a function body — db:check reads DDL at the top level of a migration only, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); write the statement at the top level, or add the file to DYNAMIC_SQL_ALLOWED with a reason`;
+/** The type allow-list line (breaker r3): a recipient column of a non-scalar type. */
+const TYPE_LINE = (table: string, column: string, type: string): string =>
+  `9999_fixture.sql: column \`${column}\` on \`${table}\` has type \`${type}\`, which is not a built-in scalar on RECIPIENT_COLUMN_TYPE — a domain, composite or row type hides its fields, and ${RECIPIENT_EMAIL_CITATION}`;
+
 const TYPED = (file = "9999_fixture.sql"): string =>
   `${file}: a typed table (\`OF\` a type, or \`ALTER TYPE … CASCADE\`) takes its columns from a type db:check does not follow, so it cannot prove no email column reaches a recipient table (${RECIPIENT_EMAIL_CITATION}); give the table its columns directly`;
 
@@ -456,14 +463,15 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
   it("A: an EXECUTE nested four and six $qN$ levels deep is still refused", () => {
     const execute =
       "EXECUTE 'ALTER TABLE public.recipient ADD COLUMN ' || 'e' || 'mail text'";
-    expect(gate(nested(4, execute))).toEqual([DYNAMIC(1)]);
-    expect(gate(nested(6, execute))).toEqual([DYNAMIC(1)]);
+    expect(gate(nested(4, execute))).toEqual([PROCEDURAL(), DYNAMIC(1)]);
+    expect(gate(nested(6, execute))).toEqual([PROCEDURAL(), DYNAMIC(1)]);
   });
 
   it("A: literal DDL nested six function bodies deep is still read", () => {
     expect(
       gate(nested(6, "ALTER TABLE recipient ADD COLUMN email text")),
     ).toEqual([
+      PROCEDURAL(),
       `9999_fixture.sql: column \`email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
   });
@@ -514,7 +522,11 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     ];
     for (const [label, body] of bodies) {
       it(label, () => {
-        expect(gate(`DO $$ BEGIN ${body} END $$;`)).toEqual([COLUMN_LINE]);
+        // Refused outright as procedural DDL, and still read: the column line is defence in depth.
+        expect(gate(`DO $$ BEGIN ${body} END $$;`)).toEqual([
+          PROCEDURAL(),
+          COLUMN_LINE,
+        ]);
       });
     }
 
@@ -552,6 +564,7 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
         "CREATE TYPE contact_t AS (phone text, email text); ALTER TABLE recipient ADD COLUMN contact contact_t;",
       ),
     ).toEqual([
+      TYPE_LINE("recipient", "contact", "contact_t"),
       `9999_fixture.sql: column \`contact.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
     expect(
@@ -559,6 +572,7 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
         "CREATE TYPE contact_t AS (phone text); ALTER TYPE contact_t ADD ATTRIBUTE e_mail text; ALTER TABLE recipient_address ADD COLUMN contacts public.contact_t[];",
       ),
     ).toEqual([
+      TYPE_LINE("recipient_address", "contacts", "public.contact_t[]"),
       `9999_fixture.sql: column \`contacts.e_mail\` on \`recipient_address\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
   });
@@ -569,6 +583,7 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
         "CREATE TYPE contact_t AS (email text); CREATE TABLE contact_book (c contact_t); DROP TABLE recipient; CREATE TABLE recipient (LIKE contact_book);",
       ),
     ).toEqual([
+      TYPE_LINE("recipient", "c", "contact_t"),
       `9999_fixture.sql: column \`c.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
     expect(
@@ -576,6 +591,7 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
         "CREATE TYPE inner_t AS (email text); CREATE TYPE outer_t AS (who inner_t); ALTER TABLE recipient ADD COLUMN x outer_t;",
       ),
     ).toEqual([
+      TYPE_LINE("recipient", "x", "outer_t"),
       `9999_fixture.sql: column \`x.who.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
   });
@@ -591,17 +607,18 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
         ),
         change,
       ).toEqual([
+        TYPE_LINE("recipient", "contact", "contact_t"),
         `9999_fixture.sql: column \`contact.email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
       ]);
     }
   });
 
-  it("B: a composite type with no email attribute passes", () => {
+  it("B: a composite type with no email attribute is refused too: only built-in scalars", () => {
     expect(
       gate(
         "CREATE TYPE money_t AS (amount_minor bigint, currency text); ALTER TABLE recipient ADD COLUMN m money_t;",
       ),
-    ).toEqual([]);
+    ).toEqual([TYPE_LINE("recipient", "m", "money_t")]);
   });
 
   it("C: the CLI runs the evaluated mirror (a spread email column fails `node scripts/db-check.ts`)", () => {
@@ -639,6 +656,117 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
       status: 0,
       stdout: "6 migration(s), each with a rollback",
     });
+  });
+});
+
+describe("AC-27 — the class, closed (breaker r3, PR 200)", () => {
+  const SEARCH_PATH = `9999_fixture.sql: a search_path change — an unqualified type could then resolve to a user type, and the recipient type allow-list (${RECIPIENT_EMAIL_CITATION}) assumes it cannot; qualify names instead`;
+  const UNSEEN = (column: string): string =>
+    `9999_fixture.sql: column \`${column}\` on \`recipient\` has a type db:check cannot see (taken from a view or a query) — a recipient table holds built-in scalar types only, and ${RECIPIENT_EMAIL_CITATION}`;
+
+  it("E: a domain over an email-bearing composite", () => {
+    expect(
+      gate(
+        "CREATE TYPE contact_t AS (email text); CREATE DOMAIN contact_d AS contact_t; ALTER TABLE recipient ADD COLUMN contact contact_d;",
+      ),
+    ).toEqual([TYPE_LINE("recipient", "contact", "contact_d")]);
+  });
+
+  it("E: a domain over text, and a schema-qualified type called text", () => {
+    expect(
+      gate(
+        "CREATE DOMAIN note_d AS text; ALTER TABLE recipient ADD COLUMN note note_d;",
+      ),
+    ).toEqual([TYPE_LINE("recipient", "note", "note_d")]);
+    expect(gate("ALTER TABLE recipient ADD COLUMN note public.text;")).toEqual([
+      TYPE_LINE("recipient", "note", "public.text"),
+    ]);
+  });
+
+  it("F: a table row type, a view row type, and a type renamed afterwards", () => {
+    expect(
+      gate("ALTER TABLE recipient ADD COLUMN buyer public.customer;"),
+    ).toEqual([TYPE_LINE("recipient", "buyer", "public.customer")]);
+    expect(
+      gate(
+        "CREATE VIEW buyer_v AS SELECT email_normalised FROM customer; ALTER TABLE recipient ADD COLUMN b buyer_v;",
+      ),
+    ).toEqual([TYPE_LINE("recipient", "b", "buyer_v")]);
+    expect(
+      gate(
+        "CREATE TYPE a_t AS (x text); ALTER TABLE recipient ADD COLUMN a a_t; ALTER TYPE a_t RENAME TO b_t;",
+      ),
+    ).toEqual([TYPE_LINE("recipient", "a", "a_t")]);
+  });
+
+  it("F: an array of a composite, and ALTER COLUMN … TYPE to a composite", () => {
+    expect(
+      gate(
+        "ALTER TABLE recipient_address ADD COLUMN people public.customer[];",
+      ),
+    ).toEqual([TYPE_LINE("recipient_address", "people", "public.customer[]")]);
+    expect(
+      gate(
+        "CREATE TYPE p_t AS (x text); ALTER TABLE recipient ALTER COLUMN full_name SET DATA TYPE p_t USING NULL;",
+      ),
+    ).toEqual([TYPE_LINE("recipient", "full_name", "p_t")]);
+  });
+
+  it("a view renamed into recipient: every column's type is unseen", () => {
+    const lines = gate(
+      "CREATE VIEW contact AS SELECT 1 AS n; DROP TABLE recipient; ALTER VIEW contact RENAME TO recipient;",
+    );
+    expect(lines).toContain(UNSEEN("n"));
+  });
+
+  it("R2-1, closed by refusal: DDL in a function body, a DO inside a body, with no EXECUTE", () => {
+    expect(
+      gate(
+        "CREATE FUNCTION f() RETURNS void LANGUAGE plpgsql AS $f$ BEGIN IF (SELECT true) THEN DROP TABLE recipient; END IF; END $f$;",
+      ),
+    ).toEqual([PROCEDURAL()]);
+    expect(
+      gate(
+        "CREATE OR REPLACE FUNCTION f() RETURNS void LANGUAGE plpgsql AS $f$ BEGIN DO $d$ BEGIN NULL; END $d$; END $f$;",
+      ),
+    ).toEqual([PROCEDURAL()]);
+  });
+
+  it("search_path changes: SET, set_config, ALTER ROLE, and inside a body", () => {
+    expect(gate("SET LOCAL search_path TO evil, pg_catalog;")).toEqual([
+      SEARCH_PATH,
+    ]);
+    expect(
+      gate("SELECT set_config('search_path', 'evil, pg_catalog', true);"),
+    ).toEqual([SEARCH_PATH]);
+    expect(gate("ALTER ROLE app_owner SET search_path = evil;")).toEqual([
+      SEARCH_PATH,
+    ]);
+    expect(
+      gate(
+        "DO $$ BEGIN PERFORM set_config('search_path', 'evil', true); END $$;",
+      ),
+    ).toEqual([SEARCH_PATH]);
+  });
+
+  it("passes: every allow-listed scalar, a function header's SET search_path, ON CONFLICT DO NOTHING in a body", () => {
+    expect(
+      gate(`ALTER TABLE recipient
+  ADD COLUMN a varchar(200), ADD COLUMN b character varying, ADD COLUMN c char(2),
+  ADD COLUMN d character(3), ADD COLUMN e numeric(10,2), ADD COLUMN f int, ADD COLUMN g bigint,
+  ADD COLUMN h smallint, ADD COLUMN i bool, ADD COLUMN j date, ADD COLUMN k timestamp with time zone,
+  ADD COLUMN l pg_catalog.text, ADD COLUMN m text[] NOT NULL DEFAULT '{}', ADD COLUMN n uuid COLLATE "C";
+CREATE FUNCTION g() RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
+AS $g$ BEGIN INSERT INTO locale (code, bcp47, name) VALUES ('x', 'x', 'x') ON CONFLICT DO NOTHING; END $g$;`),
+    ).toEqual([]);
+  });
+
+  it("the evaluated mirror refuses a non-scalar recipient column too", () => {
+    expect(
+      recipientEmailInTables([pgTable("recipient", { data: jsonb("data") })]),
+    ).toEqual([
+      `db/schema: column \`data\` on \`recipient\` has type \`jsonb\`, which is not a built-in scalar on RECIPIENT_COLUMN_TYPE — a domain, composite or row type hides its fields, and ${RECIPIENT_EMAIL_CITATION}`,
+    ]);
   });
 });
 

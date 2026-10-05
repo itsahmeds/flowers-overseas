@@ -102,6 +102,20 @@ function rejectedBy(error: unknown): string {
 }
 
 const ROLLBACK = "rollback: this test leaves the shared database untouched";
+/** `RECIPIENT_COLUMN_TYPE`'s built-in scalars, by their `pg_type.typname`. */
+const SCALARS = [
+  "text",
+  "varchar",
+  "bpchar",
+  "uuid",
+  "int2",
+  "int4",
+  "int8",
+  "bool",
+  "timestamptz",
+  "date",
+  "numeric",
+] as const;
 const SHA = "e".repeat(64);
 const MEDIA_GUARD = "PARTNER_APPLICATION_MEDIA_ASSET (23503)";
 
@@ -188,6 +202,31 @@ describe.skipIf(sql === undefined)(
           SELECT walk.table, walk.column FROM walk
         `;
         expect(columns.length).toBeGreaterThan(10);
+        // The type allow-list, live (breaker r3): every recipient column is a built-in scalar of
+        // pg_catalog (or an array of one), resolved by OID, so a domain, composite, row type or a
+        // user type named like a built-in is refused whatever it is called.
+        const offending = await db<{ where: string }[]>`
+          SELECT c.relname || '.' || a.attname || ':' || tn.nspname || '.' || t.typname AS where
+          FROM pg_attribute a
+          JOIN pg_class c ON c.oid = a.attrelid
+          JOIN pg_type t ON t.oid = a.atttypid
+          JOIN pg_namespace tn ON tn.oid = t.typnamespace
+          LEFT JOIN pg_type e ON e.oid = t.typelem AND t.typcategory = 'A'
+          LEFT JOIN pg_namespace en ON en.oid = e.typnamespace
+          WHERE c.relname IN ('recipient', 'recipient_address') AND a.attnum > 0
+            AND NOT a.attisdropped
+            AND NOT (
+              CASE WHEN t.typcategory = 'A'
+                THEN en.nspname = 'pg_catalog' AND e.typtype = 'b'
+                     AND e.typname IN ${db([...SCALARS])}
+                ELSE tn.nspname = 'pg_catalog' AND t.typtype = 'b'
+                     AND t.typname IN ${db([...SCALARS])}
+                     AND (t.typname <> 'bpchar' OR a.atttypmod IN (6, 7))
+              END
+            )
+          ORDER BY 1
+        `;
+        expect(offending.map((row) => row.where)).toEqual([]);
         const typed = await db<{ table: string }[]>`
           SELECT relname::text AS table FROM pg_class
           WHERE relname IN ('recipient', 'recipient_address') AND reloftype <> 0
@@ -713,6 +752,13 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE fulfillment_partner SET country_id = ${countryB} WHERE id = ${partner}`,
             );
+            const partnerC = await one(partnerRow("zz-demo-3"));
+            await tx`INSERT INTO partner_coverage (partner_id, postcode_zone_id) VALUES (${partnerC}, ${zoneA})`;
+            await refuse(
+              "fulfillment_partner with zone-only coverage moved to another country (D)",
+              (sp) =>
+                sp`UPDATE fulfillment_partner SET country_id = ${countryB} WHERE id = ${partnerC}`,
+            );
             await accept(
               "fulfillment_partner with no coverage moved to another country",
               async () => {
@@ -1234,6 +1280,7 @@ describe.skipIf(sql === undefined)(
             "partner_coverage a zone in another country than the partner's (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "partner_coverage moved to another country's city (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "fulfillment_partner moved to another country under its coverage (B6 r2): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
+            "fulfillment_partner with zone-only coverage moved to another country (D): PARTNER_COVERAGE_COUNTRY_MISMATCH (23514)",
             "partner_catalog_mapping in another currency than the partner's (B6): partner_catalog_mapping_partner_currency_fkey",
             "fulfillment_partner currency changed under its mappings (B6): partner_catalog_mapping_partner_currency_fkey",
             "payout in another currency than the partner's (B6): PAYOUT_CURRENCY_MISMATCH (23514)",
