@@ -332,6 +332,11 @@ export const postcodeZone = pgTable(
       table.countryId,
       table.prefix,
     ),
+    /**
+     * Migration `0006`'s (TASK-018): the supporting key for `recipient_address`'s composite
+     * reference, so an address cannot point at another country's routing zone.
+     */
+    unique("postcode_zone_id_country_key").on(table.id, table.countryId),
     foreignKey({
       name: "postcode_zone_city_fkey",
       columns: [table.cityId, table.countryId],

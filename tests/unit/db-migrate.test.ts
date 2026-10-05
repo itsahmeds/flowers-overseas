@@ -159,13 +159,15 @@ describe("the committed migration set", () => {
   // Every migration added from here on extends this list, in order: the runner applies exactly
   // what it reads from the directory, so the committed set is worth pinning (TASK-015 added 0002,
   // TASK-016 added 0003,
-  // TASK-017 added 0004).
+  // TASK-017 added 0004, TASK-018 added 0005 and 0006).
   it("reads each committed migration and its rollback from db/migrations", () => {
     expect(readMigrations(migrationsDir).map((m) => m.file)).toEqual([
       "0001_roles_grants_updated_at.sql",
       "0002_i18n_geo.sql",
       "0003_catalog_pricing.sql",
       "0004_media.sql",
+      "0005_partners.sql",
+      "0006_customers.sql",
     ]);
   });
 });
