@@ -39,7 +39,7 @@ export interface SummaryLine {
 
 export interface VatLine {
   readonly id: string;
-  /** "Of which VAT 8%" (`checkout.summary.vatOf`, the rate through `formatPercentFromBasisPoints`). */
+  /** "Of which VAT 8%" (`summary.vatOf` (checkout catalogue), the rate through `formatPercentFromBasisPoints`). */
   readonly label: string;
   readonly money: Money;
 }

@@ -27,12 +27,12 @@ export interface StepProgressStep {
 
 export interface StepProgressProps {
   readonly locale: LocaleCode;
-  /** "Checkout steps" (`checkout.progress.label`). */
+  /** "Checkout steps" (`progress.label` (checkout catalogue)). */
   readonly label: string;
   readonly steps: readonly StepProgressStep[];
   /** The index of the current step in `steps`. */
   readonly current: number;
-  /** "Step 1 of 3 · Recipient" (`checkout.progress.compact`), for the phone line. */
+  /** "Step 1 of 3 · Recipient" (`progress.compact` (checkout catalogue)), for the phone line. */
   readonly compactLabel: string;
 }
 

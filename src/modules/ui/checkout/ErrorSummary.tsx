@@ -23,12 +23,12 @@ import { FocusOnMount } from "./FocusOnMount.tsx";
 export interface ErrorSummaryItem {
   /** The id of the control to fix: the link's target. */
   readonly fieldId: string;
-  /** "Street and number: …", already translated (`checkout.error.summaryItem`). */
+  /** "Street and number: …", already translated (`error.summaryItem` (checkout catalogue)). */
   readonly text: string;
 }
 
 export interface ErrorSummaryProps {
-  /** `checkout.error.summaryTitle`. */
+  /** `error.summaryTitle` (checkout catalogue). */
   readonly title: string;
   readonly items: readonly ErrorSummaryItem[];
   readonly id?: string;

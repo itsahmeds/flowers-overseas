@@ -4,7 +4,7 @@
  * `docs/design/system/components.dc.html` "Checkout · fields"; TASK-201).
  *
  * A server component. Every string arrives as a prop, already translated: this module names no
- * message key (spec 003 §14 A17 clause 2, check 11: `checkout.*` keys may be read only from the
+ * message key (spec 003 §14 A17 clause 2, check 11: checkout keys may be read only from the
  * checkout's own files, never from `src/modules/ui/`).
  *
  * Form quality (§5.3): a visible `<label>` bound by `htmlFor`; `autocomplete` and `inputmode` as
@@ -33,7 +33,7 @@ import {
 
 /** The messages the on-blur island may show, already translated. */
 export interface ClientFieldMessages {
-  /** Shown when a required field is left empty (`checkout.error.required`). */
+  /** Shown when a required field is left empty (`error.required` (checkout catalogue)). */
   readonly required?: string;
   /** Shown when the value does not match `pattern` or the input's `type`. */
   readonly format?: string;
