@@ -96,9 +96,20 @@ test.describe("/dev/components", () => {
     const headerDisabled = await page
       .locator("[data-fo-header] button[disabled]:visible")
       .count();
-    await expect(page.getByRole("button", { disabled: true })).toHaveCount(
-      5 + headerDisabled,
-    );
+    // TASK-201 narrows it by spec 010's checkout section, which §5.3 requires on this page in
+    // every state ("Every state in /dev/components"): its place-order button drawn pending is
+    // `aria-disabled`, a state of that component and not of the `Button` primitive. Counted
+    // outside the section, so the primitive's five stay exact.
+    const checkoutDisabled = page
+      .locator("[data-fo-checkout-gallery]")
+      .getByRole("button", { disabled: true });
+    await expect
+      .poll(
+        async () =>
+          (await page.getByRole("button", { disabled: true }).count()) -
+          (await checkoutDisabled.count()),
+      )
+      .toBe(5 + headerDisabled);
     await expect(page.locator('button[aria-busy="true"]')).toHaveCount(5);
     await expect(
       page.getByRole("link", { name: "See destinations" }),
@@ -157,7 +168,13 @@ test.describe("/dev/components", () => {
               // TASK-195 narrows it by the segmented control's gallery state, for the same
               // reason: native radios in its own fieldset and legend (spec 004 §14 A24 clause
               // 4 (b), AC-49), the product page's size control on the phone, not a form layer.
-              node.closest("[data-fo-segmented]") === null,
+              node.closest("[data-fo-segmented]") === null &&
+              // TASK-201 narrows it by spec 010's checkout section: §5.3 requires its fourteen
+              // primitives on this page in every state ("Every state in /dev/components"), and
+              // they are the checkout's real fields, the form layer this comment's opening says
+              // 010/013 own. They are not on the `ui` barrel (the `ui/checkout` sub-barrel is
+              // imported by path), so `tests/unit/ui-barrel.test.ts` still holds the non-goal.
+              node.closest("[data-fo-checkout-gallery]") === null,
           ).length,
       );
     expect(controlsOutsideKnownForms).toBe(0);

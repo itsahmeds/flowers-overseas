@@ -192,7 +192,7 @@ export function CheckoutGallery({
   const ids = CHECKOUT_GALLERY_IDS;
 
   return (
-    <div className="grid gap-[40px]">
+    <div className="grid gap-[40px]" data-fo-checkout-gallery="">
       <State name={CHECKOUT_STATES.banner}>
         <DemoBanner body={t("demo.bannerBody")} title={t("demo.bannerTitle")} />
       </State>
