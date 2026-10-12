@@ -107,8 +107,12 @@ function fkKey(
   return `${name}(${norm(columns)})->${parent}(${norm(parentColumns)}) ${rule.toUpperCase()}`;
 }
 
-/** The shape of `table` as the migration text declares it. */
-export function sqlShape(sql: string, table: string): Shape {
+/**
+ * The shape of `table` as the migration text declares it. `later` is the text of the migrations
+ * after the one that creates it: a key it adds with `ALTER TABLE … ADD CONSTRAINT … FOREIGN KEY`
+ * (a key that waited for its parent table) belongs to the table's shape too.
+ */
+export function sqlShape(sql: string, table: string, later = ""): Shape {
   const body = tableBody(sql, table);
   const named = (kind: string): string[] =>
     [...body.matchAll(new RegExp(`CONSTRAINT (\\w+) ${kind}`, "g"))]
@@ -124,6 +128,24 @@ export function sqlShape(sql: string, table: string): Shape {
   ]
     .map((m) =>
       fkKey(m[1] ?? "", m[2] ?? "", m[3] ?? m[4] ?? "", m[5] ?? "", m[6] ?? ""),
+    )
+    .concat(
+      [
+        ...later.matchAll(
+          new RegExp(
+            `ALTER TABLE ${quoted(table)}\\s+ADD CONSTRAINT (\\w+) FOREIGN KEY \\(([^)]*)\\)\\s+REFERENCES ${TABLE} \\(([^)]*)\\) ON DELETE (SET NULL|\\w+);`,
+            "g",
+          ),
+        ),
+      ].map((m) =>
+        fkKey(
+          m[1] ?? "",
+          m[2] ?? "",
+          m[3] ?? m[4] ?? "",
+          m[5] ?? "",
+          m[6] ?? "",
+        ),
+      ),
     )
     .sort();
   const indexes = [

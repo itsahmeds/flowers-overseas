@@ -14,52 +14,28 @@
  * Every rejection is recorded with the constraint (or the not-null column) that produced it, so a
  * primary-key collision cannot stand in for the rule under test.
  *
- * Skips itself when no real database is reachable — `DATABASE_URL_UNPOOLED` unset, a placeholder,
- * or the CI service container that has no migrations applied — exactly as
- * `schema-catalog-pricing.test.ts` does.
+ * Runs on a migrated scratch database of a disposable local Postgres 16 (CI's service container
+ * included) and skips when none answers (`support/scratch-db.ts`; TASK-022 turned it on in CI).
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-
-import postgres from "postgres";
+import type postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { ALT_CHECK_SQL } from "../../db/schema/media.ts";
 import { ALT_LETTER_OR_DIGIT } from "../../seed/schema/media.ts";
 import { REAL_ALTS, UNANNOUNCED_ALTS } from "../fixtures/alt-text.ts";
+import { probeLocalServer, scratchDatabase } from "./support/scratch-db.ts";
 
-function readDotEnv(path: string): Record<string, string> {
-  if (!existsSync(path)) return {};
-  const entries: Record<string, string> = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (trimmed === "" || trimmed.startsWith("#")) continue;
-    const separator = trimmed.indexOf("=");
-    if (separator < 1) continue;
-    entries[trimmed.slice(0, separator).replace(/^export\s+/, "")] = trimmed
-      .slice(separator + 1)
-      .trim();
-  }
-  return entries;
-}
-
-function liveDatabaseUrl(): string | undefined {
-  const local = readDotEnv(join(process.cwd(), ".env.local"));
-  const url =
-    process.env.DATABASE_URL_UNPOOLED ??
-    local.DATABASE_URL_UNPOOLED ??
-    process.env.DATABASE_URL ??
-    local.DATABASE_URL;
-  if (url === undefined || url === "") return undefined;
-  return /localhost|127\.0\.0\.1/.test(url) ? undefined : url;
-}
-
-const databaseUrl = liveDatabaseUrl();
-const sql =
-  databaseUrl === undefined ? undefined : postgres(databaseUrl, { max: 1 });
+// TASK-022: runs on a migrated scratch database of a disposable local Postgres 16 — CI's
+// service container included, which turns T-11 on in CI — and never on the shared database.
+const server = await probeLocalServer();
+const scratch =
+  server.url === undefined
+    ? undefined
+    : await scratchDatabase(server.url, "media");
+const sql = scratch?.sql;
 
 afterAll(async () => {
-  await sql?.end();
+  await scratch?.drop();
 });
 
 const TABLES = [

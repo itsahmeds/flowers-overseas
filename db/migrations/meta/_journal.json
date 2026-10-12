@@ -50,6 +50,13 @@
       "when": 1791831539984,
       "tag": "0006_organic_selene",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791832295600,
+      "tag": "0007_lying_bug",
+      "breakpoints": true
     }
   ]
 }

@@ -18,11 +18,14 @@
  * (`0005`), `customers` (`0006`), `orders` and `payments` (`0007`), notifications and ops
  * (`0009`) and `auth` (`0010`).
  */
+export * from "./auth.ts";
 export * from "./catalog.ts";
 export * from "./customers.ts";
 export * from "./geo.ts";
 export * from "./i18n.ts";
 export * from "./media.ts";
+export * from "./notifications.ts";
+export * from "./ops.ts";
 export * from "./orders.ts";
 export * from "./partners.ts";
 export * from "./payments.ts";

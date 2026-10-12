@@ -243,4 +243,20 @@ export const DEFERRED_FOREIGN_KEYS: readonly (readonly [
     "RESTRICT",
     "0007_orders_payments.sql",
   ],
+  [
+    "partner_member_user_id_users_id_fk",
+    "user_id",
+    "users",
+    "id",
+    "CASCADE",
+    "0010_auth.sql",
+  ],
+  [
+    "customer_user_id_users_id_fk",
+    "user_id",
+    "users",
+    "id",
+    "SET NULL",
+    "0010_auth.sql",
+  ],
 ];

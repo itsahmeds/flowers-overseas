@@ -38,6 +38,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { users } from "./auth.ts";
 import { product, productTier } from "./catalog.ts";
 import { city, country, currency, postcodeZone, rowSources } from "./geo.ts";
 import { locale, timestamps } from "./i18n.ts";
@@ -210,8 +211,10 @@ export const partnerTranslation = pgTable(
 export const partnerMember = pgTable(
   "partner_member",
   {
-    /** `users.id` once `0010` exists (TASK-022 adds the reference). */
-    userId: uuid("user_id").notNull(),
+    /** `users.id`: the key `0010` adds (TASK-022); a deleted user's memberships go with them. */
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     partnerId: uuid("partner_id")
       .notNull()
       .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),

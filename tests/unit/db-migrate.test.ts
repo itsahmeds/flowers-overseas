@@ -170,6 +170,8 @@ describe("the committed migration set", () => {
       "0006_customers.sql",
       "0007_orders_payments.sql",
       "0008_order_integrity.sql",
+      "0009_notifications_ops.sql",
+      "0010_auth.sql",
     ]);
   });
 });

@@ -12,7 +12,8 @@
  *    on `lower(email_normalised)` where the row is not redacted;
  *  - **a truncated IP at most** — `consentLog.sourceIpTruncated` is `cidr`, at most /24 or /48.
  *
- * `customer.userId` waits for `users` (`0010`, TASK-022), which adds the reference.
+ * `customer.userId` references `users` (`0010`, TASK-022): `ON DELETE SET NULL`, so a buyer's row
+ * stays for the invoice and loses its login.
  */
 import { sql } from "drizzle-orm";
 import {
@@ -30,6 +31,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { users } from "./auth.ts";
 import { country, postcodeZone } from "./geo.ts";
 import { timestamps } from "./i18n.ts";
 import { E164_PATTERN } from "./partners.ts";
@@ -77,7 +79,9 @@ export const customer = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     /** `users.id` once `0010` exists (TASK-022 adds the reference); null for a guest. */
-    userId: uuid("user_id"),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     emailNormalised: text("email_normalised").notNull(),
     name: text("name"),
     phoneE164: text("phone_e164"),

@@ -76,6 +76,12 @@ function treeWith(fixture: string): { migrations: string; schema: string } {
   return { migrations, schema };
 }
 
+/** How many forward migrations are committed: the summaries below count them, not a literal. */
+const COMMITTED = readdirSync(join(repoRoot, MIGRATIONS_DIR)).filter((f) =>
+  /^\d{4}_.*(?<!\.down)\.sql$/.test(f),
+).length;
+const FIXTURE_VERSION = String(COMMITTED + 1).padStart(4, "0");
+
 /** The gate over the committed migrations plus one forward fixture. */
 function gate(
   fixture: string,
@@ -95,7 +101,7 @@ describe("T-27 — the fixture of spec 002 §10, end to end through db:check", (
     const { ok, output } = runDbCheck(migrations, schema);
     expect(ok).toBe(false);
     expect(output).toEqual([
-      `0007_fixture.sql: column \`email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
+      `${FIXTURE_VERSION}_fixture.sql: column \`email\` on \`recipient\` — recipient data is minimised, and ${RECIPIENT_EMAIL_CITATION}`,
     ]);
     expect(output[0]).toMatch(CITATION);
   });
@@ -106,7 +112,7 @@ describe("T-27 — the fixture of spec 002 §10, end to end through db:check", (
     );
     expect(runDbCheck(migrations, schema)).toEqual({
       ok: true,
-      output: ["7 migration(s), each with a rollback"],
+      output: [`${String(COMMITTED + 1)} migration(s), each with a rollback`],
     });
   });
 
@@ -666,7 +672,7 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     );
     expect({ status: run.status, stdout: run.stdout.trim() }).toEqual({
       status: 0,
-      stdout: "6 migration(s), each with a rollback",
+      stdout: `${String(COMMITTED)} migration(s), each with a rollback`,
     });
   });
 });
@@ -869,7 +875,10 @@ describe("AC-27 — the evaluated mirror (breaker hole 2, PR 200)", () => {
         join(repoRoot, MIGRATIONS_DIR),
         join(repoRoot, SCHEMA_DIR),
       ),
-    ).toEqual({ ok: true, output: ["6 migration(s), each with a rollback"] });
+    ).toEqual({
+      ok: true,
+      output: [`${String(COMMITTED)} migration(s), each with a rollback`],
+    });
   });
 });
 
