@@ -75,7 +75,12 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-13 (from PR 199, TASK-186 review): the home must sit on `PAGE_FRAME` above 1440 (today
+  its content is at x 56 while the logo is at x 92 at wide widths) and join T-33's above-1440
+  cases (1512, 1920).
+- 2026-10-13 (the sticky-bar ruling): the docked bar appears only after the hero scrolls out where
+  a page uses one; on the phone cover the bar is part of the first screen by design (the
+  Binding's viewport equation, 65 + 703 + 76), so the home follows the Binding.
 
 ## Escalations
 
@@ -87,7 +92,7 @@ _None recorded._
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-13: carry-forwards recorded; worktree from PR 208's tip (a138275d).
 
 ## Result
 
