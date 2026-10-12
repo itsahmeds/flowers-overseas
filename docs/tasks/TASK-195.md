@@ -125,6 +125,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   intersects the bar's action" cannot be tested here. Carry-forward for TASK-119: stand the popup on
   `[data-fo-action-bar]` the way `globals.css` stands the consent sheet on it, and add the case to
   `tests/e2e/action-bar.spec.ts`.
+- 2026-10-12 — **CI `audit` is red repo-wide, not from this PR.** `pnpm audit` (prod, high and up)
+  now reports new advisories: `next` <16.3.8 (GHSA-cjq9-62q9-8jv4, SSRF in image optimisation)
+  and `sharp` <0.35.5 (GHSA-wq5f-xc86-pv6w). This PR changes no dependency; PR 205 (TASK-119) is red
+  on the same job. To the orchestrator: a dependency-bump task, or a recorded exception. **open**.
 
 ## Progress
 
