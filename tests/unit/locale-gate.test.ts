@@ -163,11 +163,14 @@ describe("the loader never hides the consent sheet for good (/break 205 hole 4)"
   it("releases after the timeout when the chunk never arrives", async () => {
     renderDocument();
     guardLocaleGate();
-    await vi.advanceTimersByTimeAsync(LOCALE_GATE_TIMEOUT_MS - 1);
+    await vi.advanceTimersByTimeAsync(3999);
     expect(localeGateHeld()).toBe(true);
     await vi.advanceTimersByTimeAsync(1);
     expect(localeGateHeld()).toBe(false);
-    expect(LOCALE_GATE_TIMEOUT_MS).toBeLessThanOrEqual(4000);
+  });
+
+  it("the timeout is exactly 4000 ms: a shorter one lets the sheet paint before the popup chunk arrives (/break 205 hole 5)", () => {
+    expect(LOCALE_GATE_TIMEOUT_MS).toBe(4000);
   });
 
   it("never releases a gate the open popup holds", async () => {
@@ -224,8 +227,11 @@ describe("the island holds the gate before the dialog opens (/break 205 hole 3)"
 });
 
 describe("the components call the two effects (their wiring, pinned from source)", () => {
+  /** The file with its block and line comments removed: a commented-out effect is not wiring. */
   const source = (path: string): string =>
-    readFileSync(resolve(import.meta.dirname, "../..", path), "utf8");
+    readFileSync(resolve(import.meta.dirname, "../..", path), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//gu, "")
+      .replace(/(^|[^:])\/\/.*$/gmu, "$1");
 
   it("the loader wraps its one import and runs the timer from an effect that runs once", () => {
     const loader = source("src/modules/i18n/ui/LanguagePopupLoader.tsx");
