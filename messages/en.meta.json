@@ -1088,28 +1088,38 @@
   },
   "checkout.address.city": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "9ce56586c7281fe1dedb6870e9fd85fb3bbbbaa3837d33417acb1110904fe549"
+    "reviewed": true,
+    "sourceHash": "9ce56586c7281fe1dedb6870e9fd85fb3bbbbaa3837d33417acb1110904fe549",
+    "reviewedBy": "founder (chat 2026-10-12, five checkout address labels)",
+    "reviewedAt": "2026-10-12T00:00:00Z"
   },
   "checkout.address.fullName": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "b5af05912a3b9e84cbfd4387ac6be73f9d33cb19861b560fa2928332c327ebc2"
+    "reviewed": true,
+    "sourceHash": "b5af05912a3b9e84cbfd4387ac6be73f9d33cb19861b560fa2928332c327ebc2",
+    "reviewedBy": "founder (chat 2026-10-12, five checkout address labels)",
+    "reviewedAt": "2026-10-12T00:00:00Z"
   },
   "checkout.address.phone": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "3f47df794b159d6fddf98c360a2209edae2df086823bea2ef00d2ce28c937fc3"
+    "reviewed": true,
+    "sourceHash": "3f47df794b159d6fddf98c360a2209edae2df086823bea2ef00d2ce28c937fc3",
+    "reviewedBy": "founder (chat 2026-10-12, five checkout address labels)",
+    "reviewedAt": "2026-10-12T00:00:00Z"
   },
   "checkout.address.postcode": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "ae53cea8228bcfc350fef961189a32a592e06ccffa52a8b991f88841cbac8de4"
+    "reviewed": true,
+    "sourceHash": "ae53cea8228bcfc350fef961189a32a592e06ccffa52a8b991f88841cbac8de4",
+    "reviewedBy": "founder (chat 2026-10-12, five checkout address labels)",
+    "reviewedAt": "2026-10-12T00:00:00Z"
   },
   "checkout.address.street": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "e2a5b93f85b500fd470cfe98d9f4b0ea566c4b8e0273d96e310c79f733fec417"
+    "reviewed": true,
+    "sourceHash": "e2a5b93f85b500fd470cfe98d9f4b0ea566c4b8e0273d96e310c79f733fec417",
+    "reviewedBy": "founder (chat 2026-10-12, five checkout address labels)",
+    "reviewedAt": "2026-10-12T00:00:00Z"
   },
   "checkout.buyer.country": {
     "source": "human",
