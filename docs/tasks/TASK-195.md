@@ -135,6 +135,7 @@ One line per coherent step, newest last.
 - 2026-10-05 — CI round 1: corridor `<details>` count scoped to `main`; header visual case photographs the phone banner and Menu; baselines from CI.
 - 2026-10-05 — Local production build in the build slot: fixed the lost `data-fo-menu` attribute (a `"use client"` export is a client reference on the server), the gallery hook, the category hub case; screenshots taken.
 - 2026-10-12 — Finisher: verified review change 1 and breaker holes 1 to 3 (each unit case red on its revert); CLS 0 restored by reverting the consent sheet's `="shown"` scope (ad8c4aa9). The 11 `frame-laptop-band.spec.ts:437` "✘" lines are `test.fail` expected failures owned by later tasks, identical on 8f5d7b28; not red.
+- 2026-10-12 — `category-hub-mobile` linux baseline re-taken from CI run 37341225499 (f5d9edec); `ci:full` toggled.
 
 ## Result
 
@@ -158,5 +159,12 @@ AC-50 and AC-32's phone half; T-52 to T-55.
   caught `corridor.spec.ts` counting the header Menu's `<details>`; it now counts the page body's.
 - **Mutations watched red:** the strip shown below `md` (unit T-52 half); the trail's `max-md:hidden`
   removed (unit T-55 half); `data-fo-menu` lost (unit and e2e).
-- **Not done here:** the popup case of AC-48 (TASK-119 unmerged), the product trail "below the buy
-  section" (TASK-197 places it), and the category hub's back link (escalation above).
+- **Not done here:** the popup case of AC-48 (TASK-119 unmerged) and the product trail "below the
+  buy section" (TASK-197 places it). The category hub's back link is built (`‹ Home`, round 1).
+- **Round 1 fixes, finished 2026-10-12.** Each guard watched red on its revert (unit,
+  `ui-phone-chrome.test.tsx`): ancestor filter without `href` (2 cases), help line 40 px,
+  current-locale 40 px, `MENU_ATTRIBUTE` exported from and imported out of `MenuEscape` (2 cases),
+  the bar's `#id` refusal removed, the consent rule scoped to `="shown"`. T-53's CLS case was red
+  (0.19) on 43bbca5b from that scope; reverted. `category-hub-mobile` linux baseline re-taken from
+  CI run 37341225499 (shows `‹ Home`). No local Playwright run, no build slot taken. The darwin
+  copy of `category-hub-mobile` still shows the trail (CI never reads it).
