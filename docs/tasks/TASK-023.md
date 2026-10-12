@@ -45,6 +45,17 @@ _None recorded._
 
 - 2026-10-13: `0011` + rollback, `db/rls.ts` (the map), unit and integration suites, eight mutations. Pushed.
 
+- 2026-10-13: review round 1 items 1-4 and breaker holes H1-H3 on e270ed27 fixed, each shown red by a mutation:
+  - no partner policy on `"order"` or `order_line`; partners read the `partner_order` and `partner_order_line` views, for open or accepted offers only;
+  - the catalogue mapping is read-only to partners;
+  - every correlation goes through a `SECURITY DEFINER` lookup, and T-16 now counts rows by owner keys;
+  - unset, empty and unknown roles read as public;
+  - customers edit only contact fields;
+  - `customer_order_event` gives buyers their order timeline;
+  - `audit_log` is append-only.
+
+- 2026-10-13 (paused by the founder): done, each with a red mutation: review items 1–4, nits 2–4, nit 1 (documented), breaker H1–H3. Left: the `tests` step of `pnpm gates:cheap` exits 1 (not yet investigated), the `ci:full` label is not toggled, CI has not run on this head, and round 2 is not requested.
+
 ## Result
 
 PR 210 (feature PR, TASK-019…023).
@@ -90,3 +101,25 @@ PR 210 (feature PR, TASK-019…023).
 **Choice for the reviewer.** T-16 says "A's rows (allowed)" for update and delete. Here A may write only its own configuration tables, because spec 011 §2 makes order and money records read-only to partners.
 
 Local evidence: PostgreSQL 16.14 (embedded-postgres binaries with ICU, 127.0.0.1:54329), stopped by its PID afterwards. Neon was not touched. Every suite runs on its own scratch database (`tests/integration/support/scratch-db.ts`), and the whole integration project passed in parallel: 13 files passed, 4 skipped; 107 tests passed, 32 skipped.
+
+### Round 1 fixes (review FAIL and breaker HOLES on `e270ed27`)
+
+| Item | Fix | Mutations (all red in `tests/integration/rls-policies.test.ts` unless named) |
+|---|---|---|
+| Review 1 / H1: buyer PII to florists | Partner policies on `"order"` and `order_line` are removed. Partners read the views `partner_order` (fulfilment columns and `recipient_snapshot`) and `partner_order_line` (no retail price). Both are `security_barrier`, owned by `app_owner`, `SELECT`-only for `app_web`, and filtered by `app_partner_sees_order`: the offer must be open or accepted. `delivery_proof` and `substitution_note` follow the same rule. | 4 mutations: the views unfiltered; `buyer_snapshot` added to the view; the views writable; a partner `OR` on `order_customer`. 1 mutation: the decline/timeout cut dropped. |
+| Review 2 / H2: payout write | `partner_catalog_mapping_partner` is `SELECT` only. Partners write only `partner_coverage` and `partner_blackout`. `can_fulfil` stays read-only too, because spec 011 gives no toggle. | Mapping made writable again. |
+| Review 3: vacuous T-16 | Each correlation is a `SECURITY DEFINER` lookup with a pinned `search_path` (`app_partner_sees_order`, `app_partner_owns_payout`, `app_customer_owns`, `…_recipient`, `…_order`, `…_payment`). T-16 captures each row's key as owner and counts hits by key. | Correlation dropped from each of the 6 lookups. |
+| Review 4 / H3: defaults and gates | Unset, `''` and unknown `app.role` read as `public`. `app_is_self` needs the `customer` or `partner` role. T-17's private list adds `webhook_inbox`, `consent_log`, `accounts`, `verification_tokens`, `partner_application` and `order_event`. | Default changed to `system` and to `admin`; customer role gate dropped; self role gate dropped. |
+| H3: `WITH CHECK` | Ownership cannot be re-pointed: covered by an `INSERT`, a bare `UPDATE` (no SELECT policy re-checks it) and a re-pointing `UPDATE`, each refused with 42501. | `WITH CHECK (true)` on `customer_customer_update`, `address`, `recipient`, `recipient_address`, `partner_coverage` and `partner_blackout`. |
+| H3: delivery proof `UPDATE` | Re-pointing a proof at a public asset is refused (`order-integrity.test.ts` T-19). | Trigger narrowed to `BEFORE INSERT` (red in T-19). |
+| Nit 2 and the breaker's observation | `customer_self_update_guard`: as `customer`, a change to `email_normalised`, `marketing_consent`, `redacted`, `redacted_at`, `id` or `created_at` raises `CUSTOMER_COLUMN_READ_ONLY`. `user_id` is pinned by `WITH CHECK`. | `marketing_consent` removed from the guard. |
+| Nit 3 | No customer policy on `order_event`. Buyers read `customer_order_event` (`order_id`, `seq`, `type`, `from_status`, `to_status`, `occurred_at`). | View unfiltered. |
+| Nit 4 | `audit_log` is append-only (`0009`, `AUDIT_LOG_APPEND_ONLY`, row and `TRUNCATE` triggers). | Row trigger dropped (red in `schema-notifications-ops.test.ts`). |
+| Nit 1 | Documented in `0011`'s header for spec 040. `SET ROLE app_owner` is refused to a login that holds only `app_web` (T-18). The migration login is a member of both, so the runtime `DATABASE_URL` must not connect as it once a dedicated runtime login exists. | — |
+
+Carried forward:
+- TASK-202: the event/status tie and the session-wide switch, from the breaker; the partner views.
+- TASK-211: the partner status flip, and what the inbox reads.
+- TASK-025: `audit_log` is append-only.
+
+Local evidence: PostgreSQL 16.14 (embedded-postgres, 127.0.0.1:54329), stopped by its PID afterwards. The integration project: 13 files passed, 4 skipped; 110 tests passed, 32 skipped.
