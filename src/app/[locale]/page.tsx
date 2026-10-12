@@ -36,6 +36,8 @@ import {
   OccasionTiles,
   ProofRow,
   ReviewsSection,
+  SENTENCE_IDS,
+  StickyActionBar,
   TrendingRow,
 } from "@/modules/ui";
 
@@ -162,13 +164,15 @@ export default async function LocaleHomePage({
   const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
 
   const links = await homeCatalogueLinks(locale.code);
+  const tNav = await getTranslations({ locale: locale.code, namespace: "nav" });
 
   return (
     <>
       <main id="main">
-        {/* The v2 letter home (spec 004 §14 A21; TASK-177), in the artboards' order. The page
-            mounts the sections and hands in the catalogue's answers; every gate is the module's.
-            The hero is the copy, the photograph and the sentence picker (A21 clause 4). */}
+        {/* Home v3 (spec 004 §14 A23 clause 1, A24 clause 5; TASK-196): option A on desktop, the
+            cover on the phone, then the shipped sections in the round-2 artboard's order. The
+            page mounts the sections and hands in the catalogue's answers; every gate is the
+            module's. The hero is the copy, the photograph and the sentence (A21 clause 4). */}
         <HomeHero locale={locale.code} shopCountries={links.shopCountries} />
         {/* Popular choices: each card links to its product page where that page exists (spec 008
             §14 A14 (e); TASK-173). */}
@@ -198,6 +202,13 @@ export default async function LocaleHomePage({
             : { shopHref: links.shopHref })}
         />
       </main>
+      {/* The phone's docked Send flowers (A24 clause 4 (a), AC-48; TASK-195's primitive). On the
+          cover it is part of the first screen by design (header 65 + cover + bar 76 = the
+          viewport), so it is shown from the start. It repeats, never replaces: an in-page link to
+          the sentence card directly below the fold, which works with JavaScript off. */}
+      <StickyActionBar
+        action={{ href: `#${SENTENCE_IDS.form}`, label: tNav("send") }}
+      />
       <JsonLd
         nodes={
           options === undefined

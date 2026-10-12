@@ -160,12 +160,36 @@ describe("the hero band (AC-10)", () => {
     expect([...html.matchAll(/<img/g)]).toHaveLength(1);
   });
 
-  it("is the artboards' 4∶5 photograph on desktop and 4∶3 full-bleed on mobile", () => {
+  it("is option A's full-bleed flat-lay on desktop and the phone cover below `md` (AC-46)", () => {
     const html = hero("en");
+    const photo = /<div class="([^"]*)" data-fo-hero-photo=/u
+      .exec(html)?.[1]
+      ?.replaceAll("&amp;", "&");
 
-    expect(html).toContain("aspect-[4/5]");
-    expect(html).toContain("max-md:aspect-[4/3]");
-    expect(html).toContain("max-md:rounded-none");
+    expect(photo, "the photograph's box").toBeDefined();
+    const classes = (photo ?? "").split(/\s+/u);
+    // Desktop: the band's whole box, under the chrome, cropped with the window at 64% 50%.
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        "md:absolute",
+        "md:inset-0",
+        "md:[&_img]:object-[64%_50%]",
+      ]),
+    );
+    // Phone: the viewport minus the header (65) and the bar (76), at least 420 px.
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        "h-[min(703px,calc(100svh-141px))]",
+        "min-h-[420px]",
+      ]),
+    );
+    // The band: at least 560 px, at most the viewport minus the chrome, and never capped by
+    // `--hero-photo-max` (A24 clause 5's exemption).
+    expect(html).toContain(
+      "md:h-[clamp(560px,calc(100svh-var(--home-chrome)),826px)]",
+    );
+    expect(html).not.toContain("--hero-photo-max");
+    expect(html).not.toContain("data-fo-lead-photo");
   });
 
   it("falls back to the captioned box and no `<img>` when the dataset has no photograph", () => {
@@ -175,28 +199,44 @@ describe("the hero band (AC-10)", () => {
 
       expect(html).not.toContain("<img");
       expect(html).toContain('data-fo-media-slot="hero"');
-      expect(html).toContain("aspect-[4/5]");
+      expect(html).toMatch(/data-fo-media-placeholder="[^"]+"/u);
     } finally {
       setMediaManifest(previous);
     }
   });
 
-  it("draws the postmark as decoration, with no words in it", () => {
+  it("draws one white card with the airmail edge, and no round-1 device (A24 clause 7, A23 clause 10)", () => {
     const html = hero("en");
-    const start = html.indexOf("data-fo-postmark");
-    const postmark = html.slice(start, html.indexOf("</figure>", start));
+    const card =
+      /<div class="([^"]*)" data-fo-hero-card=/u.exec(html)?.[1] ?? "";
 
-    expect(html).toMatch(/<svg[^>]*aria-hidden="true"[^>]*data-fo-postmark/);
-    expect(postmark).not.toContain("<text");
+    expect(card.split(/\s+/u)).toEqual(
+      expect.arrayContaining([
+        "md:airmail-edge",
+        "md:bg-surface-card",
+        "md:col-span-8",
+        "lg:col-span-6",
+        "xl:col-span-5",
+      ]),
+    );
+    // Below `md` the edge moves with the white card onto the sentence; one per width.
+    expect(html).toMatch(
+      /<form id="send"[^>]*class="[^"]*max-md:airmail-edge/u,
+    );
+    expect([...html.matchAll(/airmail-edge/gu)]).toHaveLength(2);
+    expect(html).not.toContain("data-fo-postmark");
+    expect(html).not.toContain("--tilt-");
+    expect(html).not.toContain("--letter-lines");
   });
 
-  it("uses the header's desktop gutter, so the card lines up with the logo", async () => {
-    const header = await import("../../src/modules/ui/layout/SiteHeader.tsx");
-    // The v2 chrome (TASK-176) sets its gutter from `--gutter` (56 px) through `CHROME_WRAP`; the
-    // hero's desktop bleed is the same 56 px. The home's mobile bleed is v2's 20 px too (TASK-177).
-    expect(header.CHROME_WRAP).toContain("md:px-(--gutter)");
-    expect(HOME_BLEED).toContain("md:px-[56px]");
-    expect(header.SiteHeader).toBeTypeOf("function");
+  it("puts every home section on the page frame: the logo's edge at every width (AC-31)", async () => {
+    const layout = await import("../../src/modules/ui/primitives/layout.tsx");
+    // The hero's card sits in `PAGE_FRAME` itself; the full-bleed sections pad to the same edge,
+    // 20 px below `md`, 56 px from `md` and the centred 1,328 px column above 1,440.
+    expect(hero("en")).toContain(layout.PAGE_FRAME);
+    expect(HOME_BLEED).toBe(
+      "px-(--gutter-s) md:px-[max(var(--gutter),calc((100%-var(--container-page))/2))]",
+    );
   });
 
   it("holds the sentence picker, in every launch locale", () => {

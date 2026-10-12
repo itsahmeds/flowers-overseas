@@ -69,6 +69,10 @@
   /* Shadow ink: plum-navy at 12 %, so shadows read as paper on paper, never grey. */
   --color-shade: oklch(25% 0.06 285 / 0.12);
   --color-scrim: oklch(25% 0.06 285 / 0.45);
+  /* The phone cover's ink fade (spec 004 §14 A24 clause 5, AC-46; TASK-196): plum-navy at 88 %
+     under the home cover's H1 and its line. Its contrast over pure white, the worst photograph,
+     is a unit test (tests/unit/home-cover-fade.test.tsx). */
+  --color-cover-fade: oklch(25% 0.06 285 / 0.88);
 
   /* A field's edge: WCAG 1.4.11 wants 3 : 1 for a control boundary; --color-rule is 1.4. 3.65 : 1. */
   --color-field-edge: oklch(62% 0.035 285);

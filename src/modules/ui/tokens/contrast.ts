@@ -508,6 +508,8 @@ export const NON_SINGLE_COLOUR_TOKENS: Readonly<Record<string, string>> = {
     "plum-navy at 12 % alpha, used only inside box-shadow and drop-shadow values; no text or boundary is drawn in it",
   "--color-scrim":
     "plum-navy at 45 % alpha behind an open overlay; the overlay's own surface carries the text, so the scrim is never a text background",
+  "--color-cover-fade":
+    "plum-navy at 88 % alpha under the home cover's H1 and its line; a translucent layer over a photograph, so its contrast is computed over pure white, the worst case, by tests/unit/home-cover-fade.test.tsx (AC-46)",
 };
 
 /** An OKLCH colour, as written in the `@theme` block. */
@@ -619,7 +621,11 @@ export function resolveColorToken(
 }
 
 /** OKLab → linear sRGB (the standard matrices; values are not gamut-clamped yet). */
-function oklchToLinearSrgb({ l, c, h }: Oklch): [number, number, number] {
+export function oklchToLinearSrgb({
+  l,
+  c,
+  h,
+}: Oklch): [number, number, number] {
   const hue = (h * Math.PI) / 180;
   const a = c * Math.cos(hue);
   const b = c * Math.sin(hue);
