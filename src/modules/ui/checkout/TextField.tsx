@@ -22,6 +22,7 @@ import {
   type FieldMessageContent,
   FieldMessages,
   describedBy,
+  hasFieldError,
 } from "./FieldMessages.tsx";
 import {
   FIELD,
@@ -114,7 +115,7 @@ export function TextField({
       </label>
       <input
         aria-describedby={describedBy(id, messages)}
-        aria-invalid={error === undefined ? undefined : true}
+        aria-invalid={hasFieldError(error) ? true : undefined}
         autoComplete={autoComplete}
         className={forceFocus ? `${INPUT} ${INPUT_FORCED_FOCUS}` : INPUT}
         defaultValue={defaultValue}

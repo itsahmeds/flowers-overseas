@@ -34,21 +34,28 @@ export function CheckoutErrorDemo({
   title,
   items,
 }: CheckoutErrorDemoProps): ReactElement {
-  const [shown, setShown] = useState(false);
+  // Each click is one more failed submit: the summary stays mounted, and `attempt` is what
+  // moves focus back to it (the D2 case of `/break` round 1).
+  const [attempt, setAttempt] = useState(0);
   return (
     <div className="grid gap-[12px]">
       <button
         className={buttonClass("ghost", "sm", "justify-self-start")}
         id={buttonId}
         onClick={() => {
-          setShown(true);
+          setAttempt((previous) => previous + 1);
         }}
         type="button"
       >
         {buttonLabel}
       </button>
-      {shown ? (
-        <ErrorSummary id={summaryId} items={items} title={title} />
+      {attempt > 0 ? (
+        <ErrorSummary
+          attempt={attempt}
+          id={summaryId}
+          items={items}
+          title={title}
+        />
       ) : null}
     </div>
   );

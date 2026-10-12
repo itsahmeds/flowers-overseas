@@ -13,6 +13,7 @@ import {
   type FieldMessageContent,
   FieldMessages,
   describedBy,
+  hasFieldError,
 } from "./FieldMessages.tsx";
 import {
   type ClientFieldMessages,
@@ -77,7 +78,7 @@ export function SelectField({
       <div className="relative">
         <select
           aria-describedby={describedBy(id, messages)}
-          aria-invalid={error === undefined ? undefined : true}
+          aria-invalid={hasFieldError(error) ? true : undefined}
           autoComplete={autoComplete}
           className={[
             INPUT,

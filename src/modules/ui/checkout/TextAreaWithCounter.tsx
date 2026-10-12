@@ -17,11 +17,12 @@
 import type { ReactElement, ReactNode } from "react";
 
 import { CardCounter } from "./CardCounter.tsx";
-import { COUNT_SLOT } from "./counter-slot.ts";
+import { COUNT_SLOT, isOverLimit } from "./counter-slot.ts";
 import {
   type FieldMessageContent,
   FieldMessages,
   describedBy,
+  hasFieldError,
 } from "./FieldMessages.tsx";
 import { FIELD, FIELD_LABEL, FIELD_OPTIONAL, INPUT } from "./styles.ts";
 
@@ -75,7 +76,7 @@ export function TextAreaWithCounter({
 }: TextAreaWithCounterProps): ReactElement {
   const messages = { hint, warning, error };
   const counterId = `${id}-count`;
-  const over = count > max;
+  const over = isOverLimit(count, max);
   return (
     <div className={FIELD} data-fo-field={id}>
       <label className={FIELD_LABEL} htmlFor={id}>
@@ -97,7 +98,7 @@ export function TextAreaWithCounter({
         <div className="grid gap-[6px]">
           <textarea
             aria-describedby={describedBy(id, messages, [counterId])}
-            aria-invalid={error === undefined ? undefined : true}
+            aria-invalid={hasFieldError(error) ? true : undefined}
             className={`${INPUT} min-h-[96px] resize-y py-[12px] leading-[1.45]`}
             defaultValue={defaultValue}
             dir="auto"

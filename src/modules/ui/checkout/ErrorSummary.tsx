@@ -37,6 +37,11 @@ export interface ErrorSummaryProps {
    * to this one on load. The live gallery state and every checkout step keep the default.
    */
   readonly focusOnMount?: boolean;
+  /**
+   * The step's submit counter, from its action state (TASK-204). A second failed submit with the
+   * same errors keeps this component mounted; a new `attempt` is what moves focus back here.
+   */
+  readonly attempt?: number;
 }
 
 export function ErrorSummary({
@@ -44,6 +49,7 @@ export function ErrorSummary({
   items,
   id = "error-summary",
   focusOnMount = true,
+  attempt = 0,
 }: ErrorSummaryProps): ReactElement | null {
   if (items.length === 0) return null;
   const titleId = `${id}-title`;
@@ -71,7 +77,7 @@ export function ErrorSummary({
           </li>
         ))}
       </ul>
-      {focusOnMount ? <FocusOnMount targetId={id} /> : null}
+      {focusOnMount ? <FocusOnMount attempt={attempt} targetId={id} /> : null}
     </div>
   );
 }

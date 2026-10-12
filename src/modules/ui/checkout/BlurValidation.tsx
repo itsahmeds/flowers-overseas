@@ -9,19 +9,33 @@
  * (`validation.ts`), which shows or hides the field's message. Without JavaScript nothing changes:
  * the server validates every submit, which is the rule with or without this island.
  *
+ * It also renders the form's polite live region (`role="status"`, visually hidden), present
+ * from the first paint so a screen reader is already watching it: when a message appears, the
+ * region says "{field}: {message}" (`announceTemplate`), because focus has moved on by then.
+ *
  * The step form must carry `noValidate`, so the browser never blocks a submit with its own
  * bubbles and the server's error summary is what the buyer sees (TASK-204 renders the forms).
  *
  * No zod, no `next-intl`, no `Intl`, no network request, no storage, no inline script
  * (`tests/unit/checkout-ui-islands.test.ts` reads the built bundle for each).
  */
-import { useEffect } from "react";
+import { type ReactElement, useEffect } from "react";
 
 import { applyFieldState } from "./validation.ts";
 
 export interface BlurValidationProps {
   /** The id of the step's `<form>`. */
   readonly formId: string;
+  /**
+   * `{field}: {message}`: the caller resolves `error.summaryItem` (checkout catalogue) with the
+   * literal placeholders `{field}` and `{message}`, which the island fills in.
+   */
+  readonly announceTemplate: string;
+}
+
+/** The id of the live region `BlurValidation` renders for `formId`. */
+export function blurStatusId(formId: string): string {
+  return `${formId}-status`;
 }
 
 function isControl(
@@ -34,15 +48,23 @@ function isControl(
   );
 }
 
-export function BlurValidation({ formId }: BlurValidationProps): null {
+export function BlurValidation({
+  formId,
+  announceTemplate,
+}: BlurValidationProps): ReactElement {
+  const statusId = blurStatusId(formId);
   useEffect(() => {
     const form = document.getElementById(formId);
     if (form === null) return;
+    const status = document.getElementById(statusId);
+    const announcer =
+      status === null ? undefined : { status, template: announceTemplate };
     const onInput = (event: Event): void => {
       if (isControl(event.target)) event.target.dataset.foDirty = "";
     };
     const onBlur = (event: Event): void => {
-      if (isControl(event.target)) applyFieldState(event.target, document);
+      if (isControl(event.target))
+        applyFieldState(event.target, document, announcer);
     };
     form.addEventListener("input", onInput);
     form.addEventListener("change", onInput);
@@ -52,6 +74,14 @@ export function BlurValidation({ formId }: BlurValidationProps): null {
       form.removeEventListener("change", onInput);
       form.removeEventListener("focusout", onBlur);
     };
-  }, [formId]);
-  return null;
+  }, [formId, statusId, announceTemplate]);
+  return (
+    <p
+      aria-live="polite"
+      className="sr-only"
+      data-fo-blur-status=""
+      id={statusId}
+      role="status"
+    />
+  );
 }

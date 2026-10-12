@@ -167,6 +167,34 @@ describe("the committed tree (AC-22, first clause)", () => {
       `| \`en\` | ${String(fixtureKeys)} | ${String(fixtureKeys)} | 0 |`,
     );
   });
+
+  it("needs both halves of the committed tree for the committed registry (check 11, /break 1 hole 1)", () => {
+    // The committed catalogue over a fixture source: not the committed tree, so no entry
+    // applies and every `en` key counts. (The run fails on unused keys; the summary still prints.)
+    const enKeys = leafKeys(enCatalogue).length;
+    const messagesOnly = runCli(
+      "--messages-dir",
+      "messages",
+      "--src",
+      `${casesDir}/clean/src`,
+      "--summary",
+    );
+    expect(messagesOnly.stdout).toContain(
+      `| \`en\` | ${String(enKeys)} | ${String(enKeys)} | 0 |`,
+    );
+    expect(messagesOnly.stderr).not.toContain("scope entry");
+
+    // A fixture catalogue over the committed source: not the committed tree either, so the
+    // committed entries are not held against keys the fixture does not have.
+    const srcOnly = runCli(
+      "--messages-dir",
+      `${casesDir}/clean`,
+      "--src",
+      "src",
+      "--summary",
+    );
+    expect(srcOnly.stderr).not.toContain("scope entry");
+  });
 });
 
 /**

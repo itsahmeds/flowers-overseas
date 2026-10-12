@@ -588,7 +588,13 @@ export function CheckoutGallery({
             name="buyerName"
             required
           />
-          <BlurValidation formId={ids.form} />
+          <BlurValidation
+            announceTemplate={t("error.summaryItem", {
+              field: "{field}",
+              message: "{message}",
+            })}
+            formId={ids.form}
+          />
         </form>
       </State>
     </div>

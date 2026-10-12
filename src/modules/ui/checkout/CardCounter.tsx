@@ -16,7 +16,7 @@
  */
 import { useEffect } from "react";
 
-import { COUNT_SLOT } from "./counter-slot.ts";
+import { COUNT_SLOT, isOverLimit } from "./counter-slot.ts";
 import { approximateGraphemes } from "./graphemes.ts";
 
 export interface CardCounterProps {
@@ -52,7 +52,7 @@ export function CardCounter({
     const onField = (): void => {
       const count = approximateGraphemes(field.value);
       counter.textContent = template.replace(COUNT_SLOT, String(count));
-      counter.dataset.over = String(count > max);
+      counter.dataset.over = String(isOverLimit(count, max));
       mirror(field);
     };
     const onOther = (event: Event): void => {

@@ -7,3 +7,11 @@
  * reference instead of the string.
  */
 export const COUNT_SLOT = "{count}";
+
+/**
+ * Whether a card count is past the limit: `max` itself is allowed (200 of 200 is a full card, not
+ * an error). The server-drawn counter and the island both ask this, so they cannot disagree.
+ */
+export function isOverLimit(count: number, max: number): boolean {
+  return count > max;
+}

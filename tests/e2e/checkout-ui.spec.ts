@@ -7,10 +7,11 @@
  * form there has no submit button and posts nowhere.
  *
  *  - **AC-14:** the error summary that appears in a hydrated page takes focus (`FocusOnMount`),
- *    links to each field, and following a link focuses that field.
+ *    links to each field, and following a link focuses that field; a second failed submit
+ *    focuses it again.
  *  - **On blur:** an edited required field left empty shows its message, ties it by
- *    `aria-describedby`, marks `aria-invalid`, and keeps the value; a postcode in the wrong form
- *    shows the format message.
+ *    `aria-describedby`, marks `aria-invalid`, keeps the value and is said by the form's polite
+ *    live region; a postcode in the wrong form shows the format message.
  *  - **Card counter:** typing updates the counter and mirrors the message and the signature into
  *    the printed-card preview.
  *  - **AC-38:** none of that makes a network request.
@@ -51,6 +52,10 @@ test.describe("checkout primitives on /dev/components", () => {
     await expect(links.nth(1)).toHaveAttribute("href", `#${IDS.postcode}`);
     await links.nth(1).click();
     await expect(page.locator(`#${IDS.postcode}`)).toBeFocused();
+
+    // A second failed submit: the same summary, the same id, still mounted. Focus comes back.
+    await page.locator(`#${IDS.showErrors}`).click();
+    await expect(summary).toBeFocused();
   });
 
   test("an edited field shows its message on blur and keeps its value", async ({
@@ -71,6 +76,10 @@ test.describe("checkout primitives on /dev/components", () => {
       "aria-describedby",
       new RegExp(`\\b${IDS.name}-error\\b`),
     );
+    // Focus has left the field, so the form's polite live region says it (D1).
+    const status = page.locator(`#${IDS.form}-status`);
+    await expect(status).toHaveAttribute("role", "status");
+    await expect(status).toHaveText(/: Please fill this in to continue\.$/);
 
     const postcode = page.locator(`#${IDS.postcode}`);
     await postcode.fill("123");

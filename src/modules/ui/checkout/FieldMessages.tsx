@@ -42,6 +42,17 @@ export interface FieldMessageContent {
 }
 
 /**
+ * Whether the server wrote an error for the field. `undefined`, `null`, `false` and `""` are
+ * "no error": an empty message would draw a bare "!" and mark the control invalid with nothing
+ * to read.
+ */
+export function hasFieldError(error: ReactNode): boolean {
+  return (
+    error !== undefined && error !== null && error !== false && error !== ""
+  );
+}
+
+/**
  * The `aria-describedby` value: the error first, so a screen reader reads what to fix before the
  * help, then the warning, the hint and any extra id (the card counter).
  */
@@ -69,7 +80,7 @@ export function FieldMessages({
   error,
 }: FieldMessageContent & { readonly id: string }): ReactElement {
   const ids = fieldMessageIds(id);
-  const hasError = error !== undefined;
+  const hasError = hasFieldError(error);
   return (
     <>
       {hint === undefined ? null : (
@@ -90,7 +101,7 @@ export function FieldMessages({
         id={ids.error}
       >
         <span aria-hidden="true" className={FIELD_ERROR_MARK} />
-        <span data-fo-error-text="">{error}</span>
+        <span data-fo-error-text="">{hasError ? error : null}</span>
       </p>
     </>
   );

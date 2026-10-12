@@ -37,6 +37,8 @@ export function fieldProblem(validity: ValidityLike): FieldProblem | null {
 /** The parts of a control the island touches. */
 export interface ControlLike {
   readonly id: string;
+  /** The control's `<label>`s; the first names the field in the announcement. */
+  readonly labels?: ArrayLike<{ readonly textContent: string | null }> | null;
   readonly dataset: DOMStringMap;
   readonly validity: ValidityLike;
   setAttribute(name: string, value: string): void;
@@ -55,12 +57,35 @@ export interface DocumentLike {
 }
 
 /**
+ * The form's polite live region and the sentence pattern it speaks. Focus has already left the
+ * field when its message appears, so the message tied by `aria-describedby` alone would be heard
+ * only on the way back; the live region says it as it lands (WCAG 3.3.1, 4.1.3).
+ */
+export interface Announcer {
+  readonly status: { textContent: string | null };
+  /** `{field}: {message}`, already translated (`error.summaryItem` (checkout catalogue)). */
+  readonly template: string;
+}
+
+/** What the live region says for `message` on `control`: the field's label, then the message. */
+export function announcement(
+  template: string,
+  control: ControlLike,
+  message: string,
+): string {
+  const label = control.labels?.[0]?.textContent?.trim() ?? "";
+  if (label === "") return message;
+  return template.replace("{field}", label).replace("{message}", message);
+}
+
+/**
  * Shows or hides the client message of one control after it lost focus. Returns the problem it
  * showed, or `null` when it showed none (valid, unedited, not opted in, or a server message).
  */
 export function applyFieldState(
   control: ControlLike,
   doc: DocumentLike,
+  announcer?: Announcer,
 ): FieldProblem | null {
   if (control.dataset.foValidate === undefined) return null;
   if (control.dataset.foDirty === undefined) return null;
@@ -78,11 +103,18 @@ export function applyFieldState(
     error.hidden = true;
     if (text !== null) text.textContent = "";
     control.removeAttribute("aria-invalid");
+    if (announcer !== undefined) announcer.status.textContent = "";
     return null;
   }
   if (text !== null) text.textContent = message;
   error.hidden = false;
   control.setAttribute("aria-invalid", "true");
+  if (announcer !== undefined)
+    announcer.status.textContent = announcement(
+      announcer.template,
+      control,
+      message,
+    );
   return problem;
 }
 

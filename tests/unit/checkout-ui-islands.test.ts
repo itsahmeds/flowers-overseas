@@ -23,17 +23,41 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants } from "node:zlib";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { countGraphemes } from "../../src/modules/i18n";
+import { FocusOnMount } from "../../src/modules/ui/checkout/FocusOnMount.tsx";
 import { approximateGraphemes } from "../../src/modules/ui/checkout/graphemes.ts";
+import { PlaceOrderButton } from "../../src/modules/ui/checkout/PlaceOrderButton.tsx";
 import {
+  announcement,
   applyFieldState,
   type ControlLike,
   type ErrorElementLike,
   fieldProblem,
   focusTarget,
 } from "../../src/modules/ui/checkout/validation.ts";
+
+/**
+ * The unit project has no DOM, so the two hooks the islands call are stood in for: `useEffect`
+ * records each effect and its dependencies (React re-runs an effect exactly when one dependency
+ * changes by `Object.is`), and `useFormStatus` reports no submit in flight. Calling a component
+ * as a function then gives its effect, its dependencies and its element, with nothing else
+ * mocked.
+ */
+const hooks = vi.hoisted(() => ({
+  effects: [] as { run: () => unknown; deps: readonly unknown[] | undefined }[],
+}));
+vi.mock("react", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("react")>()),
+  useEffect: (run: () => unknown, deps?: readonly unknown[]) => {
+    hooks.effects.push({ run, deps });
+  },
+}));
+vi.mock("react-dom", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("react-dom")>()),
+  useFormStatus: () => ({ pending: false }),
+}));
 
 const ROOT = fileURLToPath(new URL("../..", import.meta.url));
 const CHECKOUT_UI = fileURLToPath(
@@ -164,6 +188,18 @@ describe("the card counter's count", () => {
     "line one\r\nline two",
     "é́ stacked",
     "❤️ heart with selector",
+    // `/break` round 1, D3: ZWJ between letters, ZWNJ, a Devanagari conjunct, Thai SARA AM,
+    // Persian with a ZWNJ, and a few longer words in the same scripts.
+    "a\u200Db",
+    "ab\u200Cc",
+    "क्ष",
+    "กำ",
+    "می\u200Cخواهم",
+    "नमस्ते क्षत्रिय",
+    "สวัสดีครับ",
+    "শুভ জন্মদিন",
+    "\u200D leading joiner",
+    "🏳️‍🌈 👩🏽‍💻",
   ];
 
   it.each(FIXTURES)("equals the server's countGraphemes for %j", (text) => {
@@ -325,10 +361,132 @@ describe("the error summary's focus (FocusOnMount's logic, AC-14)", () => {
     expect(focusTarget({ getElementById: () => null }, "summary")).toBe(false);
   });
 
+  afterEach(() => {
+    hooks.effects.length = 0;
+    vi.unstubAllGlobals();
+  });
+
   it("is what FocusOnMount runs on mount", () => {
-    const source = readFileSync(`${CHECKOUT_UI}FocusOnMount.tsx`, "utf8");
-    expect(source).toMatch(
-      /useEffect\(\(\) => \{\s*focusTarget\(document, targetId\);\s*\}, \[targetId\]\)/,
+    let focused = "";
+    vi.stubGlobal("document", {
+      getElementById: (id: string) => ({
+        focus: () => {
+          focused = id;
+        },
+      }),
+    });
+    FocusOnMount({ attempt: 1, targetId: "errors" });
+    hooks.effects[0]?.run();
+    expect(focused).toBe("errors");
+  });
+
+  /**
+   * D2 of `/break` round 1: a second failed submit re-renders the same summary under the same id,
+   * so the island stays mounted. Its effect must re-run on a new attempt, and only then.
+   */
+  it("refocuses on every new submit, even with the same summary id (D2)", () => {
+    FocusOnMount({ attempt: 1, targetId: "errors" });
+    FocusOnMount({ attempt: 2, targetId: "errors" });
+    FocusOnMount({ attempt: 2, targetId: "errors" });
+    const [first, second, again] = hooks.effects.map((effect) => effect.deps);
+    const changed = (a?: readonly unknown[], b?: readonly unknown[]) =>
+      a === undefined ||
+      b === undefined ||
+      a.length !== b.length ||
+      a.some((value, index) => !Object.is(value, b[index]));
+    expect(changed(first, second)).toBe(true);
+    expect(changed(second, again)).toBe(false);
+  });
+});
+
+describe("the place-order button while pending (hole 5)", () => {
+  function click(forcePending: boolean): number {
+    const element = PlaceOrderButton({
+      forcePending,
+      label: "Place demo order. Nothing is charged.",
+      pendingLabel: "Placing your demo order…",
+    });
+    const onClick = (
+      element.props as { onClick: (event: { preventDefault(): void }) => void }
+    ).onClick;
+    let prevented = 0;
+    onClick({
+      preventDefault: () => {
+        prevented += 1;
+      },
+    });
+    return prevented;
+  }
+
+  it("swallows a second click while the order is being placed", () => {
+    expect(click(true)).toBe(1);
+  });
+
+  it("lets the first click through", () => {
+    expect(click(false)).toBe(0);
+  });
+});
+
+describe("the on-blur announcement (D1)", () => {
+  function field(label: string | null): ControlLike {
+    return {
+      id: "recipient-postcode",
+      labels: label === null ? [] : [{ textContent: ` ${label} ` }],
+      dataset: {
+        foValidate: "",
+        foDirty: "",
+        foMsgRequired: "Please fill this in to continue.",
+      },
+      validity: {
+        valueMissing: true,
+        patternMismatch: false,
+        typeMismatch: false,
+      },
+      setAttribute: () => undefined,
+      removeAttribute: () => undefined,
+    };
+  }
+  const errorSlot = (): ErrorElementLike => ({
+    hidden: true,
+    dataset: { foError: "client" },
+    querySelector: () => ({ textContent: "" }),
+  });
+
+  it("says the field's label and the message in the form's live region", () => {
+    const status = { textContent: "" as string | null };
+    applyFieldState(
+      field("Postcode"),
+      { getElementById: errorSlot },
+      { status, template: "{field}: {message}" },
     );
+    expect(status.textContent).toBe(
+      "Postcode: Please fill this in to continue.",
+    );
+  });
+
+  it("clears the live region once the field is valid", () => {
+    const status = {
+      textContent: "Postcode: Please fill this in to continue.",
+    };
+    const valid = {
+      ...field("Postcode"),
+      validity: {
+        valueMissing: false,
+        patternMismatch: false,
+        typeMismatch: false,
+      },
+    };
+    applyFieldState(
+      valid,
+      { getElementById: errorSlot },
+      { status, template: "{field}: {message}" },
+    );
+    expect(status.textContent).toBe("");
+  });
+
+  it("says the message alone when the control has no label", () => {
+    expect(
+      announcement("{field}: {message}", field(null), "Please fill this in."),
+    ).toBe("Please fill this in.");
   });
 });

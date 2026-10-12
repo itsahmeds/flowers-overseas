@@ -14,11 +14,20 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { ReactElement } from "react";
+import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { findPhysicalUtility } from "../../eslint/fo/no-physical-css.js";
 import { MoneySchema, formatMoney } from "../../src/modules/i18n";
+import {
+  localeRegistryOf,
+  staticLocaleRegistry,
+  withLocaleRegistry,
+} from "../../src/modules/i18n/registry.ts";
+import { BlurValidation } from "../../src/modules/ui/checkout/BlurValidation.tsx";
+import { isOverLimit } from "../../src/modules/ui/checkout/counter-slot.ts";
+import { FocusOnMount } from "../../src/modules/ui/checkout/FocusOnMount.tsx";
 import {
   ConfirmationRecap,
   DemoBanner,
@@ -578,4 +587,252 @@ describe("spec 003 A17: the primitives name no checkout key", () => {
       expect(source).not.toMatch(/from "next-intl/);
     });
   }
+});
+
+/**
+ * `/break` round 1 on PR 206 (TASK-201): each case below is the one a surviving mutation needed.
+ * The hole it closes is named in the case.
+ */
+describe("the cases the first breaker round asked for", () => {
+  it("binds the label to the control's id, not its name (hole 2)", () => {
+    const markup = html(
+      <TextField
+        id="recipient-postcode"
+        label="Postcode"
+        name="postcode"
+        required
+      />,
+    );
+    expect(markup).toContain('for="recipient-postcode"');
+    expect(markup).not.toContain('for="postcode"');
+    expect(attribute(tagWithId(markup, "recipient-postcode"), "name")).toBe(
+      "postcode",
+    );
+  });
+
+  it("pads the sticky bar above the phone's home indicator (hole 3, AC-39)", () => {
+    const markup = html(
+      <StickyTotalBar locale="en-gb" total={gbp(4590)} totalLabel="You pay" />,
+    );
+    const tag =
+      /<div[^>]*data-fo-sticky-total=""[^>]*>/.exec(markup)?.[0] ?? "";
+    expect(attribute(tag, "class")?.split(/\s+/)).toContain(
+      "pb-[calc(14px+env(safe-area-inset-bottom))]",
+    );
+  });
+
+  it("names no physical-direction utility in any class string of the module (hole 4)", () => {
+    // `fo/no-physical-css` reads literal `className` values only; a class kept in a constant
+    // (`position`, `CHIP`, the shared `styles.ts`) is read here, by the rule's own tables.
+    const directory = fileURLToPath(
+      new URL("../../src/modules/ui/checkout/", import.meta.url),
+    );
+    const offenders = readdirSync(directory)
+      .filter((file) => /\.tsx?$/.test(file))
+      .flatMap((file) => {
+        const source = readFileSync(`${directory}${file}`, "utf8");
+        return [...source.matchAll(/"([^"\n]*)"|`([^`]*)`|'([^'\n]*)'/g)]
+          .flatMap((match) =>
+            (match[1] ?? match[2] ?? match[3] ?? "").split(/\s+/),
+          )
+          .filter(
+            (token) => token !== "" && findPhysicalUtility(token) !== null,
+          )
+          .map((token) => `${file}: ${token}`);
+      });
+    expect(offenders).toEqual([]);
+  });
+
+  it("links a step only when it is behind the current one, whatever href it carries (hole 6)", () => {
+    const markup = html(
+      <StepProgress
+        compactLabel="Step 2 of 3"
+        current={1}
+        label="Checkout steps"
+        locale="en"
+        steps={[
+          { id: "recipient", name: "Recipient", href: "#step-recipient" },
+          { id: "card", name: "Card and you", href: "#step-card" },
+          { id: "review", name: "Check", href: "#step-review" },
+        ]}
+      />,
+    );
+    const links = [...markup.matchAll(/<a[^>]*href="([^"]*)"/g)].map(
+      (match) => match[1],
+    );
+    expect(links).toEqual(["#step-recipient"]);
+  });
+
+  it("allows a card of exactly the limit (hole 7)", () => {
+    expect(isOverLimit(200, 200)).toBe(false);
+    expect(isOverLimit(201, 200)).toBe(true);
+    const markup = html(
+      <TextAreaWithCounter
+        count={200}
+        counterTemplate="{count} of 200 characters"
+        defaultValue="x"
+        formattedCount="200"
+        id="card"
+        label="Card message"
+        max={200}
+        name="cardMessage"
+      />,
+    );
+    expect(attribute(tagWithId(markup, "card-count"), "data-over")).toBe(
+      "false",
+    );
+  });
+
+  it("lets the card text set its own direction (hole 8)", () => {
+    const markup = html(
+      <TextAreaWithCounter
+        count={0}
+        counterTemplate="{count} of 200 characters"
+        formattedCount="0"
+        id="card"
+        label="Card message"
+        max={200}
+        name="cardMessage"
+      />,
+    );
+    expect(attribute(tagWithId(markup, "card"), "dir")).toBe("auto");
+  });
+
+  it("marks an errored select invalid, and every chip radio required (hole 9)", () => {
+    const select = html(
+      <SelectField
+        error="Please choose a country from the list."
+        id="country"
+        label="Country"
+        name="country"
+        options={[{ value: "pl", label: "Poland" }]}
+      />,
+    );
+    expect(attribute(tagWithId(select, "country"), "aria-invalid")).toBe(
+      "true",
+    );
+    const radios = html(
+      <RadioChipGroup
+        id="place"
+        legend="Where is it going?"
+        name="placeKind"
+        options={[
+          { value: "home", label: "A home" },
+          { value: "work", label: "A workplace" },
+        ]}
+        required
+      />,
+    );
+    const inputs = [...radios.matchAll(/<input[^>]*>/g)].map((m) => m[0]);
+    expect(inputs).toHaveLength(2);
+    for (const input of inputs) expect(input).toMatch(/\srequired=""/);
+  });
+
+  it("announces the privacy notice as a note, not an alert (hole 10)", () => {
+    const markup = html(
+      <InlinePrivacyNotice message="Please use sample details." />,
+    );
+    const tag =
+      /<div[^>]*data-fo-privacy-notice=""[^>]*>/.exec(markup)?.[0] ?? "";
+    expect(attribute(tag, "role")).toBe("note");
+  });
+
+  it("writes the step numbers in the locale's digits (hole 11)", async () => {
+    // A registry where `de` formats with Arabic-Indic digits: `String(index + 1)` would still
+    // print 1, 2, 3.
+    const registry = localeRegistryOf(
+      staticLocaleRegistry
+        .list()
+        .map((locale) =>
+          locale.code === "de"
+            ? { ...locale, formattingTag: "ar-EG-u-nu-arab" }
+            : locale,
+        ),
+    );
+    const markup = await withLocaleRegistry(registry, () =>
+      html(
+        <StepProgress
+          compactLabel="x"
+          current={0}
+          label="Schritte"
+          locale="de"
+          steps={[
+            { id: "recipient", name: "Empfänger" },
+            { id: "card", name: "Karte" },
+            { id: "review", name: "Prüfen" },
+          ]}
+        />,
+      ),
+    );
+    expect(markup).toContain("١ · Empfänger");
+    expect(markup).toContain("٣ · Prüfen");
+  });
+
+  it("mounts the focus island on the summary, keyed on the submit (hole 12, D2)", () => {
+    const tree = ErrorSummary({
+      attempt: 2,
+      id: "errors",
+      items: [{ fieldId: "street", text: "Street: Please fill this in." }],
+      title: "Please check these details",
+    });
+    const found: ReactElement[] = [];
+    const walk = (node: ReactNode): void => {
+      if (Array.isArray(node)) {
+        for (const child of node as ReactNode[]) walk(child);
+        return;
+      }
+      if (!isValidElement(node)) return;
+      if (node.type === FocusOnMount) found.push(node);
+      walk((node.props as { children?: ReactNode }).children);
+    };
+    walk(tree);
+    expect(found.map((node) => node.props)).toEqual([
+      { attempt: 2, targetId: "errors" },
+    ]);
+  });
+
+  it("renders the form's polite live region for the on-blur messages (D1)", () => {
+    const markup = html(
+      <BlurValidation announceTemplate="{field}: {message}" formId="step-1" />,
+    );
+    const tag = tagWithId(markup, "step-1-status");
+    expect(attribute(tag, "role")).toBe("status");
+    expect(attribute(tag, "aria-live")).toBe("polite");
+    expect(attribute(tag, "class")).toBe("sr-only");
+  });
+
+  it.each([
+    ["an empty string", ""],
+    ["null", null],
+  ])("draws no error and no aria-invalid for %s (nit)", (_name, error) => {
+    for (const markup of [
+      html(<TextField error={error} id="f" label="Name" name="f" />),
+      html(
+        <SelectField
+          error={error}
+          id="f"
+          label="Country"
+          name="f"
+          options={[{ value: "pl", label: "Poland" }]}
+        />,
+      ),
+      html(
+        <TextAreaWithCounter
+          count={0}
+          counterTemplate="{count} of 200"
+          error={error}
+          formattedCount="0"
+          id="f"
+          label="Card"
+          max={200}
+          name="f"
+        />,
+      ),
+    ]) {
+      expect(tagWithId(markup, "f")).not.toMatch(/aria-invalid/);
+      const slot = tagWithId(markup, "f-error");
+      expect(slot).toMatch(/\shidden=""/);
+      expect(attribute(slot, "data-fo-error")).toBe("client");
+    }
+  });
 });
