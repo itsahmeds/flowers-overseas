@@ -34,6 +34,12 @@ Branch `task/TASK-019-schema-orders-payments`. Reference rows are data, not code
 
 ### E1 (2026-10-12, feature PR TASK-019…023): `plan/11` §2 does not fit `order_transition` as the spec defines it
 
+**Resolved 2026-10-12** by spec 002 §14 A6 (approved by the founder; PR 209, decisions log row
+2026-10-12 "Spec 002 A6 approved: the order state machine seed in full"). A6 is binding for this
+task: 73 transition rows (A6.3), 26 states (A6.4), the catalogue of A6.6, `allowed_actors`
+(A6.2), `app.transition_event` with its reset (A6.7), and AC-14, AC-35, AC-36, T-36 and T-37
+(A6.8). Where A6 differs from the proposal below (A6.5 c1–c8), A6 governs.
+
 Raised before any code was written. The work order says to stop on exactly this. The spec gives
 `order_transition(from_status, event, to_status, requires_actor, PRIMARY KEY (from_status, event))`
 and AC-14 asks for "a row for every arrow". Ruling R8 says `event` holds only `plan/11` §2

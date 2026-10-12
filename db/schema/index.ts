@@ -14,13 +14,15 @@
  * repository-root `db/` (a guarded root — `.claude/hooks/task-guard.sh`), which keeps `.sql` out
  * of `src/` and keeps the definitions next to the migrations they describe.
  *
- * Filled so far: `i18n` and `geo` (migration `0002`), `catalog` (`0003`), media (`0004`),
- * `partners` (`0005`) and `customers` (`0006`). `orders`/`payments` (`0007`), notifications and
- * ops (`0009`) and `auth` (`0010`) follow in their own tasks.
+ * Filled: `i18n` and `geo` (migration `0002`), `catalog` (`0003`), media (`0004`), `partners`
+ * (`0005`), `customers` (`0006`), `orders` and `payments` (`0007`), notifications and ops
+ * (`0009`) and `auth` (`0010`).
  */
 export * from "./catalog.ts";
 export * from "./customers.ts";
 export * from "./geo.ts";
 export * from "./i18n.ts";
 export * from "./media.ts";
+export * from "./orders.ts";
 export * from "./partners.ts";
+export * from "./payments.ts";
