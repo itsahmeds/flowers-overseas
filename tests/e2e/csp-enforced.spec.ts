@@ -29,7 +29,13 @@
  */
 import { type ChildProcess, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 
 import { type Page, expect, test } from "@playwright/test";
@@ -58,6 +64,15 @@ const STORED_INJECTION_PAGES: Readonly<Record<string, string>> = {
   "e2e-desktop": "/en/poland/product/baltic-dawn",
   "e2e-mobile": "/en/poland/product/northern-light",
 };
+
+/** Next's promoted copies of one prerendered page: `.next/server/route-cache/APP_PAGE/<hash>/$<path>.html`. */
+function promotedCopies(path: string): string[] {
+  const root = resolve(ROOT, ".next/server/route-cache/APP_PAGE");
+  if (!existsSync(root)) return [];
+  return readdirSync(root)
+    .map((owner) => resolve(root, owner, `$${path}.html`))
+    .filter((file) => existsSync(file));
+}
 
 const SHOWN = '[data-fo-consent="shown"]';
 const REJECT = '[data-fo-consent-action="reject"]';
@@ -260,11 +275,26 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
   }, testInfo) => {
     const path = STORED_INJECTION_PAGES[testInfo.project.name];
     test.skip(path === undefined, "no stored-injection page for this project");
-    const file = resolve(ROOT, `.next/server/app${path ?? ""}.html`);
-    const original = readFileSync(file, "utf8");
     const payload = "<script>window.__foStoredInjected=1</script>";
+    // Where the HTML Next serves lives depends on whether the page was ever read before: the
+    // build seed under `server/app`, or — once any server over this build has read the page —
+    // the copy Next promoted to `server/route-cache/APP_PAGE/<sha256 of the source route>/$<path>`
+    // (Next 16.3.8 scopes its response cache; it reads only the promoted file when one exists).
+    // The payload goes into both, so the stored document the server really reads carries it.
+    const seed = resolve(ROOT, `.next/server/app${path ?? ""}.html`);
+    const original = readFileSync(seed, "utf8");
     expect(original).toContain("</body>");
-    writeFileSync(file, original.replace("</body>", `${payload}</body>`));
+    const promotedBefore = new Map(
+      promotedCopies(path ?? "").map((file) => [
+        file,
+        readFileSync(file, "utf8"),
+      ]),
+    );
+    const inject = (html: string): string =>
+      html.replace("</body>", `${payload}</body>`);
+    writeFileSync(seed, inject(original));
+    for (const [file, html] of promotedBefore)
+      writeFileSync(file, inject(html));
     try {
       await recordViolations(page);
       const response = await page.goto(`${origin}${path ?? ""}`);
@@ -288,7 +318,13 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
         disposition: "enforce",
       });
     } finally {
-      writeFileSync(file, original);
+      writeFileSync(seed, original);
+      for (const [file, html] of promotedBefore) writeFileSync(file, html);
+      // A copy this very read promoted from the edited seed would carry the payload into every
+      // later server over this build; Next republishes it from the restored seed on the next read.
+      for (const file of promotedCopies(path ?? "")) {
+        if (!promotedBefore.has(file)) rmSync(file);
+      }
     }
   });
 
