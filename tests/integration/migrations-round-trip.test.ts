@@ -36,6 +36,12 @@ const MIRROR_TABLES = Object.values(schema)
 
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
 const FUNCTIONS = [
+  "app_current_partner_ids",
+  "app_current_role",
+  "app_current_user_id",
+  "app_is_customer_user",
+  "app_is_partner_of",
+  "app_is_staff",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
   "media_asset_delivery_proof_guard",
