@@ -3,7 +3,7 @@
  * write this on home"): the price fact is gone, because the home shows no price.
  *
  * **v2: the promise band** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.promise`). The four
- * facts on the inverse (ink) surface with sunflower icons, under the reviewed "Our promise"
+ * facts as three cards on paper (round 2, TASK-196; the v2 band was the inverse surface), under the reviewed "Our promise"
  * heading — the v2 form of AC-10's trust strip, which the artboards fold into this band.
  *
  * `ProofRow` — the four-fact strip directly under the hero (spec 004 §13's 2026-09-08 resolution
@@ -89,7 +89,7 @@ export function ProofRow({
 
   return (
     <section
-      className={`surface-inverse ${HOME_SECTION} ${HOME_BLEED}`}
+      className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-proof-row
       data-fo-trust-strip
@@ -102,23 +102,25 @@ export function ProofRow({
       >
         {trust("heading")}
       </Display>
-      <ul className="rounded-photo bg-ink-muted grid grid-cols-1 gap-px overflow-hidden md:grid-cols-3">
-        {PROOF_FACTS.map((fact) => (
+      {/* Round 2 (TASK-196; `home-desktop.dc.html` `.proof3`): three cards on paper, the
+          guarantee first on leaf-wash, the two others white with a hairline. */}
+      <ul className="m-0 grid list-none grid-cols-1 gap-[24px] p-0 md:grid-cols-3">
+        {PROOF_FACTS.map((fact, index) => (
           <li
             key={fact.id}
-            className="bg-surface-inverse px-[26px] pt-[28px] pb-[32px]"
+            className={`rounded-photo grid content-start gap-[8px] px-[26px] pt-[26px] pb-[28px] ${index === 0 ? "bg-leaf-wash" : "bg-surface-card shadow-[inset_0_0_0_1px_var(--color-rule)]"}`}
             data-fo-trust-claim={fact.id}
           >
             {/* Decorative: the fact's title carries the claim (no icon-only meaning). */}
             <Icon
               name={fact.icon}
               size={24}
-              className="text-on-inverse-accent size-[34px]"
+              className={`size-[32px] ${index === 0 ? "text-stem" : "text-mark"}`}
             />
-            <FactHeading className="display text-md mt-[18px]">
+            <FactHeading className="display text-md">
               {t(fact.titleKey)}
             </FactHeading>
-            <p className="text-on-inverse mt-[8px]">{t(fact.bodyKey)}</p>
+            <p className="text-ink-muted m-0">{t(fact.bodyKey)}</p>
           </li>
         ))}
       </ul>

@@ -231,9 +231,13 @@ describe("the hero band (AC-10)", () => {
 
   it("puts every home section on the page frame: the logo's edge at every width (AC-31)", async () => {
     const layout = await import("../../src/modules/ui/primitives/layout.tsx");
-    // The hero's card sits in `PAGE_FRAME` itself; the full-bleed sections pad to the same edge,
-    // 20 px below `md`, 56 px from `md` and the centred 1,328 px column above 1,440.
-    expect(hero("en")).toContain(layout.PAGE_FRAME);
+    // `PAGE_FRAME`'s edge on a full-bleed band: the hero's card row and every section pad to it,
+    // 20 px below `md`, 56 px from `md` and the centred 1,328 px column above 1,440. The
+    // geometry is T-33's (`tests/e2e/frame-laptop-band.spec.ts`), at 390 to 1920 px.
+    expect(layout.PAGE_FRAME).toContain(
+      "max-w-[calc(var(--container-page)+2*var(--gutter))]",
+    );
+    expect(hero("en")).toContain(HOME_BLEED);
     expect(HOME_BLEED).toBe(
       "px-(--gutter-s) md:px-[max(var(--gutter),calc((100%-var(--container-page))/2))]",
     );
@@ -710,11 +714,16 @@ describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
     }
   });
 
-  it("is the inverse surface with three facts and no photo", () => {
+  it("is round 2's three cards on paper, the guarantee first on leaf-wash, and no photo (TASK-196)", () => {
     const html = band("en");
 
-    expect(html).toContain("surface-inverse");
+    expect(html).not.toContain("surface-inverse");
     expect([...html.matchAll(/<li/g)]).toHaveLength(3);
+    expect(
+      /<li class="([^"]*)"[^>]*data-fo-trust-claim="guarantee"/u.exec(
+        html,
+      )?.[1],
+    ).toContain("bg-leaf-wash");
     expect(html).not.toContain("<img");
   });
 

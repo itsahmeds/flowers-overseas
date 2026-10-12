@@ -93,6 +93,7 @@ _None recorded._
 One line per coherent step, newest last.
 
 - 2026-10-13: carry-forwards recorded; worktree from PR 208's tip (a138275d).
+- 2026-10-13 (paused by the founder, WIP): done: option A + phone cover in `HomeHero.tsx`, the bar on `page.tsx`, `--color-cover-fade` token with its unit contrast case (`tests/unit/home-cover-fade.test.tsx`, watched red at alpha 0.4), sections on the frame via `HOME_BLEED`, promise band to the round-2 cards, FAQ on paper-2; measured locally (1280x800 photo 145-800, card x56/text x92 at 1440, 390x844 = 65+703+76). Next: run `tests/e2e/home-v3.spec.ts` and the edited `frame-laptop-band.spec.ts` (home H1 now the title step; home joins T-33 above 1440) in the build slot; `pnpm gates:cheap`; codebase:map; rebase on PR 208's merge; ready + `ci:full` + `visual:baselines`; LCP from CI. Must know: the real desktop chrome is 145 px (artboard 119), so `--home-chrome` is 203/183/145 by breakpoint; the pre-TASK-119 suggestion banner covers the bar at 390 (`test.fail`, owner TASK-119); `docs/design/README.md` needs the difference row (phone line is the whole proposition).
 
 ## Result
 

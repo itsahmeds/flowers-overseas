@@ -40,7 +40,6 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { PAGE_FRAME } from "../primitives/layout.tsx";
 import { Display, Eyebrow } from "../primitives/typography.tsx";
 
 import { SentencePicker } from "./SentencePicker.tsx";
@@ -65,12 +64,13 @@ export const HOME_HERO_ASSET = "home-hero";
 
 /**
  * The chrome above the band, in px, per breakpoint: the utility strip and the sticky header with
- * its rule (measured on the built page). From `xl` the header is one 82 px row; between `md` and
- * `xl` it is two rows. The band's block size subtracts it, so the photograph ends at the
- * viewport's foot (AC-46).
+ * its rule, measured on the built page (TASK-196): 62 + 83 = 145 from `xl` (the artboard's chrome
+ * is 119; the shipped TASK-195 chrome is taller, and the band follows the code), 62 + 121 = 183
+ * from `lg` (the header's second row) and 81.6 + 121 from `md` (the strip wraps). The band's block
+ * size subtracts it, so the photograph ends at or above the viewport's foot (AC-46).
  */
 const CHROME_BLOCK =
-  "md:[--home-chrome:153px] lg:[--home-chrome:121px] xl:[--home-chrome:119px]";
+  "md:[--home-chrome:203px] lg:[--home-chrome:183px] xl:[--home-chrome:145px]";
 
 export interface HomeHeroProps {
   readonly locale: string;
@@ -98,7 +98,7 @@ export function HomeHero({
     >
       {/* The cover: the viewport minus the phone header (65) and the docked bar (76). */}
       <div
-        className="relative h-[min(703px,calc(100svh-141px))] min-h-[420px] overflow-hidden [grid-area:cover] md:absolute md:inset-0 md:h-auto md:min-h-0 [&_img]:object-[58%_40%] max-md:[&_img]:origin-[58%_40%] max-md:[&_img]:scale-[1.12] md:[&_img]:object-[64%_50%] [&>[data-fo-media-asset]]:h-full [&>[data-fo-media-asset]]:rounded-none"
+        className="relative h-[min(703px,calc(100svh-141px))] min-h-[420px] overflow-hidden max-md:[grid-area:cover] md:absolute md:inset-0 md:h-auto md:min-h-0 [&_img]:object-[58%_40%] max-md:[&_img]:origin-[58%_40%] max-md:[&_img]:scale-[1.12] md:[&_img]:object-[64%_50%] [&>[data-fo-media-asset]]:h-full [&>[data-fo-media-asset]]:rounded-none"
         data-fo-hero-photo
       >
         <MediaAsset
@@ -109,7 +109,7 @@ export function HomeHero({
         />
       </div>
       <div
-        className={`max-md:contents md:relative md:grid md:h-full md:grid-cols-12 md:items-center md:gap-x-[clamp(24px,2.22vw,32px)] ${PAGE_FRAME}`}
+        className={`max-md:contents md:relative md:grid md:h-full md:grid-cols-12 md:items-center md:gap-x-[clamp(24px,2.22vw,32px)] ${HOME_BLEED}`}
         data-fo-hero-frame
       >
         <div
@@ -117,7 +117,7 @@ export function HomeHero({
           data-fo-hero-card
         >
           <div
-            className="relative grid gap-[12px] self-end px-(--gutter-s) pt-[96px] pb-[24px] [grid-area:cover] max-md:bg-[linear-gradient(to_bottom,transparent,var(--color-cover-fade)_96px)] md:gap-[18px] md:p-0"
+            className="relative grid gap-[12px] self-end px-(--gutter-s) pt-[96px] pb-[24px] max-md:bg-[linear-gradient(to_bottom,transparent,var(--color-cover-fade)_96px)] max-md:[grid-area:cover] md:gap-[18px] md:p-0"
             data-fo-hero-copy
           >
             <Eyebrow className="max-md:text-on-inverse-accent">
@@ -144,7 +144,7 @@ export function HomeHero({
           <SentencePicker
             locale={locale}
             shopCountries={shopCountries}
-            className="max-md:airmail-edge max-md:bg-surface-card max-md:rounded-letter max-md:shadow-letter [grid-area:send] max-md:mx-(--gutter-s) max-md:mt-[28px] max-md:px-[20px] max-md:pt-[16px] max-md:pb-[22px]"
+            className="max-md:airmail-edge max-md:bg-surface-card max-md:rounded-letter max-md:shadow-letter max-md:mx-(--gutter-s) max-md:mt-[28px] max-md:px-[20px] max-md:pt-[16px] max-md:pb-[22px] max-md:[grid-area:send]"
           />
         </div>
       </div>
