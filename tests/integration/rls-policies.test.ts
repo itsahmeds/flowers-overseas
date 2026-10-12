@@ -603,6 +603,21 @@ describe.skipIf(server.url === undefined)(
             (sp) =>
               sp`UPDATE customer SET user_id = ${ub} WHERE id = ${mine.customerId}`,
           ),
+          // No WHERE: nothing reads a column, so no SELECT policy re-checks the new row and
+          // only the UPDATE policy's WITH CHECK stands between the buyer and another account.
+          repointUserBare: await refused(
+            (sp) => sp`UPDATE customer SET user_id = ${ub}`,
+          ),
+          recipientForOther: await refused(
+            (sp) =>
+              sp`INSERT INTO recipient (customer_id, full_name, phone_e164)
+               VALUES (${theirs.customerId}, 'Planted', '+48500000001')`,
+          ),
+          recipientAddressForOther: await refused(
+            (sp) =>
+              sp`INSERT INTO recipient_address (recipient_id, lines, city, country_id)
+               VALUES (${theirs.recipientId}, '{"4 Test Street"}', 'Warszawa', ${countryId})`,
+          ),
           consent: await refused(
             (sp) =>
               sp`UPDATE customer SET marketing_consent = true WHERE id = ${mine.customerId}`,
@@ -654,6 +669,9 @@ describe.skipIf(server.url === undefined)(
         ownName: 1,
         otherName: 0,
         repointUser: "42501",
+        repointUserBare: "42501",
+        recipientForOther: "42501",
+        recipientAddressForOther: "42501",
         consent: "CUSTOMER_COLUMN_READ_ONLY",
         redact: "CUSTOMER_COLUMN_READ_ONLY",
         email: "CUSTOMER_COLUMN_READ_ONLY",
