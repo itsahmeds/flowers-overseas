@@ -25,7 +25,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- **2026-10-13, to the orchestrator, `open`:** `sharp` 0.35.5 loads libvips 8.18.7, but `seed/schema/variants.ts` pins `PINNED_SHARP_VERSION = "0.35.4"` and `PINNED_LIBVIPS_VERSION = "8.18.6"`, and `seed/data/media-variants.json` records both in its header. `tests/unit/media-variants.test.ts` fails (9 cases) and `pnpm media:variants --check` would refuse. Fixing it is a source change outside this task's fence. Measured in a scratch copy (not committed): with the two constants bumped, `pnpm media:variants` over the 175 originals re-derived 862 variants and the manifest differs from the committed one only in its two header lines (sharp, libvips); the committed `public/media/home-hero/*` bytes are identical. So the fix is the two constants plus the two manifest header lines, no re-derivation. Needs the fence widened to `seed/schema/variants.ts` and `seed/data/media-variants.json` (and possibly the TASK-078/080 test expectations if any hard-code the numbers).
+- **2026-10-13, to the orchestrator, RESOLVED the same day:** the fence was widened to `seed/schema/variants.ts` (the two constants) and `seed/data/media-variants.json` (its two header lines only); no variant re-derived; no test hard-coded the old numbers. Original question: `sharp` 0.35.5 loads libvips 8.18.7, but `seed/schema/variants.ts` pins `PINNED_SHARP_VERSION = "0.35.4"` and `PINNED_LIBVIPS_VERSION = "8.18.6"`, and `seed/data/media-variants.json` records both in its header. `tests/unit/media-variants.test.ts` fails (9 cases) and `pnpm media:variants --check` would refuse. Fixing it is a source change outside this task's fence. Measured in a scratch copy (not committed): with the two constants bumped, `pnpm media:variants` over the 175 originals re-derived 862 variants and the manifest differs from the committed one only in its two header lines (sharp, libvips); the committed `public/media/home-hero/*` bytes are identical. So the fix is the two constants plus the two manifest header lines, no re-derivation. Needs the fence widened to `seed/schema/variants.ts` and `seed/data/media-variants.json` (and possibly the TASK-078/080 test expectations if any hard-code the numbers).
 
 ## Progress
 
@@ -37,7 +37,4 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+`next`, `eslint-config-next`, `@next/env` exact 16.3.8, `sharp` exact 0.35.5, `source-map-js` 1.2.1 to 1.2.2 by lockfile lift (`pnpm update sharp source-map-js -r --depth 99`; no override). `pnpm audit --prod --audit-level=high` exits 0; with `next` reverted to 16.3.6 it exits 1. Because sharp 0.35.5 loads libvips 8.18.7, `PINNED_SHARP_VERSION` and `PINNED_LIBVIPS_VERSION` in `seed/schema/variants.ts` and the two header lines of `seed/data/media-variants.json` moved with it; the 862 variant checksums are unchanged (measured by a full re-derivation in a scratch copy), `pnpm media:variants --check` exits 0. No new tests; the existing media-variants unit tests are the gate. No expensive gate was run locally.
