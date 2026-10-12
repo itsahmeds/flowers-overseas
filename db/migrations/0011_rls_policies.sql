@@ -14,19 +14,36 @@
 --   * the public reference set (catalogue and geo, the order machine's reference rows):
 --     `<table>_read` for everyone; `media_asset` only where `visibility = 'public'`,
 --     `media_variant` only for such an asset, `review` only where published (AC-17);
---   * partner-scoped (AC-16): readable only when the row's partner is in `app.partner_ids` and
---     `app.role = 'partner'` — directly by `partner_id`, `payout_line` through `payout`, `"order"`,
---     `order_line`, `delivery_proof` and `substitution_note` through an `order_assignment` of that
---     partner (an order offered to them, `plan/07` §1.1). The partner's own configuration
---     (coverage, blackouts, catalogue mapping) is theirs to write; order and money records are
---     read-only to them (spec 011 §2), so an `UPDATE`/`DELETE` as partner B affects 0 rows and as
---     partner A changes nothing outside A's configuration;
+--   * partner-scoped (AC-16): readable only when `app.role = 'partner'` and the row's partner is
+--     in `app.partner_ids` — directly by `partner_id`, `payout_line` through its payout,
+--     `delivery_proof` and `substitution_note` through an **open or accepted** assignment of that
+--     partner (a declined or timed-out florist loses the order, `plan/07` §1.2). Partners write
+--     only `partner_coverage` and `partner_blackout`; the catalogue mapping (it holds
+--     `partner_payout_minor`), payouts, assignments and every order table are read-only to them
+--     (spec 011 §2; review round 1, item 2). `"order"` and `order_line` have **no** partner
+--     policy: partners read the fulfilment columns through the views `partner_order` and
+--     `partner_order_line`, never the buyer, the token or the retail totals (§8; item 1);
 --   * customer-scoped: through `customer.user_id = app.user_id` with `app.role = 'customer'`; the
 --     address book is the buyer's to edit, orders and payments read-only;
---   * self: a signed-in person reads their own `users` row, `user_role` rows and memberships;
+--   * self: a signed-in person (customer or partner role) reads their own `users` row,
+--     `user_role` rows and memberships;
+--   * buyers read their order timeline through the view `customer_order_event` (no payload, no
+--     actor), and may change only the contact fields of their own `customer` row;
 --   * everything else (sessions, accounts, tokens, the outbox, flags, the audit log, retention,
 --     consent records, webhook payloads, applications, usage samples, the message catalogue):
 --     staff only.
+--
+-- Unset or empty `app.role` reads as `public`, the most restrictive role (asserted in T-17).
+--
+-- Every ownership correlation is checked by a `SECURITY DEFINER` lookup owned by `app_owner`
+-- (`app_partner_sees_order`, `app_customer_owns` …), so it is evaluated against every row rather
+-- than against the caller's own filtered view.
+--
+-- The login rule (review nit 1, recorded for spec 040): `SET ROLE app_owner` is refused to a
+-- login that holds only `app_web`. The provider login that runs migrations is a member of both
+-- (`0001`), so the runtime `DATABASE_URL` must never connect as that login once a dedicated
+-- runtime login exists; until then the guard is `tests/unit/db.test.ts`'s static scan for
+-- `SET ROLE` / `RESET ROLE` under `src/`.
 --
 -- Not `FORCE ROW LEVEL SECURITY`: the table owner `app_owner` keeps bypassing RLS, which is what
 -- the `SECURITY DEFINER` trigger functions of `0005` and `0008` rely on to see every row (the
@@ -88,6 +105,89 @@ CREATE FUNCTION public.app_is_customer_user(owner uuid) RETURNS boolean
   SET search_path = pg_catalog, public
 AS $fn$
   SELECT app_current_role() = 'customer' AND owner IS NOT NULL AND owner = app_current_user_id()
+$fn$;
+
+CREATE FUNCTION public.app_is_self(person uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SET search_path = pg_catalog, public
+AS $fn$
+  SELECT app_current_role() IN ('customer', 'partner') AND person IS NOT NULL
+     AND person = app_current_user_id()
+$fn$;
+
+/*
+ * The ownership lookups. Each is SECURITY DEFINER as `app_owner` with a pinned search_path, so the
+ * correlation it checks is evaluated against every row, not against what the caller's own RLS
+ * happens to show (review round 1, item 3): a policy cannot be satisfied by a lookup that the
+ * caller's narrower view of `order_assignment` or `customer` makes vacuous, and a mutation of the
+ * correlation is visible to the integration suite. They return a boolean about the caller's own
+ * session variables and nothing else.
+ */
+CREATE FUNCTION public.app_partner_sees_order(target uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+  -- An open or accepted offer only: a declined or timed-out florist loses the order (plan/07 §1.2).
+  SELECT EXISTS (
+    SELECT 1 FROM public.order_assignment a
+    WHERE a.order_id = target AND app_is_partner_of(a.partner_id)
+      AND (a.response IS NULL OR a.response = 'accept')
+  )
+$fn$;
+
+CREATE FUNCTION public.app_partner_owns_payout(target uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+  SELECT EXISTS (
+    SELECT 1 FROM public.payout p WHERE p.id = target AND app_is_partner_of(p.partner_id)
+  )
+$fn$;
+
+CREATE FUNCTION public.app_customer_owns(target uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+  SELECT EXISTS (
+    SELECT 1 FROM public.customer c WHERE c.id = target AND app_is_customer_user(c.user_id)
+  )
+$fn$;
+
+CREATE FUNCTION public.app_customer_owns_recipient(target uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+  SELECT EXISTS (
+    SELECT 1 FROM public.recipient r JOIN public.customer c ON c.id = r.customer_id
+    WHERE r.id = target AND app_is_customer_user(c.user_id)
+  )
+$fn$;
+
+CREATE FUNCTION public.app_customer_owns_order(target uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+  SELECT EXISTS (
+    SELECT 1 FROM public."order" o JOIN public.customer c ON c.id = o.customer_id
+    WHERE o.id = target AND app_is_customer_user(c.user_id)
+  )
+$fn$;
+
+CREATE FUNCTION public.app_customer_owns_payment(target uuid) RETURNS boolean
+  LANGUAGE sql STABLE
+  SECURITY DEFINER
+  SET search_path = pg_catalog, public
+AS $fn$
+  SELECT EXISTS (
+    SELECT 1 FROM public.payment p JOIN public."order" o ON o.id = p.order_id
+    JOIN public.customer c ON c.id = o.customer_id
+    WHERE p.id = target AND app_is_customer_user(c.user_id)
+  )
 $fn$;
 
 /* ---------------------------------------------------------------------------
@@ -363,32 +463,37 @@ CREATE POLICY partner_coverage_partner ON public.partner_coverage FOR ALL TO app
   USING (app_is_partner_of(partner_id)) WITH CHECK (app_is_partner_of(partner_id));
 CREATE POLICY partner_blackout_partner ON public.partner_blackout FOR ALL TO app_web
   USING (app_is_partner_of(partner_id)) WITH CHECK (app_is_partner_of(partner_id));
-CREATE POLICY partner_catalog_mapping_partner ON public.partner_catalog_mapping FOR ALL TO app_web
-  USING (app_is_partner_of(partner_id)) WITH CHECK (app_is_partner_of(partner_id));
+CREATE POLICY partner_catalog_mapping_partner ON public.partner_catalog_mapping FOR SELECT TO app_web
+  USING (app_is_partner_of(partner_id));
 CREATE POLICY payout_partner ON public.payout FOR SELECT TO app_web
   USING (app_is_partner_of(partner_id));
 CREATE POLICY payout_line_partner ON public.payout_line FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.payout p WHERE p.id = payout_line.payout_id AND app_is_partner_of(p.partner_id)
-  ));
+  USING (app_partner_owns_payout(payout_id));
 CREATE POLICY order_assignment_partner ON public.order_assignment FOR SELECT TO app_web
   USING (app_is_partner_of(partner_id));
-CREATE POLICY order_partner ON public."order" FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.order_assignment a WHERE a.order_id = "order".id AND app_is_partner_of(a.partner_id)
-  ));
-CREATE POLICY order_line_partner ON public.order_line FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.order_assignment a WHERE a.order_id = order_line.order_id AND app_is_partner_of(a.partner_id)
-  ));
 CREATE POLICY delivery_proof_partner ON public.delivery_proof FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.order_assignment a WHERE a.order_id = delivery_proof.order_id AND app_is_partner_of(a.partner_id)
-  ));
+  USING (app_partner_sees_order(order_id));
 CREATE POLICY substitution_note_partner ON public.substitution_note FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.order_assignment a WHERE a.order_id = substitution_note.order_id AND app_is_partner_of(a.partner_id)
-  ));
+  USING (app_partner_sees_order(order_id));
+
+-- No partner policy on "order" or order_line (review round 1, item 1): a row policy cannot hide
+-- columns, and the order row carries the buyer (`buyer_snapshot`, `customer_id`), the tracking
+-- token and the retail totals. Partners read the fulfilment columns through these two views
+-- instead. Each is owned by `app_owner` (so it reads the base table past RLS), is a
+-- `security_barrier` view (so a caller's function in a WHERE clause cannot see filtered rows),
+-- filters through `app_partner_sees_order`, and is read-only to `app_web`.
+CREATE VIEW public.partner_order WITH (security_barrier = true) AS
+  SELECT o.id, o.status, o.mode, o.destination_country_id, o.destination_city_id,
+         o.destination_postcode, o.delivery_date, o.delivery_window, o.recipient_snapshot,
+         o.created_at, o.updated_at
+  FROM public."order" o
+  WHERE app_partner_sees_order(o.id);
+
+CREATE VIEW public.partner_order_line WITH (security_barrier = true) AS
+  SELECT l.id, l.order_id, l.kind, l.product_id, l.addon_id, l.tier_key, l.qty,
+         l.partner_payout_minor, l.payout_currency_code
+  FROM public.order_line l
+  WHERE app_partner_sees_order(l.order_id);
 
 /* ---------------------------------------------------------------------------
  * customer-scoped, through customer.user_id = app.user_id
@@ -399,73 +504,74 @@ CREATE POLICY customer_customer ON public.customer FOR SELECT TO app_web
 CREATE POLICY customer_customer_update ON public.customer FOR UPDATE TO app_web
   USING (app_is_customer_user(user_id)) WITH CHECK (app_is_customer_user(user_id));
 CREATE POLICY address_customer ON public.address FOR ALL TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.customer c WHERE c.id = address.customer_id AND app_is_customer_user(c.user_id)
-  ))
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM public.customer c WHERE c.id = address.customer_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns(customer_id)) WITH CHECK (app_customer_owns(customer_id));
 CREATE POLICY recipient_customer ON public.recipient FOR ALL TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.customer c WHERE c.id = recipient.customer_id AND app_is_customer_user(c.user_id)
-  ))
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM public.customer c WHERE c.id = recipient.customer_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns(customer_id)) WITH CHECK (app_customer_owns(customer_id));
 CREATE POLICY recipient_address_customer ON public.recipient_address FOR ALL TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.recipient r JOIN public.customer c ON c.id = r.customer_id
-    WHERE r.id = recipient_address.recipient_id AND app_is_customer_user(c.user_id)
-  ))
-  WITH CHECK (EXISTS (
-    SELECT 1 FROM public.recipient r JOIN public.customer c ON c.id = r.customer_id
-    WHERE r.id = recipient_address.recipient_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns_recipient(recipient_id))
+  WITH CHECK (app_customer_owns_recipient(recipient_id));
 CREATE POLICY order_customer ON public."order" FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.customer c WHERE c.id = "order".customer_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns(customer_id));
 CREATE POLICY order_line_customer ON public.order_line FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public."order" o JOIN public.customer c ON c.id = o.customer_id
-    WHERE o.id = order_line.order_id AND app_is_customer_user(c.user_id)
-  ));
-CREATE POLICY order_event_customer ON public.order_event FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public."order" o JOIN public.customer c ON c.id = o.customer_id
-    WHERE o.id = order_event.order_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns_order(order_id));
 CREATE POLICY delivery_proof_customer ON public.delivery_proof FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public."order" o JOIN public.customer c ON c.id = o.customer_id
-    WHERE o.id = delivery_proof.order_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns_order(order_id));
 CREATE POLICY substitution_note_customer ON public.substitution_note FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public."order" o JOIN public.customer c ON c.id = o.customer_id
-    WHERE o.id = substitution_note.order_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns_order(order_id));
 CREATE POLICY payment_customer ON public.payment FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public."order" o JOIN public.customer c ON c.id = o.customer_id
-    WHERE o.id = payment.order_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns_order(order_id));
 CREATE POLICY refund_customer ON public.refund FOR SELECT TO app_web
-  USING (EXISTS (
-    SELECT 1 FROM public.payment p JOIN public."order" o ON o.id = p.order_id
-    JOIN public.customer c ON c.id = o.customer_id
-    WHERE p.id = refund.payment_id AND app_is_customer_user(c.user_id)
-  ));
+  USING (app_customer_owns_payment(payment_id));
+
+-- No customer policy on order_event (review nit 3): its payload and actor are internal. A buyer
+-- reads the timeline through this projection: which event, when, between which states.
+CREATE VIEW public.customer_order_event WITH (security_barrier = true) AS
+  SELECT e.order_id, e.seq, e.type, e.from_status, e.to_status, e.occurred_at
+  FROM public.order_event e
+  WHERE app_customer_owns_order(e.order_id);
+
+-- A buyer edits their own row's contact fields only (review nit 2, breaker observation): the
+-- guest-match key, the redaction flags and marketing consent (which goes through the consent flow,
+-- with its consent_log row) are not theirs to change. `user_id` is pinned by the policy's WITH CHECK.
+CREATE FUNCTION public.customer_self_update_guard() RETURNS trigger
+  LANGUAGE plpgsql
+  SET search_path = pg_catalog, public
+AS $fn$
+BEGIN
+  IF app_current_role() = 'customer' AND (
+    NEW.id, NEW.email_normalised, NEW.marketing_consent, NEW.redacted, NEW.redacted_at,
+    NEW.created_at
+  ) IS DISTINCT FROM (
+    OLD.id, OLD.email_normalised, OLD.marketing_consent, OLD.redacted, OLD.redacted_at,
+    OLD.created_at
+  ) THEN
+    RAISE EXCEPTION 'CUSTOMER_COLUMN_READ_ONLY: a buyer edits only name, phone and country here'
+      USING ERRCODE = 'insufficient_privilege';
+  END IF;
+  RETURN NEW;
+END;
+$fn$;
+
+CREATE TRIGGER customer_self_update_guard
+  BEFORE UPDATE ON public.customer
+  FOR EACH ROW EXECUTE FUNCTION public.customer_self_update_guard();
 
 /* ---------------------------------------------------------------------------
- * self: the signed-in person's own identity rows, whatever the role
+ * the views are read-only to app_web (default privileges granted DML on them)
+ * ------------------------------------------------------------------------ */
+
+REVOKE INSERT, UPDATE, DELETE ON public.partner_order, public.partner_order_line,
+  public.customer_order_event FROM app_web;
+
+/* ---------------------------------------------------------------------------
+ * self: the signed-in person's own identity rows (customer or partner role)
  * ------------------------------------------------------------------------ */
 
 CREATE POLICY users_self ON public.users FOR SELECT TO app_web
-  USING (id = app_current_user_id());
+  USING (app_is_self(id));
 CREATE POLICY user_role_self ON public.user_role FOR SELECT TO app_web
-  USING (user_id = app_current_user_id());
+  USING (app_is_self(user_id));
 CREATE POLICY partner_member_self ON public.partner_member FOR SELECT TO app_web
-  USING (user_id = app_current_user_id());
+  USING (app_is_self(user_id));
 
 RESET ROLE;

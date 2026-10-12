@@ -134,9 +134,26 @@ describe.skipIf(server.url === undefined)(
                        VALUES ('founder', 'country.status_changed', 'country', 'PL', 'req-1')`,
           )
         ).constraint;
+        await tx`INSERT INTO audit_log (actor_label, action, entity_table, entity_id, after, request_id)
+                 VALUES ('founder', 'country.status_changed', 'country', 'PL', '{"status": "live"}', 'req-2')`;
+        out.auditUpdate = (
+          await pgFailure(
+            tx,
+            (sp) => sp`UPDATE audit_log SET actor_label = 'someone else'`,
+          )
+        ).raised;
+        out.auditDelete = (
+          await pgFailure(tx, (sp) => sp`DELETE FROM audit_log`)
+        ).raised;
+        out.auditTruncate = (
+          await pgFailure(tx, (sp) => sp.unsafe("TRUNCATE audit_log"))
+        ).raised;
         return out;
       });
       expect(refused).toEqual({
+        auditUpdate: "AUDIT_LOG_APPEND_ONLY",
+        auditDelete: "AUDIT_LOG_APPEND_ONLY",
+        auditTruncate: "AUDIT_LOG_APPEND_ONLY",
         duplicateEvent: "outbox_event_id_key",
         noTarget: "outbox_targets_check",
         badScope: "feature_flag_scope_scope_ref_check",

@@ -1,10 +1,16 @@
 -- Rollback of 0011_rls_policies (spec 002 §5.1, AC-4; TASK-023).
 --
--- Every policy, RLS off on every table, then the six helper functions. `REVOKE CREATE ON SCHEMA
--- public FROM PUBLIC` is not undone: it is PG15+'s default, and re-granting would widen what
--- every role may do.
+-- The three views, the buyer-column trigger, every policy, RLS off on every table, then the helper
+-- functions. `REVOKE CREATE ON SCHEMA public FROM PUBLIC` is not undone: it is PG15+'s default, and
+-- re-granting would widen what every role may do.
 
 SET LOCAL ROLE app_owner;
+
+DROP VIEW IF EXISTS public.customer_order_event;
+DROP VIEW IF EXISTS public.partner_order_line;
+DROP VIEW IF EXISTS public.partner_order;
+
+DROP TRIGGER IF EXISTS customer_self_update_guard ON public.customer;
 
 DROP POLICY IF EXISTS partner_member_self ON public.partner_member;
 DROP POLICY IF EXISTS user_role_self ON public.user_role;
@@ -13,7 +19,6 @@ DROP POLICY IF EXISTS refund_customer ON public.refund;
 DROP POLICY IF EXISTS payment_customer ON public.payment;
 DROP POLICY IF EXISTS substitution_note_customer ON public.substitution_note;
 DROP POLICY IF EXISTS delivery_proof_customer ON public.delivery_proof;
-DROP POLICY IF EXISTS order_event_customer ON public.order_event;
 DROP POLICY IF EXISTS order_line_customer ON public.order_line;
 DROP POLICY IF EXISTS order_customer ON public."order";
 DROP POLICY IF EXISTS recipient_address_customer ON public.recipient_address;
@@ -23,8 +28,6 @@ DROP POLICY IF EXISTS customer_customer_update ON public.customer;
 DROP POLICY IF EXISTS customer_customer ON public.customer;
 DROP POLICY IF EXISTS substitution_note_partner ON public.substitution_note;
 DROP POLICY IF EXISTS delivery_proof_partner ON public.delivery_proof;
-DROP POLICY IF EXISTS order_line_partner ON public.order_line;
-DROP POLICY IF EXISTS order_partner ON public."order";
 DROP POLICY IF EXISTS order_assignment_partner ON public.order_assignment;
 DROP POLICY IF EXISTS payout_line_partner ON public.payout_line;
 DROP POLICY IF EXISTS payout_partner ON public.payout;
@@ -204,6 +207,14 @@ ALTER TABLE public.addon_country_price DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.addon DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.accounts DISABLE ROW LEVEL SECURITY;
 
+DROP FUNCTION IF EXISTS public.customer_self_update_guard();
+DROP FUNCTION IF EXISTS public.app_customer_owns_payment(uuid);
+DROP FUNCTION IF EXISTS public.app_customer_owns_order(uuid);
+DROP FUNCTION IF EXISTS public.app_customer_owns_recipient(uuid);
+DROP FUNCTION IF EXISTS public.app_customer_owns(uuid);
+DROP FUNCTION IF EXISTS public.app_partner_owns_payout(uuid);
+DROP FUNCTION IF EXISTS public.app_partner_sees_order(uuid);
+DROP FUNCTION IF EXISTS public.app_is_self(uuid);
 DROP FUNCTION IF EXISTS public.app_is_customer_user(uuid);
 DROP FUNCTION IF EXISTS public.app_is_partner_of(uuid);
 DROP FUNCTION IF EXISTS public.app_is_staff();

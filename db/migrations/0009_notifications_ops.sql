@@ -173,6 +173,28 @@ CREATE TABLE public.audit_log (
 
 CREATE INDEX audit_log_entity_idx ON public.audit_log USING btree (entity_table, entity_id, at);
 
+-- Append-only, like order_event (review round 1, nit 4): a record of who changed what cannot be
+-- edited or removed by the application it records. Pseudonymising personal data inside
+-- `before`/`after` is a retention concern for TASK-025, through a migration-owned path.
+CREATE FUNCTION public.audit_log_append_only() RETURNS trigger
+  LANGUAGE plpgsql
+AS $fn$
+BEGIN
+  RAISE EXCEPTION 'AUDIT_LOG_APPEND_ONLY: audit_log is append-only; % is refused', TG_OP
+    USING ERRCODE = 'restrict_violation';
+END;
+$fn$;
+
+CREATE TRIGGER audit_log_append_only
+  BEFORE UPDATE OR DELETE ON public.audit_log
+  FOR EACH ROW EXECUTE FUNCTION public.audit_log_append_only();
+
+CREATE TRIGGER audit_log_append_only_statement
+  BEFORE TRUNCATE ON public.audit_log
+  FOR EACH STATEMENT EXECUTE FUNCTION public.audit_log_append_only();
+
+REVOKE EXECUTE ON FUNCTION public.audit_log_append_only() FROM PUBLIC;
+
 /* ---------------------------------------------------------------------------
  * retention_policy — plan/07 §1.2, verbatim
  * ------------------------------------------------------------------------ */

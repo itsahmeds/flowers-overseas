@@ -53,9 +53,13 @@ export const PUBLIC_FILTERED_TABLES = {
 
 /**
  * Partner-scoped (`app.role = 'partner'`, the row's partner in `app.partner_ids`). `write` tables
- * are the partner's own configuration (`FOR ALL`); the others are read-only, because order and
- * money records change only through spec 010's engine and the payments module, in a system
- * transaction (spec 011 §2: "the partner role is read-only on every order table").
+ * are the partner's own availability (`FOR ALL`): coverage and blackouts, nothing with money in
+ * it. Everything else is read-only, because order, assignment and money records change only
+ * through spec 010's engine and the payments module, in a system transaction (spec 011 §2: "the
+ * partner role is read-only on every order table"; review round 1, item 2: the catalogue mapping
+ * holds `partner_payout_minor`, so it is read-only too). `delivery_proof` and `substitution_note`
+ * are visible only while the partner's offer is open or accepted. `"order"` and `order_line` are
+ * not here: partners read them through `PARTNER_VIEWS`.
  */
 export const PARTNER_SCOPED_TABLES = {
   fulfillment_partner: "read",
@@ -63,12 +67,10 @@ export const PARTNER_SCOPED_TABLES = {
   partner_member: "read",
   partner_coverage: "write",
   partner_blackout: "write",
-  partner_catalog_mapping: "write",
+  partner_catalog_mapping: "read",
   payout: "read",
   payout_line: "read",
   order_assignment: "read",
-  order: "read",
-  order_line: "read",
   delivery_proof: "read",
   substitution_note: "read",
 } as const;
@@ -84,14 +86,66 @@ export const CUSTOMER_SCOPED_TABLES = {
   recipient_address: "write",
   order: "read",
   order_line: "read",
-  order_event: "read",
   delivery_proof: "read",
   substitution_note: "read",
   payment: "read",
   refund: "read",
 } as const;
 
-/** Readable by the signed-in person themself, whatever `app.role` (`app.user_id` matches). */
+/**
+ * The column-limited read paths: `security_barrier` views owned by `app_owner`, filtered by a
+ * `SECURITY DEFINER` lookup, `SELECT` only for `app_web`. Each lists exactly the columns it shows.
+ */
+export const PARTNER_VIEWS = {
+  partner_order: [
+    "id",
+    "status",
+    "mode",
+    "destination_country_id",
+    "destination_city_id",
+    "destination_postcode",
+    "delivery_date",
+    "delivery_window",
+    "recipient_snapshot",
+    "created_at",
+    "updated_at",
+  ],
+  partner_order_line: [
+    "id",
+    "order_id",
+    "kind",
+    "product_id",
+    "addon_id",
+    "tier_key",
+    "qty",
+    "partner_payout_minor",
+    "payout_currency_code",
+  ],
+} as const;
+
+/** The buyer's order timeline without the internal payload and actor (review round 1, nit 3). */
+export const CUSTOMER_VIEWS = {
+  customer_order_event: [
+    "order_id",
+    "seq",
+    "type",
+    "from_status",
+    "to_status",
+    "occurred_at",
+  ],
+} as const;
+
+/** Columns a partner must never read, whatever the path (spec 002 §8). */
+export const PARTNER_FORBIDDEN_COLUMNS = [
+  "buyer_snapshot",
+  "customer_id",
+  "public_token",
+  "buyer_total_minor",
+  "base_total_minor",
+  "unit_retail_minor",
+] as const;
+
+/** Readable by the signed-in person themself (`customer` or `partner` role, `app.user_id` matches). */
 export const SELF_SCOPED_TABLES = [
   "users",
   "user_role",
@@ -107,6 +161,7 @@ export const STAFF_ONLY_TABLES = [
   "feature_flag",
   "feature_flag_scope",
   "message_catalog",
+  "order_event",
   "outbox",
   "outbox_attempt",
   "partner_application",

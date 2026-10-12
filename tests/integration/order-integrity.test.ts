@@ -341,6 +341,13 @@ describe.skipIf(server.url === undefined)(
           (sp) =>
             sp`UPDATE media_asset SET visibility = 'public' WHERE id = ${good}`,
         );
+        // H3: re-pointing an accepted proof at a public asset is refused too.
+        const publicProofAsset = await mediaAsset(tx, { visibility: "public" });
+        const repointed = await pgFailure(
+          tx,
+          (sp) =>
+            sp`UPDATE delivery_proof SET media_asset_id = ${publicProofAsset} WHERE media_asset_id = ${good}`,
+        );
         const unstripped = await pgFailure(
           tx,
           (sp) =>
@@ -352,6 +359,7 @@ describe.skipIf(server.url === undefined)(
           productAsset,
           consent: accepted?.public_use_consent,
           madePublic,
+          repointed,
           unstripped,
         };
       });
@@ -360,6 +368,7 @@ describe.skipIf(server.url === undefined)(
         "notStripped",
         "productAsset",
         "madePublic",
+        "repointed",
         "unstripped",
       ] as const) {
         expect(result[key].raised, key).toBe("DELIVERY_PROOF_ASSET");

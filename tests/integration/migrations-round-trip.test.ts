@@ -14,6 +14,7 @@
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { CUSTOMER_VIEWS, PARTNER_VIEWS } from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import {
   probeLocalServer,
@@ -34,14 +35,26 @@ const MIRROR_TABLES = Object.values(schema)
   .map((table) => getTableConfig(table as PgTable).name)
   .sort();
 
+/** The column-limited read paths of `0011` (`db/rls.ts`). */
+const VIEWS = [...Object.keys(PARTNER_VIEWS), ...Object.keys(CUSTOMER_VIEWS)];
+
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
 const FUNCTIONS = [
   "app_current_partner_ids",
   "app_current_role",
   "app_current_user_id",
+  "app_customer_owns",
+  "app_customer_owns_order",
+  "app_customer_owns_payment",
+  "app_customer_owns_recipient",
   "app_is_customer_user",
   "app_is_partner_of",
+  "app_is_self",
   "app_is_staff",
+  "app_partner_owns_payout",
+  "app_partner_sees_order",
+  "audit_log_append_only",
+  "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
   "media_asset_delivery_proof_guard",
@@ -129,7 +142,7 @@ describe.skipIf(server.url === undefined)(
       }
       for (const { up, down } of rounds) {
         expect(up.tables).toEqual(
-          [...MIRROR_TABLES, "schema_migrations"].sort(),
+          [...MIRROR_TABLES, ...VIEWS, "schema_migrations"].sort(),
         );
         expect(up.functions).toEqual(FUNCTIONS);
         expect(up.roles).toEqual(["app_owner", "app_web"]);
@@ -138,7 +151,9 @@ describe.skipIf(server.url === undefined)(
       }
       // And forward once more: the pair is re-runnable from a rolled-back database.
       await runner(scratch.url);
-      expect((await census()).tables).toHaveLength(MIRROR_TABLES.length + 1);
+      expect((await census()).tables).toHaveLength(
+        MIRROR_TABLES.length + VIEWS.length + 1,
+      );
     }, 600_000);
   },
 );

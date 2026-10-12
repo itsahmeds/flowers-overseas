@@ -1,23 +1,34 @@
 /**
  * Migration `0011` as `app_web` sees it (spec 002 AC-16, AC-17, AC-18; T-16, T-17, T-18; `plan/12`
- * §4 "RLS: vendor cannot read another partner's orders"; TASK-023).
+ * §4 "RLS: vendor cannot read another partner's orders"; §8; TASK-023, review round 1).
  *
  * One rolled-back transaction per case on a scratch database of a disposable local Postgres 16.
- * Rows are written as the server's superuser, then each context (`asApp`) runs inside a savepoint
+ * Rows are written, and every ownership fact is captured, as the server's superuser — never through
+ * a query the policy under test filters — and then each context (`asApp`) runs inside a savepoint
  * that is rolled back, so the role and the `app.*` settings never leak into the next context.
  *
- *  - **T-16**: two partners, A and B, each with a row in every partner-scoped table. As A: A's rows
- *    and none of B's; as B: the mirror image; `UPDATE` and `DELETE` of A's rows as B affect 0
- *    rows; A may change A's own configuration, and nothing in its order or money records.
- *  - **T-17**: as `public`, the reference set reads as fully as the superuser sees it, `media_asset`
- *    only public, `review` only published, and the private set returns 0 rows.
+ *  - **T-16**: two partners, each with rows in every partner-scoped table. Each partner sees
+ *    exactly its own rows (by the row keys captured as owner) and none of the other's; the other's
+ *    `UPDATE`/`DELETE` affect 0 rows; a partner writes only coverage and blackouts, never another
+ *    partner's, never money.
+ *  - **The partner read path**: `partner_order` / `partner_order_line` show the fulfilment columns
+ *    and never the buyer, the token or retail totals; `"order"` itself shows partners nothing; a
+ *    declined or timed-out florist sees nothing of the order.
+ *  - **Customer scope**: own rows only, ownership cannot be re-pointed, the buyer edits only the
+ *    contact fields, and the timeline comes through `customer_order_event`.
+ *  - **Deny by default**: no `app.role`, an empty one or an unknown one reads as `public`, and
+ *    `public` with a user id reads nothing private.
+ *  - **T-17**: as `public`, the reference set as the owner sees it, and nothing private.
  *  - **T-18**: `app_web`'s flags, and what it cannot do.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   CUSTOMER_SCOPED_TABLES,
+  CUSTOMER_VIEWS,
+  PARTNER_FORBIDDEN_COLUMNS,
   PARTNER_SCOPED_TABLES,
+  PARTNER_VIEWS,
   PUBLIC_REFERENCE_TABLES,
 } from "../../db/rls.ts";
 import { insertPlacedOrder } from "../fixtures/order-state.ts";
@@ -43,16 +54,16 @@ const server = await probeLocalServer();
 
 class Undo extends Error {}
 
-/** Runs `fn` as `app_web` in `context`, inside a savepoint that is always rolled back. */
-async function as<T>(
+/** Runs `fn` in a savepoint that is always rolled back, after `enter` has set its context. */
+async function inSavepoint<T>(
   tx: Tx,
-  context: Parameters<typeof asApp>[1],
+  enter: (sp: Tx) => Promise<unknown>,
   fn: (sp: Tx) => Promise<T>,
 ): Promise<T> {
   let result: T | undefined;
   try {
     await tx.savepoint(async (sp) => {
-      await asApp(sp, context);
+      await enter(sp);
       result = await fn(sp);
       throw new Undo();
     });
@@ -62,16 +73,42 @@ async function as<T>(
   return result as T;
 }
 
+/** Runs `fn` as `app_web` in `context`, inside a savepoint that is always rolled back. */
+function as<T>(
+  tx: Tx,
+  context: Parameters<typeof asApp>[1],
+  fn: (sp: Tx) => Promise<T>,
+): Promise<T> {
+  return inSavepoint(tx, (sp) => asApp(sp, context), fn);
+}
+
 const tableSql = (table: string): string =>
   table === "order" ? 'public."order"' : `public.${table}`;
+
+async function countOf(sp: Tx, table: string, where = "true"): Promise<number> {
+  const [row] = await sp.unsafe<{ n: number }[]>(
+    `SELECT count(*)::int AS n FROM ${tableSql(table)} t WHERE ${where}`,
+  );
+  return row?.n ?? -1;
+}
+
+async function product(tx: Tx): Promise<string> {
+  const [row] = await tx<{ id: string }[]>`
+    INSERT INTO product (sku, product_type, primary_flower, colour_primary, style, price_tier,
+                         substitution_class, freshness_days)
+    VALUES (${unique("SKU-")}, 'bouquet', 'rose', 'red', 'classic', 'classic', 'roses', 7)
+    RETURNING id`;
+  return row?.id ?? "";
+}
 
 interface PartnerWorld {
   partnerId: string;
   userId: string;
   orderId: string;
+  assignmentId: string;
 }
 
-/** A partner with one row in every partner-scoped table. */
+/** A partner with rows in every partner-scoped table, and one order offered to it. */
 async function partnerWorld(
   tx: Tx,
   countryId: string,
@@ -97,10 +134,12 @@ async function partnerWorld(
     recipientId: await recipient(tx, buyer),
     countryId,
   });
-  await tx`INSERT INTO order_line (order_id, kind, product_id, qty, unit_retail_minor, currency_code, vat_rate_bp)
-           VALUES (${orderId}, 'product', ${productId}, 1, 18900, 'PLN', 800)`;
-  await tx`INSERT INTO order_assignment (order_id, partner_id, sla_expires_at, attempt)
-           VALUES (${orderId}, ${partnerId}, now() + interval '1 hour', 1)`;
+  await tx`INSERT INTO order_line (order_id, kind, product_id, qty, unit_retail_minor, currency_code,
+                                   vat_rate_bp, partner_payout_minor, payout_currency_code)
+           VALUES (${orderId}, 'product', ${productId}, 1, 18900, 'PLN', 800, 9000, 'PLN')`;
+  const [assignment] = await tx<{ id: string }[]>`
+    INSERT INTO order_assignment (order_id, partner_id, sla_expires_at, attempt)
+    VALUES (${orderId}, ${partnerId}, now() + interval '1 hour', 1) RETURNING id`;
   await tx`INSERT INTO delivery_proof (order_id, media_asset_id, uploaded_by)
            VALUES (${orderId}, ${await mediaAsset(tx)}, 'partner:test')`;
   await tx`INSERT INTO substitution_note (order_id, proposed_by, proposal_md)
@@ -110,11 +149,13 @@ async function partnerWorld(
     VALUES (${partnerId}, DATE '2027-02-01', DATE '2027-02-07', 9000, 'PLN') RETURNING id`;
   await tx`INSERT INTO payout_line (payout_id, order_id, amount_minor, currency_code, kind)
            VALUES (${payout?.id ?? ""}, ${orderId}, 9000, 'PLN', 'order')`;
-  return { partnerId, userId, orderId };
+  return { partnerId, userId, orderId, assignmentId: assignment?.id ?? "" };
 }
 
-/** How the rows of each partner-scoped table belong to a partner. */
-const OWNER: Record<keyof typeof PARTNER_SCOPED_TABLES, string> = {
+type PartnerTable = keyof typeof PARTNER_SCOPED_TABLES;
+
+/** Who owns a row, read as the superuser only (this is the fact the policy must reproduce). */
+const OWNER: Record<PartnerTable, string> = {
   fulfillment_partner: "t.id",
   partner_translation: "t.partner_id",
   partner_member: "t.partner_id",
@@ -125,18 +166,29 @@ const OWNER: Record<keyof typeof PARTNER_SCOPED_TABLES, string> = {
   payout_line:
     "(SELECT p.partner_id FROM public.payout p WHERE p.id = t.payout_id)",
   order_assignment: "t.partner_id",
-  order:
-    "(SELECT a.partner_id FROM public.order_assignment a WHERE a.order_id = t.id)",
-  order_line:
-    "(SELECT a.partner_id FROM public.order_assignment a WHERE a.order_id = t.order_id)",
   delivery_proof:
     "(SELECT a.partner_id FROM public.order_assignment a WHERE a.order_id = t.order_id)",
   substitution_note:
     "(SELECT a.partner_id FROM public.order_assignment a WHERE a.order_id = t.order_id)",
 };
 
+/** A key that names one row of each table, stable within the transaction. */
+const KEY: Record<PartnerTable, string> = {
+  fulfillment_partner: "t.id::text",
+  partner_translation: "t.partner_id::text || '/' || t.locale_code",
+  partner_member: "t.user_id::text || '/' || t.partner_id::text",
+  partner_coverage: "t.id::text",
+  partner_blackout: "t.partner_id::text || '/' || t.date::text",
+  partner_catalog_mapping: "t.id::text",
+  payout: "t.id::text",
+  payout_line: "t.id::text",
+  order_assignment: "t.id::text",
+  delivery_proof: "t.id::text",
+  substitution_note: "t.id::text",
+};
+
 /** A no-op column per table for the `UPDATE` probes. */
-const TOUCH: Record<keyof typeof PARTNER_SCOPED_TABLES, string> = {
+const TOUCH: Record<PartnerTable, string> = {
   fulfillment_partner: "legal_name = legal_name",
   partner_translation: "display_name = display_name",
   partner_member: "role = role",
@@ -146,11 +198,21 @@ const TOUCH: Record<keyof typeof PARTNER_SCOPED_TABLES, string> = {
   payout: "total_minor = total_minor",
   payout_line: "note = note",
   order_assignment: "reason = reason",
-  order: "delivery_window = delivery_window",
-  order_line: "qty = qty",
   delivery_proof: "approved = approved",
   substitution_note: "proposal_md = proposal_md",
 };
+
+async function keysOf(
+  tx: Tx,
+  table: PartnerTable,
+  partnerId: string,
+): Promise<string[]> {
+  const rows = await tx.unsafe<{ k: string }[]>(
+    `SELECT ${KEY[table]} AS k FROM ${tableSql(table)} t WHERE ${OWNER[table]} = $1`,
+    [partnerId],
+  );
+  return rows.map((row) => row.k);
+}
 
 describe.skipIf(server.url === undefined)(
   `migration 0011 applied — RLS as app_web${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
@@ -163,68 +225,64 @@ describe.skipIf(server.url === undefined)(
       await scratch.drop();
     });
 
-    it("T-16 / AC-16: each partner sees its own rows only, and cannot touch the other's", async () => {
+    it("T-16 / AC-16: each partner sees exactly its own rows, by the keys captured as owner, and cannot touch the other's", async () => {
       const report = await rolledBack(scratch.sql, async (tx) => {
         const countryId = await country(tx);
-        const [product] = await tx<{ id: string }[]>`
-          INSERT INTO product (sku, product_type, primary_flower, colour_primary, style, price_tier,
-                               substitution_class, freshness_days)
-          VALUES ('SKU-RLS-1', 'bouquet', 'rose', 'red', 'classic', 'classic', 'roses', 7)
-          RETURNING id`;
-        const a = await partnerWorld(tx, countryId, product?.id ?? "");
-        const b = await partnerWorld(tx, countryId, product?.id ?? "");
+        const productId = await product(tx);
+        const a = await partnerWorld(tx, countryId, productId);
+        const b = await partnerWorld(tx, countryId, productId);
         const out: Record<string, Record<string, number>> = {};
         for (const table of Object.keys(
           PARTNER_SCOPED_TABLES,
-        ) as (keyof typeof PARTNER_SCOPED_TABLES)[]) {
-          const owner = OWNER[table];
-          const count = (sp: Tx, partnerId: string) =>
-            sp.unsafe<{ n: number }[]>(
-              `SELECT count(*)::int AS n FROM ${tableSql(table)} t WHERE ${owner} = $1`,
-              [partnerId],
-            );
-          const change = (
-            sp: Tx,
-            verb: "UPDATE" | "DELETE",
-            partnerId: string,
-          ) =>
+        ) as PartnerTable[]) {
+          const keysA = await keysOf(tx, table, a.partnerId);
+          const keysB = await keysOf(tx, table, b.partnerId);
+          const hits = (sp: Tx, keys: string[]) =>
+            sp
+              .unsafe<{ n: number }[]>(
+                `SELECT count(*)::int AS n FROM ${tableSql(table)} t WHERE ${KEY[table]} = ANY($1::text[])`,
+                [keys],
+              )
+              .then((rows) => rows[0]?.n ?? -1);
+          const change = (sp: Tx, verb: "UPDATE" | "DELETE", keys: string[]) =>
             sp.unsafe(
               verb === "UPDATE"
-                ? `UPDATE ${tableSql(table)} t SET ${TOUCH[table]} WHERE ${owner} = $1`
-                : `DELETE FROM ${tableSql(table)} t WHERE ${owner} = $1`,
-              [partnerId],
+                ? `UPDATE ${tableSql(table)} t SET ${TOUCH[table]} WHERE ${KEY[table]} = ANY($1::text[])`
+                : `DELETE FROM ${tableSql(table)} t WHERE ${KEY[table]} = ANY($1::text[])`,
+              [keys],
             );
-          const [superA] = await count(tx, a.partnerId);
           const asA = await as(
             tx,
             { role: "partner", partnerIds: [a.partnerId] },
             async (sp) => ({
-              own: (await count(sp, a.partnerId))[0]?.n ?? -1,
-              other: (await count(sp, b.partnerId))[0]?.n ?? -1,
-              ownUpdate: (await change(sp, "UPDATE", a.partnerId)).count,
+              own: await hits(sp, keysA),
+              other: await hits(sp, keysB),
+              all: await countOf(sp, table),
+              ownUpdate: (await change(sp, "UPDATE", keysA)).count,
             }),
           );
           const asB = await as(
             tx,
             { role: "partner", partnerIds: [b.partnerId] },
             async (sp) => ({
-              own: (await count(sp, b.partnerId))[0]?.n ?? -1,
-              other: (await count(sp, a.partnerId))[0]?.n ?? -1,
-              updateA: (await change(sp, "UPDATE", a.partnerId)).count,
-              deleteA: (await change(sp, "DELETE", a.partnerId)).count,
+              own: await hits(sp, keysB),
+              other: await hits(sp, keysA),
+              updateA: (await change(sp, "UPDATE", keysA)).count,
+              deleteA: (await change(sp, "DELETE", keysA)).count,
             }),
           );
-          const [afterA] = await count(tx, a.partnerId);
           out[table] = {
-            rowsOfA: superA?.n ?? -1,
+            rowsOfA: keysA.length,
+            rowsOfB: keysB.length,
             aSeesA: asA.own,
             aSeesB: asA.other,
+            aSeesInAll: asA.all,
             aUpdatesOwn: asA.ownUpdate,
             bSeesB: asB.own,
             bSeesA: asB.other,
             bUpdatesA: asB.updateA,
             bDeletesA: asB.deleteA,
-            rowsOfAAfter: afterA?.n ?? -1,
+            rowsOfAAfter: (await keysOf(tx, table, a.partnerId)).length,
           };
         }
         return out;
@@ -235,8 +293,10 @@ describe.skipIf(server.url === undefined)(
         expect(n, table).toBeGreaterThan(0);
         expect(row, table).toEqual({
           rowsOfA: n,
+          rowsOfB: n,
           aSeesA: n,
           aSeesB: 0,
+          aSeesInAll: n,
           aUpdatesOwn: mode === "write" ? n : 0,
           bSeesB: n,
           bSeesA: 0,
@@ -247,45 +307,232 @@ describe.skipIf(server.url === undefined)(
       }
     });
 
-    it("T-16: a partner cannot write a row for another partner, and no role other than partner reads partner rows", async () => {
+    it("§8 / item 1: partners read orders only through the views, never the buyer, the token or retail totals", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         const countryId = await country(tx);
-        const a = await partner(tx, countryId);
-        const b = await partner(tx, countryId);
-        const insertForB = await as(
+        const productId = await product(tx);
+        const a = await partnerWorld(tx, countryId, productId);
+        const b = await partnerWorld(tx, countryId, productId);
+        const viewColumns = await tx<
+          { table_name: string; column_name: string }[]
+        >`
+          SELECT table_name, column_name FROM information_schema.columns
+          WHERE table_schema = 'public'
+            AND table_name IN ('partner_order', 'partner_order_line', 'customer_order_event')
+          ORDER BY table_name, ordinal_position`;
+        const seen = await as(
           tx,
-          { role: "partner", partnerIds: [a] },
-          (sp) =>
+          { role: "partner", partnerIds: [a.partnerId] },
+          async (sp) => ({
+            orderRows: await countOf(sp, "order"),
+            orderLeak: await countOf(
+              sp,
+              "order",
+              "t.buyer_snapshot IS NOT NULL OR t.customer_id IS NOT NULL OR t.public_token IS NOT NULL",
+            ),
+            lineRows: await countOf(sp, "order_line"),
+            viewOrders: (
+              await sp<{ id: string }[]>`SELECT id FROM partner_order`
+            ).map((r) => r.id),
+            viewLines: (
+              await sp<
+                { order_id: string }[]
+              >`SELECT order_id FROM partner_order_line`
+            ).map((r) => r.order_id),
+            buyerColumn: await pgFailure(
+              sp,
+              (inner) => inner`SELECT buyer_snapshot FROM partner_order`,
+            ),
+            writeThroughView: await pgFailure(
+              sp,
+              (inner) => inner`UPDATE partner_order SET delivery_window = 'pm'`,
+            ),
+          }),
+        );
+        return { a, b, viewColumns, seen };
+      });
+      const columns = (table: string) =>
+        result.viewColumns
+          .filter((c) => c.table_name === table)
+          .map((c) => c.column_name);
+      expect(columns("partner_order")).toEqual([
+        ...PARTNER_VIEWS.partner_order,
+      ]);
+      expect(columns("partner_order_line")).toEqual([
+        ...PARTNER_VIEWS.partner_order_line,
+      ]);
+      expect(columns("customer_order_event")).toEqual([
+        ...CUSTOMER_VIEWS.customer_order_event,
+      ]);
+      for (const forbidden of PARTNER_FORBIDDEN_COLUMNS) {
+        expect(columns("partner_order"), forbidden).not.toContain(forbidden);
+        expect(columns("partner_order_line"), forbidden).not.toContain(
+          forbidden,
+        );
+      }
+      expect(result.seen.orderRows).toBe(0);
+      expect(result.seen.orderLeak).toBe(0);
+      expect(result.seen.lineRows).toBe(0);
+      expect(result.seen.viewOrders).toEqual([result.a.orderId]);
+      expect(result.seen.viewLines).toEqual([result.a.orderId]);
+      expect(result.seen.buyerColumn.code).toBe("42703");
+      expect(result.seen.writeThroughView.code).toBe("42501");
+    });
+
+    it("item 1: a florist whose offer was declined or timed out reads nothing of the order; an accepted one still does", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const countryId = await country(tx);
+        const productId = await product(tx);
+        const a = await partnerWorld(tx, countryId, productId);
+        const probe = () =>
+          as(
+            tx,
+            { role: "partner", partnerIds: [a.partnerId] },
+            async (sp) => ({
+              order: (
+                await sp<
+                  { n: number }[]
+                >`SELECT count(*)::int AS n FROM partner_order`
+              )[0]?.n,
+              lines: (
+                await sp<
+                  { n: number }[]
+                >`SELECT count(*)::int AS n FROM partner_order_line`
+              )[0]?.n,
+              proof: await countOf(sp, "delivery_proof"),
+              note: await countOf(sp, "substitution_note"),
+              assignment: await countOf(sp, "order_assignment"),
+            }),
+          );
+        const out: Record<string, unknown> = { open: await probe() };
+        for (const response of ["decline", "timeout", "accept"] as const) {
+          await tx`UPDATE order_assignment SET response = ${response}, responded_at = now()
+                   WHERE id = ${a.assignmentId}`;
+          out[response] = await probe();
+        }
+        return out;
+      });
+      const visible = { order: 1, lines: 1, proof: 1, note: 1, assignment: 1 };
+      const gone = { order: 0, lines: 0, proof: 0, note: 0, assignment: 1 };
+      expect(result).toEqual({
+        open: visible,
+        decline: gone,
+        timeout: gone,
+        accept: visible,
+      });
+    });
+
+    it("item 2 / H3: a partner writes only its own coverage and blackouts — never another partner's, never its payout", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const countryId = await country(tx);
+        const productId = await product(tx);
+        const a = await partnerWorld(tx, countryId, productId);
+        const b = await partnerWorld(tx, countryId, productId);
+        const ctx = { role: "partner", partnerIds: [a.partnerId] };
+        const out = {
+          raisePayout: await as(
+            tx,
+            ctx,
+            async (sp) =>
+              (
+                await sp`UPDATE partner_catalog_mapping SET partner_payout_minor = 999999
+                      WHERE partner_id = ${a.partnerId}`
+              ).count,
+          ),
+          toggleFulfil: await as(
+            tx,
+            ctx,
+            async (sp) =>
+              (
+                await sp`UPDATE partner_catalog_mapping SET can_fulfil = false
+                      WHERE partner_id = ${a.partnerId}`
+              ).count,
+          ),
+          insertMapping: await as(tx, ctx, (sp) =>
             pgFailure(
               sp,
               (inner) =>
-                inner`INSERT INTO partner_blackout (partner_id, date) VALUES (${b}, DATE '2027-03-01')`,
+                inner`INSERT INTO partner_catalog_mapping (partner_id, product_id, tier_key, partner_payout_minor, currency_code)
+                    VALUES (${a.partnerId}, ${productId}, 'large', 1, 'PLN')`,
             ),
-        );
-        const customerSees = await as(
-          tx,
-          { role: "customer", partnerIds: [a] },
-          async (sp) =>
-            (
-              await sp<
-                { n: number }[]
-              >`SELECT count(*)::int AS n FROM fulfillment_partner`
-            )[0]?.n,
-        );
-        return { insertForB, customerSees };
+          ),
+          ownCoverage: await as(
+            tx,
+            ctx,
+            async (sp) =>
+              (
+                await sp`UPDATE partner_coverage SET capacity_per_day = 10
+                      WHERE partner_id = ${a.partnerId}`
+              ).count,
+          ),
+          coverageToB: await as(tx, ctx, (sp) =>
+            pgFailure(
+              sp,
+              (inner) =>
+                inner`UPDATE partner_coverage SET partner_id = ${b.partnerId} WHERE partner_id = ${a.partnerId}`,
+            ),
+          ),
+          insertCoverageForB: await as(tx, ctx, (sp) =>
+            pgFailure(sp, async (inner) => {
+              const [city] = await inner<{ id: string }[]>`
+                SELECT city_id AS id FROM partner_coverage WHERE partner_id = ${a.partnerId}`;
+              await inner`INSERT INTO partner_coverage (partner_id, city_id, capacity_per_day)
+                          VALUES (${b.partnerId}, ${city?.id ?? ""}, 5)`;
+            }),
+          ),
+          blackoutToB: await as(tx, ctx, (sp) =>
+            pgFailure(
+              sp,
+              (inner) =>
+                inner`UPDATE partner_blackout SET partner_id = ${b.partnerId} WHERE partner_id = ${a.partnerId}`,
+            ),
+          ),
+          insertBlackoutForB: await as(tx, ctx, (sp) =>
+            pgFailure(
+              sp,
+              (inner) =>
+                inner`INSERT INTO partner_blackout (partner_id, date) VALUES (${b.partnerId}, DATE '2027-03-01')`,
+            ),
+          ),
+          customerSeesPartners: await as(
+            tx,
+            { role: "customer", partnerIds: [a.partnerId] },
+            (sp) => countOf(sp, "fulfillment_partner"),
+          ),
+        };
+        const [payout] = await tx<{ minor: string }[]>`
+          SELECT partner_payout_minor::text AS minor FROM partner_catalog_mapping
+          WHERE partner_id = ${a.partnerId}`;
+        return { ...out, payoutAfter: payout?.minor };
       });
-      expect(result.insertForB.code).toBe("42501");
-      expect(result.customerSees).toBe(0);
+      expect(result.raisePayout).toBe(0);
+      expect(result.toggleFulfil).toBe(0);
+      expect(result.payoutAfter).toBe("9000");
+      expect(result.insertMapping.code).toBe("42501");
+      expect(result.ownCoverage).toBe(1);
+      for (const key of [
+        "coverageToB",
+        "insertCoverageForB",
+        "blackoutToB",
+        "insertBlackoutForB",
+      ] as const) {
+        expect(result[key].code, key).toBe("42501");
+      }
+      expect(result.customerSeesPartners).toBe(0);
     });
 
-    it("customer scope: a buyer reads their own records only, and edits only their address book", async () => {
+    it("customer scope: a buyer reads their own records only, cannot re-point ownership, and edits only contact fields", async () => {
       const report = await rolledBack(scratch.sql, async (tx) => {
         const countryId = await country(tx);
         const users = await tx<{ id: string }[]>`
           INSERT INTO users (email) VALUES ('buyer-a@example.test'), ('buyer-b@example.test') RETURNING id`;
         const ua = users[0]?.id ?? "";
         const ub = users[1]?.id ?? "";
-        const worlds: { customerId: string; orderId: string }[] = [];
+        const worlds: {
+          customerId: string;
+          recipientId: string;
+          orderId: string;
+        }[] = [];
         for (const userId of [ua, ub]) {
           const customerId = await customer(tx, userId);
           const recipientId = await recipient(tx, customerId);
@@ -309,58 +556,199 @@ describe.skipIf(server.url === undefined)(
             VALUES (${orderId}, 'stripe', ${unique("pi_")}, 'authorised', 'card', 18900, 'PLN') RETURNING id`;
           await tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status)
                    VALUES (${payment?.id ?? ""}, ${unique("re_")}, 500, 'PLN', 'addon_missing', 'succeeded')`;
-          worlds.push({ customerId, orderId });
+          worlds.push({ customerId, recipientId, orderId });
         }
-        const out: Record<
-          string,
-          { own: number; other: number; total: number }
-        > = {};
+        const [mine, theirs] = worlds as [
+          (typeof worlds)[number],
+          (typeof worlds)[number],
+        ];
+        const ctx = { role: "customer", userId: ua };
+        const out: Record<string, { own: number; total: number }> = {};
         for (const table of Object.keys(CUSTOMER_SCOPED_TABLES)) {
-          const [total] = await tx.unsafe<{ n: number }[]>(
-            `SELECT count(*)::int AS n FROM ${tableSql(table)}`,
+          out[table] = {
+            total: await countOf(tx, table),
+            own: await as(tx, ctx, (sp) => countOf(sp, table)),
+          };
+        }
+        const refused = (fn: (sp: Tx) => Promise<unknown>) =>
+          as(tx, ctx, (sp) => pgFailure(sp, fn)).then(
+            (f) => f.raised ?? f.code,
           );
-          const seen = await as<number>(
+        const edits = {
+          rawEvents: await as(tx, ctx, (sp) => countOf(sp, "order_event")),
+          timeline: await as(tx, ctx, async (sp) =>
+            (
+              await sp<
+                { order_id: string }[]
+              >`SELECT order_id FROM customer_order_event`
+            ).map((r) => r.order_id),
+          ),
+          ownName: await as(
             tx,
-            { role: "customer", userId: ua },
+            ctx,
             async (sp) =>
               (
-                await sp.unsafe<{ n: number }[]>(
-                  `SELECT count(*)::int AS n FROM ${tableSql(table)}`,
-                )
-              )[0]?.n ?? -1,
-          );
-          out[table] = { own: seen, other: 0, total: total?.n ?? -1 };
-        }
-        const edits = await as(
-          tx,
-          { role: "customer", userId: ua },
-          async (sp) => ({
-            ownRecipient: (
-              await sp`UPDATE recipient SET full_name = 'Renamed' WHERE customer_id = ${worlds[0]?.customerId ?? ""}`
-            ).count,
-            otherRecipient: (
-              await sp`UPDATE recipient SET full_name = 'Renamed' WHERE customer_id = ${worlds[1]?.customerId ?? ""}`
-            ).count,
-            ownOrder: (
-              await sp`UPDATE "order" SET delivery_window = 'am' WHERE id = ${worlds[0]?.orderId ?? ""}`
-            ).count,
-            ownUser: (
-              await sp<{ n: number }[]>`SELECT count(*)::int AS n FROM users`
-            )[0]?.n,
-          }),
-        );
-        return { out, edits };
+                await sp`UPDATE customer SET name = 'Renamed' WHERE id = ${mine.customerId}`
+              ).count,
+          ),
+          otherName: await as(
+            tx,
+            ctx,
+            async (sp) =>
+              (
+                await sp`UPDATE customer SET name = 'Renamed' WHERE id = ${theirs.customerId}`
+              ).count,
+          ),
+          repointUser: await refused(
+            (sp) =>
+              sp`UPDATE customer SET user_id = ${ub} WHERE id = ${mine.customerId}`,
+          ),
+          consent: await refused(
+            (sp) =>
+              sp`UPDATE customer SET marketing_consent = true WHERE id = ${mine.customerId}`,
+          ),
+          redact: await refused(
+            (sp) =>
+              sp`UPDATE customer SET redacted = true, redacted_at = now() WHERE id = ${mine.customerId}`,
+          ),
+          email: await refused(
+            (sp) =>
+              sp`UPDATE customer SET email_normalised = 'other@example.test' WHERE id = ${mine.customerId}`,
+          ),
+          addressForOther: await refused(
+            (sp) =>
+              sp`INSERT INTO address (customer_id, kind, lines, city, country_iso2)
+               VALUES (${theirs.customerId}, 'billing', '{"3 Test Street"}', 'Testtown', 'GB')`,
+          ),
+          repointAddress: await refused(
+            (sp) =>
+              sp`UPDATE address SET customer_id = ${theirs.customerId} WHERE customer_id = ${mine.customerId}`,
+          ),
+          repointRecipient: await refused(
+            (sp) =>
+              sp`UPDATE recipient SET customer_id = ${theirs.customerId} WHERE id = ${mine.recipientId}`,
+          ),
+          repointRecipientAddress: await refused(
+            (sp) =>
+              sp`UPDATE recipient_address SET recipient_id = ${theirs.recipientId}
+               WHERE recipient_id = ${mine.recipientId}`,
+          ),
+          ownOrder: await as(
+            tx,
+            ctx,
+            async (sp) =>
+              (
+                await sp`UPDATE "order" SET delivery_window = 'am' WHERE id = ${mine.orderId}`
+              ).count,
+          ),
+          ownUser: await as(tx, ctx, (sp) => countOf(sp, "users")),
+        };
+        return { out, edits, mine };
       });
       for (const [table, counts] of Object.entries(report.out)) {
-        expect(counts.total, table).toBe(2);
-        expect(counts.own, table).toBe(1);
+        expect(counts, table).toEqual({ total: 2, own: 1 });
       }
       expect(report.edits).toEqual({
-        ownRecipient: 1,
-        otherRecipient: 0,
+        rawEvents: 0,
+        timeline: [report.mine.orderId],
+        ownName: 1,
+        otherName: 0,
+        repointUser: "42501",
+        consent: "CUSTOMER_COLUMN_READ_ONLY",
+        redact: "CUSTOMER_COLUMN_READ_ONLY",
+        email: "CUSTOMER_COLUMN_READ_ONLY",
+        addressForOther: "42501",
+        repointAddress: "42501",
+        repointRecipient: "42501",
+        repointRecipientAddress: "42501",
         ownOrder: 0,
         ownUser: 1,
       });
+    });
+
+    it("item 4 / H3: no app.role, an empty one or an unknown one reads as public, and public with a user id reads nothing private", async () => {
+      const PRIVATE = [
+        "order",
+        "customer",
+        "payment",
+        "webhook_inbox",
+        "users",
+        "address",
+        "partner_member",
+      ];
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const countryId = await country(tx);
+        const [user] = await tx<{ id: string }[]>`
+          INSERT INTO users (email) VALUES ('buyer@example.test') RETURNING id`;
+        const userId = user?.id ?? "";
+        const customerId = await customer(tx, userId);
+        await tx`INSERT INTO address (customer_id, kind, lines, city, country_iso2)
+                 VALUES (${customerId}, 'billing', '{"1 Test Street"}', 'Testtown', 'GB')`;
+        const orderId = await insertPlacedOrder(tx, {
+          customerId,
+          recipientId: await recipient(tx, customerId),
+          countryId,
+        });
+        await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
+                 VALUES (${orderId}, 'stripe', 'pi_unset', 'authorised', 'card', 18900, 'PLN')`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw)
+                 VALUES ('stripe', 'evt_unset', true, '{}')`;
+        const p = await partner(tx, countryId);
+        await tx`INSERT INTO partner_member (user_id, partner_id, role) VALUES (${userId}, ${p}, 'owner')`;
+        const owner: Record<string, number> = {};
+        for (const table of PRIVATE) owner[table] = await countOf(tx, table);
+        const read = (sp: Tx) =>
+          Promise.all(
+            [...PRIVATE, "country"].map((table) => countOf(sp, table)),
+          ).then((counts) =>
+            Object.fromEntries(
+              [...PRIVATE, "country"].map((t, i) => [t, counts[i]]),
+            ),
+          );
+        return {
+          owner,
+          // Nothing set at all: only the role switch.
+          unset: await inSavepoint(
+            tx,
+            (sp) => sp.unsafe("SET LOCAL ROLE app_web"),
+            read,
+          ),
+          empty: await inSavepoint(
+            tx,
+            async (sp) => {
+              await sp`SELECT set_config('app.role', '', true)`;
+              await sp`SELECT set_config('app.user_id', ${userId}, true)`;
+              await sp`SELECT set_config('app.partner_ids', ${p}, true)`;
+              await sp.unsafe("SET LOCAL ROLE app_web");
+            },
+            read,
+          ),
+          unknown: await as(
+            tx,
+            { role: "root", userId, partnerIds: [p] },
+            read,
+          ),
+          publicWithUser: await as(
+            tx,
+            { role: "public", userId, partnerIds: [p] },
+            read,
+          ),
+        };
+      });
+      for (const table of PRIVATE) {
+        expect(
+          result.owner[table],
+          `${table} has rows to hide`,
+        ).toBeGreaterThan(0);
+      }
+      const expected = {
+        ...Object.fromEntries(PRIVATE.map((t) => [t, 0])),
+        country: 1,
+      };
+      expect(result.unset).toEqual(expected);
+      expect(result.empty).toEqual(expected);
+      expect(result.unknown).toEqual(expected);
+      expect(result.publicWithUser).toEqual(expected);
     });
 
     it("T-17 / AC-17: public reads the reference set as fully as the owner sees it, and nothing private", async () => {
@@ -371,15 +759,11 @@ describe.skipIf(server.url === undefined)(
         await tx`INSERT INTO country_locale_content (country_id, locale_code, state, h1, intro_md)
                  VALUES (${countryId}, 'en', 'guide', 'Flowers to Poland', 'Intro')`;
         await tx`INSERT INTO city (country_id) VALUES (${countryId})`;
-        const [product] = await tx<{ id: string }[]>`
-          INSERT INTO product (sku, product_type, primary_flower, colour_primary, style, price_tier,
-                               substitution_class, freshness_days)
-          VALUES ('SKU-RLS-2', 'bouquet', 'rose', 'red', 'classic', 'classic', 'roses', 7)
-          RETURNING id`;
+        const productId = await product(tx);
         await tx`INSERT INTO product_translation (product_id, locale_code, name, slug)
-                 VALUES (${product?.id ?? ""}, 'en', 'Red roses', 'red-roses')`;
+                 VALUES (${productId}, 'en', 'Red roses', 'red-roses')`;
         await tx`INSERT INTO country_price (product_id, country_id, retail_minor, currency_code, vat_rate_bp, active_from)
-                 VALUES (${product?.id ?? ""}, ${countryId}, 18900, 'PLN', 800, DATE '2026-10-01')`;
+                 VALUES (${productId}, ${countryId}, 18900, 'PLN', 800, DATE '2026-10-01')`;
         const [category] = await tx<{ id: string }[]>`
           INSERT INTO category (key, kind) VALUES ('bouquets', 'productType') RETURNING id`;
         await tx`INSERT INTO category_translation (category_id, locale_code, name, slug)
@@ -392,72 +776,82 @@ describe.skipIf(server.url === undefined)(
         await mediaAsset(tx, { kind: "product", visibility: "private" });
         await tx`INSERT INTO review (source, rating, moderation_status, published_at)
                  VALUES ('internal', 5, 'published', now()), ('internal', 1, 'pending', NULL)`;
-        const buyer = await customer(tx);
-        await insertPlacedOrder(tx, {
-          customerId: buyer,
-          recipientId: await recipient(tx, buyer),
-          countryId,
-        });
         const [someone] = await tx<{ id: string }[]>`
           INSERT INTO users (email) VALUES ('someone@example.test') RETURNING id`;
+        const someoneId = someone?.id ?? "";
         await tx`INSERT INTO sessions (session_token, user_id, expires)
-                 VALUES ('t17-session', ${someone?.id ?? ""}, now() + interval '1 day')`;
-        const world = await partnerWorld(tx, countryId, product?.id ?? "");
+                 VALUES ('t17-session', ${someoneId}, now() + interval '1 day')`;
+        await tx`INSERT INTO accounts (user_id, type, provider, provider_account_id)
+                 VALUES (${someoneId}, 'email', 'resend', 'someone@example.test')`;
+        await tx`INSERT INTO verification_tokens (identifier, token, expires)
+                 VALUES ('someone@example.test', 'hashed', now() + interval '1 hour')`;
+        const world = await partnerWorld(tx, countryId, productId);
         await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
                  VALUES (${world.orderId}, 'stripe', 'pi_t17', 'authorised', 'card', 18900, 'PLN')`;
         await tx`INSERT INTO outbox (event_id, order_id, targets, payload, payload_version)
                  VALUES (gen_random_uuid(), ${world.orderId}, '{crm}', '{}', 1)`;
         await tx`INSERT INTO audit_log (actor_label, action, entity_table, entity_id, after, request_id)
                  VALUES ('founder', 'country.status_changed', 'country', 'PL', '{"status": "demo"}', 'req-t17')`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw)
+                 VALUES ('stripe', 'evt_t17', true, '{}')`;
+        await tx`INSERT INTO consent_log (subject_kind, subject_ref, choices, policy_version, occurred_at)
+                 VALUES ('customer', gen_random_uuid(), '{"analytics": false}', 1, now())`;
+        await tx`INSERT INTO partner_application (business_name, city, language_code)
+                 VALUES ('Applicant Florist', 'Kraków', 'pl')`;
 
-        const count = (sp: Tx, table: string) =>
-          sp
-            .unsafe<{ n: number }[]>(
-              `SELECT count(*)::int AS n FROM ${tableSql(table)}`,
-            )
-            .then((rows) => rows[0]?.n ?? -1);
         const PRIVATE = [
           "customer",
           "recipient",
           "order",
+          "order_line",
           "order_event",
           "payment",
           "outbox",
           "audit_log",
           "users",
           "sessions",
+          "accounts",
+          "verification_tokens",
+          "webhook_inbox",
+          "consent_log",
+          "partner_application",
           "feature_flag",
           "retention_policy",
           ...Object.keys(PARTNER_SCOPED_TABLES),
         ];
         const owner: Record<string, number> = {};
-        for (const table of [
-          ...PUBLIC_REFERENCE_TABLES,
-          ...PRIVATE,
-          "media_asset",
-          "review",
-        ]) {
-          owner[table] = await count(tx, table);
+        for (const table of [...PUBLIC_REFERENCE_TABLES, ...PRIVATE]) {
+          owner[table] = await countOf(tx, table);
         }
         const seen = await as(tx, { role: "public" }, async (sp) => {
           const out: Record<string, number> = {};
           for (const table of [...PUBLIC_REFERENCE_TABLES, ...PRIVATE]) {
-            out[table] = await count(sp, table);
+            out[table] = await countOf(sp, table);
           }
-          out.media_asset_private =
+          out.media_asset_private = await countOf(
+            sp,
+            "media_asset",
+            "t.visibility <> 'public'",
+          );
+          out.media_asset = await countOf(sp, "media_asset");
+          out.review_unpublished = await countOf(
+            sp,
+            "review",
+            "t.moderation_status <> 'published'",
+          );
+          out.review = await countOf(sp, "review");
+          out.partner_order =
             (
               await sp<
                 { n: number }[]
-              >`SELECT count(*)::int AS n FROM media_asset WHERE visibility <> 'public'`
+              >`SELECT count(*)::int AS n FROM partner_order`
             )[0]?.n ?? -1;
-          out.media_asset = await count(sp, "media_asset");
-          out.review_unpublished =
+          out.customer_order_event =
             (
               await sp<
                 { n: number }[]
-              >`SELECT count(*)::int AS n FROM review WHERE moderation_status <> 'published'`
+              >`SELECT count(*)::int AS n FROM customer_order_event`
             )[0]?.n ?? -1;
-          out.review = await count(sp, "review");
           return out;
         });
         return { owner, seen, PRIVATE };
@@ -493,6 +887,8 @@ describe.skipIf(server.url === undefined)(
       expect(report.seen.media_asset_private).toBe(0);
       expect(report.seen.review).toBe(1);
       expect(report.seen.review_unpublished).toBe(0);
+      expect(report.seen.partner_order).toBe(0);
+      expect(report.seen.customer_order_event).toBe(0);
     });
 
     it("T-18 / AC-18: app_web has no escape hatch", async () => {

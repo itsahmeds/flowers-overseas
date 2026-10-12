@@ -13,7 +13,9 @@ import { describe, expect, it } from "vitest";
 import * as schema from "../../db/schema/index.ts";
 import {
   CUSTOMER_SCOPED_TABLES,
+  CUSTOMER_VIEWS,
   PARTNER_SCOPED_TABLES,
+  PARTNER_VIEWS,
   PUBLIC_FILTERED_TABLES,
   PUBLIC_REFERENCE_TABLES,
   RLS_EXEMPT_TABLES,
@@ -150,29 +152,43 @@ describe("migration 0011 — each class gets exactly its policies", () => {
     ).toMatch(/a\.visibility = 'public'/);
   });
 
-  it("partner-scoped tables are keyed on app_is_partner_of(…), FOR ALL only for the partner's own configuration", () => {
+  it("partner-scoped tables are keyed on a partner lookup, FOR ALL only for coverage and blackouts", () => {
     for (const [table, mode] of Object.entries(PARTNER_SCOPED_TABLES)) {
       const policy = policiesOf(table).find(
         (p) => p.name === `${table}_partner`,
       );
       expect(policy, table).toBeDefined();
-      expect(policy?.using, table).toMatch(/app_is_partner_of\(/);
+      expect(policy?.using, table).toMatch(
+        /^app_(is_partner_of|partner_owns_payout|partner_sees_order)\(\w+\)$/,
+      );
       expect(policy?.command, table).toBe(mode === "write" ? "ALL" : "SELECT");
       if (mode === "write") expect(policy?.check).toBe(policy?.using);
     }
     expect(
-      policiesOf("order").find((p) => p.name === "order_partner")?.using,
-    ).toMatch(/order_assignment a WHERE a\.order_id = "order"\.id/);
+      Object.entries(PARTNER_SCOPED_TABLES)
+        .filter(([, mode]) => mode === "write")
+        .map(([table]) => table)
+        .sort(),
+    ).toEqual(["partner_blackout", "partner_coverage"]);
+    // Item 1: no row policy lets a partner at the order row or its lines.
+    for (const table of ["order", "order_line"]) {
+      expect(
+        policiesOf(table).filter((p) => /partner/.test(p.using)),
+        table,
+      ).toEqual([]);
+    }
   });
 
-  it("customer-scoped tables are keyed on app_is_customer_user(customer.user_id)", () => {
+  it("customer-scoped tables are keyed on a customer lookup", () => {
     for (const [table, mode] of Object.entries(CUSTOMER_SCOPED_TABLES)) {
       const policies = policiesOf(table).filter((p) =>
         p.name.startsWith(`${table}_customer`),
       );
       expect(policies.length, table).toBeGreaterThan(0);
       for (const policy of policies) {
-        expect(policy.using, table).toMatch(/app_is_customer_user\(/);
+        expect(policy.using, table).toMatch(
+          /^app_(is_customer_user|customer_owns\w*)\(\w+\)$/,
+        );
       }
       const commands = policies.map((p) => p.command).sort();
       expect(commands, table).toEqual(
@@ -185,13 +201,53 @@ describe("migration 0011 — each class gets exactly its policies", () => {
     }
   });
 
-  it("self-scoped tables match app_current_user_id()", () => {
+  it("self-scoped tables match app_is_self(…), which needs a signed-in role", () => {
     for (const table of SELF_SCOPED_TABLES) {
       expect(
         policiesOf(table).find((p) => p.name === `${table}_self`)?.using,
         table,
-      ).toMatch(/= app_current_user_id\(\)$/);
+      ).toMatch(/^app_is_self\(\w+\)$/);
     }
+    expect(up).toMatch(
+      /SELECT app_current_role\(\) IN \('customer', 'partner'\) AND person IS NOT NULL/,
+    );
+  });
+
+  it("the ownership lookups are SECURITY DEFINER with a pinned search_path (item 3)", () => {
+    for (const lookup of [
+      "app_partner_sees_order",
+      "app_partner_owns_payout",
+      "app_customer_owns",
+      "app_customer_owns_recipient",
+      "app_customer_owns_order",
+      "app_customer_owns_payment",
+    ]) {
+      expect(up, lookup).toMatch(
+        new RegExp(
+          `CREATE FUNCTION public\\.${lookup}\\(target uuid\\) RETURNS boolean\\s+LANGUAGE sql STABLE\\s+SECURITY DEFINER\\s+SET search_path = pg_catalog, public`,
+        ),
+      );
+    }
+    expect(up).toMatch(/AND \(a\.response IS NULL OR a\.response = 'accept'\)/);
+  });
+
+  it("the three views are security_barrier, list exactly db/rls.ts's columns, and are read-only to app_web", () => {
+    for (const [view, columns] of Object.entries({
+      ...PARTNER_VIEWS,
+      ...CUSTOMER_VIEWS,
+    })) {
+      const match = new RegExp(
+        `CREATE VIEW public\\.${view} WITH \\(security_barrier = true\\) AS\\s+SELECT ([\\s\\S]*?)\\s+FROM`,
+      ).exec(up);
+      expect(match, view).not.toBeNull();
+      expect(
+        (match?.[1] ?? "").split(",").map((c) => c.trim().replace(/^\w\./, "")),
+        view,
+      ).toEqual([...columns]);
+    }
+    expect(up).toMatch(
+      /REVOKE INSERT, UPDATE, DELETE ON public\.partner_order, public\.partner_order_line,\s+public\.customer_order_event FROM app_web;/,
+    );
   });
 
   it("the helpers read the session variables transaction-locally and parse what withDbContext writes", () => {
@@ -204,7 +260,7 @@ describe("migration 0011 — each class gets exactly its policies", () => {
 });
 
 describe("rollback 0011", () => {
-  it("drops every policy it created, disables RLS on every table, and drops the six helpers", () => {
+  it("drops the views, every policy, RLS on every table, and every function it created", () => {
     for (const policy of POLICIES) {
       expect(down, policy.name).toMatch(
         new RegExp(
@@ -220,7 +276,16 @@ describe("rollback 0011", () => {
     const helpers = [...up.matchAll(/CREATE FUNCTION public\.(\w+)\(/g)].map(
       (m) => m[1],
     );
-    expect(helpers).toHaveLength(6);
+    expect(helpers).toHaveLength(14);
+    for (const view of [
+      ...Object.keys(PARTNER_VIEWS),
+      ...Object.keys(CUSTOMER_VIEWS),
+    ]) {
+      expect(down).toContain(`DROP VIEW IF EXISTS public.${view};`);
+    }
+    expect(down).toContain(
+      "DROP TRIGGER IF EXISTS customer_self_update_guard ON public.customer;",
+    );
     for (const helper of helpers) {
       expect(down).toMatch(
         new RegExp(`DROP FUNCTION IF EXISTS public\\.${helper ?? ""}\\(`),
