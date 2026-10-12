@@ -1,5 +1,5 @@
 {
-  "id": "5fa74bcb-140d-4b40-914d-50f377d093cc",
+  "id": "37c14524-1daf-49d1-bf88-1a7e5c361acc",
   "prevId": "771682df-7d9d-4082-95ff-af1005172189",
   "version": "7",
   "dialect": "postgresql",
@@ -4628,15 +4628,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "compute_hours_used": {
-          "name": "compute_hours_used",
-          "type": "numeric",
+        "compute_seconds_used": {
+          "name": "compute_seconds_used",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "compute_hours_cap": {
-          "name": "compute_hours_cap",
-          "type": "numeric",
+        "compute_seconds_cap": {
+          "name": "compute_seconds_cap",
+          "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
@@ -4675,9 +4675,9 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "db_usage_sample_compute_hours_check": {
-          "name": "db_usage_sample_compute_hours_check",
-          "value": "\"db_usage_sample\".\"compute_hours_used\" >= 0 and \"db_usage_sample\".\"compute_hours_cap\" > 0"
+        "db_usage_sample_compute_seconds_check": {
+          "name": "db_usage_sample_compute_seconds_check",
+          "value": "\"db_usage_sample\".\"compute_seconds_used\" >= 0 and \"db_usage_sample\".\"compute_seconds_cap\" > 0"
         },
         "db_usage_sample_storage_bytes_check": {
           "name": "db_usage_sample_storage_bytes_check",

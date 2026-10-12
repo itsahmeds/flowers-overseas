@@ -30,6 +30,12 @@
 -- so the row carries the production figure (1 day) and the legal note states the staging/PR
 -- figure for the sweep to apply there (TASK-025's carry-forward).
 --
+-- **Deviation from §5.1's text, declared:** `db_usage_sample` stores compute as
+-- `compute_seconds_used` / `compute_seconds_cap bigint`, not `compute_hours_* numeric`. Every
+-- migration is held to "no numeric, decimal, real, float or money column"
+-- (`tests/unit/schema-i18n-geo.test.ts`), and seconds are the unit Neon's consumption API reports,
+-- so the integer loses nothing; the probe (TASK-029) divides by 3600 for the 70 % / 90 % warning.
+--
 -- No policy (RLS is `0011`). Rollback: `0009_notifications_ops.down.sql`.
 
 SET LOCAL ROLE app_owner;
@@ -213,12 +219,12 @@ CREATE TABLE public.db_usage_sample (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   captured_at        timestamptz NOT NULL DEFAULT now(),
   period_start       date        NOT NULL,
-  compute_hours_used numeric     NOT NULL,
-  compute_hours_cap  numeric     NOT NULL,
+  compute_seconds_used bigint   NOT NULL,
+  compute_seconds_cap  bigint   NOT NULL,
   storage_bytes      bigint      NOT NULL,
   source             text        NOT NULL,
-  CONSTRAINT db_usage_sample_compute_hours_check CHECK (
-    compute_hours_used >= 0 AND compute_hours_cap > 0
+  CONSTRAINT db_usage_sample_compute_seconds_check CHECK (
+    compute_seconds_used >= 0 AND compute_seconds_cap > 0
   ),
   CONSTRAINT db_usage_sample_storage_bytes_check CHECK (storage_bytes >= 0),
   CONSTRAINT db_usage_sample_source_check CHECK (source IN ('neon_api', 'manual'))

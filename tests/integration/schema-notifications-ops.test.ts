@@ -109,22 +109,22 @@ describe.skipIf(server.url === undefined)(
                        VALUES ('checkout.nope', 'global', '*', true)`,
           )
         ).constraint;
-        await tx`INSERT INTO db_usage_sample (captured_at, period_start, compute_hours_used,
-                   compute_hours_cap, storage_bytes, source)
-                 VALUES ('2026-10-12T01:00:00Z', '2026-10-01', 12.5, 191.9, 1024, 'neon_api')`;
+        await tx`INSERT INTO db_usage_sample (captured_at, period_start, compute_seconds_used,
+                   compute_seconds_cap, storage_bytes, source)
+                 VALUES ('2026-10-12T01:00:00Z', '2026-10-01', 45000, 690840, 1024, 'neon_api')`;
         out.secondSampleSameDay = (
           await pgFailure(
             tx,
             (
               sp,
-            ) => sp`INSERT INTO db_usage_sample (captured_at, period_start, compute_hours_used,
-                         compute_hours_cap, storage_bytes, source)
-                       VALUES ('2026-10-12T23:00:00Z', '2026-10-01', 13, 191.9, 1024, 'neon_api')`,
+            ) => sp`INSERT INTO db_usage_sample (captured_at, period_start, compute_seconds_used,
+                         compute_seconds_cap, storage_bytes, source)
+                       VALUES ('2026-10-12T23:00:00Z', '2026-10-01', 46800, 690840, 1024, 'neon_api')`,
           )
         ).constraint;
-        await tx`INSERT INTO db_usage_sample (captured_at, period_start, compute_hours_used,
-                   compute_hours_cap, storage_bytes, source)
-                 VALUES ('2026-10-13T00:30:00Z', '2026-10-01', 13, 191.9, 1024, 'neon_api')`;
+        await tx`INSERT INTO db_usage_sample (captured_at, period_start, compute_seconds_used,
+                   compute_seconds_cap, storage_bytes, source)
+                 VALUES ('2026-10-13T00:30:00Z', '2026-10-01', 46800, 690840, 1024, 'neon_api')`;
         out.auditWithoutChange = (
           await pgFailure(
             tx,

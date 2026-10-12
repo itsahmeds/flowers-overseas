@@ -18,7 +18,6 @@ import {
   index,
   integer,
   jsonb,
-  numeric,
   pgTable,
   text,
   timestamp,
@@ -173,15 +172,20 @@ export const dbUsageSample = pgTable(
       .notNull()
       .defaultNow(),
     periodStart: date("period_start").notNull(),
-    computeHoursUsed: numeric("compute_hours_used").notNull(),
-    computeHoursCap: numeric("compute_hours_cap").notNull(),
+    /** Seconds, Neon's own unit: integers, so no `numeric` column exists anywhere. */
+    computeSecondsUsed: bigint("compute_seconds_used", {
+      mode: "bigint",
+    }).notNull(),
+    computeSecondsCap: bigint("compute_seconds_cap", {
+      mode: "bigint",
+    }).notNull(),
     storageBytes: bigint("storage_bytes", { mode: "bigint" }).notNull(),
     source: text("source").notNull(),
   },
   (table) => [
     check(
-      "db_usage_sample_compute_hours_check",
-      sql`${table.computeHoursUsed} >= 0 and ${table.computeHoursCap} > 0`,
+      "db_usage_sample_compute_seconds_check",
+      sql`${table.computeSecondsUsed} >= 0 and ${table.computeSecondsCap} > 0`,
     ),
     check(
       "db_usage_sample_storage_bytes_check",
