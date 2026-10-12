@@ -51,7 +51,7 @@ export function StickyTotalBar({
         <div aria-hidden="true" className="h-[76px] lg:hidden" />
       )}
       <div
-        className={`bg-card/96 border-rule shadow-sticky flex min-h-[76px] items-center gap-[12px] border-t border-solid px-(--gutter-s) pt-[10px] pb-[calc(14px+env(safe-area-inset-bottom))] ${position}`}
+        className={`bg-card border-rule shadow-sticky flex min-h-[76px] items-center gap-[12px] border-t border-solid px-(--gutter-s) pt-[10px] pb-[calc(14px+env(safe-area-inset-bottom))] ${position}`}
         data-fo-sticky-total=""
       >
         <p className="m-0 grid leading-[1.15]">

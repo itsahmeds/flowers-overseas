@@ -163,7 +163,7 @@ export function OrderSummaryPanel({
       <div
         aria-atomic="true"
         aria-live="polite"
-        className="border-ink/18 mt-[14px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]"
+        className="border-rule mt-[14px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]"
         data-fo-total=""
       >
         <span className="font-bold">{totalLabel}</span>

@@ -109,7 +109,7 @@ export function ConfirmationRecap({
           </div>
         )}
       </dl>
-      <div className="border-ink/18 mt-[16px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]">
+      <div className="border-rule mt-[16px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]">
         <span className="font-bold">{totalLabel}</span>
         <strong className={`${MONEY_FIGURE} text-[32px]`}>
           {formatMoney(total, locale)}
