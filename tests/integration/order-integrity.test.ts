@@ -101,6 +101,18 @@ describe.skipIf(server.url === undefined)(
           await sp`SELECT set_config('app.transition_event', 'order.routed', true)`;
           await sp`UPDATE "order" SET status = 'routed' WHERE id = ${id}`;
         });
+        // The two pairs exist under other triples: (placed → authorised) under order.authorised,
+        // and (placed, order.authorised) towards authorised. Each must still be refused.
+        const wrongEvent = await pgFailure(tx, async (sp) => {
+          await sp`SELECT set_config('app.allow_status_write', 'on', true)`;
+          await sp`SELECT set_config('app.transition_event', 'order.captured', true)`;
+          await sp`UPDATE "order" SET status = 'authorised' WHERE id = ${id}`;
+        });
+        const wrongTarget = await pgFailure(tx, async (sp) => {
+          await sp`SELECT set_config('app.allow_status_write', 'on', true)`;
+          await sp`SELECT set_config('app.transition_event', 'order.authorised', true)`;
+          await sp`UPDATE "order" SET status = 'paid_unrouted' WHERE id = ${id}`;
+        });
         const noEvent = await pgFailure(tx, async (sp) => {
           await sp`SELECT set_config('app.allow_status_write', 'on', true)`;
           await sp`SELECT set_config('app.transition_event', '', true)`;
@@ -121,6 +133,8 @@ describe.skipIf(server.url === undefined)(
         return {
           direct,
           illegal,
+          wrongEvent,
+          wrongTarget,
           noEvent,
           sameStatus,
           before: before?.events,
@@ -130,6 +144,8 @@ describe.skipIf(server.url === undefined)(
       expect(result.direct.raised).toBe("ORDER_STATUS_DIRECT_WRITE");
       expect(result.sameStatus.raised).toBe("ORDER_STATUS_DIRECT_WRITE");
       expect(result.illegal.raised).toBe("ORDER_TRANSITION_ILLEGAL");
+      expect(result.wrongEvent.raised).toBe("ORDER_TRANSITION_ILLEGAL");
+      expect(result.wrongTarget.raised).toBe("ORDER_TRANSITION_ILLEGAL");
       expect(result.noEvent.raised).toBe("ORDER_TRANSITION_ILLEGAL");
       expect(result.after).toEqual({
         status: "authorised",
