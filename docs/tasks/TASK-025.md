@@ -14,7 +14,7 @@ Branch `task/TASK-025-retention-sweep`. §8 retention is implemented, not promis
 
 ## Carry-forwards
 
-_None recorded._
+- **From the TASK-019…023 feature PR (PR 210).** `retention_policy.demo_order_personal` has `retention_days = 1`, the production figure. Spec 010 §5.1 A gives 7 days for staging and PR environments, but a migration cannot tell environments apart, so the legal note carries that figure and the sweep must apply it per environment. `recipient_contact` names `recipient`. Its note also covers `recipient_address` and `order.recipient_snapshot`.
 
 ## Escalations
 

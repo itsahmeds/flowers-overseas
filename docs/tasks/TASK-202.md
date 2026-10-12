@@ -30,6 +30,14 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** before TASK-019 is dispatched, the orchestrator writes spec 010 §5.1 A and the catalogue-name pin (§12) into the TASK-019, TASK-020 and TASK-021 briefs (ruling R8). Read the merged migrations before starting: test what is there, migrate what is not.
 - **From `/plan-tasks` (2026-10-05):** TASK-214 and TASK-215 (spec 011) and TASK-222 (spec 012) extend `src/modules/orders` after this merges; none runs beside it.
+- **From the TASK-019…023 feature PR (PR 210).** `0008`'s status trigger:
+  - It needs both `app.allow_status_write = 'on'` and `app.transition_event`, set transaction-locally.
+  - It resets both to `''` itself after the one row it allows, so `transition`'s own reset (A6.7) is a second line of defence.
+  - It checks the triple, not `allowed_actors`. The actor check is the engine's (A6.10 (5)).
+
+  The insert trigger needs only the switch, so `place` sets no event (A6.10 (3)). `"order".mode` is immutable (`ORDER_MODE_IMMUTABLE`), and `"order".status` defaults to `placed`.
+
+  Tests reach a state through `tests/fixtures/order-state.ts` (`walkOrderTo`, `insertPlacedOrder`).
 
 ## Escalations
 

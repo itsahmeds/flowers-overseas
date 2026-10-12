@@ -21,7 +21,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **From the TASK-019…023 feature PR (PR 210).** `0008` makes `order_event` refuse `UPDATE`, `DELETE` and `TRUNCATE`. Every child of `"order"` references it `ON DELETE RESTRICT`. A demo order with events therefore cannot be deleted. This is the escalation this brief already anticipates.
 
 ## Escalations
 

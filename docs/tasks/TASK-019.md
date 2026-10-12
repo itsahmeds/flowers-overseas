@@ -143,6 +143,30 @@ carry-forward states.
 as TASK-018 did), never on the shared Neon database. `0011`'s RLS applied there would reach the
 live site.
 
+## Progress
+
+- 2026-10-12: E1 raised; resolved the same day by spec 002 §14 A6.
+- 2026-10-13: `0007` + rollback, mirror (`db/schema/orders.ts`, `payments.ts`), fixture `tests/fixtures/order-machine.ts`, unit and integration suites. Pushed, PR 210.
+
 ## Result
 
-_Pending._
+PR 210 (feature PR, TASK-019…023).
+
+**AC-14 / T-14.** `order_status` holds A6.4's 26 rows and `order_transition` A6.3's 73 rows (with `allowed_actors`, A6.2). Both equal `tests/fixtures/order-machine.ts` in both directions:
+- in the SQL text (`tests/unit/schema-orders-payments.test.ts`);
+- in a migrated database (`tests/integration/schema-orders-payments.test.ts`).
+
+`is_terminal` is derived from the rows. The distinct events are A6.6's 28, and no status-preserving event has a row.
+
+**Mutation.** Deleting the row `('closed', 'order.disputed', …)` turned "order_transition holds exactly A6.3's 73 rows" red.
+
+**Also covered:**
+- the order and payment tables, with currency-paired foreign keys (a line, a payment or a refund cannot be in another currency than its parent);
+- the deferred `payout_line_order_id_order_id_fk` (RESTRICT), in `DEFERRED_FOREIGN_KEYS`, the mirror and `pg_constraint`;
+- zero `review`, `order` and `payment` rows seeded.
+
+**Values §5.1 left open, now closed lists:**
+- `payment.status`: `pending`, `requires_action`, `authorised`, `captured`, `failed`, `cancelled`;
+- `refund.status`: `pending`, `succeeded`, `failed`, `cancelled`.
+
+Local evidence: PostgreSQL 16.14 (embedded-postgres binaries with ICU, 127.0.0.1:54329), stopped by its PID afterwards. Neon was not touched. Every suite runs on its own scratch database (`tests/integration/support/scratch-db.ts`), and the whole integration project passed in parallel: 13 files passed, 4 skipped; 107 tests passed, 32 skipped.

@@ -36,6 +36,35 @@ Branch `task/TASK-022-schema-auth-roundtrip`. §13 Q1 resolved: Auth.js v5 + Dri
 
 _None recorded._
 
+## Progress
+
+- 2026-10-13: `0010` + rollback, mirror `db/schema/auth.ts`, T-35, the T-01/T-02 round trip, `schema-media.test.ts` moved onto scratch databases (T-11 now runs in CI). Pushed.
+
 ## Result
 
-_Pending._
+PR 210 (feature PR, TASK-019…023).
+
+**AC-4 / T-01 / T-02** (`tests/integration/migrations-round-trip.test.ts`). On an empty PG16 database, the cycle runs three times: migrate, census, roll back to `0000`, census.
+- After migrate, the tables equal the Drizzle mirror's 68 plus `schema_migrations`, with all 19 functions and both roles.
+- After rollback, only `schema_migrations` and its two types remain: no function, no trigger, no role and no extra schema.
+- A final migrate succeeds.
+
+**Mutations.** Deleting `DROP FUNCTION … order_mode_immutable()` from `0008`'s rollback turned it red. So did deleting `DROP TABLE … db_usage_sample` from `0009`'s.
+
+**T-35** (`tests/integration/auth-adapter.test.ts`). `@auth/drizzle-adapter` is not a dependency yet (TASK-217 adds it), so this is the scripted round trip §10 allows. It uses the adapter's own Drizzle calls on our tables:
+- `createUser`, `getUserByEmail`, `createSession`, `getSessionAndUser`;
+- `linkAccount`, the verification-token pair, `deleteSession`;
+- `deleteUser`, which cascades to sessions and accounts.
+
+A unit test pins the adapter's property names on the mirror.
+
+**The three keys into `users`:**
+- `partner_member` CASCADE;
+- `customer` SET NULL: the buyer's row stays and loses `user_id`;
+- `audit_log.actor_user_id` SET NULL.
+
+These are asserted in `pg_constraint` and in behaviour.
+
+**The TASK-017 carry-forward is done.** `tests/integration/schema-media.test.ts` (T-11) now runs on a migrated scratch database of any local server, so CI's `postgres:16` container runs it. The other three pre-existing schema suites are unchanged: they still skip on localhost, and `schema-catalog-pricing` has the known first-query failure.
+
+Local evidence: PostgreSQL 16.14 (embedded-postgres binaries with ICU, 127.0.0.1:54329), stopped by its PID afterwards. Neon was not touched. Every suite runs on its own scratch database (`tests/integration/support/scratch-db.ts`), and the whole integration project passed in parallel: 13 files passed, 4 skipped; 107 tests passed, 32 skipped.
