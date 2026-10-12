@@ -9,8 +9,8 @@
  * documented path instead: it walks the order through **legal rows only**, one transition at a
  * time, exactly as spec 010's `orderService.transition` does — switch and event set with
  * `set_config(…, true)`, one `UPDATE`, both reset to `''`, and the `order_event` row with the next
- * `seq`. It never disables, drops or replaces a trigger and never touches
- * `session_replication_role` (`tests/unit/order-state-fixture.test.ts` scans `tests/` for that).
+ * `seq`. It never switches a trigger off, removes or redefines one, and never changes the
+ * replication role (`tests/unit/order-integrity.test.ts` scans `tests/` for all four, AC-36).
  *
  * `insertPlacedOrder` is the same idea for creation: spec 010's `orderService.place` is the only
  * writer of `"order"` rows, so a test sets the switch transaction-locally for its one insert and

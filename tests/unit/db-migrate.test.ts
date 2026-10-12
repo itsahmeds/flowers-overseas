@@ -169,6 +169,7 @@ describe("the committed migration set", () => {
       "0005_partners.sql",
       "0006_customers.sql",
       "0007_orders_payments.sql",
+      "0008_order_integrity.sql",
     ]);
   });
 });
