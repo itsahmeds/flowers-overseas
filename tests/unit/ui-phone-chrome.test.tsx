@@ -373,9 +373,12 @@ describe("the sticky action bar (AC-48, T-53's stylesheet half)", () => {
     expect(phone).toMatch(
       /body:has\(\[data-fo-action-bar\]\) \{\s*padding-block-end: calc\(76px \+ env\(safe-area-inset-bottom\)\);/u,
     );
+    // On the bar in either state: scoping it to `="shown"` moves the fixed sheet by an `inset`
+    // change each time the bar toggles, a layout shift (T-53's CLS case measured 0.19).
     expect(phone).toMatch(
-      /body:has\(\[data-fo-action-bar="shown"\]\) \[data-fo-consent-sheet="fixed"\] \{\s*inset-block-end: calc\(76px \+ env\(safe-area-inset-bottom\)\);/u,
+      /body:has\(\[data-fo-action-bar\]\) \[data-fo-consent-sheet="fixed"\] \{\s*inset-block-end: calc\(76px \+ env\(safe-area-inset-bottom\)\);/u,
     );
+    expect(phone).not.toMatch(/data-fo-action-bar="/u);
   });
 
   it("renders the action and the caller's price, phone only, and formats nothing", () => {

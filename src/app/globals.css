@@ -743,17 +743,19 @@
 
 /*
  * While a bar is on the page, below `md` (where it is drawn): the document's foot is padded by the
- * bar's block size plus the safe area, so scrolled to the bottom no content box sits under it (a
- * hidden bar keeps the padding on purpose, so showing it changes no scroll height); and while the
- * bar is shown the consent sheet stands on it instead of over its action. Unlayered on purpose, so it wins
- * over the sheet's own `bottom-0` utility (`data-fo-consent-sheet`, `ConsentBannerView`).
+ * bar's block size plus the safe area, so scrolled to the bottom no content box sits under it; and
+ * the consent sheet stands on the bar instead of over its action. Both rules hold whether the bar
+ * is shown or hidden, on purpose: showing it then changes no scroll height, and the fixed sheet
+ * never moves (an `inset` change on a fixed box is a layout shift; AC-48's CLS 0, T-53). Unlayered
+ * on purpose, so it wins over the sheet's own `bottom-0` utility (`data-fo-consent-sheet`,
+ * `ConsentBannerView`).
  */
 @media (width < 48rem) {
   body:has([data-fo-action-bar]) {
     padding-block-end: calc(76px + env(safe-area-inset-bottom));
   }
 
-  body:has([data-fo-action-bar="shown"]) [data-fo-consent-sheet="fixed"] {
+  body:has([data-fo-action-bar]) [data-fo-consent-sheet="fixed"] {
     inset-block-end: calc(76px + env(safe-area-inset-bottom));
   }
 }
