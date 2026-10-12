@@ -13,7 +13,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - `specs/001-*.md` AC-27, T-28
 - `package.json`, `pnpm-lock.yaml`
 
-**Fence:** `package.json` (three pins), `pnpm-lock.yaml`, this brief, the row.
+**Fence:** `package.json` (four exact pins: next, eslint-config-next, @next/env, sharp), `pnpm-lock.yaml`, this brief, the row.
 
 ## Carry-forwards
 
