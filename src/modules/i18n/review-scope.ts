@@ -25,8 +25,7 @@
  * The registry is parsed by zod at module load: a malformed entry stops the process, it is never
  * silently skipped. Entries are added by the task that adds the keys, in the same PR (A17 clause
  * 7); an entry whose `match` reaches no `en` key is a check 11 error, so it cannot be declared
- * ahead of its keys. Empty today: no key of the committed catalogue is reached only by one of
- * these surfaces.
+ * ahead of its keys.
  *
  * Not counted is **not exempt**: price-display, legal and every buyer-facing string still needs
  * the founder's approval before it ships (A17 clause 5); `pnpm i18n:check --summary` lists the
@@ -78,9 +77,47 @@ export type ScopeEntry = z.infer<typeof ScopeEntrySchema>;
 const ScopeSchema = z.array(ScopeEntrySchema);
 
 /**
+ * Spec 010 checkout copy (TASK-201). The components take it as props; only the checkout route,
+ * the checkout module and the gallery resolve it. `checkout.address.*` is left out on purpose:
+ * `src/modules/i18n/address.ts` reads the address-format labels, and every page type renders
+ * that module, so those keys count.
+ */
+const CHECKOUT_PATHS = [
+  "src/app/[locale]/(checkout)/**",
+  "src/app/(dev)/dev/components/**",
+  "src/modules/checkout/**",
+  "src/config/checkout.ts",
+];
+const CHECKOUT_SUBTREES = [
+  "action",
+  "buyer",
+  "card",
+  "demo",
+  "error",
+  "field",
+  "placeKind",
+  "price",
+  "privacy",
+  "progress",
+  "recipient",
+  "summary",
+];
+
+/**
  * Keys that no page an indexer reads can show. Add the entry in the PR that adds the keys.
  */
-const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [];
+const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
+  ...CHECKOUT_SUBTREES.map((subtree) => ({
+    match: `checkout.${subtree}.*`,
+    surface: "checkout",
+    paths: CHECKOUT_PATHS,
+  })),
+  {
+    match: "confirmation",
+    surface: "orderConfirmation",
+    paths: CHECKOUT_PATHS,
+  },
+];
 
 export const NON_INDEXABLE_SCOPE: readonly ScopeEntry[] = Object.freeze(
   ScopeSchema.parse(RAW_NON_INDEXABLE_SCOPE),

@@ -131,7 +131,7 @@ export function CheckoutGallery({
     STEP_IDS.map((id, index) => ({
       id,
       name: t(STEP_NAME_KEYS[id]),
-      ...(index < current ? { href: `?step=${id}` } : {}),
+      ...(index < current ? { href: `#step-${id}` } : {}),
     }));
   const compact = (current: number) =>
     t("progress.compact", {
