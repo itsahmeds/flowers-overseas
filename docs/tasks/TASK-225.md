@@ -25,7 +25,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-13, to the orchestrator, `open`:** `sharp` 0.35.5 loads libvips 8.18.7, but `seed/schema/variants.ts` pins `PINNED_SHARP_VERSION = "0.35.4"` and `PINNED_LIBVIPS_VERSION = "8.18.6"`, and `seed/data/media-variants.json` records both in its header. `tests/unit/media-variants.test.ts` fails (9 cases) and `pnpm media:variants --check` would refuse. Fixing it is a source change outside this task's fence. Measured in a scratch copy (not committed): with the two constants bumped, `pnpm media:variants` over the 175 originals re-derived 862 variants and the manifest differs from the committed one only in its two header lines (sharp, libvips); the committed `public/media/home-hero/*` bytes are identical. So the fix is the two constants plus the two manifest header lines, no re-derivation. Needs the fence widened to `seed/schema/variants.ts` and `seed/data/media-variants.json` (and possibly the TASK-078/080 test expectations if any hard-code the numbers).
 
 ## Progress
 
@@ -33,7 +33,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-13: four pins and the lockfile lift done (`pnpm update sharp source-map-js -r --depth 99` moved `source-map-js` 1.2.1 to 1.2.2 and the stale `sharp` 0.35.4 under next to 0.35.5; no override needed). `pnpm audit --prod --audit-level=high` exits 0; with `next` back at 16.3.6 on the same lock it exits 1. typecheck, lint, format, i18n, no-db, map exit 0. Unit tests red on the sharp pin: see Escalations. Next: once the fence is widened, bump the two constants and the manifest header, rerun `pnpm media:variants --check`, open the draft PR, rebase, ready, `ci:full`.
 
 ## Result
 
