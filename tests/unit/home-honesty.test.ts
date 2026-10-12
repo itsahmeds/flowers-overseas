@@ -284,9 +284,10 @@ describe("AC-16: this spec's message additions change no indexability answer", (
     for (const locale of ["en", "en-gb"] as const) {
       expect(isLocaleIndexable(locale), locale).toBe(true);
       // A short founder review queue — one key from `/review 58`, seven more reworded by
-      // TASK-084's copy pass — sits far below the 5% rule, so English is indexable exactly as
-      // it was before either task. `i18n-messages-schema.test.ts` pins the queue key-exact.
-      expect(unreviewedShare(locale), locale).toBeLessThan(
+      // TASK-084's copy pass — sits within the 5% rule (spec 003 §2: `<=`), so English is
+      // indexable exactly as it was before either task. `i18n-messages-schema.test.ts` pins the
+      // queue key-exact; `i18n-review.test.ts` pins the boundary.
+      expect(unreviewedShare(locale), locale).toBeLessThanOrEqual(
         UNREVIEWED_SHARE_THRESHOLD,
       );
     }

@@ -45,6 +45,11 @@ describe("the shell catalogue", () => {
       // date table's caption, columns and "omitted" cell. Server Components again, so they are in
       // no `ROUTE_NAMESPACES` entry and cost no client bytes.
       "categoryHub",
+      // `checkout` and `confirmation` are spec 010 §7's namespaces (TASK-201): the checkout
+      // primitives' copy, resolved by the page (the gallery today) and handed to the components
+      // as props, so `src/modules/ui/**` names no key. Not counted in the unreviewed share
+      // (`review-scope.ts`), except `checkout.address.*`, which a shared module reads.
+      "checkout",
       "common",
       // `company`, `destinations`, `footer` and `nav` are spec 004 §7's chrome namespaces, added
       // with the config registries that name their keys (TASK-047); the components that render
@@ -52,6 +57,7 @@ describe("the shell catalogue", () => {
       "company",
       // `consent` is the sheet's copy (TASK-051): server-resolved and handed to the islands as
       // props, so it is deliberately absent from `namespacesFor("localeDocument")` below.
+      "confirmation",
       "consent",
       // `corridor` is spec 007 §7's namespace (TASK-091): the corridor page's section headings,
       // the fact labels and their honest blanks, the calendar caption and columns, and the FAQ

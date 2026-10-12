@@ -38,8 +38,10 @@ import {
   isLocaleIndexable,
   localeBetaTag,
   resetReviewCache,
+  reviewBreakdown,
   unreviewedShare,
 } from "../../src/modules/i18n/review.ts";
+import { scopeEntryFor } from "../../src/modules/i18n/review-scope.ts";
 import type { MessageMetaManifest } from "../../src/modules/i18n/schemas.ts";
 
 /** Run `body` with a provider pair injected and the memoised shares cleared on both sides. */
@@ -78,6 +80,19 @@ const UNREVIEWED = {
   reviewed: false,
   sourceHash: "b".repeat(64),
 } as const;
+
+/** The dot paths of a nested catalogue's leaves, the keys the manifests are keyed by. */
+function leafKeys(
+  tree: Readonly<Record<string, unknown>>,
+  prefix = "",
+): string[] {
+  return Object.entries(tree).flatMap(([key, value]) => {
+    const path = prefix === "" ? key : `${prefix}.${key}`;
+    return typeof value === "object" && value !== null
+      ? leafKeys(value as Record<string, unknown>, path)
+      : [path];
+  });
+}
 
 /** A source that answers from `base` except for the locales in `overrides`. */
 function sourceWith(
@@ -159,25 +174,83 @@ describe("the shipped answers (AC-24)", () => {
    * itself. Its exact identity is pinned in `i18n-messages-schema.test.ts`. The module documents
    * this case: "if a hand-edit ever set `reviewed: false` on an `en` key, the source locale would
    * honestly stop being indexable rather than exempting itself" — so the assertions pin the gate,
-   * not the zero. A queue this size is well under the 5 % rule, English stays indexable and
+   * not the zero. A queue at or under the 5 % rule keeps English indexable and
    * un-tagged (the answer AC-24 fixes), and a pass that queued so much copy that English went
    * `noindex` or grew a "beta" tag in the switcher would fail here: the founder's warning light.
    */
   it("indexes `en`: all but the founder's review queue is attested", () => {
+    // Spec 003 §2: `isLocaleIndexable = isLaunch && unreviewedShare <= 0.05`; at the threshold
+    // is still indexable (the boundary is pinned below and in T-24).
     expect(unreviewedShare("en")).toBeGreaterThan(0);
-    expect(unreviewedShare("en")).toBeLessThan(UNREVIEWED_SHARE_THRESHOLD);
+    expect(unreviewedShare("en")).toBeLessThanOrEqual(
+      UNREVIEWED_SHARE_THRESHOLD,
+    );
     expect(isLocaleIndexable("en")).toBe(true);
     expect(localeBetaTag("en")).toBe(false);
   });
 
-  it("indexes `en-gb`, whose 24 inherited English keys are reviewed English", () => {
-    // §13 Q5's thin override: one own key plus the `en` chain. Inheriting *within* a language is
+  it("indexes `en-gb`: the `en` queue plus its own unreviewed `Postcode` override", () => {
+    // §13 Q5's thin override: its own keys plus the `en` chain. Inheriting *within* a language is
     // reviewed copy; inheriting across one is not (the next describe block) — so `en-gb` reads
-    // the same share as `en`, including its founder-review queue.
-    expect(unreviewedShare("en-gb")).toBe(unreviewedShare("en"));
-    expect(unreviewedShare("en-gb")).toBeLessThan(UNREVIEWED_SHARE_THRESHOLD);
+    // `en`'s founder-review queue, plus the one override it ships unreviewed:
+    // `checkout.address.postcode` ("Postcode", TASK-201), which replaces a reviewed `en` key.
+    const en = reviewBreakdown("en");
+    const enGb = reviewBreakdown("en-gb");
+    expect(enGb.counted).toBe(en.counted);
+    expect(enGb.notCounted).toBe(en.notCounted);
+    expect(enGb.unreviewedCounted).toBe(en.unreviewedCounted + 1);
+    expect(unreviewedShare("en-gb")).toBeLessThanOrEqual(
+      UNREVIEWED_SHARE_THRESHOLD,
+    );
     expect(isLocaleIndexable("en-gb")).toBe(true);
     expect(localeBetaTag("en-gb")).toBe(false);
+  });
+
+  it("keeps the shipped `en` indexable up to 5 % unreviewed and drops it one key past", async () => {
+    // The `<=` boundary on the real catalogue and the real scope registry: mark reviewed counted
+    // keys unreviewed until the queue is the most 5 % allows, then one more.
+    const catalogue = repoMessageSource.catalogue("en");
+    const meta = repoMessageSource.meta("en");
+    if (catalogue === undefined || meta === undefined) {
+      throw new Error("the committed `en` catalogue and manifest must load");
+    }
+    const { counted, unreviewedCounted } = reviewBreakdown("en");
+    const limit = Math.floor(counted * UNREVIEWED_SHARE_THRESHOLD);
+    const reviewedCounted = leafKeys(catalogue).filter(
+      (key) => scopeEntryFor(key) === undefined && meta[key]?.reviewed === true,
+    );
+    const answerWith = (queue: number) => {
+      const flipped = new Set(
+        reviewedCounted.slice(0, queue - unreviewedCounted),
+      );
+      const edited: MessageMetaManifest = Object.fromEntries(
+        Object.entries(meta).map(([key, record]) => [
+          key,
+          flipped.has(key) ? UNREVIEWED : record,
+        ]),
+      );
+      return withInjected(
+        {
+          source: sourceWith(repoMessageSource, {
+            en: { catalogue, meta: edited },
+          }),
+        },
+        () => ({
+          share: unreviewedShare("en"),
+          indexable: isLocaleIndexable("en"),
+          beta: localeBetaTag("en"),
+        }),
+      );
+    };
+
+    const atLimit = await answerWith(limit);
+    expect(atLimit.share).toBe(limit / counted);
+    expect(atLimit.share).toBeLessThanOrEqual(UNREVIEWED_SHARE_THRESHOLD);
+    expect(atLimit).toMatchObject({ indexable: true, beta: false });
+
+    const past = await answerWith(limit + 1);
+    expect(past.share).toBe((limit + 1) / counted);
+    expect(past).toMatchObject({ indexable: false, beta: true });
   });
 
   it("refuses `de` and `pl` while their drafts are unreviewed", () => {

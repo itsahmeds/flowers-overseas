@@ -230,8 +230,39 @@ describe("the share counts only keys an indexable page can render (AC-40)", () =
 });
 
 describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
-  it("parses at load, and today holds no entry", () => {
-    expect(NON_INDEXABLE_SCOPE).toEqual([]);
+  it("parses at load, and holds spec 010's checkout and confirmation entries (TASK-201)", () => {
+    const paths = [
+      "src/app/[locale]/(checkout)/**",
+      "src/app/(dev)/dev/components/**",
+      "src/modules/checkout/**",
+      "src/config/checkout.ts",
+    ];
+    expect(NON_INDEXABLE_SCOPE).toEqual([
+      ...[
+        "action",
+        "buyer",
+        "card",
+        "demo",
+        "error",
+        "field",
+        "placeKind",
+        "price",
+        "privacy",
+        "progress",
+        "recipient",
+        "summary",
+      ].map((subtree) => ({
+        match: `checkout.${subtree}.*`,
+        surface: "checkout",
+        paths,
+      })),
+      { match: "confirmation", surface: "orderConfirmation", paths },
+    ]);
+    // The address-format labels are read by a shared module (`src/modules/i18n/address.ts`), so
+    // they count: no entry may reach them.
+    expect(
+      scopeEntryFor("checkout.address.postcode", NON_INDEXABLE_SCOPE),
+    ).toBeUndefined();
     for (const entry of NON_INDEXABLE_SCOPE) {
       expect(ScopeEntrySchema.safeParse(entry).success).toBe(true);
     }

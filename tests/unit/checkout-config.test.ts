@@ -167,10 +167,11 @@ describe("the demo's sample details (§13 Q12, AC-33's data)", () => {
 
 describe("the message keys the checkout names (Appendix A pending the founder)", () => {
   /**
-   * The `en` strings are not in `messages/en.json` yet: shipped `reviewed: false`, the 65 keys
-   * would lift `en`'s unreviewed share from 4.1 % to 14.5 %, past spec 003's 5 % threshold, and
-   * `isLocaleIndexable()` would turn `en` and `en-gb` to `noindex`. They wait for the founder's
-   * batch approval (escalation in `docs/tasks/TASK-200.md`). What ships is the key names.
+   * TASK-201 ships the `en` strings. Spec 003 §14 A17 (TASK-224) keeps checkout and confirmation
+   * copy out of the unreviewed share (`src/modules/i18n/review-scope.ts`), except the
+   * address-format labels a shared module reads, which count. Not counted is not exempt: every
+   * string waits for the founder's batch approval; the five address labels are the ones the
+   * founder approved on 2026-10-12.
    */
   const KEY =
     /^(?:checkout|confirmation)\.[a-z][A-Za-z0-9]*(?:\.[a-z][A-Za-z0-9]*)+$/u;
@@ -190,9 +191,21 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
     for (const key of keys) expect(key, key).toMatch(KEY);
   });
 
-  it("adds no checkout or confirmation string to the catalogue before the founder's approval", () => {
-    expect(checkoutKeys).toEqual([]);
-    expect(Object.keys(enMeta).filter((key) => KEY.test(key))).toEqual([]);
+  it("ships the checkout and confirmation strings unreviewed, but the five approved address labels", () => {
+    expect(checkoutKeys).toHaveLength(66);
+    const metaKeys = Object.keys(enMeta).filter((key) => KEY.test(key));
+    expect(metaKeys.toSorted()).toEqual(checkoutKeys.toSorted());
+    const reviewed = metaKeys.filter((key) => enMeta[key]?.reviewed === true);
+    expect(reviewed.toSorted()).toEqual([
+      "checkout.address.city",
+      "checkout.address.fullName",
+      "checkout.address.phone",
+      "checkout.address.postcode",
+      "checkout.address.street",
+    ]);
+    for (const key of reviewed) {
+      expect(enMeta[key]?.reviewedBy, key).toMatch(/^founder\b/u);
+    }
   });
 });
 
