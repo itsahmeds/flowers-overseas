@@ -101,8 +101,11 @@ One dated bullet per `/review`, newest last.
   current-locale entry and the help link included (hole 1); a source guard fails a server module
   that imports a non-component value from a `"use client"` module (hole 2); `StickyActionBar`
   takes `action: { href: "#…" }` and refuses anything but an in-page link, with no `children`
-  slot (hole 3); the consent sheet stands on the bar only while it is shown (nit). A hidden bar
-  keeps the foot padding on purpose, so showing it changes no scroll height.
+  slot (hole 3). The reviewer's nit (scope the consent sheet's offset to a shown bar) was tried in
+  9e290488 and reverted in ad8c4aa9: an `inset` change on the fixed sheet at each toggle is a
+  layout shift (T-53 measured 0.19). **Carry-forward for TASK-196/197:** both rules stay on
+  `[data-fo-action-bar]` in either state; if the sheet must drop when the bar hides, move it with
+  `translate`, never `inset-block-end`.
 
 ## Escalations
 
@@ -131,6 +134,7 @@ One line per coherent step, newest last.
 - 2026-10-05 — Unit and e2e for T-52 to T-55, header e2e moved to the phone header (8d4df088).
 - 2026-10-05 — CI round 1: corridor `<details>` count scoped to `main`; header visual case photographs the phone banner and Menu; baselines from CI.
 - 2026-10-05 — Local production build in the build slot: fixed the lost `data-fo-menu` attribute (a `"use client"` export is a client reference on the server), the gallery hook, the category hub case; screenshots taken.
+- 2026-10-12 — Finisher: verified review change 1 and breaker holes 1 to 3 (each unit case red on its revert); CLS 0 restored by reverting the consent sheet's `="shown"` scope (ad8c4aa9). The 11 `frame-laptop-band.spec.ts:437` "✘" lines are `test.fail` expected failures owned by later tasks, identical on 8f5d7b28; not red.
 
 ## Result
 
