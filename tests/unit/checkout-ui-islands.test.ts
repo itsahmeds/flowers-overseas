@@ -503,6 +503,15 @@ describe("the on-blur announcement (D1)", () => {
     ).toBe("Cost $& $1 $$: Fix $& {field}");
   });
 
+  it("reads the template once: a placeholder inside the label or the message stays text (r3)", () => {
+    expect(announcement("{field}: {message}", field("A {message}"), "M")).toBe(
+      "A {message}: M",
+    );
+    expect(
+      announcement("{message} ({field})", field("Postcode"), "Use {field}"),
+    ).toBe("Use {field} (Postcode)");
+  });
+
   it("says the message alone when the control has no label", () => {
     expect(
       announcement("{field}: {message}", field(null), "Please fill this in."),
