@@ -309,6 +309,15 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
           )
         )
           continue;
+        // Painted text only: the closed phone menu (TASK-195's `<details>`) keeps a laid-out box
+        // for its help link, y 747 to 791 at 390 × 844, that nobody sees.
+        if (
+          !parent.checkVisibility({
+            visibilityProperty: true,
+            opacityProperty: true,
+          })
+        )
+          continue;
         const range = document.createRange();
         range.selectNodeContents(node);
         for (const box of range.getClientRects()) {
@@ -376,8 +385,11 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
     browser,
   }) => {
     // The bottom suggestion banner of spec 003 is replaced by TASK-119's language popup, a top
-    // sheet at 390 (PR 205). Until it lands, the banner on a phone whose language is not the
-    // page's sits on the bar. Coordinated by test, not by editing the banner (work order).
+    // sheet at 390 (PR 205: `dialog[data-fo-language-popup]`, block-start 0, at most 260 px).
+    // Until it lands, the banner on a phone whose language is not the page's sits on the bar.
+    // The overlay is either one, so the case cannot pass on the banner's absence: once PR 205 is
+    // in, the popup must be found and clear of the bar, and the unexpected pass deletes this mark.
+    // Coordinated by test, not by editing the banner (work order).
     test.fail(
       true,
       "the pre-TASK-119 suggestion banner sits on the viewport's foot; TASK-119 deletes this mark",
@@ -395,7 +407,8 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
     const page = await context.newPage();
     try {
       await page.goto(HOME);
-      const overlay = '[data-fo-banner="shown"]';
+      const overlay =
+        '[data-fo-banner="shown"], dialog[data-fo-language-popup][open]';
       await expect(page.locator(overlay)).toBeVisible();
       expect(
         intersects(await rectOf(page, overlay), await rectOf(page, ACTION)),
