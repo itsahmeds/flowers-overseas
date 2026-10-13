@@ -39,6 +39,14 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
   - index predicates;
   - the three trigger functions of `0005` (`partner_application_media_check`,
     `media_asset_partner_application_guard`, `payout_currency_check`) and their triggers.
+- **From the TASK-019…023 feature PR (PR 210).** RLS coverage reads `db/rls.ts`:
+  - `RLS_EXEMPT_TABLES` lists only `schema_migrations`;
+  - every other table has RLS on and a `<table>_staff` policy.
+
+  `tests/unit/rls-policies.test.ts` already holds the migration equal to that map. The Drizzle mirror models no policy, so drift on policies is a text check.
+- **Also from PR 210: two mutants that change nothing.**
+  - Dropping the partner predicate from `payout_line_partner` changes nothing, because the `EXISTS` on `payout` is itself filtered by `payout`'s policy.
+  - Dropping `REVOKE CREATE ON SCHEMA public` changes nothing on PG15+, where that is already the default.
 
 ## Escalations
 

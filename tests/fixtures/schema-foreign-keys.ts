@@ -218,3 +218,45 @@ export const FOREIGN_KEYS: readonly (readonly [
     "RESTRICT",
   ],
 ];
+
+/**
+ * The keys `0005` and `0006` could not declare because the parent table did not exist yet, each
+ * added by the migration that creates its parent (TASK-018's carry-forward): `0007` for
+ * `"order"` (TASK-019), `0010` for `users` (TASK-022). Same shape as `FOREIGN_KEYS`, plus the
+ * migration that adds the key. Asserted against the SQL text and the mirror
+ * (`tests/unit/schema-partners-customers.test.ts`) and against `pg_constraint`
+ * (`tests/integration/schema-orders-payments.test.ts`, `schema-auth.test.ts`).
+ */
+export const DEFERRED_FOREIGN_KEYS: readonly (readonly [
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+])[] = [
+  [
+    "payout_line_order_id_order_id_fk",
+    "order_id",
+    "order",
+    "id",
+    "RESTRICT",
+    "0007_orders_payments.sql",
+  ],
+  [
+    "partner_member_user_id_users_id_fk",
+    "user_id",
+    "users",
+    "id",
+    "CASCADE",
+    "0010_auth.sql",
+  ],
+  [
+    "customer_user_id_users_id_fk",
+    "user_id",
+    "users",
+    "id",
+    "SET NULL",
+    "0010_auth.sql",
+  ],
+];

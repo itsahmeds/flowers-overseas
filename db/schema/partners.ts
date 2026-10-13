@@ -17,9 +17,8 @@
  *  - **`partnerApplication.mediaAssetIds`** references `media_asset` through the two trigger
  *    functions in the migration, which Drizzle does not model (an array element has no foreign key).
  *
- * Two references wait for their parent table: `partnerMember.userId` (`users`, `0010`, TASK-022)
- * and `payoutLine.orderId` (`"order"`, `0007`, TASK-019). Each of those tasks adds the `references`
- * here when it adds the constraint there.
+ * `partnerMember.userId` references `users` (`0010`, TASK-022) and `payoutLine.orderId`
+ * references `"order"` (`0007`, TASK-019): each key was deferred until its parent table existed.
  */
 import { sql } from "drizzle-orm";
 import {
@@ -39,10 +38,12 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { users } from "./auth.ts";
 import { product, productTier } from "./catalog.ts";
 import { city, country, currency, postcodeZone, rowSources } from "./geo.ts";
 import { locale, timestamps } from "./i18n.ts";
 import { mediaAsset } from "./media.ts";
+import { order } from "./orders.ts";
 
 /* -------------------------------------------------------------------------- */
 /* The closed value sets (CHECK lists, never a Postgres enum — AC-7)          */
@@ -210,8 +211,10 @@ export const partnerTranslation = pgTable(
 export const partnerMember = pgTable(
   "partner_member",
   {
-    /** `users.id` once `0010` exists (TASK-022 adds the reference). */
-    userId: uuid("user_id").notNull(),
+    /** `users.id`: the key `0010` adds (TASK-022); a deleted user's memberships go with them. */
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     partnerId: uuid("partner_id")
       .notNull()
       .references(() => fulfillmentPartner.id, { onDelete: "restrict" }),
@@ -481,8 +484,10 @@ export const payoutLine = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     payoutId: uuid("payout_id").notNull(),
-    /** `"order".id` once `0007` exists (TASK-019 adds the reference). */
-    orderId: uuid("order_id"),
+    /** `"order".id`: the key `0007` adds (TASK-019), `RESTRICT` like every other. */
+    orderId: uuid("order_id").references(() => order.id, {
+      onDelete: "restrict",
+    }),
     amountMinor: bigint("amount_minor", { mode: "bigint" }).notNull(),
     currencyCode: text("currency_code")
       .notNull()

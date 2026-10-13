@@ -21,7 +21,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- **From the TASK-019…023 feature PR (PR 210).** `0008` makes `order_event` refuse `UPDATE`, `DELETE` and `TRUNCATE`. Every child of `"order"` references it `ON DELETE RESTRICT`. A demo order with events therefore cannot be deleted. This is the escalation this brief already anticipates.
+- **From breaker round 1 on PR 210.** A partner moved between `demo` and `active` keeps its existing assignments: `ASSIGNMENT_MODE_MISMATCH` fires on assignment writes only, not on a change of `fulfillment_partner.status`. Decide whether the status flip refuses or cancels open offers.
+- **From review round 1 on PR 210.** The inbox reads orders through `partner_order` and `partner_order_line`. These views have no buyer, no token and no retail price. Each partner sees only orders whose offer is open or accepted: after a decline or timeout the order, its photo and its substitution notes disappear for that florist, while its own `order_assignment` row stays readable. An "expired offer" page can show the assignment, not the order.
 
 ## Escalations
 

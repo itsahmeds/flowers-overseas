@@ -32,8 +32,141 @@ Branch `task/TASK-019-schema-orders-payments`. Reference rows are data, not code
 
 ## Escalations
 
-_None recorded._
+### E1 (2026-10-12, feature PR TASK-019…023): `plan/11` §2 does not fit `order_transition` as the spec defines it
+
+**Resolved 2026-10-12** by spec 002 §14 A6 (approved by the founder; PR 209, decisions log row
+2026-10-12 "Spec 002 A6 approved: the order state machine seed in full"). A6 is binding for this
+task: 73 transition rows (A6.3), 26 states (A6.4), the catalogue of A6.6, `allowed_actors`
+(A6.2), `app.transition_event` with its reset (A6.7), and AC-14, AC-35, AC-36, T-36 and T-37
+(A6.8). Where A6 differs from the proposal below (A6.5 c1–c8), A6 governs.
+
+Raised before any code was written. The work order says to stop on exactly this. The spec gives
+`order_transition(from_status, event, to_status, requires_actor, PRIMARY KEY (from_status, event))`
+and AC-14 asks for "a row for every arrow". Ruling R8 says `event` holds only `plan/11` §2
+catalogue names. The diagram cannot be transcribed under all three without decisions nobody has
+made yet:
+
+1. **Two targets for one (from, event).** "any post-paid ──refund_request──▶ refunded_partial |
+   refunded_full" breaks the primary key. The same happens with `chargeback_open ▶ won | lost`
+   if both use one event.
+2. **Arrows with no catalogue event:** `placed ▶ abandoned` (draft expiry),
+   `no_partner_available ▶ manual_reroute`, `no_partner_available ▶ cancelled`,
+   `delivery_failed ▶ redelivery_scheduled`, `redelivery_scheduled ▶ cancelled_refunded`, and
+   `refunded_* ▶ closed` ("non-terminal until closed"). The catalogue's `order.chargeback_*` is a
+   wildcard with no concrete names.
+3. **"any post-paid" names no set of states.**
+4. **The source of `payment_failed` is ambiguous.** The `┌──` line sits over the `route` arrow:
+   it could come from `placed` or from `authorised`, and `plan/01` §4 says `paid`.
+5. **The arrow into `paid_unrouted`** (immediate-charge methods) has no label and no event.
+6. **Terminal flags and buyer projections are not given per state.** The design rules list only
+   the linear projection. "chargeback_won | chargeback_lost (terminal)" could mean one or both.
+
+**Proposed transcription (approve or amend, and the work resumes as written).** Keep the PK. Use
+catalogue names where one exists, and widen the catalogue where none does, in the
+`order.chargeback_*` style. Spec 010 AC-22's catalogue fixture takes the same additions.
+
+| from | event | to |
+|---|---|---|
+| placed | order.authorised | authorised |
+| placed | order.payment_failed | payment_failed |
+| placed | order.abandoned *(new)* | abandoned |
+| authorised | order.routed | routed |
+| authorised | order.captured | paid_unrouted |
+| paid_unrouted | order.routed | routed |
+| routed | assignment.accepted | accepted |
+| routed | assignment.declined | routed |
+| routed | assignment.timed_out | routed |
+| routed | order.no_partner_available | no_partner_available |
+| no_partner_available | order.manual_reroute *(new)* | manual_reroute |
+| no_partner_available | order.cancelled *(new)* | cancelled |
+| manual_reroute | order.routed | routed |
+| accepted | order.captured | paid |
+| paid | order.in_production | in_production |
+| in_production | order.substitution_proposed | awaiting_buyer |
+| awaiting_buyer | order.substitution_resolved | in_production |
+| in_production | order.out_for_delivery | out_for_delivery |
+| out_for_delivery | order.delivered | delivered |
+| out_for_delivery | order.delivery_failed | delivery_failed |
+| delivery_failed | order.redelivery_scheduled *(new)* | redelivery_scheduled |
+| redelivery_scheduled | order.out_for_delivery | out_for_delivery |
+| redelivery_scheduled | order.cancelled | cancelled_refunded |
+| delivered | order.photo_uploaded | photo_uploaded |
+| photo_uploaded | order.closed | closed |
+| delivered, photo_uploaded, closed | order.disputed | disputed |
+| disputed | order.resolved | resolved |
+| resolved | order.closed | closed |
+| disputed | order.chargeback_opened *(new name for the wildcard)* | chargeback_open |
+| chargeback_open | order.chargeback_won | chargeback_won |
+| chargeback_open | order.chargeback_lost | chargeback_lost |
+| P (post-paid, below) | order.refunded_partial *(splits `order.refunded`)* | refunded_partial |
+| P | order.refunded_full *(splits `order.refunded`)* | refunded_full |
+| refunded_partial, refunded_full | order.closed | closed |
+
+- **P (post-paid):** `paid`, `paid_unrouted`, `in_production`, `awaiting_buyer`,
+  `out_for_delivery`, `delivery_failed`, `redelivery_scheduled`, `delivered`, `photo_uploaded`,
+  `disputed`, `resolved` and `refunded_partial` (a second partial refund, or partial then full).
+- **Status-preserving events,** never `order_transition` rows: `order.placed` (the insert),
+  `assignment.offered`, `order.refund_requested`, `customer.created`, `recipient.created`,
+  `review.created`, `partner.status_changed`, `country.status_changed`.
+- **Terminal:** `payment_failed`, `abandoned`, `cancelled`, `cancelled_refunded`,
+  `chargeback_won`, `chargeback_lost`.
+- **Buyer projection:**
+  - `placed`: placed.
+  - `confirmed`: authorised, paid_unrouted, routed, no_partner_available, manual_reroute.
+  - `with_florist`: accepted, paid.
+  - `being_made`: in_production, awaiting_buyer.
+  - `on_its_way`: out_for_delivery, delivery_failed, redelivery_scheduled.
+  - `delivered`: delivered, photo_uploaded, disputed.
+  - `closed`: closed, resolved, refunded_partial, refunded_full, chargeback_open,
+    chargeback_won, chargeback_lost.
+  - `cancelled`: payment_failed, abandoned, cancelled, cancelled_refunded.
+- **`requires_actor`:**
+  - `buyer`: order.authorised, order.payment_failed, order.substitution_resolved.
+  - `partner`: assignment.accepted, assignment.declined, order.substitution_proposed,
+    order.out_for_delivery, order.delivered, order.delivery_failed, order.photo_uploaded.
+  - `admin`: order.manual_reroute, order.cancelled, order.redelivery_scheduled, order.resolved,
+    order.refunded_*.
+  - `system`: order.abandoned, order.routed, assignment.timed_out, order.no_partner_available,
+    order.captured, order.in_production, order.closed, order.chargeback_*.
+  - `any`: order.disputed.
+
+The alternative to the new names is to widen the PK to `(from_status, event, to_status)` and let
+the payload choose the target. That changes spec 002 §5.1 and the
+`transition(orderId, event, …)` signature of spec 010, so it is not proposed.
+
+A smaller note, with no ruling needed: spec 001 §14 A20 asked for a spec 002 amendment (the flag
+set transaction-locally only, plus one documented test way to set an order's state). That
+amendment is not in spec 002 §14. Its content is unambiguous, so TASK-020 implements it as the
+carry-forward states.
+
+**For the resumed run:** test locally on a throwaway PG16 (embedded-postgres binaries with ICU,
+as TASK-018 did), never on the shared Neon database. `0011`'s RLS applied there would reach the
+live site.
+
+## Progress
+
+- 2026-10-12: E1 raised; resolved the same day by spec 002 §14 A6.
+- 2026-10-13: `0007` + rollback, mirror (`db/schema/orders.ts`, `payments.ts`), fixture `tests/fixtures/order-machine.ts`, unit and integration suites. Pushed, PR 210.
 
 ## Result
 
-_Pending._
+PR 210 (feature PR, TASK-019…023).
+
+**AC-14 / T-14.** `order_status` holds A6.4's 26 rows and `order_transition` A6.3's 73 rows (with `allowed_actors`, A6.2). Both equal `tests/fixtures/order-machine.ts` in both directions:
+- in the SQL text (`tests/unit/schema-orders-payments.test.ts`);
+- in a migrated database (`tests/integration/schema-orders-payments.test.ts`).
+
+`is_terminal` is derived from the rows. The distinct events are A6.6's 28, and no status-preserving event has a row.
+
+**Mutation.** Deleting the row `('closed', 'order.disputed', …)` turned "order_transition holds exactly A6.3's 73 rows" red.
+
+**Also covered:**
+- the order and payment tables, with currency-paired foreign keys (a line, a payment or a refund cannot be in another currency than its parent);
+- the deferred `payout_line_order_id_order_id_fk` (RESTRICT), in `DEFERRED_FOREIGN_KEYS`, the mirror and `pg_constraint`;
+- zero `review`, `order` and `payment` rows seeded.
+
+**Values §5.1 left open, now closed lists:**
+- `payment.status`: `pending`, `requires_action`, `authorised`, `captured`, `failed`, `cancelled`;
+- `refund.status`: `pending`, `succeeded`, `failed`, `cancelled`.
+
+Local evidence: PostgreSQL 16.14 (embedded-postgres binaries with ICU, 127.0.0.1:54329), stopped by its PID afterwards. Neon was not touched. Every suite runs on its own scratch database (`tests/integration/support/scratch-db.ts`), and the whole integration project passed in parallel: 13 files passed, 4 skipped; 107 tests passed, 32 skipped.

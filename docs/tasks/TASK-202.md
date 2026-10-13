@@ -30,6 +30,18 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** before TASK-019 is dispatched, the orchestrator writes spec 010 §5.1 A and the catalogue-name pin (§12) into the TASK-019, TASK-020 and TASK-021 briefs (ruling R8). Read the merged migrations before starting: test what is there, migrate what is not.
 - **From `/plan-tasks` (2026-10-05):** TASK-214 and TASK-215 (spec 011) and TASK-222 (spec 012) extend `src/modules/orders` after this merges; none runs beside it.
+- **From the TASK-019…023 feature PR (PR 210).** `0008`'s status trigger:
+  - It needs both `app.allow_status_write = 'on'` and `app.transition_event`, set transaction-locally.
+  - It resets both to `''` itself after the one row it allows, so `transition`'s own reset (A6.7) is a second line of defence.
+  - It checks the triple, not `allowed_actors`. The actor check is the engine's (A6.10 (5)).
+
+  The insert trigger needs only the switch, so `place` sets no event (A6.10 (3)). `"order".mode` is immutable (`ORDER_MODE_IMMUTABLE`), and `"order".status` defaults to `placed`.
+
+  Tests reach a state through `tests/fixtures/order-state.ts` (`walkOrderTo`, `insertPlacedOrder`).
+- **From review round 1 and breaker round 1 on PR 210 (e270ed27). These stay with the engine, not fixed in the database.**
+  - The database does not tie a status change to its `order_event` row. A status change can commit with no event, and an event can claim a transition that never happened or skip a `seq`. The engine writes both in one transaction (A6.10 (4)). A deferred constraint trigger could close this later.
+  - A switch set **session-wide** (`set_config(…, false)`) is not cleared by the trigger's local reset, and it returns at commit. AC-35's cross-transaction half therefore rests on this engine using `SET LOCAL` / `set_config(…, true)` only, plus the unit scan in `tests/unit/order-integrity.test.ts`.
+  - Partners no longer read `"order"` or `order_line`. `listOrdersForPartner` reads `partner_order` and `partner_order_line` (`0011`; column lists in `db/rls.ts` `PARTNER_VIEWS`). Buyers read the timeline from `customer_order_event`, not `order_event`. Neither view has a Drizzle mirror yet: add `pgView(…).existing()` types when the first query needs them.
 
 ## Escalations
 

@@ -20,7 +20,10 @@ import {
   recipientPlaceKinds,
 } from "../../db/schema/customers.ts";
 import * as schema from "../../db/schema/index.ts";
-import { FOREIGN_KEYS } from "../fixtures/schema-foreign-keys.ts";
+import {
+  DEFERRED_FOREIGN_KEYS,
+  FOREIGN_KEYS,
+} from "../fixtures/schema-foreign-keys.ts";
 import {
   partnerApplicationStatuses,
   partnerMemberRoles,
@@ -451,7 +454,28 @@ describe("foreign keys and their delete rules (breaker hole 3)", () => {
         ]);
       }
     }
-    expect(mirrored.sort()).toEqual(FOREIGN_KEYS.map((fk) => [...fk]).sort());
+    expect(mirrored.sort()).toEqual(
+      [
+        ...FOREIGN_KEYS.map((fk) => [...fk]),
+        ...DEFERRED_FOREIGN_KEYS.map((fk) => fk.slice(0, 5)),
+      ].sort(),
+    );
+  });
+
+  it("each deferred key is added, with its delete rule, by the migration that creates its parent", () => {
+    for (const [
+      name,
+      columns,
+      parent,
+      parentColumns,
+      rule,
+      file,
+    ] of DEFERRED_FOREIGN_KEYS) {
+      const quotedParent = parent === "order" ? '"order"' : parent;
+      expect(read(file)).toContain(
+        `ADD CONSTRAINT ${name} FOREIGN KEY (${columns})\n    REFERENCES public.${quotedParent} (${parentColumns}) ON DELETE ${rule};`,
+      );
+    }
   });
 });
 

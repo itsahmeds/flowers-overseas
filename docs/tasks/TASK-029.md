@@ -14,7 +14,7 @@ Branch `task/TASK-029-neon-usage-probe`. **Founder prerequisite** (from TASK-013
 
 ## Carry-forwards
 
-_None recorded._
+- **From the TASK-019…023 feature PR (PR 210).** `db_usage_sample` stores `compute_seconds_used` and `compute_seconds_cap` as `bigint`, not spec 002 §5.1's `compute_hours_* numeric`. Every migration is held to "no numeric column", and seconds are Neon's own unit. Convert to hours for the 70 % and 90 % thresholds. `db_usage_sample_day_idx` makes a second row on the same UTC day a unique violation, so the probe upserts on it.
 
 ## Escalations
 

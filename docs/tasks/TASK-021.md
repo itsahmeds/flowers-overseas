@@ -22,6 +22,28 @@ Branch `task/TASK-021-schema-notifications-ops`. Flags live in the database with
 
 _None recorded._
 
+## Progress
+
+- 2026-10-13: `0009` + rollback, mirrors `db/schema/notifications.ts` and `ops.ts`, unit and integration suites. Pushed.
+
 ## Result
 
-_Pending._
+PR 210 (feature PR, TASK-019…023).
+
+**Scope (§5.1, §12, spec 010 §5.1 A):**
+- the `outbox` (unique `event_id`) and `outbox_attempt`;
+- `feature_flag` / `feature_flag_scope`, seeded with 16 flags (only `checkout.demo_guard` on) and the `checkout.open` PL country scope row, off;
+- `audit_log`;
+- `retention_policy`, with eight rows:
+  - the six flows of `plan/07` §1.2, verbatim, with Q7's B1 and B4 flags in the notes;
+  - `checkout_draft` and `demo_order_personal`;
+- `db_usage_sample`, one row per UTC day through a unique index.
+
+**Tests.** `tests/unit/schema-notifications-ops-auth.test.ts` (parity, CHECK lists, seeds) and `tests/integration/schema-notifications-ops.test.ts` (seeds read back, six refusals).
+
+**Deviations, declared in the migration header:**
+- `db_usage_sample` stores `compute_seconds_used` / `compute_seconds_cap bigint`, not `compute_hours_* numeric`. The repository bans `numeric` in every migration, and seconds are Neon's unit (carried forward to TASK-029).
+- The PL scope row is seeded off. Spec 010 §12 turns it on in staging through admin; a migration cannot tell environments apart.
+- `demo_order_personal` carries the production period (1 day), and its note carries the staging/PR period of 7 days (carried forward to TASK-025).
+
+Local evidence: PostgreSQL 16.14 (embedded-postgres binaries with ICU, 127.0.0.1:54329), stopped by its PID afterwards. Neon was not touched. Every suite runs on its own scratch database (`tests/integration/support/scratch-db.ts`), and the whole integration project passed in parallel: 13 files passed, 4 skipped; 107 tests passed, 32 skipped.

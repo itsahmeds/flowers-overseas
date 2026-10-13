@@ -14,7 +14,7 @@ Branch `task/TASK-024-jobs-internal-probes`. pg-boss runs on `DATABASE_URL_UNPOO
 
 ## Carry-forwards
 
-_None recorded._
+- **From the TASK-019…023 feature PR (PR 210).** AC-18's last clause, "`app_web` cannot read `pgboss` internals it was not granted", is untested until `0012` creates the schema. Add it to `tests/integration/rls-policies.test.ts` T-18. Two more facts for `0012`: it is the first migration after `0011`'s `REVOKE CREATE ON SCHEMA public FROM PUBLIC`, and `migrations-round-trip.test.ts` lists every function the migrations create, so the new schema goes into its census.
 
 ## Escalations
 
