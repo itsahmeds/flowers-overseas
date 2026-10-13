@@ -1,11 +1,10 @@
 /**
  * The notice documents' visual baselines (spec 004 AC-12, AC-27's matrix; TASK-055).
  *
- * Four PNGs — the chooser and the 404, at the two artboard widths — because the full-page
- * `home.png` of `./shell.spec.ts` is taken at the `visual` project's 1280 px, and what this task
- * changed is a *layout* whose two states are the 390 and 1440 the design is drawn at: the lockup
- * scales (26/40 px mark, 19/26 px wordmark), the locale list goes from one column to two, and the
- * action row wraps.
+ * The 404 at the two artboard widths, because what TASK-055 changed is a *layout* whose two states
+ * are the 390 and 1440 the design is drawn at: the lockup scales and the action row wraps. The
+ * `/` chooser's pair was deleted with the chooser (spec 003 §14 A16); the language popup's pair
+ * replaced the suggestion strip's.
  *
  * The 500 documents have no baseline here, for the reason `tests/e2e/notices.spec.ts` records:
  * reaching an error boundary in a browser needs a route that throws on purpose, which this task
@@ -16,8 +15,7 @@
  * `navigator.languages` is emptied and a consent refusal is seeded before the first navigation,
  * for the two reasons `./shell.spec.ts` and `./home.spec.ts` give: without them a committed PNG
  * records the runner's language configuration and how fast its consent chunk arrived rather than
- * what the template looks like. Neither overlay can appear on `/` at all — that is what
- * `tests/e2e/notices.spec.ts` asserts — but the 404 is a document like any other.
+ * what the template looks like. The 404 is a document like any other.
  *
  * Baselines are per platform (`snapshotPathTemplate`). `darwin/` is committed from a local
  * `pnpm test:visual --update-snapshots`; the `linux/` set is written by the CI `visual` job's
@@ -28,15 +26,14 @@ import { fileURLToPath } from "node:url";
 
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
+import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
+
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1440, height: 900 },
 ] as const;
 
-const DOCUMENTS = [
-  { name: "chooser", path: "/", status: 200 },
-  { name: "not-found", path: "/nope", status: 404 },
-] as const;
+const DOCUMENTS = [{ name: "not-found", path: "/nope", status: 404 }] as const;
 
 /**
  * Everything a notice document still has in flight after `goto` resolves, waited out before the
@@ -143,37 +140,34 @@ for (const { name, path, status } of DOCUMENTS) {
 }
 
 /**
- * The restyled suggestion banner (AC-13), as an element screenshot of the panel at both artboard
- * widths — the state `./shell.spec.ts` deliberately suppresses, so the restyle has a gate of its
- * own instead of being invisible to the suite that is supposed to catch it. A German browser on
- * `/en` is the matrix row that shows it (spec 003 AC-28), and the consent question is answered
- * first because the sheet paints over it by design.
+ * The language popup open on `/en` (spec 003 AC-30 as §14 A16 restates it, T-30; spec 004 §14
+ * A23 AC-39; TASK-119): a first visit, so no `fo_locale`, at the two artboard widths of
+ * `docs/design/wireframes/locale-popup-{mobile,desktop}.dc.html`. The browser asks for British
+ * English, which is the artboards' drawn state: English current and default, English (UK)
+ * highlighted. The frame is the viewport, because the popup is fixed to it: a top sheet at 390 and
+ * a centred card over the dimmed page at 1440. `/ar-XB` is `./pseudo-rtl.spec.ts`.
  */
-test.describe("the language-suggestion banner", () => {
-  test.use({ locale: "de-DE" });
+test.describe("the language popup", () => {
+  test.use({ storageState: NO_LOCALE_CHOICE });
 
   for (const viewport of VIEWPORTS) {
-    test(`matches the ${viewport.name} baseline`, async ({
-      page,
-      context,
-      baseURL,
-    }) => {
-      await recordConsentRefusal(context, baseURL);
+    test(`matches the ${viewport.name} baseline`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.addInitScript(() => {
         Object.defineProperty(navigator, "languages", {
           configurable: true,
-          get: () => ["de-DE", "de"],
+          get: () => ["en-GB", "en"],
         });
       });
 
       await page.goto("/en");
-      const banner = page.locator('[data-fo-banner="shown"]');
-      await expect(banner).toBeVisible();
+      const popup = page.locator("dialog[data-fo-language-popup][open]");
+      await expect(popup).toBeVisible();
       await settle(page);
+      await expect(page.locator('[data-fo-consent="shown"]')).toHaveCount(0);
 
-      await expect(banner).toHaveScreenshot(
-        `suggestion-banner-${viewport.name}.png`,
+      await expect(page).toHaveScreenshot(
+        `language-popup-${viewport.name}.png`,
       );
     });
   }

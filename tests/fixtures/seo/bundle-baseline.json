@@ -11,7 +11,6 @@
   "budgetBytes": 131072,
   "regressionAllowanceBytes": 5120,
   "routes": {
-    "/": 117356,
     "/en": 124387,
     "/en-gb": 124387,
     "/de": 124387,

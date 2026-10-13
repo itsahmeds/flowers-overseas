@@ -50,8 +50,9 @@ const repoRoot = resolve(__dirname, "../..");
  * root error boundary (attached by Next to *every* document).
  */
 const CLIENT_ENTRY_POINTS = [
-  "src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx",
-  "src/modules/i18n/ui/LocaleSuggestionBannerLoader.tsx",
+  // The language popup (TASK-119) replaced the suggestion strip's two files.
+  "src/modules/i18n/ui/LanguagePopupIsland.tsx",
+  "src/modules/i18n/ui/LanguagePopupLoader.tsx",
   "src/app/global-error.tsx",
 ] as const;
 

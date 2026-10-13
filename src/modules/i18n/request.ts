@@ -34,7 +34,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale: locale.code,
     // Every namespace, because this is the **server** catalogue: `getTranslations()` and
     // `useTranslations()` in a layout, a page, a Server Component or `generateMetadata` resolve
-    // against it, so a document that renders the chooser copy (`/`) or an error title must find
+    // against it, so a document that renders a page's copy or an error title must find
     // its keys here. It is never serialised to the browser: there is no `NextIntlClientProvider`
     // in the application since TASK-085, every client island receives resolved strings as props,
     // and `pnpm budget:client-js` measures the zero from the built chunks (§6, AC-27).

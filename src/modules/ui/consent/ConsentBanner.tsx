@@ -9,9 +9,8 @@
  * and a key that does not resolve fails `pnpm i18n:check`.
  *
  * Rendered once by `src/app/[locale]/layout.tsx`, which is what makes "once per locale document"
- * true, and — because `/` has no locale layout — what keeps the chooser free of it: the chooser has
- * no locale to render copy in, must stay at zero application JavaScript (spec 003 AC-7) and sets
- * no cookie of any kind (AC-12). A consent sheet there would break all three.
+ * true. The island waits for the language popup: the popup is asked first and the two are never
+ * on screen together (spec 003 §14 A14 as amended by A16; the gate in `ConsentBannerIsland.tsx`).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";

@@ -80,8 +80,9 @@ fails if the two disagree.
 
 ```
 src/app/                  routes only, thin: a pass-through root layout plus one document per
-                          leaf — (chooser)/ owns `/`, [locale]/ owns every localised URL,
-                          not-found.tsx owns the 404 (see below) — plus api/
+                          leaf — [locale]/ owns every localised URL, not-found.tsx owns the
+                          404 (see below) — plus api/; `/` is one 308 to `/en` in
+                          next.config.ts (src/lib/root-redirect.ts), with no document
 src/modules/<module>/     one directory per module below, public barrel in index.ts
 src/lib/                  env (zod), logger, health, sentry, cache adapter; db client from spec 002
 src/jobs/                 pg-boss job definitions and cron schedule
@@ -220,14 +221,15 @@ scripts/                  repo tooling: check-layout, env-check, seo validators,
 it renders no document — no `<html>`, no `<body>`, it returns its children — and carries the
 `noindex,nofollow` metadata default so that every document below it inherits it, the 404 included
 (spec 001 §6). The document itself is rendered by whichever leaf knows the language, which is why
-no file in the repository contains a locale literal any more. There are four such documents (the
-fourth exists only where `ENABLE_DEV_UI` is on):
+no file in the repository contains a locale literal any more. There are three such documents (the
+third exists only where `ENABLE_DEV_UI` is on), and `/` is none of them:
 
-- `src/app/(chooser)/layout.tsx` + `page.tsx` — the single non-localised URL, `/`, and since
-  TASK-035 the crawlable locale chooser: one plain `<a>` per launch locale, labelled with its
-  `nativeName` and carrying `lang`/`hreflang`, `noindex,follow` (the only `follow` document in
-  Phase 0, `plan/02` §7), and no Client Component of any kind, so it needs no JavaScript. Its
-  `<html lang dir>` come from the **x-default** locale in the registry (`plan/02` §3).
+- `/` has **no document** (spec 003 §14 A16, TASK-119; founder, 2026-10-04). It answers one
+  unconditional permanent 308 to the x-default locale home, `/en`: one `redirects()` rule in
+  `next.config.ts`, built by `src/lib/root-redirect.ts` from the registry through `localePath()`,
+  with no `has` and no `missing`, so it is the same for every request (ADR-0006 stands: it reads
+  nothing about the visitor). The `(chooser)` route group that served a locale list there until
+  TASK-119 is deleted; the language popup on every localised page is the only language chooser.
 - `src/app/[locale]/layout.tsx` — every localised URL, with the `plan/01` §5 route groups
   (`(marketing)`, `(shop)`, `(checkout)`, `(account)`) created empty-but-real beneath it so specs
   004–011 add pages without touching routing. `<html lang dir>` come from the segment's `bcp47`
@@ -284,20 +286,18 @@ fourth exists only where `ENABLE_DEV_UI` is on):
   project does not need.
 - `src/app/global-error.tsx` — the last-resort 500 document (TASK-035, spec 003 §5.3), replacing
   Next's untranslated, `lang`-less built-in shell. It is an x-default document with `lang`, `dir`
-  and a localised `<title>`, and it is what answers a failure at `/` now that the `(chooser)`
-  group has no `error.tsx` of its own; every localised URL still has the nearer per-locale
-  boundary of `src/app/[locale]/error.tsx`.
+  and a localised `<title>`, and it answers when a document layout itself throws; every localised URL still has the nearer
+  per-locale boundary of `src/app/[locale]/error.tsx`.
 
-**The four documents a visitor can reach without choosing anything share one skin (TASK-055).**
-`/`, the 404, `src/app/[locale]/error.tsx` and `src/app/global-error.tsx` render the same *notice
+**The failure documents share one skin (TASK-055).**
+The 404, `src/app/[locale]/error.tsx` and `src/app/global-error.tsx` render the same *notice
 shell*: a centred `--measure` column, the masthead's own lockup at the masthead's own metrics, the
 `.label` voice for the document's metadata (the HTTP status, which is digits and therefore not
 copy) and the `.display` voice for its one `<h1>`. They cannot share a *component* — the two 500
-boundaries are Client Components whose chunk Next attaches to every document, and `/` must reach no
-client module at all — so the shell is `src/modules/ui/layout/noticeShell.ts`, a module of Tailwind
-class strings that imports **nothing**; the two documents that may use a component render it
+boundaries are Client Components whose chunk Next attaches to every document — so the shell is `src/modules/ui/layout/noticeShell.ts`, a module of Tailwind
+class strings that imports **nothing**; the document that may use a component renders it
 through `layout/NoticeDocument.tsx`. `tests/unit/ui-notice-shell.test.ts` pins the two action skins
-against `Button`'s own class list and asserts each document reads the shell, so the four cannot
+against `Button`'s own class list and asserts each document reads the shell, so the three cannot
 drift into looking like four different sites. The wordmark reaches the failure pages through
 `src/config/company.data.ts` and the way home through `errorHomePath()` in
 `src/modules/i18n/error-document.ts` — both import-free, both proved equal to `COMPANY.tradingName`
@@ -309,13 +309,9 @@ because something else threw may not depend on zod or on the registry.
 content is announced by some assistive technologies and ignored by others; a region that is already
 mounted, and empty, when the content arrives is announced by all of them. The design system exports
 it as `LiveRegion` (`src/modules/ui/primitives/a11y.tsx`) — `role="status"`, `aria-live="polite"`,
-`aria-atomic="true"`, no focus move, no reserved space — and the language-suggestion banner is its
-reference implementation: the island renders the region on its first render whatever it decides,
-and only the *content* appears later, which is why its CLS delta stays 0. The banner restates the
-three attributes rather than importing them, because a Client Component in `src/modules/i18n` may
-only cross into `src/modules/ui` through that module's public barrel, which re-exports the design
-system's islands; `tests/unit/i18n-suggestion-banner.test.tsx` asserts the two are identical. Every
-later element whose content changes after paint — the price, the delivery date, the cutoff — uses
+`aria-atomic="true"`, no focus move, no reserved space. (The language-suggestion strip that was its
+first user was replaced by the language popup of spec 003 §14 A16, a modal `<dialog>` that takes
+focus and is therefore not a live region.) Every later element whose content changes after paint — the price, the delivery date, the cutoff — uses
 the same component.
 
 Every document has a non-empty localised `<title>` (WCAG 2.4.2): pages and `not-found.tsx` export
@@ -345,7 +341,7 @@ measured on Next 16.3.4 and recorded below: a `notFound()` from a matching route
 the framework's own `<html id="__next_error__">` with no `lang`, whereas the routing-layer refusal
 reaches `src/app/not-found.tsx` as a real x-default document.
 
-**The rejected shape.** Spec 003 §5.3 recommends *two root layouts* — `(chooser)` and `[locale]`,
+**The rejected shape.** Spec 003 §5.3 recommends *two root layouts* — one for `/` and `[locale]`,
 with no `src/app/layout.tsx` at all — and that arrangement was implemented and then measured on
 Next 16.3.4: with two root layouts `src/app/not-found.tsx` is reached, but the framework wraps it
 in a bare `<html>` of its own, so the effective document has nested `html`/`body` elements and no

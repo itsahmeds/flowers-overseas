@@ -75,6 +75,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CLIENT_FORBIDDEN_NAMESPACES,
   CLIENT_JS_BUDGET_BYTES,
+  DEFAULT_URLS,
   type PageMeasurement,
   FORBIDDEN_CLIENT_MODULES,
   MESSAGES_PAYLOAD_BUDGET_BYTES,
@@ -91,11 +92,8 @@ import {
   reachableAssets,
   routeEntryFor,
   main,
-  APPLICATION_MARKUP_MARKER,
   BASELINE_FILE,
   REGRESSION_ALLOWANCE_BYTES,
-  ZERO_APP_JS_URL,
-  applicationCodeHits,
   fontBreaches,
   fontBytesFor,
   fontTransfer,
@@ -445,6 +443,13 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
       '<script src="/_next/static/chunks/clean.js"></script>' +
         '<script src="/_next/static/chunks/legacy.js" noModule=""></script>',
     );
+    // The same clean page at a URL the committed baseline has a row for: `main()` measures the
+    // baseline too, and `/` has no row since spec 003 §14 A16 made it a 308.
+    writeFileSync(
+      join(dist, "server/app/de.html"),
+      '<script src="/_next/static/chunks/clean.js"></script>' +
+        '<script src="/_next/static/chunks/legacy.js" noModule=""></script>',
+    );
     writeFileSync(
       join(dist, "server/app/en.html"),
       '<script src="/_next/static/chunks/clean.js"></script>' +
@@ -589,7 +594,9 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
   it("says so explicitly when a run finds none, so silence is not the only evidence", () => {
     const out: string[] = [];
     const write = (chunk: string): number => out.push(chunk);
-    expect(main(["--dist", dist, "--url", "/"], { write }, { write })).toBe(0);
+    expect(main(["--dist", dist, "--url", "/de"], { write }, { write })).toBe(
+      0,
+    );
     expect(out.join("")).toContain("no measured URL ships zod or @sentry/");
   });
 });
@@ -747,6 +754,11 @@ describe("catalogueLeaks — no client chunk carries server-only copy (§14 A1 a
       join(dist, "server/app/index.html"),
       '<script src="/_next/static/chunks/clean.js"></script>',
     );
+    // A clean page at a URL with a baseline row, for `main()` (see the zod fixture above).
+    writeFileSync(
+      join(dist, "server/app/de.html"),
+      '<script src="/_next/static/chunks/clean.js"></script>',
+    );
     writeFileSync(
       join(dist, "server/app/en.html"),
       '<script src="/_next/static/chunks/leaky.js"></script>',
@@ -791,23 +803,12 @@ describe("catalogueLeaks — no client chunk carries server-only copy (§14 A1 a
     );
     expect(out.join("")).toContain("catalogue in a fetched chunk");
     out.length = 0;
-    expect(main(["--dist", dist, "--url", "/"], { write }, { write })).toBe(0);
+    expect(main(["--dist", dist, "--url", "/de"], { write }, { write })).toBe(
+      0,
+    );
     expect(out.join("")).toContain(
       "no fetched chunk contains home.*, catalog.*, media.* catalogue copy",
     );
-  });
-});
-
-describe("`/` carries no Client Component of its own (AC-7, AC-27)", () => {
-  it("has no `use client` file anywhere in the (chooser) route group", async () => {
-    const { readdirSync, readFileSync } = await import("node:fs");
-    const group = resolve(__dirname, "../../src/app/(chooser)");
-    const files = readdirSync(group, { recursive: true, encoding: "utf8" });
-    for (const file of files) {
-      const path = join(group, file);
-      if (!/\.tsx?$/.test(file)) continue;
-      expect(readFileSync(path, "utf8"), file).not.toContain('"use client"');
-    }
   });
 });
 
@@ -939,12 +940,15 @@ describe("the AC-25 clauses TASK-056 added", () => {
       expect(baseline?.regressionAllowanceBytes).toBe(
         REGRESSION_ALLOWANCE_BYTES,
       );
-      for (const url of ["/", "/en", "/en-gb", "/de", "/pl"]) {
+      for (const url of ["/en", "/en-gb", "/de", "/pl"]) {
         expect(
           baseline?.routes[url],
           `${url} has no row in ${BASELINE_FILE}`,
         ).toBeGreaterThan(0);
       }
+      // `/` is a 308 with no document (spec 003 §14 A16, AC-27 as restated): no row, not measured.
+      expect(baseline?.routes["/"]).toBeUndefined();
+      expect(DEFAULT_URLS).not.toContain("/");
     });
 
     it("reports a route that grew past the allowance, and not one inside it", () => {
@@ -982,64 +986,6 @@ describe("the AC-25 clauses TASK-056 added", () => {
         readBaseline(mkdtempSync(join(tmpdir(), "fo-baseline-"))),
       ).toBeNull();
       expect(regressions(null, []).unknown).toEqual([]);
-    });
-  });
-
-  describe("`/` ships zero application JavaScript (AC-12, AC-25)", () => {
-    let dist = "";
-
-    beforeAll(() => {
-      dist = mkdtempSync(join(tmpdir(), "fo-appjs-"));
-      mkdirSync(join(dist, "server/app"), { recursive: true });
-      mkdirSync(join(dist, "static/chunks"), { recursive: true });
-      writeFileSync(
-        join(dist, "app-path-routes-manifest.json"),
-        JSON.stringify({ "/(chooser)/page": "/" }),
-      );
-      writeFileSync(
-        join(dist, "static/chunks/framework.js"),
-        "self.__next_f=[];// no markup here",
-      );
-      writeFileSync(
-        join(dist, "static/chunks/island.js"),
-        '<div data-fo-consent="shown">',
-      );
-    });
-
-    afterAll(() => {
-      rmSync(dist, { recursive: true, force: true });
-    });
-
-    const document = (scripts: readonly string[]): void => {
-      writeFileSync(
-        join(dist, "server/app/index.html"),
-        scripts
-          .map((asset) => `<script src="/_next/${asset}"></script>`)
-          .join(""),
-      );
-    };
-
-    it("passes when every chunk the chooser fetches is framework code", () => {
-      document(["static/chunks/framework.js"]);
-      expect(applicationCodeHits(dist, measurePages(dist, ["/"]))).toEqual([]);
-    });
-
-    it("fails when a chunk carries rendered application markup", () => {
-      document(["static/chunks/framework.js", "static/chunks/island.js"]);
-      expect(
-        applicationCodeHits(dist, measurePages(dist, ["/"])).map(
-          (hit) => hit.asset,
-        ),
-      ).toEqual(["static/chunks/island.js"]);
-    });
-
-    it("looks for markup, not for a module name a loader stub mentions", () => {
-      // Turbopack writes a `next/dynamic` module's name into the loader stub of the entry that
-      // declares it, so `/`'s 1 434 B stub names an island the chooser never mounts
-      // (`/review 36`). A name is not evidence; `data-fo-*` markup is.
-      expect(APPLICATION_MARKUP_MARKER.test("ConsentBannerIsland")).toBe(false);
-      expect(APPLICATION_MARKUP_MARKER.test('data-fo-header="x"')).toBe(true);
-      expect(ZERO_APP_JS_URL).toBe("/");
     });
   });
 });

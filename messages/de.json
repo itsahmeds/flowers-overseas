@@ -9,12 +9,6 @@
     },
     "skipToContent": "Skip to content"
   },
-  "banner": {
-    "dismiss": "Dismiss the language suggestion",
-    "headline": "Would you rather read this page in {language}?",
-    "stay": "Stay on this page",
-    "switch": "Switch to {language}"
-  },
   "breadcrumb": {
     "destinations": "Send flowers to",
     "entity": "{name}",
@@ -197,10 +191,6 @@
     "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}"
   },
-  "chooser": {
-    "heading": "Choose your language",
-    "intro": "We send flowers to someone in another European country: you order from us, and our florist in their town makes the bouquet and hands it over in person. Choose a language to continue."
-  },
   "common": {
     "beta": "Beta",
     "floristCount": "{count, plural, one {# Florist} other {# Floristen}}",
@@ -255,9 +245,6 @@
       },
       "locale": {
         "purpose": "Remembers the language you chose, so we do not ask again."
-      },
-      "localeSuggestionDismissed": {
-        "purpose": "Remembers that you closed the language suggestion, for this visit only."
       },
       "session": {
         "purpose": "Keeps you signed in while you order. Not set yet — there is no sign-in."
@@ -596,6 +583,15 @@
       "heading": "Beliebte Auswahl"
     }
   },
+  "languagePopup": {
+    "browserMatch": "Passt zu Ihrem Browser",
+    "browserMatchShort": "Ihr Browser",
+    "close": "Schließen",
+    "current": "Aktuell",
+    "default": "Standard",
+    "foot": "Sie können sie jederzeit oben auf jeder Seite ändern.",
+    "heading": "Wählen Sie Ihre bevorzugte Sprache"
+  },
   "media": {
     "placeholder": {
       "delivery": "Photography to supply · a bouquet handed over at the recipient's door",
@@ -611,10 +607,6 @@
     }
   },
   "meta": {
-    "chooser": {
-      "description": "We send flowers across Europe: our florist in the recipient's town makes the bouquet and hands it over in person. Choose your language.",
-      "title": "Flowers Overseas — choose your language"
-    },
     "error": {
       "description": "The page could not be loaded. Nothing you were doing was lost.",
       "title": "Something went wrong — Flowers Overseas"

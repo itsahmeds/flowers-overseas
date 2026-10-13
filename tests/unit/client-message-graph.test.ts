@@ -114,8 +114,8 @@ describe("the client entry list this file walks", () => {
     for (const expected of [
       "src/app/global-error.tsx",
       "src/app/[locale]/error.tsx",
-      "src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx",
-      "src/modules/i18n/ui/LocaleSuggestionBannerLoader.tsx",
+      "src/modules/i18n/ui/LanguagePopupIsland.tsx",
+      "src/modules/i18n/ui/LanguagePopupLoader.tsx",
       "src/modules/ui/consent/ConsentBannerIsland.tsx",
       "src/modules/ui/home/SentenceIsland.tsx",
     ]) {
@@ -124,10 +124,10 @@ describe("the client entry list this file walks", () => {
   });
 
   it("walks a closure the test itself can vouch for", () => {
-    // A resolver that silently returns nothing would make every assertion pass. The banner
-    // island's own graph is the control: it reaches `hints.ts`, which reaches `locales.data.ts`.
+    // A resolver that silently returns nothing would make every assertion pass. The language
+    // popup island's own graph is the control: it reaches `hints.ts`, which reaches `locales.data.ts`.
     const closure = importClosure(
-      resolve(repoRoot, "src/modules/i18n/ui/LocaleSuggestionBannerIsland.tsx"),
+      resolve(repoRoot, "src/modules/i18n/ui/LanguagePopupIsland.tsx"),
     );
     expect([...closure.files].map(show)).toContain("src/modules/i18n/hints.ts");
     expect([...closure.files].map(show)).toContain(

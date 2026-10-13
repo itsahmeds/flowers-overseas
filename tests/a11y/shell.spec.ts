@@ -14,8 +14,8 @@
  * templates are unstyled placeholders; spec 004 raises the bar to the full WCAG 2.1 AA rule set on
  * real templates (`plan/07` §8).
  *
- * **URL set (spec 004 AC-26, TASK-056): eight surfaces, no exception list.** `/` (the x-default
- * chooser), all four locale homes — `/en`, `/en-gb`, `/de`, `/pl` — `/dev/components` (its own
+ * **URL set (spec 004 AC-26, TASK-056; spec 003 AC-25 as §14 A16 restates it, TASK-119), no
+ * exception list.** `/` is not scanned: it is a 308 and has no document. All four locale homes — `/en`, `/en-gb`, `/de`, `/pl` — `/dev/components` (its own
  * file, `./dev-components.spec.ts`), a 404, the 500 boundary and `/ar-XB`. `/en-XA` and the second
  * 404 shape are kept from spec 003's set because they cost one navigation each and they are the
  * documents most likely to lose their title when the routing changes.
@@ -40,11 +40,12 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
+
 const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
 
 /** `{ path, expected status }` — a 404 document is audited exactly like a 200 one. */
 const AUDITED = [
-  { path: "/", status: 200 },
   { path: "/en", status: 200 },
   { path: "/en-gb", status: 200 },
   { path: "/de", status: 200 },
@@ -142,6 +143,49 @@ test.describe("the localised 500 boundary", () => {
           .map((violation) => violation.id)
           .sort(),
       ).toEqual([]);
+    });
+  }
+});
+
+/**
+ * `/en` with the language popup open (spec 003 AC-25 as §14 A16 restates it, T-25; TASK-119): a
+ * first visit at the two sizes A16 names, so axe scans the modal dialog itself (its label, its
+ * close button's name, the four `lang`-annotated links) as well as the page it makes inert.
+ */
+test.describe("/en with the language popup open", () => {
+  test.use({ storageState: NO_LOCALE_CHOICE });
+
+  for (const viewport of [
+    { width: 360, height: 640 },
+    { width: 1280, height: 800 },
+  ]) {
+    test(`at ${viewport.width} × ${viewport.height} has no serious or critical violations`, async ({
+      page,
+    }, testInfo) => {
+      await page.setViewportSize(viewport);
+      await page.goto("/en");
+      await expect(
+        page.locator("dialog[data-fo-language-popup][open]"),
+      ).toBeVisible();
+
+      const results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+
+      await testInfo.attach(`axe-results_en_popup_${viewport.width}.json`, {
+        body: JSON.stringify(results.violations, null, 2),
+        contentType: "application/json",
+      });
+
+      const blocking = results.violations
+        .filter(
+          (violation) =>
+            typeof violation.impact === "string" &&
+            BLOCKING_IMPACTS.has(violation.impact),
+        )
+        .map((violation) => violation.id)
+        .sort();
+      expect(blocking).toEqual([]);
     });
   }
 });

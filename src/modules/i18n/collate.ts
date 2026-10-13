@@ -4,7 +4,7 @@
  *
  * The second of the two files allowed to construct an `Intl.*` object (`fo/no-adhoc-intl`,
  * TASK-037). Every list a buyer reads in alphabetical order — cities in a corridor, countries in
- * the chooser, florist names in admin — is ordered here, because `Array.prototype.sort()`'s
+ * a picker, florist names in admin — is ordered here, because `Array.prototype.sort()`'s
  * default is UTF-16 code-unit order, which puts `Łódź` after `Zakopane` and reads as broken in
  * Poland (`plan/03` §7's acid test: `ł` sorts after `l`, not with the diacritics of `L`).
  *

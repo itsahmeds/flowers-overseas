@@ -358,9 +358,13 @@ test.describe("the locale home, above the fold", () => {
         .map((header) => header.name.toLowerCase())
         .filter((name) => name === "set-cookie"),
     ).toEqual([]);
-    // Choosing in the sentence writes nothing either: no island stores a preference.
+    // Choosing in the sentence writes nothing either: no island stores a preference. The one
+    // cookie in the jar is the returning visitor's `fo_locale` the config seeds
+    // (`tests/support/locale-choice.ts`), unchanged.
     await page.locator('select[name="occasion"]').selectOption("sympathy");
-    expect(await context.cookies()).toEqual([]);
+    expect(
+      (await context.cookies()).map(({ name, value }) => ({ name, value })),
+    ).toEqual([{ name: "fo_locale", value: "en" }]);
   });
 });
 

@@ -13,11 +13,12 @@
  *
  * A page is `index,follow` only when **every** term of `INDEXABILITY_TERMS` holds, and
  * `noindex,follow` otherwise. `follow` never varies: a page we do not want in the index is still a
- * page whose links we want crawled (`plan/02` §7 — the locale chooser, the facets and the demo
- * shop pages are all `noindex,follow`; `nofollow` would strand the crawl).
+ * page whose links we want crawled (`plan/02` §7 — the facets and the demo shop pages are all
+ * `noindex,follow`; `nofollow` would strand the crawl).
  *
  *  - `pageTypeIndexable` — some page types can never be indexed whatever their data says: the
- *    locale chooser `/` (`plan/02` §7) and the `/dev/components` gallery (spec 004 AC-28). The
+ *    `/dev/components` gallery (spec 004 AC-28). `/` has no page type: it is a 308 to `/en`
+ *    (spec 003 §14 A16), not a document. The
  *    policy is a table rather than a call-site `if`, so a new page type has to state its answer.
  *  - `exists` — spec 007 §6's existence rule for that page type, decided by its owner (for a
  *    corridor: `status === 'live' || guidePublished` **and** an authored content file for that
@@ -57,7 +58,6 @@ export type RobotsDirective = typeof INDEX_FOLLOW | typeof NOINDEX_FOLLOW;
  * `PAGE_TYPE_POLICY`, which is a type error until it does.
  */
 export type SeoPageType =
-  | "localeChooser"
   | "localeHome"
   | "destinationsHub"
   | "corridor"
@@ -85,8 +85,6 @@ export type SeoPageType =
 export const PAGE_TYPE_POLICY: Readonly<
   Record<SeoPageType, "never" | "byRule">
 > = {
-  // `plan/02` §7 "Locale chooser `/`: noindex,follow" — it is a redirect surface, not content.
-  localeChooser: "never",
   // spec 004 AC-28: a development affordance, refused in production by the env schema.
   devGallery: "never",
   localeHome: "byRule",

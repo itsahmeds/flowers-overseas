@@ -78,10 +78,9 @@ export const SCANNED_PATHS = [
   // than as `src/app`, for the reason the seed entries give: `src/app/api/` grows handlers that
   // *will* read the database the day spec 002 unparks (spec 013's checkout, spec 012's admin), and
   // a blanket entry would either fail then or be quietly widened. What is listed is what must
-  // never need one — the documents, the two route groups, and the two Phase-0 endpoints whose
+  // never need one — the documents, the route groups, and the two Phase-0 endpoints whose
   // whole design is that they write to a log line and nothing else (`docs/compliance/ropa.md`
   // rows 3 and 5).
-  "src/app/(chooser)",
   "src/app/(dev)",
   "src/app/[locale]",
   "src/app/layout.tsx",

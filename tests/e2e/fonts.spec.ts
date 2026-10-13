@@ -11,7 +11,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
-const PAGES = ["/", "/en", "/de", "/pl"];
+const PAGES = ["/en", "/de", "/pl"];
 
 const KB = 1024;
 /** A21 clause 3's budgets (`scripts/fonts/build-fonts.ts` `FONT_BUDGETS`). */

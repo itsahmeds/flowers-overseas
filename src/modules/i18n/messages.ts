@@ -61,7 +61,7 @@ import plMeta from "../../../messages/pl.meta.json" with { type: "json" };
 /** The shape of the English source of truth; `global.d.ts` makes it next-intl's `Messages`. */
 export type Messages = typeof en;
 
-/** Top-level namespace of a catalogue (`meta`, `chooser`, `banner`, `errors`, `a11y`, `common`). */
+/** Top-level namespace of a catalogue (`meta`, `languagePopup`, `errors`, `a11y`, `common`, …). */
 export type MessageNamespace = keyof Messages;
 
 export const MESSAGE_NAMESPACES = Object.keys(
@@ -234,7 +234,7 @@ export function resolveCatalogue(locale: string): Record<string, unknown> {
 }
 
 /** Route kinds that need a different namespace subset (§6 "CWV budget impact"). */
-export const ROUTE_KINDS = ["localeHome", "localeDocument", "chooser"] as const;
+export const ROUTE_KINDS = ["localeHome", "localeDocument"] as const;
 export type RouteKind = (typeof ROUTE_KINDS)[number];
 
 /**
@@ -245,8 +245,7 @@ export type RouteKind = (typeof ROUTE_KINDS)[number];
  * `NextIntlClientProvider` under `[locale]`, and `banner` was in it because the suggestion
  * island rendered its copy in the browser. TASK-085 removed the provider (spec 004 §13 Q13
  * option (b), §14 A1 addendum): the island and the 500 boundary take their strings as data, so
- * **no subset is serialised into any document for a client provider any more** — every locale
- * document is now what `/` always was. `banner` is therefore gone from this list, and the
+ * **no subset is serialised into any document for a client provider any more**. `banner` is therefore gone from this list, and the
  * measured payload is zero on every URL, which `scripts/client-js-budget.ts` asserts against the
  * built chunks rather than inferring from this table.
  *
@@ -259,7 +258,6 @@ const ROUTE_NAMESPACES: Readonly<
 > = {
   localeHome: ["meta", "a11y"],
   localeDocument: ["meta", "errors", "a11y", "common"],
-  chooser: ["meta", "chooser", "a11y"],
 };
 
 export function namespacesFor(

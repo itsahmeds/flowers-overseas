@@ -38,7 +38,7 @@
  * `/review 36` found what that fix over-counted, and TASK-085 fixed it. Turbopack writes the
  * **same** `next/dynamic` module ids into every route's loadable manifest — it is an app-level
  * list, not a per-route one — so `/` was charged the banner, consent and settings-panel chunk
- * groups although `(chooser)` mounts no island and a browser fetches none of them (`/review 36`:
+ * groups although the `/` document of the time (deleted by spec 003 §14 A16) mounted no island and a browser fetches none of them (`/review 36`:
  * 131 672 B charged against 116 429 B fetched; on TASK-085's base commit, 135 357 B charged
  * against 120 116 B fetched — 15 241 B of fiction). The route's manifest is now a *candidate*
  * list, filtered by reachability from what the document really loads:
@@ -57,7 +57,7 @@
  * The closure starts from the **mounted** references rather than from every script the document
  * lists, and that is the whole of the fix: `/`'s HTML does list the banner loader's chunk, because
  * Turbopack puts an entry's client modules in the entry's script set, and that chunk does name the
- * island chunks — but `(chooser)` never mounts the loader, so the import never runs.
+ * island chunks — but a document that never mounts the loader never runs the import.
  *
  * The result is checked against a real browser rather than trusted:
  * `tests/e2e/client-js-budget.spec.ts` records every script response Chromium makes for the five
@@ -85,7 +85,7 @@
  * `lighthouse`. It stays informational until then because the framework floor is almost the whole
  * budget: after TASK-085 took the client provider and the catalogue import out, `/` measures
  * 116 778 B Brotli (14 294 B spare) and every locale document 122 360 B (8 712 B spare) against
- * 131 072 B — and 114 KB of the chooser's total is react-dom plus the App Router runtime, with no
+ * 131 072 B — and 114 KB of that `/` total was react-dom plus the App Router runtime, with no
  * application byte left to remove. TASK-056 owns the flip and the Lighthouse reconciliation (a
  * protected preview also runs `vercel.live`, which is not in this build output).
  *
@@ -120,12 +120,12 @@ export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
 export const MESSAGES_PAYLOAD_BUDGET_BYTES = 4 * 1024;
 
 /**
- * The URLs measured by default: AC-24's five — the chooser and all four launch locale homes
- * (TASK-056 widened the list from spec 003's `/`, `/en`, `/de`; `lighthouse` measures the same
- * five, from `tests/fixtures/seo/lighthouse-urls.json`).
+ * The URLs measured by default: the four launch locale homes (TASK-056 widened the list from
+ * spec 003's `/en`, `/de`; `lighthouse` measures the same set, from
+ * `tests/fixtures/seo/lighthouse-urls.json`). `/` left the set with spec 003 §14 A16: it is one
+ * 308 to `/en` and has no document to measure.
  */
 export const DEFAULT_URLS = [
-  "/",
   "/en",
   "/en-gb",
   "/de",
@@ -303,12 +303,12 @@ export function documentPathFor(dist: string, url: string): string {
 }
 
 /**
- * The app-router entry key of a URL, e.g. `/` -> `/(chooser)/page` and `/de` -> `/[locale]/page`.
+ * The app-router entry key of a URL, e.g. `/dev/components` -> `/(dev)/dev/components/page` and `/de` -> `/[locale]/page`.
  *
  * Read from `.next/app-path-routes-manifest.json`, which maps every entry directory under
  * `.next/server/app/` to the route it serves. Matching is exact first, then segment by segment so
  * a `[param]` or `[...param]` segment matches — the manifest is the only place that mapping
- * exists, and a route group like `(chooser)` means the directory name cannot be derived from the
+ * exists, and a route group like `(dev)` means the directory name cannot be derived from the
  * URL.
  */
 export function routeEntryFor(dist: string, url: string): string | null {
@@ -407,8 +407,9 @@ export function loadableAssetsFor(dist: string, url: string): ScriptTag[] {
  * than to every emitted chunk name: the candidate list is what Next wrote for this graph, and an
  * unrestricted search would count a chunk merely *named* in a manifest blob.
  *
- * This is the whole fix for `/`: `(chooser)` shares the app's loadable manifest with `[locale]`,
- * but nothing `/` loads mentions the island chunks, so `/` is charged none of them.
+ * A document that mounts no island shares the app's loadable manifest with `[locale]`, but
+ * nothing it loads mentions the island chunks, so it is charged none of them (the `/review 36`
+ * case was the `/` document spec 003 §14 A16 later deleted).
  */
 export function reachableAssets(
   dist: string,
@@ -572,8 +573,8 @@ export function measurePages(
     // The closure starts from the chunks of the **mounted** client references, not from every
     // script the document lists. That distinction is the `/review 36` over-count: `/`'s HTML does
     // list the banner loader's 1 434 B chunk (Turbopack puts an entry's client modules in the
-    // entry's script set), and that chunk names the island chunks — but `(chooser)` never mounts
-    // the loader, so the dynamic import never runs and the browser fetches none of them. A
+    // entry's script set), and that chunk names the island chunks — but a document that never mounts
+    // the loader (the then `/`, since deleted), so the dynamic import never runs and the browser fetches none of them. A
     // `next/dynamic` chunk is requested by the component that mounts, so the mounted set is the
     // honest seed.
     const loaded = references.flatMap((reference) => [...reference.chunks]);
@@ -767,56 +768,6 @@ export function catalogueLeaks(
     }
   }
   return leaks;
-}
-
-/**
- * The application-code markers no chunk of `/` may contain (spec 004 AC-12, AC-25; TASK-056).
- *
- * "`/` ships zero application JavaScript" is a claim spec 003 AC-7 made and every later spec
- * repeated, and until now nothing measured it: the chooser's byte total is the framework floor,
- * and a framework floor plus a small island looks like a framework floor. What separates the two
- * is *content*. Every component of the design system renders a `data-fo-*` attribute — it is how
- * the e2e, a11y and visual suites select anything at all — so a chunk that carries one carries
- * rendered application UI.
- *
- * The attribute, not a component name: Turbopack writes a `next/dynamic` module's *name* into the
- * loader stub of the entry that declares it, so `/`'s 1 434 B loader chunk mentions
- * `LocaleSuggestionBannerIsland` although the chooser never mounts it and the browser never
- * fetches the island (`/review 36`, §14 A1 addendum). A name proves nothing; markup does.
- */
-export const APPLICATION_MARKUP_MARKER = /data-fo-[a-z-]+=/;
-
-/** The route that must stay free of it, and the reason, so a failure explains itself. */
-export const ZERO_APP_JS_URL = "/";
-
-export interface ApplicationCodeHit {
-  readonly url: string;
-  readonly asset: string;
-}
-
-/**
- * Application markup found in a script `/` fetches, and the `next/dynamic` chunks it fetches at
- * all — either one contradicts AC-12's "zero application JS" for the chooser.
- */
-export function applicationCodeHits(
-  dist: string,
-  pages: readonly PageMeasurement[],
-): ApplicationCodeHit[] {
-  const page = pages.find((candidate) => candidate.url === ZERO_APP_JS_URL);
-  if (page === undefined) return [];
-  const hits: ApplicationCodeHit[] = [];
-  for (const asset of page.assets) {
-    if (asset.noModule) continue;
-    if (asset.kind === "lazy") {
-      hits.push({ url: page.url, asset: asset.asset });
-      continue;
-    }
-    const source = readFileSync(join(dist, asset.asset), "utf8");
-    if (APPLICATION_MARKUP_MARKER.test(source)) {
-      hits.push({ url: page.url, asset: asset.asset });
-    }
-  }
-  return hits;
 }
 
 /** One of A21 clause 3's font budgets, measured. */
@@ -1169,7 +1120,6 @@ export function main(
     const forbidden = forbiddenModuleHits(dist, pages);
     const leaks = catalogueLeaks(dist, pages);
     const fonts = fontTransfer(root);
-    const applicationCode = applicationCodeHits(dist, pages);
 
     if (argv.includes("--update-baseline")) {
       const path = writeBaseline(root, pages);
@@ -1203,10 +1153,6 @@ export function main(
           `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
       ),
       ...fontBreaches(fonts),
-      ...applicationCode.map(
-        (hit) =>
-          `${hit.url} fetches ${hit.asset}, which is application JavaScript — the chooser ships none (spec 003 AC-7, spec 004 AC-12, AC-25)`,
-      ),
       ...grown.map(
         (regression) =>
           `${regression.url} grew ${kb(regression.deltaBytes)} against \`${BASELINE_FILE}\` (${kb(
@@ -1232,9 +1178,6 @@ export function main(
           : "",
         leaks.length === 0
           ? `client-js-budget: no fetched chunk contains ${CLIENT_FORBIDDEN_NAMESPACES.map((namespace) => `${namespace}.*`).join(", ")} catalogue copy`
-          : "",
-        applicationCode.length === 0
-          ? `client-js-budget: ${ZERO_APP_JS_URL} fetches no application JavaScript and no next/dynamic chunk`
           : "",
         "",
         breaches.length === 0
