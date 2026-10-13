@@ -31,7 +31,7 @@ import { type MediaSlot, mediaFormats, mediaSlots } from "./media.ts";
  * the loaded `sharp` reports a different version, because a minor bump re-encodes every file: a
  * refusal is a one-line fix, a silent re-encode is 465 changed checksums nobody asked for.
  */
-export const PINNED_SHARP_VERSION = "0.35.4";
+export const PINNED_SHARP_VERSION = "0.35.5";
 
 /**
  * The libvips build the pinned `sharp` ships as a prebuilt binary. It is recorded and asserted for
@@ -39,7 +39,7 @@ export const PINNED_SHARP_VERSION = "0.35.4";
  * bytes". A machine that forces a global libvips (`SHARP_FORCE_GLOBAL_LIBVIPS`) is refused rather
  * than allowed to write subtly different files.
  */
-export const PINNED_LIBVIPS_VERSION = "8.18.6";
+export const PINNED_LIBVIPS_VERSION = "8.18.7";
 
 /* -------------------------------------------------------------------------- */
 /* The width ladder (spec 006 §13 Q5).                                        */
