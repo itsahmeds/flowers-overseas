@@ -94,7 +94,10 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   the bottom banner it replaces is deleted. The case's overlay selector now matches the banner
   **or** the open popup, so after PR 205 it cannot "fail as expected" on a missing banner: it finds
   the popup, passes, and Playwright reports the unexpected pass. Whichever of PR 205 and this PR
-  lands second deletes the `test.fail` line. Open.
+  lands second deletes the `test.fail` line. **Answered 2026-10-14:** PR 205 merged; after the
+  rebase the case starts from `NO_LOCALE_CHOICE` (the config now seeds a returning visitor's
+  `fo_locale`), finds the open popup at y 0 to 242 against the action at y 778 to 830, and passes;
+  the `test.fail` mark is deleted. Watched red with the dialog forced to the viewport's foot.
 
 ## Progress
 
@@ -111,6 +114,10 @@ One line per coherent step, newest last.
   156 passed, 15 of them expected failures, none a home case (the home joined T-33 at 1512 and
   1920 and passes). `docs/design/README.md` difference row added. `pnpm gates:cheap` PASS.
   Waiting on PR 208's merge for the rebase onto `origin/main`.
+- 2026-10-14: rebased onto `origin/main` 932c0733 (PR 208, 205, 209 merged); map regenerated. In
+  the build slot (load 11.6 at build start): `home-v3`, `frame-laptop-band` and `shell` e2e, 187
+  passed and 15 expected failures (none on the home); the language-popup case passes and its
+  `test.fail` mark is gone.
 
 ## Result
 

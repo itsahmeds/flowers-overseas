@@ -23,6 +23,7 @@
 import { type Page, expect, test } from "@playwright/test";
 
 import { recordLayoutShifts } from "../support/layout-shift.ts";
+import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 const HOME = "/en-gb";
 const BAR = "[data-fo-action-bar]";
@@ -305,7 +306,7 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
         if (text === "" || parent === null) continue;
         if (
           parent.closest(
-            "[data-fo-action-bar], [data-fo-consent-sheet], [data-fo-banner]",
+            "[data-fo-action-bar], [data-fo-consent-sheet], [data-fo-language-popup]",
           )
         )
           continue;
@@ -381,22 +382,17 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
     ).toBe(false);
   });
 
-  test("the language overlay never covers the bar's action", async ({
+  test("the language popup never covers the bar's action", async ({
     browser,
   }) => {
-    // The bottom suggestion banner of spec 003 is replaced by TASK-119's language popup, a top
-    // sheet at 390 (PR 205: `dialog[data-fo-language-popup]`, block-start 0, at most 260 px).
-    // Until it lands, the banner on a phone whose language is not the page's sits on the bar.
-    // The overlay is either one, so the case cannot pass on the banner's absence: once PR 205 is
-    // in, the popup must be found and clear of the bar, and the unexpected pass deletes this mark.
-    // Coordinated by test, not by editing the banner (work order).
-    test.fail(
-      true,
-      "the pre-TASK-119 suggestion banner sits on the viewport's foot; TASK-119 deletes this mark",
-    );
+    // TASK-119's popup (spec 003 §14 A16) opens on a first visit: below `md` a top sheet,
+    // block-start 0 and at most 260 px, so it stays clear of the bar at the viewport's foot.
+    // Coordinated by test, not by editing the popup (work order). A first visit means no
+    // `fo_locale`: `NO_LOCALE_CHOICE` overrides the config's returning-visitor cookie.
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },
       locale: "de-DE",
+      storageState: NO_LOCALE_CHOICE,
     });
     await context.addInitScript(() => {
       Object.defineProperty(navigator, "languages", {
@@ -407,11 +403,11 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
     const page = await context.newPage();
     try {
       await page.goto(HOME);
-      const overlay =
-        '[data-fo-banner="shown"], dialog[data-fo-language-popup][open]';
-      await expect(page.locator(overlay)).toBeVisible();
+      const popup = "dialog[data-fo-language-popup][open]";
+      await expect(page.locator(popup)).toBeVisible();
+      await expect(page.locator(ACTION)).toBeVisible();
       expect(
-        intersects(await rectOf(page, overlay), await rectOf(page, ACTION)),
+        intersects(await rectOf(page, popup), await rectOf(page, ACTION)),
       ).toBe(false);
     } finally {
       await context.close();
