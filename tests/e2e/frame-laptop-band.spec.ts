@@ -96,6 +96,10 @@ function resolveStep(step: Step, width: number, height: number): number {
  */
 const LEAD_PHOTO: Readonly<Partial<Record<PageType, string>>> = {
   guide: "main div:has(> div > h1) > .photo",
+  // TASK-187: the country occasion's lead figure is `items[0]`'s own card, the grid's first `<li>`,
+  // placed over the hero from `md` up (spec 008 §14 A16 (b)); the shop root and the country
+  // category draw no lead figure.
+  countryOccasion: "main li[data-fo-lead-item] img",
 };
 
 /** `--hero-photo-max`: `min(520px, 60svh)`. No browser chrome in a headless window, so svh = vh. */
@@ -137,8 +141,6 @@ const FIRST_SCREEN: Readonly<
  * that task must delete its row here. Recorded as an escalation in `docs/tasks/TASK-186.md`
  * ("AC-41's primary action on first screens TASK-186 does not own"); measured on the TASK-186 build:
  *
- *  - the country pages' first price is in the second card row, y 1,024 to 1,246 (TASK-187: "the
- *    first priced row in view", spec 008 §14 A15);
  *  - the `en-gb` birthday hub renders no way to a price in `<main>`, and the destinations hub's
  *    first destination ends at y 813 at 1280 × 800 (TASK-188's hub first screens); the occasions
  *    index's occasion links are 21 px inline links, and at 390 the category hub's destination link
@@ -154,9 +156,6 @@ const PENDING: Readonly<
     >
   >
 > = {
-  countryShop: { inView: "TASK-187" },
-  countryCategory: { inView: "TASK-187" },
-  countryOccasion: { inView: "TASK-187" },
   occasionHub: { inView: "TASK-188", primaryTarget: "TASK-188" },
   categoryHub: { primaryTarget: "TASK-188" },
   destinationsHub: { "inView@1280": "TASK-188" },
