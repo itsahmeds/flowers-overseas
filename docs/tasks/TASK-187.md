@@ -162,6 +162,11 @@ One dated bullet per `/review`, newest last.
   country shop, country category and country occasion pages (T-43 "the primary action in view" at
   1280 × 800 and 1512 × 945) is an expected failure in TASK-186's suite; this task flips it, by
   deleting their `PENDING` rows in `tests/e2e/frame-laptop-band.spec.ts`.
+- 2026-10-14 (work order `wo-187-146`, orchestrator): (a) the Peace Lily (FO-PT-004) and Olive
+  Sapling (FO-PT-006) photographs are withdrawn: a listing whose `leadSku` is either renders the honest
+  placeholder, never a stale image. (b) Render `LanguageAlternates` on the three country types (owed
+  from the TASK-179 review). (c) TASK-188 depends on this task's `listing.ts` / `ListingViewSchema`
+  shape: `## Result` says what changed.
 
 ## Escalations
 
@@ -173,7 +178,7 @@ _None recorded._
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-14: worktree `fo-wt-146` on `task/TASK-146-country-listings-depth4` from `8c4b7386`; rows `in_progress`; carry-forwards recorded.
 
 ## Result
 
