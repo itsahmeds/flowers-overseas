@@ -107,6 +107,7 @@ One dated bullet per `/review`, newest last.
 
 - **From the orchestrator (2026-10-05):** the product trail in T-55 is the `BreadcrumbList` (the visible trail and its structured data are one list, not two).
 - **From the orchestrator (2026-10-05):** the phone sticky price-and-button bar appears only after the hero has scrolled out of view, never over the first screen; TASK-210 carries the same rule for its sticky bar.
+- **From the orchestrator (2026-10-14, work order):** (a) PR 208 round 3: AC-48's popup case had no surface; the product page is the first page with the docked bar and the TASK-119 language popup, so a case asserts the popup (top sheet, at most 260 px) never intersects the bar, including at a short viewport (390 × 600). (b) Sticky-bar ruling: the phone docked bar appears only after the hero and buy section scroll out, never over the first screen. (c) Render `LanguageAlternates` on the product page (owed from the TASK-179 review). (d) Peace Lily (FO-PT-004) and Olive Sapling (FO-PT-006) photographs were withdrawn: their product pages render the honest placeholder.
 
 ## Escalations
 
