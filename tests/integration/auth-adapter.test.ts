@@ -9,7 +9,8 @@
  * surface the sign-in flows use: `getUserByEmail`, `linkAccount`, the verification-token pair, and
  * `deleteUser` taking the user's sessions and accounts with it.
  *
- * Plus the three keys `0010` added into `users`, read from `pg_constraint` with their delete rule.
+ * Plus the three keys `0010` added into `users`, read from `pg_constraint` with their delete rule,
+ * and the one of them that meets `0009`'s append-only `audit_log` (review r2, breaker HOLE 1).
  */
 import { and, eq, sql, TransactionRollbackError } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -23,6 +24,7 @@ import {
 } from "../../db/schema/auth.ts";
 import { DEFERRED_FOREIGN_KEYS } from "../fixtures/schema-foreign-keys.ts";
 import {
+  pgFailure,
   probeLocalServer,
   rolledBack,
   scratchDatabase,
@@ -201,6 +203,118 @@ describe.skipIf(server.url === undefined)(
                  (SELECT count(*)::int FROM customer WHERE user_id IS NOT NULL) AS linked`;
       });
       expect([...left]).toEqual([{ members: 0, customers: 1, linked: 0 }]);
+    });
+
+    it("deleting an audit actor keeps the record: the key goes NULL, the label stays, nothing else is writable (HOLE 1)", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const [gone, stays] = await tx<{ id: string }[]>`
+          INSERT INTO users (email) VALUES ('gone@example.test'), ('stays@example.test')
+          RETURNING id`;
+        const goneId = gone?.id ?? "";
+        const staysId = stays?.id ?? "";
+        const audit = async (actor: string, label: string): Promise<string> => {
+          const [row] = await tx<{ id: string }[]>`
+            INSERT INTO audit_log (actor_user_id, actor_label, action, entity_table, entity_id,
+              after, request_id)
+            VALUES (${actor}, ${label}, 'partner.status_set', 'fulfillment_partner', 'p-1',
+              '{"status":"live"}', 'req-1') RETURNING id`;
+          return row?.id ?? "";
+        };
+        const goneRow = await audit(goneId, "Ada (admin)");
+        const staysRow = await audit(staysId, "Bo (admin)");
+        const refused = (fn: (sp: typeof tx) => Promise<unknown>) =>
+          pgFailure(tx, fn).then((f) => f.raised ?? f.code);
+        const before = {
+          // The actor still exists: no hand-written UPDATE may drop, re-point or rewrite.
+          nullWhileActorExists: await refused(
+            (sp) =>
+              sp`UPDATE audit_log SET actor_user_id = NULL WHERE id = ${staysRow}`,
+          ),
+          repoint: await refused(
+            (sp) =>
+              sp`UPDATE audit_log SET actor_user_id = ${staysId} WHERE id = ${goneRow}`,
+          ),
+          nullAndRelabel: await refused(
+            (sp) =>
+              sp`UPDATE audit_log SET actor_user_id = NULL, actor_label = 'someone else'
+                 WHERE id = ${goneRow}`,
+          ),
+        };
+        const deleted = (await tx`DELETE FROM users WHERE id = ${goneId}`)
+          .count;
+        const rows = await tx<
+          { id: string; actor_user_id: string | null; actor_label: string }[]
+        >`SELECT id, actor_user_id, actor_label FROM audit_log ORDER BY actor_label`;
+        const after = {
+          relabel: await refused(
+            (sp) =>
+              sp`UPDATE audit_log SET actor_label = 'someone else' WHERE id = ${goneRow}`,
+          ),
+          nullAgain: await refused(
+            (sp) =>
+              sp`UPDATE audit_log SET actor_user_id = NULL WHERE id = ${goneRow}`,
+          ),
+          remove: await refused(
+            (sp) => sp`DELETE FROM audit_log WHERE id = ${goneRow}`,
+          ),
+        };
+        // The FK makes a dangling key impossible, so lift it inside this rolled-back
+        // transaction to reach the one state where only the column rule decides: the actor is
+        // gone, the key still points at it, and an UPDATE that nulls it also changes a column.
+        const dangling = await tx.savepoint(async (sp) => {
+          await sp`ALTER TABLE audit_log DROP CONSTRAINT audit_log_actor_user_id_users_id_fk`;
+          await sp`DELETE FROM users WHERE id = ${staysId}`;
+          return {
+            nullAndRelabel: await refused(
+              (inner) =>
+                inner`UPDATE audit_log SET actor_user_id = NULL, actor_label = 'someone else'
+                      WHERE id = ${staysRow}`,
+            ),
+            nullAndRetime: await refused(
+              (inner) =>
+                inner`UPDATE audit_log SET actor_user_id = NULL, at = at - interval '1 day'
+                      WHERE id = ${staysRow}`,
+            ),
+          };
+        });
+        return {
+          before,
+          deleted,
+          rows: rows.map((r) => ({
+            row: r.id === goneRow ? "gone" : "stays",
+            actor:
+              r.actor_user_id === null
+                ? null
+                : r.actor_user_id === staysId
+                  ? "stays"
+                  : r.actor_user_id,
+            label: r.actor_label,
+          })),
+          after,
+          dangling,
+        };
+      });
+      expect(result).toEqual({
+        before: {
+          nullWhileActorExists: "AUDIT_LOG_APPEND_ONLY",
+          repoint: "AUDIT_LOG_APPEND_ONLY",
+          nullAndRelabel: "AUDIT_LOG_APPEND_ONLY",
+        },
+        deleted: 1,
+        rows: [
+          { row: "gone", actor: null, label: "Ada (admin)" },
+          { row: "stays", actor: "stays", label: "Bo (admin)" },
+        ],
+        after: {
+          relabel: "AUDIT_LOG_APPEND_ONLY",
+          nullAgain: "AUDIT_LOG_APPEND_ONLY",
+          remove: "AUDIT_LOG_APPEND_ONLY",
+        },
+        dangling: {
+          nullAndRelabel: "AUDIT_LOG_APPEND_ONLY",
+          nullAndRetime: "AUDIT_LOG_APPEND_ONLY",
+        },
+      });
     });
   },
 );

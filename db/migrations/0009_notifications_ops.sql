@@ -176,10 +176,27 @@ CREATE INDEX audit_log_entity_idx ON public.audit_log USING btree (entity_table,
 -- Append-only, like order_event (review round 1, nit 4): a record of who changed what cannot be
 -- edited or removed by the application it records. Pseudonymising personal data inside
 -- `before`/`after` is a retention concern for TASK-025, through a migration-owned path.
+--
+-- One UPDATE passes: the one `0010`'s key `actor_user_id → users ON DELETE SET NULL` makes when
+-- an actor's account is deleted (Auth.js `deleteUser`, an erasure). It sets `actor_user_id` from
+-- a value to NULL, changes no other column, and the user it pointed at no longer exists. While
+-- that key stands no other statement can produce that state, so a hand-written UPDATE is still
+-- refused, and `actor_label` keeps who it was (review round 2, breaker HOLE 1). `users` arrives
+-- in `0010`; before it does (and after its rollback) the branch is never planned.
 CREATE FUNCTION public.audit_log_append_only() RETURNS trigger
   LANGUAGE plpgsql
 AS $fn$
 BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    IF OLD.actor_user_id IS NOT NULL
+       AND NEW.actor_user_id IS NULL
+       AND (to_jsonb(NEW) - 'actor_user_id') = (to_jsonb(OLD) - 'actor_user_id')
+       AND to_regclass('public.users') IS NOT NULL THEN
+      IF NOT EXISTS (SELECT 1 FROM public.users u WHERE u.id = OLD.actor_user_id) THEN
+        RETURN NEW;
+      END IF;
+    END IF;
+  END IF;
   RAISE EXCEPTION 'AUDIT_LOG_APPEND_ONLY: audit_log is append-only; % is refused', TG_OP
     USING ERRCODE = 'restrict_violation';
 END;

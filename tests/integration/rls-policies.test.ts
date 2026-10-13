@@ -574,6 +574,20 @@ describe.skipIf(server.url === undefined)(
           as(tx, ctx, (sp) => pgFailure(sp, fn)).then(
             (f) => f.raised ?? f.code,
           );
+        // HOLE 2 (a), review r2: the column guard is the buyer's alone; staff correct an email
+        // and the retention sweep (`system`) redacts, so both still write every guarded column.
+        const staffEdit = (role: "admin" | "system") =>
+          as(
+            tx,
+            { role },
+            async (sp) =>
+              (
+                await sp`UPDATE customer SET email_normalised = 'corrected@example.test',
+                     marketing_consent = true, redacted = true, redacted_at = now(),
+                     created_at = created_at - interval '1 day'
+                   WHERE id = ${mine.customerId}`
+              ).count,
+          );
         const edits = {
           rawEvents: await as(tx, ctx, (sp) => countOf(sp, "order_event")),
           timeline: await as(tx, ctx, async (sp) =>
@@ -630,6 +644,18 @@ describe.skipIf(server.url === undefined)(
             (sp) =>
               sp`UPDATE customer SET email_normalised = 'other@example.test' WHERE id = ${mine.customerId}`,
           ),
+          // HOLE 2 (b): `created_at` starts the retention clock (spec 002 §8). A new `id` would
+          // also break the keys into it, so `raised` (not 23503) is what names the guard.
+          createdAt: await refused(
+            (sp) =>
+              sp`UPDATE customer SET created_at = created_at - interval '3 years' WHERE id = ${mine.customerId}`,
+          ),
+          id: await refused(
+            (sp) =>
+              sp`UPDATE customer SET id = gen_random_uuid() WHERE id = ${mine.customerId}`,
+          ),
+          adminEdits: await staffEdit("admin"),
+          systemEdits: await staffEdit("system"),
           addressForOther: await refused(
             (sp) =>
               sp`INSERT INTO address (customer_id, kind, lines, city, country_iso2)
@@ -675,6 +701,10 @@ describe.skipIf(server.url === undefined)(
         consent: "CUSTOMER_COLUMN_READ_ONLY",
         redact: "CUSTOMER_COLUMN_READ_ONLY",
         email: "CUSTOMER_COLUMN_READ_ONLY",
+        createdAt: "CUSTOMER_COLUMN_READ_ONLY",
+        id: "CUSTOMER_COLUMN_READ_ONLY",
+        adminEdits: 1,
+        systemEdits: 1,
         addressForOther: "42501",
         repointAddress: "42501",
         repointRecipient: "42501",
