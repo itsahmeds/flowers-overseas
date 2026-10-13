@@ -51,13 +51,13 @@ for (const [locale, url, native] of SHOP_ROOTS) {
     expect(response?.status()).toBe(200);
 
     await expect(page.locator("h1")).toHaveCount(1);
-    await expect(page.locator("main [data-fo-listing-intro] h1")).toHaveCount(
-      1,
-    );
+    // Round 2 (spec 004 §14 A24 clause 2; TASK-187): the H1 in the head, the flat P.S., and no
+    // band inside the grid.
+    await expect(page.locator("main [data-fo-listing-hero] h1")).toHaveCount(1);
     await expect(page.locator("main [data-fo-listing-note]")).toHaveCount(1);
     await expect(page.locator('main [role="note"][aria-label]')).toHaveCount(1);
     await expect(page.locator("main [data-fo-listing-interlude]")).toHaveCount(
-      1,
+      0,
     );
 
     const cards = await page

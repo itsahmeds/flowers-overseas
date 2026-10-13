@@ -107,9 +107,9 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
     for (const url of ["/en/flowers/roses/", "/en/occasions/mothers-day/"]) {
       const response = await request.get(url, { maxRedirects: 0 });
       expect([301, 308], url).toContain(response.status());
-      expect(response.headers()["location"], url).toContain(
-        url.replace(/\/$/u, ""),
-      );
+      // The exact bare URL: a self-redirect would satisfy a `toContain` (TASK-146 carry-forward
+      // from `/review 99`).
+      expect(response.headers()["location"], url).toBe(url.replace(/\/$/u, ""));
     }
   });
 });

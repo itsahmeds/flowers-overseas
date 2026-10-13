@@ -148,8 +148,12 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     // The sibling row is the whole browsing affordance (§13 Q6): links to pages that exist, the
     // current category marked and not a link to itself.
-    const siblings = page.locator("#sibling-categories");
-    await expect(siblings).toBeVisible();
+    // From `md` up the row sits under the grid; below `md` it is the phone's one chip scroller
+    // above the grid (spec 008 §14 A16 (e)). Exactly one of the two is displayed.
+    const siblings = page.locator(
+      "#sibling-categories:visible, main [data-fo-phone-chips]:visible",
+    );
+    await expect(siblings).toHaveCount(1);
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
     // The demo sentence, the whole of the Phase 0 state.
@@ -158,13 +162,15 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
         "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
       ),
     ).toBeVisible();
-    // Toolbar and pagination wait for TASK-114's `searchParams` (§14 A8 (c)).
-    await expect(page.locator("main form")).toHaveCount(0);
-    await expect(page.locator("main button")).toHaveCount(0);
-    await expect(page.locator("main select")).toHaveCount(0);
+    // Since spec 008 §14 A15 (TASK-187) the sort form and the pager are here: one `GET` form
+    // under the grid whose submit can act with no JavaScript, and a pager of real links. Counted
+    // exactly, so a basket or a second form fails here.
+    await expect(page.locator('main form[method="get"]')).toHaveCount(1);
+    await expect(page.locator("main button")).toHaveCount(1);
+    await expect(page.locator("main select")).toHaveCount(1);
     await expect(
       page.locator('main nav[aria-label="Pages of products"]'),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
   });
 
   test("every link on the page is to a URL that exists (AC-5's link half)", async ({
