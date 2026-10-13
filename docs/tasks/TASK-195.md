@@ -140,6 +140,7 @@ One line per coherent step, newest last.
 - 2026-10-05 — Local production build in the build slot: fixed the lost `data-fo-menu` attribute (a `"use client"` export is a client reference on the server), the gallery hook, the category hub case; screenshots taken.
 - 2026-10-12 — Finisher: verified review change 1 and breaker holes 1 to 3 (each unit case red on its revert); CLS 0 restored by reverting the consent sheet's `="shown"` scope (ad8c4aa9). The 11 `frame-laptop-band.spec.ts:437` "✘" lines are `test.fail` expected failures owned by later tasks, identical on 8f5d7b28; not red.
 - 2026-10-12 — `category-hub-mobile` linux baseline re-taken from CI run 37341225499 (f5d9edec); `ci:full` toggled.
+- 2026-10-14 — Rebased onto main after PR 211, PR 205 (TASK-119) and PR 209: `banner.spec.ts` dropped (deleted on main), its phone-Menu branch moved into `shell.spec.ts`'s no-script case (0abf9467); map regenerated; three baselines taken from main, `suggestion-banner-mobile` stays deleted.
 
 ## Result
 
@@ -172,3 +173,27 @@ AC-50 and AC-32's phone half; T-52 to T-55.
   (0.19) on 43bbca5b from that scope; reverted. `category-hub-mobile` linux baseline re-taken from
   CI run 37341225499 (shows `‹ Home`). No local Playwright run, no build slot taken. The darwin
   copy of `category-hub-mobile` still shows the trail (CI never reads it).
+
+- **Rebase onto main (2026-10-14, finisher).** Base 686549a4 → 14f8364d. Range-diff: commits 1, 2,
+  4, 5, 7, 9 to 14 unchanged; 455d43c5 loses its `tests/e2e/banner.spec.ts` hunk (main deleted the
+  file with the banner) and its codebase-map hunk is regenerated; b261aeed and 8f5d7b28 lose
+  `consent-settings-{de,en}-mobile`, `dev-components-desktop` (main's taken) and
+  `suggestion-banner-mobile` (deleted on main). One new commit, 0abf9467: main moved the
+  no-script switcher case into `tests/e2e/shell.spec.ts`, which went red on e2e-mobile (the header
+  switcher is inside the Menu below `md`); it now opens the Menu first, as 455d43c5 did in the
+  banner spec. AC-48's popup case still has no surface: the bar lives only on the `(dev)` fixture
+  page, which mounts no popup, and the popup is a top sheet on the phone; it falls to TASK-197.
+- **Local run** (build slot, load average 5.9 to 9.6): full e2e-desktop + e2e-mobile 1616 passed,
+  184 skipped, 0 failed (the 15 `frame-laptop-band` "✘" are `test.fail`); a11y 101 passed.
+
+```
+gates:cheap · 0abf9467b2c2153901cf5bff152832c5de2aac02 · tree clean · base origin/main
+typecheck             exit 0 · 2.1 s
+lint                  exit 0 · 21.9 s
+format:check          exit 0 · 13.2 s
+i18n:check            exit 0 · 0.6 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 31.9 s · changed 81 + map 0 + always 3
+RESULT: PASS
+```
