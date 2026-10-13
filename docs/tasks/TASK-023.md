@@ -56,6 +56,8 @@ _None recorded._
 
 - 2026-10-13 (paused by the founder): done, each with a red mutation: review items 1–4, nits 2–4, nit 1 (documented), breaker H1–H3. Left: the `tests` step of `pnpm gates:cheap` exits 1 (not yet investigated), the `ci:full` label is not toggled, CI has not run on this head, and round 2 is not requested.
 
+- 2026-10-13 (finisher): the red `tests` step was two failures. (1) `order-integrity.test.ts` AC-36 scan flagged `rls-policies.test.ts:287`, this bundle's plain-string assertion on the rollback's `DROP TRIGGER` line; rewritten as the anchored `/^…$/m` literal the scan allows (`900d4029`), red when line 13 of `0011_rls_policies.down.sql` is commented out. (2) `url-pii.test.ts` T-59 timed out at 5 s with the load average at 64–85 from other agents; the diff touches nothing under `src/`, and it passed in the full gates run at load 7.6.
+
 ## Result
 
 PR 210 (feature PR, TASK-019…023).
@@ -123,3 +125,20 @@ Carried forward:
 - TASK-025: `audit_log` is append-only.
 
 Local evidence: PostgreSQL 16.14 (embedded-postgres, 127.0.0.1:54329), stopped by its PID afterwards. The integration project: 13 files passed, 4 skipped; 110 tests passed, 32 skipped.
+
+### Cheap gates on `900d4029` (load average 7.58 at start, 8.10 at end)
+
+```
+gates:cheap · 900d4029b5b108f409149ee75a60e814165d2f4d · tree clean · base origin/main · 2026-10-13T16:56:44.718Z
+typecheck             exit 0 · 2.8 s
+lint                  exit 0 · 17.2 s
+format:check          exit 0 · 11.1 s
+i18n:check            exit 0 · 0.6 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 21.8 s · changed 8 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
+Tests: 411 of 411 unit passed. No Postgres was started in this run: the fix is in a unit file, and CI's `test-integration` ran the integration project. No expensive gate was run locally. CI's `audit` is red until PR 211 merges; it is not fixed here.
