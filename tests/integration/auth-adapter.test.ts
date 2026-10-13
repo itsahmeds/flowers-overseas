@@ -260,10 +260,13 @@ describe.skipIf(server.url === undefined)(
         };
         // The FK makes a dangling key impossible, so lift it inside this rolled-back
         // transaction to reach the one state where only the column rule decides: the actor is
-        // gone, the key still points at it, and an UPDATE that nulls it also changes a column.
+        // gone, the key still points at it, and an UPDATE that nulls it also changes a column,
+        // or points it at someone else.
         const dangling = await tx.savepoint(async (sp) => {
           await sp`ALTER TABLE audit_log DROP CONSTRAINT audit_log_actor_user_id_users_id_fk`;
           await sp`DELETE FROM users WHERE id = ${staysId}`;
+          const [other] = await sp<{ id: string }[]>`
+            INSERT INTO users (email) VALUES ('other@example.test') RETURNING id`;
           return {
             nullAndRelabel: await refused(
               (inner) =>
@@ -275,6 +278,15 @@ describe.skipIf(server.url === undefined)(
                 inner`UPDATE audit_log SET actor_user_id = NULL, at = at - interval '1 day'
                       WHERE id = ${staysRow}`,
             ),
+            repointToOther: await refused(
+              (inner) =>
+                inner`UPDATE audit_log SET actor_user_id = ${other?.id ?? ""}
+                      WHERE id = ${staysRow}`,
+            ),
+            // The control: the same row, the key alone set NULL, is the one update that passes.
+            nullOnly: (
+              await sp`UPDATE audit_log SET actor_user_id = NULL WHERE id = ${staysRow}`
+            ).count,
           };
         });
         return {
@@ -313,6 +325,8 @@ describe.skipIf(server.url === undefined)(
         dangling: {
           nullAndRelabel: "AUDIT_LOG_APPEND_ONLY",
           nullAndRetime: "AUDIT_LOG_APPEND_ONLY",
+          repointToOther: "AUDIT_LOG_APPEND_ONLY",
+          nullOnly: 1,
         },
       });
     });
