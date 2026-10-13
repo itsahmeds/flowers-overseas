@@ -2829,10 +2829,20 @@
     "reviewed": false,
     "sourceHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
   },
+  "shop.pagination.nextPage": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c08ac736a5e29c291b681cbdc15f06901a735f28d2e04645b92cf331861cb8c0"
+  },
   "shop.pagination.page": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "7b2478a95138b0b20b6b921d8051dfada24888778a8939f20624bfb7ec2b2ab8"
+  },
+  "shop.pagination.pageOf": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d746a867988f8812e38c18d6484cbe1ce83069579ee8cfb99a556f1436e633f2"
   },
   "shop.pagination.previous": {
     "source": "machine",
@@ -2917,7 +2927,7 @@
   "shop.root.tileCount": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "18c95e42a89f54edba69cba864a90c54e9fd600f847f22a968141f9a45657436"
+    "sourceHash": "9a2fe94d745a9d6495ca2c361cb9190bfa9cd7cf1ad42878abb415b8eea304e4"
   },
   "shop.root.tilesHeading": {
     "source": "machine",
@@ -2953,6 +2963,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "cc44e3bd92f25ddd462eeaec8a88579c0fe468ac7f22fa4439c2e067655eb0ef"
+  },
+  "shop.toolbar.reorderLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "55e62a99425a5df4c30472d64e5d03e5bd702172d0fbbb5237a6b1505b2ae8fa"
   },
   "shop.toolbar.sortLabel": {
     "source": "machine",

@@ -94,31 +94,78 @@ export function ListingToolbar({
           {t("toolbar.disclosure")}
         </Text>
       </div>
-      <form className="flex items-end gap-[12px]" method="get">
-        <div className="gap-xs grid min-w-0 flex-1 md:flex-none">
-          <label className="label text-ink-subtle" htmlFor={id}>
-            {t("toolbar.sortLabel")}
-          </label>
-          <select
-            className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 border-[1.5px] px-[14px] md:min-w-[240px]"
-            defaultValue={sort}
-            id={id}
-            name="sort"
-          >
-            {LISTING_SORTS.map((option) => (
-              <option key={option} value={option}>
-                {t(SORT_LABEL_KEYS[option])}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button
-          className="text-ink text-ui hover:bg-surface-raised min-h-(--control-sm) rounded-full px-[20px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
-          type="submit"
-        >
-          {t("toolbar.submit")}
-        </button>
-      </form>
+      <SortForm id={id} sort={sort} />
     </div>
+  );
+}
+
+/** The sort form itself: a visible label, a real `<select>`, a real submit button (AC-9). */
+function SortForm({
+  id,
+  sort,
+}: {
+  readonly id: string;
+  readonly sort: ListingSort;
+}): ReactElement {
+  const t = useTranslations("shop");
+  return (
+    <form className="flex items-end gap-[12px]" method="get">
+      <div className="gap-xs grid min-w-0 flex-1 md:flex-none">
+        <label className="label text-ink-subtle" htmlFor={id}>
+          {t("toolbar.sortLabel")}
+        </label>
+        <select
+          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 border-[1.5px] px-[14px] md:min-w-[240px]"
+          defaultValue={sort}
+          id={id}
+          name="sort"
+        >
+          {LISTING_SORTS.map((option) => (
+            <option key={option} value={option}>
+              {t(SORT_LABEL_KEYS[option])}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        className="text-ink text-ui hover:bg-surface-raised min-h-(--control-sm) rounded-full px-[20px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+        type="submit"
+      >
+        {t("toolbar.submit")}
+      </button>
+    </form>
+  );
+}
+
+export interface ListingSortFormProps {
+  readonly sort: ListingSort;
+  /** The `<select>`'s id. */
+  readonly id?: string;
+}
+
+/**
+ * The sort form **under the grid** (spec 008 §14 A15 (d), **R8**, AC-32; spec 004 §14 A23 Appendix
+ * A **A10**; TASK-187): the same `<form method="get">` as the toolbar's, labelled "Change the order"
+ * (`shop.toolbar.reorderLabel`), which names the form for a screen reader too. The count and the
+ * ranking disclosure stay above the grid, so this is the form alone, between one rule above and
+ * one below, the label on the start side and the control on the end side from `md` up.
+ */
+export function ListingSortForm({
+  sort,
+  id = "listing-sort",
+}: ListingSortFormProps): ReactElement {
+  const t = useTranslations("shop");
+  const headingId = `${id}-heading`;
+  return (
+    <section
+      aria-labelledby={headingId}
+      className="border-rule gap-y-md grid grid-cols-1 items-end border-y py-[18px] md:grid-cols-[minmax(0,1fr)_auto]"
+      data-fo-listing-sort-form={sort}
+    >
+      <p className="label text-ink-subtle" id={headingId}>
+        {t("toolbar.reorderLabel")}
+      </p>
+      <SortForm id={id} sort={sort} />
+    </section>
   );
 }

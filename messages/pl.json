@@ -929,7 +929,9 @@
     "pagination": {
       "label": "Pages of products",
       "next": "Next",
+      "nextPage": "Next page",
       "page": "Page {page}",
+      "pageOf": "Page {page} of {total}",
       "previous": "Previous",
       "titleSuffix": "{title} · Page {page}"
     },
@@ -948,7 +950,7 @@
       "pageColumn": "Page",
       "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "Send flowers to {country} — what we can make there",
-      "tileCount": "{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}",
+      "tileCount": "{noun, select, plant {{count, plural, one {# roślina, którą możemy wykonać dla {country}} few {# rośliny, które możemy wykonać dla {country}} many {# roślin, które możemy wykonać dla {country}} other {# rośliny, które możemy wykonać dla {country}}}} arrangement {{count, plural, one {# kompozycja, którą możemy wykonać dla {country}} few {# kompozycje, które możemy wykonać dla {country}} many {# kompozycji, które możemy wykonać dla {country}} other {# kompozycji, które możemy wykonać dla {country}}}} other {{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}}}",
       "tilesHeading": "By what it is",
       "tilesSubheading": "Narrow it down"
     },
@@ -960,6 +962,7 @@
     "toolbar": {
       "count": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}}",
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+      "reorderLabel": "Change the order",
       "sortLabel": "Sort by",
       "submit": "Sort",
       "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"

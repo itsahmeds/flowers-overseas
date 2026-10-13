@@ -75,6 +75,19 @@ export interface ProductCardProps {
    * labelled.
    */
   readonly manifest?: MediaManifest;
+  /**
+   * Where the "Example arrangement" label shows (spec 008 §14 **A16 (a)**). `card` (the default):
+   * under every card at every width, as A2 rules. `md`: under the card from `md` up only; below
+   * `md` it stays in the HTML, hidden by CSS, because the grid then prints it once, above itself.
+   */
+  readonly provenance?: "card" | "md";
+  /**
+   * The country occasion's lead (spec 008 §14 **A16 (b)**; spec 004 §14 A24 clause 2 (b)): from
+   * `md` up the name, the price and the label sit on a white card over the foot of the photograph,
+   * as the artboard's lead figure draws them; below `md` the card is an ordinary grid card. One
+   * element at every width; only its CSS differs.
+   */
+  readonly lead?: boolean;
 }
 
 /** The 4∶5 box, in every state. Named once so the four states cannot drift apart. */
@@ -86,6 +99,8 @@ export function ProductCard({
   priority = false,
   headingLevel = "h2",
   manifest,
+  provenance = "card",
+  lead = false,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
   const media = useTranslations("media");
@@ -116,9 +131,27 @@ export function ProductCard({
       />
     );
 
-  const body: ReactNode = (
+  const provenanceNote =
+    card.photo.kind === "asset" ? (
+      <MediaProvenanceNote
+        assetIds={[card.photo.assetId]}
+        locale={locale}
+        {...(manifest === undefined ? {} : { manifest })}
+      />
+    ) : null;
+  // Below `md` on a page that prints the label once per grid, this one stays in the HTML and is
+  // hidden by CSS (spec 008 §14 A16 (a)); the default keeps the shipped markup exactly.
+  const note =
+    provenanceNote === null || provenance === "card" ? (
+      provenanceNote
+    ) : (
+      <div className="max-md:hidden" data-fo-card-provenance="md">
+        {provenanceNote}
+      </div>
+    );
+
+  const caption: ReactNode = (
     <>
-      {photo}
       {/* The card name: Fraunces at the `h3` step (21/18), 14 px under the photograph (10 on a
           phone), and a real heading, because §5.3 requires the card's name to *be* its heading
           and the price to be adjacent text. Underlined on the card link's hover. */}
@@ -160,10 +193,32 @@ export function ProductCard({
     </>
   );
 
+  const body: ReactNode = lead ? (
+    <>
+      {photo}
+      {/* The lead figure's tag from `md` up: the card's own name, price and label on a white card
+          over the photograph's foot (the country occasion artboard). The price is this card's
+          `formatMoney` output: the tag is the card, larger (price shown = price charged). */}
+      <div
+        className="md:bg-card md:rounded-field md:absolute md:start-[16px] md:end-[16px] md:bottom-[16px] md:px-[20px] md:pt-[6px] md:pb-[16px] md:shadow-(--shadow-letter)"
+        data-fo-lead-tag
+      >
+        {caption}
+        {note === null ? null : <div className="md:mt-[8px]">{note}</div>}
+      </div>
+    </>
+  ) : (
+    <>
+      {photo}
+      {caption}
+    </>
+  );
+
   return (
     <Stack
       as="article"
       gap="xs"
+      {...(lead ? { className: "md:relative", "data-fo-lead": true } : {})}
       data-fo-product-card={card.productId}
       data-fo-product-card-kind={card.href === undefined ? "tile" : "link"}
       data-fo-product-card-money={hasCardPrice(card) ? "priced" : "none"}
@@ -178,13 +233,7 @@ export function ProductCard({
           {body}
         </a>
       )}
-      {card.photo.kind === "asset" ? (
-        <MediaProvenanceNote
-          assetIds={[card.photo.assetId]}
-          locale={locale}
-          {...(manifest === undefined ? {} : { manifest })}
-        />
-      ) : null}
+      {lead ? null : note}
     </Stack>
   );
 }

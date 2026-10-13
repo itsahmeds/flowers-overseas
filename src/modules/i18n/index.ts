@@ -142,6 +142,7 @@ export {
 export { LocaleCookieSchema } from "./schemas.ts";
 
 export {
+  type DateParts,
   type DateStyle,
   type FormatMoneyOptions,
   type FormatNumberOptions,
@@ -153,6 +154,7 @@ export {
   type ZonedClock,
   countGraphemes,
   formatDate,
+  formatDateParts,
   formatList,
   formatMoney,
   formatNumber,

@@ -21,6 +21,13 @@
  * itself. It is a *count*, not copy, so it is not a message key: a catalogue entry whose whole
  * value is one placeholder has no text for the pseudo-locale to mirror.
  *
+ * **The phone's compact form** (spec 008 §14 **A16 (e)**; spec 004 §14 A24 clause 10 P3; TASK-187).
+ * Below `md` the same `<nav>` displays "Page {page} of {total}", the next link as a pill reading
+ * "Next page" and, from page 2 on, the previous link; the numbered links are hidden by CSS only,
+ * so every page's `<a href>` stays in the one `<nav>` at every width (AC-10, AC-29). The step links
+ * are one element each at both widths: each carries its desktop word and its phone words, one of
+ * them `display: none`, so the accessible name is the text shown at that width.
+ *
  * Server Component, no client bytes.
  */
 import { useTranslations } from "next-intl";
@@ -52,6 +59,9 @@ const LINK_CLASS = `${PILL} bg-card shadow-[inset_0_0_0_1px_var(--color-rule)] h
 const CURRENT_CLASS = `${PILL} bg-ink text-paper`;
 const STEP_CLASS =
   "inline-grid place-items-center min-h-(--target-min) px-[12px] text-link font-bold underline underline-offset-4 hover:text-link-strong";
+/** The phone's next pill: a 44 px outlined pill on the end side (the phone artboards). */
+const NEXT_PHONE_CLASS =
+  "max-md:ms-auto max-md:rounded-full max-md:px-[20px] max-md:text-ink max-md:no-underline max-md:shadow-[inset_0_0_0_1.5px_var(--color-ink)]";
 
 export function Pagination({
   locale,
@@ -67,7 +77,7 @@ export function Pagination({
   return (
     <nav
       aria-label={t("pagination.label")}
-      className="flex flex-wrap items-center gap-[6px]"
+      className="flex flex-wrap items-center gap-[6px] max-md:gap-[12px]"
       data-fo-pagination={pageCount}
     >
       {page > 1 ? (
@@ -75,17 +85,32 @@ export function Pagination({
           {t("pagination.previous")}
         </a>
       ) : null}
+      {/* The phone's "Page 1 of 7" (P3): text, not a control. */}
+      <span
+        className="text-ink-muted text-sm md:hidden"
+        data-fo-pagination-compact
+      >
+        {t("pagination.pageOf", {
+          page: formatNumber(page, locale),
+          total: formatNumber(pageCount, locale),
+        })}
+      </span>
       {pages.map((n) =>
         n === page ? (
-          <b aria-current="page" className={CURRENT_CLASS} key={n}>
+          <b
+            aria-current="page"
+            className={`${CURRENT_CLASS} max-md:hidden`}
+            key={n}
+          >
             {formatNumber(n, locale)}
           </b>
         ) : (
           // The visible text is the numeral; the accessible name says what the numeral means,
-          // because "3" alone is not a link name (§5.3's accessibility paragraph).
+          // because "3" alone is not a link name (§5.3's accessibility paragraph). Below `md` the
+          // numbered links are hidden by CSS and stay in the HTML (spec 008 §14 A16 (e)).
           <a
             aria-label={t("pagination.page", { page: n })}
-            className={LINK_CLASS}
+            className={`${LINK_CLASS} max-md:hidden`}
             href={pageHref(baseHref, n)}
             key={n}
           >
@@ -94,8 +119,13 @@ export function Pagination({
         ),
       )}
       {page < pageCount ? (
-        <a className={STEP_CLASS} href={pageHref(baseHref, page + 1)}>
-          {t("pagination.next")}
+        <a
+          className={`${STEP_CLASS} ${NEXT_PHONE_CLASS}`}
+          data-fo-pagination-next
+          href={pageHref(baseHref, page + 1)}
+        >
+          <span className="max-md:hidden">{t("pagination.next")}</span>
+          <span className="md:hidden">{t("pagination.nextPage")}</span>
         </a>
       ) : null}
     </nav>

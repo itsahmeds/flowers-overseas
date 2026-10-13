@@ -929,7 +929,9 @@
     "pagination": {
       "label": "Pages of products",
       "next": "Next",
+      "nextPage": "Next page",
       "page": "Page {page}",
+      "pageOf": "Page {page} of {total}",
       "previous": "Previous",
       "titleSuffix": "{title} · Page {page}"
     },
@@ -948,7 +950,7 @@
       "pageColumn": "Page",
       "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "seoTitle": "Send flowers to {country} — what we can make there",
-      "tileCount": "{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}",
+      "tileCount": "{noun, select, plant {{count, plural, one {# plant we can make for {country}} other {# plants we can make for {country}}}} arrangement {{count, plural, one {# arrangement we can make for {country}} other {# arrangements we can make for {country}}}} other {{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}}}",
       "tilesHeading": "By what it is",
       "tilesSubheading": "Narrow it down"
     },
@@ -960,6 +962,7 @@
     "toolbar": {
       "count": "{count, plural, one {# Strauß} other {# Sträuße}}",
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+      "reorderLabel": "Change the order",
       "sortLabel": "Sort by",
       "submit": "Sort",
       "summary": "{count, plural, one {# Strauß} other {# Sträuße}} · Seite {page} von {pageCount}"

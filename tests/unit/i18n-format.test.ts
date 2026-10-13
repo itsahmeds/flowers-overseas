@@ -46,6 +46,7 @@ import {
 import {
   MoneySchema,
   formatDate,
+  formatDateParts,
   formatList,
   formatMoney,
   formatNumber,
@@ -436,6 +437,48 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
     expect(formatDate(asOf, "en-gb", "dayMonth", "UTC")).toBe("8 September");
     expect(formatDate(asOf, "de", "dayMonth", "UTC")).toBe("8. September");
     expect(formatDate(asOf, "pl", "dayMonth", "UTC")).toBe("8 września");
+  });
+
+  it("splits one `calendarDate` value into its parts, each part that value's (TASK-187)", () => {
+    // Mother's Day in Poland, 2027: the date card's day, month, weekday and year are the parts of
+    // the one value the dated sentence prints, never four separate formats.
+    const mothersDay = new Date("2027-05-26T12:00:00Z");
+    expect(formatDate(mothersDay, "en-gb", "calendarDate", "UTC")).toBe(
+      "Wednesday, 26 May 2027",
+    );
+    expect(formatDateParts(mothersDay, "en-gb", "UTC")).toStrictEqual({
+      day: "26",
+      month: "May",
+      weekday: "Wednesday",
+      year: "2027",
+    });
+    expect(formatDateParts(mothersDay, "de", "UTC")).toStrictEqual({
+      day: "26",
+      month: "Mai",
+      weekday: "Mittwoch",
+      year: "2027",
+    });
+    expect(formatDateParts(mothersDay, "pl", "UTC")).toStrictEqual({
+      day: "26",
+      month: "maja",
+      weekday: "środa",
+      year: "2027",
+    });
+    // Each part occurs in the whole value, in every launch locale.
+    for (const locale of ["en", "en-gb", "de", "pl"] as const) {
+      const whole = formatDate(mothersDay, locale, "calendarDate", "UTC");
+      for (const part of Object.values(
+        formatDateParts(mothersDay, locale, "UTC"),
+      )) {
+        expect(whole, `${locale} ${part}`).toContain(part);
+      }
+    }
+    // The zone decides the day, exactly as for `formatDate`.
+    expect(
+      formatDateParts(new Date("2027-05-26T23:30:00Z"), "en", "Europe/Warsaw")
+        .day,
+    ).toBe("27");
+    expect(() => formatDateParts(mothersDay, "de", "")).toThrow();
   });
 
   it("resolves the calendar date in the given zone, not the server's", () => {
