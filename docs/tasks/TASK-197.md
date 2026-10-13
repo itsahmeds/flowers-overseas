@@ -121,8 +121,37 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-14: carry-forwards recorded, draft PR 215 opened.
+- 2026-10-14: v3 layout (gallery subgrid, buy section and phone sheet, sizes, date scroller, trail, sections in A12's order, docked bar by scroll timeline, `LanguageAlternates`), unit tests moved to v3 (bb276293).
+- 2026-10-14: `tests/e2e/product-v3.spec.ts` (16 cases, six mutations watched red), visual cases re-pointed, README differences, axe fix on the preview date row (c2c78048).
 
 ## Result
 
-_Pending._
+**PR 215.** Built to spec 004 §14 A24 clauses 1, 4, 5 and 10 and spec 009 §14 A12.
+
+- **AC-46 (product half)**, T-51: `product-v3.spec.ts` "T-51" at 1280 × 800, 1440 × 900, 1512 × 945 (hero 1.25 × width, ≤ viewport, top in view; H1, price, sizes, status pill in view) and 390 × 844 (photo 470 px, full-bleed; sheet 24–28 px over its foot; H1, price, sizes above the bar's top; no grip; N2 under the status). Measured locally on `next dev`: hero 648 × 810 at 1440, 570 × 712 at 1280; status pill ends y 776 at 1280 × 800.
+- **AC-48**, T-53 on the product page: bar not over the first screen, shown once the buy section has scrolled out, opaque, price equal to the sheet's (and to the checked segment's), action `#buy` → the status, nothing under it at the bottom, the language popup (top sheet) never intersects its action at 390 × 844 and 390 × 600.
+- **AC-49**, T-54: the sizes are a fieldset/legend/native-radio segmented control ≥ 44 px; the date row is `overflow-x: auto`, scrolls, last chip reachable, focusable and named when no chip is; no page overflow; gallery dots are `#pdp-photo-n` links ≥ 24 × 24 to real targets; no carousel role. axe clean on the five PDPs of `tests/a11y/product-page.spec.ts`.
+- **AC-50**, T-55: the one trail is below the buy section and above the sections at 390, and leads the page at 1440; no back link. The product page serves no JSON-LD (TASK-115 owns it), so `BreadcrumbList` equality is vacuous there today; the existing `phone-chrome.spec.ts` product row passes.
+- **Spec 009 A12** (AC-30 to AC-32 render halves): the buy section's seven elements in order with JS off at 1440 and 390, sections in one DOM order whose boxes read in that order, no CSS `order`; the description whole in the HTML, three lines closed, "Read more" (native `<details>`, `:has()`) opens it with JS off; the equivalents line only in "The price", converting the selected tier.
+- **Carry-forwards:** (a) popup case done; (b) the bar shows only after the buy section scrolls out (CSS scroll timeline in `globals.css`, no island; browsers without scroll timelines never show it, which loses nothing); (c) `LanguageAlternates` on the product route via `productAlternatePaths()`; (d) unit case: FO-PT-004 and FO-PT-006 render the placeholder.
+- **Mutations watched red** (e2e on `next dev`): status pushed below 800 at 1280; bar price from another tier; N2 removed; trail `display: none` at 390; a grip drawn; date row `overflow: hidden`.
+- **Deviations, recorded in `docs/design/README.md`:** phone sections open rather than accordions; ~6 date chips in view on desktop rather than 7; no hero thumbnail; no "About this bouquet"/"The price" headings (no approved string); P2 filled with the descriptor; the bar's action is the status pill link in every state. Equivalents line moved from the total to the tier price per A12 (one line).
+- **Copy:** `product.readMore` (P1) and `product.eyebrowPhone` (P2), `reviewed: false`, de/pl machine drafts; queued in `AWAITING_FOUNDER_REVIEW`.
+- **Local expensive runs** (build slot held; `next dev` on :3197, load average 4–12 while running): `product-v3`, `product-page`, `product-card-preview` e2e and the product a11y suite, 76 passed; the product rows of `frame-laptop-band` and `phone-chrome`, 12 passed. Visual baselines are CI's (`visual:baselines`).
+
+`pnpm gates:cheap` (the `tests` row timed out under a load average of 16; the failing files, `catalog-listing`, `catalog-product-routes`, `product-route`, `url-pii`, pass in isolation, 99/99):
+
+```
+gates:cheap · bb276293fd53fd0cb87128c524b76c58f3599326 · tree DIRTY · base origin/main · 2026-10-13T22:02:03.010Z
+typecheck             exit 0 · 2.6 s
+lint                  exit 0 · 26.2 s
+format:check          exit 0 · 20.1 s
+i18n:check            exit 0 · 0.9 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 1 · 172.5 s · changed 137 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: FAIL (1 of 7 red: tests)
+[ELIFECYCLE] Command failed with exit code 1.
+```
