@@ -141,6 +141,12 @@ export interface ListingSortFormProps {
   readonly sort: ListingSort;
   /** The `<select>`'s id. */
   readonly id?: string;
+  /**
+   * `reorder` (default): the form under the grid with its "Change the order" label (A10).
+   * `bare`: the form alone, for a page whose toolbar keeps it beside the count (the country
+   * occasion, A15 (d)).
+   */
+  readonly variant?: "reorder" | "bare";
 }
 
 /**
@@ -153,8 +159,16 @@ export interface ListingSortFormProps {
 export function ListingSortForm({
   sort,
   id = "listing-sort",
+  variant = "reorder",
 }: ListingSortFormProps): ReactElement {
   const t = useTranslations("shop");
+  if (variant === "bare") {
+    return (
+      <div data-fo-listing-sort-form={sort}>
+        <SortForm id={id} sort={sort} />
+      </div>
+    );
+  }
   const headingId = `${id}-heading`;
   return (
     <section

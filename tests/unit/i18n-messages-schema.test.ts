@@ -416,7 +416,14 @@ describe("the shipped catalogues and manifests", () => {
     "shop.occasion.seoDescription",
     "shop.occasion.seoTitle",
     "shop.occasion.undatedLine",
+    // TASK-187 (spec 004 §14 A23 clause 6, Appendix A A9 and A10; A24 clause 10 P3): the tile noun,
+    // "Change the order" and the phone pager's two strings. A9 and A10 are approved English text;
+    // each still ships `reviewed: false` until the founder's own script attests the exact value.
+    "shop.pagination.nextPage",
+    "shop.pagination.pageOf",
     "shop.root.occasionPageLink",
+    "shop.root.tileCount",
+    "shop.toolbar.reorderLabel",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

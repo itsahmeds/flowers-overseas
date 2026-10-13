@@ -145,10 +145,12 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text).toContain(
       "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
     );
-    expect(html).not.toMatch(/<button/iu);
-    // The toolbar's sort form and the pagination nav are TASK-114's (§14 A8 (c)).
-    expect(html).not.toMatch(/<form/iu);
-    expect(html).not.toContain("data-fo-pagination");
+    // The one button on the page is the sort form's submit (spec 008 §14 A15 (a), TASK-187):
+    // a `<form method="get">`, never a basket.
+    expect(html.match(/<button/giu) ?? []).toHaveLength(1);
+    expect(html.match(/<form/giu) ?? []).toHaveLength(1);
+    expect(html).toMatch(/<form[^>]*method="get"/u);
+    expect(text).not.toMatch(/add to (?:basket|cart)|buy now/iu);
   });
 
   it("prices every card, with the inclusive wording and the stale-FX sentence", () => {

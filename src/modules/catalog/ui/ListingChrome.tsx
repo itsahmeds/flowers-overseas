@@ -28,12 +28,17 @@ import type { ReactElement, ReactNode } from "react";
 import type { LocaleCode } from "@/config/locales";
 import { formatDate } from "@/modules/i18n";
 import {
+  Chip,
   Display,
   Eyebrow,
   FromPriceChip,
+  HorizontalScroller,
+  MediaProvenanceNote,
   Text,
   TextLink,
+  needsAiProvenanceNote,
   type CategoryTileView,
+  type ProductCardView,
 } from "@/modules/ui";
 
 /**
@@ -495,4 +500,297 @@ export function OccasionDatesTable({
       </tbody>
     </table>
   );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Round 2: the country listings' first screens (spec 004 §14 A24 clause 2;   */
+/* spec 008 §14 A15, A16; TASK-187).                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The destination's state as one quiet text line (spec 004 §14 A23 **R7**, A24 clause 2): the
+ * message for `listingView().country.state`, never a postmark. The dot is a 7 px decoration, so
+ * it is `aria-hidden` and far under AC-45's 48 px ornament bound.
+ */
+export function ListingStateLine({
+  state,
+  text,
+}: {
+  readonly state: "guide" | "live";
+  readonly text: string;
+}): ReactElement {
+  return (
+    <p
+      className="text-ink-muted mt-[8px] flex items-center gap-[8px] text-sm"
+      data-fo-listing-state-line={state}
+    >
+      <span
+        aria-hidden="true"
+        className={`size-[7px] flex-none rounded-full ${state === "live" ? "bg-success" : "bg-ink-subtle"}`}
+      />
+      {text}
+    </p>
+  );
+}
+
+export interface CountryListingHeadProps {
+  /** The page's one heading, already translated. */
+  readonly heading: string;
+  readonly emphasis: string;
+  /** Spec 004 §14 A23 R7's line: `ListingStateLine`, or nothing on page 2 and later. */
+  readonly stateLine?: ReactNode;
+  /** Between the state line and the end of the start column (the occasion's dated line). */
+  readonly children?: ReactNode;
+  /** `shop.root.demoNotice` (N1): a flat P.S. with a rule from `md` up, a muted line on a phone. */
+  readonly note?: string;
+  readonly noteMark?: string;
+  readonly noteLabel?: string;
+}
+
+/**
+ * The shop root's and the country category's head (round 2): the H1 with the destination in the
+ * poppy italic, the state line directly under it, and the shop's note on the end side as a flat
+ * P.S. with a rule, nothing tilted and no tape (the round-2 artboards; A24 clause 2). On a phone
+ * the note is the one muted line under the state line (`country-*-mobile`). One rule closes the
+ * head from `md` up. No lede and no eyebrow here: a lede longer than two lines moves under the
+ * first screen, and the first screen is the H1, the state line, the count and the first row.
+ */
+export function CountryListingHead({
+  heading,
+  emphasis,
+  stateLine,
+  children,
+  note,
+  noteMark,
+  noteLabel,
+}: CountryListingHeadProps): ReactElement {
+  return (
+    <div
+      className="md:border-rule md:gap-2xl grid grid-cols-1 items-start gap-[10px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:border-b md:pt-[28px] md:pb-[28px]"
+      data-fo-listing-hero
+    >
+      <div>
+        <Display as="h1" size="display">
+          {emphasise(heading, emphasis)}
+        </Display>
+        {stateLine}
+        {children}
+      </div>
+      {note === undefined ? null : (
+        <div
+          {...(noteLabel === undefined
+            ? {}
+            : { role: "note", "aria-label": noteLabel })}
+          className="md:border-rule md:border-s md:ps-[20px]"
+          data-fo-listing-note
+        >
+          {noteMark === undefined ? null : (
+            <p className="text-ink text-sm font-bold max-md:hidden">
+              {noteMark}
+            </p>
+          )}
+          <Text
+            as="p"
+            size="sm"
+            tone="muted"
+            className="md:text-ui max-w-[52ch] md:mt-[6px]"
+          >
+            {note}
+          </Text>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** One chip of the phone's chip row: a link, or the current page marked and not a link. */
+export interface PhoneChip {
+  readonly key: string;
+  readonly name: string;
+  readonly href: string;
+  readonly current?: boolean | undefined;
+}
+
+/**
+ * The phone's one chip row (spec 004 §14 A24 clause 4 (c), AC-49; TASK-195's scroller): a single
+ * horizontal scroller of real links, every chip reachable by touch and keyboard, shown below `md`
+ * only. From `md` up the page shows its own row in its own place, so this one is `display: none`
+ * there and out of the accessibility tree.
+ */
+export function PhoneChipRow({
+  label,
+  chips,
+}: {
+  readonly label: string;
+  readonly chips: readonly PhoneChip[];
+}): ReactElement | null {
+  if (chips.length === 0) return null;
+  return (
+    <nav aria-label={label} className="md:hidden" data-fo-phone-chips>
+      <HorizontalScroller
+        itemsFocusable
+        items={chips.map((chip) => ({
+          key: chip.key,
+          node:
+            chip.current === true ? (
+              <Chip aria-current="page">{chip.name}</Chip>
+            ) : (
+              <Chip href={chip.href}>{chip.name}</Chip>
+            ),
+        }))}
+        label={label}
+      />
+    </nav>
+  );
+}
+
+export interface CountryListingResultsProps {
+  /** The count line: `phone` below `md` ("84 bouquets"), `desktop` from `md` up (with the page). */
+  readonly count: { readonly phone: string; readonly desktop: string };
+  readonly disclosure: string;
+  /** The once-per-grid "Example arrangement" label shown below `md` (spec 008 §14 A16 (a)). */
+  readonly gridLabel?: ReactNode;
+  readonly grid: ReactNode;
+  readonly fx?: ReactNode;
+  readonly pager?: ReactNode;
+  readonly sortForm: ReactNode;
+  /**
+   * Where the sort form sits from `md` up: `below` the grid (the shop root and the country
+   * category, R8 and the round-2 shop artboard) or `above` it, beside the count (the country
+   * occasion, A15 (d)).
+   */
+  readonly sortFormPlacement: "above" | "below";
+}
+
+/**
+ * The results block of the three country listings, one element per part, laid out by CSS grid
+ * placement so the DOM order is the phone's reading order:
+ *
+ * ```
+ * phone (one column):  count · label · grid · fx · pager · disclosure · sort form
+ * md, form below:      count | disclosure  ·  grid  ·  fx  ·  sort form  ·  pager
+ * md, form above:      count, disclosure | sort form  ·  grid  ·  fx  ·  pager
+ * ```
+ *
+ * So the ranking disclosure follows the grid on a phone and stands above it from `md` up, visible
+ * at both (spec 008 §14 A16 (c), AC-32; spec 004 §14 A24 clause 2 (e)); the sort form is after the
+ * grid in the DOM, and below it from `md` up where R8 puts it.
+ */
+export function CountryListingResults({
+  count,
+  disclosure,
+  gridLabel,
+  grid,
+  fx,
+  pager,
+  sortForm,
+  sortFormPlacement,
+}: CountryListingResultsProps): ReactElement {
+  const above = sortFormPlacement === "above";
+  return (
+    <div
+      className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-[32px]"
+      data-fo-listing-results={sortFormPlacement}
+    >
+      <p
+        className={`md:col-start-1 md:row-start-1 ${above ? "md:pt-[24px]" : "md:py-[20px]"}`}
+        data-fo-listing-count
+      >
+        <Text as="span" size="sm" tone="muted" className="md:hidden">
+          {count.phone}
+        </Text>
+        <Text as="span" size="md" className="display text-md max-md:hidden">
+          {count.desktop}
+        </Text>
+      </p>
+      {gridLabel === undefined ? null : (
+        <div className="mt-[8px] md:hidden" data-fo-grid-provenance>
+          {gridLabel}
+        </div>
+      )}
+      <div
+        className={`mt-[12px] md:col-span-2 md:mt-0 ${above ? "md:border-rule md:row-start-3 md:mt-[24px] md:border-t md:pt-[32px]" : "md:row-start-2 md:mt-[4px]"}`}
+        data-fo-listing-grid-slot
+      >
+        {grid}
+      </div>
+      {fx === undefined ? null : (
+        <div
+          className={`mt-[28px] md:col-span-2 ${above ? "md:row-start-4" : "md:row-start-3"}`}
+        >
+          {fx}
+        </div>
+      )}
+      {pager === undefined ? null : (
+        <div
+          className={`mt-[28px] md:col-span-2 md:mt-[32px] ${above ? "md:row-start-5" : "md:row-start-5"}`}
+        >
+          {pager}
+        </div>
+      )}
+      <Text
+        as="p"
+        size="sm"
+        tone="subtle"
+        className={`mt-[20px] max-w-[70ch] ${above ? "md:col-start-1 md:row-start-2 md:mt-[6px]" : "md:col-start-2 md:row-start-1 md:mt-0 md:self-center md:text-end"}`}
+        data-fo-listing-disclosure
+      >
+        {disclosure}
+      </Text>
+      <div
+        className={`mt-[24px] ${above ? "md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:self-end" : "md:col-span-2 md:row-start-4 md:mt-[40px]"}`}
+        data-fo-listing-sort
+      >
+        {sortForm}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The message each destination state reads (spec 004 §14 A23 R7). The state comes from
+ * `listingView().country.state` and nothing else; the words are the destinations hub's own.
+ */
+export const STATE_KEYS = {
+  guide: "destinations.state.guideNotDelivering",
+  live: "destinations.state.deliveringNow",
+} as const satisfies Readonly<Record<"guide" | "live", string>>;
+
+/**
+ * Page 2 and later: **no hero** (spec 004 §14 A23 clause 5; spec 008 §14 A15 (a)). The H1 alone,
+ * compact, then the results start the page. No state line, no note, no lead figure, no date.
+ */
+export function ListingPageHead({
+  heading,
+  emphasis,
+}: {
+  readonly heading: string;
+  readonly emphasis: string;
+}): ReactElement {
+  return (
+    <div className="pt-[12px] pb-[8px] md:pt-[24px]" data-fo-listing-page-head>
+      <Display as="h1" size="2xl">
+        {emphasise(heading, emphasis)}
+      </Display>
+    </div>
+  );
+}
+
+/**
+ * The phone's "Example arrangement" label, **once per grid** (spec 008 §14 A16 (a)): rendered only
+ * where at least one card of this grid shows an `ai` asset (`MediaProvenanceNote` decides, from the
+ * same manifest), placed by the page directly above the grid and shown below `md` only.
+ */
+export function GridProvenance({
+  cards,
+  locale,
+}: {
+  readonly cards: readonly ProductCardView[];
+  readonly locale: LocaleCode;
+}): ReactElement | null {
+  const assetIds = cards.flatMap((card) =>
+    card.photo.kind === "asset" ? [card.photo.assetId] : [],
+  );
+  if (!needsAiProvenanceNote(assetIds, locale)) return null;
+  return <MediaProvenanceNote assetIds={assetIds} locale={locale} />;
 }

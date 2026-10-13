@@ -3732,7 +3732,8 @@
     "reviewed": true,
     "sourceHash": "47d732fd584be06e8364c1c4d25c93acc355478d5fdaf276f17a5c60ad40cb2a",
     "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
-    "reviewedAt": "2026-10-03T21:49:22Z"
+    "reviewedAt": "2026-10-03T21:49:22Z",
+    "retained": true
   },
   "shop.category.lede": {
     "source": "human",

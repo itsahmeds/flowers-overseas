@@ -111,6 +111,7 @@ describe("the other listing view models", () => {
       name: "Roses",
       href: "/en/poland/flowers/roses",
       count: 12,
+      countNoun: "bouquet",
     } as const;
     expect(CategoryTileViewSchema.parse(tile).fromPrice).toBeUndefined();
     expect(
@@ -121,6 +122,10 @@ describe("the other listing view models", () => {
     ).toBe(3090);
     expect(
       CategoryTileViewSchema.safeParse({ ...tile, rating: 4.5 }).success,
+    ).toBe(false);
+    // The count noun is the founder's closed set of three (spec 008 §14 A15 (b)).
+    expect(
+      CategoryTileViewSchema.safeParse({ ...tile, countNoun: "stem" }).success,
     ).toBe(false);
   });
 

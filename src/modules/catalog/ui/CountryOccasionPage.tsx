@@ -39,12 +39,16 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { formatDate } from "@/modules/i18n";
+import { formatDate, formatDateParts } from "@/modules/i18n";
 import {
   type ChipLinkView,
   CategoryChipRow,
   Container,
+  Display,
+  Eyebrow,
   ListingGrid,
+  ListingSortForm,
+  Pagination,
   Text,
   VisuallyHidden,
   assertSinglePriority,
@@ -54,12 +58,30 @@ import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
-  ListingCount,
-  ListingIntro,
+  CountryListingResults,
+  GridProvenance,
+  ListingPageHead,
   ListingProse,
+  ListingStateLine,
   ListingSubsection,
+  STATE_KEYS,
+  emphasise,
 } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
+
+/**
+ * The register's ground from `md` up, full-bleed: the band's own box stays on the page frame (so
+ * AC-31's first block is still at the gutter) and its colour is painted to the viewport's edges.
+ */
+const BAND =
+  "md:bg-blush md:shadow-[0_0_0_100vmax_var(--color-blush)] md:[clip-path:inset(0_-100vmax)]";
+
+/**
+ * The lead figure's box from `md` up: a 4∶5 photograph capped at `--hero-photo-max` (spec 004
+ * §14 A23 clause 9), narrowed rather than cropped, and never wider than the end column allows.
+ */
+const LEAD_BOX =
+  "md:w-[min(calc(var(--hero-photo-max)*0.8),36vw)] md:aspect-[4/5]";
 
 /** Midday UTC: the hour that is the same calendar date in every European zone (007's rule). */
 function instantOf(date: string): Date {
@@ -113,6 +135,23 @@ export function CountryOccasionPage({
         ]),
   ];
 
+  const register = view.entity?.register ?? "dated";
+  const firstPage = view.page === 1;
+  const heading = shop("h1.countryOccasion", { occasion, country });
+  const dateInstant = date === null ? undefined : instantOf(date);
+  const datedLine =
+    dateInstant === undefined
+      ? shop("occasion.undatedLine", { occasion, country })
+      : shop("occasion.datedLine", {
+          occasion,
+          country,
+          date: formatDate(dateInstant, code, "calendarDate", "UTC"),
+        });
+  const parts =
+    dateInstant === undefined
+      ? undefined
+      : formatDateParts(dateInstant, code, "UTC");
+
   return (
     <Container
       as="main"
@@ -121,74 +160,159 @@ export function CountryOccasionPage({
       data-fo-listing-state={view.items.length === 0 ? "empty" : "populated"}
     >
       <div className="pb-(--section-fluid)">
-        <ListingBreadcrumb crumbs={view.breadcrumb} />
-
-        {/* v2 `.shop-intro`: the `<h1>` with the destination in the poppy italic, then the dated
-            line — the reason this page type is worth having — in the display face, the lede, and
-            the Phase 0 demo sentence as the note card (one wording for one fact, shared with the
-            shop root). */}
-        <ListingIntro
-          emphasis={country}
-          heading={shop("h1.countryOccasion", { occasion, country })}
-          lede={shop("occasion.lede", { country })}
-          eyebrow={shop("listing.eyebrow", { country })}
-          note={shop("root.demoNotice")}
-          noteLabel={shop("note.label")}
-          noteMark={shop("note.mark")}
+        {/* The register's ground (spec 004 §14 A23 R1: the occasion's own row, always `dated`
+            here) runs full-bleed behind the breadcrumb and the hero from `md` up. */}
+        <div
+          className={firstPage ? BAND : undefined}
+          {...(firstPage ? { "data-register": register } : {})}
         >
-          <div
-            className="mt-[28px] grid gap-[6px]"
-            data-fo-occasion-date={date ?? ""}
-          >
-            <Text as="p" size="md" className="display text-md max-w-[44ch]">
-              {date === null
-                ? shop("occasion.undatedLine", { occasion, country })
-                : shop("occasion.datedLine", {
-                    occasion,
-                    country,
-                    date: formatDate(
-                      instantOf(date),
-                      code,
-                      "calendarDate",
-                      "UTC",
-                    ),
-                  })}
-            </Text>
-            {date === null ? null : (
-              <Text size="sm" tone="muted" className="max-w-[44ch]">
-                {shop("occasion.dateNote", { country })}
-              </Text>
-            )}
-          </div>
-        </ListingIntro>
+          <ListingBreadcrumb crumbs={view.breadcrumb} />
+        </div>
 
-        {/* Products before prose (§5.3, `docs/design/README.md` §Density). */}
-        <section aria-labelledby="occasion-grid-heading" data-fo-shop-listing>
-          <VisuallyHidden as="h2" id="occasion-grid-heading">
-            {shop("h1.countryOccasion", { occasion, country })}
-          </VisuallyHidden>
-          {/* §2 "Sort": the default order is labelled for what it is and never called a ranking
-              by sales. No sort form: this page type has no parameter route, and a control that
-              cannot sort is a dead control (spec 004 §14 A20). */}
-          <ListingCount
-            count={shop("toolbar.count", { count: view.resultCount })}
-            disclosure={shop("toolbar.disclosure")}
-            inclusive={catalog("price.inclusive")}
-          />
-          <div className="mt-[32px]">
-            <ListingGrid cards={view.items} locale={code} priority />
-          </div>
-          {/* Stale FX (spec 005 §14 A3): the projection fell back to the destination's own
-              authored price, so the page says which currency it is quoting. Once for the page,
-              because one rate priced all of it. */}
-          {view.fxFallback ? (
-            <div className="mt-[32px]" data-fo-fx-fallback>
-              <Text measure size="sm" tone="muted">
-                {catalog("availability.fxUnavailable")}
-              </Text>
+        {/* The positioning context of the lead figure (spec 008 §14 A16 (b)): `items[0]` is the
+            grid's first `<li>` at every width, and from `md` up its `<li>` is placed over the
+            hero's end column, which holds an empty box of the same size. One element in the DOM,
+            its URL once in `<main>`, no `display: none` copy. */}
+        <div className={firstPage ? "md:relative" : undefined}>
+          {firstPage ? (
+            <div
+              className={`${BAND} grid grid-cols-1 gap-x-[48px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,1fr)_auto] md:pt-[24px] md:pb-[40px]`}
+              data-fo-listing-hero
+              data-register={register}
+            >
+              <div>
+                <Eyebrow className="mb-[14px] max-md:hidden">
+                  {shop("listing.eyebrow", { country })}
+                </Eyebrow>
+                <Display as="h1" size="display">
+                  {emphasise(heading, country)}
+                </Display>
+                {view.country === undefined ? null : (
+                  <ListingStateLine
+                    state={view.country.state}
+                    text={t(STATE_KEYS[view.country.state])}
+                  />
+                )}
+                {/* The date: one `formatDate` value (AC-11), the reason this page exists. */}
+                <p
+                  className="text-ink-muted md:display md:text-ink mt-[10px] max-w-[44ch] text-sm md:mt-[24px] md:text-[26px] md:leading-[1.2]"
+                  data-fo-occasion-date={date ?? ""}
+                >
+                  {datedLine}
+                </p>
+                {date === null ? null : (
+                  <Text
+                    size="sm"
+                    tone="muted"
+                    className="mt-[8px] max-w-[44ch] max-md:hidden"
+                  >
+                    {shop("occasion.dateNote", { country })}
+                  </Text>
+                )}
+                <div className="mt-[10px] flex items-start gap-[32px] md:mt-[28px]">
+                  {parts === undefined ? null : (
+                    /* The date card: the day, month, weekday and year of that **one** value,
+                       set apart (spec 004 §14 A23 clause 5; `formatDateParts`). */
+                    <div
+                      className="bg-card rounded-field border-rule flex-none border px-[22px] pt-[14px] pb-[16px] max-md:hidden"
+                      data-fo-date-card
+                    >
+                      <p className="display text-ink text-[88px] leading-none">
+                        {parts.day}
+                      </p>
+                      <p className="label text-ink-muted mt-[10px]">
+                        {[parts.month, parts.weekday, parts.year].join(" · ")}
+                      </p>
+                      <p className="text-ui text-ink mt-[8px]">{occasion}</p>
+                    </div>
+                  )}
+                  <div
+                    aria-label={shop("note.label")}
+                    className="md:border-rule md:border-s md:ps-[20px]"
+                    data-fo-listing-note
+                    role="note"
+                  >
+                    <p className="text-ink text-sm font-bold max-md:hidden">
+                      {shop("note.mark")}
+                    </p>
+                    <Text
+                      as="p"
+                      size="sm"
+                      tone="muted"
+                      className="md:text-ui max-w-[44ch] md:mt-[6px]"
+                    >
+                      {shop("root.demoNotice")}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+              {/* The lead figure's box: empty, the size of the figure placed over it. */}
+              <div className={`${LEAD_BOX} hidden md:block`} data-fo-lead-box />
             </div>
-          ) : null}
-        </section>
+          ) : (
+            <ListingPageHead emphasis={country} heading={heading} />
+          )}
+
+          {/* Products before prose (§5.3). */}
+          <section aria-labelledby="occasion-grid-heading" data-fo-shop-listing>
+            <VisuallyHidden as="h2" id="occasion-grid-heading">
+              {heading}
+            </VisuallyHidden>
+            {/* The toolbar keeps its place beside the count from `md` up (spec 008 §14 A15 (d));
+                on a phone the disclosure follows the grid (A16 (c)). */}
+            <CountryListingResults
+              count={{
+                phone: shop("toolbar.count", { count: view.resultCount }),
+                desktop:
+                  view.pageCount > 1
+                    ? shop("toolbar.summary", {
+                        count: view.resultCount,
+                        page: view.page,
+                        pageCount: view.pageCount,
+                      })
+                    : shop("toolbar.count", { count: view.resultCount }),
+              }}
+              disclosure={shop("toolbar.disclosure")}
+              gridLabel={<GridProvenance cards={view.items} locale={code} />}
+              grid={
+                <ListingGrid
+                  cards={view.items}
+                  lead={firstPage}
+                  leadItemClassName={`md:absolute md:top-[24px] md:end-0 ${LEAD_BOX}`}
+                  locale={code}
+                  priority
+                  provenance="md"
+                />
+              }
+              fx={
+                view.fxFallback ? (
+                  <div data-fo-fx-fallback>
+                    <Text measure size="sm" tone="muted">
+                      {catalog("availability.fxUnavailable")}
+                    </Text>
+                  </div>
+                ) : undefined
+              }
+              pager={
+                <Pagination
+                  baseHref={view.path}
+                  locale={code}
+                  page={view.page}
+                  pageCount={view.pageCount}
+                />
+              }
+              sortForm={<ListingSortForm sort={view.sort} variant="bare" />}
+              sortFormPlacement="above"
+            />
+          </section>
+        </div>
+
+        {/* The lede, under the first screen. */}
+        {firstPage ? (
+          <div className="pt-[40px] md:pt-[48px]" data-fo-shop-lede>
+            <ListingProse>{shop("occasion.lede", { country })}</ListingProse>
+          </div>
+        ) : null}
 
         {/* The artboard's "Also in Poland" row: the other occasions of this destination that have
             a page, and the destination's shop root. Every href is one `listingView()` resolved, so
