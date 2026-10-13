@@ -401,36 +401,48 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
     expect(amounts(after)).toEqual(amounts(before));
   });
 
-  it("docks the summary's own total row at ≤390 px — the sticky bar is not a second money element", async () => {
+  it("v3: the phone's docked bar repeats the selected tier's price and links to the status; the total stays in the flow, once (AC-48, A12)", async () => {
     for (const view of [
       await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+      await viewOf("en", "PL", AMBER, {
+        now: WOMENS_DAY_WEEK,
+        selection: { tierKey: "stems_12" },
+      }),
       await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK }),
     ]) {
       const html = render(view);
-      const where = view.delivery.state;
-      // One element is docked, and it is the row inside the summary that holds the one total.
-      // A named breakpoint: an arbitrary media variant once emptied this project's stylesheet
-      // with no error raised (`ui-site-header.test.tsx`).
-      expect(html, where).not.toMatch(/(?:min|max)-\[\d+px\]:/u);
-      const docked = [...html.matchAll(/class="[^"]*max-sm:fixed/gu)];
-      expect(docked, where).toHaveLength(1);
-      const row = block(html, "data-fo-summary-total");
-      expect(row, where).toMatch(/^<div[^>]*max-sm:fixed/u);
-      expect(block(html, "data-fo-price-summary"), where).toContain(row);
+      const where = `${view.delivery.state} ${view.selectedTierKey}`;
+      // Nothing docks but the bar: the summary's total is an ordinary row now.
+      expect(html, where).not.toMatch(/max-sm:fixed/u);
       expect([...html.matchAll(/data-fo-price-total/gu)], where).toHaveLength(
         1,
       );
-      expect(row, where).toContain("data-fo-price-total");
       expect([...html.matchAll(/aria-live=/gu)], where).toHaveLength(1);
-      expect(row, where).toContain('aria-live="polite"');
-      // The bar names the size and the inclusive formula beside the amount; those words repeat
-      // the summary's, so they are out of the accessibility tree, and they carry no money.
-      const selection = block(row, 'data-fo-summary-docked="selection"');
-      expect(selection, where).toContain('aria-hidden="true"');
-      expect(readable(selection), where).toContain(
-        loadMessages("en", ["catalog"]).catalog.price.inclusive,
+      const bar = block(html, "data-fo-action-bar=");
+      expect(bar, where).not.toBe("");
+      const tier = view.tiers.find(
+        (option) => option.tierKey === view.selectedTierKey,
       );
-      expect(selection, where).not.toMatch(/\d[\d,.]*\s*zł|zł\s*\d|PLN|£/u);
+      const price = formatMoney(tier!.price, "en");
+      // The bar's price is the sheet's price, from the same `TierOption`.
+      expect(
+        decode(
+          firstText(
+            block(bar, "data-fo-action-bar-price"),
+            /<strong[^>]*>([^<]*)<\/strong>/u,
+          ),
+        ),
+        where,
+      ).toBe(price);
+      expect(
+        decode(
+          firstText(block(html, "data-fo-pdp-price"), /<bdi>([^<]*)<\/bdi>/u),
+        ),
+        where,
+      ).toBe(price);
+      // Its action is an in-page link to the status in the flow (repeats, never replaces).
+      expect(bar, where).toMatch(/<a[^>]*href="#buy"/u);
+      expect(html, where).toMatch(/id="buy"[^>]*>[\s\S]*?data-fo-pdp-status/u);
     }
   });
 });
@@ -816,7 +828,7 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
         expect(
           firstText(
             radio,
-            /<span[^>]*data-fo-tier-label[^>]*>([^<]*)<\/span>/u,
+            /<(?:span|b)[^>]*data-fo-tier-label[^>]*>([^<]*)<\/(?:span|b)>/u,
           ),
           where,
         ).toBe(label);
@@ -894,7 +906,7 @@ describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge
     }
   });
 
-  it("dates the summary's surcharge line, and the docked bar, with the chosen chip's date", async () => {
+  it("dates the summary's surcharge line with the chosen chip's date", async () => {
     for (const locale of ["en", "pl"] as const) {
       const plain = await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK });
       const surcharged = plain.delivery.dates.find(
@@ -914,11 +926,6 @@ describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge
         /<dt[^>]*>([^<]*)<\/dt>/u,
       );
       expect(line.split(" · ").at(-1), locale).toBe(expected);
-      const docked = firstText(
-        block(html, 'data-fo-summary-docked="selection"'),
-        /<span[^>]*>([^<]*)<\/span>/u,
-      );
-      expect(docked.split(" · "), locale).toContain(expected);
     }
   });
 });
@@ -988,8 +995,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         // The picker's cutoff line is the one place the PDP may print it — in `live` only, since
         // spec 009 §14 A8 took it out of `preview` — so it is lifted out by its own element, and
         // the `unavailable` and `preview` pages, which have no cutoff at all, are scanned whole.
-        // The docked summary repeats it in `live` (the mobile artboard's "the last line becomes
-        // the cutoff sentence"), marked the same way, so every marked line is lifted and counted.
+        // v3 (TASK-197) has no docked summary any more, so `live` prints it once.
         let scanned = html;
         let cutoffs = 0;
         for (
@@ -1001,7 +1007,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
           cutoffs += 1;
         }
         expect(cutoffs, where).toBe(
-          { unavailable: 0, preview: 0, live: 2 }[view.delivery.state],
+          { unavailable: 0, preview: 0, live: 1 }[view.delivery.state],
         );
         expect(
           listingHonestyViolations({
@@ -1084,8 +1090,9 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
         expect(shown, where).toBe(total);
         // No structured-data price on a Phase 0 PDP (BreadcrumbList only), so nothing can differ.
         expect(html, where).not.toMatch(/"price"\s*:/u);
-        // The equivalents line (A21 clause 6) sits under the price and the total exactly when the
-        // view carries it; `tests/unit/product-equivalents.test.tsx` pins its text.
+        // The equivalents line left the price line for "The price" (spec 009 §14 A12 move 2): the
+        // price element holds the amount and the inclusive text and nothing else;
+        // `tests/unit/product-equivalents.test.tsx` pins its text.
         expect(
           [
             ...block(html, "data-fo-pdp-price").matchAll(
@@ -1093,12 +1100,12 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
             ),
           ],
           where,
-        ).toHaveLength(view.equivalents.price === undefined ? 0 : 1);
+        ).toHaveLength(0);
       }
     }
   });
 
-  it("prints the view's equivalents line under the price and the total, and never a second amount in it", async () => {
+  it('prints the view\'s one equivalents line in "The price", never in the price element, and never a second amount (A12 move 2, AC-31)', async () => {
     const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
     expect(view.equivalents.price).toBeDefined();
     const html = render(view);
@@ -1106,7 +1113,14 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
       ...block(html, "data-fo-pdp-price").matchAll(
         /data-fo-price-equivalents/gu,
       ),
-    ]).toHaveLength(1);
+    ]).toHaveLength(0);
+    // The price element: the amount and the inclusive text, nothing else.
+    const selected = view.tiers.find(
+      (tier) => tier.tierKey === view.selectedTierKey,
+    );
+    expect(readable(block(html, "data-fo-pdp-price"))).toBe(
+      `${formatMoney(selected!.price, "en")} ${loadMessages("en", ["catalog"]).catalog.price.inclusive}`,
+    );
     expect([
       ...block(html, "data-fo-price-summary").matchAll(
         /data-fo-price-equivalents/gu,

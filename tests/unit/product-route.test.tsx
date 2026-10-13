@@ -149,9 +149,24 @@ describe("AC-1: the product route answers the existence set and 404s everything 
         grandchild: slug ?? "",
       });
       expect(isValidElement(element), locale).toBe(true);
-      expect(element.type, locale).toBe(ProductPage);
-      const props = element.props as { view: { product: { sku: string } } };
+      // The page and, beside it, the language popup's per-locale paths (TASK-197).
+      const children = (element.props as { children: readonly ReactElement[] })
+        .children;
+      const [pdp, alternates] = children;
+      expect(pdp?.type, locale).toBe(ProductPage);
+      const props = pdp?.props as { view: { product: { sku: string } } };
       expect(props.view.product.sku, locale).toBe(page?.sku);
+      // Every launch locale's path of this product, each under its own prefix.
+      const paths = (
+        alternates?.props as { paths: Readonly<Record<string, string>> }
+      ).paths;
+      expect(Object.keys(paths).sort(), locale).toEqual([
+        "de",
+        "en",
+        "en-gb",
+        "pl",
+      ]);
+      expect(paths[locale], locale).toBe(page?.path);
     }
   });
 

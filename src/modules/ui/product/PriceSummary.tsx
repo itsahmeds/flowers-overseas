@@ -17,12 +17,12 @@
  *  - **with surcharge** — the date's line ("Women's Day, Mon 8 Mar · +£5.00") before the rows.
  *  - **stale FX** — the projection fell back to the destination's currency, and the page says so
  *    in `catalog.availability.fxUnavailable`'s own words.
- *  - **demo** — no purchase affordance at all (§13 Q6, Q7): "Ordering is not open yet" stands where
- *    a button would, with the reason beside it while the destination has no florist. No disabled
- *    button: a greyed-out button is a promise with an excuse attached.
- *  - **sticky** — below `sm` (the 390 px artboard) the total row docks at the bottom of the
- *    viewport. It is the same element restyled, not a second bar repeating the total (AC-9), so the
- *    page still has one `data-fo-price-total` and one live region.
+ *
+ * **v3 (spec 009 §14 A12; TASK-197): this is "The price" section below the action.** The primary
+ * action (Phase 0: the "Ordering is not open yet" status and the demo sentence) moved up into the
+ * buy section (`BuyAction`), and the phone's sticky element is spec 004 AC-48's `StickyActionBar`,
+ * so the total row no longer docks: it stays in the flow. The equivalents line lives here, and
+ * only here, for the product (A12 move 2).
  *
  * The total sits in an `aria-live="polite"` region, which announces only on change — the one
  * island (TASK-129) swaps it from numbers already in the HTML.
@@ -34,26 +34,10 @@ import type { ProductView } from "@/modules/catalog";
 import { occasionByKey } from "@/config/catalogue/occasions.data";
 import { formatDate, formatMoney } from "@/modules/i18n";
 
-import { instantOf, localeOf, messageFor, zoneCity } from "./labels.ts";
+import { instantOf, localeOf, messageFor } from "./labels.ts";
 import { equivalentsMessageValues } from "../shop/equivalents.ts";
 
 import { tierLabel } from "./TierSelector.tsx";
-
-/**
- * The total row's docked style below the `sm` breakpoint (640 px), which holds the 390 px mobile
- * artboard (`product-mobile.dc.html`, "Sticky · docked at the bottom of the viewport") and every
- * phone: fixed to the bottom edge, full width, one column, under the language and consent banners'
- * layers. A named breakpoint, not `max-[390px]:` — an arbitrary media variant once compiled this
- * project's stylesheet down to its base layer (`SiteHeader.tsx`, TASK-048). The two arbitrary variants keep room for it on the
- * document itself — `body` padding, so the footer's last line is never under the bar, and `html`
- * scroll padding, so a focused element scrolls clear of it — and apply only while the bar exists.
- */
-const DOCKED = [
-  "max-sm:fixed max-sm:start-0 max-sm:end-0 max-sm:bottom-0 max-sm:m-0",
-  "max-sm:layer-header max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-y-[2px]",
-  "max-sm:border-t max-sm:border-rule max-sm:bg-card max-sm:px-(--gutter-s) max-sm:py-[12px] max-sm:shadow-sticky",
-  "max-sm:[body:has(&)]:pb-[8rem] max-sm:[html:has(&)]:scroll-pb-[8rem]",
-].join(" ");
 
 export interface PriceSummaryProps {
   readonly view: Pick<
@@ -69,23 +53,13 @@ export interface PriceSummaryProps {
     | "product"
     | "gallery"
   >;
-  /** The destination's name in this locale. */
-  readonly country: string;
   /** The id of the live region, so a page can point the island at it. */
   readonly totalId?: string;
-  /**
-   * Whether the total row docks below `sm` (the 390 px artboard). A page has one summary and
-   * docks it; a surface that renders several side by side (`/dev/components`) passes `false`, or
-   * its bars would stack.
-   */
-  readonly dock?: boolean;
 }
 
 export function PriceSummary({
   view,
-  country,
   totalId = "price-total",
-  dock = true,
 }: PriceSummaryProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -100,7 +74,6 @@ export function PriceSummary({
       ? undefined
       : view.delivery.dates.find((day) => day.date === view.selectedDate);
   const fee = date?.surcharge;
-  const live = view.delivery.state === "live";
 
   // v2 (product artboards, "the summary"): a butter panel of rows — the included ones in leaf, a
   // fee in poppy-strong — and the total in Fraunces; the demo sentence sits under the panel on a
@@ -151,88 +124,40 @@ export function PriceSummary({
             </div>
           )}
         </dl>
-        {/* The total row **is** the sticky summary (AC-9: no second money element). On a phone it
-            leaves the flow and docks at the bottom of the viewport, restyled, with the size and
-            the date beside the amount and the demo sentence (or, live, the cutoff) under it — the
-            two lines a buyer would otherwise scroll back for. Those two lines repeat words the
-            summary and the picker already say, so they are hidden from the accessibility tree;
-            the amount is the one `aria-live` region, announced once. The document keeps room for
-            the bar, so it never covers the last line of the page or a focused element (WCAG
-            2.4.11). */}
+        {/* The product's one approximate-equivalents line (spec 009 §14 A12 move 2, AC-31): it
+            left the price line for this section, beside the tier row, and converts the selected
+            tier's price (`priceEquivalents()` at the page's one clock), absent when any leg is
+            stale or the price is the destination-currency fallback (004 A21 clause 6 (d)). */}
+        {view.equivalents.price === undefined ? null : (
+          <p
+            className="num text-ink-subtle m-0 mt-[8px] text-xs leading-[1.35]"
+            data-fo-price-equivalents
+          >
+            {catalog(
+              "price.equivalents",
+              equivalentsMessageValues(view.equivalents.price, code),
+            )}
+          </p>
+        )}
+        {/* The one total, in the flow (v3: the phone's sticky element is spec 004 AC-48's bar,
+            whose price is the selected tier's, from the same projection). The amount is the one
+            `aria-live` region, announced once. */}
         <div
-          className={`border-rule mt-[14px] grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-[16px] border-t pt-[14px] ${dock ? DOCKED : ""}`}
+          className="border-rule mt-[14px] grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-[16px] border-t pt-[14px]"
           data-fo-summary-total
         >
-          <span
-            className="max-sm:text-ink-subtle font-bold max-sm:col-start-1 max-sm:text-xs max-sm:font-normal"
-            id={`${totalId}-label`}
-          >
+          <span className="font-bold" id={`${totalId}-label`}>
             {product("summary.total")}
           </span>
-          <span
-            aria-live="polite"
-            className="text-end max-sm:col-start-1 max-sm:row-start-2 max-sm:text-start"
-            id={totalId}
-          >
+          <span aria-live="polite" className="text-end" id={totalId}>
             <bdi
-              className="display num max-sm:text-md text-[32px] leading-[1.1]"
+              className="display num text-[32px] leading-[1.1]"
               data-fo-price-total
             >
               {formatMoney(view.price.displayPrice, code)}
             </bdi>
           </span>
-          <span
-            aria-hidden="true"
-            className="text-ink-subtle hidden text-xs max-sm:col-start-2 max-sm:row-start-1 max-sm:block max-sm:text-end"
-            data-fo-summary-docked="selection"
-          >
-            {[
-              ...(tier === undefined ? [] : [tierLabel(t, tier)]),
-              ...(date === undefined
-                ? []
-                : [
-                    formatDate(
-                      instantOf(date.date),
-                      code,
-                      "deliveryDate",
-                      "UTC",
-                    ),
-                  ]),
-              catalog("price.inclusive"),
-            ].join(" · ")}
-          </span>
-          <span
-            aria-hidden="true"
-            className="text-ink hidden text-xs font-bold max-sm:col-start-2 max-sm:row-start-2 max-sm:block max-sm:text-end"
-            data-fo-summary-docked="status"
-            {...(live ? { "data-fo-cutoff": "docked" } : {})}
-          >
-            {live
-              ? messageFor(t, view.delivery.noticeKey, {
-                  country,
-                  time: view.delivery.cutoffLocal ?? "",
-                  city:
-                    view.delivery.timeZone === undefined
-                      ? ""
-                      : zoneCity(view.delivery.timeZone),
-                })
-              : product("demo.heading")}
-          </span>
         </div>
-        {/* The approximate equivalents of the total (spec 004 §14 A21 clause 6): `productView()`'s
-            `priceEquivalents()` of this amount at the page's one clock, absent when any leg is
-            stale or the price is the destination-currency fallback. */}
-        {view.equivalents.total === undefined ? null : (
-          <p
-            className="num text-ink-subtle m-0 mt-[3px] text-xs leading-[1.35]"
-            data-fo-price-equivalents
-          >
-            {catalog(
-              "price.equivalents",
-              equivalentsMessageValues(view.equivalents.total, code),
-            )}
-          </p>
-        )}
         <p className="text-ink-muted m-0 mt-[6px] text-sm">
           {catalog("price.inclusive")}
         </p>
@@ -241,15 +166,6 @@ export function PriceSummary({
             {catalog("availability.fxUnavailable")}
           </p>
         )}
-      </div>
-      <div
-        className="border-sun text-ink-muted mt-[16px] border-s-[3px] ps-[14px] text-sm leading-[1.45]"
-        data-fo-demo-summary
-      >
-        <p className="text-ink text-ui m-0 font-bold">
-          {product("demo.heading")}
-        </p>
-        {live ? null : <p className="m-0">{product("demo.body")}</p>}
       </div>
     </section>
   );

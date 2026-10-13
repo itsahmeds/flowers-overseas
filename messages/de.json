@@ -874,7 +874,9 @@
         "title": "If something is unavailable"
       }
     },
-    "vat": "VAT {rate}"
+    "vat": "VAT {rate}",
+    "readMore": "Mehr lesen",
+    "eyebrowPhone": "{category} · {country}"
   },
   "shop": {
     "card": {

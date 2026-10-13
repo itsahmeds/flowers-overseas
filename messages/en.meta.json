@@ -4155,5 +4155,15 @@
     "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
+  },
+  "product.readMore": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "83b794145c0cc3f560cb6dfb6b5bcf7afac4dba15e5c6dbc54d103dae029fec6"
+  },
+  "product.eyebrowPhone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7c443a3d824a90c76332856e3b73f90bfcd3529910a974af196774d44b6d8bce"
   }
 }

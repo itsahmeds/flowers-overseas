@@ -32,6 +32,7 @@ import type { ReactElement } from "react";
 import type { ProductView } from "@/modules/catalog";
 
 import { Button } from "../primitives/Button.tsx";
+import { HorizontalScroller } from "../primitives/HorizontalScroller.tsx";
 
 import { DateChip } from "./DateChip.tsx";
 import { messageFor, zoneCity } from "./labels.ts";
@@ -49,11 +50,16 @@ export interface DeliveryDatePickerProps {
   readonly idPrefix?: string;
   /** The step number the v2 page draws beside the legend (decorative; `StepLegend`). */
   readonly step?: number;
+  /** `buy` (v3, TASK-197): the round-2 buy column's plain legend, no step number. */
+  readonly look?: "step" | "buy";
 }
 
 /** v2's picker note: the cornflower wash, 16 px inline padding, the field radius (TASK-179). */
 const NOTE =
   "bg-sage-wash text-ink rounded-field text-ui m-0 px-[16px] py-[12px] leading-[1.4]";
+
+/** v3's buy column draws the picker's sentence as a plain caption (`.pv-cap`), not a wash box. */
+const NOTE_BUY = "text-ink-muted text-sm m-0 leading-[1.35]";
 
 export function DeliveryDatePicker({
   delivery,
@@ -63,6 +69,7 @@ export function DeliveryDatePicker({
   corridorPath,
   idPrefix = "delivery",
   step,
+  look = "step",
 }: DeliveryDatePickerProps): ReactElement {
   const t = useTranslations();
   const d = useTranslations("delivery");
@@ -75,7 +82,15 @@ export function DeliveryDatePicker({
     city,
   });
   const fieldset = "m-0 flex min-w-0 flex-col gap-[10px] border-0 p-0";
-  const legend = <StepLegend step={step}>{d("legend")}</StepLegend>;
+  const note = look === "buy" ? NOTE_BUY : NOTE;
+  const legend = (
+    <StepLegend
+      look={look === "buy" ? "buy" : "step"}
+      step={look === "buy" ? undefined : step}
+    >
+      {d("legend")}
+    </StepLegend>
+  );
 
   if (delivery.state === "unavailable") {
     return (
@@ -85,7 +100,7 @@ export function DeliveryDatePicker({
         disabled
       >
         {legend}
-        <p className={NOTE} id={noticeId}>
+        <p className={note} id={noticeId}>
           {notice}
         </p>
         {corridorPath === undefined ? null : (
@@ -118,7 +133,7 @@ export function DeliveryDatePicker({
     >
       {legend}
       {live ? null : (
-        <p className={`${NOTE} self-start`} id={noticeId}>
+        <p className={`${note} self-start`} id={noticeId}>
           {notice}
         </p>
       )}
@@ -127,30 +142,37 @@ export function DeliveryDatePicker({
           <p className="m-0 font-bold">{notice}</p>
         </div>
       ) : null}
-      {/* Seven columns from `md`; below it the 390 artboard's rail of 66 px chips, which scrolls
-          rather than wraps so a fortnight reads as one line. The block padding leaves room for an
-          occasion tag that sits on a chip's top edge. */}
-      <div
-        className="grid auto-cols-[66px] grid-flow-col gap-[8px] overflow-x-auto pt-[10px] max-md:-mx-(--gutter-s) max-md:px-(--gutter-s) md:grid-flow-row md:grid-cols-7 md:overflow-visible"
-        data-fo-date-grid
-      >
-        {delivery.dates.map((date) => (
-          <DateChip
-            key={date.date}
-            checked={live && date.date === selectedDate}
-            country={country}
-            date={date}
-            locale={locale}
-            pickerState={live ? "live" : "preview"}
-            sharedReasonId={noticeId}
-            {...(delivery.cutoffLocal === undefined
-              ? {}
-              : { cutoffLocal: delivery.cutoffLocal })}
-            {...(delivery.timeZone === undefined
-              ? {}
-              : { timeZone: delivery.timeZone })}
-          />
-        ))}
+      {/* The date row is a real horizontal scroller at every width (spec 004 §14 A24 clause 4
+          (c), AC-49): the 390 artboard's rail of 66 px chips, and from `md` the week's seven
+          columns with the rest of the window one scroll away, so the buy column stays one row
+          tall (AC-46). `overflow-x: auto`, never the artboards' `hidden`; with no focusable chip
+          (every date closed) the row itself takes focus and is named by the legend's question.
+          The block padding leaves room for an occasion tag on a chip's top edge. */}
+      <div data-fo-date-grid>
+        <HorizontalScroller
+          className="pt-[10px] pb-[4px] [&>li]:w-[66px]"
+          items={delivery.dates.map((date) => ({
+            key: date.date,
+            node: (
+              <DateChip
+                checked={live && date.date === selectedDate}
+                country={country}
+                date={date}
+                locale={locale}
+                pickerState={live ? "live" : "preview"}
+                sharedReasonId={noticeId}
+                {...(delivery.cutoffLocal === undefined
+                  ? {}
+                  : { cutoffLocal: delivery.cutoffLocal })}
+                {...(delivery.timeZone === undefined
+                  ? {}
+                  : { timeZone: delivery.timeZone })}
+              />
+            ),
+          }))}
+          itemsFocusable={live && anySelectable}
+          label={d("legend")}
+        />
       </div>
       {live && anySelectable ? (
         <Button

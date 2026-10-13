@@ -142,8 +142,9 @@ function lines(markup: string): string[] {
 }
 
 /**
- * The lines of the page's own two amounts — the H1 price and the summary — and not the related
- * row's cards, which carry their own (TASK-178).
+ * The product's own lines — the buy section's price and "The price" section — and not the related
+ * row's cards, which carry their own (TASK-178). Since spec 009 §14 A12 move 2 (TASK-197) the
+ * product has exactly one, in "The price".
  */
 function pageLines(html: string): string[] {
   return [
@@ -156,16 +157,16 @@ function occurrences(haystack: string, needle: string): number {
   return haystack.split(needle).length - 1;
 }
 
-describe("A21 clause 6: the product page prints the equivalents under the price and the total", () => {
-  it("prints the one English line the helper gives, under the H1 price and under the total", async () => {
+describe('A21 clause 6 as spec 009 §14 A12 move 2 reads it: one line, in "The price", never on the price line', () => {
+  it('prints the one English line the helper gives, in "The price" and not in the buy section\'s price', async () => {
     const view = await viewOf("en", { now: FRESH });
     expect(view.fx.state).toBe("converted");
     const html = render(view);
     const expected =
       "about 47.07 £, 237.05 PLN or 63.76 US$ at the rate of 8 September";
-    expect(lines(block(html, "data-fo-pdp-price"))).toEqual([expected]);
+    expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
-    expect(pageLines(html)).toEqual([expected, expected]);
+    expect(pageLines(html)).toEqual([expected]);
     // Never a second total: the line is text under the one total, not another amount element.
     expect(occurrences(html, "data-fo-price-total")).toBe(1);
   });
@@ -183,11 +184,11 @@ describe("A21 clause 6: the product page prints the equivalents under the price 
     const expected =
       "ok. 53,04 €, 45,47 GBP lub 61,60 USD po kursie z 8 września";
     const html = render(view);
-    expect(lines(block(html, "data-fo-pdp-price"))).toEqual([expected]);
+    expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
   });
 
-  it("prints exactly two lines in every locale, each a list of the other currencies", async () => {
+  it("prints exactly one line in every locale, a list of the other currencies", async () => {
     const conjunction: Record<(typeof LOCALES)[number], string> = {
       en: " or ",
       "en-gb": " or ",
@@ -198,7 +199,7 @@ describe("A21 clause 6: the product page prints the equivalents under the price 
       const view = await viewOf(locale, { now: FRESH });
       const html = render(view);
       const found = pageLines(html);
-      expect(found, locale).toHaveLength(2);
+      expect(found, locale).toHaveLength(1);
       expect(view.equivalents.price, locale).toBeDefined();
       for (const line of found) {
         expect(line, locale).toContain(conjunction[locale]);
@@ -236,11 +237,11 @@ describe("A21 clause 6 (d): one stale or missing leg hides the whole line", () =
     return FX_SNAPSHOT.map((row) => ({ ...row, asOf: CURRENT }));
   }
 
-  it("prints both lines when every leg is current (the control)", async () => {
+  it("prints the line when every leg is current (the control)", async () => {
     rateRows = currentRows();
     const view = await viewOf("en", { now: FRESH });
     expect(view.fx.state).toBe("converted");
-    expect(pageLines(render(view))).toHaveLength(2);
+    expect(pageLines(render(view))).toHaveLength(1);
   });
 
   for (const leg of ["GBP", "USD"] as const) {
@@ -302,7 +303,7 @@ describe("one clock for the price, the fallback, the line and the date window", 
     expect(view.equivalents.total?.asOf).toBe(CURRENT);
     expect(view.delivery.dates[0]?.date).toBe("2026-09-09");
     const html = render(view);
-    expect(pageLines(html)).toHaveLength(2);
+    expect(pageLines(html)).toHaveLength(1);
     expect(html).not.toContain("data-fo-fx-notice");
   });
 
@@ -388,8 +389,8 @@ describe("one clock for the price, the fallback, the line and the date window", 
   }
 });
 
-describe("the H1 line is the tier's, the summary line is the total's", () => {
-  it("with Women's Day chosen, the two lines convert two different amounts", async () => {
+describe("the one line converts the selected tier's price, not the surcharged total (A12 move 2, T-34)", () => {
+  it("with Women's Day chosen, the line is the tier's conversion, not the total's", async () => {
     // Every rate re-dated into a window around 1 March 2027, so the Women's Day week is current.
     rateRows = FX_SNAPSHOT.map((row) => ({ ...row, asOf: "2027-02-28" }));
     const now = new Date("2027-03-01T08:00:00Z");
@@ -419,11 +420,23 @@ describe("the H1 line is the tier's, the summary line is the total's", () => {
     expect(view.equivalents.total).toEqual(total);
     expect(view.equivalents.price).not.toEqual(view.equivalents.total);
     const html = render(view);
-    const [priceLine] = lines(block(html, "data-fo-pdp-price"));
-    const [totalLine] = lines(block(html, "data-fo-price-summary"));
-    expect(priceLine).toBeDefined();
-    expect(totalLine).toBeDefined();
-    expect(priceLine).not.toBe(totalLine);
+    expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
+    const shown = lines(block(html, "data-fo-price-summary"));
+    expect(shown).toHaveLength(1);
+    // The tier's conversion, rendered through the same message: its first amount is the tier's
+    // euro-to-pound figure, which the total's line does not contain.
+    const tierFirst = base?.amounts[0];
+    const totalFirst = total?.amounts[0];
+    expect(tierFirst).toBeDefined();
+    expect(totalFirst).toBeDefined();
+    expect(tierFirst?.amountMinor).not.toBe(totalFirst?.amountMinor);
+    const view2 = {
+      ...view,
+      equivalents: { ...view.equivalents, price: view.equivalents.total },
+    };
+    expect(lines(block(render(view2), "data-fo-price-summary"))).not.toEqual(
+      shown,
+    );
   });
 });
 

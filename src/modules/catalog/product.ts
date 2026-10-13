@@ -226,6 +226,29 @@ export async function productPageExists(identity: unknown): Promise<boolean> {
   return pageExists(parsed.sku, parsed.countryIso, parsed.locale, newMemo());
 }
 
+/**
+ * The product page's own path in every locale that has it, for the language popup's options
+ * (`LanguageAlternates`, spec 003 §14 A14 as A16 amends it; TASK-197, owed from TASK-179's
+ * review). Each path passes `pageExists()` first, so the popup never links a page the router
+ * refuses. It feeds no hreflang: the product page is `noindex` and its head is unchanged.
+ */
+export async function productAlternatePaths(identity: {
+  readonly sku: string;
+  readonly countryIso: string;
+}): Promise<Readonly<Record<string, string>>> {
+  const memo = newMemo();
+  const paths: Record<string, string> = {};
+  if (!isCountryIso2(identity.countryIso)) return paths;
+  for (const locale of listingLocales()) {
+    if (!(await pageExists(identity.sku, identity.countryIso, locale, memo))) {
+      continue;
+    }
+    const record = recordFor(identity.sku, identity.countryIso, locale);
+    if (record !== undefined) paths[locale] = record.path;
+  }
+  return paths;
+}
+
 /** One record of the set, with its path built by the one URL builder (spec 009 §2). */
 function recordFor(
   sku: string,

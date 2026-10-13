@@ -451,6 +451,7 @@ export {
   listProductPages,
   productExistenceCounts,
   productExistenceSummaryMarkdown,
+  productAlternatePaths,
   productPageExists,
   productPrebuildPages,
   writeProductExistenceSummary,

@@ -1329,8 +1329,6 @@ export default function DevComponentsPage(): ReactElement {
                       state,
                       <div className="max-w-[420px]" key={state}>
                         <PriceSummary
-                          country={PRODUCT_COUNTRY}
-                          dock={false}
                           totalId={`gallery-${state}`}
                           view={
                             PRODUCT_SUMMARIES[summary] ??
