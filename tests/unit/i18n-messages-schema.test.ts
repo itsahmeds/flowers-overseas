@@ -400,6 +400,10 @@ describe("the shipped catalogues and manifests", () => {
     // the 2026-10-04 copy batch by mistake. It is not one of the batch's 14 items (orchestrator
     // check, 2026-10-04), so it waits here for the founder.
     "product.eyebrow",
+    // TASK-197, product v3: spec 004 §14 A24 clause 10's P2 (the phone sheet's eyebrow) and P1
+    // ("Read more"), proposed copy that ships `reviewed: false` until the founder attests it.
+    "product.eyebrowPhone",
+    "product.readMore",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording

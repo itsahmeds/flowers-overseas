@@ -546,9 +546,8 @@ test.describe("/dev/components", () => {
   test("docks no summary at the 390 px artboard width: the sticky bar is the product page's (AC-9)", async ({
     page,
   }) => {
-    // Four summaries side by side would dock four bars over the listing blocks' mobile baselines;
-    // the gallery passes `dock={false}` and the page's own summary is asserted docked in
-    // `tests/e2e/product-page.spec.ts`.
+    // Since v3 (TASK-197) no summary docks anywhere: the product page's sticky element is its
+    // `StickyActionBar` (`tests/e2e/product-v3.spec.ts`).
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(GALLERY);
     const positions = await page

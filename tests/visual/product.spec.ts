@@ -129,7 +129,32 @@ for (const { width, viewport } of WIDTHS) {
   });
 }
 
-test("the sticky summary at 390px matches product-mobile-sticky", async ({
+/**
+ * v3's first screens (TASK-197): the two-column desktop at 1440 × 900 and the phone sheet at
+ * 390 × 844, against `wireframes/product-{desktop,mobile}.dc.html`. The date row is taken out by
+ * `product-blocks.css` for the reason it gives (the window moves every day), so each shot is the
+ * same on every build date. Then the docked bar, scrolled into its shown state.
+ */
+for (const { width, viewport } of WIDTHS) {
+  test(`the v3 first screen at ${String(viewport.width)}px matches product-${width}-first`, async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await recordConsentRefusal(context, baseURL);
+    await withoutLanguageHint(page);
+    await page.setViewportSize(viewport);
+    const url = BLOCKS[0].url;
+    const response = await page.goto(url);
+    expect(response?.status(), url).toBe(200);
+    await expect(page.locator("[data-fo-pdp-buy] h1")).toBeVisible();
+    await expect(page).toHaveScreenshot(`product-${width}-first.png`, {
+      stylePath: [BLOCK_STYLE],
+    });
+  });
+}
+
+test("the docked bar at 390px, once the buy section has scrolled out, matches product-mobile-bar", async ({
   page,
   context,
   baseURL,
@@ -140,7 +165,8 @@ test("the sticky summary at 390px matches product-mobile-sticky", async ({
   const url = BLOCKS[0].url;
   const response = await page.goto(url);
   expect(response?.status(), url).toBe(200);
-  // The first screen a phone sees: the gallery, and the bar docked over its bottom edge.
-  await expect(page.locator("[data-fo-summary-total]")).toBeVisible();
-  await expect(page).toHaveScreenshot("product-mobile-sticky.png");
+  await page.locator("[data-fo-pdp-more]").scrollIntoViewIfNeeded();
+  const bar = page.locator("[data-fo-action-bar]");
+  await expect(bar).toBeVisible();
+  await expect(bar).toHaveScreenshot("product-mobile-bar.png");
 });

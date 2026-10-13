@@ -126,11 +126,7 @@ export function DeliveryDatePicker({
     delivery.timeZone !== undefined;
 
   return (
-    <fieldset
-      className={fieldset}
-      data-fo-picker-state={delivery.state}
-      disabled={!live}
-    >
+    <fieldset className={fieldset} data-fo-picker-state={delivery.state}>
       {legend}
       {live ? null : (
         <p className={`${note} self-start`} id={noticeId}>

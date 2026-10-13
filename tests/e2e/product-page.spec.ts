@@ -232,7 +232,10 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       await expect(
         summary.locator('[data-fo-summary-row="delivery"]'),
       ).toHaveCount(1);
-      await expect(page.locator("[data-fo-demo-summary]")).toHaveCount(1);
+      // v3 (spec 009 §14 A12): the status and the demo sentence are the buy section's action.
+      await expect(
+        page.locator("[data-fo-pdp-action] [data-fo-pdp-demo]"),
+      ).toHaveCount(1);
       const main = (await page.locator("main").innerText()).toLowerCase();
       expect(main).not.toMatch(
         /\b(tomorrow|morgen|jutro)\b|order within|countdown/u,
@@ -327,8 +330,8 @@ test.describe("a withdrawn photograph is not served, and nothing is preloaded (T
   }
 });
 
-test.describe("the sticky summary is the summary's own total, docked (AC-9, the 390 px artboard)", () => {
-  test("at 390 px the one total row docks at the bottom edge and the page keeps room for it", async ({
+test.describe('v3: the one total stays in "The price"; the phone\'s sticky element is the docked bar (AC-9, spec 009 §14 A12)', () => {
+  test("at 390 px the one total row is in the flow, and the bar (asserted in product-v3.spec.ts) repeats the price", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -338,28 +341,8 @@ test.describe("the sticky summary is the summary's own total, docked (AC-9, the 
     await expect(page.locator("[data-fo-price-total]")).toHaveCount(1);
     await expect(row.locator("[data-fo-price-total]")).toHaveCount(1);
     expect(await row.evaluate((node) => getComputedStyle(node).position)).toBe(
-      "fixed",
-    );
-    const box = await row.boundingBox();
-    expect(Math.round((box?.y ?? 0) + (box?.height ?? 0))).toBe(844);
-    // The bar names the size beside the amount, and the document's own padding clears it, so
-    // the footer's last line is reachable above the bar.
-    await expect(
-      row.locator('[data-fo-summary-docked="selection"]'),
-    ).toBeVisible();
-    const reserved = await page.evaluate(() =>
-      Number.parseFloat(getComputedStyle(document.body).paddingBottom),
-    );
-    expect(reserved).toBeGreaterThanOrEqual(
-      box?.height ?? Number.POSITIVE_INFINITY,
-    );
-    // Above the artboard width it is back in the summary's flow, and the selection line is gone.
-    await page.setViewportSize({ width: 1440, height: 900 });
-    expect(await row.evaluate((node) => getComputedStyle(node).position)).toBe(
       "static",
     );
-    await expect(
-      row.locator('[data-fo-summary-docked="selection"]'),
-    ).toBeHidden();
+    await expect(page.locator("[data-fo-action-bar]")).toHaveCount(1);
   });
 });

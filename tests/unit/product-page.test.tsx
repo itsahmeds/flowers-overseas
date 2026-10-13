@@ -1265,3 +1265,15 @@ describe("the gallery's product fixtures are shapes `productView()` could produc
     );
   });
 });
+
+describe("withdrawn photographs render the honest placeholder (TASK-190, TASK-197 carry-forward (d))", () => {
+  it("draws Peace Lily (FO-PT-004) and Olive Sapling (FO-PT-006) as the placeholder: no <img>, no preload", async () => {
+    for (const sku of ["FO-PT-004", "FO-PT-006"]) {
+      const view = await viewOf("en", "PL", sku, { now: IN_WINDOW });
+      expect(view.gallery.kind, sku).toBe("placeholder");
+      const html = render(view);
+      expect(html, sku).toMatch(/data-fo-gallery="placeholder"/u);
+      expect(block(html, "data-fo-pdp-gallery"), sku).not.toMatch(/<img/u);
+    }
+  });
+});

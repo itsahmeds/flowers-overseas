@@ -132,7 +132,11 @@ export function DateChip({
       <input
         className="sr-only"
         defaultChecked={checked}
-        disabled={!date.selectable}
+        // Every `preview` date is closed (spec 009 §2), on the radio itself rather than through a
+        // disabled `<fieldset>`: the v3 date row is a scroller that must stay focusable inside the
+        // group (spec 004 AC-49; axe `scrollable-region-focusable`), and a disabled fieldset
+        // takes it out of the tab order (TASK-197).
+        disabled={!date.selectable || pickerState === "preview"}
         name={name}
         type="radio"
         value={date.date}
