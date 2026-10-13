@@ -70,7 +70,8 @@
  *    are read only from its `paths`, its `paths` claim no shared file, and no indexable page
  *    imports a file under its `paths`, directly or through other files. The rules and their
  *    limits are in `scripts/i18n-check-scope.ts`. `--scope <file.json>` swaps the registry for a
- *    fixture, as `--registry` does for check 8.
+ *    fixture, as `--registry` does for check 8. The committed registry applies to the committed
+ *    tree only: a `--messages-dir` or `--src` elsewhere with no `--scope` runs with no entry.
  *
  * ## The usage heuristic (check 2) and its limits
  *
@@ -100,6 +101,7 @@ import {
   existsSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   statSync,
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -898,13 +900,33 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
 
 const COMMITTED_SCOPE_FILE = "src/modules/i18n/review-scope.ts";
 
-/** The registry check 11 reads: `--scope <file.json>` when given, the committed one otherwise. */
+/** The repository this script belongs to; the committed registry describes its tree alone. */
+const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/** The label check 11 names when a tree other than the committed one runs with no `--scope`. */
+export const NO_SCOPE_FILE = "(no scope registry: not the committed tree)";
+
+/**
+ * The registry check 11 reads: `--scope <file.json>` when given; otherwise the committed one, but
+ * only over the committed tree (this repository's own `messages/` and `src/`). The committed
+ * registry names the committed keys and source files, so over a fixture tree every entry would
+ * "match no `en` key"; a fixture tree with no `--scope` runs with no entry, where every key
+ * counts (the side that fails safe: an unmatched key pushes the share toward `noindex`).
+ */
 function readScope(
   options: CheckOptions,
+  dirs: { readonly messagesDir: string; readonly srcDir: string },
   problems: Problem[],
 ): { raw: readonly unknown[]; file: string } {
   if (options.scopeFile === undefined) {
-    return { raw: NON_INDEXABLE_SCOPE, file: COMMITTED_SCOPE_FILE };
+    const same = (a: string, b: string): boolean =>
+      existsSync(a) && existsSync(b) && realpathSync(a) === realpathSync(b);
+    const committedTree =
+      same(dirs.messagesDir, join(REPOSITORY_ROOT, DEFAULT_MESSAGES_DIR)) &&
+      same(dirs.srcDir, join(REPOSITORY_ROOT, DEFAULT_SRC_DIR));
+    return committedTree
+      ? { raw: NON_INDEXABLE_SCOPE, file: COMMITTED_SCOPE_FILE }
+      : { raw: [], file: NO_SCOPE_FILE };
   }
   const path = resolve(options.root, options.scopeFile);
   const file = displayPath(path, options.root);
@@ -965,7 +987,7 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
 
   // Check 11 reads the registry as written; the share and the summary run under the entries that
   // parse, so a malformed entry is reported once and, being unmatched, counts (it fails safe).
-  const scope = readScope(options, problems);
+  const scope = readScope(options, { messagesDir, srcDir }, problems);
 
   const result = await withReviewScope(validScopeEntries(scope.raw), () =>
     withLocaleRegistry(localeRegistryOf(authored), () =>

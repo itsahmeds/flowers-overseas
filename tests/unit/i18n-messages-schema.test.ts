@@ -288,6 +288,73 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-193's neutral batch, N1–N7 (spec 004 §14 A23 clause 12), left this queue on the
     // founder's `record-approval-193.py` run, 2026-10-05.
     "categoryHub.destinationLink",
+    // TASK-201, spec 010's checkout primitives: 66 strings, the implementer's wording from spec 010
+    // Appendix A and the boards, all waiting for the founder's batch approval (listed in PR 206's
+    // "Copy for the founder"). Not counted in the unreviewed share (`review-scope.ts`, A17), but
+    // not exempt from the founder's tick (A17 clause 5). The five address-format labels
+    // (`checkout.address.{city,fullName,phone,postcode,street}`), which a shared module reads and
+    // which therefore count, were approved by the founder in chat on 2026-10-12 and are not here.
+    "checkout.action.toCard",
+    "checkout.action.toReview",
+    "checkout.buyer.country",
+    "checkout.buyer.email",
+    "checkout.buyer.fullName",
+    "checkout.buyer.phone",
+    "checkout.card.blank",
+    "checkout.card.counter",
+    "checkout.card.label",
+    "checkout.card.preview",
+    "checkout.card.previewLabel",
+    "checkout.card.signAs",
+    "checkout.card.signAsHint",
+    "checkout.demo.bannerBody",
+    "checkout.demo.bannerTitle",
+    "checkout.demo.place",
+    "checkout.demo.placing",
+    "checkout.demo.useSample",
+    "checkout.error.addonUnavailable",
+    "checkout.error.countryInvalid",
+    "checkout.error.dateInvalid",
+    "checkout.error.emailInvalid",
+    "checkout.error.invalidCharacters",
+    "checkout.error.phoneInvalid",
+    "checkout.error.placeKindInvalid",
+    "checkout.error.postcodeFormat",
+    "checkout.error.required",
+    "checkout.error.summaryItem",
+    "checkout.error.summaryTitle",
+    "checkout.error.tooLong",
+    "checkout.field.optional",
+    "checkout.placeKind.cemetery",
+    "checkout.placeKind.church",
+    "checkout.placeKind.funeralHome",
+    "checkout.placeKind.home",
+    "checkout.placeKind.hospital",
+    "checkout.placeKind.hotel",
+    "checkout.placeKind.legend",
+    "checkout.placeKind.work",
+    "checkout.price.changed",
+    "checkout.price.confirm",
+    "checkout.price.currencyLine",
+    "checkout.privacy.demoNotice",
+    "checkout.progress.card",
+    "checkout.progress.compact",
+    "checkout.progress.label",
+    "checkout.progress.recipient",
+    "checkout.progress.review",
+    "checkout.recipient.phoneNonLocal",
+    "checkout.recipient.phoneReason",
+    "checkout.summary.delivery",
+    "checkout.summary.included",
+    "checkout.summary.mini",
+    "checkout.summary.title",
+    "checkout.summary.total",
+    "checkout.summary.vat",
+    "checkout.summary.vatOf",
+    "confirmation.recap.card",
+    "confirmation.recap.date",
+    "confirmation.recap.nothingCharged",
+    "confirmation.recap.recipient",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -461,6 +528,10 @@ describe("the shipped catalogues and manifests", () => {
       // lines and the calendar's reason strings. Server Components only, so no client provider.
       "product",
       "delivery",
+      // Spec 010 §7's namespaces (TASK-201): the checkout primitives' copy and the demo
+      // confirmation recap, resolved by the page and handed to the components as props.
+      "checkout",
+      "confirmation",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

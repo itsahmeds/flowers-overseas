@@ -21,6 +21,7 @@
  * ones a future edit is most likely to get wrong.
  */
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -32,10 +33,28 @@ import {
   pathSegmentProblems,
 } from "../../scripts/i18n-check.ts";
 import { PATH_SEGMENT_KEYS } from "../../src/config/locales.ts";
+import {
+  NON_INDEXABLE_SCOPE,
+  scopeEntryFor,
+} from "../../src/modules/i18n/review-scope.ts";
 import { PAGE_TYPES, localePath } from "../../src/modules/i18n/routing.ts";
+import enCatalogue from "../../messages/en.json";
 
 const repoRoot = resolve(__dirname, "../..");
 const casesDir = "tests/fixtures/i18n/_cases";
+
+/** The dot paths of a nested catalogue's leaves. */
+function leafKeys(
+  tree: Readonly<Record<string, unknown>>,
+  prefix = "",
+): string[] {
+  return Object.entries(tree).flatMap(([key, value]) => {
+    const path = prefix === "" ? key : `${prefix}.${key}`;
+    return typeof value === "object" && value !== null
+      ? leafKeys(value as Record<string, unknown>, path)
+      : [path];
+  });
+}
 
 interface CliResult {
   readonly status: number;
@@ -88,14 +107,13 @@ describe("the committed tree (AC-22, first clause)", () => {
     const result = runCli("--summary");
     expect(result.status).toBe(0);
     // The table is the founder-facing number: `de` and `pl` are echoed English, so they must read
-    // 100 % unreviewed and `no`. `en`/`en-gb` carry the founder's review queue — one authored key
-    // from `/review 58` plus the seven TASK-084's copy pass reworded — and must stay far below
-    // 5 % and read `yes`; the table is where the founder sees that queue, and its exact contents
-    // are pinned in `i18n-messages-schema.test.ts`.
+    // 100 % unreviewed and `no`. `en`/`en-gb` carry the founder's review queue and must stay at
+    // or under 5 % (spec 003 §2: `<=`) and read `yes`; the table is where the founder sees that
+    // queue, and its exact contents are pinned in `i18n-messages-schema.test.ts`.
     for (const locale of ["en", "en-gb"]) {
       expect(result.stdout, locale).toMatch(
         new RegExp(
-          `\\| \`${locale}\` \\| \\d+ \\| \\d+ \\| \\d+ \\| 0 \\| \\d+ \\| [0-4]\\.\\d% \\| 0 \\| yes \\|`,
+          `\\| \`${locale}\` \\| \\d+ \\| \\d+ \\| \\d+ \\| 0 \\| \\d+ \\| (?:[0-4]\\.\\d|5\\.0)% \\| 0 \\| yes \\|`,
         ),
       );
     }
@@ -112,6 +130,70 @@ describe("the committed tree (AC-22, first clause)", () => {
     const result = runCase("clean");
     expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
+  });
+
+  it("applies the committed scope registry to the committed tree only (check 11)", () => {
+    // The committed registry names the committed keys and files. Over the committed tree, named
+    // explicitly, its entries apply: `en` reads exactly the keys they reach as not counted.
+    const enKeys = leafKeys(enCatalogue);
+    const notCounted = enKeys.filter(
+      (key) => scopeEntryFor(key, NON_INDEXABLE_SCOPE) !== undefined,
+    ).length;
+    expect(notCounted).toBeGreaterThan(0);
+    const committed = runCli(
+      "--messages-dir",
+      "messages",
+      "--src",
+      "src",
+      "--summary",
+    );
+    expect(committed.stderr).toBe("");
+    expect(committed.status).toBe(0);
+    expect(committed.stdout).toContain(
+      `| \`en\` | ${String(enKeys.length)} | ${String(enKeys.length - notCounted)} | ${String(notCounted)} |`,
+    );
+
+    // Over a fixture tree with no `--scope` it has no entry: every key counts, and check 11 does
+    // not report the committed entries as matching no key of the fixture's `en`.
+    const fixture = runCase("clean", "--summary");
+    expect(fixture.stderr).toBe("");
+    expect(fixture.status).toBe(0);
+    const fixtureKeys = leafKeys(
+      JSON.parse(
+        readFileSync(resolve(repoRoot, casesDir, "clean/en.json"), "utf8"),
+      ) as Record<string, unknown>,
+    ).length;
+    expect(fixture.stdout).toContain(
+      `| \`en\` | ${String(fixtureKeys)} | ${String(fixtureKeys)} | 0 |`,
+    );
+  });
+
+  it("needs both halves of the committed tree for the committed registry (check 11, /break 1 hole 1)", () => {
+    // The committed catalogue over a fixture source: not the committed tree, so no entry
+    // applies and every `en` key counts. (The run fails on unused keys; the summary still prints.)
+    const enKeys = leafKeys(enCatalogue).length;
+    const messagesOnly = runCli(
+      "--messages-dir",
+      "messages",
+      "--src",
+      `${casesDir}/clean/src`,
+      "--summary",
+    );
+    expect(messagesOnly.stdout).toContain(
+      `| \`en\` | ${String(enKeys)} | ${String(enKeys)} | 0 |`,
+    );
+    expect(messagesOnly.stderr).not.toContain("scope entry");
+
+    // A fixture catalogue over the committed source: not the committed tree either, so the
+    // committed entries are not held against keys the fixture does not have.
+    const srcOnly = runCli(
+      "--messages-dir",
+      `${casesDir}/clean`,
+      "--src",
+      "src",
+      "--summary",
+    );
+    expect(srcOnly.stderr).not.toContain("scope entry");
   });
 });
 

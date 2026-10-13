@@ -82,6 +82,11 @@ export const SECTIONS = [
   // sideways rows (with and without focusable items) and the gallery's in-page dots. The docked
   // action bar is `position: fixed`, so its state is its own fixture page, linked from here.
   "Phone patterns",
+  // TASK-201: spec 010's fourteen checkout primitives in every §5.3 state, and a live form that
+  // mounts the two islands (`system/components.dc.html`, "Checkout"). No Phase-0 page reaches
+  // them until TASK-204 builds the checkout, so this is their visual, axe and e2e surface. Last on
+  // the page, so no section above it moves.
+  "Checkout",
 ] as const;
 
 /** TASK-175's gallery samples. Developer copy, never shipped on a public page. */
