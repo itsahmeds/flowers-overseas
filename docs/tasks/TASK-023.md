@@ -58,6 +58,8 @@ _None recorded._
 
 - 2026-10-13 (finisher): the red `tests` step was two failures. (1) `order-integrity.test.ts` AC-36 scan flagged `rls-policies.test.ts:287`, this bundle's plain-string assertion on the rollback's `DROP TRIGGER` line; rewritten as the anchored `/^…$/m` literal the scan allows (`900d4029`), red when line 13 of `0011_rls_policies.down.sql` is commented out. (2) `url-pii.test.ts` T-59 timed out at 5 s with the load average at 64–85 from other agents; the diff touches nothing under `src/`, and it passed in the full gates run at load 7.6.
 
+- 2026-10-13 (finisher): rebased on `origin/main` `14f8364d` (A6, PR 211's deps, PR 205); only the codebase map conflicted and was regenerated. Gates green again; CI re-fired on the new head.
+
 ## Result
 
 PR 210 (feature PR, TASK-019…023).
@@ -126,17 +128,19 @@ Carried forward:
 
 Local evidence: PostgreSQL 16.14 (embedded-postgres, 127.0.0.1:54329), stopped by its PID afterwards. The integration project: 13 files passed, 4 skipped; 110 tests passed, 32 skipped.
 
-### Cheap gates on `900d4029` (load average 7.58 at start, 8.10 at end)
+### Cheap gates after the rebase on `14f8364d` (load average 4.38 at start, 4.32 at end)
+
+The block names the code head; the commit that records it adds only this brief.
 
 ```
-gates:cheap · 900d4029b5b108f409149ee75a60e814165d2f4d · tree clean · base origin/main · 2026-10-13T16:56:44.718Z
-typecheck             exit 0 · 2.8 s
-lint                  exit 0 · 17.2 s
-format:check          exit 0 · 11.1 s
+gates:cheap · 6ae38a8ee36a89f00609cf3616c97eadfe23ffe3 · tree clean · base origin/main · 2026-10-13T18:54:55.117Z
+typecheck             exit 0 · 10.9 s
+lint                  exit 0 · 17.0 s
+format:check          exit 0 · 10.7 s
 i18n:check            exit 0 · 0.6 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 21.8 s · changed 8 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+tests                 exit 0 · 20.0 s · changed 8 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
