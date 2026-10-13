@@ -172,13 +172,23 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **E-1 (2026-10-14), for the designer through the orchestrator; not blocking.** A24 clause 2 (f)'s
+  pre-build check fails on `country-category-desktop`: it draws `items[0]` at double size (two
+  columns, two rows), so at 1440 × 900 that card's price sits at about y 1,155 and the whole first
+  row is not in view; it also puts the count and the disclosure under the grid, which R8 and AC-32
+  forbid. The brief's rule ("the artboard is tightened, not the rule") decides the build, so the page
+  is built in the round-2 shop root's form (four equal cards, count and disclosure above, the form
+  under the grid) and the difference is a dated row in `docs/design/README.md`. Open for the
+  designer: redraw the artboard to match.
 
 ## Progress
 
 One line per coherent step, newest last.
 
 - 2026-10-14: worktree `fo-wt-146` on `task/TASK-146-country-listings-depth4` from `8c4b7386`; rows `in_progress`; carry-forwards recorded.
+- 2026-10-14: depth-4 parameter route, rewrites, cache header and the parameterised-hub robots header (c2397b24).
+- 2026-10-14: registry `listing-presentation.ts`, `country.state` enum, `countNoun`, A9/A10/P3 copy, `formatDateParts`, the phone pager (d32a01f5).
+- 2026-10-14: the three country first screens rebuilt to round 2, the occasion's lead figure as `items[0]`'s own `<li>` (689dda11); unit cases (d1db2eec); e2e for depth-4 params, first screens, AC-45, R8, the phone label (a2e6b8bb, 69788b3f).
 
 ## Result
 
