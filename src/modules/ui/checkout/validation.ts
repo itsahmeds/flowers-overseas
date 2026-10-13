@@ -75,7 +75,11 @@ export function announcement(
 ): string {
   const label = control.labels?.[0]?.textContent?.trim() ?? "";
   if (label === "") return message;
-  return template.replace("{field}", label).replace("{message}", message);
+  // Replacer functions, one pass: a string replacement would read `$&` in a label as a pattern,
+  // and a second pass would read a placeholder written in the label.
+  return template.replace(/\{field\}|\{message\}/g, (slot) =>
+    slot === "{field}" ? label : message,
+  );
 }
 
 /**

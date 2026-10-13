@@ -663,6 +663,23 @@ describe("the cases the first breaker round asked for", () => {
     expect(links).toEqual(["#step-recipient"]);
   });
 
+  it("renders no link for a done step that has no href (low)", () => {
+    const markup = html(
+      <StepProgress
+        compactLabel="Step 2 of 3"
+        current={1}
+        label="Checkout steps"
+        locale="en"
+        steps={[
+          { id: "recipient", name: "Recipient" },
+          { id: "card", name: "Card and you" },
+          { id: "review", name: "Check" },
+        ]}
+      />,
+    );
+    expect(markup).not.toContain("<a");
+  });
+
   it("allows a card of exactly the limit (hole 7)", () => {
     expect(isOverLimit(200, 200)).toBe(false);
     expect(isOverLimit(201, 200)).toBe(true);
@@ -804,6 +821,7 @@ describe("the cases the first breaker round asked for", () => {
   it.each([
     ["an empty string", ""],
     ["null", null],
+    ["false", false],
   ])("draws no error and no aria-invalid for %s (nit)", (_name, error) => {
     for (const markup of [
       html(<TextField error={error} id="f" label="Name" name="f" />),

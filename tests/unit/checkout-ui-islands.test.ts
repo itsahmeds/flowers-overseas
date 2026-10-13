@@ -26,6 +26,8 @@ import { brotliCompressSync, constants } from "node:zlib";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { countGraphemes } from "../../src/modules/i18n";
+import { BlurValidation } from "../../src/modules/ui/checkout/BlurValidation.tsx";
+import { CardCounter } from "../../src/modules/ui/checkout/CardCounter.tsx";
 import { FocusOnMount } from "../../src/modules/ui/checkout/FocusOnMount.tsx";
 import { approximateGraphemes } from "../../src/modules/ui/checkout/graphemes.ts";
 import { PlaceOrderButton } from "../../src/modules/ui/checkout/PlaceOrderButton.tsx";
@@ -200,6 +202,13 @@ describe("the card counter's count", () => {
     "শুভ জন্মদিন",
     "\u200D leading joiner",
     "🏳️‍🌈 👩🏽‍💻",
+    // `/break` round 2, hole 2: one conjunct or SARA AM per branch of the grapheme code (Lao
+    // SARA AM, and the Gujarati, Oriya, Telugu and Malayalam viramas).
+    "ຄຳ",
+    "ક્ષ",
+    "କ୍ଷ",
+    "క్ష",
+    "ക്ഷ",
   ];
 
   it.each(FIXTURES)("equals the server's countGraphemes for %j", (text) => {
@@ -484,9 +493,141 @@ describe("the on-blur announcement (D1)", () => {
     expect(status.textContent).toBe("");
   });
 
+  it("puts a label or message with a replacement pattern in verbatim", () => {
+    expect(
+      announcement(
+        "{field}: {message}",
+        field("Cost $& $1 $$"),
+        "Fix $& {field}",
+      ),
+    ).toBe("Cost $& $1 $$: Fix $& {field}");
+  });
+
   it("says the message alone when the control has no label", () => {
     expect(
       announcement("{field}: {message}", field(null), "Please fill this in."),
     ).toBe("Please fill this in.");
+  });
+});
+
+/**
+ * The wiring of the two form islands, driven with stand-ins for the DOM classes and elements
+ * (`/break` round 2, holes 1 and 3). The unit project has no DOM, so `instanceof` checks are
+ * answered by small classes and `document` by a lookup.
+ */
+describe("the islands' event wiring", () => {
+  type Listener = (event: unknown) => void;
+
+  class FakeElement {
+    readonly listeners = new Map<string, Listener[]>();
+    readonly dataset: Record<string, string> = {};
+    textContent: string | null = "";
+    value = "";
+    id = "";
+    addEventListener(type: string, listener: Listener): void {
+      this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
+    }
+    removeEventListener(type: string, listener: Listener): void {
+      this.listeners.set(
+        type,
+        (this.listeners.get(type) ?? []).filter((fn) => fn !== listener),
+      );
+    }
+    fire(type: string, event: unknown = { target: this }): void {
+      for (const listener of this.listeners.get(type) ?? []) listener(event);
+    }
+  }
+  class FakeTextArea extends FakeElement {}
+  class FakeInput extends FakeElement {
+    readonly attributes = new Map<string, string>();
+    labels = [{ textContent: "Postcode" }];
+    validity = {
+      valueMissing: true,
+      patternMismatch: false,
+      typeMismatch: false,
+    };
+    setAttribute(name: string, value: string): void {
+      this.attributes.set(name, value);
+    }
+    removeAttribute(name: string): void {
+      this.attributes.delete(name);
+    }
+  }
+
+  function stubDom(elements: Record<string, unknown>): void {
+    vi.stubGlobal("HTMLTextAreaElement", FakeTextArea);
+    vi.stubGlobal("HTMLInputElement", FakeInput);
+    vi.stubGlobal("HTMLSelectElement", class {});
+    vi.stubGlobal("document", {
+      getElementById: (id: string) => elements[id] ?? null,
+      querySelectorAll: () => [],
+    });
+  }
+
+  afterEach(() => {
+    hooks.effects.length = 0;
+    vi.unstubAllGlobals();
+  });
+
+  describe("CardCounter (hole 1)", () => {
+    function type(count: number): { counter: FakeElement } {
+      const field = new FakeTextArea();
+      const counter = new FakeElement();
+      stubDom({ card: field, "card-count": counter });
+      CardCounter({
+        fieldId: "card",
+        counterId: "card-count",
+        template: "{count} of 200",
+        max: 200,
+      });
+      hooks.effects[0]?.run();
+      field.value = "x".repeat(count);
+      field.fire("input");
+      return { counter };
+    }
+
+    it("writes the count and is not over at exactly the limit", () => {
+      const { counter } = type(200);
+      expect(counter.textContent).toBe("200 of 200");
+      expect(counter.dataset.over).toBe("false");
+    });
+
+    it("is over one past the limit", () => {
+      const { counter } = type(201);
+      expect(counter.textContent).toBe("201 of 200");
+      expect(counter.dataset.over).toBe("true");
+    });
+  });
+
+  describe("BlurValidation (hole 3)", () => {
+    it("announces the message in the form's live region when a field loses focus", () => {
+      const form = new FakeElement();
+      const status = new FakeElement();
+      const input = new FakeInput();
+      input.id = "postcode";
+      input.dataset.foValidate = "";
+      input.dataset.foDirty = "";
+      input.dataset.foMsgRequired = "Please fill this in.";
+      const errorText = { textContent: "" as string | null };
+      const error = {
+        hidden: true,
+        dataset: { foError: "client" },
+        querySelector: () => errorText,
+      };
+      stubDom({
+        step: form,
+        "step-status": status,
+        "postcode-error": error,
+      });
+      BlurValidation({
+        formId: "step",
+        announceTemplate: "{field}: {message}",
+      });
+      hooks.effects[0]?.run();
+      form.fire("focusout", { target: input });
+      expect(error.hidden).toBe(false);
+      expect(errorText.textContent).toBe("Please fill this in.");
+      expect(status.textContent).toBe("Postcode: Please fill this in.");
+    });
   });
 });
