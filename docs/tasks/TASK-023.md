@@ -60,6 +60,8 @@ _None recorded._
 
 - 2026-10-13 (finisher): rebased on `origin/main` `14f8364d` (A6, PR 211's deps, PR 205); only the codebase map conflicted and was regenerated. Gates green again; CI re-fired on the new head.
 
+- 2026-10-14 (finisher, review r2 FAIL on `b3c21b7c`): HOLE 1 fixed in `0009`. `audit_log_append_only()` now lets one UPDATE through: the one `0010`'s `actor_user_id ON DELETE SET NULL` makes. The key goes from a value to NULL, no other column changes (`to_jsonb` minus the key), and the user is gone. Every other UPDATE, DELETE and TRUNCATE is still refused. The down file is unchanged (same function and signature). The new case in `auth-adapter.test.ts` was red on the old trigger (the user `DELETE` raised `AUDIT_LOG_APPEND_ONLY`). Four mutants went red, each turning a refused UPDATE into a success: the user-exists check removed, the other-columns check removed, `OLD IS NOT NULL` removed, `NEW IS NULL` removed. The last one survived until the dangling-key re-point case was added. HOLE 2: the claim is false. The guard already refuses a buyer's `created_at` and `id`, and the new cases prove it. Dropping `created_at` from the guard went red, and so did dropping `id` (raised `23503` instead of the guard). A guard applied to every role went red on the new admin and system edits. Local PG16.14 on 127.0.0.1:54391, stopped by its PID with the data directory deleted. Integration: 13 files passed and 4 skipped; 112 tests passed and 32 skipped. The reviewer's two carry-forwards (the engine `timeout` at `sla_expires_at`, and the `search_path`/`security_barrier` integration attack) are on PR 210 for the orchestrator to copy.
+
 ## Result
 
 PR 210 (feature PR, TASK-019…023).
@@ -128,19 +130,19 @@ Carried forward:
 
 Local evidence: PostgreSQL 16.14 (embedded-postgres, 127.0.0.1:54329), stopped by its PID afterwards. The integration project: 13 files passed, 4 skipped; 110 tests passed, 32 skipped.
 
-### Cheap gates after the rebase on `14f8364d` (load average 4.38 at start, 4.32 at end)
+### Cheap gates after the review round 2 fix (load average 2.67 at start, 2.99 at end)
 
-The block names the code head; the commit that records it adds only this brief.
+The block names the code head `3f57e95c`. The tree was dirty only with this brief, which the next commit adds.
 
 ```
-gates:cheap · 6ae38a8ee36a89f00609cf3616c97eadfe23ffe3 · tree clean · base origin/main · 2026-10-13T18:54:55.117Z
-typecheck             exit 0 · 10.9 s
-lint                  exit 0 · 17.0 s
-format:check          exit 0 · 10.7 s
-i18n:check            exit 0 · 0.6 s
+gates:cheap · 3f57e95c789f2e1672f06a2febbf80a2d1f7302d · tree DIRTY · base origin/main · 2026-10-13T20:27:52.011Z
+typecheck             exit 0 · 2.0 s
+lint                  exit 0 · 15.1 s
+format:check          exit 0 · 9.8 s
+i18n:check            exit 0 · 0.5 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 20.0 s · changed 8 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+tests                 exit 0 · 18.1 s · changed 8 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
 RESULT: PASS
 ```
