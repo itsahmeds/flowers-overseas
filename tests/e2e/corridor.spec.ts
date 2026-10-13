@@ -244,7 +244,10 @@ test.describe("the guide state, rendered (AC-8, AC-19, T-09)", () => {
     const count = await questions.count();
     expect(count).toBeGreaterThanOrEqual(8);
     expect(count).toBeLessThanOrEqual(12);
-    await expect(page.locator("details")).toHaveCount(0);
+    // No accordion in the page: the header's phone Menu is the chrome's one `<details>` (spec 004
+    // §14 A24 clause 3; TASK-195), so the count is the page body's.
+    await expect(page.locator("main details")).toHaveCount(0);
+    await expect(page.locator("[data-fo-corridor-faq] details")).toHaveCount(0);
     await expect(questions.first()).toBeVisible();
   });
 

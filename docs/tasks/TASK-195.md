@@ -96,20 +96,104 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-05 (PR 208 round 1, fixed in the same PR) — back link to the last ancestor with a page
+  (category hub `‹ Home`); the panel's 44 px unit case checks every interactive element, the
+  current-locale entry and the help link included (hole 1); a source guard fails a server module
+  that imports a non-component value from a `"use client"` module (hole 2); `StickyActionBar`
+  takes `action: { href: "#…" }` and refuses anything but an in-page link, with no `children`
+  slot (hole 3). The reviewer's nit (scope the consent sheet's offset to a shown bar) was tried in
+  9e290488 and reverted in ad8c4aa9: an `inset` change on the fixed sheet at each toggle is a
+  layout shift (T-53 measured 0.19). **Carry-forward for TASK-196/197:** both rules stay on
+  `[data-fo-action-bar]` in either state; if the sheet must drop when the bar hides, move it with
+  `translate`, never `inset-block-end`.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-05 — **A trail whose last ancestor has no page.** AC-50 says every type but the product
+  page shows the back link, "its `href` and its text equal the trail's last ancestor". The category
+  hub's trail is Home / Flowers / Roses, and "Flowers" is text (no flowers index exists), so a back
+  link to it would link to nothing (A20). Built: no back link there, and the trail stays displayed
+  on the phone (exactly one of the two is still displayed; `BreadcrumbList` is unaffected). The
+  alternative is `‹ Home` (the nearest ancestor with a page), which breaks "text equals the last
+  ancestor". To the orchestrator and reviewer in PR 208. **Ruled 2026-10-05 (PR 208 review,
+  round 1):** the back link goes to the trail's last ancestor **that has a page**, so the category
+  hub shows `‹ Home`; T-55 has no exception (a missing back link on any non-product page is red).
+  The orchestrator amends spec 004 AC-50's wording.
+- 2026-10-05 — **The language popup (TASK-119, PR 205) is not merged**, so AC-48's "the popup never
+  intersects the bar's action" cannot be tested here. Carry-forward for TASK-119: stand the popup on
+  `[data-fo-action-bar]` the way `globals.css` stands the consent sheet on it, and add the case to
+  `tests/e2e/action-bar.spec.ts`.
+- 2026-10-12 — **CI `audit` is red repo-wide, not from this PR.** `pnpm audit` (prod, high and up)
+  now reports new advisories: `next` <16.3.8 (GHSA-cjq9-62q9-8jv4, SSRF in image optimisation)
+  and `sharp` <0.35.5 (GHSA-wq5f-xc86-pv6w). This PR changes no dependency; PR 205 (TASK-119) is red
+  on the same job. To the orchestrator: a dependency-bump task, or a recorded exception. **open**.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-05 — Phone header with the `<details>` Menu, no strip below `md`, back link in `Breadcrumbs`, the four primitives, gallery states and the bar fixture page (74f45a8c).
+- 2026-10-05 — Unit and e2e for T-52 to T-55, header e2e moved to the phone header (8d4df088).
+- 2026-10-05 — CI round 1: corridor `<details>` count scoped to `main`; header visual case photographs the phone banner and Menu; baselines from CI.
+- 2026-10-05 — Local production build in the build slot: fixed the lost `data-fo-menu` attribute (a `"use client"` export is a client reference on the server), the gallery hook, the category hub case; screenshots taken.
+- 2026-10-12 — Finisher: verified review change 1 and breaker holes 1 to 3 (each unit case red on its revert); CLS 0 restored by reverting the consent sheet's `="shown"` scope (ad8c4aa9). The 11 `frame-laptop-band.spec.ts:437` "✘" lines are `test.fail` expected failures owned by later tasks, identical on 8f5d7b28; not red.
+- 2026-10-12 — `category-hub-mobile` linux baseline re-taken from CI run 37341225499 (f5d9edec); `ci:full` toggled.
+- 2026-10-14 — Rebased onto main after PR 211, PR 205 (TASK-119) and PR 209: `banner.spec.ts` dropped (deleted on main), its phone-Menu branch moved into `shell.spec.ts`'s no-script case (0abf9467); map regenerated; three baselines taken from main, `suggestion-banner-mobile` stays deleted.
 
 ## Result
 
-_Pending._
+PR [#208](https://github.com/itsahmeds/flowers-overseas/pull/208). AC-47, AC-48 (the primitive), AC-49,
+AC-50 and AC-32's phone half; T-52 to T-55.
+
+- **Built.** Below `md`: the logo and a native `<details>` Menu (65 px with the rule), no strip;
+  the Menu holds the header's links, Send flowers, spec 003's `LocaleSwitcher`, the currency and
+  the help line, and `MenuEscape` (an island that renders nothing) adds `Esc`. `Breadcrumbs` draws
+  the `‹ Parent` back link below `md` (14 px under the header, 44 px), keeps the trail in the HTML
+  and takes `phone="trail"` for the product page. `StickyActionBar`, `SegmentedControl`,
+  `HorizontalScroller` and `GalleryDots` with gallery states and the `/dev/components/action-bar`
+  fixture page. No new message key.
+- **Local build** (build slot, load average 7.6 to 13.3 during the run): needed to measure the 65 px
+  header, the 14 px offset and the safe-area emulation and to take the founder's screenshots. It
+  found a real bug a server render could not: an export of a `"use client"` module is a client
+  reference on the server, so `data-fo-menu` was lost. e2e-mobile and e2e-desktop: 651 + 178
+  passed locally on the touched and neighbouring suites; a11y header and phone: 15 passed.
+- **Visual baselines** from CI run 37324416769 (43 linux images, verified against its manifest);
+  `header-mobile-utility` removed (linux and darwin), `header-mobile-menu` added. CI round 1 also
+  caught `corridor.spec.ts` counting the header Menu's `<details>`; it now counts the page body's.
+- **Mutations watched red:** the strip shown below `md` (unit T-52 half); the trail's `max-md:hidden`
+  removed (unit T-55 half); `data-fo-menu` lost (unit and e2e).
+- **Not done here:** the popup case of AC-48 (TASK-119 unmerged) and the product trail "below the
+  buy section" (TASK-197 places it). The category hub's back link is built (`‹ Home`, round 1).
+- **Round 1 fixes, finished 2026-10-12.** Each guard watched red on its revert (unit,
+  `ui-phone-chrome.test.tsx`): ancestor filter without `href` (2 cases), help line 40 px,
+  current-locale 40 px, `MENU_ATTRIBUTE` exported from and imported out of `MenuEscape` (2 cases),
+  the bar's `#id` refusal removed, the consent rule scoped to `="shown"`. T-53's CLS case was red
+  (0.19) on 43bbca5b from that scope; reverted. `category-hub-mobile` linux baseline re-taken from
+  CI run 37341225499 (shows `‹ Home`). No local Playwright run, no build slot taken. The darwin
+  copy of `category-hub-mobile` still shows the trail (CI never reads it).
+
+- **Rebase onto main (2026-10-14, finisher).** Base 686549a4 → 14f8364d. Range-diff: commits 1, 2,
+  4, 5, 7, 9 to 14 unchanged; 455d43c5 loses its `tests/e2e/banner.spec.ts` hunk (main deleted the
+  file with the banner) and its codebase-map hunk is regenerated; b261aeed and 8f5d7b28 lose
+  `consent-settings-{de,en}-mobile`, `dev-components-desktop` (main's taken) and
+  `suggestion-banner-mobile` (deleted on main). One new commit, 0abf9467: main moved the
+  no-script switcher case into `tests/e2e/shell.spec.ts`, which went red on e2e-mobile (the header
+  switcher is inside the Menu below `md`); it now opens the Menu first, as 455d43c5 did in the
+  banner spec. AC-48's popup case still has no surface: the bar lives only on the `(dev)` fixture
+  page, which mounts no popup, and the popup is a top sheet on the phone; it falls to TASK-197.
+- **Local run** (build slot, load average 5.9 to 9.6): full e2e-desktop + e2e-mobile 1616 passed,
+  184 skipped, 0 failed (the 15 `frame-laptop-band` "✘" are `test.fail`); a11y 101 passed.
+
+```
+gates:cheap · 0abf9467b2c2153901cf5bff152832c5de2aac02 · tree clean · base origin/main
+typecheck             exit 0 · 2.1 s
+lint                  exit 0 · 21.9 s
+format:check          exit 0 · 13.2 s
+i18n:check            exit 0 · 0.6 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 31.9 s · changed 81 + map 0 + always 3
+RESULT: PASS
+```

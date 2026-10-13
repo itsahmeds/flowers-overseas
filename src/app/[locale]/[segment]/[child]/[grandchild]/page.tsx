@@ -329,7 +329,11 @@ export default async function LocaleGrandchildRoute({
     setRequestLocale(match.locale);
     return (
       <ProductPage
-        breadcrumb={<ListingBreadcrumb crumbs={product.breadcrumb} />}
+        breadcrumb={
+          // The product page keeps its trail on the phone and shows no back link (spec 004
+          // §14 A24 clause 4 (e)); TASK-197 moves it below the buy section.
+          <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
+        }
         facts={
           <DeliveryFacts
             facts={product.facts}

@@ -6,7 +6,8 @@
  * variants by `./root-redirect.spec.ts`. What stays here:
  *
  *  - **`/` works with JavaScript disabled**: the 308 is HTTP, so a browser with scripting off
- *    still lands on the English home, and the header switcher's links still reach every locale.
+ *    still lands on the English home, and the header switcher's links still reach every locale
+ *    (below `md`, from the phone's Menu).
  *  - **No third-party script** on the English home.
  *  - **The indexability belts**: `robots.txt` and the `X-Robots-Tag: noindex` header outside
  *    production.
@@ -26,10 +27,18 @@ test.describe("`/` without JavaScript (AC-7 as restated)", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     expect((await page.title()).trim().length).toBeGreaterThan(0);
 
-    await page
-      .locator('[data-fo-header-switcher] a[href="/de"]')
-      .first()
-      .click();
+    // Below `md` the switcher is in the phone's Menu, which opens with no script (spec 004 §14
+    // A24 clause 3; TASK-195).
+    const menu = page.locator("[data-fo-menu-summary]");
+    if (await menu.isVisible()) {
+      await menu.click();
+      await page.locator('[data-fo-menu-switcher] nav a[href="/de"]').click();
+    } else {
+      await page
+        .locator('[data-fo-header-switcher] a[href="/de"]')
+        .first()
+        .click();
+    }
     await expect(page).toHaveURL(/\/de$/);
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
   });

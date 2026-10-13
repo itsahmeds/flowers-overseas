@@ -12,16 +12,23 @@
  *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
  *     the outlined `Wordmark`, A21 clause 3) linked to the locale home, the eight category links
  *     (spec 008 §14 A14) and the "Send flowers" pill to the home's sentence (`#send`). Desktop
- *     draws them in one 82 px row; mobile draws the logo and the pill in a 64 px row and the same
- *     eight links below it as a horizontally scrolling row of 44 px chips.
+ *     draws them in one 82 px row; from `md` to `xl` the logo and the pill share a 64 px row and the
+ *     same eight links sit below it as a horizontally scrolling row of 44 px chips;
+ *  3. **the phone** (below `md`, spec 004 §14 A24 clause 3, AC-47; TASK-195) — the logo and the
+ *     **Menu** only, 64 px plus the rule. No notice bar: `MenuSheet` holds the links, Send
+ *     flowers, the switcher, the currency and the help line, as `chrome-mobile.dc.html` round 2
+ *     draws them.
  *
  * **Every entry with no page is absent** (AC-14 as §14 A20 amends it; TASK-173). An entry is drawn
  * exactly when `./header-model.ts` resolves it to a URL; this file has no `published` branch, so a
- * go-live is a data flip in `src/config/site-links.ts`. No search, no account cluster, no basket,
- * no menu button: each would be a control that does nothing.
+ * go-live is a data flip in `src/config/site-links.ts`. No search, no account cluster, no basket:
+ * each would be a control that does nothing. The phone's Menu opens something real (A24 clause 3
+ * lifts A20 clause 2's omission of it).
  *
- * **Zero client JavaScript and a reserved box** (AC-7). One Server Component, no island, no
- * `<button>`: the box the first paint shows is the final box, so the header's CLS is 0. The notice
+ * **A reserved box, the same before and after hydration** (AC-7). One Server Component and no
+ * `<button>`; the Menu is a native disclosure, and its one island (`MenuEscape`, `Esc` with
+ * JavaScript on) renders nothing: the box the first paint shows is the final box, so the header's
+ * CLS is 0. The notice
  * bar is a sibling that scrolls away and `<header role="banner" data-fo-header>` is the sticky part
  * (§14 A4's addendum, mechanism iii). `HEADER_STICKY_HEIGHTS` carries the banner's two heights as
  * data for the e2e assertion.
@@ -43,6 +50,7 @@ import { Wordmark } from "../icons/Wordmark.tsx";
 import { Button } from "../primitives/Button.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
+import { MenuSheet } from "./MenuSheet.tsx";
 import {
   type HeaderItem,
   type HeaderListingHrefs,
@@ -192,7 +200,15 @@ export function SiteHeader({
     <>
       {/* 1. The notice bar: a plain, non-landmark sibling that scrolls away (§14 A4's addendum).
              `role="note"` is the artboards' semantics for it. */}
-      <div data-fo-header-band="utility" data-fo-utility role="note">
+      {/* Below `md` there is no strip at all (§14 A24 clause 3, AC-47): the languages, the
+          currency and the help line are in the Menu there. `display: none`, so it holds no box
+          and no accessibility node on a phone. */}
+      <div
+        className="max-md:hidden"
+        data-fo-header-band="utility"
+        data-fo-utility
+        role="note"
+      >
         {/* Two adjustments from the wrapper, so the primitive stays TASK-175's: the frame is the
             chrome's (content 56 px in at 1 440 px, like the header below it), and below `lg` the
             utilities are a **second centred row** instead of hidden. Spec 004 §14 A4 binds over
@@ -292,7 +308,7 @@ export function SiteHeader({
               between the logo and the pill on desktop. */}
           <nav
             aria-label={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
-            className={`col-span-2 row-start-2 -mx-(--gutter-s) min-w-0 md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0`}
+            className={`col-span-2 row-start-2 -mx-(--gutter-s) min-w-0 max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0`}
             data-fo-header-band="categories"
           >
             <ul
@@ -306,12 +322,36 @@ export function SiteHeader({
 
           {/* The one action: to the home's sentence (`#send`, TASK-177's form). */}
           <Button
-            className={`col-start-2 row-start-1 xl:col-start-3`}
+            className={`col-start-2 row-start-1 max-md:hidden xl:col-start-3`}
             href={headerSendHref(locale)}
             size="sm"
           >
             {t("nav.send")}
           </Button>
+
+          {/* Below `md`: the Menu, the header's second and last control (§14 A24 clause 3). It
+              holds the same entries, Send flowers, the switcher, the currency and the help line;
+              from `md` up it is `display: none` and the row, the pill and the strip draw them. */}
+          <MenuSheet
+            className="col-start-2 row-start-1 justify-self-end md:hidden"
+            currency={{
+              code: currency,
+              label: nav("currency.label", { currency }),
+            }}
+            help={{
+              href: `tel:${contact.phoneE164}`,
+              label: `${t("company.support.label")} ${contact.phoneDisplay}`,
+            }}
+            label={t("nav.menu.label")}
+            links={entries.map((item) => ({
+              id: item.id,
+              href: item.href,
+              label: registryLabel(t, item.labelKey),
+            }))}
+            navLabel={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
+            send={{ href: headerSendHref(locale), label: t("nav.send") }}
+            switcher={<LocaleSwitcher locale={locale} />}
+          />
         </div>
       </header>
     </>
