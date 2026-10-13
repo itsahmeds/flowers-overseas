@@ -283,8 +283,8 @@ describe("rollback 0011", () => {
     ]) {
       expect(down).toContain(`DROP VIEW IF EXISTS public.${view};`);
     }
-    expect(down).toContain(
-      "DROP TRIGGER IF EXISTS customer_self_update_guard ON public.customer;",
+    expect(down).toMatch(
+      /^DROP TRIGGER IF EXISTS customer_self_update_guard ON public\.customer;$/m,
     );
     for (const helper of helpers) {
       expect(down).toMatch(
