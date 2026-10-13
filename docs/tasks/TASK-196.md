@@ -86,7 +86,15 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-13 (to the orchestrator, for TASK-119 / PR 205): the `test.fail` "the language overlay
+  never covers the bar's action" (`tests/e2e/home-v3.spec.ts`) is right on this branch and
+  **wrong once PR 205 is in**. Checked against `task/TASK-119-language-popup` @ bd8b4e73: the
+  popup is `dialog[data-fo-language-popup]`, a top sheet below `md` (`fixed top-0 bottom-auto`,
+  `max-h-[260px]`), so at 390 × 844 its box ends by y 260 and cannot meet the bar (y 768 to 844);
+  the bottom banner it replaces is deleted. The case's overlay selector now matches the banner
+  **or** the open popup, so after PR 205 it cannot "fail as expected" on a missing banner: it finds
+  the popup, passes, and Playwright reports the unexpected pass. Whichever of PR 205 and this PR
+  lands second deletes the `test.fail` line. Open.
 
 ## Progress
 
@@ -95,6 +103,39 @@ One line per coherent step, newest last.
 - 2026-10-13: carry-forwards recorded; worktree from PR 208's tip (a138275d).
 - 2026-10-13 (paused by the founder, WIP): done: option A + phone cover in `HomeHero.tsx`, the bar on `page.tsx`, `--color-cover-fade` token with its unit contrast case (`tests/unit/home-cover-fade.test.tsx`, watched red at alpha 0.4), sections on the frame via `HOME_BLEED`, promise band to the round-2 cards, FAQ on paper-2; measured locally (1280x800 photo 145-800, card x56/text x92 at 1440, 390x844 = 65+703+76). Next: run `tests/e2e/home-v3.spec.ts` and the edited `frame-laptop-band.spec.ts` (home H1 now the title step; home joins T-33 above 1440) in the build slot; `pnpm gates:cheap`; codebase:map; rebase on PR 208's merge; ready + `ci:full` + `visual:baselines`; LCP from CI. Must know: the real desktop chrome is 145 px (artboard 119), so `--home-chrome` is 203/183/145 by breakpoint; the pre-TASK-119 suggestion banner covers the bar at 390 (`test.fail`, owner TASK-119); `docs/design/README.md` needs the difference row (phone line is the whole proposition).
 
+- 2026-10-13 (finisher): codebase map regenerated; the two e2e files run in the build slot on a
+  local `next start` of de8d6055 (load 15.9 at build start): `home-v3.spec.ts` 16 passed + 1
+  expected failure (the language overlay, see Escalations), after fixing the T-53 text case to skip
+  unpainted text (the closed phone menu's help link has a box at y 747 to 791; the case still goes
+  red with the foot padding removed, "Cookie settings" under the bar); `frame-laptop-band.spec.ts`
+  156 passed, 15 of them expected failures, none a home case (the home joined T-33 at 1512 and
+  1920 and passes). `docs/design/README.md` difference row added. `pnpm gates:cheap` PASS.
+  Waiting on PR 208's merge for the rebase onto `origin/main`.
+
 ## Result
 
-_Pending._
+**Partial: waiting on PR 208.** Not ready yet; the rebase (`git rebase --onto origin/main
+a138275d`), `ci:full`, `visual:baselines` and CI's LCP on the four locale homes come after PR 208
+merges.
+
+- Local e2e (build slot, `next start` of de8d6055, build began at load 15.9):
+  `tests/e2e/home-v3.spec.ts` 16 passed + 1 expected failure;
+  `tests/e2e/frame-laptop-band.spec.ts` 156 passed (15 expected failures, none on the home).
+- Screenshots (local render): `.claude/state/shots-196/home-desktop-1440x900-final.png`,
+  `home-phone-390x844-final.png`, and their `-fullpage-final` and `-consent-final` variants (main
+  checkout).
+
+```
+gates:cheap · 2f50788721584e57e32e8233a62de76feb1a1c49 · tree clean · base origin/main
+typecheck             exit 0 · 4.0 s
+lint                  exit 0 · 21.2 s
+format:check          exit 0 · 12.4 s
+i18n:check            exit 0 · 0.6 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 32.8 s · changed 86 + map 0 + always 3
+RESULT: PASS (89 files, 3065 tests)
+```
+
+A first `gates:cheap` run at load 81 timed out four unrelated unit cases (`url-pii`,
+`product-route`) at 5 s; the re-run at load 6.4 passed them.
