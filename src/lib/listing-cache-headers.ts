@@ -46,15 +46,15 @@
  * prerendered ISR response has its own `Cache-Control` replaced. The two hubs stopped being
  * hypothetical in the 2026-09-22 rebase — TASK-112 landed them as branches of the same depth-3
  * route file, prerendered, reading no `searchParams` — so their exclusion is now load-bearing
- * rather than theoretical, and asserted as such. The
- * depth-4 country category and country occasion URLs are **not** here, and the reason changed
- * under this branch rather than going away: TASK-110/111 landed those routes
- * (`[locale]/[segment]/[child]/[grandchild]/page.tsx`) while this task was in review, but they
- * read no `searchParams`, so they are **prerendered ISR** with a `Cache-Control` of their own.
- * Giving them this rule would replace a working ISR header, which is the one thing the paragraph
- * above exists to prevent. The handoff therefore moves rather than closes: whichever task makes
- * a depth-4 listing honour `?page=`/`?sort=` makes it dynamic, and *that* task adds its depth
- * here. `tests/unit/listing-cache-headers.test.ts` asserts both depth-4 shapes stay unmatched.
+ * rather than theoretical, and asserted as such.
+ *
+ * **Depth 4** (spec 008 §14 A15 (a); TASK-146, TASK-187). The country category
+ * (`/en/:country/flowers/:entity`) and the country occasion (`/en/:country/occasions/:entity`)
+ * now honour `?page=`/`?sort=` through the depth-4 parameter route, which renders per request, so
+ * their shapes are here too, exactly as A15 (a) lists them. On the prebuilt bare URL the rule
+ * replaces Next's ISR header with the same hour, as it already does for the shop root. A product URL
+ * (`/en/:country/product/:slug`) is not a listing and does not match: its third segment is the
+ * locale's `product` segment.
  *
  * A listing URL that 404s *inside* this shape (`/en/atlantis/flowers`) does get the header, and
  * that is correct rather than tolerated: the existence set is fixed at build time
@@ -73,9 +73,15 @@ export const LISTING_CACHE_CONTROL =
  * The listing path shapes, in Next's header-source syntax, derived from the locale registry so a
  * new launch locale brings its own segment with it and no segment is ever written twice.
  */
-export const LISTING_CACHE_PATHS: readonly string[] = launchLocales.map(
-  (locale) =>
-    `/${locale}/:country/${localeConfig(locale).pathSegments.shopCategory}`,
+export const LISTING_CACHE_PATHS: readonly string[] = launchLocales.flatMap(
+  (locale) => {
+    const { shopCategory, occasions } = localeConfig(locale).pathSegments;
+    return [
+      `/${locale}/:country/${shopCategory}`,
+      `/${locale}/:country/${shopCategory}/:entity`,
+      `/${locale}/:country/${occasions}/:entity`,
+    ];
+  },
 );
 
 /** Fresh objects on every call, matching `noindexHeaderRules()` and `mediaHeaderRules()`. */

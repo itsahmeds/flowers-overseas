@@ -396,6 +396,12 @@ describe("the routes really hand `parameterised` to `listingView()` (AC-15, TASK
     "[locale]/%5Fquery/[segment]/[child]/page.tsx",
   );
   const depth3 = sourceOf("[locale]/[segment]/[child]/page.tsx");
+  // Depth 4 (spec 008 §14 A15 (a); TASK-146, TASK-187): the same three-file shape, one level down.
+  const shared4 = sourceOf("[locale]/country-listing.tsx");
+  const parameterRoute4 = sourceOf(
+    "[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx",
+  );
+  const depth4 = sourceOf("[locale]/[segment]/[child]/[grandchild]/page.tsx");
 
   /** The argument text of every `name(…)` call in `source`, by balancing parentheses. */
   const argumentsOfCallsTo = (source: string, name: string): string[] => {
@@ -443,7 +449,14 @@ describe("the routes really hand `parameterised` to `listingView()` (AC-15, TASK
   it("keeps each render whole through the comment strip", () => {
     // The tripwire for the stripper documented above: a strip that eats source almost always eats
     // a brace with it.
-    for (const source of [shared, parameterRoute, depth3]) {
+    for (const source of [
+      shared,
+      parameterRoute,
+      depth3,
+      shared4,
+      parameterRoute4,
+      depth4,
+    ]) {
       for (const render of rendersOf(source)) {
         const where = nameOf(render);
         const opens = (render.match(/\{/gu) ?? []).length;
@@ -556,5 +569,73 @@ describe("the routes really hand `parameterised` to `listingView()` (AC-15, TASK
         ).not.toContain(term);
       }
     }
+  });
+  it("renders the two depth-4 listings from the request they are handed, and goes red if a pass-through is cut (AC-15, AC-29)", () => {
+    const renders = rendersOf(shared4).filter((render) =>
+      render.includes("listingView("),
+    );
+    expect(renders.map(nameOf)).toEqual([
+      "countryListingMetadata",
+      "CountryListing",
+    ]);
+    expect(argumentsOfCallsTo(shared4, "listingView")).toHaveLength(2);
+    for (const render of renders) {
+      const where = nameOf(render);
+      const [call, ...more] = argumentsOfCallsTo(render, "listingView");
+      expect(more, where).toEqual([]);
+      expect(pageTypeOf(call ?? ""), where).toBe("match.kind");
+      for (const term of ["page", "sort", "parameterised"]) {
+        expect(call, `${where}: ${term}`).toMatch(
+          new RegExp(`\\b${term}:\\s*request\\.${term}\\b`, "u"),
+        );
+      }
+      expect(
+        render.slice(0, render.indexOf("{", render.indexOf(")"))),
+        where,
+      ).toMatch(/\brequest\b/u);
+      expect(render, where).not.toMatch(/\bconst request\b/u);
+    }
+  });
+
+  it("parses the depth-4 parameter route's request from the request's own query string, in both renders", () => {
+    const [query, ...others] = argumentsOfCallsTo(
+      parameterRoute4,
+      "listingRequest",
+    );
+    expect(others).toEqual([]);
+    expect(query).toBe("await searchParams");
+    const renders = rendersOf(parameterRoute4);
+    expect(renders.map(nameOf)).toEqual(["generateMetadata", "ParameterRoute"]);
+    for (const render of renders) {
+      const where = nameOf(render);
+      expect(argumentsOfCallsTo(render, where)[0] ?? "", where).toContain(
+        "searchParams",
+      );
+      expect(render, where).toContain(
+        "const request = await listingQuery(searchParams)",
+      );
+    }
+    const [metadata, page] = renders;
+    expect(
+      argumentsOfCallsTo(metadata ?? "", "countryListingMetadata"),
+    ).toEqual(["match, request"]);
+    expect(page).toMatch(
+      /<CountryListing match=\{match\} request=\{request\} \/>/u,
+    );
+  });
+
+  it("keeps the prebuilt depth-4 route free of the query string (spec 008 AC-29, A15 (a))", () => {
+    // One `searchParams` here makes every country category, country occasion and product page
+    // per-request, and the router's 404 gate stops holding at depth 4.
+    expect(depth4).not.toMatch(/\bsearchParams\b/u);
+    // The listings here are the bare URL: an empty request, handed to the shared head and body.
+    expect(argumentsOfCallsTo(depth4, "countryListingMetadata")).toEqual([
+      "match, listingRequest()",
+    ]);
+    expect(depth4).toMatch(
+      /<CountryListing match=\{match\} request=\{listingRequest\(\)\} \/>/u,
+    );
+    // No listing call of its own is left to drift from the shared module.
+    expect(argumentsOfCallsTo(depth4, "listingView")).toEqual([]);
   });
 });

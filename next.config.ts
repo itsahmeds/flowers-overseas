@@ -11,6 +11,7 @@ import { listingCacheHeaderRules } from "./src/lib/listing-cache-headers";
 import {
   listingRewriteRules,
   parameterRouteHeaderRules,
+  parameterisedHubHeaderRules,
 } from "./src/lib/listing-rewrites";
 import {
   appEnvironment,
@@ -98,6 +99,10 @@ const headerRules = [
   // this source does not match. After `noindexHeaderRules()`, so its value is the one served on a
   // direct hit (`src/lib/listing-rewrites.ts`; TASK-170, `/review 143`).
   ...parameterRouteHeaderRules(),
+  // `X-Robots-Tag: noindex, follow` on a hub address that carries a listing key: the hubs honour
+  // no parameter and are served their prebuilt document, so the header supplies AC-15's
+  // `noindex` half that document cannot (`src/lib/listing-rewrites.ts`; TASK-146).
+  ...parameterisedHubHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,

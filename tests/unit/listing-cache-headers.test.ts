@@ -29,11 +29,17 @@ describe("`Cache-Control` for the listing routes (§5.4, AC-22)", () => {
 
   it("names every launch locale's own shop segment and no literal", () => {
     expect(LISTING_CACHE_PATHS).toStrictEqual(
-      launchLocales.map(
-        (locale) =>
-          `/${locale}/:country/${localeConfig(locale).pathSegments.shopCategory}`,
-      ),
+      launchLocales.flatMap((locale) => {
+        const { shopCategory, occasions } = localeConfig(locale).pathSegments;
+        // The shop root, and since spec 008 §14 A15 (a) the two depth-4 listings.
+        return [
+          `/${locale}/:country/${shopCategory}`,
+          `/${locale}/:country/${shopCategory}/:entity`,
+          `/${locale}/:country/${occasions}/:entity`,
+        ];
+      }),
     );
+    expect(LISTING_CACHE_PATHS).toContain("/de/:country/anlaesse/:entity");
     // The German and Polish segments are the registry's, so a locale whose URL words change
     // brings its cache rule with it (`/de/:country/blumen`, `/pl/:country/kwiaty`).
     expect(LISTING_CACHE_PATHS).toContain("/de/:country/blumen");
@@ -54,6 +60,10 @@ describe("`Cache-Control` for the listing routes (§5.4, AC-22)", () => {
     expect(anyMatch("/en/poland/flowers")).toBe(true);
     expect(anyMatch("/en-gb/poland/flowers")).toBe(true);
     expect(anyMatch("/pl/polska/kwiaty")).toBe(true);
+    // Depth 4 honours `?page=`/`?sort=` through its parameter route since A15 (a).
+    expect(anyMatch("/en/poland/flowers/roses")).toBe(true);
+    expect(anyMatch("/de/polen/blumen/rosen")).toBe(true);
+    expect(anyMatch("/en-gb/poland/occasions/mothers-day")).toBe(true);
     // The corridor page (third segment is the country), the category hub (the shop segment is
     // second, not third), the destinations hub, the locale home and TASK-110/111's depth-4
     // listing URLs are all prerendered: none may lose its own `Cache-Control` to this rule. The
@@ -68,8 +78,8 @@ describe("`Cache-Control` for the listing routes (§5.4, AC-22)", () => {
       "/en/occasions/mothers-day",
       "/en/send-flowers-to",
       "/en",
-      "/en/poland/flowers/roses",
-      "/de/polen/blumen/rosen",
+      "/en/poland/product/amber-hour",
+      "/de/polen/produkt/amber-hour",
     ]) {
       expect(anyMatch(path), path).toBe(false);
     }
