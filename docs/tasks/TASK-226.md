@@ -269,6 +269,8 @@ PR 225 (draft), branch `task/TASK-226-buyer-copy-no-relay`. Status `blocked` on 
 
 - **Batch 2:** the de drafts avoid "Blumen", which `home-honesty`'s partner-name shape reads as a shop name, and the pl FAQ draft avoids "dostaw" (`ui-home` H3). `seed/snapshot/product_translation.json` is regenerated (`pnpm seed:diff --write`).
 
+- **CI on 95b68a50:** e2e has 1794 passed, including all 52 relay-scan cases. 5 failed: 4 are the language-popup "beta" mark (the E1 cascade), and 1 is an unexpected pass. `/en-gb/send-flowers-to` at 1280 × 800 now has its primary action in view, because R4 shortened the hub intro, so the `destinationsHub` row leaves `PENDING` in `tests/e2e/frame-laptop-band.spec.ts`, as that file asks. Visual fails as E5 expects. test-unit and test-integration fail with the E1 cascade.
+
 ### Every `en`/`en-gb` key and content or seed field changed, with its final text (for the founder's record script)
 
 Everything below ships `reviewed: false`, apart from the 14 guide files: corridor review is per file and they keep their file-level `reviewed: true`, so the record script should restamp `reviewedAt`. `de`/`pl` carry `source: machine` drafts for every message key below.
