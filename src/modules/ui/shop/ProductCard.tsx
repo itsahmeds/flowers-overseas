@@ -40,7 +40,8 @@
  * taken is decided by the **shape**, through `hasCardPrice()`: a country-scoped card cannot reach
  * the priceless branch, because its schema has no way to be missing a price.
  *
- * Server Component. No state, no client bytes (§5.4).
+ * Server Component. No state, no client bytes (§5.4). Its hover motion (motion 6: a 2 px lift and a
+ * 3 % photo zoom, transform only) is CSS on `data-fo-card-motion`, and the priority card has none.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
@@ -227,8 +228,12 @@ export function ProductCard({
         body
       ) : (
         <a
-          className="group ease-photo flex flex-col [&_img]:transition-transform [&_img]:duration-(--duration-photo) motion-safe:hover:[&_img]:scale-[1.035]"
+          className="group flex flex-col"
           href={card.href}
+          // Motion 6 (spec 004 §14 A24 clause 9; TASK-194): the card lifts 2 px and its photograph
+          // zooms 3 % inside its clipped box on a fine pointer's hover (`globals.css`). Never on
+          // the priority card: the LCP photograph and its ancestors carry no transition (AC-44).
+          {...(priority ? {} : { "data-fo-card-motion": "" })}
         >
           {body}
         </a>
