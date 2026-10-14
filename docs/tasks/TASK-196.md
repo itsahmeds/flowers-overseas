@@ -82,6 +82,12 @@ One dated bullet per `/review`, newest last.
   a page uses one; on the phone cover the bar is part of the first screen by design (the
   Binding's viewport equation, 65 + 703 + 76), so the home follows the Binding.
 
+- 2026-10-14 (from PR 212 review round 1, nits): `ProofRow.tsx` has a doc-comment line over 100
+  columns and one `SentencePicker.tsx` comment line is long (Prettier does not wrap comments).
+  The breaker's round-2 list: German and Polish at 320 × 568 and 360 × 640, the consent sheet with
+  the popup and the bar at 640 px height, one preload per width on the four locales, a Playwright
+  rerun of the e2e mutations it read but could not run.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -126,30 +132,29 @@ One line per coherent step, newest last.
   passed and 15 expected failures (none on the home); the language-popup case passes and its
   `test.fail` mark is gone.
 
+- 2026-10-14 (round-1 fixes): review FAIL items and breaker holes 1–3 closed, each watched red.
+  The fade's last stop equals `COVER_FADE_RAMP_PX` and the `pt-` padding (unit, on the class;
+  e2e, on the computed `background-image`): red at `_220px`, `_400px` and `pt-[40px]` (unit) and at
+  `_220px` (e2e, a mutated build: stop 220 against padding 96). T-51 at 768 × 1024, 1024 × 768 and
+  1180 × 820: photo top at the chrome's foot, foot inside the viewport, card on the photo; red with
+  md `--home-chrome` at 3px (768 × 1024, foot 1028.6). 1024 × 700: the card stays on the photo
+  below the header (no spill); the 560 px floor runs past the foot by design. The
+  `NON_SINGLE_COLOUR_TOKENS` entry is asserted to name the contrast test: red with it dropped.
+  Rebased on f780a389; row `in_review`.
+
 ## Result
 
-**Partial: waiting on PR 208.** Not ready yet; the rebase (`git rebase --onto origin/main
-a138275d`), `ci:full`, `visual:baselines` and CI's LCP on the four locale homes come after PR 208
-merges.
+**In review on PR 212.** Rebased on `origin/main` (PR 208, 205, 209, 206, 210, 216 merged).
 
-- Local e2e (build slot, `next start` of de8d6055, build began at load 15.9):
-  `tests/e2e/home-v3.spec.ts` 16 passed + 1 expected failure;
-  `tests/e2e/frame-laptop-band.spec.ts` 156 passed (15 expected failures, none on the home).
+- CI on 9d15de08 (run 38515671336 and its siblings): every job green with `ci:full`.
+- LCP in CI's lighthouse, median of 3 (run 38468596768, attempt 2): `/en` 1 969 ms, `/en-gb`
+  1 875, `/de` 1 904, `/pl` 1 745, all under the 2 000 ms budget; `/en` is the first URL measured
+  (the orchestrator logged the first-URL penalty and the missing `lighthouseci` artifact as
+  framework gaps).
+- Visual baselines: the whole linux set from `visual-baselines` run 38515671452, `--verify` 106 of
+  106 (it also repaired ten manifest entries PR 206 left stale); the home's from run 38461061867
+  (59 PNGs, each opened).
+- Local e2e in the build slot: `home-v3.spec.ts` 21 passed; `frame-laptop-band` and `shell` 187
+  passed with 15 expected failures, none on the home.
 - Screenshots (local render): `.claude/state/shots-196/home-desktop-1440x900-final.png`,
-  `home-phone-390x844-final.png`, and their `-fullpage-final` and `-consent-final` variants (main
-  checkout).
-
-```
-gates:cheap · 2f50788721584e57e32e8233a62de76feb1a1c49 · tree clean · base origin/main
-typecheck             exit 0 · 4.0 s
-lint                  exit 0 · 21.2 s
-format:check          exit 0 · 12.4 s
-i18n:check            exit 0 · 0.6 s
-check:no-db           exit 0 · 0.2 s
-codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 32.8 s · changed 86 + map 0 + always 3
-RESULT: PASS (89 files, 3065 tests)
-```
-
-A first `gates:cheap` run at load 81 timed out four unrelated unit cases (`url-pii`,
-`product-route`) at 5 s; the re-run at load 6.4 passed them.
+  `home-phone-390x844-final.png`, `home-phone-390x844-popup-final.png` (main checkout).

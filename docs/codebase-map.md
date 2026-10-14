@@ -24,7 +24,7 @@ task actually touches.
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +16 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `unit/catalog-occasion-page.test.tsx`, `unit/checkout-ui-components.test.tsx`, `unit/checkout-ui-islands.test.ts` +40 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx`, `unit/checkout-ui-components.test.tsx` +41 |
 
 ## Config (`src/config/`)
 
