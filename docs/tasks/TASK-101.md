@@ -23,7 +23,25 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 180` round 1 (2026-10-14, FAIL on `8a9c0fca`):** change 1, `isForeign` let a site-wide Cache Everything through (`http.host ne "media…"`): **fixed** in `ea8cf473` (host-only match, `hostsMatched`), cases "hole 13 (/review 180 change 1)". Change 2, CI green on the head: the orchestrator's re-run. Carried, not this task's: (1) E7's credentialed run recorded here before TASK-104 flips the apex; (3) TASK-104 C1, consider `bypass_by_default` over `respect_origin`; (4) TASK-104, an e2e case that `RSC: 1` cannot poison the HTML entry; (5) the payments/webhook task, `/api/webhooks/*` shares the 10-per-10-s limit; (6) `docs/framework/gaps.md`, the codebase map has 33 bytes of headroom; (7) the PR body's e2e count (fixed: 15). Nit 2 (`custom_key.user`) is closed as hole 15.
+- **Breaker round 1 (8a9c0fca), HOLES 17**, each now closed by a case in `tests/contract/cloudflare-edge-check.test.ts` that goes red on the breaker's mutation (the mutation run is in `## Progress`):
+  1. M53: nothing tested that the CLI with a token diffs the edge (`edge: undefined`) → "the CLI with a token reads the live edge (hole 1)".
+  2. M12: a dropped bypass rule untested → "hole 2: the bypass rule dropped", "…no longer bypassing".
+  3. M13 + J01 + J02: rule stages unlinted/untested (bypass `now`, rate limit `cutover`, documents `now`) → lint gains two stage checks; three "hole 3" cases.
+  4. M31: rules pending/active logic untested → "hole 4: before the cutover a cutover rule absent live is pending…".
+  5. M33: live `action` drift untested → "hole 5: the rate limit's action switched from block".
+  6. M18, M19: a second redirect, or its host changed → two "hole 6" cases.
+  7. M02, M04: `origin_cache_control: false` and header-in-cache-key → two "hole 7" cases.
+  8. M49, M50: geo coverage only `ip.src.country` → "hole 8" cases for `cf-ipcountry` and `ip.geoip.asnum`.
+  9. M06: phase-order lint untested → "hole 9: the phases out of order".
+  10. M08, M10: duplicate dns name and duplicate rule description → two "hole 10" cases.
+  11. M46, M47, M48: `edgeGet` 401, non-2xx/`success:false`, allow-list refusal → four "edgeGet's refusals (hole 11)" cases.
+  12. M27: two Railway CNAMEs at one name → "hole 12: two Railway CNAMEs at one name → red on both" (closed, not put up for acceptance).
+  13. S1/S2: `isForeign` read "names the media host" as "applies only to it" → fixed (`hostsMatched`); three "hole 13" cases.
+  14. S3: a second live rule with a declared name never compared → fixed (`N live rules carry this name`); "hole 14".
+  15. S4: `custom_key.user.{geo,lang}` passed the lint → fixed (`cacheRuleHazards`); "hole 15" lint and live cases.
+  16. G1: `https://flowersoverseas.com.` passed the production guard → fixed (`tests/e2e/cloudflare-edge-target.ts`, root dot stripped); "the edge suite's production guard (hole 16)", including a pin that the spec's first hook throws on it.
+  17. T-16 probed 7 of the 42 bypass clauses → the e2e walks `bypassProbes(...)`, all 42; "the T-16 e2e probes every bypass clause (hole 17)".
 
 ## Escalations
 
