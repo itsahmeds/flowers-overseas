@@ -12,6 +12,9 @@
  *
  * `pageAlternatePaths()` is the page type's own existence answer, the builders each route already
  * hands the language popup, so a link never names a page the router refuses.
+ *
+ * @purpose The @switcher slot's switcher: this page in each locale
+ * @spec 003
  */
 import { setRequestLocale } from "next-intl/server";
 import type { ReactElement } from "react";

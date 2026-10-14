@@ -1,4 +1,9 @@
-/** The locale home's language links: every locale's home (TASK-233; `../page-switcher.tsx`). */
+/**
+ * The locale home's language links: every locale's home (TASK-233; `../page-switcher.tsx`).
+ *
+ * @purpose Language links of the locale home
+ * @spec 003
+ */
 import type { ReactElement } from "react";
 
 import { PageLocaleSwitcher } from "../page-switcher";
