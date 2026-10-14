@@ -27,4 +27,12 @@ Branch `task/TASK-024-jobs-internal-probes`. pg-boss runs on `DATABASE_URL_UNPOO
 
 ## Result
 
-_Pending._
+PR #224. AC-21, AC-23 and AC-18's last clause (the PR 210 carry-forward) covered.
+
+- `db/migrations/0012_pgboss.sql` + `.down.sql`: schema `pgboss` owned by `app_owner`, pg-boss 12.37.1's construction plan (schema version 45) verbatim minus `BEGIN`/`COMMIT`/`CREATE SCHEMA`; `app_web` gets `USAGE` only; rollback `DROP SCHEMA pgboss CASCADE`.
+- `src/jobs/index.ts` (registry: 4 registered, 8 declared-only, versioned `{ v, requestId, payload }` envelope), `runtime.ts` (`migrate: false`, no timers, one instance per request, `runTick`, `probeDbHealth`), `internal.ts` (secret gate, headers, schemas), `handlers.ts` (empty; one entry per later task); the two route files.
+- `scripts/db-check.ts`: `VENDOR_SCHEMAS` (pgboss out of the Drizzle drift rule), `0012` on `DYNAMIC_SQL_ALLOWED`, the "pg-boss present" line (AC-21).
+- Tests. Unit: `jobs-registry` 15, `jobs-runtime` 10, `jobs-internal` 13, `health-no-db` 3, plus `db-check` +4 and updated pins in `db-check`, `db-check-recipient-email`, `db-migrate`, `schema-media`, `schema-i18n-geo`. Integration: `jobs-pgboss` 8, the T-18 pgboss case in `rls-policies`, the pgboss census in `migrations-round-trip`.
+- Local evidence: PostgreSQL 16.14 (embedded-postgres binaries, 127.0.0.1:54424, stopped by PID 23213, data dir deleted; Neon not touched). Integration: 14 files passed, 4 skipped; 121 tests passed, 32 skipped. `pnpm gates:cheap` on 254d66b4: typecheck, lint, format:check, i18n:check, check:no-db and codebase:map all exit 0. In the tests step, 4 cases timed out at load average 18 to 26 (`url-pii`, `product-route`, two in `dev-os`). Run alone they pass (`url-pii` 15/15 under `CI=1`, `dev-os` 71/71). The dev-os leftover check reads the shared tmpdir, which other agents write to.
+- No expensive gate run locally.
+- Not wired: no cron calls `/api/internal/jobs/tick` yet. A one-minute tick would keep the Neon compute from ever auto-suspending.
