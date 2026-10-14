@@ -118,10 +118,8 @@ and freesias arrive in quantity and prices for them fall to their lowest.
 
 ## What we can honestly tell you today
 
-We have not begun delivering in Romania. We have written this guide, chosen the
-cities we would like to start in, and begun talking to shops. Until one of them has
-agreed to work with us, we will not put a date, an hour or a promise of arrival on
-this page, because a promise without an arrangement behind it is just words.
+We are not delivering in Romania yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.
 
 When that changes, this section changes first: which cities we reach, what happens
 on the day, and who to speak to if something has gone wrong.

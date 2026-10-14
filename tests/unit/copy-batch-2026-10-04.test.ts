@@ -36,8 +36,7 @@ const APPROVED: Readonly<Record<string, string>> = {
     "Message us any time, 24/7 — we reply within a few hours.",
   "footer.signoff": "With love, from wherever you are.",
   // TASK-177 (PR 174): the home strings of the same batch, attested on `main`.
-  "home.destinations.body":
-    "We open each country only once we have local florists there we can stand behind.",
+  // `home.destinations.body` left this batch: the founder replaced it on 2026-10-14 (TASK-226, R3).
   "home.proof.guarantee.body":
     "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
   "home.proof.guarantee.title": "Fresh-flower promise",

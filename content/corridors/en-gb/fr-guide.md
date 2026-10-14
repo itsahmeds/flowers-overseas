@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "A single figure in pounds sterling, VAT and delivery already included, shown before you enter a card. That is what leaves your account. No conversion is applied afterwards, and no price of any kind travels with the flowers."
   - q: "Who is the order with, and who do I chase?"
-    a: "Your contract is with us rather than with the florist who ties the flowers, so any complaint comes to us in English rather than to a shop abroad. Since we are not yet delivering in France there is nothing to buy today, and we would rather say so."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver to France today?"
     a: "Not yet. Ordering for France is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
@@ -129,6 +129,6 @@ something is wrong you take it up with us, in English.
 ## What we can honestly tell you today
 
 We have not begun delivering in France. This page exists because the etiquette is
-worth knowing whoever carries the flowers. We are choosing shops. Until one of them
+worth knowing. We are choosing shops. Until one of them
 has agreed to work with us, nothing here will claim an arrival, and when that
 changes this is the section that will change first.

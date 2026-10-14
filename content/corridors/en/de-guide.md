@@ -118,11 +118,8 @@ actually matters.
 
 ## What we can honestly tell you today
 
-We are not making deliveries in Germany. We have written this guide, we have
-decided which cities we want to begin in, and we are talking to the shops we would
-like to make your flowers. Until one of them has said yes, there will be no date,
-no time and no promise on this page, because a promise on a website is worth
-exactly as much as the arrangement standing behind it.
+We are not delivering in Germany yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.
 
 When that changes, this page changes with it: it will name the cities we cover,
 explain what happens on the day, and tell you who to speak to when something goes

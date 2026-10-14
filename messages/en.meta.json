@@ -113,11 +113,8 @@
   },
   "catalog.addon.chocolates.description": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "686cd0718cd83ca2574305f3d31a8b2d9d9cd595118c48b9329e17348dea65a7",
-    "retained": true
+    "reviewed": false,
+    "sourceHash": "31330a0a100f175ba50c020054e8051cae2d27385697a99a32c3672fb24945cb"
   },
   "catalog.addon.chocolates.name": {
     "source": "human",
@@ -129,11 +126,8 @@
   },
   "catalog.addon.plush.description": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "2cf94ecd5b4d6c1d2bb534274305fb420b3bfbdf61173af81d8d8243713df578",
-    "retained": true
+    "reviewed": false,
+    "sourceHash": "ef59975ea328489ca28f5751440e188e8c7db5f1689bdf9b7ab3db7d1fcbc8ee"
   },
   "catalog.addon.plush.name": {
     "source": "human",
@@ -161,11 +155,8 @@
   },
   "catalog.addon.wine.description": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (plan/10 §1.1 label table, spec 005 §7; TASK-062)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "2d0fb6986f1b79819a349cd5d21cd5a66d73c22e89cb7dad32a501ad849a615d",
-    "retained": true
+    "reviewed": false,
+    "sourceHash": "a7f94648e0fc73b4355bb1c431f4e2c6790f93bb0caf30dda32c0080b752d422"
   },
   "catalog.addon.wine.name": {
     "source": "human",
@@ -1324,7 +1315,7 @@
   "checkout.privacy.demoNotice": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "ebc507ec87fccd23e54c001220df48a778dc9f532d9af8377fd2c41f50c2f9b5"
+    "sourceHash": "e2e71e685a2e83d7617daa572d741f50f8b0017f92de6ece8b6de4d5bb6772a9"
   },
   "checkout.progress.card": {
     "source": "human",
@@ -1985,10 +1976,8 @@
   },
   "corridor.shop.body": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/corridor-country-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-091)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "5adc0030ef00bfff8b0d226545af84bcdbea8ecd3a74d64c6114741b70079d4d"
+    "reviewed": false,
+    "sourceHash": "06e6416e6c347f4421ce59f86ef313a813aaae25c4314cdbc9667d90520bdea9"
   },
   "corridor.shop.cta": {
     "source": "human",
@@ -2048,10 +2037,8 @@
   },
   "corridor.steps.guide.twoBody": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/corridor-country-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-091)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "2f56f87f378efd3f72e970c5df3bed349d5ee6e18e349bb758ee7504eee464f6"
+    "reviewed": false,
+    "sourceHash": "6c9c87529c4b721c6fab13bb34421bc79d87ce8b0b5cb0e738c0e65b60d65bfc"
   },
   "corridor.steps.guide.twoTitle": {
     "source": "human",
@@ -2104,10 +2091,8 @@
   },
   "corridor.steps.live.twoBody": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/corridor-country-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-091)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "a02e462d31fe3ead618b80d1bc0767a467f1976ccb15ad3d484e31219fca2fa3"
+    "reviewed": false,
+    "sourceHash": "6c9c87529c4b721c6fab13bb34421bc79d87ce8b0b5cb0e738c0e65b60d65bfc"
   },
   "corridor.steps.live.twoTitle": {
     "source": "human",
@@ -2333,10 +2318,8 @@
   },
   "destinationsHub.intro": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "2dcd3f39bd10a427d987e7e4587e22a1f005feb5c1e82807eabcd0a3f8b92239"
+    "reviewed": false,
+    "sourceHash": "359d44d09dfeadd1c76b748e58d458f2d01a0cec8418607920fc7dee767a121a"
   },
   "destinationsHub.noGuide": {
     "source": "human",
@@ -2473,10 +2456,8 @@
   },
   "faq.photo.answer": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "bf43940d1a0e145b4f17e921b12638db8e54982ff016da4be53efb534916a212"
+    "reviewed": false,
+    "sourceHash": "5997f455a721e68dfe1c330fba1164ba5b542e57850709f0137b9696a3837308"
   },
   "faq.photo.question": {
     "source": "human",
@@ -2710,10 +2691,8 @@
   },
   "home.destinations.body": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "18caa7bb0f6e2efe5927fade6ab683292d8faec856548c3f03263d1e0963c408"
+    "reviewed": false,
+    "sourceHash": "80e78289f75e76d0af722f153af253f7a7b9c370b0fb52d9267afd2175081831"
   },
   "home.destinations.eyebrow": {
     "source": "human",
@@ -2831,11 +2810,9 @@
     "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "home.proof.local.body": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "7133b5a36ec83a4b09d4bcf2a56b28410413e9c1e615c072cc8aeea346de59d2"
+    "reviewed": false,
+    "sourceHash": "80613144cb7473266133055067db744a9ec479ab98b14b6960ad7e31e287c8f0"
   },
   "home.proof.local.title": {
     "reviewed": true,
@@ -3738,10 +3715,8 @@
   },
   "shop.category.seoDescription": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-category-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-110)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "f57eac20bf34fd1bce15329639bd47a20dd63c4ca927c32031f9c011b187054d"
+    "reviewed": false,
+    "sourceHash": "658adafec25b6c9b2500e66a7bc9e81dc812b8e84f5a407a7a79105dc2b9b776"
   },
   "shop.category.seoTitle": {
     "source": "human",
@@ -4018,10 +3993,8 @@
   },
   "shop.root.seoDescription": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "b96037055332670e868c2347019359052201e11aca886caef50cfed4da018cbb"
+    "reviewed": false,
+    "sourceHash": "61b9fb4381233e5da9ca423733f00e0dc82851eef38ef1e675432f22b153c866"
   },
   "shop.root.seoTitle": {
     "source": "human",

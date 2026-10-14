@@ -506,14 +506,12 @@
       "locale": "en",
       "name": "Season's Hand",
       "slug": "seasons-hand",
-      "descriptionMd": "Whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage. Eighteen stems as standard, with twelve and twenty-four sizes. A birthday bouquet or a just-because delivery when you would rather trust the shop than the catalogue. The whole mix is our florist's choice on the day. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage. Eighteen stems as standard, with twelve and twenty-four sizes. A birthday bouquet or a just-because delivery when you would rather trust our florist. The whole mix is our florist's choice on the day. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Season's Hand — hand-tied seasonal bouquet",
       "seoDescription": "Whatever is at its peak that week, tied by hand in mixed colour. A birthday or just-because delivery chosen by our florist.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "ba36c1bb9e94352d6e2e9ede1f5a867c327bcc6f056d30cecf2fd93c226842e1"
+      "reviewed": false,
+      "sourceHash": "a1ba10a00854552a98e7652cf4d386271a3a51150fa12c4b7f4e2b53de3e131c"
     },
     {
       "entity": "product",
@@ -836,14 +834,12 @@
       "locale": "en",
       "name": "Moth Orchid Pink",
       "slug": "moth-orchid-pink",
-      "descriptionMd": "One pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered. A single size. Sent for birthdays, Mother's Day and thank yous, and it asks for very little care. The plant is always a pink moth orchid; shade ranges from pale to deep, and the pot depends on the shop. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "One pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered. A single size. Sent for birthdays, Mother's Day and thank yous, and it asks for very little care. The plant is always a pink moth orchid; shade ranges from pale to deep, and the pot depends on the day. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Moth Orchid Pink — pink orchid plant in a pot",
       "seoDescription": "One pink moth orchid, staked and potted, in bud and flower. Easy care. For birthdays, Mother's Day and thank yous.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "d9f7638a434ffe312b91585e94c333df605fa2d26e868ba8821416dc40fed22c"
+      "reviewed": false,
+      "sourceHash": "bd983aad73a9ae4ed74e0970aea5870ab9e451fe00dd169d6bfad3f898e9f003"
     },
     {
       "entity": "product",
@@ -1136,14 +1132,12 @@
       "locale": "en",
       "name": "Welcome Baby Pink + Plush",
       "slug": "welcome-baby-pink-plush",
-      "descriptionMd": "A pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for new babies and congratulations. We hold the pink scheme; the flowers and the toy come from our florist's own shop, and the toy is new, tagged and suitable from birth. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "A pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for new babies and congratulations. We hold the pink scheme; the flowers and the toy come from our florist, and the toy is new, tagged and suitable from birth. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Welcome Baby Pink + Plush — pink flowers and a soft toy",
       "seoDescription": "A pink and white bouquet with a small soft toy for a new baby. Eighteen stems as standard. Toy new, tagged and suitable from birth.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "a5f4c30fdadae86c63062b826343efc2453f7c5ac4e9ebb3fba58b3a3f6ede1b"
+      "reviewed": false,
+      "sourceHash": "530191b0d53ad388a7af41ef5ed50b87e8afa2850de050656131cea4fcbd6ec7"
     },
     {
       "entity": "product",
@@ -1196,14 +1190,12 @@
       "locale": "en",
       "name": "Peony Note + Vase",
       "slug": "peony-note-vase",
-      "descriptionMd": "Our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are. Fifteen stems as standard, nine or twenty-one available. Sent for anniversaries, weddings and romance in the peony months. The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are. Fifteen stems as standard, nine or twenty-one available. Sent for anniversaries, weddings and romance in the peony months. The pink scheme is held and the vase is included. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Peony Note + Vase — pink peonies and a glass vase",
       "seoDescription": "Our pink peony bouquet with a heavier glass vase included. Fifteen stems as standard. For anniversaries, weddings and romance.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "cf9e79dbadd0f6fd641b409d5bbdc9c7b4c3896278b2e4be39a9ff57e4c9aeec"
+      "reviewed": false,
+      "sourceHash": "7f0dc7dfc8661da37c1767f7dcb9bbbbf01013cb0c20ac7c115e81aee05891b2"
     },
     {
       "entity": "product",

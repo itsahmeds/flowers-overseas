@@ -259,6 +259,9 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    "catalog.addon.chocolates.description", // TASK-226, batch 2 (2026-10-14)
+    "catalog.addon.plush.description", // TASK-226, batch 2 (2026-10-14)
+    "catalog.addon.wine.description", // TASK-226, batch 2 (2026-10-14)
     // TASK-120's honest-chrome sweep (spec 004 §14 A19, `/review 70`) added eight of these: the
     // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
     // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
@@ -358,9 +361,14 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-226: the founder approved this text in chat on 2026-10-14 ("3 ok"); it waits here for
     // his own record run.
     "corridor.facts.orderBy.none",
+    "corridor.shop.body", // TASK-226, batch 2 (2026-10-14)
+    "corridor.steps.guide.twoBody", // TASK-226, batch 2 (2026-10-14)
+    "corridor.steps.live.twoBody", // TASK-226, batch 2 (2026-10-14)
     // TASK-226: the em dash replaced by a comma (founder, 2026-10-14: no em dashes); it waits
     // here for his own record run.
     "delivery.picker.live",
+    "destinationsHub.intro", // TASK-226, batch 2 (2026-10-14)
+    "faq.photo.answer", // TASK-226, batch 2 (2026-10-14)
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -371,10 +379,12 @@ describe("the shipped catalogues and manifests", () => {
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "footer.payment.methods",
+    "home.destinations.body", // TASK-226, batch 2 (2026-10-14)
     "home.howItWorks.choose.body",
     // TASK-226: the founder approved this text in chat on 2026-10-14 ("3 ok"); it waits here for
     // his own record run.
     "home.howItWorks.make.title",
+    "home.proof.local.body", // TASK-226, batch 2 (2026-10-14)
     "home.proof.photo.body",
     // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
     // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
@@ -413,6 +423,7 @@ describe("the shipped catalogues and manifests", () => {
     // ("Read more"), proposed copy that ships `reviewed: false` until the founder attests it.
     "product.eyebrowPhone",
     "product.readMore",
+    "shop.category.seoDescription", // TASK-226, batch 2 (2026-10-14)
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
@@ -431,6 +442,7 @@ describe("the shipped catalogues and manifests", () => {
     // each still ships `reviewed: false` until the founder's own script attests the exact value.
     "shop.pagination.pageOf",
     "shop.root.occasionPageLink",
+    "shop.root.seoDescription", // TASK-226, batch 2 (2026-10-14)
     "shop.root.tileCount",
     "shop.toolbar.reorderLabel",
   ];

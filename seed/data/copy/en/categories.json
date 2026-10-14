@@ -56,14 +56,12 @@
       "locale": "en",
       "name": "Funeral and sympathy flowers",
       "slug": "funeral-and-sympathy-flowers",
-      "descriptionMd": "Wreaths, sprays, a cross, a heart, grave bouquets and low memorial arrangements, in the forms each country expects. If you tell us the funeral home or the cemetery, we pass the details on and the timing is checked against the service. Sympathy flowers to a home are here too, for when a framed tribute would be too formal. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Wreaths, sprays, a cross, a heart, grave bouquets and low memorial arrangements, in the forms each country expects. Tell us the funeral home or cemetery and we time the delivery to the service. Sympathy flowers to a home are here too, for when a framed tribute would be too formal. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Funeral and sympathy flowers delivered across Europe",
       "seoDescription": "Wreaths, sprays, crosses, hearts, grave bouquets and memorial arrangements in the forms each country expects, timed to the service.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "709c11263e911c0c256c3eeaf79d59810888f74c4e71643e348cbd60011a6eb8"
+      "reviewed": false,
+      "sourceHash": "67e5e2fcacb91c07ac7803776370e01c376f72d5d3fd769541ccfeb08d7e74cc"
     },
     {
       "entity": "category",
@@ -71,14 +69,12 @@
       "locale": "en",
       "name": "Flowers and gift sets",
       "slug": "flowers-and-gift-sets",
-      "descriptionMd": "A bouquet with one thing added: chocolates, a glass vase, a balloon or a small soft toy, bought by the same florist who makes the flowers. Nothing is shipped separately, so the whole gift arrives at once and in one condition. Sets that contain food carry allergen information at checkout, and every price includes delivery and local tax. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "A bouquet with one thing added: chocolates, a glass vase, a balloon or a small soft toy, chosen to go with the flowers and delivered together. Nothing is shipped separately, so the whole gift arrives at once and in one condition. Sets that contain food carry allergen information at checkout, and every price includes delivery and local tax. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Flowers and gift sets — bouquets with chocolates, a vase or more",
       "seoDescription": "A bouquet with chocolates, a vase, a balloon or a soft toy, bought by the same florist. One delivery, one price, allergen details shown.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "347ebb5893ba0df1a7d380df7ae3e2ca06d3c46acbfe1efd55303db366241da1"
+      "reviewed": false,
+      "sourceHash": "2e4650bf4bcf439e753a2c5afc0d54b363dd053ff8d99957cda185a1f0daccdf"
     },
     {
       "entity": "category",

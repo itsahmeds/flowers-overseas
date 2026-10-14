@@ -50,12 +50,12 @@
       "locale": "de",
       "name": "Trauerfloristik",
       "slug": "trauerfloristik",
-      "descriptionMd": "Kränze, Gestecke, ein Kreuz, ein Herz, Grabsträuße und niedrige Trauergestecke, in den Formen, die in jedem Land erwartet werden. Wenn Sie uns das Bestattungsinstitut oder den Friedhof nennen, geben wir die Angaben weiter und stimmen die Lieferung auf die Trauerfeier ab. Blumen zum Beileid an eine Wohnadresse finden Sie hier ebenfalls, wenn ein förmliches Gesteck zu viel wäre. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Kränze, Gestecke, ein Kreuz, ein Herz, Grabsträuße und niedrige Trauergestecke, in den Formen, die in jedem Land erwartet werden. Nennen Sie uns das Bestattungsinstitut oder den Friedhof, und wir stimmen die Lieferung auf die Trauerfeier ab. Blumen zum Beileid an eine Wohnadresse finden Sie hier ebenfalls, wenn ein förmliches Gesteck zu viel wäre. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Trauerfloristik – Kränze und Gestecke europaweit",
       "seoDescription": "Kränze, Gestecke, Kreuze, Herzen, Grabsträuße und Trauergestecke in den Formen, die jedes Land erwartet, abgestimmt auf die Trauerfeier.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "709c11263e911c0c256c3eeaf79d59810888f74c4e71643e348cbd60011a6eb8"
+      "sourceHash": "67e5e2fcacb91c07ac7803776370e01c376f72d5d3fd769541ccfeb08d7e74cc"
     },
     {
       "entity": "category",
@@ -63,12 +63,12 @@
       "locale": "de",
       "name": "Blumen mit Geschenk",
       "slug": "blumen-mit-geschenk",
-      "descriptionMd": "Ein Strauß mit einer Beigabe: Pralinen, eine Glasvase, ein Ballon oder ein kleines Kuscheltier, gekauft von demselben Floristen, der die Blumen bindet. Nichts wird getrennt verschickt, also kommt das ganze Geschenk zusammen und in einem Zustand an. Sets mit Lebensmitteln zeigen die Allergene an der Kasse, und jeder Preis enthält Lieferung und örtliche Steuer. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Ein Strauß mit einer Beigabe: Pralinen, eine Glasvase, ein Ballon oder ein kleines Kuscheltier, passend zu den Blumen ausgewählt und zusammen geliefert. Nichts wird getrennt verschickt, also kommt das ganze Geschenk zusammen und in einem Zustand an. Sets mit Lebensmitteln zeigen die Allergene an der Kasse, und jeder Preis enthält Lieferung und örtliche Steuer. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Blumen mit Geschenk – Sträuße mit Pralinen, Vase und mehr",
       "seoDescription": "Ein Strauß mit Pralinen, Vase, Ballon oder Kuscheltier, gekauft vom selben Floristen. Eine Lieferung, ein Preis, Allergene angegeben.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "347ebb5893ba0df1a7d380df7ae3e2ca06d3c46acbfe1efd55303db366241da1"
+      "sourceHash": "2e4650bf4bcf439e753a2c5afc0d54b363dd053ff8d99957cda185a1f0daccdf"
     },
     {
       "entity": "category",

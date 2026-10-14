@@ -1,6 +1,6 @@
 ---
 seoTitle: "Sending flowers to the Netherlands from the UK"
-seoDescription: "Tulip season, Moederdag, Koningsdag and why less is more. For British senders, with sterling pricing, who you buy from and what we can honestly do today."
+seoDescription: "Tulip season, Moederdag, Koningsdag and why less is more. For British senders, with sterling prices and what we can do today."
 h1: "Sending flowers to the Netherlands from the UK"
 extends: en
 intro: >-
@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "A single figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That figure is what leaves your account, nothing is added afterwards, and the recipient is shown no price at all."
   - q: "Who am I buying from, and who handles a complaint?"
-    a: "You are buying from us, never from the shop that ties the bunch, so any complaint comes to us in English. We are not delivering in the Netherlands yet, so there is nothing to buy today and we would rather say so than imply otherwise."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver in the Netherlands today?"
     a: "Not yet. Ordering for the Netherlands is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-

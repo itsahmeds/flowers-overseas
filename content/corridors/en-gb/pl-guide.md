@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "You are shown one amount in pounds sterling, with VAT and delivery already inside it, before you enter a card. That figure is the figure charged. Nothing is added afterwards, and the person receiving the flowers is shown no price at all."
   - q: "Who am I buying from, and who do I complain to?"
-    a: "You are buying from us, not from the shop that makes the bouquet, so your contract and your complaint are both with us rather than with a shop abroad. We have not begun delivering to Poland yet, so today there is nothing to claim against, and we would rather say that plainly."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver to Poland today?"
     a: "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
@@ -114,7 +114,7 @@ inside it, before you enter a card, and that figure is what leaves your account.
 currency conversion is applied afterwards and no fee appears at the end. The person
 receiving the flowers is never shown a price, and there is no paperwork in the box.
 
-Your contract is with us, not with the shop that makes the bouquet. If something is
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep. If something is
 wrong you complain to us and we sort it out; you never have to take up an argument with a shop
 abroad in a language you do not speak.
 

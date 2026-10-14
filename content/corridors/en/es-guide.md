@@ -104,7 +104,7 @@ The national holidays to plan around are 1 and 6 January, Good Friday, 1 May,
 those, every region and almost every town keeps its own fiesta, and on that day the
 shutters come down whatever the national calendar says.
 
-## Heat, hours and what a shop will agree to
+## Heat, hours and timing
 
 From June to September the heat decides. A good Spanish florist will not sell you
 something soft-headed for a flat with no air conditioning, and if you insist they
@@ -118,11 +118,8 @@ Madrid, Barcelona and Valencia are the exceptions rather than the rule.
 
 ## What we can honestly tell you today
 
-We are not making deliveries in Spain. We have written this guide because the
-customs are worth knowing whoever carries the flowers, and because we would rather
-publish something true and limited than something complete and invented. We are
-talking to shops. Until one of them has agreed to work with us, this page will
-carry no arrival claim of any kind.
+We are not delivering in Spain yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.
 
 When that changes, this section is the one that changes first. It will name the
 cities we can reach, explain what happens on the day, and say who to contact when

@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, VAT and delivery already inside it, shown before you enter a card. That is the amount charged. Nothing is added afterwards and the person receiving the flowers is shown no price in euro or anything else."
   - q: "Who am I contracting with when I order?"
-    a: "With us, not with the shop that arranges the flowers, so a complaint comes to us in English rather than to a shop abroad. We are not delivering in Spain yet, so there is nothing to buy today and we will not pretend otherwise."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you send flowers to Spain now?"
     a: "Not yet. Ordering for Spain is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
@@ -128,6 +128,6 @@ not have.
 ## What we can honestly tell you today
 
 We are not making deliveries in Spain. We have written this guide because the
-customs are worth knowing whoever carries the flowers, and because we would rather
+customs are worth knowing, and because we would rather
 publish something true and limited than something complete and invented. Until a
 shop there has agreed to work with us, this page will carry no arrival claim at all.

@@ -120,11 +120,8 @@ foreigners rarely think of.
 
 ## What we can honestly tell you today
 
-We are not delivering in Italy. We have written the guide because the customs are
-worth knowing regardless, and because we would rather publish a page that is true
-and incomplete than one that is complete and made up. We are talking to shops we
-admire. Until one of them has agreed to work with us, nothing here will claim an
-arrival.
+We are not delivering in Italy yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.
 
 When that changes, this is the section that changes: the cities we cover, what
 happens on the day itself, and who you speak to when something goes wrong.

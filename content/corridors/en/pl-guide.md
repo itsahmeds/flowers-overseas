@@ -75,7 +75,7 @@ The second is counting. Give an odd number of stems to a living person and an ev
 number only at a funeral or a graveside. This is not a quaint survival that nobody
 observes any more: it is a live convention that shop staff apply without being asked,
 and a bunch of a dozen roses is the sort of thing that gets quietly re-counted before
-it goes out of the door. When we make a bouquet for you, the shop counts it correctly
+it goes out of the door. When we make a bouquet for you, our florist counts the stems for you
 as a matter of course.
 
 The third is that flowers there are given constantly, and not only romantically. A
@@ -117,11 +117,8 @@ same money than you would by insisting on roses in January.
 
 ## What we can honestly tell you today
 
-We are not delivering to Poland yet. We have written this guide, we have chosen
-the cities we want to start in, and we are meeting the shops we would like to make
-your flowers. Until one of them has agreed to work with us, we will not print a
-time, a date or a promise on this page — because a promise on a website is worth
-exactly as much as the arrangement behind it, and right now there is none.
+We are not delivering in Poland yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.
 
 When that changes, this page changes: it will carry the cities we cover, what
 happens on the day, and who to speak to when something goes wrong. Until then,

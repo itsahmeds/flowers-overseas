@@ -454,7 +454,7 @@ describe("the destinations grid", () => {
 
     // The opening rule is stated as a rule, not as a fact Poland already meets (2026-10-04).
     expect(rendered).toContain(
-      "We open each country only once we have local florists there we can stand behind.",
+      "We open one country at a time, and only when we can promise the same flowers and the same care.",
     );
     expect(rendered).not.toContain("met enough florists");
 

@@ -141,12 +141,12 @@
       "locale": "pl",
       "name": "Ślub",
       "slug": "slub",
-      "descriptionMd": "Dostarczamy kwiaty na ślub jako prezent lub ozdobę stołu, a nie jako zlecenie ślubne: bez bukietów ślubnych, bez dekoracji sali, bez konsultacji. Białe róże, białe piwonie, lilie i storczyk to kwiaty, które wysyła się parze młodej. Do czegoś więcej warto zarezerwować lokalnego florystę bezpośrednio, z wielomiesięcznym wyprzedzeniem. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Dostarczamy kwiaty na ślub jako prezent lub ozdobę stołu, a nie jako zlecenie ślubne: bez bukietów ślubnych, bez dekoracji sali, bez konsultacji. Białe róże, białe piwonie, lilie i storczyk to kwiaty, które wysyła się parze młodej. Bukiety ślubne i dekorację sali zarezerwuj u florysty ślubnego z wielomiesięcznym wyprzedzeniem. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Ślub – kwiaty w prezencie z dostawą w Europie",
       "seoDescription": "Białe róże, piwonie, lilie i storczyki jako prezent lub ozdoba stołu na ślub. Nie przyjmujemy zleceń na bukiety ślubne ani dekoracje sal.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "c5a8cf5127c78dd041c82d70e92f12ff97ac64a177cdf1e2b6aad27bfce93202"
+      "sourceHash": "e0f5fd10275a7b1170a10a1e0a0671bc16c2b8f7fb75d799c7918ba4ffb2131d"
     },
     {
       "entity": "occasion",
@@ -193,12 +193,12 @@
       "locale": "pl",
       "name": "Walentynki",
       "slug": "walentynki",
-      "descriptionMd": "Walentynki to jedna data w całej Europie i najbardziej pracowity dzień naszego roku. Czerwone róże kosztują w tym tygodniu więcej, bo więcej kosztują naszych florystów, a w sam dzień obowiązuje dopłata; jedno i drugie widać przed zapłatą. Zamów wcześnie: terminy zamówień przesuwają się w tym tygodniu do przodu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Walentynki to jedna data w całej Europie i najbardziej pracowity dzień naszego roku. Czerwone róże kosztują w tym tygodniu więcej, w całej Europie, a w sam dzień obowiązuje dopłata; jedno i drugie widać przed zapłatą. Zamów wcześnie: terminy zamówień przesuwają się w tym tygodniu do przodu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Walentynki – wysyłka kwiatów w całej Europie",
       "seoDescription": "Czerwone róże na 14 lutego w całej Europie. Wyższe ceny sezonowe i dopłata tego dnia widoczne przed zapłatą. Zamów wcześnie.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
+      "sourceHash": "3b7e94bdf0f5e3179c59aa32a8cfbf1a5a22979c9f0b0b2f1e64fee15634d0b8"
     },
     {
       "entity": "occasion",

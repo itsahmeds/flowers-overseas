@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That figure is what leaves your account, nothing is added at the end, and the recipient is shown no price at all."
   - q: "Who do I deal with if an order goes wrong?"
-    a: "Us. Your contract is with us and not with the fiorista who makes the bouquet, so any complaint comes to us in English rather than to a shop abroad. We are not delivering in Italy yet, so there is nothing to buy today, and we would rather say it plainly."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver flowers in Italy at the moment?"
     a: "Not yet. Ordering for Italy is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
@@ -127,6 +127,6 @@ comes to us in English, rather than to a shop abroad.
 ## What we can honestly tell you today
 
 We are not delivering in Italy. We wrote this guide because the customs are worth
-knowing whoever carries the flowers, and because a page that is true and incomplete
+knowing, and because a page that is true and incomplete
 is better than one that is complete and made up. Until a shop there has agreed to
 work with us, nothing here will claim an arrival.

@@ -163,6 +163,18 @@ const context = {
   source: true,
 };
 
+/** TASK-226: the rows reworded to the founder's second copy batch (2026-10-14, "R ok"). */
+const AWAITING_226: ReadonlySet<string> = new Set([
+  "category:funeral",
+  "category:gift_set",
+  "occasion:valentines",
+  "occasion:wedding",
+  "product:FO-BQ-034",
+  "product:FO-GS-004",
+  "product:FO-GS-008",
+  "product:FO-PT-002",
+]);
+
 describe("T-05: the copy rules fail on the cases spec 006 §2.3 rule 6 names", () => {
   it.each([
     [COPY_WORD_MIN - 1, true],
@@ -372,9 +384,18 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
 
   it("records a reviewer and a date on every authored row", () => {
     const attested: string[] = [];
+    const awaiting: string[] = [];
     for (const row of allRows("en")) {
       expect(row.translationStatus).toBe("human");
       expect(row.sourceHash).toBe(copySourceHash(row));
+      if (AWAITING_226.has(`${row.entity}:${row.key}`)) {
+        // Reworded to the founder's approved text of 2026-10-14 (TASK-226); unreviewed and
+        // unattributed until his own record run.
+        awaiting.push(`${row.entity}:${row.key}`);
+        expect(row.reviewed, row.key).toBe(false);
+        expect(row.reviewedBy, row.key).toBeUndefined();
+        continue;
+      }
       const attestedHash = FOUNDER_179_ROWS.get(`${row.entity}:${row.key}`);
       if (attestedHash !== undefined) {
         // Reworded, then attested by the founder over exactly the text this hash names.
@@ -390,6 +411,7 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
       expect(row.reviewedAt).toBe("2026-09-09T00:00:00Z");
     }
     expect(attested.sort()).toEqual(["product:FO-BQ-001", "product:FO-BQ-003"]);
+    expect(awaiting.sort()).toEqual([...AWAITING_226].sort());
   });
 
   it("stays inside the SEO field limits", () => {

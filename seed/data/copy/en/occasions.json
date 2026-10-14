@@ -161,14 +161,12 @@
       "locale": "en",
       "name": "Wedding",
       "slug": "wedding",
-      "descriptionMd": "We deliver flowers to a wedding as a gift or a table piece, not as a wedding contract: no bridal work, no venue installation, no consultation. White roses, white peonies, lilies and an orchid are what people send to a couple. For anything more, a local florist should be booked directly, months ahead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "We deliver flowers to a wedding as a gift or a table piece, not as a wedding contract: no bridal work, no venue installation, no consultation. White roses, white peonies, lilies and an orchid are what people send to a couple. For bridal flowers and venue work, book a wedding florist months ahead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Wedding flower delivery across Europe",
       "seoDescription": "White roses, peonies, lilies and orchids delivered to a wedding as a gift or table piece. We do not take bridal or venue work.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "c5a8cf5127c78dd041c82d70e92f12ff97ac64a177cdf1e2b6aad27bfce93202"
+      "reviewed": false,
+      "sourceHash": "e0f5fd10275a7b1170a10a1e0a0671bc16c2b8f7fb75d799c7918ba4ffb2131d"
     },
     {
       "entity": "occasion",
@@ -221,14 +219,12 @@
       "locale": "en",
       "name": "Valentine's Day",
       "slug": "valentines-day",
-      "descriptionMd": "Valentine's Day is one date across the whole of Europe and the busiest day of our year. Red roses cost more that week because they cost our florists more, and a surcharge applies on the day itself — both are shown before you pay. Order early: cutoffs move forward that week. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Valentine's Day is one date across the whole of Europe and the busiest day of our year. Red roses cost more that week, everywhere in Europe, and a surcharge applies on the day itself — both are shown before you pay. Order early: cutoffs move forward that week. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Valentine's Day flower delivery across Europe",
       "seoDescription": "Red roses delivered on 14 February across Europe. Higher seasonal prices and the day's surcharge are shown before you pay. Order early.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
+      "reviewed": false,
+      "sourceHash": "3b7e94bdf0f5e3179c59aa32a8cfbf1a5a22979c9f0b0b2f1e64fee15634d0b8"
     },
     {
       "entity": "occasion",

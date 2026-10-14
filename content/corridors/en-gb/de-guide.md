@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That is the amount charged. Nothing is added at the end, and the person receiving the flowers never sees a price in euro or in anything else."
   - q: "Who am I actually buying from?"
-    a: "From us, and not from whichever shop ends up making the bouquet, so a complaint comes to us rather than to a shop abroad. As we are not yet delivering in Germany, there is nothing to buy today, and we would rather say that than dress it up."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you send flowers to Germany right now?"
     a: "Not yet. Ordering for Germany is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-

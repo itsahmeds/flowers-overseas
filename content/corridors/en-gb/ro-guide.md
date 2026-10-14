@@ -34,7 +34,7 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, VAT and delivery already inside it, shown before you enter a card. That is what leaves your account. Nothing about money reaches the recipient, in lei or in anything else."
   - q: "Who is my order with, and who puts it right?"
-    a: "Your order is with us, not with the florist who assembles the bouquet, so a complaint comes to us in English rather than to a shop abroad. We have not begun delivering in Romania, so there is nothing to buy today and we will not pretend there is."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you send flowers to Romania today?"
     a: "Not yet. Ordering for Romania is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-

@@ -119,11 +119,8 @@ is the biggest of them.
 
 ## What we can honestly tell you today
 
-We are not delivering in the Netherlands. We have written this guide because the
-habits here are worth explaining to anybody sending from outside, and because a page
-that is true and limited beats a page that is complete and invented. We are talking
-to shops we would like to work with. Until one of them has agreed, there will be no
-date, no hour and no claim of arrival anywhere on this page.
+We are not delivering in the Netherlands yet. When we start, this page will show the
+cities, the order-by time and what happens on the day.
 
 When that changes, this section is the first thing we will rewrite: the towns we can
 reach, what happens on the day itself, and who you speak to when something has gone

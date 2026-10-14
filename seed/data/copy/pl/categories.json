@@ -50,12 +50,12 @@
       "locale": "pl",
       "name": "Kwiaty pogrzebowe",
       "slug": "kwiaty-pogrzebowe",
-      "descriptionMd": "Wieńce, wiązanki, krzyż, serce, bukiety na grób i niskie kompozycje żałobne, w formach, jakich oczekuje się w każdym kraju. Jeśli podasz nam dom pogrzebowy lub cmentarz, przekażemy dane dalej i dopasujemy dostawę do terminu uroczystości. Kwiaty kondolencyjne do domu też są tutaj, na wypadek gdyby formalna wiązanka była zbyt oficjalna. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Wieńce, wiązanki, krzyż, serce, bukiety na grób i niskie kompozycje żałobne, w formach, jakich oczekuje się w każdym kraju. Podaj nam dom pogrzebowy lub cmentarz, a dopasujemy dostawę do terminu uroczystości. Kwiaty kondolencyjne do domu też są tutaj, na wypadek gdyby formalna wiązanka była zbyt oficjalna. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty pogrzebowe – wieńce i wiązanki w Europie",
       "seoDescription": "Wieńce, wiązanki, krzyże, serca, bukiety na grób i kompozycje żałobne w formach, jakich oczekuje każdy kraj, dopasowane do uroczystości.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "709c11263e911c0c256c3eeaf79d59810888f74c4e71643e348cbd60011a6eb8"
+      "sourceHash": "67e5e2fcacb91c07ac7803776370e01c376f72d5d3fd769541ccfeb08d7e74cc"
     },
     {
       "entity": "category",
@@ -63,12 +63,12 @@
       "locale": "pl",
       "name": "Kwiaty z prezentem",
       "slug": "kwiaty-z-prezentem",
-      "descriptionMd": "Bukiet z jednym dodatkiem: czekoladkami, szklanym wazonem, balonem lub małą przytulanką, kupionym przez tego samego florystę, który robi kwiaty. Nic nie jest wysyłane osobno, więc cały prezent dociera razem i w jednym stanie. Zestawy z jedzeniem pokazują alergeny przy kasie, a każda cena obejmuje dostawę i lokalny podatek. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiet z jednym dodatkiem: czekoladkami, szklanym wazonem, balonem lub małą przytulanką, dobranym do kwiatów i dostarczanym razem z nimi. Nic nie jest wysyłane osobno, więc cały prezent dociera razem i w jednym stanie. Zestawy z jedzeniem pokazują alergeny przy kasie, a każda cena obejmuje dostawę i lokalny podatek. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty z prezentem – bukiety z czekoladkami i więcej",
       "seoDescription": "Bukiet z czekoladkami, wazonem, balonem lub przytulanką od tego samego florysty. Jedna dostawa, jedna cena, alergeny podane.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "347ebb5893ba0df1a7d380df7ae3e2ca06d3c46acbfe1efd55303db366241da1"
+      "sourceHash": "2e4650bf4bcf439e753a2c5afc0d54b363dd053ff8d99957cda185a1f0daccdf"
     },
     {
       "entity": "category",

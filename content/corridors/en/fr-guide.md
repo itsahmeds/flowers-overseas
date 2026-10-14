@@ -83,7 +83,7 @@ of the spectrum.
 
 The fourth is counting. Give an odd number, and avoid thirteen. That is the whole
 rule, and in practice a fleuriste composes to a shape rather than to a count, so
-if you leave the composition to the shop it will be handled for you.
+if you leave the composition to our florist it will be handled for you.
 
 ## Muguet, and the one morning nobody can regulate
 
@@ -124,10 +124,8 @@ more formal style all year; the Atlantic coast does hydrangeas better than anywh
 
 ## What we can honestly tell you today
 
-We have not started delivering in France. This page exists because the etiquette is
-worth knowing whether or not we are the ones carrying the flowers. We are choosing
-the shops we want to work with, and until one of them has agreed to work with us,
-nothing on this page will claim an arrival, a time or a place.
+We are not delivering in France yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.
 
 When that changes we will rewrite this section first: the cities we cover, what
 happens on the day itself, and who you speak to when something has gone wrong. Until

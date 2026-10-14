@@ -259,6 +259,33 @@ const APPROVED = {
   "checkout.price.currencyLine": "You pay in {buyerCurrency}.",
   "delivery.picker.live":
     "Order by {time} in {city}, the recipient's time, not yours",
+  // The second batch (founder, 2026-10-14, "R ok"; rows R2 to R24 of the brief).
+  "home.proof.local.body":
+    "Made by our florist, a few streets from their door.",
+  "home.destinations.body":
+    "We open one country at a time, and only when we can promise the same flowers and the same care.",
+  "destinationsHub.intro":
+    "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where we are not delivering yet, this page says so in the same words on every row.",
+  "corridor.steps.guide.twoBody":
+    "Our florist sees the recipient's address and your card message, and nothing else about you.",
+  "corridor.steps.live.twoBody":
+    "Our florist sees the recipient's address and your card message, and nothing else about you.",
+  "checkout.privacy.demoNotice":
+    "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how ordering works, then we delete the personal details. {controllerLine}",
+  "catalog.addon.plush.description":
+    "A small, new soft toy, chosen to suit the bouquet.",
+  "catalog.addon.chocolates.description":
+    "A box of good chocolates, delivered with the flowers.",
+  "catalog.addon.wine.description":
+    "A bottle of local wine, where local law allows it.",
+  "faq.photo.answer":
+    "Close, not identical. Our florist works with what is fresh that morning and substitutes like for like in colour and value. Every change is noted on your delivery photo.",
+  "corridor.shop.body":
+    "Bouquets our florist in {country} can make, priced for {country}, with delivery and VAT already in the price.",
+  "shop.category.seoDescription":
+    "The {entity} our florist can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
+  "shop.root.seoDescription":
+    "Every bouquet our florist can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
 } as const;
 
 const hash = (text: string): string =>
@@ -279,7 +306,7 @@ describe("the approved copy (spec 041 §14 A-founder-2026-10-14; spec 010 §14 A
   }
 
   for (const locale of ["de", "pl"] as const) {
-    it(`\`${locale}\` drafts the four keys in ${locale}, unreviewed, from the new English`, () => {
+    it(`\`${locale}\` drafts every approved key in ${locale}, unreviewed, from the new English`, () => {
       const meta = MessageMetaManifestSchema.parse(
         readMessages(`${locale}.meta.json`),
       );
