@@ -44,8 +44,12 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- Cap constant, boundary fixtures and mutation check done; gates:cheap PASS.
 
 ## Result
 
-_Pending._
+`tests/unit/codebase-map.test.ts` now holds `MAP_HARD_CAP_BYTES = 20 * 1024` with the spec 001 §14 A21 reason inline (guard against an unbounded map, not a budget; the 12 KB target and TASK-095 stand). The committed-map assertion, a pin test (`toBe(20480)`), a boundary fixture (20,480 bytes passes, 20,481 fails) and a bytes-not-characters fixture share one `withinHardCap` predicate. No other file changed (map is 17,375 B).
+
+Mutation: with the constant set to 20,479 the pin test and the boundary fixture go red (2 failed, 15 passed); restored, 17 passed.
+
+`pnpm gates:cheap`: typecheck, lint, format:check, i18n:check, check:no-db, codebase:map --check all exit 0; tests exit 0 (94 passed). RESULT: PASS. No expensive gate run.
