@@ -76,11 +76,10 @@ task actually touches.
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
 | `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page except the home (spec 004… | spec 004 |
 | `[locale]/@notice/page.tsx` | The locale home's `@notice` slot: **no** price claim (founder, 2026-10-04:… | — |
-| `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Language links of a depth-4 page | spec 003 |
-| `[locale]/@switcher/[segment]/[child]/page.tsx` | Language links of a depth-3 page | spec 003 |
-| `[locale]/@switcher/[segment]/page.tsx` | Language links of a depth-2 page | spec 003 |
-| `[locale]/@switcher/default.tsx` | Language links of an unmirrored route: the locale homes | spec 003 |
-| `[locale]/@switcher/page.tsx` | Language links of the locale home | spec 003 |
+| `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | spec 003 |
+| `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | spec 003 |
+| `[locale]/@switcher/[segment]/page.tsx` | Depth-2 language links | spec 003 |
+| `[locale]/@switcher/default.tsx` | Unmirrored routes' language links (homes) | spec 003 |
 | `[locale]/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL… | spec 008 |
 | `[locale]/[segment]/[child]/page.tsx` | `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008… | spec 008 |
 | `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |
@@ -90,7 +89,6 @@ task actually touches.
 | `[locale]/country-shop-root.tsx` | The country shop root's head and body, **once**, for the two route files that… | spec 007 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
-| `[locale]/page-switcher.tsx` | The @switcher slot's switcher: this page in each locale | spec 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |

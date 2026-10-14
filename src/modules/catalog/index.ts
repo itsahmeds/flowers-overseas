@@ -439,6 +439,7 @@ export {
 // This page in every launch locale, for the language links (spec 003 §2, §5.3; TASK-233): the
 // `@switcher` slot hands its segments here, and the page type's own alternates builder answers.
 export { pageAlternatePaths } from "./alternates";
+export { PageLocaleSwitcher } from "./ui/PageLocaleSwitcher";
 
 // The product page's existence set and its prebuild list (spec 009 §2, §5.2, §11, **AC-3**,
 // **AC-4**; TASK-121). `productPageExists()` is the single answer to "is this URL a page", on the

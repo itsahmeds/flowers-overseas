@@ -297,6 +297,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "resolveLocalePath",
         // this page in every launch locale, for the language links (TASK-233).
         "pageAlternatePaths",
+        "PageLocaleSwitcher",
         // the country occasion's page component (TASK-111): the same rule one level down, and the
         // third React component the module owns. Its URLs share `localeGrandchildParams()` with
         // the country category, because they share the route file.
@@ -386,6 +387,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/ListingChrome.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,
       `${moduleDir}/ui/OccasionsIndexPage.tsx`,
+      `${moduleDir}/ui/PageLocaleSwitcher.tsx`,
       `${moduleDir}/ui/labels.ts`,
     ]);
   });
