@@ -180,12 +180,12 @@
       "locale": "de",
       "name": "Tulip Parade",
       "slug": "tulip-parade",
-      "descriptionMd": "Tulips in strong mixed colour — orange, pink and red together — tied high with the heads at one level. Twenty-five stems as standard; fifteen and thirty-five sizes available. Sent for birthdays, graduations and congratulations where a bright bunch beats a subtle one. We keep the vibrant colour scheme; the exact colours follow the week's crop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Tulips in strong mixed colour (orange, pink and red together), tied high with the heads at one level. Twenty-five stems as standard; fifteen and thirty-five sizes available. Sent for birthdays, graduations and congratulations where a bright bunch beats a subtle one. We keep the vibrant colour scheme; the exact colours follow the week's crop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Tulip Parade — hand-tied vibrant tulip bouquet",
       "seoDescription": "Twenty-five tulips in strong orange, pink and red, tied with the heads at one level. For birthdays, graduations and congratulations.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "bbc1556afcd2fceb6d5c91f0e2102558e961133ff599cad891073b145f748da7"
+      "sourceHash": "37710e15317e74ffe1828693fe21cc4deb8adb46bda1109492deb6cf7aa9a39e"
     },
     {
       "entity": "product",
@@ -401,12 +401,12 @@
       "locale": "de",
       "name": "Pastel Weekend",
       "slug": "pastel-weekend",
-      "descriptionMd": "Soft pastels only — pale pink, cream, white — cut short and tied in a small tight posy with minimal foliage. Eighteen stems as standard, twelve or twenty-four available. Sent for a new baby, a get-well or a quiet hello. We keep the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Soft pastels only (pale pink, cream, white), cut short and tied in a small tight posy with minimal foliage. Eighteen stems as standard, twelve or twenty-four available. Sent for a new baby, a get-well or a quiet hello. We keep the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Pastel Weekend — hand-tied pastel posy",
       "seoDescription": "A small tight posy in pale pink, cream and white with minimal foliage. For a new baby, a get-well or a quiet hello.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "01630347934aea55848f8e84c9b7d5670fe38ff122d5c4470ab04feacdb22ed4"
+      "sourceHash": "debbe7491105459ac2cf00d4d1747fca7aee30d106ceb3b65d3acbf637677c4e"
     },
     {
       "entity": "product",
@@ -908,12 +908,12 @@
       "locale": "de",
       "name": "Quiet Wreath",
       "slug": "quiet-wreath",
-      "descriptionMd": "A wreath in pastel rather than pure white — pale pink, cream and soft green on a round frame — for a family that wants something gentler. Small, medium as standard, or large. Sent for funerals and memorials. We keep the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A wreath in pastel rather than pure white (pale pink, cream and soft green on a round frame), for a family that wants something gentler. Small, medium as standard, or large. Sent for funerals and memorials. We keep the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Quiet Wreath — pastel funeral wreath",
       "seoDescription": "A wreath in pale pink, cream and soft green on a round frame, gentler than pure white. For funerals and memorials. Three sizes.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "6751c7bb2204f84e2ba75398336954b1008f0981d8b4b2da37f308918f232be3"
+      "sourceHash": "303741415b4a6922ed31a7a93c8789fab69a34f6b11ffb1423240cc2982c45ce"
     },
     {
       "entity": "product",

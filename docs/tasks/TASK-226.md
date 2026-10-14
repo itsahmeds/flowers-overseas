@@ -438,3 +438,5 @@ Batch 3 (founder, 2026-10-15, "yes go ahead"):
   - `content/corridors/en/fr-guide.md`: "What a French shop is good at" → "What French florists are known for"
   - Kept as general facts about the country: "How the shops and markets work" (nl, both guides) and body lines such as "shops close on Sunday".
   - Left for the founder: the body under the British German heading still ends "the least interesting thing in the shop", where "the shop" means the local trade.
+- Punctuation only, so the record script's em-dash check passes on every recorded row (the founder's no-em-dash rule): FO-BQ-014 "Tulips in strong mixed colour (orange, pink and red together), tied …", FO-BQ-031 "Soft pastels only (pale pink, cream, white), cut …", FO-FN-008 "A wreath in pastel rather than pure white (pale pink, cream and soft green on a round frame), for …" (`de`/`pl` echoes follow). Product `seoTitle` em dashes are untouched (pick 2).
+- The record script covers all three batches in one run: 17 message keys, 73 catalogue lines over 59 rows and 73 guide lines (8 of the lines are cuts), so **163 numbered texts**.
