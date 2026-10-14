@@ -27,7 +27,7 @@
         "name": "Printed card"
       },
       "chocolates": {
-        "description": "Eine Schachtel guter Pralinen, zusammen mit den Blumen geliefert.",
+        "description": "Eine Schachtel guter Pralinen, zusammen mit dem Strauß geliefert.",
         "name": "Box of chocolates"
       },
       "plush": {
@@ -614,7 +614,7 @@
       "orderBy": "Order by {date}, {time}"
     },
     "destinations": {
-      "body": "Wir öffnen ein Land nach dem anderen, und nur, wenn wir dieselben Blumen und dieselbe Sorgfalt versprechen können.",
+      "body": "Wir öffnen ein Land nach dem anderen, und nur, wenn wir dieselben Sträuße und dieselbe Sorgfalt versprechen können.",
       "eyebrow": "Destinations"
     },
     "hero": {

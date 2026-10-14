@@ -353,7 +353,7 @@ describe("the FAQ", () => {
       "Before you order",
       "Questions people ask first",
       "Will the bouquet look like the photo?",
-      "substitute like for like in colour and value",
+      "substitutes like for like in colour and value",
       "What if nobody is home?",
       "Who delivers, and when?",
     ]) {

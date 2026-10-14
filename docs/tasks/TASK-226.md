@@ -264,8 +264,10 @@ PR 225 (draft), branch `task/TASK-226-buyer-copy-no-relay`. Status `blocked` on 
 
 - **AC-51 (spec 010), catalogue half:** `tests/unit/relay-language.test.ts`, 94 cases, green. Mutation: `messages/pl.json` `home.howItWorks.make.title` set back to "A florist a few streets away accepts it." turns 3 cases red ("`pl` gives no relay match outside RELAY_EXEMPT": `expected [ Array(1) ] to deeply equal []`). Reverted.
 - **AC-30 (spec 041), site-wide half:** `tests/e2e/relay-scan.spec.ts`, 22 documents (home, product, country shop, category and occasion in en, en-gb, de and pl; the guide in en and en-gb, because de/pl have none). It reads body text plus `alt`/`aria-label`/`title`/meta. The planted cases put a phrase into one page's text and one `alt` and need the same read to fail. CI runs it; no build slot was taken. A real-page mutation (a key put back, then rebuilt) needs the build slot, which the orchestrator has to grant.
-- **Gates:** `pnpm gates:cheap` is red on tests only (48 cases, all in the E1 indexability cascade); typecheck, lint, format:check, i18n:check, check:no-db and codebase:map --check are at exit 0. With the founder's record simulated locally, the only red cases left are the expected pins and the sitemap fixtures (E1), the map budget (E2), and two load-timeouts (`dev-os`, `url-pii`, load average about 20).
+- **Gates (batch 1, aec23907):** `pnpm gates:cheap` is red on tests only (48 cases, all in the E1 indexability cascade); typecheck, lint, format:check, i18n:check, check:no-db and codebase:map --check are at exit 0. With the founder's record simulated locally, the only red cases left are the expected pins and the sitemap fixtures (E1), the map budget (E2), and two load-timeouts (`dev-os`, `url-pii`, load average about 20).
 - **Not done here:** the founder's record run; refreshing the visual baselines (E5); rewording the E6 hits.
+
+- **Batch 2:** the de drafts avoid "Blumen", which `home-honesty`'s partner-name shape reads as a shop name, and the pl FAQ draft avoids "dostaw" (`ui-home` H3). `seed/snapshot/product_translation.json` is regenerated (`pnpm seed:diff --write`).
 
 ### Every `en`/`en-gb` key and content or seed field changed, with its final text (for the founder's record script)
 
