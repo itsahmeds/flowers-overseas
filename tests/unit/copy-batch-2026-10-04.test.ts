@@ -46,7 +46,6 @@ const APPROVED: Readonly<Record<string, string>> = {
   "home.sentence.notYet": "{country} (not yet)",
   "home.sentence.who":
     "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
-  "nav.notice.lead": "A note from us:",
   "nav.send": "Send flowers",
   "nav.utility.guarantee": "Fresh-flower promise",
   "product.card.legend": "What should the card say?",

@@ -15,6 +15,7 @@ import {
   corridorShopEntry,
   listProductPages,
   listingExists,
+  occasionsIndexHref,
   slugFor,
 } from "@/modules/catalog";
 import { listingPath, routableLocale } from "@/modules/i18n";
@@ -103,6 +104,7 @@ async function homeCatalogueLinks(locale: string): Promise<{
   readonly shopCountries: readonly string[];
   readonly shopHref: string | undefined;
   readonly hubHrefs: Readonly<Record<string, string>>;
+  readonly occasionsHref: string | undefined;
 }> {
   const shops = await Promise.all(
     COUNTRY_CODES.map(async (iso2) => {
@@ -135,6 +137,9 @@ async function homeCatalogueLinks(locale: string): Promise<{
       .map((shop) => shop.iso2),
     shopHref: shops.find((shop) => shop.iso2 === DEMO_DESTINATION_ISO2)?.href,
     hubHrefs,
+    // "Occasions →" beside "What is the occasion?" (TASK-232): the published `occasions` link id
+    // paired with `listingExists()`, the footer's own gate, so `/pl/okazje` is never linked.
+    occasionsHref: await occasionsIndexHref(locale),
   };
 }
 
@@ -186,7 +191,13 @@ export default async function LocaleHomePage({
             : { shopHref: links.shopHref })}
         />
         <OccasionDates locale={locale.code} hubHrefs={links.hubHrefs} />
-        <OccasionTiles locale={locale.code} hubHrefs={links.hubHrefs} />
+        <OccasionTiles
+          locale={locale.code}
+          hubHrefs={links.hubHrefs}
+          {...(links.occasionsHref === undefined
+            ? {}
+            : { indexHref: links.occasionsHref })}
+        />
         {/* The honesty label (spec 006 AC-17, ADR-0014), under the last image-bearing section. */}
         <HomeProvenanceNote locale={locale.code} />
         {/* Renders nothing until a completed order produces a real review (AC-15). */}

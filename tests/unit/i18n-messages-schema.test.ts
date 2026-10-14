@@ -360,16 +360,26 @@ describe("the shipped catalogues and manifests", () => {
     // 2026-10-03, and the three the page needed beyond them (the calendar reasons
     // `beforeEarliest` and `notDeliveryDay`, and the trust block's substitution sentence) the
     // same day ("approve 3"), so none of the page's keys waits here.
+    // TASK-231: the eight home headings gained the `<em>` of their one italic phrase (the founder's
+    // "italic ok", 2026-10-14; spec 004 §14 A21 clauses 2–3), words unchanged. A changed value is a
+    // new review (spec 003 §14 A17), so each waits here for the founder's record run.
+    "faq.heading",
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "footer.payment.methods",
+    "home.dates.heading",
+    "home.destinations.heading",
+    "home.hero.heading",
     "home.howItWorks.choose.body",
+    "home.howItWorks.heading",
+    "home.occasions.heading",
     "home.proof.photo.body",
     // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
     // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
     // `home.sentence.who`, with "my partner" (§14 A22), was attested by the founder on 2026-10-04
     // (09:54:22Z) and left this queue.
     "home.sentence.occasion",
+    "home.trending.heading",
     // TASK-119's seven `languagePopup.*` strings left this queue on the founder's own
     // record-approval-119 run, 2026-10-05.
     "meta.home.description",
@@ -422,6 +432,7 @@ describe("the shipped catalogues and manifests", () => {
     "shop.root.occasionPageLink",
     "shop.root.tileCount",
     "shop.toolbar.reorderLabel",
+    "trust.heading",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
@@ -573,7 +584,8 @@ describe("the shipped catalogues and manifests", () => {
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
     expect(categoryLabel).toBe("Our selection");
-    expect(heroHeading).toBe("Flowers for someone far away.");
+    // TASK-231: the reviewed words, with the one italic phrase marked (the founder's "italic ok").
+    expect(heroHeading).toBe("Flowers for someone <em>far away.</em>");
     expect(finderSubmit).toBe("Continue");
     expect(guaranteeName).toBe("7-day freshness guarantee");
     expect(occasionSubtitle).toContain("Imieniny");

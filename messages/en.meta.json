@@ -2439,7 +2439,8 @@
     "reviewed": true,
     "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
     "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "d2d3ab361b22ef98bf3c8b30026bc9b0639edcf58c5bab8aecb7b2a9c30cd00d"
+    "sourceHash": "d2d3ab361b22ef98bf3c8b30026bc9b0639edcf58c5bab8aecb7b2a9c30cd00d",
+    "retained": true
   },
   "faq.allTopicsPending": {
     "source": "human",
@@ -2457,10 +2458,8 @@
   },
   "faq.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "fe04113c65cbba9e7d625f3cde3e7e92c2011bcfd3c56b4a5a8a4e9f0aa86724"
+    "reviewed": false,
+    "sourceHash": "0d644da205fbdcf2ff8a92b3f3d12bf2ffa94c724a9a28c1c9708d06d1a94c3e"
   },
   "faq.nobodyHome.answer": {
     "source": "human",
@@ -2701,10 +2700,8 @@
   },
   "home.dates.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "6cffc48f47ab68250a64cb5ddce49e92bff3c88f246990b9ed77a390b7697eb6"
+    "reviewed": false,
+    "sourceHash": "d50a63f53e6f87a1e1a7c16e35146d3caeb73a4ceb6bbae936e4ad52a3daa971"
   },
   "home.dates.orderBy": {
     "source": "human",
@@ -2727,6 +2724,11 @@
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
   },
+  "home.destinations.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a19f87cd49e53b5758ddc06aac1cb12e87cbdb99d7fc5cec6877af842385d49a"
+  },
   "home.hero.eyebrow": {
     "reviewed": true,
     "reviewedAt": "2026-09-09T00:00:00Z",
@@ -2735,11 +2737,9 @@
     "sourceHash": "00a9a3878b14182c335a9f990a44b0117316eb17b763d60555df7840709fa3b2"
   },
   "home.hero.heading": {
-    "reviewed": true,
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "reviewedBy": "founder",
     "source": "human",
-    "sourceHash": "73a20c92dbe3d09ab0cedb63cdcbfd4df9cc14912da0c9498fc0df7094a20e63"
+    "reviewed": false,
+    "sourceHash": "48915b766e98296695954e8d5889503a726373fde69c4b4a2606d759c2cb0bc6"
   },
   "home.hero.proposition": {
     "reviewed": true,
@@ -2783,10 +2783,8 @@
   },
   "home.howItWorks.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "ee5331dd6c26b1704618f9387322160472b43a3136e443c17e2697c910a32879"
+    "reviewed": false,
+    "sourceHash": "7433b70a8b07e6504dadc094b2248a000875155b715d4bfc5c18204b631060f1"
   },
   "home.howItWorks.intro": {
     "source": "human",
@@ -2818,10 +2816,8 @@
   },
   "home.occasions.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "d2d90f63ab3544d2bb372d496a6646e38595bf374ce5284d7a9ec26ea3145f37"
+    "reviewed": false,
+    "sourceHash": "3b1260462b548a3e38acade0ffc8033fe18acbb8a7b43e0fc9ea2f852a0bc57c"
   },
   "home.proof.guarantee.body": {
     "source": "human",
@@ -2961,10 +2957,8 @@
   },
   "home.trending.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (2026-10-03 chat, \"ok go with popular choices\"; docs/decisions-log.md \"The trending row reads Popular choices\"; transcribed by TASK-140)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "0837d67f3cb538dd2683c0f99806f474500885b255c4eba20d6e6f3cb888c3ac"
+    "reviewed": false,
+    "sourceHash": "64a1a51b423b82d186f4a71ee4d26ab0f1ee011c4b9739cd6588f2b1246d4bea"
   },
   "languagePopup.browserMatch": {
     "source": "human",
@@ -3229,13 +3223,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862",
     "retained": true
-  },
-  "nav.notice.lead": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "426db035784b9d5623b70c9a4fa21e1c7bb0bf98e16c0bf6474a5329d0f37fc7"
   },
   "nav.search.help": {
     "source": "human",
@@ -3630,12 +3617,22 @@
     "reviewed": false,
     "sourceHash": "08cb5e418a89588652633f7cbe19a198f9a93e4a6c6a2004dbd53ea49eb85675"
   },
+  "product.eyebrowPhone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7c443a3d824a90c76332856e3b73f90bfcd3529910a974af196774d44b6d8bce"
+  },
   "product.included": {
     "source": "human",
     "reviewed": true,
     "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "7f0f70e643bcb02dfc5f7e678cc06d692e53875ee9ead594e50bae7d3354b305"
+  },
+  "product.readMore": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "83b794145c0cc3f560cb6dfb6b5bcf7afac4dba15e5c6dbc54d103dae029fec6"
   },
   "product.related.heading": {
     "source": "human",
@@ -4133,10 +4130,8 @@
   },
   "trust.heading": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "b8be849c2fa4971a27f9c76daef930063856d6df1e99575aae6d648e043ee4fc"
+    "reviewed": false,
+    "sourceHash": "082470c1714424cd7df2aeaea8c245de6af4575b779da9527da22a15dd44382c"
   },
   "trust.local.claim": {
     "source": "human",
@@ -4165,15 +4160,5 @@
     "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
-  },
-  "product.readMore": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "83b794145c0cc3f560cb6dfb6b5bcf7afac4dba15e5c6dbc54d103dae029fec6"
-  },
-  "product.eyebrowPhone": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "7c443a3d824a90c76332856e3b73f90bfcd3529910a974af196774d44b6d8bce"
   }
 }

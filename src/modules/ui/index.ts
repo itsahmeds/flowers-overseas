@@ -109,6 +109,7 @@ export {
   Display,
   DISPLAY_SIZES,
   Eyebrow,
+  HEADING_EM,
   Label,
   Text,
   TEXT_LINK_VARIANTS,

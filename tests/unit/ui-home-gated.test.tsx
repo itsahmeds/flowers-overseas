@@ -115,11 +115,22 @@ const TRENDING_COPY = {
   { heading: string; basis: string }
 >;
 
-/** The row's `<h2 id="trending-heading">` text, exactly as rendered. */
+/**
+ * The row's `<h2 id="trending-heading">` text, exactly as rendered — the italic phrase's `<em>`
+ * included in the text (TASK-231), so the words are pinned whole.
+ */
 function trendingHeading(html: string): string | undefined {
-  const inner = /id="trending-heading"[^>]*>([^<]*)</u.exec(html)?.[1];
+  const inner = /id="trending-heading"[^>]*>(.*?)<\/h[23]>/u.exec(html)?.[1];
   return inner === undefined ? undefined : text(inner).trim();
 }
+
+/** The heading's poppy italic phrase (spec 004 §14 A21 clauses 2–3; TASK-231). */
+const TRENDING_EM = {
+  en: "choices",
+  "en-gb": "choices",
+  de: "Auswahl",
+  pl: "wybory",
+} as const satisfies Record<(typeof LOCALES)[number], string>;
 
 /** The basis line after the picks' list, or `undefined` when the row renders none. */
 function trendingBasis(html: string): string | undefined {
@@ -150,6 +161,13 @@ describe("the trending row is gated on real orders", () => {
 
       expect(html, locale).toContain('data-fo-trending-basis="picks"');
       expect(trendingHeading(html), locale).toBe(TRENDING_COPY[locale].heading);
+      // TASK-231: the one italic phrase, the last word of the reviewed heading, in `<em>`.
+      expect(html, locale).toMatch(
+        new RegExp(
+          `id="trending-heading"[^>]*>[^<]*<em data-fo-em="">${TRENDING_EM[locale]}</em></h2>`,
+          "u",
+        ),
+      );
       expect(trendingBasis(html), locale).toBe(TRENDING_COPY[locale].basis);
     }
   });
@@ -220,11 +238,12 @@ describe("the trending row is gated on real orders", () => {
   });
 
   it("tells the browser the card's rendered width, not the listing grid's (TASK-168, AC-15)", () => {
-    // `MEDIA_SLOT_SPECS.trending`, written out: the row is 2-up below `md` and 5-up from it,
-    // inside `HOME_BLEED`, so the browser picks the rung that fits a ~178 px phone card rather
-    // than the 640 w one the listing grid's 50vw asked for.
+    // `MEDIA_SLOT_SPECS.trending`, written out: the row is 2-up below `md` (14 px apart inside
+    // 20 px gutters, TASK-232's drawn grid: 168 px at 390) and 5-up from it, inside `HOME_BLEED`,
+    // so the browser picks the rung that fits the phone card rather than the 640 w one the listing
+    // grid's 50vw asked for.
     const TRENDING_SIZES =
-      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)";
+      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 27px)";
     const html = render(<TrendingRow locale="en" />, "en");
     const sizes = [...html.matchAll(/\bsizes="([^"]*)"/g)].map(
       (match) => match[1],

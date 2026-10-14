@@ -15,6 +15,12 @@
  * component that needs a chevron-down, a close, a clock or a globe adds it in the task that ships
  * that component, against a canvas that shows it.
  *
+ * **Design system v2's icons keep their own grid** (TASK-232). `docs/design/system/components.dc.html`
+ * ("Line icons, 1.6 stroke") draws the v2 icons on a 34 unit grid; one ships so far, `leaf`, the
+ * mark the round-2 notice bar sets before "Fresh-flower promise" (`chrome-desktop.dc.html`), and it
+ * is drawn here with the sheet's own geometry and viewBox (`V2_GRID_ICONS`) rather than redrawn,
+ * so the provenance test can match it coordinate for coordinate against the sheet.
+ *
  * **Mirroring is a property of the icon, not of the call site** (§2): `MIRRORED_IN_RTL` names the
  * two direction-carrying icons, `Icon` applies `mirror-in-rtl` from that set, and no consumer can
  * decide differently. That is what makes AC-5's assertion — arrow and chevron flipped under
@@ -59,6 +65,9 @@ export const ICON_NAMES = [
   "card",
   // Trust strip: "Photo on delivery".
   "document",
+  // v2 (`system/components.dc.html`): the round-2 notice bar's mark before "Fresh-flower promise",
+  // and the promise band's guarantee card. A leaf is not direction-carrying: never mirrored.
+  "leaf",
 ] as const;
 
 export type IconName = (typeof ICON_NAMES)[number];
@@ -73,7 +82,10 @@ export const MIRRORED_IN_RTL: ReadonlySet<IconName> = new Set<IconName>([
   "chevron-end",
 ]);
 
-/** The geometry, keyed by name. `viewBox="0 0 24 24"` for all of them. */
+/** The icons drawn on design system v2's 34 unit grid (`viewBox="0 0 34 34"`), as the sheet draws them. */
+export const V2_GRID_ICONS: ReadonlySet<IconName> = new Set<IconName>(["leaf"]);
+
+/** The geometry, keyed by name: `viewBox="0 0 24 24"`, or 34 for `V2_GRID_ICONS`. */
 const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
   "arrow-end": (
     <>
@@ -142,6 +154,13 @@ const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
       <path d="M8 8h8M8 12h8M8 16h5" />
     </>
   ),
+  leaf: (
+    <>
+      <path d="M17 31V15" />
+      <path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z" />
+      <path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z" />
+    </>
+  ),
 };
 
 export interface IconProps {
@@ -167,7 +186,7 @@ export function Icon({
     <svg
       width={size}
       height={size}
-      viewBox="0 0 24 24"
+      viewBox={V2_GRID_ICONS.has(name) ? "0 0 34 34" : "0 0 24 24"}
       fill="none"
       stroke="currentColor"
       strokeWidth={1.6}

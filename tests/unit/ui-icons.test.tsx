@@ -22,6 +22,7 @@ import {
   WORDMARK_PATH,
   WORDMARK_VIEW_BOX,
 } from "../../src/modules/ui/icons/wordmark-paths.ts";
+import { V2_GRID_ICONS } from "../../src/modules/ui/icons/Icon.tsx";
 import { Wordmark } from "../../src/modules/ui/icons/Wordmark.tsx";
 
 import {
@@ -34,10 +35,14 @@ import {
 const repoRoot = resolve(__dirname, "../..");
 
 describe("the icon set (AC-5)", () => {
-  it("draws every icon on the 24 grid with a 1.6 stroke and currentColor", () => {
+  it("draws every icon on its grid (24, or v2's 34) with a 1.6 stroke and currentColor", () => {
+    // TASK-232: design system v2's icons keep the sheet's 34 unit grid; only `leaf` ships.
+    expect([...V2_GRID_ICONS]).toEqual(["leaf"]);
     for (const name of ICON_NAMES) {
       const html = renderToStaticMarkup(<Icon name={name} />);
-      expect(html, name).toContain('viewBox="0 0 24 24"');
+      expect(html, name).toContain(
+        V2_GRID_ICONS.has(name) ? 'viewBox="0 0 34 34"' : 'viewBox="0 0 24 24"',
+      );
       expect(html, name).toContain('stroke="currentColor"');
       expect(html, name).toContain('stroke-width="1.6"');
       expect(html, name).toContain('fill="none"');
@@ -75,6 +80,12 @@ describe("the icon set (AC-5)", () => {
         ),
       )
       .join("\n");
+    // A v2 icon traces to design system v2's sheet ("Line icons, 1.6 stroke"), where it is drawn
+    // on the 34 grid (TASK-232), and to nothing else.
+    const v2Sheet = readFileSync(
+      resolve(repoRoot, "docs/design/system/components.dc.html"),
+      "utf8",
+    );
     const unapproved: string[] = [];
     for (const name of ICON_NAMES) {
       if (MIRRORED_IN_RTL.has(name)) continue;
@@ -86,7 +97,8 @@ describe("the icon set (AC-5)", () => {
         .filter((match) => !["width", "height"].includes(match[1] ?? ""))
         .map((match) => `${match[1] ?? ""}="${match[2] ?? ""}"`);
       expect(geometry.length, name).toBeGreaterThan(0);
-      if (geometry.some((attribute) => !canvas.includes(attribute))) {
+      const source = V2_GRID_ICONS.has(name) ? v2Sheet : canvas;
+      if (geometry.some((attribute) => !source.includes(attribute))) {
         unapproved.push(name);
       }
     }

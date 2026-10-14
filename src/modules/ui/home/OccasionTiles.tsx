@@ -35,12 +35,23 @@
  * favour. `MEDIA_SLOT_SPECS.tile` states its `sizes` for this geometry (50vw mobile, ~17vw
  * desktop) and the two cannot be changed apart without failing
  * `tests/unit/ui-media.test.ts`.
+ *
+ * **"Occasions →" (TASK-232; QA-3 D-08).** The artboards draw the occasions index link beside the
+ * heading on desktop and under it on the phone, the same `.sh` head as Popular choices. It is the
+ * header's reviewed "Occasions" (`nav.category.occasions`) with the drawn arrow icon, and it is
+ * drawn only when the page hands in `indexHref`: `occasionsIndexHref()`, the published `occasions`
+ * link id paired with `listingExists()`, so `/pl/okazje` (no page) is never linked (AC-14, A20).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { Display, Eyebrow } from "../primitives/typography.tsx";
+import {
+  Display,
+  Eyebrow,
+  HEADING_EM,
+  TextLink,
+} from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 import { OCCASIONS_ANCHOR, occasionTiles } from "./occasion-model.ts";
@@ -56,6 +67,8 @@ export interface OccasionTilesProps {
    * is a photograph and a name, not a control (spec 004 §14 A20).
    */
   readonly hubHrefs?: Readonly<Record<string, string>>;
+  /** The occasions index in this locale (`occasionsIndexHref()`, from the page); absent → no link. */
+  readonly indexHref?: string;
 }
 
 const HEADING_ID = "occasions-heading";
@@ -82,6 +95,7 @@ export function OccasionTiles({
   locale,
   headingLevel = "h2",
   hubHrefs = {},
+  indexHref,
 }: OccasionTilesProps): ReactElement {
   const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
@@ -95,11 +109,18 @@ export function OccasionTiles({
       data-fo-occasions
       id={OCCASIONS_ANCHOR}
     >
-      <div className="mb-[28px] md:mb-[48px]">
-        <Eyebrow className="mb-[14px]">{home("occasions.eyebrow")}</Eyebrow>
-        <Display as={headingLevel} id={HEADING_ID} size="display-s">
-          {home("occasions.heading")}
-        </Display>
+      <div className="mb-[28px] flex flex-wrap items-end justify-between gap-x-[40px] gap-y-[16px] md:mb-[48px]">
+        <div>
+          <Eyebrow className="mb-[14px]">{home("occasions.eyebrow")}</Eyebrow>
+          <Display as={headingLevel} id={HEADING_ID} size="display-s">
+            {home.rich("occasions.heading", HEADING_EM)}
+          </Display>
+        </div>
+        {indexHref === undefined ? null : (
+          <TextLink href={indexHref} arrow>
+            {t("nav.category.occasions")}
+          </TextLink>
+        )}
       </div>
       <ul className="grid grid-cols-2 gap-x-[16px] gap-y-[28px] md:grid-cols-6 md:gap-[24px]">
         {tiles.map((tile) => (

@@ -40,7 +40,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { Display, Eyebrow } from "../primitives/typography.tsx";
+import { Display, Eyebrow, HEADING_EM } from "../primitives/typography.tsx";
 
 import { SentencePicker } from "./SentencePicker.tsx";
 
@@ -129,9 +129,9 @@ export function HomeHero({
               as={headingLevel}
               id="hero-heading"
               size="hero"
-              className="md:text-title-fluid max-md:text-on-inverse leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing)"
+              className="md:text-title-fluid max-md:text-on-inverse max-md:[&_em]:text-on-inverse-accent leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing)"
             >
-              {t("hero.heading")}
+              {t.rich("hero.heading", HEADING_EM)}
             </Display>
             <p
               className="text-ui md:text-lede-fluid md:text-ink-muted max-md:text-on-inverse m-0 max-w-[32ch] leading-[1.5] md:max-w-[38ch]"
