@@ -281,6 +281,14 @@
       "h": 4150
     },
     {
+      "file": "wireframes/invoice-pdf.dc.html",
+      "title": "Invoice and credit note · the A4 PDF · spec 018",
+      "x": 2000,
+      "y": 166709,
+      "w": 1440,
+      "h": 2600
+    },
+    {
       "file": "wireframes/category-hub-desktop.dc.html",
       "title": "Category hub · no destination · desktop · v2",
       "x": 0,

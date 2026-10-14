@@ -176,6 +176,50 @@
     </div>
 
     <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The pay branch · specs 013 and 018 · test and live (2026-10-14)</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">from Pay to the link the buyer keeps</h2><p style="margin:0;font-size:var(--text-sm);color:var(--color-ink-2);max-width:110ch">Replaces step 08's “Place” and step 09 when <code>checkoutMode()</code> is <code>test</code> or <code>live</code>; demo keeps 08 and 09 above. Methods at launch: card, Apple Pay, Google Pay (founder 13-5). BLIK is drawn when its task is scheduled. Thumbnails only; the screens are <code>wireframes/checkout-*</code> (spec 013 pass), <code>confirmation-*</code> and <code>track-order-*</code>.</p></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">P1</span><b>Step 3 · Pay</b></header>
+        <code>/en-gb/checkout?step=review</code>
+        <div class="thumb"><div class="ink"></div><div class="box">1 ✓ · 2 ✓ · 3 Check</div><div class="box">Payment · Stripe Element (Card · Apple Pay · Google Pay)</div><div class="box">Before you pay · the seven items</div><div class="box" style="border-color: var(--color-accent)">Pay &pound;45.90 and place order</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Pay. The island runs <code>elements.submit()</code>, then <code>placeOrderAction</code> (order <code>placed</code>), then <code>confirm</code> (one PaymentIntent from the order, manual capture for card and wallets), then <code>stripe.confirmPayment</code>.</dd><dt>Trust</dt><dd><span class="trust">The amount on the button equals the recap and the charge; the pre-contract block sits directly above it; 3DS on every card (13-1).</span></dd><dt>Reads</dt><dd>the draft, the quote, <code>prepare()</code>'s Element options</dd><dt>Index</dt><dd>noindex, nofollow + robots disallow</dd><dt>Spec</dt><dd>013 · AC-1, AC-3, AC-7</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">P2</span><b>Declined · retry</b></header>
+        <code>/en-gb/checkout?step=review</code>
+        <div class="thumb"><div class="ink"></div><div class="box" style="border-color: var(--color-accent)">Your bank declined this card. Try another card or payment method.</div><div class="box">Element · same intent</div><div class="box">Pay &pound;45.90 and place order</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Try again, with the same or another card or wallet. The order stays <code>placed</code>; one <code>order.payment_attempt_failed</code> per distinct decline; nothing to retype, and a refresh rebuilds step 3 from the order.</dd><dt>Trust</dt><dd><span class="trust">Our words, in the buyer's language, never the bank's; “Nothing was charged” where true.</span></dd><dt>Exit</dt><dd>Left unpaid for 2 hours: <code>abandoned</code>, or <code>payment_failed</code> after a decline (13-9). Coming back shows “cancelled”.</dd><dt>Spec</dt><dd>013 · AC-5, AC-17</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">P3</span><b>3DS · the bank's check</b></header>
+        <code>Stripe modal, or the bank's page</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Step 3 behind a scrim</div><div class="box" style="min-height:60px">The bank's own check (Stripe's frame)</div><div class="box">Processing your payment…</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Approve in the banking app or with a code. Most banks pass without a challenge.</dd><dt>Branches</dt><dd>Approved in a modal: back to P2's island, which goes to P4. Approved after a full redirect: the bank returns to <code>/en-gb/checkout/return</code>. Failed: P2 with <code>payments.error.authenticationFailed</code>.</dd><dt>Spec</dt><dd>013 · AC-4, AC-33, AC-38</dd></dl>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">P4</span><b>Return route · 303</b></header>
+        <code>/en-gb/checkout/return → /en-gb/checkout/done</code>
+        <div class="thumb"><div class="ink"></div><div class="box">GET, reads nothing from the query</div><div class="box"><code>syncFromProvider</code> → reconcile</div><div class="box">303, no query · no-store · no-referrer</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>None. The return route, or a webhook, whichever comes first, retrieves the intent and writes A6 row 1 (<code>authorised</code>). The webhook is idempotent, so the second one writes nothing.</dd><dt>Trust</dt><dd><span class="trust">No client secret in any URL, log or page; the buyer sees the result without waiting for a webhook.</span></dd><dt>Spec</dt><dd>013 · AC-4, AC-11, AC-21 to AC-24</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">P5</span><b>Confirmation · held</b></header>
+        <code>/en-gb/checkout/done</code>
+        <div class="thumb"><div class="ink"></div><span>Thank you. Here is what happens next.</span><div class="box" style="border-color: var(--color-ink)">&pound;45.90 · held, not charged, until a florist accepts it</div><div class="box">Confirmation to a•••@example.com · four steps</div><div class="box">Track · Calendar · Invoice · Share</div><div class="box">Cancel for free</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Keep the link, or cancel for free while the status is in E (until our florist accepts). After 24 hours (the cookie) a buyer cancels by writing to us (018 Q15).</dd><dt>Branches</dt><dd><code>placed</code>: “Your payment was not completed”, Try again → P1. <code>payment_failed</code> or <code>abandoned</code>, or cancelled by the buyer: “This order was cancelled and nothing was charged.”</dd><dt>Trust</dt><dd><span class="trust">Never “confirmed” before acceptance; the hold sentence next to the held amount.</span></dd><dt>Spec</dt><dd>013 · AC-6 · 018 · AC-9, AC-28</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">P6</span><b>Accepted · captured · tracked</b></header>
+        <code>/en-gb/track/[token]</code>
+        <div class="thumb"><div class="ink"></div><span>Being made</span><div class="box">✓ We have your order · ✓ Accepted by Anna · ● Being made</div><div class="box">Anna · our florist in Warszawa</div><div class="box">Calendar · Share the tracking link</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>None. Our florist accepts (spec 011); the outbox captures the full hold once, then writes <code>paid</code> and <code>in_production</code> in one transaction, so nothing is made before it is paid. The invoice is issued at that capture and emailed (spec 016 B8).</dd><dt>Branches</dt><dd>Capture refused: <code>payment_failed</code>, the founder tells the florist to stop. Hold about to lapse with no acceptance: the sweep cancels and voids it (D4). Re-offers show as “We are offering your order to another florist”.</dd><dt>Index</dt><dd>noindex, nofollow; <code>/*/track/</code> disallowed</dd><dt>Spec</dt><dd>013 · AC-13 to AC-18 · 018 · AC-3 to AC-7</dd></dl>
+      </div>
+    </div>
+
+    <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
       <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">Where the journey can end early</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">and what each exit is for</h2></div>
       <table class="spec" style="border-collapse: collapse; width: 100%; font-size: var(--text-sm);">
         <tr><th style="text-align: start; border-block-end: var(--rule); padding: 8px 12px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">Exit</th><th style="text-align: start; border-block-end: var(--rule); padding: 8px 12px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">Where</th><th style="text-align: start; border-block-end: var(--rule); padding: 8px 12px; font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3);">What we offer instead</th></tr>
