@@ -83,6 +83,12 @@ const BYPASSED = [
   "/vendor",
 ];
 
+/** A file name with an extension Cloudflare caches by default (`.css`), which no route serves. */
+const PROBE = "fo-edge-probe.css";
+
+/** The probe outside every bypassed path, bare and under a locale prefix. */
+const PROBE_CONTROLS = [`/${PROBE}`, `/en/${PROBE}`];
+
 const hostOf = (url: string): string => {
   try {
     return new URL(url).hostname;
@@ -151,17 +157,30 @@ test.describe
     await edge.dispose();
   });
 
-  test("T-16: every dynamic path, bare and under a locale prefix, bypasses the cache", async ({
+  test("T-16: every dynamic path, bare and under a locale prefix, is never eligible for cache", async ({
     playwright,
   }) => {
     const edge = await context(playwright, STAGING_URL);
+    // The control: a static extension Cloudflare caches by default is eligible outside the
+    // bypassed paths, and staging's origin answers `no-store`, so the edge reports BYPASS.
+    for (const path of PROBE_CONTROLS) {
+      const response = await edge.get(path, { maxRedirects: 0 });
+      expect(response.headers()["cf-cache-status"], `control ${path}`).toBe(
+        "BYPASS",
+      );
+    }
+    // A Cache Rule set to "Bypass cache" makes the request ineligible, which Cloudflare reports
+    // as DYNAMIC, not BYPASS (TASK-101 E-7). The probe under each path proves it is the rule: the
+    // same extension outside the rule is eligible (the control above).
     for (const path of BYPASSED) {
-      for (const attempt of [1, 2]) {
-        const response = await edge.get(path, { maxRedirects: 0 });
-        expect(
-          response.headers()["cf-cache-status"],
-          `${path} (request ${String(attempt)})`,
-        ).toBe("BYPASS");
+      for (const probe of [path, `${path}/${PROBE}`]) {
+        for (const attempt of [1, 2]) {
+          const response = await edge.get(probe, { maxRedirects: 0 });
+          expect(
+            response.headers()["cf-cache-status"],
+            `${probe} (request ${String(attempt)})`,
+          ).toBe("DYNAMIC");
+        }
       }
     }
     await edge.dispose();
@@ -200,6 +219,22 @@ test.describe
         await edge.dispose();
         await origin.dispose();
       }
+    });
+
+    test("T-18 (spec 040 §14 A7): ?utm_source=x on a corridor URL returns the bare URL's body, byte for byte", async ({
+      playwright,
+    }) => {
+      // On the Free plan a marketing parameter stays in the cache key (TASK-101 E-1); correctness
+      // rests on the body being the same.
+      const edge = await context(playwright, STAGING_URL);
+      const [bare, tagged] = await Promise.all([
+        edge.get(CORRIDOR, { maxRedirects: 0 }),
+        edge.get(`${CORRIDOR}?utm_source=x`, { maxRedirects: 0 }),
+      ]);
+      expect(bare.status()).toBe(200);
+      expect(tagged.status()).toBe(200);
+      expect(sha256(await tagged.body())).toBe(sha256(await bare.body()));
+      await edge.dispose();
     });
 
     test("T-19: robots.txt through Cloudflare is the origin's, byte for byte, with one Sitemap: line and Disallow: /", async ({
@@ -285,6 +320,33 @@ test.describe
     });
   });
 
+  test("T-21: 100 POSTs to a document path within a minute are never answered 429 by the edge", async ({
+    playwright,
+  }) => {
+    test.setTimeout(90_000);
+    const edge = await context(playwright, STAGING_URL);
+    const started = Date.now();
+    const limited: string[] = [];
+    for (let sent = 0; sent < 100; sent += 1) {
+      const response = await edge.post(CORRIDOR, {
+        form: { probe: "1" },
+        maxRedirects: 0,
+      });
+      if (
+        response.status() === 429 ||
+        response.headers()["cf-mitigated"] !== undefined
+      ) {
+        limited.push(`POST ${String(sent + 1)} → ${String(response.status())}`);
+      }
+    }
+    expect(limited).toEqual([]);
+    expect(
+      Date.now() - started,
+      "the 100 POSTs fell within one minute",
+    ).toBeLessThan(60_000);
+    await edge.dispose();
+  });
+
   // Last: it blocks this IP's /api/ requests for the rule's 10-second timeout.
   test("T-21: POSTs to /api/consent are rate-limited (429) within two 10-second windows", async ({
     playwright,
@@ -332,12 +394,5 @@ test.describe("T-16 HIT half: a cached host (opt-in, the cutover's)", () => {
     expect(second.headers()["set-cookie"]).toBeUndefined();
     expect(second.headers()["vary"]).toBeUndefined();
     await edge.dispose();
-  });
-
-  test("?utm_source=x is served from the same cache entry", () => {
-    test.fixme(
-      true,
-      "TASK-101 E-1: excluding utm_*, gclid and fbclid from the cache key is an Enterprise-plan feature; open until the spec 040 ruling",
-    );
   });
 });
