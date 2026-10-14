@@ -52,11 +52,26 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
 
 ## Escalations
 
-_None recorded._
+- **E1 (implementer, 2026-10-15): the LCP edge is not a cold path, so no warm-up moves it.** The
+  binding clause says: "If the cause turns out to be the page and not the warm-up, stop and
+  escalate". The evidence is in `## Result` (C1 to C3). In short: the home documents' simulated
+  LCP is their simulated FCP plus about 450 ms in every run. That FCP follows the origin's
+  per-request quality-11 Brotli encode, which costs the same warm or cold. Taking that cost away
+  made LCP worse (6 of 9 runs over 2,000 ms), because the page's async script chunks then finish
+  before first paint and Lantern counts them toward the LCP. The margin depends on the page's
+  script-versus-paint race and on the measurement basis (A12, A18), and those are decisions
+  above an implementer. Options for the orchestrator or founder: (a) the page keeps
+  non-critical chunks from finishing before the LCP paint (a spec 004 change); (b) TASK-103's
+  basis (median, HTTP/2), knowing that a faster origin alone made the race worse here; (c)
+  accept that the margin is thin. This PR delivers the binding warm-up, and with it the evidence
+  that was missing: the job had kept no Lighthouse report since `upload-artifact@v4` started
+  skipping dot-directories.
 
 ## Progress
 
-_Not started._
+- 2026-10-15: cause investigated (30 CI runs, 18 local runs; see `## Result`); warm-up script,
+  discarded first-URL pass, per-run LCP table and the artifact fix written test-first; cheap
+  gates pass; pushed for the CI dry run.
 
 ## Result
 

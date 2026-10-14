@@ -408,6 +408,67 @@ describe("the lighthouse job's step summary (spec 004 §11, AC-24; TASK-056)", (
   it("says so in the summary when the manifest is missing, instead of printing nothing", () => {
     expect(summaryStep?.run ?? "").toContain("No per-URL table");
   });
+
+  it("prints every measured run's LCP per URL, not only the representative run (TASK-235)", () => {
+    // Under `optimistic` a red LCP means all three runs were over, which the representative row
+    // cannot show; the per-run table is what tells a cold first run from a slow runner.
+    const run = summaryStep?.run ?? "";
+    expect(run).toContain("LCP of every measured run");
+    expect(run).toContain('.audits["largest-contentful-paint"].numericValue');
+  });
+});
+
+describe("the lighthouse job warms the audited pages before measuring (spec 004 §14 A18; TASK-235)", () => {
+  const steps = ci.jobs["lighthouse"]?.steps ?? [];
+  const indexOf = (predicate: (run: string) => boolean): number =>
+    steps.findIndex((step) => predicate(step.run ?? ""));
+  const serve = indexOf((run) => run.includes("pnpm lighthouse:origin"));
+  const warmup = indexOf((run) =>
+    run.includes("node scripts/seo/lighthouse-warmup.ts"),
+  );
+  const measured = indexOf((run) => /@lhci\/cli@[\d.]+ autorun/.test(run));
+
+  it("runs the subresource warm-up after the origin is up and before the measured `lhci autorun`", () => {
+    expect(serve).toBeGreaterThanOrEqual(0);
+    expect(warmup).toBeGreaterThan(serve);
+    expect(measured).toBeGreaterThan(warmup);
+  });
+
+  it("warms through the Brotli origin, not `next start` directly", () => {
+    // The script reads `LHCI_BASE_URL`; the job pins it to the proxy on :3001.
+    expect(ci.jobs["lighthouse"]?.env?.["LHCI_BASE_URL"]).toBe(
+      "http://127.0.0.1:3001",
+    );
+    expect(steps[warmup]?.run).not.toMatch(/--base\s/);
+  });
+
+  it("pays the cold browser start with one discarded Lighthouse run outside `.lighthouseci/`", () => {
+    const run = steps[warmup]?.run ?? "";
+    const discarded = run.slice(run.indexOf("collect"));
+    expect(run).toMatch(
+      /cd "\$RUNNER_TEMP" && npx --yes @lhci\/cli@[\d.]+ collect/,
+    );
+    expect(discarded).toContain("--numberOfRuns=1");
+    // Same settings as the measured runs, so it warms what they will fetch.
+    expect(discarded).toContain(
+      '--config="$GITHUB_WORKSPACE/lighthouserc.json"',
+    );
+    // Never `autorun` or `assert`: a warm-up run must not be able to fail or pass a budget.
+    expect(run).not.toMatch(/autorun|lhci\/cli@[\d.]+ assert/);
+    // The same pinned version as the measured run.
+    const version = /@lhci\/cli@([\d.]+)/;
+    expect(run.match(version)?.[1]).toBe(
+      steps[measured]?.run?.match(version)?.[1],
+    );
+  });
+
+  it("keeps the reports: `.lighthouseci/` is a dot-directory `upload-artifact@v4` skips by default", () => {
+    const upload = steps.find((step) =>
+      (step.uses ?? "").startsWith("actions/upload-artifact@"),
+    );
+    expect(upload?.with?.["path"]).toBe(".lighthouseci/");
+    expect(String(upload?.with?.["include-hidden-files"])).toBe("true");
+  });
 });
 
 describe("the catalogue-check job (spec 005 AC-5's CI half, TASK-062)", () => {

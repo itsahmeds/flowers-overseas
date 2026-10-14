@@ -146,6 +146,7 @@ task actually touches.
 | `seo/generate-sitemap-fixtures.ts` | — | The committed sitemap fixtures, generated from the real builders (spec 007 §2… |
 | `seo/lib.ts` | — | Shared plumbing for the three SEO validator CLIs (spec 001 §2 "CI", §6, AC-22 /… |
 | `seo/lighthouse-urls.ts` | `lighthouse` | `lighthouse-urls` (spec 001 §2 "CI", AC-23 / T-24, TASK-009) |
+| `seo/lighthouse-warmup.ts` | — | `lighthouse-warmup` — fetch every audited page **and its subresources** through… |
 | `seo/validate-hreflang.ts` | `seo:validate` | `validate-hreflang` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
 | `seo/validate-schema.ts` | `seo:validate` | `validate-schema` (spec 001 §2 "CI", §6, §8, AC-22 / T-23, TASK-009) |
 | `seo/validate-sitemap.ts` | `seo:validate` | `validate-sitemap` (spec 001 §2 "CI", §6, AC-22 / T-23, TASK-009) |
@@ -159,7 +160,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 289 |
+| `tests/unit/` | 290 |
 | `tests/integration/` | 21 |
 | `tests/contract/` | 12 |
 | `tests/e2e/` | 55 |
