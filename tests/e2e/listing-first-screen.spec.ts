@@ -133,7 +133,8 @@ async function firstRow(
           top: card.getBoundingClientRect().top,
           bottom:
             price?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY,
-          price: price?.textContent ?? "",
+          // `innerText`: a marker hidden by CSS is not beside the price.
+          price: price?.innerText ?? "",
         };
       });
   });
@@ -259,7 +260,8 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
         for (let index = 0; index < count; index += 1) {
           const price = cards.nth(index).locator("[data-fo-price]");
           await expect(price).toBeVisible();
-          await expect(price).toContainText("all in");
+          // Rendered text, so a marker hidden by CSS below `md` counts as absent (T-49).
+          await expect(price).toContainText("all in", { useInnerText: true });
         }
 
         // Each product's URL once in `<main>` (AC-31).

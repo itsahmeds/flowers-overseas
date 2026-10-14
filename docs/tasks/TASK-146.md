@@ -80,6 +80,8 @@ _None recorded._
 - 2026-10-14: built with TASK-187 in PR 214 (branch `task/TASK-146-country-listings-depth4`): the
   depth-4 rewrite, the parameter route, the cache header and the hub robots header (c2397b24); the
   `/review 99` carry-forwards (69788b3f).
+- 2026-10-14 (finisher): rebased on `48837dca`; rendered in the build slot; the depth-4 e2e run
+  green and seen red with the depth-4 category rewrite cut and the hub header rule cut (6dfa995b).
 
 ## Result
 
@@ -104,8 +106,11 @@ draft, head `4e747f67`, not yet run in CI.
     the hub header's shapes and value;
   - e2e `tests/e2e/listing-depth4-params.spec.ts` compares responses with each other, not with a
     literal (page 2 ≠ page 1, sorted order ≠ bare order, canonical and robots against the bare
-    page's), plus the hub header value `noindex, follow`, which no other rule serves. **Not yet
-    run.**
+    page's), plus the hub header value `noindex, follow`, which no other rule serves. **Run green
+    by the finisher** in both e2e projects, and **seen red** with the depth-4 category source cut
+    from `listingRewriteRules()` (page 2 = page 1, the self-canonical, `?page=1`, the sorted case,
+    the no-JS pager) and with `parameterisedHubHeaderRules()` cut from `next.config.ts` (the hub
+    header case); restored.
 - **Carry-forwards from `/review 99`:**
   - `hubs.spec.ts` and `country-occasion.spec.ts` now assert the trailing-slash `Location` with
     `toBe`. This is not mutation-run yet: it needs a server;

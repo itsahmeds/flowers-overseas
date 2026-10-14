@@ -189,6 +189,7 @@ One line per coherent step, newest last.
 - 2026-10-14: depth-4 parameter route, rewrites, cache header and the parameterised-hub robots header (c2397b24).
 - 2026-10-14: registry `listing-presentation.ts`, `country.state` enum, `countNoun`, A9/A10/P3 copy, `formatDateParts`, the phone pager (d32a01f5).
 - 2026-10-14: the three country first screens rebuilt to round 2, the occasion's lead figure as `items[0]`'s own `<li>` (689dda11); unit cases (d1db2eec); e2e for depth-4 params, first screens, AC-45, R8, the phone label (a2e6b8bb, 69788b3f).
+- 2026-10-14 (finisher, `wo-214-finish`): rebased on `48837dca`, map regenerated; the barrel pins (9ea2e339); rendered in the build slot: first row in view at 1280 × 800, the disclosure hook, e2e fixes (6dfa995b); geometry mutations seen red; screenshots in `.claude/state/shots-187/`.
 
 ## Result
 
