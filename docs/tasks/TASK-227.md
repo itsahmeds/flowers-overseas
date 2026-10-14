@@ -30,3 +30,22 @@ _None recorded._
 - 2026-10-15: rebased on 10e25a87; fix in `Gallery.tsx` (`lg:grid!`, `lg:overflow-clip`) and the width-scan e2e `tests/e2e/product-gallery-containment.spec.ts`.
 
 ## Result
+
+**PR 228.** A defensive fix: the fault was not reproducible on main.
+
+- **Reproduction.** A production build of 43ad442e, whose CSS chunk is byte-identical to the one staging serves. Scanned 768–1600 every 16 px plus 1330 in Playwright Chromium, Chrome 155 and WebKit 26.6. No overlap at any width: the strip is a grid from 1024 and TASK-197's clipped scroller below. Soft navigation into the page renders correctly too. The founder did not name a browser.
+- **The founder's picture** is matched pixel for pixel by forcing the strip (`<ul data-fo-scroller>`) to `display: flex` at 1360 (`.claude/state/shots-197/fix-before-simulated-strip-as-row-1360x860.png`). So a `display: flex` beat `lg:grid` in the founder's browser while the strip's other `lg:` classes held.
+- **Fix** (`src/modules/ui/product/Gallery.tsx`). `lg:grid!` means a layered important grid, which no later or unlayered `display: flex` can override. `lg:overflow-clip` replaces `lg:overflow-visible`, so the strip never paints outside its box and is not a scroll container. Full-page screenshots at 1024, 1280 and 1440 are pixel-identical before and after, so the visual baselines are unchanged.
+- **Test.** `tests/e2e/product-gallery-containment.spec.ts` (e2e-desktop) scans 768–1600 in steps of 32, plus 1330 and 1366. At each width it checks that no visible photo intersects the buy column, that every visible photo stays in `[data-fo-pdp-gallery]`, and that from `lg` the strip is a grid with every photo whole, the thumbnail on column 1 and the hero after it. It also checks that exactly one `fetchpriority="high"` image exists, on the hero.
+- **Watched red.**
+  - On main, with an injected later `.flex{display:flex}` rule: red at 1024 ("painted under the buy column").
+  - On main, with the strip forced to flex: red. Forced to flex and clipped: red on "the strip is a grid".
+  - On the fix, the same two CSS mutations stay green, because the fix holds.
+  - On the fix, an inline important `display: flex`: red on "the strip is a grid".
+  - On the fix, the scroller's overflow made visible: red at 768 ("leaves its column").
+  - Unmutated: green on main and on the fix.
+  - **Red on current main without a mutation could not be shown**, because main does not fail in any engine available here.
+- **Rulings applied** (orchestrator, 2026-10-14): `md`–`lg` stays TASK-197's scroller; the dots note is corrected to `lg:hidden`.
+- **Local expensive runs** (build slot held; load average 17 at acquire, then falling): one `next build` plus `next start` for the after screenshots `.claude/state/shots-197/fix-after-{1024x860,1280x800,1330x860,1440x900}.png` and the spec's mutation runs. In those shots the photographs show their alt text, because `media.flowersoverseas.com` does not resolve (DNS) at the time of the run. The layout (thumbnail column, hero on columns 2–7, nothing under the buy column) is as designed.
+- **Codebase map:** 17,390 bytes after regeneration, under 17,408.
+
