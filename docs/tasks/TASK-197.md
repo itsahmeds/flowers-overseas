@@ -124,6 +124,7 @@ One line per coherent step, newest last.
 - 2026-10-14: carry-forwards recorded, draft PR 215 opened.
 - 2026-10-14: v3 layout (gallery subgrid, buy section and phone sheet, sizes, date scroller, trail, sections in A12's order, docked bar by scroll timeline, `LanguageAlternates`), unit tests moved to v3 (bb276293).
 - 2026-10-14: `tests/e2e/product-v3.spec.ts` (16 cases, six mutations watched red), visual cases re-pointed, README differences, axe fix on the preview date row (c2c78048).
+- 2026-10-14: rebased on `origin/main` (48837dca) and pushed, head 719a9642. **Partial at the 180 min limit:** the PR is still a draft, and no CI has run on the head. Still owed: `gh pr ready 215`, then the `visual:baselines` label alone, then commit the linux baselines for `product-{desktop,mobile}-first` and `product-mobile-bar`, then toggle `ci:full`.
 
 ## Result
 
