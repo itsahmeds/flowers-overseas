@@ -27,6 +27,7 @@ One dated bullet per `/review`, newest last.
 - **From `/break 104` round 3 (2026-09-28):** once production `web` exists with its trigger on `release`, paste the exit-0 output of `pnpm railway:check` into this brief's `## Result`. Spec 040 T-44 moved that proof here from TASK-157.
 
 - **From `/review 115` (2026-09-29):** T-43, the rollback rehearsal with the founder (spec 040 AC-39), is owed once production `web` exists: after this task creates `web` on `release`, the founder does step 1 as a dashboard redeploy (image redeploy under five minutes) and runs `pnpm release:rollback` from their own terminal; `release:status` clean; production `commit` = `release`. Record it in `TASKS.md`.
+- **From `/review` round 1 and round 2 of PR 210 (2026-10-14), for spec 040.** The runtime `DATABASE_URL` login must not be a member of `app_owner`. `0001` grants the migration login both `app_web` and `app_owner`, so with a login that holds both, `SET ROLE app_owner` works from `app_web` and a SQL injection becomes `RESET ROLE`; T-18 passes only under an `app_web`-only login. Create the Railway runtime login with `app_web` alone, and have `pnpm railway:check` or the runbook say so. If this task does not create that login, the task that does carries this clause.
 
 ## Escalations
 

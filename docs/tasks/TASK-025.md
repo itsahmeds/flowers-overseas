@@ -16,6 +16,7 @@ Branch `task/TASK-025-retention-sweep`. §8 retention is implemented, not promis
 
 - **From the TASK-019…023 feature PR (PR 210).** `retention_policy.demo_order_personal` has `retention_days = 1`, the production figure. Spec 010 §5.1 A gives 7 days for staging and PR environments, but a migration cannot tell environments apart, so the legal note carries that figure and the sweep must apply it per environment. `recipient_contact` names `recipient`. Its note also covers `recipient_address` and `order.recipient_snapshot`.
 - **From review round 1 on PR 210.** `audit_log` is now append-only (`0009`, `AUDIT_LOG_APPEND_ONLY`). If `before`/`after` must be pseudonymised under a retention rule, that needs its own migration-owned path, because the sweep cannot `UPDATE` it.
+- **From `/review` round 2 of PR 210 (2026-10-14), HOLE 2 ACCEPTABLE (reviewer).** In the retention sweep's tests, add the positive case that the `system` role can set `redacted` and `redacted_at` and edit `email_normalised` and `marketing_consent` on `customer` (the buyer-column guard fires for `customer` only), beside the `created_at` and `id` refusals for a buyer. `audit_log` is append-only for every role, with one carve-out: `0009` lets the FK's own `ON DELETE SET NULL` on `actor_user_id` through. The sweep still cannot `UPDATE` `before`, `after` or `actor_label`.
 
 ## Escalations
 

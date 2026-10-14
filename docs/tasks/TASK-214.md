@@ -26,6 +26,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** the same backend agent takes TASK-214 and then TASK-215 (shared florist view models and `src/modules/orders`); one feature PR closing both is allowed (`CLAUDE.md` conventions).
+- **From `/review` round 2 and `/break` round 2 of PR 210 (2026-10-14).** For this task, `listFloristAssignments` and `floristOrderView`: record `timeout` at `sla_expires_at`, because until it does a florist reads an open offer (`response IS NULL`) through `partner_order` and `partner_order_line`; and close partner visibility of a cancelled order whose offer is still open. The engine (TASK-202) writes the `timeout`; this task's views must not assume it has already happened, and must read through `partner_order` and `partner_order_line` only.
 
 ## Escalations
 

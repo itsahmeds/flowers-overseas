@@ -31,6 +31,7 @@ Branch `task/TASK-022-schema-auth-roundtrip`. §13 Q1 resolved: Auth.js v5 + Dri
   Once a migration creates the parent table, that test fails until a migration adds `partner_member_user_id_users_id_fk` and `customer_user_id_users_id_fk`. When you
   add it, also add the live catalogue assertion (`pg_constraint` by name, with its delete rule) to
   the integration suite, and add the row to `tests/fixtures/schema-foreign-keys.ts`.
+- **From `/review` round 3 of PR 210 (2026-10-14), nit 1.** Add one case that calls the Auth.js adapter's `deleteUser` on a user who is an audit actor, so the `deleteUser` clause is asserted through the adapter and not only by its SQL (`DELETE FROM users`, which takes the same FK action). The `0009` trigger lets exactly that `SET NULL` through; the row survives with `actor_label` intact. Nit 2, intended: a staff member who can delete users can null any audit actor through the FK, and `actor_label` keeps the name; pseudonymising the label stays with TASK-025.
 
 ## Escalations
 
