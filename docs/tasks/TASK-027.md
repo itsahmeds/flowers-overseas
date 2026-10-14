@@ -47,6 +47,7 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
 - **Also from PR 210: two mutants that change nothing.**
   - Dropping the partner predicate from `payout_line_partner` changes nothing, because the `EXISTS` on `payout` is itself filtered by `payout`'s policy.
   - Dropping `REVOKE CREATE ON SCHEMA public` changes nothing on PG15+, where that is already the default.
+- **From `/break` round 2 and `/review` round 2 of PR 210 (2026-10-14).** Pin `app_current_role()`'s `SET search_path` and the `security_barrier` option (and `SECURITY DEFINER` with a pinned `search_path` on the lookups) with an integration test, not unit text: an attack with a `pg_temp` leaky function in a `WHERE` on `partner_order` must fail. Today removing any of them goes red only in `tests/unit/rls-policies.test.ts`. Equivalent mutants to skip: `nullif(…,'')` removed from `app_current_role` (an empty role matches no policy), and `REVOKE CREATE ON SCHEMA public` (PG16 default). The `to_regclass('public.users')` guard in the `audit_log` trigger has no test that runs the state before `0010`; add one if the live check reads that state.
 
 ## Escalations
 

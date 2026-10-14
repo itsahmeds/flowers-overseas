@@ -19,7 +19,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/review` of PR 211 (2026-10-14).** Two nits, none required. (1) The brief's Fence line names only the four pins; the Escalations record the widening (the sharp and libvips pin, and the e2e fence). (2) The spec's `promotedCopies` helper in `tests/e2e/csp-enforced.spec.ts` assumes the `APP_PAGE/<hash>/$<path>.html` layout; a future Next layout change makes the test fail loudly on `toContain(payload)`, not silently. Breaker: HOLDS on `1f4f41b9`, no holes; the Lighthouse row was not seen by either agent before merge.
 
 ## Escalations
 

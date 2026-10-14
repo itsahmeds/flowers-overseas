@@ -16,7 +16,6 @@ Branch `task/TASK-023-rls-policies`. §13 Q4 resolved: session-variable RLS, adm
 
 ## Carry-forwards
 
-_None recorded._
 - **From `/review 71` (2026-09-16, TASK-014):** both Neon URLs connect as `neondb_owner`, which has `rolbypassrls = true`; `SET LOCAL ROLE app_web` is the isolation and a `RESET ROLE` in the same transaction restores bypass. AC-18 must assert on the **connecting** role (a dedicated `app_web` login without `BYPASSRLS`, or a proof that no code path can `RESET ROLE`), not only on `current_user` inside the helper.
 - **From TASK-018 (PR 200).** For AC-16 and the customer scope: `payout_line` has no `partner_id`, so
   its policy reaches the partner through `payout` (`payout_line_payout_id_idx` serves the join);
@@ -36,6 +35,9 @@ _None recorded._
   - `partner_coverage_country_check()`, which reads `fulfillment_partner` `FOR SHARE`, plus `city`
     and `postcode_zone`;
   - `fulfillment_partner_coverage_country_guard()`, which reads `partner_coverage`.
+- **From `/review` rounds 1 to 3 and `/break` rounds 1 to 3 of PR 210 (2026-10-14).** Reviewer's carry-forwards, copied. (1) The engine records `timeout` at `sla_expires_at` and closes partner visibility of a cancelled order with an open offer (see TASK-202, TASK-214, TASK-215). (2) `app_current_role`'s `SET search_path` and the `security_barrier` option on the partner and buyer views are held by unit text only; an integration attack (a `pg_temp` leaky function in a `WHERE` on the view) would pin them (TASK-027). (3) The runtime login must not be a member of `app_owner`, because `SET ROLE app_owner` is then one `RESET ROLE` away (TASK-104 or spec 040's runtime-login task). (4) `audit_log` is append-only for every role; pseudonymising `actor_label`, `before` or `after` needs a migration-owned path (TASK-025). (5) Declared and not reopened: spec 013 columns come with spec 002 A7, and AC-18's `pgboss` clause is TASK-024's.
+- **From `/break` round 2 of PR 210 (2026-10-14), HOLE 2 ACCEPTABLE (reviewer).** The customer self-update guard had no test that staff and system may still edit `email_normalised`, `marketing_consent` and `redacted`, and none for a buyer's `id` and `created_at`. The code was correct; round 3 added the cases (admin and system edits succeed, `CUSTOMER_COLUMN_READ_ONLY` on `created_at` and `id`) and the breaker closed it. HOLE 1 (`audit_log` append-only refused the `ON DELETE SET NULL` update) was closed by the one-update carve-out in `0009`; the breaker's round 3 holds. Survivors left, not holes: the `to_regclass('public.users')` guard (no test runs the 0009-only state; the error text would change, the refusal would not) and the `TG_OP` guard (an equivalent mutant).
+- **From the reviewer's notes on PR 210 (2026-10-14), for the account-area task.** A buyer can edit any contact column of their own `customer` row except the guarded ones; if the account area needs a narrower list, change the guard's column tuple and add the case. `order_event_customer` was replaced by `customer_order_event` (a projection with no `payload` or `actor`); spec 018 reads through it.
 
 ## Escalations
 

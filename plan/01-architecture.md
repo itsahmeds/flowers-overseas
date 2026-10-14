@@ -140,7 +140,7 @@ placed → paid → routed → accepted → in_production → out_for_delivery �
                  │          │
                  │          └─ declined → routed (re-offer) → … | manual_reroute | cancelled_refunded
                  └─ no_partner_available → manual_reroute | cancelled_refunded
-paid → payment_failed (terminal) ; any post-paid → refund_requested → refunded_partial | refunded_full
+paid → payment_failed (terminal) ; any post-paid → refund_requested → refunded_full (a partial refund records `order.refunded_partial` and keeps the status; spec 002 §14 A6.6)
 delivered → disputed → resolved | chargeback_lost
 accepted/in_production → substitution_proposed → substitution_accepted | substitution_rejected
 ```

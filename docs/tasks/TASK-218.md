@@ -25,6 +25,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** after this merges, TASK-220, TASK-221 and TASK-222 may run in parallel; each adds only its own `admin.*` namespace to `messages/admin/en.json` and its own navigation entry.
+- **From PR 210 (2026-10-14).** `audit_log` is already append-only: `0009` creates `audit_log_append_only()` with exactly one carve-out, the `UPDATE` that the FK `ON DELETE SET NULL` on `actor_user_id` makes (the key goes from a value to NULL, no other column changes, the user is gone). Extend or replace that function in this task's migration; do not add a second trigger, and keep the carve-out, or deleting a user with an audit row (Auth.js `deleteUser`, GDPR erasure) fails with `AUDIT_LOG_APPEND_ONLY`.
 
 ## Escalations
 
