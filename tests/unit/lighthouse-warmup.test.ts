@@ -1,5 +1,5 @@
 /**
- * `scripts/seo/lighthouse-warmup.ts` — the warm-up the blocking `lighthouse` job runs before its
+ * `scripts/seo/lighthouse-urls.ts --warm` — the warm-up the blocking `lighthouse` job runs before its
  * measured collect (spec 004 AC-24, §14 A18 "warmed"; spec 001 AC-23; TASK-235).
  *
  * The job's old warm-up `curl`ed each document and nothing else, so the stylesheets, the preloaded
@@ -17,12 +17,12 @@ import { afterAll, describe, expect, it } from "vitest";
 import {
   ACCEPT_ENCODING,
   type Fetch,
-  main,
+  warmMain,
   requestHeaders,
   srcsetUrls,
   subresourceUrls,
   warm,
-} from "../../scripts/seo/lighthouse-warmup.ts";
+} from "../../scripts/seo/lighthouse-urls.ts";
 
 const BASE = "http://127.0.0.1:3001";
 
@@ -257,7 +257,7 @@ describe("the CLI", () => {
     });
     const out = sink();
     const err = sink();
-    const code = await main(
+    const code = await warmMain(
       ["--file", urls],
       { LHCI_BASE_URL: BASE },
       out,
@@ -278,7 +278,7 @@ describe("the CLI", () => {
   it("exits 1 and names the problem when anything was not warmed", async () => {
     const { fetch } = stubFetch({ "/en": "", "/de": "" });
     const err = sink();
-    const code = await main(
+    const code = await warmMain(
       ["--file", urls],
       { LHCI_BASE_URL: BASE },
       sink(),
@@ -293,7 +293,7 @@ describe("the CLI", () => {
 
   it("exits 1 when the URL list cannot be read", async () => {
     const err = sink();
-    const code = await main(
+    const code = await warmMain(
       ["--file", join(dir, "missing.json")],
       { LHCI_BASE_URL: BASE },
       sink(),

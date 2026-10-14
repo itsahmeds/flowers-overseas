@@ -75,4 +75,75 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
 
 ## Result
 
-_Pending._
+### Cause (what was measured before any change)
+
+**C0. The failed run kept no report.** `actions/upload-artifact@v4` skips dot-directories by
+default, so run 38592098548 logged "No files were found with the provided path: .lighthouseci/"
+and no `lhr-*.json` exists for it. The evidence below comes from the step logs of 30 `lighthouse`
+jobs (2026-10-14, every completed run in the last 80 workflow runs) and from 18 local runs of the
+measured profile (`lighthouserc.json` settings, `next start` behind `brotli-origin.ts`, inside the
+build slot, at load average 9 to 26, so local numbers show the mechanism and not the margin).
+
+**C1. It is not a cold first run.** Run 38592098548 failed `/en-gb` on all three runs: 2,042,
+2,023 and 2,062 ms. The best run was over, and the three runs sit within 40 ms of each other.
+Run 38522199662 is the same pattern on `/en-gb/poland/flowers` (2,018, 2,022, 2,017). Main's
+run 38602496628 failed five URLs at once (`/en` and the four listing pages), which is a slow
+runner, not a cold path. A cold first run does show, but only on the first URL and only twice
+in 30 jobs: `/en` read 2,627, then 2,158, then 2,005 (38602496628), and 2,600, then 2,210, then
+2,070 (38550156697). Representative-run LCP across the 30 jobs: `/en` 1,680 to 2,627,
+`/en-gb` 1,775 to 2,070, `/de` 1,768 to 2,140, `/pl` 1,720 to 1,992, listings 1,467 to 2,270,
+send-flowers-to pages 1,401 to 1,786. The home and listing pages sit 50 to 250 ms under the
+budget in every run.
+
+**C2. The LCP is the photo, and its number is FCP plus about 450 ms, driven by the proxy's
+encode.** Local runs, before (`/en`, `/en-gb`, `/de`, three runs each): the LCP element is
+`div.photo > picture > img` (spec 004 AC-46). Simulated LCP 1,819 to 2,227 ms. LCP minus FCP is
+450 ms in all nine runs, and FCP follows the origin's server latency as Lighthouse measured it:
+85 to 289 ms. That latency comes from `brotli-origin.ts` encoding at quality 11 on **every**
+request: 90 ms for the 15 KB stylesheet, 180 ms for a 38 KB chunk, 300 ms for the 63 KB chunk
+and 170 ms for the 211 KB `/en` document. The same files come from `next start` in 1 to 4 ms.
+The cost is identical on the first request and the hundredth, so warming does not remove it.
+The encode also runs on the proxy's one thread, so it moves with the runner's CPU, which is the
+run-to-run spread in C1.
+
+**C3. Removing the encode cost made it worse, because the page then loses a race.** As a
+prototype (not shipped), the proxy kept its encoded bytes, keyed by content, and was warmed
+first. Server latency fell to 24 to 67 ms and FCP to 1,290 to 1,473 ms. LCP went bimodal:
+1,634, 1,740 and 1,770 in three runs, and 2,474 to 2,920 in the other six. In the unthrottled
+load the async script chunks now finished before the first paint (for example `/de`: chunks
+done at 126 to 226 ms, paint at 222 ms). Lantern then counts them as LCP dependencies, with
+1.1 to 1.7 s of render delay. In the before state the slow encode held most chunks back until
+after the paint (chunks from 340 to 380 ms, paint at 368 to 425 ms), so only the first small
+chunk was counted. That is the constant 450 ms. The margin depends on when the page's async
+chunks arrive relative to its first paint, under the measurement origin. That makes it the page
+and the measurement basis (A12, A18), not the warm-up: escalation E1.
+
+### What this PR changes (and does not)
+
+- `scripts/seo/lighthouse-urls.ts --warm` (not a new script: `docs/codebase-map.md` had 33 B left
+  under its 17 KB cap): every audited document and every same-origin subresource
+  it names (stylesheets, font and image preloads including `imageSrcSet`, script chunks,
+  `<img>`/`<source>` candidates, the icon), each URL once, with `br` and Chrome's `accept`. It
+  exits 1 on any non-2xx response or on a document that names nothing. Locally: 14 documents and
+  25 distinct subresources in about 9 s.
+- One discarded Lighthouse run of the first URL in `$RUNNER_TEMP`, so the cold browser start
+  seen in C1 is never a measured run (it matters under TASK-103's `median`).
+- The step summary prints every measured run's LCP per URL, and the upload keeps
+  `.lighthouseci/` (`include-hidden-files: true`).
+- Unchanged: budgets, URL set, `numberOfRuns`, throttling, aggregation, `brotli-origin.ts`, the
+  page.
+
+### After (CI dry runs on this branch)
+
+_Pending: filled in from this PR's runs._
+
+### Gates
+
+- `pnpm gates:cheap`: PASS (typecheck, lint, format:check, i18n:check, check:no-db,
+  codebase:map --check, tests). `tests/unit/lighthouse-warmup.test.ts` has 16 cases;
+  `tests/unit/ci-workflow.test.ts` gains 5.
+- Mutations watched red: deleting the warm-up step fails 3 `ci-workflow` cases; setting
+  `include-hidden-files: false` fails 1; skipping the subresource loop fails 3 warm-up cases;
+  dropping `accept-encoding` fails 2.
+- No expensive gate was run for the gate itself. Lighthouse ran locally inside the build slot
+  only to find the cause (C2, C3), because the failed run kept no report.

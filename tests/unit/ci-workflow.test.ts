@@ -424,7 +424,7 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     steps.findIndex((step) => predicate(step.run ?? ""));
   const serve = indexOf((run) => run.includes("pnpm lighthouse:origin"));
   const warmup = indexOf((run) =>
-    run.includes("node scripts/seo/lighthouse-warmup.ts"),
+    run.includes("node scripts/seo/lighthouse-urls.ts --warm"),
   );
   const measured = indexOf((run) => /@lhci\/cli@[\d.]+ autorun/.test(run));
 

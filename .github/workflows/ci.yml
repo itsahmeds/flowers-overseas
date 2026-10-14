@@ -1851,7 +1851,7 @@ jobs:
       # stylesheet, preloaded font, LCP image candidate and script chunk, and the origin's Brotli
       # path itself, were first fetched by a measured run. Two passes now, both before the
       # measured collect and both discarded:
-      #  1. `scripts/seo/lighthouse-warmup.ts` fetches every audited document and every
+      #  1. `lighthouse-urls.ts --warm` fetches every audited document and every
       #     same-origin subresource it names, with `br` and Chrome's `accept`; it exits 1 if
       #     anything answers non-2xx or a document names nothing to warm.
       #  2. One Lighthouse run of the first audited URL with the measured settings, in
@@ -1861,7 +1861,7 @@ jobs:
       - name: Warm every audited page and its subresources before measuring
         run: |
           set -euo pipefail
-          node scripts/seo/lighthouse-warmup.ts
+          node scripts/seo/lighthouse-urls.ts --warm
           first=$(node -p 'require("./tests/fixtures/seo/lighthouse-urls.json")[0]')
           (cd "$RUNNER_TEMP" && npx --yes @lhci/cli@0.15.1 collect \
             --config="$GITHUB_WORKSPACE/lighthouserc.json" \
