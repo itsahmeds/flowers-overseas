@@ -12,8 +12,18 @@ and reads the alternates that also feed hreflang.
 
 - **Spec 003 §2 L79:** "Header locale switcher: `localePath()`-built links to the same path in
   every launch locale, falling back to the locale home; no JS required." **§5.3 L194:** "Plain
-  links to the same path in each launch locale". There is no AC id for this clause (listed as a
-  spec gap in the PR); the task owns it explicitly, as TASK-004 did for its unnumbered clause.
+  links to the same path in each launch locale". Since PR 227 this has an AC: **spec 003 §14
+  A-founder-2026-10-14c AC-49 (T-49), owned here** (the amendment gives T-49 to whichever of the
+  `shown` task and this one lands first; both are in this PR). On a corridor page, a listing, a
+  product page and a trust page, each language link in the header strip, the phone Menu, the
+  footer and the popup points to the same page in that locale through `localePath()`, never to
+  the locale's home unless the page is the home, and answers 200.
+- **One feature PR with TASK-237 (`de`/`pl` hidden, `shownLocales()`) and TASK-238 (the WhatsApp
+  help line), one agent, branch `task/TASK-233-…`.** The switcher lists `shownLocales()` (today
+  `en` and `en-gb`), so every e2e here iterates `shownLocales()`, not four locales (PR 226 review).
+- **Spec 003 §13 Q12 is open** (where a link goes when the target locale lacks the page). With
+  only `en` and `en-gb` shown every page exists in both, so build no new fallback: keep §2 L79's
+  existing one and do not build Q12's default.
 - **Every place the switcher renders:** the desktop utility strip, the phone Menu sheet (spec 004
   §14 A24 AC-47: "the four locale links (spec 003's `LocaleSwitcher` markup)") and the footer
   language row. Each link goes to the **same page** in that locale: the page's own alternate path
@@ -30,14 +40,16 @@ and reads the alternates that also feed hreflang.
   (QA-4b Part E); leave it unless TASK-191's notice document gives it one.
 - **Gates:** cheap gates; CI green with `ci:full`; `/review` and `/break`. Tests: an e2e over one
   page of each type (home, destinations hub, guide, shop root, category, occasion, occasion hub,
-  category hub, occasions index, product) in four locales at 1440 and 390 asserting each
+  category hub, occasions index, product) in each of `shownLocales()` at 1440 and 390 (T-49's
+  four pages among them: `/en-gb/send-flowers-to/poland`, `/en-gb/poland/flowers/roses`,
+  `/en-gb/poland/product/amber-hour`, `/en-gb/help` once TASK-182 publishes it) asserting each
   switcher link's `href` equals that page's alternate, or the locale home where none exists.
   Mutations watched red: switcher back to locale homes; an alternate pointing at an unpublished
   guide.
 
 ## Read
 
-- `specs/003-i18n-foundation.md` — `## 0. Index`, §2 L79, §5.3 L194, §6 "Internal links", §14 A16 (the popup)
+- `specs/003-i18n-foundation.md` — `## 0. Index`, §2 L79, §5.3 L194, §6 "Internal links", §13 Q12, §14 A16 (the popup), A-founder-2026-10-14c (AC-49, T-49)
 - `specs/004-design-system-layout.md` — §14 A24 AC-47, AC-14
 - `docs/codebase-map.md`
 - `src/modules/i18n/ui/LocaleSwitcher.tsx`, `src/modules/i18n/ui/LanguagePopup.tsx`, `src/modules/ui/layout/SiteHeader.tsx`, `MenuSheet.tsx`, `SiteFooter.tsx`, `src/modules/catalog/product.ts` (`productAlternatePaths`)
@@ -50,7 +62,14 @@ and reads the alternates that also feed hreflang.
   `.claude/state/qa-2026-10-14/QA-4-interactions.md` (QA-4 #4, Part E), `QA-2.md` 11.
 - **Not this task (spec gaps in the PR):** the phone menu's backdrop, tap-outside close, focus
   containment and close label (QA-4 #8, QA-4b E02, QA-3 D-16): spec 004 AC-47 asks only for `Esc`
-  and focus return, and no artboard draws the open sheet.
+  and focus return, and no artboard draws the open sheet. Since PR 227 that is spec 004 §13 Q16,
+  open for the founder.
+- **From PR 226's review (2026-10-14):** spec 003 AC-49 and T-49 now own the same-path rule (the
+  brief said "no AC id"); spec 003 AC-45 to AC-48 add `shown` locales, so the switcher shows only
+  `en` and `en-GB` and the e2e iterates `shownLocales()`; Q12 stays open. All three are written
+  into the Binding above.
+- **`SiteHeader.tsx`** is also edited by TASK-232 (the notice bar, home feature PR). Whichever
+  merges second rebases and keeps both.
 
 ## Escalations
 

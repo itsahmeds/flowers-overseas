@@ -144,7 +144,7 @@ One line per coherent step, newest last.
 
 ## Result
 
-**In review on PR 212.** Rebased on `origin/main` (PR 208, 205, 209, 206, 210, 216 merged).
+**Merged in PR 212.** Rebased on `origin/main` (PR 208, 205, 209, 206, 210, 216 merged).
 
 - CI on 9d15de08 (run 38515671336 and its siblings): every job green with `ci:full`.
 - LCP in CI's lighthouse, median of 3 (run 38468596768, attempt 2): `/en` 1 969 ms, `/en-gb`

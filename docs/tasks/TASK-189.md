@@ -88,6 +88,17 @@ One dated bullet per `/review`, newest last.
 - 2026-10-05 (carry-in from TASK-186, orchestrator ruling): AC-41 primary-action case for the
   country guide (T-43 "the primary action in view" at 1280 × 800 and 1512 × 945) is an expected
   failure in TASK-186's suite; this task flips it, by deleting its `PENDING` row in `tests/e2e/frame-laptop-band.spec.ts`.
+- **From the site test (2026-10-14):** QA-1 Q1-14 and QA-5 3.18: every guide still shows the empty
+  "Photo slot · Poland" box and prints `fixed` / `easter_offset` in the calendar's Rule column
+  (`.claude/state/qa-2026-10-14/QA-1-11.jpg`, `QA-1-12.jpg`). Both are this task's AC-30 and
+  AC-31 already; no new task. The other buyer-page notes to ourselves QA-5 3.17 lists ("Our picks
+  until real orders start", "Our help pages are being written…") are copy for the founder's batch
+  4, not this task.
+- **From the founder's ruling D2 (spec 007 §14 A-founder-2026-10-14c, PR 227):** the guide state
+  line reads "Ordering opens soon". TASK-239 changes the **value** of
+  `destinations.state.guideNotDelivering` (and the guide's other state keys); this task renders
+  the key and pins no old wording. Whichever merges second rebases and never restores the old
+  text.
 
 ## Escalations
 

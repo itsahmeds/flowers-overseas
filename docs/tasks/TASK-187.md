@@ -193,7 +193,7 @@ One line per coherent step, newest last.
 
 ## Result
 
-**FINISHED, in review (2026-10-14, finisher `wo-214-finish`).** PR 214, branch
+**Merged in PR 214 (2026-10-14, finisher `wo-214-finish`).** PR 214, branch
 `task/TASK-146-country-listings-depth4`, one feature PR with TASK-146, rebased on `48837dca`. The
 implementer's partial result (`4e747f67`) is below as "Built" and "Tests written"; the finisher's
 part is "Finished" and "Mutations seen red".
