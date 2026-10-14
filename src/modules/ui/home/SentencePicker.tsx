@@ -22,6 +22,10 @@
  * clause 7). No tilt and no ruled lines. No "prices include VAT and delivery" line: the founder ruled it off
  * the home on 2026-10-04 ("dont write this on home"); the home shows no price. Each choice is Fraunces italic poppy with a dashed underline and
  * a drawn chevron.
+ *
+ * Motion (spec 004 §14 A24 clause 9; TASK-194): each choice is a `data-fo-pick`, under which the
+ * one-time shimmer (motion 4) sweeps when the motion module marks the form `data-fo-shimmer` 800 ms
+ * after load, if nobody has touched it; Continue is `pending` (motion 3).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
@@ -88,7 +92,7 @@ function Pick({
   readonly children: ReactNode;
 }): ReactElement {
   return (
-    <span className={PICK}>
+    <span className={PICK} data-fo-pick>
       {label === undefined ? null : (
         <label htmlFor={id} className="sr-only">
           {label}
@@ -225,6 +229,7 @@ export function SentencePicker({
           type="submit"
           variant="accent"
           className="flex-auto md:flex-none"
+          pending
         >
           {t("finder.submit")}
           {/* "Continue →" (TASK-231; QA-3 D-19): the drawn arrow, `arrow-end`, decorative and

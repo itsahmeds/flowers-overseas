@@ -149,6 +149,7 @@ export function TrendingRow({
       className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-trending
+      data-fo-reveal=""
       data-fo-trending-basis={source.basis()}
       id={TRENDING_ANCHOR}
     >
