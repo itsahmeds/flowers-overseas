@@ -1493,3 +1493,7 @@ Open items for the founder (named items, not ACs; they do not block A20's approv
 
 Raised by: the founder ("H all recommended", 2026-09-28) from the standards audit (gap 17); written
 for the `spec/001-a20-standards-locks` branch.
+
+**A21 — the codebase map's hard cap becomes 20 KB (§2 "Dev OS"; A15's AC-33 as amended by A16; the founder's ruling of 2026-10-14, "map 20").**
+Original: A16 set the hard assertion at 16 KB, and TASK-200 raised it to 17 KB (17,408 bytes) in `tests/unit/codebase-map.test.ts`.
+Corrected: the hard cap is **20 KB** (20 × 1024 = 20,480 bytes). On 2026-10-14 main stood at 17,390 bytes, 18 under the cap, and three open PRs (180, 224, 225) each needed 50 to 300 more bytes for the entries their new files add: the growth the artefact exists for, as A16 says. The founder ruled in chat, verbatim "map 20" (recorded in `docs/decisions-log.md`, 2026-10-14). The ≤ 12 KB **target** stays, and so does TASK-095's ownership of compressing the generator's output (`PURPOSE_LIMIT`, the tests column), which may lower the cap again. The test's inline comment carries this reason. No other check changes.

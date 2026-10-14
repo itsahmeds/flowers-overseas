@@ -1312,6 +1312,20 @@ distinct, and removing the `schedule` branch turns the case red. The PR that add
 trigger (TASK-100) carries the change.
 Raised by: TASK-100 `## Escalations` E-2 (2026-09-30).
 
+**A-founder-2026-10-14c — T-16's bypass literal: Cloudflare reports a cache rule's "Bypass cache" as `DYNAMIC` (§10 T-16 L667; §14 A7's T-16 staging half, written on PR 180's branch; AC-16 unchanged; TASK-101 E-7).**
+The founder's reply, 2026-10-14, in chat, verbatim: "R ok, D1–D5, E7 ok, map 20, partner ok, italic ok". "E7 ok" approves the orchestrator's pick below. The reply reached the spec writer through the orchestrator's work order (`.claude/state/wo-spec-rulings-1014b.md`); the founder confirms this text when they approve the docs PR that carries it.
+Original: T-16 (L667) ends "`/api/health`, `/checkout` → `BYPASS`". §14 A7, which lands with PR 180 (TASK-101) and is not yet on `main` when this amendment is written, splits T-16 and reads, for its staging half: "`/api/health` and `/checkout`, bare and under a locale prefix, answer `BYPASS`".
+Trigger: TASK-101 `## Escalations` E-7 (2026-10-14). Cloudflare's "Cloudflare cache responses" page, under `DYNAMIC`: "A Cache Rule with the Bypass cache setting matches the request." `BYPASS` means the asset was eligible for cache and the origin's response was not cacheable. Observed on staging the same day: all seven bypassed paths answer `DYNAMIC`; a `.css` probe (an extension Cloudflare caches by default) answers `DYNAMIC` under every bypassed path and `BYPASS` outside them (`/fo-edge-probe.css`, `/en/fo-edge-probe.css`, origin `no-store`). A bare `/api/health` answers `DYNAMIC` with or without the rule, so only the probe proves the rule exists. As written, T-16's literal could never pass.
+Corrected (founder ruling): the intent, **"never cached"**, is unchanged; AC-16 is unchanged. T-16's bypass half (A7's staging half, once PR 180 merges) now reads:
+- each bypassed path of AC-16 (`/api/`, `/checkout`, `/account`, `/admin`, `/vendor`, `/track`), bare and under every registry locale prefix, answers `cf-cache-status: DYNAMIC`;
+- a cache-eligible probe (a `.css` path) under each of those paths answers `DYNAMIC`;
+- the same probe outside every bypassed path (`/fo-edge-probe.css` and `/en/fo-edge-probe.css`) answers `BYPASS`;
+- each request is sent twice, and the second answer is the same as the first.
+
+The probes are what make the case bite: with the bypass rule removed, the probes under the paths answer `BYPASS` and the case goes red. A non-bypassed path added to the bypassed list (for example `/en/send-flowers-to`) also goes red, because its probe answers `BYPASS`. A7's other T-16 halves (the production HIT case through `EDGE_HIT_URL`, and the `?utm_source=x` body-identity case) are unchanged.
+Merge note: PR 180 adds A7 after A6 in this section and this amendment sits after A6 too. Whichever merges second keeps both, A7 before this one; neither text changes.
+Raised by: TASK-101 E-7 (2026-10-14); ruled by the founder the same day.
+
 ## 15. Task estimate (input to `/plan-tasks`)
 
 Eight one-day tasks. Dependencies in brackets; tasks 3 and 4 are independent of each other, and 6
