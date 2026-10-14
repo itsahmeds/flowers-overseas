@@ -112,7 +112,9 @@ test.describe("pagination at depth 4 (AC-29, T-33)", () => {
       .getAttribute("data-fo-product-card");
     const nav = page.locator("main nav[data-fo-pagination]");
     await expect(nav).toHaveCount(1);
-    await nav.locator(`a[href="${ROSES}?page=2"]`).first().click();
+    // The displayed link: the numbered links from `md` up, the compact pager's "Next page" on a
+    // phone (P3). Both are the same `<a href>` in the one pager `<nav>`.
+    await nav.locator(`a[href="${ROSES}?page=2"]:visible`).first().click();
     await expect(page).toHaveURL(`${ROSES}?page=2`);
     await expect(page.locator("main [data-fo-product-card]")).toHaveCount(3);
     expect(

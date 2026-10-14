@@ -566,7 +566,7 @@ export function CountryListingHead({
 }: CountryListingHeadProps): ReactElement {
   return (
     <div
-      className="md:border-rule md:gap-2xl grid grid-cols-1 items-start gap-[10px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:border-b md:pt-[28px] md:pb-[28px]"
+      className="md:border-rule md:gap-2xl grid grid-cols-1 items-start gap-[10px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:border-b md:pt-[12px] md:pb-[16px]"
       data-fo-listing-hero
     >
       <div>
@@ -693,7 +693,7 @@ export function CountryListingResults({
       data-fo-listing-results={sortFormPlacement}
     >
       <p
-        className={`md:col-start-1 md:row-start-1 ${above ? "md:pt-[24px]" : "md:py-[20px]"}`}
+        className={`md:col-start-1 md:row-start-1 ${above ? "md:pt-[24px]" : "md:py-[10px]"}`}
         data-fo-listing-count
       >
         <Text as="span" size="sm" tone="muted" className="md:hidden">
@@ -728,15 +728,15 @@ export function CountryListingResults({
           {pager}
         </div>
       )}
-      <Text
-        as="p"
-        size="sm"
-        tone="subtle"
-        className={`mt-[20px] max-w-[70ch] ${above ? "md:col-start-1 md:row-start-2 md:mt-[6px]" : "md:col-start-2 md:row-start-1 md:mt-0 md:self-center md:text-end"}`}
+      {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
+      <div
+        className={`mt-[20px] max-w-[70ch] ${above ? "md:col-start-1 md:row-start-2 md:mt-[6px]" : "md:col-start-2 md:row-start-1 md:mt-0 md:max-w-[104ch] md:self-center md:py-[8px] md:text-end"}`}
         data-fo-listing-disclosure
       >
-        {disclosure}
-      </Text>
+        <Text as="p" size="sm" tone="subtle">
+          {disclosure}
+        </Text>
+      </div>
       <div
         className={`mt-[24px] ${above ? "md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:self-end" : "md:col-span-2 md:row-start-4 md:mt-[40px]"}`}
         data-fo-listing-sort

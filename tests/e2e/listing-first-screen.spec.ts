@@ -122,7 +122,12 @@ async function firstRow(
         (card) => Math.abs(card.getBoundingClientRect().top - (first ?? 0)) < 1,
       )
       .map((card) => {
-        const price = card.querySelector<HTMLElement>("[data-fo-price]");
+        // The price is the amount with its "all in" (the `Price` primitive's first line). The
+        // approximate-equivalents line under it (spec 004 §14 A21 clause 6) is a separate line,
+        // as the TASK-187 brief lists "price, `catalog.price.allIn` and the equivalents line".
+        const price = card.querySelector<HTMLElement>(
+          "[data-fo-price] > :first-child",
+        );
         return {
           id: card.getAttribute("data-fo-product-card") ?? "",
           top: card.getBoundingClientRect().top,
@@ -243,6 +248,7 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
             expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
               size.height + 0.5,
             );
+            expect(card.price, `${card.id} price`).toContain("all in");
           }
         }
 

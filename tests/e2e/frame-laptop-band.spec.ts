@@ -119,8 +119,13 @@ const FIRST_SCREEN: Readonly<
     h1: "title",
     action: "main [data-fo-sentence] button[type='submit']",
   },
-  countryShop: { h1: "display", action: "main [data-fo-price]" },
-  countryCategory: { h1: "display", action: "main [data-fo-price]" },
+  // The first price line: the amount with its "all in". The approximate-equivalents line under
+  // it (spec 004 §14 A21 clause 6) is not the price (TASK-187, D-1 in its brief).
+  countryShop: { h1: "display", action: "main [data-fo-price] > :first-child" },
+  countryCategory: {
+    h1: "display",
+    action: "main [data-fo-price] > :first-child",
+  },
   countryOccasion: { h1: "display", action: "main [data-fo-price]" },
   occasionHub: { h1: "display", action: "main [data-fo-hub-destination] a" },
   categoryHub: { h1: "display", action: "main [data-fo-hub-destination] a" },
