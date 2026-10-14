@@ -20,11 +20,15 @@ import { loadMessages } from "../../src/modules/i18n";
 import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import {
   COVER_FADE_RAMP_PX,
+  COVER_FADE_TOKEN,
   COVER_TEXT,
   coverFadeContrast,
   parseOklchAlpha,
 } from "../../src/modules/ui/home/cover-fade.ts";
-import { formatRatio } from "../../src/modules/ui/tokens/contrast.ts";
+import {
+  NON_SINGLE_COLOUR_TOKENS,
+  formatRatio,
+} from "../../src/modules/ui/tokens/contrast.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const css = readFileSync(resolve(repoRoot, "src/app/globals.css"), "utf8");
@@ -103,8 +107,21 @@ describe("HomeHero paints what the unit case measures (AC-46)", () => {
   const copy = /<div[^>]*data-fo-hero-copy[^>]*>/u.exec(html)?.[0] ?? "";
 
   it("draws the fade from the token, its ramp inside the copy's block-start padding", () => {
-    expect(copy).toContain("var(--color-cover-fade)");
-    expect(copy).toContain(`${String(COVER_FADE_RAMP_PX)}px`);
+    const classes = (/class="([^"]*)"/u.exec(copy)?.[1] ?? "").split(/\s+/u);
+    // The gradient's full-alpha stop and the padding the text starts below are one number: a
+    // longer ramp would put the eyebrow and the H1 on partial alpha (`/break` 212, hole 1).
+    const gradient = classes.find((name) =>
+      name.startsWith("max-md:bg-[linear-gradient("),
+    );
+    expect(gradient, classes.join(" ")).toBeDefined();
+    const stop = /var\(--color-cover-fade\)_(\d+(?:\.\d+)?)px\)\]$/u.exec(
+      gradient ?? "",
+    )?.[1];
+    expect(stop, gradient).toBe(String(COVER_FADE_RAMP_PX));
+    const padding = classes
+      .map((name) => /^pt-\[(\d+(?:\.\d+)?)px\]$/u.exec(name)?.[1])
+      .filter((value) => value !== undefined);
+    expect(padding).toEqual([String(COVER_FADE_RAMP_PX)]);
   });
 
   it("sets the H1, the line and the eyebrow in the measured tokens below `md`", () => {
@@ -120,5 +137,16 @@ describe("HomeHero paints what the unit case measures (AC-46)", () => {
       "max-md:text-on-inverse",
     );
     expect(eyebrow.split(/\s+/u)).toContain("max-md:text-on-inverse-accent");
+  });
+});
+
+describe("the fade's exemption from the pair manifest points here", () => {
+  // `--color-cover-fade` is translucent, so `tests/unit/contrast.test.ts` cannot pair it; its entry
+  // in `NON_SINGLE_COLOUR_TOKENS` is the record that this file measures it instead (`/break` 212,
+  // hole 3).
+  it("names the cover fade and this test as the place its contrast is computed", () => {
+    expect(NON_SINGLE_COLOUR_TOKENS[COVER_FADE_TOKEN]).toContain(
+      "tests/unit/home-cover-fade.test.tsx",
+    );
   });
 });
