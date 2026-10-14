@@ -1547,7 +1547,7 @@ fieldset.fm-f { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 .s13g .tline p { color: var(--color-ink-2); font-size: var(--text-ui); grid-column: 2; }
 .s13g .tline time { font-size: var(--text-sm); color: var(--color-ink-3); padding-block-start: 12px; font-variant-numeric: tabular-nums; }
 .s13g .tline li.later h3, .s13g .tline li.later p { color: var(--color-ink-3); }
-.s13g .prop { text-decoration: underline dotted var(--color-warning); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.s13g .prop { text-decoration: underline dotted color-mix(in oklab, var(--color-warning) 55%, transparent); text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .s13g .note .prop-key { display: inline-block; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-warning); border-radius: var(--radius-full); padding: 1px 8px; }
 .s13g .s13-testlabel { display: flex; align-items: center; gap: 10px; padding-block: 8px; background: var(--color-butter); border-block-end: var(--rule); font-size: var(--text-sm); color: var(--color-ink); }
 .s13g .s13-testlabel b { color: var(--color-paper); background: var(--color-ink); border-radius: var(--radius-full); padding: 2px 10px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -1608,9 +1608,16 @@ fieldset.fm-f { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 .s13g .s13-email b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
 .s13g .s13-next { inline-size: 100%; }
 .s13g .s13-next h2 { font-size: var(--text-h3); margin-block-end: 14px; }
-.s13g .s13-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; inline-size: 100%; }
+.s13g .s13-next .tline li { grid-template-columns: 44px minmax(0, 1fr) auto; padding-block-end: 12px; }
+.s13g .s13-next .tline li::before { inline-size: 34px; block-size: 34px; font-size: var(--text-ui); }
+.s13g .s13-next .tline li.now::before { box-shadow: 0 0 0 4px var(--color-sage-wash); }
+.s13g .s13-next .tline li:not(:last-child)::after { inset-inline-start: 16px; inset-block-start: 38px; }
+.s13g .s13-next .tline h3 { font-size: 18px; padding-block-start: 5px; }
+.s13g .s13-next .tline time { padding-block-start: 7px; }
+.s13g .s13-next .tline p { font-size: var(--text-sm); }
+.s13g .s13-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; inline-size: 100%; }
 .s13g .s13-tile { display: grid; gap: 4px; align-content: start; padding: 16px 16px 18px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); text-decoration: none; color: var(--color-ink); }
-.s13g .s13-tile b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-h3); line-height: 1.2; }
+.s13g .s13-tile b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 19px; line-height: 1.2; }
 .s13g .s13-tile span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.4; }
 .s13g .s13-tile.go b { color: var(--color-link); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
 .s13g .s13-tile.st b { color: var(--color-ink); }
