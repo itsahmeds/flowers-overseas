@@ -256,6 +256,7 @@ Not applied:
 ## Progress
 
 - 2026-10-14: copy, de/pl drafts, glossary, `src/config/honesty.ts`, unit and e2e scans committed and pushed; blocked on E1 (founder's record run) and E2 (map budget).
+- 2026-10-15: the founder's record script `.claude/state/record-approval-226.py` (not committed; tested on a throwaway worktree, where it reached APPROVE and made the E1 cascade green, leaving only the map budget, E2); `valentines` loses its em dash so it can be recorded; the task-226 pins accept the record. Batch-3 proposals in `.claude/state/relay-copy-batch-3.md` (89 rows).
 - 2026-10-14: batch 2 (R2 to R24) applied where its text was found and passes the gates; the rest is recorded in E7. Every changed key and field is listed in Result.
 
 ## Result
