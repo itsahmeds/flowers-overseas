@@ -26,63 +26,7 @@ import { LocaleSwitcher, loadMessages } from "../../src/modules/i18n";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import { SiteFooter } from "../../src/modules/ui/layout/SiteFooter.tsx";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
-
-/** One page of each type: its path in every locale that has it, from the shipped catalogue. */
-const PAGES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  home: { en: "/en", "en-gb": "/en-gb", de: "/de", pl: "/pl" },
-  destinationsHub: {
-    en: "/en/send-flowers-to",
-    "en-gb": "/en-gb/send-flowers-to",
-    de: "/de/blumen-verschicken",
-    pl: "/pl/wyslij-kwiaty",
-  },
-  guide: {
-    en: "/en/send-flowers-to/poland",
-    "en-gb": "/en-gb/send-flowers-to/poland",
-  },
-  shopRoot: {
-    en: "/en/poland/flowers",
-    "en-gb": "/en-gb/poland/flowers",
-    de: "/de/polen/blumen",
-    pl: "/pl/polska/kwiaty",
-  },
-  category: {
-    en: "/en/poland/flowers/hand-tied-bouquets",
-    "en-gb": "/en-gb/poland/flowers/hand-tied-bouquets",
-    de: "/de/polen/blumen/blumenstraeusse",
-    pl: "/pl/polska/kwiaty/bukiety",
-  },
-  occasion: {
-    en: "/en/poland/occasions/mothers-day",
-    "en-gb": "/en-gb/poland/occasions/mothers-day",
-    de: "/de/polen/anlaesse/muttertag",
-    pl: "/pl/polska/okazje/dzien-matki",
-  },
-  occasionHub: {
-    en: "/en/occasions/birthday",
-    "en-gb": "/en-gb/occasions/birthday",
-    de: "/de/anlaesse/geburtstag",
-    pl: "/pl/okazje/urodziny",
-  },
-  categoryHub: {
-    en: "/en/flowers/roses",
-    "en-gb": "/en-gb/flowers/roses",
-    de: "/de/blumen/rosen",
-    pl: "/pl/kwiaty/roze",
-  },
-  occasionsIndex: {
-    en: "/en/occasions",
-    "en-gb": "/en-gb/occasions",
-    de: "/de/anlaesse",
-    pl: "/pl/okazje",
-  },
-  product: {
-    en: "/en/poland/product/small-kindness",
-    "en-gb": "/en-gb/poland/product/small-kindness",
-    de: "/de/polen/produkt/small-kindness",
-    pl: "/pl/polska/produkt/small-kindness",
-  },
-};
+import { LANGUAGE_LINK_PAGES as PAGES } from "../support/language-links.ts";
 
 /** `/de/polen/blumen` → `["de", ["polen", "blumen"]]`. */
 function split(path: string): [string, string[]] {
