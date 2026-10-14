@@ -42,6 +42,8 @@ One dated bullet per `/review`, newest last.
   15. S4: `custom_key.user.{geo,lang}` passed the lint → fixed (`cacheRuleHazards`); "hole 15" lint and live cases.
   16. G1: `https://flowersoverseas.com.` passed the production guard → fixed (`tests/e2e/cloudflare-edge-target.ts`, root dot stripped); "the edge suite's production guard (hole 16)", including a pin that the spec's first hook throws on it.
   17. T-16 probed 7 of the 42 bypass clauses → the e2e walks `bypassProbes(...)`, all 42; "the T-16 e2e probes every bypass clause (hole 17)".
+- **Breaker round 2 (28aa554f):** holes 1 to 17 confirmed closed; one new hole, closed:
+  1. Deleting `response.status < 200 || response.status > 299 ||` in `edgeGet` kept every case green, because the 500 case also carried `success: false` → "a 500 whose envelope says success:true → an error on the status alone (break 180 round 2)", red on that deletion (1 failed of 147), green restored.
 
 ## Escalations
 

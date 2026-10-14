@@ -1490,6 +1490,20 @@ describe("edgeGet's refusals (hole 11)", () => {
     );
   });
 
+  it("a 500 whose envelope says success:true → an error on the status alone (break 180 round 2)", async () => {
+    const error = await failure(
+      edgeGet(
+        answering(500, { success: true, errors: [], result: { rules: [] } }),
+        ZONE,
+        `/zones/${ZONE}/rulesets/phases/http_response_headers_transform/entrypoint`,
+        true,
+      ),
+    );
+    expect((error as Error).message).toBe(
+      "GET /zones/{zone_id}/rulesets/phases/http_response_headers_transform/entrypoint answered 500: no error detail",
+    );
+  });
+
   it("a 200 with success:false → an error, never a result", async () => {
     const error = await failure(
       edgeGet(
