@@ -595,3 +595,105 @@ test.describe("spec 009 A12: one order, the buy section's seven elements, the de
     }
   });
 });
+
+/** The PDP in the three languages whose chips the review asked about (review round 1). */
+const PDP_BY_LOCALE = {
+  en: "/en-gb/poland/product/amber-hour",
+  de: "/de/polen/produkt/amber-hour",
+  pl: "/pl/polska/produkt/amber-hour",
+} as const;
+
+test.describe("the date row's chips: one height, nothing spilling, the reasons under the row (review round 1)", () => {
+  for (const [locale, path] of Object.entries(PDP_BY_LOCALE)) {
+    for (const viewport of [
+      { width: 1440, height: 900 },
+      { width: 1280, height: 800 },
+      { width: 390, height: 844 },
+    ] as const) {
+      test(`${locale} at ${String(viewport.width)}: every chip the same height, none overflowing its 66 px`, async ({
+        page,
+      }) => {
+        await page.setViewportSize(viewport);
+        const response = await page.goto(path);
+        expect(response?.status(), path).toBe(200);
+        await page.evaluate(() => document.fonts.ready);
+        const chips = await page
+          .locator("[data-fo-pdp-buy] [data-fo-date-grid] label[data-fo-date]")
+          .evaluateAll((labels) =>
+            labels.map((label) => {
+              const box = label.getBoundingClientRect();
+              return {
+                date: label.getAttribute("data-fo-date"),
+                width: Math.round(box.width),
+                height: Math.round(box.height * 10) / 10,
+                spills:
+                  label.scrollWidth > label.clientWidth + 1 ||
+                  label.scrollHeight > label.clientHeight + 1,
+              };
+            }),
+          );
+        expect(chips.length, path).toBeGreaterThanOrEqual(7);
+        const heights = new Set(chips.map((chip) => chip.height));
+        expect([...heights], JSON.stringify(chips)).toHaveLength(1);
+        for (const chip of chips) {
+          expect(chip.width, chip.date ?? "").toBe(66);
+          expect(chip.spills, chip.date ?? "").toBe(false);
+        }
+        // No chip prints a reason of its own: a closed day's reason is a caption line under
+        // the row, beginning with the date it closes.
+        await expect(
+          page.locator(
+            "[data-fo-pdp-buy] label[data-fo-date] [data-fo-date-why]",
+          ),
+        ).toHaveCount(0);
+      });
+    }
+  }
+});
+
+test.describe("the eyebrow: P2 on the phone, the desktop line from md (breaker H2)", () => {
+  /** Restated, not read from the catalogue: the descriptor and the two patterns. */
+  const DESCRIPTOR = "hand-tied rose bouquet";
+  for (const [width, expected] of [
+    [390, `${DESCRIPTOR} · Poland`],
+    [1440, `${DESCRIPTOR} · for Poland`],
+  ] as const) {
+    test(`at ${String(width)} the visible eyebrow reads "${expected}", once`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await open(page);
+      const eyebrow = page.locator("[data-fo-pdp-buy] .eyebrow");
+      await expect(eyebrow).toHaveCount(1);
+      // `innerText`: only what is rendered at this width, so a hidden span reads as nothing and
+      // a doubled country reads twice.
+      const shown = await eyebrow.evaluate((node) =>
+        (node as HTMLElement).innerText.replaceAll(/\s+/gu, " ").trim(),
+      );
+      expect(shown.toLowerCase()).toBe(expected.toLowerCase());
+    });
+  }
+});
+
+test.describe("the docked bar under reduced motion (review round 1)", () => {
+  test("is still hidden over the first screen and shown once the buy section has scrolled out", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      reducedMotion: "reduce",
+      viewport: PHONE,
+    });
+    const page = await context.newPage();
+    try {
+      await open(page);
+      expect(await barShown(page), "over the first screen").toBe(false);
+      await scrollPastBuy(page);
+      await page.evaluate(() =>
+        window.scrollTo({ top: 0, behavior: "instant" }),
+      );
+      await expect.poll(() => barShown(page)).toBe(false);
+    } finally {
+      await context.close();
+    }
+  });
+});

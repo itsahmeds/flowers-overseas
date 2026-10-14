@@ -34,8 +34,10 @@ import type { ProductView } from "@/modules/catalog";
 import { Button } from "../primitives/Button.tsx";
 import { HorizontalScroller } from "../primitives/HorizontalScroller.tsx";
 
-import { DateChip } from "./DateChip.tsx";
-import { messageFor, zoneCity } from "./labels.ts";
+import { formatDate, formatList } from "@/modules/i18n";
+
+import { DateChip, sharesNotice } from "./DateChip.tsx";
+import { instantOf, localeOf, messageFor, zoneCity } from "./labels.ts";
 import { StepLegend } from "./StepLegend.tsx";
 
 export interface DeliveryDatePickerProps {
@@ -124,6 +126,26 @@ export function DeliveryDatePicker({
     live &&
     delivery.cutoffLocal !== undefined &&
     delivery.timeZone !== undefined;
+  const pickerState = live ? "live" : "preview";
+  const buy = look === "buy";
+
+  // v3 (TASK-197): in the buy column a closed day's own reason leaves the chip for one caption
+  // line under the row, one line per reason with the dates it closes ("Sun 18 Oct · We do not
+  // deliver on Sundays in Poland."), so every chip is the same card. Each closed chip's radio is
+  // named by its date and its line (spec 009 AC-7: visible words beside the date, in the name).
+  const reasons = new Map<string, { id: string; dates: string[] }>();
+  if (buy) {
+    for (const date of delivery.dates) {
+      if (date.reasonKey === undefined) continue;
+      if (sharesNotice(date.reasonKey, pickerState)) continue;
+      const line = reasons.get(date.reasonKey) ?? {
+        id: `${idPrefix}-why-${String(reasons.size + 1)}`,
+        dates: [],
+      };
+      line.dates.push(date.date);
+      reasons.set(date.reasonKey, line);
+    }
+  }
 
   return (
     <fieldset className={fieldset} data-fo-picker-state={delivery.state}>
@@ -146,7 +168,7 @@ export function DeliveryDatePicker({
           The block padding leaves room for an occasion tag on a chip's top edge. */}
       <div data-fo-date-grid>
         <HorizontalScroller
-          className="pt-[10px] pb-[4px] [&>li]:w-[66px]"
+          className="pt-[10px] pb-[4px] [&>li]:flex [&>li]:w-[66px]"
           items={delivery.dates.map((date) => ({
             key: date.date,
             node: (
@@ -155,8 +177,13 @@ export function DeliveryDatePicker({
                 country={country}
                 date={date}
                 locale={locale}
-                pickerState={live ? "live" : "preview"}
+                pickerState={pickerState}
                 sharedReasonId={noticeId}
+                compact={buy}
+                {...(date.reasonKey === undefined ||
+                reasons.get(date.reasonKey) === undefined
+                  ? {}
+                  : { reasonId: reasons.get(date.reasonKey)?.id ?? "" })}
                 {...(delivery.cutoffLocal === undefined
                   ? {}
                   : { cutoffLocal: delivery.cutoffLocal })}
@@ -170,6 +197,29 @@ export function DeliveryDatePicker({
           label={d("legend")}
         />
       </div>
+      {[...reasons.entries()].map(([reasonKey, line]) => (
+        <p className={NOTE_BUY} data-fo-date-why-line key={reasonKey}>
+          {formatList(
+            line.dates.map((day) =>
+              formatDate(
+                instantOf(day),
+                localeOf(locale),
+                "deliveryDate",
+                "UTC",
+              ),
+            ),
+            localeOf(locale),
+          )}
+          {" · "}
+          <span data-fo-date-why id={line.id}>
+            {messageFor(t, reasonKey, {
+              country,
+              time: delivery.cutoffLocal ?? "",
+              city,
+            })}
+          </span>
+        </p>
+      ))}
       {live && anySelectable ? (
         <Button
           className="self-start"

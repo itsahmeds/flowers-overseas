@@ -90,7 +90,12 @@ const BLOCKS = [
   },
 ] as const;
 
-/** Hides the docked total row and takes the date grid out (see the file). */
+/** The date-row shots' one rule: the dated home band out of the layout (see the file). */
+const PICKER_ROW_STYLE = fileURLToPath(
+  new URL("./picker-row.css", import.meta.url),
+);
+
+/** Hides the docked bar and takes the date grid out (see the file). */
 const BLOCK_STYLE = fileURLToPath(
   new URL("./product-blocks.css", import.meta.url),
 );
@@ -170,3 +175,35 @@ test("the docked bar at 390px, once the buy section has scrolled out, matches pr
   await expect(bar).toBeVisible();
   await expect(bar).toHaveScreenshot("product-mobile-bar.png");
 });
+
+/**
+ * The v3 date row itself (review round 1): every other product shot takes it out because the
+ * page's window moves with today. `/dev/components` renders the same `DeliveryDatePicker` in the
+ * buy column's look over fixtures with fixed dates, so the row, its equal chips, the Sunday's
+ * closed card and its reason line under the row are photographed with a pinned `now`.
+ */
+for (const { width, viewport } of WIDTHS) {
+  test(`the v3 date row at ${String(viewport.width)}px matches product-${width}-picker-{preview,live}`, async ({
+    page,
+    context,
+    baseURL,
+  }) => {
+    await recordConsentRefusal(context, baseURL);
+    await withoutLanguageHint(page);
+    await page.setViewportSize(viewport);
+    const response = await page.goto("/dev/components");
+    expect(response?.status()).toBe(200);
+    for (const state of ["preview", "live"] as const) {
+      const picker = page.locator(
+        `[data-fo-product-state="picker${state === "live" ? "Live" : "Preview"}"]`,
+      );
+      await expect(picker.locator("label[data-fo-date]")).toHaveCount(
+        state === "live" ? 8 : 7,
+      );
+      await expect(picker).toHaveScreenshot(
+        `product-${width}-picker-${state}.png`,
+        { stylePath: [PICKER_ROW_STYLE, HEADER_STYLE] },
+      );
+    }
+  });
+}

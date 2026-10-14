@@ -501,6 +501,17 @@ test.describe("/dev/components", () => {
       "Order by 14:00 in Warsaw",
     );
     await expect(live.locator('button[type="submit"]')).toHaveCount(1);
+    // v3's buy column (TASK-197): the closed Sunday's reason is a line under the row, and still
+    // in the closed radio's computed name (spec 009 AC-7).
+    await expect(live.locator("label [data-fo-date-why]")).toHaveCount(0);
+    await expect(live.locator("[data-fo-date-why-line]")).toContainText(
+      "We do not deliver on Sundays in Poland",
+    );
+    await expect(
+      live.getByRole("radio", {
+        name: /We do not deliver on Sundays in Poland/u,
+      }),
+    ).toBeDisabled();
     await expect(
       state("pickerPreview").locator("input:not([disabled])"),
     ).toHaveCount(0);

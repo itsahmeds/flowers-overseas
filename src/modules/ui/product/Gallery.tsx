@@ -142,8 +142,11 @@ export function Gallery({
         label={a11y("media.gallery")}
       />
       <GalleryDots
-        className="absolute start-0 end-0 bottom-[40px] z-[3] md:hidden"
-        current={0}
+        // Until `lg` the gallery is a scroller (the phone and the tablet), so the dots show there.
+        // No dot claims to be the current one: with no island nothing follows the scroll, so a
+        // fixed `aria-current` would be wrong after the first swipe (review round 1).
+        className="absolute start-0 end-0 bottom-[40px] z-[3] lg:hidden"
+        current={-1}
         label={a11y("media.gallery")}
         links={images.map((image, index) => ({
           href: anchor(index),

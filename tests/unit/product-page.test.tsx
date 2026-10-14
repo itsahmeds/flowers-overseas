@@ -165,6 +165,30 @@ function chips(html: string): ReadonlyMap<string, string> {
   return found;
 }
 
+/**
+ * A closed chip's own reason as v3's buy column prints it (TASK-197): not inside the chip but on
+ * the caption line under the row that the chip's radio names in `aria-labelledby`, beside the
+ * date it closes. Returns the reason's text and the caption line's whole text.
+ */
+function ownReason(
+  html: string,
+  date: string,
+): { readonly reason: string; readonly line: string } {
+  const chip = chips(html).get(date) ?? "";
+  const ids = /aria-labelledby="([^"]+)"/u.exec(chip)?.[1]?.split(" ") ?? [];
+  const id = ids.find((candidate) => candidate !== `date-${date}`) ?? "";
+  const reason = readable(
+    new RegExp(`id="${id}"[^>]*>([^<]+)<`, "u").exec(html)?.[1] ?? "",
+  );
+  const line = readable(
+    new RegExp(
+      `<p[^>]*data-fo-date-why-line[^>]*>((?:(?!</p>)[\\s\\S])*id="${id}"[\\s\\S]*?)</p>`,
+      "u",
+    ).exec(html)?.[1] ?? "",
+  );
+  return { reason, line };
+}
+
 /** The markup between `data-fo-<block>` and the end of its element's subtree, approximately. */
 function block(html: string, marker: string): string {
   const start = html.indexOf(marker);
@@ -260,8 +284,8 @@ describe("AC-8: the picker says only what the destination's data allows, in one 
 /* AC-7 (render half) — the reason in words, and in the accessible name.      */
 /* -------------------------------------------------------------------------- */
 
-describe("AC-7: a closed date says why, in words, inside its own label", () => {
-  it("prints every calendar reason beside its date, inside the radio's `<label>`", async () => {
+describe("AC-7: a closed date says why, in words, beside its date and in its name", () => {
+  it("v3: prints every calendar reason on the caption line under the row with the date it closes, and names the radio by it", async () => {
     const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
     const html = render(view);
     const grid = chips(html);
@@ -269,9 +293,13 @@ describe("AC-7: a closed date says why, in words, inside its own label", () => {
     expect(closed.length).toBeGreaterThan(0);
     for (const date of closed) {
       const chip = grid.get(date.date) ?? "";
-      const why = /data-fo-date-why[^>]*>([^<]+)</u.exec(chip)?.[1] ?? "";
-      expect(why.trim(), date.date).not.toBe("");
-      // Inside the `<label>` that wraps the disabled radio: the reason is part of its name.
+      // Out of the chip (every chip is the same card), onto its own line.
+      expect(chip, date.date).not.toContain("data-fo-date-why");
+      const { reason, line } = ownReason(html, date.date);
+      expect(reason, date.date).not.toBe("");
+      // Beside the date it closes, in words: the line starts with that date.
+      expect(line, date.date).toContain(printedDate(date.date, "en"));
+      expect(line, date.date).toContain(reason);
       expect(chip, date.date).toMatch(/<input[^>]*disabled/u);
       expect(chip).toContain(`data-fo-date-reason="${date.reasonKey ?? ""}"`);
     }
@@ -639,13 +667,17 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
   it("keeps the `live` past-cutoff chip's own reason with its time", async () => {
     const view = await liveViewOf("en", AMBER, { now: PAST_CUTOFF });
     expect(view.delivery.state).toBe("live");
-    const chip = chips(render(view)).get("2027-03-01") ?? "";
+    const html = render(view);
+    const chip = chips(html).get("2027-03-01") ?? "";
     expect(chip).toMatch(/<input[^>]*disabled/u);
     expect(chip).toContain('data-fo-date-reason="delivery.reason.pastCutoff"');
-    expect(
-      readable(/data-fo-date-why[^>]*>([^<]+)</u.exec(chip)?.[1] ?? ""),
-    ).toBe("Ordering closed at 14:00 in Warsaw");
-    expect(chip).not.toContain("aria-labelledby");
+    // v3: its own line under the row, never the shared notice.
+    expect(ownReason(html, "2027-03-01").reason).toBe(
+      "Ordering closed at 14:00 in Warsaw",
+    );
+    expect(chip).not.toMatch(
+      /aria-labelledby="date-2027-03-01 delivery-notice"/u,
+    );
   });
 
   it("leaves no `delivery.cutoffPreview` key in any message or meta file", () => {
@@ -1263,6 +1295,25 @@ describe("the gallery's product fixtures are shapes `productView()` could produc
     expect(gallery.PRODUCT_SUMMARIES["surcharge"]?.selectedDate).toBe(
       gallery.PRODUCT_SURCHARGE_DATE,
     );
+  });
+});
+
+describe("the preview picker closes every date on the radio itself (TASK-197; breaker H4)", () => {
+  it("renders every `preview` chip's radio `disabled`, in every locale, with no disabled fieldset", async () => {
+    for (const locale of LOCALES) {
+      const view = await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK });
+      expect(view.delivery.state, locale).toBe("preview");
+      const html = render(view);
+      const grid = chips(html);
+      expect(grid.size, locale).toBe(view.delivery.dates.length);
+      for (const [date, chip] of grid) {
+        expect(chip, `${locale} ${date}`).toMatch(/<input[^>]*\bdisabled\b/u);
+      }
+      // The row stays focusable: the group is not a disabled fieldset.
+      expect(block(html, 'data-fo-picker-state="preview"'), locale).not.toMatch(
+        /^<fieldset[^>]*\bdisabled\b/u,
+      );
+    }
   });
 });
 
