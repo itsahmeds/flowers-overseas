@@ -163,6 +163,9 @@ const context = {
   source: true,
 };
 
+const FOUNDER_226 =
+  /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-226\.py after reading the exact text it printed$/u;
+
 /** TASK-226: the rows reworded to the founder's second copy batch (2026-10-14, "R ok"). */
 const AWAITING_226: ReadonlySet<string> = new Set([
   "category:funeral",
@@ -389,11 +392,15 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
       expect(row.translationStatus).toBe("human");
       expect(row.sourceHash).toBe(copySourceHash(row));
       if (AWAITING_226.has(`${row.entity}:${row.key}`)) {
-        // Reworded to the founder's approved text of 2026-10-14 (TASK-226); unreviewed and
-        // unattributed until his own record run.
+        // Reworded to the founder's approved text of 2026-10-14 (TASK-226): unreviewed and
+        // unattributed until his own record run, then attested by it.
         awaiting.push(`${row.entity}:${row.key}`);
-        expect(row.reviewed, row.key).toBe(false);
-        expect(row.reviewedBy, row.key).toBeUndefined();
+        if (row.reviewed) {
+          // Only the founder's own record-approval-226 run may attest it.
+          expect(row.reviewedBy, row.key).toMatch(FOUNDER_226);
+        } else {
+          expect(row.reviewedBy, row.key).toBeUndefined();
+        }
         continue;
       }
       const attestedHash = FOUNDER_179_ROWS.get(`${row.entity}:${row.key}`);

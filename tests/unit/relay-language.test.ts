@@ -288,6 +288,10 @@ const APPROVED = {
     "Every bouquet our florist can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
 } as const;
 
+/** The `reviewedBy` the founder's `record-approval-226.py` run writes, and nothing else may. */
+const FOUNDER_226 =
+  /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-226\.py after reading the exact text it printed$/u;
+
 const hash = (text: string): string =>
   createHash("sha256").update(text).digest("hex");
 
@@ -295,12 +299,16 @@ describe("the approved copy (spec 041 §14 A-founder-2026-10-14; spec 010 §14 A
   const enMeta = MessageMetaManifestSchema.parse(readMessages("en.meta.json"));
 
   for (const [key, text] of Object.entries(APPROVED)) {
-    it(`\`${key}\` is the approved English, byte for byte, shipped unreviewed`, () => {
+    it(`\`${key}\` is the approved English, byte for byte, unreviewed or attested by the founder's record run`, () => {
       expect(at(CATALOGUES.en, key)).toBe(text);
       // `en-gb` inherits it: an override would bypass the approval.
       expect(at(CATALOGUES["en-gb"], key)).toBeUndefined();
-      expect(enMeta[key]?.reviewed).toBe(false);
-      expect(enMeta[key]?.reviewedBy).toBeUndefined();
+      if (enMeta[key]?.reviewed === true) {
+        // Only the founder's own record run may attest it, and only this hash.
+        expect(enMeta[key]?.reviewedBy).toMatch(FOUNDER_226);
+      } else {
+        expect(enMeta[key]?.reviewedBy).toBeUndefined();
+      }
       expect(enMeta[key]?.sourceHash).toBe(hash(text));
     });
   }
