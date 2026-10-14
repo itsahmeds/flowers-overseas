@@ -36,6 +36,8 @@
  *
  * Exit codes: 0 match (or skipped) · 1 drift · 2 missing credentials · 3 the API refused or the
  * request was not allow-listed (a 403 names the missing token scope).
+ *
+ * @purpose Zone apply and check
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";

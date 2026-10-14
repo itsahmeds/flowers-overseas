@@ -26,6 +26,8 @@
  *    `unverified`, naming the scope and the gate that checks it instead (the e2e suite against
  *    `staging.` and the founder's look in the dashboard). A 403 on a scope the token is meant to
  *    hold (DNS) is still an error, exit 3, as in TASK-100.
+ *
+ * @purpose Edge as code
  */
 import { z } from "zod";
 
