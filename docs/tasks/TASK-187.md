@@ -352,6 +352,22 @@ file this PR does not touch: its first case starts a cold type-aware ESLint over
 passes the 5 s default only on an idle machine. Re-run alone with `--testTimeout=60000`: 61 of 61
 pass in 13 s. Every other unit file (3,996 cases) is green.
 
+**Round 1 of `/review 214` (fixes).**
+- `catalogue-dataset.test.ts`: the registry stays at the path spec 008 §14 A15 (b) names; the test
+  lists it as the tenth file and lets it, and only it, import the category, occasion and product
+  datasets, with the reason in the test.
+- `locale-routing.spec.ts`: see the TASK-146 Result (the residual widened to depth 4).
+- **LCP on `/en-gb/poland/flowers`** (Lighthouse mobile, simulated, against the Brotli origin, one
+  run each, load average 6): 2,234 ms before. The LCP element is the first card's photograph; its
+  load time was spent sharing the connection with the second card and the next row, which Chrome
+  boosts to High in a phone's first viewport. `MediaAsset` now gives every image that is not the
+  LCP candidate `fetchpriority="low"` (unit case added): 1,968 and 1,952 ms;
+  `/en-gb/poland/flowers/roses` 1,884; `/en/poland/flowers` 1,932. The rest is TTFB (the Brotli
+  proxy compresses the 275 KB document, 230 ms of it) and the document's 21.7 KB transfer, much of
+  it the site chrome (the wordmark's path, about 11 KB, is in the document six times). CI decides.
+- Nits not taken (carry-forwards): the count line's "84 bouquets" beside plants; `?Page=2` in the
+  wrong case; the de/pl English strings marked `machine`.
+
 **View model for TASK-188** (unchanged from the implementer): `ListingCountrySchema.state` is
 `z.enum(["guide","live"])`; `ListingEntitySchema.register` is required, from the registry;
 `CategoryTileViewSchema.countNoun`; `leadSku` is not on the view.

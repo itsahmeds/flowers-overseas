@@ -232,6 +232,10 @@ describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18
     // React writes these attributes in its own casing; HTML attribute names are
     // case-insensitive, so every assertion on them is too.
     expect(html).not.toMatch(/fetchpriority="high"/i);
+    // TASK-187 (`/review 214`, the shop root's LCP): every image that is not the LCP candidate asks
+    // for `low`, so an in-viewport card on a phone is not boosted to High beside the one photograph
+    // the page preloads.
+    expect(html).toMatch(/fetchpriority="low"/i);
   });
 
   it("offers AVIF first and WebP as the fallback ladder (§2.5)", () => {

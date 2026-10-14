@@ -267,9 +267,11 @@ const NOT_FOUND_SHAPES = [
     shape: "unknown locale, depth 4",
     path: "/xx/poland/product/amber-hour",
   },
-  // with a query string (TASK-170): only a shop-root address carrying a listing key is rewritten
-  // to the parameter route (`src/lib/listing-rewrites.ts`); every other address with a query is
-  // the prebuilt route's, so its unknown paths keep the router's localised 404
+  // with a query string (TASK-170, widened by TASK-146): a shop-root, country-category or
+  // country-occasion address carrying a listing key is rewritten to the parameter route
+  // (`src/lib/listing-rewrites.ts`), and its unknown paths are the accepted residual below; every
+  // other address with a query is the prebuilt route's, so its unknown paths keep the router's
+  // localised 404
   {
     shape: "depth 3, unknown corridor, with ?page=",
     path: "/en/send-flowers-to/nowhere?page=2",
@@ -281,10 +283,6 @@ const NOT_FOUND_SHAPES = [
   {
     shape: "unknown locale, depth 3, shop root, with ?page=",
     path: "/fr/poland/flowers?page=2",
-  },
-  {
-    shape: "depth 4, unknown category under a country, with ?sort=",
-    path: "/en/poland/flowers/no-such-kind?sort=price-asc",
   },
 ] as const;
 
@@ -341,6 +339,15 @@ const RESIDUAL_404S = [
   "/EN/poland/flowers?page=2",
   "/en/poland/FLOWERS?page=2",
   "/DE/polen/BLUMEN?page=2",
+  // Depth 4 (TASK-146, spec 008 §14 A15 (a)): the country category and the country occasion now
+  // honour `?page=`/`?sort=` through the depth-4 parameter route, so an unknown entity or a page
+  // past the last under a known country with a listing key is the same per-request render and
+  // the same error shell as the shop-root rows above. The bare addresses stay the router's
+  // localised 404 (`NOT_FOUND_SHAPES`).
+  "/en/poland/flowers/no-such-kind?sort=price-asc",
+  "/en/poland/occasions/no-such-kind?sort=price-asc",
+  "/en/poland/flowers/roses?page=99",
+  "/en/poland/occasions/mothers-day?page=2",
 ] as const;
 
 test.describe("the accepted residual: 404 inside the error shell (TASK-170 E-1)", () => {

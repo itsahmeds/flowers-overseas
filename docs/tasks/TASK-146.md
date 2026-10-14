@@ -116,6 +116,14 @@ for the shared state).** PR 214, rebased on `48837dca`.
     `toBe`. This is not mutation-run yet: it needs a server;
   - `catalog-listing.test.ts` now asserts each entry's own kind, both kinds present, and collator
     order. Seen red with every kind set to `evergreen`, and red with the order reversed; restored.
+- **The accepted 404 residual widens to depth 4 (round 1 of `/review 214`).** An unknown entity
+  or a page past the last under a known country, with a listing key, now reaches the depth-4
+  parameter route and answers 404 inside Next's error shell (no `lang`), the same residual spec
+  008 A13 and TASK-170 E-1 accept at depth 3. `tests/e2e/locale-routing.spec.ts` moves
+  `/en/poland/flowers/no-such-kind?sort=price-asc` from `NOT_FOUND_SHAPES` to `RESIDUAL_404S` and
+  adds `/en/poland/occasions/no-such-kind?sort=price-asc`, `/en/poland/flowers/roses?page=99` and
+  `/en/poland/occasions/mothers-day?page=2`; the bare addresses stay the router's localised 404.
+  Run locally: 84 passed in both projects.
 - **Corpus fact:** no country occasion has more than 12 products (the most is 7), so the
   occasion's paging is proven by sorting through the same rewrite and by the page-past-the-last
   404.
