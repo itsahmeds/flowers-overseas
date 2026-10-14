@@ -72,6 +72,11 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
 - 2026-10-15: cause investigated (30 CI runs, 18 local runs; see `## Result`); warm-up script,
   discarded first-URL pass, per-run LCP table and the artifact fix written test-first; cheap
   gates pass; pushed for the CI dry run.
+- 2026-10-15: CI run 38641145234 on 9570fde0 failed `test-unit` (`codebase-map.test` size cap:
+  the new script's map row took the map from 17,375 B to 17,499 B, over 17,408 B), so `build` and
+  `lighthouse` skipped. The warm-up moved into `lighthouse-urls.ts --warm` and the map is back to
+  17,375 B. Rebased on `origin/main` (TASKS.md conflict resolved to main plus this row). The head
+  needs a `ci:full` toggle from the orchestrator (work order §3), then two more for the dry runs.
 
 ## Result
 
