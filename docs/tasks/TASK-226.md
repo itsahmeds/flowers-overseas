@@ -31,10 +31,181 @@ file, not the row.
 
 ## Escalations
 
-_None recorded._
+**E1. Shipping the approved texts `reviewed: false` takes `en` out of the index (needs the founder's record run before merge).** Three `en` keys that were `reviewed: true` change value here (`home.howItWorks.make.title`, `corridor.facts.orderBy.none`, `delivery.picker.live`), so they ship unreviewed as the brief says. That moves `unreviewedShare("en")` from 4.80 % to **5.35 %**, over the 5 % threshold (`plan/03` §6, `src/modules/i18n/review.ts`), so `isLocaleIndexable("en")` and `("en-gb")` turn false: 48 unit cases in 20 files go red (sitemaps, hreflang, indexability, i18n:check summary, etc.). Simulating the founder's record of those three keys locally leaves only the expected pins red (this file's three "shipped unreviewed" cases, the review queue) and the sitemap fixtures, whose `<lastmod>` moves; so after the record run: `UPDATE_SEO_FIXTURES=1 pnpm exec vitest run --project unit tests/unit/sitemap-fixtures.test.ts`, then flip the three `reviewed: false` assertions in `tests/unit/relay-language.test.ts` to the record, and drop the three keys from `AWAITING_FOUNDER_REVIEW` in `tests/unit/i18n-messages-schema.test.ts`. This is what TASK-193 did (the founder's commit inside the PR). The 14 guide files keep their file-level `reviewed: true` (corridor review is per file, decisions-log 2026-09-16); only `version` and `updatedAt` moved, so the founder's record should restamp `reviewedAt`.
+
+**E2. `docs/codebase-map.md` is over its 17 KB budget by 49 bytes** (`tests/unit/codebase-map.test.ts`, 17 × 1024 = 17 408; main is 17 390, so any new config file breaks it). The new row is already the shortest summary that says what the file is. The budget is a spec number, so raising it is the orchestrator's call, not this task's.
+
+**E3. `RELAY_EXEMPT` carries a third kind.** Spec 041 §14 allows two kinds (non-buyer surfaces, quoted records) and "no per-key exemption on a buyer surface"; the work order rules that "my partner" (`home.sentence.who`, case `partner`, `en`/`en-gb`) gets an entry citing the decisions-log row of 2026-10-04. It is a `decided-string` entry: the exact ICU case in that key and locale, and in rendered HTML only an `<option>` whose whole text is "my partner". Mutations show the word elsewhere still fails. A spec amendment should record it.
+
+**E4. Two readings of the definition, both stricter than the letter.** (a) `de` and `pl` read the `en` list as well as their own, because their Phase 0 drafts echo the English (spec 003 §14 A15): without it, "accepts it" put back into `pl.json` would not go red. (b) Stems take inflections the spec's base words miss (`zaakcept*` for "zaakceptuje", `until (a|our|the) florist`). Key names are not scanned (work order).
+
+**E5. Visual baselines.** The home how-it-works step, the corridor facts row and the product picker's cutoff line change text, so the `visual` job needs the `visual:baselines` label (labels are the orchestrator's).
+
+**E6. Every hit the scan reports outside this task's fence (orchestrator, 2026-10-14: record, do not reword, do not exempt).** The message catalogues are clean. The hits are in seed copy and guide prose; `de`/`pl` seed rows are the English echo, so they repeat the `en` rows (43 each). The e2e matrix reads `amber-hour` and the Poland, roses and Mother's Day pages, which render none of these as far as the copy shows; CI is the proof. QA-5 §1 (R1 to R24) lists further relay wording that the patterns do not match (for example "the shop that makes the bouquet", "we pass the details on").
+
+Guide prose (`content/corridors/`):
+
+| pattern | where | text |
+|---|---|---|
+| held | `content/corridors/en/es-guide.md:42` | Carnations above all, which Spain grows and gives without any of the reservations held further north; roses for 23 April; orange blossom in the south in spring; gerberas, lilies and gladioli all year; and potted plants t |
+| held | `content/corridors/en/fr-guide.md:23` | The superstition is real and still held by enough people to matter: carnations are the flower you do not bring to a host, and in some professions they are read as an outright bad omen. |
+| hold | `content/corridors/en/fr-guide.md:76` | Whether or not the person you are sending to holds the superstition, there is no cost to avoiding it. |
+| take | `content/corridors/en-gb/es-guide.md:29` | Between June and September a Spanish florist will steer you to carnations, firm mixed bunches, succulents and potted plants, and the advice is worth taking rather than arguing with. |
+| held | `content/corridors/en-gb/fr-guide.md:21` | The belief is genuine and still widely held. |
+| hold | `content/corridors/en-gb/fr-guide.md:78` | Whether or not the person you are sending to holds the superstition, there is no cost at all to choosing something else, and a fleuriste will quietly do so on your behalf. |
+
+Seed copy (`seed/data/copy/`):
+
+| pattern | where | text |
+|---|---|---|
+| hold | `seed/data/copy/de/products.json:53` FO-BQ-004 `descriptionMd` | We hold the pastel colour scheme rather than the exact stems, so our florist can swap in the stems that came in that morning. |
+| held | `seed/data/copy/de/products.json:55` FO-BQ-004 `seoDescription` | Pastel colour scheme held; stems vary by market. |
+| hold | `seed/data/copy/de/products.json:66` FO-BQ-005 `descriptionMd` | White roses are always the flower; the foliage is whatever holds its shape longest that morning. |
+| hold | `seed/data/copy/de/products.json:131` FO-BQ-010 `descriptionMd` | The yellow colour scheme is what we hold — variety and shade depend on the week's growers. |
+| hold | `seed/data/copy/de/products.json:183` FO-BQ-014 `descriptionMd` | We hold the vibrant colour scheme; the exact colours follow the week's crop. |
+| take | `seed/data/copy/de/products.json:248` FO-BQ-019 `descriptionMd` | Peonies are always the flower; outside the season our florist tells us before we take the order rather than after. |
+| hold | `seed/data/copy/de/products.json:261` FO-BQ-020 `descriptionMd` | We hold the pastel colour scheme rather than the exact flowers, so the mix follows the market inside those shades. |
+| held | `seed/data/copy/de/products.json:300` FO-BQ-023 `descriptionMd` | Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-held bunch. |
+| hold | `seed/data/copy/de/products.json:300` FO-BQ-023 `descriptionMd` | Sent for birthdays, congratulations and thank yous, and it holds up well in a warm room. |
+| held | `seed/data/copy/de/products.json:302` FO-BQ-023 `seoDescription` | Nine sunflowers with ruscus and seasonal green in a rustic hand-held bunch. |
+| hold | `seed/data/copy/de/products.json:313` FO-BQ-024 `descriptionMd` | We hold the yellow colour scheme rather than a fixed recipe, so our florist can use whatever summer stems are open that day. |
+| hold | `seed/data/copy/de/products.json:326` FO-BQ-025 `descriptionMd` | The orange colour scheme is what we hold; the supporting stems change every week as the season turns. |
+| hold | `seed/data/copy/de/products.json:339` FO-BQ-026 `descriptionMd` | We hold the vibrant colour scheme rather than named colours; gerbera availability moves daily. |
+| hold | `seed/data/copy/de/products.json:404` FO-BQ-031 `descriptionMd` | We hold the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. |
+| hold | `seed/data/copy/de/products.json:495` FO-BQ-038 `descriptionMd` | A long-lasting, unfussy bouquet for a birthday, a name day or a Sunday visit; carnations often hold two weeks in water. |
+| hold | `seed/data/copy/de/products.json:534` FO-AR-001 `descriptionMd` | We hold the pastel scheme; the flowers inside it are our florist's choice. |
+| hold | `seed/data/copy/de/products.json:573` FO-AR-004 `descriptionMd` | We hold the vibrant colour scheme; the exact colours follow the day's delivery. |
+| hold | `seed/data/copy/de/products.json:586` FO-AR-005 `descriptionMd` | The pink colour scheme is what we hold; tulip variety and shade depend on the week. |
+| hold | `seed/data/copy/de/products.json:612` FO-AR-007 `descriptionMd` | Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. |
+| take | `seed/data/copy/de/products.json:651` FO-AR-010 `descriptionMd` | Peonies are always the flower; where the season has ended our florist tells us before we take the order. |
+| hold | `seed/data/copy/de/products.json:690` FO-AR-013 `descriptionMd` | Sent for All Saints' visits, thank yous and housewarmings, and chrysanthemums hold longer than most cut flowers. |
+| hold | `seed/data/copy/de/products.json:703` FO-AR-014 `descriptionMd` | Sent for a new baby, a get-well or a birthday; alstroemeria often holds two weeks. |
+| hold | `seed/data/copy/de/products.json:703` FO-AR-014 `descriptionMd` | We hold the pastel scheme, and our florist chooses shades and any filler from the day's delivery. |
+| hold | `seed/data/copy/de/products.json:820` FO-FN-001 `descriptionMd` | We hold the white scheme and the form; the flowers inside it are chosen by our florist from that morning's market. |
+| held | `seed/data/copy/de/products.json:846` FO-FN-003 `descriptionMd` | The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. |
+| hold | `seed/data/copy/de/products.json:846` FO-FN-003 `descriptionMd` | The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. |
+| hold | `seed/data/copy/de/products.json:859` FO-FN-004 `descriptionMd` | The white scheme and the heart form are what we hold; rose variety and any filler are chosen by our florist on the morning of the service. |
+| hold | `seed/data/copy/de/products.json:872` FO-FN-005 `descriptionMd` | We hold the white scheme; the mix is our florist's choice from that day's market. |
+| hold | `seed/data/copy/de/products.json:885` FO-FN-006 `descriptionMd` | We hold the mixed scheme and the flat form; colours follow what our florist can buy that week. |
+| hold | `seed/data/copy/de/products.json:911` FO-FN-008 `descriptionMd` | We hold the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. |
+| held | `seed/data/copy/de/products.json:924` FO-FN-009 `descriptionMd` | The white scheme is held; the foliage follows the season. |
+| hold | `seed/data/copy/de/products.json:937` FO-FN-010 `descriptionMd` | We hold the white scheme and the low form; the flowers and the container's finish are our florist's choice. |
+| hold | `seed/data/copy/de/products.json:950` FO-GS-001 `descriptionMd` | We hold the orange scheme and swap greenery for what the market has. |
+| held | `seed/data/copy/de/products.json:963` FO-GS-002 `descriptionMd` | The pink scheme is held and the vase is always included; vase height and shape depend on what our florist stocks that week. |
+| hold | `seed/data/copy/de/products.json:976` FO-GS-003 `descriptionMd` | We hold the blue scheme; the flowers and the toy are chosen by our florist from what is in the shop, and the toy is new and tagged. |
+| hold | `seed/data/copy/de/products.json:989` FO-GS-004 `descriptionMd` | We hold the pink scheme; the flowers and the toy come from our florist's own shop, and the toy is new, tagged and suitable from birth. |
+| hold | `seed/data/copy/de/products.json:1002` FO-GS-005 `descriptionMd` | We hold the mixed tulip scheme, because tulip colours change from week to week. |
+| held | `seed/data/copy/de/products.json:1015` FO-GS-006 `descriptionMd` | The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. |
+| held | `seed/data/copy/de/products.json:1028` FO-GS-007 `descriptionMd` | The yellow scheme is held; supporting stems follow the week. |
+| held | `seed/data/copy/de/products.json:1041` FO-GS-008 `descriptionMd` | The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. |
+| take | `seed/data/copy/de/products.json:1041` FO-GS-008 `descriptionMd` | The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. |
+| hold | `seed/data/copy/de/products.json:1054` FO-GS-009 `descriptionMd` | We hold the mixed scheme; the flowers and the balloon design are our florist's choice on the day. |
+| hold | `seed/data/copy/de/products.json:1067` FO-GS-010 `descriptionMd` | We hold the vibrant scheme; gerbera colours and the balloon design depend on the day's stock. |
+| held | `seed/data/copy/de/products.json:1080` FO-GS-011 `descriptionMd` | The white scheme is held; lilies arrive part-closed and open over days. |
+| hold | `seed/data/copy/de/products.json:1093` FO-GS-012 `descriptionMd` | We hold the pastel scheme and our florist chooses the flowers and the toy from the shop; the toy is new, tagged and suitable from birth, and the bouquet is tied light enough to carry. |
+| hold | `seed/data/copy/en/categories.json:164` get_well `descriptionMd` | Bouquets and arrangements chosen for a hospital room or a sofa: light to hold, low in scent, and several in a box or pot so no vase is needed. |
+| hold | `seed/data/copy/en/categories.json:164` get_well `descriptionMd` | Some wards do not accept flowers, so check before ordering and we will hold the delivery if needed. |
+| accept | `seed/data/copy/en/categories.json:164` get_well `descriptionMd` | Some wards do not accept flowers, so check before ordering and we will hold the delivery if needed. |
+| hold | `seed/data/copy/en/categories.json:254` tulips `descriptionMd` | A spring flower: growers change varieties weekly, so we hold the colour and let our florist choose the variety. |
+| held | `seed/data/copy/en/categories.json:256` tulips `seoDescription` | Colour held; variety by week. |
+| take | `seed/data/copy/en/categories.json:314` peonies `descriptionMd` | The season is short — a few weeks in late spring — and outside it our florist tells us before we take an order rather than substituting something else. |
+| hold | `seed/data/copy/en/occasions.json:29` anniversary `descriptionMd` | Choose the date and we hold it. |
+| hold | `seed/data/copy/en/occasions.json:89` get_well `descriptionMd` | If a ward refuses flowers we will hold the delivery for a home address instead. |
+| hold | `seed/data/copy/en/products.json:59` FO-BQ-004 `descriptionMd` | We hold the pastel colour scheme rather than the exact stems, so our florist can swap in the stems that came in that morning. |
+| held | `seed/data/copy/en/products.json:61` FO-BQ-004 `seoDescription` | Pastel colour scheme held; stems vary by market. |
+| hold | `seed/data/copy/en/products.json:74` FO-BQ-005 `descriptionMd` | White roses are always the flower; the foliage is whatever holds its shape longest that morning. |
+| hold | `seed/data/copy/en/products.json:149` FO-BQ-010 `descriptionMd` | The yellow colour scheme is what we hold — variety and shade depend on the week's growers. |
+| hold | `seed/data/copy/en/products.json:209` FO-BQ-014 `descriptionMd` | We hold the vibrant colour scheme; the exact colours follow the week's crop. |
+| take | `seed/data/copy/en/products.json:284` FO-BQ-019 `descriptionMd` | Peonies are always the flower; outside the season our florist tells us before we take the order rather than after. |
+| hold | `seed/data/copy/en/products.json:299` FO-BQ-020 `descriptionMd` | We hold the pastel colour scheme rather than the exact flowers, so the mix follows the market inside those shades. |
+| held | `seed/data/copy/en/products.json:344` FO-BQ-023 `descriptionMd` | Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-held bunch. |
+| hold | `seed/data/copy/en/products.json:344` FO-BQ-023 `descriptionMd` | Sent for birthdays, congratulations and thank yous, and it holds up well in a warm room. |
+| held | `seed/data/copy/en/products.json:346` FO-BQ-023 `seoDescription` | Nine sunflowers with ruscus and seasonal green in a rustic hand-held bunch. |
+| hold | `seed/data/copy/en/products.json:359` FO-BQ-024 `descriptionMd` | We hold the yellow colour scheme rather than a fixed recipe, so our florist can use whatever summer stems are open that day. |
+| hold | `seed/data/copy/en/products.json:374` FO-BQ-025 `descriptionMd` | The orange colour scheme is what we hold; the supporting stems change every week as the season turns. |
+| hold | `seed/data/copy/en/products.json:389` FO-BQ-026 `descriptionMd` | We hold the vibrant colour scheme rather than named colours; gerbera availability moves daily. |
+| hold | `seed/data/copy/en/products.json:464` FO-BQ-031 `descriptionMd` | We hold the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. |
+| hold | `seed/data/copy/en/products.json:569` FO-BQ-038 `descriptionMd` | A long-lasting, unfussy bouquet for a birthday, a name day or a Sunday visit; carnations often hold two weeks in water. |
+| hold | `seed/data/copy/en/products.json:614` FO-AR-001 `descriptionMd` | We hold the pastel scheme; the flowers inside it are our florist's choice. |
+| hold | `seed/data/copy/en/products.json:659` FO-AR-004 `descriptionMd` | We hold the vibrant colour scheme; the exact colours follow the day's delivery. |
+| hold | `seed/data/copy/en/products.json:674` FO-AR-005 `descriptionMd` | The pink colour scheme is what we hold; tulip variety and shade depend on the week. |
+| hold | `seed/data/copy/en/products.json:704` FO-AR-007 `descriptionMd` | Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. |
+| take | `seed/data/copy/en/products.json:749` FO-AR-010 `descriptionMd` | Peonies are always the flower; where the season has ended our florist tells us before we take the order. |
+| hold | `seed/data/copy/en/products.json:794` FO-AR-013 `descriptionMd` | Sent for All Saints' visits, thank yous and housewarmings, and chrysanthemums hold longer than most cut flowers. |
+| hold | `seed/data/copy/en/products.json:809` FO-AR-014 `descriptionMd` | Sent for a new baby, a get-well or a birthday; alstroemeria often holds two weeks. |
+| hold | `seed/data/copy/en/products.json:809` FO-AR-014 `descriptionMd` | We hold the pastel scheme, and our florist chooses shades and any filler from the day's delivery. |
+| hold | `seed/data/copy/en/products.json:944` FO-FN-001 `descriptionMd` | We hold the white scheme and the form; the flowers inside it are chosen by our florist from that morning's market. |
+| held | `seed/data/copy/en/products.json:974` FO-FN-003 `descriptionMd` | The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. |
+| hold | `seed/data/copy/en/products.json:974` FO-FN-003 `descriptionMd` | The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. |
+| hold | `seed/data/copy/en/products.json:989` FO-FN-004 `descriptionMd` | The white scheme and the heart form are what we hold; rose variety and any filler are chosen by our florist on the morning of the service. |
+| hold | `seed/data/copy/en/products.json:1004` FO-FN-005 `descriptionMd` | We hold the white scheme; the mix is our florist's choice from that day's market. |
+| hold | `seed/data/copy/en/products.json:1019` FO-FN-006 `descriptionMd` | We hold the mixed scheme and the flat form; colours follow what our florist can buy that week. |
+| hold | `seed/data/copy/en/products.json:1049` FO-FN-008 `descriptionMd` | We hold the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. |
+| held | `seed/data/copy/en/products.json:1064` FO-FN-009 `descriptionMd` | The white scheme is held; the foliage follows the season. |
+| hold | `seed/data/copy/en/products.json:1079` FO-FN-010 `descriptionMd` | We hold the white scheme and the low form; the flowers and the container's finish are our florist's choice. |
+| hold | `seed/data/copy/en/products.json:1094` FO-GS-001 `descriptionMd` | We hold the orange scheme and swap greenery for what the market has. |
+| held | `seed/data/copy/en/products.json:1109` FO-GS-002 `descriptionMd` | The pink scheme is held and the vase is always included; vase height and shape depend on what our florist stocks that week. |
+| hold | `seed/data/copy/en/products.json:1124` FO-GS-003 `descriptionMd` | We hold the blue scheme; the flowers and the toy are chosen by our florist from what is in the shop, and the toy is new and tagged. |
+| hold | `seed/data/copy/en/products.json:1139` FO-GS-004 `descriptionMd` | We hold the pink scheme; the flowers and the toy come from our florist's own shop, and the toy is new, tagged and suitable from birth. |
+| hold | `seed/data/copy/en/products.json:1154` FO-GS-005 `descriptionMd` | We hold the mixed tulip scheme, because tulip colours change from week to week. |
+| held | `seed/data/copy/en/products.json:1169` FO-GS-006 `descriptionMd` | The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. |
+| held | `seed/data/copy/en/products.json:1184` FO-GS-007 `descriptionMd` | The yellow scheme is held; supporting stems follow the week. |
+| held | `seed/data/copy/en/products.json:1199` FO-GS-008 `descriptionMd` | The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. |
+| take | `seed/data/copy/en/products.json:1199` FO-GS-008 `descriptionMd` | The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. |
+| hold | `seed/data/copy/en/products.json:1214` FO-GS-009 `descriptionMd` | We hold the mixed scheme; the flowers and the balloon design are our florist's choice on the day. |
+| hold | `seed/data/copy/en/products.json:1229` FO-GS-010 `descriptionMd` | We hold the vibrant scheme; gerbera colours and the balloon design depend on the day's stock. |
+| held | `seed/data/copy/en/products.json:1244` FO-GS-011 `descriptionMd` | The white scheme is held; lilies arrive part-closed and open over days. |
+| hold | `seed/data/copy/en/products.json:1259` FO-GS-012 `descriptionMd` | We hold the pastel scheme and our florist chooses the flowers and the toy from the shop; the toy is new, tagged and suitable from birth, and the bouquet is tied light enough to carry. |
+| hold | `seed/data/copy/en-gb/products.json:14` FO-AR-007 `descriptionMd` | Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. |
+| held | `seed/data/copy/en-gb/products.json:29` FO-GS-006 `descriptionMd` | The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. |
+| hold | `seed/data/copy/pl/products.json:53` FO-BQ-004 `descriptionMd` | We hold the pastel colour scheme rather than the exact stems, so our florist can swap in the stems that came in that morning. |
+| held | `seed/data/copy/pl/products.json:55` FO-BQ-004 `seoDescription` | Pastel colour scheme held; stems vary by market. |
+| hold | `seed/data/copy/pl/products.json:66` FO-BQ-005 `descriptionMd` | White roses are always the flower; the foliage is whatever holds its shape longest that morning. |
+| hold | `seed/data/copy/pl/products.json:131` FO-BQ-010 `descriptionMd` | The yellow colour scheme is what we hold — variety and shade depend on the week's growers. |
+| hold | `seed/data/copy/pl/products.json:183` FO-BQ-014 `descriptionMd` | We hold the vibrant colour scheme; the exact colours follow the week's crop. |
+| take | `seed/data/copy/pl/products.json:248` FO-BQ-019 `descriptionMd` | Peonies are always the flower; outside the season our florist tells us before we take the order rather than after. |
+| hold | `seed/data/copy/pl/products.json:261` FO-BQ-020 `descriptionMd` | We hold the pastel colour scheme rather than the exact flowers, so the mix follows the market inside those shades. |
+| held | `seed/data/copy/pl/products.json:300` FO-BQ-023 `descriptionMd` | Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-held bunch. |
+| hold | `seed/data/copy/pl/products.json:300` FO-BQ-023 `descriptionMd` | Sent for birthdays, congratulations and thank yous, and it holds up well in a warm room. |
+| held | `seed/data/copy/pl/products.json:302` FO-BQ-023 `seoDescription` | Nine sunflowers with ruscus and seasonal green in a rustic hand-held bunch. |
+| hold | `seed/data/copy/pl/products.json:313` FO-BQ-024 `descriptionMd` | We hold the yellow colour scheme rather than a fixed recipe, so our florist can use whatever summer stems are open that day. |
+| hold | `seed/data/copy/pl/products.json:326` FO-BQ-025 `descriptionMd` | The orange colour scheme is what we hold; the supporting stems change every week as the season turns. |
+| hold | `seed/data/copy/pl/products.json:339` FO-BQ-026 `descriptionMd` | We hold the vibrant colour scheme rather than named colours; gerbera availability moves daily. |
+| hold | `seed/data/copy/pl/products.json:404` FO-BQ-031 `descriptionMd` | We hold the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. |
+| hold | `seed/data/copy/pl/products.json:495` FO-BQ-038 `descriptionMd` | A long-lasting, unfussy bouquet for a birthday, a name day or a Sunday visit; carnations often hold two weeks in water. |
+| hold | `seed/data/copy/pl/products.json:534` FO-AR-001 `descriptionMd` | We hold the pastel scheme; the flowers inside it are our florist's choice. |
+| hold | `seed/data/copy/pl/products.json:573` FO-AR-004 `descriptionMd` | We hold the vibrant colour scheme; the exact colours follow the day's delivery. |
+| hold | `seed/data/copy/pl/products.json:586` FO-AR-005 `descriptionMd` | The pink colour scheme is what we hold; tulip variety and shade depend on the week. |
+| hold | `seed/data/copy/pl/products.json:612` FO-AR-007 `descriptionMd` | Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. |
+| take | `seed/data/copy/pl/products.json:651` FO-AR-010 `descriptionMd` | Peonies are always the flower; where the season has ended our florist tells us before we take the order. |
+| hold | `seed/data/copy/pl/products.json:690` FO-AR-013 `descriptionMd` | Sent for All Saints' visits, thank yous and housewarmings, and chrysanthemums hold longer than most cut flowers. |
+| hold | `seed/data/copy/pl/products.json:703` FO-AR-014 `descriptionMd` | Sent for a new baby, a get-well or a birthday; alstroemeria often holds two weeks. |
+| hold | `seed/data/copy/pl/products.json:703` FO-AR-014 `descriptionMd` | We hold the pastel scheme, and our florist chooses shades and any filler from the day's delivery. |
+| hold | `seed/data/copy/pl/products.json:820` FO-FN-001 `descriptionMd` | We hold the white scheme and the form; the flowers inside it are chosen by our florist from that morning's market. |
+| held | `seed/data/copy/pl/products.json:846` FO-FN-003 `descriptionMd` | The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. |
+| hold | `seed/data/copy/pl/products.json:846` FO-FN-003 `descriptionMd` | The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. |
+| hold | `seed/data/copy/pl/products.json:859` FO-FN-004 `descriptionMd` | The white scheme and the heart form are what we hold; rose variety and any filler are chosen by our florist on the morning of the service. |
+| hold | `seed/data/copy/pl/products.json:872` FO-FN-005 `descriptionMd` | We hold the white scheme; the mix is our florist's choice from that day's market. |
+| hold | `seed/data/copy/pl/products.json:885` FO-FN-006 `descriptionMd` | We hold the mixed scheme and the flat form; colours follow what our florist can buy that week. |
+| hold | `seed/data/copy/pl/products.json:911` FO-FN-008 `descriptionMd` | We hold the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. |
+| held | `seed/data/copy/pl/products.json:924` FO-FN-009 `descriptionMd` | The white scheme is held; the foliage follows the season. |
+| hold | `seed/data/copy/pl/products.json:937` FO-FN-010 `descriptionMd` | We hold the white scheme and the low form; the flowers and the container's finish are our florist's choice. |
+| hold | `seed/data/copy/pl/products.json:950` FO-GS-001 `descriptionMd` | We hold the orange scheme and swap greenery for what the market has. |
+| held | `seed/data/copy/pl/products.json:963` FO-GS-002 `descriptionMd` | The pink scheme is held and the vase is always included; vase height and shape depend on what our florist stocks that week. |
+| hold | `seed/data/copy/pl/products.json:976` FO-GS-003 `descriptionMd` | We hold the blue scheme; the flowers and the toy are chosen by our florist from what is in the shop, and the toy is new and tagged. |
+| hold | `seed/data/copy/pl/products.json:989` FO-GS-004 `descriptionMd` | We hold the pink scheme; the flowers and the toy come from our florist's own shop, and the toy is new, tagged and suitable from birth. |
+| hold | `seed/data/copy/pl/products.json:1002` FO-GS-005 `descriptionMd` | We hold the mixed tulip scheme, because tulip colours change from week to week. |
+| held | `seed/data/copy/pl/products.json:1015` FO-GS-006 `descriptionMd` | The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. |
+| held | `seed/data/copy/pl/products.json:1028` FO-GS-007 `descriptionMd` | The yellow scheme is held; supporting stems follow the week. |
+| held | `seed/data/copy/pl/products.json:1041` FO-GS-008 `descriptionMd` | The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. |
+| take | `seed/data/copy/pl/products.json:1041` FO-GS-008 `descriptionMd` | The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. |
+| hold | `seed/data/copy/pl/products.json:1054` FO-GS-009 `descriptionMd` | We hold the mixed scheme; the flowers and the balloon design are our florist's choice on the day. |
+| hold | `seed/data/copy/pl/products.json:1067` FO-GS-010 `descriptionMd` | We hold the vibrant scheme; gerbera colours and the balloon design depend on the day's stock. |
+| held | `seed/data/copy/pl/products.json:1080` FO-GS-011 `descriptionMd` | The white scheme is held; lilies arrive part-closed and open over days. |
+| hold | `seed/data/copy/pl/products.json:1093` FO-GS-012 `descriptionMd` | We hold the pastel scheme and our florist chooses the flowers and the toy from the shop; the toy is new, tagged and suitable from birth, and the bouquet is tied light enough to carry. |
 
 ## Progress
 
-_Not started._
+- 2026-10-14: copy, de/pl drafts, glossary, `src/config/honesty.ts`, unit and e2e scans committed and pushed; blocked on E1 (founder's record run) and E2 (map budget).
 
 ## Result
