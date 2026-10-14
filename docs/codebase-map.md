@@ -162,7 +162,7 @@ task actually touches.
 | `tests/unit/` | 291 |
 | `tests/integration/` | 21 |
 | `tests/contract/` | 12 |
-| `tests/e2e/` | 55 |
+| `tests/e2e/` | 56 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
