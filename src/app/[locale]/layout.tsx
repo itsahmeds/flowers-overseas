@@ -128,8 +128,13 @@ async function headerListingHrefs(locale: string): Promise<HeaderListingHrefs> {
 export default async function LocaleLayout({
   children,
   notice,
+  switcher,
   params,
-}: LocaleParams & { children: ReactNode; notice?: ReactNode }) {
+}: LocaleParams & {
+  children: ReactNode;
+  notice?: ReactNode;
+  switcher?: ReactNode;
+}) {
   const { locale: requested } = await params;
   const locale = routableLocale(requested) ?? documentFallbackLocale();
   setRequestLocale(locale.code);
@@ -188,10 +193,14 @@ export default async function LocaleLayout({
         {/* `notice` is the `@notice` parallel-route slot: the notice bar's "Prices include
             delivery and VAT" on every page, nothing on the locale home (founder, 2026-10-04;
             TASK-176). The route decides, so the document stays static and no path is read. */}
+        {/* `switcher` is the `@switcher` slot: the language links to this page in each locale
+            that has it, and to the locale home elsewhere (spec 003 §2 L79; TASK-233). One node,
+            drawn in the utility strip, the phone menu and the footer language row. */}
         <SiteHeader
           locale={locale.code}
           listingHrefs={await headerListingHrefs(locale.code)}
           priceClaim={notice}
+          switcher={switcher}
         />
         {children}
         {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
@@ -207,6 +216,7 @@ export default async function LocaleLayout({
             shape as the corridor route's shop entry, for the same reason. */}
         <SiteFooter
           locale={locale.code}
+          switcher={switcher}
           view={footerView(locale.code, {
             unavailable:
               (await occasionsIndexHref(locale.code)) === undefined

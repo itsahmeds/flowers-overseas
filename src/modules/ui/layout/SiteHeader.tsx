@@ -160,6 +160,14 @@ export interface SiteHeaderProps {
    * gallery, a unit render) shows the full notice.
    */
   readonly priceClaim?: ReactNode;
+  /**
+   * The language links, decided **by the route** like `priceClaim` (spec 003 §2 L79, §5.3; spec
+   * 004 §14 A24 AC-47; TASK-233). The document layout passes its `@switcher` slot: `LocaleSwitcher`
+   * with this page's own path in each locale that has it, and the locale home elsewhere. The same
+   * node is drawn in the utility strip and in the phone menu. Defaults to the switcher's locale
+   * homes, for a header with no route behind it (the gallery, a unit render).
+   */
+  readonly switcher?: ReactNode;
 }
 
 /**
@@ -180,6 +188,7 @@ export function SiteHeader({
   locale,
   listingHrefs = {},
   priceClaim = <NoticePriceClaim />,
+  switcher = <LocaleSwitcher locale={locale} />,
 }: SiteHeaderProps): ReactElement {
   const t = useTranslations();
   // Namespace-bound for the one key with an ICU argument (`{currency}`).
@@ -243,7 +252,7 @@ export function SiteHeader({
                 className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-xs [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 max-lg:[&_ul]:flex-wrap max-lg:[&_ul]:justify-center lg:[&_ul]:gap-[14px]"
                 data-fo-header-switcher
               >
-                <LocaleSwitcher locale={locale} />
+                {switcher}
               </div>
               <span
                 aria-label={nav("currency.label", { currency })}
@@ -359,7 +368,7 @@ export function SiteHeader({
             }))}
             navLabel={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
             send={{ href: headerSendHref(locale), label: t("nav.send") }}
-            switcher={<LocaleSwitcher locale={locale} />}
+            switcher={switcher}
           />
         </div>
       </header>
