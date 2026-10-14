@@ -332,6 +332,26 @@ The new unit files pass (`--maxWorkers=2`).
   TASK-188); A10 changed by one character → both T-40 cases red.
 - not run: the `/review 99` `toBe` trailing-slash cases need a server that self-redirects.
 
+**Gates block** (`pnpm gates:cheap`, load average 22 at the start):
+
+```
+gates:cheap · 9aea36aef15445421a12833e73969f19505600a1 · tree clean · base origin/main · 2026-10-14T06:09:41.453Z
+typecheck             exit 0 · 2.3 s
+lint                  exit 0 · 26.4 s
+format:check          exit 0 · 13.7 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 1 · 112.1 s · changed 140 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: FAIL (1 of 7 red: tests)
+```
+
+The one red is `tests/unit/catalog-pricing-minor.test.ts` "x as Minor is red on every root", a
+file this PR does not touch: its first case starts a cold type-aware ESLint over eight roots and
+passes the 5 s default only on an idle machine. Re-run alone with `--testTimeout=60000`: 61 of 61
+pass in 13 s. Every other unit file (3,996 cases) is green.
+
 **View model for TASK-188** (unchanged from the implementer): `ListingCountrySchema.state` is
 `z.enum(["guide","live"])`; `ListingEntitySchema.register` is required, from the registry;
 `CategoryTileViewSchema.countNoun`; `leadSku` is not on the view.
