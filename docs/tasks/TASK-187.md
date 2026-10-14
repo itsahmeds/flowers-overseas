@@ -368,6 +368,14 @@ pass in 13 s. Every other unit file (3,996 cases) is green.
 - Nits not taken (carry-forwards): the count line's "84 bouquets" beside plants; `?Page=2` in the
   wrong case; the de/pl English strings marked `machine`.
 
+**Rebase on `024ca3cf` (PR 215 merged).** With main's new keys, this PR's four unreviewed keys
+took `en-gb` to 28 of 543 counted strings unreviewed (5.16 %), over spec 003's 5 % gate, so
+`en-gb` fell out of the index (13 unit files red). P3's "Next page" is dropped: the compact pager's
+next link reads the reviewed `shop.pagination.next` ("Next") at every width, and `en-gb` is at
+27 of 542 (4.98 %). **For the founder:** attesting A9, A10 and P3's "Page {page} of {total}"
+restores the headroom; "Next page" can come back with that batch. The product route also needed
+its `LanguageAlternates` import back after the merge.
+
 **View model for TASK-188** (unchanged from the implementer): `ListingCountrySchema.state` is
 `z.enum(["guide","live"])`; `ListingEntitySchema.register` is required, from the registry;
 `CategoryTileViewSchema.countNoun`; `leadSku` is not on the view.

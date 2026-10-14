@@ -929,7 +929,6 @@
     "pagination": {
       "label": "Pages of products",
       "next": "Next",
-      "nextPage": "Next page",
       "page": "Page {page}",
       "pageOf": "Page {page} of {total}",
       "previous": "Previous",

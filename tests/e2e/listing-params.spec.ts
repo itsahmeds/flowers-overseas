@@ -136,7 +136,7 @@ test.describe("pagination (AC-10, T-10)", () => {
     // Every control is an `<a href>`; the current page is not a link.
     await expect(nav.locator("button")).toHaveCount(0);
     await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
-    // Below `md` the numbered links are hidden by CSS and the "Next page" link carries the same
+    // Below `md` the numbered links are hidden by CSS and the "Next" link carries the same
     // href (spec 008 §14 A16 (e)); whichever is displayed at this width is the one clicked.
     await nav.locator('a[href$="?page=2"]:visible').first().click();
     await expect(page).toHaveURL(/\?page=2$/u);

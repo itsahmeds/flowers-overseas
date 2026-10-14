@@ -2829,11 +2829,6 @@
     "reviewed": false,
     "sourceHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
   },
-  "shop.pagination.nextPage": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "c08ac736a5e29c291b681cbdc15f06901a735f28d2e04645b92cf331861cb8c0"
-  },
   "shop.pagination.page": {
     "source": "machine",
     "reviewed": false,

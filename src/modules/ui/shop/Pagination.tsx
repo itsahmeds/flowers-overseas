@@ -124,8 +124,9 @@ export function Pagination({
           data-fo-pagination-next
           href={pageHref(baseHref, page + 1)}
         >
-          <span className="max-md:hidden">{t("pagination.next")}</span>
-          <span className="md:hidden">{t("pagination.nextPage")}</span>
+          {/* "Next" at every width: P3's "Next page" waits for the founder's batch, because a
+              fifth unreviewed key would take `en-gb` over spec 003's 5 % gate (TASK-187). */}
+          {t("pagination.next")}
         </a>
       ) : null}
     </nav>

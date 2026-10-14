@@ -716,7 +716,6 @@
       "next": "Next",
       "page": "Page {page}",
       "titleSuffix": "{title} · Page {page}",
-      "nextPage": "Next page",
       "pageOf": "Page {page} of {total}"
     },
     "empty": {
