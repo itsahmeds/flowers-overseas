@@ -91,6 +91,10 @@ export function Gallery({
   //    auto-advances and nothing is called a carousel.
   // The hero is the page's one `priority` image; every other photograph is lazy and keeps its own
   // `grid` box, so the phone slide is never a 96 px thumbnail stretched to the screen.
+  // Contained from `lg` (TASK-227, the founder's report of 2026-10-14): the strip's desktop grid is
+  // `!important`, so no later `display: flex` (the scroller's own base class included) can lay it
+  // back out as the phone's row at a desktop width, and it clips (`overflow: clip`, not a scroll
+  // container) so even then no photograph paints beside the hero or under the buy column.
   const images = [gallery.hero, ...gallery.thumbs];
   const anchor = (index: number): `#${string}` =>
     `#pdp-photo-${String(index + 1)}`;
@@ -101,7 +105,7 @@ export function Gallery({
     >
       <HorizontalScroller
         bleed={false}
-        className="max-lg:gap-0 lg:col-span-full lg:grid lg:grid-cols-subgrid lg:grid-rows-[repeat(4,auto)_1fr] lg:[column-gap:normal] lg:gap-y-[12px] lg:overflow-visible [&>li]:w-full lg:[&>li]:col-start-1 lg:[&>li:first-child]:col-[2/8] lg:[&>li:first-child]:row-[1/6]"
+        className="max-lg:gap-0 lg:col-span-full lg:grid! lg:grid-cols-subgrid lg:grid-rows-[repeat(4,auto)_1fr] lg:[column-gap:normal] lg:gap-y-[12px] lg:overflow-clip [&>li]:w-full lg:[&>li]:col-start-1 lg:[&>li:first-child]:col-[2/8] lg:[&>li:first-child]:row-[1/6]"
         itemsFocusable={false}
         items={images.map((image, index) => ({
           key: image.assetId,

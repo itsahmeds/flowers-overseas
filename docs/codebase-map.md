@@ -159,7 +159,7 @@ task actually touches.
 | `tests/unit/` | 283 |
 | `tests/integration/` | 20 |
 | `tests/contract/` | 12 |
-| `tests/e2e/` | 52 |
+| `tests/e2e/` | 53 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
