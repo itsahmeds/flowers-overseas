@@ -157,7 +157,7 @@ task actually touches.
 | `tests/contract/` | 11 |
 | `tests/e2e/` | 47 |
 | `tests/a11y/` | 15 |
-| `tests/visual/` | 21 |
+| `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
 | `tests/fixtures/` | 313 |
 | `tests/msw/` | 4 |
