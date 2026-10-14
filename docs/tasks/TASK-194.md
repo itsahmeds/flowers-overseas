@@ -95,7 +95,10 @@ file, not the row.
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- 2026-10-14 (orchestrator, before review): motion 5 → home conformance task, needs `<em>` in
+  `home.hero.heading`, founder asked 2026-10-14. The poppy italic phrase in the H1 is also a
+  home-vs-artboard finding from the 2026-10-14 QA; that task adds the tag and the underline
+  together.
 
 - **From the orchestrator (2026-10-18):** TASK-244 now lands before this task. When this task merges, add the motions module to TASK-244's declared deferred set in `src/modules/ui` and extend its unit test (spec 004 A-founder-2026-10-15b clause 2); the motion chunk must load after the LCP paint (clause 1).
 
@@ -112,7 +115,9 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   inherits), rendered with `t.rich`. That is a change to message text (founder-attested copy) and
   also brings in the italic poppy phrase the sheet draws, which the H1 does not have today. The
   fence forbids changing message text, so motion 5 is skipped. Question: may the four catalogues
-  carry that tag (text otherwise unchanged), in this task or a copy task? Answer: `open`.
+  carry that tag (text otherwise unchanged), in this task or a copy task? Answer (orchestrator,
+  2026-10-14): **moved**. Motion 5 leaves this task for the home-conformance task, with the tag;
+  see Carry-forwards.
 
 ## Progress
 
