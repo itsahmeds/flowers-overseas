@@ -91,6 +91,7 @@
     <dl>
       <dt>Purpose</dt><dd>How a Warsaw florist meets us, applies, and on a demo call signs in on staging and handles a first example order on their phone. Phase 0 exit signal 9 depends on it.</dd>
       <dt>What changed (spec 011 Appendix B item 6)</dt><dd>Step 03 is the staging inbox reached through the one email sign-in (spec 011 §13 Q2, accepted): there is no per-order <code>/v/{token}</code> link. Step 04 drops the public-use consent question (§13 Q6: photos stay private until spec 029's recipient consent) and the substitution field (spec 027). The walkthrough has its own page now. “Not in Phase 0” names specs 026 and 027.</dd>
+      <dt>What changed (spec 016, 2026-10-14)</dt><dd>Steps 06 to 11 add Phase 1: the offer by email with the one-tap link (and the founder's WhatsApp copy, offer and stop message only), the reminder and the timeout that re-offers the order to the next florist, the confirmation after capture, the stop message and the inbox's withdrawn stage, the photo reminder, and the founder's no-florist alert with the grace window. Templates: <code>wireframes/email-*</code>.</dd>
       <dt>What is honest here</dt><dd>No count of florists, no testimonial, no shop logo. The status line is drawn as “We are opening country by country, starting in Poland.” (founder copy pending; it replaces spec 011's “choosing” line, which the founder's ruling bans). The payout example is two lines, the buyer's price from the catalogue and the agreed amount, labelled as one example. Every inbox order on staging is synthetic.</dd>
       <dt>Owning spec</dt><dd>011 · <code>plan/05</code> rows 41, 42, 43, 45 · artboards <code>wireframes/for-florists-*</code>, <code>for-florists-walkthrough-*</code>, <code>for-florists-apply-*</code>, <code>florist-sign-in-*</code>, <code>florist-inbox-*</code></dd>
     </dl>
@@ -135,11 +136,55 @@
         <div class="stub">
           <span><b>Spec 026:</b> florists sign in on the live site (a small slice in Phase 1, at the first signed florist), owner and staff permissions, staff invites, a shop switcher for chains.</span>
           <span><b>Spec 027:</b> capacity and days-off calendar, substitution notes, the printed card PDF, payout history, ratings, coverage editing, availability toggles, photo hints.</span>
-          <span><b>Spec 017:</b> order emails that sign the florist in and open the order in one tap. <b>028:</b> WhatsApp. <b>029:</b> recipient consent for public photos. <b>030:</b> payouts.</span>
+          <span><b>Spec 016 (Phase 1, steps 06 to 11):</b> order emails that sign the florist in and open the order in one tap, and the founder's WhatsApp copies. <b>028:</b> WhatsApp sent by us. <b>029:</b> recipient consent for public photos. <b>030:</b> payouts.</span>
           <span>Florist terms as a legal page (Phase 1); “our florists” pages only for florists who opt in.</span>
         </div>
       </div>
     </div>
+    <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+      <p style="margin:0;font-size:var(--text-xs);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-ink-2)">Phase 1 · spec 016 · an order by email, 2026-10-14</p>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">06</span><b>The offer arrives by email</b></header>
+        <code>V1 email → {base}/sign-in/confirm?t=… → Continue → {base}/orders/{assignmentId}</code>
+        <div class="thumb"><div class="ink"></div><span>New order for Thu 8 Oct · answer by 15:40</span><div class="box">Answer by 15:40</div><div class="box">Amber Hour · 18 stems · Vase · Thu 8 Oct · 00-001 Warszawa</div><div class="box">You receive 149 zł</div><div class="acc"></div><span>Open the order (one tap; works once, for one hour)</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Open the order in one tap, then accept or decline in the inbox (step 04). A WhatsApp florist also gets the same offer pasted by the founder (W copy); the email goes every time.</dd><dt>Trust</dt><dd><span class="trust">No recipient name, street, phone or card message in the email or the WhatsApp copy (16-3). The link holds a token only; the WhatsApp copy holds no token at all.</span></dd><dt>Reads</dt><dd><code>assignment.offered</code>; the link from spec 012's core with the callback stored server-side; <code>partner_member.locale_code</code>.</dd><dt>Spec</dt><dd>016 V1, W · <code>email-florist-*</code>, <code>email-founder-*</code></dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">07</span><b>No answer: a reminder, then the next florist</b></header>
+        <code>V2 at half the time · at the end: assignment.timed_out → V4 → offer to the next florist</code>
+        <div class="thumb"><div class="ink"></div><span>Reminder: answer by 15:40</span><div class="box">This order is still waiting for your answer.</div><div class="row2"><div class="box" style="flex:1">15:10 reminder</div><div class="box" style="flex:1">15:40 timed out</div></div><div class="box">The time to answer has passed. This order is no longer yours.</div><span>→ the same order is offered to the next florist (step 06)</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Answer before the time is up, or the order moves on. A decline moves it on at once, with no stop email to the florist who declined.</dd><dt>Times</dt><dd>60 minutes between 08:00 and 20:00 in the destination, 30 for a same-day order. Paid at night: offered at 07:30, answer by 09:00 (08:00 if same-day). Never past the routing deadline: the same-day cutoff plus 2 hours. Up to 5 offers.</dd><dt>Reads</dt><dd><code>offerWindow</code>, <code>rankCandidates</code>; jobs <code>assignment.remind</code>, <code>assignment.timeout</code>, <code>order.route</code>. V2 is email only (16-5).</dd><dt>Spec</dt><dd>016 V2, V4, AC-4, AC-7, AC-8</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">08</span><b>Confirmed: make it</b></header>
+        <code>assignment.accepted → order.in_production → V3 to the florist, B2 “being made” to the buyer</code>
+        <div class="thumb"><div class="ink"></div><span>Confirmed: please make the order for Thu 8 Oct</span><div class="box">Open the order for the recipient's name, address, phone and the card message to print.</div><div class="acc"></div><span>Inbox: recipient and card message shown · Out for delivery</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Make the bouquet. The recipient's details are in the inbox from now until the photo.</dd><dt>Trust</dt><dd><span class="trust">The buyer paid at checkout (founder 2026-10-14: charge at once) and now reads “Your bouquet is being made” (B2); they never hear of an offer or an acceptance.</span></dd><dt>Reads</dt><dd><code>assignment.accepted</code>, then <code>order.in_production</code>.</dd><dt>Spec</dt><dd>016 V3, B2, AC-14</dd></dl>
+      </div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">09</span><b>Stopped: no longer yours</b></header>
+        <code>cancelled · payment refused · full refund · chargeback (before delivery) → withdrawn → V4</code>
+        <div class="thumb"><div class="ink"></div><span>Please do not make the order for Thu 8 Oct</span><div class="box">This order is no longer yours. Please do not make it.</div><span>Inbox: the withdrawn stage, under In progress, no recipient, no action</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Stop. If they have already started, they call the founder; whether a made bouquet is paid is the florist agreement's (16-12).</dd><dt>Trust</dt><dd><span class="trust">The recipient's details disappear from the inbox at once. No reason is given to the florist.</span></dd><dt>Reads</dt><dd><code>order_assignment.withdrawn_at</code>, <code>withdrawn_reason</code>; reminders and the photo reminder then do nothing.</dd><dt>Spec</dt><dd>016 V4, W, AC-15 · <code>florist-inbox-*</code> (withdrawn)</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">10</span><b>Delivered, then the photo</b></header>
+        <code>order.delivered → 1 hour, no photo → V5 · order.photo_uploaded → B4 to the buyer</code>
+        <div class="thumb"><div class="ink"></div><span>Add the photo</span><div class="box">Thank you for delivering Amber Hour today. Please add one photo of the bouquet as you handed it over.</div><div class="acc"></div><span>Buyer: “Your flowers are delivered.” with the photo inside</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Add the photo from the same order page (step 05).</dd><dt>Reads</dt><dd><code>assignment.photo_remind</code>; a photo before the hour means no reminder. Email only (16-5).</dd><dt>Spec</dt><dd>016 V5, B4, AC-17</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">11</span><b>Nobody took it (the founder)</b></header>
+        <code>order.no_partner_available → A1 → reroute (spec 020) or cancel at the end of the grace window</code>
+        <div class="thumb"><div class="ink"></div><span>No florist: FO-7K2M-9QXA · Warszawa · Thu 8 Oct</span><div class="box">Cancels automatically at 16:40 Warsaw time unless you act.</div><div class="box">1 declined · 2 no answer · 3 declined</div><div class="row2"><div class="box" style="flex:1">Reroute → step 06</div><div class="box" style="flex:1">Cancel → B5, full refund</div></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Phone a florist and reroute to them (spec 020's button calls <code>manualReroute</code>), cancel, or let the window run out.</dd><dt>Grace window</dt><dd>Due today: 2 hours. Not due today: until 10:00 destination time the next morning (21:00 → 10:00; 06:00 → 10:00 the same day). Both end by the routing deadline (16-2). With <code>routing.auto</code> off, nothing cancels automatically.</dd><dt>Trust</dt><dd><span class="trust">The buyer has paid; a cancel refunds in full, and B5 says only “We could not deliver this order. We have refunded {amount}.”</span></dd><dt>Spec</dt><dd>016 A1, B5, AC-10 to AC-13, AC-35 · <code>email-founder-*</code></dd></dl>
+      </div>
+    </div>
+    </div>
+
   </div>
 </div>
 </x-dc>
