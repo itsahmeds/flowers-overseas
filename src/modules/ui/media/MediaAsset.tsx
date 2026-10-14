@@ -231,6 +231,10 @@ export function MediaAsset({
           src={resolved.fallbackSrc}
           srcSet={fallback?.srcSet}
           width={resolved.width}
+          // Motion 11 (spec 004 §14 A24 clause 9; TASK-194): every image but the LCP candidate is
+          // marked; the motion module fades in only those that start below the first viewport and
+          // have not loaded yet. The priority image never carries it, so it paints at once.
+          {...(priority ? {} : { "data-fo-fade": "" })}
         />
       </picture>
     </Photo>

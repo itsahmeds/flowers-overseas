@@ -1067,6 +1067,25 @@
     }
   }
 
+  /* 6. A product card lifts 2 px and its photograph zooms 3 % inside its clipped box, on a fine
+     pointer's hover only. The priority card (the LCP photograph) carries no `data-fo-card-motion`. */
+  @media (hover: hover) and (pointer: fine) {
+    a[data-fo-card-motion],
+    a[data-fo-card-motion] img {
+      transition-property: transform;
+      transition-duration: var(--duration-base);
+      transition-timing-function: var(--ease-standard);
+    }
+
+    a[data-fo-card-motion]:hover {
+      transform: translateY(-2px);
+    }
+
+    a[data-fo-card-motion]:hover img {
+      transform: scale(1.03);
+    }
+  }
+
   /* 11. A below-the-fold image fades in over its paper box once it has loaded. */
   html[data-fo-motion] img[data-fo-fade="pending"] {
     opacity: 0;

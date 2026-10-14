@@ -103,7 +103,16 @@ _None._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-14, to the orchestrator (for the founder): **motion 5 needs a copy change.** The sheet
+  draws the underline under "far away." inside the H1 (`someone <em>far away.</em>`, the italic
+  poppy phrase). The shipped H1 is one plain string, `home.hero.heading` = "Flowers for someone far
+  away." in `en` (and the same English text in `de` and `pl`), with no tag marking the phrase, so
+  the code cannot find "far away" in a locale-neutral way. Building motion 5 needs the message to
+  carry a tag, e.g. `Flowers for someone <em>far away.</em>`, in every locale (en, de, pl; en-gb
+  inherits), rendered with `t.rich`. That is a change to message text (founder-attested copy) and
+  also brings in the italic poppy phrase the sheet draws, which the H1 does not have today. The
+  fence forbids changing message text, so motion 5 is skipped. Question: may the four catalogues
+  carry that tag (text otherwise unchanged), in this task or a copy task? Answer: `open`.
 
 ## Progress
 
