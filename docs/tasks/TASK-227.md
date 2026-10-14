@@ -18,7 +18,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Carry-forwards
 
-- **From the orchestrator (2026-10-14):** TASK-197's accepted breaker holes include "dots `lg:hidden` vs `md:hidden` (no case between 768 and 1023)"; this task's width scan covers that band.
+- **From the orchestrator (2026-10-14):** TASK-197's brief records `GalleryDots` as `md:hidden`, which hides them at 768 to 1023 px. That is an open note for the designer or the founder, not an accepted hole. This task's width scan covers that band.
 
 ## Escalations
 
