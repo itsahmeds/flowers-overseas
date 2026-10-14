@@ -52,6 +52,8 @@ import { useTranslations } from "next-intl";
 import { localeBetaTag } from "../review.ts";
 import { type PageType, launchLocales, localePath } from "../routing.ts";
 
+import { languageAlternateEntries } from "./LanguageAlternates.tsx";
+
 export interface LocaleSwitcherProps {
   /** The locale of the page the switcher is rendered on; it is the one entry that is not a link. */
   locale: string;
@@ -62,6 +64,14 @@ export interface LocaleSwitcherProps {
    */
   pageType?: PageType;
   /**
+   * **This page** in each locale that has it (spec 003 §2 L79, §5.3; TASK-233): locale code → that
+   * locale's path, from the page type's own alternates builder (`pageAlternatePaths()`, read by
+   * the `@switcher` slot). A locale missing from it has no such page and links the `pageType`
+   * fallback, the locale home. Filtered exactly as the popup's are (`languageAlternateEntries()`):
+   * launch codes only, each path under its own locale's prefix.
+   */
+  paths?: Readonly<Record<string, string>>;
+  /**
    * Locales to mark as machine-drafted ("beta", `plan/03` §6). Defaults to the live locales whose
    * unreviewed share is above the 5 % threshold, computed by `localeBetaTag()`.
    */
@@ -71,11 +81,15 @@ export interface LocaleSwitcherProps {
 export function LocaleSwitcher({
   locale,
   pageType = "home",
+  paths = {},
   betaLocales,
 }: LocaleSwitcherProps) {
   const t = useTranslations("a11y");
   const common = useTranslations("common");
+  // The one list of what the switcher offers: the launch-locale registry. A locale leaves every
+  // language row (strip, phone menu, footer) by leaving `launchLocales()`, never by an edit here.
   const locales = launchLocales();
+  const samePage = languageAlternateEntries(paths);
   const beta = new Set(
     betaLocales ??
       locales
@@ -95,7 +109,9 @@ export function LocaleSwitcher({
             ) : (
               <a
                 className="underline"
-                href={localePath(target.code, pageType)}
+                href={
+                  samePage[target.code] ?? localePath(target.code, pageType)
+                }
                 lang={target.bcp47}
                 hrefLang={target.bcp47}
               >
