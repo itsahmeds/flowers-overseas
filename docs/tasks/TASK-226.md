@@ -12,7 +12,7 @@ file, not the row.
   - `corridor.facts.orderBy.none` → "None yet." (also removes the em dash; drop its entry from `tests/support/forbidden-phrases.ts` `PHRASE_EXCEPTIONS`)
   - the ten guide FAQ answers to "Can you deliver to {country} today?" / "Can you send flowers to {country} now?" in `content/corridors/{en,en-gb}/*-guide.md` → "Not yet. Ordering for {country} is not open. When it opens, this page shows the delivery days and the order-by time." (country name filled per file; drop their `PHRASE_EXCEPTIONS` entries)
   - `checkout.price.currencyLine` → "You pay in {buyerCurrency}." (spec 010 §14 A4)
-  - Each of these four keys and the FAQ text records `reviewed: true` as the founder's approval in chat on 2026-10-14 is the founder's own words; the agent marks nothing reviewed itself: set `reviewed: false` with a `proposedBy` note, and the orchestrator hands the founder a record-approval script (spec 003 A17 clause 5).
+  - The founder approved these texts in chat on 2026-10-14, but the agent marks nothing reviewed itself: ship them `reviewed: false`, and the orchestrator hands the founder a record-approval script for their own commit (spec 003 A17 clause 5).
   - `de` and `pl`: replace the same keys and FAQ answers with machine drafts of the new text (`source: machine`, `reviewed: false`); no English left in `de`/`pl`.
 - **Glossary:** `content/i18n/glossary.en.md` lines ~34 and ~67 tell translators to write "partner florist" and never "our florist(s)": rewrite so buyer-facing copy uses "our florist"; "partner florist" only for florist, admin and founder surfaces.
 - **The em dash** in the product date picker (seen 2026-10-14): find its key and replace it with a full stop or comma, same review handling.
