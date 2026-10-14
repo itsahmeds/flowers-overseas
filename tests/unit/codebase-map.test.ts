@@ -66,6 +66,17 @@ function fixtureRepo(barrel: string): string {
   return root;
 }
 
+/**
+ * The hard cap on the map, in bytes. Spec 001 §14 A21 (founder, "map 20"): 20 × 1024. It is a guard
+ * against an unbounded map, not a budget the growth must fit under; the ≤ 12 KB *target* (A16) and
+ * TASK-095's compression stand, and compression may lower this again.
+ */
+const MAP_HARD_CAP_BYTES = 20 * 1024;
+
+/** The predicate the committed-map assertion and the boundary fixtures share. */
+const withinHardCap = (text: string): boolean =>
+  Buffer.byteLength(text, "utf8") <= MAP_HARD_CAP_BYTES;
+
 describe("the committed docs/codebase-map.md (AC-33)", () => {
   it("is current — `pnpm codebase:map --check` finds nothing", () => {
     expect(checkMap(repoRoot).join("\n")).toBe("");
@@ -83,9 +94,28 @@ describe("the committed docs/codebase-map.md (AC-33)", () => {
    * TASK-200 raised the cap from 16 KB to 17 KB: main stood at 16 239 B, 145 B under the cap, and
    * spec 010's new `checkout` module plus its two config files need ~320 B even with the shortest
    * purpose lines. Flagged in PR 201 for the reviewer; TASK-095's compression is still the remedy.
+   *
+   * Spec 001 §14 A21 raised it to 20 KB: PRs 180, 224 and 225 each need 50 to 300 bytes the 17 KB
+   * cap no longer had.
    */
   it("stays inside the size budget the spec sets", () => {
-    expect(Buffer.byteLength(committed, "utf8")).toBeLessThanOrEqual(17 * 1024);
+    expect(withinHardCap(committed)).toBe(true);
+  });
+
+  it("holds the hard cap at exactly 20 480 bytes", () => {
+    expect(MAP_HARD_CAP_BYTES).toBe(20480);
+  });
+
+  it("passes a 20 480-byte map and fails a 20 481-byte one (boundary fixtures)", () => {
+    expect(withinHardCap("a".repeat(20480))).toBe(true);
+    expect(withinHardCap("a".repeat(20481))).toBe(false);
+  });
+
+  it("counts bytes, not characters: 20 480 characters of 2 bytes each is over the cap", () => {
+    // 20 479 ASCII characters plus one “é” (2 bytes) is 20 480 characters but 20 481 bytes.
+    const fixture = `${"a".repeat(20479)}é`;
+    expect(fixture.length).toBe(20480);
+    expect(withinHardCap(fixture)).toBe(false);
   });
 
   it("keeps the hand-maintained “Where does X live?” table with every named row", () => {
