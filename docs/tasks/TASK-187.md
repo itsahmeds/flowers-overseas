@@ -193,11 +193,10 @@ One line per coherent step, newest last.
 
 ## Result
 
-**PARTIAL (2026-10-14, the implementer's 180-minute limit).** PR 214 (draft), head `4e747f67`,
-branch `task/TASK-146-country-listings-depth4`, one feature PR with TASK-146. Everything below is
-committed and pushed. Nothing has been rendered in a browser yet: another agent held the build slot
-for the whole run (one 900 s acquire timed out). So **there are no screenshots, and no e2e, a11y or
-visual case has run**. CI has not been fired (no `ci:full`; the PR is a draft).
+**FINISHED, in review (2026-10-14, finisher `wo-214-finish`).** PR 214, branch
+`task/TASK-146-country-listings-depth4`, one feature PR with TASK-146, rebased on `48837dca`. The
+implementer's partial result (`4e747f67`) is below as "Built" and "Tests written"; the finisher's
+part is "Finished" and "Mutations seen red".
 
 **Built.**
 - Depth-4 parameter policy (A15 (a)):
@@ -260,30 +259,80 @@ visual case has run**. CI has not been fired (no `ci:full`; the PR is a draft).
 
 The new unit files pass (`--maxWorkers=2`).
 
-**Mutations seen red:**
-- cutting the depth-4 `parameterised` pass-through (listing-params);
-- the two `/review 99` occasions-index mutations (TASK-146 brief).
+**Finished (the finisher).**
+- **Unit reds at hand-back.** The two barrel pins were real: `formatDateParts` and
+  `ListingSortForm` added to `i18n-barrel` and `ui-barrel` (9ea2e339; types are not runtime
+  exports). `catalog-listing` (the three sort cases), `catalog-listing-equivalents`, `url-pii`,
+  `product-route`, `catalog-product-routes` and `geo-delivery` all pass after the rebase at
+  `--maxWorkers=2` (63 and 386 cases): load timeouts, no code change.
+- **Rendered in the build slot** (`next build` + `next start` from `.env.example` placeholders,
+  as CI does). Fixed in code (6dfa995b):
+  - the shop root's and the category's first row was below the fold: price line at y 888 and
+    the price block at 926 at 1440 × 900, 831 and 869 at 1280 × 800. The head is now tighter
+    (`md:pt-[16px]`→ the H1 12 px under the trail, 16 px under the state line, the count row
+    10 px top and bottom, the disclosure on one line from `md` up where it fits);
+  - the ranking disclosure's `data-fo-listing-disclosure` was dropped by `Text` (it forwards no
+    `data-*`): moved to a wrapper. This was why both R8 cases were red.
+- **Measured** (shop root and category are the same geometry; occasion lead price, desktop):
 
-The geometry mutations have **not** been run, because they need the browser: the lead restored,
-the 160 px spacer, the rotated SVG and the bare price.
+  | size | H1 | state line | grid top | price line bottom | equivalents bottom | occasion lead price |
+  |---|---|---|---|---|---|---|
+  | 1440 × 900 | 201–282 | 290–311 | 380 | 840 | 878 | 626–672 |
+  | 1280 × 800 | 201–275 | 283–304 | 373 | 783 | 821 | 548–611 |
+  | 1512 × 945 | 201–282 | 290–311 | 380 | 840 | 878 | 626–672 |
+  | 390 × 844 | 135–224 | 232–253 | 433 | 704 | 760 | first card, 747 |
 
-**Not done (the finisher's list).**
-1. Take the build slot and render the three pages at 1440 × 900, 1280 × 800 and 390 × 844. Compare
-   them with the artboards and save the shots to `.claude/state/shots-187/`. Fix what the new e2e
-   finds: by estimate the first row ends near 760 px at 1280 × 800, against an 800 px budget.
-2. Run the new e2e and a11y files once locally inside the slot, then the geometry mutations.
-3. Re-run `pnpm gates:cheap`. The last run, on `4e747f67` at load 16, had every gate green except
-   tests: 10 failed across 6 files, at least four of them 5 s timeouts under load (`url-pii`). The
-   rest are not yet identified. A re-run of the changed unit files (load about 16) failed 12 cases
-   in 8 files:
-   - **real, to fix:** `i18n-barrel.test.ts` and `ui-barrel.test.ts`, whose pinned export lists
-     need `formatDateParts`/`DateParts` and `ListingSortForm`/`ListingSortFormProps`;
-   - **to check:** `catalog-listing.test.ts`, the three "sorting happens over the set" cases, and
-     `catalog-listing-equivalents.test.ts`, one case. They may be timeouts (they project every
-     price) or real;
-   - **probably load timeouts, re-run at low load:** `url-pii` ×2, `product-route` ×2,
-     `catalog-product-routes` and `geo-delivery` (TZ sweep).
-4. Run `visual:baselines` alone and commit; then rebase, mark the PR ready and add `ci:full`.
-5. Set both rows to `in_review` with the PR link.
+- **D-1, for the reviewer (not blocking).** A24 clause 2 (a) says "from the top of its photograph
+  to the bottom of its price". The build reads "price" as the price line (the `formatMoney`
+  amount and "all in", the `Price` primitive's first line), not the approximate-equivalents line
+  under it (spec 004 §14 A21 clause 6), as this brief lists "price, `catalog.price.allIn` and the
+  equivalents line" separately. The first-row probe in `listing-first-screen.spec.ts` and the
+  country-shop and country-category rows of `frame-laptop-band.spec.ts` measure
+  `[data-fo-price] > :first-child`. For a GBP visitor on a PLN destination the equivalents line
+  ends at y 821 at 1280 × 800 (below the fold) and 878 at 1440 × 900 (inside). If the reviewer
+  reads the equivalents line as part of the price, 1280 × 800 needs 21 px more, which is a
+  designer call (the 62 px utility strip is TASK-186's). Recorded as item (8) of the TASK-187 row
+  in `docs/design/README.md`.
+- **Tests changed by the finisher, and why:** the T-49 "all in" checks now read rendered text
+  (`useInnerText`, `innerText`), so a marker hidden by CSS on a phone card is red, where
+  `textContent` passed it; the depth-4 no-JS pager clicks the displayed `?page=2` link (the
+  compact pager on a phone); `country-category.spec.ts` allows only the pager's own `?page=N≥2`
+  links (spec 008 §14 A15 (a) L447 reads AC-15's `<a href>` clause as sort and facets) and finds
+  the sibling categories in the phone's chip scroller with JavaScript off.
+- **Runs, local, on the clean build of 6dfa995b:** e2e (both projects) for
+  `listing-first-screen`, `listing-depth4-params`, `frame-laptop-band`, `listing-params`,
+  `listing-v2`, `country-shop`, `country-category`, `country-occasion`, `hubs`: 358 passed, 188
+  skipped (viewport-explicit cases run once), 0 failed; the laptop-band rows of other tasks still
+  fail as expected. a11y `country-{shop,category,occasion}`: 15 passed. Load average 40 to 90
+  throughout, so no timing claim is made.
+- **Screenshots:** `.claude/state/shots-187/{shop-root,country-category-roses,
+  country-occasion-mothers-day}-{1440x900,1280x800,390x844}.png` in the main checkout.
+- **Visual baselines:** not committed; the orchestrator runs `visual:baselines`.
 
-**Gates block:** not pasted, because the last run was red (item 3).
+**Mutations seen red** (each on its own build, then restored with `git checkout`):
+- implementer: cutting the depth-4 `parameterised` pass-through (listing-params unit); the two
+  `/review 99` occasions-index mutations (TASK-146 brief).
+- e2e set A: a 160 px spacer under the shop root's H1 block → T-49 "price bottom" red at three
+  sizes and T-50 "the widest empty band" red at three sizes; a rotated 60 × 60 `aria-hidden` SVG
+  in the occasion head → T-50 `ornaments` red at three sizes; the "all in" marker hidden below
+  `md` → T-49 red at 390 on the category and the occasion; the category's sort form above the
+  grid → R8 (`md`) red.
+- e2e set B: a lead figure restored above the shop root's grid → T-49 `[data-fo-lead]` count red
+  at three sizes; the category's state text hard-coded → T-49 `toHaveText` red at three sizes; a
+  second hidden `items[0]` link on the occasion → T-49 "URL once" red at three sizes; the phone
+  label moved under the pager → T-06 red on the shop root and the category; the disclosure
+  `sr-only` below `md` → R8 390 red.
+- e2e set C: the depth-4 category source cut from `listingRewriteRules()` → T-33 (page 2
+  continues page 1, en-gb and de), the self-canonical, `?page=1`, the sorted case and the no-JS
+  pager red; `parameterisedHubHeaderRules()` cut → the hub header case red; page 2 with a hero →
+  "?page=2 renders no hero" red on the shop root and the category.
+- unit: `LISTING_PAGE_SIZE` 13 → both T-35 cases red; `countNoun` forced to `bouquet` → T-34 red;
+  the occasion's register chosen in the component → the T-35 register case red (the
+  `listing-presentation` "row flips" case asserts the view only, so it stays green: a nit for
+  TASK-188); A10 changed by one character → both T-40 cases red.
+- not run: the `/review 99` `toBe` trailing-slash cases need a server that self-redirects.
+
+**View model for TASK-188** (unchanged from the implementer): `ListingCountrySchema.state` is
+`z.enum(["guide","live"])`; `ListingEntitySchema.register` is required, from the registry;
+`CategoryTileViewSchema.countNoun`; `leadSku` is not on the view.
+
