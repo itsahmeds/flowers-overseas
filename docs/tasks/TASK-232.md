@@ -108,6 +108,15 @@ same PR changes `scripts/` gates.
 - 2026-10-15: implementation, unit and e2e tests; build slot once for the select clip probe, once
   for `next build` + `next start` + the e2e suites; rebased on PR 227/232 (A-founder-2026-10-14d:
   marked values keep their approval) and reworked the messages to match; PR 230 ready.
+- 2026-10-15 (stopped at the weekly usage cap): every Binding item of both briefs is built and
+  tested (see `## Result`), except TASK-232 item 7's house/camera/plus (E3) and the product
+  heading (carry-forward to TASK-228). CI on `ecf1b1e2`: spine green; `visual` red (baselines,
+  the orchestrator's `visual:baselines` label); `a11y` red on the two home FAQ cases that assumed
+  every question closed, fixed in the next commit (not yet re-run); `e2e` 1798 passed, 1 failed:
+  `language-popup.spec.ts:401` "a top sheet at 360 × 640" (CLS, AC-39), not yet investigated: the
+  hero's italic swap (0.0003 at 390) may be the cause, as the popup test excludes only the
+  sentence. Remaining: look at that case (likely `FONT_SWAP_REGIONS` in `language-popup.spec.ts`),
+  toggle `ci:full`, refresh visual baselines, `/review` and `/break`.
 
 ## Result
 

@@ -103,11 +103,12 @@ test("every FAQ disclosure clears the 44 px tap-target floor and toggles", async
     );
   }
 
-  // The platform's own disclosure: keyboard-operable with no script at all.
-  const first = summaries.first();
-  await first.focus();
-  await first.press("Enter");
-  await expect(page.locator("[data-fo-faq] details").first()).toHaveAttribute(
+  // The platform's own disclosure: keyboard-operable with no script at all. The first question
+  // arrives open as drawn (TASK-232), so the keyboard opens the second.
+  const second = summaries.nth(1);
+  await second.focus();
+  await second.press("Enter");
+  await expect(page.locator("[data-fo-faq] details").nth(1)).toHaveAttribute(
     "open",
     "",
   );
@@ -126,7 +127,12 @@ test("every FAQ summary paints the artboards' `+`, which rotates when the answer
   const markers = page.locator("[data-fo-faq] summary span[aria-hidden]");
   await expect(markers).toHaveCount(3);
 
-  const first = markers.first();
+  // The second: the first arrives open as both artboards draw it (TASK-232), already rotated.
+  const first = markers.nth(1);
+  await expect(markers.first()).toBeVisible();
+  expect(
+    await markers.first().evaluate((node) => getComputedStyle(node).rotate),
+  ).toBe("45deg");
   await expect(first).toBeVisible();
   await expect(first).toHaveText("+");
   const box = await first.boundingBox();
@@ -135,7 +141,7 @@ test("every FAQ summary paints the artboards' `+`, which rotates when the answer
   // Drawn at the inline end of the summary, not next to the question text.
   const summaryBox = await page
     .locator("[data-fo-faq] summary")
-    .first()
+    .nth(1)
     .boundingBox();
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeGreaterThan(
     (summaryBox?.x ?? 0) + (summaryBox?.width ?? 0) - 4,
@@ -145,8 +151,8 @@ test("every FAQ summary paints the artboards' `+`, which rotates when the answer
   expect(await first.evaluate((node) => getComputedStyle(node).rotate)).toBe(
     "none",
   );
-  await page.locator("[data-fo-faq] summary").first().click();
-  await expect(page.locator("[data-fo-faq] details[open]")).toHaveCount(1);
+  await page.locator("[data-fo-faq] summary").nth(1).click();
+  await expect(page.locator("[data-fo-faq] details[open]")).toHaveCount(2);
   await expect
     .poll(async () => first.evaluate((node) => getComputedStyle(node).rotate))
     .toBe("45deg");
