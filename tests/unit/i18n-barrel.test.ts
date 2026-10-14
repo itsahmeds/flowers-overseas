@@ -73,6 +73,9 @@ const PINNED_EXPORTS = [
   "launchLocales",
   "countGraphemes",
   "formatDate",
+  // Added by TASK-187 (spec 008 A15, the country occasion's date): the parts of one
+  // `formatDate` value, so the artboard's day, month, weekday and year come from one formatter.
+  "formatDateParts",
   "formatList",
   "formatMoney",
   "formatNumber",
