@@ -121,7 +121,3 @@ is the biggest of them.
 
 We are not delivering in the Netherlands yet. When we start, this page will show the
 cities, the order-by time and what happens on the day.
-
-When that changes, this section is the first thing we will rewrite: the towns we can
-reach, what happens on the day itself, and who you speak to when something has gone
-wrong.

@@ -120,8 +120,3 @@ actually matters.
 
 We are not delivering in Germany yet. When we start, this page will show the cities,
 the order-by time and what happens on the day.
-
-When that changes, this page changes with it: it will name the cities we cover,
-explain what happens on the day, and tell you who to speak to when something goes
-wrong. Until then this is a guide, written by us, honest about what it does not
-yet know.

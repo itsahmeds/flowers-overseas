@@ -101,7 +101,7 @@ white Christrose. The fixed holidays to plan around are the 1st of January, the 
 of May, the 3rd of October and the 25th and 26th of December; the moving ones are
 Good Friday, Easter Monday and Whit Monday.
 
-## What a German shop will make you
+## What German florists are known for
 
 Something looser and more natural than a British florist would produce for the same
 money: paper rather than cellophane, grasses and seed heads rather than gypsophila,
@@ -116,12 +116,8 @@ before you enter a card, and that is the figure that leaves your account. There 
 no conversion applied afterwards and no fee at the end. No price travels with the
 flowers, and there is no paperwork in the box.
 
-You are buying from us, and not from whichever shop ends up making the bouquet. A
-complaint comes to us, in English, rather than to a shop abroad.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We are not making deliveries in Germany. We have written this guide, decided which
-cities we want to start in, and begun talking to the shops we would like to make
-your flowers. Until one of them has agreed to work with us there will be no date and
-no hour on this page, because a promise with nothing behind it is not worth reading.
+We are not delivering in Germany yet. When we start, this page will show the cities, the order-by time and what happens on the day.

@@ -20,7 +20,7 @@ faq:
   - q: "Why are chrysanthemums a problem in France?"
     a: "They are the flower of la Toussaint, the first of November, when families take potted chrysanthemums to family graves. Send them for a birthday and you have sent a funeral flower. There is no way to soften it."
   - q: "Are carnations really unlucky in France?"
-    a: "The superstition is real and still held by enough people to matter: carnations are the flower you do not bring to a host, and in some professions they are read as an outright bad omen. It costs nothing to choose something else."
+    a: "The superstition is real and still believed by enough people to matter: carnations are the flower you do not bring to a host, and in some professions they are read as an outright bad omen. It costs nothing to choose something else."
   - q: "What about yellow flowers in France?"
     a: "An older tradition reads yellow as a hint of infidelity, which is why a French fleuriste will rarely build an all-yellow romantic bouquet. Mixed with other colours nobody blinks, and for a friend or a new flat it is a non-issue."
   - q: "When is the Fete des Meres in France?"
@@ -73,7 +73,7 @@ apartment for a birthday reads as a message about death, not about autumn.
 The second is the carnation, the oeillet. There is a long-standing belief that
 it brings bad luck, strong enough that it is the one flower you never carry to a
 dinner. Some trades will not have them in the building at all. Whether or not the
-person you are sending to holds the superstition, there is no cost to avoiding it.
+person you are sending to shares the superstition, there is no cost to avoiding it.
 
 The third is colour. Yellow has an old association with infidelity, which is why a
 shop will steer a romantic order away from an all-yellow composition. In a mixed
@@ -110,7 +110,7 @@ August is its own kind of closure. In smaller towns a fleuriste may shut for two
 three weeks and put a handwritten sign in the window, and there is nothing to be
 done about it except to know it happens.
 
-## What a French shop is good at
+## What French florists are known for
 
 Restraint, mostly. A composition here tends to be smaller and more deliberate than
 the armful you might expect: a clear shape, a limited palette, good material, and
@@ -126,7 +126,3 @@ more formal style all year; the Atlantic coast does hydrangeas better than anywh
 
 We are not delivering in France yet. When we start, this page will show the cities,
 the order-by time and what happens on the day.
-
-When that changes we will rewrite this section first: the cities we cover, what
-happens on the day itself, and who you speak to when something has gone wrong. Until
-then, this is a guide and only a guide, and it is honest about that.

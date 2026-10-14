@@ -109,7 +109,7 @@ Then there is Ferragosto. Around the 15th of August much of the country leaves f
 the sea, and a small shop in a city may simply shut for a fortnight. If the date you
 care about is in mid-August, assume the smaller shops are away.
 
-## What an Italian shop is good at
+## What Italian florists are known for
 
 Shape. The style here is more sculpted than the loose paper-wrapped bunch you find
 further north: a clear silhouette, considered proportions, and a preference for
@@ -122,6 +122,3 @@ foreigners rarely think of.
 
 We are not delivering in Italy yet. When we start, this page will show the cities,
 the order-by time and what happens on the day.
-
-When that changes, this is the section that changes: the cities we cover, what
-happens on the day itself, and who you speak to when something goes wrong.

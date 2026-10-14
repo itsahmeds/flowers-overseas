@@ -1,6 +1,6 @@
 ---
 seoTitle: "Sending flowers to Spain from the UK: an honest guide"
-seoDescription: "Sant Jordi, saints days, Holy Week and the summer heat. For British senders, with sterling pricing, who your order is with and what we can do today."
+seoDescription: "Sant Jordi, saints days, Holy Week and the summer heat. For British senders, with sterling prices and what we can do today."
 h1: "Sending flowers to Spain from the UK"
 extends: en
 intro: >-
@@ -26,7 +26,7 @@ faq:
   - q: "How does Holy Week affect florists in Spain?"
     a: "Semana Santa absorbs carnations, lilies and, in Seville, orange blossom by the cartload for the processional floats. Shops work to the brotherhoods' deadlines, shorten their hours and close streets. Ordinary orders take second place that week."
   - q: "Will flowers survive the Spanish summer?"
-    a: "Soft-headed material will not last long in a hot flat. Between June and September a Spanish florist will steer you to carnations, firm mixed bunches, succulents and potted plants, and the advice is worth taking rather than arguing with."
+    a: "Soft-headed material will not last long in a hot flat. Between June and September a Spanish florist will steer you to carnations, firm mixed bunches, succulents and potted plants, and the advice is worth following rather than arguing with."
   - q: "Why is 19 March fathers' day in Spain?"
     a: "It is San Jose, the feast of Saint Joseph, and it is a public holiday in some regions and an ordinary one in others. Plants and small arrangements suit the day better than a grand bouquet."
   - q: "What are shop opening hours like in Spain?"
@@ -90,13 +90,13 @@ smell of the city for those days. Every shop in town is working to that deadline
 rather than to yours. Hours shorten, streets close, and a good florist will be frank
 with you about what is realistic.
 
-## Heat, and what a shop will agree to make
+## Heat, and timing
 
 From June to September the temperature decides. A conscientious Spanish florist will
 not sell you something soft-headed for a flat without air conditioning, and if you
 insist they will tell you exactly what will happen to it. Potted plants, succulents,
-carnations and firm mixed bunches are what survive, and they are what an experienced
-shop will offer. British senders, used to a mild summer, are the ones who argue with
+carnations and firm mixed bunches are what survive, and they are what our florist
+will suggest. British senders, used to a mild summer, are the ones who argue with
 this advice, and they are wrong to.
 
 ## The carnation, reconsidered
@@ -121,13 +121,8 @@ shown before you enter a card, and that figure is what leaves your account. No
 conversion is applied at the end and no fee appears afterwards. Nothing about money
 travels with the flowers.
 
-You are contracting with us, not with the shop that arranges the flowers, so a
-complaint is made to us in English and not to a shop abroad in a language you may
-not have.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We are not making deliveries in Spain. We have written this guide because the
-customs are worth knowing, and because we would rather
-publish something true and limited than something complete and invented. Until a
-shop there has agreed to work with us, this page will carry no arrival claim at all.
+We are not delivering in Spain yet. When we start, this page will show the cities, the order-by time and what happens on the day.

@@ -105,7 +105,7 @@ Luminatia, on the 1st of November, is kept most strongly in Transylvania, where
 cemeteries are lit with candles and dressed with chrysanthemums. That is the reason
 the flower reads as it does, and the reason to keep it out of a living room.
 
-## What a Romanian shop is good at
+## What Romanian florists are known for
 
 Volume and finish. A florist in Bucharest or Cluj will build something large,
 symmetrical and heavily wrapped, with ribbon, paper and often a sleeve. Roses are
@@ -119,12 +119,8 @@ You pay in pounds sterling: one figure, VAT and delivery already included, shown
 before you enter a card, and that is the amount charged. No conversion is applied
 afterwards and no fee appears at the end. The recipient sees no figure of any kind.
 
-Your contract is with us, not with the florist who assembles the bouquet, so anything
-that goes wrong is ours to put right, in English.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We have not begun delivering in Romania. We have written this guide, chosen the
-cities we would like to start in, and begun talking to shops. Until one of them has
-agreed to work with us, this page will carry no date, no hour and no promise of
-arrival, because a promise with no arrangement behind it is just words.
+We are not delivering in Romania yet. When we start, this page will show the cities, the order-by time and what happens on the day.

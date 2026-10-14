@@ -121,13 +121,8 @@ You pay in pounds sterling: one figure, VAT and delivery already inside it, show
 before you enter a card, and that is what leaves your account. No conversion afterwards
 and no fee at the end. Nothing about money travels with the flowers.
 
-Your contract is with us, never with the shop that ties the bunch, so a complaint
-comes to us in English rather than to a shop abroad.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We are not delivering in the Netherlands. We have written this guide because the
-habits here are worth explaining to anybody sending from outside, and because a page
-that is true and limited beats one that is complete and invented. Until a shop there
-has agreed to work with us there will be no date, no hour and no claim of arrival
-anywhere on this page.
+We are not delivering in the Netherlands yet. When we start, this page will show the cities, the order-by time and what happens on the day.

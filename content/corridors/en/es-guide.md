@@ -6,8 +6,8 @@ intro: >-
   Spain is several flower cultures sharing one passport. A rose handed over in
   Barcelona on 23 April means something that would puzzle somebody in Bilbao; a
   saint's day is a bigger event in a village in Andalusia than a birthday is;
-  and the heat between June and September governs what a shop will agree to
-  make for you at all. This page gathers the parts we are confident about: the
+  and the heat between June and September decides which flowers will last at
+  all. This page gathers the parts we are confident about: the
   occasions that fill the shops, the flowers that belong to Holy Week and to
   cemeteries, the regional customs that a visitor would never guess, and the
   hours when a small shop simply locks the door and goes home for lunch. We
@@ -39,7 +39,7 @@ faq:
     a: "Not yet. Ordering for Spain is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Carnations above all, which Spain grows and gives without any of the
-  reservations held further north; roses for 23 April; orange blossom in the
+  reservations felt further north; roses for 23 April; orange blossom in the
   south in spring; gerberas, lilies and gladioli all year; and potted plants
   through the hottest months, when cut material struggles.
 taboos: >-
@@ -120,7 +120,3 @@ Madrid, Barcelona and Valencia are the exceptions rather than the rule.
 
 We are not delivering in Spain yet. When we start, this page will show the cities,
 the order-by time and what happens on the day.
-
-When that changes, this section is the one that changes first. It will name the
-cities we can reach, explain what happens on the day, and say who to contact when
-something has gone wrong.

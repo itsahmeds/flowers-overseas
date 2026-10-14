@@ -18,7 +18,7 @@ faq:
   - q: "Why are chrysanthemums such a problem in France?"
     a: "They belong to la Toussaint, the first of November, when families take potted chrysanthemums to graves. In Britain the same flower is a cheap cheerful bunch from a supermarket, which is precisely why British senders get caught. There is no way to soften the reading."
   - q: "Are carnations really unlucky in France?"
-    a: "The belief is genuine and still widely held. Carnations are not brought to a dinner, and in some trades they are treated as an outright bad omen. At home they are an unremarkable filler flower, so it is worth consciously avoiding them."
+    a: "The belief is genuine and still widely shared. Carnations are not brought to a dinner, and in some trades they are treated as an outright bad omen. At home they are an unremarkable filler flower, so it is worth consciously avoiding them."
   - q: "What is the muguet custom on 1 May?"
     a: "People give each other a sprig of lily of the valley for luck. It is sold from folding tables and doorways by anyone who cares to, for that one morning, outside the usual rules of trade. Nothing in the British calendar resembles it."
   - q: "When is the Fete des Meres, and is it near Mothering Sunday?"
@@ -75,7 +75,7 @@ Sent to a flat for a birthday it reads as a message about death.
 
 Another British staple with a French shadow. The oeillet is believed to bring bad
 luck; it is the flower you do not take to a dinner, and certain professions will not
-have it in the building. Whether or not the person you are sending to holds the
+have it in the building. Whether or not the person you are sending to shares the
 superstition, there is no cost at all to choosing something else, and a fleuriste
 will quietly do so on your behalf.
 
@@ -84,8 +84,8 @@ will quietly do so on your behalf.
 Yellow keeps an old link to infidelity, so an all-yellow romantic bouquet is a poor
 idea and an all-yellow housewarming bunch is perfectly fine. Counting is milder: give
 an odd number, avoid thirteen, and be aware that the British dozen is faintly
-off-key. A shop composes to a shape rather than a count, so the problem disappears
-if you leave the arrangement to it.
+off-key. Our florist composes to a shape rather than a count, so the problem disappears
+if you leave the arrangement to our florist.
 
 ## The first of May
 
@@ -123,12 +123,8 @@ before you enter a card. Nothing is added at the end and no conversion is applie
 afterwards. The person receiving the flowers is shown no price and finds no
 paperwork in the box.
 
-Your contract is with us rather than with the florist who ties the flowers. If
-something is wrong you take it up with us, in English.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We have not begun delivering in France. This page exists because the etiquette is
-worth knowing. We are choosing shops. Until one of them
-has agreed to work with us, nothing here will claim an arrival, and when that
-changes this is the section that will change first.
+We are not delivering in France yet. When we start, this page will show the cities, the order-by time and what happens on the day.

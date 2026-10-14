@@ -71,10 +71,10 @@
       "slug": "flowers-and-gift-sets",
       "descriptionMd": "A bouquet with one thing added: chocolates, a glass vase, a balloon or a small soft toy, chosen to go with the flowers and delivered together. Nothing is shipped separately, so the whole gift arrives at once and in one condition. Sets that contain food carry allergen information at checkout, and every price includes delivery and local tax. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Flowers and gift sets — bouquets with chocolates, a vase or more",
-      "seoDescription": "A bouquet with chocolates, a vase, a balloon or a soft toy, bought by the same florist. One delivery, one price, allergen details shown.",
+      "seoDescription": "A bouquet with chocolates, a vase, a balloon or a soft toy, chosen to go with the flowers and delivered together. One delivery, one price, allergen details shown.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "2e4650bf4bcf439e753a2c5afc0d54b363dd053ff8d99957cda185a1f0daccdf"
+      "sourceHash": "36425942c35f8ac1fe217f43e84e980c065f39c1eb76b37fe4fbc94652ab5da7"
     },
     {
       "entity": "category",
@@ -157,14 +157,12 @@
       "locale": "en",
       "name": "Get well flowers",
       "slug": "get-well-flowers",
-      "descriptionMd": "Bouquets and arrangements chosen for a hospital room or a sofa: light to hold, low in scent, and several in a box or pot so no vase is needed. Freesias, gerberas, pastel mixes and a peace lily are all here. Some wards do not accept flowers, so check before ordering and we will hold the delivery if needed. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Bouquets and arrangements chosen for a hospital room or a sofa: light to carry, low in scent, and several in a box or pot so no vase is needed. Freesias, gerberas, pastel mixes and a peace lily are all here. Some wards do not allow flowers, so check before ordering; we can deliver to a home address instead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Get well flowers delivered across Europe",
       "seoDescription": "Bouquets and box arrangements for a hospital room or a sofa: light, low in scent, no vase needed. Freesias, gerberas and pastel mixes.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "7c797184f0a2cc815c130065b6a075d46b053a28ad81234a61ab5b7f38708bec"
+      "reviewed": false,
+      "sourceHash": "0f8aaa7d39cb2088e36703c1d62edd110f31f53a486d773d90aafa73149e21d7"
     },
     {
       "entity": "category",
@@ -247,14 +245,12 @@
       "locale": "en",
       "name": "Tulips",
       "slug": "tulips",
-      "descriptionMd": "Tulips in mixed, yellow, white, pink and purple, bunched in fifteen, twenty-five or thirty-five stems, with their own leaves and no filler. A spring flower: growers change varieties weekly, so we hold the colour and let our florist choose the variety. A spring flower, sold by the bunch rather than by the stem. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Tulips in mixed, yellow, white, pink and purple, bunched in fifteen, twenty-five or thirty-five stems, with their own leaves and no filler. A spring flower: growers change varieties weekly, so we keep the colour and let our florist choose the variety. A spring flower, sold by the bunch rather than by the stem. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Tulips delivered across Europe — mixed, yellow and pink",
-      "seoDescription": "Tulips in mixed, yellow, white, pink and purple, in fifteen to thirty-five stems with their own leaves. Colour held; variety by week.",
+      "seoDescription": "Tulips in mixed, yellow, white, pink and purple, in fifteen to thirty-five stems with their own leaves. Colour fixed; variety by week.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "16e976a94cc63d21b9427f6474398bf9a94aed75dcfab90746df66f788f36696"
+      "reviewed": false,
+      "sourceHash": "22ddbb532b4a5d2357b59fbf94188ccbb023a718006512c74ccaa4205c99a651"
     },
     {
       "entity": "category",
@@ -262,14 +258,12 @@
       "locale": "en",
       "name": "Lilies",
       "slug": "lilies",
-      "descriptionMd": "Oriental lilies in white and pink, in sheaves of five, eight or twelve stems, and in a glass vase arrangement. Three or four heads to a stem and strongly scented, so a small bouquet fills a room. Sent for sympathy, weddings and anniversaries. Stems leave the shop part-closed and open over the first few days. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Oriental lilies in white and pink, in sheaves of five, eight or twelve stems, and in a glass vase arrangement. Three or four heads to a stem and strongly scented, so a small bouquet fills a room. Sent for sympathy, weddings and anniversaries. Stems arrive part-closed and open over the first few days. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Lilies delivered across Europe — white and pink",
       "seoDescription": "Oriental lilies in white and pink, in sheaves of five to twelve stems or a glass vase. Strongly scented; buds open over days.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "0713af0e0d42601f66eb6221b32392605e7f9bc4f041bbb93f507be3525b377e"
+      "reviewed": false,
+      "sourceHash": "e69c71fb1e7fd4ef478c1c1033f172c1a49d1b941a5c6333ee6126778ee82fa0"
     },
     {
       "entity": "category",
@@ -277,14 +271,12 @@
       "locale": "en",
       "name": "Orchids",
       "slug": "orchids",
-      "descriptionMd": "Moth orchids in white and pink, single or two-stem, potted and staked, in bud and flower when they leave the shop. They flower for weeks and need water once a week, which makes them the plant to send when nobody will be home to trim stems. One size each, with care notes. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Moth orchids in white and pink, single or two-stem, potted and staked, in bud and flower on the day they are delivered. They flower for weeks and need water once a week, which makes them the plant to send when nobody will be home to trim stems. One size each, with care notes. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Orchid plants delivered across Europe",
       "seoDescription": "Moth orchids in white and pink, single or two-stem, potted and staked, in bud and flower. Flowering for weeks, watered once a week.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "ff19ecf17df92956684407df3702bde01c6a360e70d5b664628bf2e69b3d7be9"
+      "reviewed": false,
+      "sourceHash": "88d1d180e10c114b5460756939392d0c9a53e4fa4323808e1537d354f50e24c3"
     },
     {
       "entity": "category",
@@ -307,14 +299,12 @@
       "locale": "en",
       "name": "Peonies",
       "slug": "peonies",
-      "descriptionMd": "Peonies in pink, pale pink and white, in nine, fifteen or twenty-one stems, and in a heavy studio vase. The season is short — a few weeks in late spring — and outside it our florist tells us before we take an order rather than substituting something else. Priced at the top of our range because the flower is. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Peonies in pink, pale pink and white, in nine, fifteen or twenty-one stems, and in a heavy studio vase. The season is short, a few weeks in late spring, so peony bouquets are only available while it lasts. Priced at the top of our range because the flower is. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Peonies delivered across Europe — pink and white",
       "seoDescription": "Peonies in pink, pale pink and white, in nine to twenty-one stems or a heavy studio vase. Short late-spring season, no silent swaps.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "b390a4bab57dee0e13a1a7f635797993b3c2fe2cf4fe1ba001443a145f536022"
+      "reviewed": false,
+      "sourceHash": "7319bf5a8b2514d01c4b92a1c090b28379667ec99d264601d37246a871953c29"
     },
     {
       "entity": "category",

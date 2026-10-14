@@ -108,7 +108,7 @@ Luminatia, on 1 November, is kept most strongly in Transylvania, where cemeterie
 are lit with candles and dressed with chrysanthemums. It is the reason the flower
 reads the way it does, and the reason to keep it away from a living room.
 
-## What a Romanian shop is good at
+## What Romanian florists are known for
 
 Volume and wrapping, done properly. A florist in Bucharest or Cluj will build
 something large, symmetrical and heavily finished, with ribbon, paper and often a
@@ -120,6 +120,3 @@ and freesias arrive in quantity and prices for them fall to their lowest.
 
 We are not delivering in Romania yet. When we start, this page will show the cities,
 the order-by time and what happens on the day.
-
-When that changes, this section changes first: which cities we reach, what happens
-on the day, and who to speak to if something has gone wrong.

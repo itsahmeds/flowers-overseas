@@ -19,7 +19,7 @@ faq:
   - q: "Which flowers should I not send in Poland?"
     a: "Chrysanthemums, above all. They belong on a grave there, and a beautiful bunch of them sent to a birthday will land as a shock rather than a gift. We would also avoid lilies for anything cheerful, for the same reason."
   - q: "Is it true that the number of flowers matters in Poland?"
-    a: "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florists count the stems so you do not have to."
+    a: "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florist counts the stems so you do not have to."
   - q: "What is a name day, and should I send flowers for it?"
     a: "A name day, or imieniny, is the feast day of the saint you are named after, and plenty of people in Poland celebrate it as warmly as a birthday. Flowers are the usual gift. If you know only the first name of the person you are sending to, that is enough to look the date up."
   - q: "When is Mother's Day in Poland?"
@@ -119,7 +119,3 @@ same money than you would by insisting on roses in January.
 
 We are not delivering in Poland yet. When we start, this page will show the cities,
 the order-by time and what happens on the day.
-
-When that changes, this page changes: it will carry the cities we cover, what
-happens on the day, and who to speak to when something goes wrong. Until then,
-what you are reading is a guide, written by us, and honest about its limits.
