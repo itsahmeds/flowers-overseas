@@ -273,7 +273,15 @@ the 160 px spacer, the rotated SVG and the bare price.
 2. Run the new e2e and a11y files once locally inside the slot, then the geometry mutations.
 3. Re-run `pnpm gates:cheap`. The last run, on `4e747f67` at load 16, had every gate green except
    tests: 10 failed across 6 files, at least four of them 5 s timeouts under load (`url-pii`). The
-   rest are not yet identified. A re-run of the changed unit files was still running at hand-back.
+   rest are not yet identified. A re-run of the changed unit files (load about 16) failed 12 cases
+   in 8 files:
+   - **real, to fix:** `i18n-barrel.test.ts` and `ui-barrel.test.ts`, whose pinned export lists
+     need `formatDateParts`/`DateParts` and `ListingSortForm`/`ListingSortFormProps`;
+   - **to check:** `catalog-listing.test.ts`, the three "sorting happens over the set" cases, and
+     `catalog-listing-equivalents.test.ts`, one case. They may be timeouts (they project every
+     price) or real;
+   - **probably load timeouts, re-run at low load:** `url-pii` ×2, `product-route` ×2,
+     `catalog-product-routes` and `geo-delivery` (TZ sweep).
 4. Run `visual:baselines` alone and commit; then rebase, mark the PR ready and add `ci:full`.
 5. Set both rows to `in_review` with the PR link.
 
