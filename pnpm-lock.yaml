@@ -117,7 +117,7 @@ importers:
         version: 10.73.0(@opentelemetry/core@2.11.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.11.0(@opentelemetry/api@1.9.1))(next@16.3.8(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(supports-color@7.2.0)(webpack@5.110.3(@swc/core@1.16.2(@swc/helpers@0.5.23))(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.28)(sharp@0.35.5(@types/node@24.13.3)))
       drizzle-orm:
         specifier: ^0.45.2
-        version: 0.45.2(@opentelemetry/api@1.9.1)(postgres@3.4.9)
+        version: 0.45.2(@opentelemetry/api@1.9.1)(pg@8.23.1)(postgres@3.4.9)
       libphonenumber-js:
         specifier: ^1.13.14
         version: 1.13.14
@@ -127,6 +127,9 @@ importers:
       next-intl:
         specifier: 4.14.2
         version: 4.14.2(@swc/helpers@0.5.23)(next@16.3.8(@babel/core@7.29.7(supports-color@7.2.0))(@opentelemetry/api@1.9.1)(@playwright/test@1.63.0)(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)
+      pg-boss:
+        specifier: 12.37.1
+        version: 12.37.1(@opentelemetry/api@1.9.1)
       postgres:
         specifier: ^3.4.9
         version: 3.4.9
@@ -2661,6 +2664,10 @@ packages:
       typescript:
         optional: true
 
+  cron-parser@5.10.2:
+    resolution: {integrity: sha512-JfAYMY0LZaWQTuict8PhtF/ksSnq8xefSDmQUnnoqvkPYkU/y3UP0DTWzJKFBz0P1IXsDG8q0vY3zHkoFZOhvw==}
+    engines: {node: '>=18'}
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -3771,6 +3778,10 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
+
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
@@ -3969,6 +3980,10 @@ packages:
     resolution: {integrity: sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ==}
     engines: {node: '>=18'}
 
+  non-error@0.1.0:
+    resolution: {integrity: sha512-TMB1uHiGsHRGv1uYclfhivcnf0/PdFp2pNqRxXjncaAsjYMoisaQJI+SSZCqRq+VliwRTC8tsMQfmrWjDMhkPQ==}
+    engines: {node: '>=20'}
+
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -4064,6 +4079,47 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
+  pg-boss@12.37.1:
+    resolution: {integrity: sha512-LghWeOIbMCiLcTY3+8MInXaJ0wk0AOkbeUZ8oE+cGO0uoheGSW3GK57eDqEbrDGpwTIpX9BVphvdvWEDYTcJ9A==}
+    engines: {node: '>=22.12.0'}
+    hasBin: true
+    peerDependencies:
+      '@opentelemetry/api': ^1.9.0
+
+  pg-cloudflare@1.4.1:
+    resolution: {integrity: sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==}
+
+  pg-connection-string@2.14.1:
+    resolution: {integrity: sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==}
+
+  pg-int8@1.0.1:
+    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
+    engines: {node: '>=4.0.0'}
+
+  pg-pool@3.14.0:
+    resolution: {integrity: sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==}
+    peerDependencies:
+      pg: '>=8.0'
+
+  pg-protocol@1.16.1:
+    resolution: {integrity: sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg==}
+
+  pg-types@2.2.0:
+    resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
+    engines: {node: '>=4'}
+
+  pg@8.23.1:
+    resolution: {integrity: sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+
+  pgpass@1.0.5:
+    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -4112,6 +4168,22 @@ packages:
   postcss@8.5.28:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
+
+  postgres-array@2.0.0:
+    resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
+    engines: {node: '>=4'}
+
+  postgres-bytea@1.0.1:
+    resolution: {integrity: sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==}
+    engines: {node: '>=0.10.0'}
+
+  postgres-date@1.0.7:
+    resolution: {integrity: sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==}
+    engines: {node: '>=0.10.0'}
+
+  postgres-interval@1.2.0:
+    resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
+    engines: {node: '>=0.10.0'}
 
   postgres@3.4.9:
     resolution: {integrity: sha512-GD3qdB0x1z9xgFI6cdRD6xu2Sp2WCOEoe3mtnyB5Ee0XrrL5Pe+e4CCnJrRMnL1zYtRDZmQQVbvOttLnKDLnaw==}
@@ -4267,6 +4339,9 @@ packages:
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
+  rrule-temporal@2.2.8:
+    resolution: {integrity: sha512-+wWUe0J02oMh1UWKIt1RTu2H0Cz+gP11O/iweK0MN2UP6JLGeepTUkbSBa90Hxq0W+ywSxM9IlJNouIUdMOwhg==}
+
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
@@ -4297,6 +4372,10 @@ packages:
     resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
     hasBin: true
+
+  serialize-error@13.0.2:
+    resolution: {integrity: sha512-G+YKwp9I6IvWMe5RlwqxdmTPIcq/G8HK/sU51gdV1XAJznYkRSTB0ph+zB9AfSxG0fx6xrqYA6i9HeIcHFTXow==}
+    engines: {node: '>=20'}
 
   set-cookie-parser@3.1.2:
     resolution: {integrity: sha512-5/r/lTwbJ3zQ+qwdUFZYeRNqda7P5HD8zQKqlSjdGt1/S0cjLAphHusj4Y58ahDtWn/g32xrIS58/ikOvwl0Lw==}
@@ -4371,6 +4450,10 @@ packages:
   source-map@0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
+
+  split2@4.2.0:
+    resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
+    engines: {node: '>= 10.x'}
 
   stable-hash@0.0.5:
     resolution: {integrity: sha512-+L3ccpzibovGXFK+Ap/f8LOS0ahMrHTf3xu7mMLSpEGU0EO9ucaysSylKo9eRDFNhWve/y275iPmIZ4z39a9iA==}
@@ -4512,6 +4595,9 @@ packages:
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
+
+  temporal-spec@1.0.1:
+    resolution: {integrity: sha512-wxVoanmDeavXie1vu2JaQ3WIc3JZnWAOYFBsJyATaVsXsycKYUflGsyBmrRSnoCpZJpwPyr38VpgSUlQ8CbFxg==}
 
   terser@5.51.2:
     resolution: {integrity: sha512-bWnjSNscmuI+GJze6ZupnHP8G/cTcsJF+bXCeQknk2SHQsgbNJnLrqiH9jZ2W4STPVXH2mDKKRX3iwPhc9Cn/Q==}
@@ -4806,6 +4892,10 @@ packages:
   xml-naming@0.3.0:
     resolution: {integrity: sha512-ghig2TBE/H11aOVgmahA3MhimvkBr6JIYknH/Dhdk10nXwdbIqBJsbfMxpvFPG8bAw77gN29aQWvKpmVoPlvPQ==}
     engines: {node: '>=16.0.0'}
+
+  xtend@4.0.2:
+    resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
+    engines: {node: '>=0.4'}
 
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
@@ -6908,6 +6998,10 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  cron-parser@5.10.2:
+    dependencies:
+      luxon: 3.7.2
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -6988,9 +7082,10 @@ snapshots:
       esbuild: 0.25.12
       tsx: 4.23.13
 
-  drizzle-orm@0.45.2(@opentelemetry/api@1.9.1)(postgres@3.4.9):
+  drizzle-orm@0.45.2(@opentelemetry/api@1.9.1)(pg@8.23.1)(postgres@3.4.9):
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
+      pg: 8.23.1
       postgres: 3.4.9
 
   dunder-proto@1.0.1:
@@ -8092,6 +8187,8 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
+  luxon@3.7.2: {}
+
   magic-string@0.30.21:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -8255,6 +8352,8 @@ snapshots:
 
   node-releases@2.0.54: {}
 
+  non-error@0.1.0: {}
+
   normalize-path@3.0.0: {}
 
   object-assign@4.1.1: {}
@@ -8357,6 +8456,51 @@ snapshots:
 
   pathe@2.0.3: {}
 
+  pg-boss@12.37.1(@opentelemetry/api@1.9.1):
+    dependencies:
+      '@opentelemetry/api': 1.9.1
+      cron-parser: 5.10.2
+      pg: 8.23.1
+      rrule-temporal: 2.2.8
+      serialize-error: 13.0.2
+    transitivePeerDependencies:
+      - pg-native
+
+  pg-cloudflare@1.4.1:
+    optional: true
+
+  pg-connection-string@2.14.1: {}
+
+  pg-int8@1.0.1: {}
+
+  pg-pool@3.14.0(pg@8.23.1):
+    dependencies:
+      pg: 8.23.1
+
+  pg-protocol@1.16.1: {}
+
+  pg-types@2.2.0:
+    dependencies:
+      pg-int8: 1.0.1
+      postgres-array: 2.0.0
+      postgres-bytea: 1.0.1
+      postgres-date: 1.0.7
+      postgres-interval: 1.2.0
+
+  pg@8.23.1:
+    dependencies:
+      pg-connection-string: 2.14.1
+      pg-pool: 3.14.0(pg@8.23.1)
+      pg-protocol: 1.16.1
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.4.1
+
+  pgpass@1.0.5:
+    dependencies:
+      split2: 4.2.0
+
   picocolors@1.1.1: {}
 
   picomatch@2.3.2: {}
@@ -8395,6 +8539,16 @@ snapshots:
       nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.2
+
+  postgres-array@2.0.0: {}
+
+  postgres-bytea@1.0.1: {}
+
+  postgres-date@1.0.7: {}
+
+  postgres-interval@1.2.0:
+    dependencies:
+      xtend: 4.0.2
 
   postgres@3.4.9: {}
 
@@ -8536,6 +8690,10 @@ snapshots:
       '@rollup/rollup-win32-x64-msvc': 4.63.1
       fsevents: 2.3.3
 
+  rrule-temporal@2.2.8:
+    dependencies:
+      temporal-spec: 1.0.1
+
   run-parallel@1.2.0:
     dependencies:
       queue-microtask: 1.2.3
@@ -8571,6 +8729,11 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.8.5: {}
+
+  serialize-error@13.0.2:
+    dependencies:
+      non-error: 0.1.0
+      type-fest: 5.9.0
 
   set-cookie-parser@3.1.2: {}
 
@@ -8683,6 +8846,8 @@ snapshots:
       source-map: 0.6.1
 
   source-map@0.6.1: {}
+
+  split2@4.2.0: {}
 
   stable-hash@0.0.5: {}
 
@@ -8875,6 +9040,8 @@ snapshots:
   tailwindcss@4.3.3: {}
 
   tapable@2.3.3: {}
+
+  temporal-spec@1.0.1: {}
 
   terser@5.51.2:
     dependencies:
@@ -9223,6 +9390,8 @@ snapshots:
       signal-exit: 4.1.0
 
   xml-naming@0.3.0: {}
+
+  xtend@4.0.2: {}
 
   y18n@5.0.8: {}
 
