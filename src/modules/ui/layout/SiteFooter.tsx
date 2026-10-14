@@ -33,7 +33,7 @@
  * Logical CSS only (`fo/no-physical-css`, AC-5); every colour is a token utility.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { LocaleSwitcher } from "@/modules/i18n";
 
@@ -82,6 +82,12 @@ export interface SiteFooterProps {
   readonly marks?: readonly TrustMark[];
   /** Gallery only: makes every id in this instance unique (see `FOOTER_ID_PREFIX`). */
   readonly idPrefix?: string;
+  /**
+   * The language row, decided by the route: the document layout passes its `@switcher` slot, so
+   * each locale links this page's own path where it exists and its home elsewhere (spec 003 §2
+   * L79; TASK-233). Defaults to the switcher's locale homes, for a footer with no route behind it.
+   */
+  readonly switcher?: ReactNode;
 }
 
 /** The column heading: the label voice in muted ink (`.ftr h2`). */
@@ -157,6 +163,7 @@ export function SiteFooter({
   view,
   marks = [],
   idPrefix = FOOTER_ID_PREFIX,
+  switcher = <LocaleSwitcher locale={locale} />,
 }: SiteFooterProps): ReactElement {
   const translate = useTranslations();
   /**
@@ -287,7 +294,7 @@ export function SiteFooter({
             className="[&_ul]:gap-y-xs [&_[aria-current]]:text-ink [&_[aria-current]]:font-bold [&_[data-beta]]:before:content-['·_'] [&_a]:inline-flex [&_a]:min-h-(--target-min) [&_a]:items-center [&_a]:underline-offset-4 [&_li]:inline-flex [&_li]:min-h-(--target-min) [&_li]:items-center [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:flex-wrap [&_ul]:items-center [&_ul]:gap-x-[18px] [&_ul]:p-0"
             data-fo-footer-languages
           >
-            <LocaleSwitcher locale={locale} />
+            {switcher}
           </div>
           {/* Withdrawal of consent, on every page (`plan/04` §11, §8). */}
           <button

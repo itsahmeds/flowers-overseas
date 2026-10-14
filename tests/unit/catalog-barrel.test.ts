@@ -295,6 +295,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "localeGrandchildParams",
         "localeSegmentParams",
         "resolveLocalePath",
+        // this page in every launch locale, for the language links (TASK-233).
+        "pageAlternatePaths",
         // the country occasion's page component (TASK-111): the same rule one level down, and the
         // third React component the module owns. Its URLs share `localeGrandchildParams()` with
         // the country category, because they share the route file.
