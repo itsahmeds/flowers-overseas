@@ -85,8 +85,8 @@ _None recorded._
 
 ## Result
 
-**PARTIAL (2026-10-14; see `docs/tasks/TASK-187.md` `## Result` for the shared state).** PR 214,
-draft, head `4e747f67`, not yet run in CI.
+**In review (2026-10-14, finished by `wo-214-finish`; see `docs/tasks/TASK-187.md` `## Result`
+for the shared state).** PR 214, rebased on `48837dca`.
 
 - **Depth 4:** the country category and the country occasion now honour `?page=`/`?sort=`/facets
   through the mirrored parameter route, as spec 008 §14 A15 (a) lists it. A sorted or faceted URL

@@ -269,8 +269,8 @@ The new unit files pass (`--maxWorkers=2`).
   as CI does). Fixed in code (6dfa995b):
   - the shop root's and the category's first row was below the fold: price line at y 888 and
     the price block at 926 at 1440 × 900, 831 and 869 at 1280 × 800. The head is now tighter
-    (`md:pt-[16px]`→ the H1 12 px under the trail, 16 px under the state line, the count row
-    10 px top and bottom, the disclosure on one line from `md` up where it fits);
+    (12 px above the H1, 16 px under the state line, the count row 10 px top and bottom, the
+    disclosure on one line from `md` up where it fits);
   - the ranking disclosure's `data-fo-listing-disclosure` was dropped by `Text` (it forwards no
     `data-*`): moved to a wrapper. This was why both R8 cases were red.
 - **Measured** (shop root and category are the same geometry; occasion lead price, desktop):
