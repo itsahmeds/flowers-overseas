@@ -16,6 +16,10 @@
  */
 @import "tailwindcss" source(none);
 @source "../../src/**/*.{ts,tsx}";
+/* The bare word "transition" in a comment (the DST transition in `geo/delivery`) would ship
+   Tailwind's `.transition` utility, a colour/filter/display transition AC-44 forbids; no
+   component uses it (TASK-194, `tests/unit/motion-css.test.ts`). */
+@source not inline("transition");
 
 /*
  * Design tokens, v2 — "the letter home" (spec 004 §2 "Tokens", §14 A21 clauses 2–3, AC-1, AC-3;
