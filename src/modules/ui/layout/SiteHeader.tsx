@@ -27,7 +27,7 @@
  * lifts A20 clause 2's omission of it).
  *
  * **A reserved box, the same before and after hydration** (AC-7). One Server Component and no
- * `<button>`; the Menu is a native disclosure, and its one island (`MenuEscape`, `Esc` with
+ * `<button>`; the Menu is a native disclosure, and its one island (`MotionIsland`, which adds `Esc` with
  * JavaScript on) renders nothing: the box the first paint shows is the final box, so the header's
  * CLS is 0. The notice
  * bar is a sibling that scrolls away and `<header role="banner" data-fo-header>` is the sticky part

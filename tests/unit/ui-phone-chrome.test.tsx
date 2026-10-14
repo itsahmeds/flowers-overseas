@@ -605,7 +605,7 @@ describe("the Menu's hook survives the server render (PR 208 breaker hole 2)", (
     const escape = readFileSync(
       resolve(
         import.meta.dirname,
-        "../../src/modules/ui/layout/MenuEscape.tsx",
+        "../../src/modules/ui/motion/MotionIsland.tsx",
       ),
       "utf8",
     );
@@ -615,7 +615,7 @@ describe("the Menu's hook survives the server render (PR 208 breaker hole 2)", (
       [...escape.matchAll(/^export\s+(?:const|function|let)\s+(\w+)/gmu)].map(
         (m) => m[1],
       ),
-    ).toEqual(["MenuEscape"]);
+    ).toEqual(["MotionIsland"]);
   });
 
   it('no server module under src/ imports a non-component value from a `"use client"` module', () => {

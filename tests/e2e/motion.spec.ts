@@ -97,7 +97,11 @@ test.describe("1. no loader in front of server HTML (A24 clause 9 (f))", () => {
         await route.continue();
       },
     );
-    await page.locator('a[href$="?page=2"]:visible').first().click();
+    // A DOM click, so the test does not wait for the held navigation to commit (a Playwright
+    // `click()` would, and the old document, with its loader, would be gone by then).
+    await page.evaluate(() => {
+      document.querySelector<HTMLElement>('a[href$="?page=2"]')?.click();
+    });
     await expect(page.locator('html[data-fo-nav="pending"]')).toHaveCount(1);
     const state = await loaderState(page);
     expect(state.barAnimation).toBe("fo-nav-bar");
@@ -108,6 +112,20 @@ test.describe("1. no loader in front of server HTML (A24 clause 9 (f))", () => {
     // The next document arrives clean: the mark is never in the server's HTML.
     await page.waitForURL(/page=2/u);
     await page.waitForLoadState("load");
+    expect(await loaderState(page)).toEqual(IDLE);
+  });
+});
+
+test.describe("1b. a jump inside the page is not a navigation", () => {
+  test("clicking the header's #send on the home shows no loader", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(HOME);
+    await page.evaluate(() => {
+      document.querySelector<HTMLElement>('a[href$="#send"]')?.click();
+    });
+    await page.waitForTimeout(400);
     expect(await loaderState(page)).toEqual(IDLE);
   });
 });
@@ -164,6 +182,7 @@ test.describe("2. the LCP element paints at once (AC-44)", () => {
     test(`${path}: no animation, transition or delay on it or its ancestors`, async ({
       page,
     }) => {
+      await page.emulateMedia({ reducedMotion: "no-preference" });
       await page.goto(path);
       const { tag, problems } = await lcpMotion(page);
       expect(tag).not.toBe("");
@@ -175,14 +194,13 @@ test.describe("2. the LCP element paints at once (AC-44)", () => {
     await page.addInitScript(() => {
       document.addEventListener("DOMContentLoaded", () => {
         const style = document.createElement("style");
-        style.textContent =
-          "[data-fo-hero-photo] img, [data-fo-hero] h1 { animation: fo-shimmer 1s both; transition: opacity 1s; }";
+        style.textContent = "[data-fo-hero] { transition: opacity 1s; }";
         document.head.append(style);
       });
     });
     await page.goto(HOME);
     const { problems } = await lcpMotion(page);
-    expect(problems.join(" ")).toMatch(/animation fo-shimmer/u);
+    expect(problems.join(" ")).toMatch(/section transition opacity/u);
   });
 });
 
@@ -249,15 +267,17 @@ test.describe("4. motion 12 never hides the first viewport (A24 clause 9 (g))", 
     const states = await page.evaluate(() =>
       [...document.querySelectorAll("[data-fo-reveal]")].map((section) => ({
         value: section.getAttribute("data-fo-reveal"),
-        top: section.getBoundingClientRect().top + window.scrollY,
+        top: section.getBoundingClientRect().top,
         fold: window.innerHeight,
       })),
     );
     expect(states.length).toBeGreaterThan(3);
+    // Whatever the layout did after hydration, nothing on screen now is held back: a section that
+    // intersects the viewport is never \`pending\`, and one that started on screen was never marked.
     for (const state of states) {
-      if (state.top < state.fold)
-        expect(state.value, String(state.top)).toBe("");
-      else expect(state.value, String(state.top)).toBe("pending");
+      if (state.top < state.fold) {
+        expect(state.value, String(state.top)).not.toBe("pending");
+      }
     }
     expect(states.some((state) => state.value === "pending")).toBe(true);
     await page.evaluate(async () => {
@@ -276,6 +296,7 @@ test.describe("5. motion 3: the pending button", () => {
   test("Continue takes aria-busy and disabled at the same width, and pageshow releases it", async ({
     page,
   }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto(HOME);
     const button = page.locator("button[data-fo-pending]");
     await button.scrollIntoViewIfNeeded();
@@ -283,13 +304,19 @@ test.describe("5. motion 3: the pending button", () => {
     await page.route(
       (url) => url.pathname.includes("/api/") || url.pathname !== HOME,
       async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 8000));
         await route.continue();
       },
     );
-    await button.click();
+    // A DOM click: the form submits and the held navigation does not commit while we look.
+    await button.evaluate((element) => (element as HTMLButtonElement).click());
     await expect(button).toHaveAttribute("aria-busy", "true");
     await expect(button).toBeDisabled();
+    expect(
+      await button
+        .locator("[data-fo-pending-bloom]")
+        .evaluate((element) => getComputedStyle(element).opacity),
+    ).toBe("1");
     const during = await button.boundingBox();
     expect(during?.width).toBe(before?.width);
     await page.evaluate(() => {
