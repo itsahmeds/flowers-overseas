@@ -82,20 +82,18 @@ links (PR 226 review nit 1).
 
 ## Escalations
 
-- **E1 (2026-10-15): the markup flips `en` and `en-gb` to non-indexable until the founder's record
-  run.** The eight changed `en` values ship `reviewed: false` (work order §3; spec 003 §14 A17), so
-  `en` goes from 26 to 34 unreviewed of 542 counted keys (4.80 % to 6.27 %) and `en-gb` from 4.98 %
-  to 6.46 %, both over the 5 % gate. About 48 unit cases that pin `en`/`en-gb` as indexable
-  (`i18n-review`, `home-honesty`, `seo-sitemap`, `sitemap-*`, `i18n-alternates`, `catalog-read`,
-  `listing-params`, …) go red until the run lands on this branch, as on PR 225 (TASK-226 E1). Not
-  worked around. The keys and values are in `## Result`.
-- **E2 (2026-10-15): the destinations heading is a new key, not markup on the shared one.** The home
-  printed `destinationsHub.h1`, which is also the destinations hub's `<h1>` and its `<title>`
-  (`src/app/[locale]/[segment]/page.tsx`): markup there breaks the title and touches a page outside
-  this task. So the home reads a new key, `home.destinations.heading`, with the same reviewed words
-  ("Where we can <em>send flowers</em>"); no new words. The founder may prefer the hub's own H1 to
-  carry the split too (its artboard draws `<em class="sun">send flowers</em>`): that is a hub-page
-  task that also strips the tag for the title.
+- **E1 (2026-10-15), resolved the same day by spec 004 §14 A-founder-2026-10-14d (PR 227).** The
+  first build shipped the eight marked `en` values `reviewed: false`, which put `en` at 6.27 % and
+  `en-gb` at 6.46 % unreviewed and turned both non-indexable. Clause 3 of the amendment keeps the
+  founder's approval for a marker-only change, so every marked value keeps `reviewed`, `reviewedBy`
+  and `reviewedAt` and only its `sourceHash` follows the value; the share is unchanged (`en` 4.80 %,
+  `en-gb` 4.98 %).
+- **E2 (2026-10-15): the destinations heading is `destinationsHub.h1`, shared with the hub page.**
+  The home's "Where we can send flowers" is the destinations hub's `<h1>` key. It carries the marker
+  (the home's artboard draws the phrase), the home renders it in `<em>`, and the hub page renders
+  the marker as plain words (`DestinationsHubPage.tsx`, one line outside this fence) so the hub
+  looks as it did; the hub's `<title>` reads `seoTitle`, not this key. Whether the hub's own H1
+  shows the phrase (its artboard draws `<em class="sun">send flowers</em>`) is a hub-page task.
 
 ## Progress
 

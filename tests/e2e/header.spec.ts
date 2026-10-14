@@ -32,7 +32,7 @@ import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
 
 import {
-  SENTENCE_REGION,
+  FONT_SWAP_REGIONS,
   recordLayoutShifts,
   shiftOutside,
 } from "../support/layout-shift.ts";
@@ -116,7 +116,8 @@ const MENU = "[data-fo-menu]";
 const MENU_SUMMARY = "[data-fo-menu-summary]";
 
 /**
- * The shift the header can cause: every entry not wholly inside the home's sentence picker
+ * The shift the header can cause: every entry not wholly inside the home's font-swap regions, the sentence picker and
+ * the hero copy (`FONT_SWAP_REGIONS`, TASK-231)
  * (`../support/layout-shift.ts`), after a 500 ms settle. A header that changes height moves what
  * is below it, and the browser names those nodes (`<main>`), not the header, as the sources, so the
  * test excludes the one region whose shift another test owns rather than including the header's
@@ -129,7 +130,7 @@ async function headerShift(page: import("@playwright/test").Page) {
         setTimeout(resolve, 500);
       }),
   );
-  return shiftOutside(page, SENTENCE_REGION);
+  return shiftOutside(page, FONT_SWAP_REGIONS);
 }
 
 test.describe("the site header (AC-7)", () => {

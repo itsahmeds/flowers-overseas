@@ -525,6 +525,39 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
   });
 });
 
+/**
+ * The italic phrase's tag pair (spec 004 §14 A-founder-2026-10-14d clause 4, AC-52, T-57;
+ * TASK-231): a `de` or `pl` heading value carries exactly the `<em>` pairs its `en` source does.
+ * The tag is part of the argument set, counted, so a draft that drops the pair or adds a second
+ * one fails the same check a dropped `{language}` does.
+ */
+describe("the italic phrase's `<em>` pair is part of the argument set (AC-52)", () => {
+  it("fails a `de` heading value without the pair, naming the file and the key", () => {
+    const result = runCase("em-pair-missing");
+    expect(result.status).not.toBe(0);
+    const line = result.stderr
+      .split("\n")
+      .find((candidate) => candidate.includes("[meta.home.title]"));
+    expect(line, "no line names meta.home.title").toBeDefined();
+    expect(line).toContain("em-pair-missing/de.json");
+    expect(line).toMatch(
+      /argument set differs from `en`: expected \{em:tag\}, found \{\}/,
+    );
+  });
+
+  it("counts the pairs: a second `<em>` differs, the same one matches", () => {
+    const one = argumentSignature("Flowers for someone <em>far away.</em>");
+    expect([...one]).toEqual(["em:tag"]);
+    expect([...argumentSignature("Kwiaty dla kogoś <em>daleko.</em>")]).toEqual(
+      [...one],
+    );
+    expect([
+      ...argumentSignature("<em>Kwiaty</em> dla kogoś <em>daleko.</em>"),
+    ]).toEqual(["em:tag", "em:tag#2"]);
+    expect([...argumentSignature("Kwiaty dla kogoś daleko.")]).toEqual([]);
+  });
+});
+
 describe("argumentSignature (the check-4 rule)", () => {
   it("names every argument with its kind", () => {
     expect([...argumentSignature("Read this in {language}?")]).toEqual([

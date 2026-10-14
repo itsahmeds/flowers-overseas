@@ -1672,7 +1672,7 @@
   "destinationsHub.h1": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
+    "sourceHash": "a19f87cd49e53b5758ddc06aac1cb12e87cbdb99d7fc5cec6877af842385d49a"
   },
   "destinationsHub.intro": {
     "source": "machine",
@@ -1953,11 +1953,6 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
-  },
-  "home.destinations.heading": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "a19f87cd49e53b5758ddc06aac1cb12e87cbdb99d7fc5cec6877af842385d49a"
   },
   "home.hero.eyebrow": {
     "reviewed": false,

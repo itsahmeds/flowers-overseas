@@ -20,6 +20,18 @@ import type { BrowserContext, Page } from "@playwright/test";
 /** The sentence picker's form (`SentencePicker`, `data-fo-sentence`). */
 export const SENTENCE_REGION = "[data-fo-sentence]";
 
+/** The hero's copy: the eyebrow, the H1 and its line (`HomeHero`, `data-fo-hero-copy`). */
+export const HERO_COPY_REGION = "[data-fo-hero-copy]";
+
+/**
+ * Every region of the home whose display-face text re-measures when its webfont swaps in: the
+ * sentence, and since TASK-231 the H1, whose italic phrase (Fraunces 300 italic, never preloaded,
+ * A21 clause 3) re-balances its lines on the swap (spec 004 §14 A-founder-2026-10-14d). The
+ * zero-shift tests of the header and the consent sheet exclude both; `tests/e2e/home.spec.ts`
+ * bounds each one's own swap.
+ */
+export const FONT_SWAP_REGIONS = `${SENTENCE_REGION}, ${HERO_COPY_REGION}`;
+
 /** Record every layout shift, with its source nodes, from the first paint onwards. */
 export async function recordLayoutShifts(
   target: Page | BrowserContext,

@@ -75,6 +75,7 @@ export function DestinationsGrid({
 }: DestinationsGridProps): ReactElement {
   const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
+  const hub = useTranslations("destinationsHub");
   const source = provider ?? getDestinationStatusProvider();
   // The provider owns the order (featured first, then collated); the grid does not re-sort.
   const destinations = source.list(locale, (nameKey) => t(nameKey));
@@ -92,7 +93,7 @@ export function DestinationsGrid({
             {home("destinations.eyebrow")}
           </Eyebrow>
           <Display as={headingLevel} id={HEADING_ID} size="display-s">
-            {home.rich("destinations.heading", HEADING_EM)}
+            {hub.rich("h1", HEADING_EM)}
           </Display>
           <p className="text-ink-muted text-body mt-[18px] max-w-[40ch] leading-[1.5] md:text-[21px]">
             {home("destinations.body")}

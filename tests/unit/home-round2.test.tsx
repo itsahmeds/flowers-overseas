@@ -4,7 +4,8 @@
  * `home-mobile.dc.html`, `chrome-desktop.dc.html`). The geometry half is
  * `tests/e2e/home-round2.spec.ts`.
  *
- *  - **One italic phrase per drawn heading (TASK-231).** Each heading the artboards draw with an
+ *  - **One italic phrase per drawn heading (TASK-231; spec 004 §14 A-founder-2026-10-14d,
+ *    AC-52, T-57's unit half).** Each heading the artboards draw with an
  *    `h1 em`/`h2 em` renders exactly that phrase in `<em>`, and its words are the reviewed words,
  *    in all four locales; the cover's phrase is recoloured sunflower below `md`. Watched red by
  *    taking the `<em>` out of one `en` value.
@@ -17,6 +18,9 @@
  *  - **Popular choices (item 5)** is a two-column grid on the phone, not a scroller.
  *  - **The destination chips (item 6)** are one scrolling row below `md` (AC-49).
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -346,5 +350,126 @@ describe("the phone rows (TASK-232 items 5 and 6)", () => {
       ]),
     );
     expect(classes).not.toContain("flex-wrap");
+  });
+});
+
+/**
+ * T-57's unit half (spec 004 §14 A-founder-2026-10-14d clauses 1, 3 and 4, AC-52; TASK-231): the
+ * marker is the only change. Each marked `en` value, with its `<em>` and `</em>` removed, is the
+ * base value byte for byte, carries exactly one pair, and keeps its review record as it was
+ * (`reviewed`, `reviewedBy`, `reviewedAt`; only `sourceHash` follows the value). `de` and `pl`
+ * carry one pair each. Watched red with one word inside a marked value changed.
+ */
+describe("the marker keeps the approval (AC-52; T-57)", () => {
+  const read = (file: string): Record<string, unknown> =>
+    JSON.parse(
+      readFileSync(resolve(__dirname, `../../messages/${file}`), "utf8"),
+    ) as Record<string, unknown>;
+  const at = (tree: Record<string, unknown>, key: string): unknown =>
+    key
+      .split(".")
+      .reduce<unknown>(
+        (node, part) =>
+          typeof node === "object" && node !== null
+            ? (node as Record<string, unknown>)[part]
+            : undefined,
+        tree,
+      );
+  const strip = (value: string): string =>
+    value.replace("<em>", "").replace("</em>", "");
+  const pairs = (value: string): number =>
+    [...value.matchAll(/<em>[^<]*<\/em>/gu)].length;
+
+  /** The base value and its review record, as `main` held them before the marker. */
+  const MARKED: readonly (readonly [string, string, string, string])[] = [
+    [
+      "home.hero.heading",
+      "Flowers for someone far away.",
+      "founder",
+      "2026-09-09T00:00:00Z",
+    ],
+    [
+      "home.trending.heading",
+      "Popular choices",
+      'founder (2026-10-03 chat, "ok go with popular choices"; docs/decisions-log.md "The trending row reads Popular choices"; transcribed by TASK-140)',
+      "2026-10-03T00:00:00Z",
+    ],
+    [
+      "home.dates.heading",
+      "Dates worth sending for",
+      "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+      "2026-09-11T00:00:00Z",
+    ],
+    [
+      "home.occasions.heading",
+      "What is the occasion?",
+      "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+      "2026-09-11T00:00:00Z",
+    ],
+    [
+      "home.howItWorks.heading",
+      "Three people touch your order. None of them is a courier.",
+      "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+      "2026-09-11T00:00:00Z",
+    ],
+    [
+      "trust.heading",
+      "Our promise",
+      "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+      "2026-09-11T00:00:00Z",
+    ],
+    [
+      "faq.heading",
+      "Questions people ask first",
+      "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+      "2026-09-11T00:00:00Z",
+    ],
+    [
+      "destinationsHub.h1",
+      "Where we can send flowers",
+      "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
+      "2026-09-16T00:00:00Z",
+    ],
+  ];
+
+  const catalogue = read("en.json");
+  const meta = read("en.meta.json") as Record<
+    string,
+    { reviewed?: boolean; reviewedBy?: string; reviewedAt?: string }
+  >;
+
+  it.each(MARKED)(
+    "`%s`: the words are the base value, one pair, the review record unchanged",
+    (key, base, reviewedBy, reviewedAt) => {
+      const value = at(catalogue, key);
+      expect(typeof value).toBe("string");
+      expect(strip(value as string)).toBe(base);
+      expect(pairs(value as string)).toBe(1);
+      expect(meta[key]?.reviewed).toBe(true);
+      expect(meta[key]?.reviewedBy).toBe(reviewedBy);
+      expect(meta[key]?.reviewedAt).toBe(reviewedAt);
+    },
+  );
+
+  it("`de` and `pl` carry exactly one pair in each marked value", () => {
+    for (const file of ["de.json", "pl.json"]) {
+      const drafts = read(file);
+      for (const [key] of MARKED) {
+        expect(pairs(at(drafts, key) as string), `${file} ${key}`).toBe(1);
+      }
+    }
+  });
+
+  it("puts no `<em>` in any other `en` value (clause 1)", () => {
+    const marked = new Set(MARKED.map(([key]) => key));
+    const walk = (node: unknown, path: string): string[] =>
+      typeof node === "string"
+        ? node.includes("<em>") && !marked.has(path)
+          ? [path]
+          : []
+        : Object.entries(node as Record<string, unknown>).flatMap(
+            ([key, child]) => walk(child, path === "" ? key : `${path}.${key}`),
+          );
+    expect(walk(catalogue, "")).toEqual([]);
   });
 });

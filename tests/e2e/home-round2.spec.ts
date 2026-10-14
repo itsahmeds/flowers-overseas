@@ -9,8 +9,9 @@
  *    `actualBoundingBoxRight` in the select's own computed font: an italic's last glyph inks past
  *    its advance, which is what `field-sizing: content` sizes to. Watched red with
  *    `SELECT_INK_ROOM` removed (the select back to its old width): "Poland" inks 4 px past it.
- *  - **The one italic phrase (TASK-231).** Every drawn home heading carries one `em` in Fraunces
- *    300 italic poppy at 1440; on the phone cover the H1's phrase is sunflower.
+ *  - **The one italic phrase (TASK-231; AC-52, T-57's e2e half).** Every drawn home heading
+ *    carries one `em` in Fraunces 300 italic poppy at 1440; on the phone cover the H1's phrase is
+ *    sunflower.
  *  - **The notice bar (TASK-232 item 1).** No lead, the leaf mark before the promise, the promise
  *    in sunflower, and one line at 1024 and 1440 (QA-1 Q1-23).
  *  - **The date stamps (item 2).** At 768 and 820 every stamp's text lies inside its stamp, the rows
@@ -21,6 +22,7 @@
  *  - **Popular choices on the phone (item 5)**: two columns of five, each card exactly the width its
  *    `sizes` states. Watched red with the scroller back.
  *  - **The destination chips on the phone (item 6)**: one row that scrolls (AC-49).
+ *  - **No price on Popular choices (AC-53, T-58)** in four locales at 1440 and 390.
  */
 import { type Page, expect, test } from "@playwright/test";
 
@@ -59,7 +61,11 @@ test.describe("the country select renders every value whole (TASK-231; AC-43, AC
         const select = page.locator("[data-fo-sentence-country]");
         await expect(select).toBeVisible();
         const labels = await select.evaluate((node) =>
-          [...(node as HTMLSelectElement).options].map((option) => option.text),
+          [...(node as HTMLSelectElement).options].map((option) =>
+            option.disabled
+              ? option.text.replace(/\s*\([^)]*\)$/u, "")
+              : option.text,
+          ),
         );
         expect(labels.length).toBe(7);
 
@@ -68,14 +74,21 @@ test.describe("the country select renders every value whole (TASK-231; AC-43, AC
             const element = node as HTMLSelectElement;
             const option = element.options[at];
             if (option === undefined) throw new Error("no option");
-            // Select each destination in turn: a disabled one is enabled for the probe only, so
-            // the box is measured with that label as its value (a flag flip, AC-11's case).
-            option.disabled = false;
+            // Select each destination in turn: a disabled one is enabled for the probe only, with
+            // the label an open destination prints (its name, without the "(not yet)" state), so
+            // the box is measured as it renders once its flag flips (AC-11's case).
+            if (option.disabled) {
+              option.disabled = false;
+              option.text = option.text.replace(/\s*\([^)]*\)$/u, "");
+            }
             element.selectedIndex = at;
             const style = getComputedStyle(element);
             const context = document.createElement("canvas").getContext("2d");
             if (context === null) throw new Error("no canvas");
             context.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+            // The select's own tracking (the display face's), which the layout applies to every
+            // glyph, the last one included.
+            context.letterSpacing = style.letterSpacing;
             const ink = context.measureText(option.text);
             const box = element.getBoundingClientRect();
             const start =
@@ -163,6 +176,10 @@ test.describe("one poppy italic phrase per drawn heading (TASK-231)", () => {
       expect(style.fontWeight, selector).toBe("300");
       expect(style.color, selector).toBe(poppy);
     }
+    // AC-52: no other heading on the page carries an `em`.
+    await expect(page.locator(":is(h1, h2, h3, h4, h5, h6) em")).toHaveCount(
+      HEADINGS.length + 1,
+    );
   });
 
   test("at 390: the cover's phrase is sunflower", async ({ page }) => {
@@ -176,8 +193,15 @@ test.describe("one poppy italic phrase per drawn heading (TASK-231)", () => {
 });
 
 test.describe("the notice bar, round 2 (TASK-232 item 1)", () => {
-  for (const width of [1024, 1440] as const) {
-    for (const path of ["/en-gb", "/en-gb/occasions"] as const) {
+  // One line at 1024 on the home (QA-1 Q1-23). A page with the price claim also fits from 1440;
+  // at 1024 its claims meet the four-locale switcher, which TASK-237 narrows to the shown locales
+  // (spec 004 §14 A-founder-2026-10-14e), so that page is held to one line at 1440 here.
+  for (const [width, path] of [
+    [1024, "/en-gb"],
+    [1440, "/en-gb"],
+    [1440, "/en-gb/occasions"],
+  ] as const) {
+    {
       test(`${path} at ${String(width)}: no lead, the leaf, the sunflower promise, one line`, async ({
         page,
       }) => {
@@ -390,4 +414,32 @@ test.describe("the destination chips on the phone (TASK-232 item 6; AC-49)", () 
       "wrap",
     );
   });
+});
+
+/**
+ * T-58 (spec 004 §14 A-founder-2026-10-14g, AC-53; TASK-232 item 5): the Popular choices cards
+ * carry no price on any locale home at either width, whatever the artboard draws: no currency
+ * symbol or code, no figure formatted as money, no "all in", no inclusive VAT text and no
+ * equivalents line. Watched red with a card rendering a from-price.
+ */
+test.describe("Popular choices carry no price (AC-53)", () => {
+  const MONEY =
+    /[€£$]|zł|\b(?:EUR|GBP|PLN|USD|RON|CHF)\b|\d+[.,]\d{2}\b|\ball in\b|\bVAT\b|\bMwSt\b|\bat the rate of\b|\babout\b/iu;
+  for (const path of LOCALES) {
+    for (const width of [1440, 390] as const) {
+      test(`${path} at ${String(width)}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await open(page, path);
+        const cards = page.locator("[data-fo-trending-pick]");
+        expect(await cards.count()).toBeGreaterThan(0);
+        for (const card of await cards.all()) {
+          const words = (await card.innerText()).replaceAll(/\s+/gu, " ");
+          expect(words, words).not.toMatch(MONEY);
+        }
+        await expect(
+          page.locator("[data-fo-trending] [data-fo-price]"),
+        ).toHaveCount(0);
+      });
+    }
+  }
 });

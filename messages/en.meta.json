@@ -2334,7 +2334,7 @@
     "reviewed": true,
     "reviewedBy": "founder (docs/design/wireframes/all-destinations-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-092)",
     "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "bde980964168d925712f4b32e8edf8a8d798a99c64d8d0319e351fd7a3a4da84"
+    "sourceHash": "a19f87cd49e53b5758ddc06aac1cb12e87cbdb99d7fc5cec6877af842385d49a"
   },
   "destinationsHub.intro": {
     "source": "human",
@@ -2458,7 +2458,9 @@
   },
   "faq.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "0d644da205fbdcf2ff8a92b3f3d12bf2ffa94c724a9a28c1c9708d06d1a94c3e"
   },
   "faq.nobodyHome.answer": {
@@ -2700,7 +2702,9 @@
   },
   "home.dates.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "d50a63f53e6f87a1e1a7c16e35146d3caeb73a4ceb6bbae936e4ad52a3daa971"
   },
   "home.dates.orderBy": {
@@ -2724,11 +2728,6 @@
     "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "72eb63f032e47e349e8901353e08ba91cfb9d1f78d08d070c60bae0e9b4e038d"
   },
-  "home.destinations.heading": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "a19f87cd49e53b5758ddc06aac1cb12e87cbdb99d7fc5cec6877af842385d49a"
-  },
   "home.hero.eyebrow": {
     "reviewed": true,
     "reviewedAt": "2026-09-09T00:00:00Z",
@@ -2737,8 +2736,10 @@
     "sourceHash": "00a9a3878b14182c335a9f990a44b0117316eb17b763d60555df7840709fa3b2"
   },
   "home.hero.heading": {
+    "reviewed": true,
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "reviewedBy": "founder",
     "source": "human",
-    "reviewed": false,
     "sourceHash": "48915b766e98296695954e8d5889503a726373fde69c4b4a2606d759c2cb0bc6"
   },
   "home.hero.proposition": {
@@ -2783,7 +2784,9 @@
   },
   "home.howItWorks.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "7433b70a8b07e6504dadc094b2248a000875155b715d4bfc5c18204b631060f1"
   },
   "home.howItWorks.intro": {
@@ -2816,7 +2819,9 @@
   },
   "home.occasions.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "3b1260462b548a3e38acade0ffc8033fe18acbb8a7b43e0fc9ea2f852a0bc57c"
   },
   "home.proof.guarantee.body": {
@@ -2957,7 +2962,9 @@
   },
   "home.trending.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder (2026-10-03 chat, \"ok go with popular choices\"; docs/decisions-log.md \"The trending row reads Popular choices\"; transcribed by TASK-140)",
+    "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "64a1a51b423b82d186f4a71ee4d26ab0f1ee011c4b9739cd6588f2b1246d4bea"
   },
   "languagePopup.browserMatch": {
@@ -4130,7 +4137,9 @@
   },
   "trust.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
+    "reviewedAt": "2026-09-11T00:00:00Z",
     "sourceHash": "082470c1714424cd7df2aeaea8c245de6af4575b779da9527da22a15dd44382c"
   },
   "trust.local.claim": {
