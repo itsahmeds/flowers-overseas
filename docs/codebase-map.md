@@ -14,11 +14,11 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +68 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +70 |
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +29 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +75 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +76 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
@@ -34,6 +34,7 @@ task actually touches.
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates, vase, balloon, plush,… | spec 005 |
 | `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product types + 10 occasion… | spec 005 |
 | `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB euro reference rates (spec 005… | spec 005 |
+| `catalogue/listing-presentation.ts` | The listing presentation registry (spec 004 §14 A23 clause 4 **R1** and **R2**,… | spec 004 |
 | `catalogue/occasions.data.ts` | The occasion facet as rows (`plan/10` §1.1; spec 002 §5.1 `occasion(id, key,… | spec 002 |
 | `catalogue/prices.data.ts` | The authored price dataset: `country_price` and `addon_country_price` rows for… | spec 005 |
 | `catalogue/products.data.ts` | The 84 seeded products (spec 005 §2 "Dataset content", AC-6; `plan/10` §2.1;… | spec 005 |
@@ -71,6 +72,7 @@ task actually touches.
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
+| `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the **depth-4 parameter… | spec 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
 | `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page except the home (spec 004… | spec 004 |
 | `[locale]/@notice/page.tsx` | The locale home's `@notice` slot: **no** price claim (founder, 2026-10-04:… | — |
@@ -79,6 +81,7 @@ task actually touches.
 | `[locale]/[segment]/page.tsx` | `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14… | spec 008 |
 | `[locale]/boom/BoomIsland.tsx` | The throw that reaches `src/app/[locale]/error.tsx` (spec 004 AC-26, AC-27;… | spec 004 |
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500 boundary, as an auditable… | spec 004 |
+| `[locale]/country-listing.tsx` | The country category's and the country occasion's head and body, **once**, for… | spec 008 |
 | `[locale]/country-shop-root.tsx` | The country shop root's head and body, **once**, for the two route files that… | spec 007 |
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
@@ -152,10 +155,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 281 |
+| `tests/unit/` | 283 |
 | `tests/integration/` | 20 |
 | `tests/contract/` | 11 |
-| `tests/e2e/` | 48 |
+| `tests/e2e/` | 50 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |

@@ -16,6 +16,7 @@ import {
   writeProductExistenceSummary,
 } from "@/modules/catalog";
 import { DeliveryFacts } from "@/modules/geo";
+import { LanguageAlternates } from "@/modules/i18n";
 import {
   canonicalFor,
   deploymentDescriptor,
