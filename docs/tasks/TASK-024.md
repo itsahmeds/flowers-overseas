@@ -28,6 +28,11 @@ Branch `task/TASK-024-jobs-internal-probes`. pg-boss runs on `DATABASE_URL_UNPOO
 8. `MediaDeriveVariantsPayload.reason` accepted a fourth value (U29). Closed in round 2.
 9. The query counter's tagged-template path was never proven live (U13). Closed in round 2.
 
+### Breaker round 2 (34a556e2)
+
+1. Deleting the `.catch` after `boss.stop` in `withBoss`, or the `jobs.stop_failed` log inside it, kept `jobs-runtime` green. Closed in round 3: `jobs-runtime` "a stop that rejects is logged as jobs.stop_failed…" goes red under both mutations.
+2. The unit AC-22 strip was not anchored, so `CREATE TABLE pgboss.h AS SELECT sha224(queue_name::bytea) AS body` passed. Closed in round 3: the strip now removes pg-boss's three exact statement texts, once each, and `schema-media` "declares no binary column…" goes red under that mutation.
+
 ### Review round 1 (8fa8bf33) nits
 
 - N1 (`withBoss` stops pg-boss after a refused start): fixed in round 2.
@@ -50,6 +55,13 @@ T-23 is "e2e (Playwright, preview) + unit". The CI preview is `next start` over 
 
 - Migration `0012_pgboss` (pg-boss 12.37.1, schema version 45, owned by `app_owner`, `USAGE` only for `app_web`), `src/jobs/` (registry, runtime, internal routes) and the two route files; draft PR 224.
 - Tests: unit (registry, runtime, internal routes, `/api/health` query counter, db:check), integration (T-21, T-18 pgboss clause, round-trip census); full integration project green on a local PG 16.14.
+- Round 2: the T-23 e2e spec added; breaker round 1 holes 1 to 9 closed; review nits N1, N3 and N7 fixed. Round 3: breaker round 2 holes 1 and 2 closed.
+- Local Postgres 16, for the next implementer or breaker (no install, no Homebrew, no Docker). The binaries are kept at `/Users/ahmed/dev/.tools/pg16-embedded/package/native/bin/` (`initdb`, `pg_ctl`, `postgres`). They came from `npm pack @embedded-postgres/darwin-arm64@16.14.0-beta.17` (a tarball download only), then `tar xzf`, then `node scripts/hydrate-symlinks.js` from `package/`, which only recreates the bundled library symlinks. To start one:
+  - `B=/Users/ahmed/dev/.tools/pg16-embedded/package/native/bin; T=$(mktemp -d /tmp/fo-pg.XXXX)`
+  - `$B/initdb -D $T/data -U postgres --auth=trust -E UTF8 --no-locale`
+  - `$B/pg_ctl -D $T/data -o "-p 54424 -c unix_socket_directories='' -c listen_addresses=127.0.0.1" -l $T/pg.log start`. Unix sockets stay off because a long data path exceeds the 103-byte socket limit.
+  - The PID is the first line of `$T/data/postmaster.pid`. Create a base database (`CREATE DATABASE fo_base`), then run with `DATABASE_URL=postgres://postgres@127.0.0.1:54424/fo_base npx vitest run --project integration`.
+  - Stop with `kill <pid>`, then `rm -rf $T`.
 
 ## Result
 
