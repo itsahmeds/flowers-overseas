@@ -35,7 +35,7 @@ faq:
   - q: "Should I have the card written in Italian?"
     a: "Only if you want it that way. We will print it on our card in whatever language you write it, exactly as you type it. If you would like Italian and are unsure of the register, tell us the sense of it and we will help you phrase it warmly rather than stiffly."
   - q: "Can you deliver flowers in Italy at the moment?"
-    a: "No. We have not begun there. We are choosing which shops we want to work with, and until one of them has agreed, this page will carry no date, no hour and no claim about arrival."
+    a: "Not yet. Ordering for Italy is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Mimosa for a single day in March, then ranunculus and anemones from the
   Ligurian coast, peonies and roses through May and June, sunflowers across the
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Two rules, learned in a minute

@@ -186,14 +186,7 @@ describe("T-47: AC-37's phrases in the English copy (unit)", () => {
     ).toHaveLength(2);
   });
 
-  it("names exactly open item (vii)'s entries, and the list never grows", () => {
-    expect(PHRASE_EXCEPTIONS).toStrictEqual([
-      "content/corridors/en-gb/es-guide.md › faq › Can you send flowers to Spain now?",
-      "content/corridors/en-gb/fr-guide.md › faq › Can you deliver to France today?",
-      "content/corridors/en-gb/pl-guide.md › faq › Can you deliver to Poland today?",
-      "content/corridors/en/es-guide.md › faq › Can you send flowers to Spain now?",
-      "content/corridors/en/pl-guide.md › faq › Can you deliver to Poland today?",
-      "corridor.facts.orderBy.none",
-    ]);
+  it("open item (vii)'s list is empty: every entry left with its approved replacement (TASK-226)", () => {
+    expect(PHRASE_EXCEPTIONS).toStrictEqual([]);
   });
 });

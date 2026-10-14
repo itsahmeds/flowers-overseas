@@ -36,7 +36,7 @@ faq:
   - q: "Who am I buying from, and who do I complain to?"
     a: "You are buying from us, not from the shop that makes the bouquet, so your contract and your complaint are both with us rather than with a shop abroad. We have not begun delivering to Poland yet, so today there is nothing to claim against, and we would rather say that plainly."
   - q: "Can you deliver to Poland today?"
-    a: "No. We are still choosing the shops we want to work with, and until one of them has agreed we will not print a date or an hour on this page. We would rather turn you away than promise something we cannot honour."
+    a: "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips in spring, peonies in late May and June, roses all year round,
   gerberas for colour and freesias when a shop wants to show what it can do.
@@ -51,8 +51,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Written for a sender in Britain

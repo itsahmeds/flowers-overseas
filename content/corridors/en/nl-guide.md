@@ -36,7 +36,7 @@ faq:
   - q: "Do Dutch homes really buy flowers every week?"
     a: "Most do, or close to it. Flowers are cheap, the markets are everywhere and the front window is a semi-public space. It is the reason a gift of flowers here is a warm, casual gesture rather than a grand one."
   - q: "Can you deliver in the Netherlands today?"
-    a: "No. We have not started there. We are choosing the shops we want to work with, and until one has agreed to make your flowers we will not put a date, an hour or any claim about arrival on this page."
+    a: "Not yet. Ordering for the Netherlands is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips from January and in the fields from mid-April, then hyacinths,
   daffodils and narcissi, peonies in June, dahlias and sunflowers through the
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Flowers as groceries

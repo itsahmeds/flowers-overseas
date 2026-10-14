@@ -35,7 +35,7 @@ faq:
   - q: "Will the person receiving them see what I paid, or anything in lei?"
     a: "No. You see one all-in amount in your own currency before you pay, and nothing about money goes anywhere near the flowers or the card."
   - q: "Can you send flowers to Romania today?"
-    a: "Not yet. We are choosing the shops we would like to work with and have not finished. Until one of them has agreed, we will not put a date, an hour or an arrival claim on this page."
+    a: "Not yet. Ordering for Romania is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Snowdrops at the very start of March, then hyacinths, freesias and tulips
   through the spring, roses all year and in quantity, lilies and gerberas for
@@ -50,8 +50,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country where flowers are ordinary and constant

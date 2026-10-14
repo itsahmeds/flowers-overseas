@@ -36,7 +36,7 @@ faq:
   - q: "Will the person receiving the flowers see the price in euro?"
     a: "No. You are shown one all-in amount in your own currency before you pay, and no figure of any kind travels with the flowers or the card."
   - q: "Can you send flowers to Spain now?"
-    a: "Not yet. We are still choosing the shops we want to work with, and until one of them has agreed to make your flowers we will put no date, no hour and no claim of arrival on this page."
+    a: "Not yet. Ordering for Spain is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Carnations above all, which Spain grows and gives without any of the
   reservations held further north; roses for 23 April; orange blossom in the
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## One country, several flower cultures

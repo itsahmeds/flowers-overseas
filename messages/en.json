@@ -477,7 +477,7 @@
         "body": "Every price is final, and any order-by time we show is on the recipient's clock, not yours."
       },
       "make": {
-        "title": "A florist a few streets away accepts it.",
+        "title": "Our florist nearby makes it that morning.",
         "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you."
       },
       "deliver": {
@@ -598,7 +598,7 @@
       },
       "orderBy": {
         "label": "Order by",
-        "none": "— no cutoff, because no florist has agreed to one",
+        "none": "None yet.",
         "value": "{time} in {zone} — the recipient's own time, not yours — for delivery the same day"
       },
       "deliveryDays": {
@@ -824,7 +824,7 @@
     "corridorLink": "What we can tell you about sending flowers to {country}",
     "legend": "When should it arrive?",
     "picker": {
-      "live": "Order by {time} in {city} — the recipient's time, not yours",
+      "live": "Order by {time} in {city}, the recipient's time, not yours",
       "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
       "unavailable": "Delivery dates for {country} open when ordering does."
     },
@@ -944,7 +944,7 @@
     "price": {
       "changed": "<b>The price changed from {old} to {new} since you opened the product page.</b> Please check it before you continue.",
       "confirm": "Continue at {new}",
-      "currencyLine": "You pay in {buyerCurrency}. Our florist is paid in {destinationCurrency}."
+      "currencyLine": "You pay in {buyerCurrency}."
     },
     "summary": {
       "title": "Your order",

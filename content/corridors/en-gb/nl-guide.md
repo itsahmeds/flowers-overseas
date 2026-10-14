@@ -36,7 +36,7 @@ faq:
   - q: "Who am I buying from, and who handles a complaint?"
     a: "You are buying from us, never from the shop that ties the bunch, so any complaint comes to us in English. We are not delivering in the Netherlands yet, so there is nothing to buy today and we would rather say so than imply otherwise."
   - q: "Can you deliver in the Netherlands today?"
-    a: "No. We have not started there. We are choosing the shops we want to work with, and until one has agreed to make your flowers we will put no date, no hour and no claim about arrival on this page."
+    a: "Not yet. Ordering for the Netherlands is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips from January and in the fields from mid-April, then hyacinths,
   daffodils and narcissi, peonies in June, dahlias and sunflowers in the late
@@ -51,8 +51,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## The easiest destination we write about, with one catch

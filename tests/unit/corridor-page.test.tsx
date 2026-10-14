@@ -123,7 +123,7 @@ describe("the guide state (AC-8, AC-19)", () => {
   });
 
   it("states the blanks in words and claims no cutoff, date, price or city", () => {
-    expect(body).toContain("no cutoff, because no florist has agreed to one");
+    expect(body).toContain("None yet.");
     expect(body).toContain("no price on this page");
     expect(body).toMatch(/Nowhere in Poland, today/u);
     // No price, no time of day, no "same-day": the guide claims nothing operational. (The

@@ -274,7 +274,7 @@ describe("AC-8: the picker says only what the destination's data allows, in one 
     expect(checked.map(([date]) => date)).toEqual([selectable[0]?.date]);
     expect(html).toContain("data-fo-cutoff");
     expect(readable(html)).toContain(
-      "Order by 14:00 in Warsaw — the recipient's time, not yours",
+      "Order by 14:00 in Warsaw, the recipient's time, not yours",
     );
     expect(html).toContain(">Use this date<");
   });
@@ -526,7 +526,7 @@ describe("AC-10: absolute dates and an absolute cutoff, in every state and local
       render(await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK })),
     );
     expect(live).toContain(
-      "Order by 14:00 in Warsaw — the recipient's time, not yours",
+      "Order by 14:00 in Warsaw, the recipient's time, not yours",
     );
   });
 });

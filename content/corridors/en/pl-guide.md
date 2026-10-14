@@ -35,7 +35,7 @@ faq:
   - q: "Will the person paying in one currency and receiving in złoty cause confusion?"
     a: "No. You see one all-in amount in your own currency before you pay, and the person receiving the flowers never sees a price at all."
   - q: "Can you deliver to Poland today?"
-    a: "Not yet. We are still choosing the shops we want to work with there, and until we have, we will not put a date or a time on this page. We would rather tell you no than promise something we cannot honour."
+    a: "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips in spring, peonies in late May and June, roses all year, gerberas for
   something bright, and freesias when a florist wants to show off. Polish shops
@@ -50,8 +50,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-10-05
-version: 2
-updatedAt: "2026-10-05"
+version: 3
+updatedAt: "2026-10-14"
 ---
 
 ## Why we started here

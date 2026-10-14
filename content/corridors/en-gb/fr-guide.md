@@ -36,7 +36,7 @@ faq:
   - q: "Who is the order with, and who do I chase?"
     a: "Your contract is with us rather than with the florist who ties the flowers, so any complaint comes to us in English rather than to a shop abroad. Since we are not yet delivering in France there is nothing to buy today, and we would rather say so."
   - q: "Can you deliver to France today?"
-    a: "No. We are still choosing the shops we want to work with, and until one of them has agreed we will print no date, no hour and no claim of arrival on this page."
+    a: "Not yet. Ordering for France is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Lily of the valley for one morning in May, roses and peonies in early summer,
   lavender and sunflowers in the south from July, dahlias and anemones in
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Near neighbours, different rules

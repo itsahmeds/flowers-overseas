@@ -1319,7 +1319,7 @@
   "checkout.price.currencyLine": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "1b263d47c9918b63ef93af9042ebb09597a2454822f50f06309fa11617e63715"
+    "sourceHash": "498f2f9ff8bdf28c0ac4433a6a5e9225126b622e784b81f831cf19799b003b38"
   },
   "checkout.privacy.demoNotice": {
     "source": "human",
@@ -1840,10 +1840,8 @@
   },
   "corridor.facts.orderBy.none": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/corridor-country-desktop.dc.html and -mobile, 2026-09-15 design round; transcribed by TASK-091)",
-    "reviewedAt": "2026-09-16T00:00:00Z",
-    "sourceHash": "73edb74486f896cc3c43973331dd4eee3e2fd35f8371220e0d6f0c7c839593f4"
+    "reviewed": false,
+    "sourceHash": "bd3ce633497fa23b75c81ac06132f0d2777c1332a31c263ea35639144c8ad576"
   },
   "corridor.facts.orderBy.value": {
     "source": "human",
@@ -2183,10 +2181,8 @@
   },
   "delivery.picker.live": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
-    "reviewedAt": "2026-10-03T00:00:00Z",
-    "sourceHash": "61c5ac273b16bf23fa94ad28333c29e52b1df44d6ba2d7e2fa0d05f62bd30c76"
+    "reviewed": false,
+    "sourceHash": "e0cc4e98f3c62bb869d4120da4c3e537a699352cf07280f656dae576d4c0ebac"
   },
   "delivery.picker.preview": {
     "source": "human",
@@ -2803,10 +2799,8 @@
   },
   "home.howItWorks.make.title": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/homepage-v1 artboards, round 2 and round 6; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "e1e72d90b776000bc68ec11e12f78a8f07b1b4ea5196ec0b5d45bb16756dcd7c"
+    "reviewed": false,
+    "sourceHash": "5b65092313e9ff0fea989ac060d35b7cb68b3b954208a575e9ca4f6aa01d6f4e"
   },
   "home.occasions.eyebrow": {
     "source": "human",

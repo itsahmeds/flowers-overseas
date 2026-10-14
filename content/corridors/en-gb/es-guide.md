@@ -36,7 +36,7 @@ faq:
   - q: "Who am I contracting with when I order?"
     a: "With us, not with the shop that arranges the flowers, so a complaint comes to us in English rather than to a shop abroad. We are not delivering in Spain yet, so there is nothing to buy today and we will not pretend otherwise."
   - q: "Can you send flowers to Spain now?"
-    a: "Not yet. We are still choosing the shops we want to work with, and until one of them has agreed to make your flowers we will put no date, no hour and no claim of arrival on this page."
+    a: "Not yet. Ordering for Spain is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Carnations above all, used here without any of the northern reservations;
   roses for the 23rd of April; orange blossom in the south in spring; gerberas,
@@ -51,8 +51,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Not one country, for these purposes

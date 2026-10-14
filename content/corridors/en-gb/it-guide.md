@@ -36,7 +36,7 @@ faq:
   - q: "Who do I deal with if an order goes wrong?"
     a: "Us. Your contract is with us and not with the fiorista who makes the bouquet, so any complaint comes to us in English rather than to a shop abroad. We are not delivering in Italy yet, so there is nothing to buy today, and we would rather say it plainly."
   - q: "Can you deliver flowers in Italy at the moment?"
-    a: "No. We are choosing the shops we want to work with and have not finished. Until one of them has agreed, this page will carry no date, no hour and no claim about arrival."
+    a: "Not yet. Ordering for Italy is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Mimosa for a single day in March, ranunculus and anemones from the Ligurian
   coast in late winter, peonies and roses through May and June, sunflowers
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Two absolutes, and a pleasure

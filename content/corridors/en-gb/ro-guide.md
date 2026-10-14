@@ -36,7 +36,7 @@ faq:
   - q: "Who is my order with, and who puts it right?"
     a: "Your order is with us, not with the florist who assembles the bouquet, so a complaint comes to us in English rather than to a shop abroad. We have not begun delivering in Romania, so there is nothing to buy today and we will not pretend there is."
   - q: "Can you send flowers to Romania today?"
-    a: "Not yet. We are choosing the shops we would like to work with and have not finished. Until one of them has agreed we will put no date, no hour and no arrival claim on this page."
+    a: "Not yet. Ordering for Romania is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Snowdrops at the very start of March, then hyacinths, freesias and tulips
   through the spring, roses all year and in quantity, lilies and gerberas for
@@ -51,8 +51,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country that gives flowers constantly

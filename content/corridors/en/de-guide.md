@@ -36,7 +36,7 @@ faq:
   - q: "The recipient pays nothing, but will they see what I paid in euro?"
     a: "No. You see one all-in amount in your own currency before you pay, and nothing about money travels with the flowers."
   - q: "Can you send flowers to Germany right now?"
-    a: "Not yet. We have written this guide and chosen the cities we want to begin in, and until a shop there has agreed to work with us we will not put a date on this page. We would rather say no than say something we cannot honour."
+    a: "Not yet. Ordering for Germany is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips and daffodils from February, peonies and lily of the valley in late
   spring, sunflowers through August, asters and dahlias into the autumn, and
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country that buys flowers for itself

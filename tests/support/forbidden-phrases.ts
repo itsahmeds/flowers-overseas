@@ -30,16 +30,11 @@ export const FORBIDDEN_PHRASES = [
 
 /**
  * Spec 004 §14 A23 open item (vii): the shipped, reviewed `en` copy that still matches, and nothing
- * else. Each entry waits for the founder's replacement wording (proposed in TASK-193's PR).
+ * else. The list may only shrink, and it is empty: the last six entries (five guide FAQ answers and
+ * `corridor.facts.orderBy.none`) left with the founder's replacement wording of 2026-10-14
+ * (TASK-226).
  */
-export const PHRASE_EXCEPTIONS: readonly string[] = [
-  "content/corridors/en-gb/es-guide.md › faq › Can you send flowers to Spain now?",
-  "content/corridors/en-gb/fr-guide.md › faq › Can you deliver to France today?",
-  "content/corridors/en-gb/pl-guide.md › faq › Can you deliver to Poland today?",
-  "content/corridors/en/es-guide.md › faq › Can you send flowers to Spain now?",
-  "content/corridors/en/pl-guide.md › faq › Can you deliver to Poland today?",
-  "corridor.facts.orderBy.none",
-];
+export const PHRASE_EXCEPTIONS: readonly string[] = [];
 
 /** One piece of copy: where it lives (a catalogue key, or a file and field) and its text. */
 export interface CopyRecord {

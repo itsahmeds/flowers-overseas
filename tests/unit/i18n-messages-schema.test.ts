@@ -355,6 +355,12 @@ describe("the shipped catalogues and manifests", () => {
     "confirmation.recap.date",
     "confirmation.recap.nothingCharged",
     "confirmation.recap.recipient",
+    // TASK-226: the founder approved this text in chat on 2026-10-14 ("3 ok"); it waits here for
+    // his own record run.
+    "corridor.facts.orderBy.none",
+    // TASK-226: the em dash replaced by a comma (founder, 2026-10-14: no em dashes); it waits
+    // here for his own record run.
+    "delivery.picker.live",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -366,6 +372,9 @@ describe("the shipped catalogues and manifests", () => {
     "faq.whoDelivers.answerCutoff",
     "footer.payment.methods",
     "home.howItWorks.choose.body",
+    // TASK-226: the founder approved this text in chat on 2026-10-14 ("3 ok"); it waits here for
+    // his own record run.
+    "home.howItWorks.make.title",
     "home.proof.photo.body",
     // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
     // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.

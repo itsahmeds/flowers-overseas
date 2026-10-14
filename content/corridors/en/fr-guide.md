@@ -36,7 +36,7 @@ faq:
   - q: "Should the card be written in French?"
     a: "We will print it on our card in whatever language you write it, exactly as you type it. If you want a French phrasing and are not confident, send us the sense of it in English and we will help you word it properly."
   - q: "Can you deliver to France today?"
-    a: "No. We have not begun there. We are choosing which shops we want to work with, and until one of them has agreed we will not print a date, a time or a claim about arrival on this page."
+    a: "Not yet. Ordering for France is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Lily of the valley for a single morning in May, roses and peonies through
   early summer, lavender and sunflowers in the south from July, dahlias and
@@ -53,8 +53,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country with rules about flowers

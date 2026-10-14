@@ -255,7 +255,7 @@
     "price": {
       "changed": "<b>The price changed from {old} to {new} since you opened the product page.</b> Please check it before you continue.",
       "confirm": "Continue at {new}",
-      "currencyLine": "You pay in {buyerCurrency}. Our florist is paid in {destinationCurrency}."
+      "currencyLine": "Sie zahlen in {buyerCurrency}."
     },
     "privacy": {
       "demoNotice": "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how an order reaches our florist, then we delete the personal details. {controllerLine}"
@@ -402,7 +402,7 @@
       "headingLive": "What happens on the day",
       "orderBy": {
         "label": "Order by",
-        "none": "— no cutoff, because no florist has agreed to one",
+        "none": "Noch keine.",
         "value": "{time} in {zone} — the recipient's own time, not yours — for delivery the same day"
       },
       "prices": {
@@ -480,7 +480,7 @@
     "corridorLink": "What we can tell you about sending flowers to {country}",
     "legend": "When should it arrive?",
     "picker": {
-      "live": "Order by {time} in {city} — the recipient's time, not yours",
+      "live": "Bestellen bis {time} in {city}, nach der Uhrzeit des Empfängers, nicht Ihrer",
       "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
       "unavailable": "Delivery dates for {country} open when ordering does."
     },
@@ -636,7 +636,7 @@
       "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
       "make": {
         "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you.",
-        "title": "A florist a few streets away accepts it."
+        "title": "Unser Florist in der Nähe bindet ihn an diesem Morgen."
       }
     },
     "occasions": {

@@ -36,7 +36,7 @@ faq:
   - q: "Who am I actually buying from?"
     a: "From us, and not from whichever shop ends up making the bouquet, so a complaint comes to us rather than to a shop abroad. As we are not yet delivering in Germany, there is nothing to buy today, and we would rather say that than dress it up."
   - q: "Can you send flowers to Germany right now?"
-    a: "No. We have chosen the cities we want to begin in and we are talking to shops, but until one of them has agreed to work with us this page will carry no date, no hour and no claim about arrival."
+    a: "Not yet. Ordering for Germany is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips and daffodils from February, peonies and lily of the valley in late
   spring, sunflowers through August, asters and dahlias in the autumn, and
@@ -52,8 +52,8 @@ source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
 reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Three British assumptions that do not travel

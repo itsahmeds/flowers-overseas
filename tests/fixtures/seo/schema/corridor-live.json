@@ -104,7 +104,7 @@
             "name": "Can you deliver to Poland today?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Not yet. We are still choosing the shops we want to work with there, and until we have, we will not put a date or a time on this page. We would rather tell you no than promise something we cannot honour."
+              "text": "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
             }
           }
         ]

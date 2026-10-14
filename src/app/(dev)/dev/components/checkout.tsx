@@ -431,7 +431,6 @@ export function CheckoutGallery({
             }
             currencyLine={t("price.currencyLine", {
               buyerCurrency: CHECKOUT_TOTAL.currency,
-              destinationCurrency: "PLN",
             })}
             id="gallery-summary-3"
             lines={lines.filter((line) => line.id !== "vat")}
