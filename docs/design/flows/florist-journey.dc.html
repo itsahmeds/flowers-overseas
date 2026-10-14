@@ -158,9 +158,9 @@
       </div>
       <div class="step">
         <header><span class="i">08</span><b>Confirmed: make it</b></header>
-        <code>assignment.accepted → spec 013 captures → B2 to the buyer, V3 to the florist</code>
-        <div class="thumb"><div class="ink"></div><span>Confirmed: please make the order for Thu 8 Oct</span><div class="box">We have taken the payment. Open the order for the recipient's name, address, phone and the card message to print.</div><div class="acc"></div><span>Inbox: recipient and card message shown · Out for delivery</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Make the bouquet. The recipient's details are in the inbox from now until the photo.</dd><dt>Trust</dt><dd><span class="trust">The buyer's contract confirmation (B2, terms attached) goes at the same moment: the contract forms on capture, after the florist accepted.</span></dd><dt>Reads</dt><dd><code>order.captured</code> from <code>accepted</code>; spec 013 has written <code>order.in_production</code>.</dd><dt>Spec</dt><dd>016 V3, B2, AC-14</dd></dl>
+        <code>assignment.accepted → order.in_production → V3 to the florist, B2 “being made” to the buyer</code>
+        <div class="thumb"><div class="ink"></div><span>Confirmed: please make the order for Thu 8 Oct</span><div class="box">Open the order for the recipient's name, address, phone and the card message to print.</div><div class="acc"></div><span>Inbox: recipient and card message shown · Out for delivery</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Make the bouquet. The recipient's details are in the inbox from now until the photo.</dd><dt>Trust</dt><dd><span class="trust">The buyer paid at checkout (founder 2026-10-14: charge at once) and now reads “Your bouquet is being made” (B2); they never hear of an offer or an acceptance.</span></dd><dt>Reads</dt><dd><code>assignment.accepted</code>, then <code>order.in_production</code>.</dd><dt>Spec</dt><dd>016 V3, B2, AC-14</dd></dl>
       </div>
     </div>
     <div class="steps">
@@ -179,8 +179,8 @@
       <div class="step">
         <header><span class="i">11</span><b>Nobody took it (the founder)</b></header>
         <code>order.no_partner_available → A1 → reroute (spec 020) or cancel at the end of the grace window</code>
-        <div class="thumb"><div class="ink"></div><span>No florist: FO-7K2M-9QXA · Warszawa · Thu 8 Oct</span><div class="box">Cancels automatically at 16:40 Warsaw time unless you act.</div><div class="box">1 declined · 2 no answer · 3 declined</div><div class="row2"><div class="box" style="flex:1">Reroute → step 06</div><div class="box" style="flex:1">Cancel → B5, hold released</div></div></div>
-        <dl class="meta"><dt>Decision</dt><dd>Phone a florist and reroute to them (spec 020's button calls <code>manualReroute</code>), cancel, or let the window run out.</dd><dt>Grace window</dt><dd>Due today: 2 hours. Not due today: until 10:00 destination time the next morning (21:00 → 10:00; 06:00 → 10:00 the same day). Both end by the routing deadline (16-2). With <code>routing.auto</code> off, nothing cancels automatically.</dd><dt>Trust</dt><dd><span class="trust">The buyer's card is held, not charged, the whole time; a cancel releases it and B5 says so.</span></dd><dt>Spec</dt><dd>016 A1, B5, AC-10 to AC-13, AC-35 · <code>email-founder-*</code></dd></dl>
+        <div class="thumb"><div class="ink"></div><span>No florist: FO-7K2M-9QXA · Warszawa · Thu 8 Oct</span><div class="box">Cancels automatically at 16:40 Warsaw time unless you act.</div><div class="box">1 declined · 2 no answer · 3 declined</div><div class="row2"><div class="box" style="flex:1">Reroute → step 06</div><div class="box" style="flex:1">Cancel → B5, full refund</div></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Phone a florist and reroute to them (spec 020's button calls <code>manualReroute</code>), cancel, or let the window run out.</dd><dt>Grace window</dt><dd>Due today: 2 hours. Not due today: until 10:00 destination time the next morning (21:00 → 10:00; 06:00 → 10:00 the same day). Both end by the routing deadline (16-2). With <code>routing.auto</code> off, nothing cancels automatically.</dd><dt>Trust</dt><dd><span class="trust">The buyer has paid; a cancel refunds in full, and B5 says only “We could not deliver this order. We have refunded {amount}.”</span></dd><dt>Spec</dt><dd>016 A1, B5, AC-10 to AC-13, AC-35 · <code>email-founder-*</code></dd></dl>
       </div>
     </div>
     </div>
