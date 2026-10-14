@@ -126,6 +126,13 @@ One line per coherent step, newest last.
 - 2026-10-14: `tests/e2e/product-v3.spec.ts` (16 cases, six mutations watched red), visual cases re-pointed, README differences, axe fix on the preview date row (c2c78048).
 - 2026-10-14: rebased on `origin/main` (48837dca) and pushed, head 719a9642. **Partial at the 180 min limit:** the PR is still a draft, and no CI has run on the head. Still owed: `gh pr ready 215`, then the `visual:baselines` label alone, then commit the linux baselines for `product-{desktop,mobile}-first` and `product-mobile-bar`, then toggle `ci:full`.
 
+- 2026-10-14 (round 1 fixes):
+  - Deleted the darwin `product-mobile-sticky.png`.
+  - Equal date chips: a closed day's own reason moves to one caption line under the row that names its dates and names the radio (spec 009 AC-7).
+  - The closed day's number is **not struck**: `tests/unit/product-page.test.tsx` AC-21 forbids `line-through` on the page, and TASK-179's ruling (d) says a closed day is never struck. Struck needs a ruling.
+  - New tests: chip heights and no spill in en/de/pl at 1440/1280/390; the P2 text; preview radios disabled with no disabled fieldset; the `productAlternatePaths` guard (`hasSlug` switched off for `de`); the bar under reduced motion; date-row shots on `/dev/components`' fixed dates (linux baselines owed).
+  - Dots show until `lg` and mark no current photograph.
+
 ## Result
 
 **PR 215.** Built to spec 004 §14 A24 clauses 1, 4, 5 and 10 and spec 009 §14 A12.

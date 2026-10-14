@@ -626,9 +626,21 @@ test.describe("the date row's chips: one height, nothing spilling, the reasons u
                 date: label.getAttribute("data-fo-date"),
                 width: Math.round(box.width),
                 height: Math.round(box.height * 10) / 10,
-                spills:
-                  label.scrollWidth > label.clientWidth + 1 ||
-                  label.scrollHeight > label.clientHeight + 1,
+                // Every in-flow line inside the card; the occasion tag is drawn on purpose over the
+                // chip's top edge, 12 px past each side (`DateChip`), and no further.
+                spills: Array.from(label.children).some((child) => {
+                  const inner = child.getBoundingClientRect();
+                  if (inner.width === 0 || inner.height === 0) return false;
+                  const tag = child.hasAttribute("data-fo-date-occasion");
+                  const bleed = tag ? 12.5 : 0.5;
+                  return (
+                    inner.left < box.left - bleed ||
+                    inner.right > box.right + bleed ||
+                    (!tag &&
+                      (inner.top < box.top - 0.5 ||
+                        inner.bottom > box.bottom + 0.5))
+                  );
+                }),
               };
             }),
           );
