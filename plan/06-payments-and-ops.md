@@ -44,12 +44,12 @@ This document is written for a Pakistan-resident founder operating an Estonian O
 
 ### 2.2 Application-side payment design
 
-- **Payment Intents** with automatic payment methods filtered by our buyer-country config (04 §10); **manual capture**: authorise at order, capture when a partner **accepts** (or within 7 days at most; card auths expire). If no partner accepts, cancel the authorisation: the buyer is never charged for an undeliverable order. For methods that do not support auth/capture (BLIK, P24, iDEAL, Klarna, Vipps), charge immediately and refund automatically on `no_partner_available`.
+- **Payment Intents** with automatic payment methods filtered by our buyer-country config (04 §10); **automatic capture at placement for every method** (founder ruling 2026-10-14: charge at once, never hold a card; spec 013). If no florist can take the order, we cancel it and refund in full automatically; the buyer sees a plain cancellation with no mention of florists.
 - **Charge exactly the displayed amount in the displayed currency.** FX policy: prices are set per destination in local currency; display in buyer currency uses the daily ECB rate + a **2.5% FX buffer**, rounded to psychological endings; the rate snapshot is stored on the order. We settle in EUR (Stripe) and eat conversion cost inside the buffer 🧾 (settlement currency choice affects accounting; confirm).
 - **SCA / 3DS2**: always request 3DS on first-time cards and orders > €150 (`request_three_d_secure: 'any'` via Radar rule); rely on TRA exemptions for low-value repeat customers. Liability shift for authenticated transactions is the primary chargeback defence.
 - **Idempotency** keys on every create/capture/refund; webhook inbox table before processing (01 §9).
 - **Receipts and invoices**: our own PDF invoice per order (07 §5 requirements), not Stripe's receipt.
-- **Refunds**: full and partial from admin; reason codes; partial refund suggested amounts (add-on missing = add-on price; late delivery = delivery fee + 20%; substitution complaint = 30%); automatic full refund on cancellation before acceptance.
+- **Refunds**: full and partial from admin; reason codes; partial refund suggested amounts (add-on missing = add-on price; late delivery = delivery fee + 20%; substitution complaint = 30%); automatic full refund on cancellation before we start preparing the order (internally: before acceptance).
 - **Rolling reserve expectation 💳**: plan cash flow assuming Stripe may impose 5–10% held for 90 days in the first months, and T+7 payouts. Florist payouts (weekly) must be fundable from Wise balance independent of Stripe payout timing; keep a €3–5k float.
 
 ### 2.3 Fraud rules (Radar custom rules + our own pre-checks)
@@ -162,7 +162,7 @@ Admin is a set of server-rendered pages with Supabase RLS + role checks; no sepa
 
 | Peak | Dates 2027 | What breaks | Prevention |
 |---|---|---|---|
-| Valentine's | 14 Feb (Sun) | Florist capacity; red-rose supply and price spikes; every buyer wants the same day; chargebacks from non-delivery | Capacity caps per partner/day set by 1 Feb; Valentine's surcharge and "guaranteed 13–14 Feb window" product; red-rose products switch to "florist's choice red" tier with explicit wording; cutoff pulled forward (12 Feb 18:00 for 14 Feb); pre-authorisation policy holds until acceptance so capacity failures do not charge buyers |
+| Valentine's | 14 Feb (Sun) | Florist capacity; red-rose supply and price spikes; every buyer wants the same day; chargebacks from non-delivery | Capacity caps per partner/day set by 1 Feb; Valentine's surcharge and "guaranteed 13–14 Feb window" product; red-rose products switch to "florist's choice red" tier with explicit wording; cutoff pulled forward (12 Feb 18:00 for 14 Feb); capacity failures are cancelled and refunded in full automatically (charge at placement, founder ruling 2026-10-14) |
 | Women's Day PL | 8 Mar (Mon) | Tulip supply; Monday morning office deliveries; volume 3–5× | Same caps; tulip products pinned; office-address fields prominent; partners confirm Sunday prep |
 | Mothering Sunday UK (for UK→UK later) / Mother's Day PL 26 May / DE 9 May / NO 14 Feb (collides with Valentine's) | various | Capacity, cutoff confusion across countries | Per-country occasion calendar drives copy and cutoffs automatically; no hard-coded dates |
 | All Saints PL | 1 Nov | Wreath/chrysanthemum-specific products; cemetery deliveries need plot info | Seasonal product set with extra address fields (cemetery, section) enabled by occasion |
