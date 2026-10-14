@@ -1,4 +1,9 @@
-/** Depth 3's language links: this page in each locale (TASK-233; `../../../page-switcher.tsx`). */
+/**
+ * Depth 3's language links: this page in each locale (TASK-233; `../../../page-switcher.tsx`).
+ *
+ * @purpose Language links of a depth-3 page
+ * @spec 003
+ */
 import type { ReactElement } from "react";
 
 import { PageLocaleSwitcher } from "../../../page-switcher";
