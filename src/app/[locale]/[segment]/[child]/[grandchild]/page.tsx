@@ -4,14 +4,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { isPublished } from "@/config/site-links";
 import {
-  CountryCategoryPage,
-  CountryOccasionPage,
   ListingBreadcrumb,
-  type ListingView,
   type LocalePathResolution,
   type ProductView,
-  listingAlternatePaths,
-  listingView,
+  listingRequest,
   localeGrandchildParams,
   localeProductParams,
   productAlternatePaths,
@@ -20,7 +16,7 @@ import {
   writeProductExistenceSummary,
 } from "@/modules/catalog";
 import { DeliveryFacts } from "@/modules/geo";
-import { LanguageAlternates, alternatesFor } from "@/modules/i18n";
+import { LanguageAlternates } from "@/modules/i18n";
 import {
   canonicalFor,
   deploymentDescriptor,
@@ -29,6 +25,11 @@ import {
 // Imported directly, not through the `ui` barrel: `ProductPage` mounts the printed-card preview,
 // Caveat's one importer, so the barrel must not reach it (`tests/unit/fonts.test.ts`).
 import { ProductPage } from "@/modules/ui/product/ProductPage";
+
+import {
+  CountryListing,
+  countryListingMetadata,
+} from "../../../country-listing";
 
 /**
  * `/{locale}/{segment}/{child}/{grandchild}` — **one route file for one URL depth** (spec 008 §14
@@ -75,6 +76,14 @@ import { ProductPage } from "@/modules/ui/product/ProductPage";
  * invalidation seam. Nothing here reads a cookie or a request header, so no response carries a
  * `Vary` and every body is byte-identical for every visitor (AC-22).
  *
+ * **Parameters** (spec 008 §14 A13, A15 (a); TASK-146, TASK-187). This file reads no query
+ * string, so the route stays prebuilt and the router's `dynamicParams = false` gate holds. A country
+ * category or country occasion request that carries a listing key (`?page=`, `?sort=`, a facet) is
+ * rewritten by `next.config.ts` to the depth-4 parameter route
+ * (`src/app/[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx`), and both files render the
+ * two listing types through `../../../country-listing.tsx` with a `ListingRequest`, this one with
+ * `listingRequest()` of nothing (the bare URL), so the two cannot drift.
+ *
  * **Head.** The robots directive is `listingView()`'s own verdict, from `pageIndexability()`
  * through `listingIndexability()`: the page and its head cannot disagree about whether it is
  * indexable, and no robots literal is written here (AC-14). The canonical is `canonicalFor()`'s,
@@ -108,11 +117,6 @@ import { ProductPage } from "@/modules/ui/product/ProductPage";
  */
 export const revalidate = 3600;
 export const dynamicParams = true;
-
-/** The build's date, as the first day of the date window (spec 007 AC-22's rule). */
-function windowStart(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 /**
  * Next calls `generateStaticParams` more than once per build (the collection pass and the render
@@ -150,9 +154,6 @@ type Depth4Match = Extract<
   { kind: "countryCategory" | "countryOccasion" | "product" }
 >;
 
-/** The two listing resolutions of this depth. */
-type ListingMatch = Exclude<Depth4Match, { kind: "product" }>;
-
 /** The product resolution of this depth. */
 type ProductMatch = Extract<Depth4Match, { kind: "product" }>;
 
@@ -162,36 +163,6 @@ function depth4(match: LocalePathResolution): Depth4Match | undefined {
     match.kind === "product"
     ? match
     : undefined;
-}
-
-/** The entity slug **as the URL spells it** — the one field the two branches name differently. */
-function entitySlugOf(match: ListingMatch): string {
-  return match.kind === "countryCategory"
-    ? match.categorySlug
-    : match.occasionSlug;
-}
-
-/**
- * The one view model, asked for once per render and once per head (spec 008 §5.2's single-source
- * rule). `listingView()` answering `undefined` after the resolver said the page exists can only
- * mean the data moved under a prebuilt page, and the honest answer to that is the 404 the next
- * build would give anyway.
- */
-async function viewFor(
-  match: ListingMatch,
-  options: Parameters<typeof listingView>[1],
-): Promise<ListingView> {
-  const view = await listingView(
-    {
-      locale: match.locale,
-      pageType: match.kind,
-      country: match.countrySlug,
-      entity: entitySlugOf(match),
-    },
-    options,
-  );
-  if (view === undefined) notFound();
-  return view;
 }
 
 /**
@@ -259,61 +230,7 @@ export async function generateMetadata({
     });
   }
 
-  const view = await viewFor(match, { from: windowStart(), deployment });
-
-  // `countries.ts` holds the country's name as a **dotted message key**, and next-intl types
-  // `t()` against the catalogue's literal key union: a key read from a registry is not a literal,
-  // so the cast is made here with the reason written down (the `modules/*/ui/labels.ts`
-  // precedent). `pnpm i18n:check` proves the key exists. The entity's name needs no cast — it is
-  // the founder's authored copy, carried on the view model.
-  const t = await getTranslations({ locale: match.locale });
-  const country = (t as unknown as (key: string) => string)(
-    view.country?.nameKey ?? "",
-  );
-  const entity = view.entity?.name ?? "";
-  const shop = await getTranslations({
-    locale: match.locale,
-    namespace: "shop",
-  });
-
-  const cluster = deployment.siteUrl.startsWith("https:")
-    ? alternatesFor(
-        {
-          pathByLocale: await listingAlternatePaths({
-            pageType: match.kind,
-            locale: match.locale,
-            countryIso: match.iso2,
-            ...(view.entity === undefined
-              ? {}
-              : { entityKey: view.entity.key }),
-          }),
-        },
-        { baseUrl: deployment.siteUrl },
-      ).find((page) => page.url.endsWith(view.path))?.alternates
-    : undefined;
-
-  const copy =
-    match.kind === "countryCategory"
-      ? {
-          title: shop("category.seoTitle", { country, entity }),
-          description: shop("category.seoDescription", { country, entity }),
-        }
-      : {
-          title: shop("occasion.seoTitle", { occasion: entity, country }),
-          description: shop("occasion.seoDescription", {
-            occasion: entity,
-            country,
-          }),
-        };
-
-  return pageMetadata({
-    ...copy,
-    directive: view.directive,
-    canonical: canonicalFor(match.locale, view.path, {
-      baseUrl: deployment.siteUrl,
-    }),
-    ...(cluster === undefined ? {} : { alternates: cluster }),
-  });
+  return countryListingMetadata(match, listingRequest());
 }
 
 export default async function LocaleGrandchildRoute({
@@ -361,31 +278,5 @@ export default async function LocaleGrandchildRoute({
     );
   }
 
-  const view = await viewFor(match, {
-    from: windowStart(),
-    productLinks: isPublished("product"),
-  });
-  setRequestLocale(match.locale);
-  const alternates = (
-    <LanguageAlternates
-      paths={await listingAlternatePaths({
-        pageType: match.kind,
-        locale: match.locale,
-        countryIso: match.iso2,
-        ...(view.entity === undefined ? {} : { entityKey: view.entity.key }),
-      })}
-    />
-  );
-
-  return match.kind === "countryCategory" ? (
-    <>
-      <CountryCategoryPage view={view} />
-      {alternates}
-    </>
-  ) : (
-    <>
-      <CountryOccasionPage view={view} />
-      {alternates}
-    </>
-  );
+  return <CountryListing match={match} request={listingRequest()} />;
 }

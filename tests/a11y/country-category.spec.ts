@@ -44,3 +44,24 @@ for (const path of AUDITED) {
     expect(await audit(page), path).toEqual([]);
   });
 }
+
+/**
+ * The round-2 phone list and page 2 (spec 008 §14 A15, A16; spec 004 AC-49; TASK-187, T-36): the
+ * chip scroller, the compact pager, the once-per-grid label and the disclosure under the grid, and
+ * a page with no hero, audited at the sizes they exist at.
+ */
+for (const [path, size] of [
+  ["/en-gb/poland/flowers/roses", { width: 390, height: 844 }],
+  ["/en-gb/poland/flowers/roses?page=2", { width: 1440, height: 900 }],
+  ["/en-gb/poland/occasions/mothers-day", { width: 390, height: 844 }],
+  ["/en-gb/poland/flowers", { width: 390, height: 844 }],
+] as const) {
+  test(`${path} at ${String(size.width)} has no serious or critical violations`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    const response = await page.goto(path);
+    expect(response?.status(), path).toBe(200);
+    expect(await audit(page), path).toEqual([]);
+  });
+}

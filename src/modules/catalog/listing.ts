@@ -68,6 +68,11 @@ import {
   isCountryIso2,
   isGuidePublished,
 } from "@/config/countries";
+import {
+  LISTING_REGISTERS,
+  categoryPresentation,
+  occasionPresentation,
+} from "@/config/catalogue/listing-presentation";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
 import {
   type ListingLinkPageType,
@@ -230,7 +235,12 @@ export const ListingCountrySchema = z
     nameKey: z.string().min(1),
     /** The corridor guide, where one is published — plain text where it is not (§13 Q1). */
     corridorPath: z.string().min(1).optional(),
-    state: z.string().min(1),
+    /**
+     * Spec 007's `corridorState(iso2)`, the predicate the corridor page uses (spec 004 §14 A23
+     * **R7**; TASK-187). The country pages' state line reads this field and nothing else, and no
+     * listing module reads `corridorView()` (spec 008 §14 A9).
+     */
+    state: z.enum(["guide", "live"]),
   })
   .strict();
 
@@ -257,6 +267,12 @@ export const ListingEntitySchema = z
     seoTitle: z.string().min(1).optional(),
     seoDescription: z.string().min(1).optional(),
     reviewed: z.boolean(),
+    /**
+     * The entity's register (spec 004 §14 A23 **R1**), from `listing-presentation.ts` and never
+     * chosen by a component: the country occasion band and the hub bands render it as
+     * `data-register` (AC-33; TASK-187).
+     */
+    register: z.enum(LISTING_REGISTERS),
   })
   .strict();
 
@@ -1094,6 +1110,8 @@ export async function categoryTileView(
     name: copyRow("category", category.key, locale)?.name ?? category.key,
     href: pathOf(locale, "countryCategory", corridorSlug(iso2, locale), slug),
     count: products.length,
+    // The tile's noun (spec 008 §14 A15 (b)): the registry's, never the component's.
+    countNoun: categoryPresentation(category.key).countNoun,
     fromPrice: lowest.displayPrice,
   });
 }
@@ -1496,6 +1514,10 @@ export async function listingView(
               ? {}
               : { seoDescription: entityRow.seoDescription }),
             reviewed: entityRow.reviewed,
+            register:
+              kind === "category"
+                ? categoryPresentation(entityKey).register
+                : occasionPresentation(entityKey).register,
           },
         }),
     h1: {

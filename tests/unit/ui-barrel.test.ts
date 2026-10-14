@@ -233,6 +233,10 @@ describe("src/modules/ui barrel", () => {
         "ListingEmpty",
         "ListingGrid",
         "ListingSortSchema",
+        // TASK-187 (spec 004 A23 R8, A10): the sort form on its own, placed under the grid as
+        // "Change the order" on the shop root and the country category. A Server Component GET
+        // form over `LISTING_SORTS`, not a generic form control.
+        "ListingSortForm",
         "ListingToolbar",
         "MediaSlotSchema",
         "PRICE_LABEL_KEYS",

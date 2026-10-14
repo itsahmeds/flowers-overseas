@@ -50,6 +50,16 @@ export interface ListingGridProps {
    * so the list holds what it says it holds; the grid's accessible name still counts cards.
    */
   readonly interlude?: ReactNode;
+  /** Where each card's "Example arrangement" label shows (`ProductCard`'s `provenance`). */
+  readonly provenance?: "card" | "md";
+  /**
+   * The country occasion's lead (spec 008 §14 A16 (b)): the first card is drawn as the lead
+   * figure from `md` up, and `leadItemClassName` places its `<li>` there (the page owns the
+   * geometry, because it owns the band the figure sits in). It stays the first `<li>` of this
+   * list at every width, so the product is one element and its URL appears once.
+   */
+  readonly lead?: boolean;
+  readonly leadItemClassName?: string;
 }
 
 /** The card after which the interlude band sits (the artboard: after the eighth). */
@@ -62,6 +72,9 @@ export function ListingGrid({
   headingLevel = "h2",
   manifest,
   interlude,
+  provenance = "card",
+  lead = false,
+  leadItemClassName,
 }: ListingGridProps): ReactElement | null {
   const t = useTranslations("shop");
 
@@ -82,12 +95,24 @@ export function ListingGrid({
       data-fo-listing-grid={cards.length}
     >
       {cards.map((card, index) => [
-        <li key={card.productId}>
+        <li
+          key={card.productId}
+          {...(lead && index === 0
+            ? {
+                "data-fo-lead-item": true,
+                ...(leadItemClassName === undefined
+                  ? {}
+                  : { className: leadItemClassName }),
+              }
+            : {})}
+        >
           <ProductCard
             card={card}
             headingLevel={headingLevel}
+            lead={lead && index === 0}
             locale={locale}
             priority={priority && index === 0}
+            provenance={provenance}
             {...(manifest === undefined ? {} : { manifest })}
           />
         </li>,

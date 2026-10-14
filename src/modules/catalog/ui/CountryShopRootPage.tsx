@@ -51,7 +51,7 @@ import {
   Container,
   ListingEmpty,
   ListingGrid,
-  ListingToolbar,
+  ListingSortForm,
   Pagination,
   Text,
   VisuallyHidden,
@@ -62,11 +62,17 @@ import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
-  ListingIntro,
+  CountryListingHead,
+  CountryListingResults,
+  GridProvenance,
+  ListingPageHead,
   ListingProse,
+  ListingStateLine,
   ListingSubsection,
   ListingTiles,
   OccasionDatesTable,
+  PhoneChipRow,
+  STATE_KEYS,
 } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
@@ -114,72 +120,108 @@ export function CountryShopRootPage({
           </div>
         ) : (
           <>
-            {/* v2 `.shop-intro`: the one `<h1>` with the destination in the poppy italic, the
-                lede, and the demo sentence as the page's note card — the whole of the Phase 0
-                state, with no disabled basket button and no purchase affordance at all. */}
-            <ListingIntro
-              emphasis={country}
-              heading={shop("h1.countryShopRoot", { country })}
-              lede={shop("root.lede", { country })}
-              eyebrow={shop("listing.eyebrow", { country })}
-              note={shop("root.demoNotice")}
-              noteLabel={shop("note.label")}
-              noteMark={shop("note.mark")}
-            />
+            {/* Round 2 (spec 004 §14 A24 clause 2 (a)): the H1, the state line under it and the
+                shop's note as a flat P.S. on the end side. No separate lead figure: the lead is
+                `items[0]`, the grid's first card. Page 2 and later render no hero (A23 clause 5):
+                the H1 alone, then the results. */}
+            {view.page === 1 ? (
+              <CountryListingHead
+                emphasis={country}
+                heading={shop("h1.countryShopRoot", { country })}
+                note={shop("root.demoNotice")}
+                noteLabel={shop("note.label")}
+                noteMark={shop("note.mark")}
+                stateLine={
+                  view.country === undefined ? null : (
+                    <ListingStateLine
+                      state={view.country.state}
+                      text={t(STATE_KEYS[view.country.state])}
+                    />
+                  )
+                }
+              />
+            ) : (
+              <ListingPageHead
+                emphasis={country}
+                heading={shop("h1.countryShopRoot", { country })}
+              />
+            )}
 
-            {/* Products before prose (§5.3 row 1, `docs/design/README.md` §Density). The grid's
-                heading names the section for a screen reader; the artboards draw none. */}
+            {view.page === 1 ? (
+              <PhoneChipRow
+                chips={view.tiles.map((tile) => ({
+                  key: tile.key,
+                  name: tile.name,
+                  href: tile.href,
+                }))}
+                label={shop("root.tilesHeading")}
+              />
+            ) : null}
+
+            {/* Products before prose (§5.3 row 1). The grid's heading names the section for a
+                screen reader; the artboards draw none. */}
             <section aria-labelledby="shop-grid-heading" data-fo-shop-listing>
               <VisuallyHidden as="h2" id="shop-grid-heading">
                 {shop("root.listingHeading", { country })}
               </VisuallyHidden>
-              {/* The toolbar carries the count, the ranking disclosure and the sort form — one
-                  `<form method="get">` with a visible label and a submit button, so sorting works
-                  with JavaScript off and from the keyboard alone and adds zero client bytes (§2
-                  "Sort", AC-9, TASK-114). The order it shows is the order the server rendered:
-                  `view.sort` comes from `listingRequest()`, never from the browser. */}
-              <ListingToolbar
-                page={view.page}
-                pageCount={view.pageCount}
-                productCount={view.resultCount}
-                sort={view.sort}
+              <CountryListingResults
+                count={{
+                  phone: shop("toolbar.count", { count: view.resultCount }),
+                  desktop:
+                    view.pageCount > 1
+                      ? shop("toolbar.summary", {
+                          count: view.resultCount,
+                          page: view.page,
+                          pageCount: view.pageCount,
+                        })
+                      : shop("toolbar.count", { count: view.resultCount }),
+                }}
+                disclosure={shop("toolbar.disclosure")}
+                gridLabel={<GridProvenance cards={view.items} locale={code} />}
+                grid={
+                  <ListingGrid
+                    cards={view.items}
+                    locale={code}
+                    priority
+                    provenance="md"
+                  />
+                }
+                fx={
+                  view.fxFallback ? (
+                    /* Stale FX (spec 005 §14 A3): one sentence for the page, because one rate
+                       priced all of it. */
+                    <div data-fo-fx-fallback>
+                      <Text measure size="sm" tone="muted">
+                        {catalog("availability.fxUnavailable")}
+                      </Text>
+                    </div>
+                  ) : undefined
+                }
+                pager={
+                  /* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL (AC-10).
+                     The sort is not carried into these hrefs: a sorted URL is `noindex` and may
+                     never be a crawlable link (AC-15). */
+                  <Pagination
+                    baseHref={view.path}
+                    locale={code}
+                    page={view.page}
+                    pageCount={view.pageCount}
+                  />
+                }
+                /* The sort form under the grid, "Change the order" (the round-2 shop artboard);
+                   still a `<form method="get">` that works with JavaScript off (AC-9). */
+                sortForm={<ListingSortForm sort={view.sort} />}
+                sortFormPlacement="below"
               />
-              <div className="mt-[32px]">
-                <ListingGrid
-                  cards={view.items}
-                  interlude={
-                    <p className="display-em text-accent-strong text-[26px] leading-[1.15] md:text-xl">
-                      {shop("cardNote.heading")}
-                    </p>
-                  }
-                  locale={code}
-                  priority
-                />
-              </div>
-              {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
-                  destination's own authored price, so the page says which currency it is
-                  quoting. One sentence for the page, because one rate priced all of it. */}
-              {view.fxFallback ? (
-                <div className="mt-[32px]" data-fo-fx-fallback>
-                  <Text measure size="sm" tone="muted">
-                    {catalog("availability.fxUnavailable")}
-                  </Text>
-                </div>
-              ) : null}
-              {/* Real `<a>`s in a labelled `<nav>`, page 1 linking to the bare URL, nothing at
-                  all on a single-page listing (AC-10). The sort is deliberately **not** carried
-                  into these hrefs: a sorted URL is `noindex` and may never be a crawlable link
-                  (AC-15), so paging out of a sorted view returns the reader to the order the
-                  page canonicals to. */}
-              <div className="mt-xl">
-                <Pagination
-                  baseHref={view.path}
-                  locale={code}
-                  page={view.page}
-                  pageCount={view.pageCount}
-                />
-              </div>
             </section>
+
+            {/* The lede, directly under the first screen (A24 clause 2: a lede longer than two
+                lines moves there). */}
+            {view.page === 1 ? (
+              <div className="pt-[40px] md:pt-[48px]" data-fo-shop-lede>
+                <ListingProse>{shop("root.lede", { country })}</ListingProse>
+              </div>
+            ) : null}
 
             {view.tiles.length === 0 ? null : (
               <ListingSubsection
@@ -191,7 +233,12 @@ export function CountryShopRootPage({
               >
                 <ListingTiles
                   countLabel={(tile) =>
-                    shop("root.tileCount", { count: tile.count, country })
+                    // The tile's own noun (spec 008 §14 A15 (b), AC-30), from the registry.
+                    shop("root.tileCount", {
+                      count: tile.count,
+                      noun: tile.countNoun,
+                      country,
+                    })
                   }
                   locale={code}
                   tiles={view.tiles}

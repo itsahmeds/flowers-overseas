@@ -148,13 +148,19 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(trail).toContain("Roses");
   });
 
-  it("renders no toolbar and no pagination control (§14 A8 (c))", () => {
-    expect(html).not.toMatch(/<form/iu);
-    expect(html).not.toMatch(/<select/iu);
-    expect(html).not.toMatch(/<button/iu);
-    expect(html).not.toContain("Pages of products");
-    // Nothing on the page links to a parameterised URL (AC-15's half this task can hold).
-    expect(html).not.toMatch(/href="[^"]*[?&](?:page|sort)=/iu);
+  it("renders the sort form under the grid and a real pager (spec 008 §14 A15 (a), (d); TASK-187)", () => {
+    // R8: one `<form method="get">`, after the grid, labelled "Change the order" (A10).
+    expect(html.match(/<form/giu) ?? []).toHaveLength(1);
+    const grid = html.indexOf("data-fo-listing-grid=");
+    const form = html.indexOf("<form");
+    expect(grid).toBeGreaterThan(-1);
+    expect(form).toBeGreaterThan(grid);
+    expect(text).toContain("Change the order");
+    // The pager links only `?page=N`; no sorted URL is ever a crawlable link (AC-15).
+    expect(html).not.toMatch(/href="[^"]*[?&]sort=/iu);
+    expect(roses.pageCount).toBe(2);
+    expect(html).toContain("Pages of products");
+    expect(html).toContain(`href="${roses.path}?page=2"`);
   });
 
   it("omits the delivery-facts panel the artboard draws (§14 A9)", () => {

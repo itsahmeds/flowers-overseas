@@ -702,7 +702,8 @@
       "summary": "{count, plural, one {# bouquet} other {# bouquets}} · page {page} of {pageCount}",
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
       "sortLabel": "Sort by",
-      "submit": "Sort"
+      "submit": "Sort",
+      "reorderLabel": "Change the order"
     },
     "sort": {
       "default": "Our order",
@@ -714,7 +715,8 @@
       "previous": "Previous",
       "next": "Next",
       "page": "Page {page}",
-      "titleSuffix": "{title} · Page {page}"
+      "titleSuffix": "{title} · Page {page}",
+      "pageOf": "Page {page} of {total}"
     },
     "empty": {
       "heading": "Nothing we can deliver in {country} yet",
@@ -739,7 +741,7 @@
       "demoNotice": "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
       "listingHeading": "Everything we can make for {country}",
       "tilesHeading": "By what it is",
-      "tileCount": "{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}",
+      "tileCount": "{noun, select, plant {{count, plural, one {# plant we can make for {country}} other {# plants we can make for {country}}}} arrangement {{count, plural, one {# arrangement we can make for {country}} other {# arrangements we can make for {country}}}} other {{count, plural, one {# bouquet we can make for {country}} other {# bouquets we can make for {country}}}}}",
       "occasionsEyebrow": "Coming up in {country}",
       "occasionsHeading": "{country}'s own dates",
       "occasionsCaption": "The next twelve months in {country}, computed from the destination's own rules",

@@ -26,8 +26,10 @@ import {
   PARAMETER_ROUTE_HEADER_SOURCE,
   PARAMETER_ROUTE_ROBOTS,
   PARAMETER_ROUTE_SEGMENT,
+  PARAMETERISED_HUB_ROBOTS,
   listingRewriteRules,
   parameterRouteHeaderRules,
+  parameterisedHubHeaderRules,
 } from "../../src/lib/listing-rewrites";
 import {
   listingLocales,
@@ -96,35 +98,53 @@ describe("the listing rewrite (TASK-170)", () => {
     }
   });
 
-  it("is one rule per routed listing locale and key, carrying the visitor's own spelling", () => {
+  it("is three rules per routed listing locale and key, carrying the visitor's own spelling", () => {
     const rules = listingRewriteRules();
     expect(rules).toHaveLength(
-      LISTING_REWRITE_LOCALES.length * LISTING_REWRITE_KEYS.length,
+      3 * LISTING_REWRITE_LOCALES.length * LISTING_REWRITE_KEYS.length,
     );
     for (const config of LOCALES.filter((locale) =>
       LISTING_REWRITE_LOCALES.includes(locale.code),
     )) {
       const shop = config.pathSegments.shopCategory;
+      const occasions = config.pathSegments.occasions;
       const mine = rules.filter((rule) =>
         rule.source.startsWith(`/:locale(${config.code})/`),
       );
-      expect(
-        mine.map((rule) => rule.has[0].key),
-        config.code,
-      ).toStrictEqual([...LISTING_REWRITE_KEYS]);
-      for (const rule of mine) {
-        expect(rule.source).toBe(
+      // The three shapes (spec 008 §14 A13; A15 (a) adds the two depth-4 ones), each with its
+      // destination, each keyed on every listing key.
+      const shapes = [
+        [
           `/:locale(${config.code})/:country/:shop(${shop})`,
-        );
-        // The captured values, never the registry's literals: the destination is what the
-        // visitor typed, so the parameter route's strict resolver judges the visitor's casing.
-        expect(rule.destination).toBe(
           `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:shop`,
-        );
-        expect(rule.has).toStrictEqual([
-          { type: "query", key: rule.has[0].key },
-        ]);
+        ],
+        [
+          `/:locale(${config.code})/:country/:shop(${shop})/:entity`,
+          `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:shop/:entity`,
+        ],
+        [
+          `/:locale(${config.code})/:country/:occ(${occasions})/:entity`,
+          `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:occ/:entity`,
+        ],
+      ] as const;
+      for (const [source, destination] of shapes) {
+        const ofShape = mine.filter((rule) => rule.source === source);
+        expect(
+          ofShape.map((rule) => rule.has[0].key),
+          `${config.code} ${source}`,
+        ).toStrictEqual([...LISTING_REWRITE_KEYS]);
+        for (const rule of ofShape) {
+          // The captured values, never the registry's literals: the destination is what the
+          // visitor typed, so the parameter route's strict resolver judges the visitor's casing.
+          expect(rule.destination).toBe(destination);
+          expect(rule.has).toStrictEqual([
+            { type: "query", key: rule.has[0].key },
+          ]);
+        }
       }
+      expect(mine, config.code).toHaveLength(
+        shapes.length * LISTING_REWRITE_KEYS.length,
+      );
     }
     // Fresh objects per call, like the header rules.
     expect(listingRewriteRules()[0]).not.toBe(rules[0]);
@@ -166,31 +186,58 @@ describe("the listing rewrite (TASK-170)", () => {
     }
     expect(rewrite("/en/poland/flowers")).toBe("/en/_query/poland/flowers");
     expect(rewrite("/de/polen/blumen")).toBe("/de/_query/polen/blumen");
-    // The corridor, the hubs and depth 4 never leave their prebuilt route, whatever the query.
+    // Depth 4 (spec 008 §14 A15 (a)): the country category and the country occasion.
+    expect(rewrite("/en-gb/poland/flowers/roses")).toBe(
+      "/en-gb/_query/poland/flowers/roses",
+    );
+    expect(rewrite("/en/poland/occasions/mothers-day")).toBe(
+      "/en/_query/poland/occasions/mothers-day",
+    );
+    expect(rewrite("/pl/polska/okazje/dzien-matki")).toBe(
+      "/pl/_query/polska/okazje/dzien-matki",
+    );
+    // The corridor, the hubs and the product page never leave their prebuilt route, whatever
+    // the query: a product URL's `?tier=`/`?date=` are TASK-128's.
     for (const path of [
       "/en/send-flowers-to/poland",
       "/en/flowers/roses",
       "/en/occasions/mothers-day",
-      "/en/poland/flowers/roses",
       "/en/poland/product/amber-hour",
+      "/de/polen/produkt/amber-hour",
+      "/en/poland/flowers/roses/extra",
       "/fr/poland/flowers",
+      "/fr/poland/flowers/roses",
     ]) {
       expect(rewrite(path), path).toBeUndefined();
     }
+  });
+
+  it("sends every depth-4 listing that exists to a destination the depth-4 parameter route resolves", async () => {
+    // The served half of A15 (a): what the rewrite captures is what `resolveLocalePath()` reads.
+    for (const [path, kind] of [
+      ["/en-gb/poland/flowers/roses", "countryCategory"],
+      ["/en/poland/occasions/mothers-day", "countryOccasion"],
+    ] as const) {
+      const [, locale = "", , ...segments] = (rewrite(path) ?? "").split("/");
+      expect((await resolveLocalePath(locale, segments)).kind, path).toBe(kind);
+    }
+    // An uppercase shop segment is rewritten and refused, as at depth 3.
+    const [, locale = "", , ...segments] = (
+      rewrite("/en/poland/FLOWERS/roses") ?? ""
+    ).split("/");
+    expect((await resolveLocalePath(locale, segments)).kind).toBe("notFound");
   });
 
   it("points at a route that exists, under a segment no slug can take", () => {
     // `%5F` is how Next spells a leading underscore in a folder name; a slug never starts with
     // one, so the internal segment cannot shadow a page at any depth.
     expect(PARAMETER_ROUTE_SEGMENT).toBe("_query");
-    expect(
-      existsSync(
-        resolve(
-          import.meta.dirname,
-          "../../src/app/[locale]/%5Fquery/[segment]/[child]/page.tsx",
-        ),
-      ),
-    ).toBe(true);
+    for (const route of [
+      "../../src/app/[locale]/%5Fquery/[segment]/[child]/page.tsx",
+      "../../src/app/[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx",
+    ]) {
+      expect(existsSync(resolve(import.meta.dirname, route)), route).toBe(true);
+    }
   });
 
   it("is mounted by `next.config.ts` as `beforeFiles` (asserted from source)", () => {
@@ -234,7 +281,10 @@ describe("the rewrite's locales are the prebuilt shop roots' locales (`/break 14
     const arXB = rewrites
       .listingRewriteRules()
       .filter((rule) => rule.source.startsWith("/:locale(ar-XB)/"));
+    // Three shapes (the shop root and the two depth-4 listings), each keyed on every key.
     expect(arXB.map((rule) => rule.has[0].key)).toStrictEqual([
+      ...rewrites.LISTING_REWRITE_KEYS,
+      ...rewrites.LISTING_REWRITE_KEYS,
       ...rewrites.LISTING_REWRITE_KEYS,
     ]);
   });
@@ -307,5 +357,81 @@ describe("`listingRequest().keys`: what the parameter route's guard reads (TASK-
     expect(
       listingRequest(new URLSearchParams("gclid=1&page=3")).keys,
     ).toStrictEqual(["gclid", "page"]);
+  });
+});
+
+describe("the parameterised hub's robots header (TASK-146, TASK-114 E-7)", () => {
+  /** The header value Next would serve for `path` with `key` in its query, or `undefined`. */
+  const hubHeader = (path: string, key: string): string | undefined => {
+    for (const rule of parameterisedHubHeaderRules()) {
+      if (rule.has[0].key !== key) continue;
+      if (nextMatch(rule.source, path) !== false) return rule.headers[0]?.value;
+    }
+    return undefined;
+  };
+
+  it("says `noindex, follow`, distinguishable from the environment's and the parameter route's", () => {
+    expect(PARAMETERISED_HUB_ROBOTS).toBe("noindex, follow");
+    expect(PARAMETERISED_HUB_ROBOTS).not.toBe(PARAMETER_ROUTE_ROBOTS);
+    for (const rule of parameterisedHubHeaderRules()) {
+      expect(rule.headers).toStrictEqual([
+        { key: "X-Robots-Tag", value: "noindex, follow" },
+      ]);
+    }
+    expect(parameterisedHubHeaderRules()[0]).not.toBe(
+      parameterisedHubHeaderRules()[0],
+    );
+  });
+
+  it("covers both hub shapes, in every routed locale, for every listing key", () => {
+    for (const config of LOCALES.filter((locale) =>
+      LISTING_REWRITE_LOCALES.includes(locale.code),
+    )) {
+      for (const segment of [
+        config.pathSegments.shopCategory,
+        config.pathSegments.occasions,
+      ]) {
+        for (const key of LISTING_REWRITE_KEYS) {
+          expect(
+            hubHeader(`/${config.code}/${segment}/some-entity`, key),
+            `${config.code} ${segment} ${key}`,
+          ).toBe("noindex, follow");
+        }
+      }
+    }
+    expect(hubHeader("/en/flowers/roses", "colour")).toBe("noindex, follow");
+    expect(hubHeader("/de/anlaesse/muttertag", "sort")).toBe("noindex, follow");
+  });
+
+  it("names no other page type, and no parameter outside the listing keys", () => {
+    // The country pages answer their own robots through the parameter route; the corridor, the
+    // product page and a campaign id are not this rule's.
+    for (const path of [
+      "/en/poland/flowers",
+      "/en/poland/flowers/roses",
+      "/en/poland/occasions/birthday",
+      "/en/send-flowers-to/poland",
+      "/en/poland/product/amber-hour",
+      "/en/occasions",
+      "/en",
+    ]) {
+      for (const key of LISTING_REWRITE_KEYS) {
+        expect(hubHeader(path, key), `${path} ${key}`).toBeUndefined();
+      }
+    }
+    expect(hubHeader("/en/flowers/roses", "utm_source")).toBeUndefined();
+    // A hub address is never rewritten: it keeps its prebuilt document (E-7).
+    expect(rewrite("/en/flowers/roses")).toBeUndefined();
+  });
+
+  it("is mounted by `next.config.ts` after the environment's noindex rule (asserted from source)", () => {
+    const source = readFileSync(
+      resolve(import.meta.dirname, "../../next.config.ts"),
+      "utf8",
+    );
+    const environment = source.indexOf("...noindexHeaderRules(environment)");
+    const mine = source.indexOf("...parameterisedHubHeaderRules()");
+    expect(environment).toBeGreaterThan(-1);
+    expect(mine).toBeGreaterThan(environment);
   });
 });

@@ -42,10 +42,13 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { sortBy } from "@/modules/i18n";
 import {
   CategoryChipRow,
   Container,
   ListingGrid,
+  ListingSortForm,
+  Pagination,
   Text,
   VisuallyHidden,
   assertSinglePriority,
@@ -55,10 +58,15 @@ import type { ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
-  ListingCount,
-  ListingIntro,
+  CountryListingHead,
+  CountryListingResults,
+  GridProvenance,
+  ListingPageHead,
   ListingProse,
+  ListingStateLine,
   ListingSubsection,
+  PhoneChipRow,
+  STATE_KEYS,
 } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
@@ -95,51 +103,111 @@ export function CountryCategoryPage({
       <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} />
 
-        {/* v2 `.shop-intro`: the one `<h1>` with the destination in the poppy italic, the
-            counted lede, and the demo sentence as the note card — the whole of the Phase 0
-            state, with no disabled basket button and no purchase affordance at all. */}
-        <ListingIntro
-          emphasis={country}
-          heading={shop("h1.countryCategory", { country, entity })}
-          lede={shop("category.lede", { count: view.resultCount, country })}
-          eyebrow={shop("listing.eyebrow", { country })}
-          note={shop("root.demoNotice")}
-          noteLabel={shop("note.label")}
-          noteMark={shop("note.mark")}
-        />
+        {/* Round 2 (spec 004 §14 A24 clause 2 (a)): the H1, the state line and the shop's note.
+            No separate lead figure: `items[0]` is the grid's first card. Page 2 and later render
+            no hero (A23 clause 5). */}
+        {view.page === 1 ? (
+          <CountryListingHead
+            emphasis={country}
+            heading={shop("h1.countryCategory", { country, entity })}
+            note={shop("root.demoNotice")}
+            noteLabel={shop("note.label")}
+            noteMark={shop("note.mark")}
+            stateLine={
+              view.country === undefined ? null : (
+                <ListingStateLine
+                  state={view.country.state}
+                  text={t(STATE_KEYS[view.country.state])}
+                />
+              )
+            }
+          />
+        ) : (
+          <ListingPageHead
+            emphasis={country}
+            heading={shop("h1.countryCategory", { country, entity })}
+          />
+        )}
+
+        {/* The phone's one chip row: the sibling categories, the current one marked (spec 008
+            §14 A16 (e), spec 004 AC-49). From `md` up the row sits under the grid. */}
+        {view.page === 1 ? (
+          <PhoneChipRow
+            chips={sortBy(view.links.chips, code, (chip) => chip.name)}
+            label={shop("category.siblingsHeading", { country })}
+          />
+        ) : null}
 
         <section aria-labelledby="category-grid-heading" data-fo-shop-listing>
+          {/* The grid's heading repeats the H1 word for word, so it is visually hidden and stays
+              the list's accessible name (spec 008 §14 A15 (d), AC-32). */}
           <VisuallyHidden as="h2" id="category-grid-heading">
             {shop("h1.countryCategory", { country, entity })}
           </VisuallyHidden>
-          {/* The toolbar's count and §2 "Sort"'s disclosure: the default order is labelled for
-              what it is and never called a ranking by sales. No sort form here — this page type
-              has no parameter route yet, and a control that cannot sort is a dead control
-              (spec 004 §14 A20). */}
-          <ListingCount
-            count={shop("toolbar.count", { count: view.resultCount })}
+          {/* R8 (spec 008 §14 A15 (d), A16 (c)): the count and the ranking disclosure above the
+              grid from `md` up, the disclosure after the grid on a phone, both visible; the sort
+              form under the grid, "Change the order" (A10). */}
+          <CountryListingResults
+            count={{
+              phone: shop("toolbar.count", { count: view.resultCount }),
+              desktop:
+                view.pageCount > 1
+                  ? shop("toolbar.summary", {
+                      count: view.resultCount,
+                      page: view.page,
+                      pageCount: view.pageCount,
+                    })
+                  : shop("toolbar.count", { count: view.resultCount }),
+            }}
             disclosure={shop("toolbar.disclosure")}
+            gridLabel={<GridProvenance cards={view.items} locale={code} />}
+            grid={
+              <ListingGrid
+                cards={view.items}
+                locale={code}
+                priority
+                provenance="md"
+              />
+            }
+            fx={
+              view.fxFallback ? (
+                <div data-fo-fx-fallback>
+                  <Text measure size="sm" tone="muted">
+                    {catalog("availability.fxUnavailable")}
+                  </Text>
+                </div>
+              ) : undefined
+            }
+            pager={
+              <Pagination
+                baseHref={view.path}
+                locale={code}
+                page={view.page}
+                pageCount={view.pageCount}
+              />
+            }
+            sortForm={<ListingSortForm sort={view.sort} />}
+            sortFormPlacement="below"
           />
-          <div className="mt-[32px]">
-            <ListingGrid cards={view.items} locale={code} priority />
-          </div>
-          {/* Stale FX (spec 005 §14 A3, §5.3's state): the projection fell back to the
-              destination's own authored price, so the page says which currency it quotes. One
-              sentence for the page, because one rate priced all of it. */}
-          {view.fxFallback ? (
-            <div className="mt-[32px]" data-fo-fx-fallback>
-              <Text measure size="sm" tone="muted">
-                {catalog("availability.fxUnavailable")}
-              </Text>
-            </div>
-          ) : null}
         </section>
 
-        {/* "Also for Poland": the other categories that clear the floor **for this destination**,
-            collated by `CategoryChipRow` in this locale's order, the current one marked and not a
-            link to the page the reader is already on. */}
+        {/* The lede, under the first screen (A24 clause 2). */}
+        {view.page === 1 ? (
+          <div className="pt-[40px] md:pt-[48px]" data-fo-shop-lede>
+            <ListingProse>
+              {shop("category.lede", { count: view.resultCount, country })}
+            </ListingProse>
+          </div>
+        ) : null}
+
+        {/* "Also for Poland" from `md` up: the other categories that clear the floor for this
+            destination, the current one marked and not a link. The phone shows its scroller above
+            the grid instead. */}
         {view.links.chips.length === 0 ? null : (
-          <div className="pt-[48px] md:pt-(--section-fluid)">
+          <div
+            className="pt-[48px] max-md:hidden md:pt-(--section-fluid)"
+            data-fo-desktop-chips
+          >
             <CategoryChipRow
               heading={shop("category.siblingsHeading", { country })}
               id="sibling-categories"

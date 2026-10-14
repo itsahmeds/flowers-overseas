@@ -162,19 +162,221 @@ One dated bullet per `/review`, newest last.
   country shop, country category and country occasion pages (T-43 "the primary action in view" at
   1280 × 800 and 1512 × 945) is an expected failure in TASK-186's suite; this task flips it, by
   deleting their `PENDING` rows in `tests/e2e/frame-laptop-band.spec.ts`.
+- 2026-10-14 (work order `wo-187-146`, orchestrator): (a) the Peace Lily (FO-PT-004) and Olive
+  Sapling (FO-PT-006) photographs are withdrawn: a listing whose `leadSku` is either renders the honest
+  placeholder, never a stale image. (b) Render `LanguageAlternates` on the three country types (owed
+  from the TASK-179 review). (c) TASK-188 depends on this task's `listing.ts` / `ListingViewSchema`
+  shape: `## Result` says what changed.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **E-1 (2026-10-14), for the designer through the orchestrator; not blocking.** A24 clause 2 (f)'s
+  pre-build check fails on `country-category-desktop`: it draws `items[0]` at double size (two
+  columns, two rows), so at 1440 × 900 that card's price sits at about y 1,155 and the whole first
+  row is not in view; it also puts the count and the disclosure under the grid, which R8 and AC-32
+  forbid. The brief's rule ("the artboard is tightened, not the rule") decides the build, so the page
+  is built in the round-2 shop root's form (four equal cards, count and disclosure above, the form
+  under the grid) and the difference is a dated row in `docs/design/README.md`. Open for the
+  designer: redraw the artboard to match.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-14: worktree `fo-wt-146` on `task/TASK-146-country-listings-depth4` from `8c4b7386`; rows `in_progress`; carry-forwards recorded.
+- 2026-10-14: depth-4 parameter route, rewrites, cache header and the parameterised-hub robots header (c2397b24).
+- 2026-10-14: registry `listing-presentation.ts`, `country.state` enum, `countNoun`, A9/A10/P3 copy, `formatDateParts`, the phone pager (d32a01f5).
+- 2026-10-14: the three country first screens rebuilt to round 2, the occasion's lead figure as `items[0]`'s own `<li>` (689dda11); unit cases (d1db2eec); e2e for depth-4 params, first screens, AC-45, R8, the phone label (a2e6b8bb, 69788b3f).
+- 2026-10-14 (finisher, `wo-214-finish`): rebased on `48837dca`, map regenerated; the barrel pins (9ea2e339); rendered in the build slot: first row in view at 1280 × 800, the disclosure hook, e2e fixes (6dfa995b); geometry mutations seen red; screenshots in `.claude/state/shots-187/`.
 
 ## Result
 
-_Pending._
+**FINISHED, in review (2026-10-14, finisher `wo-214-finish`).** PR 214, branch
+`task/TASK-146-country-listings-depth4`, one feature PR with TASK-146, rebased on `48837dca`. The
+implementer's partial result (`4e747f67`) is below as "Built" and "Tests written"; the finisher's
+part is "Finished" and "Mutations seen red".
+
+**Built.**
+- Depth-4 parameter policy (A15 (a)):
+  - two depth-4 sources per (locale, key) in `listingRewriteRules()`, and the same two in
+    `LISTING_CACHE_PATHS`;
+  - the mirrored route `src/app/[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx`;
+  - one shared head and body module, `src/app/[locale]/country-listing.tsx`. Both depth-4 route
+    files call it. The prebuilt route passes `listingRequest()` and reads no `searchParams`.
+- Registry `src/config/catalogue/listing-presentation.ts`:
+  - one row per category and per occasion of the dataset;
+  - R1 registers, the six `leadSku`s, and `countNoun` chosen by majority product type;
+  - the load fails, naming the key, on any bad row.
+- View model (for TASK-188):
+  - `ListingCountrySchema.state` is now `z.enum(["guide","live"])`;
+  - `ListingEntitySchema` gains a required `register`, from the registry;
+  - `CategoryTileViewSchema` gains `countNoun`.
+
+  No other field changed. `leadSku` is **not** on the view yet: TASK-188 reads the registry or adds
+  it.
+- Pages:
+  - round-2 heads: `CountryListingHead` and `ListingStateLine`, plus `ListingPageHead` for page 2
+    and later;
+  - one results block, `CountryListingResults`, placed with CSS grid so the phone's DOM order is
+    its reading order;
+  - on the phone: the chip scroller, the label once per grid, and the compact pager (P3);
+  - the sort form sits under the grid as "Change the order" (A10) on the shop root and the
+    category, and above the grid beside the count on the occasion;
+  - the occasion's lead figure is `items[0]`'s own first `<li>`, placed absolutely over the hero
+    from `md` up: one element, its URL once.
+
+  `formatDateParts` is added to `format.ts`.
+- Copy, all `reviewed: false` and in the founder queue:
+  - `shop.root.tileCount` (A9): an ICU select per noun, `pl` one/few/many/other;
+  - `shop.toolbar.reorderLabel` (A10);
+  - `shop.pagination.nextPage` and `shop.pagination.pageOf` (P3).
+
+  English strings outside the batch: only P3's "Next page" and "Page {page} of {total}".
+  `shop.cardNote.heading` is no longer rendered, because round 2 draws no band. It is marked
+  `retained: true`, and the orchestrator decides whether to delete it.
+- Carry-forwards:
+  - (a) Peace Lily and Olive Sapling render the placeholder (unit case);
+  - (b) TASK-119 already renders `LanguageAlternates` on all three types; kept;
+  - (c) the view-model changes are listed above.
+- Laptop band: the three country `PENDING` rows are deleted, and the occasion's lead photo is added
+  to `LEAD_PHOTO`.
+
+**Tests written.**
+- Unit, new:
+  - `tests/unit/listing-country-first-screen.test.tsx`: 18 cases (T-35, the unit half of T-49,
+    T-34, T-40, the placeholder case);
+  - `tests/unit/listing-presentation.test.ts`: 8 cases (spec 004 T-35);
+  - `tests/unit/i18n-format.test.ts`: one more case, for the date parts.
+- Unit, updated: the catalog shop, category and occasion page units, `ui-shop-view-model` and
+  `i18n-messages-schema`.
+- e2e, new:
+  - `tests/e2e/listing-first-screen.spec.ts`: T-49 at three sizes, T-50, T-36, T-06 A16, T-35;
+  - `tests/e2e/listing-depth4-params.spec.ts`: T-33, AC-15 at depth 4, the hub header.
+- a11y: 4 more cases.
+- e2e, updated: `listing-params`, `listing-v2` and the `country-*` specs.
+
+The new unit files pass (`--maxWorkers=2`).
+
+**Finished (the finisher).**
+- **Unit reds at hand-back.** The two barrel pins were real: `formatDateParts` and
+  `ListingSortForm` added to `i18n-barrel` and `ui-barrel` (9ea2e339; types are not runtime
+  exports). `catalog-listing` (the three sort cases), `catalog-listing-equivalents`, `url-pii`,
+  `product-route`, `catalog-product-routes` and `geo-delivery` all pass after the rebase at
+  `--maxWorkers=2` (63 and 386 cases): load timeouts, no code change.
+- **Rendered in the build slot** (`next build` + `next start` from `.env.example` placeholders,
+  as CI does). Fixed in code (6dfa995b):
+  - the shop root's and the category's first row was below the fold: price line at y 888 and
+    the price block at 926 at 1440 × 900, 831 and 869 at 1280 × 800. The head is now tighter
+    (12 px above the H1, 16 px under the state line, the count row 10 px top and bottom, the
+    disclosure on one line from `md` up where it fits);
+  - the ranking disclosure's `data-fo-listing-disclosure` was dropped by `Text` (it forwards no
+    `data-*`): moved to a wrapper. This was why both R8 cases were red.
+- **Measured** (shop root and category are the same geometry; occasion lead price, desktop):
+
+  | size | H1 | state line | grid top | price line bottom | equivalents bottom | occasion lead price |
+  |---|---|---|---|---|---|---|
+  | 1440 × 900 | 201–282 | 290–311 | 380 | 840 | 878 | 626–672 |
+  | 1280 × 800 | 201–275 | 283–304 | 373 | 783 | 821 | 548–611 |
+  | 1512 × 945 | 201–282 | 290–311 | 380 | 840 | 878 | 626–672 |
+  | 390 × 844 | 135–224 | 232–253 | 433 | 704 | 760 | first card, 747 |
+
+- **D-1, for the reviewer (not blocking).** A24 clause 2 (a) says "from the top of its photograph
+  to the bottom of its price". The build reads "price" as the price line (the `formatMoney`
+  amount and "all in", the `Price` primitive's first line), not the approximate-equivalents line
+  under it (spec 004 §14 A21 clause 6), as this brief lists "price, `catalog.price.allIn` and the
+  equivalents line" separately. The first-row probe in `listing-first-screen.spec.ts` and the
+  country-shop and country-category rows of `frame-laptop-band.spec.ts` measure
+  `[data-fo-price] > :first-child`. For a GBP visitor on a PLN destination the equivalents line
+  ends at y 821 at 1280 × 800 (below the fold) and 878 at 1440 × 900 (inside). If the reviewer
+  reads the equivalents line as part of the price, 1280 × 800 needs 21 px more, which is a
+  designer call (the 62 px utility strip is TASK-186's). Recorded as item (8) of the TASK-187 row
+  in `docs/design/README.md`.
+- **Tests changed by the finisher, and why:** the T-49 "all in" checks now read rendered text
+  (`useInnerText`, `innerText`), so a marker hidden by CSS on a phone card is red, where
+  `textContent` passed it; the depth-4 no-JS pager clicks the displayed `?page=2` link (the
+  compact pager on a phone); `country-category.spec.ts` allows only the pager's own `?page=N≥2`
+  links (spec 008 §14 A15 (a) L447 reads AC-15's `<a href>` clause as sort and facets) and finds
+  the sibling categories in the phone's chip scroller with JavaScript off.
+- **Runs, local, on the clean build of 6dfa995b:** e2e (both projects) for
+  `listing-first-screen`, `listing-depth4-params`, `frame-laptop-band`, `listing-params`,
+  `listing-v2`, `country-shop`, `country-category`, `country-occasion`, `hubs`: 358 passed, 188
+  skipped (viewport-explicit cases run once), 0 failed; the laptop-band rows of other tasks still
+  fail as expected. a11y `country-{shop,category,occasion}`: 15 passed. Load average 40 to 90
+  throughout, so no timing claim is made.
+- **Screenshots:** `.claude/state/shots-187/{shop-root,country-category-roses,
+  country-occasion-mothers-day}-{1440x900,1280x800,390x844}.png` in the main checkout.
+- **Visual baselines:** not committed; the orchestrator runs `visual:baselines`.
+
+**Mutations seen red** (each on its own build, then restored with `git checkout`):
+- implementer: cutting the depth-4 `parameterised` pass-through (listing-params unit); the two
+  `/review 99` occasions-index mutations (TASK-146 brief).
+- e2e set A: a 160 px spacer under the shop root's H1 block → T-49 "price bottom" red at three
+  sizes and T-50 "the widest empty band" red at three sizes; a rotated 60 × 60 `aria-hidden` SVG
+  in the occasion head → T-50 `ornaments` red at three sizes; the "all in" marker hidden below
+  `md` → T-49 red at 390 on the category and the occasion; the category's sort form above the
+  grid → R8 (`md`) red.
+- e2e set B: a lead figure restored above the shop root's grid → T-49 `[data-fo-lead]` count red
+  at three sizes; the category's state text hard-coded → T-49 `toHaveText` red at three sizes; a
+  second hidden `items[0]` link on the occasion → T-49 "URL once" red at three sizes; the phone
+  label moved under the pager → T-06 red on the shop root and the category; the disclosure
+  `sr-only` below `md` → R8 390 red.
+- e2e set C: the depth-4 category source cut from `listingRewriteRules()` → T-33 (page 2
+  continues page 1, en-gb and de), the self-canonical, `?page=1`, the sorted case and the no-JS
+  pager red; `parameterisedHubHeaderRules()` cut → the hub header case red; page 2 with a hero →
+  "?page=2 renders no hero" red on the shop root and the category.
+- unit: `LISTING_PAGE_SIZE` 13 → both T-35 cases red; `countNoun` forced to `bouquet` → T-34 red;
+  the occasion's register chosen in the component → the T-35 register case red (the
+  `listing-presentation` "row flips" case asserts the view only, so it stays green: a nit for
+  TASK-188); A10 changed by one character → both T-40 cases red.
+- not run: the `/review 99` `toBe` trailing-slash cases need a server that self-redirects.
+
+**Gates block** (`pnpm gates:cheap`, load average 22 at the start):
+
+```
+gates:cheap · 9aea36aef15445421a12833e73969f19505600a1 · tree clean · base origin/main · 2026-10-14T06:09:41.453Z
+typecheck             exit 0 · 2.3 s
+lint                  exit 0 · 26.4 s
+format:check          exit 0 · 13.7 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 1 · 112.1 s · changed 140 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: FAIL (1 of 7 red: tests)
+```
+
+The one red is `tests/unit/catalog-pricing-minor.test.ts` "x as Minor is red on every root", a
+file this PR does not touch: its first case starts a cold type-aware ESLint over eight roots and
+passes the 5 s default only on an idle machine. Re-run alone with `--testTimeout=60000`: 61 of 61
+pass in 13 s. Every other unit file (3,996 cases) is green.
+
+**Round 1 of `/review 214` (fixes).**
+- `catalogue-dataset.test.ts`: the registry stays at the path spec 008 §14 A15 (b) names; the test
+  lists it as the tenth file and lets it, and only it, import the category, occasion and product
+  datasets, with the reason in the test.
+- `locale-routing.spec.ts`: see the TASK-146 Result (the residual widened to depth 4).
+- **LCP on `/en-gb/poland/flowers`** (Lighthouse mobile, simulated, against the Brotli origin, one
+  run each, load average 6): 2,234 ms before. The LCP element is the first card's photograph; its
+  load time was spent sharing the connection with the second card and the next row, which Chrome
+  boosts to High in a phone's first viewport. `MediaAsset` now gives every image that is not the
+  LCP candidate `fetchpriority="low"` (unit case added): 1,968 and 1,952 ms;
+  `/en-gb/poland/flowers/roses` 1,884; `/en/poland/flowers` 1,932. The rest is TTFB (the Brotli
+  proxy compresses the 275 KB document, 230 ms of it) and the document's 21.7 KB transfer, much of
+  it the site chrome (the wordmark's path, about 11 KB, is in the document six times). CI decides.
+- Nits not taken (carry-forwards): the count line's "84 bouquets" beside plants; `?Page=2` in the
+  wrong case; the de/pl English strings marked `machine`.
+
+**Rebase on `024ca3cf` (PR 215 merged).** With main's new keys, this PR's four unreviewed keys
+took `en-gb` to 28 of 543 counted strings unreviewed (5.16 %), over spec 003's 5 % gate, so
+`en-gb` fell out of the index (13 unit files red). P3's "Next page" is dropped: the compact pager's
+next link reads the reviewed `shop.pagination.next` ("Next") at every width, and `en-gb` is at
+27 of 542 (4.98 %). **For the founder:** attesting A9, A10 and P3's "Page {page} of {total}"
+restores the headroom; "Next page" can come back with that batch. The product route also needed
+its `LanguageAlternates` import back after the merge.
+
+**View model for TASK-188** (unchanged from the implementer): `ListingCountrySchema.state` is
+`z.enum(["guide","live"])`; `ListingEntitySchema.register` is required, from the registry;
+`CategoryTileViewSchema.countNoun`; `leadSku` is not on the view.
+

@@ -405,7 +405,12 @@ describe("`listingView()` is the single input, and it never invents money (§5.2
     }
   });
 
-  it("lists every occasion hub on the occasions index, grouped by kind", async () => {
+  it("lists every occasion hub on the occasions index, each with its own kind, in collator order", async () => {
+    // TASK-146 carry-forward from `/review 99`: this case claimed "grouped by kind" and asserted
+    // only that each kind was one of the two, so it stayed green with the order reversed and with
+    // every kind set to `evergreen`. The view carries each hub's **own** kind (the page groups by
+    // it, `tests/unit/catalog-occasions-index.test.tsx`) in `collator(locale)` order (design-round
+    // Q3); both are asserted as the one value, not the set of reachable values.
     const view = await listingView(
       { locale: "en", pageType: "occasionsIndex" },
       { from: "2026-10-01" },
@@ -413,10 +418,23 @@ describe("`listingView()` is the single input, and it never invents money (§5.2
     const hubs = (await listingPages("en")).filter(
       (page) => page.pageType === "occasionHub",
     );
-    expect(view?.occasions?.length).toBe(hubs.length);
-    for (const entry of view?.occasions ?? []) {
-      expect(["evergreen", "seasonal"]).toContain(entry.kind);
+    const entries = view?.occasions ?? [];
+    expect(entries.length).toBe(hubs.length);
+    const { OCCASIONS } =
+      await import("../../src/config/catalogue/occasions.data");
+    for (const entry of entries) {
+      expect(entry.kind, entry.key).toBe(
+        OCCASIONS.find((occasion) => occasion.key === entry.key)?.kind,
+      );
     }
+    // Both kinds are present, so a constant kind cannot pass.
+    expect(new Set(entries.map((entry) => entry.kind))).toStrictEqual(
+      new Set(["evergreen", "seasonal"]),
+    );
+    const names = entries.map((entry) => entry.name);
+    const collated = [...names].sort(new Intl.Collator("en").compare);
+    expect(names).toStrictEqual(collated);
+    expect(names).not.toStrictEqual([...collated].reverse());
   });
 });
 

@@ -27,8 +27,15 @@
  * The same shape as `listing-cache-headers.ts`, from the same registry: one source per locale the
  * shop root is prebuilt in (launch locales, plus pseudo-locales where routed), naming that locale's
  * own `shopCategory` segment, the country slug as the one wildcard.
- * It cannot match the corridor (`/en/send-flowers-to/poland`), a hub (`/en/flowers/roses`) or a
- * depth-4 URL, so those page types never leave their prebuilt route.
+ * It cannot match the corridor (`/en/send-flowers-to/poland`) or a hub (`/en/flowers/roses`), so
+ * those page types never leave their prebuilt route.
+ *
+ * **Depth 4** (spec 008 §14 A15 (a); TASK-146, TASK-187): two more sources per (locale, key), the
+ * country category `/:locale/:country/:shop({shopCategory})/:entity` and the country occasion
+ * `/:locale/:country/:occ({occasions})/:entity`, both to `/:locale/_query/:country/:seg/:entity`
+ * (`src/app/[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx`). A product URL
+ * (`/{country}/{product}/{slug}`) matches neither, because its third segment is the locale's
+ * `product` segment: spec 009's `?tier=`/`?date=` stay TASK-128's.
  *
  * ## Which parameters
  *
@@ -99,12 +106,29 @@ export function listingRewriteRules(): RewriteRule[] {
   return LOCALES.filter((locale) =>
     LISTING_REWRITE_LOCALES.includes(locale.code),
   ).flatMap((locale): RewriteRule[] => {
-    const shopCategory = locale.pathSegments.shopCategory;
-    return LISTING_REWRITE_KEYS.map((key) => ({
-      source: `/:locale(${literal(locale.code)})/:country/:shop(${literal(shopCategory)})`,
-      destination: `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:shop`,
-      has: [{ type: "query", key }],
-    }));
+    const code = literal(locale.code);
+    const shopCategory = literal(locale.pathSegments.shopCategory);
+    const occasions = literal(locale.pathSegments.occasions);
+    const shapes: readonly { source: string; destination: string }[] = [
+      {
+        source: `/:locale(${code})/:country/:shop(${shopCategory})`,
+        destination: `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:shop`,
+      },
+      {
+        source: `/:locale(${code})/:country/:shop(${shopCategory})/:entity`,
+        destination: `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:shop/:entity`,
+      },
+      {
+        source: `/:locale(${code})/:country/:occ(${occasions})/:entity`,
+        destination: `/:locale/${PARAMETER_ROUTE_SEGMENT}/:country/:occ/:entity`,
+      },
+    ];
+    return shapes.flatMap((shape) =>
+      LISTING_REWRITE_KEYS.map((key): RewriteRule => ({
+        ...shape,
+        has: [{ type: "query", key }],
+      })),
+    );
   });
 }
 
@@ -138,4 +162,53 @@ export function parameterRouteHeaderRules(): HeaderRule[] {
       headers: [{ key: NOINDEX_HEADER_NAME, value: PARAMETER_ROUTE_ROBOTS }],
     },
   ];
+}
+
+/**
+ * The robots header on a **parameterised hub** address (spec 008 §14 A13 "The rule binds every
+ * route file", AC-15; TASK-146, widened per TASK-114 E-7).
+ *
+ * The two destination-less hubs (`/{locale}/{shopCategory}/{category}`,
+ * `/{locale}/{occasions}/{occasion}`) honour no parameter: `listingView()` forces the default order
+ * on a listing with no country, no hub renders a toolbar or a pager, and the depth-3 route that
+ * serves them is prebuilt and reads no query string (TASK-170). So a hub address with a listing key
+ * is served the bare prebuilt document, whose canonical is already the bare URL, but whose meta
+ * robots is the bare page's own verdict: after the indexing flip (TASK-096), `index,follow` on
+ * `/en/flowers/roses?colour=red`, AC-15's canonical half without its `noindex` half (E-7's recorded
+ * residual).
+ *
+ * The bare document cannot know it was asked with a parameter, and a rewrite to a per-request
+ * route would take the hubs' prerendered documents out of the build for a parameter they cannot
+ * use (E-7, point 3). A header can know: `next.config`'s `headers()` match the address the visitor
+ * asked for, with the same `has: query` condition the rewrites use, so exactly the parameterised
+ * hub addresses carry `X-Robots-Tag: noindex, follow`, and a crawler takes the stricter of the
+ * header and the meta. The value is not the environment rule's bare `noindex` and not the
+ * parameter route's `noindex, nofollow`, so the three are told apart on a served response outside
+ * production too. Mounted after `noindexHeaderRules()`, so on these addresses this value is served.
+ */
+export const PARAMETERISED_HUB_ROBOTS = "noindex, follow";
+
+/** Fresh objects on every call, matching `listingRewriteRules()`. */
+export function parameterisedHubHeaderRules(): (HeaderRule & {
+  has: [{ type: "query"; key: string }];
+})[] {
+  return LOCALES.filter((locale) =>
+    LISTING_REWRITE_LOCALES.includes(locale.code),
+  ).flatMap((locale) => {
+    const code = literal(locale.code);
+    return [
+      `/:locale(${code})/:hub(${literal(locale.pathSegments.shopCategory)})/:entity`,
+      `/:locale(${code})/:hub(${literal(locale.pathSegments.occasions)})/:entity`,
+    ].flatMap((source) =>
+      LISTING_REWRITE_KEYS.map((key) => ({
+        source,
+        has: [{ type: "query" as const, key }] as [
+          { type: "query"; key: string },
+        ],
+        headers: [
+          { key: NOINDEX_HEADER_NAME, value: PARAMETERISED_HUB_ROBOTS },
+        ],
+      })),
+    );
+  });
 }

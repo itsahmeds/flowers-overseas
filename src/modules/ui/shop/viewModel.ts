@@ -198,6 +198,11 @@ export const CategoryTileViewSchema = z
     name: NonEmpty,
     href: NonEmpty,
     count: z.int().nonnegative(),
+    /**
+     * The noun the tile's count line uses (spec 008 §14 A15 (b), AC-30): the category's
+     * `countNoun` in `src/config/catalogue/listing-presentation.ts`, one of the founder's three.
+     */
+    countNoun: z.enum(["bouquet", "plant", "arrangement"]),
     fromPrice: MoneySchema.optional(),
   })
   .strict();

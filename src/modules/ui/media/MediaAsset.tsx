@@ -189,7 +189,10 @@ export function MediaAsset({
           // letterboxed, and the CLS delta of landing imagery stays 0.
           className="h-full w-full object-cover"
           decoding={priority ? undefined : "async"}
-          fetchPriority={priority ? "high" : undefined}
+          // `low` on every other image (TASK-187): a phone's second card and next row sit in the
+          // first viewport, and the browser would otherwise boost them to High, sharing the
+          // connection with the one LCP photograph the page preloads.
+          fetchPriority={priority ? "high" : "low"}
           height={resolved.height}
           loading={priority ? "eager" : "lazy"}
           sizes={resolved.sizes}

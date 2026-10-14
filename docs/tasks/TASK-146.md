@@ -75,9 +75,55 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+- 2026-10-14: built with TASK-187 in PR 214 (branch `task/TASK-146-country-listings-depth4`): the
+  depth-4 rewrite, the parameter route, the cache header and the hub robots header (c2397b24); the
+  `/review 99` carry-forwards (69788b3f).
+- 2026-10-14 (finisher): rebased on `48837dca`; rendered in the build slot; the depth-4 e2e run
+  green and seen red with the depth-4 category rewrite cut and the hub header rule cut (6dfa995b).
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**In review (2026-10-14, finished by `wo-214-finish`; see `docs/tasks/TASK-187.md` `## Result`
+for the shared state).** PR 214, rebased on `48837dca`.
 
-_Pending._
+- **Depth 4:** the country category and the country occasion now honour `?page=`/`?sort=`/facets
+  through the mirrored parameter route, as spec 008 §14 A15 (a) lists it. A sorted or faceted URL
+  passes `parameterised` to `listingView()`, so it is `noindex,follow` with a canonical to the bare
+  URL. `?page=N ≥ 2` is self-canonical. The prebuilt depth-4 route reads no `searchParams`.
+- **The other depth-3 branches (E-7's scope):**
+  - the hubs honour no parameter and stay prebuilt, so a hub address carrying a listing key now
+    gets `X-Robots-Tag: noindex, follow` from `parameterisedHubHeaderRules()` (next.config, after
+    the environment rule). That is the `noindex` half the prebuilt document cannot give;
+  - the corridor is not a listing and stays unrewritten (A13);
+  - the depth-3 route file is unchanged.
+- **Proof against the Phase 0 trap:**
+  - unit `tests/unit/listing-params.test.ts`: three new cases read the three depth-4 files as
+    source. Cutting `parameterised: request.parameterised` in `country-listing.tsx` turns them red
+    (run, then restored);
+  - unit `tests/unit/listing-rewrites.test.ts`: the depth-4 sources, a product URL unmatched, and
+    the hub header's shapes and value;
+  - e2e `tests/e2e/listing-depth4-params.spec.ts` compares responses with each other, not with a
+    literal (page 2 ≠ page 1, sorted order ≠ bare order, canonical and robots against the bare
+    page's), plus the hub header value `noindex, follow`, which no other rule serves. **Run green
+    by the finisher** in both e2e projects, and **seen red** with the depth-4 category source cut
+    from `listingRewriteRules()` (page 2 = page 1, the self-canonical, `?page=1`, the sorted case,
+    the no-JS pager) and with `parameterisedHubHeaderRules()` cut from `next.config.ts` (the hub
+    header case); restored.
+- **Carry-forwards from `/review 99`:**
+  - `hubs.spec.ts` and `country-occasion.spec.ts` now assert the trailing-slash `Location` with
+    `toBe`. This is not mutation-run yet: it needs a server;
+  - `catalog-listing.test.ts` now asserts each entry's own kind, both kinds present, and collator
+    order. Seen red with every kind set to `evergreen`, and red with the order reversed; restored.
+- **The accepted 404 residual widens to depth 4 (round 1 of `/review 214`).** An unknown entity
+  or a page past the last under a known country, with a listing key, now reaches the depth-4
+  parameter route and answers 404 inside Next's error shell (no `lang`), the same residual spec
+  008 A13 and TASK-170 E-1 accept at depth 3. `tests/e2e/locale-routing.spec.ts` moves
+  `/en/poland/flowers/no-such-kind?sort=price-asc` from `NOT_FOUND_SHAPES` to `RESIDUAL_404S` and
+  adds `/en/poland/occasions/no-such-kind?sort=price-asc`, `/en/poland/flowers/roses?page=99` and
+  `/en/poland/occasions/mothers-day?page=2`; the bare addresses stay the router's localised 404.
+  Run locally: 84 passed in both projects.
+- **Corpus fact:** no country occasion has more than 12 products (the most is 7), so the
+  occasion's paging is proven by sorting through the same rewrite and by the page-past-the-last
+  404.

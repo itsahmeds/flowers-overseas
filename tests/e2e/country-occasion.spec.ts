@@ -112,7 +112,9 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       maxRedirects: 0,
     });
     expect([301, 308]).toContain(response.status());
-    expect(response.headers()["location"]).toContain(
+    // The exact bare URL: a self-redirect would satisfy a `toContain` (TASK-146 carry-forward
+    // from `/review 99`).
+    expect(response.headers()["location"]).toBe(
       "/en/poland/occasions/mothers-day",
     );
   });
@@ -140,9 +142,11 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
         "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
       ),
     ).toBeVisible();
-    // No control that cannot act: the sort form and the pagination are TASK-114's (§14 A8 (c)).
-    await expect(page.locator("main button")).toHaveCount(0);
-    await expect(page.locator("main form")).toHaveCount(0);
+    // The sort form is the one control (spec 008 §14 A15 (a); TASK-187): a `GET` form that can
+    // act with no JavaScript. Seven products are one page, so there is no pager.
+    await expect(page.locator("main button")).toHaveCount(1);
+    await expect(page.locator('main form[method="get"]')).toHaveCount(1);
+    await expect(page.locator("main nav[data-fo-pagination]")).toHaveCount(0);
   });
 
   test("the shop root's occasion table links here, and only here (§14 A10)", async ({

@@ -386,6 +386,42 @@ export function formatDate(
   }).format(instant);
 }
 
+/** The four parts of one `calendarDate` value, each the locale's own spelling of it. */
+export interface DateParts {
+  readonly day: string;
+  readonly month: string;
+  readonly weekday: string;
+  readonly year: string;
+}
+
+/**
+ * The day, month, weekday and year of **one** `calendarDate` value, as `Intl` spells each part in
+ * that value (spec 004 §14 A23 clause 5; TASK-187). The country occasion page's date card sets them
+ * apart ("26" · "May" · "Wednesday" · "2027"); they come from `formatToParts` of the same
+ * formatter and options `formatDate(…, "calendarDate", zone)` uses, so the parts can never name a
+ * different day from the sentence beside them, and no component touches `Intl`.
+ */
+export function formatDateParts(
+  date: Date,
+  locale: LocaleCode,
+  timeZone: string,
+): DateParts {
+  const instant = InstantSchema.parse(date);
+  const zone = TimeZoneSchema.parse(timeZone);
+  const parts = dateTimeFormat(tagFor(locale), {
+    ...DATE_STYLE_OPTIONS.calendarDate,
+    timeZone: zone,
+  }).formatToParts(instant);
+  const part = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((entry) => entry.type === type)?.value ?? "";
+  return {
+    day: part("day"),
+    month: part("month"),
+    weekday: part("weekday"),
+    year: part("year"),
+  };
+}
+
 /** Which zone label `formatTimeInZone` appends; `longGeneric` is the default (see header). */
 export type ZoneNameStyle = "long" | "short" | "longGeneric" | "shortGeneric";
 

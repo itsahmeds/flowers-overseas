@@ -148,8 +148,12 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     // The sibling row is the whole browsing affordance (§13 Q6): links to pages that exist, the
     // current category marked and not a link to itself.
-    const siblings = page.locator("#sibling-categories");
-    await expect(siblings).toBeVisible();
+    // From `md` up the row sits under the grid; below `md` it is the phone's one chip scroller
+    // above the grid (spec 008 §14 A16 (e)). Exactly one of the two is displayed.
+    const siblings = page.locator(
+      "#sibling-categories:visible, main [data-fo-phone-chips]:visible",
+    );
+    await expect(siblings).toHaveCount(1);
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
     // The demo sentence, the whole of the Phase 0 state.
@@ -158,13 +162,15 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
         "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
       ),
     ).toBeVisible();
-    // Toolbar and pagination wait for TASK-114's `searchParams` (§14 A8 (c)).
-    await expect(page.locator("main form")).toHaveCount(0);
-    await expect(page.locator("main button")).toHaveCount(0);
-    await expect(page.locator("main select")).toHaveCount(0);
+    // Since spec 008 §14 A15 (TASK-187) the sort form and the pager are here: one `GET` form
+    // under the grid whose submit can act with no JavaScript, and a pager of real links. Counted
+    // exactly, so a basket or a second form fails here.
+    await expect(page.locator('main form[method="get"]')).toHaveCount(1);
+    await expect(page.locator("main button")).toHaveCount(1);
+    await expect(page.locator("main select")).toHaveCount(1);
     await expect(
       page.locator('main nav[aria-label="Pages of products"]'),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
   });
 
   test("every link on the page is to a URL that exists (AC-5's link half)", async ({
@@ -178,9 +184,23 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
         nodes.map((node) => node.getAttribute("href") ?? ""),
       );
     expect(hrefs.length).toBeGreaterThan(5);
+    // The pager's own `?page=N` links (N >= 2), and nothing else parameterised: since TASK-146
+    // the country category pages, and spec 008 §14 A15 (a) reads AC-15's "no parameterised URL as
+    // an `<a href>`" as sort and facet parameters, because AC-10 requires the pager's real links.
+    const pagerHrefs = await page
+      .locator("main nav[data-fo-pagination] a[href^='/']")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute("href") ?? ""),
+      );
+    expect(pagerHrefs).toContain("/en/poland/flowers/roses?page=2");
     for (const href of new Set(hrefs)) {
-      // No parameterised URL is ever an `<a href>` (AC-15).
-      expect(href, href).not.toMatch(/[?&](?:page|sort)=/u);
+      expect(href, href).not.toMatch(/[?&]sort=/u);
+      if (/[?&]page=/u.test(href)) {
+        expect(href, href).toMatch(
+          /^\/en\/poland\/flowers\/roses\?page=(?:[2-9]|[1-9]\d+)$/u,
+        );
+        expect(pagerHrefs, href).toContain(href);
+      }
       expect(await status(request, href), href).toBe(200);
     }
   });
@@ -237,7 +257,15 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     const page = await context.newPage();
     await page.goto("/en/poland/flowers/roses");
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
-    await expect(page.locator("#sibling-categories a").first()).toBeVisible();
+    // The sibling categories: the chip row from `md` up, the phone's one chip scroller below it
+    // (spec 004 §14 A24 clause 4; TASK-195's primitive). Real links either way.
+    await expect(
+      page
+        .locator(
+          "#sibling-categories a:visible, [data-fo-phone-chips] a:visible",
+        )
+        .first(),
+    ).toBeVisible();
     await context.close();
   });
 });

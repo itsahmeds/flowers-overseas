@@ -147,7 +147,10 @@ describe("the populated shop root (§5.3 row 1)", () => {
 
   it("paginates with real links in a labelled nav, page 1 linking to the bare URL (AC-10)", () => {
     expect(en.pageCount).toBeGreaterThan(1);
-    const nav = html.slice(html.indexOf("data-fo-pagination"));
+    const nav = html.slice(
+      html.indexOf("data-fo-pagination"),
+      html.indexOf("</nav>", html.indexOf("data-fo-pagination")),
+    );
     expect(html).toContain(`data-fo-pagination="${String(en.pageCount)}"`);
     expect(nav).toContain(`href="${en.path}?page=2"`);
     // Never `?page=1`: that URL redirects, and no crawlable link may point at a redirect.
@@ -181,18 +184,14 @@ describe("the populated shop root (§5.3 row 1)", () => {
     expect(text).toContain("currency of the delivery country");
   });
 
-  it("renders the v2 intro: eyebrow, P.S. note and the printed-card band after the eighth card", () => {
-    expect(text).toContain("Sending to Poland");
+  it("renders the round-2 head: the H1, the state line and the P.S., and no printed-card band", () => {
+    // Spec 004 §14 A24 clause 2: the note is a flat P.S. beside the H1; the round-2 artboard
+    // draws no eyebrow and no band inside the grid (TASK-187).
     expect(html).toMatch(/role="note" aria-label="A note before you choose"/u);
     expect(text).toContain("P.S.");
-    // The band is a full-width `<li>` of the grid, after exactly eight cards.
-    const grid = html.slice(html.indexOf("data-fo-listing-grid"));
-    const band = grid.indexOf("data-fo-listing-interlude");
-    expect(band).toBeGreaterThan(-1);
-    expect(grid.slice(0, band).match(/data-fo-product-card="/gu)).toHaveLength(
-      8,
-    );
-    expect(text).toContain("Every one of these comes with a card, at no cost.");
+    expect(html).not.toContain("data-fo-listing-interlude");
+    expect(html).toContain('data-fo-listing-state-line="guide"');
+    expect(text).toContain("Guide · not delivering yet");
     expect(text).toContain("Narrow it down");
   });
 
@@ -305,7 +304,7 @@ describe("page 2 and a sorted page (AC-9, AC-10; TASK-114)", () => {
     // `defaultValue` on the `<select>` renders as `selected` on the option the URL asked for, so
     // the control shows the order the server actually rendered — with JavaScript off.
     expect(html).toContain('<option value="price-desc" selected=""');
-    expect(html).toContain('data-fo-listing-toolbar="price-desc"');
+    expect(html).toContain('data-fo-listing-sort-form="price-desc"');
   });
 });
 

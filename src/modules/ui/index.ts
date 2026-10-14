@@ -475,8 +475,15 @@ export { ProductCard } from "./shop/ProductCard.tsx";
 export type { ProductCardProps } from "./shop/ProductCard.tsx";
 export { ListingGrid } from "./shop/ListingGrid.tsx";
 export type { ListingGridProps } from "./shop/ListingGrid.tsx";
-export { ListingToolbar, SORT_LABEL_KEYS } from "./shop/ListingToolbar.tsx";
-export type { ListingToolbarProps } from "./shop/ListingToolbar.tsx";
+export {
+  ListingSortForm,
+  ListingToolbar,
+  SORT_LABEL_KEYS,
+} from "./shop/ListingToolbar.tsx";
+export type {
+  ListingSortFormProps,
+  ListingToolbarProps,
+} from "./shop/ListingToolbar.tsx";
 export { Pagination, pageHref } from "./shop/Pagination.tsx";
 export type { PaginationProps } from "./shop/Pagination.tsx";
 export { ListingEmpty } from "./shop/ListingEmpty.tsx";

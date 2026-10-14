@@ -450,13 +450,17 @@ describe("what the dataset deliberately does not contain (AC-6)", () => {
 });
 
 describe("the dataset directory is server-only, database-free config (AC-2, AC-3)", () => {
-  it("has exactly the nine files spec 005 §5.2 names for Phase 0", () => {
+  it("has exactly the nine files spec 005 §5.2 names for Phase 0, plus spec 008's presentation registry", () => {
     expect(datasetFiles.sort()).toEqual([
       `${datasetDir}/addons.data.ts`,
       `${datasetDir}/categories.data.ts`,
       // The price half, TASK-062: the per-destination bands, ladders, VAT rates, surcharges and
       // add-on prices, and one dated ECB euro-reference snapshot.
       `${datasetDir}/fx.data.ts`,
+      // The tenth file, TASK-187: the listings' presentation registry (register, lead SKU, count
+      // noun per category and occasion). Spec 008 §14 A15 (b) names this exact path, and spec 004
+      // A23 asks for it to be covered by `check:no-db` with the dataset: it is config, not data.
+      `${datasetDir}/listing-presentation.ts`,
       `${datasetDir}/occasions.data.ts`,
       `${datasetDir}/prices.data.ts`,
       `${datasetDir}/products.data.ts`,
@@ -475,6 +479,17 @@ describe("the dataset directory is server-only, database-free config (AC-2, AC-3
         (match) => match[1],
       );
       for (const specifier of imports) {
+        // `listing-presentation.ts` (TASK-187) reads the category, occasion and product sets so a
+        // missing row, an unknown key or a `leadSku` outside its hub's products fails at load,
+        // naming the key. It is the only file allowed the category and occasion datasets.
+        if (
+          file === `${datasetDir}/listing-presentation.ts` &&
+          /^\.\/(?:categories|occasions|products)\.data\.ts$/.test(
+            String(specifier),
+          )
+        ) {
+          continue;
+        }
         // `prices.data.ts` also reads its sibling dataset files and the destination registry:
         // its rows are one per (product, tier, destination), so the product, tier and add-on
         // sets and `src/config/countries.ts`'s `live`/`demo` list are its inputs — and reading

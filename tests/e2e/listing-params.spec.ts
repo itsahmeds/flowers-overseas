@@ -136,7 +136,9 @@ test.describe("pagination (AC-10, T-10)", () => {
     // Every control is an `<a href>`; the current page is not a link.
     await expect(nav.locator("button")).toHaveCount(0);
     await expect(nav.locator('[aria-current="page"]')).toHaveCount(1);
-    await nav.getByRole("link", { name: /page 2/iu }).click();
+    // Below `md` the numbered links are hidden by CSS and the "Next" link carries the same
+    // href (spec 008 §14 A16 (e)); whichever is displayed at this width is the one clicked.
+    await nav.locator('a[href$="?page=2"]:visible').first().click();
     await expect(page).toHaveURL(/\?page=2$/u);
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     await context.close();
@@ -163,8 +165,8 @@ test.describe("sorting (AC-9, T-09)", () => {
     await page.getByRole("button", { name: /^sort$/iu }).click();
 
     await expect(page).toHaveURL(/\?sort=price-asc$/u);
-    await expect(page.locator("[data-fo-listing-toolbar]")).toHaveAttribute(
-      "data-fo-listing-toolbar",
+    await expect(page.locator("[data-fo-listing-sort-form]")).toHaveAttribute(
+      "data-fo-listing-sort-form",
       "price-asc",
     );
     expect(await skus()).not.toEqual(before);
@@ -190,9 +192,14 @@ test.describe("sorting (AC-9, T-09)", () => {
     page,
   }) => {
     await page.goto(SHOP);
-    const toolbar = page.locator("[data-fo-listing-toolbar]");
-    await expect(toolbar).toHaveAttribute("data-fo-listing-toolbar", "default");
-    await expect(toolbar).toContainText("It is not a ranking by sales");
+    // Round 2 (TASK-187): the form sits under the grid and the disclosure is its own line.
+    await expect(page.locator("[data-fo-listing-sort-form]")).toHaveAttribute(
+      "data-fo-listing-sort-form",
+      "default",
+    );
+    await expect(
+      page.locator("main [data-fo-listing-disclosure]"),
+    ).toContainText("It is not a ranking by sales");
     const text = (await page.locator("body").innerText()).toLowerCase();
     for (const claim of ["bestseller", "most popular", "recommended for you"]) {
       expect(text, claim).not.toContain(claim);
