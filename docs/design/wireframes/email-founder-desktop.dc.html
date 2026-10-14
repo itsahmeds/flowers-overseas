@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; padding-block-end: 72px; }
+.fo.M { font-size: var(--text-body-s); padding-block-end: 48px; }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote, h1, h2, h3, h4) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.9em; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .spec code, .slot code, .page-label code, .stub code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; overflow-wrap: anywhere; }
+.note ul { display: grid; gap: 2px; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+.pending, .prop, .verb { display: inline-block; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); border-radius: var(--radius-full); padding: 1px 8px; white-space: nowrap; }
+.pending, .prop { background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-warning); }
+.verb { background: var(--color-leaf-wash); box-shadow: inset 0 0 0 1px var(--color-stem); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); font-size: 0.86em; }
+
+/* a whole drawn email for one template: a label, then the email */
+.page-label { margin-block-start: 72px; padding: 14px var(--gutter); background: var(--color-paper-3); border-block: 1px dashed var(--color-ink-3); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+.M .page-label { margin-block-start: 48px; padding-inline: var(--gutter-s); }
+.row { display: grid; grid-template-columns: 680px minmax(0, 1fr); gap: 48px; align-items: start; padding: 40px var(--gutter) 0; }
+.M .row { display: block; padding: 24px 0 0; }
+.side { display: grid; gap: 24px; min-inline-size: 0; }
+.M .side { padding: 20px var(--gutter-s) 0; }
+.side h3 { font-family: var(--font-body); font-variation-settings: normal; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: 8px; }
+.pt { padding: 16px 20px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; line-height: 1.6; color: var(--color-ink-2); white-space: pre-wrap; overflow-wrap: anywhere; }
+.spec { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 8px 14px; font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .spec { grid-template-columns: minmax(0, 1fr); gap: 2px; font-size: var(--text-xs); }
+.M .spec dd { margin-block-end: 8px; }
+.spec dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.spec dd b { color: var(--color-ink); }
+.spec ul { display: grid; gap: 4px; }
+.states { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.M .states { grid-template-columns: minmax(0, 1fr); }
+.state { display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: var(--radius-field); background: var(--color-paper); box-shadow: inset 0 0 0 1px var(--color-rule); min-inline-size: 0; }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+
+/* ---------- the mail client frame (drawing only; not part of the email) ---------- */
+.mx { inline-size: 680px; border-radius: var(--radius-photo-s); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); overflow: hidden; }
+.M .mx { inline-size: 375px; margin-inline: auto; border-radius: 0; box-shadow: inset 0 0 0 1px var(--color-rule); }
+.mail-h { display: grid; gap: 4px; padding: 16px 20px; background: var(--color-paper-3); border-block-end: var(--rule); font-size: var(--text-sm); }
+.mail-h div { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 8px; }
+.mail-h dt { color: var(--color-ink-3); }
+.mail-h dd { color: var(--color-ink); overflow-wrap: anywhere; }
+.mail-h .subj { font-weight: var(--font-weight-bold); }
+.mail-h .pre { color: var(--color-ink-2); }
+.M .mail-h { padding: 12px 16px; font-size: var(--text-fine); }
+.M .mail-h div { grid-template-columns: 58px minmax(0, 1fr); }
+
+/* ---------- the email itself: React Email under emails/, 600 px max, 375 on a phone ---------- */
+.em { padding: 32px 40px 40px; background: var(--color-paper-2); }
+.M .em { padding: 0; background: var(--color-card); }
+.em-card { inline-size: 600px; margin-inline: auto; background: var(--color-card); border-radius: var(--radius-photo-s); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; }
+.M .em-card { inline-size: 100%; border-radius: 0; box-shadow: none; }
+.em-top { display: flex; align-items: center; gap: 10px; padding: 28px 48px 20px; border-block-end: var(--rule); }
+.M .em-top { padding: 20px 20px 16px; }
+.em-top svg { inline-size: 28px; block-size: 28px; flex: none; }
+.em-top .wm { font-family: var(--font-logo); font-size: 20px; color: var(--color-logo-ink); letter-spacing: var(--tracking-wordmark); }
+.em-top .aud { margin-inline-start: auto; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.em-body { display: grid; gap: 20px; padding: 32px 48px 36px; }
+.M .em-body { gap: 18px; padding: 24px 20px 28px; }
+.em-eyebrow { font-size: 13px; font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); margin-block-end: -8px; }
+.em h1 { font-size: 32px; line-height: 1.15; letter-spacing: -0.01em; color: var(--color-ink); }
+.M .em h1 { font-size: 26px; }
+.em p { font-size: 17px; line-height: 1.55; color: var(--color-ink); }
+.M .em p { font-size: 16px; }
+.em p.sub { color: var(--color-ink-2); }
+.em-facts { display: grid; border-block-start: var(--rule); }
+.em-facts > div { display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 2px 16px; padding-block: 11px; border-block-end: var(--rule); align-items: baseline; }
+.M .em-facts > div { grid-template-columns: minmax(0, 1fr); }
+.em-facts dt { font-size: 13px; font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.em-facts dd { font-size: 17px; color: var(--color-ink); }
+.M .em-facts dd { font-size: 16px; }
+.em-facts dd .name { font-family: var(--font-display); font-size: 19px; }
+.em-total { display: grid; gap: 4px; padding: 16px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.em-total .l { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: var(--font-weight-bold); }
+.em-total strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 26px; font-variant-numeric: lining-nums tabular-nums; }
+.em-total small { font-size: 14px; color: var(--color-ink-3); }
+.em-box { padding: 14px 18px; border-radius: var(--radius-field); background: var(--color-sage-wash); font-size: 16px; line-height: 1.5; color: var(--color-ink); }
+.em-box.leaf { background: var(--color-leaf-wash); }
+.em-box.blush { background: var(--color-blush); }
+.em-box.butter { background: var(--color-butter); }
+.em-refund { display: block; font-weight: var(--font-weight-bold); color: var(--color-stem); font-variant-numeric: lining-nums tabular-nums; }
+.em-btn { justify-self: start; display: inline-flex; align-items: center; justify-content: center; min-block-size: 52px; padding-inline: 30px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-weight: var(--font-weight-bold); font-size: 17px; text-decoration: none; }
+.M .em-btn { justify-self: stretch; }
+.em-link { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.em-note { font-size: 14px !important; line-height: 1.45 !important; color: var(--color-ink-3) !important; margin-block-start: -8px !important; }
+.em-due { justify-self: start; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 10px; border-radius: var(--radius-full); background: var(--color-blush); color: var(--color-accent-strong); font-weight: var(--font-weight-bold); font-size: 17px; font-variant-numeric: lining-nums tabular-nums; }
+.em-due svg { inline-size: 18px; block-size: 18px; }
+.em-pay { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 14px 18px; border-radius: var(--radius-field); background: var(--color-leaf-wash); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.em-pay strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 24px; font-variant-numeric: lining-nums; }
+.em-photo { aspect-ratio: 4 / 5; inline-size: 100%; max-inline-size: 504px; border-radius: var(--radius-photo-s); background: var(--color-photo); display: grid; place-items: center; padding: 24px; text-align: center; font-size: 14px; color: var(--color-photo-ink); }
+.em-attach { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 15px; color: var(--color-ink); }
+.em-attach svg { inline-size: 20px; block-size: 20px; color: var(--color-ink-3); flex: none; }
+.em-attach small { margin-inline-start: auto; color: var(--color-ink-3); font-size: 13px; }
+.em-legal { display: grid; gap: 10px; padding-block-start: 18px; border-block-start: var(--rule); }
+.em-legal p { font-size: 14px !important; line-height: 1.5 !important; color: var(--color-ink-2) !important; }
+.em-table { display: grid; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); overflow: hidden; font-size: 15px; }
+.em-table > div { display: grid; grid-template-columns: 28px 120px minmax(0, 1fr); gap: 10px; padding: 10px 14px; border-block-end: var(--rule); align-items: baseline; }
+.M .em-table > div { grid-template-columns: 22px minmax(0, 1fr); }
+.M .em-table > div > :last-child { grid-column: 2; }
+.em-table > div:last-child { border-block-end: 0; }
+.em-table .h { background: var(--color-paper-2); font-size: 12px; font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); }
+.em-paste { padding: 18px 20px; border-radius: var(--radius-field); background: var(--color-paper-2); border-inline-start: 4px solid var(--color-stem); font-size: 16px; line-height: 1.55; white-space: pre-wrap; color: var(--color-ink); }
+.em-band { padding: 12px 48px; background: var(--color-butter); font-weight: var(--font-weight-bold); font-size: 16px; color: var(--color-ink); border-block-end: var(--rule); }
+.M .em-band { padding: 12px 20px; }
+.em-foot { display: grid; gap: 8px; padding: 24px 48px 32px; background: var(--color-paper-2); border-block-start: var(--rule); }
+.M .em-foot { padding: 20px 20px 28px; }
+.em-foot p { font-size: 14px !important; line-height: 1.5 !important; color: var(--color-ink-2) !important; }
+.em-foot b { color: var(--color-ink); }
+.em-foot .help { color: var(--color-ink) !important; }
+
+  </style>
+</helmet>
+<div class="fo D" style="inline-size: 1440px;">
+<section class="note"><span class="nl">Founder emails: the no-florist alert and the WhatsApp copies · desktop 1440 (emails at 600) · spec 016 · [internal]</span><dl><dt>Purpose</dt><dd>What the founder receives: the no-florist alert (A1) and the WhatsApp copies (W) of an offer and a stop message, ready to paste. Designed for the founder's phone first: the paste block is one tap-and-hold away.</dd><dt>Sent</dt><dd>To <code>OPS_ALERT_EMAIL</code>, in English (<code>emails.ops.*</code> in <code>messages/admin/en.json</code>; admin copy is English only). <code>test</code> and <code>live</code>.</dd><dt>URL</dt><dd>A1 links <code>/admin/orders/{id}</code> (spec 012). W carries the florist's inbox address without a token.</dd><dt>Index</dt><dd>Not a page. Emails are not indexed and carry no schema (spec 016 §6). Every link: spec 018's tracking URL, the buyer's locale home, the florist one-tap URL, or <code>/admin/orders/{id}</code>; no tracking parameters. Open and click tracking are <b>off</b> on the Resend domain (click tracking would rewrite the sign-in links).</dd><dt>Reads</dt><dd>A1: the order's reference, city, date, its assignments and decline reason codes, <code>graceEnd</code>, the country's <code>routing.auto</code>. W: the V1 or V4 content in the florist's language, the shop's name and code. No buyer or recipient data in either (spec 016 §8: ops alerts carry ids, city and date).</dd><dt>States</dt><dd>A1 due today (2 hours) · A1 not due today (10:00 next morning) · A1 automatic routing off · A1 no florist covers it · A1 before spec 020 · W offer · W stop message.</dd><dt>Data drawn</dt><dd>Shop codes <code>pl-waw-01</code> to <code>-03</code> and “Kwiaciarnia Przykładowa” are sample values; times are Europe/Warsaw.</dd><dt>Copy</dt><dd><span class="pending">Founder copy pending</span> All <span class="prop">proposed</span> except the decline reasons and the inbox strings (spec 011 Appendix A).</dd><dt>AC</dt><dd>spec 016 AC-10, AC-11, AC-12, AC-22, AC-35, AC-36</dd><dt>Owning spec</dt><dd>016 (task 3 templates; task 1b the alert; <code>docs/runbooks/whatsapp-phase1.md</code>)</dd></dl></section><p class="page-label" aria-hidden="true">A1 <code>alert-no-partner</code> · no florist took the order · due today (cancels 2 hours after)</p><div class="row"><div class="mx"><dl class="mail-h"><div><dt>From</dt><dd>Flowers Overseas &lt;<code>EMAIL_FROM</code>&gt;</dd></div><div><dt>To</dt><dd><code>OPS_ALERT_EMAIL</code> (and Sentry <code>alert=routing.no_partner</code>)</dd></div><div><dt>Subject</dt><dd class="subj">No florist: FO-7K2M-9QXA · Warszawa · Thu 8 Oct</dd></div><div><dt>Preview</dt><dd class="pre">Cancels automatically at 16:40 Warsaw time unless you act.</dd></div></dl><div class="em"><div class="em-card" lang="en" dir="ltr"><div class="em-top"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wm">Flowers Overseas</span><span class="aud">Internal</span></div><div class="em-band">Cancels automatically at 16:40 Warsaw time unless you act.</div><div class="em-body"><h1>No florist took order <span class="num">FO-7K2M-9QXA</span></h1><dl class="em-facts"><div><dt>Destination</dt><dd>Warszawa, Poland</dd></div><div><dt>Delivery date</dt><dd>Thu 8 Oct (today)</dd></div><div><dt>Cancels at</dt><dd class="num">16:40 Europe/Warsaw</dd></div></dl><div class="em-table" role="table" aria-label="Offers made"><div class="h" role="row"><span>#</span><span>Florist</span><span>Outcome</span></div><div role="row"><span class="num">1</span><span><code>pl-waw-01</code></span><span>Declined · We are full that day</span></div><div role="row"><span class="num">2</span><span><code>pl-waw-02</code></span><span>No answer by 14:10</span></div><div role="row"><span class="num">3</span><span><code>pl-waw-03</code></span><span>Declined · We cannot get these flowers</span></div></div><a class="em-btn" href="#">Open the order in admin</a><p class="em-note">Reroute to a florist you have phoned, or cancel, from the order page. The buyer&#39;s card is held, not charged.</p></div><div class="em-foot"><p>Sent to <code>OPS_ALERT_EMAIL</code>. Internal: never forwarded to a buyer or a florist.</p></div></div></div></div><div class="side"><div><h3>Plain-text part</h3><p class="pt">No florist took order FO-7K2M-9QXA
+
+Cancels automatically at 16:40 Warsaw time unless you act.
+
+Destination: Warszawa, Poland
+Delivery date: Thu 8 Oct (today)
+Cancels at: 16:40 Europe/Warsaw
+
+Offers made:
+1. pl-waw-01: Declined · We are full that day
+2. pl-waw-02: No answer by 14:10
+3. pl-waw-03: Declined · We cannot get these flowers
+
+Open the order in admin:
+https://flowersoverseas.com/admin/orders/{orderId}
+
+Reroute to a florist you have phoned, or cancel, from the order page. The buyer's card is held, not charged.</p></div><div><h3>Build</h3><dl class="spec"><dt>Template</dt><dd><code>emails/ops/alert-no-partner.tsx</code> · key <code>A1</code>; English only, <code>messages/admin/en.json</code></dd><dt>Trigger</dt><dd><code>order.no_partner_available</code>: cascade exhausted (5 offers, no candidate left, or the routing deadline), no candidate at the first attempt, or <code>routing.auto</code> off</dd><dt>Carries</dt><dd>reference, destination city, date, every offer with its outcome (the decline reason's <b>enum label only</b>; the free-text note is never sent), the cancel time from <code>graceEnd</code> in the destination zone, the admin link (spec 012). Florists by their shop code, in <code>&lt;code&gt;</code>. No buyer or recipient data (spec 016 §8).</dd><dt>Action</dt><dd>the link opens <code>/admin/orders/{id}</code>; reroute and cancel are spec 020's slice (16-4), calling <code>manualReroute</code> and spec 013's admin cancel</dd><dt>Copy</dt><dd><ul><li><span class="verb">verbatim</span> the decline reasons (spec 011 App. A)</li><li><span class="prop">proposed</span> <code>emails.ops.noFlorist.subject</code> “No florist: {reference} · {city} · {date}” · <code>.band</code> “Cancels automatically at {time} {city} time unless you act.” · <code>.heading</code> · labels “Destination”, “Cancels at”, “Offers made”, “No answer by {time}” · <code>.open</code> “Open the order in admin” · <code>.what</code></li></ul></dd><dt>AC</dt><dd>016 AC-10, AC-11, AC-12, AC-35</dd></dl></div><div><h3>States of this template</h3><div class="states"><div class="state"><span class="state-tag">Not due today: waits until 10:00 next morning</span><div class="em" style="padding:0;background:none"><div class="em-band" style="padding:12px 16px;border-radius:var(--radius-field)">Cancels automatically at 10:00 tomorrow, Fri 9 Oct, Warsaw time, unless you act.</div></div><p class="stub">16-2: the first 10:00 destination-local at least 2 hours after exhaustion (21:00 → 10:00 next morning; 06:00 → 10:00 the same morning), capped at the routing deadline. <span class="prop">proposed</span> <code>.bandTomorrow</code>.</p></div><div class="state"><span class="state-tag">Automatic routing off for the country</span><div class="em" style="padding:0;background:none"><div class="em-band" style="padding:12px 16px;border-radius:var(--radius-field);background:var(--color-sage-wash)">Automatic routing is off for Poland. Nothing cancels automatically.</div></div><p class="stub"><code>routing.auto</code> off: no expiry is scheduled; the order waits for reroute or cancel, and the only automatic end is spec 013's hold lapse. No “Cancels at” row. <span class="prop">proposed</span> <code>.bandManual</code>.</p></div><div class="state"><span class="state-tag">No florist covers it at all</span><div class="em" style="padding:0;background:none"><div class="em-body" style="padding:0"><div class="em-table"><div class="h"><span>#</span><span>Florist</span><span>Outcome</span></div><div><span></span><span>None</span><span>No florist covers this date and place</span></div></div></div></div><p class="stub">spec 002 §14 A8 rows: straight from <code>authorised</code> or <code>paid_unrouted</code> (16-9). <span class="prop">proposed</span> <code>.noCandidate</code>.</p></div><div class="state"><span class="state-tag">Before spec 020 ships</span><p class="stub">No reroute or cancel button exists on the order page yet; the note line reads “Rerouting is not built yet. The order cancels at the time above.” (<span class="prop">proposed</span> <code>.whatBefore020</code>) and is removed when spec 020's slice merges.</p></div></div></div></div></div><p class="page-label" aria-hidden="true">W <code>whatsapp-copy (V1)</code> · the WhatsApp copy of an offer, ready to paste</p><div class="row"><div class="mx"><dl class="mail-h"><div><dt>From</dt><dd>Flowers Overseas &lt;<code>EMAIL_FROM</code>&gt;</dd></div><div><dt>To</dt><dd><code>OPS_ALERT_EMAIL</code></dd></div><div><dt>Subject</dt><dd class="subj">WhatsApp: new order for pl-waw-02 · answer by 15:40</dd></div><div><dt>Preview</dt><dd class="pre">Paste the message below into the chat with Kwiaciarnia Przykładowa.</dd></div></dl><div class="em"><div class="em-card" lang="en" dir="ltr"><div class="em-top"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wm">Flowers Overseas</span><span class="aud">Internal</span></div><div class="em-body"><h1>Paste this offer into WhatsApp</h1><dl class="em-facts"><div><dt>Florist</dt><dd>Kwiaciarnia Przykładowa · <code>pl-waw-02</code></dd></div><div><dt>Language</dt><dd>Polski</dd></div><div><dt>Paste before</dt><dd class="num">15:40 Europe/Warsaw</dd></div></dl><p class="em-paste">New order from Flowers Overseas
+
+Amber Hour · 18 stems
+Add-ons: Vase
+Delivery date: Thu 8 Oct
+00-001 Warszawa
+You receive 149 zł
+
+Answer by 15:40
+
+Open the order: flowersoverseas.com{base}/orders/6f1c2e0a-…
+We have also sent you this order by email.</p><p class="em-note">The florist has the same offer by email already. Never accept or decline for them; ask them to open the order.</p></div><div class="em-foot"><p>Sent to <code>OPS_ALERT_EMAIL</code>. Internal: never forwarded to a buyer or a florist.</p></div></div></div></div><div class="side"><div><h3>Plain-text part</h3><p class="pt">Paste this offer into WhatsApp
+
+Florist: Kwiaciarnia Przykładowa (pl-waw-02)
+Language: Polski
+Paste before: 15:40 Europe/Warsaw
+
+----- copy from here -----
+New order from Flowers Overseas
+
+Amber Hour · 18 stems
+Add-ons: Vase
+Delivery date: Thu 8 Oct
+00-001 Warszawa
+You receive 149 zł
+
+Answer by 15:40
+
+Open the order: flowersoverseas.com{base}/orders/6f1c2e0a-…
+We have also sent you this order by email.
+----- to here -----
+
+The florist has the same offer by email already. Never accept or decline for them; ask them to open the order.</p></div><div><h3>Build</h3><dl class="spec"><dt>Template</dt><dd><code>emails/ops/whatsapp-copy.tsx</code> · key <code>W</code>, two bodies: the offer (V1) and the stop message (V4); never V2 or V5 (16-5, AC-36)</dd><dt>Trigger</dt><dd>each V1 and V4 for a shop whose <code>notification_channel</code> is <code>whatsapp</code>; the florist's email is sent in parallel every time</dd><dt>The paste block</dt><dd>in the language of the shop's earliest owner member (<code>whatsapp.florist.*</code>; drawn in English, ships in Polish); plain text with line breaks only, so it pastes cleanly into WhatsApp on a phone. It carries the <b>inbox address without a token</b> (<code>{base}/orders/{assignmentId}</code>): no bearer credential passes through the founder's inbox or Meta (AC-22). Signed out, that address shows the sign-in page.</dd><dt>Founder side</dt><dd>shop name and code identify the WhatsApp contact (saved as “florist”, <code>docs/runbooks/whatsapp-phase1.md</code>); no phone number in the email. “Kwiaciarnia Przykładowa” and <code>pl-waw-02</code> are sample values.</dd><dt>Copy</dt><dd><ul><li><span class="verb">verbatim</span> in the paste block: “Add-ons”, “Delivery date”, “You receive {payout}”, “Answer by {time}” (spec 011 App. A)</li><li><span class="prop">proposed</span> <code>whatsapp.florist.offer.*</code> “New order from Flowers Overseas”, “Open the order: {url}”, “We have also sent you this order by email.” · <code>emails.ops.whatsapp.*</code> subject, heading, labels, note</li></ul></dd><dt>AC</dt><dd>016 AC-5, AC-22, AC-36</dd></dl></div><div><h3>States of this template</h3><div class="states"><div class="state"><span class="state-tag">The stop message (V4)</span><div class="em" style="padding:0;background:none"><div class="em-body" style="padding:0;gap:12px"><h1 style="font-size:24px">Paste this stop message into WhatsApp</h1><p class="em-paste">Flowers Overseas
+
+This order is no longer yours. Please do not make it.
+
+Amber Hour · 18 stems · For Thu 8 Oct
+
+If you have already started, call us on +1 (213) 592-5150.</p></div></div><p class="stub">Subject “WhatsApp: stop message for {code}” (<span class="prop">proposed</span>). Sent on a timeout and on every withdrawal; no reason, no link. <code>whatsapp.florist.stop.*</code> reuses V4's verbatim sentence.</p></div></div></div></div></div>
+</div>
+</x-dc>
+</body>
+</html>
