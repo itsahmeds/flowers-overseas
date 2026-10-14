@@ -35,7 +35,9 @@ import {
   formatSummary,
   MIGRATIONS_DIR,
   OWNER_PREAMBLE,
+  pgbossBootstrap,
   readMigrationDir,
+  VENDOR_SCHEMAS,
   readSources,
   runDbCheck,
   SCHEMA_DIR,
@@ -49,7 +51,13 @@ describe("pnpm db:check on the committed tree (spec 002 §13 Q2)", () => {
       cwd: repoRoot,
       encoding: "utf8",
     });
-    expect(stdout.trim()).toMatch(/^\d+ migration\(s\), each with a rollback$/);
+    // Spec 002 AC-21 (TASK-024): the second line reports pg-boss present.
+    expect(stdout.trim().split("\n")).toEqual([
+      expect.stringMatching(/^\d+ migration\(s\), each with a rollback$/),
+      expect.stringMatching(
+        /^pg-boss: schema pgboss bootstrapped by 0012_pgboss\.sql \(pg-boss schema version \d+\)$/,
+      ),
+    ]);
   });
 
   it("is wired to the `db:check` package script", () => {
@@ -306,6 +314,74 @@ describe("table-level drift (the offline half of AC-26)", () => {
         new Map(),
       ).ok,
     ).toBe(true);
+  });
+});
+
+/**
+ * Spec 002 AC-21 (TASK-024): pg-boss's tables live in its own schema and are versioned by pg-boss,
+ * so the table-drift rule skips exactly that schema — and nothing else — and `db:check` reports
+ * the bootstrap.
+ */
+describe("the pg-boss vendor schema (spec 002 AC-21)", () => {
+  const mirror = new Map([
+    ["geo.ts", 'export const country = pgTable("country", {});'],
+  ]);
+
+  it("names pgboss, and only pgboss, as a vendor schema", () => {
+    expect([...VENDOR_SCHEMAS.keys()]).toEqual(["pgboss"]);
+  });
+
+  it("does not require a Drizzle declaration for a table in schema pgboss, nor misread `pgboss.%I`", () => {
+    const report = checkSources(
+      new Map([
+        [
+          "0002_geo.sql",
+          `${OWNER_PREAMBLE}\nCREATE TABLE public.country (id uuid);\nCREATE TABLE pgboss.job (id uuid);\nCREATE TABLE IF NOT EXISTS "pgboss"."queue" (id uuid);\nSELECT format('CREATE TABLE pgboss.%I (LIKE pgboss.job)', 'j1');`,
+        ],
+      ]),
+      mirror,
+    );
+    expect(formatSourceProblems(report)).toEqual([]);
+  });
+
+  it("still requires one for a table in any other schema", () => {
+    const report = checkSources(
+      new Map([
+        [
+          "0002_geo.sql",
+          `${OWNER_PREAMBLE}\nCREATE TABLE public.country (id uuid);\nCREATE TABLE ops.escape (id uuid);`,
+        ],
+      ]),
+      mirror,
+    );
+    expect(report.driftMissingInSchema).toEqual([
+      "0002_geo.sql: table `escape` is created by a migration but is declared in no Drizzle schema module",
+    ]);
+  });
+
+  it("reports the migration that bootstraps pg-boss and its schema version, and nothing without one", () => {
+    expect(
+      pgbossBootstrap(
+        new Map([
+          ["0001_roles.sql", "CREATE ROLE app_owner NOLOGIN;"],
+          [
+            "0012_pgboss.sql",
+            `${OWNER_PREAMBLE}\nCREATE SCHEMA pgboss AUTHORIZATION app_owner;\nINSERT INTO pgboss.version(version) VALUES ('45');`,
+          ],
+          ["0012_pgboss.down.sql", "DROP SCHEMA IF EXISTS pgboss CASCADE;"],
+        ]),
+      ),
+    ).toBe(
+      "pg-boss: schema pgboss bootstrapped by 0012_pgboss.sql (pg-boss schema version 45)",
+    );
+    expect(
+      pgbossBootstrap(
+        new Map([
+          ["0001_roles.sql", "CREATE ROLE app_owner NOLOGIN;"],
+          ["0002_x.sql", "CREATE SCHEMA pgboss_archive;"],
+        ]),
+      ),
+    ).toBeUndefined();
   });
 });
 

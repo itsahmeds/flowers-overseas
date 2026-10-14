@@ -81,6 +81,9 @@ const COMMITTED = readdirSync(join(repoRoot, MIGRATIONS_DIR)).filter((f) =>
   /^\d{4}_.*(?<!\.down)\.sql$/.test(f),
 ).length;
 const FIXTURE_VERSION = String(COMMITTED + 1).padStart(4, "0");
+/** Spec 002 AC-21 (TASK-024): the line `db:check` adds once `0012` bootstraps pg-boss. */
+const PGBOSS_LINE =
+  "pg-boss: schema pgboss bootstrapped by 0012_pgboss.sql (pg-boss schema version 45)";
 
 /** The gate over the committed migrations plus one forward fixture. */
 function gate(
@@ -112,7 +115,10 @@ describe("T-27 — the fixture of spec 002 §10, end to end through db:check", (
     );
     expect(runDbCheck(migrations, schema)).toEqual({
       ok: true,
-      output: [`${String(COMMITTED + 1)} migration(s), each with a rollback`],
+      output: [
+        `${String(COMMITTED + 1)} migration(s), each with a rollback`,
+        PGBOSS_LINE,
+      ],
     });
   });
 
@@ -395,10 +401,11 @@ CREATE FUNCTION f() RETURNS SETOF int LANGUAGE plpgsql AS $f$ BEGIN RETURN QUERY
     ]);
   });
 
-  it("allows dynamic SQL only in 0001's role bootstrap, which needs it, and the list is pinned", () => {
+  it("allows dynamic SQL only in 0001's role bootstrap and 0012's pg-boss plan, which need it, and the list is pinned", () => {
     expect([...DYNAMIC_SQL_ALLOWED.keys()]).toEqual([
       "0001_roles_grants_updated_at.sql",
       "0001_roles_grants_updated_at.down.sql",
+      "0012_pgboss.sql",
     ]);
     for (const file of DYNAMIC_SQL_ALLOWED.keys()) {
       expect(
@@ -672,7 +679,7 @@ describe("AC-27 — breaker round 2 (PR 200)", () => {
     );
     expect({ status: run.status, stdout: run.stdout.trim() }).toEqual({
       status: 0,
-      stdout: `${String(COMMITTED)} migration(s), each with a rollback`,
+      stdout: `${String(COMMITTED)} migration(s), each with a rollback\n${PGBOSS_LINE}`,
     });
   });
 });
@@ -877,7 +884,10 @@ describe("AC-27 — the evaluated mirror (breaker hole 2, PR 200)", () => {
       ),
     ).toEqual({
       ok: true,
-      output: [`${String(COMMITTED)} migration(s), each with a rollback`],
+      output: [
+        `${String(COMMITTED)} migration(s), each with a rollback`,
+        PGBOSS_LINE,
+      ],
     });
   });
 });

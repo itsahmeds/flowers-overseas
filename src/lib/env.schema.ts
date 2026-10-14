@@ -234,7 +234,11 @@ export const serverEnvSchema = z.object({
   SENTRY_DSN: optionalUrl,
   /** Source-map upload token. CI only, never needed for a local or preview build. */
   SENTRY_AUTH_TOKEN: optionalText,
-  /** Shared secret for internal cron/job endpoints. Placeholder until jobs exist. */
+  /**
+   * Shared secret for the internal cron routes (spec 002 §5.2, AC-23; TASK-024): the caller sends
+   * it in the `x-internal-cron-secret` header to `GET /api/internal/db-health` and
+   * `POST /api/internal/jobs/tick`, compared in constant time (`src/jobs/internal.ts`). SECRET.
+   */
   INTERNAL_CRON_SECRET: requiredSecret,
   /**
    * The HMAC key spec 005's signed price quotes are signed with (spec 005 §13 Q5, spec 010 §2

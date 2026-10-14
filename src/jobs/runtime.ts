@@ -96,7 +96,10 @@ export async function withBoss<T>(
   );
   // An EventEmitter with no `error` listener throws on emit; pg-boss emits background errors.
   boss.on("error", (error: Error) => {
-    log.error({ job_runtime: "pg-boss", error_name: error.name }, "jobs.error");
+    log.error(
+      { job_runtime: "pg-boss", error_class: error.name },
+      "jobs.error",
+    );
   });
   await boss.start();
   try {
@@ -238,7 +241,7 @@ export async function runTick(
             job_id: job.id,
             actor,
             duration_ms: Date.now() - startedAt,
-            error_name: error instanceof Error ? error.name : "Error",
+            error_class: error instanceof Error ? error.name : "Error",
           },
           "job.failed",
         );

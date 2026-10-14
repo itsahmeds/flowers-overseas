@@ -21,7 +21,10 @@
  *    role, and its rollback is exempt because a role cannot drop itself;
  *  - **drift, table level** — every table declared in the Drizzle schema (`db/schema/*.ts`) has a
  *    `CREATE TABLE` in some migration, and every `CREATE TABLE` in a migration has a Drizzle
- *    declaration. This is the offline half of AC-26's "a column added in TS but not in a
+ *    declaration. Tables in a `VENDOR_SCHEMAS` schema (`pgboss`, spec 002 AC-21) are
+ *    outside the rule: pg-boss versions them, and its own start-up check is their drift gate;
+ *  - **pg-boss present** (AC-21, TASK-024) — the success output names the migration that creates
+ *    schema `pgboss` and the pg-boss schema version it installs. This is the offline half of AC-26's "a column added in TS but not in a
  *    migration, and the reverse";
  *  - **no recipient email** (AC-27, TASK-018) — no committed migration, forward or rollback, and
  *    no Drizzle module gives `recipient` or `recipient_address` a column matching
@@ -30,8 +33,8 @@
  *    `RENAME COLUMN`, a table or view renamed into a recipient name, `LIKE`,
  *    `INHERITS`/`INHERIT`, `PARTITION OF`, `CREATE TABLE … AS`, `SELECT … INTO`, or literal DDL
  *    inside a string. It fails closed on what it cannot read: a view named like a recipient table,
- *    and **any dynamic-SQL `EXECUTE`** outside `DYNAMIC_SQL_ALLOWED` (only `0001`'s role
- *    bootstrap). The mirror is read twice: as text, and evaluated through `getTableConfig`
+ *    and **any dynamic-SQL `EXECUTE`** outside `DYNAMIC_SQL_ALLOWED` (`0001`'s role bootstrap
+ *    and `0012`'s pg-boss construction plan). The mirror is read twice: as text, and evaluated through `getTableConfig`
  *    (`runDbCheckWithMirror`), so a spread or a constant column name is seen.
  *    `recipientEmailViolations` is the same rule over a live catalogue, for TASK-027's connected
  *    half.

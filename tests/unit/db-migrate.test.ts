@@ -173,6 +173,7 @@ describe("the committed migration set", () => {
       "0009_notifications_ops.sql",
       "0010_auth.sql",
       "0011_rls_policies.sql",
+      "0012_pgboss.sql",
     ]);
   });
 });

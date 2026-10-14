@@ -287,7 +287,14 @@ describe("migration 0004 — media (AC-11, AC-22, §14 A1 (c))", () => {
       for (const file of forwards) {
         const sql = withoutComments(
           readFileSync(join(MIGRATIONS_DIR, file), "utf8"),
-        ).replace(/'[^']*'/g, "''");
+        )
+          .replace(/'[^']*'/g, "''")
+          // A `::bytea` cast is an expression, not a column: pg-boss's plan (`0012`, TASK-024)
+          // hashes text with `sha224(x::bytea)` and joins `pg_namespace n ON n.oid = …`; neither
+          // a cast nor a qualified catalogue reference declares a column. A `bytea` or `oid`
+          // *column* still matches below.
+          .replace(/::\s*bytea\b/gi, "")
+          .replace(/\.\s*oid\b/gi, "");
         expect(sql, file).not.toMatch(banned);
       }
     });

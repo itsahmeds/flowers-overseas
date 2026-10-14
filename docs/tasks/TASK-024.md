@@ -18,7 +18,12 @@ Branch `task/TASK-024-jobs-internal-probes`. pg-boss runs on `DATABASE_URL_UNPOO
 
 ## Escalations
 
-_None recorded._
+- **Interpretation, flagged for the reviewer (not blocking).** AC-7 says "no `enum` type is created"; AC-21 says pg-boss is bootstrapped by migration, and pg-boss's construction plan creates `pgboss.job_state AS ENUM`, with no option to avoid it. Both ACs hold only if AC-7 governs our schema, so `0012` keeps pg-boss's plan verbatim and the two AC-7 checks (`tests/unit/schema-i18n-geo.test.ts`, `tests/integration/schema-i18n-geo.test.ts`) now skip schema `pgboss` and nothing else; an enum anywhere else still fails (mutation checked). The same reading applies to `schema-media.test.ts`'s AC-22 text scan, which now ignores `::bytea` casts and qualified `.oid` catalogue references in pg-boss's plan, never a column. If the spec owner reads AC-7 as covering vendor schemas too, the alternative is a spec amendment.
+
+## Progress
+
+- Migration `0012_pgboss` (pg-boss 12.37.1, schema version 45, owned by `app_owner`, `USAGE` only for `app_web`), `src/jobs/` (registry, runtime, internal routes) and the two route files; draft PR 224.
+- Tests: unit (registry, runtime, internal routes, `/api/health` query counter, db:check), integration (T-21, T-18 pgboss clause, round-trip census); full integration project green on a local PG 16.14.
 
 ## Result
 

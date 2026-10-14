@@ -119,7 +119,7 @@ export async function dbHealthResponse(
     (deps.log ?? defaultLogger).error(
       {
         route: "db-health",
-        error_name: error instanceof Error ? error.name : "Error",
+        error_class: error instanceof Error ? error.name : "Error",
       },
       "internal.db_health_failed",
     );
@@ -152,7 +152,7 @@ export async function tickResponse(
     log.error(
       {
         route: "jobs-tick",
-        error_name: error instanceof Error ? error.name : "Error",
+        error_class: error instanceof Error ? error.name : "Error",
       },
       "internal.tick_failed",
     );

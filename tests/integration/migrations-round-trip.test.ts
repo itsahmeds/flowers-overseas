@@ -2,7 +2,8 @@
  * T-01 and T-02 — the full round trip on an empty Postgres 16 (spec 002 AC-4; TASK-022).
  *
  * `pnpm db:migrate` against an empty database creates every table of §5.1 (the Drizzle mirror's
- * set, which `db:check` holds equal to the migrations), every trigger function and both roles;
+ * set, which `db:check` holds equal to the migrations), every trigger function, both roles and
+ * schema `pgboss` (`0012`, TASK-024: its tables and functions, every object `app_owner`'s);
  * `pnpm db:rollback --to 0000` returns it to zero — no table, type, function, trigger, role or
  * schema of ours left, only the runner's own `schema_migrations` — and the pair runs twice more.
  * Both directions go through the real runner (`scripts/db-migrate.ts`).
@@ -70,6 +71,34 @@ const FUNCTIONS = [
   "set_updated_at",
 ];
 
+/**
+ * Schema `pgboss` as `0012` creates it (pg-boss 12.37.1, schema version 45; TASK-024): its tables
+ * — `queue_stats`'s two dated partitions (today and tomorrow, named by date) are counted, not
+ * named — and its functions. Every object in it is owned by `app_owner`.
+ */
+const PGBOSS_TABLES = [
+  "bam",
+  "instance",
+  "job",
+  "job_common",
+  "job_dependency",
+  "queue",
+  "queue_stats",
+  "schedule",
+  "subscription",
+  "version",
+  "warning",
+];
+const PGBOSS_FUNCTIONS = [
+  "create_queue",
+  "delete_queue",
+  "job_now",
+  "job_table_format",
+  "job_table_run",
+  "job_table_run_async",
+];
+const DATED_PARTITION = /^queue_stats_\d{8}$/;
+
 interface Census {
   tables: string[];
   functions: string[];
@@ -77,6 +106,13 @@ interface Census {
   types: string[];
   roles: string[];
   schemas: string[];
+  pgboss: {
+    tables: string[];
+    datedPartitions: number;
+    functions: string[];
+    /** Owners of the schema and of every relation, function and type in it. */
+    owners: string[];
+  };
 }
 
 describe.skipIf(server.url === undefined)(
@@ -112,6 +148,27 @@ describe.skipIf(server.url === undefined)(
         SELECT nspname AS name FROM pg_namespace
         WHERE nspname NOT LIKE 'pg\\_%' AND nspname NOT IN ('information_schema', 'public')
         ORDER BY 1`;
+      const pgbossTables = (
+        await sql<{ name: string }[]>`
+          SELECT relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'pgboss' AND c.relkind IN ('r', 'p', 'v', 'm') ORDER BY 1`
+      ).map((r) => r.name);
+      const pgbossFunctions = await sql<{ name: string }[]>`
+        SELECT proname AS name FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'pgboss' ORDER BY 1`;
+      const owners = await sql<{ owner: string }[]>`
+        SELECT DISTINCT owner FROM (
+          SELECT pg_get_userbyid(nspowner) AS owner FROM pg_namespace WHERE nspname = 'pgboss'
+          UNION ALL
+          SELECT pg_get_userbyid(c.relowner) FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace WHERE n.nspname = 'pgboss'
+          UNION ALL
+          SELECT pg_get_userbyid(p.proowner) FROM pg_proc p
+            JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'pgboss'
+          UNION ALL
+          SELECT pg_get_userbyid(t.typowner) FROM pg_type t
+            JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'pgboss'
+        ) o ORDER BY 1`;
       return {
         tables: tables.map((r) => r.name),
         functions: functions.map((r) => r.name),
@@ -119,6 +176,14 @@ describe.skipIf(server.url === undefined)(
         types: types.map((r) => r.name),
         roles: roles.map((r) => r.name),
         schemas: schemas.map((r) => r.name),
+        pgboss: {
+          tables: pgbossTables.filter((name) => !DATED_PARTITION.test(name)),
+          datedPartitions: pgbossTables.filter((name) =>
+            DATED_PARTITION.test(name),
+          ).length,
+          functions: pgbossFunctions.map((r) => r.name),
+          owners: owners.map((r) => r.owner),
+        },
       };
     }
 
@@ -129,6 +194,7 @@ describe.skipIf(server.url === undefined)(
       types: ["_schema_migrations", "schema_migrations"],
       roles: [],
       schemas: [],
+      pgboss: { tables: [], datedPartitions: 0, functions: [], owners: [] },
     };
 
     it("AC-4: migrate creates every table of §5.1, the functions and both roles; rollback to 0000 leaves nothing; three times", async () => {
@@ -147,6 +213,12 @@ describe.skipIf(server.url === undefined)(
         expect(up.functions).toEqual(FUNCTIONS);
         expect(up.roles).toEqual(["app_owner", "app_web"]);
         expect(up.triggers).toBeGreaterThan(0);
+        // 0012 (TASK-024): schema pgboss, all of it app_owner's.
+        expect(up.schemas).toEqual(["pgboss"]);
+        expect(up.pgboss.tables).toEqual(PGBOSS_TABLES);
+        expect(up.pgboss.datedPartitions).toBe(2);
+        expect(up.pgboss.functions).toEqual(PGBOSS_FUNCTIONS);
+        expect(up.pgboss.owners).toEqual(["app_owner"]);
         expect(down).toEqual(EMPTY);
       }
       // And forward once more: the pair is re-runnable from a rolled-back database.
