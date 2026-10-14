@@ -116,12 +116,14 @@ describe.skipIf(sql === undefined)(
         expect(rows.map((row) => row.extname)).toEqual(["plpgsql"]);
       });
 
-      it("has created no enum type", async () => {
+      it("has created no enum type outside pg-boss's vendor schema", async () => {
+        // `pgboss.job_state` is pg-boss's own (0012, TASK-024): AC-7 governs our schema.
         const rows = await db<{ typname: string }[]>`
         SELECT t.typname
         FROM pg_type t
         JOIN pg_namespace n ON n.oid = t.typnamespace
-        WHERE t.typtype = 'e' AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+        WHERE t.typtype = 'e'
+          AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pgboss')
       `;
         expect(rows).toEqual([]);
       });

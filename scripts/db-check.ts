@@ -22,7 +22,10 @@
  *  - **drift, table level** — every table declared in the Drizzle schema (`db/schema/*.ts`) has a
  *    `CREATE TABLE` in some migration, and every `CREATE TABLE` in a migration has a Drizzle
  *    declaration. This is the offline half of AC-26's "a column added in TS but not in a
- *    migration, and the reverse";
+ *    migration, and the reverse". Tables in a `VENDOR_SCHEMAS` schema (`pgboss`, spec 002 AC-21)
+ *    are outside the rule: pg-boss versions them, and its own start-up check is their drift gate;
+ *  - **pg-boss present** (AC-21, TASK-024) — the success output names the migration that creates
+ *    schema `pgboss` and the pg-boss schema version it installs;
  *  - **no recipient email** (AC-27, TASK-018) — no committed migration, forward or rollback, and
  *    no Drizzle module gives `recipient` or `recipient_address` a column matching
  *    `/e[-_]?mail/i`, and each problem line cites `plan/07` §1.3. The migrations are replayed in
@@ -30,9 +33,10 @@
  *    `RENAME COLUMN`, a table or view renamed into a recipient name, `LIKE`,
  *    `INHERITS`/`INHERIT`, `PARTITION OF`, `CREATE TABLE … AS`, `SELECT … INTO`, or literal DDL
  *    inside a string. It fails closed on what it cannot read: a view named like a recipient table,
- *    and **any dynamic-SQL `EXECUTE`** outside `DYNAMIC_SQL_ALLOWED` (only `0001`'s role
- *    bootstrap). The mirror is read twice: as text, and evaluated through `getTableConfig`
- *    (`runDbCheckWithMirror`), so a spread or a constant column name is seen.
+ *    and **any dynamic-SQL `EXECUTE`** outside `DYNAMIC_SQL_ALLOWED` (`0001`'s role bootstrap
+ *    and `0012`'s pg-boss construction plan). The mirror is read twice: as text, and evaluated
+ *    through `getTableConfig` (`runDbCheckWithMirror`), so a spread or a constant column name is
+ *    seen.
  *    `recipientEmailViolations` is the same rule over a live catalogue, for TASK-027's connected
  *    half.
  *
@@ -281,9 +285,40 @@ export const OWNER_PREAMBLE = "SET LOCAL ROLE app_owner;";
  * rollback (a role cannot drop itself). */
 export const BOOTSTRAP_VERSION = "0001";
 
-/** `CREATE TABLE [IF NOT EXISTS] [schema.]name` in a migration, however it is quoted. */
+/**
+ * `CREATE TABLE [IF NOT EXISTS] [schema.]name` in a migration, however it is quoted: group 1 is the
+ * schema when one is written, group 2 the table. The trailing look-ahead refuses a name that is
+ * itself followed by a dot, so `pgboss.%I` (a `format()` template inside pg-boss's functions) is
+ * not misread as a table called `pgboss`.
+ */
 const CREATE_TABLE =
-  /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?public"?\.)?"?([a-z_][a-z0-9_]*)"?/gi;
+  /create\s+table\s+(?:if\s+not\s+exists\s+)?(?:"?([a-z_][a-z0-9_]*)"?\.)?"?([a-z_][a-z0-9_]*)"?(?![a-z0-9_"]*\.)/gi;
+
+/**
+ * Schemas whose tables a vendor library defines and Drizzle never mirrors, with the reason. Their
+ * `CREATE TABLE`s are outside the drift rule: the library's own version check is the drift gate
+ * for them (`src/jobs/runtime.ts` starts pg-boss with `migrate: false`, which refuses a schema
+ * version it does not expect).
+ */
+export const VENDOR_SCHEMAS: ReadonlyMap<string, string> = new Map([
+  [
+    "pgboss",
+    "pg-boss's job tables (spec 002 §2, AC-21; 0012_pgboss): its construction plan, versioned by pg-boss",
+  ],
+]);
+
+/** Tables a migration body creates outside the vendor schemas, deduplicated and sorted. */
+function migrationTableNames(body: string): string[] {
+  const names = new Set<string>();
+  for (const match of body.matchAll(CREATE_TABLE)) {
+    const schema = match[1]?.toLowerCase();
+    const table = match[2];
+    if (table === undefined) continue;
+    if (schema !== undefined && VENDOR_SCHEMAS.has(schema)) continue;
+    names.add(table);
+  }
+  return [...names].sort();
+}
 /** `pgTable("name"` in a Drizzle schema module. */
 const PG_TABLE = /pgTable\s*\(\s*["'`]([a-z_][a-z0-9_]*)["'`]/g;
 
@@ -1146,6 +1181,10 @@ export const DYNAMIC_SQL_ALLOWED: ReadonlyMap<string, string> = new Map([
     "0001_roles_grants_updated_at.down.sql",
     "ALTER DEFAULT PRIVILEGES / REASSIGN OWNED / DROP ROLE, guarded by role-existence checks",
   ],
+  [
+    "0012_pgboss.sql",
+    "pg-boss's construction plan, verbatim: its functions build per-queue tables and stats partitions as `pgboss.%I` with format(); every name it can create is inside schema pgboss, never a recipient table",
+  ],
 ]);
 
 /**
@@ -1374,7 +1413,7 @@ export function checkSources(
         `${file}: must open with \`${OWNER_PREAMBLE}\` so app_owner owns what it creates (spec 002 §2)`,
       );
     }
-    for (const table of tableNames(body, CREATE_TABLE)) {
+    for (const table of migrationTableNames(body)) {
       if (!createdTables.has(table)) createdTables.set(table, file);
     }
   }
@@ -1461,6 +1500,33 @@ export function formatSummary(report: DbCheckReport): string {
   return `${report.migrations.length} migration(s), each with a rollback`;
 }
 
+/**
+ * The line that says pg-boss is bootstrapped (spec 002 AC-21: "`pnpm db:check` reports it
+ * present"): the forward migration that creates schema `pgboss` and the pg-boss schema version
+ * its construction plan records. `undefined` when no migration creates the schema — a fixture
+ * tree, or the tree before `0012`.
+ */
+export function pgbossBootstrap(
+  migrationSources: ReadonlyMap<string, string>,
+): string | undefined {
+  const files = [...migrationSources.keys()]
+    .filter((file) => !file.endsWith(".down.sql"))
+    .sort();
+  for (const file of files) {
+    const body = migrationSources.get(file) ?? "";
+    if (
+      !/create\s+schema\s+(?:if\s+not\s+exists\s+)?"?pgboss"?[\s;]/i.test(body)
+    )
+      continue;
+    const version =
+      /insert\s+into\s+pgboss\.version\s*\(\s*version\s*\)\s*values\s*\(\s*'?(\d+)'?\s*\)/i.exec(
+        body,
+      )?.[1];
+    return `pg-boss: schema pgboss bootstrapped by ${file}${version === undefined ? "" : ` (pg-boss schema version ${version})`}`;
+  }
+  return undefined;
+}
+
 export function runDbCheck(
   migrationsDir: string,
   schemaDir?: string,
@@ -1469,12 +1535,20 @@ export function runDbCheck(
   output: string[];
 } {
   const report = checkMigrations(readMigrationDir(migrationsDir));
+  const migrationSources = readSources(migrationsDir, ".sql");
   const sources = checkSources(
-    readSources(migrationsDir, ".sql"),
+    migrationSources,
     schemaDir === undefined ? new Map() : readSources(schemaDir, ".ts"),
   );
   if (report.ok && sources.ok) {
-    return { ok: true, output: [formatSummary(report)] };
+    const pgboss = pgbossBootstrap(migrationSources);
+    return {
+      ok: true,
+      output: [
+        formatSummary(report),
+        ...(pgboss === undefined ? [] : [pgboss]),
+      ],
+    };
   }
   return {
     ok: false,

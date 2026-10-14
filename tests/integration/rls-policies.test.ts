@@ -1004,5 +1004,62 @@ describe.skipIf(server.url === undefined)(
       expect(result.login.escape?.code).toBe("42501");
       expect(result.login.afterReset).toBe(false);
     });
+
+    it("T-18 / AC-18 (last clause, TASK-024): app_web cannot read pgboss internals it was not granted", async () => {
+      // `0012` grants `app_web` USAGE on schema `pgboss` and nothing inside it. The census is read
+      // from the catalogue, so a table pg-boss adds in a later schema version is covered too.
+      const tables = (
+        await scratch.sql<{ name: string }[]>`
+          SELECT c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'pgboss' AND c.relkind IN ('r', 'p') ORDER BY 1`
+      ).map((row) => row.name);
+      expect(tables).toEqual(
+        expect.arrayContaining(["job", "queue", "version"]),
+      );
+      const [grants] = await scratch.sql<{ usage: boolean; create: boolean }[]>`
+        SELECT has_schema_privilege('app_web', 'pgboss', 'USAGE') AS usage,
+               has_schema_privilege('app_web', 'pgboss', 'CREATE') AS create`;
+      expect(grants).toEqual({ usage: true, create: false });
+      // EXECUTE on every pgboss function is revoked, read from the catalogue (breaker hole 2 / review
+      // N2, PR 224): `create_queue` failing below is also explained by its own INSERT, so the
+      // revoke needs this assertion of its own.
+      const functions = await scratch.sql<{ name: string; execute: boolean }[]>`
+        SELECT p.oid::regprocedure::text AS name,
+               has_function_privilege('app_web', p.oid, 'EXECUTE') AS execute
+        FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'pgboss' ORDER BY 1`;
+      expect(functions.length).toBeGreaterThan(0);
+      expect(functions.filter((f) => f.execute).map((f) => f.name)).toEqual([]);
+
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const context = { role: "admin" };
+        const failure = (statement: string) =>
+          as(tx, context, (sp) =>
+            pgFailure(sp, (inner) => inner.unsafe(statement)),
+          );
+        const reads: Record<string, string> = {};
+        for (const table of tables) {
+          reads[table] = (
+            await failure(`SELECT 1 FROM pgboss.${table} LIMIT 1`)
+          ).code;
+        }
+        return {
+          reads,
+          insert: await failure(
+            "INSERT INTO pgboss.job (name, data) VALUES ('retention.sweep', '{}')",
+          ),
+          createQueue: await failure(
+            "SELECT pgboss.create_queue('escape', '{}'::jsonb)",
+          ),
+          create: await failure("CREATE TABLE pgboss.escape (id int)"),
+        };
+      });
+      for (const table of tables) {
+        expect(result.reads[table], `SELECT on pgboss.${table}`).toBe("42501");
+      }
+      expect(result.insert.code).toBe("42501");
+      expect(result.createQueue.code).toBe("42501");
+      expect(result.create.code).toBe("42501");
+    });
   },
 );

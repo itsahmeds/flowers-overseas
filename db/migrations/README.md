@@ -109,6 +109,20 @@ hand-written SQL uses — including the Drizzle Kit foreign-key convention
 `<table>_<column>_<parent>_<parent_column>_fk` — so the generated draft and the applied migration
 stay comparable.
 
+## pg-boss (`0012`)
+
+Schema `pgboss` is created by `0012_pgboss.sql` from pg-boss's own construction plan
+(`getConstructionPlans('pgboss')`), owned by `app_owner`, with `USAGE` — and nothing inside the
+schema — granted to `app_web` (spec 002 AC-18, AC-21). The runtime (`src/jobs/runtime.ts`) starts
+pg-boss with `migrate: false`, so pg-boss never changes its schema in a deploy: it checks the
+version and refuses to start when it expects another one. **Upgrading pg-boss is therefore a
+migration**: pin the new version in `package.json`, write `NNNN_pgboss_vX.sql` from
+`getMigrationPlans('pgboss', <installed version>)` (opening with the ownership preamble) and its
+`.down.sql` from `getRollbackPlans`, add the file to `DYNAMIC_SQL_ALLOWED` in
+`scripts/db-check.ts` with its reason, and let `tests/integration/jobs-pgboss.test.ts` prove the
+start succeeds. `pnpm db:check` names the bootstrap migration and its pg-boss schema version on
+success; the `pgboss` tables are outside its Drizzle drift rule (`VENDOR_SCHEMAS`).
+
 ## Phase 0 caveat
 
 There is one shared database in Phase 0 (spec 002 §13 Q5), so a migration applied from a branch

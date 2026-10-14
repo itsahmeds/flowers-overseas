@@ -23,7 +23,7 @@ task actually touches.
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +16 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +17 |
 | `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx`, `unit/checkout-ui-components.test.tsx` +41 |
 
 ## Config (`src/config/`)
@@ -89,6 +89,8 @@ task actually touches.
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
+| `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron (spec 002 AC-23) | spec 002 |
+| `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts only (spec 002 AC-21) | spec 002 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's action (spec 004 §14… | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
@@ -156,10 +158,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 283 |
-| `tests/integration/` | 20 |
+| `tests/unit/` | 288 |
+| `tests/integration/` | 21 |
 | `tests/contract/` | 12 |
-| `tests/e2e/` | 53 |
+| `tests/e2e/` | 54 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
