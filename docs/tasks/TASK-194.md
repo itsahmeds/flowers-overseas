@@ -107,7 +107,7 @@ _None recorded._
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-14 (paused by the founder): PR 221 (draft). Done: the two tokens in both files; `MotionIsland` (one null-rendering client module in `SiteHeader`) plus CSS in `globals.css` for motions 1 (header bloom + bar), 3 (Continue `pending`), 4 (shimmer), 6 (pill press, `transition-colors` removed everywhere, `@source not inline("transition")`), 7 (tier/date ring), 10 (popup, menu, consent entry via `@starting-style`), 12 (home sections); unit tests `motion-css.test.ts`, `motion-model.test.tsx` green, full unit suite green. Next: escalate motion 5 (the H1 has no split around "far away"; marking it is a message change in every locale, outside the fence); after PR 214 merges, rebase and do 6 (cards) and 11 (`MediaAsset` `data-fo-fade`); e2e for T-48/T-06 (no loader on first load/reload/JS-off/`?page=2`, LCP ancestors, CLS, reduced motion, motion 12 first viewport); client-JS budget build; screenshots; README difference rows (360/250/1600 ms literals drawn, tokens built; exit animations not built because `display`/`overlay` transitions are outside AC-44); the `pdp-bar-reveal` `visibility` keyframe exception named in the scan, for the reviewer.
 
 ## Result
 
