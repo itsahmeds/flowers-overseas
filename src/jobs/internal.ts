@@ -8,6 +8,10 @@
  * `X-Robots-Tag: noindex`, and both paths sit under spec 001's `/api/` robots disallow
  * (`src/modules/seo/robots.ts`), so neither can be cached by Cloudflare or indexed.
  *
+ * Statuses: 401 without the secret; 200 with it; 503 when the database work fails (the database is
+ * unreachable, or pg-boss refuses its schema version), so a cron caller retries on any 5xx and
+ * never mistakes a failed tick for an empty one.
+ *
  * The database work is injected (`probe`, `tick`), so this module is unit-testable with no
  * database and the route files in `src/app/api/internal/` stay one call each (`plan/01` §5).
  * Neither body carries PII: counts, a latency, a migration name.
@@ -158,7 +162,7 @@ export async function tickResponse(
     );
     return json(
       request,
-      500,
+      503,
       InternalError.parse({ ok: false, error: "tick_failed" }),
     );
   }

@@ -57,6 +57,9 @@ export function bossOptions(connectionString: string): ConstructorOptions {
     application_name: "fo-jobs",
     // One request at a time uses it; two connections cover a fetch beside a complete.
     max: 2,
+    // A probe that cannot connect answers 503 within the request, rather than hanging on a host
+    // that never refuses.
+    connectionTimeoutMillis: 10_000,
     migrate: false,
     createSchema: false,
     supervise: false,
@@ -84,7 +87,8 @@ export interface WithBossOptions {
 
 /**
  * Starts a pg-boss instance, runs `fn` with it, and stops it — pool closed, nothing left armed —
- * whether `fn` resolved or threw.
+ * whether the start was refused, `fn` resolved, or `fn` threw. A failed stop is logged, never
+ * allowed to mask the start's or `fn`'s own error.
  */
 export async function withBoss<T>(
   fn: (boss: PgBoss) => Promise<T>,
@@ -101,11 +105,23 @@ export async function withBoss<T>(
       "jobs.error",
     );
   });
-  await boss.start();
+  // `start()` inside the `try`: a refused start (a schema version pg-boss does not expect) has
+  // already opened the pool, and pg-boss documents that `stop()` must still run to release it.
   try {
+    await boss.start();
     return await fn(boss);
   } finally {
-    await boss.stop({ graceful: false, close: true, timeout: 1_000 });
+    await boss
+      .stop({ graceful: false, close: true, timeout: 1_000 })
+      .catch((error: unknown) => {
+        log.warn(
+          {
+            job_runtime: "pg-boss",
+            error_class: error instanceof Error ? error.name : "Error",
+          },
+          "jobs.stop_failed",
+        );
+      });
   }
 }
 

@@ -279,6 +279,28 @@ describe("migration 0004 — media (AC-11, AC-22, §14 A1 (c))", () => {
   describe("AC-22 — keys, never bytes (ADR-0015)", () => {
     const banned = /\bbytea\b|\blargeobject\b|\blo_import\b|\boid\b/i;
 
+    /**
+     * pg-boss's construction plan (`0012`, TASK-024) names `bytea` and `oid` three times, and
+     * none of them is a column: two `sha224(…::bytea)` hashes and one `n.oid` catalogue join.
+     * Exactly those three expressions are removed, and only from `0012` — every other spelling,
+     * a `::bytea` in a `CREATE TABLE … AS SELECT` or an `oid` column, still matches (breaker
+     * hole 6, PR 224). Each must be present, so a change to pg-boss's plan fails here first.
+     */
+    const PGBOSS_EXPRESSIONS = [
+      "sha224((current_database() || '')::bytea)",
+      "sha224(queue_name::bytea)",
+      "JOIN pg_namespace n ON n.oid = c.relnamespace",
+    ];
+    function withoutPgBossExpressions(file: string, sql: string): string {
+      if (file !== "0012_pgboss.sql") return sql;
+      let out = sql;
+      for (const expression of PGBOSS_EXPRESSIONS) {
+        expect(out, expression).toContain(expression);
+        out = out.split(expression).join("");
+      }
+      return out;
+    }
+
     it("declares no binary column in any committed forward migration", () => {
       const forwards = readdirSync(MIGRATIONS_DIR).filter(
         (file) => /^\d{4}_\w+\.sql$/.test(file) && !file.endsWith(".down.sql"),
@@ -287,15 +309,8 @@ describe("migration 0004 — media (AC-11, AC-22, §14 A1 (c))", () => {
       for (const file of forwards) {
         const sql = withoutComments(
           readFileSync(join(MIGRATIONS_DIR, file), "utf8"),
-        )
-          .replace(/'[^']*'/g, "''")
-          // A `::bytea` cast is an expression, not a column: pg-boss's plan (`0012`, TASK-024)
-          // hashes text with `sha224(x::bytea)` and joins `pg_namespace n ON n.oid = …`; neither
-          // a cast nor a qualified catalogue reference declares a column. A `bytea` or `oid`
-          // *column* still matches below.
-          .replace(/::\s*bytea\b/gi, "")
-          .replace(/\.\s*oid\b/gi, "");
-        expect(sql, file).not.toMatch(banned);
+        ).replace(/'[^']*'/g, "''");
+        expect(withoutPgBossExpressions(file, sql), file).not.toMatch(banned);
       }
     });
 

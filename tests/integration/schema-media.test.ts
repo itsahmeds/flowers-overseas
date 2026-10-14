@@ -96,15 +96,35 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
       }
     });
 
-    it("AC-22 — holds no bytea column in any schema of ours", async () => {
-      const rows = await db<{ where: string }[]>`
-        SELECT table_schema || '.' || table_name || '.' || column_name AS where
-        FROM information_schema.columns
-        WHERE data_type = 'bytea'
-          AND table_schema NOT IN ('pg_catalog', 'information_schema')
-          AND table_schema NOT LIKE 'pg\_%'
+    it("AC-22 — holds no bytea or oid column in any schema of ours, pgboss included", async () => {
+      // `pg_attribute`, not `information_schema.columns`: the catalogue sees every relation
+      // whatever the connecting role may read, and `oid` (a large-object handle) is binary storage
+      // by another name. Every non-system schema, so pg-boss's vendor schema is held to AC-22 too
+      // (breaker hole 6, PR 224).
+      // One scan, two readings: the binary columns, and the schemas the scan covered — so the
+      // filter is proven to reach `pgboss`. (`'pg\\_%'`: a template literal cooks `\_` to `_`,
+      // a LIKE wildcard that would silently drop `pgboss` from the scan.)
+      const rows = await db<
+        { schema: string; where: string; binary: boolean }[]
+      >`
+        SELECT n.nspname AS schema,
+               n.nspname || '.' || c.relname || '.' || a.attname AS where,
+               a.atttypid IN ('bytea'::regtype, 'oid'::regtype) AS binary
+        FROM pg_attribute a
+        JOIN pg_class c ON c.oid = a.attrelid
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE a.attnum > 0 AND NOT a.attisdropped
+          AND c.relkind IN ('r', 'p', 'v', 'm', 'f')
+          AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND n.nspname NOT LIKE 'pg\\_%'
       `;
-      expect(rows.map((row) => row.where)).toEqual([]);
+      expect(rows.filter((row) => row.binary).map((row) => row.where)).toEqual(
+        [],
+      );
+      expect([...new Set(rows.map((row) => row.schema))].sort()).toEqual([
+        "pgboss",
+        "public",
+      ]);
     });
 
     it("AC-11 — declares the one-primary index unique, on product_id, where is_primary", async () => {

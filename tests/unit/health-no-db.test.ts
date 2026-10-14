@@ -112,6 +112,28 @@ describe("GET /api/health is database-free (AC-23)", () => {
     expect(counter.statements).toBeGreaterThan(before);
   });
 
+  it("positive control: the counting driver double counts a client, a tagged-template statement, unsafe() and begin()", async () => {
+    // Breaker hole 9 (PR 224, U13): every statement path of the `postgres` double is proven live,
+    // so a route that queried through `sql\`…\`` could not slip past a dead branch of the counter.
+    const { default: postgres } = await import("postgres");
+    const before = { ...counter };
+    const sql = postgres(
+      "postgres://user:pass@localhost:5432/fo",
+    ) as unknown as {
+      (strings: TemplateStringsArray, ...values: unknown[]): Promise<unknown>;
+      unsafe(query: string): Promise<unknown>;
+      begin(fn: (tx: unknown) => Promise<unknown>): Promise<unknown>;
+    };
+    await sql`SELECT 1`;
+    expect(counter).toEqual({
+      clients: before.clients + 1,
+      statements: before.statements + 1,
+    });
+    await sql.unsafe("SELECT 1");
+    await sql.begin(async () => undefined);
+    expect(counter.statements).toBe(before.statements + 3);
+  });
+
   it("positive control: the same counter sees a pg-boss instance from withBoss", async () => {
     const { withBoss } = await import("../../src/jobs/runtime");
     const clients = counter.clients;

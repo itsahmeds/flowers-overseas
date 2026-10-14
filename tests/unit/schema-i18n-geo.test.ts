@@ -104,6 +104,11 @@ describe("migration 0002 — i18n + geo (AC-7, T-06)", () => {
       expect(withoutComments(sql), name).not.toMatch(
         /CREATE\s+TYPE\s+(?!"?pgboss"?\.)[\s\S]{0,200}?AS\s+ENUM/i,
       );
+      // ...and no type is moved out of `pgboss` into our schema (breaker hole 5, PR 224): an enum
+      // created there and `ALTER TYPE … SET SCHEMA public` would otherwise pass the line above.
+      expect(withoutComments(sql), name).not.toMatch(
+        /ALTER\s+TYPE\s+[\s\S]{0,200}?SET\s+SCHEMA/i,
+      );
     }
   });
 

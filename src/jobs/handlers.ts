@@ -6,6 +6,10 @@
  * `media.derive_variants` spec 006 (TASK-082). Each adds one entry here. Until a name has an
  * entry, `runTick` does not fetch from its queue, so a job enqueued early waits (and shows in
  * `/api/internal/db-health`'s `pending_jobs`) rather than being consumed by nothing.
+ *
+ * **Every handler must be idempotent.** `runTick` settles each fetched job once, but delivery is
+ * at least once: a process killed between a handler's work and `complete` leaves the job `active`
+ * until it expires, and pg-boss then hands it out again (review N7, PR 224).
  */
 import type { JobHandlers } from "./runtime";
 

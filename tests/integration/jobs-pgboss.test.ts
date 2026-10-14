@@ -148,6 +148,20 @@ describe.skipIf(server.url === undefined)(
       expect(row?.version).toBe(EXPECTED_SCHEMA_VERSION);
     });
 
+    it("refuses promptly, without running the callback, when no database answers (the preview's 503)", async () => {
+      let ran = false;
+      const fn = async (): Promise<string> => {
+        ran = true;
+        return "ran";
+      };
+      const startedAt = Date.now();
+      await expect(
+        withBoss(fn, { connectionString: "postgres://u:p@127.0.0.1:1/none" }),
+      ).rejects.toThrow();
+      expect(ran).toBe(false);
+      expect(Date.now() - startedAt).toBeLessThan(15_000);
+    }, 30_000);
+
     it("creates a queue for every registered job and for no declared-only name", async () => {
       await withBoss(
         async (boss) => {
@@ -323,6 +337,24 @@ describe.skipIf(server.url === undefined)(
       const text = JSON.stringify(log.lines);
       expect(text).toContain("payload.objectKey:invalid_type");
       expect(text).not.toContain("backups/2026/10/14");
+      // Exactly these keys, so a `data` or `payload` field cannot ride along — the logger would
+      // redact `objectKey` by name, which is why a value check alone is not enough (breaker hole
+      // 4, PR 224).
+      expect(log.lines.map((line) => line.msg)).toEqual([
+        "job.rejected",
+        "job.rejected",
+      ]);
+      for (const line of log.lines) {
+        expect(Object.keys(line).sort()).toEqual([
+          "issues",
+          "job",
+          "job_id",
+          "level",
+          "msg",
+          "reason",
+          "time",
+        ]);
+      }
     });
 
     it("a handler that throws fails the job (pg-boss retries it), and the tick still answers", async () => {
@@ -358,29 +390,45 @@ describe.skipIf(server.url === undefined)(
 
     it("T-23 (database half): probeDbHealth reports the newest applied migration and the waiting jobs", async () => {
       await scratch.sql`DELETE FROM pgboss.job`;
-      const health = await withBoss(
+      // One job in each state (breaker hole 3, PR 224): `created` and `retry` are waiting and
+      // count; `active` (fetched, not settled) and `completed` do not. So `state <= 'active'`
+      // reads 3 and `state = 'created'` reads 1, and only `state < 'active'` reads 2.
+      const { health, states } = await withBoss(
         async (boss) => {
           await ensureQueues(boss);
+          const request = { requestId: "system:test" };
           await enqueue(
             boss,
             "media.derive_variants",
             { assetId: "a1", reason: "upload" },
-            {
-              requestId: "system:test",
-            },
+            request,
           );
-          await enqueue(
-            boss,
-            "media.derive_variants",
-            { assetId: "a2", reason: "backfill" },
-            {
-              requestId: "system:test",
-            },
-          );
-          return probeDbHealth(boss);
+          await enqueue(boss, "neon.usage_probe", {}, request);
+          const [retrying] = await boss.fetch("neon.usage_probe");
+          await boss.fail("neon.usage_probe", retrying?.id ?? "", {
+            error: "Error",
+          });
+          await enqueue(boss, "db.backup_verify", { objectKey: "k" }, request);
+          await boss.fetch("db.backup_verify");
+          await enqueue(boss, "retention.sweep", {}, request);
+          const [done] = await boss.fetch("retention.sweep");
+          await boss.complete("retention.sweep", done?.id ?? "");
+          return {
+            health: await probeDbHealth(boss),
+            states: (
+              await scratch.sql<{ name: string; state: string }[]>`
+                SELECT name, state::text AS state FROM pgboss.job ORDER BY name`
+            ).map((row) => `${row.name}:${row.state}`),
+          };
         },
         { connectionString: loginUrl },
       );
+      expect(states).toEqual([
+        "db.backup_verify:active",
+        "media.derive_variants:created",
+        "neon.usage_probe:retry",
+        "retention.sweep:completed",
+      ]);
       const [newest] = await scratch.sql<{ latest: string }[]>`
         SELECT version || '_' || name AS latest FROM public.schema_migrations
         ORDER BY version DESC LIMIT 1`;

@@ -110,6 +110,16 @@ describe("the payload schemas (spec 002 §5.2, spec 006 §5.2)", () => {
     expect(BackupVerifyPayload.safeParse({}).success).toBe(false);
   });
 
+  it("MediaDeriveVariantsPayload's reasons are exactly spec 006's three (breaker hole 8)", () => {
+    expect([...MediaDeriveVariantsPayload.shape.reason.options].sort()).toEqual(
+      ["backfill", "reencode", "upload"],
+    );
+    expect(Object.keys(MediaDeriveVariantsPayload.shape).sort()).toEqual([
+      "assetId",
+      "reason",
+    ]);
+  });
+
   it("MediaDeriveVariantsPayload is spec 006's: assetId and one of three reasons", () => {
     expect(
       MediaDeriveVariantsPayload.parse({ assetId: "a1", reason: "upload" }),

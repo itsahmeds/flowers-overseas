@@ -57,9 +57,35 @@ describe("hasInternalSecret", () => {
       SECRET.slice(0, -1),
       `${SECRET}x`,
       `${SECRET} x`,
+      // Breaker hole 1 (PR 224, U2): the compare is exact, never case-insensitive.
+      SECRET.toUpperCase(),
+      `${SECRET.slice(0, 1).toUpperCase()}${SECRET.slice(1)}`,
     ]) {
       expect(with_(value), String(value)).toBe(false);
     }
+  });
+
+  it("compares the raw header value: surrounding whitespace is a different secret (hole 1, U3)", () => {
+    // `Headers` already strips leading and trailing whitespace and refuses a newline, so the raw
+    // value is handed in through a minimal request double: `hasInternalSecret` must not trim it.
+    const raw = (value: string): Request =>
+      ({
+        headers: {
+          get: (name: string) =>
+            name === INTERNAL_SECRET_HEADER ? value : null,
+        },
+      }) as unknown as Request;
+    for (const value of [
+      ` ${SECRET}`,
+      `${SECRET} `,
+      `${SECRET}\n`,
+      `\t${SECRET}`,
+    ]) {
+      expect(hasInternalSecret(raw(value), SECRET), JSON.stringify(value)).toBe(
+        false,
+      );
+    }
+    expect(hasInternalSecret(raw(SECRET), SECRET)).toBe(true);
   });
 
   it("never matches when the configured secret is empty", () => {
@@ -167,7 +193,7 @@ describe("POST /api/internal/jobs/tick (spec 002 §5.2: counts only)", () => {
     });
   });
 
-  it("500 with a closed-set error when the tick throws", async () => {
+  it("503 with a closed-set error when the tick throws", async () => {
     const response = await tickResponse(
       request("/api/internal/jobs/tick", "POST", SECRET),
       {
@@ -178,7 +204,7 @@ describe("POST /api/internal/jobs/tick (spec 002 §5.2: counts only)", () => {
         log: quiet(),
       },
     );
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
     expectInternalHeaders(response);
     expect(await response.json()).toEqual({ ok: false, error: "tick_failed" });
   });
@@ -264,6 +290,11 @@ describe("the route files, as Next loads them", () => {
     );
     expect(allowed.status).toBe(200);
     expect(ensure).toHaveBeenCalledTimes(1);
-    expect(tick).toHaveBeenCalledWith({ boss: true }, JOB_HANDLERS);
+    expect(tick).toHaveBeenCalledTimes(1);
+    // Identity, not deep equality: `JOB_HANDLERS` is `{}` today, so `toHaveBeenCalledWith` would
+    // also pass for a route that ticked with a fresh `{}` (breaker hole 7, U39).
+    const [boss, handlers] = tick.mock.calls[0] as [unknown, unknown];
+    expect(boss).toEqual({ boss: true });
+    expect(handlers).toBe(JOB_HANDLERS);
   });
 });

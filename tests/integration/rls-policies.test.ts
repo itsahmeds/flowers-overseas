@@ -1020,6 +1020,16 @@ describe.skipIf(server.url === undefined)(
         SELECT has_schema_privilege('app_web', 'pgboss', 'USAGE') AS usage,
                has_schema_privilege('app_web', 'pgboss', 'CREATE') AS create`;
       expect(grants).toEqual({ usage: true, create: false });
+      // EXECUTE on every pgboss function is revoked, read from the catalogue (breaker hole 2 / review
+      // N2, PR 224): `create_queue` failing below is also explained by its own INSERT, so the
+      // revoke needs this assertion of its own.
+      const functions = await scratch.sql<{ name: string; execute: boolean }[]>`
+        SELECT p.oid::regprocedure::text AS name,
+               has_function_privilege('app_web', p.oid, 'EXECUTE') AS execute
+        FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'pgboss' ORDER BY 1`;
+      expect(functions.length).toBeGreaterThan(0);
+      expect(functions.filter((f) => f.execute).map((f) => f.name)).toEqual([]);
 
       const result = await rolledBack(scratch.sql, async (tx) => {
         const context = { role: "admin" };

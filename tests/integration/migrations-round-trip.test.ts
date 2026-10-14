@@ -106,6 +106,8 @@ interface Census {
   types: string[];
   roles: string[];
   schemas: string[];
+  /** AC-7, from the catalogue: every enum type outside the system schemas, `schema.name`. */
+  enums: string[];
   pgboss: {
     tables: string[];
     datedPartitions: number;
@@ -169,8 +171,15 @@ describe.skipIf(server.url === undefined)(
           SELECT pg_get_userbyid(t.typowner) FROM pg_type t
             JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'pgboss'
         ) o ORDER BY 1`;
+      const enums = await sql<{ name: string }[]>`
+        SELECT n.nspname || '.' || t.typname AS name FROM pg_type t
+        JOIN pg_namespace n ON n.oid = t.typnamespace
+        WHERE t.typtype = 'e' AND n.nspname NOT IN ('pg_catalog', 'information_schema')
+          AND n.nspname NOT LIKE 'pg\\_%'
+        ORDER BY 1`;
       return {
         tables: tables.map((r) => r.name),
+        enums: enums.map((r) => r.name),
         functions: functions.map((r) => r.name),
         triggers: triggers?.n ?? -1,
         types: types.map((r) => r.name),
@@ -194,6 +203,7 @@ describe.skipIf(server.url === undefined)(
       types: ["_schema_migrations", "schema_migrations"],
       roles: [],
       schemas: [],
+      enums: [],
       pgboss: { tables: [], datedPartitions: 0, functions: [], owners: [] },
     };
 
@@ -219,6 +229,10 @@ describe.skipIf(server.url === undefined)(
         expect(up.pgboss.datedPartitions).toBe(2);
         expect(up.pgboss.functions).toEqual(PGBOSS_FUNCTIONS);
         expect(up.pgboss.owners).toEqual(["app_owner"]);
+        // AC-7 on the catalogue, run here because this suite runs on every local server and in
+        // CI (breaker hole 5, PR 224): pg-boss's own enum and nothing else — an enum created in
+        // `pgboss` and moved into `public` shows up as `public.…`.
+        expect(up.enums).toEqual(["pgboss.job_state"]);
         expect(down).toEqual(EMPTY);
       }
       // And forward once more: the pair is re-runnable from a rolled-back database.
@@ -226,6 +240,10 @@ describe.skipIf(server.url === undefined)(
       expect((await census()).tables).toHaveLength(
         MIRROR_TABLES.length + VIEWS.length + 1,
       );
+      // AC-7, the extension half, on the catalogue of a fully migrated database: none created.
+      const extensions = await scratch.sql<{ name: string }[]>`
+        SELECT extname AS name FROM pg_extension ORDER BY 1`;
+      expect(extensions.map((r) => r.name)).toEqual(["plpgsql"]);
     }, 600_000);
   },
 );

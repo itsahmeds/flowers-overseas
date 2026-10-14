@@ -48,6 +48,7 @@ describe("bossOptions — no DDL and no timers in the web process", () => {
       schema: "pgboss",
       application_name: "fo-jobs",
       max: 2,
+      connectionTimeoutMillis: 10_000,
       migrate: false,
       createSchema: false,
       supervise: false,
@@ -100,6 +101,11 @@ describe("withBoss — one instance per call, always stopped", () => {
       }),
     ).rejects.toThrow("requires migrations");
     expect(fn).not.toHaveBeenCalled();
+    // Review N1 (PR 224): the refused start already opened pg-boss's pool, so stop still runs.
+    expect(calls).toEqual([
+      "start",
+      'stop:{"graceful":false,"close":true,"timeout":1000}',
+    ]);
   });
 });
 
@@ -148,6 +154,70 @@ describe("ensureQueues", () => {
       "neon.usage_probe",
       "retention.sweep",
     ]);
+  });
+});
+
+describe("runTick — what reaches a log line (breaker hole 4, PR 224)", () => {
+  it("writes each job.* line with exactly its declared keys: never the job's data or payload", async () => {
+    const fake = fakeBoss({
+      "db.backup_verify": [
+        {
+          id: "bad",
+          data: envelope({ objectKey: 9, note: "buyer@example.test" }),
+        },
+        {
+          id: "good",
+          data: envelope({ objectKey: "backups/2026/10/14/fo.dump" }),
+        },
+      ],
+      "neon.usage_probe": [{ id: "boom", data: envelope({}) }],
+    });
+    const lines: Record<string, unknown>[] = [];
+    await runTick(
+      fake.boss,
+      {
+        "db.backup_verify": async () => undefined,
+        "neon.usage_probe": async () => {
+          throw new RangeError("x");
+        },
+      },
+      {
+        log: createLogger({
+          level: "debug",
+          write: (line) =>
+            lines.push(JSON.parse(line) as Record<string, unknown>),
+        }),
+      },
+    );
+    const base = ["level", "msg", "time"];
+    const expected: Record<string, string[]> = {
+      "job.rejected": [...base, "issues", "job", "job_id", "reason"],
+      "job.start": [...base, "actor", "job", "job_id", "origin_request_id"],
+      "job.finish": [...base, "actor", "duration_ms", "job", "job_id"],
+      "job.failed": [
+        ...base,
+        "actor",
+        "duration_ms",
+        "error_class",
+        "job",
+        "job_id",
+      ],
+    };
+    expect(lines.map((line) => line["msg"])).toEqual([
+      // Registry order: `neon.usage_probe` is consumed before `db.backup_verify`.
+      "job.start",
+      "job.failed",
+      "job.rejected",
+      "job.start",
+      "job.finish",
+    ]);
+    for (const line of lines) {
+      const msg = String(line["msg"]);
+      expect(Object.keys(line).sort(), msg).toEqual(expected[msg]?.sort());
+    }
+    const text = JSON.stringify(lines);
+    expect(text).not.toContain("backups/2026/10/14");
+    expect(text).not.toContain("example.test");
   });
 });
 

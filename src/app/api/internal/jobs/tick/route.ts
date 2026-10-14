@@ -1,4 +1,6 @@
 /**
+ * @purpose POST: secret-gated minute pg-boss tick, counts only (spec 002 AC-21)
+ *
  * `POST /api/internal/jobs/tick` — the minute-cron pg-boss tick of `plan/08` §5 (spec 002 §5.2,
  * AC-21; TASK-024). Returns counts only.
  *

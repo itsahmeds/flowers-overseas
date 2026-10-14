@@ -89,8 +89,8 @@ task actually touches.
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
-| `api/internal/db-health/route.ts` | `GET /api/internal/db-health` — the database probe (spec 002 §5.2, §5.4, AC-23;… | spec 002 |
-| `api/internal/jobs/tick/route.ts` | `POST /api/internal/jobs/tick` — the minute-cron pg-boss tick of `plan/08` §5… | spec 002 |
+| `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron (spec 002 AC-23) | spec 002 |
+| `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts only (spec 002 AC-21) | spec 002 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's action (spec 004 §14… | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
@@ -161,7 +161,7 @@ task actually touches.
 | `tests/unit/` | 288 |
 | `tests/integration/` | 21 |
 | `tests/contract/` | 12 |
-| `tests/e2e/` | 53 |
+| `tests/e2e/` | 54 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |

@@ -1,4 +1,6 @@
 /**
+ * @purpose GET: secret-gated database probe for cron (spec 002 AC-23)
+ *
  * `GET /api/internal/db-health` — the database probe (spec 002 §5.2, §5.4, AC-23; TASK-024).
  *
  * Thin by design (`plan/01` §5): the secret gate, the headers and the body schema are
