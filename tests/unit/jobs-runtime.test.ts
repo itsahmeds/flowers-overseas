@@ -11,6 +11,7 @@ import { createLogger } from "../../src/lib/logger";
 const constructed: unknown[] = [];
 const calls: string[] = [];
 let startError: Error | undefined;
+let stopError: Error | undefined;
 
 vi.mock("pg-boss", () => {
   class PgBoss {
@@ -27,6 +28,7 @@ vi.mock("pg-boss", () => {
     }
     async stop(options: unknown): Promise<void> {
       calls.push(`stop:${JSON.stringify(options)}`);
+      if (stopError !== undefined) throw stopError;
     }
   }
   return { PgBoss };
@@ -38,6 +40,7 @@ const { bossOptions, ensureQueues, runTick, withBoss, PGBOSS_SCHEMA } = runtime;
 beforeEach(() => {
   constructed.length = 0;
   calls.length = 0;
+  stopError = undefined;
   startError = undefined;
 });
 
@@ -65,6 +68,32 @@ describe("bossOptions — no DDL and no timers in the web process", () => {
 });
 
 describe("withBoss — one instance per call, always stopped", () => {
+  it("a stop that rejects is logged as jobs.stop_failed and never masks the result or the callback's error (breaker round 2, hole 1)", async () => {
+    stopError = new TypeError("pool already closed");
+    const lines: Record<string, unknown>[] = [];
+    const log = createLogger({
+      level: "debug",
+      write: (line) => lines.push(JSON.parse(line) as Record<string, unknown>),
+    });
+    const options = {
+      connectionString: "postgres://u:p@direct.example.test/fo",
+      log,
+    };
+    await expect(withBoss(async () => "done", options)).resolves.toBe("done");
+    await expect(
+      withBoss(async () => {
+        throw new RangeError("handler failed");
+      }, options),
+    ).rejects.toThrow("handler failed");
+    expect(
+      lines.map((line) => [line["msg"], line["level"], line["error_class"]]),
+    ).toEqual([
+      ["jobs.stop_failed", "warn", "TypeError"],
+      ["jobs.stop_failed", "warn", "TypeError"],
+    ]);
+    expect(JSON.stringify(lines)).not.toContain("pool already closed");
+  });
+
   it("starts, runs, stops with the pool closed, and returns the result", async () => {
     const result = await withBoss(async () => "done", {
       connectionString: "postgres://u:p@direct.example.test/fo",

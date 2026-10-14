@@ -282,21 +282,24 @@ describe("migration 0004 — media (AC-11, AC-22, §14 A1 (c))", () => {
     /**
      * pg-boss's construction plan (`0012`, TASK-024) names `bytea` and `oid` three times, and
      * none of them is a column: two `sha224(…::bytea)` hashes and one `n.oid` catalogue join.
-     * Exactly those three expressions are removed, and only from `0012` — every other spelling,
-     * a `::bytea` in a `CREATE TABLE … AS SELECT` or an `oid` column, still matches (breaker
-     * hole 6, PR 224). Each must be present, so a change to pg-boss's plan fails here first.
+     * Each is removed only as the **whole statement text pg-boss writes** (indentation and
+     * neighbouring lines included, after the quote strip), only from `0012`, and only when it
+     * occurs exactly once. The same expression anywhere else — `CREATE TABLE pgboss.h AS SELECT
+     * sha224(queue_name::bytea) AS body`, a `::bytea` in a CTAS, an `oid` column — still matches
+     * (breaker hole 6, PR 224, and its round-2 follow-up). A change to pg-boss's plan fails here
+     * first, by the occurrence count.
      */
-    const PGBOSS_EXPRESSIONS = [
-      "sha224((current_database() || '')::bytea)",
-      "sha224(queue_name::bytea)",
-      "JOIN pg_namespace n ON n.oid = c.relnamespace",
+    const PGBOSS_STATEMENTS = [
+      "    SELECT pg_advisory_xact_lock(('' || encode(sha224((current_database() || '')::bytea), ''))::bit(64)::bigint);\n",
+      "      tablename varchar := CASE WHEN options->>'' = ''\n                            THEN '' || encode(sha224(queue_name::bytea), '')\n",
+      "          SELECT 1 FROM pg_class c\n          JOIN pg_namespace n ON n.oid = c.relnamespace\n          WHERE n.nspname = '' AND c.relname = part_name\n",
     ];
     function withoutPgBossExpressions(file: string, sql: string): string {
       if (file !== "0012_pgboss.sql") return sql;
       let out = sql;
-      for (const expression of PGBOSS_EXPRESSIONS) {
-        expect(out, expression).toContain(expression);
-        out = out.split(expression).join("");
+      for (const statement of PGBOSS_STATEMENTS) {
+        expect(out.split(statement).length - 1, statement).toBe(1);
+        out = out.split(statement).join("");
       }
       return out;
     }
