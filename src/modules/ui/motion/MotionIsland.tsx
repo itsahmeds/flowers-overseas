@@ -5,172 +5,134 @@
  * AC-44, AC-25; TASK-194; `docs/design/system/motion.dc.html`).
  *
  * It renders nothing (`null`, so the header that mounts it keeps its server box, AC-7), adds no
- * dependency and only toggles attributes: every motion itself is CSS in `src/app/globals.css`.
+ * dependency and only toggles attributes; every motion itself is CSS in `src/app/globals.css`, and
+ * every rule that moves or hides something sits inside `prefers-reduced-motion: no-preference`, so
+ * the media query, not this file, is the reduced-motion gate. It is written for bytes, because it
+ * ships on every locale document inside AC-25's 131 072 B (the cost per motion is in
+ * `docs/tasks/TASK-194.md`):
  *
- *  - **Motion 1, the route-loading bloom.** A click that starts a navigation of this tab to another
- *    page of the site (`startsNavigation`) arms a 150 ms timer; if the next document has not
- *    replaced this one by then, `<html data-fo-nav="pending">` draws the header logo's bloom and the
- *    2 px bar. The server's HTML never carries it, so no first load, reload, JavaScript-off load or
- *    `?page=2` response paints a loader (A24 clause 9 (f)).
- *  - **Motion 3, the pending button.** On a form's submit, its `pending` button takes
- *    `aria-busy="true"` and `disabled` in the next task (so the submission itself has already read
- *    the form), and both come off on `pageshow`, when the back/forward cache brings the page back.
- *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, if nobody has touched the
- *    form.
- *  - **Motion 11 and 12, image fade-in and sections fading up.** `<html data-fo-motion>` first;
- *    then only sections and lazy images whose top is at or below the first viewport's foot take
- *    their hidden start state, and an observer plays each once. Nothing in the first viewport is
- *    ever hidden, and without JavaScript nothing is.
- *
- * With `prefers-reduced-motion: reduce` it still sets `aria-busy`/`disabled` (a state, not a
- * motion) and nothing else: no bloom, no shimmer, no hidden start state.
+ *  - **Motion 1, the route-loading bloom.** A plain click on a link to another page of this site
+ *    (same origin, no new tab, no download, no modifier, not a jump inside this page) arms a
+ *    150 ms timer; if the next document has not replaced this one by then, `<html data-fo-nav>`
+ *    plays the header logo's bloom and the 2 px bar. The server's HTML never carries it, so no
+ *    first load, reload, JavaScript-off load or `?page=2` response paints a loader (A24 (f)).
+ *  - **Motion 3, the pending button.** On a form's submit, its `data-fo-pending` button takes
+ *    `aria-busy="true"` and `disabled` in the next task (the submission has already read the form
+ *    by then), and both come off on `pageshow`, when the back/forward cache brings the page back.
+ *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, unless the form was touched.
+ *  - **Motion 10's `Esc`** for the phone Menu (spec 004 AC-47; was `MenuEscape`, TASK-195): closes
+ *    every open Menu and returns focus to its summary.
+ *  - **Motion 11 and 12.** `<html data-fo-motion>` first; then only sections and not-yet-loaded
+ *    images whose top is at or below the first viewport's foot take their `pending` start state,
+ *    and each plays once (`in`). Nothing in the first viewport is ever hidden, and without
+ *    JavaScript nothing is (A24 (g)).
  */
 import { useEffect } from "react";
 
-import {
-  FADE_ATTRIBUTE,
-  MOTION_ROOT_ATTRIBUTE,
-  NAV_ATTRIBUTE,
-  NAV_DELAY_MS,
-  NAV_PENDING,
-  PENDING_BUTTON_SELECTOR,
-  REVEAL_ATTRIBUTE,
-  SENTENCE_SELECTOR,
-  SHIMMER_ATTRIBUTE,
-  SHIMMER_DELAY_MS,
-  startsBelowFold,
-  startsNavigation,
-} from "./motion-model.ts";
-
-function onPendingSubmit(event: SubmitEvent): void {
-  if (event.defaultPrevented) return;
-  const form = event.target;
-  if (!(form instanceof HTMLFormElement)) return;
-  const submitter = event.submitter;
-  const button =
-    submitter instanceof HTMLButtonElement &&
-    submitter.matches(PENDING_BUTTON_SELECTOR)
-      ? submitter
-      : form.querySelector<HTMLButtonElement>(PENDING_BUTTON_SELECTOR);
-  if (button === null) return;
-  // After the submission has built its form data: a disabled submitter is left out of it.
-  window.setTimeout(() => {
-    button.setAttribute("aria-busy", "true");
-    button.disabled = true;
-  }, 0);
-}
-
-function releasePending(): void {
-  for (const button of document.querySelectorAll<HTMLButtonElement>(
-    PENDING_BUTTON_SELECTOR,
-  )) {
-    button.removeAttribute("aria-busy");
-    button.disabled = false;
-  }
-}
-
 export function MotionIsland(): null {
   useEffect(() => {
-    const root = document.documentElement;
-    const reduced = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const timers: number[] = [];
-    let navTimer = 0;
+    const d = document;
+    const root = d.documentElement;
+    const here = location;
+    const fold = innerHeight;
+    const busy = "aria-busy";
+    const pending = "button[data-fo-pending]";
+    let timer = 0;
+    let touched = false;
 
-    const onClick = (event: MouseEvent): void => {
-      const anchor =
-        event.target instanceof Element ? event.target.closest("a") : null;
-      const facts = {
-        button: event.button,
-        defaultPrevented: event.defaultPrevented,
-        modified:
-          event.metaKey || event.ctrlKey || event.shiftKey || event.altKey,
-        href: anchor?.href ?? null,
-        target: anchor?.target ?? "",
-        download: anchor?.hasAttribute("download") ?? false,
-      };
-      if (reduced || !startsNavigation(facts, window.location.href)) return;
-      window.clearTimeout(navTimer);
-      navTimer = window.setTimeout(() => {
-        root.setAttribute(NAV_ATTRIBUTE, NAV_PENDING);
-      }, NAV_DELAY_MS);
-    };
-
-    const onPageShow = (): void => {
-      // The back/forward cache restores this page as it was left: no loader, no busy button.
-      window.clearTimeout(navTimer);
-      root.removeAttribute(NAV_ATTRIBUTE);
-      releasePending();
-    };
-
-    document.addEventListener("click", onClick);
-    document.addEventListener("submit", onPendingSubmit);
-    window.addEventListener("pageshow", onPageShow);
-
-    let observer: IntersectionObserver | undefined;
-    if (!reduced) {
-      root.setAttribute(MOTION_ROOT_ATTRIBUTE, "");
-
-      const sentence = document.querySelector(SENTENCE_SELECTOR);
-      if (sentence !== null) {
-        let touched = false;
-        const touch = (): void => {
-          touched = true;
-        };
-        for (const type of ["pointerdown", "focusin", "keydown", "input"]) {
-          sentence.addEventListener(type, touch, { once: true });
-        }
-        timers.push(
-          window.setTimeout(() => {
-            if (!touched) sentence.setAttribute(SHIMMER_ATTRIBUTE, "");
-          }, SHIMMER_DELAY_MS),
-        );
+    d.addEventListener("click", (event) => {
+      const link = (event.target as Element).closest?.("a");
+      if (
+        !link ||
+        event.button ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        event.defaultPrevented ||
+        (link.target && link.target !== "_self") ||
+        link.hasAttribute("download") ||
+        link.origin !== here.origin ||
+        (link.hash &&
+          link.pathname === here.pathname &&
+          link.search === here.search)
+      ) {
+        return;
       }
+      clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        root.setAttribute("data-fo-nav", "pending");
+      }, 150);
+    });
 
-      if ("IntersectionObserver" in window) {
-        const fold = window.innerHeight;
-        observer = new IntersectionObserver((entries) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            entry.target.setAttribute(REVEAL_ATTRIBUTE, "in");
-            observer?.unobserve(entry.target);
-          }
+    d.addEventListener("submit", (event) => {
+      const button = (event.target as Element).querySelector(pending);
+      if (button && !event.defaultPrevented) {
+        setTimeout(() => {
+          button.setAttribute(busy, "true");
+          button.setAttribute("disabled", "");
         });
-        for (const section of document.querySelectorAll(
-          `[${REVEAL_ATTRIBUTE}]`,
+      }
+    });
+
+    addEventListener("pageshow", () => {
+      clearTimeout(timer);
+      root.removeAttribute("data-fo-nav");
+      for (const button of d.querySelectorAll(pending)) {
+        button.removeAttribute(busy);
+        button.removeAttribute("disabled");
+      }
+    });
+
+    d.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        for (const menu of d.querySelectorAll<HTMLDetailsElement>(
+          "details[data-fo-menu][open]",
         )) {
-          if (!startsBelowFold(section.getBoundingClientRect().top, fold)) {
-            continue;
-          }
-          section.setAttribute(REVEAL_ATTRIBUTE, "pending");
-          observer.observe(section);
-        }
-        for (const image of document.querySelectorAll<HTMLImageElement>(
-          `img[${FADE_ATTRIBUTE}]`,
-        )) {
-          if (image.complete) continue;
-          if (!startsBelowFold(image.getBoundingClientRect().top, fold)) {
-            continue;
-          }
-          image.setAttribute(FADE_ATTRIBUTE, "pending");
-          const show = (): void => {
-            image.setAttribute(FADE_ATTRIBUTE, "in");
-          };
-          image.addEventListener("load", show, { once: true });
-          image.addEventListener("error", show, { once: true });
+          menu.open = false;
+          menu.querySelector("summary")?.focus();
         }
       }
+    });
+
+    const sentence = d.querySelector("form[data-fo-sentence]");
+    if (sentence) {
+      for (const type of ["pointerdown", "focusin", "keydown"]) {
+        sentence.addEventListener(type, () => (touched = true));
+      }
+      setTimeout(() => {
+        if (!touched) sentence.setAttribute("data-fo-shimmer", "");
+      }, 800);
     }
 
-    return () => {
-      document.removeEventListener("click", onClick);
-      document.removeEventListener("submit", onPendingSubmit);
-      window.removeEventListener("pageshow", onPageShow);
-      window.clearTimeout(navTimer);
-      for (const timer of timers) window.clearTimeout(timer);
-      observer?.disconnect();
-    };
+    root.setAttribute("data-fo-motion", "");
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.setAttribute("data-fo-reveal", "in");
+          observer.unobserve(entry.target);
+        }
+      }
+    });
+    for (const element of d.querySelectorAll(
+      "[data-fo-reveal],img[data-fo-fade]",
+    )) {
+      if (
+        element.getBoundingClientRect().top < fold ||
+        (element as HTMLImageElement).complete
+      ) {
+        continue;
+      }
+      if (element.tagName === "IMG") {
+        element.setAttribute("data-fo-fade", "pending");
+        const show = (): void => element.setAttribute("data-fo-fade", "in");
+        element.addEventListener("load", show);
+        element.addEventListener("error", show);
+      } else {
+        element.setAttribute("data-fo-reveal", "pending");
+        observer.observe(element);
+      }
+    }
   }, []);
   return null;
 }

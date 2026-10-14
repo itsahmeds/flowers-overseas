@@ -108,6 +108,13 @@ export default defineConfig({
     // a first visit, and the popup's own suites opt back into a first visit with
     // `NO_LOCALE_CHOICE` (`tests/support/locale-choice.ts`).
     storageState: recordedLocaleChoice(baseURL),
+    // Every suite judges the page at rest: geometry, screenshots and axe read final boxes, and the
+    // approved motions (spec 004 §14 A24 clause 9; TASK-194) would put an opening sheet or a
+    // section mid-transition under the measurement. With `reduce` nothing moves and nothing is
+    // held back (the only change left is a 120 ms fade, which `toHaveScreenshot` finishes).
+    // `tests/e2e/motion.spec.ts` and `reduced-motion.spec.ts` opt back in per page with
+    // `page.emulateMedia({ reducedMotion: "no-preference" })`.
+    contextOptions: { reducedMotion: "reduce" },
     extraHTTPHeaders: protectionBypassHeaders,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
