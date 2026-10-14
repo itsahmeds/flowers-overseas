@@ -114,6 +114,13 @@ One line per coherent step, newest last.
   156 passed, 15 of them expected failures, none a home case (the home joined T-33 at 1512 and
   1920 and passes). `docs/design/README.md` difference row added. `pnpm gates:cheap` PASS.
   Waiting on PR 208's merge for the rebase onto `origin/main`.
+- 2026-10-14 (finisher, partial at the time limit): rebased onto `origin/main` 48837dca (PR 206,
+  210); map regenerated; baselines the home does not render (dev-components, laptop-country-shop,
+  listing-*, product-*) taken from main, the home's kept, the manifest main's plus the home's
+  entries. Main's own manifest already mismatches 10 of PR 206's PNGs, so `--verify` stays red
+  until the CI re-take. Pushed a2e112f2. `gates:cheap`: six gates exit 0; 12 unit cases timed out
+  under load (typecheck took 37 s against 4 s), none in this diff. Next: re-run `gates:cheap`,
+  add `visual:baselines` alone, commit its PNGs, toggle `ci:full`.
 - 2026-10-14: rebased onto `origin/main` 932c0733 (PR 208, 205, 209 merged); map regenerated. In
   the build slot (load 11.6 at build start): `home-v3`, `frame-laptop-band` and `shell` e2e, 187
   passed and 15 expected failures (none on the home); the language-popup case passes and its
