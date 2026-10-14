@@ -105,7 +105,31 @@ same PR changes `scripts/` gates.
 ## Progress
 
 - 2026-10-15: started on `task/TASK-231-home-to-artboards` (one feature PR with TASK-231/232).
+- 2026-10-15: implementation, unit and e2e tests; build slot once for the select clip probe, once
+  for `next build` + `next start` + the e2e suites; rebased on PR 227/232 (A-founder-2026-10-14d:
+  marked values keep their approval) and reworked the messages to match; PR 230 ready.
 
 ## Result
 
-_Pending._
+- **PR:** https://github.com/itsahmeds/flowers-overseas/pull/230 (with TASK-231).
+- **Item 1, notice bar:** no lead (`nav.notice.lead` deleted, it has no consumer), the v2 `leaf`
+  (added to the icon set on the sheet's 34 grid, `V2_GRID_ICONS`) before the promise in the bar's
+  sunflower `<strong>`. One line at 1024 on the home and at 1440 everywhere; at 1024 a page with the
+  price claim still wraps against the four-locale switcher until TASK-237 lists the shown locales
+  only (carry-forward). Tests: `ui-site-header.test.tsx`, e2e `home-round2` "the notice bar".
+- **Item 2, stamps:** the second name split at its ` · ` onto its own Fraunces 300 italic line, no
+  arrow, two across from `md`, four from `lg`, the drawn five from `xl`; Andrzejki (no page) has no
+  link and no lift. Mutations watched red: the five-column row at 768 (a name past the edge), the
+  name joined again (unit).
+- **Item 3, "Occasions →":** `nav.category.occasions` with the arrow icon, `occasionsIndexHref()`
+  from the page (so no link where the index does not exist); beside the heading at 1440, under it
+  at 390, 200 (e2e).
+- **Item 4, FAQ:** "All help topics" not rendered (`faq.allTopics` `retained` for spec 041's help
+  page), the first question open. Mutation watched red: the line back (unit, four locales).
+- **Item 5, Popular choices (AC-53, T-58):** two columns of five on the phone, 14 px apart;
+  `sizes` `calc(50vw - 27px)` equals the card width at 360 and 390 (e2e). No price in four locales at
+  1440 and 390 (e2e). Mutation watched red: the scroller back (5 columns, not 2).
+- **Item 6, chips:** one scrolling row below `md`, named by the heading, wrapped from `md` (AC-49).
+- **Item 7, icons:** E3 (house, camera, plus wait for the founder); the guarantee card uses the
+  leaf item 1 shipped.
+- **Gates:** `pnpm gates:cheap` PASS; e2e as in TASK-231's Result.

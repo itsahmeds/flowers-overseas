@@ -98,7 +98,41 @@ links (PR 226 review nit 1).
 ## Progress
 
 - 2026-10-15: started on `task/TASK-231-home-to-artboards` (one feature PR with TASK-231/232).
+- 2026-10-15: implementation, unit and e2e tests; build slot once for the select clip probe, once
+  for `next build` + `next start` + the e2e suites; rebased on PR 227/232 (A-founder-2026-10-14d:
+  marked values keep their approval) and reworked the messages to match; PR 230 ready.
 
 ## Result
 
-_Pending._
+- **PR:** https://github.com/itsahmeds/flowers-overseas/pull/230 (one feature PR with TASK-232).
+- **AC-52 (T-57).** The marked keys, words unchanged, review records unchanged (only `sourceHash`
+  recomputed, clause 3), `de`/`pl` one pair each:
+  - `home.hero.heading` "Flowers for someone <em>far away.</em>"
+  - `home.trending.heading` "Popular <em>choices</em>" (`de` "Beliebte <em>Auswahl</em>", `pl` "Popularne <em>wybory</em>")
+  - `home.dates.heading` "Dates worth <em>sending for</em>"
+  - `home.occasions.heading` "What is the <em>occasion?</em>"
+  - `home.howItWorks.heading` "Three people touch your order. <em>None of them is a courier.</em>"
+  - `trust.heading` "Our <em>promise</em>"
+  - `faq.heading` "Questions people <em>ask first</em>"
+  - `destinationsHub.h1` "Where we can <em>send flowers</em>" (E2: the hub page renders it plain)
+  Rendered by `t.rich` with `HEADING_EM` (`src/modules/ui/primitives/typography.tsx`); sunflower
+  on the phone cover. `i18n:check` counts tag pairs (check 4), with the `em-pair-missing` fixture.
+  Tests: `tests/unit/home-round2.test.tsx` (each heading in four locales; the marker keeps the
+  approval; no other `en` value has `<em>`), `tests/unit/i18n-check.test.ts`, and
+  `tests/e2e/home-round2.spec.ts` (computed italic 300 poppy at 1440, sunflower at 390, and no
+  other heading with an `em`). Mutations watched red: `<em>` removed from `faq.heading`.
+- **"Polana" (A21 clause 4; AC-43, AC-46).** The select's content box gains a quarter em past the
+  italic overhang (`SELECT_INK_ROOM`, `calc-size()`); e2e measures every destination's ink in four
+  locales at 320/360/390 and the chevron clear of it. Mutation watched red (the select back to its
+  old width: "Poland" inks 58.9 px in a 54.4 px box).
+- **"Continue →":** `arrow-end` after the label, `mirror-in-rtl`, unit-tested.
+- **Font swap.** The H1's italic is never preloaded (A21 clause 3), so its swap re-balances the
+  heading: 0.00012 at 1280, 0.00031 at 390 (`next start`, load average about 17). The header and
+  consent zero-shift tests exclude the hero copy with the sentence (`FONT_SWAP_REGIONS`), and
+  `tests/e2e/home.spec.ts` bounds the hero copy's own swap at 0.001, as it does the sentence's.
+- **Build slot:** taken twice, because the clipping and the swap cannot be judged without a
+  browser: a static probe of the select (Chromium), then `next build` + `next start` + the e2e
+  suites (`home-round2`, `home`, `home-v3`, `header`, `consent-banner`, `destinations-hub`,
+  `phone-chrome`, `honesty`, `links`; green but for `/dev/components` and `/ar-XB`, which a local
+  production start does not serve). Visual baselines are the orchestrator's `visual:baselines`.
+- **Gates:** `pnpm gates:cheap` PASS (7 of 7).
