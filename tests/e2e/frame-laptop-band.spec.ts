@@ -109,7 +109,12 @@ const heroPhotoMax = (height: number): number => Math.min(520, 0.6 * height);
 const FIRST_SCREEN: Readonly<
   Record<PageType, { readonly h1: Step; readonly action: string }>
 > = {
-  home: { h1: "hero", action: "main [data-fo-sentence] button[type='submit']" },
+  // Home v3 (TASK-196): option A's card sets the H1 in the title step from `md` (the artboard's
+  // `.t-title`, 53.76 px at 1280 × 800); the phone cover keeps the hero step's minimum (T-45).
+  home: {
+    h1: "title",
+    action: "main [data-fo-sentence] button[type='submit']",
+  },
   countryShop: { h1: "display", action: "main [data-fo-price]" },
   countryCategory: { h1: "display", action: "main [data-fo-price]" },
   countryOccasion: { h1: "display", action: "main [data-fo-price]" },
@@ -296,31 +301,36 @@ test.describe("T-33: the first block in <main> starts at the logo's edge (AC-31)
  * Above the frame's maximum (`/break` round 1, hole 2; `/review` round 1). At 1440 and below the
  * frame's max width never binds, so a `PAGE_FRAME` without it measures the same; at 1512 and 1920
  * it must: the frame box is 1,440 px (`--container-page` plus both gutters), its column 1,328 px,
- * centred, so the logo and the first block sit at x 92 and x 296. The home is not in this set: its sections are full-bleed bands on
- * `HOME_BLEED`, not the frame, and TASK-196 rebuilds it.
+ * centred, so the logo and the first block sit at x 92 and x 296. The home joined the set with
+ * TASK-196 (the PR 199 carry-forward): its bands are full-bleed by design (A24 clause 4 (f)), so
+ * `<main>` is not the frame there, and what is measured is the logo and the first block (option A's
+ * white card) on the frame's edge.
  */
 test.describe("T-33: above the frame's maximum, at 1512 and 1920 px (AC-31)", () => {
   for (const width of [1512, 1920] as const) {
     const frameX = (width - 1328) / 2;
-    for (const type of (Object.keys(PAGE_TYPES) as PageType[]).filter(
-      (candidate) => candidate !== "home",
-    )) {
+    for (const type of Object.keys(PAGE_TYPES) as PageType[]) {
       test(`${PAGE_TYPES[type]} at ${String(width)} px`, async ({ page }) => {
         await page.setViewportSize({ width, height: 945 });
         await open(page, type);
-        const frame = await page.locator("main").evaluate((main) => {
-          const box = main.getBoundingClientRect();
-          const style = getComputedStyle(main);
-          return {
-            width: box.width,
-            content:
-              box.width -
-              Number.parseFloat(style.paddingInlineStart) -
-              Number.parseFloat(style.paddingInlineEnd),
-          };
-        });
-        expect(frame.width, "<main>'s frame box").toBeCloseTo(1328 + 2 * 56, 0);
-        expect(frame.content, "<main>'s column").toBeCloseTo(1328, 0);
+        if (type !== "home") {
+          const frame = await page.locator("main").evaluate((main) => {
+            const box = main.getBoundingClientRect();
+            const style = getComputedStyle(main);
+            return {
+              width: box.width,
+              content:
+                box.width -
+                Number.parseFloat(style.paddingInlineStart) -
+                Number.parseFloat(style.paddingInlineEnd),
+            };
+          });
+          expect(frame.width, "<main>'s frame box").toBeCloseTo(
+            1328 + 2 * 56,
+            0,
+          );
+          expect(frame.content, "<main>'s column").toBeCloseTo(1328, 0);
+        }
         if (type !== "notFound") {
           const masthead = await boxOf(
             page,

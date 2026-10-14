@@ -78,7 +78,7 @@ export function HomeFaq({
       as="section"
       columns="1-3"
       gap="2xl"
-      className={`items-start ${HOME_SECTION} ${HOME_BLEED}`}
+      className={`bg-surface-raised items-start ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-faq
     >

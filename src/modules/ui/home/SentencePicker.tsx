@@ -17,8 +17,9 @@
  *   `data-label-*` for `SentenceIsland`, which swaps them when the reader picks someone else.
  *   That island is the home's only one and carries no copy of its own.
  *
- * The letter is `--color-card` on `--letter-lines`, tilted, with the airmail edge on top (one of
- * A21 clause 2's three places). No "prices include VAT and delivery" line: the founder ruled it off
+ * Round 2 (TASK-196): the form draws no surface of its own. `HomeHero` sets it in the desktop
+ * card, or in the white card under the phone cover, and that card carries the airmail edge (A24
+ * clause 7). No tilt and no ruled lines. No "prices include VAT and delivery" line: the founder ruled it off
  * the home on 2026-10-04 ("dont write this on home"); the home shows no price. Each choice is Fraunces italic poppy with a dashed underline and
  * a drawn chevron.
  */
@@ -108,8 +109,11 @@ export function SentencePicker({
       action={sentenceAction(locale)}
       aria-labelledby={SENTENCE_IDS.heading}
       className={[
-        "airmail-edge bg-surface-card rounded-letter shadow-letter px-[22px] pt-[20px] pb-[26px] md:px-[32px] md:pt-[22px] md:pb-[30px]",
-        "rotate-(--tilt-letter-s) bg-(image:--letter-lines) bg-[position:0_20px] md:rotate-(--tilt-letter)",
+        // Round 2 draws no tilt and no ruled lines (A23 clause 10, A24): the white card around the
+        // sentence is the caller's (`HomeHero`: the desktop card, or the phone card below the
+        // cover), and so is its airmail edge. The scroll margin clears the sticky header when the
+        // header's Send flowers or the phone's docked bar jumps here (`#send`).
+        "scroll-mt-[81px] md:scroll-mt-[105px] xl:scroll-mt-[99px]",
         className,
       ]
         .filter(Boolean)
@@ -118,11 +122,11 @@ export function SentencePicker({
     >
       <Heading
         id={SENTENCE_IDS.heading}
-        className="label text-sm leading-[48px]"
+        className="label mb-[10px] text-sm leading-[1.4]"
       >
         {t("home.sentence.heading")}
       </Heading>
-      <p className="display text-lg-s leading-[48px] md:text-lg">
+      <p className="display text-lg-s m-0 leading-[1.75] md:text-lg">
         {t.rich("home.sentence.frame", {
           who: () => (
             <Pick id={SENTENCE_IDS.who}>
@@ -203,7 +207,7 @@ export function SentencePicker({
         })}
       </p>
       <SentenceIsland formId={SENTENCE_IDS.form} />
-      <div className="mt-[22px] flex flex-wrap items-center gap-x-[20px] gap-y-[12px]">
+      <div className="mt-[14px] flex flex-wrap items-center gap-x-[20px] gap-y-[12px]">
         <Button
           type="submit"
           variant="accent"
