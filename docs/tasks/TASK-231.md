@@ -63,6 +63,13 @@ links (PR 226 review nit 1).
 
 ## Carry-forwards
 
+- **For TASK-228 (product page):** the related-products heading's italic phrase, *our order* in
+  "Six more, in our order" (`product.related.heading`, `product-desktop.dc.html` `#rel-h`), is not
+  done here (work order fence: TASK-227 to TASK-230 own the product page). Mark it with
+  `HEADING_EM` (`src/modules/ui/primitives/typography.tsx`) the same way.
+- **For TASK-194 (motions):** the hero phrase is `#hero-heading em[data-fo-em]`, the hook for the
+  underline motion (cell 5); no motion is built here.
+
 - **From the site test (2026-10-14):**
   - QA-1 Q1-04 (P1): "Poland" reads "Polana" at 390 and every phone width.
     `.claude/state/qa-2026-10-14/QA-1-05.png`; QA-4 `QA-4-out/sent-en-390-mum-birthday.png`.
@@ -75,7 +82,20 @@ links (PR 226 review nit 1).
 
 ## Escalations
 
-_None recorded._
+- **E1 (2026-10-15): the markup flips `en` and `en-gb` to non-indexable until the founder's record
+  run.** The eight changed `en` values ship `reviewed: false` (work order §3; spec 003 §14 A17), so
+  `en` goes from 26 to 34 unreviewed of 542 counted keys (4.80 % to 6.27 %) and `en-gb` from 4.98 %
+  to 6.46 %, both over the 5 % gate. About 48 unit cases that pin `en`/`en-gb` as indexable
+  (`i18n-review`, `home-honesty`, `seo-sitemap`, `sitemap-*`, `i18n-alternates`, `catalog-read`,
+  `listing-params`, …) go red until the run lands on this branch, as on PR 225 (TASK-226 E1). Not
+  worked around. The keys and values are in `## Result`.
+- **E2 (2026-10-15): the destinations heading is a new key, not markup on the shared one.** The home
+  printed `destinationsHub.h1`, which is also the destinations hub's `<h1>` and its `<title>`
+  (`src/app/[locale]/[segment]/page.tsx`): markup there breaks the title and touches a page outside
+  this task. So the home reads a new key, `home.destinations.heading`, with the same reviewed words
+  ("Where we can <em>send flowers</em>"); no new words. The founder may prefer the hub's own H1 to
+  carry the split too (its artboard draws `<em class="sun">send flowers</em>`): that is a hub-page
+  task that also strips the tag for the title.
 
 ## Progress
 

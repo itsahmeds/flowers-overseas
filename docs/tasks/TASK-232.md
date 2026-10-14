@@ -66,6 +66,19 @@ same PR changes `scripts/` gates.
 
 ## Carry-forwards
 
+- **For the designer (`docs/design/README.md`, "Where the sheet and the code currently differ";
+  this task's fence keeps it out of `docs/design/`):**
+  - the Andrzejki stamp (no page) sits flat with no lift, and a linked stamp underlines its name on
+    hover: the artboard draws all four alike, and the brief asks that the one with no page not
+    look like a link (QA-4 #10);
+  - the stamps are two across from 768 px and four across from 1024 px, the drawn five-column row
+    from 1280 px (QA-1 Q1-08: at 768 the five-column row cut the names and left half a row empty);
+  - "Occasions →" is not drawn where the occasions index does not exist (`/pl/okazje`, `/de/anlaesse`
+    today, `occasionsIndexHref()`), the footer's own rule (A20).
+- **`site-links.ts` surfaces:** the `occasions` link's `surfaces` still read `footer, listing`; the
+  home now draws it too. The list is descriptive (no gate reads it for `home`) and the file is
+  outside this fence: add `home` with the next `site-links.ts` change.
+
 - **From the site test (2026-10-14):** QA-3 D-03, D-07, D-08, D-09, D-10, D-11, D-12
   (`.claude/state/qa-2026-10-14/QA-3-chrome-1440-*`, `QA-3-home-1440-*`, `QA-3-home-390-*`,
   `QA-3-home-390-popular-sidebyside.png`, `QA-3-home-390-stamps-sidebyside.png`); QA-1 Q1-08
@@ -80,7 +93,14 @@ same PR changes `scripts/` gates.
 
 ## Escalations
 
-_None recorded._
+- **E3 (2026-10-15): the promise icons (item 7) wait for an answer.** The drawn `house` and `camera`
+  (home) and `plus` (product, outside this fence) are in design system v2's sheet
+  (`system/components.dc.html`, "Line icons") but not in the shipped set, and spec 004 §3 L122
+  rules out "an icon system beyond the five icons the chrome needs". Per the brief they are not
+  added. Question for the founder: may the set take `house`, `camera` and `plus`? The `leaf` did
+  ship, because item 1 needs it in the chrome (the notice bar), drawn on the sheet's own 34 grid
+  (`V2_GRID_ICONS`); the guarantee card uses that same leaf. The two other cards keep `florist`
+  (a house) and `document`.
 
 ## Progress
 
