@@ -192,4 +192,89 @@ One line per coherent step, newest last.
 
 ## Result
 
-_Pending._
+**PARTIAL (2026-10-14, the implementer's 180-minute limit).** PR 214 (draft), head `4e747f67`,
+branch `task/TASK-146-country-listings-depth4`, one feature PR with TASK-146. Everything below is
+committed and pushed. Nothing has been rendered in a browser yet: another agent held the build slot
+for the whole run (one 900 s acquire timed out). So **there are no screenshots, and no e2e, a11y or
+visual case has run**. CI has not been fired (no `ci:full`; the PR is a draft).
+
+**Built.**
+- Depth-4 parameter policy (A15 (a)):
+  - two depth-4 sources per (locale, key) in `listingRewriteRules()`, and the same two in
+    `LISTING_CACHE_PATHS`;
+  - the mirrored route `src/app/[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx`;
+  - one shared head and body module, `src/app/[locale]/country-listing.tsx`. Both depth-4 route
+    files call it. The prebuilt route passes `listingRequest()` and reads no `searchParams`.
+- Registry `src/config/catalogue/listing-presentation.ts`:
+  - one row per category and per occasion of the dataset;
+  - R1 registers, the six `leadSku`s, and `countNoun` chosen by majority product type;
+  - the load fails, naming the key, on any bad row.
+- View model (for TASK-188):
+  - `ListingCountrySchema.state` is now `z.enum(["guide","live"])`;
+  - `ListingEntitySchema` gains a required `register`, from the registry;
+  - `CategoryTileViewSchema` gains `countNoun`.
+
+  No other field changed. `leadSku` is **not** on the view yet: TASK-188 reads the registry or adds
+  it.
+- Pages:
+  - round-2 heads: `CountryListingHead` and `ListingStateLine`, plus `ListingPageHead` for page 2
+    and later;
+  - one results block, `CountryListingResults`, placed with CSS grid so the phone's DOM order is
+    its reading order;
+  - on the phone: the chip scroller, the label once per grid, and the compact pager (P3);
+  - the sort form sits under the grid as "Change the order" (A10) on the shop root and the
+    category, and above the grid beside the count on the occasion;
+  - the occasion's lead figure is `items[0]`'s own first `<li>`, placed absolutely over the hero
+    from `md` up: one element, its URL once.
+
+  `formatDateParts` is added to `format.ts`.
+- Copy, all `reviewed: false` and in the founder queue:
+  - `shop.root.tileCount` (A9): an ICU select per noun, `pl` one/few/many/other;
+  - `shop.toolbar.reorderLabel` (A10);
+  - `shop.pagination.nextPage` and `shop.pagination.pageOf` (P3).
+
+  English strings outside the batch: only P3's "Next page" and "Page {page} of {total}".
+  `shop.cardNote.heading` is no longer rendered, because round 2 draws no band. It is marked
+  `retained: true`, and the orchestrator decides whether to delete it.
+- Carry-forwards:
+  - (a) Peace Lily and Olive Sapling render the placeholder (unit case);
+  - (b) TASK-119 already renders `LanguageAlternates` on all three types; kept;
+  - (c) the view-model changes are listed above.
+- Laptop band: the three country `PENDING` rows are deleted, and the occasion's lead photo is added
+  to `LEAD_PHOTO`.
+
+**Tests written.**
+- Unit, new:
+  - `tests/unit/listing-country-first-screen.test.tsx`: 18 cases (T-35, the unit half of T-49,
+    T-34, T-40, the placeholder case);
+  - `tests/unit/listing-presentation.test.ts`: 8 cases (spec 004 T-35);
+  - `tests/unit/i18n-format.test.ts`: one more case, for the date parts.
+- Unit, updated: the catalog shop, category and occasion page units, `ui-shop-view-model` and
+  `i18n-messages-schema`.
+- e2e, new:
+  - `tests/e2e/listing-first-screen.spec.ts`: T-49 at three sizes, T-50, T-36, T-06 A16, T-35;
+  - `tests/e2e/listing-depth4-params.spec.ts`: T-33, AC-15 at depth 4, the hub header.
+- a11y: 4 more cases.
+- e2e, updated: `listing-params`, `listing-v2` and the `country-*` specs.
+
+The new unit files pass (`--maxWorkers=2`).
+
+**Mutations seen red:**
+- cutting the depth-4 `parameterised` pass-through (listing-params);
+- the two `/review 99` occasions-index mutations (TASK-146 brief).
+
+The geometry mutations have **not** been run, because they need the browser: the lead restored,
+the 160 px spacer, the rotated SVG and the bare price.
+
+**Not done (the finisher's list).**
+1. Take the build slot and render the three pages at 1440 × 900, 1280 × 800 and 390 × 844. Compare
+   them with the artboards and save the shots to `.claude/state/shots-187/`. Fix what the new e2e
+   finds: by estimate the first row ends near 760 px at 1280 × 800, against an 800 px budget.
+2. Run the new e2e and a11y files once locally inside the slot, then the geometry mutations.
+3. Re-run `pnpm gates:cheap`. The last run, on `4e747f67` at load 16, had every gate green except
+   tests: 10 failed across 6 files, at least four of them 5 s timeouts under load (`url-pii`). The
+   rest are not yet identified. A re-run of the changed unit files was still running at hand-back.
+4. Run `visual:baselines` alone and commit; then rebase, mark the PR ready and add `ci:full`.
+5. Set both rows to `in_review` with the PR link.
+
+**Gates block:** not pasted, because the last run was red (item 3).

@@ -75,9 +75,42 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+- 2026-10-14: built with TASK-187 in PR 214 (branch `task/TASK-146-country-listings-depth4`): the
+  depth-4 rewrite, the parameter route, the cache header and the hub robots header (c2397b24); the
+  `/review 99` carry-forwards (69788b3f).
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+**PARTIAL (2026-10-14; see `docs/tasks/TASK-187.md` `## Result` for the shared state).** PR 214,
+draft, head `4e747f67`, not yet run in CI.
 
-_Pending._
+- **Depth 4:** the country category and the country occasion now honour `?page=`/`?sort=`/facets
+  through the mirrored parameter route, as spec 008 §14 A15 (a) lists it. A sorted or faceted URL
+  passes `parameterised` to `listingView()`, so it is `noindex,follow` with a canonical to the bare
+  URL. `?page=N ≥ 2` is self-canonical. The prebuilt depth-4 route reads no `searchParams`.
+- **The other depth-3 branches (E-7's scope):**
+  - the hubs honour no parameter and stay prebuilt, so a hub address carrying a listing key now
+    gets `X-Robots-Tag: noindex, follow` from `parameterisedHubHeaderRules()` (next.config, after
+    the environment rule). That is the `noindex` half the prebuilt document cannot give;
+  - the corridor is not a listing and stays unrewritten (A13);
+  - the depth-3 route file is unchanged.
+- **Proof against the Phase 0 trap:**
+  - unit `tests/unit/listing-params.test.ts`: three new cases read the three depth-4 files as
+    source. Cutting `parameterised: request.parameterised` in `country-listing.tsx` turns them red
+    (run, then restored);
+  - unit `tests/unit/listing-rewrites.test.ts`: the depth-4 sources, a product URL unmatched, and
+    the hub header's shapes and value;
+  - e2e `tests/e2e/listing-depth4-params.spec.ts` compares responses with each other, not with a
+    literal (page 2 ≠ page 1, sorted order ≠ bare order, canonical and robots against the bare
+    page's), plus the hub header value `noindex, follow`, which no other rule serves. **Not yet
+    run.**
+- **Carry-forwards from `/review 99`:**
+  - `hubs.spec.ts` and `country-occasion.spec.ts` now assert the trailing-slash `Location` with
+    `toBe`. This is not mutation-run yet: it needs a server;
+  - `catalog-listing.test.ts` now asserts each entry's own kind, both kinds present, and collator
+    order. Seen red with every kind set to `evergreen`, and red with the order reversed; restored.
+- **Corpus fact:** no country occasion has more than 12 products (the most is 7), so the
+  occasion's paging is proven by sorting through the same rewrite and by the page-past-the-last
+  404.
