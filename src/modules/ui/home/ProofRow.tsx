@@ -92,6 +92,7 @@ export function ProofRow({
       className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-proof-row
+      data-fo-reveal=""
       data-fo-trust-strip
     >
       <Display

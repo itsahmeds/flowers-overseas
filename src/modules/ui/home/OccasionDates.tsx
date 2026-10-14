@@ -111,6 +111,7 @@ export function OccasionDates({
       className={`bg-surface-raised ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-occasion-dates
+      data-fo-reveal=""
       id="dates"
     >
       <div className="mb-[28px] md:mb-[48px]">

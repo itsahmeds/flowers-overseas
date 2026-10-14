@@ -81,10 +81,10 @@ const PANEL =
  * pins it to `Button` class for class.
  */
 const CONTROL =
-  "inline-flex min-h-(--control-md) w-full cursor-pointer items-center justify-center gap-[10px] rounded-full bg-surface px-[28px] text-body-s font-bold leading-[1.1] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] transition-colors motion-fast ease-standard select-none hover:bg-surface-raised active:bg-surface-muted active:translate-y-px";
+  "inline-flex min-h-(--control-md) w-full cursor-pointer items-center justify-center gap-[10px] rounded-full bg-surface px-[28px] text-body-s font-bold leading-[1.1] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] transition-transform motion-fast ease-standard select-none hover:bg-surface-raised active:bg-surface-muted motion-safe:active:scale-[0.98]";
 /** The `saved` state's dismiss control: the same skin, one step smaller, not full width. */
 export const CONSENT_CONTROL_SM =
-  "inline-flex min-h-(--control-sm) cursor-pointer items-center justify-center gap-[10px] rounded-full bg-surface px-[20px] text-ui font-bold leading-[1.1] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] transition-colors motion-fast ease-standard select-none hover:bg-surface-raised active:bg-surface-muted active:translate-y-px";
+  "inline-flex min-h-(--control-sm) cursor-pointer items-center justify-center gap-[10px] rounded-full bg-surface px-[20px] text-ui font-bold leading-[1.1] text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] transition-transform motion-fast ease-standard select-none hover:bg-surface-raised active:bg-surface-muted motion-safe:active:scale-[0.98]";
 
 interface ControlProps {
   readonly action: string;

@@ -93,6 +93,7 @@ export function OccasionTiles({
       className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-occasions
+      data-fo-reveal=""
       id={OCCASIONS_ANCHOR}
     >
       <div className="mb-[28px] md:mb-[48px]">
