@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&family=Noto+Sans:wght@400;700&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+.fo.M { font-size: var(--text-body-s); }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { margin: 0; font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+.fo h1 em, .fo h2 em { font-style: italic; font-weight: var(--font-weight-display-em); color: var(--color-accent); }
+:where(.fo) :where(button, select, input, textarea) { font: inherit; color: inherit; }
+.vh { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.wrap { padding-inline: var(--gutter); }
+.M .wrap { padding-inline: var(--gutter-s); }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .stub code, .slot code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; }
+.note ul { display: grid; gap: 2px; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+
+/* the band that separates the page from its drawn states */
+.state-band { margin-block-start: var(--space-xl); padding: var(--space-xl) var(--gutter) var(--space-2xl); background: var(--color-paper-3); border-block-start: 1px dashed var(--color-ink-3); }
+.M .state-band { padding: var(--space-lg) var(--gutter-s) var(--space-xl); }
+.state-band > .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.states { display: grid; gap: var(--space-lg); }
+.D .states.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.D .states.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.state { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+.M .state { padding: var(--space-md); }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.stub b { color: var(--color-ink); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); }
+.phbar { display: inline-block; inline-size: 2.6em; block-size: 0.75em; border-radius: var(--radius-sm); background: var(--color-paper-3); box-shadow: inset 0 0 0 1px var(--color-rule); vertical-align: -0.05em; }
+/* the invoice PDF (spec 018 §5.2 renderPdf): A4 at 96 dpi = 794 × 1123 px, 56 px margins, Noto Sans (the embedded subset) */
+.sheetwrap { display: grid; justify-items: center; gap: 56px; padding: 40px var(--gutter) 96px; background: var(--color-paper-3); }
+.a4 { inline-size: 794px; min-block-size: 1123px; background: var(--color-card); box-shadow: var(--shadow-paper); padding: 56px; display: flex; flex-direction: column; gap: 22px; font-family: "Noto Sans", var(--font-body); font-size: 11.5px; line-height: 1.45; color: var(--color-ink); }
+.a4 .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-block-end: 16px; border-block-end: 2px solid var(--color-ink); }
+.a4 .brand { font-family: var(--font-logo); font-weight: 500; font-size: 22px; letter-spacing: var(--tracking-wordmark); color: var(--color-logo-ink); }
+.a4 .title { text-align: end; }
+.a4 .title b { display: block; font-size: 24px; letter-spacing: 0.01em; }
+.a4 .title span { display: block; font-size: 12px; color: var(--color-ink-2); }
+.a4 .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 18px; }
+.a4 .meta div, .a4 .party div { display: grid; gap: 1px; }
+.a4 .k { font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-3); }
+.a4 .k i { font-style: normal; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.a4 .v { font-size: 12px; font-variant-numeric: tabular-nums; }
+.a4 .parties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.a4 .party { display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--color-rule); border-radius: 4px; }
+.a4 table { inline-size: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.a4 th { text-align: start; font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; color: var(--color-ink-3); padding: 6px 6px; border-block-end: 1px solid var(--color-ink-3); vertical-align: bottom; }
+.a4 th i { display: block; font-style: normal; font-weight: 400; }
+.a4 td { padding: 7px 6px; border-block-end: 1px solid var(--color-rule); vertical-align: top; }
+.a4 .n { text-align: end; white-space: nowrap; }
+.a4 tfoot td { font-weight: 700; border-block-end: 2px solid var(--color-ink); }
+.a4 .sub { display: block; font-size: 10px; color: var(--color-ink-2); }
+.a4 .pln { padding: 10px 14px; border-radius: 4px; background: var(--color-paper-2); display: grid; gap: 6px; }
+.a4 .paid { display: flex; justify-content: space-between; gap: 18px; padding-block: 10px; border-block: 1px solid var(--color-rule); font-size: 12px; }
+.a4 .fine { margin-block-start: auto; display: grid; gap: 4px; font-size: 9.5px; color: var(--color-ink-3); }
+.a4 .slot { font-size: 10px; }
+.a4 .phbar { inline-size: 6em; }
+.pg-label { inline-size: 794px; font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); }
+
+.prop { text-decoration: underline dotted var(--color-warning); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+.note .prop-key { display: inline-block; font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-warning); border-radius: var(--radius-full); padding: 1px 8px; }
+
+  </style>
+</helmet>
+<div class="fo D" style="inline-size: 1440px;">
+<section class="note"><span class="nl">Invoice and credit note · the A4 PDF · spec 018 launch slice, 2026-10-14 · [internal]</span><dl><dt>Purpose</dt><dd>Our own invoice for every live order, issued when the money is taken, and a credit note for every succeeded refund. A document, not a page: drawn at A4 (794 × 1123 px at 96 dpi) inside the 1440 frame. There is no 390 artboard: the phone opens the same PDF; the HTML equivalent comes with the account order detail (task 4, after launch).</dd><dt>Status</dt><dd><b>Spec 018 approved (2026-10-14).</b> Profile <code>principal/PL</code> (active seed): Polish labels plus the buyer's language, invoice in the charged currency, VAT per rate also in PLN at NBP table A of the business day before the tax point (18-5). 🧾 The accountant can change every label, the series and the PLN line by data (AC-18).</dd><dt>Where</dt><dd>No URL of its own. <code>renderPdf(invoiceId)</code> stores it in the private bucket (<code>invoices/{yyyy}/{id}.pdf</code>); the buyer gets it by spec 016's B8 email and through <code>/en-gb/account/invoices/[invoiceId]?t=…</code> (signed <code>invoice</code> link; <code>Content-Disposition: attachment</code>, <code>private, no-store</code>, <code>noindex</code>, <code>no-referrer</code>; never through a tracking token, AC-23).</dd><dt>Reads</dt><dd>The invoice <code>snapshot</code> and the profile only, never live order rows: issuer (<code>company.ts</code> + <code>tax_registration</code>), buyer (<code>order.buyer_snapshot</code>: name, country), supply and issue dates, lines (product name untranslated plus the localised tier descriptor), <code>order.vat_breakdown</code> per rate, totals, the NBP rate with its source and date.</dd><dt>States drawn</dt><dd>Invoice (one 8% bouquet, one 23% add-on, the free printed card, paid in GBP: AC-17's fixture) · credit note for a partial refund of the add-on (row 30), referencing the original number, negative per-rate amounts summing to the refund (AC-21). Not drawn: a full credit note (the same with every line negated, netting to zero per rate), the <code>agent/PL</code> receipt (title and issuer statement from its profile).</dd><dt>Build</dt><dd>PDFKit, <code>tagged: true</code>, <code>/Lang pl</code> (one language when the buyer is in <code>pl</code>), Noto Sans subset embedded (Latin Ext: “Zażółć gęślą jaźń”, “Größe”, AC-22), reading order: header, meta, seller, buyer, table, PLN line, payment line, fine print. 56 px margins, 11.5 px body, numbers tabular and end-aligned, one 2 px ink rule under the header and the total. Ink and rules only; no airmail edge, no photo. The wordmark is the committed SVG.</dd><dt>Numbers</dt><dd>Example amounts. VAT per rate = <code>round_half_even(gross × rate / (10 000 + rate))</code> on the group total: 8% of £45.90 → £3.40; 23% of £6.00 → £1.12. Gross per rate sums to <code>order.buyer_total_minor</code> (£51.90) or the invoice refuses (<code>INVOICE_TOTAL_MISMATCH</code>). The NBP table number, the rate and every PLN amount are placeholder bars: we have no rate to print. Numbers follow 18 Q4 (<code>FO-PL/2026/000001</code>, credit notes <code>FOK-PL/2026/000001</code>).</dd><dt>Copy</dt><dd>Every label is <span class="prop-key">proposed</span> (dotted underline), Polish first, English after the slash; title and issuer statement come from <code>invoice_profile.title_key</code> and <code>issuer_statement_key</code>. Seller identity: placeholder bars and <code>[slot]</code>s until the OÜ is registered (<code>company.registered</code> false → <code>INVOICE_ISSUER_INCOMPLETE</code>, so no invoice is issued before then). Sample buyer “Sam Sample” is <code>checkout-samples.ts</code>'s.</dd><dt>Owning spec</dt><dd>018 · AC-15 to AC-23 · task 3 · 016 (B8 sends it) · 013 (<code>payment.captured_at</code>, refund rows).</dd></dl></section>
+<div class="sheetwrap"><p class="pg-label">Invoice · <code>FO-PL/2026/000001</code></p><article class="a4" lang="pl"><div class="top"><div><div class="brand">Flowers Overseas</div><span class="sub">flowersoverseas.com</span></div><div class="title"><b><span class="prop">Faktura</span></b><span><span class="prop">Invoice</span></span></div></div><div class="meta"><div><span class="k"><span class="prop">Numer</span> <i>/ <span class="prop">Number</span></i></span><span class="v">FO-PL/2026/000001</span></div><div><span class="k"><span class="prop">Data wystawienia</span> <i>/ <span class="prop">Issue date</span></i></span><span class="v">6 October 2026</span></div><div><span class="k"><span class="prop">Data dostawy</span> <i>/ <span class="prop">Supply date</span></i></span><span class="v">8 October 2026</span></div><div><span class="k"><span class="prop">Zamówienie</span> <i>/ <span class="prop">Order</span></i></span><span class="v">FO-7K2M-9QXA</span></div><div><span class="k"><span class="prop">Waluta</span> <i>/ <span class="prop">Currency</span></i></span><span class="v">GBP</span></div></div><div class="parties"><div class="party"><span class="k"><span class="prop">Sprzedawca</span> <i>/ <span class="prop">Seller</span></i></span><div><b>Flowers Overseas</b><span><span class="phbar"></span> <span class="slot">[legal name · <code>company.ts</code>]</span></span></div><div><span><span class="phbar"></span> <span class="phbar"></span> <span class="slot">[registered address]</span></span></div><div><span><span class="prop">Kod rejestrowy / Registry code</span>: <span class="phbar"></span></span><span>VAT EE: <span class="phbar"></span> · VAT PL: <span class="phbar"></span> <span class="slot">[<code>tax_registration</code> rows]</span></span></div></div><div class="party"><span class="k"><span class="prop">Nabywca</span> <i>/ <span class="prop">Buyer</span></i></span><div><b><bdi>Sam Sample</bdi></b><span><span class="prop">Wielka Brytania / United Kingdom</span></span></div></div></div><table><thead><tr><th><span class="prop">Lp.</span><i><span class="prop">No.</span></i></th><th><span class="prop">Opis</span><i><span class="prop">Description</span></i></th><th class="n"><span class="prop">Stawka VAT</span><i><span class="prop">VAT rate</span></i></th><th class="n"><span class="prop">Netto</span><i><span class="prop">Net</span></i></th><th class="n">VAT<i>VAT</i></th><th class="n"><span class="prop">Brutto</span><i><span class="prop">Gross</span></i></th></tr></thead><tbody><tr><td>1</td><td>Amber Hour<span class="sub"><span class="prop">18 łodyg / 18 stems</span> · <span class="prop">dostawa w cenie / delivery included</span></span></td><td class="n">8%</td><td class="n">£42.50</td><td class="n">£3.40</td><td class="n">£45.90</td></tr><tr><td>2</td><td><span class="prop">Bombonierka / Box of chocolates</span></td><td class="n">23%</td><td class="n">£4.88</td><td class="n">£1.12</td><td class="n">£6.00</td></tr><tr><td>3</td><td><span class="prop">Drukowany bilecik / Printed card</span></td><td class="n">8%</td><td class="n">£0.00</td><td class="n">£0.00</td><td class="n">£0.00</td></tr><tr><td></td><td><span class="prop">Razem 8% / Total 8%</span></td><td class="n">8%</td><td class="n">£42.50</td><td class="n">£3.40</td><td class="n">£45.90</td></tr><tr><td></td><td><span class="prop">Razem 23% / Total 23%</span></td><td class="n">23%</td><td class="n">£4.88</td><td class="n">£1.12</td><td class="n">£6.00</td></tr></tbody><tfoot><tr><td></td><td><span class="prop">Do zapłaty / Total</span></td><td></td><td class="n">£47.38</td><td class="n">£4.52</td><td class="n">£51.90</td></tr></tfoot></table><div class="pln"><span class="k"><span class="prop">VAT w PLN</span> <i>/ <span class="prop">VAT in PLN</span></i></span><div><span class="prop">Kurs NBP, tabela A nr / NBP rate, table A no.</span> <span class="phbar"></span>, 5 October 2026: 1 GBP = <span class="phbar"></span> PLN</div><div>8%: VAT <span class="phbar"></span> zł</div><div>23%: VAT <span class="phbar"></span> zł</div></div><div class="paid"><span><span class="prop">Zapłacono kartą / Paid by card</span>, 6 October 2026</span><span><b>£51.90</b></span></div><div class="fine"><span><span class="prop">Ceny zawierają VAT i dostawę. / Prices include VAT and delivery.</span></span><span class="slot">[issuer statement · <code>invoice_profile.issuer_statement_key</code> · the inactive <code>agent/PL</code> profile only]</span><span><span class="prop">Strona 1 z 1 / Page 1 of 1</span></span></div></article><p class="pg-label">Credit note · <code>FOK-PL/2026/000001</code> · a partial refund, reason <code>addon_missing</code></p><article class="a4" lang="pl"><div class="top"><div><div class="brand">Flowers Overseas</div><span class="sub">flowersoverseas.com</span></div><div class="title"><b><span class="prop">Faktura korygująca</span></b><span><span class="prop">Credit note</span></span></div></div><div class="meta"><div><span class="k"><span class="prop">Numer</span> <i>/ <span class="prop">Number</span></i></span><span class="v">FOK-PL/2026/000001</span></div><div><span class="k"><span class="prop">Data wystawienia</span> <i>/ <span class="prop">Issue date</span></i></span><span class="v">9 October 2026</span></div><div><span class="k"><span class="prop">Data dostawy</span> <i>/ <span class="prop">Supply date</span></i></span><span class="v">8 October 2026</span></div><div><span class="k"><span class="prop">Zamówienie</span> <i>/ <span class="prop">Order</span></i></span><span class="v">FO-7K2M-9QXA</span></div><div><span class="k"><span class="prop">Koryguje fakturę</span> <i>/ <span class="prop">Corrects invoice</span></i></span><span class="v">FO-PL/2026/000001</span></div><div><span class="k"><span class="prop">Powód</span> <i>/ <span class="prop">Reason</span></i></span><span class="v"><span class="prop">Box of chocolates not delivered</span></span></div><div><span class="k"><span class="prop">Waluta</span> <i>/ <span class="prop">Currency</span></i></span><span class="v">GBP</span></div></div><div class="parties"><div class="party"><span class="k"><span class="prop">Sprzedawca</span> <i>/ <span class="prop">Seller</span></i></span><div><b>Flowers Overseas</b><span><span class="phbar"></span> <span class="slot">[legal name · <code>company.ts</code>]</span></span></div><div><span><span class="phbar"></span> <span class="phbar"></span> <span class="slot">[registered address]</span></span></div><div><span><span class="prop">Kod rejestrowy / Registry code</span>: <span class="phbar"></span></span><span>VAT EE: <span class="phbar"></span> · VAT PL: <span class="phbar"></span> <span class="slot">[<code>tax_registration</code> rows]</span></span></div></div><div class="party"><span class="k"><span class="prop">Nabywca</span> <i>/ <span class="prop">Buyer</span></i></span><div><b><bdi>Sam Sample</bdi></b><span><span class="prop">Wielka Brytania / United Kingdom</span></span></div></div></div><table><thead><tr><th><span class="prop">Lp.</span><i><span class="prop">No.</span></i></th><th><span class="prop">Opis</span><i><span class="prop">Description</span></i></th><th class="n"><span class="prop">Stawka VAT</span><i><span class="prop">VAT rate</span></i></th><th class="n"><span class="prop">Netto</span><i><span class="prop">Net</span></i></th><th class="n">VAT<i>VAT</i></th><th class="n"><span class="prop">Brutto</span><i><span class="prop">Gross</span></i></th></tr></thead><tbody><tr><td>1</td><td><span class="prop">Bombonierka / Box of chocolates</span><span class="sub"><span class="prop">pozycja 2 faktury FO-PL/2026/000001 / line 2 of invoice FO-PL/2026/000001</span></span></td><td class="n">23%</td><td class="n">−£4.88</td><td class="n">−£1.12</td><td class="n">−£6.00</td></tr><tr><td></td><td><span class="prop">Razem 23% / Total 23%</span></td><td class="n">23%</td><td class="n">−£4.88</td><td class="n">−£1.12</td><td class="n">−£6.00</td></tr></tbody><tfoot><tr><td></td><td><span class="prop">Do zwrotu / Refunded</span></td><td></td><td class="n">−£4.88</td><td class="n">−£1.12</td><td class="n">−£6.00</td></tr></tfoot></table><div class="pln"><span class="k"><span class="prop">VAT w PLN</span> <i>/ <span class="prop">VAT in PLN</span></i></span><div><span class="prop">Kurs NBP, tabela A nr / NBP rate, table A no.</span> <span class="phbar"></span>, 5 October 2026: 1 GBP = <span class="phbar"></span> PLN</div><div>23%: VAT −<span class="phbar"></span> zł</div></div><div class="paid"><span><span class="prop">Zwrócono na kartę / Refunded to the card</span>, 9 October 2026</span><span><b>−£6.00</b></span></div><div class="fine"><span><span class="prop">Ceny zawierają VAT i dostawę. / Prices include VAT and delivery.</span></span><span class="slot">[issuer statement · <code>invoice_profile.issuer_statement_key</code> · the inactive <code>agent/PL</code> profile only]</span><span><span class="prop">Strona 1 z 1 / Page 1 of 1</span></span></div></article></div>
+</div>
+</x-dc>
+</body>
+</html>
