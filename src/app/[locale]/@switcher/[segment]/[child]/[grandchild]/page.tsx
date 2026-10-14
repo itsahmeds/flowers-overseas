@@ -1,6 +1,9 @@
 /**
  * Depth 4's language links: this listing or product in each locale (TASK-233;
  * `../../../../page-switcher.tsx`).
+ *
+ * @purpose Language links of a depth-4 page
+ * @spec 003
  */
 import type { ReactElement } from "react";
 
