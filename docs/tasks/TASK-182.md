@@ -110,6 +110,15 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From `/plan-tasks` (2026-10-04):** T-08 and the AC-8 scan iterate over `listInfoPages()`, so
   TASK-183's legal pages and TASK-184's `de`/`pl` drafts fall under them with no edit. T-12's
   imprint surface arrives with TASK-183, which extends T-12.
+- **From the founder's ruling D4 (spec 041 §14 A-founder-2026-10-14d, PR 227, 2026-10-14):**
+  supersedes the P6 text above. `company.support.hours` is "Message us on WhatsApp. We reply the
+  same day." and no message file contains "24/7" (AC-12's amended last sentence); TASK-238 ships
+  that value and the chrome's `wa.me` links before this task, so this task re-verifies AC-12 and
+  does not change the value again. This task owns **AC-34's help-page half**: on the help page's
+  contact block, every "Help & WhatsApp" control and WhatsApp link is an `<a>` to
+  `https://wa.me/12135925150` (from `phoneE164`, no query), never `tel:`; whether the printed
+  number keeps a `tel:` link beside it is unchanged (§2 L78). T-36's `/en-gb/help` case is
+  written here.
 
 ## Escalations
 

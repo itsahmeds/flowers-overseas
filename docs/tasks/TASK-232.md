@@ -7,8 +7,9 @@ file, not the row.
 ## Binding
 
 A bug in merged work (TASK-176, TASK-177, TASK-196), so a new task (founder rule, 2026-10-14).
-Class: **review-only** (presentation: chrome and home components, styles; no money, no SEO gate,
-no new words). The reviewer confirms the class against the diff and may call the breaker.
+Class: **keeps the breaker** (changed 2026-10-15 from review-only, PR 226 review nit 1): items 2
+and 3 add or change home `<a>`s, the link graph spec 004 AC-14's crawl guards, and TASK-231 in the
+same PR changes `scripts/` gates.
 
 - **Spec 004 §14 A21 clause 1, A24 clause 1:** match `docs/design/wireframes/chrome-desktop.dc.html`
   (the `.notice` bar) and `home-desktop.dc.html` / `home-mobile.dc.html` (PR 189). Items, from
@@ -32,8 +33,13 @@ no new words). The reviewer confirms the class against the diff and may call the
      being written…" sentence is copy (QA-5 3.17) and stays for the founder's batch.
   5. **Phone Popular choices (D-07):** the drawn two-column grid of five, not a 1.3-card
      scroller. `sizes` matches the rendered width (QA-4b C04: 252 px cards asked `50vw`). The
-     cards keep **no price**: that is spec 004 §3/§8 against the artboard, listed as a design/spec
-     conflict, not changed here.
+     cards keep **no price**: founder ruling C1, spec 004 §14 A-founder-2026-10-14g, **owned here:
+     AC-53 (T-58)**. On every locale home at 1440 and 390 no Popular choices card contains a
+     currency symbol or code, a money-formatted number, "all in", the inclusive VAT text or an
+     equivalents line. Where the artboard still draws a price, "all in" or the equivalents line,
+     the ruling wins; the designer redraws the home artboards and records it in
+     `docs/design/README.md` (not this task). The "Example arrangement" note follows spec 006
+     AC-17, unchanged.
   6. **Phone destination chips (D-12):** a horizontal scroller (spec 004 AC-49), not a vertical
      stack of seven.
   7. **Promise icons (D-11):** leaf, house, camera on the home; plus and leaf on the product
@@ -44,12 +50,16 @@ no new words). The reviewer confirms the class against the diff and may call the
      adding them; the other six items do not wait on it.
 - **Touches the product page** only for item 7's icons: never beside TASK-227 to TASK-230.
 - **Gates:** cheap gates; CI green with `ci:full` (home and chrome visual baselines re-taken in
-  CI); `/review`. Mutations watched red: "All help topics" back; second name joined again; stamp
-  text past its edge at 768; Popular choices back to a scroller at 390.
+  CI); `/review` and `/break`. Mutations watched red: "All help topics" back; second name joined
+  again; stamp text past its edge at 768; Popular choices back to a scroller at 390; T-58: a card
+  rendering `formatMoney` of the product's from-price.
+- **Not this task:** the home FAQ's cutoff answer (`faq.whoDelivers.answerCutoff`) and the
+  destinations grid's "Ordering opens soon" state are TASK-239's, after this PR (spec 007
+  A-founder-2026-10-14c); change no state text or cutoff gate here.
 
 ## Read
 
-- `specs/004-design-system-layout.md` — `## 0. Index`, §14 A20, A21 clause 1, A24 clauses 1, 3 and 4, AC-14, AC-49
+- `specs/004-design-system-layout.md` — `## 0. Index`, §14 A20, A21 clause 1, A24 clauses 1, 3 and 4, A-founder-2026-10-14g, AC-14, AC-49, AC-53
 - `docs/design/wireframes/chrome-desktop.dc.html`, `home-desktop.dc.html`, `home-mobile.dc.html`, `docs/design/system/components.dc.html` (icons), `docs/design/README.md`
 - `docs/codebase-map.md`
 - `src/modules/ui/layout/SiteHeader.tsx`, `src/modules/ui/home/OccasionDates.tsx`, `OccasionTiles.tsx`, `HomeFaq.tsx`, `TrendingRow.tsx`, `DestinationsGrid.tsx`, `ProofRow.tsx`, `src/modules/ui/icons/`
@@ -62,6 +72,11 @@ no new words). The reviewer confirms the class against the diff and may call the
   (`QA-1-08.jpg`), Q1-18 (`QA-1-17.jpg`), Q1-23 (`QA-1-06.jpg`); QA-4 #10, #11; QA-2 15
   (`QA-2-15.png`).
 - Same agent and PR as TASK-231.
+- **From PR 226's review (2026-10-14):** spec 004 AC-53 and T-58 now rule "no price on Popular
+  choices" (item 5). Spec 004 §13 Q16 (the open phone Menu) and Q18 (a tablet spill gate at 768
+  and 1024) are open; neither is built here, but item 2's 768 px stamps must already fit.
+- **`SiteHeader.tsx`** is also edited by the TASK-233 feature PR (language links, the help line):
+  item 1 touches only the notice bar. Whichever merges second rebases and keeps both.
 
 ## Escalations
 

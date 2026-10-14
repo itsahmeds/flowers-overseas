@@ -49,6 +49,12 @@ A bug in merged work (TASK-197, PR 215), so a new task (founder rule, 2026-10-14
     `QA-4b-A04.png`.
   - QA-2 22: the chip label wraps to two lines and the last chip is cut. `QA-2-22.png`.
 - Same agent and PR as TASK-228.
+- **From PR 226's review and the founder's ruling D2 (PR 227, 2026-10-14):** spec 007 §14
+  A-founder-2026-10-14c (AC-33, AC-34) changes the picker's `preview` notice and caption wording
+  ("Ordering opens soon", no cutoff or order-by text while no country is open). That text is
+  TASK-239's, after this PR: style the chips beside whatever reason text renders, and pin no
+  notice, caption or cutoff wording in a new assertion. Spec 009 AC-35 (TASK-229, same PR)
+  removes the delivery-facts block, so no test here may lean on it.
 
 ## Escalations
 

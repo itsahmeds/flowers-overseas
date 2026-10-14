@@ -26,24 +26,37 @@ A bug in merged work (TASK-179 and TASK-197), so a new task (founder rule, 2026-
 - **Spec 004 §14 A24 AC-49:** "`document.documentElement.scrollWidth` equals the viewport width".
   A long unbroken word (a URL, 90 × "W") wraps inside the card and the field at 320, 360 and 390
   (`overflow-wrap: anywhere`); the docked bar does not slide.
-- **The column below the action at 1024 px.** Spec 009 §14 A12 open item (b) keeps the delivery
-  facts block after "The price" (it is not removed here, see the PR's design/spec conflicts). At
-  1024 × 768 its value column must not break one word per line or spill past its edge, and the
-  empty gap under the price section goes. No AC measures 1024 (listed as a spec gap in the PR);
-  the e2e written here is a regression check on spec 004 A21 clause 1's drawing of the facts list
-  in `system/components.dc.html` ("delivery-facts summary").
-- **Not this task:** the card-length limit (400 here, 200 at checkout) waits for the founder's D5;
-  add-on controls and add-on currency are spec gaps; the facts block's wording belongs to the copy
-  batch and TASK-226.
+- **The empty gap under the price section at 1024 px goes** (QA-1 Q1-21, QA-2 22). No AC
+  measures 1024 (spec 004 §13 Q18, open, proposes a tablet gate; not built here); the e2e written
+  here is a regression check on the artboard.
+- **Folded in from the founder's rulings (PR 227, 2026-10-14), replacing this brief's earlier
+  "facts column at 1024" item and its "waits for D5" exclusion:**
+  - **C2, spec 009 §14 A-founder-2026-10-14d. Owned: AC-35 (T-39).** The PDP renders **no
+    delivery-facts block** in any picker state, at any width, in any locale: no element of spec
+    007's facts block and no `corridor.facts.*` value; the sections after the buy section are
+    exactly A12's order without it. A12 open item (b) is answered; the corridor guide keeps its
+    own facts block. The artboards already omit it.
+  - **D5, spec 004 §14 A-founder-2026-10-14c. Owned: AC-51 (T-56).** One card limit, **200
+    graphemes**, one exported constant shared with checkout (`src/config/checkout.ts`, spec 010
+    §13 Q9); the PDP keeps no limit of its own and no PDP source holds 400 as a card limit
+    (`CARD_MESSAGE_MAX` in `ProductPage.tsx` today). The counter shows the grapheme count against
+    200 (`countGraphemes`, `format.ts`, TASK-200), and the island refuses a 201st grapheme. This
+    absorbs QA-4b A05's grapheme half. The `<textarea>` keeps no `name`, the text is never stored,
+    submitted or put in a URL, and the 2,048 B island budget holds.
+- **Not this task:** add-on controls (spec 009 §13 Q6 keeps them off the PDP); add-on currency is
+  TASK-228's (D6); the copy batch's wording.
 - **Gates:** cheap gates; CI green with `ci:full` (visual baselines for the product page re-taken
   in CI); `/review` and `/break` (keeps the breaker). Mutations watched red: card rotated again;
   `overflow-wrap` removed (page wider than 390); counter moved out of the field's column; a
-  400-character message cut with no sign.
+  long message cut with no sign; the PDP constant set back to 400 (T-56); the facts block
+  rendered back after "The price" (T-39).
 
 ## Read
 
 - `specs/004-design-system-layout.md` — `## 0. Index`, §14 A21 clauses 1, 3 and 5, A24 clause 1, AC-49
-- `specs/009-product-page-date-picker.md` — §14 A12 (open items (b) and (d)), AC-28
+- `specs/009-product-page-date-picker.md` — §14 A12 (open items (b) and (d)), AC-28, §14 A-founder-2026-10-14d (AC-35, T-39)
+- `specs/004-design-system-layout.md` — §14 A-founder-2026-10-14c (AC-51, T-56); `specs/010-checkout.md` §13 Q9
+- `src/config/checkout.ts` (the card limit), `src/modules/i18n/format.ts` (`countGraphemes`)
 - `docs/design/wireframes/product-desktop.dc.html`, `product-mobile.dc.html` (the card section and its annotation), `docs/design/README.md` (the TASK-179 and TASK-197 difference rows)
 - `docs/codebase-map.md`
 - `src/modules/ui/product/PrintedCardPreview.tsx`, `CardMessageField.tsx`, `ProductPage.tsx`, `src/app/globals.css`
@@ -59,10 +72,11 @@ A bug in merged work (TASK-179 and TASK-197), so a new task (founder rule, 2026-
   - QA-1 Q1-21 and QA-2 22: counter far right of the field; ruled lines not aligned with the typed
     text; empty gap under the price section at 1024. `QA-1-06.jpg`, `QA-2-22.png`.
   - QA-1 Q1-06 (P1): at 1024 the facts value column is ~70 px, one word per line, "delivering"
-    spills. `QA-1-06.jpg`.
-  - QA-4b A05 (P2, optional here, no AC): the counter counts UTF-16 units, not graphemes, and is
-    not a live region; `countGraphemes` exists in `format.ts` (TASK-200). Fix it only if it fits
-    the island budget; otherwise leave it for the card-limit task after D5.
+    spills. `QA-1-06.jpg`. Void since C2: the block is removed (AC-35).
+  - QA-4b A05 (P2): the counter counts UTF-16 units, not graphemes, and is not a live region.
+    The grapheme count is now AC-51's; the live region stays optional, inside the island budget.
+- **From PR 226's review (2026-10-14):** spec 004 §13 Q18 (a tablet-width spill gate at 768 and
+  1024) is open; it also concerns TASK-232's 768 px stamps. Not built here.
 - Same agent and PR as TASK-228; never beside TASK-227 (PR 223) on the product page.
 
 ## Escalations
