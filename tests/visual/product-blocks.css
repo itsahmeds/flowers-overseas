@@ -20,9 +20,17 @@
  * offset on every day. The grid itself is never photographed (`product.spec.ts`'s header), and
  * the `unavailable` picker has no grid, so its shot is unchanged.
  */
-[data-fo-date-grid] {
+[data-fo-date-grid],
+[data-fo-date-why-line] {
   display: none !important;
 }
+
+/*
+ * v3 (TASK-197 review round 1): a closed day's reason is a caption line under the row, naming the
+ * dates it closes ("Sun, 18 Oct and Sun, 25 Oct · …"), so it moves with the window exactly as the
+ * grid does and leaves the layout with it. The row and its lines are photographed on fixed dates
+ * by the `product-*-picker-*` shots (`./picker-row.css`).
+ */
 
 /*
  * The `gallery-placeholder` block is photographed on `/dev/components`, below the home's "Coming
