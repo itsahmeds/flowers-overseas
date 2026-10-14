@@ -31,8 +31,8 @@ in_production ──substitution_proposed──▶ awaiting_buyer (2 h, default 
 in_production ──dispatch──▶ out_for_delivery ──deliver──▶ delivered ──photo──▶ photo_uploaded ──review_window(72 h)──▶ closed
 out_for_delivery ──fail──▶ delivery_failed ──▶ redelivery_scheduled ──▶ out_for_delivery | cancelled_refunded
 delivered/photo_uploaded/closed ──complaint──▶ disputed ──▶ resolved (refund_partial | refund_full | goodwill | rejected) ──▶ closed
-any post-paid ──refund_request──▶ refunded_partial | refunded_full (non-terminal until closed)
-disputed ──chargeback──▶ chargeback_open ──▶ chargeback_won | chargeback_lost (terminal)
+any post-paid ──refund_request──▶ refunded_full (non-terminal until closed); a partial refund is not a state: it records `order.refunded_partial` and the status stays (spec 002 §14 A6.6)
+disputed ──chargeback──▶ chargeback_open ──▶ chargeback_won | chargeback_lost (terminal); the events are `order.chargeback_opened`, `order.chargeback_won`, `order.chargeback_lost` (spec 002 §14 A6.6)
 ```
 
 Design rules:
@@ -43,7 +43,7 @@ Design rules:
 - Timeouts (`assignment.timeout`, `awaiting_buyer` default) are scheduled jobs that emit transitions like any actor.
 - Every event type has a versioned zod schema in `modules/orders/events.ts`; adding a field is additive; renaming requires a new version.
 
-Event catalogue (initial): `order.placed`, `order.authorised`, `order.payment_failed`, `order.routed`, `assignment.offered`, `assignment.accepted`, `assignment.declined`, `assignment.timed_out`, `order.no_partner_available`, `order.captured`, `order.in_production`, `order.substitution_proposed`, `order.substitution_resolved`, `order.out_for_delivery`, `order.delivered`, `order.delivery_failed`, `order.photo_uploaded`, `order.closed`, `order.refund_requested`, `order.refunded`, `order.disputed`, `order.resolved`, `order.chargeback_*`, `customer.created`, `recipient.created`, `review.created`, `partner.status_changed`, `country.status_changed`.
+Event catalogue (initial): `order.placed`, `order.authorised`, `order.payment_failed`, `order.routed`, `assignment.offered`, `assignment.accepted`, `assignment.declined`, `assignment.timed_out`, `order.no_partner_available`, `order.captured`, `order.in_production`, `order.substitution_proposed`, `order.substitution_resolved`, `order.out_for_delivery`, `order.delivered`, `order.delivery_failed`, `order.photo_uploaded`, `order.closed`, `order.refund_requested`, `order.refunded_partial`, `order.refunded_full`, `order.disputed`, `order.resolved`, `order.chargeback_opened`, `order.chargeback_won`, `order.chargeback_lost`, `customer.created`, `recipient.created`, `review.created`, `partner.status_changed`, `country.status_changed`. Amended by spec 002 §14 A6.6 (36 names): `order.refunded` is split into `order.refunded_partial` and `order.refunded_full`, `order.chargeback_*` into `_opened`, `_won` and `_lost`, and ten names are added in all (the five above plus `order.abandoned`, `order.manual_reroute`, `order.cancelled`, `order.redelivery_scheduled`, `order.cancelled_refunded`).
 
 **Recommendation:** this machine, implemented in `015`, with the outbox as the only integration point for every later system.
 **Rationale:** CRM sync, portal notifications, analytics and automations all become subscribers; none needs a change to the machine.
@@ -93,7 +93,7 @@ adapters: brevo/, hubspot/ (both thin)
 | Direction | Data | When |
 |---|---|---|
 | **Us → CRM** | Contact: email, name, locale, buyer_country, display_currency, consent (marketing: bool, timestamp, source), lifetime orders, last order date, first/last destination country, occasions bought for (multi-select), recipients count, acquisition channel | on `customer.created`, `order.closed`, `consent.updated` |
-| **Us → CRM** | Order summary as a custom object/event: order id, value, currency, destination, occasion, delivery date, status | on `order.captured`, `order.delivered`, `order.refunded` |
+| **Us → CRM** | Order summary as a custom object/event: order id, value, currency, destination, occasion, delivery date, status | on `order.captured`, `order.delivered`, `order.refunded_partial`, `order.refunded_full` (spec 002 §14 A6.6) |
 | **Us → CRM** | Recipient relation (name + next occasion dates) for reminder campaigns; **never** recipient contact details | on `order.closed` |
 | **CRM → Us** | Unsubscribe / consent changes (webhook) → `customer.marketing_consent = false` | real time |
 | **CRM → Us** | Nothing else. Orders, prices, recipients live only in our DB | — |
@@ -133,7 +133,7 @@ Adopting a CRM later is `CRM_PROVIDER=brevo` plus credentials; switching is a re
 | T8 | `assignment.offered` + 30 min unanswered | vendor | WhatsApp + SMS | reminder |
 | T9 | `order.delivered` + 1 h without photo | vendor | WhatsApp | photo reminder |
 | T10 | `order.no_partner_available`, webhook failures, SLA exhaustion | admin | WhatsApp + email | alert |
-| T11 | `order.refunded` | buyer | email | refund confirmation |
+| T11 | `order.refunded_partial`, `order.refunded_full` (spec 002 §14 A6.6) | buyer | email | refund confirmation |
 | T12 | `order.delivery_failed` | buyer | WhatsApp + email | options |
 | T13 | weekly | vendor | email | payout statement PDF |
 | T14 | magic-link login | customer/vendor | email | link |
