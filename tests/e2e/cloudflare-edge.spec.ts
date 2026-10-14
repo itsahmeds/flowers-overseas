@@ -28,13 +28,18 @@ import { createHash } from "node:crypto";
 
 import { type APIRequestContext, expect, test } from "@playwright/test";
 
+import { loadDeclaredEdge } from "../../scripts/cloudflare/apply-zone-settings.ts";
+import { localePrefixes } from "../../scripts/cloudflare/edge.ts";
+import {
+  bypassProbes,
+  hostOf,
+  productionRefusal,
+} from "./cloudflare-edge-target.ts";
+
 const STAGING_URL = process.env.STAGING_URL ?? "";
 const ORIGIN_URL = process.env.STAGING_ORIGIN_URL ?? "";
 const CREDENTIAL = process.env.STAGING_BASIC_AUTH ?? "";
 const EDGE_HIT_URL = process.env.EDGE_HIT_URL ?? "";
-
-/** The hosts this suite refuses: production is never a test target here. */
-const PRODUCTION_HOSTS = ["flowersoverseas.com", "www.flowersoverseas.com"];
 
 /** `/`, a locale home and a corridor page (AC-18). */
 const DOCUMENTS = ["/", "/en", "/en/send-flowers-to/poland"];
@@ -89,13 +94,15 @@ const PROBE = "fo-edge-probe.css";
 /** The probe outside every bypassed path, bare and under a locale prefix. */
 const PROBE_CONTROLS = [`/${PROBE}`, `/en/${PROBE}`];
 
-const hostOf = (url: string): string => {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "";
-  }
-};
+/**
+ * One probe under every clause of the declared bypass: each path of `config/cloudflare/edge.json`,
+ * bare and under every locale prefix of the registry (42 today).
+ */
+const EVERY_CLAUSE_PROBE = bypassProbes(
+  loadDeclaredEdge(process.cwd()).bypass.paths,
+  localePrefixes(),
+  PROBE,
+);
 
 const sha256 = (bytes: Buffer): string =>
   createHash("sha256").update(bytes).digest("hex");
@@ -131,11 +138,8 @@ test.describe
       STAGING_URL === "",
       "STAGING_URL is not set: the edge checks run against staging. through Cloudflare only, never against production (spec 040 §12 step 4)",
     );
-    if (PRODUCTION_HOSTS.includes(hostOf(STAGING_URL))) {
-      throw new Error(
-        `STAGING_URL names production (${hostOf(STAGING_URL)}): this suite never runs there`,
-      );
-    }
+    const refusal = productionRefusal(STAGING_URL);
+    if (refusal !== undefined) throw new Error(refusal);
     try {
       const response = await fetch(new URL("/api/health", STAGING_URL), {
         signal: AbortSignal.timeout(10_000),
@@ -182,6 +186,11 @@ test.describe
           ).toBe("DYNAMIC");
         }
       }
+    }
+    // Every clause, not a sample: a live bypass missing one prefix's path fails here.
+    for (const probe of EVERY_CLAUSE_PROBE) {
+      const response = await edge.get(probe, { maxRedirects: 0 });
+      expect(response.headers()["cf-cache-status"], probe).toBe("DYNAMIC");
     }
     await edge.dispose();
   });

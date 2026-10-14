@@ -235,6 +235,15 @@ export function cacheRuleHazards(parameters: unknown): string[] {
       "a request header in the cache key: a cached response would vary by header",
     );
   }
+  const user = at(parameters, "cache_key", "custom_key", "user");
+  const visitor = isRecord(user)
+    ? Object.keys(user).filter((key) => user[key] === true)
+    : [];
+  if (visitor.length > 0) {
+    hazards.push(
+      `the visitor's ${visitor.join(", ")} in the cache key (custom_key.user): a cached response would vary by visitor (ADR-0006)`,
+    );
+  }
   return hazards;
 }
 
@@ -349,6 +358,11 @@ export function lintEdge(
       problems.push(`rule "${rule.description}": ${hazard}`);
     }
     if (at(rule.action_parameters, "cache") === true) {
+      if (rule.stage !== "cutover") {
+        problems.push(
+          `rule "${rule.description}" must have stage cutover: only the production host is cached, from the cutover on (spec 040 §14 A7)`,
+        );
+      }
       if (at(rule.action_parameters, "edge_ttl", "mode") !== "respect_origin") {
         problems.push(
           `rule "${rule.description}": a rule that makes a page eligible for cache must take its edge TTL from the origin (edge_ttl.mode respect_origin)`,
@@ -391,6 +405,11 @@ export function lintEdge(
   ) {
     problems.push(
       `exactly one rate-limit rule, on ${RATE_LIMIT_EXPRESSION} only: documents must never be counted (AC-21)`,
+    );
+  }
+  if (limit !== undefined && limit.stage !== "now") {
+    problems.push(
+      `rule "${limit.description}" must have stage now: the rate limit is proven on staging first (spec 040 §12 step 4)`,
     );
   }
 
@@ -597,21 +616,34 @@ export function diffDns(
   return { drifts, notes };
 }
 
-function hostsNamed(expression: string, zone: string): string[] {
-  const pattern = new RegExp(
-    `(?:[a-z0-9-]+\\.)*${zone.replace(/\./g, "\\.")}`,
-    "gi",
-  );
-  return [...expression.matchAll(pattern)].map((match) =>
-    match[0].toLowerCase(),
-  );
+/** `http.host eq "a"`, or `http.host in {"a" "b"}`, and nothing else, in optional parentheses. */
+const HOST_ONLY =
+  /^\(?\s*http\.host\s+(?:(?:eq|==)\s+"([^"]+)"|in\s+\{((?:\s*"[^"]+")+)\s*\})\s*\)?$/i;
+
+/** The hosts a rule is restricted to, when its expression is a host match alone; else `undefined`. */
+export function hostsMatched(expression: string): string[] | undefined {
+  const match = HOST_ONLY.exec(squash(expression));
+  if (match === null) return undefined;
+  const set = match[2];
+  return (
+    set === undefined
+      ? [match[1] ?? ""]
+      : [...set.matchAll(/"([^"]+)"/g)].map((entry) => entry[1] ?? "")
+  ).map((name) => name.toLowerCase());
 }
 
-/** Whether a live rule names only hosts this file leaves alone (the R2 media host). */
+/**
+ * Whether a live rule applies only to hosts this file leaves alone (the R2 media host): its
+ * expression is a host match and nothing else, on foreign hosts only. A rule that merely names
+ * the media host (`http.host ne "media…"`, `media… or <anything>`) matches other hosts, so it is
+ * checked like any other.
+ */
 export function isForeign(edge: EdgeDeclaration, rule: LiveRule): boolean {
-  const named = hostsNamed(rule.expression, edge.zone);
+  const matched = hostsMatched(rule.expression);
   return (
-    named.length > 0 && named.every((name) => edge.hosts.foreign.includes(name))
+    matched !== undefined &&
+    matched.length > 0 &&
+    matched.every((name) => edge.hosts.foreign.includes(name))
   );
 }
 
@@ -650,8 +682,16 @@ export function diffPhase(
 
   for (const rule of declared) {
     const active = rule.stage === "now" || edge.cutover.state === "done";
-    const match = live.find((entry) => entry.description === rule.description);
+    const matches = live.filter(
+      (entry) => entry.description === rule.description,
+    );
+    const match = matches[0];
     const where = `rule "${rule.description}" · ${phase}`;
+    if (matches.length > 1) {
+      drifts.push(
+        `${where} · ${String(matches.length)} live rules carry this name · delete all but the declared one · ${step(rule.founderStep)}`,
+      );
+    }
     if (match === undefined) {
       if (active) {
         drifts.push(`${where} · live absent · ${step(rule.founderStep)}`);

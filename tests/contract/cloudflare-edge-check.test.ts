@@ -21,7 +21,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   loadDeclaredEdge,
@@ -35,16 +35,25 @@ import {
   TOKEN_SCOPES,
   bypassExpression,
   checkEdge,
+  edgeGet,
+  hostsMatched,
   lintEdge,
   localePrefixes,
 } from "../../scripts/cloudflare/edge.ts";
 import {
+  CloudflareApiError,
+  EndpointNotAllowedError,
   MissingScopeError,
   type RecordedZone,
   createRecordedTransport,
   matchEndpoint,
   recordedZoneSchema,
 } from "../../src/lib/cloudflare-zone";
+import {
+  bypassProbes,
+  hostOf,
+  productionRefusal,
+} from "../e2e/cloudflare-edge-target.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const declared = loadDeclaredEdge(repoRoot);
@@ -1087,5 +1096,525 @@ describe("the founder steps carry the declared values verbatim", () => {
     expect(section).toContain(
       'concat("https://flowersoverseas.com", http.request.uri.path)',
     );
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+// /break 180 round 1 (8a9c0fca) and /review 180 round 1: one case per hole, each red on the
+// breaker's mutation.
+
+describe("the lint, each rule the breaker could switch off (holes 2, 3, 6–10, 15)", () => {
+  const lint = (change: (edge: EdgeDeclaration) => void) => {
+    const copy = structuredClone(declared);
+    change(copy);
+    return lintEdge(copy);
+  };
+  const rules = (edge: EdgeDeclaration, index: number) =>
+    edge.phases[index]?.rules ?? [];
+  const documents = (edge: EdgeDeclaration) => rules(edge, 0)[0];
+  const extra = (
+    edge: EdgeDeclaration,
+    phase: number,
+    expression: string,
+  ): void => {
+    rules(edge, phase).push({
+      description: "fo: extra",
+      stage: "now",
+      founderStep: "E4",
+      reason: "a case",
+      expression,
+      action: "rewrite",
+      action_parameters: { headers: {} },
+    });
+  };
+
+  it("hole 2: the bypass rule dropped → named", () => {
+    expect(
+      lint((edge) => {
+        rules(edge, 0).pop();
+      }),
+    ).toEqual([
+      "no cache rule bypasses the dynamic paths (spec 040 §5.4 rule 1)",
+    ]);
+  });
+
+  it("hole 2: the bypass rule no longer bypassing (cache not false) → named", () => {
+    expect(
+      lint((edge) => {
+        const bypass = rules(edge, 0)[1];
+        if (bypass) bypass.action_parameters = {};
+      }),
+    ).toEqual([
+      "no cache rule bypasses the dynamic paths (spec 040 §5.4 rule 1)",
+    ]);
+  });
+
+  it("hole 3: the bypass staged at the cutover → named", () => {
+    expect(
+      lint((edge) => {
+        const bypass = rules(edge, 0)[1];
+        if (bypass) bypass.stage = "cutover";
+      }),
+    ).toEqual(['rule "fo: bypass dynamic paths" must have stage now']);
+  });
+
+  it("hole 3: the rate limit staged at the cutover → named", () => {
+    expect(
+      lint((edge) => {
+        const limit = rules(edge, 2)[0];
+        if (limit) limit.stage = "cutover";
+      }),
+    ).toEqual([
+      'rule "fo: api rate limit" must have stage now: the rate limit is proven on staging first (spec 040 §12 step 4)',
+    ]);
+  });
+
+  it("hole 3: the documents rule brought forward to now → named (E-4)", () => {
+    expect(
+      lint((edge) => {
+        const rule = documents(edge);
+        if (rule) rule.stage = "now";
+      }),
+    ).toEqual([
+      'rule "fo: cache documents" must have stage cutover: only the production host is cached, from the cutover on (spec 040 §14 A7)',
+    ]);
+  });
+
+  const REDIRECT =
+    "exactly one redirect rule: www.flowersoverseas.com → https://flowersoverseas.com with the path, 301, query kept (plan/02 §7)";
+
+  it("hole 6: a second redirect rule → named", () => {
+    expect(
+      lint((edge) => {
+        const www = rules(edge, 1)[0];
+        if (www) rules(edge, 1).push({ ...www, description: "fo: second" });
+      }),
+    ).toEqual([REDIRECT]);
+  });
+
+  it("hole 6: the redirect's host changed → named", () => {
+    expect(
+      lint((edge) => {
+        const www = rules(edge, 1)[0];
+        if (www)
+          www.expression = '(http.host eq "staging.flowersoverseas.com")';
+      }),
+    ).toEqual([REDIRECT]);
+  });
+
+  it("hole 7: origin Cache-Control ignored on the documents rule → named", () => {
+    expect(
+      lint((edge) => {
+        const rule = documents(edge);
+        if (rule)
+          rule.action_parameters = {
+            ...rule.action_parameters,
+            origin_cache_control: false,
+          };
+      }),
+    ).toEqual([
+      'rule "fo: cache documents": origin Cache-Control ignored: a no-store page would be cached',
+    ]);
+  });
+
+  it("hole 7: a request header in the cache key → named", () => {
+    expect(
+      lint((edge) => {
+        const rule = documents(edge);
+        if (rule)
+          rule.action_parameters = {
+            ...rule.action_parameters,
+            cache_key: {
+              custom_key: { header: { include: ["accept-language"] } },
+            },
+          };
+      }),
+    ).toEqual([
+      'rule "fo: cache documents": a request header in the cache key: a cached response would vary by header',
+    ]);
+  });
+
+  it("hole 15: the visitor's country and language in the cache key (custom_key.user) → named", () => {
+    expect(
+      lint((edge) => {
+        const rule = documents(edge);
+        if (rule)
+          rule.action_parameters = {
+            ...rule.action_parameters,
+            cache_key: {
+              custom_key: {
+                user: { geo: true, lang: true, device_type: false },
+              },
+            },
+          };
+      }),
+    ).toEqual([
+      'rule "fo: cache documents": the visitor\'s geo, lang in the cache key (custom_key.user): a cached response would vary by visitor (ADR-0006)',
+    ]);
+  });
+
+  for (const [what, expression] of [
+    [
+      "the cf-ipcountry header",
+      '(http.request.headers["cf-ipcountry"][0] eq "PL")',
+    ],
+    ["the IP's network (ip.geoip.asnum)", "(ip.geoip.asnum eq 13335)"],
+  ] as const) {
+    it(`hole 8: a rule reading ${what} → named (ADR-0006)`, () => {
+      expect(
+        lint((edge) => {
+          extra(edge, 3, expression);
+        }),
+      ).toEqual([
+        'rule "fo: extra" reads the visitor\'s location: no IP redirects, ever (ADR-0006)',
+      ]);
+    });
+  }
+
+  it("hole 9: the phases out of order → named", () => {
+    expect(
+      lint((edge) => {
+        const [a, b] = [edge.phases[2], edge.phases[3]];
+        if (a && b) edge.phases.splice(2, 2, b, a);
+      }),
+    ).toEqual([
+      "phases must be, in order: http_request_cache_settings, http_request_dynamic_redirect, http_ratelimit, http_response_headers_transform",
+    ]);
+  });
+
+  it("hole 10: a dns name declared twice → named", () => {
+    expect(
+      lint((edge) => {
+        const staging = edge.dns.records.find(
+          (entry) => entry.name === "staging.flowersoverseas.com",
+        );
+        if (staging) edge.dns.records.push({ ...staging });
+      }),
+    ).toEqual(["a dns name is declared twice"]);
+  });
+
+  it("hole 10: a rule description used twice → named", () => {
+    expect(
+      lint((edge) => {
+        const limit = rules(edge, 2)[0];
+        if (limit) limit.description = "fo: www to apex";
+      }),
+    ).toEqual(["a rule description is used twice"]);
+  });
+});
+
+describe("the live diff, each path the breaker found unguarded (holes 4, 5, 12–15)", () => {
+  const cacheEverything = (expression: string): Rule => ({
+    description: "media.flowersoverseas.com everything",
+    expression,
+    action: "set_cache_settings",
+    action_parameters: {
+      cache: true,
+      edge_ttl: { mode: "override_origin", default: 7200 },
+    },
+    enabled: true,
+  });
+
+  for (const expression of [
+    '(http.host ne "media.flowersoverseas.com")',
+    '(http.host eq "media.flowersoverseas.com" or starts_with(http.request.uri.path, "/"))',
+  ]) {
+    it(`hole 13 (/review 180 change 1): ${expression} matches other hosts, so its Cache Everything is checked → red`, async () => {
+      const { report } = await check(
+        withRules(asDeclared, "http_request_cache_settings", (rules) => [
+          ...rules,
+          cacheEverything(expression),
+        ]),
+      );
+      expect(report.drifts).toEqual([
+        'rule "media.flowersoverseas.com everything" · http_request_cache_settings · Cache Everything: the edge TTL overrides the origin\'s Cache-Control, so a no-store page would be cached · delete it',
+        'rule "media.flowersoverseas.com everything" · http_request_cache_settings · not declared in config/cloudflare/edge.json · delete it, or declare it',
+        'rule "media.flowersoverseas.com everything" · http_request_cache_settings · comes after the bypass rule and wins over it: drag the bypass rule to the bottom of the list',
+      ]);
+    });
+  }
+
+  it("hole 13: the same rule restricted to the media host alone is the media host's own → clean", async () => {
+    const { report } = await check(
+      withRules(asDeclared, "http_request_cache_settings", (rules) => [
+        ...rules,
+        cacheEverything('(http.host eq "media.flowersoverseas.com")'),
+      ]),
+    );
+    expect(report.drifts).toEqual([]);
+  });
+
+  it("hole 13: a host match alone is read as its hosts; anything more is not a host match", () => {
+    expect(hostsMatched('(http.host eq "media.flowersoverseas.com")')).toEqual([
+      "media.flowersoverseas.com",
+    ]);
+    expect(
+      hostsMatched('http.host in {"media.flowersoverseas.com" "a.example"}'),
+    ).toEqual(["media.flowersoverseas.com", "a.example"]);
+    for (const expression of [
+      '(http.host ne "media.flowersoverseas.com")',
+      '(http.host eq "media.flowersoverseas.com" or true)',
+      '(not http.host eq "media.flowersoverseas.com")',
+      '(http.host eq "media.flowersoverseas.com") or (true)',
+    ]) {
+      expect(hostsMatched(expression), expression).toBeUndefined();
+    }
+  });
+
+  it("hole 14: a second live rule carrying a declared name (the walled staging host, before the bypass) → red", async () => {
+    const { report } = await check(
+      withRules(asDeclared, "http_request_cache_settings", (rules) => {
+        const documents = rules.find(
+          (rule) => rule.description === "fo: cache documents",
+        ) as Rule;
+        return [
+          ...rules.slice(0, 2),
+          {
+            ...documents,
+            expression: '(http.host eq "staging.flowersoverseas.com")',
+          },
+          ...rules.slice(2),
+        ];
+      }),
+    );
+    expect(report.drifts).toEqual([
+      'rule "fo: cache documents" · http_request_cache_settings · 2 live rules carry this name · delete all but the declared one · founder step C1',
+    ]);
+  });
+
+  it("hole 15: the visitor's country added to the live cache key → red", async () => {
+    const { report } = await check(
+      withRules(
+        asDeclared,
+        "http_request_cache_settings",
+        named("fo: cache documents", (rule) => ({
+          ...rule,
+          action_parameters: {
+            ...rule.action_parameters,
+            cache_key: { custom_key: { user: { geo: true } } },
+          },
+        })),
+      ),
+    );
+    expect(report.drifts).toEqual([
+      'rule "fo: cache documents" · http_request_cache_settings · the visitor\'s geo in the cache key (custom_key.user): a cached response would vary by visitor (ADR-0006) · delete it',
+    ]);
+  });
+
+  it("hole 5: the rate limit's action switched from block → red, naming the action", async () => {
+    const { report } = await check(
+      withRules(
+        asDeclared,
+        "http_ratelimit",
+        named("fo: api rate limit", (rule) => ({
+          ...rule,
+          action: "managed_challenge",
+        })),
+      ),
+    );
+    expect(report.drifts).toEqual([
+      'rule "fo: api rate limit" · http_ratelimit · action · declared "block" · live "managed_challenge" · founder step E5',
+    ]);
+  });
+
+  it("hole 4: before the cutover a cutover rule absent live is pending, not failed; a now rule absent fails", async () => {
+    const { report } = await check(
+      withRules(asDeclared, "http_request_cache_settings", (rules) =>
+        rules.filter((rule) => rule.description !== "fo: cache documents"),
+      ),
+      declared,
+    );
+    expect(report.drifts).toEqual([]);
+    expect(report.notes).toContain(
+      'pending cutover (TASK-104) · rule "fo: cache documents" · http_request_cache_settings · live absent · founder step C1',
+    );
+    const now = await check(
+      withRules(asDeclared, "http_ratelimit", () => []),
+      declared,
+    );
+    expect(now.report.drifts).toEqual([
+      'rule "fo: api rate limit" · http_ratelimit · live absent · founder step E5',
+    ]);
+  });
+
+  it("hole 12: two Railway CNAMEs at one name → red on both", async () => {
+    const { report } = await check(
+      withRecords(asDeclared, (records) => [
+        ...records,
+        record("staging.flowersoverseas.com", "CNAME", "x7k2pq.up.railway.app"),
+      ]),
+    );
+    expect(report.drifts).toEqual([
+      "dns staging.flowersoverseas.com · declared CNAME *.up.railway.app proxied · live CNAME g05ns7.up.railway.app proxied · a second CNAME at the name · AC-14 · founder step E2",
+      "dns staging.flowersoverseas.com · declared CNAME *.up.railway.app proxied · live CNAME x7k2pq.up.railway.app proxied · a second CNAME at the name · AC-14 · founder step E2",
+    ]);
+  });
+});
+
+describe("edgeGet's refusals (hole 11)", () => {
+  const ZONE = asDeclared.zoneId;
+  const DNS = `/zones/${ZONE}/dns_records`;
+  const answering =
+    (status: number, body: unknown) =>
+    (): Promise<{ status: number; body: unknown }> =>
+      Promise.resolve({ status, body });
+  const failure = (promise: Promise<unknown>) =>
+    promise.then(
+      () => undefined,
+      (error: unknown) => error,
+    );
+
+  it("a 401 → the token refused, named", async () => {
+    const error = await failure(edgeGet(answering(401, null), ZONE, DNS));
+    expect(error).toBeInstanceOf(CloudflareApiError);
+    expect((error as Error).message).toBe(
+      "GET /zones/{zone_id}/dns_records answered 401: the token was refused (invalid, expired or revoked)",
+    );
+  });
+
+  it("a 500 envelope → an error with Cloudflare's codes, never an empty phase", async () => {
+    const error = await failure(
+      edgeGet(
+        answering(500, {
+          success: false,
+          errors: [{ code: 10000, message: "internal error" }],
+          result: null,
+        }),
+        ZONE,
+        `/zones/${ZONE}/rulesets/phases/http_response_headers_transform/entrypoint`,
+        true,
+      ),
+    );
+    expect((error as Error).message).toBe(
+      "GET /zones/{zone_id}/rulesets/phases/http_response_headers_transform/entrypoint answered 500: 10000 internal error",
+    );
+  });
+
+  it("a 200 with success:false → an error, never a result", async () => {
+    const error = await failure(
+      edgeGet(
+        answering(200, { success: false, errors: [], result: [] }),
+        ZONE,
+        DNS,
+      ),
+    );
+    expect((error as Error).message).toBe(
+      "GET /zones/{zone_id}/dns_records answered 200: no error detail",
+    );
+  });
+
+  it("a path off the allow-list is refused before the transport is called", async () => {
+    const transport = vi.fn(answering(200, { success: true, result: [] }));
+    const error = await failure(
+      edgeGet(transport, ZONE, `/zones/${ZONE}/settings/ssl`),
+    );
+    expect(error).toBeInstanceOf(EndpointNotAllowedError);
+    expect((error as Error).message).toBe(
+      "GET /zones/{zone_id}/settings/ssl is not on the edge allow-list (scripts/cloudflare/edge.ts EDGE_ENDPOINTS)",
+    );
+    expect(transport).not.toHaveBeenCalled();
+  });
+});
+
+describe("the CLI with a token reads the live edge (hole 1)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("cloudflare:check with the two secrets diffs the zone and then the edge, GETs only", async () => {
+    const zone = load("zone-as-declared.json");
+    const responses = { ...zone.responses, ...beforeCutover.responses };
+    const requested: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url: string, init: RequestInit) => {
+        const key = `${init.method ?? "GET"} ${new URL(url).pathname.replace(/^\/client\/v4/, "").replace(`/zones/${zone.zoneId}`, "/zones/{zone_id}")}`;
+        requested.push(key);
+        const answer = responses[key] ?? { status: 404, body: null };
+        return Promise.resolve(
+          new Response(JSON.stringify(answer.body), { status: answer.status }),
+        );
+      }),
+    );
+    const result = await run(
+      ["--check", "--require-token"],
+      {
+        CLOUDFLARE_API_TOKEN: "a-token-for-the-stub",
+        CLOUDFLARE_ZONE_ID: zone.zoneId,
+      },
+      repoRoot,
+    );
+    expect(result.stderr).toBe("");
+    expect(result.code).toBe(0);
+    expect(requested).toContain(DNS_KEY);
+    expect(requested.every((key) => key.startsWith("GET "))).toBe(true);
+    const lines = result.stdout.trimEnd().split("\n");
+    expect(lines).toContain(
+      "cloudflare:check: 26 declared values match config/cloudflare/zone-settings.json",
+    );
+    expect(lines.at(-1)).toBe(`${VERDICT_OK} (6 notes above)`);
+  });
+});
+
+describe("the edge suite's production guard (hole 16)", () => {
+  it("refuses production however the URL spells it", () => {
+    for (const url of [
+      "https://flowersoverseas.com",
+      "https://flowersoverseas.com.",
+      "https://FlowersOverseas.com./en",
+      "https://www.flowersoverseas.com.:443",
+      "https://staging.flowersoverseas.com@flowersoverseas.com",
+    ]) {
+      expect(productionRefusal(url), url).toBe(
+        `STAGING_URL names production (${hostOf(url)}): this suite never runs there`,
+      );
+    }
+    expect(hostOf("https://flowersoverseas.com.")).toBe("flowersoverseas.com");
+  });
+
+  it("lets staging through", () => {
+    expect(
+      productionRefusal("https://staging.flowersoverseas.com"),
+    ).toBeUndefined();
+  });
+
+  it("is what the suite's first hook throws on", () => {
+    const spec = readFileSync(
+      resolve(repoRoot, "tests/e2e/cloudflare-edge.spec.ts"),
+      "utf8",
+    );
+    expect(spec).toContain(
+      "const refusal = productionRefusal(STAGING_URL);\n    if (refusal !== undefined) throw new Error(refusal);",
+    );
+  });
+});
+
+describe("the T-16 e2e probes every bypass clause, not a sample (hole 17)", () => {
+  it("builds one probe per path under every locale prefix of the registry, 42 today", () => {
+    const probes = bypassProbes(
+      declared.bypass.paths,
+      localePrefixes(),
+      "p.css",
+    );
+    expect(probes).toHaveLength(42);
+    expect(new Set(probes).size).toBe(42);
+    for (const probe of [
+      "/api/p.css",
+      "/pl/checkout/p.css",
+      "/de/api/p.css",
+      "/en-XA/vendor/p.css",
+      "/ar-XB/track/p.css",
+    ]) {
+      expect(probes).toContain(probe);
+    }
+  });
+
+  it("is what the T-16 case walks", () => {
+    const spec = readFileSync(
+      resolve(repoRoot, "tests/e2e/cloudflare-edge.spec.ts"),
+      "utf8",
+    );
+    expect(spec).toContain("const EVERY_CLAUSE_PROBE = bypassProbes(");
+    expect(spec).toContain("for (const probe of EVERY_CLAUSE_PROBE) {");
   });
 });
