@@ -79,7 +79,7 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-15: started on `task/TASK-231-home-to-artboards` (one feature PR with TASK-231/232).
 
 ## Result
 
