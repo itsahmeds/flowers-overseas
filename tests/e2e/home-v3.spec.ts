@@ -22,6 +22,7 @@
  */
 import { type Page, expect, test } from "@playwright/test";
 
+import { COVER_FADE_RAMP_PX } from "../../src/modules/ui/home/cover-fade.ts";
 import { recordLayoutShifts } from "../support/layout-shift.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
@@ -137,6 +138,51 @@ test.describe("T-51: option A fills the first screen under the chrome (AC-46)", 
     });
   }
 
+  // Below the laptop band (`/break` 212, hole 2): `--home-chrome` is 203 px at `md` and 183 px at
+  // `lg`, so the photograph must still start at the chrome's foot and end inside the viewport.
+  for (const viewport of [
+    { width: 768, height: 1024 },
+    { width: 1024, height: 768 },
+    { width: 1180, height: 820 },
+  ] as const) {
+    test(`${String(viewport.width)} × ${String(viewport.height)}: under the chrome, inside the viewport`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await open(page);
+      const chrome = await rectOf(page, "[data-fo-header]");
+      const photo = await rectOf(page, PHOTO);
+      expect(
+        Math.abs(photo.top - chrome.bottom),
+        `photo top ${String(photo.top)} vs chrome bottom ${String(chrome.bottom)}`,
+      ).toBeLessThanOrEqual(1);
+      expect(photo.bottom, "photo block-end").toBeLessThanOrEqual(
+        viewport.height + 0.5,
+      );
+      const card = await rectOf(page, CARD);
+      expect(inside(card, photo), `card ${JSON.stringify(card)}`).toBe(true);
+    });
+  }
+
+  // A short window (`/review` 212 nit): at 1024 × 700 the chrome (183 px) and the photograph's
+  // 560 px floor are 743 px, so the photograph runs past the foot by design (the artboard's
+  // `clamp(560px, …)`); what must hold is that the card stays on it, below the header.
+  test("1024 × 700: the card stays on the photograph, below the header", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1024, height: 700 });
+    await open(page);
+    const chrome = await rectOf(page, "[data-fo-header]");
+    const photo = await rectOf(page, PHOTO);
+    const card = await rectOf(page, CARD);
+    expect(Math.abs(photo.top - chrome.bottom)).toBeLessThanOrEqual(1);
+    expect(photo.height).toBeGreaterThanOrEqual(560);
+    expect(card.top, `card ${JSON.stringify(card)}`).toBeGreaterThanOrEqual(
+      chrome.bottom - 0.5,
+    );
+    expect(inside(card, photo), `card ${JSON.stringify(card)}`).toBe(true);
+  });
+
   test("1440 × 900 matches the artboard's left edges: card at x 56, text at x 92", async ({
     page,
   }) => {
@@ -177,14 +223,19 @@ test.describe("T-51: the phone cover (AC-46)", () => {
       .evaluate((node) =>
         Number.parseFloat(getComputedStyle(node).paddingBlockStart),
       );
-    expect(ramp).toBe(96);
+    expect(ramp).toBe(COVER_FADE_RAMP_PX);
     const eyebrow = await rectOf(page, "[data-fo-hero-eyebrow]");
     expect(eyebrow.top).toBeGreaterThanOrEqual(copy.top + ramp - 0.5);
-    expect(
-      await page
-        .locator(COPY)
-        .evaluate((node) => getComputedStyle(node).backgroundImage),
-    ).toContain("linear-gradient");
+    // The gradient reaches the fade's full alpha at its last stop, and that stop is the padding:
+    // a longer ramp would leave the eyebrow and the H1 on partial alpha (`/break` 212, hole 1).
+    const gradient = await page
+      .locator(COPY)
+      .evaluate((node) => getComputedStyle(node).backgroundImage);
+    const stop = /^linear-gradient\(.*\s(\d+(?:\.\d+)?)px\)$/u.exec(
+      gradient,
+    )?.[1];
+    expect(stop, gradient).toBeDefined();
+    expect(Number(stop), gradient).toBe(ramp);
 
     await expect(page.locator(ACTION)).toHaveText(/Send flowers/u);
     expect(inside(await rectOf(page, ACTION), bar)).toBe(true);
