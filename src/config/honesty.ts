@@ -1,6 +1,8 @@
 /**
- * The relay-language check (spec 041 §14 A-founder-2026-10-14, the canonical definition; spec 010
- * §14 A4.3 AC-51, spec 013 AC-41, spec 016 AC-38, spec 018 §7 AC-38 to AC-43 cite it; TASK-226).
+ * Relay-language check (spec 041 §14).
+ *
+ * The canonical definition is spec 041 §14 A-founder-2026-10-14; spec 010 §14 A4.3 AC-51, spec 013
+ * AC-41, spec 016 AC-38 and spec 018 §7 AC-38 to AC-43 cite it (TASK-226).
  *
  * The founder's ruling, 2026-10-14: buyers never learn that we relay an order to a partner
  * florist. No buyer-facing string says "partner", that a florist accepts, declines, offers or
