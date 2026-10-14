@@ -14,6 +14,7 @@ import {
   listingView,
   localeGrandchildParams,
   localeProductParams,
+  productAlternatePaths,
   productView,
   resolveLocalePath,
   writeProductExistenceSummary,
@@ -327,23 +328,36 @@ export default async function LocaleGrandchildRoute({
   if (match.kind === "product") {
     const product = await productViewFor(match);
     setRequestLocale(match.locale);
-    return (
-      <ProductPage
-        breadcrumb={
-          // The product page keeps its trail on the phone and shows no back link (spec 004
-          // §14 A24 clause 4 (e)); TASK-197 moves it below the buy section.
-          <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
-        }
-        facts={
-          <DeliveryFacts
-            facts={product.facts}
-            locale={product.locale}
-            nameKey={product.country.nameKey}
-            prices="omit"
-          />
-        }
-        view={product}
+    // The popup's options go to this product in each locale that has it (TASK-197, owed from
+    // the TASK-179 review); nothing here touches the head.
+    const productAlternates = (
+      <LanguageAlternates
+        paths={await productAlternatePaths({
+          sku: match.sku,
+          countryIso: match.iso2,
+        })}
       />
+    );
+    return (
+      <>
+        <ProductPage
+          breadcrumb={
+            // The product page keeps its trail on the phone and shows no back link (spec 004
+            // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.
+            <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
+          }
+          facts={
+            <DeliveryFacts
+              facts={product.facts}
+              locale={product.locale}
+              nameKey={product.country.nameKey}
+              prices="omit"
+            />
+          }
+          view={product}
+        />
+        {productAlternates}
+      </>
     );
   }
 

@@ -47,7 +47,7 @@ const CUTOFF_REASON_KEY = "delivery.reason.pastCutoff";
  * Whether a chip prints no reason of its own and is named by the picker's notice instead: the
  * shared `notOrderable` reason in any state, and a past-cutoff day in `preview` (§14 A8, E-1).
  */
-function sharesNotice(
+export function sharesNotice(
   reasonKey: string | undefined,
   pickerState: "preview" | "live",
 ): boolean {
@@ -82,6 +82,16 @@ export interface DateChipProps {
   readonly pickerState?: "preview" | "live";
   /** The form field name; `date` is `ProductSearchParamsSchema`'s (TASK-128). */
   readonly name?: string;
+  /**
+   * v3's buy column (TASK-197): the id of the picker's caption line that states this chip's own
+   * reason, under the row. The chip then prints no reason of its own, so every chip in the row is
+   * the same small card (the artboard's `.pv-day`), and the radio is named by the date and that
+   * line together: the reason is still visible words, beside the date it names, and in the
+   * accessible name (spec 009 AC-7). Absent: the reason prints inside the chip (v2).
+   */
+  readonly reasonId?: string;
+  /** v3's buy column: the shorter chip, which fills its row's height. */
+  readonly compact?: boolean;
 }
 
 export function DateChip({
@@ -94,6 +104,8 @@ export function DateChip({
   sharedReasonId,
   pickerState = "live",
   name = "date",
+  reasonId,
+  compact = false,
 }: DateChipProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -101,6 +113,8 @@ export function DateChip({
   const state = dateChipState(date);
   const chipId = `date-${date.date}`;
   const shared = sharesNotice(date.reasonKey, pickerState);
+  const outside =
+    reasonId !== undefined && date.reasonKey !== undefined && !shared;
   const occasions = date.occasionKeys.map((key) =>
     messageFor(t, occasionByKey(key).labelKey),
   );
@@ -122,7 +136,7 @@ export function DateChip({
   return (
     <label
       id={chipId}
-      className={`${tone} ${edge} rounded-chip has-[:focus-visible]:outline-focus relative flex min-h-[92px] flex-col items-center justify-start gap-[2px] px-[4px] py-[10px] text-center text-xs has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
+      className={`${tone} ${edge} rounded-chip has-[:focus-visible]:outline-focus relative flex ${compact ? "min-h-[64px] w-full" : "min-h-[92px]"} flex-col items-center justify-start gap-[2px] px-[4px] py-[10px] text-center text-xs has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
       data-fo-date={date.date}
       data-fo-date-state={state}
       {...(date.reasonKey === undefined
@@ -132,13 +146,19 @@ export function DateChip({
       <input
         className="sr-only"
         defaultChecked={checked}
+        // Every `preview` date is `selectable: false` (the view's schema refuses anything else), so
+        // each radio is closed on its own; the picker no longer disables its `<fieldset>`, which
+        // would take the v3 date scroller out of the tab order (spec 004 AC-49; axe
+        // `scrollable-region-focusable`; TASK-197).
         disabled={!date.selectable}
         name={name}
         type="radio"
         value={date.date}
         {...(shared
           ? { "aria-labelledby": `${chipId} ${sharedReasonId}` }
-          : {})}
+          : outside
+            ? { "aria-labelledby": `${chipId} ${reasonId}` }
+            : {})}
       />
       <b className="display text-h3-s leading-[1.15] font-normal">
         {formatDate(instantOf(date.date), code, "deliveryDate", "UTC")}
@@ -162,7 +182,7 @@ export function DateChip({
           })}
         </bdi>
       )}
-      {date.reasonKey === undefined || shared ? null : (
+      {date.reasonKey === undefined || shared || outside ? null : (
         <span
           className="text-ink-muted text-[11px] leading-[1.15]"
           data-fo-date-why

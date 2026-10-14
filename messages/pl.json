@@ -850,7 +850,9 @@
     },
     "excludes": "What the price does not include: a vase. The photograph is styled with one and the bouquet is delivered wrapped, so we say it here rather than let the picture imply it.",
     "eyebrow": "{descriptor} · for {country}",
+    "eyebrowPhone": "{category} · {country}",
     "included": "included",
+    "readMore": "Czytaj dalej",
     "related": {
       "heading": "Six more, in our order",
       "label": "More we make for {country}"

@@ -1282,6 +1282,7 @@ export default function DevComponentsPage(): ReactElement {
                     country={PRODUCT_COUNTRY}
                     delivery={PRODUCT_DELIVERY_LIVE}
                     idPrefix="gallery-live"
+                    look="buy"
                     key="picker-live"
                     locale={galleryLocale}
                     selectedDate={PRODUCT_LIVE_DATE}
@@ -1293,6 +1294,7 @@ export default function DevComponentsPage(): ReactElement {
                     country={PRODUCT_COUNTRY}
                     delivery={PRODUCT_DELIVERY_PREVIEW}
                     idPrefix="gallery-preview"
+                    look="buy"
                     key="picker-preview"
                     locale={galleryLocale}
                   />,
@@ -1329,8 +1331,6 @@ export default function DevComponentsPage(): ReactElement {
                       state,
                       <div className="max-w-[420px]" key={state}>
                         <PriceSummary
-                          country={PRODUCT_COUNTRY}
-                          dock={false}
                           totalId={`gallery-${state}`}
                           view={
                             PRODUCT_SUMMARIES[summary] ??

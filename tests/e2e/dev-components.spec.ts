@@ -501,6 +501,17 @@ test.describe("/dev/components", () => {
       "Order by 14:00 in Warsaw",
     );
     await expect(live.locator('button[type="submit"]')).toHaveCount(1);
+    // v3's buy column (TASK-197): the closed Sunday's reason is a line under the row, and still
+    // in the closed radio's computed name (spec 009 AC-7).
+    await expect(live.locator("label [data-fo-date-why]")).toHaveCount(0);
+    await expect(live.locator("[data-fo-date-why-line]")).toContainText(
+      "We do not deliver on Sundays in Poland",
+    );
+    await expect(
+      live.getByRole("radio", {
+        name: /We do not deliver on Sundays in Poland/u,
+      }),
+    ).toBeDisabled();
     await expect(
       state("pickerPreview").locator("input:not([disabled])"),
     ).toHaveCount(0);
@@ -546,9 +557,8 @@ test.describe("/dev/components", () => {
   test("docks no summary at the 390 px artboard width: the sticky bar is the product page's (AC-9)", async ({
     page,
   }) => {
-    // Four summaries side by side would dock four bars over the listing blocks' mobile baselines;
-    // the gallery passes `dock={false}` and the page's own summary is asserted docked in
-    // `tests/e2e/product-page.spec.ts`.
+    // Since v3 (TASK-197) no summary docks anywhere: the product page's sticky element is its
+    // `StickyActionBar` (`tests/e2e/product-v3.spec.ts`).
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(GALLERY);
     const positions = await page

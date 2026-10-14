@@ -165,6 +165,30 @@ function chips(html: string): ReadonlyMap<string, string> {
   return found;
 }
 
+/**
+ * A closed chip's own reason as v3's buy column prints it (TASK-197): not inside the chip but on
+ * the caption line under the row that the chip's radio names in `aria-labelledby`, beside the
+ * date it closes. Returns the reason's text and the caption line's whole text.
+ */
+function ownReason(
+  html: string,
+  date: string,
+): { readonly reason: string; readonly line: string } {
+  const chip = chips(html).get(date) ?? "";
+  const ids = /aria-labelledby="([^"]+)"/u.exec(chip)?.[1]?.split(" ") ?? [];
+  const id = ids.find((candidate) => candidate !== `date-${date}`) ?? "";
+  const reason = readable(
+    new RegExp(`id="${id}"[^>]*>([^<]+)<`, "u").exec(html)?.[1] ?? "",
+  );
+  const line = readable(
+    new RegExp(
+      `<p[^>]*data-fo-date-why-line[^>]*>((?:(?!</p>)[\\s\\S])*id="${id}"[\\s\\S]*?)</p>`,
+      "u",
+    ).exec(html)?.[1] ?? "",
+  );
+  return { reason, line };
+}
+
 /** The markup between `data-fo-<block>` and the end of its element's subtree, approximately. */
 function block(html: string, marker: string): string {
   const start = html.indexOf(marker);
@@ -260,8 +284,8 @@ describe("AC-8: the picker says only what the destination's data allows, in one 
 /* AC-7 (render half) — the reason in words, and in the accessible name.      */
 /* -------------------------------------------------------------------------- */
 
-describe("AC-7: a closed date says why, in words, inside its own label", () => {
-  it("prints every calendar reason beside its date, inside the radio's `<label>`", async () => {
+describe("AC-7: a closed date says why, in words, beside its date and in its name", () => {
+  it("v3: prints every calendar reason on the caption line under the row with the date it closes, and names the radio by it", async () => {
     const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
     const html = render(view);
     const grid = chips(html);
@@ -269,9 +293,13 @@ describe("AC-7: a closed date says why, in words, inside its own label", () => {
     expect(closed.length).toBeGreaterThan(0);
     for (const date of closed) {
       const chip = grid.get(date.date) ?? "";
-      const why = /data-fo-date-why[^>]*>([^<]+)</u.exec(chip)?.[1] ?? "";
-      expect(why.trim(), date.date).not.toBe("");
-      // Inside the `<label>` that wraps the disabled radio: the reason is part of its name.
+      // Out of the chip (every chip is the same card), onto its own line.
+      expect(chip, date.date).not.toContain("data-fo-date-why");
+      const { reason, line } = ownReason(html, date.date);
+      expect(reason, date.date).not.toBe("");
+      // Beside the date it closes, in words: the line starts with that date.
+      expect(line, date.date).toContain(printedDate(date.date, "en"));
+      expect(line, date.date).toContain(reason);
       expect(chip, date.date).toMatch(/<input[^>]*disabled/u);
       expect(chip).toContain(`data-fo-date-reason="${date.reasonKey ?? ""}"`);
     }
@@ -401,36 +429,48 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
     expect(amounts(after)).toEqual(amounts(before));
   });
 
-  it("docks the summary's own total row at ≤390 px — the sticky bar is not a second money element", async () => {
+  it("v3: the phone's docked bar repeats the selected tier's price and links to the status; the total stays in the flow, once (AC-48, A12)", async () => {
     for (const view of [
       await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+      await viewOf("en", "PL", AMBER, {
+        now: WOMENS_DAY_WEEK,
+        selection: { tierKey: "stems_12" },
+      }),
       await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK }),
     ]) {
       const html = render(view);
-      const where = view.delivery.state;
-      // One element is docked, and it is the row inside the summary that holds the one total.
-      // A named breakpoint: an arbitrary media variant once emptied this project's stylesheet
-      // with no error raised (`ui-site-header.test.tsx`).
-      expect(html, where).not.toMatch(/(?:min|max)-\[\d+px\]:/u);
-      const docked = [...html.matchAll(/class="[^"]*max-sm:fixed/gu)];
-      expect(docked, where).toHaveLength(1);
-      const row = block(html, "data-fo-summary-total");
-      expect(row, where).toMatch(/^<div[^>]*max-sm:fixed/u);
-      expect(block(html, "data-fo-price-summary"), where).toContain(row);
+      const where = `${view.delivery.state} ${view.selectedTierKey}`;
+      // Nothing docks but the bar: the summary's total is an ordinary row now.
+      expect(html, where).not.toMatch(/max-sm:fixed/u);
       expect([...html.matchAll(/data-fo-price-total/gu)], where).toHaveLength(
         1,
       );
-      expect(row, where).toContain("data-fo-price-total");
       expect([...html.matchAll(/aria-live=/gu)], where).toHaveLength(1);
-      expect(row, where).toContain('aria-live="polite"');
-      // The bar names the size and the inclusive formula beside the amount; those words repeat
-      // the summary's, so they are out of the accessibility tree, and they carry no money.
-      const selection = block(row, 'data-fo-summary-docked="selection"');
-      expect(selection, where).toContain('aria-hidden="true"');
-      expect(readable(selection), where).toContain(
-        loadMessages("en", ["catalog"]).catalog.price.inclusive,
+      const bar = block(html, "data-fo-action-bar=");
+      expect(bar, where).not.toBe("");
+      const tier = view.tiers.find(
+        (option) => option.tierKey === view.selectedTierKey,
       );
-      expect(selection, where).not.toMatch(/\d[\d,.]*\s*zł|zł\s*\d|PLN|£/u);
+      const price = formatMoney(tier!.price, "en");
+      // The bar's price is the sheet's price, from the same `TierOption`.
+      expect(
+        decode(
+          firstText(
+            block(bar, "data-fo-action-bar-price"),
+            /<strong[^>]*>([^<]*)<\/strong>/u,
+          ),
+        ),
+        where,
+      ).toBe(price);
+      expect(
+        decode(
+          firstText(block(html, "data-fo-pdp-price"), /<bdi>([^<]*)<\/bdi>/u),
+        ),
+        where,
+      ).toBe(price);
+      // Its action is an in-page link to the status in the flow (repeats, never replaces).
+      expect(bar, where).toMatch(/<a[^>]*href="#buy"/u);
+      expect(html, where).toMatch(/id="buy"[^>]*>[\s\S]*?data-fo-pdp-status/u);
     }
   });
 });
@@ -627,13 +667,17 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
   it("keeps the `live` past-cutoff chip's own reason with its time", async () => {
     const view = await liveViewOf("en", AMBER, { now: PAST_CUTOFF });
     expect(view.delivery.state).toBe("live");
-    const chip = chips(render(view)).get("2027-03-01") ?? "";
+    const html = render(view);
+    const chip = chips(html).get("2027-03-01") ?? "";
     expect(chip).toMatch(/<input[^>]*disabled/u);
     expect(chip).toContain('data-fo-date-reason="delivery.reason.pastCutoff"');
-    expect(
-      readable(/data-fo-date-why[^>]*>([^<]+)</u.exec(chip)?.[1] ?? ""),
-    ).toBe("Ordering closed at 14:00 in Warsaw");
-    expect(chip).not.toContain("aria-labelledby");
+    // v3: its own line under the row, never the shared notice.
+    expect(ownReason(html, "2027-03-01").reason).toBe(
+      "Ordering closed at 14:00 in Warsaw",
+    );
+    expect(chip).not.toMatch(
+      /aria-labelledby="date-2027-03-01 delivery-notice"/u,
+    );
   });
 
   it("leaves no `delivery.cutoffPreview` key in any message or meta file", () => {
@@ -816,7 +860,7 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
         expect(
           firstText(
             radio,
-            /<span[^>]*data-fo-tier-label[^>]*>([^<]*)<\/span>/u,
+            /<(?:span|b)[^>]*data-fo-tier-label[^>]*>([^<]*)<\/(?:span|b)>/u,
           ),
           where,
         ).toBe(label);
@@ -894,7 +938,7 @@ describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge
     }
   });
 
-  it("dates the summary's surcharge line, and the docked bar, with the chosen chip's date", async () => {
+  it("dates the summary's surcharge line with the chosen chip's date", async () => {
     for (const locale of ["en", "pl"] as const) {
       const plain = await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK });
       const surcharged = plain.delivery.dates.find(
@@ -914,11 +958,6 @@ describe("HOLE 4: a chip prints the date it carries, and the summary's surcharge
         /<dt[^>]*>([^<]*)<\/dt>/u,
       );
       expect(line.split(" · ").at(-1), locale).toBe(expected);
-      const docked = firstText(
-        block(html, 'data-fo-summary-docked="selection"'),
-        /<span[^>]*>([^<]*)<\/span>/u,
-      );
-      expect(docked.split(" · "), locale).toContain(expected);
     }
   });
 });
@@ -988,8 +1027,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         // The picker's cutoff line is the one place the PDP may print it — in `live` only, since
         // spec 009 §14 A8 took it out of `preview` — so it is lifted out by its own element, and
         // the `unavailable` and `preview` pages, which have no cutoff at all, are scanned whole.
-        // The docked summary repeats it in `live` (the mobile artboard's "the last line becomes
-        // the cutoff sentence"), marked the same way, so every marked line is lifted and counted.
+        // v3 (TASK-197) has no docked summary any more, so `live` prints it once.
         let scanned = html;
         let cutoffs = 0;
         for (
@@ -1001,7 +1039,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
           cutoffs += 1;
         }
         expect(cutoffs, where).toBe(
-          { unavailable: 0, preview: 0, live: 2 }[view.delivery.state],
+          { unavailable: 0, preview: 0, live: 1 }[view.delivery.state],
         );
         expect(
           listingHonestyViolations({
@@ -1084,8 +1122,9 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
         expect(shown, where).toBe(total);
         // No structured-data price on a Phase 0 PDP (BreadcrumbList only), so nothing can differ.
         expect(html, where).not.toMatch(/"price"\s*:/u);
-        // The equivalents line (A21 clause 6) sits under the price and the total exactly when the
-        // view carries it; `tests/unit/product-equivalents.test.tsx` pins its text.
+        // The equivalents line left the price line for "The price" (spec 009 §14 A12 move 2): the
+        // price element holds the amount and the inclusive text and nothing else;
+        // `tests/unit/product-equivalents.test.tsx` pins its text.
         expect(
           [
             ...block(html, "data-fo-pdp-price").matchAll(
@@ -1093,12 +1132,12 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
             ),
           ],
           where,
-        ).toHaveLength(view.equivalents.price === undefined ? 0 : 1);
+        ).toHaveLength(0);
       }
     }
   });
 
-  it("prints the view's equivalents line under the price and the total, and never a second amount in it", async () => {
+  it('prints the view\'s one equivalents line in "The price", never in the price element, and never a second amount (A12 move 2, AC-31)', async () => {
     const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
     expect(view.equivalents.price).toBeDefined();
     const html = render(view);
@@ -1106,7 +1145,14 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
       ...block(html, "data-fo-pdp-price").matchAll(
         /data-fo-price-equivalents/gu,
       ),
-    ]).toHaveLength(1);
+    ]).toHaveLength(0);
+    // The price element: the amount and the inclusive text, nothing else.
+    const selected = view.tiers.find(
+      (tier) => tier.tierKey === view.selectedTierKey,
+    );
+    expect(readable(block(html, "data-fo-pdp-price"))).toBe(
+      `${formatMoney(selected!.price, "en")} ${loadMessages("en", ["catalog"]).catalog.price.inclusive}`,
+    );
     expect([
       ...block(html, "data-fo-price-summary").matchAll(
         /data-fo-price-equivalents/gu,
@@ -1249,5 +1295,36 @@ describe("the gallery's product fixtures are shapes `productView()` could produc
     expect(gallery.PRODUCT_SUMMARIES["surcharge"]?.selectedDate).toBe(
       gallery.PRODUCT_SURCHARGE_DATE,
     );
+  });
+});
+
+describe("the preview picker closes every date on the radio itself (TASK-197; breaker H4)", () => {
+  it("renders every `preview` chip's radio `disabled`, in every locale, with no disabled fieldset", async () => {
+    for (const locale of LOCALES) {
+      const view = await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK });
+      expect(view.delivery.state, locale).toBe("preview");
+      const html = render(view);
+      const grid = chips(html);
+      expect(grid.size, locale).toBe(view.delivery.dates.length);
+      for (const [date, chip] of grid) {
+        expect(chip, `${locale} ${date}`).toMatch(/<input[^>]*\bdisabled\b/u);
+      }
+      // The row stays focusable: the group is not a disabled fieldset.
+      expect(block(html, 'data-fo-picker-state="preview"'), locale).not.toMatch(
+        /^<fieldset[^>]*\bdisabled\b/u,
+      );
+    }
+  });
+});
+
+describe("withdrawn photographs render the honest placeholder (TASK-190, TASK-197 carry-forward (d))", () => {
+  it("draws Peace Lily (FO-PT-004) and Olive Sapling (FO-PT-006) as the placeholder: no <img>, no preload", async () => {
+    for (const sku of ["FO-PT-004", "FO-PT-006"]) {
+      const view = await viewOf("en", "PL", sku, { now: IN_WINDOW });
+      expect(view.gallery.kind, sku).toBe("placeholder");
+      const html = render(view);
+      expect(html, sku).toMatch(/data-fo-gallery="placeholder"/u);
+      expect(block(html, "data-fo-pdp-gallery"), sku).not.toMatch(/<img/u);
+    }
   });
 });

@@ -25,8 +25,17 @@ export function StepNumber({ step }: { readonly step: number }): ReactElement {
 export const STEP_HEADING =
   "display text-md m-0 mb-[14px] flex items-center gap-[12px] p-0";
 
+/**
+ * The v3 buy column's legend (product artboards, round 2): the question in the body face, bold, at
+ * the UI size, with no step number. `compact` hides it visually below `md`, where the phone sheet
+ * names the group by its legend alone (the sizes' segmented control).
+ */
+export const BUY_LEGEND = "text-ui text-ink m-0 mb-[10px] p-0 font-bold";
+
 export interface StepLegendProps {
   readonly children: ReactNode;
+  /** `buy`: the v3 buy column's plain legend; `buy-phone-hidden`: the same, visually hidden below `md`. */
+  readonly look?: "step" | "buy" | "buy-phone-hidden";
   readonly step?: number | undefined;
   /** For a control inside the group that is named by the legend (`aria-labelledby`). */
   readonly id?: string;
@@ -36,9 +45,16 @@ export function StepLegend({
   children,
   step,
   id,
+  look = "step",
 }: StepLegendProps): ReactElement {
+  const className =
+    look === "step"
+      ? STEP_HEADING
+      : look === "buy"
+        ? BUY_LEGEND
+        : `${BUY_LEGEND} max-md:sr-only`;
   return (
-    <legend className={STEP_HEADING} id={id}>
+    <legend className={className} id={id}>
       {step === undefined ? null : <StepNumber step={step} />}
       {children}
     </legend>

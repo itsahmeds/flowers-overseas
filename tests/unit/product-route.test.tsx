@@ -32,6 +32,25 @@ vi.mock("../../src/modules/catalog/read.ts", async (importOriginal) => {
   };
 });
 
+/**
+ * Every committed product has a slug in every locale, so "this product has no page in one locale"
+ * has no corpus example either. `hasSlug` is made switchable for one (sku, locale) pair while
+ * `slugFor` stays real, so a path builder that skipped the existence rule would still find a slug
+ * and print the page the router refuses (TASK-197, breaker H5).
+ */
+const slugs: { missing?: string } = {};
+vi.mock("../../src/modules/catalog/slugs.ts", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/modules/catalog/slugs.ts")>();
+  return {
+    ...actual,
+    hasSlug: (...args: Parameters<typeof actual.hasSlug>) =>
+      slugs.missing === `${args[1]}|${args[2]}`
+        ? false
+        : actual.hasSlug(...args),
+  };
+});
+
 vi.mock("next-intl/server", () => ({
   setRequestLocale: (): void => undefined,
   getTranslations: (): Promise<(key: string) => string> =>
@@ -42,7 +61,7 @@ const route =
   await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
 const { ProductPage } =
   await import("../../src/modules/ui/product/ProductPage.tsx");
-const { listProductPages, productPageExists } =
+const { listProductPages, productAlternatePaths, productPageExists } =
   await import("../../src/modules/catalog");
 const { listingLocales, publishedCountries } =
   await import("../../src/modules/catalog/listing.ts");
@@ -149,9 +168,51 @@ describe("AC-1: the product route answers the existence set and 404s everything 
         grandchild: slug ?? "",
       });
       expect(isValidElement(element), locale).toBe(true);
-      expect(element.type, locale).toBe(ProductPage);
-      const props = element.props as { view: { product: { sku: string } } };
+      // The page and, beside it, the language popup's per-locale paths (TASK-197).
+      const children = (element.props as { children: readonly ReactElement[] })
+        .children;
+      const [pdp, alternates] = children;
+      expect(pdp?.type, locale).toBe(ProductPage);
+      const props = pdp?.props as { view: { product: { sku: string } } };
       expect(props.view.product.sku, locale).toBe(page?.sku);
+      // Every launch locale's path of this product, each under its own prefix.
+      const paths = (
+        alternates?.props as { paths: Readonly<Record<string, string>> }
+      ).paths;
+      expect(Object.keys(paths).sort(), locale).toEqual([
+        "de",
+        "en",
+        "en-gb",
+        "pl",
+      ]);
+      expect(paths[locale], locale).toBe(page?.path);
+    }
+  });
+
+  it("gives the language popup only the locales whose page exists (productAlternatePaths' existence guard)", async () => {
+    const identity = { sku: "FO-BQ-001", countryIso: "PL" };
+    const all = await productAlternatePaths(identity);
+    expect(Object.keys(all).sort()).toEqual(["de", "en", "en-gb", "pl"]);
+    slugs.missing = "FO-BQ-001|de";
+    try {
+      expect(
+        await productPageExists({
+          locale: "de",
+          countryIso: "PL",
+          sku: "FO-BQ-001",
+        }),
+      ).toBe(false);
+      const paths = await productAlternatePaths(identity);
+      expect(Object.keys(paths).sort()).toEqual(["en", "en-gb", "pl"]);
+      expect(paths["en"]).toBe(all["en"]);
+    } finally {
+      delete slugs.missing;
+    }
+    reads.unpriced = "FO-BQ-001|PL";
+    try {
+      expect(await productAlternatePaths(identity)).toEqual({});
+    } finally {
+      delete reads.unpriced;
     }
   });
 

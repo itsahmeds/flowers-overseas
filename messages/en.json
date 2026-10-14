@@ -878,7 +878,9 @@
       "printed": "Printed on our card · included",
       "legend": "What should the card say?"
     },
-    "eyebrow": "{descriptor} · for {country}"
+    "eyebrow": "{descriptor} · for {country}",
+    "readMore": "Read more",
+    "eyebrowPhone": "{category} · {country}"
   },
   "checkout": {
     "demo": {

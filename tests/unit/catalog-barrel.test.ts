@@ -311,6 +311,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productExistenceSummaryMarkdown",
         "productPageExists",
         "productPrebuildPages",
+        // The language popup's per-locale paths of one product page (TASK-197).
+        "productAlternatePaths",
         "writeProductExistenceSummary",
         // spec 009's product view model (TASK-125): the single input to the page, its JSON-LD
         // and its sitemap row, the tier ladder and the totals table it is built from, and the

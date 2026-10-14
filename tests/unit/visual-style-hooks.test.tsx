@@ -60,11 +60,12 @@ describe("every visual stylesheet selects a hook the source still writes", () =>
     expect(
       hooksOf(readFileSync(join(VISUAL, "product-blocks.css"), "utf8")),
     ).toEqual([
+      "data-fo-action-bar",
       "data-fo-date-grid",
+      "data-fo-date-why-line",
       "data-fo-fx-notice",
       "data-fo-occasion-dates",
       "data-fo-price-equivalents",
-      "data-fo-summary-total",
     ]);
   });
 

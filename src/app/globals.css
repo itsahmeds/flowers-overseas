@@ -763,3 +763,45 @@
     inset-block-end: calc(76px + env(safe-area-inset-bottom));
   }
 }
+
+/*
+ * The product page's docked bar appears only once the buy section has scrolled out, never over
+ * the first screen (spec 004 §14 A24 clause 4 (a), AC-48; the orchestrator's sticky-bar ruling;
+ * TASK-197). No island: a CSS scroll-driven animation on the buy section's view timeline flips the
+ * bar from its hidden state (the same transform `StickyActionBar`'s `hidden` uses, so CLS stays 0)
+ * to shown at the end of the section's exit, and back when it scrolls in again. A browser without
+ * scroll timelines never shows it, which loses nothing: the bar only repeats the flow.
+ */
+@keyframes pdp-bar-reveal {
+  from {
+    translate: 0 100%;
+    visibility: hidden;
+  }
+
+  to {
+    translate: 0 0;
+    visibility: visible;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  html:has([data-fo-pdp-buy]) {
+    timeline-scope: --pdp-buy;
+  }
+
+  [data-fo-pdp-buy] {
+    view-timeline: --pdp-buy block;
+  }
+
+  .pdp-bar {
+    animation: pdp-bar-reveal step-end both;
+    animation-timeline: --pdp-buy;
+    animation-range: exit 99% exit 100%;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  .pdp-bar {
+    display: none;
+  }
+}

@@ -165,27 +165,30 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
     }
   });
 
-  it("draws the preview with the sample sentence and the printed label, shown once per width", async () => {
+  it("draws the preview once, beside the field in the card section, with the sample sentence and the printed label (v3, TASK-197)", async () => {
     const html = await pageHtml("en");
     const en = loadMessages("en", ["product", "catalog"]) as {
       product: { card: { printed: string } };
       catalog: { addon: { card: { description: string } } };
     };
+    // v3 draws the preview beside the field (`.pv-card`), at every width: one figure, not a
+    // shown/hidden pair.
     const previews = [...html.matchAll(/data-fo-card-preview/gu)];
-    expect(previews).toHaveLength(2);
+    expect(previews).toHaveLength(1);
     expect(
       html.split(`>${en.catalog.addon.card.description}<`).length,
-    ).toBeGreaterThanOrEqual(3);
+    ).toBeGreaterThanOrEqual(2);
     // The literal, not the catalogue's current value: A21 clause 5's label as the founder approved
     // it (`/break` round 1 hole 2 on PR 170).
     expect(en.product.card.printed).toBe("Printed on our card · included");
-    expect(html.split(`>${en.product.card.printed}<`)).toHaveLength(3);
-    // One wrapper hidden below `lg`, the other from `lg` up: never both on screen.
-    expect(html).toMatch(
-      /class="[^"]*\bhidden\b[^"]*\blg:block\b[^"]*"><figure[^>]*data-fo-card-preview/u,
+    expect(html.split(`>${en.product.card.printed}<`)).toHaveLength(2);
+    // Inside the card section, after the field, and never hidden at a width.
+    const card = html.slice(html.indexOf("data-fo-pdp-card"));
+    expect(card.indexOf("data-fo-card-preview")).toBeGreaterThan(
+      card.indexOf("<textarea"),
     );
-    expect(html).toMatch(
-      /class="[^"]*\blg:hidden\b[^"]*"><figure[^>]*data-fo-card-preview/u,
+    expect(html).not.toMatch(
+      /class="[^"]*(lg:)?hidden[^"]*"><figure[^>]*data-fo-card-preview/u,
     );
   });
 });
