@@ -357,6 +357,7 @@ Not applied:
 ## Progress
 
 - 2026-10-15 (finisher): breaker holes H1 to H6 closed with tests watched red; `messageCase` rename; rebased onto main; visual diffs read; baselines refreshed.
+- 2026-10-15 (finisher, session closing, partial): done: holes H1 to H6, rename, rebase, visual diffs explained, 37 baselines committed (8e8dd0f8), PR description rewritten, `ci:full` toggled on e1d8af79 (run 38698371323: spine green; build, e2e, visual, a11y, container, lighthouse still queued at handover). Next: read run 38698371323 on the head (visual and lighthouse especially); if visual is red, open the new diff, do not widen anything. A replacement must know: the founder's record commit is `6f29213d` after the rebase (range-diff unchanged); never revert with `git checkout` over uncommitted work.
 
 - 2026-10-14: copy, de/pl drafts, glossary, `src/config/honesty.ts`, unit and e2e scans committed and pushed; blocked on E1 (founder's record run) and E2 (map budget).
 - 2026-10-15: the founder's record script `.claude/state/record-approval-226.py` (not committed; tested on a throwaway worktree, where it reached APPROVE and made the E1 cascade green, leaving only the map budget, E2); `valentines` loses its em dash so it can be recorded; the task-226 pins accept the record. Batch-3 proposals in `.claude/state/relay-copy-batch-3.md` (89 rows).
