@@ -117,6 +117,7 @@ same PR changes `scripts/` gates.
   hero's italic swap (0.0003 at 390) may be the cause, as the popup test excludes only the
   sentence. Remaining: look at that case (likely `FONT_SWAP_REGIONS` in `language-popup.spec.ts`),
   toggle `ci:full`, refresh visual baselines, `/review` and `/break`.
+- 2026-10-15 (finisher): rebased; the 360 × 640 CLS fixed in the hero (TASK-231's `## Result`).
 
 ## Result
 

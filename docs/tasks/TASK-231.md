@@ -110,6 +110,9 @@ links (PR 226 review nit 1).
   hero's italic swap (0.0003 at 390) may be the cause, as the popup test excludes only the
   sentence. Remaining: look at that case (likely `FONT_SWAP_REGIONS` in `language-popup.spec.ts`),
   toggle `ci:full`, refresh visual baselines, `/review` and `/break`.
+- 2026-10-15 (finisher): rebased on `origin/main` (map regenerated); found the 360 × 640 CLS cause
+  (the H1 gaining a line on the italic swap, not a region the test should exclude) and fixed it in
+  `HomeHero` with e2e cases first (red at 360/375/389, then green); `ci:full` toggled on `98e46a1d`.
 
 ## Result
 
