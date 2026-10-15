@@ -131,13 +131,20 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text).toContain("That is the date Poland keeps for it");
   });
 
-  it("opens with the dated line and the grid, before the links out", () => {
+  it("opens with the dated line, then the links out and the sort form, then the grid", () => {
+    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): "Also in Poland" and the sort form
+    // sit above the grid at every width, and nothing that narrows or sorts follows it.
     const dated = html.indexOf("data-fo-occasion-date");
-    const grid = html.indexOf("data-fo-listing-grid");
-    const links = html.indexOf("occasion-siblings");
+    const links = html.indexOf("data-fo-listing-chips");
+    const form = html.indexOf("<form");
+    const grid = html.indexOf("data-fo-listing-grid=");
     expect(dated).toBeGreaterThan(-1);
-    expect(dated).toBeLessThan(grid);
-    expect(grid).toBeLessThan(links);
+    expect(dated).toBeLessThan(links);
+    expect(links).toBeLessThan(form);
+    expect(form).toBeLessThan(grid);
+    expect(html).toMatch(
+      /<nav aria-label="Also in Poland" data-fo-listing-chips/u,
+    );
   });
 
   it("carries the demo sentence and no purchase affordance (§13 Q8)", () => {

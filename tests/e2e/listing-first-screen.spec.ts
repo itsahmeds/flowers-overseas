@@ -1,7 +1,7 @@
 /**
  * The three country listings' first screens, as a browser lays them out (spec 004 §14 **A24**
- * clause 2, rebound **AC-34**, **AC-45**, T-49, T-50; spec 008 §14 **A15**, **A16**, AC-31, AC-32,
- * AC-6, T-35, T-36, T-06; TASK-187).
+ * clause 2, rebound **AC-34**, **AC-45**, T-49, T-50; spec 008 §14 **A15**, **A16**,
+ * A-founder-2026-10-14c, AC-31, AC-33, AC-6, T-35, T-37, T-06; TASK-187, TASK-241).
  *
  * Three sizes: 1440 × 900 and 1280 × 800 (the laptop band) and 390 × 844 (the phone). Every case
  * sets its own viewport, so it runs once, in `e2e-desktop`.
@@ -14,8 +14,10 @@
  * - the price marker: a card's price with no "all in" in the same card (a bare number);
  * - AC-45: a band of the first viewport over 120 px tall with no text, image or control in it, and
  *   any rotated element or `aria-hidden` element 48 px or larger;
- * - R8: a sort form before or above the grid on the country category, or a disclosure that is not
- *   visible; at 390 a disclosure before the grid;
+ * - C3 (spec 008 §14 A-founder-2026-10-14c, AC-33, T-37; TASK-241, which withdrew T-36): a sort
+ *   form or a chip row after the grid or below its first card, a count line or disclosure that is
+ *   not visible or not before them, a pager before the grid, in any of four locales at 390 or 1440;
+ *   a form that no longer sorts with JavaScript off;
  * - the phone label: anything but exactly one displayed "Example arrangement" label above the
  *   grid's first card, inside the first viewport, while every card's own label stays in the HTML.
  */
@@ -437,71 +439,244 @@ test.describe("AC-45 (T-50): calm, not bland", () => {
   }
 });
 
-test.describe("R8 on the country category (AC-32, T-36)", () => {
-  test("from `md` up: count and disclosure above the grid and visible, the form under it", async ({
-    page,
-  }) => {
-    await open(page, CATEGORY, SIZES[0]);
-    const grid = await boxOf(page, "main [data-fo-listing-grid]");
-    const form = page.locator("main [data-fo-listing-sort-form]");
-    await expect(form).toHaveCount(1);
-    await expect(form).toContainText("Change the order");
-    const formBox = await boxOf(page, "main [data-fo-listing-sort-form]");
-    expect(formBox.top).toBeGreaterThanOrEqual(grid.bottom);
-    expect(
-      await page.evaluate(() => {
-        const g = document.querySelector("main [data-fo-listing-grid]");
-        const f = document.querySelector("main form");
-        return (
-          g !== null &&
-          f !== null &&
-          (g.compareDocumentPosition(f) & Node.DOCUMENT_POSITION_FOLLOWING) !==
-            0
-        );
-      }),
-    ).toBe(true);
-    for (const hook of [
-      "[data-fo-listing-count]",
-      "[data-fo-listing-disclosure]",
-    ]) {
-      const box = await boxOf(page, `main ${hook}`);
-      expect(box.bottom, hook).toBeLessThanOrEqual(grid.top + 0.5);
-      expect(box.bottom - box.top, hook).toBeGreaterThan(10);
-      await expect(page.locator(`main ${hook}`), hook).toBeVisible();
-    }
-    // The grid heading repeats the H1, so it is visually hidden and still names the section.
-    const heading = page.locator("#category-grid-heading");
-    await expect(heading).toHaveCount(1);
-    expect(
-      await heading.evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        return rect.width <= 1 && rect.height <= 1;
-      }),
-    ).toBe(true);
-    await expect(
-      page.locator("section[aria-labelledby='category-grid-heading']"),
-    ).toHaveCount(1);
-  });
+/**
+ * The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33, T-37; TASK-241): on the shop root,
+ * the country category, the country occasion and the occasion hub, at 390 and 1440, in four
+ * locales — the count line, the ranking disclosure, the chip row and the sort form, in that DOM
+ * order, all ending above the first card of the grid; the pager after the grid; no sort form and
+ * no chip row after it. The "first card" is the grid's first card in flow: on the country occasion
+ * from `md` up the lead `<li>` is drawn over the hero (A16 (b)), so it is the first of the others.
+ */
+const C3_PAGES = [
+  {
+    locale: "en-gb",
+    pages: [SHOP, CATEGORY, OCCASION, "/en-gb/occasions/mothers-day"],
+  },
+  {
+    locale: "en",
+    pages: [
+      "/en/poland/flowers",
+      "/en/poland/flowers/roses",
+      "/en/poland/occasions/mothers-day",
+      "/en/occasions/mothers-day",
+    ],
+  },
+  {
+    locale: "de",
+    pages: [
+      "/de/polen/blumen",
+      "/de/polen/blumen/rosen",
+      "/de/polen/anlaesse/muttertag",
+      "/de/anlaesse/muttertag",
+    ],
+  },
+  {
+    locale: "pl",
+    pages: [
+      "/pl/polska/kwiaty",
+      "/pl/polska/kwiaty/roze",
+      "/pl/polska/okazje/dzien-matki",
+      "/pl/okazje/dzien-matki",
+    ],
+  },
+] as const;
 
-  test("at 390: the disclosure follows the grid and is visible", async ({
-    page,
-  }) => {
-    await open(page, CATEGORY, SIZES[2]);
-    const grid = await boxOf(page, "main [data-fo-listing-grid]");
-    const disclosure = page.locator("main [data-fo-listing-disclosure]");
-    await expect(disclosure).toBeVisible();
-    const box = await boxOf(page, "main [data-fo-listing-disclosure]");
-    expect(box.top).toBeGreaterThanOrEqual(grid.bottom);
-    expect(box.bottom - box.top).toBeGreaterThan(10);
-    // Not clipped: its box is at least as tall as its content.
-    expect(
-      await disclosure.evaluate(
-        (element) => element.scrollHeight <= element.clientHeight + 1,
+/** "Change the order" in each locale, from the catalogue the page renders. */
+function reorderLabel(locale: string): string {
+  const read = (file: string): string | undefined => {
+    const messages = JSON.parse(
+      readFileSync(
+        resolve(import.meta.dirname, `../../messages/${file}.json`),
+        "utf8",
       ),
-    ).toBe(true);
-    // The count stays above the grid.
-    const count = await boxOf(page, "main [data-fo-listing-count]");
-    expect(count.bottom).toBeLessThanOrEqual(grid.top + 0.5);
+    ) as { shop?: { toolbar?: { reorderLabel?: string } } };
+    return messages.shop?.toolbar?.reorderLabel;
+  };
+  return read(locale) ?? read(locale.split("-")[0] ?? "en") ?? "";
+}
+
+interface C3Layout {
+  /** The hooks found, in DOM order, among the parts AC-33 orders. */
+  readonly order: readonly string[];
+  /** Each part's box bottom and height, and the first in-flow card's top. */
+  readonly bottoms: Readonly<
+    Record<string, { bottom: number; height: number }>
+  >;
+  readonly firstCardTop: number;
+  /** Every `form`, `select` or `nav` in `<main>` after the grid, other than the pager. */
+  readonly afterGrid: readonly string[];
+}
+
+/** The parts AC-33 orders, read off the served page in one pass. */
+async function c3Layout(page: Page): Promise<C3Layout> {
+  return page.evaluate(() => {
+    const parts: readonly (readonly [string, string])[] = [
+      ["count", "main [data-fo-listing-count]"],
+      ["disclosure", "main [data-fo-listing-disclosure]"],
+      [
+        "chips",
+        "main [data-fo-listing-chips], main [data-fo-hub-destinations]",
+      ],
+      ["sort", "main [data-fo-listing-sort-form]"],
+      ["grid", "main [data-fo-listing-grid]"],
+      ["pager", "main [data-fo-pagination]"],
+    ];
+    const found: { name: string; element: Element }[] = [];
+    const bottoms: Record<string, { bottom: number; height: number }> = {};
+    for (const [name, query] of parts) {
+      const all = Array.from(document.querySelectorAll(query));
+      if (all.length === 0) continue;
+      if (all.length > 1)
+        throw new Error(`${name}: ${String(all.length)} elements`);
+      const element = all[0] as Element;
+      found.push({ name, element });
+      const rect = element.getBoundingClientRect();
+      bottoms[name] = { bottom: rect.bottom, height: rect.height };
+    }
+    found.sort((a, b) =>
+      a.element.compareDocumentPosition(b.element) &
+      Node.DOCUMENT_POSITION_FOLLOWING
+        ? -1
+        : 1,
+    );
+    const grid = document.querySelector("main [data-fo-listing-grid]");
+    const inFlow = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        "main [data-fo-listing-grid] > li",
+      ),
+    ).find((li) => getComputedStyle(li).position !== "absolute");
+    const afterGrid =
+      grid === null
+        ? []
+        : Array.from(
+            document.querySelectorAll("main form, main select, main nav"),
+          )
+            .filter(
+              (element) =>
+                (grid.compareDocumentPosition(element) &
+                  Node.DOCUMENT_POSITION_FOLLOWING) !==
+                  0 && !element.hasAttribute("data-fo-pagination"),
+            )
+            .map((element) => element.outerHTML.slice(0, 120));
+    return {
+      order: found.map((part) => part.name),
+      bottoms,
+      firstCardTop:
+        inFlow?.getBoundingClientRect().top ?? Number.NEGATIVE_INFINITY,
+      afterGrid,
+    };
+  });
+}
+
+test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-37)", () => {
+  for (const { locale, pages } of C3_PAGES) {
+    for (const url of pages) {
+      const hub = url === pages[3];
+      for (const size of [SIZES[0], SIZES[2]]) {
+        test(`${url} at ${String(size.width)}`, async ({ page }) => {
+          await open(page, url, size);
+          const layout = await c3Layout(page);
+          const expected = hub
+            ? ["chips", "grid"]
+            : ["count", "disclosure", "chips", "sort", "grid"];
+          // DOM order: the parts the page has, in AC-33's order, the pager (where there is one)
+          // after the grid.
+          expect(
+            layout.order.filter((name) => name !== "pager"),
+            "DOM order",
+          ).toStrictEqual(expected);
+          if (layout.order.includes("pager")) {
+            expect(layout.order.at(-1), "the pager follows the grid").toBe(
+              "pager",
+            );
+          }
+          // Boxes: every part above the grid is displayed and ends above the first card's top.
+          for (const name of expected.filter((part) => part !== "grid")) {
+            const box = layout.bottoms[name];
+            expect(box, name).toBeDefined();
+            expect(box?.height ?? 0, `${name} is displayed`).toBeGreaterThan(
+              10,
+            );
+            expect(
+              box?.bottom ?? Infinity,
+              `${name} ends above the first card`,
+            ).toBeLessThanOrEqual(layout.firstCardTop + 0.5);
+          }
+          // Nothing that sorts or narrows the list follows the grid.
+          expect(layout.afterGrid, "after the grid").toStrictEqual([]);
+          if (!hub) {
+            for (const hook of [
+              "[data-fo-listing-count]",
+              "[data-fo-listing-disclosure]",
+            ]) {
+              await expect(page.locator(`main ${hook}`), hook).toBeVisible();
+            }
+            // The one sort control, labelled "Change the order" (A10).
+            await expect(page.locator("main form")).toHaveCount(1);
+            await expect(page.locator("main select")).toHaveCount(1);
+            await expect(
+              page.locator("main [data-fo-listing-sort-form]"),
+            ).toContainText(reorderLabel(locale));
+            // The disclosure is not clipped.
+            expect(
+              await page
+                .locator("main [data-fo-listing-disclosure]")
+                .evaluate(
+                  (element) => element.scrollHeight <= element.clientHeight + 1,
+                ),
+            ).toBe(true);
+          }
+          // Below `md` the chip row is one horizontal scroller: every chip on one line
+          // (A16 (e), spec 004 AC-49).
+          if (!hub && size.width < 768) {
+            const tops = await page
+              .locator("main [data-fo-listing-chips] li")
+              .evaluateAll((items) =>
+                items.map((item) =>
+                  Math.round(item.getBoundingClientRect().top),
+                ),
+              );
+            expect(tops.length).toBeGreaterThan(1);
+            expect(new Set(tops).size, "one line").toBe(1);
+          }
+        });
+      }
+    }
+  }
+
+  test("with JavaScript off, the form above the grid still sorts it", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      viewport: SIZES[2],
+    });
+    const page = await context.newPage();
+    await page.goto(CATEGORY);
+    const prices = async (): Promise<number[]> =>
+      page
+        .locator("main [data-fo-product-card]")
+        .evaluateAll((cards) =>
+          cards.map((card) =>
+            Number(
+              (card.querySelector("[data-fo-price]")?.textContent ?? "")
+                .replace(/[^\d.,]/gu, "")
+                .replace(/,/gu, ""),
+            ),
+          ),
+        );
+    await page.getByLabel(/sort by/iu).selectOption("price-asc");
+    await page.getByRole("button", { name: /^sort$/iu }).click();
+    await expect(page).toHaveURL(/\?sort=price-asc$/u);
+    const sorted = await prices();
+    expect(sorted.length).toBeGreaterThan(1);
+    expect(sorted).toStrictEqual([...sorted].sort((a, b) => a - b));
+    // Still above the grid after the round trip.
+    const layout = await c3Layout(page);
+    expect(layout.order.indexOf("sort")).toBeLessThan(
+      layout.order.indexOf("grid"),
+    );
+    await context.close();
   });
 });
 
