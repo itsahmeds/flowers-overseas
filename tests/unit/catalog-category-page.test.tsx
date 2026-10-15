@@ -83,15 +83,18 @@ describe("the populated country category (§5.3 row 2)", () => {
 
   // v2 (spec 004 §14 A21; `country-category-desktop.dc.html`): the grid comes straight after the
   // hero, and "Also for Poland" moves under it.
-  it("follows the v2 artboard's block order: crumbs, hero, grid, siblings, intro", () => {
+  it("follows the block order of the founder's C3: crumbs, hero, siblings, grid, intro", () => {
+    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): the sibling chip row is above the grid
+    // at every width, and none follows it.
     const crumbs = html.indexOf("data-fo-breadcrumb");
-    const siblings = html.indexOf("sibling-categories");
-    const grid = html.indexOf("data-fo-listing-grid");
+    const siblings = html.indexOf("data-fo-listing-chips");
+    const grid = html.indexOf("data-fo-listing-grid=");
     const intro = html.indexOf("data-fo-shop-intro");
     expect(crumbs).toBeGreaterThan(-1);
-    expect(crumbs).toBeLessThan(grid);
-    expect(grid).toBeLessThan(siblings);
-    expect(siblings).toBeLessThan(intro);
+    expect(crumbs).toBeLessThan(siblings);
+    expect(siblings).toBeLessThan(grid);
+    expect(grid).toBeLessThan(intro);
+    expect(html.match(/data-fo-listing-chips/gu) ?? []).toHaveLength(1);
   });
 
   it("carries the counted lede and the demo sentence", () => {
@@ -121,7 +124,10 @@ describe("the populated country category (§5.3 row 2)", () => {
 
   it("renders the sibling row from `links.chips` and nothing else", () => {
     expect(roses.links.chips.length).toBeGreaterThan(1);
-    expect(text).toContain("Also for Poland");
+    // The row's name, on its `<nav>` (one line of the first screen, so the heading is not drawn).
+    expect(html).toMatch(
+      /<nav aria-label="Also for Poland" data-fo-listing-chips/u,
+    );
     for (const chip of roses.links.chips) {
       expect(text, chip.key).toContain(chip.name);
     }
@@ -148,13 +154,16 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(trail).toContain("Roses");
   });
 
-  it("renders the sort form under the grid and a real pager (spec 008 §14 A15 (a), (d); TASK-187)", () => {
-    // R8: one `<form method="get">`, after the grid, labelled "Change the order" (A10).
+  it("renders the sort form above the grid and a real pager after it (spec 008 §14 A-founder-2026-10-14c; TASK-241)", () => {
+    // C3 (AC-33): one `<form method="get">`, before the grid, labelled "Change the order" (A10);
+    // the pager after the grid.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
     const grid = html.indexOf("data-fo-listing-grid=");
     const form = html.indexOf("<form");
     expect(grid).toBeGreaterThan(-1);
-    expect(form).toBeGreaterThan(grid);
+    expect(form).toBeGreaterThan(-1);
+    expect(form).toBeLessThan(grid);
+    expect(html.indexOf("data-fo-pagination")).toBeGreaterThan(grid);
     expect(text).toContain("Change the order");
     // The pager links only `?page=N`; no sorted URL is ever a crawlable link (AC-15).
     expect(html).not.toMatch(/href="[^"]*[?&]sort=/iu);

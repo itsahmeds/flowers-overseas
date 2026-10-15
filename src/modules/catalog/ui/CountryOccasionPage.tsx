@@ -39,10 +39,9 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { formatDate, formatDateParts } from "@/modules/i18n";
+import { formatDate, formatDateParts, sortBy } from "@/modules/i18n";
 import {
   type ChipLinkView,
-  CategoryChipRow,
   Container,
   Display,
   Eyebrow,
@@ -60,6 +59,7 @@ import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
   CountryListingResults,
   GridProvenance,
+  ListingChipRow,
   ListingPageHead,
   ListingProse,
   ListingStateLine,
@@ -258,8 +258,10 @@ export function CountryOccasionPage({
             <VisuallyHidden as="h2" id="occasion-grid-heading">
               {heading}
             </VisuallyHidden>
-            {/* The toolbar keeps its place beside the count from `md` up (spec 008 §14 A15 (d));
-                on a phone the disclosure follows the grid (A16 (c)). */}
+            {/* The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33): the count, the ranking
+                disclosure, "Also in Poland" and the sort form, in that order, above the grid at
+                every width; then the grid; then the pager. The lead figure is the grid's first
+                `<li>`, drawn over the hero from `md` up (A16 (b)). */}
             <CountryListingResults
               count={{
                 phone: shop("toolbar.count", { count: view.resultCount }),
@@ -273,6 +275,12 @@ export function CountryOccasionPage({
                     : shop("toolbar.count", { count: view.resultCount }),
               }}
               disclosure={shop("toolbar.disclosure")}
+              chips={
+                <ListingChipRow
+                  chips={sortBy(alsoIn, code, (chip) => chip.name)}
+                  label={shop("occasion.siblingsHeading", { country })}
+                />
+              }
               gridLabel={<GridProvenance cards={view.items} locale={code} />}
               grid={
                 <ListingGrid
@@ -301,8 +309,7 @@ export function CountryOccasionPage({
                   pageCount={view.pageCount}
                 />
               }
-              sortForm={<ListingSortForm sort={view.sort} variant="bare" />}
-              sortFormPlacement="above"
+              sortForm={<ListingSortForm sort={view.sort} />}
             />
           </section>
         </div>
@@ -313,22 +320,6 @@ export function CountryOccasionPage({
             <ListingProse>{shop("occasion.lede", { country })}</ListingProse>
           </div>
         ) : null}
-
-        {/* The artboard's "Also in Poland" row: the other occasions of this destination that have
-            a page, and the destination's shop root. Every href is one `listingView()` resolved, so
-            none can point at a page that does not exist (spec 004 AC-14, 007 AC-17); an occasion
-            below the floor is absent rather than disabled. The occasions index is not repeated
-            here — the breadcrumb already carries it. */}
-        {alsoIn.length === 0 ? null : (
-          <div className="pt-[48px] md:pt-(--section-fluid)">
-            <CategoryChipRow
-              heading={shop("occasion.siblingsHeading", { country })}
-              id="occasion-siblings"
-              items={alsoIn}
-              locale={code}
-            />
-          </div>
-        )}
 
         {/* "How it reaches Poland", last: the country's paragraph, as on the shop root. */}
         <ListingSubsection

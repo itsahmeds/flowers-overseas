@@ -143,41 +143,41 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
           <Text
             as="p"
             size="md"
-            className="bg-sage-wash rounded-field text-ui px-md mb-[32px] max-w-[70ch] py-[12px]"
+            className="bg-sage-wash rounded-field text-ui px-md mb-[24px] max-w-[70ch] py-[12px]"
           >
             {shop("hub.noMoney")}
           </Text>
+          {destinations.length === 0 ? null : (
+            /* One link per country page that exists, and nothing where none does: a block whose
+               data is missing renders nothing at all (§5.2). The hub's chip row sits above the
+               grid (spec 008 §14 A-founder-2026-10-14c, AC-33): it is where the prices are. */
+            <section
+              aria-labelledby="hub-pages-heading"
+              className="mb-[32px]"
+              data-fo-hub-destinations
+            >
+              <Eyebrow className="mb-[14px]">
+                <span id="hub-pages-heading">{hub("destinationsHeading")}</span>
+              </Eyebrow>
+              <ul className="gap-sm flex list-none flex-wrap p-0">
+                {destinations.map((destination) => (
+                  <li
+                    data-fo-hub-destination={destination.iso2}
+                    key={destination.iso2}
+                  >
+                    <Chip href={destination.href ?? ""}>
+                      {hub("destinationLink", {
+                        country: named(destination),
+                        entity,
+                      })}
+                    </Chip>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <ListingGrid cards={view.hubItems} locale={code} priority />
         </ListingSubsection>
-
-        {destinations.length === 0 ? null : (
-          /* One link per country page that exists, and nothing where none does: a block whose
-             data is missing renders nothing at all (§5.2). */
-          <section
-            aria-labelledby="hub-pages-heading"
-            className="pt-[48px] md:pt-(--section-fluid)"
-            data-fo-hub-destinations
-          >
-            <Eyebrow className="mb-[14px]">
-              <span id="hub-pages-heading">{hub("destinationsHeading")}</span>
-            </Eyebrow>
-            <ul className="gap-sm flex list-none flex-wrap p-0">
-              {destinations.map((destination) => (
-                <li
-                  data-fo-hub-destination={destination.iso2}
-                  key={destination.iso2}
-                >
-                  <Chip href={destination.href ?? ""}>
-                    {hub("destinationLink", {
-                      country: named(destination),
-                      entity,
-                    })}
-                  </Chip>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </div>
     </Container>
   );

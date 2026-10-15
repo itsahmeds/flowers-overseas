@@ -603,8 +603,8 @@ export function CountryListingHead({
   );
 }
 
-/** One chip of the phone's chip row: a link, or the current page marked and not a link. */
-export interface PhoneChip {
+/** One chip of a listing's chip row: a link, or the current page marked and not a link. */
+export interface ListingChip {
   readonly key: string;
   readonly name: string;
   readonly href: string;
@@ -612,22 +612,26 @@ export interface PhoneChip {
 }
 
 /**
- * The phone's one chip row (spec 004 §14 A24 clause 4 (c), AC-49; TASK-195's scroller): a single
- * horizontal scroller of real links, every chip reachable by touch and keyboard, shown below `md`
- * only. From `md` up the page shows its own row in its own place, so this one is `display: none`
- * there and out of the accessibility tree.
+ * The listing's one chip row (spec 008 §14 A-founder-2026-10-14c, AC-33; spec 004 AC-49;
+ * TASK-195's scroller; TASK-241): the category or occasion links of this destination as a single
+ * horizontal scroller of real links, above the grid **at every width**, every chip reachable by
+ * touch, keyboard and (from `md` up, where a thin scrollbar shows) pointer. Phase 0's "category
+ * filters" are links to real pages (§13 Q6), never facet parameters. The `<nav>`'s name is the
+ * row's heading, read by a screen reader and not drawn, so the row costs one line of the first
+ * screen.
  */
-export function PhoneChipRow({
+export function ListingChipRow({
   label,
   chips,
 }: {
   readonly label: string;
-  readonly chips: readonly PhoneChip[];
+  readonly chips: readonly ListingChip[];
 }): ReactElement | null {
   if (chips.length === 0) return null;
   return (
-    <nav aria-label={label} className="md:hidden" data-fo-phone-chips>
+    <nav aria-label={label} data-fo-listing-chips>
       <HorizontalScroller
+        className="md:[scrollbar-width:thin] md:pb-[6px]"
         itemsFocusable
         items={chips.map((chip) => ({
           key: chip.key,
@@ -648,101 +652,84 @@ export interface CountryListingResultsProps {
   /** The count line: `phone` below `md` ("84 bouquets"), `desktop` from `md` up (with the page). */
   readonly count: { readonly phone: string; readonly desktop: string };
   readonly disclosure: string;
+  /** The page's `ListingChipRow`, where it has one. */
+  readonly chips?: ReactNode;
+  /** The sort form, "Change the order" (`ListingSortForm`). */
+  readonly sortForm: ReactNode;
   /** The once-per-grid "Example arrangement" label shown below `md` (spec 008 §14 A16 (a)). */
   readonly gridLabel?: ReactNode;
   readonly grid: ReactNode;
   readonly fx?: ReactNode;
   readonly pager?: ReactNode;
-  readonly sortForm: ReactNode;
-  /**
-   * Where the sort form sits from `md` up: `below` the grid (the shop root and the country
-   * category, R8 and the round-2 shop artboard) or `above` it, beside the count (the country
-   * occasion, A15 (d)).
-   */
-  readonly sortFormPlacement: "above" | "below";
 }
 
 /**
- * The results block of the three country listings, one element per part, laid out by CSS grid
- * placement so the DOM order is the phone's reading order:
+ * The results block of the three country listings (spec 008 §14 A-founder-2026-10-14c, the
+ * founder's C3 ruling, AC-33; TASK-241). One order, in the DOM and on the screen, at every width:
  *
  * ```
- * phone (one column):  count · label · grid · fx · pager · disclosure · sort form
- * md, form below:      count | disclosure  ·  grid  ·  fx  ·  sort form  ·  pager
- * md, form above:      count, disclosure | sort form  ·  grid  ·  fx  ·  pager
+ * count · disclosure  ·  chip row · sort form  ·  label (phone) · grid  ·  fx  ·  pager
  * ```
  *
- * So the ranking disclosure follows the grid on a phone and stands above it from `md` up, visible
- * at both (spec 008 §14 A16 (c), AC-32; spec 004 §14 A24 clause 2 (e)); the sort form is after the
- * grid in the DOM, and below it from `md` up where R8 puts it.
+ * From `md` up the count and the disclosure share the first line (count on the start side) and
+ * the chip row and the sort form share the second (chips on the start side); below `md` each
+ * part is its own line. Nothing that sorts or narrows the list follows it, and the ranking
+ * disclosure is visible above the grid at every width (§8 L240).
  */
 export function CountryListingResults({
   count,
   disclosure,
+  chips,
+  sortForm,
   gridLabel,
   grid,
   fx,
   pager,
-  sortForm,
-  sortFormPlacement,
 }: CountryListingResultsProps): ReactElement {
-  const above = sortFormPlacement === "above";
   return (
-    <div
-      className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-[32px]"
-      data-fo-listing-results={sortFormPlacement}
-    >
-      <p
-        className={`md:col-start-1 md:row-start-1 ${above ? "md:pt-[24px]" : "md:py-[10px]"}`}
-        data-fo-listing-count
-      >
-        <Text as="span" size="sm" tone="muted" className="md:hidden">
-          {count.phone}
-        </Text>
-        <Text as="span" size="md" className="display text-md max-md:hidden">
-          {count.desktop}
-        </Text>
-      </p>
+    <div data-fo-listing-results>
+      <div className="md:gap-x-lg md:flex md:items-baseline md:justify-between md:pt-[10px]">
+        <p className="md:flex-none" data-fo-listing-count>
+          <Text as="span" size="sm" tone="muted" className="md:hidden">
+            {count.phone}
+          </Text>
+          <Text as="span" size="md" className="display text-md max-md:hidden">
+            {count.desktop}
+          </Text>
+        </p>
+        {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
+        <div
+          className="mt-[4px] max-w-[70ch] md:mt-0 md:max-w-[104ch] md:text-end"
+          data-fo-listing-disclosure
+        >
+          <Text as="p" size="sm" tone="subtle">
+            {disclosure}
+          </Text>
+        </div>
+      </div>
+      <div className="md:gap-x-lg mt-[12px] flex flex-col gap-y-[10px] md:mt-[16px] md:flex-row md:items-center">
+        {chips === undefined ? null : (
+          <div className="min-w-0 md:flex-1">{chips}</div>
+        )}
+        <div className="md:ms-auto md:flex-none" data-fo-listing-sort>
+          {sortForm}
+        </div>
+      </div>
       {gridLabel === undefined ? null : (
-        <div className="mt-[8px] md:hidden" data-fo-grid-provenance>
+        <div className="mt-[10px] md:hidden" data-fo-grid-provenance>
           {gridLabel}
         </div>
       )}
       <div
-        className={`mt-[12px] md:col-span-2 md:mt-0 ${above ? "md:border-rule md:row-start-3 md:mt-[24px] md:border-t md:pt-[32px]" : "md:row-start-2 md:mt-[4px]"}`}
+        className="md:border-rule mt-[12px] md:mt-[20px] md:border-t md:pt-[28px]"
         data-fo-listing-grid-slot
       >
         {grid}
       </div>
-      {fx === undefined ? null : (
-        <div
-          className={`mt-[28px] md:col-span-2 ${above ? "md:row-start-4" : "md:row-start-3"}`}
-        >
-          {fx}
-        </div>
-      )}
+      {fx === undefined ? null : <div className="mt-[28px]">{fx}</div>}
       {pager === undefined ? null : (
-        <div
-          className={`mt-[28px] md:col-span-2 md:mt-[32px] ${above ? "md:row-start-5" : "md:row-start-5"}`}
-        >
-          {pager}
-        </div>
+        <div className="mt-[28px] md:mt-[32px]">{pager}</div>
       )}
-      {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
-      <div
-        className={`mt-[20px] max-w-[70ch] ${above ? "md:col-start-1 md:row-start-2 md:mt-[6px]" : "md:col-start-2 md:row-start-1 md:mt-0 md:max-w-[104ch] md:self-center md:py-[8px] md:text-end"}`}
-        data-fo-listing-disclosure
-      >
-        <Text as="p" size="sm" tone="subtle">
-          {disclosure}
-        </Text>
-      </div>
-      <div
-        className={`mt-[24px] ${above ? "md:col-start-2 md:row-span-2 md:row-start-1 md:mt-0 md:self-end" : "md:col-span-2 md:row-start-4 md:mt-[40px]"}`}
-        data-fo-listing-sort
-      >
-        {sortForm}
-      </div>
     </div>
   );
 }
