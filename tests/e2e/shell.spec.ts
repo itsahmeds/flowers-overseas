@@ -19,7 +19,9 @@ const NOINDEX_PATHS = ["/en", "/robots.txt", "/does-not-exist"] as const;
 test.describe("`/` without JavaScript (AC-7 as restated)", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("lands on /en and the switcher still reaches /de", async ({ page }) => {
+  test("lands on /en and the switcher still reaches /en-gb", async ({
+    page,
+  }) => {
     const response = await page.goto("/");
 
     expect(response?.status()).toBe(200);
@@ -32,15 +34,19 @@ test.describe("`/` without JavaScript (AC-7 as restated)", () => {
     const menu = page.locator("[data-fo-menu-summary]");
     if (await menu.isVisible()) {
       await menu.click();
-      await page.locator('[data-fo-menu-switcher] nav a[href="/de"]').click();
+      await page
+        .locator('[data-fo-menu-switcher] nav a[href="/en-gb"]')
+        .click();
     } else {
       await page
-        .locator('[data-fo-header-switcher] a[href="/de"]')
+        .locator('[data-fo-header-switcher] a[href="/en-gb"]')
         .first()
         .click();
     }
-    await expect(page).toHaveURL(/\/de$/);
-    await expect(page.locator("html")).toHaveAttribute("lang", "de");
+    // `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c): English (UK) is the one
+    // other language the switcher offers.
+    await expect(page).toHaveURL(/\/en-gb$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "en-GB");
   });
 });
 
