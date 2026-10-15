@@ -34,6 +34,10 @@ test.describe("`/` without JavaScript (AC-7 as restated)", () => {
     const menu = page.locator("[data-fo-menu-summary]");
     if (await menu.isVisible()) {
       await menu.click();
+      // The panel drops in (motion 10, TASK-194); the link is clicked once it has landed.
+      const panel = page.locator("[data-fo-menu-panel]");
+      await expect(panel).toHaveCSS("opacity", "1");
+      await expect(panel).toHaveCSS("transform", "none");
       await page
         .locator('[data-fo-menu-switcher] nav a[href="/en-gb"]')
         .click();
