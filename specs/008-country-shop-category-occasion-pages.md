@@ -580,7 +580,7 @@ Each carries the default this spec is written against; the spec stays `draft` un
   |---|---|---|---|
   | T-38 | e2e (built site, CI) + unit | The listing documents as named cases of spec 003 T-51; a unit render of `countryShopRootMetadata` and `countryListingMetadata` for Poland on pages 1 and 2. Red when `shop.category.seoTitle` is put back to its em-dash value, and red when the hub reads a seed row whose `seoTitle` has one | AC-34 |
 
-  Open for the founder: the "and" dropped from `shop.occasion.seoTitle` (spec 003 §14 A-founder-2026-10-15a, open item 2).
+  Resolved by the founder (2026-10-15, chat, verbatim "specs ok (237 and 240), dashes yes, prices: your picks"): the "and" dropped from `shop.occasion.seoTitle` is approved as the target; the value still ships `reviewed: false` until the founder's record run (spec 003 §14 A-founder-2026-10-15a, resolution 2).
 
 - **A-founder-2026-10-15c: on the country category, the sibling-category chips fold into a "Categories" disclosure on the toolbar row (amends A-founder-2026-10-14c, AC-33 and T-37 for the country category; new T-39; spec 004 rebound AC-34 and T-49 unchanged).** The founder's ruling, 2026-10-15, in chat, verbatim: "A your pick". It chooses option A of the question below and leaves its details to the spec, which fixes them here. The reply reached the spec writer through the orchestrator's work order; the founder confirms this text when they approve the docs PR that carries it. Implemented by TASK-241 (PR 235).
 

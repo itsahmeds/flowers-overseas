@@ -2322,7 +2322,7 @@ SEO note are spec 003 §14 A-founder-2026-10-15a's; this amendment applies them 
 |---|---|---|---|
 | T-59 | e2e (built site, CI) + unit | The four locale homes as named cases of spec 003 T-51; a unit pin of the `en` value. Red when `meta.home.title` is put back to "Flowers Overseas — send flowers to Europe" | AC-54 |
 
-Open for the founder: the proposed wording (spec 003 §14 A-founder-2026-10-15a, open item 2).
+Resolved by the founder (2026-10-15, chat, verbatim "specs ok (237 and 240), dashes yes, prices: your picks"): the proposed wording is the target; it still ships `reviewed: false` until the founder's record run (spec 003 §14 A-founder-2026-10-15a, resolution 2).
 
 **A-founder-2026-10-15b — Non-critical client chunks wait for the LCP paint (§9 AC-24; §14 A1,
 A12, A18; A23 clause 11; TASK-235 escalation E1, option (a); new AC-55, T-60).**

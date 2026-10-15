@@ -875,7 +875,7 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
 | T-50 | unit | Check 12 over AC-50's three fixtures, each red with the locale and key named; the hyphenated fixture green; the committed tree green; `error-copy.data.ts` titles read and asserted. Red when check 12 skips `de` and `pl`, and when `HEAD_MESSAGE_KEYS` is emptied | AC-50 |
 | T-51 | e2e (built site, CI) | AC-51's scan over the build. Each owning spec's page types are its own named cases (spec 004 T-59, spec 007 T-37, spec 008 T-38, spec 009 T-40). Red when `meta.home.title` is put back to its em-dash value, and red when the document list is empty or shorter than the manifest's count | AC-51 |
 
-- **Open for the founder.**
-  1. Is a spaced hyphen or a spaced en dash also banned (clause 2, third bullet)? Default: yes.
-  2. The proposed wordings in this amendment and the five that cite it. Default: as written, each shipped `reviewed: false` until the founder's record run.
+- **Resolved by the founder (2026-10-15, chat, verbatim "specs ok (237 and 240), dashes yes, prices: your picks").**
+  1. A spaced hyphen or a spaced en dash is banned too ("dashes yes"), so clause 2's third bullet is binding.
+  2. "specs ok" approves the wordings in this amendment and the five that cite it as the targets. Each changed text still ships `reviewed: false` until the founder's record run.
 

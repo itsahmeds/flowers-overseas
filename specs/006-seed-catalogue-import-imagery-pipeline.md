@@ -529,5 +529,5 @@ The rule, the rulings (founder, 2026-10-05: "approve the wording just no em dash
 |---|---|---|---|
 | T-33 | unit | `tests/unit/seed-check.test.ts`: AC-33's four fixtures, each red with the file, key, locale and field named; the passing fixture green; the committed tree green. Red when `copy/dash-in-head` is removed (the first fixture passes) | AC-33 |
 
-Open for the founder: the reworded category and occasion values, listed in the PR (spec 003 §14 A-founder-2026-10-15a, open item 2).
+Resolved by the founder (2026-10-15, chat, verbatim "specs ok (237 and 240), dashes yes, prices: your picks"): the wordings of this amendment are the targets, and every changed row still ships `reviewed: false` until the founder's record run (spec 003 §14 A-founder-2026-10-15a, resolution 2). A category or occasion value the task rewords beyond the separator (clause 3) is still listed in its PR.
 
