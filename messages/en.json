@@ -840,7 +840,8 @@
   },
   "product": {
     "addons": {
-      "label": "Add something"
+      "label": "Add something",
+      "included": "Included"
     },
     "demo": {
       "body": "When ordering opens, this is the price you will pay. Nothing is added at a later step.",

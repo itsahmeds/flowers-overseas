@@ -1,11 +1,15 @@
 /**
  * `AddonPriceList` — the add-ons as a priced, read-only list (spec 009 §2 "Add-ons", §5.3, §13 Q6,
- * AC-23; `docs/design/system/components.dc.html` "Add-on price row"; TASK-126).
+ * AC-23 as amended by §14 A-founder-2026-10-14c, AC-34; `docs/design/system/components.dc.html`
+ * "Add-on price row"; TASK-126, TASK-228).
  *
- * Each row is the add-on's name (`catalog.addon.*`), its price in the destination's currency
- * (`AddonLine.price`, design round Q4) and **its own** VAT rate (`AddonLine.vatRateText`). The free
- * printed card is a row like the others, at a visible zero, set in leaf (`--color-included`) as v2
- * draws the included row (TASK-179). Each row also prints the add-on's catalogue description.
+ * Each row is the add-on's name (`catalog.addon.*`), its catalogue description and its all-in
+ * price **in the page's currency** (`AddonLine.price`, from `addonPriceProjection()`: the bouquet's
+ * FX rule, so a euro page shows euro add-ons and a stale rate moves both to the destination's
+ * currency together). **No row carries a VAT rate**: the list says once, under the rows, that the
+ * prices include VAT and delivery (`catalog.price.inclusive`, the approved inclusive key); the
+ * split by rate is spec 010's step 3. The free printed card's row reads "Included", with no
+ * amount and no currency, set in leaf (`--color-included`) as v2 draws the included row.
  *
  * **There is no input of any kind** — no checkbox, no toggle, no button. There is no basket in
  * Phase 0 to add one to, and a tick that changes a total nobody can be charged is a worse lie than
@@ -31,39 +35,52 @@ export function AddonPriceList({
 }: AddonPriceListProps): ReactElement | null {
   const t = useTranslations();
   const product = useTranslations("product");
+  const catalog = useTranslations("catalog");
   const code = localeOf(locale);
   if (addons.length === 0) return null;
 
   return (
-    <ul className="m-0 grid list-none gap-[8px] p-0" data-fo-addon-list>
-      {addons.map((addon) => {
-        const free = addon.price.amountMinor === 0;
-        return (
-          <li
-            key={addon.key}
-            className="bg-card rounded-field grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-[14px] gap-y-[4px] px-[16px] py-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)]"
-            data-fo-addon={addon.key}
-          >
-            <span className="grid">
-              <span className="font-bold">{messageFor(t, addon.nameKey)}</span>
-              <span className="text-ink-muted text-sm leading-[1.4]">
-                {messageFor(t, descriptionKey(addon.nameKey))}
-              </span>
-            </span>
-            <span
-              className={`grid text-end whitespace-nowrap ${free ? "text-included font-bold" : ""}`}
+    <>
+      <ul className="m-0 grid list-none gap-[8px] p-0" data-fo-addon-list>
+        {addons.map((addon) => {
+          const free = addon.price.amountMinor === 0;
+          return (
+            <li
+              key={addon.key}
+              className="bg-card rounded-field grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-[14px] gap-y-[4px] px-[16px] py-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)]"
+              data-fo-addon={addon.key}
             >
-              <bdi className="tabular-nums" data-fo-addon-price>
-                {formatMoney(addon.price, code)}
-              </bdi>
-              <small className="text-ink-subtle text-xs font-normal">
-                {product("vat", { rate: addon.vatRateText })}
-              </small>
-            </span>
-          </li>
-        );
-      })}
-    </ul>
+              <span className="grid">
+                <span className="font-bold">
+                  {messageFor(t, addon.nameKey)}
+                </span>
+                <span className="text-ink-muted text-sm leading-[1.4]">
+                  {messageFor(t, descriptionKey(addon.nameKey))}
+                </span>
+              </span>
+              {free ? (
+                <span
+                  className="text-included text-end font-bold whitespace-nowrap"
+                  data-fo-addon-price="included"
+                >
+                  {product("addons.included")}
+                </span>
+              ) : (
+                <bdi
+                  className="text-end font-medium whitespace-nowrap tabular-nums"
+                  data-fo-addon-price
+                >
+                  {formatMoney(addon.price, code)}
+                </bdi>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-ink-muted m-0 mt-[10px] text-sm" data-fo-addon-vat>
+        {catalog("price.inclusive")}
+      </p>
+    </>
   );
 }
 

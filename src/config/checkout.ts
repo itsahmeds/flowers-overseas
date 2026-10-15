@@ -24,6 +24,8 @@
  */
 import type { DeploymentEnvironment } from "../lib/env.schema.ts";
 
+import { CARD_MESSAGE_MAX } from "./card-message.ts";
+
 /** The three steps of `/{locale}/checkout`, in the order a buyer meets them (§2). */
 export const CHECKOUT_STEPS = ["recipient", "card", "review"] as const;
 export type CheckoutStep = (typeof CHECKOUT_STEPS)[number];
@@ -38,13 +40,19 @@ export type CheckoutStep = (typeof CHECKOUT_STEPS)[number];
  * out of a florist's brief.
  */
 export const CHECKOUT_LIMITS = {
-  cardMessage: 200,
+  cardMessage: CARD_MESSAGE_MAX,
   signAs: 40,
   deliveryNote: 120,
   fullName: 120,
   addressLine: 120,
 } as const satisfies Readonly<Record<string, number>>;
 export type CheckoutLimitKey = keyof typeof CHECKOUT_LIMITS;
+
+/**
+ * The printed card's one limit, shared with the product page (spec 004 §14
+ * A-founder-2026-10-14c, AC-51): `CHECKOUT_LIMITS.cardMessage` is this constant.
+ */
+export { CARD_MESSAGE_MAX };
 
 /**
  * The raw ceiling of a free-text field, in UTF-16 code units per grapheme of its limit, checked

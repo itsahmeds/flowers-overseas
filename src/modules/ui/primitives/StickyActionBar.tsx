@@ -38,10 +38,11 @@ export interface StickyActionBarProps {
   readonly action: { readonly href: `#${string}`; readonly label: ReactNode };
   /**
    * The selected price, already formatted by `formatMoney` from the same view the page prints it
-   * from, and its caption (e.g. the size). Omitted on a bar with no price (the home).
+   * from (a string, or that string in an element the page keeps in step, as the product page's
+   * size slot), and its caption (e.g. the size). Omitted on a bar with no price (the home).
    */
   readonly price?:
-    { readonly amount: string; readonly caption?: ReactNode } | undefined;
+    { readonly amount: ReactNode; readonly caption?: ReactNode } | undefined;
   /** Hidden until the page decides to show it (e.g. once the hero has scrolled out). */
   readonly hidden?: boolean;
   readonly className?: string;

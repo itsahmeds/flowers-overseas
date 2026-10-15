@@ -109,7 +109,7 @@ function render(view: ProductView): string {
       messages={loadMessages(view.locale, [...NAMESPACES])}
       timeZone="UTC"
     >
-      <ProductPage breadcrumb={null} facts={null} view={view} />
+      <ProductPage breadcrumb={null} view={view} />
     </NextIntlClientProvider>,
   );
 }
