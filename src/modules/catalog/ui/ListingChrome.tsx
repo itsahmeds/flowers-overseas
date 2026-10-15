@@ -33,6 +33,7 @@ import {
   Eyebrow,
   FromPriceChip,
   HorizontalScroller,
+  Icon,
   MediaProvenanceNote,
   Text,
   TextLink,
@@ -678,20 +679,79 @@ export function ListingChipRow({
   );
 }
 
+/**
+ * The country category's sibling categories from `md` up, folded into one "Categories" button on
+ * the toolbar row (spec 008 §14 A-founder-2026-10-15c, the founder's "A your pick" on E-1;
+ * TASK-241 E-1): a native `<details>`/`<summary>`, so it opens and closes with no client script
+ * and every chip link is in the server HTML whether the panel is open or not. The panel overlays
+ * the grid rather than pushing it, so the first row of cards keeps its place on the first screen
+ * (spec 004 rebound AC-34). Below `md` the page shows its one chip scroller instead.
+ */
+export function ListingCategoriesToggle({
+  label,
+  heading,
+  chips,
+}: {
+  /** The button's words, `shop.category.chipsToggle` ("Categories"). */
+  readonly label: string;
+  /** The row's name ("Also for Poland"), on the panel's `<nav>`. */
+  readonly heading: string;
+  readonly chips: readonly ListingChip[];
+}): ReactElement | null {
+  if (chips.length === 0) return null;
+  return (
+    <details
+      className="group relative max-md:hidden"
+      data-fo-listing-categories
+    >
+      <summary className="text-ink text-ui hover:bg-surface-raised flex min-h-(--control-sm) cursor-pointer list-none items-center gap-[8px] rounded-full px-[18px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)] [&::-webkit-details-marker]:hidden">
+        {label}
+        <Icon
+          className="rotate-90 group-open:-rotate-90"
+          name="chevron-end"
+          size={16}
+        />
+      </summary>
+      <nav
+        aria-label={heading}
+        className="bg-card rounded-field border-rule absolute end-0 top-[calc(100%+8px)] z-20 w-[min(720px,70vw)] border p-[20px] shadow-(--shadow-letter)"
+      >
+        <ul className="gap-sm flex list-none flex-wrap p-0">
+          {chips.map((chip) => (
+            <li key={chip.key}>
+              {chip.current === true ? (
+                <Chip aria-current="page">{chip.name}</Chip>
+              ) : (
+                <Chip href={chip.href}>{chip.name}</Chip>
+              )}
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </details>
+  );
+}
+
 export interface CountryListingResultsProps {
   /** The count line: `phone` below `md` ("84 bouquets"), `desktop` from `md` up (with the page). */
   readonly count: { readonly phone: string; readonly desktop: string };
   readonly disclosure: string;
   /** The page's `ListingChipRow`, where it has one. */
   readonly chips?: ReactNode;
+  /**
+   * The country category's `ListingCategoriesToggle`: from `md` up its chips fold into one
+   * button on the count-and-sort row, before the sort form (A-founder-2026-10-15c).
+   */
+  readonly chipsToggle?: ReactNode;
   /** The sort form (`ListingSortForm`). */
   readonly sortForm: ReactNode;
   /**
-   * Where the chip row sits from `md` up (the C3 artboards, PR 236): `band` (the shop root) shows
-   * none there, its categories being the tiles; `rows` (the country category) and `column` (the
-   * country occasion, whose row carries its drawn label) put it under the count-and-sort row.
+   * Where the chip line sits from `md` up: `band` (the shop root and the country category) shows
+   * none there (the shop root's categories are its tiles; the category's fold into
+   * `chipsToggle`); `column` (the country occasion, whose line carries its drawn label) puts it
+   * under the count-and-sort row.
    */
-  readonly toolbar: "band" | "rows" | "column";
+  readonly toolbar: "band" | "column";
   /** The once-per-grid "Example arrangement" label shown below `md` (spec 008 §14 A16 (a)). */
   readonly gridLabel?: ReactNode;
   readonly grid: ReactNode;
@@ -701,8 +761,7 @@ export interface CountryListingResultsProps {
 
 const TOOLBAR_PLACEMENT = {
   band: { chips: "md:hidden" },
-  rows: { chips: "md:col-span-3 md:row-start-2 md:pt-[10px]" },
-  column: { chips: "md:col-span-3 md:row-start-2 md:pt-[10px]" },
+  column: { chips: "md:col-span-full md:row-start-2 md:pt-[10px]" },
 } as const;
 
 /**
@@ -714,8 +773,9 @@ const TOOLBAR_PLACEMENT = {
  * ```
  *
  * Below `md` each part is its own line, as the phone artboards draw them. From `md` up the count,
- * the disclosure and the sort form share one row (count on the start side, sort on the end side),
- * and the chip row, where the page shows one there, is the single scrolling line under it. All of
+ * the disclosure and the sort form share one row (count on the start side, sort on the end side);
+ * the country category's chips fold into a "Categories" button on that row, before the sort form
+ * (A-founder-2026-10-15c), and the occasion's chip line sits under it. All of
  * it ends above the grid. Nothing that sorts or narrows the list follows it, and the ranking
  * disclosure is visible above the grid at every width (§8 L240).
  */
@@ -723,6 +783,7 @@ export function CountryListingResults({
   count,
   disclosure,
   chips,
+  chipsToggle,
   sortForm,
   toolbar,
   gridLabel,
@@ -734,7 +795,7 @@ export function CountryListingResults({
   return (
     <div data-fo-listing-results={toolbar}>
       <div
-        className="md:border-rule grid grid-cols-1 gap-y-[10px] md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-[24px] md:gap-y-0 md:border-b md:py-[6px]"
+        className={`md:border-rule grid grid-cols-1 gap-y-[10px] md:items-center md:gap-x-[24px] md:gap-y-0 md:border-b md:py-[6px] ${chipsToggle === undefined ? "md:grid-cols-[auto_minmax(0,1fr)_auto]" : "md:grid-cols-[auto_minmax(0,1fr)_auto_auto]"}`}
         data-fo-listing-toolbar-band
       >
         <p className="md:col-start-1 md:row-start-1" data-fo-listing-count>
@@ -757,7 +818,15 @@ export function CountryListingResults({
         {chips === undefined ? null : (
           <div className={`min-w-0 ${place.chips}`}>{chips}</div>
         )}
-        <div className="md:col-start-3 md:row-start-1" data-fo-listing-sort>
+        {chipsToggle === undefined ? null : (
+          <div className="max-md:hidden md:col-start-3 md:row-start-1">
+            {chipsToggle}
+          </div>
+        )}
+        <div
+          className={`md:row-start-1 ${chipsToggle === undefined ? "md:col-start-3" : "md:col-start-4"}`}
+          data-fo-listing-sort
+        >
           {sortForm}
         </div>
       </div>

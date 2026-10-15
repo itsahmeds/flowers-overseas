@@ -409,6 +409,9 @@ describe("the shipped catalogues and manifests", () => {
     // Poland-specific sentence, the honest blank for an occasion with no computable rule
     // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
     // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
+    // TASK-241 (spec 008 §14 A-founder-2026-10-15c): the country category's "Categories" button,
+    // the founder's option A of 2026-10-15; his script attests the exact value.
+    "shop.category.chipsToggle",
     "shop.occasion.dateNote",
     "shop.occasion.lede",
     "shop.occasion.seoDescription",

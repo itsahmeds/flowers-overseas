@@ -60,6 +60,7 @@ import {
   CountryListingHead,
   CountryListingResults,
   GridProvenance,
+  ListingCategoriesToggle,
   ListingChipRow,
   ListingPageHead,
   ListingProse,
@@ -84,6 +85,8 @@ export function CountryCategoryPage({
   // Authored copy in this locale — the founder's category name, carried on the view model rather
   // than composed here (§7: this file writes no sentence).
   const entity = view.entity?.name ?? "";
+  // The sibling categories, once: the phone's chip line and the desktop's "Categories" panel.
+  const siblings = sortBy(view.links.chips, code, (chip) => chip.name);
 
   // AC-24's rule, asserted where the nomination is made: the first card of the one grid, and
   // nothing else on the page, carries `priority`.
@@ -136,7 +139,8 @@ export function CountryCategoryPage({
           </VisuallyHidden>
           {/* The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33): the count, the ranking
               disclosure, the sibling categories and the sort form ("Change the order", A10), in
-              that order, above the grid at every width; then the grid; then the pager. */}
+              that order, above the grid at every width; then the grid; then the pager. From `md`
+              up the siblings fold into the "Categories" button (A-founder-2026-10-15c). */}
           <CountryListingResults
             count={{
               phone: shop("toolbar.count", { count: view.resultCount }),
@@ -152,8 +156,16 @@ export function CountryCategoryPage({
             disclosure={shop("toolbar.disclosure")}
             chips={
               <ListingChipRow
-                chips={sortBy(view.links.chips, code, (chip) => chip.name)}
+                phoneOnly
+                chips={siblings}
                 label={shop("category.siblingsHeading", { country })}
+              />
+            }
+            chipsToggle={
+              <ListingCategoriesToggle
+                chips={siblings}
+                heading={shop("category.siblingsHeading", { country })}
+                label={shop("category.chipsToggle")}
               />
             }
             gridLabel={<GridProvenance cards={view.items} locale={code} />}
@@ -183,7 +195,7 @@ export function CountryCategoryPage({
               />
             }
             sortForm={<ListingSortForm sort={view.sort} />}
-            toolbar="rows"
+            toolbar="band"
           />
         </section>
 

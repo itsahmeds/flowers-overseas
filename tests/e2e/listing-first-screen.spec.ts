@@ -545,10 +545,14 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
               "pager",
             );
           }
-          // The shop root's desktop draws no chip row (its tiles are the categories, PR 236):
-          // the row is in the DOM, in order, and displayed below `md` only.
-          const shopRoot = url === pages[0];
-          const chipsShown = !(shopRoot && size.width >= 768);
+          // From `md` up the shop root draws no chip line (its tiles are the categories, PR 236)
+          // and the country category folds its chips into the "Categories" button
+          // (A-founder-2026-10-15c, asserted below): the line is in the DOM, in order, and
+          // displayed below `md` only.
+          const chipsShown = !(
+            (url === pages[0] || url === pages[1]) &&
+            size.width >= 768
+          );
           if (!chipsShown) {
             expect(layout.bottoms["chips"]?.height ?? -1, "no chip row").toBe(
               0,
@@ -708,4 +712,138 @@ test.describe("the country occasion's lead is one element (spec 008 §14 A16 (b)
       ).toBe(true);
     });
   }
+});
+
+/**
+ * The founder's option A on E-1 (spec 008 §14 A-founder-2026-10-15c; TASK-241): on the country
+ * category, from `md` up, the sibling chips fold into one "Categories" button, a native
+ * `<details>`, on the toolbar row with the count and the sort form, so the first row of cards
+ * keeps its place on the first screen (spec 004 rebound AC-34). Red with the chips put back as a
+ * line: the button is gone and the first row's prices drop past the bound at 1280 × 800.
+ */
+test.describe('A-founder-2026-10-15c: the category\'s chips in a "Categories" button', () => {
+  const CATEGORIES_LABEL = (
+    JSON.parse(
+      readFileSync(
+        resolve(import.meta.dirname, "../../messages/en.json"),
+        "utf8",
+      ),
+    ) as { shop: { category: { chipsToggle: string } } }
+  ).shop.category.chipsToggle;
+
+  for (const size of SIZES) {
+    test(`${CATEGORY} at ${String(size.width)} × ${String(size.height)}`, async ({
+      page,
+    }) => {
+      await open(page, CATEGORY, size);
+      const toggle = page.locator("main details[data-fo-listing-categories]");
+      await expect(toggle).toHaveCount(1);
+      if (size.width >= 768) {
+        // On the toolbar row: displayed, its summary the button's words, vertically level with
+        // the sort form, before it in the DOM, and above the first card.
+        await expect(toggle.locator("summary")).toBeVisible();
+        await expect(toggle.locator("summary")).toHaveText(CATEGORIES_LABEL);
+        await expect(page.locator("main [data-fo-listing-chips]")).toBeHidden();
+        const row = await page.evaluate(() => {
+          const box = (query: string): DOMRect | undefined =>
+            document.querySelector(query)?.getBoundingClientRect();
+          const summary = box("main [data-fo-listing-categories] summary");
+          const sort = box("main [data-fo-listing-sort-form] select");
+          const count = box("main [data-fo-listing-count]");
+          const band = box("main [data-fo-listing-toolbar-band]");
+          const card = box("main [data-fo-listing-grid] > li");
+          const details = document.querySelector(
+            "main [data-fo-listing-categories]",
+          );
+          const form = document.querySelector(
+            "main [data-fo-listing-sort-form]",
+          );
+          return {
+            summaryMid:
+              summary === undefined ? -1 : summary.top + summary.height / 2,
+            sortMid: sort === undefined ? -2 : sort.top + sort.height / 2,
+            countTop: count?.top ?? -1,
+            bandBottom: band?.bottom ?? Infinity,
+            summaryBottom: summary?.bottom ?? Infinity,
+            cardTop: card?.top ?? -1,
+            before:
+              details !== null &&
+              form !== null &&
+              (details.compareDocumentPosition(form) &
+                Node.DOCUMENT_POSITION_FOLLOWING) !==
+                0,
+          };
+        });
+        expect(
+          Math.abs(row.summaryMid - row.sortMid),
+          "level with the sort form",
+        ).toBeLessThan(6);
+        expect(
+          row.summaryBottom,
+          "inside the toolbar band",
+        ).toBeLessThanOrEqual(row.bandBottom + 0.5);
+        expect(row.summaryBottom, "above the first card").toBeLessThanOrEqual(
+          row.cardTop + 0.5,
+        );
+        expect(row.before, "before the sort form").toBe(true);
+        // It opens with the platform's own disclosure, and its links show.
+        await toggle.locator("summary").click();
+        await expect(toggle.locator("a").first()).toBeVisible();
+      } else {
+        // Below `md` the one chip scroller (A16 (e)) and no button.
+        await expect(toggle).toBeHidden();
+        await expect(
+          page.locator("main [data-fo-listing-chips]"),
+        ).toBeVisible();
+      }
+      // The first row's prices are within the first screen (the bound T-49 keeps).
+      const row = await firstRow(page);
+      expect(row.length).toBe(size.width < 768 ? 2 : 4);
+      for (const card of row) {
+        expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
+          size.height + 0.5,
+        );
+      }
+    });
+  }
+
+  test("with JavaScript off, every sibling link is in the HTML, closed", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+      viewport: SIZES[1],
+    });
+    const page = await context.newPage();
+    await page.goto(CATEGORY);
+    const hrefs = async (query: string): Promise<string[]> =>
+      (
+        await page
+          .locator(query)
+          .evaluateAll((links) =>
+            links.map((link) => link.getAttribute("href") ?? ""),
+          )
+      ).sort();
+    const inButton = await hrefs("main [data-fo-listing-categories] a[href]");
+    const inLine = await hrefs("main [data-fo-listing-chips] a[href]");
+    expect(inButton.length).toBeGreaterThan(5);
+    expect(inButton).toStrictEqual(inLine);
+    for (const href of inButton) {
+      expect(href).toMatch(/^\/en-gb\/poland\/flowers\/[a-z-]+$/u);
+    }
+    await expect(
+      page.locator("main [data-fo-listing-categories] [aria-current='page']"),
+    ).toHaveCount(1);
+    expect(
+      await page
+        .locator("main details[data-fo-listing-categories]")
+        .evaluate((element) => (element as HTMLDetailsElement).open),
+    ).toBe(false);
+    // Opens with no script: the summary is the platform's own control.
+    await page.locator("main [data-fo-listing-categories] summary").click();
+    await expect(
+      page.locator("main [data-fo-listing-categories] a").first(),
+    ).toBeVisible();
+    await context.close();
+  });
 });
