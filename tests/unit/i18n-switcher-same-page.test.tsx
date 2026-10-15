@@ -9,7 +9,9 @@
  *     map is `en` and `en-gb` and nothing else; a path the router refuses answers `{}`.
  *  2. **`LocaleSwitcher` with `paths`**: each sibling link is the page's own path, a locale missing
  *     from the map links its home, and an entry that is not a launch code or not under its own
- *     prefix is dropped, as the popup's are.
+ *     prefix is dropped, as the popup's are. Only shown locales are linked (spec 003 §14
+ *     A-founder-2026-10-14c, TASK-237): the committed registry offers `en` and `en-gb`, and each
+ *     case is also run on a registry with every launch locale shown, the data flip's state.
  *  3. **The three mounts**: the header draws the node it is handed in the utility strip and the
  *     phone menu, and the footer in its language row, so the layout's slot reaches all three.
  *
@@ -21,9 +23,14 @@ import { describe, expect, it } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
 
+import { LOCALES } from "../../src/config/locales.ts";
 import { pageAlternatePaths } from "../../src/modules/catalog";
 import { LocaleSwitcher, loadMessages } from "../../src/modules/i18n";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
+import {
+  localeRegistryOf,
+  withLocaleRegistry,
+} from "../../src/modules/i18n/registry.ts";
 import { SiteFooter } from "../../src/modules/ui/layout/SiteFooter.tsx";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 import { LANGUAGE_LINK_PAGES as PAGES } from "../support/language-links.ts";
@@ -83,40 +90,68 @@ function links(html: string): Record<string, string> {
   );
 }
 
+/** Every launch locale shown: the registry once `de` and `pl` are flipped (AC-48's data flip). */
+const allShown = localeRegistryOf(
+  LOCALES.map((locale) =>
+    locale.isLaunch ? { ...locale, shown: true } : locale,
+  ),
+);
+
+function shownAll<T>(body: () => T): Promise<T> {
+  return withLocaleRegistry(allShown, body);
+}
+
 describe("LocaleSwitcher with this page's paths", () => {
-  it("links each locale to the page itself, and the current locale is not a link", () => {
+  it("links each shown locale to the page itself, and the current locale is not a link", async () => {
     const html = renderSwitcher("en", PAGES["product"]);
     expect(links(html)).toEqual({
+      "en-GB": "/en-gb/poland/product/small-kindness",
+    });
+    expect(html).toContain('<span aria-current="page" lang="en">English');
+    expect(
+      links(await shownAll(() => renderSwitcher("en", PAGES["product"]))),
+    ).toEqual({
       "en-GB": "/en-gb/poland/product/small-kindness",
       de: "/de/polen/produkt/small-kindness",
       pl: "/pl/polska/produkt/small-kindness",
     });
-    expect(html).toContain('<span aria-current="page" lang="en">English');
   });
 
-  it("links a locale with no such page to its home (the guide in German and Polish)", () => {
+  it("links a locale with no such page to its home (the guide in German and Polish)", async () => {
     expect(links(renderSwitcher("en-gb", PAGES["guide"]))).toEqual({
+      en: "/en/send-flowers-to/poland",
+    });
+    expect(
+      links(await shownAll(() => renderSwitcher("en-gb", PAGES["guide"]))),
+    ).toEqual({
       en: "/en/send-flowers-to/poland",
       de: "/de",
       pl: "/pl",
     });
   });
 
-  it("drops an entry that is not a launch locale or not under its own prefix", () => {
-    expect(
-      links(
-        renderSwitcher("en", {
-          "en-gb": "/de/blumen",
-          de: "https://example.com/de",
-          fr: "/fr/fleurs",
-          pl: "/pl/okazje",
-        }),
-      ),
-    ).toEqual({ "en-GB": "/en-gb", de: "/de", pl: "/pl/okazje" });
+  it("drops an entry that is not a launch locale or not under its own prefix", async () => {
+    const paths = {
+      "en-gb": "/de/blumen",
+      de: "https://example.com/de",
+      fr: "/fr/fleurs",
+      pl: "/pl/okazje",
+    };
+    expect(links(renderSwitcher("en", paths))).toEqual({ "en-GB": "/en-gb" });
+    expect(links(await shownAll(() => renderSwitcher("en", paths)))).toEqual({
+      "en-GB": "/en-gb",
+      de: "/de",
+      pl: "/pl/okazje",
+    });
   });
 
-  it("links the homes when it is given no paths (a header with no route behind it)", () => {
-    expect(links(renderSwitcher("de"))).toEqual({
+  it("links the shown homes on a hidden locale's page, and marks no entry current (AC-46)", async () => {
+    // `/de` is reached by URL only: its switcher lists the shown locales and not the page's own.
+    const html = renderSwitcher("de");
+    expect(links(html)).toEqual({ en: "/en", "en-GB": "/en-gb" });
+    expect(html).not.toContain("aria-current");
+    expect(html).not.toMatch(/lang="(?:de|pl)"/u);
+    expect(links(await shownAll(() => renderSwitcher("de")))).toEqual({
       en: "/en",
       "en-GB": "/en-gb",
       pl: "/pl",
@@ -144,16 +179,19 @@ describe("the three mounts draw the switcher the layout hands them", () => {
   it("the utility strip and the phone menu", () => {
     const html = inProvider(<SiteHeader locale="en" switcher={marker} />);
     const strip = html.split("data-fo-header-switcher")[1] ?? "";
-    expect(strip).toContain('href="/de/anlaesse/geburtstag"');
-    // Twice in the header: the strip and the menu sheet, and never a German home link.
-    expect(html.match(/href="\/de\/anlaesse\/geburtstag"/gu)).toHaveLength(2);
-    expect(html).not.toContain('href="/de"');
+    expect(strip).toContain('href="/en-gb/occasions/birthday"');
+    // Twice in the header: the strip and the menu sheet, and never a British home link.
+    expect(html.match(/href="\/en-gb\/occasions\/birthday"/gu)).toHaveLength(2);
+    expect(html).not.toContain('href="/en-gb"');
+    // `de` and `pl` are hidden: no language link of theirs in any mount.
+    expect(html).not.toMatch(/hrefLang="(?:de|pl)"/u);
   });
 
   it("the footer language row", () => {
     const html = inProvider(<SiteFooter locale="en" switcher={marker} />);
     const row = html.split("data-fo-footer-languages")[1] ?? "";
-    expect(row).toContain('href="/pl/okazje/urodziny"');
-    expect(html).not.toContain('href="/pl"');
+    expect(row).toContain('href="/en-gb/occasions/birthday"');
+    expect(html).not.toContain('href="/en-gb"');
+    expect(html).not.toMatch(/hrefLang="(?:de|pl)"/u);
   });
 });

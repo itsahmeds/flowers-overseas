@@ -37,8 +37,8 @@ export const PAGE_TYPES: readonly PageType[] = ["home", ...PATH_SEGMENT_KEYS];
 const TRAILING_SEGMENT_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
- * The live locales, in registry order — the set the language popup lists, the switcher links to and
- * `generateStaticParams` prerenders. Full `LocaleConfig` objects because every consumer needs the
+ * The live locales, in registry order — the set `generateStaticParams` prerenders and the routes
+ * answer 200 for. What visitors are *offered* is the narrower `shownLocales()`. Full `LocaleConfig` objects because every consumer needs the
  * `nativeName`, `bcp47` and `dir` alongside the code (spec 003 §2, AC-7), and because reading them
  * back one by one through `launchLocale()` would invite a caller to filter `isLaunch` itself.
  */
@@ -46,6 +46,17 @@ export function launchLocales(): readonly LocaleConfig[] {
   return getLocaleRegistry()
     .list()
     .filter((locale) => locale.isLaunch);
+}
+
+/**
+ * The locales offered to visitors, in registry order: launch locales with `shown: true` (spec 003
+ * §14 A-founder-2026-10-14c, AC-46). The header strip, the phone Menu, the footer's language links
+ * and the first-visit popup list these and nothing else, so a hidden launch locale (`de`, `pl`
+ * until a reviewed translation exists) stays routed by URL but is offered nowhere. Showing it again
+ * is the `shown` flag in the registry, never an edit here.
+ */
+export function shownLocales(): readonly LocaleConfig[] {
+  return launchLocales().filter((locale) => locale.shown);
 }
 
 export function launchLocaleCodes(): readonly string[] {
@@ -76,7 +87,7 @@ export function launchLocale(
  * TASK-042). This is the set `generateStaticParams` prerenders and the `[locale]` layout resolves,
  * and it is deliberately *not* `launchLocales()`: a pseudo-locale must render a real document for
  * the visual and a11y suites while staying out of every place that speaks to a buyer or a crawler
- * — the switcher (`launchLocales()`), hreflang (`alternatesFor()`), sitemaps and robots-meta
+ * — the switcher (`shownLocales()`), hreflang (`alternatesFor()`), sitemaps and robots-meta
  * lifting (`isLocaleIndexable()`), all of which start from `isLaunch`.
  *
  * A registry member that is neither a launch nor a pseudo locale still has no URL, so a locale

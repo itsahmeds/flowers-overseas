@@ -10,7 +10,7 @@
  *  2. Send flowers, the full-width send pill;
  *  3. spec 003's `LocaleSwitcher`, mounted with its markup unchanged (spec 003 AC-3), and the
  *     currency as text with its localised label (AC-8: no cookie, the same for every visitor);
- *  4. the help line, the `tel:` link the notice bar carries from `lg` up.
+ *  4. the help line, the WhatsApp link the notice bar carries from `lg` up.
  *
  * **A native disclosure** (`<details>`/`<summary>`): it opens and closes with JavaScript off, and
  * it is the one control below `md` besides the logo. With JavaScript on, `MenuEscape` adds `Esc`

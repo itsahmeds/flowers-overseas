@@ -558,6 +558,27 @@ describe("the italic phrase's `<em>` pair is part of the argument set (AC-52)", 
   });
 });
 
+describe("check 12: a shown locale in another language is reviewed (spec 003 AC-48 / T-48)", () => {
+  it("exits non-zero naming `pl` when `pl` is shown with its drafts unreviewed", () => {
+    // The committed catalogues, the committed registry but for one field: `pl` is `shown: true`.
+    const result = runCli("--registry", `${casesDir}/registry-pl-shown.json`);
+    expect(result.status).toBe(1);
+    const lines = result.stderr
+      .split("\n")
+      .filter((line) => line.includes("`shown: true`"));
+    expect(lines).toEqual([
+      `  - ${casesDir}/registry-pl-shown.json: locale \`pl\` is \`shown: true\` with 100.0% of its counted keys unreviewed, above the 5.0% threshold: a language is offered to visitors only once a person has reviewed it (spec 003 §14 A-founder-2026-10-14c). Set \`shown: false\`, or have its catalogue reviewed first`,
+    ]);
+  });
+
+  it("exits 0 on the same registry with `pl` hidden, and on the committed tree", () => {
+    expect(runCli("--registry", `${casesDir}/registry-valid.json`).status).toBe(
+      0,
+    );
+    expect(runCli().status).toBe(0);
+  });
+});
+
 describe("argumentSignature (the check-4 rule)", () => {
   it("names every argument with its kind", () => {
     expect([...argumentSignature("Read this in {language}?")]).toEqual([
