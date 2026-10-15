@@ -94,6 +94,13 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   The occasion at 390 fails locally only because this machine's build fetched a fresh ECB rate,
   so the price block carries the equivalents line (to y 894). CI builds keep the stale snapshot, and
   there the block is the amount line, ending at 838.
+- **E-1 ruled (founder, 2026-10-15, "A your pick"; spec 008 §14 A-founder-2026-10-15c).** On the
+  country category only, from `md` up, the sibling chips fold into a "Categories" button (native
+  `<details>`, new key `shop.category.chipsToggle`, `reviewed: false`) on the toolbar row with the
+  count and the sort form. Below `md` the chip scroller stays (A16 (e), spec 004 AC-49). Measured
+  after the build (local production build): category 1280 × 800 price foot 785 (bound 800),
+  1440 × 900 840 (900), 390 × 844 809 (844). Below `lg` the disclosure takes its own line under
+  the count-and-sort row (the four-part row does not fit at 768).
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
@@ -109,10 +116,21 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
 - 2026-10-15: spacing matched to PR 236 (one count-and-sort row from `md`, title-size H1, phone
   disclosure `text-xs`); five of the six T-49 cases now pass; the category at 1280 × 800 does not
   (E-1 update).
+- 2026-10-15: rebased on origin/main (PRs 234, 236). Built option A (A-founder-2026-10-15c). Local
+  e2e (listing-first-screen, listing-params, country-category, country-occasion, country-shop,
+  hubs, listing-v2; desktop and mobile): 212 passed; the only red is the occasion at 390, which
+  fails locally because this build fetched a fresh rate (equivalents line), to be judged in CI.
+  Mutation: the chips put back as a line turns all four new A-founder-2026-10-15c cases red and
+  T-49 at 1280 red (y 833).
+  **Next (for whoever continues):** (1) add the `visual:baselines` label to PR 235, download the
+  Linux set and commit it per `docs/runbooks/visual-baselines.md` §2 (look at every image);
+  (2) replace PR 236's C3 row in `docs/design/README.md` ("TASK-241 builds it and moves this
+  row out") and update this task's own row to option A; (3) `gh pr ready 235`, add `ci:full`,
+  report CI on the head, judge the occasion at 390 there; (4) row to `in_review`.
 
 ## Result
 
-**Blocked on E-1** (the T-49 first-row bound, now only the category at 1280 × 800). Built and pushed; PR 235 stays draft.
+**Partial.** E-1 ruled (A-founder-2026-10-15c) and built; baselines, ready and `ci:full` not done (see `## Progress` Next). PR 235 is a draft.
 
 - AC-33: count line, disclosure, chip row and sort form above the grid on the shop root, the
   country category and the country occasion, at every width; the occasion hub's destination chips
