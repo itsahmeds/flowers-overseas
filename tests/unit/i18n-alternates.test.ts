@@ -68,10 +68,23 @@ const allReviewed: MessageSource = {
       : repoMessageSource.meta(locale),
 };
 
+/**
+ * Every launch locale shown, as the data flip of spec 003 §14 A-founder-2026-10-14c clause 4
+ * makes it: a reviewed `de` stays out of hreflang while it is hidden, so the four-locale cluster
+ * needs both halves of the flip, the review and `shown: true`.
+ */
+const allShown = localeRegistryOf(
+  LOCALES.map((locale) =>
+    locale.isLaunch ? { ...locale, shown: true } : locale,
+  ),
+);
+
 async function withAllLocalesReviewed<T>(body: () => T): Promise<T> {
   resetReviewCache();
   try {
-    return await withMessageSource(allReviewed, body);
+    return await withLocaleRegistry(allShown, () =>
+      withMessageSource(allReviewed, body),
+    );
   } finally {
     resetReviewCache();
   }
@@ -168,7 +181,7 @@ describe("the shipped cluster: only `en` and `en-gb` are indexable today", () =>
   });
 });
 
-describe("the four-locale cluster once `de` and `pl` are reviewed (AC-14)", () => {
+describe("the four-locale cluster once `de` and `pl` are reviewed and shown (AC-14)", () => {
   it("adds both locales and their aliases with no code change", async () => {
     const pages = await withAllLocalesReviewed(() =>
       alternatesFor({ pageType: "home" }, { baseUrl: BASE }),

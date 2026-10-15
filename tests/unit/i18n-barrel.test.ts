@@ -104,6 +104,10 @@ const PINNED_EXPORTS = [
   "pseudoCatalogue",
   "routableLocale",
   "routableLocaleCodes",
+  // Added by TASK-237 (spec 003 §14 A-founder-2026-10-14c clause 1, AC-45/AC-46): the launch
+  // locales with `shown: true`, in registry order — the one list every language menu, the footer
+  // row and the popup offer. A function over the provider, no data.
+  "shownLocales",
   "parseAcceptLanguage",
   "preferredLocale",
   // Added by TASK-105 (spec 008 AC-4, AC-1's routing half): the two listing URL builders. Both are

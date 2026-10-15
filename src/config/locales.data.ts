@@ -72,6 +72,13 @@ export interface LocaleData {
   readonly nativeName: string;
   readonly dir: TextDirection;
   readonly isLaunch: boolean;
+  /**
+   * Offered to visitors and allowed to be indexed (spec 003 §14 A-founder-2026-10-14c): the
+   * language menus, the footer row and the popup list only shown locales, and a hidden locale is
+   * `noindex` whatever its review share. A hidden launch locale keeps its routes (no redirect,
+   * ADR-0006). Showing one again is this data flip, never a code change.
+   */
+  readonly shown: boolean;
   readonly isPseudo: boolean;
   readonly fallbackCode: string | null;
   readonly currencyDefault: string;
@@ -101,6 +108,7 @@ export const LAUNCH_LOCALE_DATA = [
     nativeName: "English",
     dir: "ltr",
     isLaunch: true,
+    shown: true,
     isPseudo: false,
     fallbackCode: null,
     currencyDefault: "EUR",
@@ -124,6 +132,7 @@ export const LAUNCH_LOCALE_DATA = [
     nativeName: "English (UK)",
     dir: "ltr",
     isLaunch: true,
+    shown: true,
     isPseudo: false,
     fallbackCode: "en",
     currencyDefault: "GBP",
@@ -147,6 +156,8 @@ export const LAUNCH_LOCALE_DATA = [
     nativeName: "Deutsch",
     dir: "ltr",
     isLaunch: true,
+    // Hidden until a reviewed translation exists (founder ruling D1 A, 2026-10-14).
+    shown: false,
     isPseudo: false,
     fallbackCode: "en",
     currencyDefault: "EUR",
@@ -170,6 +181,8 @@ export const LAUNCH_LOCALE_DATA = [
     nativeName: "Polski",
     dir: "ltr",
     isLaunch: true,
+    // Hidden until a reviewed translation exists (founder ruling D1 A, 2026-10-14).
+    shown: false,
     isPseudo: false,
     fallbackCode: "en",
     currencyDefault: "PLN",
@@ -214,6 +227,7 @@ export const PSEUDO_LOCALE_DATA = [
     nativeName: "[Ëñglïsh]",
     dir: "ltr",
     isLaunch: false,
+    shown: false,
     isPseudo: true,
     fallbackCode: "en",
     currencyDefault: "EUR",
@@ -239,6 +253,7 @@ export const PSEUDO_LOCALE_DATA = [
     nativeName: "[العربية]",
     dir: "rtl",
     isLaunch: false,
+    shown: false,
     isPseudo: true,
     fallbackCode: "en",
     currencyDefault: "EUR",

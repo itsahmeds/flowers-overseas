@@ -127,6 +127,8 @@ function testLocale(code: string, bcp47: string): LocaleConfig {
     nativeName: code,
     dir: "ltr",
     isLaunch: true,
+    // Spec 003 §14 A-founder-2026-10-14c: `shown` is required; a fake launch locale states it.
+    shown: true,
     // TASK-042: a pseudo-locale is a registry flag now; a fake launch locale states it.
     isPseudo: false,
     fallbackCode: "en",
@@ -377,31 +379,46 @@ describe("the threshold table (T-24)", () => {
 });
 
 describe("the fixture-manifest flip (AC-24, no code change)", () => {
-  it("makes `de` indexable and unmarked once every key is reviewed", async () => {
-    // The shipped `de` manifest's own key set, with every entry flipped to reviewed. Nothing but
-    // the manifest changes — no branch, no flag, no code path (AC-24's last clause).
+  it("makes a reviewed `de` indexable only once it is shown (AC-24, AC-47 / T-47)", async () => {
+    // The shipped `de` manifest's own key set, with every entry flipped to reviewed. The fixture
+    // pair differs in one field: `de`'s `shown` flag (spec 003 §14 A-founder-2026-10-14c clause
+    // 3, `isLaunch ∧ shown ∧ share ≤ 5 %`). Hidden, a fully reviewed `de` stays `noindex`;
+    // shown, it is indexable. No branch and no code path changes (AC-24's last clause).
     const shipped = repoMessageSource.meta("de");
     expect(Object.keys(shipped ?? {}).length).toBeGreaterThan(0);
     const reviewedDe: MessageMetaManifest = Object.fromEntries(
       Object.keys(shipped ?? {}).map((key) => [key, REVIEWED]),
     );
-
-    const answers = await withInjected(
-      {
-        source: sourceWith(repoMessageSource, {
-          de: {
-            catalogue: repoMessageSource.catalogue("de"),
-            meta: reviewedDe,
-          },
-        }),
+    const source = sourceWith(repoMessageSource, {
+      de: {
+        catalogue: repoMessageSource.catalogue("de"),
+        meta: reviewedDe,
       },
-      () => ({
-        share: unreviewedShare("de"),
-        beta: localeBetaTag("de"),
-        indexable: isLocaleIndexable("de"),
-      }),
-    );
+    });
+    const withDeShown = (shown: boolean) =>
+      staticLocaleRegistry
+        .list()
+        .map((locale) =>
+          locale.code === "de" ? { ...locale, shown } : locale,
+        );
+    const answer = () => ({
+      share: unreviewedShare("de"),
+      beta: localeBetaTag("de"),
+      indexable: isLocaleIndexable("de"),
+    });
 
-    expect(answers).toEqual({ share: 0, beta: false, indexable: true });
+    // The committed registry hides `de`: the same as the `shown: false` fixture.
+    expect(staticLocaleRegistry.get("de")?.shown).toBe(false);
+    expect(await withInjected({ source }, answer)).toEqual({
+      share: 0,
+      beta: false,
+      indexable: false,
+    });
+    expect(
+      await withInjected({ locales: withDeShown(false), source }, answer),
+    ).toEqual({ share: 0, beta: false, indexable: false });
+    expect(
+      await withInjected({ locales: withDeShown(true), source }, answer),
+    ).toEqual({ share: 0, beta: false, indexable: true });
   });
 });
