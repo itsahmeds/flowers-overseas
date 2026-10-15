@@ -258,12 +258,7 @@ describe("the shipped catalogues and manifests", () => {
    * `unreviewedShare("en")` must stay at or under the 5 % gate either way — `home-honesty` owns
    * that half.
    */
-  // Lines marked `// TASK-226` are the founder's two relay-copy batches of 2026-10-14; his own
-  // `record-approval-226.py` run removes them from this queue in the same commit that records them.
   const AWAITING_FOUNDER_REVIEW = [
-    "catalog.addon.chocolates.description", // TASK-226
-    "catalog.addon.plush.description", // TASK-226
-    "catalog.addon.wine.description", // TASK-226
     // TASK-120's honest-chrome sweep (spec 004 §14 A19, `/review 70`) added eight of these: the
     // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
     // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
@@ -340,8 +335,6 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.placeKind.work",
     "checkout.price.changed",
     "checkout.price.confirm",
-    "checkout.price.currencyLine", // TASK-226
-    "checkout.privacy.demoNotice", // TASK-226
     "checkout.progress.card",
     "checkout.progress.compact",
     "checkout.progress.label",
@@ -360,13 +353,6 @@ describe("the shipped catalogues and manifests", () => {
     "confirmation.recap.date",
     "confirmation.recap.nothingCharged",
     "confirmation.recap.recipient",
-    "corridor.facts.orderBy.none", // TASK-226
-    "corridor.shop.body", // TASK-226
-    "corridor.steps.guide.twoBody", // TASK-226
-    "corridor.steps.live.twoBody", // TASK-226
-    "delivery.picker.live", // TASK-226
-    "destinationsHub.intro", // TASK-226
-    "faq.photo.answer", // TASK-226
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -377,10 +363,7 @@ describe("the shipped catalogues and manifests", () => {
     "faq.whoDelivers.answer",
     "faq.whoDelivers.answerCutoff",
     "footer.payment.methods",
-    "home.destinations.body", // TASK-226
     "home.howItWorks.choose.body",
-    "home.howItWorks.make.title", // TASK-226
-    "home.proof.local.body", // TASK-226
     "home.proof.photo.body",
     // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
     // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
@@ -419,7 +402,6 @@ describe("the shipped catalogues and manifests", () => {
     // ("Read more"), proposed copy that ships `reviewed: false` until the founder attests it.
     "product.eyebrowPhone",
     "product.readMore",
-    "shop.category.seoDescription", // TASK-226
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
@@ -438,7 +420,6 @@ describe("the shipped catalogues and manifests", () => {
     // each still ships `reviewed: false` until the founder's own script attests the exact value.
     "shop.pagination.pageOf",
     "shop.root.occasionPageLink",
-    "shop.root.seoDescription", // TASK-226
     "shop.root.tileCount",
     "shop.toolbar.reorderLabel",
   ];

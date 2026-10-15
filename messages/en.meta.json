@@ -113,7 +113,9 @@
   },
   "catalog.addon.chocolates.description": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "31330a0a100f175ba50c020054e8051cae2d27385697a99a32c3672fb24945cb"
   },
   "catalog.addon.chocolates.name": {
@@ -126,7 +128,9 @@
   },
   "catalog.addon.plush.description": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "ef59975ea328489ca28f5751440e188e8c7db5f1689bdf9b7ab3db7d1fcbc8ee"
   },
   "catalog.addon.plush.name": {
@@ -155,7 +159,9 @@
   },
   "catalog.addon.wine.description": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "a7f94648e0fc73b4355bb1c431f4e2c6790f93bb0caf30dda32c0080b752d422"
   },
   "catalog.addon.wine.name": {
@@ -1309,12 +1315,16 @@
   },
   "checkout.price.currencyLine": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "498f2f9ff8bdf28c0ac4433a6a5e9225126b622e784b81f831cf19799b003b38"
   },
   "checkout.privacy.demoNotice": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "e2e71e685a2e83d7617daa572d741f50f8b0017f92de6ece8b6de4d5bb6772a9"
   },
   "checkout.progress.card": {
@@ -1831,7 +1841,9 @@
   },
   "corridor.facts.orderBy.none": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "bd3ce633497fa23b75c81ac06132f0d2777c1332a31c263ea35639144c8ad576"
   },
   "corridor.facts.orderBy.value": {
@@ -1976,7 +1988,9 @@
   },
   "corridor.shop.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "06e6416e6c347f4421ce59f86ef313a813aaae25c4314cdbc9667d90520bdea9"
   },
   "corridor.shop.cta": {
@@ -2037,7 +2051,9 @@
   },
   "corridor.steps.guide.twoBody": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "6c9c87529c4b721c6fab13bb34421bc79d87ce8b0b5cb0e738c0e65b60d65bfc"
   },
   "corridor.steps.guide.twoTitle": {
@@ -2091,7 +2107,9 @@
   },
   "corridor.steps.live.twoBody": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "6c9c87529c4b721c6fab13bb34421bc79d87ce8b0b5cb0e738c0e65b60d65bfc"
   },
   "corridor.steps.live.twoTitle": {
@@ -2166,7 +2184,9 @@
   },
   "delivery.picker.live": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "e0cc4e98f3c62bb869d4120da4c3e537a699352cf07280f656dae576d4c0ebac"
   },
   "delivery.picker.preview": {
@@ -2318,7 +2338,9 @@
   },
   "destinationsHub.intro": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "359d44d09dfeadd1c76b748e58d458f2d01a0cec8418607920fc7dee767a121a"
   },
   "destinationsHub.noGuide": {
@@ -2456,7 +2478,9 @@
   },
   "faq.photo.answer": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "5997f455a721e68dfe1c330fba1164ba5b542e57850709f0137b9696a3837308"
   },
   "faq.photo.question": {
@@ -2691,7 +2715,9 @@
   },
   "home.destinations.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "80e78289f75e76d0af722f153af253f7a7b9c370b0fb52d9267afd2175081831"
   },
   "home.destinations.eyebrow": {
@@ -2778,7 +2804,9 @@
   },
   "home.howItWorks.make.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "5b65092313e9ff0fea989ac060d35b7cb68b3b954208a575e9ca4f6aa01d6f4e"
   },
   "home.occasions.eyebrow": {
@@ -2811,7 +2839,9 @@
   },
   "home.proof.local.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "80613144cb7473266133055067db744a9ec479ab98b14b6960ad7e31e287c8f0"
   },
   "home.proof.local.title": {
@@ -3715,7 +3745,9 @@
   },
   "shop.category.seoDescription": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "658adafec25b6c9b2500e66a7bc9e81dc812b8e84f5a407a7a79105dc2b9b776"
   },
   "shop.category.seoTitle": {
@@ -3993,7 +4025,9 @@
   },
   "shop.root.seoDescription": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-15T05:41:33Z",
     "sourceHash": "61b9fb4381233e5da9ca423733f00e0dc82851eef38ef1e675432f22b153c866"
   },
   "shop.root.seoTitle": {

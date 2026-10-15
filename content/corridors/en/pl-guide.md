@@ -49,7 +49,7 @@ relatedIso2: ["DE", "RO", "NL"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-10-05
+reviewedAt: 2026-10-15
 version: 3
 updatedAt: "2026-10-14"
 ---

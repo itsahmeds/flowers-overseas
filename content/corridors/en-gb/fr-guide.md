@@ -51,7 +51,7 @@ relatedIso2: ["DE", "ES", "IT"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
+reviewedAt: 2026-10-15
 version: 2
 updatedAt: "2026-10-14"
 ---
