@@ -40,6 +40,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+import { motionsSettled } from "../support/at-rest.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
@@ -123,6 +124,8 @@ test.describe("the localised 500 boundary", () => {
       // 500 document shares (`src/modules/i18n/error-copy.data.ts`).
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await expect(page.locator("main")).toBeVisible();
+      // Read at rest: the consent sheet's opening fade is not low-contrast text (TASK-194).
+      await motionsSettled(page);
 
       const results = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

@@ -1054,6 +1054,16 @@
     }
   }
 
+  /* Standing on a sticky action bar (below `md`), the sheet only fades: rising from its edge it
+     would pass over the bar's action, which it never covers (AC-48, T-53). */
+  @media (width < 48rem) {
+    @starting-style {
+      body:has([data-fo-action-bar]) [data-fo-consent-sheet="fixed"] {
+        transform: none;
+      }
+    }
+  }
+
   @media (width < 48rem) {
     dialog[data-fo-language-popup][open] {
       transition-duration: var(--duration-slow);
