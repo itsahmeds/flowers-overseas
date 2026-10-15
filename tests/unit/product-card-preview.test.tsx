@@ -21,18 +21,20 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { ListingBreadcrumb, productView } from "../../src/modules/catalog";
-import { DeliveryFacts } from "../../src/modules/geo";
 import { loadMessages } from "../../src/modules/i18n";
+import { CARD_MESSAGE_MAX } from "../../src/config/card-message.ts";
 import {
-  CARD_MESSAGE_MAX,
-  ProductPage,
-} from "../../src/modules/ui/product/ProductPage.tsx";
+  CARD_MESSAGE_MAX as CHECKOUT_CARD_MESSAGE_MAX,
+  CHECKOUT_LIMITS,
+} from "../../src/config/checkout.ts";
+import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
 
 import { importClosure } from "./support/import-closure.ts";
 
 const repoRoot = resolve(import.meta.dirname, "../..");
 const ISLAND = "src/modules/ui/product/CardMessageField.tsx";
 const PREVIEW = "src/modules/ui/product/PrintedCardPreview.tsx";
+const GRAPHEMES = "src/modules/ui/checkout/graphemes.ts";
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 const NAMESPACES = [
   "product",
@@ -65,14 +67,6 @@ async function pageHtml(locale: (typeof LOCALES)[number]): Promise<string> {
     >
       <ProductPage
         breadcrumb={<ListingBreadcrumb crumbs={view.breadcrumb} />}
-        facts={
-          <DeliveryFacts
-            facts={view.facts}
-            locale={view.locale}
-            nameKey={view.country.nameKey}
-            prices="omit"
-          />
-        }
         view={view}
       />
     </NextIntlClientProvider>,
@@ -111,9 +105,12 @@ describe("spec 009 AC-14 / T-14: the island makes no network access and adds no 
     const source = readFileSync(join(repoRoot, ISLAND), "utf8");
     expect(source.trimStart().startsWith('"use client";')).toBe(true);
     const closure = importClosure(join(repoRoot, ISLAND));
-    // React is the only thing it imports: no `next-intl`, no zod, no barrel.
+    // React is the only package it imports: no `next-intl`, no zod, no barrel. Its one local
+    // import is checkout's dependency-free grapheme count (spec 004 AC-51: one way to count).
     expect([...closure.packages]).toEqual(["react"]);
-    expect([...closure.files]).toEqual([join(repoRoot, ISLAND)]);
+    expect([...closure.files].sort()).toEqual(
+      [join(repoRoot, ISLAND), join(repoRoot, GRAPHEMES)].sort(),
+    );
     for (const file of closure.files) {
       const code = readFileSync(file, "utf8")
         // Comments name the APIs the island refuses; only code counts.
@@ -151,9 +148,9 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
       ).toEqual(["textarea"]);
       const textarea = fields[0]?.[0] ?? "";
       expect(textarea, locale).not.toMatch(/\sname=/u);
-      expect(textarea, locale).toContain(
-        `maxLength="${String(CARD_MESSAGE_MAX)}"`,
-      );
+      // No `maxLength`: it counts UTF-16 units and would refuse a 200-grapheme message with an
+      // emoji in it; the island counts graphemes (spec 004 AC-51).
+      expect(textarea, locale).not.toMatch(/maxLength=/iu);
       // Visible text names it (WCAG 1.3.1): the step's legend, through `aria-labelledby`.
       const labelledBy =
         /\baria-labelledby="([^"]+)"/u.exec(textarea)?.[1] ?? "!";
@@ -190,6 +187,46 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
     expect(html).not.toMatch(
       /class="[^"]*(lg:)?hidden[^"]*"><figure[^>]*data-fo-card-preview/u,
     );
+  });
+});
+
+describe("spec 004 AC-51 / T-56 (unit half): one 200-grapheme card limit, shared with checkout", () => {
+  it("is one exported constant equal to 200, and checkout's card limit is that constant", () => {
+    expect(CARD_MESSAGE_MAX).toBe(200);
+    expect(CHECKOUT_LIMITS.cardMessage).toBe(CARD_MESSAGE_MAX);
+    expect(CHECKOUT_CARD_MESSAGE_MAX).toBe(CARD_MESSAGE_MAX);
+    // `checkout.ts` takes the number from the shared file rather than restating it.
+    const checkout = readFileSync(
+      join(repoRoot, "src/config/checkout.ts"),
+      "utf8",
+    );
+    expect(checkout).toMatch(/cardMessage:\s*CARD_MESSAGE_MAX,/u);
+  });
+
+  it("the page's counter reads the shared limit, in every locale", async () => {
+    for (const locale of LOCALES) {
+      const html = await pageHtml(locale);
+      const counter =
+        /<p[^>]*id="pdp-card-message-count"[^>]*>([\s\S]*?)<\/p>/u.exec(
+          html,
+        )?.[1] ?? "";
+      expect(counter.replace(/<!-- -->/gu, ""), locale).toBe(
+        `0 / ${String(CARD_MESSAGE_MAX)}`,
+      );
+    }
+  });
+
+  it("no product-page source holds a card limit of its own: 400 appears nowhere, and the island imports no number", () => {
+    const dir = join(repoRoot, "src/modules/ui/product");
+    for (const name of readdirSync(dir)) {
+      const code = readFileSync(join(dir, name), "utf8");
+      expect(/\b400\b/u.exec(code)?.[0], name).toBe(undefined);
+    }
+    const page = readFileSync(join(dir, "ProductPage.tsx"), "utf8");
+    expect(page).toMatch(
+      /import \{ CARD_MESSAGE_MAX \} from "@\/config\/card-message";/u,
+    );
+    expect(page).not.toMatch(/const CARD_MESSAGE_MAX\b/u);
   });
 });
 

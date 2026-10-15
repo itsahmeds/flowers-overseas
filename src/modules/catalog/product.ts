@@ -67,7 +67,6 @@ import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { writeStepSummaryStdout } from "@/lib/step-summary";
 import {
   type DeliveryWindow,
-  CountryOperationsSchema,
   corridorPageExists,
   corridorSlug,
   corridorState,
@@ -76,11 +75,7 @@ import {
   deliveryWindow,
   pickerStates,
 } from "@/modules/geo";
-import {
-  formatPercentFromBasisPoints,
-  localePath,
-  productPath,
-} from "@/modules/i18n";
+import { localePath, productPath } from "@/modules/i18n";
 import {
   type DeploymentDescriptor,
   type IndexabilityVerdict,
@@ -91,6 +86,7 @@ import {
   pageIndexability,
 } from "@/modules/seo";
 import {
+  type PriceEquivalentsView,
   PriceEquivalentsViewSchema,
   ProductCardViewSchema,
   altFor,
@@ -109,8 +105,8 @@ import {
 } from "./listing";
 import { priceEquivalents } from "./pricing/equivalents";
 import { toMinor } from "./pricing/money";
-import { priceProjection } from "./pricing/project";
-import { dateSurcharges, resolveAddonPrice } from "./pricing/resolve";
+import { addonPriceProjection, priceProjection } from "./pricing/project";
+import { dateSurcharges } from "./pricing/resolve";
 import {
   getProduct,
   hasActivePrice,
@@ -451,8 +447,10 @@ export async function writeProductExistenceSummary(
  *    projection with the date minus the projection without it, in the display currency. Never a
  *    converted surcharge: converting 25 zł on its own and adding it to a separately rounded
  *    bouquet price is how a chip says "+£5.00" over a total that moved by £5.01.
- *  - **Add-on rows are in the destination currency** (Q4) at their own VAT rate, until spec 010
- *    adds a projection for them.
+ *  - **Add-on rows are in the page's currency** (spec 009 §14 A-founder-2026-10-14c, AC-34):
+ *    `addonPriceProjection()`, the bouquet's FX rule at the page's one clock, so a stale rate
+ *    sends the bouquet and every add-on back to the destination currency together. A row carries
+ *    no VAT rate the page could print (the rate stays data, `vatRateBp`, for spec 010's split).
  *  - **Stale FX is a state of the view**, not of one field: every projection on the page shares
  *    one clock, so they all convert or all fall back together, and `fx.state` says which.
  *  - **Indexability** is spec 007's `indexability()` over a `product` descriptor whose every term
@@ -568,9 +566,13 @@ export const TierOptionSchema = z
 export type TierOption = z.infer<typeof TierOptionSchema>;
 
 /**
- * One read-only add-on row (§2 "Add-ons", AC-23): its name key, its price **in the destination's
- * currency** (design round Q4) and **its own** VAT rate. No selection state of any kind exists on
- * the shape — there is nothing to tick in Phase 0, and `Addon` has no `defaultSelected` to copy.
+ * One read-only add-on row (§2 "Add-ons", AC-23 as amended by §14 A-founder-2026-10-14c, AC-34):
+ * its name key and its all-in price **in the page's display currency**, from
+ * `addonPriceProjection()` at the page's one clock (the bouquet's FX rule, so the two convert or
+ * fall back together). Its own VAT rate stays data (`vatRateBp`, spec 005 §13 Q3: spec 010's step 3
+ * splits VAT by it) but there is **no rate text** on the shape, so no row can print one. No
+ * selection state of any kind exists on the shape — there is nothing to tick in Phase 0, and
+ * `Addon` has no `defaultSelected` to copy.
  */
 export const AddonLineSchema = z
   .object({
@@ -580,7 +582,6 @@ export const AddonLineSchema = z
       amountMinor: z.int().nonnegative(),
     }).strict(),
     vatRateBp: BasisPointsSchema,
-    vatRateText: NonEmpty,
   })
   .strict();
 export type AddonLine = z.infer<typeof AddonLineSchema>;
@@ -633,15 +634,6 @@ const ProductDeliverySchema = z
     cutoffLocal: z.string().min(1).optional(),
     dates: z.array(ProductDeliveryDateSchema).readonly(),
     noticeKey: NonEmpty,
-  })
-  .strict();
-
-/** Spec 007's delivery-facts block, in the shape `corridorView()` builds it (§5.3, reused). */
-const ProductFactsSchema = z
-  .object({
-    known: z.boolean(),
-    operations: CountryOperationsSchema.optional(),
-    citiesKey: NonEmpty.optional(),
   })
   .strict();
 
@@ -721,11 +713,16 @@ export const ProductViewSchema = z
       .object({
         price: PriceEquivalentsViewSchema.optional(),
         total: PriceEquivalentsViewSchema.optional(),
+        /**
+         * Each tier's own line (its undated price), so a client-side size change shows the chosen
+         * tier's equivalents from the server's text and never from arithmetic in the browser
+         * (spec 009 §14 A12, AC-31; TASK-228). The selected tier's entry **is** `price`.
+         */
+        tiers: z.record(TierKeySchema, PriceEquivalentsViewSchema).optional(),
       })
       .strict(),
     addons: z.array(AddonLineSchema).readonly(),
     delivery: ProductDeliverySchema,
-    facts: ProductFactsSchema,
     totals: DateTotalsSchema,
     breadcrumb: z.array(ListingCrumbSchema).min(1).readonly(),
     related: z
@@ -747,13 +744,19 @@ export const ProductViewSchema = z
     // One clock (A21 clause 6 (b), (d)): a page whose price is the stale-FX fallback carries no
     // equivalents line, no line names the currency the page already quotes, and a converted
     // price's lines are dated by the snapshot that converted it.
-    for (const line of ["price", "total"] as const) {
-      const equivalents = view.equivalents[line];
+    const lines = [
+      ["price", view.equivalents.price],
+      ["total", view.equivalents.total],
+      ...Object.entries(view.equivalents.tiers ?? {}).map(
+        ([tierKey, line]) => [`tiers.${tierKey}`, line] as const,
+      ),
+    ] as const;
+    for (const [line, equivalents] of lines) {
       if (equivalents === undefined) continue;
       if (view.fx.state === "fallback") {
         ctx.addIssue({
           code: "custom",
-          path: ["equivalents", line],
+          path: ["equivalents", ...line.split(".")],
           message:
             "a stale-FX fallback price carries no equivalents line: the line and the fallback read two clocks (spec 004 §14 A21 clause 6 (d))",
         });
@@ -761,7 +764,7 @@ export const ProductViewSchema = z
       if (equivalents.amounts.some((amount) => amount.currency === currency)) {
         ctx.addIssue({
           code: "custom",
-          path: ["equivalents", line, "amounts"],
+          path: ["equivalents", ...line.split("."), "amounts"],
           message: `the equivalents line repeats the page's own ${currency} (A21 clause 6 (b))`,
         });
       }
@@ -771,7 +774,7 @@ export const ProductViewSchema = z
       ) {
         ctx.addIssue({
           code: "custom",
-          path: ["equivalents", line, "asOf"],
+          path: ["equivalents", ...line.split("."), "asOf"],
           message: `the equivalents line is dated ${equivalents.asOf}, the price was converted at ${view.price.fxAsOf}: one snapshot (A21 clause 6 (b))`,
         });
       }
@@ -800,6 +803,43 @@ export const ProductViewSchema = z
           code: "custom",
           path: ["tiers", index, "price", "amountMinor"],
           message: `tier \`${tier.tierKey}\` is priced at ${String(tier.price.amountMinor)}: every tier is a payable configuration`,
+        });
+      }
+    });
+    // Each tier's equivalents line covers exactly the product's tiers, and the selected tier's is
+    // the page's `price` line, the one the server prints (AC-31: the line follows the size).
+    const tierLines = view.equivalents.tiers;
+    if (
+      tierLines !== undefined &&
+      JSON.stringify(Object.keys(tierLines).sort()) !==
+        JSON.stringify(view.tiers.map((tier) => tier.tierKey).sort())
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["equivalents", "tiers"],
+        message:
+          "the per-tier equivalents lines must carry every tier and no other",
+      });
+    }
+    if (
+      JSON.stringify(tierLines?.[view.selectedTierKey]) !==
+      JSON.stringify(view.equivalents.price)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["equivalents", "tiers", view.selectedTierKey],
+        message:
+          "the selected tier's equivalents line is the page's price line: one line, one tier",
+      });
+    }
+    // One page, one currency: every add-on in the bouquet's (spec 009 AC-34; the stale-FX
+    // fallback moves both together).
+    view.addons.forEach((addon, index) => {
+      if (addon.price.currency !== currency) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["addons", index, "price", "currency"],
+          message: `add-on \`${addon.key}\` quotes ${addon.price.currency} on a page quoting ${currency}: one page, one currency (spec 009 AC-34)`,
         });
       }
     });
@@ -1193,24 +1233,31 @@ function fxStateOf(projection: PriceProjection): FxState {
 /* The non-money blocks.                                                      */
 /* -------------------------------------------------------------------------- */
 
-/** The add-on rows (AC-23): `listAddons()`'s offerable set, each priced in the destination. */
+/**
+ * The add-on rows (AC-23 as amended, AC-34): `listAddons()`'s offerable set, each priced by
+ * `addonPriceProjection()` — the one function spec 010's checkout charges an add-on line from — in
+ * the locale's currency at the page's one clock, so shown = charged and the add-ons fall back to
+ * the destination currency exactly when the bouquet does.
+ */
 async function addonLines(
   locale: LocaleCode,
   iso2: CountryIso2,
+  now: Date,
 ): Promise<readonly AddonLine[]> {
   const lines: AddonLine[] = [];
   for (const addon of await listAddons(iso2)) {
-    const price = await resolveAddonPrice({
-      addonKey: addon.key,
-      countryIso: iso2,
+    const projection = await addonPriceProjection(addon.key, iso2, locale, {
+      now,
     });
     lines.push(
       AddonLineSchema.parse({
         key: addon.key,
         nameKey: addon.nameKey,
-        price: { amountMinor: price.amountMinor, currency: price.currency },
-        vatRateBp: addon.vatRateBp,
-        vatRateText: formatPercentFromBasisPoints(addon.vatRateBp, locale),
+        price: {
+          amountMinor: projection.displayPrice.amountMinor,
+          currency: projection.displayPrice.currency,
+        },
+        vatRateBp: projection.vatRateBp,
       }),
     );
   }
@@ -1482,11 +1529,19 @@ export async function productView(
   }
   const priceLine = await priceEquivalents(selectedBase, now);
   const totalLine = await priceEquivalents(price, now);
+  // Every tier's own line, so the size the buyer picks shows its own (AC-31; TASK-228). One clock:
+  // a stale leg drops every tier's line together, because the legs are the rates, not the amount.
+  const tierLines: Record<string, PriceEquivalentsView> = {};
+  for (const tier of tiers) {
+    const undated = grid.base.get(tier.tierKey);
+    if (undated === undefined) throw new Error(`\`${tier.tierKey}\` unpriced`);
+    const line = await priceEquivalents(undated, now);
+    if (line !== null) {
+      tierLines[tier.tierKey] = { asOf: line.asOf, amounts: [...line.amounts] };
+    }
+  }
 
   const state = corridorState(iso2, locale);
-  const operations = countryConfig(iso2).operations;
-  const factsKnown = state === "live" && operations !== undefined;
-  const citiesKey = countryConfig(iso2).citiesKey;
 
   const verdict = productPageIndexability(
     locale,
@@ -1558,14 +1613,10 @@ export async function productView(
       ...(totalLine === null
         ? {}
         : { total: { asOf: totalLine.asOf, amounts: [...totalLine.amounts] } }),
+      ...(Object.keys(tierLines).length === 0 ? {} : { tiers: tierLines }),
     },
-    addons: await addonLines(locale, iso2),
+    addons: await addonLines(locale, iso2, now),
     delivery: deliveryOf(window),
-    facts: {
-      known: factsKnown,
-      ...(factsKnown ? { operations } : {}),
-      ...(factsKnown && citiesKey !== undefined ? { citiesKey } : {}),
-    },
     totals: totalsOf(grid, window),
     breadcrumb: await breadcrumbFor(
       locale,

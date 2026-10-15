@@ -16,7 +16,6 @@ import {
   resolveLocalePath,
   writeProductExistenceSummary,
 } from "@/modules/catalog";
-import { DeliveryFacts } from "@/modules/geo";
 import { LanguageAlternates } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
@@ -114,9 +113,10 @@ import {
  * `productPageExists()` rather than silently refusing.
  *
  * The product branch mounts one module page component, `ProductPage`, over one `productView()`;
- * the two blocks that page cannot import — spec 008's breadcrumb and spec 007's delivery facts —
- * are mounted here over the same view and handed in as slots (the import direction is in
- * `ProductPage`'s header). It renders the bare URL: `?tier=` / `?date=` and their form are
+ * the one block that page cannot import — spec 008's breadcrumb — is mounted here over the same
+ * view and handed in as a slot (the import direction is in
+ * `ProductPage`'s header). The PDP mounts no delivery-facts block (spec 009 §14
+ * A-founder-2026-10-14d, AC-35). It renders the bare URL: `?tier=` / `?date=` and their form are
  * TASK-128's, so this branch reads no search parameter and stays ISR.
  *
  * **Its JSON-LD** (spec 009 AC-18; TASK-130) is `productJsonLd()` over the same view: the
@@ -275,14 +275,6 @@ export default async function LocaleGrandchildRoute({
             // The product page keeps its trail on the phone and shows no back link (spec 004
             // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.
             <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
-          }
-          facts={
-            <DeliveryFacts
-              facts={product.facts}
-              locale={product.locale}
-              nameKey={product.country.nameKey}
-              prices="omit"
-            />
           }
           view={product}
         />

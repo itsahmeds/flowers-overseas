@@ -855,6 +855,7 @@
   },
   "product": {
     "addons": {
+      "included": "Included",
       "label": "Add something"
     },
     "card": {

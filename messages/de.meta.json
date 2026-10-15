@@ -2619,6 +2619,11 @@
     "reviewed": false,
     "sourceHash": "290d56a719db44fd4dbae562a1a7b6ca6384e2d6f8ad45a46f4cfd5cc44a7115"
   },
+  "product.addons.included": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ba829a98b799408899294035fa50f73daa14b204e672049da9697d5b3e8d5757"
+  },
   "product.addons.label": {
     "source": "machine",
     "reviewed": false,

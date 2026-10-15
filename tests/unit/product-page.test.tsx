@@ -38,7 +38,6 @@ import {
   productView,
 } from "../../src/modules/catalog";
 import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
-import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
@@ -115,19 +114,11 @@ function liveViewOf(
   );
 }
 
-/** The page as the route mounts it: the two slots are the route's own components. */
+/** The page as the route mounts it: the breadcrumb slot is the route's own component. */
 function mount(view: ProductView): ReactElement {
   return (
     <ProductPage
       breadcrumb={<ListingBreadcrumb crumbs={view.breadcrumb} />}
-      facts={
-        <DeliveryFacts
-          facts={view.facts}
-          locale={view.locale}
-          nameKey={view.country.nameKey}
-          prices="omit"
-        />
-      }
       view={view}
     />
   );
@@ -1187,30 +1178,67 @@ describe("no N-day freshness promise on the product page (founder, 2026-10-04)",
   });
 });
 
-describe("AC-23: the add-ons are a priced, read-only list", () => {
-  it("prints name, per-country price and own VAT rate per row, with no input element", async () => {
-    const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s currency, no VAT rate, the card "Included"', () => {
+  /** The destination currency's own spellings, which a converted page's add-on may not print. */
+  const ZLOTY = /zł|PLN/u;
+
+  it.each([
+    ["en", "EUR"],
+    ["en-gb", "GBP"],
+    ["pl", "PLN"],
+  ] as const)(
+    "%s: every add-on row prints its projected amount in %s, no %% rate, and the card reads Included",
+    async (locale, currency) => {
+      const view = await viewOf(locale, "PL", AMBER, { now: IN_WINDOW });
+      expect(view.price.displayPrice.currency).toBe(currency);
+      const html = render(view);
+      const list = block(html, "data-fo-addon-list");
+      const say = createTranslator({
+        locale,
+        messages: loadMessages(locale, ["product", "catalog"]),
+      }) as unknown as (key: string) => string;
+      const included = say("product.addons.included");
+      expect(view.addons.length).toBeGreaterThan(1);
+      // Read-only rows (§13 Q6, AC-22): nothing to tick.
+      expect(list).not.toMatch(/<(input|button|select|textarea)[\s>]/u);
+      for (const addon of view.addons) {
+        const row = readable(block(list, `data-fo-addon="${addon.key}"`));
+        // No VAT rate on any row (AC-34): no percentage at all.
+        expect(row, addon.key).not.toContain("%");
+        if (addon.key === "card") {
+          // "Included", with no digit and no currency (A-founder-2026-10-14c clause 3).
+          expect(row, addon.key).toContain(included);
+          expect(row, addon.key).not.toMatch(/\d/u);
+          expect(row, addon.key).not.toContain(
+            formatMoney({ amountMinor: 0, currency }, locale),
+          );
+          continue;
+        }
+        expect(addon.price.currency, addon.key).toBe(currency);
+        expect(row, addon.key).toContain(formatMoney(addon.price, locale));
+        if (currency !== "PLN") {
+          expect(ZLOTY.exec(row)?.[0], addon.key).toBe(undefined);
+        }
+      }
+      // The section says once that its prices include VAT, with the approved inclusive key.
+      const note = readable(block(html, "data-fo-addon-vat"));
+      expect(note).toBe(say("catalog.price.inclusive"));
+      expect(html.split("data-fo-addon-vat").length - 1).toBe(1);
+    },
+  );
+
+  it("with stale FX the bouquet and every add-on show the destination currency together", async () => {
+    const view = await viewOf("en-gb", "PL", AMBER, { now: WOMENS_DAY_WEEK });
+    expect(view.fx.state).toBe("fallback");
     const list = block(render(view), "data-fo-addon-list");
-    expect(view.addons.length).toBeGreaterThan(0);
-    expect(list).not.toMatch(/<(input|button|select|textarea)[\s>]/u);
-    for (const addon of view.addons) {
-      const row = block(list, `data-fo-addon="${addon.key}"`);
-      expect(decode(row), addon.key).toContain(
-        `>${formatMoney(addon.price, "en")}<`,
+    for (const addon of view.addons.filter((line) => line.key !== "card")) {
+      expect(addon.price.currency, addon.key).toBe("PLN");
+      expect(readable(block(list, `data-fo-addon="${addon.key}"`))).toContain(
+        formatMoney(addon.price, "en-gb"),
       );
-      expect(row, addon.key).toContain(`VAT ${addon.vatRateText}`);
     }
-    const card = view.addons.find((addon) => addon.price.amountMinor === 0);
-    expect(card?.key).toBe("card");
-    expect(decode(block(list, 'data-fo-addon="card"'))).toContain(
-      `>${formatMoney({ amountMinor: 0, currency: card?.price.currency ?? "PLN" }, "en")}<`,
-    );
   });
 });
-
-/* -------------------------------------------------------------------------- */
-/* AC-25 — one priority image with its preload; the placeholder has none.     */
-/* -------------------------------------------------------------------------- */
 
 describe("AC-25: one `priority` image with a matching preload, and none without a photograph", () => {
   it("preloads the hero, and only the hero, from the srcset it renders", async () => {
