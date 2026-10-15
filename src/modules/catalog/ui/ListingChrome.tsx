@@ -617,8 +617,9 @@ export interface ListingChip {
 /**
  * The listing's chip row (spec 008 §14 A-founder-2026-10-14c, AC-33; spec 004 AC-49; TASK-195's
  * scroller; TASK-241; the C3 artboards of PR 236): the category or occasion links of this
- * destination, above the grid. Below `md` one horizontal scroller, every chip reachable by touch
- * and keyboard; from `md` up the chips wrap. Phase 0's "category filters" are links to real pages
+ * destination, above the grid: one horizontal scroller at every width (one line of the first
+ * screen; with a thin scrollbar from `md` up), every chip reachable by touch, keyboard and
+ * pointer. Phase 0's "category filters" are links to real pages
  * (§13 Q6), never facet parameters.
  *
  * - `phoneOnly`: the shop root, whose desktop draws no chip row (its tiles are the categories),
@@ -658,7 +659,7 @@ export function ListingChipRow({
         </p>
       ) : null}
       <HorizontalScroller
-        className="md:flex-wrap md:overflow-x-visible"
+        className="md:[scrollbar-width:thin] md:pb-[6px]"
         itemsFocusable
         items={chips.map((chip) => ({
           key: chip.key,

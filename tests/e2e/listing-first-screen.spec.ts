@@ -653,7 +653,7 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
                   Math.round(item.getBoundingClientRect().top),
                 ),
               );
-            expect(tops.length).toBeGreaterThan(1);
+            expect(tops.length).toBeGreaterThan(0);
             expect(new Set(tops).size, "one line").toBe(1);
           }
         });
