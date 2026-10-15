@@ -4175,10 +4175,5 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "7c443a3d824a90c76332856e3b73f90bfcd3529910a974af196774d44b6d8bce"
-  },
-  "product.addons.included": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "ba829a98b799408899294035fa50f73daa14b204e672049da9697d5b3e8d5757"
   }
 }

@@ -1187,7 +1187,9 @@ describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s cur
         locale,
         messages: loadMessages(locale, ["product", "catalog"]),
       }) as unknown as (key: string) => string;
-      const included = say("product.addons.included");
+      // The approved `product.included`, its first letter set upright by CSS
+      // (`first-letter:uppercase`), so the row reads "Included" with no new string.
+      const included = say("product.included");
       expect(view.addons.length).toBeGreaterThan(1);
       // Read-only rows (§13 Q6, AC-22): nothing to tick.
       expect(list).not.toMatch(/<(input|button|select|textarea)[\s>]/u);
@@ -1198,6 +1200,12 @@ describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s cur
         if (addon.key === "card") {
           // "Included", with no digit and no currency (A-founder-2026-10-14c clause 3).
           expect(row, addon.key).toContain(included);
+          expect(
+            /<span[^>]*class="([^"]*)"[^>]*data-fo-addon-price="included"/u.exec(
+              block(list, 'data-fo-addon="card"'),
+            )?.[1],
+            addon.key,
+          ).toMatch(/\bfirst-letter:uppercase\b/u);
           expect(row, addon.key).not.toMatch(/\d/u);
           expect(spaced(row), addon.key).not.toContain(
             spaced(formatMoney({ amountMinor: 0, currency }, locale)),

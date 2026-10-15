@@ -9,7 +9,9 @@
  * currency together). **No row carries a VAT rate**: the list says once, under the rows, that the
  * prices include VAT and delivery (`catalog.price.inclusive`, the approved inclusive key); the
  * split by rate is spec 010's step 3. The free printed card's row reads "Included", with no
- * amount and no currency, set in leaf (`--color-included`) as v2 draws the included row.
+ * amount and no currency, set in leaf (`--color-included`) as v2 draws the included row: the
+ * founder's approved `product.included` with its first letter set upright by CSS, so the row
+ * adds no unreviewed string to the locale's review share (spec 003's 5 % gate).
  *
  * **There is no input of any kind** — no checkbox, no toggle, no button. There is no basket in
  * Phase 0 to add one to, and a tick that changes a total nobody can be charged is a worse lie than
@@ -60,10 +62,10 @@ export function AddonPriceList({
               </span>
               {free ? (
                 <span
-                  className="text-included text-end font-bold whitespace-nowrap"
+                  className="text-included inline-block text-end font-bold whitespace-nowrap first-letter:uppercase"
                   data-fo-addon-price="included"
                 >
-                  {product("addons.included")}
+                  {product("included")}
                 </span>
               ) : (
                 <bdi
