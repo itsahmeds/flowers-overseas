@@ -17,8 +17,8 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +70 |
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +29 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +77 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +28 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +75 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
@@ -31,6 +31,7 @@ task actually touches.
 | File | Purpose | Spec |
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country (spec 003 §2, §5.2, §7; `plan/03` §8;… | spec 003 |
+| `card-message.ts` | The printed card's one limit (spec 004 §14 A-founder-2026-10-14c, AC-51; spec… | spec 004 |
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates, vase, balloon, plush,… | spec 005 |
 | `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product types + 10 occasion… | spec 005 |
 | `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB euro reference rates (spec 005… | spec 005 |
@@ -49,7 +50,6 @@ task actually touches.
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
-| `honesty.ts` | Relay-language check (spec 041 §14) | spec 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2 "Everything data-gated is… | spec 004 |
@@ -159,7 +159,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 289 |
+| `tests/unit/` | 288 |
 | `tests/integration/` | 21 |
 | `tests/contract/` | 12 |
 | `tests/e2e/` | 55 |
