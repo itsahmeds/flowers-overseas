@@ -91,7 +91,7 @@ says "this is the price you will pay" and shows another tier's price.
 
 - 2026-10-15 06:35Z: view model (per-tier equivalents, add-ons by `addonPriceProjection`, no `facts`), the island's size half, bar on load; unit tests; draft PR 239.
 - 2026-10-15 06:50Z: e2e (size, card, chips), mutations watched red on `next dev`; rebased on `origin/main`.
-- 2026-10-15 07:20Z (session closing, partial on CI only): CI on `6a04ec94` had spine green, `visual` red (product and gallery baselines, expected: needs `visual:baselines`), `e2e` red only on `dev-components.spec.ts`'s add-on line (fixed in `32bf3cc3`, pushed, `ci:full` toggled), `lighthouse` still running. **Next:** read CI on the new head; if green except `visual`, the orchestrator adds `visual:baselines`; then `/review` + `/break`. The related heading `<em>` waits for PR 230.
+- 2026-10-15 07:20Z (session closing, partial on CI only): CI on `6a04ec94` had spine green, `visual` red (product and gallery baselines, expected: needs `visual:baselines`), `e2e` red only on `dev-components.spec.ts`'s add-on line (fixed in `32bf3cc3`, pushed, `ci:full` toggled), `lighthouse` still running. **Next:** read CI on the new head; if green except `visual`, the orchestrator adds `visual:baselines`; then `/review` + `/break`. The related heading `<em>` waits for PR 230. **Open:** `lighthouse` on `6a04ec94` failed `resource-summary.script.size` on `/en{,-gb}/poland/flowers/roses` at 131,517 B (budget 131,072, +445 B). That is a listing page, not the PDP. Not yet diagnosed: check whether main is also over budget, or whether the island's growth (602 → 1,133 B br) or `ui/checkout/graphemes.ts` landed in a chunk the listing shares.
 
 ## Result
 
