@@ -65,6 +65,14 @@ const protectionBypassHeaders: Record<string, string> =
         "x-vercel-set-bypass-cookie": "false",
       };
 
+// The two screenshot projects photograph a still: the page as a reader sees it once every entrance
+// has played. Below the fold, motion 12 holds a section at opacity 0 until it is scrolled into view
+// (spec 004 §14 A24 clause 9 (g); TASK-194), and a full-page shot scrolls nothing, so these two
+// projects take their frames with `reduce`, where no section waits and nothing moves. Every other
+// project runs with the browser's default, so the motions are what e2e and axe judge
+// (`tests/support/at-rest.ts` waits for them to finish; `tests/e2e/motion.spec.ts` tests them).
+const STILLS = { reducedMotion: "reduce" } as const;
+
 export default defineConfig({
   testDir: "tests",
   // Playwright resolves specs itself; see the comment in that file for why the `@/*` alias is
@@ -108,13 +116,6 @@ export default defineConfig({
     // a first visit, and the popup's own suites opt back into a first visit with
     // `NO_LOCALE_CHOICE` (`tests/support/locale-choice.ts`).
     storageState: recordedLocaleChoice(baseURL),
-    // Every suite judges the page at rest: geometry, screenshots and axe read final boxes, and the
-    // approved motions (spec 004 §14 A24 clause 9; TASK-194) would put an opening sheet or a
-    // section mid-transition under the measurement. With `reduce` nothing moves and nothing is
-    // held back (the only change left is a 120 ms fade, which `toHaveScreenshot` finishes).
-    // `tests/e2e/motion.spec.ts` and `reduced-motion.spec.ts` opt back in per page with
-    // `page.emulateMedia({ reducedMotion: "no-preference" })`.
-    contextOptions: { reducedMotion: "reduce" },
     extraHTTPHeaders: protectionBypassHeaders,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
@@ -142,6 +143,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 720 },
+        contextOptions: STILLS,
       },
     },
     {
@@ -151,6 +153,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 720 },
+        contextOptions: STILLS,
       },
     },
     {

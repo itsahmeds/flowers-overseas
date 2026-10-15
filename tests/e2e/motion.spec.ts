@@ -16,7 +16,7 @@
  *  6. reduced motion: nothing moves; the one change over time is motion 10's opacity, 120 ms or
  *     less (red with that fade at 300 ms).
  *
- * The 4.5 KB the module costs is AC-25's (`tests/e2e/client-js-budget.spec.ts`,
+ * The bytes the module costs are AC-25's (`tests/e2e/client-js-budget.spec.ts`,
  * `pnpm budget:client-js`), not this file's.
  */
 import { expect, test, type Page } from "@playwright/test";
@@ -97,18 +97,34 @@ test.describe("1. no loader in front of server HTML (A24 clause 9 (f))", () => {
         await route.continue();
       },
     );
-    // A DOM click, so the test does not wait for the held navigation to commit (a Playwright
-    // `click()` would, and the old document, with its loader, would be gone by then).
-    await page.evaluate(() => {
+    // Click and look from inside the page: a Playwright `click()` or locator waits for the held
+    // navigation to commit, and by then the old document, with its loader, is gone.
+    const during = await page.evaluate(async () => {
       document.querySelector<HTMLElement>('a[href$="?page=2"]')?.click();
+      const before = document.documentElement.getAttribute("data-fo-nav");
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      const animation = (selector: string): string | null => {
+        const element = document.querySelector(selector);
+        return element === null
+          ? null
+          : getComputedStyle(element).animationName;
+      };
+      return {
+        before,
+        nav: document.documentElement.getAttribute("data-fo-nav"),
+        bar: animation("[data-fo-nav-bar]"),
+        stem: animation('[data-fo-header-logo] [data-fo-bloom="stem"]'),
+        petal: animation('[data-fo-header-logo] [data-fo-bloom="petal"]'),
+      };
     });
-    await expect(page.locator('html[data-fo-nav="pending"]')).toHaveCount(1);
-    const state = await loaderState(page);
-    expect(state.barAnimation).toBe("fo-nav-bar");
-    const stem = await page
-      .locator('[data-fo-header-logo] [data-fo-bloom="stem"]')
-      .evaluate((element) => getComputedStyle(element).animationName);
-    expect(stem).toBe("fo-bloom-stem");
+    // Nothing at the click: the 150 ms grace comes first. Then the bloom and the bar.
+    expect(during).toEqual({
+      before: null,
+      nav: "pending",
+      bar: "fo-nav-bar",
+      stem: "fo-bloom-stem",
+      petal: "fo-bloom-petal",
+    });
     // The next document arrives clean: the mark is never in the server's HTML.
     await page.waitForURL(/page=2/u);
     await page.waitForLoadState("load");
@@ -308,24 +324,36 @@ test.describe("5. motion 3: the pending button", () => {
         await route.continue();
       },
     );
-    // A DOM click: the form submits and the held navigation does not commit while we look.
-    await button.evaluate((element) => (element as HTMLButtonElement).click());
-    await expect(button).toHaveAttribute("aria-busy", "true");
-    await expect(button).toBeDisabled();
-    expect(
-      await button
-        .locator("[data-fo-pending-bloom]")
-        .evaluate((element) => getComputedStyle(element).opacity),
-    ).toBe("1");
-    const during = await button.boundingBox();
-    expect(during?.width).toBe(before?.width);
-    await page.evaluate(() => {
+    // Submit and look from inside the page: a locator waits for the held navigation to commit,
+    // and the pending state belongs to the document that is still on screen.
+    const states = await button.evaluate(async (element) => {
+      const read = () => ({
+        busy: element.getAttribute("aria-busy"),
+        disabled: (element as HTMLButtonElement).disabled,
+        width: element.getBoundingClientRect().width,
+        bloom: getComputedStyle(
+          element.querySelector("[data-fo-pending-bloom]") ?? element,
+        ).opacity,
+        stem: getComputedStyle(
+          element.querySelector('[data-fo-bloom="stem"]') ?? element,
+        ).animationName,
+      });
+      (element as HTMLButtonElement).click();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const during = read();
       window.dispatchEvent(
         new PageTransitionEvent("pageshow", { persisted: true }),
       );
+      return { during, after: read() };
     });
-    await expect(button).not.toHaveAttribute("aria-busy", "true");
-    await expect(button).toBeEnabled();
+    expect(states.during).toEqual({
+      busy: "true",
+      disabled: true,
+      width: before?.width,
+      bloom: "1",
+      stem: "fo-bloom-stem",
+    });
+    expect(states.after).toMatchObject({ busy: null, disabled: false });
   });
 });
 
@@ -407,9 +435,27 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
     expect(reducedViolations(motions)).toEqual([]);
     // The consent sheet's fade is the one motion left, and it did run.
     expect(motions.some((motion) => motion.what === "opacity")).toBe(true);
-    expect(await page.locator("html[data-fo-motion]").count()).toBe(0);
-    expect(await page.locator('[data-fo-reveal="pending"]').count()).toBe(0);
-    expect(await page.locator("[data-fo-shimmer]").count()).toBe(0);
+    // The module still marks the page (the media query, not script, is the gate), and nothing it
+    // marked is held back or offset: every section's children and every image sit at opacity 1
+    // with no transform, and the sentence's shimmer line draws nothing.
+    expect(
+      await page.evaluate(() => {
+        const held = [
+          ...document.querySelectorAll(
+            "[data-fo-reveal] > *, img[data-fo-fade]",
+          ),
+        ]
+          .map((element) => getComputedStyle(element))
+          .filter(
+            (style) => style.opacity !== "1" || style.transform !== "none",
+          )
+          .map((style) => `${style.opacity} ${style.transform}`);
+        const shimmer = [...document.querySelectorAll("[data-fo-pick]")]
+          .map((pick) => getComputedStyle(pick, "::before").animationName)
+          .filter((name) => name !== "none");
+        return [...held, ...shimmer];
+      }),
+    ).toEqual([]);
   });
 
   test("without the preference the same page moves (the check is not vacuous)", async ({
