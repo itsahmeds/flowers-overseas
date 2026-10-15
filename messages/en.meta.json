@@ -1434,10 +1434,8 @@
   },
   "company.support.hours": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179)",
-    "reviewedAt": "2026-10-04T00:00:00Z",
-    "sourceHash": "95eebff5d4b6812feb340b5f0d0e089a1adf563212ece039c0ef151b1b230b9e"
+    "reviewed": false,
+    "sourceHash": "1ca1ae22898c745d299e6e7100e7404c3c89fdbd2b542d515b567707ffe7b283"
   },
   "company.support.label": {
     "source": "human",

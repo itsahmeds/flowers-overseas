@@ -269,10 +269,10 @@ describe("AC-9: the company block tells the truth about a company that does not 
     expect(phase0).not.toContain("tel:");
     expect(phase0).not.toContain("wa.me/12135925150?");
     expect(phase0).toContain("+1 (213) 592-5150");
-    // Founder copy batch, 2026-10-04: the support line replaces "Mon–Sat 8–20 CET".
-    expect(phase0).toContain(
-      "Message us any time, 24/7 — we reply within a few hours.",
-    );
+    // Founder ruling D4, 2026-10-14 (spec 041 §14 A-founder-2026-10-14d): the support line, with
+    // no "24/7" and no em dash; it replaced "Mon–Sat 8–20 CET" and then the 24/7 line.
+    expect(phase0).toContain("Message us on WhatsApp. We reply the same day.");
+    expect(phase0).not.toContain("24/7");
     expect(phase0).not.toContain("Mon–Sat");
   });
 

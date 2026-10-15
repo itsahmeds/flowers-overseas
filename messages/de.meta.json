@@ -1025,9 +1025,9 @@
     "sourceHash": "68f7f2ac014d6c23801cbb1fcd6c25950b940fc57b543b20b4609c61dbb5bfd7"
   },
   "company.support.hours": {
-    "source": "human",
+    "source": "machine",
     "reviewed": false,
-    "sourceHash": "95eebff5d4b6812feb340b5f0d0e089a1adf563212ece039c0ef151b1b230b9e"
+    "sourceHash": "1ca1ae22898c745d299e6e7100e7404c3c89fdbd2b542d515b567707ffe7b283"
   },
   "company.support.label": {
     "source": "human",

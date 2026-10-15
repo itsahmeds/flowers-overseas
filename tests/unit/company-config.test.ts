@@ -83,9 +83,10 @@ describe("src/config/company.ts", () => {
       "We send flowers across Europe. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person.",
     );
     expect(canvas).toContain(messages.company.description);
-    // The support line is the founder's 2026-10-04 copy batch, which postdates the artboard.
+    // The support line is the founder's ruling D4 of 2026-10-14 (spec 041 §14
+    // A-founder-2026-10-14d clause 1, AC-12 as amended), which postdates the artboard.
     expect(messages.company.support.hours).toBe(
-      "Message us any time, 24/7 — we reply within a few hours.",
+      "Message us on WhatsApp. We reply the same day.",
     );
     // The identity sentence is the registered-state clause and takes all three facts.
     expect(messages.company.operatedBy).toContain("{legalName}");

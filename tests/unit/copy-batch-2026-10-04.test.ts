@@ -32,8 +32,9 @@ const APPROVED: Readonly<Record<string, string>> = {
   "catalog.addon.card.name": "Printed card",
   "catalog.price.allIn": "all in",
   "catalog.price.equivalents": "about {amounts} at the rate of {date}",
-  "company.support.hours":
-    "Message us any time, 24/7 — we reply within a few hours.",
+  // `company.support.hours` left the batch on 2026-10-14: the founder's ruling D4 replaced it with
+  // "Message us on WhatsApp. We reply the same day." (spec 041 §14 A-founder-2026-10-14d), which
+  // ships `reviewed: false` until the founder's own `record-approval` run.
   "footer.signoff": "With love, from wherever you are.",
   // TASK-177 (PR 174): the home strings of the same batch, attested on `main`.
   "home.destinations.body":
