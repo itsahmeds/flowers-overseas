@@ -151,6 +151,9 @@ file, not the row.
 ## Carry-forwards
 
 - **From the orchestrator (2026-10-14):** spec 041 L576 "what we hold" trips the `hold` pattern; that page is not built yet (TASK-182/183), so it is not this task's, but the scan must not exempt it.
+- **From the reviewer, PR 225 round 1 (2026-10-15), for founder copy batch 4:** `content/corridors/en-gb/pl-guide.md:23` ("A shop there counts the stems … if you leave the composition to us it is handled") and `content/corridors/en-gb/ro-guide.md:29` ("Romanian shops apply the rule as routine, so leaving the composition to us settles it") still imply a shop makes the bouquet, against batch-3 call 3. No approved row covers them; they need a founder-approved reword, so they are not changed here.
+- **From the reviewer, PR 225 round 1 (E3 naming):** the exemption kind is now `messageCase` with the spec's fields (`key`, `selectCase`, `text`, `locales`, `reason`; spec 041 §14 A-founder-2026-10-14c). The rename is code-only: no copy and no exempted text changed.
+- **From the breaker, PR 225 round 1 (notes, not holes):** no catalogue-wide em dash check (U+2014 in a key outside the approved list passes); `en-gb`'s unreviewed share is 4.98 % against the 5 % cut, so one more unreviewed counted key tips it to noindex; the e2e relay scan removes `<script>`, so JSON-LD text is not scanned. The `\s` to space mutation in `another-florist` is equivalent (sentences are whitespace-collapsed before matching), so no case can tell them apart.
 
 ## Escalations
 
