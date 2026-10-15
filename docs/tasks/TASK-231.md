@@ -113,6 +113,10 @@ links (PR 226 review nit 1).
 - 2026-10-15 (finisher): rebased on `origin/main` (map regenerated); found the 360 × 640 CLS cause
   (the H1 gaining a line on the italic swap, not a region the test should exclude) and fixed it in
   `HomeHero` with e2e cases first (red at 360/375/389, then green); `ci:full` toggled on `98e46a1d`.
+- 2026-10-15 (finisher, session closing): e2e green on `5feaef5e` (1829 passed); Linux baselines
+  refreshed from run 38696273273 and committed (`ea1c1541`); `ci:full` toggled on the final head.
+  Next: read CI on that head (expect `visual` green now); remove the `visual:baselines` label;
+  `/review` and `/break`. A replacement must know: the scratchpad is shared, use a private subdir.
 
 ## Result
 
@@ -147,4 +151,33 @@ links (PR 226 review nit 1).
   suites (`home-round2`, `home`, `home-v3`, `header`, `consent-banner`, `destinations-hub`,
   `phone-chrome`, `honesty`, `links`; green but for `/dev/components` and `/ar-XB`, which a local
   production start does not serve). Visual baselines are the orchestrator's `visual:baselines`.
-- **Gates:** `pnpm gates:cheap` PASS (7 of 7).
+- **The 360 × 640 CLS (AC-39; finisher).** Cause: at 360 px the H1 is at its 50 px floor and
+  "someone far away." ran 318.4 of the 320 px the cover leaves, so whether "far away." wrapped hung
+  on sub-pixel advances. On Linux the metric-matched fallback kept it on line 2 and Fraunces pushed
+  it to line 3, and the cover's copy (bottom-anchored, `self-end`) rose 48 px when the italic
+  swapped in: one entry of 0.158 sourced on `[data-fo-hero-copy]`, outside the popup test's
+  excluded sentence. Not the test: the font swap moved real content a real Android phone sees.
+  Fix: below the artboard's 390 px the phrase takes its own line (`max-[390px]:[&_em]:block` on the
+  H1 in `HomeHero.tsx`), so the heading has three lines in either face; from 390 it follows
+  "someone" as drawn (30 px spare). No token, font or preload change. Numbers: CI before 0.158
+  (run 38646687793, `ba88aaa7`, both attempts); CI after, run 38692990715 on `5feaef5e`: the popup
+  case green, e2e 1829 passed, and the hero copy's swap at 360 logged `0` on all four homes (the
+  360 × 640 viewport added to `home.spec.ts`'s swap bounds). Locally (`next start`, fonts delayed
+  1.5 s, load average about 16) at 358 px, where macOS reproduces it: 0.15686 before, 0.00002
+  after (the popup's own "Current" tag). Tests first: `home-round2.spec.ts` "the hero H1 breaks the
+  same way before and after the swap" (320/360/375/389: phrase starts its line, three lines in
+  Fraunces and in the fallback; 390: after "someone", two lines), red at 360/375/389 before the
+  fix. Residual, not in AC-39's widths: any width where a line ends within a pixel or two of the
+  measure can still break differently on the swap (here, near the phone's one-line width).
+- **Visual baselines.** `visual:baselines` run 38696273273 on `5feaef5e`: 64 of 112 Linux PNGs
+  changed, all opened. The home sections match `home-desktop.dc.html` and `home-mobile.dc.html`
+  (order, two-column picks, stamps, "Occasions →", italic phrases, first FAQ open, chips), less
+  the ruled deviations (no prices on Popular choices, AC-53; E3 icons). Outside the home: the notice
+  bar on every page, and sub-threshold gradient or 1 px offsets on listing, product and footer
+  shots. `--verify` 112 of 112, `--check` clean.
+- **Build slot (finisher):** once, for `next build` + `next start` + the e2e suites above and the
+  CLS probe, because the swap cannot be judged without a browser; released.
+- **Gates (finisher, `ea1c1541`):** typecheck, lint, format:check, i18n:check, check:no-db and
+  codebase:map --check exit 0; tests 4171 of 4172, the one red a 5 s timeout in
+  `catalog-pricing-minor.test.ts` (untouched by this PR) at load average 35; it and the other
+  timeouts of the first run pass in isolation. CI's `test-unit` is the gate of record.
