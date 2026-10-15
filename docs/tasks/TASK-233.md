@@ -79,6 +79,9 @@ _None recorded._
 
 - 2026-10-15: `pageAlternatePaths()` (catalog), `LocaleSwitcher` `paths` prop, the `@switcher` slot and its three mounts; unit and e2e suites; one local build to prove the slot (PR 229).
 - 2026-10-15: CI red on the map size budget only; slot trimmed to four files, cap +0.5 KB, flagged.
+- 2026-10-15: TASK-237 and TASK-238 joined this PR (feature PR). The switcher now reads
+  `shownLocales()`, and `language-links.spec.ts` iterates it; see `docs/tasks/TASK-237.md` and
+  `docs/tasks/TASK-238.md`.
 
 ## Result
 

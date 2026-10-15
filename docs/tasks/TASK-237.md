@@ -70,8 +70,74 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-15: `shown` field and refinements, `shownLocales()`, the gate term, check 12, the
+  switcher and popup on `shownLocales()`; unit tests and fixtures (`b9e5967e`, PR 229).
+- 2026-10-15: e2e for the chrome rows, the popup, AC-14's crawl and T-52's Menu (`c5a39a0c`);
+  map regenerated (`722121f5`); visual baselines refreshed from the `visual-baselines` artifact.
 
 ## Result
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/229 (feature PR with TASK-233, TASK-238).
+
+**How.** `shown: boolean` is a required field of `LocaleData` and `LocaleConfigSchema`
+(`src/config/locales.data.ts`, `src/config/locales.ts`): `en`, `en-gb` true; `de`, `pl` and both
+pseudo-locales false. `LocaleConfigSchema` refuses `isPseudo ∧ shown` on `shown`;
+`LocaleRegistrySchema` refuses a hidden x-default on `N.shown`. `shownLocales()` in
+`src/modules/i18n/routing.ts` is `launchLocales().filter(shown)`, exported from the barrel (AC-3's
+pinned list +1). `LocaleSwitcher` (strip, phone Menu, footer) and `popupCandidates()` read it, so
+on `/de` and `/pl` the rows list English and English (UK) with no current entry, and a German hint
+matches no option. `isLocaleIndexable` is `isLaunch ∧ shown ∧ share ≤ 5 %`; `alternatesFor()`, the
+sitemaps and the page types read it unchanged. `pnpm i18n:check` check 12 fails, naming the locale
+and the registry file, when a locale whose primary language is not `en` is shown above 5 %
+unreviewed. Routing, `isLaunch`, `generateStaticParams`, cookie values and messages unchanged.
+
+**Tests (by AC).**
+- AC-45 / T-45: `tests/unit/locales-config.test.ts` (pinned `shown` per locale; missing field →
+  `2.shown`; shown pseudo → `4.shown`, one issue; hidden x-default → `0.shown`, one issue).
+- AC-46 / T-46: unit `i18n-switcher-same-page` (each case on the committed and on an all-shown
+  registry; `/de` lists `en`, `en-GB`, no `aria-current`), `ui-site-header`, `ui-phone-chrome`
+  (two Menu entries), `site-footer`, `app-shell` (`/de` document), `i18n-language-popup`
+  (German hint → `hint: null`, two options; the same hint on an all-shown registry → `de`). E2E:
+  `language-links.spec.ts` now iterates `shownLocales()` (ten page types, every locale that has
+  the page, `/de` and `/pl` included, 1440 strip + footer, 390 Menu + footer); `language-popup.spec.ts`
+  (German browser on `/en`: two options, no hint, no `de`/`pl` node).
+- AC-47 / T-47: `i18n-review.test.ts` fixture pair (reviewed `de`: hidden → not indexable, shown
+  → indexable); committed tree: `i18n-alternates`, `seo-sitemap`, `e2e/locale-routing.spec.ts`
+  (`/de`, `/pl` noindex, not linked from the shown roots).
+- AC-48 / T-48: `i18n-check.test.ts` check 12 (`registry-pl-shown.json` → exit 1, the one `pl`
+  line pinned; committed tree → 0); `i18n-fifth-locale.test.tsx` flips `de` (switcher gains
+  Deutsch, gate and hreflang gain `de`, `src/app/` and `src/modules/` hashed identical).
+- Spec 004 A-founder-2026-10-14e: T-52's Menu case (unit and e2e two links); AC-14's crawl
+  (`links.spec.ts` on the shown locales plus `/de`, `/pl` by URL, and no shown page links into a
+  hidden locale); `shop-reachability.spec.ts` (`/` reaches the shown homes).
+
+**Mutations watched red (unit).** Pseudo refinement deleted: 1 red (`locales-config`).
+`LocaleSwitcher` on `launchLocales()`: 11 red (switcher, header, phone chrome, app shell). `shown`
+dropped from `isLocaleIndexable`: 2 red (`i18n-review` pair, `i18n-fifth-locale` flip). Check 12
+skipping non-English locales: 1 red (`i18n-check`).
+
+**SEO fixtures.** Unchanged: `de` and `pl` were already out of hreflang and the sitemaps by their
+share; `sitemap-fixtures.test.ts` is green with no regeneration.
+
+**Gates.** `pnpm gates:cheap` on `722121f5`, run with `CI=1` (the unit project's 30 s timeout)
+because the machine's load average was 32 to 41 and three CLI-spawning cases timed out at the
+local 5 s default (all 4 963 passed under `CI=1`):
+
+```
+gates:cheap · 722121f5d9653f69f7ba067ae1334f760303570d · tree clean · base origin/main · 2026-10-15T06:31:23.735Z
+typecheck             exit 0 · 3.2 s
+lint                  exit 0 · 33.3 s
+format:check          exit 0 · 18.8 s
+i18n:check            exit 0 · 1.3 s
+check:no-db           exit 0 · 0.3 s
+codebase:map --check  exit 0 · 0.3 s
+tests                 exit 0 · 177.2 s · changed 173 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts
+RESULT: PASS
+```
+
+No local build, e2e, a11y or visual run: those are CI's (`ci:full`).
+
+**Observation (not built).** On a hidden locale's page the popup's close writes no `fo_locale`
+(the page's own code is not a candidate), so a visitor who reaches `/de` by URL sees the popup
+again on the next page. The spec is silent; it affects only URL-reached hidden pages.
