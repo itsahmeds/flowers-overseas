@@ -569,11 +569,18 @@ export function CountryListingHead({
 }: CountryListingHeadProps): ReactElement {
   return (
     <div
-      className="md:border-rule md:gap-2xl grid grid-cols-1 items-start gap-[10px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:border-b md:pt-[12px] md:pb-[16px]"
+      className="md:border-rule md:gap-2xl grid grid-cols-1 items-start gap-[8px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,7fr)_minmax(0,4fr)] md:border-b md:pt-[12px] md:pb-[8px]"
       data-fo-listing-hero
     >
       <div>
-        <Display as="h1" size="display">
+        {/* The C3 artboards' title size (PR 236): `--text-title-fluid` from `md` up, 32 px on a
+            phone, so the toolbar above the grid still leaves the first row on the first screen
+            (spec 004 rebound AC-34). */}
+        <Display
+          as="h1"
+          size="title"
+          className="max-md:text-[32px] max-md:leading-[1.08]"
+        >
           {emphasise(heading, emphasis)}
         </Display>
         {stateLine}
@@ -618,8 +625,7 @@ export interface ListingChip {
  * The listing's chip row (spec 008 §14 A-founder-2026-10-14c, AC-33; spec 004 AC-49; TASK-195's
  * scroller; TASK-241; the C3 artboards of PR 236): the category or occasion links of this
  * destination, above the grid: one horizontal scroller at every width (one line of the first
- * screen; with a thin scrollbar from `md` up), every chip reachable by touch, keyboard and
- * pointer. Phase 0's "category filters" are links to real pages
+ * screen), every chip a real link reachable by touch, keyboard and a trackpad's sideways scroll. Phase 0's "category filters" are links to real pages
  * (§13 Q6), never facet parameters.
  *
  * - `phoneOnly`: the shop root, whose desktop draws no chip row (its tiles are the categories),
@@ -659,7 +665,6 @@ export function ListingChipRow({
         </p>
       ) : null}
       <HorizontalScroller
-        className="md:[scrollbar-width:thin] md:pb-[6px]"
         itemsFocusable
         items={chips.map((chip) => ({
           key: chip.key,
@@ -685,13 +690,9 @@ export interface CountryListingResultsProps {
   /** The sort form (`ListingSortForm`). */
   readonly sortForm: ReactNode;
   /**
-   * How the toolbar sits from `md` up, as the C3 artboards draw it (PR 236):
-   * - `band` (the shop root): the count and the disclosure on the start side, the sort form on
-   *   the end side, one band;
-   * - `rows` (the country category): the count and the disclosure, then one row with the chips on
-   *   the start side and the sort form on the end side;
-   * - `column` (the country occasion): the count, the disclosure and the chips on the start side,
-   *   the sort form on the end side.
+   * Where the chip row sits from `md` up (the C3 artboards, PR 236): `band` (the shop root) shows
+   * none there, its categories being the tiles; `rows` (the country category) and `column` (the
+   * country occasion, whose row carries its drawn label) put it under the count-and-sort row.
    */
   readonly toolbar: "band" | "rows" | "column";
   /** The once-per-grid "Example arrangement" label shown below `md` (spec 008 §14 A16 (a)). */
@@ -702,35 +703,24 @@ export interface CountryListingResultsProps {
 }
 
 const TOOLBAR_PLACEMENT = {
-  band: {
-    text: "md:col-start-1 md:row-start-1",
-    chips: "md:hidden",
-    sort: "md:col-start-2 md:row-start-1",
-  },
-  rows: {
-    text: "md:col-span-2 md:row-start-1 md:border-rule md:border-b md:pb-[10px]",
-    chips: "md:col-start-1 md:row-start-2 md:pt-[12px]",
-    sort: "md:col-start-2 md:row-start-2 md:pt-[12px]",
-  },
-  column: {
-    text: "md:col-start-1 md:row-start-1",
-    chips: "md:col-start-1 md:row-start-2 md:pt-[14px]",
-    sort: "md:col-start-2 md:row-span-2 md:row-start-1 md:self-end",
-  },
+  band: { chips: "md:hidden" },
+  rows: { chips: "md:col-span-3 md:row-start-2 md:pt-[10px]" },
+  column: { chips: "md:col-span-3 md:row-start-2 md:pt-[10px]" },
 } as const;
 
 /**
  * The results block of the three country listings (spec 008 §14 A-founder-2026-10-14c, the
- * founder's C3 ruling, AC-33; TASK-241). One order in the DOM, and the same reading order on the
- * screen at every width:
+ * founder's C3 ruling, AC-33; TASK-241). One order in the DOM at every width:
  *
  * ```
  * count · disclosure · chip row · sort form  ·  label (phone) · grid  ·  fx  ·  pager
  * ```
  *
- * Below `md` each part is its own line. From `md` up `toolbar` places them as the page's artboard
- * draws it, always ending above the grid. Nothing that sorts or narrows the list follows it, and
- * the ranking disclosure is visible above the grid at every width (§8 L240).
+ * Below `md` each part is its own line, as the phone artboards draw them. From `md` up the count,
+ * the disclosure and the sort form share one row (count on the start side, sort on the end side),
+ * and the chip row, where the page shows one there, is the single scrolling line under it. All of
+ * it ends above the grid. Nothing that sorts or narrows the list follows it, and the ranking
+ * disclosure is visible above the grid at every width (§8 L240).
  */
 export function CountryListingResults({
   count,
@@ -747,43 +737,39 @@ export function CountryListingResults({
   return (
     <div data-fo-listing-results={toolbar}>
       <div
-        className="md:border-rule grid grid-cols-1 gap-y-[10px] md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-x-[32px] md:gap-y-0 md:border-b md:py-[10px]"
+        className="md:border-rule grid grid-cols-1 gap-y-[10px] md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center md:gap-x-[24px] md:gap-y-0 md:border-b md:py-[6px]"
         data-fo-listing-toolbar-band
       >
+        <p className="md:col-start-1 md:row-start-1" data-fo-listing-count>
+          <Text as="span" size="sm" tone="muted" className="md:hidden">
+            {count.phone}
+          </Text>
+          <Text as="span" size="md" className="display text-md max-md:hidden">
+            {count.desktop}
+          </Text>
+        </p>
+        {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
         <div
-          className={`md:flex md:flex-wrap md:items-baseline md:gap-x-[24px] md:gap-y-[2px] ${place.text}`}
+          className="-mt-[6px] max-w-[70ch] md:col-start-2 md:row-start-1 md:mt-0"
+          data-fo-listing-disclosure
         >
-          <p data-fo-listing-count>
-            <Text as="span" size="sm" tone="muted" className="md:hidden">
-              {count.phone}
-            </Text>
-            <Text as="span" size="md" className="display text-md max-md:hidden">
-              {count.desktop}
-            </Text>
-          </p>
-          {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
-          <div
-            className="mt-[4px] max-w-[70ch] md:mt-0"
-            data-fo-listing-disclosure
-          >
-            <Text as="p" size="sm" tone="subtle">
-              {disclosure}
-            </Text>
-          </div>
+          <Text as="p" size="xs" tone="subtle" className="md:text-sm">
+            {disclosure}
+          </Text>
         </div>
         {chips === undefined ? null : (
           <div className={`min-w-0 ${place.chips}`}>{chips}</div>
         )}
-        <div className={place.sort} data-fo-listing-sort>
+        <div className="md:col-start-3 md:row-start-1" data-fo-listing-sort>
           {sortForm}
         </div>
       </div>
       {gridLabel === undefined ? null : (
-        <div className="mt-[10px] md:hidden" data-fo-grid-provenance>
+        <div className="mt-[14px] md:hidden" data-fo-grid-provenance>
           {gridLabel}
         </div>
       )}
-      <div className="mt-[12px] md:mt-[20px]" data-fo-listing-grid-slot>
+      <div className="mt-[12px] md:mt-[16px]" data-fo-listing-grid-slot>
         {grid}
       </div>
       {fx === undefined ? null : <div className="mt-[28px]">{fx}</div>}

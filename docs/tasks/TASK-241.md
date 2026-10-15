@@ -119,6 +119,28 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   pages, and to what (for example: "the first row's photographs start inside the first viewport"),
   or must the toolbar be squeezed further (which the brief's fence and "no new words" leave little
   room for)? I have not changed T-49. Until it is ruled, CI cannot be green on this PR.
+- **E-1 update (2026-10-15, after the orchestrator's instruction to match PR 236's spacing).** The
+  toolbar now shares one row from `md` up (count · disclosure · sort form), the chip row is one
+  scrolling line under it, the H1 takes the artboards' title size (`--text-title-fluid`, 32 px on
+  the phone), the disclosure is `text-xs` on the phone, and the gaps are the drawing's (band 6 px,
+  grid 16 px). First-row price foot, build vs bound, local production build:
+
+  | Case | Before (E-1) | Now | Bound | Artboard (PR 236) |
+  |---|---|---|---|---|
+  | shop root 1280 × 800 | 843.6 | 785 | 800 | 795 (designer) |
+  | shop root 1440 × 900 | 876 | 840 | 900 | 826 |
+  | shop root 390 × 844 | 887.3 | 809 | 844 | 808 / 826 (designer) |
+  | category 1440 × 900 | 948.6 | 894 | 900 | 1328 (magazine grid, TASK-187 E-1) |
+  | **category 1280 × 800** | 891.7 | **839** | 800 | grid at 662 (designer); first row past the fold |
+  | category 390 × 844 | 887.3 | 809 | 844 | 808 |
+  | occasion 390 × 844, `items[0]` price | outside | amount line ends 838 | 844 | 786 |
+
+  **Still red: the category at 1280 × 800.** Its chip line (44 px plus 10) is the difference, and
+  the drawing does not meet the bound there either. Measuring 22 sibling chips, two rows (count
+  row, chip line) are the floor. Escalated to the orchestrator for the founder.
+  The occasion at 390 fails locally only because this machine's build fetched a fresh ECB rate,
+  so the price block carries the equivalents line (to y 894). CI builds keep the stale snapshot, and
+  there the block is the amount line, ending at 838.
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
@@ -131,10 +153,13 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   T-36's R8 cases withdrawn; unit tests amended.
 - 2026-10-15: arrangements matched to PR 236's redrawn artboards (band / rows / column); chip row a
   one-line scroller at every width; local e2e run: T-37 green, six T-49 cases red (E-1).
+- 2026-10-15: spacing matched to PR 236 (one count-and-sort row from `md`, title-size H1, phone
+  disclosure `text-xs`); five of the six T-49 cases now pass; the category at 1280 × 800 does not
+  (E-1 update).
 
 ## Result
 
-**Blocked on E-1** (the T-49 first-row bound). Built and pushed; PR 235 stays draft.
+**Blocked on E-1** (the T-49 first-row bound, now only the category at 1280 × 800). Built and pushed; PR 235 stays draft.
 
 - AC-33: count line, disclosure, chip row and sort form above the grid on the shop root, the
   country category and the country occasion, at every width; the occasion hub's destination chips

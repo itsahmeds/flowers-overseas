@@ -176,7 +176,7 @@ export function CountryOccasionPage({
         <div className={firstPage ? "md:relative" : undefined}>
           {firstPage ? (
             <div
-              className={`${BAND} grid grid-cols-1 gap-x-[48px] pt-[12px] pb-[16px] md:grid-cols-[minmax(0,1fr)_auto] md:pt-[24px] md:pb-[40px]`}
+              className={`${BAND} grid grid-cols-1 gap-x-[48px] pt-[12px] pb-[6px] md:grid-cols-[minmax(0,1fr)_auto] md:pt-[24px] md:pb-[40px]`}
               data-fo-listing-hero
               data-register={register}
             >
@@ -184,7 +184,11 @@ export function CountryOccasionPage({
                 <Eyebrow className="mb-[14px] max-md:hidden">
                   {shop("listing.eyebrow", { country })}
                 </Eyebrow>
-                <Display as="h1" size="display">
+                <Display
+                  as="h1"
+                  size="display"
+                  className="max-md:text-[32px] max-md:leading-[1.08]"
+                >
                   {emphasise(heading, country)}
                 </Display>
                 {view.country === undefined ? null : (
@@ -195,7 +199,7 @@ export function CountryOccasionPage({
                 )}
                 {/* The date: one `formatDate` value (AC-11), the reason this page exists. */}
                 <p
-                  className="text-ink-muted md:display md:text-ink mt-[10px] max-w-[44ch] text-sm md:mt-[24px] md:text-[26px] md:leading-[1.2]"
+                  className="text-ink-muted md:display md:text-ink mt-[8px] max-w-[44ch] text-sm md:mt-[24px] md:text-[26px] md:leading-[1.2]"
                   data-fo-occasion-date={date ?? ""}
                 >
                   {datedLine}
@@ -209,7 +213,7 @@ export function CountryOccasionPage({
                     {shop("occasion.dateNote", { country })}
                   </Text>
                 )}
-                <div className="mt-[10px] flex items-start gap-[32px] md:mt-[28px]">
+                <div className="mt-[8px] flex items-start gap-[32px] md:mt-[28px]">
                   {parts === undefined ? null : (
                     /* The date card: the day, month, weekday and year of that **one** value,
                        set apart (spec 004 §14 A23 clause 5; `formatDateParts`). */
