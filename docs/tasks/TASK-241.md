@@ -55,12 +55,48 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
 
 ## Escalations
 
-_None recorded._
+- **E-1 (2026-10-15, implementer): AC-33 contradicts spec 004 rebound AC-34 (T-49) on six cases.** T-49
+  (`tests/e2e/listing-first-screen.spec.ts`, "rebound AC-34") requires the whole first row of
+  priced cards inside the first viewport. With the count line, the disclosure, the chip row and the
+  sort form above the grid (AC-33), measured on a local production build (load average about 28):
+  - shop root, 1280 × 800: first-row price foot at y 843.6 (bound 800); the designer's PR 236
+    predicted about 820;
+  - shop root, 390 × 844: y 887.3 (bound 844); PR 236's artboard measures 826;
+  - country category, 1440 × 900: y 948.6 (bound 900); 1280 × 800: y 891.7 (bound 800);
+    390 × 844: y 887.3 (bound 844). PR 236 notes the category's first row was already past the
+    fold on the artboard (TASK-187 E-1);
+  - country occasion, 390 × 844: `items[0]`'s price is outside the first viewport.
+
+  All 34 T-37 cases pass, and so do listing-params, country-category and hubs. The question for the
+  founder or the spec writer: does AC-33 (the later ruling) relax AC-34's first-row bound on these
+  pages, and to what (for example: "the first row's photographs start inside the first viewport"),
+  or must the toolbar be squeezed further (which the brief's fence and "no new words" leave little
+  room for)? I have not changed T-49. Until it is ruled, CI cannot be green on this PR.
+- **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
+  as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
+  to the shop root and the category, whose forms carried it. The shop root shows its chip row below
+  `md` only (PR 236: its desktop's categories are the tiles).
 
 ## Progress
 
-_Not started._
+- 2026-10-15: draft PR 235 opened; shared `CountryListingResults` rebuilt to one order (count,
+  disclosure, chips, sort; grid; pager); `ListingChipRow` replaces `PhoneChipRow`; T-37 added,
+  T-36's R8 cases withdrawn; unit tests amended.
+- 2026-10-15: arrangements matched to PR 236's redrawn artboards (band / rows / column); chip row a
+  one-line scroller at every width; local e2e run: T-37 green, six T-49 cases red (E-1).
 
 ## Result
 
-_Pending._
+**Blocked on E-1** (the T-49 first-row bound). Built and pushed; PR 235 stays draft.
+
+- AC-33: count line, disclosure, chip row and sort form above the grid on the shop root, the
+  country category and the country occasion, at every width; the occasion hub's destination chips
+  above its grid; the pager after the grid; nothing that sorts or narrows after it. One GET form,
+  no client script, "Change the order" on the shop root and the category.
+- Tests: T-37 in `tests/e2e/listing-first-screen.spec.ts` (four pages × 390/1440 × four locales =
+  32 cases, plus a JS-off sort case); unit order cases in `catalog-category-page`,
+  `catalog-occasion-page`, `catalog-hub-pages`. Mutation: the sort form moved back under the grid
+  turns the category and occasion unit cases red (2 failed); not re-run in the browser.
+- Local expensive runs, and why: one production build in the build slot to measure the first
+  screen, because the conflict in E-1 could not be judged without it (load average about 28).
+  Visual baselines not refreshed: they wait for the E-1 ruling, since the layout may still move.
