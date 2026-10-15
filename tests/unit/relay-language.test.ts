@@ -30,10 +30,16 @@ import {
   type RelayLocale,
   relayExemptKey,
   relayMatches,
+  sentencesOf,
   withoutDecidedStrings,
 } from "../../src/config/honesty.ts";
 import { MessageMetaManifestSchema } from "../../src/modules/i18n/schemas.ts";
-import { corridorCopy } from "../support/forbidden-phrases.ts";
+import {
+  type CopyRecord,
+  corridorCopy,
+  forbiddenPhrasesIn,
+  seedCopy,
+} from "../support/forbidden-phrases.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 type Locale = (typeof LOCALES)[number];
@@ -69,7 +75,7 @@ function at(catalogue: unknown, key: string): unknown {
   return value;
 }
 
-/** A deep copy with `key` set to `value`. */
+/** A deep copy with `key` set to `value`, creating any missing namespace on the way. */
 function withValue(
   catalogue: Catalogue,
   key: string,
@@ -79,6 +85,9 @@ function withValue(
   const segments = key.split(".");
   let node = copy as Record<string, unknown>;
   for (const segment of segments.slice(0, -1)) {
+    if (typeof node[segment] !== "object" || node[segment] === null) {
+      node[segment] = {};
+    }
     node = node[segment] as Record<string, unknown>;
   }
   node[segments.at(-1) ?? ""] = value;
@@ -241,7 +250,7 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
 
   it("lists only non-buyer surfaces, quoted records and the one decided string", () => {
     expect(
-      RELAY_EXEMPT.filter((rule) => rule.kind === "decided-string"),
+      RELAY_EXEMPT.filter((rule) => rule.kind === "messageCase"),
     ).toHaveLength(1);
     for (const rule of RELAY_EXEMPT)
       expect(rule.reason.length).toBeGreaterThan(0);
@@ -250,6 +259,212 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
       leaves(CATALOGUES.en).filter(([key]) => relayExemptKey(key)),
     ).toEqual([]);
   });
+});
+
+describe("the matcher's reading rules (breaker H2 to H6, PR 225)", () => {
+  const ids = (text: string, locale: string): readonly string[] =>
+    relayMatches(text, locale).map((match) => match.id);
+
+  it("H2: strips rich-text, HTML and markdown emphasis before matching", () => {
+    expect(ids("There is no <em>florist</em> there.", "en")).toEqual([
+      "no-florist",
+    ]);
+    expect(ids("We find another <b>florist</b>.", "en")).toEqual([
+      "another-florist",
+    ]);
+    expect(ids("We find another **florist**.", "en")).toEqual([
+      "another-florist",
+    ]);
+    expect(ids("Ihre Karte ist <i>reserviert</i>.", "de")).toEqual([
+      "de-reserviert",
+    ]);
+    // The phrase-scan reader strips the same markup.
+    expect(forbiddenPhrasesIn("We are still <em>choosing</em>.")).toEqual([
+      "still choosing",
+    ]);
+  });
+
+  it("H2: a phrase planted with markup into a catalogue value is found", () => {
+    const key = "checkout.privacy.demoNotice";
+    expect(
+      catalogueFindings(
+        "en",
+        withValue(
+          CATALOGUES.en,
+          key,
+          "<b>Please use sample details.</b> If no <em>florist</em> is free, we tell you.",
+        ),
+      ),
+    ).toEqual([`en › ${key} › no-florist`]);
+  });
+
+  it("H3: an in-context verb fails beside the word for order alone, with no florist", () => {
+    expect(ids("We accepted your order.", "en")).toEqual(["accept"]);
+    expect(ids("Your order was declined.", "en-gb")).toEqual(["decline"]);
+    expect(ids("Wir haben Ihre Bestellung akzeptiert.", "de")).toEqual([
+      "de-akzeptieren",
+    ]);
+    expect(ids("Zamówienie zostało zaakceptowane.", "pl")).toEqual([
+      "pl-zaakceptowac",
+    ]);
+  });
+
+  it("H4: a blank line ends a sentence, a single line break does not", () => {
+    expect(sentencesOf("Made by our florist\n\nAccept all")).toEqual([
+      "Made by our florist",
+      "Accept all",
+    ]);
+    expect(sentencesOf("Made by our florist\n  \n Accept all")).toEqual([
+      "Made by our florist",
+      "Accept all",
+    ]);
+    expect(sentencesOf("Made by our\nflorist")).toEqual([
+      "Made by our florist",
+    ]);
+    // So a heading over a paragraph is not read with it.
+    expect(relayMatches("Made by our florist\n\nAccept all", "en")).toEqual([]);
+  });
+
+  it("H5: a phrase in a florist or admin namespace is exempt, the same phrase in a buyer key is not", () => {
+    for (const key of [
+      "forFlorists.planted.body",
+      "floristAuth.planted.body",
+      "floristInbox.planted.body",
+      "admin.planted.body",
+    ]) {
+      expect(relayExemptKey(key), key).toBe(true);
+      expect(
+        catalogueFindings("en", withValue(CATALOGUES.en, key, PLANTED)),
+        key,
+      ).toEqual([]);
+    }
+    // The namespace ends in its dot: a look-alike buyer namespace is read.
+    expect(relayExemptKey("administer.planted.body")).toBe(false);
+    expect(
+      catalogueFindings(
+        "en",
+        withValue(CATALOGUES.en, "home.planted.body", PLANTED),
+      ),
+    ).toEqual([
+      "en › home.planted.body › until-a-florist",
+      "en › home.planted.body › accept",
+    ]);
+  });
+
+  it('H6: `taken`, the `partner` stem, Polish `kwiaciar` context and "agreed to work with us"', () => {
+    expect(ids("Our florist has taken your order.", "en")).toEqual(["take"]);
+    expect(ids("We work through partnerships.", "en")).toEqual(["partner"]);
+    expect(ids("Our partners make it.", "en-gb")).toEqual(["partner"]);
+    expect(ids("Nasza kwiaciarnia odrzuciła termin.", "pl")).toEqual([
+      "pl-odrzucic",
+    ]);
+    expect(ids("Every florist we use agreed to work with us.", "en")).toEqual([
+      "agreed-to-work-with-us",
+    ]);
+    expect(ids("Shops that agree to work with us.", "en")).toEqual([
+      "agreed-to-work-with-us",
+    ]);
+  });
+
+  it("H6: word boundaries are Unicode letters, not ASCII", () => {
+    // "ß" is a letter, so "held" inside "Spaßheld" is no match.
+    expect(relayMatches("Ein Spaßheld.", "de")).toEqual([]);
+    expect(ids("Ein Held.", "de")).toEqual(["held"]);
+  });
+
+  it("H6: the decided string is cut only as a whole select case, not inside a longer keyword", () => {
+    const who = String(at(CATALOGUES.en, "home.sentence.who"));
+    const longer = who.replace(
+      "partner {my partner}",
+      "otherpartner {my partner}",
+    );
+    expect(longer).not.toBe(who);
+    expect(
+      catalogueFindings(
+        "en",
+        withValue(CATALOGUES.en, "home.sentence.who", longer),
+      ),
+    ).toEqual(["en › home.sentence.who › partner"]);
+  });
+});
+
+/** The locale a content record is read in, from its path. */
+function contentLocale(record: CopyRecord): string {
+  return (
+    /^(?:seed\/data\/copy|content\/corridors)\/([a-z-]+)\//u.exec(
+      record.id,
+    )?.[1] ?? "?"
+  );
+}
+
+/** `record id › pattern` for every relay match in content records. */
+function contentFindings(records: readonly CopyRecord[]): readonly string[] {
+  return records.flatMap((record) =>
+    relayMatches(record.text, contentLocale(record)).map(
+      (match) => `${record.id} › ${match.id}`,
+    ),
+  );
+}
+
+const SEED_LOCALES = ["en", "en-gb", "de", "pl"] as const;
+
+describe("AC-30 / T-32: every content file, every locale (breaker H1, PR 225)", () => {
+  const seed = seedCopy(SEED_LOCALES);
+  const guides = corridorCopy("");
+  const content = [...seed, ...guides];
+
+  it("reads every seed copy row in en, en-gb, de and pl, and every corridor guide", () => {
+    for (const locale of SEED_LOCALES) {
+      expect(
+        seed.filter((record) => contentLocale(record) === locale).length,
+        locale,
+      ).toBeGreaterThan(0);
+    }
+    expect(
+      seed.filter((record) => contentLocale(record) === "de").length,
+    ).toBeGreaterThan(500);
+    expect(
+      new Set(guides.map(({ id }) => id.split(" › ")[0])).size,
+    ).toBeGreaterThanOrEqual(14);
+    expect(guides.map(({ id }) => id)).toContain(
+      "content/corridors/en/de-guide.md › body",
+    );
+  });
+
+  it("gives no relay match in any seed row or guide", () => {
+    expect(contentFindings(content)).toEqual([]);
+  });
+
+  for (const [target, planted, expected] of [
+    [
+      "content/corridors/en/de-guide.md › body",
+      "If one florist declines, another florist accepts the order, and your card is held.",
+      ["another-florist", "held", "accept", "decline"],
+    ],
+    [
+      "seed/data/copy/en/products.json › FO-BQ-004 › descriptionMd",
+      PLANTED,
+      ["until-a-florist", "accept"],
+    ],
+    [
+      "seed/data/copy/de/products.json › FO-BQ-004 › descriptionMd",
+      "Bis unser Florist Ihre Bestellung akzeptiert.",
+      ["de-akzeptieren"],
+    ],
+  ] as const) {
+    it(`a phrase planted into ${target} is found, and only there`, () => {
+      const index = content.findIndex(({ id }) => id === target);
+      expect(index, target).toBeGreaterThanOrEqual(0);
+      const mutated = content.map((record, at) =>
+        at === index
+          ? { ...record, text: `${record.text}\n\n${planted}` }
+          : record,
+      );
+      expect([...contentFindings(mutated)].sort()).toEqual(
+        expected.map((id) => `${target} › ${id}`).sort(),
+      );
+    });
+  }
 });
 
 /** The founder's approval of 2026-10-14 ("3 ok"), and the em dash fix of the same day. */

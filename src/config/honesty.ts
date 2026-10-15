@@ -154,6 +154,15 @@ const EN: readonly RelayPattern[] = [
     mustMatch: "None of our florists can take this delivery.",
     mustNotMatch: "We are not taking orders yet.",
   },
+  {
+    // Plain relay wording (a florist who signed up to take our orders), named by the finisher's
+    // work order for PR 225 after the breaker's H6; context-free like "partner".
+    id: "agreed-to-work-with-us",
+    pattern: term(String.raw`agree(?:s|d|ing)?\s+to\s+work\s+with\s+us`),
+    context: "none",
+    mustMatch: "Each florist has agreed to work with us.",
+    mustNotMatch: "We work with care.",
+  },
 ];
 
 const DE: readonly RelayPattern[] = [
@@ -353,12 +362,21 @@ export interface RelayMatch {
 }
 
 /**
+ * `text` without inline markup: rich-text and HTML tags (`<b>`, `</em>`, `<br/>`) and markdown
+ * emphasis asterisks are removed, so "no <em>florist</em>" and "another **florist**" read as the
+ * phrase they render. ICU arguments (`{country}`) stay; they are data, not markup.
+ */
+export function stripMarkup(text: string): string {
+  return text.replaceAll(/<\/?[a-z][^<>]*>/giu, "").replaceAll(/\*+/gu, "");
+}
+
+/**
  * Sentences: split after `.`, `!`, `?` or `…` followed by space, and at a blank line (a paragraph
  * or block boundary). A single line break is a fold inside a sentence (YAML, markdown), so it is
- * read as a space.
+ * read as a space. Markup is stripped first (`stripMarkup`).
  */
-function sentencesOf(text: string): readonly string[] {
-  return text
+export function sentencesOf(text: string): readonly string[] {
+  return stripMarkup(text)
     .split(/(?<=[.!?…])\s+|\n[^\S\n]*\n\s*/u)
     .map((sentence) => sentence.replaceAll(/\s+/gu, " ").trim())
     .filter((sentence) => sentence !== "");
@@ -412,10 +430,11 @@ export function relayMatches(
  * One surface the relay scans do not read, with its one-line reason. Spec 041 §14 allows two
  * kinds: (a) **non-buyer surfaces** (florist, admin, founder and ops), named by message namespace
  * or route; (b) **quoted amendment records** (`specs/`, `docs/`, a legal document's dated change
- * history), named by path. The third kind is the single string the orchestrator recorded under
- * the decisions-log row of 2026-10-04 ("my partner" allowed as a who option; spec 004 §14 A22
- * clause 2): one ICU select case, in one key, in the English catalogues, which means the buyer's
- * loved one and never a florist. It exempts that exact case text, never the word.
+ * history), named by path. Kind (c), `messageCase` (spec 041 §14 A-founder-2026-10-14c), is the
+ * single string recorded under the decisions-log row of 2026-10-04 ("my partner" allowed as a who
+ * option; spec 004 §14 A22 clause 2): one ICU select case, in one key, in the English catalogues,
+ * which means the buyer's loved one and never a florist. It exempts that exact case text, never
+ * the word.
  */
 export type RelayExemption =
   | {
@@ -437,13 +456,14 @@ export type RelayExemption =
       readonly reason: string;
     }
   | {
-      readonly kind: "decided-string";
-      readonly messageKey: string;
+      readonly kind: "messageCase";
+      /** The message key that holds the ICU select. */
+      readonly key: string;
+      /** The select case keyword (syntax, never scanned). */
+      readonly selectCase: string;
+      /** The case's whole text, exactly; any other text in that case is scanned. */
+      readonly text: string;
       readonly locales: readonly string[];
-      /** The ICU select case, exactly as the catalogue holds it. */
-      readonly token: string;
-      /** The text that case renders, exactly. */
-      readonly rendered: string;
       readonly reason: string;
     };
 
@@ -489,11 +509,11 @@ export const RELAY_EXEMPT: readonly RelayExemption[] = [
       "ADRs, the decisions log, advice and task briefs quote superseded wording.",
   },
   {
-    kind: "decided-string",
-    messageKey: "home.sentence.who",
+    kind: "messageCase",
+    key: "home.sentence.who",
+    selectCase: "partner",
+    text: "my partner",
     locales: ["en", "en-gb"],
-    token: "partner {my partner}",
-    rendered: "my partner",
     reason:
       'decisions-log 2026-10-04 "\\"my partner\\" allowed as a who option" (spec 004 §14 A22 clause 2): the buyer\'s loved one, never a florist.',
   },
@@ -524,15 +544,20 @@ export function withoutDecidedStrings(
 ): string {
   return exempt.reduce((text, rule) => {
     if (
-      rule.kind !== "decided-string" ||
-      rule.messageKey !== messageKey ||
+      rule.kind !== "messageCase" ||
+      rule.key !== messageKey ||
       !rule.locales.includes(locale)
     ) {
       return text;
     }
-    const token = rule.token.replaceAll(/[{}]/gu, (brace) => `\\${brace}`);
+    const token = escapeRegExp(`${rule.selectCase} {${rule.text}}`);
     return text.replaceAll(new RegExp(`(?<=^|[\\s{}])${token}`, "gu"), " ");
   }, value);
+}
+
+/** `source` with every regular-expression metacharacter escaped. */
+function escapeRegExp(source: string): string {
+  return source.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 /** The exact rendered texts of the decided strings a locale's page may show. */
@@ -541,8 +566,8 @@ export function decidedRenderedStrings(
   exempt: readonly RelayExemption[] = RELAY_EXEMPT,
 ): readonly string[] {
   return exempt.flatMap((rule) =>
-    rule.kind === "decided-string" && rule.locales.includes(locale)
-      ? [rule.rendered]
+    rule.kind === "messageCase" && rule.locales.includes(locale)
+      ? [rule.text]
       : [],
   );
 }
