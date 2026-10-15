@@ -277,7 +277,15 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       const card = list.locator('[data-fo-addon="card"] [data-fo-addon-price]');
       await expect(card).not.toHaveText(/\d|[€£]|zł|PLN/u);
       await expect(card).not.toHaveText("");
-      if (symbol !== "zł") await expect(card).toHaveText("Included");
+      if (symbol !== "zł") {
+        // The approved "included", its first letter set upright: it reads "Included".
+        await expect(card).toHaveText(/^included$/iu);
+        expect(
+          await card.evaluate(
+            (node) => getComputedStyle(node, "::first-letter").textTransform,
+          ),
+        ).toBe("uppercase");
+      }
       // The section says once that its prices include VAT.
       await expect(page.locator("[data-fo-addon-vat]")).toHaveCount(1);
     });
