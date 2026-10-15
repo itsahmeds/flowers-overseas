@@ -142,9 +142,11 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(dated).toBeLessThan(links);
     expect(links).toBeLessThan(form);
     expect(form).toBeLessThan(grid);
+    // Named by its drawn label from `md` up (the C3 artboard).
     expect(html).toMatch(
-      /<nav aria-label="Also in Poland" data-fo-listing-chips/u,
+      /<nav aria-labelledby="listing-chips-label" data-fo-listing-chips/u,
     );
+    expect(html).toMatch(/id="listing-chips-label">Also in Poland</u);
   });
 
   it("carries the demo sentence and no purchase affordance (§13 Q8)", () => {

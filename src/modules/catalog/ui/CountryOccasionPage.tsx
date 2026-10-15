@@ -277,6 +277,7 @@ export function CountryOccasionPage({
               disclosure={shop("toolbar.disclosure")}
               chips={
                 <ListingChipRow
+                  labelFromMd
                   chips={sortBy(alsoIn, code, (chip) => chip.name)}
                   label={shop("occasion.siblingsHeading", { country })}
                 />
@@ -309,7 +310,8 @@ export function CountryOccasionPage({
                   pageCount={view.pageCount}
                 />
               }
-              sortForm={<ListingSortForm sort={view.sort} />}
+              sortForm={<ListingSortForm sort={view.sort} variant="bare" />}
+              toolbar="column"
             />
           </section>
         </div>

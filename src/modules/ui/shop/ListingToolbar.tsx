@@ -142,37 +142,58 @@ export interface ListingSortFormProps {
   readonly sort: ListingSort;
   /** The `<select>`'s id. */
   readonly id?: string;
+  /**
+   * `reorder` (default; the shop root and the country category): one row whose visible label is
+   * "Change the order" (A10), bound to the `<select>`. `bare`: the toolbar's form as the country
+   * occasion has always drawn it, "Sort by" over the `<select>` (the C3 artboards, PR 236).
+   */
+  readonly variant?: "reorder" | "bare";
 }
 
 /**
  * The listing's sort form **above the grid** (spec 008 §14 A-founder-2026-10-14c, the founder's
  * C3 ruling, AC-33; spec 004 §14 A23 Appendix A **A10**; TASK-241): the same `<form method="get">`
- * as the toolbar's, one row high, its visible label "Change the order"
- * (`shop.toolbar.reorderLabel`), which names the form for a screen reader too. The `<select>`'s
- * `<label>` shows those words and keeps "Sort by" for assistive technology, so the control's
- * accessible name contains what a sighted reader sees beside it (WCAG 2.5.3). Still no client
- * script: the submit button does the work with JavaScript off (AC-9).
+ * as the toolbar's. In the `reorder` variant its visible label is "Change the order"
+ * (`shop.toolbar.reorderLabel`), which also names the section; the `<label>` keeps "Sort by" for
+ * assistive technology, so the control's accessible name contains what a sighted reader sees
+ * (WCAG 2.5.3). On a phone the label sits over the control, from `md` up beside it. Still no
+ * client script: the submit button does the work with JavaScript off (AC-9).
  */
 export function ListingSortForm({
   sort,
   id = "listing-sort",
+  variant = "reorder",
 }: ListingSortFormProps): ReactElement {
   const t = useTranslations("shop");
+  if (variant === "bare") {
+    return (
+      <div data-fo-listing-sort-form={sort}>
+        <SortForm id={id} sort={sort} />
+      </div>
+    );
+  }
   const headingId = `${id}-heading`;
   return (
-    <section aria-labelledby={headingId} data-fo-listing-sort-form={sort}>
-      <form className="flex items-center gap-[10px]" method="get">
+    <section
+      aria-labelledby={headingId}
+      className="max-md:border-rule max-md:border-y max-md:py-[10px]"
+      data-fo-listing-sort-form={sort}
+    >
+      <form
+        className="flex flex-wrap items-center gap-x-[10px] gap-y-[6px] md:flex-nowrap md:gap-x-[12px]"
+        method="get"
+      >
         {/* The visible words are "Change the order" (A10); the `<label>` also carries "Sort by"
             for assistive technology, so the control's name holds what a sighted reader sees. */}
         <label
-          className="label text-ink-subtle max-w-[11ch] flex-none md:max-w-none"
+          className="label text-ink-subtle basis-full md:basis-auto"
           htmlFor={id}
         >
           <span id={headingId}>{t("toolbar.reorderLabel")}</span>{" "}
           <VisuallyHidden>{t("toolbar.sortLabel")}</VisuallyHidden>
         </label>
         <select
-          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 flex-1 border-[1.5px] px-[14px] md:w-auto md:min-w-[200px]"
+          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 flex-1 border-[1.5px] px-[14px] md:w-auto md:min-w-[210px] md:flex-none"
           defaultValue={sort}
           id={id}
           name="sort"

@@ -545,8 +545,19 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
               "pager",
             );
           }
+          // The shop root's desktop draws no chip row (its tiles are the categories, PR 236):
+          // the row is in the DOM, in order, and displayed below `md` only.
+          const shopRoot = url === pages[0];
+          const chipsShown = !(shopRoot && size.width >= 768);
+          if (!chipsShown) {
+            expect(layout.bottoms["chips"]?.height ?? -1, "no chip row").toBe(
+              0,
+            );
+          }
           // Boxes: every part above the grid is displayed and ends above the first card's top.
-          for (const name of expected.filter((part) => part !== "grid")) {
+          for (const name of expected.filter(
+            (part) => part !== "grid" && (chipsShown || part !== "chips"),
+          )) {
             const box = layout.bottoms[name];
             expect(box, name).toBeDefined();
             expect(box?.height ?? 0, `${name} is displayed`).toBeGreaterThan(
@@ -566,12 +577,18 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
             ]) {
               await expect(page.locator(`main ${hook}`), hook).toBeVisible();
             }
-            // The one sort control, labelled "Change the order" (A10).
+            // The one sort control: "Change the order" (A10) where the page's form has always
+            // carried it, the shop root and the country category; the country occasion keeps its
+            // "Sort by" form (the C3 artboards, PR 236).
             await expect(page.locator("main form")).toHaveCount(1);
             await expect(page.locator("main select")).toHaveCount(1);
-            await expect(
-              page.locator("main [data-fo-listing-sort-form]"),
-            ).toContainText(reorderLabel(locale));
+            const form = page.locator("main [data-fo-listing-sort-form]");
+            if (url === pages[2]) {
+              await expect(form).toBeVisible();
+              await expect(form.locator("label")).toBeVisible();
+            } else {
+              await expect(form).toContainText(reorderLabel(locale));
+            }
             // The disclosure is not clipped.
             expect(
               await page
@@ -583,7 +600,7 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
           }
           // Below `md` the chip row is one horizontal scroller: every chip on one line
           // (A16 (e), spec 004 AC-49).
-          if (!hub && size.width < 768) {
+          if (!hub && size.width < 768 && layout.order.includes("chips")) {
             const tops = await page
               .locator("main [data-fo-listing-chips] li")
               .evaluateAll((items) =>

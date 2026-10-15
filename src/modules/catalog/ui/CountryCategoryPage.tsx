@@ -183,6 +183,7 @@ export function CountryCategoryPage({
               />
             }
             sortForm={<ListingSortForm sort={view.sort} />}
+            toolbar="rows"
           />
         </section>
 
