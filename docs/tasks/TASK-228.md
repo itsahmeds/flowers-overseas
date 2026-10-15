@@ -83,12 +83,22 @@ says "this is the price you will pay" and shows another tier's price.
 
 ## Escalations
 
-_None recorded._
+- **The related heading's poppy *our order*** (folded in by the work order from TASK-231) cannot land before PR 230. It needs AC-52's marker rules: `i18n:check` tag pairs, and `record-approval` comparing the tag-stripped value so the founder's approval survives. It is not built here. It is one line (`t.rich` with `HEADING_EM` on `product.related.heading`) once PR 230 merges.
 
 ## Progress
 
-_Not started._
+- 2026-10-15 06:35Z: view model (per-tier equivalents, add-ons by `addonPriceProjection`, no `facts`), the island's size half, bar on load; unit tests; draft PR 239.
+- 2026-10-15 06:50Z: e2e (size, card, chips), mutations watched red on `next dev`; rebased on `origin/main`.
 
 ## Result
 
-_Pending._
+**PR 239** (feature PR with TASK-229 and TASK-230).
+
+- **AC-31 client half, T-34; AC-48:** each size radio carries the server's strings for that size (`data-fo-say-price`, `-label`, `-total`, `-equivalents`; `TierSelector`'s `say`). The island (`CardMessageField`, still the PDP's only island) copies the chosen size's strings into every `data-fo-tier-slot`: buy price, "The price" tier row (label and price), equivalents line, the `aria-live` total, the bar's price and caption. It computes no money. The server HTML holds one amount per place. The view model gains `equivalents.tiers`; the selected size's entry must equal `equivalents.price`. The total per size is the totals table's entry for the chosen date, or the size's own price when no date is chosen.
+- **AC-34, AC-23 as amended, T-38:** `AddonLine.price` comes from `addonPriceProjection(key, iso2, locale, { now })`, which uses the same `convertForDisplay()` as the bouquet at the page's clock. `vatRateText` is gone from the shape, so a row cannot print a rate. The schema refuses an add-on in another currency. One `catalog.price.inclusive` line sits under the rows. The card reads the approved `product.included` with `first-letter:uppercase`. A new "Included" key (`reviewed: false`) pushed `en` past spec 003's 5 % share and turned 34 SEO and i18n cases red, so it was dropped.
+- **C4 (AC-46 phone, T-51):** the bar shows from load. The scroll-timeline reveal in `globals.css` is gone. The price stays in the bar on the first screen, which differs from the artboard ("price joins the bar" once scrolled). Hiding it would shift the action and break AC-48's CLS 0. This needs a row in `docs/design/README.md`, which is outside this fence.
+- **Tests:** unit: `product-page.test.tsx` (+5 cases: say strings, slots equal the checked size, per-size equivalents, T-38 render ×3 locales, stale FX), `catalog-product-view.test.ts` (T-38 model ×3 locales, stale FX, schema refusal), `product-equivalents.test.tsx` (E-1 superseded). e2e: `product-size-card-dates.spec.ts` T-34 at 1440 and 390; `product-page.spec.ts` T-38 ×3; `product-v3.spec.ts` C4 case and reduced motion.
+- **Watched red:** unit: card as `formatMoney(0)`, add-ons back in PLN, bar slot dropped, tier row reading another size, every size's equivalents from the selected size. e2e on `next dev`: bar price pinned, tier row not following, total not following, bar hidden on the first screen. "Equivalents left on the old size" is red at unit level only, because the committed FX snapshot is stale locally and the line is absent. The e2e case covers it where FX is fresh (a deployment).
+- **Island:** 1,133 B Brotli (vite, minified, React external), up from 602, which leaves 915 B of the shared 2,048 B for TASK-129.
+- **Local expensive run** (build slot held, `next dev` on :3228, load average 28 to 40): `product-size-card-dates` (12), `product-v3`, `product-page`: 53 passed. The 3 failures were the A12 count (fixed) and `/dev/components` (404 without `ENABLE_DEV_UI`, not this change). Product a11y: 7 passed, `/ar-XB` is not served locally. Visual baselines go through the orchestrator's `visual:baselines` label.
+- **Carry-forwards:** (1) the related heading's *our order* `<em>` (TASK-231 → here) waits for PR 230's AC-52 machinery (`t.rich` + `HEADING_EM`, tag-stripped approval). Without it, the founder's approval of `product.related.heading` would be lost. It is one line after PR 230 merges. (2) To TASK-129: with a surcharged date chosen in `live`, the surcharge line and the chip fees still show the default size's fee after a size change. The total is right (totals table). This is the date half.
