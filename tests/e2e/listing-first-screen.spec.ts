@@ -787,7 +787,7 @@ test.describe('A-founder-2026-10-15c: the category\'s chips in a "Categories" bu
         // On the toolbar row: displayed, its summary the button's words, vertically level with
         // the sort form, before it in the DOM, and above the first card.
         await expect(toggle.locator("summary")).toBeVisible();
-        await expect(toggle.locator("summary")).toHaveText(CATEGORIES_LABEL);
+        await expect(toggle.locator("summary")).toContainText(CATEGORIES_LABEL);
         await expect(page.locator("main [data-fo-listing-chips]")).toBeHidden();
         const row = await page.evaluate(() => {
           const box = (query: string): DOMRect | undefined =>

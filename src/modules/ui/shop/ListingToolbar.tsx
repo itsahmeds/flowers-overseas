@@ -193,7 +193,7 @@ export function ListingSortForm({
           <VisuallyHidden>{t("toolbar.sortLabel")}</VisuallyHidden>
         </label>
         <select
-          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 flex-1 border-[1.5px] px-[14px] md:w-auto md:min-w-[210px] md:flex-none"
+          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 flex-1 border-[1.5px] px-[14px] md:w-[180px] md:flex-none"
           defaultValue={sort}
           id={id}
           name="sort"

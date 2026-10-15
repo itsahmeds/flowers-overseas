@@ -33,7 +33,6 @@ import {
   Eyebrow,
   FromPriceChip,
   HorizontalScroller,
-  Icon,
   MediaProvenanceNote,
   Text,
   TextLink,
@@ -707,13 +706,17 @@ export function ListingCategoriesToggle({
       className="group relative max-md:hidden"
       data-fo-listing-categories
     >
-      <summary className="text-ink text-ui hover:bg-surface-raised flex min-h-(--control-sm) cursor-pointer list-none items-center gap-[8px] rounded-full px-[18px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)] [&::-webkit-details-marker]:hidden">
+      <summary className="text-ink text-ui hover:bg-surface-raised flex min-h-(--control-sm) cursor-pointer list-none items-center gap-[8px] rounded-full px-[16px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)] [&::-webkit-details-marker]:hidden">
         {label}
-        <Icon
-          className="rotate-90 group-open:-rotate-90"
-          name="chevron-end"
-          size={16}
-        />
+        {/* The FAQ's `+` (`HomeFaq`): the expand affordance, `aria-hidden` because `<details>`
+            exposes the state; turned into a `×` only when open, so the closed first screen holds
+            no rotated element (AC-45). */}
+        <span
+          aria-hidden="true"
+          className="motion-fast ease-standard leading-none transition-transform group-open:rotate-45"
+        >
+          +
+        </span>
       </summary>
       <nav
         aria-label={heading}
@@ -764,7 +767,9 @@ export interface CountryListingResultsProps {
 
 const TOOLBAR_PLACEMENT = {
   band: { chips: "md:hidden" },
-  column: { chips: "md:col-span-full md:row-start-2 md:pt-[10px]" },
+  column: {
+    chips: "md:col-span-full md:row-start-3 md:pt-[4px] lg:row-start-2",
+  },
 } as const;
 
 /**
@@ -775,8 +780,9 @@ const TOOLBAR_PLACEMENT = {
  * count · disclosure · chip row · sort form  ·  label (phone) · grid  ·  fx  ·  pager
  * ```
  *
- * Below `md` each part is its own line, as the phone artboards draw them. From `md` up the count,
- * the disclosure and the sort form share one row (count on the start side, sort on the end side);
+ * Below `md` each part is its own line, as the phone artboards draw them. From `md` up the count
+ * and the sort form share one row (count on the start side, sort on the end side), the disclosure
+ * between them from `lg` and on its own line under them before;
  * the country category's chips fold into a "Categories" button on that row, before the sort form
  * (A-founder-2026-10-15c), and the occasion's chip line sits under it. All of
  * it ends above the grid. Nothing that sorts or narrows the list follows it, and the ranking
@@ -798,7 +804,7 @@ export function CountryListingResults({
   return (
     <div data-fo-listing-results={toolbar}>
       <div
-        className={`md:border-rule grid grid-cols-1 gap-y-[10px] md:items-center md:gap-x-[24px] md:gap-y-0 md:border-b md:py-[6px] ${chipsToggle === undefined ? "md:grid-cols-[auto_minmax(0,1fr)_auto]" : "md:grid-cols-[auto_minmax(0,1fr)_auto_auto]"}`}
+        className={`md:border-rule grid grid-cols-1 gap-y-[10px] md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${chipsToggle === undefined ? "md:grid-cols-[auto_minmax(0,1fr)_auto]" : "md:grid-cols-[auto_minmax(0,1fr)_auto_auto]"}`}
         data-fo-listing-toolbar-band
       >
         <p className="md:col-start-1 md:row-start-1" data-fo-listing-count>
@@ -811,7 +817,7 @@ export function CountryListingResults({
         </p>
         {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
         <div
-          className="-mt-[6px] max-w-[70ch] md:col-start-2 md:row-start-1 md:mt-0"
+          className="-mt-[6px] max-w-[70ch] md:col-span-full md:row-start-2 md:mt-0 lg:col-span-1 lg:col-start-2 lg:row-start-1"
           data-fo-listing-disclosure
         >
           <Text as="p" size="xs" tone="subtle" className="md:text-sm">
