@@ -499,6 +499,9 @@ const SENTENCE_SHIFT_BOUND = 0.001;
 const SENTENCE_VIEWPORTS = [
   { width: 1280, height: 720 },
   { width: 390, height: 844 },
+  // The language popup's 360 × 640 case (AC-39): there the H1's italic swap once added a line to
+  // the cover's copy (0.158 in CI) until the phrase took its own line below 390 (TASK-231).
+  { width: 360, height: 640 },
 ] as const;
 
 /**

@@ -124,12 +124,18 @@ export function HomeHero({
               <span data-fo-hero-eyebrow>{t("hero.eyebrow")}</span>
             </Eyebrow>
             {/* The document's one `<h1>` (AC-10): the hero step on the phone cover, the title step
-                in the desktop card (the artboards' `.t-hero` and `.t-title`). */}
+                in the desktop card (the artboards' `.t-hero` and `.t-title`).
+                Below the phone artboard's 390 px the italic phrase starts its own line: at 50 px
+                (the hero's floor) "someone far away." is 318 of the 320 px a 360 screen leaves, so
+                whether it wrapped hung on sub-pixel advances, and Fraunces and its matched
+                fallback broke it differently on Linux. The cover's copy then rose a line when the
+                italic swapped in (CLS 0.158 at 360 × 640, AC-39). From 390 it follows "someone",
+                as drawn, with 30 px to spare (TASK-231). */}
             <Display
               as={headingLevel}
               id="hero-heading"
               size="hero"
-              className="md:text-title-fluid max-md:text-on-inverse max-md:[&_em]:text-on-inverse-accent leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing)"
+              className="md:text-title-fluid max-md:text-on-inverse max-md:[&_em]:text-on-inverse-accent leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing) max-[390px]:[&_em]:block"
             >
               {t.rich("hero.heading", HEADING_EM)}
             </Display>

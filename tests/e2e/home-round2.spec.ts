@@ -192,6 +192,83 @@ test.describe("one poppy italic phrase per drawn heading (TASK-231)", () => {
   });
 });
 
+/**
+ * The H1's line breaks do not depend on which face drew them (TASK-231; AC-39's CLS on the phone
+ * cover). At 360 px the drawn break ("Flowers for / someone far away.") left the second line 318 of
+ * 320 px long, so a sub-pixel difference in advances decided whether "far away." wrapped: on Linux
+ * the metric-matched fallback kept it on line 2 and Fraunces pushed it to line 3, the bottom-anchored
+ * hero copy rose a line when the italic swapped in, and the language popup's CLS case read 0.158
+ * in CI. Below the artboard's 390 px the phrase starts its own line, so the heading has the same
+ * three lines in the fallback and in Fraunces; from 390 it follows "someone" as drawn, with 30 px to
+ * spare. "The fallback" is the heading's own stack from its first metric-matched face, which is
+ * what the browser paints before the swap. Watched red without the break: at 360 the phrase begins
+ * after "someone".
+ */
+test.describe("the hero H1 breaks the same way before and after the swap (TASK-231)", () => {
+  /** The heading's line count and where its phrase starts, in the page's face or in the fallback. */
+  async function lines(
+    page: Page,
+    face: "webfont" | "fallback",
+  ): Promise<{ count: number; phraseInset: number }> {
+    return page.evaluate((which) => {
+      const heading = document.querySelector<HTMLElement>("#hero-heading");
+      const em = heading?.querySelector<HTMLElement>("em");
+      if (heading == null || em == null) throw new Error("no hero heading");
+      if (which === "fallback") {
+        for (const node of [heading, em]) {
+          const families = getComputedStyle(node)
+            .fontFamily.split(",")
+            .map((family) => family.trim());
+          const first = families.findIndex((family) =>
+            family.includes("Fallback"),
+          );
+          if (first < 0) throw new Error("no metric-matched fallback");
+          node.style.fontFamily = families.slice(first).join(", ");
+          node.style.fontVariationSettings = "normal";
+        }
+      }
+      const lineHeight = Number.parseFloat(
+        getComputedStyle(heading).lineHeight,
+      );
+      const box = heading.getBoundingClientRect();
+      const phrase = em.getClientRects()[0];
+      if (phrase === undefined) throw new Error("the phrase is not rendered");
+      return {
+        count: Math.round(box.height / lineHeight),
+        phraseInset: phrase.left - box.left,
+      };
+    }, face);
+  }
+
+  for (const width of [320, 360, 375, 389] as const) {
+    test(`at ${String(width)}: the phrase on its own line, three lines in either face`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await open(page, "/en");
+      const web = await lines(page, "webfont");
+      expect(web.phraseInset, "the phrase starts the line").toBeLessThan(1);
+      expect(web.count).toBe(3);
+      const fallback = await lines(page, "fallback");
+      expect(fallback.phraseInset).toBeLessThan(1);
+      expect(fallback.count).toBe(web.count);
+    });
+  }
+
+  test("at 390: the phrase follows the drawn break, two lines in either face", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, "/en");
+    const web = await lines(page, "webfont");
+    expect(web.phraseInset, "after “someone”").toBeGreaterThan(100);
+    expect(web.count).toBe(2);
+    const fallback = await lines(page, "fallback");
+    expect(fallback.phraseInset).toBeGreaterThan(100);
+    expect(fallback.count).toBe(web.count);
+  });
+});
+
 test.describe("the notice bar, round 2 (TASK-232 item 1)", () => {
   // One line at 1024 on the home (QA-1 Q1-23). A page with the price claim also fits from 1440;
   // at 1024 its claims meet the four-locale switcher, which TASK-237 narrows to the shown locales
