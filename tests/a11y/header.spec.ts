@@ -88,15 +88,14 @@ test("the header's keyboard order follows the document order and stops at nothin
     );
   }
 
-  // Skip link, then the notice bar (desktop: the help line's `tel:` link and the switcher's three
-  // sibling locales), then the banner: the logo and the first category link (v2 chrome,
-  // TASK-176). Nothing unpublished is drawn, so nothing inert is a stop (§14 A20).
+  // Skip link, then the notice bar (desktop: the help line's WhatsApp link, spec 041 AC-34, and
+  // the switcher's one sibling shown locale, spec 003 §14 A-founder-2026-10-14c), then the
+  // banner: the logo and the first category link (v2 chrome, TASK-176). Nothing unpublished is
+  // drawn, so nothing inert is a stop (§14 A20).
   expect(stops).toEqual([
     "A[#main]",
-    "A[tel:+12135925150]",
+    "A[https://wa.me/12135925150]",
     "A[/en-gb]",
-    "A[/de]",
-    "A[/pl]",
     "A[/en]",
     "A[/en/poland/flowers]",
   ]);

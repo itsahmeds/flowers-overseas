@@ -67,7 +67,7 @@ import {
 } from "../../src/config/site-links.ts";
 // By path and not through the barrel: `@/modules/i18n`'s index re-exports the suggestion banner's
 // `next/dynamic` loader, which Playwright's ESM loader cannot resolve outside the Next build.
-import { localePath } from "../../src/modules/i18n/routing.ts";
+import { localePath, shownLocales } from "../../src/modules/i18n/routing.ts";
 import {
   EXCLUDED,
   HEADER_CATEGORY_HUBS,
@@ -410,13 +410,17 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
     });
   }
 
-  test("`/` lands on /en, which links every locale home at depth 1, so the shop is ≤4 clicks from the root", async ({
+  test("`/` lands on /en, which links every shown locale home at depth 1, so the shop is ≤4 clicks from the root", async ({
     request,
   }) => {
     // The per-locale bound above starts at the locale home. Since spec 003 §14 A16 `/` is one
-    // permanent 308 to `/en` (a hop, not a click), and `/en`'s switcher links every home —
-    // itself included as the current entry or not — so "≤3 from every locale home" still means
-    // "≤4 from `/`". Asserted as the exact set of homes, not "some links exist".
+    // permanent 308 to `/en` (a hop, not a click), and `/en`'s switcher links every **shown**
+    // home — itself included as the current entry or not — so "≤3 from every locale home" still
+    // means "≤4 from `/`" for the locales a visitor is offered. `/de` and `/pl` are hidden (spec 003
+    // §14 A-founder-2026-10-14c clause 6): reached by URL only, and linked from no shown page.
+    // Asserted as the exact set of homes, not "some links exist".
+    const shown = shownLocales().map((locale) => locale.code);
+    expect(shown).toEqual(["en", "en-gb"]);
     const redirect = await request.get("/", { maxRedirects: 0 });
     expect(redirect.status(), "/").toBe(308);
     expect(redirect.headers()["location"]).toMatch(/\/en$/u);
@@ -428,7 +432,7 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
       ),
     );
     expect([...homes].sort(), "locale homes linked from /").toEqual(
-      locales.map((locale) => `/${locale}`).sort(),
+      shown.map((locale) => `/${locale}`).sort(),
     );
     for (const home of homes) {
       expect((await get(request, home)).status, home).toBe(200);
