@@ -89,8 +89,17 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-15 06:35Z: card section to `.pv-card`, one 200-grapheme limit (`src/config/card-message.ts`), no facts block; unit tests.
+- 2026-10-15 06:50Z: e2e at 320/360/390/768/1440, mutations watched red.
 
 ## Result
 
-_Pending._
+**PR 239** (with TASK-228 and TASK-230).
+
+- **A21 clause 1, AC-28 look:** the `.pv-card` row is the field with its counter under it (end-aligned, `#pdp-card-message-count`) and the "Printed on our card · included" line, beside an upright white card (`PrintedCardPreview`). The card is 200 px from `md` and under the field on the phone, with `min-height: 190px`, no aspect ratio and no stage. It grows with the message, so the whole message shows and nothing is cut.
+- **AC-49:** `wrap-anywhere` on the card text and the field. At 320, 360 and 390 a 90-letter word and a long link leave `scrollWidth` equal to the viewport.
+- **AC-51, T-56:** `CARD_MESSAGE_MAX = 200` lives in `src/config/card-message.ts`. `CHECKOUT_LIMITS.cardMessage` is that constant, and `checkout.ts` re-exports it. It is not kept in `checkout.ts` because `i18n:check` check 11 forbids an indexable page from importing that file. The island counts with checkout's own `approximateGraphemes()` (no `Intl`: `fo/no-adhoc-intl`), refuses a grapheme typed at 200, and cuts a paste to 200. The `maxLength` attribute is dropped because it counts UTF-16 units. No product source holds 400.
+- **AC-35, T-39:** `ProductView.facts` and the route's `DeliveryFacts` slot are removed. The page has six sections after the buy section. The 1024 px gap (the facts column) goes with them. AC-10's "today" exemption for the facts heading is removed, so the scan is stricter.
+- **Tests:** unit: `product-card-preview.test.tsx` (T-56 ×3, closure now island + `graphemes.ts`), `product-page.test.tsx` T-39 (4 locales × 3 states). e2e: `product-size-card-dates.spec.ts` (T-56; AC-49 ×3 widths; the 1440 layout case; T-39 ×3 widths); `product-v3.spec.ts` A12 order (6 sections).
+- **Watched red:** limit 400 (unit and e2e); facts block rendered back (unit); `overflow-wrap` removed; card rotated; counter moved 140 px out; a 190 px card with `overflow: hidden` (cut with no sign). All on `next dev`.
+- Visual baselines: `visual:baselines` label (orchestrator).

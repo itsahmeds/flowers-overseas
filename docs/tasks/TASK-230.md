@@ -65,8 +65,15 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-15 06:35Z: disabled chips muted; unit test.
+- 2026-10-15 06:50Z: e2e (look and the 390 row end), mutations watched red.
 
 ## Result
 
-_Pending._
+**PR 239** (with TASK-228 and TASK-229).
+
+- **AC-7, AC-28:** every chip whose radio is disabled (all `preview` days, and the closed days in `live`) gets `bg-surface-muted` and `text-ink-subtle` (ink-3 on paper-3 is a body-text pair in the contrast manifest) plus a 1.5 px **dashed** edge, so the cue is shape as well as colour. An occasion day's dashed edge is poppy. Its reason stays in words in its accessible name. No `line-through` is used. A selectable chip keeps the card white and the solid edge.
+- **AC-49 at 390:** the row already ends on a whole chip (five 66 px chips with 8 px gaps inside the 20 px gutter). The e2e now fails if a chip's date words straddle the visible end.
+- **Tests:** unit: `product-page.test.tsx` TASK-230 (4 locales × `preview` and `live`: muted exactly when disabled, words in the name, never struck). e2e: `product-size-card-dates.spec.ts` (computed ground different from the card, dashed, no strike; the 390 row end and `scrollWidth`). AC-7's existing unit and e2e cases are unchanged and green.
+- **Watched red:** `muted = false` (unit and e2e); chips at 78 px, which cuts a label at 390 (e2e). Removing the reason words still fails AC-7's existing test (`ownReason`/`aria-labelledby`), which is unchanged.
+- No notice, caption or cutoff wording is pinned (TASK-239).
