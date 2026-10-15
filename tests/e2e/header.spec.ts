@@ -300,7 +300,8 @@ test.describe("the site header (AC-7)", () => {
 
     const switcher = page.locator("[data-fo-header-switcher] nav");
     await expect(switcher).toHaveAttribute("aria-label", "Change language");
-    await expect(switcher.locator("li")).toHaveCount(4);
+    // One entry per shown locale: English and English (UK) (spec 003 §14 A-founder-2026-10-14c).
+    await expect(switcher.locator("li")).toHaveCount(2);
     await expect(switcher.locator('[aria-current="page"]')).toHaveCount(1);
   });
 
@@ -397,10 +398,10 @@ test.describe("the site header (AC-7)", () => {
       ).filter((link) => link.rendered);
 
       // At 1 440 px the logo, the eight category links, the Send pill, the help line and the
-      // switcher's three siblings (§14 A4). At 390 px only the logo is a rendered link: the Menu
+      // switcher's one sibling shown locale (§14 A4; spec 003 §14 A-founder-2026-10-14c). At 390 px only the logo is a rendered link: the Menu
       // is closed, and its summary is measured below (§14 A24 clause 3).
       expect(measured.length, String(viewport.width)).toBe(
-        viewport.width >= XL_BREAKPOINT ? 14 : 1,
+        viewport.width >= XL_BREAKPOINT ? 12 : 1,
       );
       if (viewport.width < MD_BREAKPOINT) {
         const summary = await page.locator(MENU_SUMMARY).boundingBox();

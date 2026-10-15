@@ -24,6 +24,9 @@ const LOCALE_DOCUMENTS = [
   { path: "/pl", lang: "pl", dir: "ltr" },
 ] as const;
 
+/** The roots the switcher offers (spec 003 §14 A-founder-2026-10-14c): `/de`, `/pl` by URL only. */
+const SHOWN_PATHS: readonly string[] = ["/en", "/en-gb"];
+
 /** The x-default locale (`plan/02` §3: `x-default` → `/en`), which every 404 document declares. */
 const X_DEFAULT_LANG = "en";
 
@@ -91,19 +94,29 @@ test.describe("localised documents (AC-6)", () => {
       // Still nothing indexable until spec 007 lifts it by rule (§6, ADR-0007).
       expect(html).toContain('name="robots" content="noindex,nofollow"');
       // §6 "Internal links in/out" (TASK-035): the switcher links this locale root to the other
-      // three and marks the current one, so the Phase 0 crawl graph is `/` → every locale root →
-      // every other locale root, with no redirect anywhere in it (`plan/02` §11).
-      expect(html).toContain('aria-current="page"');
+      // **shown** roots and marks the current one when it is shown, with no redirect anywhere in
+      // the graph (`plan/02` §11). `/de` and `/pl` are hidden (spec 003 §14
+      // A-founder-2026-10-14c): their own documents list the shown roots and mark none current,
+      // and no other root links them.
+      const shown = SHOWN_PATHS.includes(path);
+      if (shown) expect(html).toContain('aria-current="page"');
+      else expect(html).not.toContain('aria-current="page"');
       for (const other of LOCALE_DOCUMENTS.filter(
         (document) => document.path !== path,
       )) {
-        expect(html, `${path} → ${other.path}`).toContain(
-          `href="${other.path}"`,
-        );
+        if (SHOWN_PATHS.includes(other.path)) {
+          expect(html, `${path} → ${other.path}`).toContain(
+            `href="${other.path}"`,
+          );
+        } else {
+          expect(html, `${path} ↛ ${other.path}`).not.toContain(
+            `href="${other.path}"`,
+          );
+        }
       }
-      // The current locale is a `<span aria-current="page">`, so the *switcher* does not link
-      // this URL. Spec 004's masthead lockup does (AC-7), and it is the only one that may: the
-      // document carries exactly one `href` to its own path.
+      // The current locale is a `<span aria-current="page">` (or absent, when hidden), so the
+      // *switcher* does not link this URL. Spec 004's masthead lockup does (AC-7), and it is the
+      // only one that may: the document carries exactly one `href` to its own path.
       expect(html.match(new RegExp(`href="${path}"`, "g")), path).toHaveLength(
         1,
       );
