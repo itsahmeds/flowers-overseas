@@ -356,13 +356,36 @@ Not applied:
 
 ## Progress
 
+- 2026-10-15 (finisher): breaker holes H1 to H6 closed with tests watched red; `messageCase` rename; rebased onto main; visual diffs read; baselines refreshed.
+
 - 2026-10-14: copy, de/pl drafts, glossary, `src/config/honesty.ts`, unit and e2e scans committed and pushed; blocked on E1 (founder's record run) and E2 (map budget).
 - 2026-10-15: the founder's record script `.claude/state/record-approval-226.py` (not committed; tested on a throwaway worktree, where it reached APPROVE and made the E1 cascade green, leaving only the map budget, E2); `valentines` loses its em dash so it can be recorded; the task-226 pins accept the record. Batch-3 proposals in `.claude/state/relay-copy-batch-3.md` (89 rows).
 - 2026-10-14: batch 2 (R2 to R24) applied where its text was found and passes the gates; the rest is recorded in E7. Every changed key and field is listed in Result.
 
 ## Result
 
-PR 225 (draft), branch `task/TASK-226-buyer-copy-no-relay`. Status `blocked` on E1 and E2.
+PR 225, branch `task/TASK-226-buyer-copy-no-relay`, status `in_review`. E1 is closed by the founder's record commit, E2 by the 20 KB map cap on main; nothing is blocked.
+
+### Round-1 finish (2026-10-15): the breaker's holes, each watched red
+
+All in `tests/unit/relay-language.test.ts` (121 cases, green). Each mutation was applied to the committed tree, the file run, then reverted.
+
+| Hole | Test | Mutation that turns it red |
+|---|---|---|
+| H1 | "AC-30 / T-32: every content file, every locale" › "gives no relay match in any seed row or guide" (plus three planted cases) | the breaker's sentence appended to `content/corridors/en/de-guide.md`; the same sentence in `seed/data/copy/en/products.json` FO-BQ-004; "Florysta odrzucił zamówienie." in the `pl` FO-BQ-004 row: 4 red each |
+| H2 | "H2: strips rich-text, HTML and markdown emphasis before matching", "H2: a phrase planted with markup into a catalogue value is found" | `stripMarkup` returns its input: 2 red |
+| H3 | "H3: an in-context verb fails beside the word for order alone, with no florist" | the `order` branch of `inContext` returns false: 1 red |
+| H4 | "H4: a blank line ends a sentence, a single line break does not" | the blank-line alternative dropped from `sentencesOf`: 1 red |
+| H5 | "H5: a phrase in a florist or admin namespace is exempt, the same phrase in a buyer key is not" | `relayExemptKey` always false: 1 red |
+| H6 | "H6: `taken`, the `partner` stem, Polish `kwiaciar` context and \"agreed to work with us\"" | `taken` removed from `take`; the stem dropped from en `partner`; `kwiaciar` dropped from the pl context; the new `agreed-to-work-with-us` pattern broken: 1 red each (2 for the last, its self-test too) |
+| H6 | "H6: word boundaries are Unicode letters, not ASCII" | `LETTER` set to `[a-z0-9_]`: 1 red |
+| H6 | "H6: the decided string is cut only as a whole select case, not inside a longer keyword" | the lookbehind dropped from `withoutDecidedStrings`: 1 red |
+
+- The scan reads every seed row in `en`, `en-gb`, `de` and `pl` and every corridor guide (`corridorCopy("")`, `seedCopy([...])`). No approved text is flagged by the new pattern or by markup stripping.
+- `forbiddenPhrasesIn` strips the same markup (`stripMarkup` from `src/config/honesty.ts`).
+- The `\s` to space mutation in `another-florist` is equivalent: sentences are whitespace-collapsed before matching, so no case can tell them apart.
+- `RELAY_EXEMPT` kind (c) renamed `messageCase` with the spec's fields; code only.
+- The branch was rebased onto `origin/main` (0e19e051); `git range-diff` shows every commit unchanged except `TASKS.md` context lines, and the founder's record commit is byte-identical (author Ahmed).
 
 - **AC-51 (spec 010), catalogue half:** `tests/unit/relay-language.test.ts`, 94 cases, green. Mutation: `messages/pl.json` `home.howItWorks.make.title` set back to "A florist a few streets away accepts it." turns 3 cases red ("`pl` gives no relay match outside RELAY_EXEMPT": `expected [ Array(1) ] to deeply equal []`). Reverted.
 - **AC-30 (spec 041), site-wide half:** `tests/e2e/relay-scan.spec.ts`, 22 documents (home, product, country shop, category and occasion in en, en-gb, de and pl; the guide in en and en-gb, because de/pl have none). It reads body text plus `alt`/`aria-label`/`title`/meta. The planted cases put a phrase into one page's text and one `alt` and need the same read to fail. CI runs it; no build slot was taken. A real-page mutation (a key put back, then rebuilt) needs the build slot, which the orchestrator has to grant.
