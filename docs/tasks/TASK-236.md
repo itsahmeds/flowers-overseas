@@ -34,6 +34,7 @@ rulings: it unblocks PRs 180 (TASK-101), 224 (TASK-024) and 225 (TASK-226), each
 
 ## Carry-forwards
 
+- **Breaker hole accepted by the reviewer (PR 233, 2026-10-15):** "HOLE 1 ACCEPTABLE: the DoD mutates the assertion's subject, and the subject here (the committed map's size) is caught: the breaker padded the map to 20,481 B and the size-budget case went red. Deleting or weakening the assertion line is deleting the test, which every test in the repo survives; the suggested helper only moves the same deletable call one level down, and a meta-test of the test file would be a gate on a gate. The cap value, the byte measure and the predicate are each pinned by sibling cases the breaker watched go red."
 - **From the founder's rulings (PR 227, 2026-10-14):** after this merges, the orchestrator tells
   PRs 180, 224 and 225 to rebase and regenerate the map with `pnpm codebase:map` (never a hand
   merge).
