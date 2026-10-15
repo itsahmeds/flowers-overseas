@@ -131,7 +131,9 @@ root, 5 s timeout) timed out locally under that load and touches nothing in this
 stood at 17 375 B, 33 B under the 17 KB cap, and any new route file overflows it. With the
 component moved into the catalogue module and the home on the slot default, four route lines
 remain (map 17 751 B); the cap is now 17.5 KB, with the note beside TASK-200's. TASK-095's
-compression is still the remedy.
+compression is still the remedy. **Superseded on rebase (orchestrator, 2026-10-15):** TASK-236
+(PR 233) set the cap to 20 KB per spec 001 A21, so this branch's cap change was dropped and the
+test is main's; the regenerated map is 17 966 B.
 
 **Spec gaps (in the PR).** Spec 003 §2 L79 / §5.3 L194 has no AC id. The phone menu's backdrop,
 tap-outside close, focus containment and close label stay out (QA-4 #8, QA-4b E02, QA-3 D-16).
