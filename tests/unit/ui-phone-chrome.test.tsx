@@ -49,6 +49,8 @@ import { SegmentedControl } from "../../src/modules/ui/primitives/SegmentedContr
 import { StickyActionBar } from "../../src/modules/ui/primitives/StickyActionBar.tsx";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
+/** The locales the Menu offers: `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c). */
+const SHOWN: readonly string[] = ["en", "en-gb"];
 
 async function listingHrefsFor(
   locale: (typeof LOCALES)[number],
@@ -165,22 +167,39 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
     }
   });
 
-  it("holds Send flowers, the four-language switcher as spec 003 renders it, the currency chip and the help line", () => {
+  it("holds Send flowers, the shown locales' switcher as spec 003 renders it, the currency chip and the help line", () => {
     for (const locale of LOCALES) {
       const menu = menuOf(renderHeader(locale));
       const hrefs = hrefsOf(menu);
       expect(hrefs, locale).toContain(headerSendHref(locale));
-      expect(hrefs, locale).toContain(`tel:${COMPANY.contact.phoneE164}`);
-      for (const other of LOCALES.filter((code) => code !== locale)) {
+      // Spec 041 §14 A-founder-2026-10-14d (AC-34): the help line opens WhatsApp, never `tel:`.
+      expect(hrefs, locale).toContain(
+        `https://wa.me/${COMPANY.contact.phoneE164.slice(1)}`,
+      );
+      expect(
+        hrefs.filter((href) => href.startsWith("tel:")),
+        locale,
+      ).toEqual([]);
+      // Spec 004 §14 A-founder-2026-10-14e (T-52's Menu case): the language links of
+      // `shownLocales()`, today English and English (UK), and no hidden locale.
+      for (const other of SHOWN.filter((code) => code !== locale)) {
         expect(hrefs, `${locale} → ${other}`).toContain(
           localePath(other, "home"),
         );
       }
       // Spec 003 AC-3: the switcher's own markup, mounted, not restyled at the source.
-      const switcher = menu.slice(menu.indexOf("data-fo-menu-switcher"));
+      const switcher = menu.slice(
+        menu.indexOf("data-fo-menu-switcher"),
+        menu.indexOf("</nav>", menu.indexOf("data-fo-menu-switcher")),
+      );
       expect(switcher).toMatch(/<nav aria-label="[^"]+"><ul><li>/u);
-      expect([...switcher.matchAll(/<li>/g)].length).toBeGreaterThanOrEqual(4);
-      expect(switcher).toContain('aria-current="page"');
+      expect([...switcher.matchAll(/<li>/g)], locale).toHaveLength(2);
+      expect(switcher).not.toMatch(/(?:hrefLang|lang)="(?:de|pl)"/u);
+      if (SHOWN.includes(locale)) {
+        expect(switcher).toContain('aria-current="page"');
+      } else {
+        expect(switcher).not.toContain('aria-current="page"');
+      }
       // AC-8: the same text and label as the strip's chip.
       const strip = tagWith(renderHeader(locale), "data-fo-header-currency");
       const chip = tagWith(menu, "data-fo-menu-currency");
@@ -202,9 +221,11 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
         /<(?:a\s[^>]*|[a-z]+\s[^>]*aria-current="[^"]*"[^>]*)>/gu,
       ),
     ].map((match) => ({ tag: match[0], at: match.index }));
-    // Eight links, Send, three sibling locales, the current locale, the help line.
-    expect(elements).toHaveLength(8 + 1 + 3 + 1 + 1);
-    expect(elements.filter(({ tag }) => tag.includes("tel:"))).toHaveLength(1);
+    // Eight links, Send, one sibling shown locale, the current locale, the help line.
+    expect(elements).toHaveLength(8 + 1 + 1 + 1 + 1);
+    expect(
+      elements.filter(({ tag }) => tag.includes('href="https://wa.me/')),
+    ).toHaveLength(1);
     expect(
       elements.filter(({ tag }) => tag.includes("aria-current")),
     ).toHaveLength(1);

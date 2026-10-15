@@ -6,11 +6,11 @@
  * `chrome-mobile.dc.html`: paper-2, the third and last airmail edge on its top (A21 clause 2,
  * `airmail-edge-footer`), the sign-off, four columns — about (the logo and
  * `company.description`), the link columns the registry publishes (`Sending` today), Help &
- * WhatsApp (the `tel:` number and the hours) and Payment — and the fine row with the language list
+ * WhatsApp (the number, opening WhatsApp, and the support line) and Payment — and the fine row with the language list
  * and the "Cookie settings" control. One column on mobile.
  *
  * **Zero client JavaScript.** A synchronous Server Component: every link is an `<a>`, and the
- * language list is spec 003's `LocaleSwitcher` (four plain links), laid out from a wrapper.
+ * language list is spec 003's `LocaleSwitcher` (one plain link per shown locale), laid out from a wrapper.
  *
  * **What it is allowed to say**, each enforced by data rather than by this file:
  *
@@ -238,12 +238,12 @@ export function SiteFooter({
             />
           ))}
 
-          {/* Help & WhatsApp: one number, dialled from `company.ts`, and its hours. */}
+          {/* Help & WhatsApp: one number from `company.ts`, opening WhatsApp, and the support line. */}
           <div>
             <h2 className={HEADING}>{label(company.contact.labelKey)}</h2>
             <ul className="gap-xs m-0 grid list-none p-0">
               <li>
-                <a href={company.contact.phoneHref} className={COLUMN_LINK}>
+                <a href={company.contact.helpHref} className={COLUMN_LINK}>
                   {company.contact.phoneDisplay}
                 </a>
               </li>

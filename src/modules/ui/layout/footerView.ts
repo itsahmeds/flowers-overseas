@@ -21,7 +21,12 @@
  * (`tradingName`, `displayName`, `phoneDisplay`), and the component resolves the keys —
  * `plan/03` §5 and `CLAUDE.md`'s no-literal rule apply to the projection as much as to the JSX.
  */
-import { type Company, COMPANY, isCompanyRegistered } from "@/config/company";
+import {
+  type Company,
+  COMPANY,
+  isCompanyRegistered,
+  whatsappHref,
+} from "@/config/company";
 import { anyDeliveryDatesOpen } from "@/config/countries";
 import {
   availablePaymentMethods,
@@ -70,7 +75,8 @@ export interface FooterCompanyView {
     readonly labelKey: string;
     readonly hoursKey: string;
     readonly phoneDisplay: string;
-    readonly phoneHref: string;
+    /** The help channel: `https://wa.me/…`, never `tel:` (spec 041 AC-34). */
+    readonly helpHref: string;
   };
   /** Present **only** while `company.registered` is true (AC-9). */
   readonly identity?: CompanyIdentityView;
@@ -195,7 +201,7 @@ function companyView(company: Company, registered: boolean): FooterCompanyView {
       labelKey: company.contact.labelKey,
       hoursKey: company.contact.hoursKey,
       phoneDisplay: company.contact.phoneDisplay,
-      phoneHref: `tel:${company.contact.phoneE164}`,
+      helpHref: whatsappHref(company.contact),
     },
   } as const satisfies Omit<FooterCompanyView, "identity">;
   const identity = companyIdentity(company, registered);

@@ -56,6 +56,8 @@ import { dayCountIn } from "../support/day-count.ts";
 import { SiteHeader } from "../../src/modules/ui/layout/SiteHeader.tsx";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
+/** The locales the switcher offers: `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c). */
+const SHOWN: readonly string[] = ["en", "en-gb"];
 
 /** Every site-link id the header draws, typed so `siteLink()` needs no cast. */
 const headerLinkIds: readonly SiteLinkId[] = [
@@ -355,22 +357,24 @@ describe("the rendered header (AC-7, AC-14)", () => {
       const internal = hrefs(html).filter((href) => href.startsWith("/"));
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
 
-      // Internal: the lockup, the Send pill, the switcher's three sibling locales and the
-      // category row — and nothing else: no account item, no `For florists`, no search (AC-14,
-      // §14 A20).
+      // Internal: the lockup, the Send pill, the switcher's sibling shown locales (`en`, `en-gb`;
+      // spec 003 §14 A-founder-2026-10-14c) and the category row — and nothing else: no account
+      // item, no `For florists`, no search (AC-14, §14 A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
           `${localePath(locale, "home")}#${SEND_ANCHOR}`,
-          ...LOCALES.filter((other) => other !== locale).map((other) =>
+          ...SHOWN.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
           ...(EXPECTED_ROW[locale] ?? []).map(([, href]) => href),
         ].toSorted(),
       );
-      // External: the help line, dialled from the one E.164 number in `company.ts` (the v2
-      // artboards draw the `tel:` link only).
-      expect(external).toEqual([`tel:${COMPANY.contact.phoneE164}`]);
+      // External: the help line, opening WhatsApp on the one E.164 number in `company.ts`, with
+      // no query and never `tel:` (spec 041 §14 A-founder-2026-10-14d, AC-34).
+      expect(external).toEqual([
+        `https://wa.me/${COMPANY.contact.phoneE164.slice(1)}`,
+      ]);
 
       // Every keyed item is an `<a>` to its page — not one `<span>` dressed as an entry.
       const items = headerItems(html);
@@ -470,11 +474,16 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect([...html.matchAll(/<details\b/g)]).toHaveLength(1);
   });
 
-  it("hosts spec 003's `LocaleSwitcher` unchanged: four entries, the current one not a link", () => {
-    const html = withoutMenu(render("de"));
+  it("hosts spec 003's `LocaleSwitcher` unchanged: one entry per shown locale, the current one not a link", () => {
+    const html = withoutMenu(render("en-gb"));
     expect(html).toContain("data-fo-header-switcher");
     expect(html).toContain('aria-current="page"');
-    expect([...html.matchAll(/<li>/g)]).toHaveLength(4);
+    expect([...html.matchAll(/<li>/g)]).toHaveLength(2);
+    // On a hidden locale's page, reached by URL, the same two entries and neither is current
+    // (spec 003 §14 A-founder-2026-10-14c clause 2).
+    const hidden = withoutMenu(render("de"));
+    expect([...hidden.matchAll(/<li>/g)]).toHaveLength(2);
+    expect(hidden).not.toContain('aria-current="page"');
   });
 
   it("puts the switcher and the currency in the notice bar, not in the banner (§14 A4)", () => {
@@ -504,8 +513,11 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(bar).toContain("max-lg:[&amp;&gt;div]:flex-col");
     expect(bar).not.toContain("max-lg:[&amp;&gt;div&gt;div]:hidden");
     // … and only the help line steps out of it there (the footer carries the number).
-    const tel = html.indexOf(`href="tel:${COMPANY.contact.phoneE164}"`);
-    expect(tagAt(html, html.lastIndexOf("<span", tel))).toContain(
+    const help = html.indexOf(
+      `href="https://wa.me/${COMPANY.contact.phoneE164.slice(1)}"`,
+    );
+    expect(help).toBeGreaterThan(-1);
+    expect(tagAt(html, html.lastIndexOf("<span", help))).toContain(
       "max-lg:hidden",
     );
     const switcher = html.indexOf("data-fo-header-switcher");

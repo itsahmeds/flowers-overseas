@@ -32,10 +32,14 @@ import { NextIntlClientProvider } from "next-intl";
 
 import type { LocaleConfig } from "../../src/config/locales.ts";
 import { alternatesFor } from "../../src/modules/i18n/alternates.ts";
+import { CANONICAL_HOST, sitemapLocales } from "../../src/modules/seo";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
 import {
   type MessageNamespace,
+  type MessageSource,
   loadMessages,
+  repoMessageSource,
+  withMessageSource,
 } from "../../src/modules/i18n/messages.ts";
 import {
   localeRegistryOf,
@@ -88,6 +92,8 @@ const FRENCH: LocaleConfig = {
   nativeName: "Français",
   dir: "ltr",
   isLaunch: true,
+  // Spec 003 §14 A-founder-2026-10-14c: `shown` is required; a fake launch locale states it.
+  shown: true,
   // TASK-042: a pseudo-locale is a registry flag now; a fake launch locale states it.
   isPseudo: false,
   fallbackCode: "en",
@@ -203,13 +209,13 @@ describe("a fifth locale is data (AC-31)", () => {
 
     expect(html).toContain('lang="fr" hrefLang="fr">Français</a>');
     expect(html).toContain('<span class="ms-1" data-beta="true">Beta</span>');
-    // `en` and `en-gb` are reviewed, so exactly the three unreviewed locales are marked — **per
-    // switcher**. TASK-049 mounts `LocaleSwitcher` a second time, in the footer colophon's
-    // language list, so a locale document renders it twice until TASK-053 drops the placeholder
-    // one from the home page; the ratio is what this asserts, not the raw count.
+    // `en` and `en-gb` are reviewed and `de`/`pl` are hidden (spec 003 §14
+    // A-founder-2026-10-14c), so exactly the one shown unreviewed locale is marked — **per
+    // switcher**. The header strip, the phone Menu and the footer each mount `LocaleSwitcher`, so
+    // the ratio is what this asserts, not the raw count.
     const switchers = html.match(/aria-label="Change language"/g)?.length ?? 0;
     expect(switchers).toBeGreaterThan(0);
-    expect(html.match(/data-beta="true"/g)).toHaveLength(3 * switchers);
+    expect(html.match(/data-beta="true"/g)).toHaveLength(switchers);
   });
 
   it("claims to be nobody's alternate while it is unreviewed", async () => {
@@ -244,5 +250,100 @@ describe("a fifth locale is data (AC-31)", () => {
   it("leaves the static registry exactly as it was", () => {
     expect(generateStaticParams()).toHaveLength(4);
     expect(isLocaleIndexable("fr")).toBe(false);
+  });
+});
+
+/**
+ * AC-48 / T-48's integration half (spec 003 §14 A-founder-2026-10-14c clause 4): showing a hidden
+ * locale again is a data flip. `de` with every key reviewed, then `shown: true` in a fixture
+ * registry: the switcher gains its link and `isLocaleIndexable("de")` turns true, and no file under
+ * `src/app/` or `src/modules/` changes — the AC-31 harness above, applied to `shown`.
+ */
+describe("showing `de` again is data (AC-48)", () => {
+  const reviewedDe: MessageSource = {
+    catalogue: (locale) => repoMessageSource.catalogue(locale),
+    meta: (locale) => {
+      const meta = repoMessageSource.meta(locale);
+      if (locale !== "de" || meta === undefined) return meta;
+      return Object.fromEntries(
+        Object.entries(meta).map(([key, record]) => [
+          key,
+          {
+            ...record,
+            source: "human" as const,
+            reviewed: true,
+            reviewedBy: "native reviewer",
+            reviewedAt: "2026-10-15T00:00:00Z",
+          },
+        ]),
+      );
+    },
+  };
+  const deShown = (shown: boolean) =>
+    localeRegistryOf(
+      staticLocaleRegistry
+        .list()
+        .map((locale) =>
+          locale.code === "de" ? { ...locale, shown } : locale,
+        ),
+    );
+
+  async function underFlip<T>(
+    shown: boolean,
+    body: () => T | Promise<T>,
+  ): Promise<T> {
+    resetReviewCache();
+    try {
+      return await withLocaleRegistry(deShown(shown), () =>
+        withMessageSource(reviewedDe, body),
+      );
+    } finally {
+      resetReviewCache();
+    }
+  }
+
+  it("adds the German link to the switcher and makes `de` indexable, with no file changed", async () => {
+    const before = {
+      app: manifest("src/app"),
+      modules: manifest("src/modules"),
+    };
+    const GERMAN_LINK = 'lang="de" hrefLang="de">Deutsch</a>';
+
+    const observe = async () => ({
+      html: await renderLocaleDocument("en"),
+      indexable: isLocaleIndexable("de"),
+      hreflang: alternatesFor(
+        { pageType: "home" },
+        { baseUrl: `https://${CANONICAL_HOST}` },
+      ).map((page) => page.url.slice(`https://${CANONICAL_HOST}/`.length)),
+      sitemaps: sitemapLocales({
+        environment: "production",
+        siteUrl: `https://${CANONICAL_HOST}`,
+      }),
+    });
+    const hidden = await underFlip(false, observe);
+    const shown = await underFlip(true, observe);
+
+    // Hidden: a fully reviewed `de` is still offered nowhere and indexed nowhere (AC-47).
+    expect(hidden.indexable).toBe(false);
+    expect(hidden.html).not.toContain(GERMAN_LINK);
+    expect(hidden.hreflang).toEqual(["en", "en-gb"]);
+    expect(hidden.sitemaps).toEqual(["en", "en-gb"]);
+    // Shown: the same tree, one flag apart.
+    expect(shown.indexable).toBe(true);
+    expect(shown.html).toContain(GERMAN_LINK);
+    expect(shown.hreflang).toEqual(["en", "en-gb", "de"]);
+    // The sitemaps read the same gate; `de` has no published corridor guide, so no German URL
+    // is indexable yet and the index still announces the English locales only.
+    expect(shown.sitemaps).toEqual(["en", "en-gb"]);
+    expect({
+      app: manifest("src/app"),
+      modules: manifest("src/modules"),
+    }).toEqual(before);
+  });
+
+  it("leaves the static registry hiding `de` afterwards", () => {
+    expect(staticLocaleRegistry.get("de")?.shown).toBe(false);
+    expect(isLocaleIndexable("de")).toBe(false);
   });
 });

@@ -83,6 +83,7 @@ export {
   type ParsedPath,
   routableLocale,
   routableLocaleCodes,
+  shownLocales,
 } from "./routing.ts";
 
 // The six listing URLs of spec 008 §2 and the PDP pattern spec 009 owns (TASK-105). They are

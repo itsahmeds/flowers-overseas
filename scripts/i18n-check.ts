@@ -17,7 +17,7 @@
  * the unit suite can point the checks at a fixture tree in a child process (the spec 001 validator
  * style, `tests/fixtures/i18n/_cases/`) instead of mutating the committed catalogues.
  *
- * ## The eleven checks
+ * ## The twelve checks
  *
  * 1. **Key sets agree after fallback resolution** — every `en` key must resolve to a string for
  *    every registry locale, and no locale may define a key `en` does not have. Resolution is
@@ -72,6 +72,13 @@
  *    limits are in `scripts/i18n-check-scope.ts`. `--scope <file.json>` swaps the registry for a
  *    fixture, as `--registry` does for check 8. The committed registry applies to the committed
  *    tree only: a `--messages-dir` or `--src` elsewhere with no `--scope` runs with no entry.
+ * 12. **Shown** (spec 003 §14 A-founder-2026-10-14c clause 4, AC-48; TASK-237) — a locale whose
+ *    primary language is not `en`'s (the set check 10 covers) may be `shown: true` only while its
+ *    unreviewed share is at or below 5 %: offering a machine-drafted language to every visitor is
+ *    the fault the 2026-10-14 site test found. The share is `unreviewedShare()` itself, under the
+ *    registry and the tree being checked. `en` and `en-gb` stay outside it: an English share above
+ *    5 % turns English `noindex` (A17) but never breaks the build. It reads the registry the run
+ *    reads, so `--registry` exercises it on a fixture.
  *
  * ## The usage heuristic (check 2) and its limits
  *
@@ -127,10 +134,12 @@ import {
   withMessageSource,
 } from "../src/modules/i18n/messages.ts";
 import {
+  getLocaleRegistry,
   localeRegistryOf,
   withLocaleRegistry,
 } from "../src/modules/i18n/registry.ts";
 import {
+  UNREVIEWED_SHARE_THRESHOLD,
   isLocaleIndexable,
   resetReviewCache,
   reviewBreakdown,
@@ -673,6 +682,8 @@ interface CatalogueCheckInput {
   /** Check 11: the registry as written, and the file it came from. */
   readonly scopeRaw: readonly unknown[];
   readonly scopeFile: string;
+  /** Check 12: the locale registry's file, named in its problems. */
+  readonly registryFile: string;
 }
 
 function catalogueChecks(input: CatalogueCheckInput): CheckResult {
@@ -882,6 +893,9 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
     });
   }
 
+  // 12: a shown locale in another language is reviewed (A-founder-2026-10-14c clause 4, AC-48).
+  problems.push(...shownLocaleProblems(input.locales, input.registryFile));
+
   const unapproved = [...sourceFlat.keys()].filter((key) => {
     const entry = scopeEntryFor(key);
     return (
@@ -894,11 +908,35 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
   return { problems, rows, unapproved };
 }
 
+/**
+ * Check 12. Runs inside the injected registry and message source, so `shown` and the share are
+ * the registry's and the tree's under test, read through the production functions.
+ */
+function shownLocaleProblems(
+  locales: readonly LoadedLocale[],
+  registryFile: string,
+): Problem[] {
+  const problems: Problem[] = [];
+  const sourceLanguage = primaryLanguage(SOURCE_LOCALE);
+  for (const locale of locales) {
+    if (primaryLanguage(locale.code) === sourceLanguage) continue;
+    if (getLocaleRegistry().get(locale.code)?.shown !== true) continue;
+    const share = unreviewedShare(locale.code);
+    if (share <= UNREVIEWED_SHARE_THRESHOLD) continue;
+    problems.push({
+      file: registryFile,
+      reason: `locale \`${locale.code}\` is \`shown: true\` with ${formatShare(share)} of its counted keys unreviewed, above the ${formatShare(UNREVIEWED_SHARE_THRESHOLD)} threshold: a language is offered to visitors only once a person has reviewed it (spec 003 §14 A-founder-2026-10-14c). Set \`shown: false\`, or have its catalogue reviewed first`,
+    });
+  }
+  return problems;
+}
+
 // ---------------------------------------------------------------------------------------------
 // orchestration
 // ---------------------------------------------------------------------------------------------
 
 const COMMITTED_SCOPE_FILE = "src/modules/i18n/review-scope.ts";
+const COMMITTED_REGISTRY_FILE = "src/config/locales.ts";
 
 /** The repository this script belongs to; the committed registry describes its tree alone. */
 const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -1001,6 +1039,13 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
             root: options.root,
             scopeRaw: scope.raw,
             scopeFile: scope.file,
+            registryFile:
+              options.registryFile === undefined
+                ? COMMITTED_REGISTRY_FILE
+                : displayPath(
+                    resolve(options.root, options.registryFile),
+                    options.root,
+                  ),
           });
         } finally {
           resetReviewCache();
@@ -1055,12 +1100,12 @@ export function formatSummary(
   }
   lines.push(
     "",
-    "`indexable` is `isLocaleIndexable()` itself (`src/modules/i18n/review.ts`): a launch locale",
-    "whose unreviewed share is at or below 5 % (`plan/03` §6). The share counts the keys a page",
+    "`indexable` is `isLocaleIndexable()` itself (`src/modules/i18n/review.ts`): a launch locale,",
+    "shown to visitors, whose unreviewed share is at or below 5 % (`plan/03` §6). The share counts the keys a page",
     "that can be indexed may render; a key under an entry of `src/modules/i18n/review-scope.ts`",
     "(checkout, florist portal, email and the like) is in neither number. A locale that reads",
     "`no` here is excluded from hreflang, sitemaps and robots-meta lifting by spec 007, which is",
-    "the correct answer while `de` and `pl` are machine-drafted.",
+    "the correct answer while `de` and `pl` are machine-drafted and hidden.",
     "",
     "#### Buyer-facing keys not yet approved (not counted, not exempt)",
     "",

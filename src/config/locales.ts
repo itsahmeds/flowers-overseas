@@ -136,6 +136,14 @@ const LocaleConfigObjectSchema = z
     dir: z.enum(textDirections),
     isLaunch: z.boolean(),
     /**
+     * Offered to visitors and allowed to be indexed (spec 003 §14 A-founder-2026-10-14c, AC-45).
+     * Required, so no locale is shown or hidden by a default. Read only through
+     * `LocaleRegistryProvider` (`shownLocales()`, `isLocaleIndexable()`), so spec 002's
+     * `feature_flag` scope `locale` and spec 012's admin take it over with no caller change. A
+     * hidden launch locale keeps its routes: `isLaunch` alone decides what answers 200.
+     */
+    shown: z.boolean(),
+    /**
      * A generated pseudo-locale (`en-XA`, `ar-XB`), present in the registry only when
      * `ENABLE_PSEUDO_LOCALES` is on (spec 003 §2 "Pseudo-locales", AC-29). It is never
      * `isLaunch`, so it is absent from `launchLocales()`, the switcher, `alternatesFor()` and
@@ -182,6 +190,13 @@ export const LocaleConfigSchema = LocaleConfigObjectSchema.transform(
       code: "custom",
       path: ["isLaunch"],
       message: `pseudo-locale \`${config.code}\` must not be a launch locale (spec 003 §2)`,
+    });
+  }
+  if (config.isPseudo && config.shown) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["shown"],
+      message: `pseudo-locale \`${config.code}\` must not be shown (spec 003 §14 A-founder-2026-10-14c)`,
     });
   }
   if (config.isPseudo && config.hreflangAliases.length > 0) {
@@ -265,6 +280,13 @@ export const LocaleRegistrySchema = z
         code: "custom",
         path: [locales.indexOf(xDefault), "isLaunch"],
         message: `the \`${X_DEFAULT}\` locale \`${xDefault.code}\` must be a launch locale`,
+      });
+    }
+    if (xDefault !== undefined && !xDefault.shown) {
+      ctx.addIssue({
+        code: "custom",
+        path: [locales.indexOf(xDefault), "shown"],
+        message: `the \`${X_DEFAULT}\` locale \`${xDefault.code}\` must be shown (spec 003 §14 A-founder-2026-10-14c)`,
       });
     }
 
