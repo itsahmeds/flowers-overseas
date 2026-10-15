@@ -18,7 +18,7 @@ task actually touches.
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +29 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +76 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +77 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
@@ -49,6 +49,7 @@ task actually touches.
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
+| `honesty.ts` | Relay-language check (spec 041 §14) | spec 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2 "Everything data-gated is… | spec 004 |
@@ -158,10 +159,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 288 |
+| `tests/unit/` | 289 |
 | `tests/integration/` | 21 |
 | `tests/contract/` | 12 |
-| `tests/e2e/` | 54 |
+| `tests/e2e/` | 55 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
