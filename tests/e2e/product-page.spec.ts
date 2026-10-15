@@ -256,8 +256,15 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       page,
     }) => {
       await page.goto(url);
+      // With a stale rate the bouquet and every add-on quote the destination's złoty together.
+      const stale =
+        (await page
+          .locator("[data-fo-price-summary]")
+          .getAttribute("data-fo-fx-state")) === "fallback";
+      const shown = stale ? "zł" : symbol;
+      const other = stale ? /€|£|EUR|GBP/u : foreign;
       await expect(page.locator("[data-fo-pdp-price] bdi")).toContainText(
-        symbol,
+        stale ? /zł|PLN/u : symbol,
       );
       const list = page.locator("[data-fo-addon-list]");
       await expect(list.locator("input, button, select, textarea")).toHaveCount(
@@ -268,10 +275,10 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       for (const row of await rows.all()) {
         const text = await row.innerText();
         expect(text, text).not.toContain("%");
-        expect(foreign.exec(text)?.[0], text).toBe(undefined);
+        expect(other.exec(text)?.[0], text).toBe(undefined);
         if ((await row.getAttribute("data-fo-addon")) === "card") continue;
         await expect(row.locator("[data-fo-addon-price]")).toContainText(
-          symbol,
+          shown === "zł" ? /zł|PLN/u : shown,
         );
       }
       const card = list.locator('[data-fo-addon="card"] [data-fo-addon-price]');

@@ -534,7 +534,7 @@ test.describe("spec 009 A12: one order, the buy section's seven elements, the de
         ]);
         const sections = await page
           .locator(
-            "[data-fo-pdp-about], [data-fo-pdp-trust], [data-fo-pdp-card], [data-fo-pdp-addons], [data-fo-pdp-the-price], [data-fo-pdp-facts], [data-fo-pdp-related]",
+            "[data-fo-pdp-about], [data-fo-pdp-trust], [data-fo-pdp-card], [data-fo-pdp-addons], [data-fo-pdp-the-price], [data-fo-pdp-related]",
           )
           .evaluateAll((nodes) =>
             nodes.map((node) => ({
@@ -542,7 +542,8 @@ test.describe("spec 009 A12: one order, the buy section's seven elements, the de
               order: getComputedStyle(node).order,
             })),
           );
-        expect(sections).toHaveLength(7);
+        // A12's six, without the delivery-facts block (spec 009 §14 A-founder-2026-10-14d, AC-35).
+        expect(sections).toHaveLength(6);
         for (const [index, section] of sections.entries()) {
           expect(section.order).toBe("0");
           const previous = sections[index - 1];
