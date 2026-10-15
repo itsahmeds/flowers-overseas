@@ -171,6 +171,7 @@ export function CountryShopRootPage({
                    lede stay the browsing section with counts and prices. */
                 chips={
                   <ListingChipRow
+                    phoneOnly
                     chips={view.tiles.map((tile) => ({
                       key: tile.key,
                       name: tile.name,
@@ -213,6 +214,7 @@ export function CountryShopRootPage({
                 /* The sort form above the grid, "Change the order" (C3, AC-33); still a
                    `<form method="get">` that works with JavaScript off (AC-9). */
                 sortForm={<ListingSortForm sort={view.sort} />}
+                toolbar="band"
               />
             </section>
 
