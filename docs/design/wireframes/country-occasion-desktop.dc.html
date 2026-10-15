@@ -1770,7 +1770,8 @@ a.tag:hover b { text-decoration: underline; text-underline-offset: 4px; }
 .countline .disclosure { font-size: var(--text-sm); max-inline-size: none; }
 .toolbar.under { margin-block-start: 32px; }
 /* founder ruling C3, 2026-10-14 (spec 008 §14 A-founder-2026-10-14c, AC-33): count, disclosure, chips and sort above the grid */
-.countline.sortline { align-items: center; padding-block: 10px; border-block-end: var(--rule); }
+.countline.sortline { align-items: center; padding-block: 6px; border-block-end: var(--rule); }
+main > .hx + .wrap > section:first-child:has(> .sortline) { padding-block-start: 0 !important; }
 .sortline .cl-text { flex: 1 1 520px; min-inline-size: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 24px; }
 .sortform.inline { flex: none; align-items: center; gap: 12px; }
 .sortform.inline .select { min-inline-size: 210px; }
