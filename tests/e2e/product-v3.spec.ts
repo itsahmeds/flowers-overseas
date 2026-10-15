@@ -8,8 +8,9 @@
  *    viewport. At 390 × 844 the photograph is `min(470, 844 − 300)` px, the H1, the price and the
  *    size control lie above the bar's top edge, the sheet draws no grip, and N2 renders under the
  *    status. Watched red: the action pushed below 800 at 1280 × 800, a grip drawn, N2 removed.
- *  - **T-53 on the product page (AC-48).** The bar is not shown over the first screen (the
- *    orchestrator's sticky-bar ruling) and shows once the buy section has scrolled out; it is
+ *  - **T-53 on the product page (AC-48).** The bar is on the first screen from load, its action
+ *    fully in view where the phone artboard draws the dock (spec 004 §14 A-founder-2026-10-14h,
+ *    C4, which replaces the orchestrator's earlier "not over the first screen" ruling); it is
  *    opaque; its price equals the sheet's price; its action links to the status in the flow;
  *    scrolled to the bottom no text sits under it; the language popup (a top sheet) never
  *    intersects its action, at 390 × 844 and at 390 × 600 (PR 208 round 3). Watched red: the bar's
@@ -225,12 +226,17 @@ test.describe("T-53: the docked bar on the product page (AC-48)", () => {
     await page.setViewportSize(PHONE);
   });
 
-  test("is not over the first screen, and shows once the buy section has scrolled out", async ({
+  // Spec 004 §14 A-founder-2026-10-14h (C4; T-51's new case): on load, before any scroll, the
+  // primary action lies fully inside the viewport, where `product-mobile.dc.html` draws the dock.
+  test("is on the first screen from load, opaque and fixed, with its action fully in view; it stays when scrolled", async ({
     page,
   }) => {
     await open(page);
-    expect(await barShown(page), "over the first screen").toBe(false);
-    await scrollPastBuy(page);
+    expect(await barShown(page), "on the first screen").toBe(true);
+    const action = await boxOf(page, `${BAR} a`);
+    expect(inside(action, PHONE), JSON.stringify(action)).toBe(true);
+    // Where the artboard draws it: in the 76 px dock at the screen's foot.
+    expect(action.top).toBeGreaterThanOrEqual(PHONE.height - 76);
     const style = await page.locator(BAR).evaluate((node) => ({
       background: getComputedStyle(node).backgroundColor,
       position: getComputedStyle(node).position,
@@ -239,9 +245,8 @@ test.describe("T-53: the docked bar on the product page (AC-48)", () => {
     expect(style.background).not.toMatch(
       /rgba\([^)]*,\s*0?\.\d+\)|\/\s*0?\.\d/u,
     );
-    // Scrolling back to the top hides it again.
-    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
-    await expect.poll(() => barShown(page)).toBe(false);
+    await scrollPastBuy(page);
+    expect(await barShown(page), "scrolled").toBe(true);
   });
 
   test("its price is the sheet's selected price, and its action an in-page link to the status", async ({
@@ -688,7 +693,7 @@ test.describe("the eyebrow: P2 on the phone, the desktop line from md (breaker H
 });
 
 test.describe("the docked bar under reduced motion (review round 1)", () => {
-  test("is still hidden over the first screen and shown once the buy section has scrolled out", async ({
+  test("is on the first screen from load and stays when scrolled (C4)", async ({
     browser,
   }) => {
     const context = await browser.newContext({
@@ -698,12 +703,12 @@ test.describe("the docked bar under reduced motion (review round 1)", () => {
     const page = await context.newPage();
     try {
       await open(page);
-      expect(await barShown(page), "over the first screen").toBe(false);
+      expect(await barShown(page), "on the first screen").toBe(true);
       await scrollPastBuy(page);
       await page.evaluate(() =>
         window.scrollTo({ top: 0, behavior: "instant" }),
       );
-      await expect.poll(() => barShown(page)).toBe(false);
+      expect(await barShown(page), "back at the top").toBe(true);
     } finally {
       await context.close();
     }
