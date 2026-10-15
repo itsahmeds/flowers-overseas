@@ -14,9 +14,11 @@
  * `motionsSettled` waits for every finite transition and animation running on the document clock
  * to end; the bloom (infinite, and only while a navigation waits) and the product page's
  * scroll-driven bar (on a view timeline, which never "finishes") are not waited for.
- * `atRest` first lets the motion module mount (it marks `<html data-fo-motion>`), scrolls the page
- * through so every section and image plays its entrance once, as a reader scrolling would, returns
- * to the top, and then waits for the motions to settle.
+ * `atRest` first waits for the network to go quiet (the page has hydrated, and the consent sheet,
+ * a lazily loaded island that opens a moment after hydration, has had its chunk and rendered),
+ * scrolls the page through so every section and image plays its entrance once, as a reader
+ * scrolling would, returns to the top, and then waits for the motions to settle. On a document with
+ * no motion module (the root `not-found`, the global 500) the scroll changes nothing.
  */
 import type { Page } from "@playwright/test";
 
@@ -41,9 +43,7 @@ export async function motionsSettled(page: Page): Promise<void> {
 
 /** Hydrated, every entrance played, scrolled back to the top, nothing moving. */
 export async function atRest(page: Page): Promise<void> {
-  await page.waitForFunction(() =>
-    document.documentElement.hasAttribute("data-fo-motion"),
-  );
+  await page.waitForLoadState("networkidle");
   await page.evaluate(async () => {
     const frame = (): Promise<unknown> =>
       new Promise((resolve) =>
