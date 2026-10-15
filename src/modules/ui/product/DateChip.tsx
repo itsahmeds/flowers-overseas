@@ -133,12 +133,11 @@ export function DateChip({
   const tone = muted
     ? "bg-surface-muted text-ink-subtle cursor-not-allowed"
     : "bg-card text-ink cursor-pointer has-[:checked]:bg-selected has-[:checked]:text-on-selected has-[:checked]:shadow-none";
-  const edge =
-    occasions.length > 0
+  const edge = muted
+    ? `border-[1.5px] border-dashed ${occasions.length > 0 ? "border-accent" : "border-rule"}`
+    : occasions.length > 0
       ? "shadow-[inset_0_0_0_1.5px_var(--color-accent)]"
-      : muted
-        ? "border-[1.5px] border-dashed border-rule"
-        : "shadow-[inset_0_0_0_1.5px_var(--color-rule)]";
+      : "shadow-[inset_0_0_0_1.5px_var(--color-rule)]";
 
   return (
     <label
