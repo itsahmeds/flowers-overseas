@@ -2784,6 +2784,11 @@
     "reviewed": false,
     "sourceHash": "47d732fd584be06e8364c1c4d25c93acc355478d5fdaf276f17a5c60ad40cb2a"
   },
+  "shop.category.chipsToggle": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b8b1d894c683725260dcd78f8ed64f979331a1ab61fc8311e9ccfc300fd5de20"
+  },
   "shop.category.lede": {
     "reviewed": false,
     "source": "human",

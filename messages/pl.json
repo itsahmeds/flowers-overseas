@@ -924,6 +924,7 @@
       "heading": "Every one of these comes with a card, at no cost."
     },
     "category": {
+      "chipsToggle": "Categories",
       "lede": "{count, plural, one {Jeden bukiet, który nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
       "seoDescription": "{entity}, które nasz florysta może zrobić w {country}, każdy z jedną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
       "seoTitle": "{entity} for {country}: one all-in price",

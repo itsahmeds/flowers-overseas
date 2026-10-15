@@ -148,9 +148,12 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     // The sibling row is the whole browsing affordance (§13 Q6): links to pages that exist, the
     // current category marked and not a link to itself.
-    // One chip scroller above the grid at every width (spec 008 §14 A-founder-2026-10-14c, A16
-    // (e); TASK-241).
-    const siblings = page.locator("main [data-fo-listing-chips]:visible");
+    // Above the grid: the phone's chip scroller (spec 008 §14 A16 (e)), or from `md` up the
+    // "Categories" button holding the same links (A-founder-2026-10-15c; TASK-241). Exactly one
+    // of the two is displayed.
+    const siblings = page.locator(
+      "main [data-fo-listing-chips]:visible, main [data-fo-listing-categories]:visible",
+    );
     await expect(siblings).toHaveCount(1);
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
@@ -256,11 +259,19 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     const page = await context.newPage();
     await page.goto("/en/poland/flowers/roses");
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
-    // The sibling categories: one chip scroller at every width (spec 004 §14 A24 clause 4;
-    // TASK-195's primitive; TASK-241). Real links.
+    // The sibling categories: the phone's chip scroller (spec 004 §14 A24 clause 4; TASK-195's
+    // primitive), or from `md` up the "Categories" button whose links are in the HTML closed
+    // (A-founder-2026-10-15c; TASK-241). Real links either way.
     await expect(
-      page.locator("main [data-fo-listing-chips] a:visible").first(),
+      page
+        .locator(
+          "main [data-fo-listing-chips] a:visible, main [data-fo-listing-categories] summary:visible",
+        )
+        .first(),
     ).toBeVisible();
+    await expect(
+      page.locator("main [data-fo-listing-categories] a[href]"),
+    ).not.toHaveCount(0);
     await context.close();
   });
 });

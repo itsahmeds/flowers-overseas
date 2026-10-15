@@ -126,7 +126,7 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(roses.links.chips.length).toBeGreaterThan(1);
     // The row's name, on its `<nav>` (one line of the first screen, so the heading is not drawn).
     expect(html).toMatch(
-      /<nav aria-label="Also for Poland" data-fo-listing-chips/u,
+      /<nav aria-label="Also for Poland" class="md:hidden" data-fo-listing-chips/u,
     );
     for (const chip of roses.links.chips) {
       expect(text, chip.key).toContain(chip.name);
@@ -139,6 +139,29 @@ describe("the populated country category (§5.3 row 2)", () => {
     );
     expect(html).not.toContain('href="/en/poland/flowers/roses"><');
     expect(html).toContain('aria-current="page"');
+  });
+
+  it('folds the siblings into a native "Categories" disclosure on the toolbar row, every link in the HTML (A-founder-2026-10-15c; TASK-241)', () => {
+    // One `<details>`, before the sort form and the grid, its `<summary>` the button's words; every
+    // sibling that is not this page is a real link inside it, closed, with no script.
+    expect(html.match(/<details/gu) ?? []).toHaveLength(1);
+    const start = html.indexOf("data-fo-listing-categories");
+    const end = html.indexOf("</details>", start);
+    expect(start).toBeGreaterThan(-1);
+    expect(start).toBeLessThan(html.indexOf("<form"));
+    expect(html.indexOf("<form")).toBeLessThan(
+      html.indexOf("data-fo-listing-grid="),
+    );
+    expect(html.slice(start, end)).not.toContain(" open");
+    const panel = html.slice(start, end);
+    expect(panel).toMatch(/<summary[^>]*>Categories</u);
+    for (const chip of roses.links.chips) {
+      if (chip.current === true) {
+        expect(panel, chip.key).toContain('aria-current="page"');
+      } else {
+        expect(panel, chip.key).toContain(`href="${chip.href}"`);
+      }
+    }
   });
 
   it("is a breadcrumb of five crumbs, the leaf marked and not a link", () => {
