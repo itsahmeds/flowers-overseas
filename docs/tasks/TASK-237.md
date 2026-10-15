@@ -74,6 +74,12 @@ _None recorded._
   switcher and popup on `shownLocales()`; unit tests and fixtures (`b9e5967e`, PR 229).
 - 2026-10-15: e2e for the chrome rows, the popup, AC-14's crawl and T-52's Menu (`c5a39a0c`);
   map regenerated (`722121f5`); visual baselines refreshed from the `visual-baselines` artifact.
+- 2026-10-15 (session close): rebased onto `origin/main` (TASKS.md conflict only, main's rows kept,
+  statuses re-applied), head pushed, `ci:full` toggled. **Done:** AC-45 to AC-48 built and tested,
+  cheap gates PASS. **Next:** read CI on the PR's current head; if `visual` is red, re-run the
+  `visual-baselines` label and compare with the committed set (`881fee61` carries run
+  38693547083's bytes). **A replacement must know:** the `visual:baselines` label is still on PR
+  229; TASK-238's copy half is held on `task/TASK-238-support-line-hours` (see that brief).
 
 ## Result
 

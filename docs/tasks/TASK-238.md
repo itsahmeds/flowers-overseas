@@ -69,6 +69,11 @@ it edits the same header strip, phone Menu and footer; that PR keeps the breaker
   link `https://wa.me/12135925150`; unit and e2e tests (PR 229, `b9e5967e`, `c5a39a0c`).
 - 2026-10-15: the support line, its drafts and the no-24/7 scan written; held on
   `task/TASK-238-support-line-hours` (`acf183d0`) by the escalation above.
+- 2026-10-15 (session close): **Done:** link half (AC-34 chrome) in PR 229. **Next:** the
+  founder's answer to the escalation; then rebase `task/TASK-238-support-line-hours` (based on
+  `722121f5`, behind PR 229's head) onto the merged PR 229 and open its PR. **A replacement must
+  know:** with the founder's `record-approval` of `company.support.hours` on that branch, `en-gb`
+  returns to 27/542 and the 29 reds clear; the branch's own new tests already pass.
 
 ## Result
 
