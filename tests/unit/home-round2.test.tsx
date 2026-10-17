@@ -174,6 +174,15 @@ describe("one poppy italic phrase in each drawn home heading (TASK-231; A21 clau
     );
     expect(h1.split(" ")).toContain("max-md:[&_em]:text-on-inverse-accent");
   });
+
+  it("puts the phrase on its own line from 360 to 389 px, the CLS fix (TASK-231)", () => {
+    const html = render(<HomeHero locale="en" shopCountries={["PL"]} />, "en");
+    const h1 = (/<h1[^>]*class="([^"]*)"/u.exec(html)?.[1] ?? "").replaceAll(
+      "&amp;",
+      "&",
+    );
+    expect(h1.split(" ")).toContain("max-[390px]:[&_em]:block");
+  });
 });
 
 describe('"Continue →" and the country select (TASK-231)', () => {

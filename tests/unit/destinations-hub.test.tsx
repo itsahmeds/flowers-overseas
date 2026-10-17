@@ -356,3 +356,22 @@ describe("no destination claims delivery before a florist is signed (PR 174 item
     },
   );
 });
+
+/**
+ * The hub's `<h1>` is marked in the catalogue (`<em>send flowers</em>`) but the artboard draws it
+ * upright, so the page strips the marker (TASK-231, breaker HOLE 1): a hub that rendered the
+ * `<em>` would put an italic phrase on a heading the design draws plain.
+ */
+describe("the hub's h1 draws no italic phrase (TASK-231)", () => {
+  it.each(LOCALES)(
+    "%s: one <h1>, its exact words, and no <em> inside it",
+    (locale) => {
+      const html = render(locale);
+      const h1s = [...html.matchAll(/<h1[^>]*>(.*?)<\/h1>/gu)];
+      expect(h1s, locale).toHaveLength(1);
+      const inner = h1s[0]?.[1] ?? "";
+      expect(inner, locale).toBe("Where we can send flowers");
+      expect(inner, locale).not.toContain("<em");
+    },
+  );
+});
