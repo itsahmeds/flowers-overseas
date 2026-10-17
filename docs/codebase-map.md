@@ -122,6 +122,7 @@ task actually touches.
 | `corridor-check.ts` | `corridor:check` | `pnpm corridor:check` — the corridor content gate (spec 007 §2, §11, AC-2 /… |
 | `corridor-index.ts` | `corridor:index` | `pnpm corridor:index` — regenerate the typed corridor-corpus index (spec 007 §2… |
 | `coverage-thresholds.ts` | — | Coverage-threshold loader for `vitest.coverage.json` (spec 001 §2 "Testing… |
+| `db-check-live.ts` | — | `pnpm db:check`, connected half (spec 002 §2, AC-5, AC-22, AC-26, AC-27; §13… |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2 "Scripts", §5.1; spec 002 §2,… |
 | `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the migration runner (spec 002 §2… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev OS", AC-24/AC-25/AC-26 ·… |
@@ -159,8 +160,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 293 |
-| `tests/integration/` | 23 |
+| `tests/unit/` | 294 |
+| `tests/integration/` | 24 |
 | `tests/contract/` | 12 |
 | `tests/e2e/` | 56 |
 | `tests/a11y/` | 15 |

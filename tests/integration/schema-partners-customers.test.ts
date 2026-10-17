@@ -17,47 +17,29 @@
  * or the CI service container that has no migrations applied — exactly as
  * `schema-media.test.ts` does.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-
 import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { recipientEmailViolations } from "../../scripts/db-check.ts";
 import { FOREIGN_KEYS } from "../fixtures/schema-foreign-keys.ts";
+import { insertPlacedOrder } from "../fixtures/order-state.ts";
 
-function readDotEnv(path: string): Record<string, string> {
-  if (!existsSync(path)) return {};
-  const entries: Record<string, string> = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (trimmed === "" || trimmed.startsWith("#")) continue;
-    const separator = trimmed.indexOf("=");
-    if (separator < 1) continue;
-    entries[trimmed.slice(0, separator).replace(/^export\s+/, "")] = trimmed
-      .slice(separator + 1)
-      .trim();
-  }
-  return entries;
-}
+import { orderParents } from "./support/rows.ts";
+import { probeLocalServer, scratchDatabase } from "./support/scratch-db.ts";
 
-function liveDatabaseUrl(): string | undefined {
-  const local = readDotEnv(join(process.cwd(), ".env.local"));
-  const url =
-    process.env.DATABASE_URL_UNPOOLED ??
-    local.DATABASE_URL_UNPOOLED ??
-    process.env.DATABASE_URL ??
-    local.DATABASE_URL;
-  if (url === undefined || url === "") return undefined;
-  return /localhost|127\.0\.0\.1/.test(url) ? undefined : url;
-}
-
-const databaseUrl = liveDatabaseUrl();
-const sql =
-  databaseUrl === undefined ? undefined : postgres(databaseUrl, { max: 1 });
+// TASK-027 (spec 002 AC-28): a migrated scratch database of a disposable local Postgres 16 —
+// CI's service container included — and never a remote URL or `.env.local` (Phase 0's one
+// database is the live site's, §13 Q5). Before TASK-027 this suite read `.env.local` and skipped
+// on every local server, so it never ran in CI.
+const server = await probeLocalServer();
+const scratch =
+  server.url === undefined
+    ? undefined
+    : await scratchDatabase(server.url, "partners");
+const sql = scratch?.sql;
 
 afterAll(async () => {
-  await sql?.end();
+  await scratch?.drop();
 });
 
 const TABLES = [
@@ -244,7 +226,14 @@ describe.skipIf(sql === undefined)(
           ORDER BY con.conname
         `;
         const RULE: Record<string, string> = { RESTRICT: "r", CASCADE: "c" };
-        expect(rows).toEqual(
+        // Keys later migrations add to these tables (the scratch database is fully migrated):
+        // `0007` keys `payout_line.order_id` to `order`, `0010` keys both `user_id`s to `users`.
+        const LATER = new Set([
+          "payout_line_order_id_order_id_fk",
+          "partner_member_user_id_users_id_fk",
+          "customer_user_id_users_id_fk",
+        ]);
+        expect(rows.filter((row) => !LATER.has(row.fk))).toEqual(
           FOREIGN_KEYS.map(([fk, , , , rule]) => ({
             fk,
             rule: RULE[rule] ?? rule,
@@ -322,7 +311,7 @@ describe.skipIf(sql === undefined)(
      */
     describe("media_asset_ids across two sessions (review R1)", () => {
       const KEY = "zz-two-session";
-      const url = databaseUrl as string;
+      const url = scratch?.url as string;
       const options = { max: 1, connection: { lock_timeout: 10_000 } } as const;
 
       /** True once `pid` is waiting on a lock; false if it never does within five seconds. */
@@ -669,6 +658,9 @@ describe.skipIf(sql === undefined)(
                  VALUES (${partner}, 'zz', 'Again')`,
             );
             const user = "00000000-0000-4000-8000-000000000018";
+            // `0010` keys `partner_member.user_id` to `users` (TASK-022), so the member exists.
+            await tx`INSERT INTO users (id, email)
+                     VALUES (${user}, 'member-0018@example.test')`;
             await accept(
               "partner_member one user in two partners (a chain)",
               async () => {
@@ -964,7 +956,8 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE payout SET currency_code = 'ZZY' WHERE id = ${payoutId}`,
             );
-            const order = "00000000-0000-4000-8000-0000000000bb";
+            // `0007` keys `payout_line.order_id` to `order`, so the paid order exists.
+            const order = await insertPlacedOrder(tx, await orderParents(tx));
             const line = (
               sp: postgres.TransactionSql,
               kind: string,

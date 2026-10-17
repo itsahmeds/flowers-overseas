@@ -53,6 +53,12 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
 
 _None recorded._
 
+## Progress
+
+- 2026-10-18 (paused at the usage-window reset, resume from here): committed and pushed. Done: `scripts/db-check-live.ts` (connected half: column drift vs the mirror, RLS coverage, money pair and float money, `bytea`, recipient email, catalogue snapshot `scripts/db-check.snapshot.json` pinning CHECK expressions, index defs incl. `NULLS NOT DISTINCT` and predicates, triggers, functions with `SECURITY DEFINER`/`search_path`, policies, views with `security_barrier`, defaults), wired into `scripts/db-check.ts` when `DATABASE_URL_UNPOOLED` is set, `--write-snapshot`; `tests/integration/db-check-live.test.ts` (T-26, 22 cases); `tests/integration/rls-leak.test.ts` (PR 210 pg_temp leaky-function attack + control); `tests/unit/no-float-money-enabled.test.ts` (T-07; the rule was already on since spec 005); the three legacy suites that read `.env.local` and never ran now use scratch databases; `tests/integration/db.test.ts` deleted, probe throws in CI instead of skipping, `tests/unit/test-harness.test.ts` asserts no `.skip`; CI `test-integration` asserts 0 skipped and seeds twice (second run must report 0/0), `db-check` job has a PG16 service and migrates first (and `set -o pipefail`, which the old step lacked). Full local integration run: 21 files, 209 tests green (PG 16.14).
+- Next: mutation runs for T-26/T-07 (not yet done), `pnpm gates:cheap`, `## Result`, rebase, ready, `ci:full`, rows to `in_review`. Not done from the carry-forwards: the Drizzle `meta/` snapshots stop at `0007` while migrations reach `0012`, so no mirror-vs-meta check was added (would be red today; `db/` is outside the fence).
+- Found: `src/lib/db.ts`'s `withDbContext` calls `drizzle(tx)` on a postgres.js transaction, which has no `options`, so it throws `Cannot read properties of undefined (reading 'parsers')` against a real database (TASK-202's suite works around it the same way). Needs its own task row.
+
 ## Result
 
 _Pending._

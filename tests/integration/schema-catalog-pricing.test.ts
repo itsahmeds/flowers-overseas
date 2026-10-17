@@ -19,46 +19,24 @@
  * still the `.env.example` placeholder — so `pnpm test:integration` stays green on a clean clone
  * and in CI, where spec 002 has no Neon credentials.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 
-import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
-/** `KEY=value` pairs of a dotenv-style file, without interpolation or quoting rules. */
-function readDotEnv(path: string): Record<string, string> {
-  if (!existsSync(path)) return {};
-  const entries: Record<string, string> = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (trimmed === "" || trimmed.startsWith("#")) continue;
-    const separator = trimmed.indexOf("=");
-    if (separator < 1) continue;
-    entries[trimmed.slice(0, separator).replace(/^export\s+/, "")] = trimmed
-      .slice(separator + 1)
-      .trim();
-  }
-  return entries;
-}
+import { probeLocalServer, scratchDatabase } from "./support/scratch-db.ts";
 
-/** The direct connection string, or undefined when only a placeholder is available (§13 Q6). */
-function liveDatabaseUrl(): string | undefined {
-  const local = readDotEnv(join(process.cwd(), ".env.local"));
-  const url =
-    process.env.DATABASE_URL_UNPOOLED ??
-    local.DATABASE_URL_UNPOOLED ??
-    process.env.DATABASE_URL ??
-    local.DATABASE_URL;
-  if (url === undefined || url === "") return undefined;
-  return /localhost|127\.0\.0\.1/.test(url) ? undefined : url;
-}
-
-const databaseUrl = liveDatabaseUrl();
-const sql =
-  databaseUrl === undefined ? undefined : postgres(databaseUrl, { max: 1 });
+// TASK-027 (spec 002 AC-28): a migrated scratch database of a disposable local Postgres 16 —
+// CI's service container included — and never a remote URL or `.env.local` (Phase 0's one
+// database is the live site's, §13 Q5). Before TASK-027 this suite read `.env.local` and skipped
+// on every local server, so it never ran in CI.
+const server = await probeLocalServer();
+const scratch =
+  server.url === undefined
+    ? undefined
+    : await scratchDatabase(server.url, "catalog");
+const sql = scratch?.sql;
 
 afterAll(async () => {
-  await sql?.end();
+  await scratch?.drop();
 });
 
 /** The eleven tables migration `0003` creates (§5.1 `catalog`, minus media — that is `0004`). */
@@ -100,7 +78,7 @@ describe.skipIf(sql === undefined)(
       it("has created all eleven tables, owned by app_owner", async () => {
         const rows = await db<{ tablename: string; tableowner: string }[]>`
           SELECT tablename, tableowner FROM pg_tables
-          WHERE schemaname = 'public' AND tablename = ANY(${db.array([...TABLES])})
+          WHERE schemaname = 'public' AND tablename IN ${db([...TABLES])}
           ORDER BY tablename
         `;
         expect(rows.map((row) => row.tablename)).toEqual([...TABLES].sort());
@@ -116,7 +94,7 @@ describe.skipIf(sql === undefined)(
           SELECT table_name, column_name, data_type
           FROM information_schema.columns
           WHERE table_schema = 'public'
-            AND table_name = ANY(${db.array([...TABLES])})
+            AND table_name IN ${db([...TABLES])}
             AND column_name LIKE '%_minor'
           ORDER BY table_name, column_name
         `;
@@ -139,7 +117,7 @@ describe.skipIf(sql === undefined)(
           SELECT table_name, is_nullable
           FROM information_schema.columns
           WHERE table_schema = 'public'
-            AND table_name = ANY(${db.array(money.map((row) => row.table_name))})
+            AND table_name IN ${db(money.map((row) => row.table_name))}
             AND column_name = 'currency_code'
           ORDER BY table_name
         `;
@@ -156,7 +134,7 @@ describe.skipIf(sql === undefined)(
           SELECT table_name, column_name, data_type
           FROM information_schema.columns
           WHERE table_schema = 'public'
-            AND table_name = ANY(${db.array([...TABLES])})
+            AND table_name IN ${db([...TABLES])}
             AND data_type IN ('numeric', 'real', 'double precision', 'money', 'bytea')
         `;
         expect(rows).toEqual([]);
@@ -170,7 +148,7 @@ describe.skipIf(sql === undefined)(
           JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
           WHERE con.contype = 'f'
             AND nsp.nspname = 'public'
-            AND rel.relname = ANY(${db.array([...TABLES])})
+            AND rel.relname IN ${db([...TABLES])}
         `;
         expect(
           rows.map((row) => `${row.table_name}: ${row.definition}`).sort(),
@@ -204,7 +182,7 @@ describe.skipIf(sql === undefined)(
           JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace
           WHERE con.contype IN ('p', 'u')
             AND nsp.nspname = 'public'
-            AND rel.relname = ANY(${db.array([...TABLES])})
+            AND rel.relname IN ${db([...TABLES])}
         `;
         expect(
           rows.map((row) => `${row.table_name}: ${row.definition}`).sort(),
@@ -231,7 +209,7 @@ describe.skipIf(sql === undefined)(
       it("creates exactly the indexes this migration measured for, and no others", async () => {
         const rows = await db<{ indexname: string; indexdef: string }[]>`
           SELECT indexname, indexdef FROM pg_indexes
-          WHERE schemaname = 'public' AND tablename = ANY(${db.array([...TABLES])})
+          WHERE schemaname = 'public' AND tablename IN ${db([...TABLES])}
           ORDER BY indexname
         `;
         // Primary keys and unique constraints bring their own index; everything else on this list
@@ -297,7 +275,7 @@ describe.skipIf(sql === undefined)(
           JOIN pg_proc pro ON pro.oid = trg.tgfoid
           WHERE NOT trg.tgisinternal
             AND pro.proname = 'set_updated_at'
-            AND rel.relname = ANY(${db.array([...TABLES])})
+            AND rel.relname IN ${db([...TABLES])}
           ORDER BY rel.relname
         `;
         expect(rows.map((row) => row.table_name)).toEqual([...TABLES].sort());

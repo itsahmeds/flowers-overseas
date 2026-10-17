@@ -140,6 +140,7 @@ const SDK_TABLE: readonly {
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
       "scripts/db-check.ts",
+      "scripts/db-check-live.ts",
       "seed/index.ts",
     ],
   },
