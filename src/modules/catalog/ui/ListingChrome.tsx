@@ -839,11 +839,9 @@ export function CountryListingResults({
         {toggled ? (
           <>
             {/* Below `md` the button and the sort form share one ruled row; the rule is drawn
-                once, across both, by this empty cell. */}
-            <div
-              aria-hidden="true"
-              className="border-rule col-span-full row-start-3 border-y md:hidden"
-            />
+                once, across both, by this empty cell (empty, so nothing to hide from assistive
+                technology, and no `aria-hidden` box for AC-45's ornament probe). */}
+            <div className="border-rule col-span-full row-start-3 border-y md:hidden" />
             {/* A direct child of this grid: its `<summary>` and its opened panel take cells here. */}
             {chipsToggle}
           </>

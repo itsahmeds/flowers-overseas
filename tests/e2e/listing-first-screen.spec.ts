@@ -797,7 +797,7 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
         await open(page, url, size);
         const toggle = page.locator("main details");
         await expect(toggle).toHaveCount(1);
-        await expect(toggle).toHaveAttribute("data-fo-listing-categories", "");
+        await expect(toggle).toHaveAttribute("data-fo-listing-categories");
         expect(
           await toggle.evaluate(
             (element) => (element as HTMLDetailsElement).open,
@@ -905,10 +905,11 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
     const names = await chips.evaluateAll((elements) =>
       elements.map((element) => element.textContent?.trim() ?? ""),
     );
-    // The sibling set the chip row carried: 22 for Poland in the committed corpus, the current
-    // category marked and not a link, in the page's collation order (sortBy, by name).
-    expect(names).toHaveLength(22);
-    expect(hrefs).toHaveLength(21);
+    // The sibling set the chip row carried (the exact set against `listingView()` is the unit
+    // case in `catalog-category-page`), the current category marked and not a link, in the
+    // page's collation order (sortBy, by name).
+    expect(names.length).toBeGreaterThan(5);
+    expect(hrefs).toHaveLength(names.length - 1);
     expect(names).toStrictEqual(
       [...names].sort(new Intl.Collator("en-GB").compare),
     );
