@@ -73,8 +73,20 @@ test("the header's keyboard order follows the document order and stops at nothin
 }) => {
   await page.goto("/en");
 
+  // Skip link, then the notice bar (desktop: the help line's WhatsApp link, spec 041 AC-34, and
+  // the switcher's one sibling shown locale, spec 003 §14 A-founder-2026-10-14c), then the
+  // banner: the logo and the first category link (v2 chrome, TASK-176). Nothing unpublished is
+  // drawn, so nothing inert is a stop (§14 A20). One Tab per expected stop: a hidden locale that
+  // came back would shift the list and fail it.
+  const expected = [
+    "A[#main]",
+    "A[https://wa.me/12135925150]",
+    "A[/en-gb]",
+    "A[/en]",
+    "A[/en/poland/flowers]",
+  ];
   const stops: string[] = [];
-  for (let index = 0; index < 7; index += 1) {
+  for (let index = 0; index < expected.length; index += 1) {
     await page.keyboard.press("Tab");
     stops.push(
       await page.evaluate(() => {
@@ -88,15 +100,5 @@ test("the header's keyboard order follows the document order and stops at nothin
     );
   }
 
-  // Skip link, then the notice bar (desktop: the help line's WhatsApp link, spec 041 AC-34, and
-  // the switcher's one sibling shown locale, spec 003 §14 A-founder-2026-10-14c), then the
-  // banner: the logo and the first category link (v2 chrome, TASK-176). Nothing unpublished is
-  // drawn, so nothing inert is a stop (§14 A20).
-  expect(stops).toEqual([
-    "A[#main]",
-    "A[https://wa.me/12135925150]",
-    "A[/en-gb]",
-    "A[/en]",
-    "A[/en/poland/flowers]",
-  ]);
+  expect(stops).toEqual(expected);
 });
