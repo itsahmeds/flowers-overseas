@@ -31,9 +31,32 @@ import { writeEvent } from "./event-writer";
 import { OrderModeSchema, OrderPlacedV1 } from "./events";
 import { jsonb, withExecutor, type OrderExecutor } from "./executor";
 import type { OutboxTargetResolver } from "./outbox";
+import { withSwitch } from "./switch";
 import type { EngineOptions } from "./transition";
 
 const CurrencyCode = z.string().regex(/^[A-Z]{3}$/);
+
+/** Parts per million: `fx_rate_ppm`'s unit (spec 002 §5.1; `modules/catalog` `pricing/fx.ts`). */
+const PPM = 1_000_000;
+
+/**
+ * Spec 005's buyer price is the base price converted at `fxRatePpm`, plus the FX buffer, then
+ * rounded to the currency's charm ending, so it is never the bare conversion. The check is
+ * therefore a band, in integer arithmetic only: the buyer total lies within 10 % of
+ * `baseTotalMinor × fxRatePpm / 1 000 000`. Wide enough for the buffer and the rounding, narrow
+ * enough that a wrong rate or a wrong base total (`1` at `1` ppm) is refused.
+ */
+function withinFxTolerance(
+  baseTotalMinor: number,
+  fxRatePpm: number,
+  buyerTotalMinor: number,
+): boolean {
+  const converted = BigInt(baseTotalMinor) * BigInt(fxRatePpm);
+  const buyerScaled = BigInt(buyerTotalMinor) * BigInt(PPM);
+  const difference =
+    converted > buyerScaled ? converted - buyerScaled : buyerScaled - converted;
+  return difference * 10n <= buyerScaled;
+}
 const Minor = z.number().int().nonnegative();
 const Positive = z.number().int().positive();
 
@@ -131,7 +154,7 @@ export const PlaceOrderInputSchema = z
     fxRatePpm: Positive.optional(),
     baseCurrency: CurrencyCode,
     baseTotalMinor: Positive,
-    vatBreakdown: z.array(VatSplitSchema),
+    vatBreakdown: z.array(VatSplitSchema).min(1),
     termsVersion: z.string().min(1).max(40).optional(),
     buyerSnapshot: BuyerSnapshotSchema,
     recipientSnapshot: RecipientSnapshotSchema,
@@ -150,9 +173,29 @@ export const PlaceOrderInputSchema = z
   )
   .refine(
     (input) =>
-      input.buyerCurrency === input.baseCurrency ||
-      input.fxRatePpm !== undefined,
-    { error: "a converted order carries its rate", path: ["fxRatePpm"] },
+      input.buyerCurrency === input.baseCurrency
+        ? input.baseTotalMinor === input.buyerTotalMinor &&
+          (input.fxRatePpm === undefined || input.fxRatePpm === PPM)
+        : input.fxRatePpm !== undefined &&
+          withinFxTolerance(
+            input.baseTotalMinor,
+            input.fxRatePpm,
+            input.buyerTotalMinor,
+          ),
+    {
+      error:
+        "one currency: base total = buyer total and no rate; two: the rate reproduces the buyer total from the base total",
+      path: ["fxRatePpm"],
+    },
+  )
+  .refine(
+    (input) =>
+      input.vatBreakdown.reduce((sum, split) => sum + split.grossMinor, 0) ===
+      input.buyerTotalMinor,
+    {
+      error: "the VAT breakdown's gross amounts add up to the buyer total",
+      path: ["vatBreakdown"],
+    },
   )
   .refine(
     (input) =>
@@ -214,10 +257,8 @@ export async function placeWith(
   const supplyModel = CountryRow.parse(country).supply_model;
 
   const orderId = newId();
-  await executor.execute(
-    sql`SELECT set_config('app.allow_status_write', 'on', true)`,
-  );
-  const [inserted] = await executor.execute(sql`
+  const [inserted] = await withSwitch(executor, () =>
+    executor.execute(sql`
     INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id,
                          destination_country_id, destination_city_id, destination_postcode,
                          delivery_date, delivery_window, status, buyer_currency_code,
@@ -232,9 +273,7 @@ export async function placeWith(
             ${input.baseTotalMinor}, ${jsonb(input.vatBreakdown)}, ${supplyModel},
             ${input.termsVersion ?? null}, ${jsonb(input.buyerSnapshot)},
             ${jsonb(input.recipientSnapshot)})
-    RETURNING id`);
-  await executor.execute(
-    sql`SELECT set_config('app.allow_status_write', '', true)`,
+    RETURNING id`),
   );
   IdRow.parse(inserted);
 

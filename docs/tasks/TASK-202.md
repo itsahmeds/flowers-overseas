@@ -46,6 +46,17 @@ One dated bullet per `/review`, newest last.
 - **From `/review` round 2 and `/break` round 2 of PR 210 (2026-10-14).** The engine owns this, not the database: record `timeout` at `sla_expires_at`, because until it does a florist reads an open offer (`response IS NULL`) through `partner_order` and `partner_order_line`; and close partner visibility of a cancelled order whose offer is still open. Source: reviewer's carry-forwards on PR 210.
 - **From `/break` round 1 of PR 210 (2026-10-14), observation M5.** Flipping a partner's `mode` from `demo` to `active` leaves its demo-order assignments, and `active` to `demo` leaves its live ones, because the trigger fires on assignment writes only. The engine (or the admin partner-status task, TASK-221) decides what happens to them; do not assume the database cleans up. A13 and A13b (a status change with no `order_event`, and a session-wide switch) stay with the engine as already recorded.
 
+- **From `/break` round 1 of PR 243 (bd2ed0c5, 2026-10-18), HOLES; `/review` round 1 PASS, HOLE A (AC-25's staging p95) accepted.** Each hole is fixed or pinned, with a test that goes red under the breaker's own mutation (finisher run, same branch):
+  1. `appendEvent` took a second `order.placed` and a buyer's `assignment.offered` naming no real offer. Now `ORDER_EVENT_PLACE_ONLY`, `ORDER_ACTOR_NOT_ALLOWED` (`STATUS_PRESERVING_ACTORS`: an offer is `system` or `admin`), and `ORDER_PAYLOAD_INVALID` unless the offer exists on this order, florist and attempt.
+  2. An injected resolver bypassed AC-24. `writeOutbox` now applies `withoutPeopleUnlessLive` after any resolver.
+  3. `place` now requires Σ `vatBreakdown.grossMinor` = `buyerTotalMinor` (at least one rate line). With one currency, `baseTotalMinor` = `buyerTotalMinor` and no rate (or exactly 1 000 000 ppm). With two, a rate is required, and `baseTotalMinor × fxRatePpm / 10^6` must lie within 10 % of the buyer total (BigInt arithmetic, integer minor units). The band covers spec 005's FX buffer and charm rounding.
+  4. Queue contract pinned: newest first (admin and partner), 50 a page, no florist whose offer is declined, total from `buyer_total_minor`, names fall back to `en`.
+  5. `demoRoute` pinned: skips a non-demo florist in the zone, longest prefix wins, and a `test` order routes to a demo florist.
+  6. Pinned: `ORDER_EVENT_UNREGISTERED` (`tests/unit/order-engine-registry.test.ts`), `appendEvent`'s payload-mode check and from = to, and a malformed id gives `ORDER_NOT_FOUND` with the transaction still usable.
+  7. T-20 (hole 7) asserts the `order.placed` payload, `place`'s actor, the line currency (EUR over a PLN base) and the outbox `payload_version` (3).
+  8. Observation closed: `withSwitch` (`service/switch.ts`) resets both settings in a `finally`-style path for `transition` and `place`.
+  Not pinned and not asked: the "first product line" order of the projections (`ORDER BY id`, arbitrary among product lines).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -61,6 +72,7 @@ here.
 
 - 2026-10-18 · Engine (`src/modules/orders/service/`), projections (`queries.ts`) and the guest writers (`src/modules/customers/writers.ts`) committed (c2258c67); PR 243 draft.
 - 2026-10-18 · Integration suite `tests/integration/order-engine.test.ts` (14 cases) and unit suite `tests/unit/order-engine.test.ts` (87 cases) green on local PG16; 12 mutations each turned a case red. Local PG16: embedded binaries of TASK-024's brief, port 54502.
+- 2026-10-18 · Breaker round 1 holes 1–8 fixed or pinned (see Carry-forwards). Unit 94 (+ the new registry file), integration 22; all 24 of the breaker's mutations replayed, each red.
 
 ## Result
 

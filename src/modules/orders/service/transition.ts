@@ -30,6 +30,7 @@ import { logger } from "@/lib/logger";
 import { actorClass, ACTOR_CLASSES } from "./actor";
 import { OrderEngineError } from "./errors";
 import { writeEvent } from "./event-writer";
+import { withSwitch } from "./switch";
 import type { OrderEventType } from "./events";
 import {
   withExecutor,
@@ -97,20 +98,13 @@ export async function transitionWith(
   }
   assertPayloadMode(order, parsed);
 
-  await executor.execute(
-    sql`SELECT set_config('app.allow_status_write', 'on', true)`,
-  );
-  await executor.execute(
-    sql`SELECT set_config('app.transition_event', ${parsed.type}, true)`,
-  );
-  await executor.execute(
-    sql`UPDATE "order" SET status = ${rule.to_status} WHERE id = ${orderId}`,
-  );
-  await executor.execute(
-    sql`SELECT set_config('app.allow_status_write', '', true)`,
-  );
-  await executor.execute(
-    sql`SELECT set_config('app.transition_event', '', true)`,
+  await withSwitch(
+    executor,
+    () =>
+      executor.execute(
+        sql`UPDATE "order" SET status = ${rule.to_status} WHERE id = ${orderId}`,
+      ),
+    parsed.type,
   );
 
   const written = await writeEvent(

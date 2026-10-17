@@ -50,15 +50,22 @@ const PEOPLE: ReadonlySet<OutboxTarget["audience"]> = new Set([
   "recipient",
 ]);
 
+/** AC-24's rule, on any list of targets: no buyer or recipient for a `demo` or `test` order. */
+export function withoutPeopleUnlessLive(
+  targets: readonly OutboxTarget[],
+  mode: OrderMode,
+): readonly OutboxTarget[] {
+  if (mode === "live") return targets;
+  return targets.filter((target) => !PEOPLE.has(target.audience));
+}
+
 /** The targets of `event` for an order in `mode`, under `routes`. Pure. */
 export function resolveOutboxTargets(
   routes: OutboxRoutes,
   event: OrderEventType,
   mode: OrderMode,
 ): readonly OutboxTarget[] {
-  const targets = routes[event] ?? [];
-  if (mode === "live") return targets;
-  return targets.filter((target) => !PEOPLE.has(target.audience));
+  return withoutPeopleUnlessLive(routes[event] ?? [], mode);
 }
 
 /** `outboxTargets(event, mode)` of §5.2, over this spec's (empty) routes. */
@@ -94,8 +101,13 @@ export async function writeOutbox(
   write: OutboxWrite,
   resolver: OutboxTargetResolver = outboxTargets,
 ): Promise<string | null> {
-  const targets = resolver(write.type, write.mode).map((target) =>
-    OutboxTargetSchema.parse(target),
+  // The filter runs again here, after whatever resolver was injected, so no resolver can route
+  // a demo or test event to a buyer or a recipient (AC-24).
+  const targets = withoutPeopleUnlessLive(
+    resolver(write.type, write.mode).map((target) =>
+      OutboxTargetSchema.parse(target),
+    ),
+    write.mode,
   );
   if (targets.length === 0) return null;
   const rows = await executor.execute(sql`

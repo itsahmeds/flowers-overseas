@@ -121,6 +121,31 @@ export const AssignmentOfferedV1 = z
   })
   .strict();
 
+/**
+ * Status-preserving events only `place` may write: `order.placed` is seq 1 of a new order and
+ * never a second event on an existing one, so `appendEvent` refuses it (`ORDER_EVENT_PLACE_ONLY`).
+ */
+export const PLACE_ONLY_EVENTS: ReadonlySet<OrderEventType> = new Set([
+  "order.placed",
+]);
+
+/**
+ * The actor classes allowed to append a status-preserving event (the `allowed_actors` of an
+ * event with no `order_transition` row). An offer is made by routing (`system`) or by an admin
+ * re-offering by hand, never by a buyer or a florist. An event absent from this map has no class
+ * rule yet; the spec that registers its schema adds its row here.
+ */
+export const STATUS_PRESERVING_ACTORS: Readonly<
+  Partial<
+    Record<
+      OrderEventType,
+      readonly ("buyer" | "partner" | "admin" | "system")[]
+    >
+  >
+> = {
+  "assignment.offered": ["system", "admin"],
+};
+
 /** What the engine needs of a payload schema: it parses to an object that names its mode. */
 export type EventPayloadSchema = z.ZodType<{ mode: OrderMode }>;
 

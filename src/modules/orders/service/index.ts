@@ -41,8 +41,10 @@ export {
   OrderModeSchema,
   OrderPlacedV1,
   OrderRoutedV1,
+  PLACE_ONLY_EVENTS,
   registerEventSchema,
   registeredEventTypes,
+  STATUS_PRESERVING_ACTORS,
   STATUS_PRESERVING_EVENTS,
   TRANSITION_EVENTS,
 } from "./events";
@@ -64,6 +66,7 @@ export {
   outboxTargets,
   OutboxTargetSchema,
   resolveOutboxTargets,
+  withoutPeopleUnlessLive,
 } from "./outbox";
 export type {
   OutboxRoutes,

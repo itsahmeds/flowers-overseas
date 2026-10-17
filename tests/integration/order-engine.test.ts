@@ -10,6 +10,7 @@
 import { loadavg } from "node:os";
 
 import type { SQL } from "drizzle-orm";
+import { z } from "zod";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
@@ -24,6 +25,8 @@ import {
   selectPartnerOrders,
   transition,
   type OutboxTargetResolver,
+  OrderModeSchema,
+  registerEventSchema,
 } from "@/modules/orders";
 import { createRecipient, upsertGuestCustomer } from "@/modules/customers";
 
@@ -61,6 +64,13 @@ import {
 import { runnerOf, sqlText } from "./support/sql-runner.ts";
 
 const server = await probeLocalServer();
+// Hole 7: one event at a version other than 1, so the outbox row's payload_version is the
+// event's own and not a constant.
+registerEventSchema(
+  "order.refund_requested",
+  3,
+  z.object({ mode: OrderModeSchema }).strict(),
+);
 registerFixtureEventSchemas();
 
 const db = (tx: Tx) => ({ db: runnerOf(tx) });
@@ -75,6 +85,17 @@ function failingAfter(tx: Tx, after: RegExp): OrderExecutor {
         throw new Error("injected failure");
       }
       return rows;
+    },
+  };
+}
+
+/** An executor over `tx` that throws instead of running the statement matching `before`. */
+function throwingBefore(tx: Tx, before: RegExp): OrderExecutor {
+  const handle = runnerOf(tx);
+  return {
+    async execute(query: SQL) {
+      if (before.test(sqlText(query))) throw new Error("injected before");
+      return handle.execute(query);
     },
   };
 }
@@ -777,7 +798,7 @@ describe.skipIf(server.url === undefined)(
     it("T-43: appendEvent refuses each of the 28 transition events on a routed order with nothing written, then appends assignment.offered with from = to", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         const w = await world(tx);
-        const { orderId } = await demoOrder(tx, w);
+        const { orderId, assignmentId } = await demoOrder(tx, w);
         const before = await snapshot(tx, orderId);
         const codes: string[] = [];
         for (const event of TRANSITION_EVENTS) {
@@ -801,7 +822,7 @@ describe.skipIf(server.url === undefined)(
           "system:demo_router",
           {
             mode: "demo",
-            assignmentId: w.zonePartner,
+            assignmentId,
             partnerId: w.zonePartner,
             attempt: 1,
             answerWindowMinutes: 60,
@@ -1104,6 +1125,470 @@ describe.skipIf(server.url === undefined)(
       expect(result.r4.recipientId).toBe(result.r1.recipientId);
       expect(result.r4.addressId).not.toBe(result.r1.addressId);
       expect(result.addresses?.n).toBe(2);
+    });
+    it("T-20 (hole 7): the order.placed payload, place's actor, the line currency and the outbox payload version", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const { orderId } = await place(
+          placeInput(w, {
+            actor: "system:test_engine",
+            buyerCurrency: "EUR",
+            buyerTotalMinor: 4_500,
+            baseCurrency: "PLN",
+            baseTotalMinor: 19_900,
+            fxRatePpm: 226_000,
+            vatBreakdown: [
+              {
+                rateBp: 800,
+                netMinor: 4_167,
+                vatMinor: 333,
+                grossMinor: 4_500,
+              },
+            ],
+            lines: [
+              {
+                kind: "product",
+                productId: w.productId,
+                tierKey: "classic",
+                qty: 1,
+                unitRetailMinor: 4_000,
+                vatRateBp: 800,
+              },
+              {
+                kind: "surcharge",
+                qty: 1,
+                unitRetailMinor: 500,
+                vatRateBp: 800,
+              },
+            ],
+          }),
+          db(tx),
+        );
+        const [seq1] = await tx<
+          {
+            actor: string;
+            payload: Record<string, unknown>;
+            payload_version: number;
+          }[]
+        >`
+          SELECT actor, payload, payload_version FROM order_event WHERE order_id = ${orderId} AND seq = 1`;
+        const lines = await tx<{ currency_code: string }[]>`
+          SELECT currency_code FROM order_line WHERE order_id = ${orderId}`;
+        const staff: OutboxTargetResolver = () => [
+          { name: "ops.fixture", audience: "staff" },
+        ];
+        const appended = await appendEvent(
+          orderId,
+          "order.refund_requested",
+          ACTOR_OF.admin,
+          { mode: "demo" },
+          { ...db(tx), outboxTargets: staff },
+        );
+        const [outbox] = await tx<
+          { payload_version: number; payload: Record<string, unknown> }[]
+        >`
+          SELECT payload_version, payload FROM outbox WHERE id = ${appended.outboxId}`;
+        const [event] = await tx<{ payload_version: number }[]>`
+          SELECT payload_version FROM order_event WHERE id = ${appended.eventId}`;
+        return { seq1, lines, outbox, event };
+      });
+      expect(result.seq1).toEqual({
+        actor: "system:test_engine",
+        payload_version: 1,
+        payload: {
+          mode: "demo",
+          buyerCurrency: "EUR",
+          buyerTotalMinor: 4_500,
+          deliveryDate: "2027-02-14",
+          lineCount: 2,
+        },
+      });
+      expect(result.lines.map((l) => l.currency_code)).toEqual(["EUR", "EUR"]);
+      expect(result.event?.payload_version).toBe(3);
+      expect(result.outbox?.payload_version).toBe(3);
+      expect(result.outbox?.payload).toMatchObject({
+        type: "order.refund_requested",
+        data: { mode: "demo" },
+      });
+    });
+
+    it("hole 1: appendEvent refuses a second order.placed, a buyer's offer, and an offer that does not exist, writing nothing", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const { orderId, assignmentId, partnerId } = await demoOrder(tx, w);
+        const fresh = await place(placeInput(w), db(tx));
+        const before = await snapshot(tx, orderId);
+        const offer = {
+          mode: "demo",
+          assignmentId,
+          partnerId,
+          attempt: 1,
+          answerWindowMinutes: 60,
+        };
+        const codes = {
+          placedAgain: await refusal(
+            appendEvent(
+              orderId,
+              "order.placed",
+              "buyer",
+              {
+                mode: "demo",
+                buyerCurrency: "PLN",
+                buyerTotalMinor: 19_900,
+                deliveryDate: "2027-02-14",
+                lineCount: 2,
+              },
+              db(tx),
+            ),
+          ),
+          buyerOffer: await refusal(
+            appendEvent(
+              fresh.orderId,
+              "assignment.offered",
+              "buyer",
+              offer,
+              db(tx),
+            ),
+          ),
+          ghostOffer: await refusal(
+            appendEvent(
+              orderId,
+              "assignment.offered",
+              "system:demo_router",
+              {
+                ...offer,
+                assignmentId: "00000000-0000-4000-8000-000000000001",
+              },
+              db(tx),
+            ),
+          ),
+          otherOrdersOffer: await refusal(
+            appendEvent(
+              fresh.orderId,
+              "assignment.offered",
+              "system:demo_router",
+              offer,
+              db(tx),
+            ),
+          ),
+          wrongMode: await refusal(
+            appendEvent(
+              orderId,
+              "assignment.offered",
+              "system:demo_router",
+              { ...offer, mode: "live" },
+              db(tx),
+            ),
+          ),
+        };
+        return {
+          codes,
+          before,
+          after: await snapshot(tx, orderId),
+          settings: await settings(tx),
+        };
+      });
+      expect(result.codes).toEqual({
+        placedAgain: "ORDER_EVENT_PLACE_ONLY",
+        buyerOffer: "ORDER_ACTOR_NOT_ALLOWED",
+        ghostOffer: "ORDER_PAYLOAD_INVALID",
+        otherOrdersOffer: "ORDER_PAYLOAD_INVALID",
+        wrongMode: "ORDER_PAYLOAD_INVALID",
+      });
+      expect(result.after).toEqual(result.before);
+      expect(result.settings).toEqual(["", ""]);
+    });
+
+    it("hole 2: an injected resolver naming a buyer target writes no outbox row for a demo order", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const buyer: OutboxTargetResolver = () => [
+          { name: "notify.buyer_email", audience: "buyer" },
+          { name: "notify.recipient_sms", audience: "recipient" },
+        ];
+        const { orderId } = await place(placeInput(w), {
+          ...db(tx),
+          outboxTargets: buyer,
+        });
+        const t = await transition(
+          orderId,
+          "order.authorised",
+          "system:demo_guard",
+          { mode: "demo" },
+          { ...db(tx), outboxTargets: buyer },
+        );
+        const [row] = await tx<
+          { n: number }[]
+        >`SELECT count(*)::int AS n FROM outbox WHERE order_id = ${orderId}`;
+        return { outboxId: t.outboxId, rows: row?.n };
+      });
+      expect(result).toEqual({ outboxId: null, rows: 0 });
+    });
+
+    it("hole 6: appendEvent keeps the current status in from and to, and a malformed id is ORDER_NOT_FOUND with the transaction still usable", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const { orderId } = await place(placeInput(w), db(tx));
+        const appended = await appendEvent(
+          orderId,
+          "order.refund_requested",
+          ACTOR_OF.admin,
+          { mode: "demo" },
+          db(tx),
+        );
+        const [row] = await tx<{ from_status: string; to_status: string }[]>`
+          SELECT from_status, to_status FROM order_event WHERE id = ${appended.eventId}`;
+        const codes = [
+          await refusal(
+            transition(
+              "not-a-uuid",
+              "order.authorised",
+              "system:demo_guard",
+              { mode: "demo" },
+              db(tx),
+            ),
+          ),
+          await refusal(
+            appendEvent(
+              "not-a-uuid",
+              "order.refund_requested",
+              ACTOR_OF.admin,
+              { mode: "demo" },
+              db(tx),
+            ),
+          ),
+          await refusal(demoRoute("not-a-uuid", db(tx))),
+        ];
+        const [alive] = await tx<{ one: number }[]>`SELECT 1 AS one`;
+        return { row, codes, alive: alive?.one };
+      });
+      expect(result.row).toEqual({
+        from_status: "placed",
+        to_status: "placed",
+      });
+      expect(result.codes).toEqual([
+        "ORDER_NOT_FOUND",
+        "ORDER_NOT_FOUND",
+        "ORDER_NOT_FOUND",
+      ]);
+      expect(result.alive).toBe(1);
+    });
+
+    it("hole 4: the admin queue is newest first, 50 a page, totals in the buyer's currency, no declined florist; the partner list is newest first; names fall back to en", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const read = <T>(
+          context: Parameters<typeof asApp>[1],
+          fn: (e: OrderExecutor) => Promise<T>,
+        ) =>
+          undone(tx, async (sp) => {
+            await asApp(sp, context);
+            return fn(runnerOf(sp));
+          });
+        const older = await demoOrder(tx, w);
+        const newer = await demoOrder(tx, w);
+        await tx`UPDATE "order" SET created_at = now() - interval '2 hours' WHERE id = ${older.orderId}`;
+        await tx`UPDATE "order" SET created_at = now() - interval '1 hour' WHERE id = ${newer.orderId}`;
+        const eur = await place(
+          placeInput(w, {
+            buyerCurrency: "EUR",
+            buyerTotalMinor: 4_500,
+            baseCurrency: "PLN",
+            baseTotalMinor: 19_900,
+            fxRatePpm: 226_000,
+            vatBreakdown: [
+              {
+                rateBp: 800,
+                netMinor: 4_167,
+                vatMinor: 333,
+                grossMinor: 4_500,
+              },
+            ],
+            lines: [
+              {
+                kind: "product",
+                productId: w.productId,
+                tierKey: "classic",
+                qty: 1,
+                unitRetailMinor: 4_500,
+                vatRateBp: 800,
+              },
+            ],
+          }),
+          db(tx),
+        );
+        await tx`UPDATE order_assignment SET response = 'decline', responded_at = now() WHERE order_id = ${older.orderId}`;
+        const mine = { countryIso2: w.iso2 };
+        const admin = await read({ role: "admin" }, (e) =>
+          selectAdminOrders(e, mine),
+        );
+        const partner = await read(
+          { role: "partner", partnerIds: [w.zonePartner] },
+          (e) => selectPartnerOrders(e),
+        );
+        const de = await read(
+          { role: "partner", partnerIds: [w.zonePartner] },
+          (e) => selectPartnerOrders(e, "de"),
+        );
+        for (let index = 0; index < 48; index += 1) {
+          const { orderId } = await place(placeInput(w), db(tx));
+          await tx`UPDATE "order" SET created_at = now() - interval '3 hours' - ${index} * interval '1 second' WHERE id = ${orderId}`;
+        }
+        const page1 = await read({ role: "admin" }, (e) =>
+          selectAdminOrders(e, mine),
+        );
+        const page2 = await read({ role: "admin" }, (e) =>
+          selectAdminOrders(e, { ...mine, page: 2 }),
+        );
+        return { older, newer, eur, admin, partner, de, page1, page2 };
+      });
+      expect(result.admin.map((i) => i.orderId)).toEqual([
+        result.eur.orderId,
+        result.newer.orderId,
+        result.older.orderId,
+      ]);
+      expect(result.admin[0]).toMatchObject({
+        totalMinor: 4_500,
+        currency: "EUR",
+        assignedPartner: null,
+      });
+      expect(result.admin[2]?.assignedPartner).toBeNull();
+      expect(result.admin[1]?.assignedPartner?.partnerId).toBe(
+        result.newer.partnerId,
+      );
+      expect(result.partner.map((i) => i.orderId)).toEqual([
+        result.newer.orderId,
+      ]);
+      expect(result.de[0]?.cityName).toBe("Warsaw");
+      expect(result.de[0]?.productName).toBe("Red roses");
+      expect(result.page1).toHaveLength(50);
+      expect(
+        (result.page1[49]?.placedAt ?? "") <= (result.page1[0]?.placedAt ?? ""),
+      ).toBe(true);
+      expect(result.page2).toHaveLength(1);
+      expect(
+        new Set([...result.page1, ...result.page2].map((i) => i.orderId)).size,
+      ).toBe(51);
+    });
+
+    it("hole 4: the partner list is newest first across two open offers", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const older = await demoOrder(tx, w);
+        const newer = await demoOrder(tx, w);
+        await tx`UPDATE "order" SET created_at = now() - interval '2 hours' WHERE id = ${older.orderId}`;
+        await tx`UPDATE "order" SET created_at = now() - interval '1 hour' WHERE id = ${newer.orderId}`;
+        const items = await undone(tx, async (sp) => {
+          await asApp(sp, { role: "partner", partnerIds: [w.zonePartner] });
+          return selectPartnerOrders(runnerOf(sp));
+        });
+        return {
+          order: items.map((i) => i.orderId),
+          expected: [newer.orderId, older.orderId],
+        };
+      });
+      expect(result.order).toEqual(result.expected);
+    });
+
+    it("hole 5: demoRoute skips a non-demo florist in the zone, prefers the longest prefix, and routes a test order to a demo florist", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const [short] = await tx<{ id: string }[]>`
+          INSERT INTO postcode_zone (country_id, prefix, city_id) VALUES (${w.countryId}, '00', ${w.cityId}) RETURNING id`;
+        const shortPartner = await partner(tx, w.countryId, "demo");
+        await tx`UPDATE fulfillment_partner SET code = ${`ab-${shortPartner}`} WHERE id = ${shortPartner}`;
+        await tx`INSERT INTO partner_coverage (partner_id, postcode_zone_id) VALUES (${shortPartner}, ${short?.id ?? ""})`;
+        const [longZone] = await tx<{ id: string }[]>`
+          SELECT id FROM postcode_zone WHERE country_id = ${w.countryId} AND prefix = '00-9'`;
+        await tx`UPDATE fulfillment_partner SET code = ${`aa-0-${w.activePartner}`} WHERE id = ${w.activePartner}`;
+        await tx`INSERT INTO partner_coverage (partner_id, postcode_zone_id) VALUES (${w.activePartner}, ${longZone?.id ?? ""})`;
+        const longest = await demoOrder(tx, w);
+        const shortOnly = await demoOrder(tx, w, { postcode: "00-100" });
+        const test = await place(placeInput(w, { mode: "test" }), db(tx));
+        await transition(
+          test.orderId,
+          "order.authorised",
+          "system:demo_guard",
+          { mode: "test" },
+          db(tx),
+        );
+        const routed = await demoRoute(test.orderId, db(tx));
+        const testEvents = await tx<{ type: string; mode: string }[]>`
+          SELECT type, payload->>'mode' AS mode FROM order_event WHERE order_id = ${test.orderId} ORDER BY seq`;
+        const [status] = await tx<
+          { status: string }[]
+        >`SELECT status FROM "order" WHERE id = ${test.orderId}`;
+        return {
+          w,
+          shortPartner,
+          longest,
+          shortOnly,
+          routed,
+          testEvents,
+          status: status?.status,
+        };
+      });
+      expect(result.longest.partnerId).toBe(result.w.zonePartner);
+      expect(result.shortOnly.partnerId).toBe(result.shortPartner);
+      expect(result.routed.partnerId).toBe(result.w.zonePartner);
+      expect(result.status).toBe("routed");
+      expect(result.testEvents).toEqual([
+        { type: "order.placed", mode: "test" },
+        { type: "order.authorised", mode: "test" },
+        { type: "order.routed", mode: "test" },
+        { type: "assignment.offered", mode: "test" },
+      ]);
+    });
+
+    it("hole 8: a throw between the switch and the guarded statement, caught without a savepoint, leaves the switch off", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const w = await world(tx);
+        const { orderId } = await place(placeInput(w), db(tx));
+        const caughtTransition = await transition(
+          orderId,
+          "order.authorised",
+          "system:demo_guard",
+          { mode: "demo" },
+          {
+            executor: throwingBefore(tx, /^\s*UPDATE "order" SET status/),
+          },
+        ).catch((error: unknown) => (error as Error).message);
+        const afterTransition = await settings(tx);
+        const rawUpdate = await pgFailure(
+          tx,
+          (sp) =>
+            sp`UPDATE "order" SET status = 'authorised' WHERE id = ${orderId}`,
+        );
+        const caughtPlace = await place(placeInput(w), {
+          executor: throwingBefore(tx, /^\s*INSERT INTO "order"/),
+        }).catch((error: unknown) => (error as Error).message);
+        const afterPlace = await settings(tx);
+        const rawInsert = await pgFailure(
+          tx,
+          (sp) => sp`
+          INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
+                               delivery_date, buyer_currency_code, buyer_total_minor,
+                               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
+          VALUES (${"h".repeat(24)}, 'demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
+                  DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}'::jsonb, '{}'::jsonb)`,
+        );
+        return {
+          caughtTransition,
+          afterTransition,
+          rawUpdate: rawUpdate.raised,
+          caughtPlace,
+          afterPlace,
+          rawInsert: rawInsert.raised,
+        };
+      });
+      expect(result).toEqual({
+        caughtTransition: "injected before",
+        afterTransition: ["", ""],
+        rawUpdate: "ORDER_STATUS_DIRECT_WRITE",
+        caughtPlace: "injected before",
+        afterPlace: ["", ""],
+        rawInsert: "ORDER_INSERT_OUTSIDE_SERVICE",
+      });
     });
   },
 );

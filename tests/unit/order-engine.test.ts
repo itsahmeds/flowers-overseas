@@ -35,6 +35,7 @@ import {
   type OutboxRoutes,
 } from "@/modules/orders";
 import { appendEventWith } from "@/modules/orders/service/append-event";
+import { writeOutbox } from "@/modules/orders/service/outbox";
 import { placeWith } from "@/modules/orders/service/place";
 import { transitionWith } from "@/modules/orders/service/transition";
 
@@ -66,6 +67,9 @@ interface Script {
   readonly mode?: "demo" | "test" | "live";
   readonly row?: { to_status: string; allowed_actors: string[] } | null;
   readonly guarded?: boolean;
+  readonly offerExists?: boolean;
+  /** Throw (without running it) when a statement matches. */
+  readonly throwOn?: RegExp;
 }
 
 function recorder(script: Script = {}): {
@@ -78,6 +82,10 @@ function recorder(script: Script = {}): {
       const { sql, params } = dialect.sqlToQuery(query);
       log.push({ sql, params });
       await Promise.resolve();
+      if (script.throwOn?.test(sql) === true) throw new Error("injected");
+      if (/FROM order_assignment/.test(sql)) {
+        return script.offerExists === false ? [] : [{ found: 1 }];
+      }
       if (/FROM "order" WHERE id = \$1 FOR UPDATE/.test(sql)) {
         return [
           {
@@ -556,5 +564,187 @@ describe("read projections run under the right context (AC-25; R3, R4)", () => {
     expect(partnerSql).not.toMatch(/FROM "order"|snapshot|order_line ol/);
     await expect(listOrdersForPartner("not-a-uuid")).rejects.toThrow();
     vi.doUnmock("@/lib/db");
+  });
+});
+
+const PARENTS = {
+  countryId: "1b2c3d4e-5f60-4a7b-8c9d-0e1f2a3b4c5d",
+  customerId: "2c3d4e5f-6071-4b8c-9d0e-1f2a3b4c5d6e",
+  recipientId: "3d4e5f60-7182-4c9d-8e1f-2a3b4c5d6e7f",
+  productId: "4e5f6071-8293-4dae-9f20-3b4c5d6e7f80",
+};
+const OFFER = {
+  mode: "demo",
+  assignmentId: EVENT_ID,
+  partnerId: ORDER_ID,
+  attempt: 1,
+  answerWindowMinutes: 60,
+};
+
+describe("breaker round 1 on PR 243 (holes 1, 2, 3, 8)", () => {
+  it("hole 1: appendEvent refuses order.placed, a buyer's offer, and an offer that does not exist", async () => {
+    const placed = recorder({ status: "routed" });
+    expect(
+      await refusalCode(
+        appendEventWith(placed.executor, ORDER_ID, "order.placed", "buyer", {
+          mode: "demo",
+          buyerCurrency: "PLN",
+          buyerTotalMinor: 1,
+          deliveryDate: "2027-01-01",
+          lineCount: 1,
+        }),
+      ),
+    ).toBe("ORDER_EVENT_PLACE_ONLY");
+    const buyer = recorder({ status: "placed" });
+    expect(
+      await refusalCode(
+        appendEventWith(
+          buyer.executor,
+          ORDER_ID,
+          "assignment.offered",
+          "buyer",
+          OFFER,
+        ),
+      ),
+    ).toBe("ORDER_ACTOR_NOT_ALLOWED");
+    const ghost = recorder({ status: "routed", offerExists: false });
+    expect(
+      await refusalCode(
+        appendEventWith(
+          ghost.executor,
+          ORDER_ID,
+          "assignment.offered",
+          "system:demo_router",
+          OFFER,
+        ),
+      ),
+    ).toBe("ORDER_PAYLOAD_INVALID");
+    for (const { log } of [placed, buyer, ghost]) {
+      expect(log.some((e) => /^\s*INSERT/.test(e.sql))).toBe(false);
+    }
+  });
+
+  it("hole 2: an injected resolver cannot route a demo or test event to a buyer or a recipient", async () => {
+    const people = () =>
+      [
+        { name: "notify.buyer_email", audience: "buyer" },
+        { name: "notify.recipient_sms", audience: "recipient" },
+      ] as const;
+    for (const mode of ["demo", "test"] as const) {
+      const { log, executor } = recorder();
+      const id = await writeOutbox(
+        executor,
+        {
+          eventId: EVENT_ID,
+          orderId: ORDER_ID,
+          type: "order.routed",
+          seq: 3,
+          mode,
+          payload: { mode },
+          payloadVersion: 1,
+        },
+        people,
+      );
+      expect(id).toBeNull();
+      expect(log).toEqual([]);
+    }
+    const live = recorder();
+    await expect(
+      writeOutbox(
+        live.executor,
+        {
+          eventId: EVENT_ID,
+          orderId: ORDER_ID,
+          type: "order.routed",
+          seq: 3,
+          mode: "live",
+          payload: { mode: "live" },
+          payloadVersion: 1,
+        },
+        people,
+      ),
+    ).rejects.toThrow();
+    expect(live.log.map((e) => e.sql)).toEqual([
+      expect.stringMatching(/INSERT INTO outbox/),
+    ]);
+  });
+
+  it("hole 3: place refuses a VAT breakdown that does not add up and a base total or rate that does not match", async () => {
+    const eur = {
+      buyerCurrency: "EUR",
+      buyerTotalMinor: 4_500,
+      baseCurrency: "PLN",
+      baseTotalMinor: 19_900,
+      fxRatePpm: 226_000,
+      vatBreakdown: [
+        { rateBp: 800, netMinor: 4_167, vatMinor: 333, grossMinor: 4_500 },
+      ],
+      lines: [
+        {
+          kind: "product" as const,
+          productId: PARENTS.productId,
+          tierKey: "classic",
+          qty: 1,
+          unitRetailMinor: 4_500,
+          vatRateBp: 800,
+        },
+      ],
+    };
+    const accepted = recorder();
+    await placeWith(accepted.executor, placeInput(PARENTS, eur));
+    expect(accepted.log.length).toBeGreaterThan(0);
+    for (const overrides of [
+      {
+        vatBreakdown: [
+          { rateBp: 800, netMinor: 1, vatMinor: 1, grossMinor: 2 },
+        ],
+      },
+      { vatBreakdown: [] },
+      { baseTotalMinor: 1, fxRatePpm: 1 },
+      { baseTotalMinor: 1 },
+      { fxRatePpm: 1_000_001 },
+      { ...eur, fxRatePpm: 1 },
+      { ...eur, baseTotalMinor: 1 },
+      { ...eur, fxRatePpm: undefined },
+    ]) {
+      const { log, executor } = recorder();
+      expect(
+        await refusalCode(placeWith(executor, placeInput(PARENTS, overrides))),
+        JSON.stringify(overrides),
+      ).toBe("ORDER_INPUT_INVALID");
+      expect(log).toEqual([]);
+    }
+  });
+
+  it("hole 8: a throw between the switch and the reset still resets both settings, and the first error is rethrown", async () => {
+    const t = recorder({
+      row: { to_status: "authorised", allowed_actors: ["system"] },
+      throwOn: /UPDATE "order" SET status/,
+    });
+    await expect(
+      transitionWith(
+        t.executor,
+        ORDER_ID,
+        "order.authorised",
+        "system:demo_guard",
+        { mode: "demo" },
+      ),
+    ).rejects.toThrow("injected");
+    expect(settingSequence(t.log)).toEqual([
+      "switch on",
+      "event set order.authorised",
+      "status update",
+      "switch reset",
+      "event reset",
+    ]);
+    const p = recorder({ throwOn: /INSERT INTO "order"/ });
+    await expect(placeWith(p.executor, placeInput(PARENTS))).rejects.toThrow(
+      "injected",
+    );
+    expect(settingSequence(p.log)).toEqual([
+      "switch on",
+      "order insert",
+      "switch reset",
+    ]);
   });
 });

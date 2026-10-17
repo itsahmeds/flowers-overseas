@@ -28,6 +28,8 @@ export const ORDER_ERROR_CODES = [
   "ORDER_ACTOR_NOT_ALLOWED",
   /** `appendEvent` was given an event that has a row in `order_transition` (A1.4, AC-43). */
   "ORDER_EVENT_NEEDS_TRANSITION",
+  /** `appendEvent` was given an event only `place` writes (`order.placed`). */
+  "ORDER_EVENT_PLACE_ONLY",
   /** `demoRoute` was given a `live` order (§5.2). */
   "DEMO_ROUTE_LIVE_ORDER",
   /** `demoRoute` found no demo florist for the order's country (§2). */
