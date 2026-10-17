@@ -1,0 +1,10 @@
+{
+  "source": "https://resend.com/docs/api-reference/emails/send-email (request body fields and the 200 response), recorded 2026-10-18; no account was called",
+  "response200": { "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794" },
+  "response422": {
+    "statusCode": 422,
+    "name": "validation_error",
+    "message": "Invalid `to` field."
+  },
+  "requestFields": ["from", "to", "subject", "text", "html", "tags"]
+}
