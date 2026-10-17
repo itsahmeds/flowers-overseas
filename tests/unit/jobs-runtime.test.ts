@@ -359,13 +359,16 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("does nothing but maintenance with no handlers (the production map today)", async () => {
+  it("the production map handles retention.sweep (TASK-025) and nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
-    expect(JOB_HANDLERS).toEqual({});
+    expect(Object.keys(JOB_HANDLERS)).toEqual(["retention.sweep"]);
+  });
+
+  it("does nothing but maintenance with no handlers", async () => {
     const fake = fakeBoss({
       "retention.sweep": [{ id: "w", data: envelope({}) }],
     });
-    const counts = await runTick(fake.boss, JOB_HANDLERS, { log: quiet() });
+    const counts = await runTick(fake.boss, {}, { log: quiet() });
     expect(fake.fetched).toEqual([]);
     expect(fake.settled).toEqual([]);
     expect(counts).toEqual({
