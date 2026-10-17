@@ -84,7 +84,7 @@ describe("resendMailer (Resend send-email contract)", () => {
       Promise.reject(new Error("connect ECONNREFUSED founder@example.test")),
     );
     const send = resendMailer(config, fetchImpl).send(message);
-    await expect(send).rejects.toThrow("network error");
+    await expect(send).rejects.toThrow("request failed");
     await expect(send).rejects.not.toThrow(/founder@example\.test/u);
   });
 

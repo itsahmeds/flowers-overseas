@@ -79,7 +79,7 @@ export function resendMailer(
           }),
         });
       } catch {
-        throw new MailerError("network error");
+        throw new MailerError("request failed");
       }
       if (!response.ok) {
         throw new MailerError(`HTTP ${String(response.status)}`);
