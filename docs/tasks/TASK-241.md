@@ -101,6 +101,17 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   after the build (local production build): category 1280 × 800 price foot 785 (bound 800),
   1440 × 900 840 (900), 390 × 844 809 (844). Below `lg` the disclosure takes its own line under
   the count-and-sort row (the four-part row does not fit at 768).
+- **E-2 (2026-10-18, finisher): the new key takes `en-gb` out of the index.** Spec 008 §14
+  A-founder-2026-10-15c requires one new key, `shop.category.chipsToggle`, shipped
+  `reviewed: false` in every locale ("`i18n:check` stays green", which it does). But `en-gb`'s
+  unreviewed share is at the 5 % threshold: with this one key it reads 0.05157 (> 0.05), so
+  `en-gb` becomes a beta, non-indexable locale, its hreflang alternates disappear, and its sitemap
+  children go (on `origin/main` 83c8e777 without the key, the same tests pass). Red on this branch:
+  `i18n-review` (2), `home-honesty` (2), `i18n-alternates` (3+), `seo-sitemap`, `corridor-route`,
+  `cache-cloudflare`, `catalog-read`, `destinations-hub`, `i18n-check`, `i18n-fifth-locale`. The
+  fix is not mine to make: attesting the copy is the founder's own act (`reviewed: true` via his
+  approval script for "Categories"), or the spec writer rules another way (for example, the
+  founder reviews other pending `en` keys first). Until then CI cannot be green on this PR.
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
