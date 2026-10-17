@@ -54,12 +54,12 @@ Same rulings as TASK-242. "Specs ok" approves the proposed wordings below as the
     from that list.
 - **Ordering risk, 5 % share.** Indexable `meta` titles always count towards spec 003 A17's 5 %
   unreviewed share. TASK-224 measured committed `en` at 4.1 % (22 of 537), a margin of four keys.
-  This task unreviews at least six counted keys. Start only after the founder's
-  `record-approval-226.py` run has landed on `main`. If `i18n:check` still breaches 5 %, stop and
+  This task unreviews at least six counted keys. Start only after PR 225 merges: it carries
+  the founder's `record-approval-226.py` run (commit `bc090490`, already made). If `i18n:check` still breaches 5 %, stop and
   escalate. Do not mark anything reviewed and do not loosen the threshold.
 - **Not this task:** body copy dashes and corridor guide copy (none in head fields; spec 007).
 - **Order:** after TASK-226 (PR 225), which rewrites the same `messages/*` and
-  `seed/data/copy/*` rows, and after its founder record run.
+  `seed/data/copy/*` rows (its founder record is already made, in that PR).
 
 ## Read
 
