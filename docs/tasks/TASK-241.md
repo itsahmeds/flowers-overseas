@@ -127,6 +127,18 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   (2) replace PR 236's C3 row in `docs/design/README.md` ("TASK-241 builds it and moves this
   row out") and update this task's own row to option A; (3) `gh pr ready 235`, add `ci:full`,
   report CI on the head, judge the occasion at 390 there; (4) row to `in_review`.
+- 2026-10-18 (finisher): rebased on origin/main (PR 240's spec text, PR 237). The merged spec
+  (A-founder-2026-10-15c) differs from the E-1 build in four ways, so the build now follows the
+  spec: the disclosure renders **at every width** (below `md` on the sort form's row, the two under
+  one rule), no chip line renders on the category (no link outside the `<details>`), and the
+  opened panel is **in normal flow** in a full-width row under the toolbar, pushing the grid down
+  (no overlay). The `<details>` is `display: contents` where `::details-content` is supported, so
+  its `<summary>` and its panel take separate cells of the toolbar grid; elsewhere the whole
+  `<details>` sits in the button cell and, opened, moves to the panel row. T-39 written to the
+  spec (`en-gb` and `de`, 1440/1280/390, JS off, every link 200); T-37 reads the summary as the
+  category's chip row and counts a `<details>` after the grid. `docs/design/README.md`: PR 236's
+  C3 row and this task's row replaced by one option A row. Local build not run (load average 112);
+  judged in CI.
 
 ## Result
 
