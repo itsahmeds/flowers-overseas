@@ -81,8 +81,31 @@ says "this is the price you will pay" and shows another tier's price.
 - **From the founder's ruling D2 (PR 227):** TASK-239 changes the primary-action status text to
   "Ordering opens soon" after this PR; do not pin "Ordering is not open yet" in a new assertion.
 
+- **From the 2026-10-18 finisher (PR 239):** (1) TASK-129, the date half: with a surcharged date
+  chosen in `live`, the surcharge line and the chip fees still show the default size's fee after a
+  size change (the total is right, from the totals table). (2) `docs/design/README.md` needs a
+  difference row for C4: the docked bar shows from load with its price on the first screen,
+  where the artboard has the price join the bar once scrolled (outside this fence). (3) The related
+  heading's *our order* `<em>` waits for PR 230 (see Escalations).
+
 ## Escalations
 
+- **The PDP's script budget cannot be met with AC-51 and AC-31 as specified (2026-10-18, finisher;
+  rows 228 and 229 `blocked`).** `lighthouse` fails `resource-summary.script.size` only on
+  `/en{,-gb}/poland/flowers/roses`, a category listing served by the same
+  `[segment]/[child]/[grandchild]/page.tsx` as the PDP, so it loads the PDP island's chunk too
+  (the Lighthouse set holds no product URL; a product URL pays the same bytes): 131,517 B on this PR (run 38698876578) against
+  130,950 B on main (run 38701069633) and a 131,072 B budget. Shared script is 130,099 B on both,
+  so main leaves the PDP 122 B of headroom while spec 009 AC-14 promises the island 2,048 B. The
+  whole +567 B is the island (esbuild, minified, React external, Brotli 11: main 415 B, this PR
+  955 B; `ui/checkout/graphemes.ts` alone 388 B, the size-follow ~135 B). A rewrite as a
+  render-null island over a server-drawn `<textarea>` with the same `graphemes.ts` measures 734 B,
+  still about 200 B over. Only dropping checkout's grapheme approximation fits: a one-regex PDP
+  counter measures 498 B (+83 B, under budget by ~40 B by proxy), but it would count Indic
+  conjuncts, Thai SARA AM and CRLF differently from checkout, against TASK-229's binding clause
+  (`countGraphemes` parity), and leave TASK-129 no room. **Founder/spec decision needed:** (a) the
+  coarser PDP-only counter; (b) a PDP script budget above 131,072 B (spec 004 A1, spec 009 AC-14);
+  or (c) a task that cuts shared script. Nothing was changed for it in this run.
 - **The related heading's poppy *our order*** (folded in by the work order from TASK-231) cannot land before PR 230. It needs AC-52's marker rules: `i18n:check` tag pairs, and `record-approval` comparing the tag-stripped value so the founder's approval survives. It is not built here. It is one line (`t.rich` with `HEADING_EM` on `product.related.heading`) once PR 230 merges.
 
 ## Progress
@@ -90,6 +113,7 @@ says "this is the price you will pay" and shows another tier's price.
 - 2026-10-15 06:35Z: view model (per-tier equivalents, add-ons by `addonPriceProjection`, no `facts`), the island's size half, bar on load; unit tests; draft PR 239.
 - 2026-10-15 06:50Z: e2e (size, card, chips), mutations watched red on `next dev`; rebased on `origin/main`.
 - 2026-10-15 07:20Z (session closing, partial on CI only): CI on `6a04ec94` had spine green, `visual` red (product and gallery baselines, expected: needs `visual:baselines`), `e2e` red only on `dev-components.spec.ts`'s add-on line (fixed in `32bf3cc3`, pushed, `ci:full` toggled), `lighthouse` still running. **Next:** read CI on the new head; if green except `visual`, the orchestrator adds `visual:baselines`; then `/review` + `/break`. The related heading `<em>` waits for PR 230. **Open:** `lighthouse` on `6a04ec94` failed `resource-summary.script.size` on `/en{,-gb}/poland/flowers/roses` at 131,517 B (budget 131,072, +445 B). That is a listing page, not the PDP. Not yet diagnosed: check whether main is also over budget, or whether the island's growth (602 → 1,133 B br) or `ui/checkout/graphemes.ts` landed in a chunk the listing shares.
+- 2026-10-18 03:05Z (finisher): rebased on `67ac748d` (head `7d7fd8b9`); cheap gates green except unit timeouts at load ~150, all 83 changed files + 3 always-run green with `--testTimeout=120000`; `visual:baselines` added, `ci:full` toggled. Script budget diagnosed and escalated (see Escalations); not fixed.
 
 ## Result
 

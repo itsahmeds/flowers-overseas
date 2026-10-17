@@ -81,7 +81,7 @@ A bug in merged work (TASK-179 and TASK-197), so a new task (founder rule, 2026-
 
 ## Escalations
 
-_None recorded._
+- **AC-51's grapheme counter costs the PDP 388 B of script, and the PDP has 122 B of headroom (2026-10-18).** The decision is written in `docs/tasks/TASK-228.md` `## Escalations`; this row is `blocked` with TASK-228's.
 
 ## Progress
 
