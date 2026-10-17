@@ -22,6 +22,10 @@ Branch `task/TASK-025-retention-sweep`. §8 retention is implemented, not promis
 
 _None recorded._
 
+## Progress
+
+- 2026-10-18: `src/jobs/retention.ts` + the `retention.sweep` entry in `src/jobs/handlers.ts`; T-20 in `tests/integration/retention-sweep.test.ts` (17 cases, 8 mutants red), pure half in `tests/unit/retention-sweep.test.ts`. Next: TASK-026 seed.
+
 ## Result
 
 _Pending._
