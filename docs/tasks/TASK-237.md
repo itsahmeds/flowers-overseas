@@ -63,6 +63,14 @@ TASK-233 and TASK-238, one agent, branch `task/TASK-233-…`**: all three edit `
   them to every visitor. `.claude/state/qa-2026-10-14/QA-2-03.png`, `QA-2-04.png`, `QA-1-19.jpg`.
 - **From PR 226's review (2026-10-14):** TASK-233's e2e iterates `shownLocales()`, not four
   locales; this task supplies the function, so build it first inside the feature PR.
+- **From `/break` round 1 (2026-10-18), AC-48 / AC-45, closed by tests (finisher):** three
+  surviving mutations, each now red under that exact mutation (watched red, source restored).
+  **H1** deleting check 12's `primaryLanguage(locale.code) === sourceLanguage` skip: new case in
+  `tests/unit/i18n-check.test.ts` where `en` and `en-gb` are shown and 100 % unreviewed and the
+  check exits 0 ("never breaks the build"). **H2** check 12's `<=` turned to `<`: a throwaway tree
+  with `de` shown at exactly 1 of 20 unreviewed (5.00 %) exits 0; 2 of 20 (10.0 %) exits 1 naming
+  `de`. **H3** `shown: z.coerce.boolean()` in `src/config/locales.ts`: `tests/unit/locales-config.test.ts`
+  refuses `"false"`, `"true"`, `""`, `1`, `0`, `null`, each naming `2.shown`.
 
 ## Escalations
 
@@ -89,6 +97,8 @@ _None recorded._
 - 2026-10-18 (finisher): runner baselines from run 39073535884 committed (`734b1fa9`, 25 PNGs and
   the manifest, `--verify` 112/112, images looked at); `visual:baselines` removed; CI on
   `734b1fa9`: `a11y`, `visual`, `e2e` green. **Next:** `/review` and `/break` on the head.
+- 2026-10-18 (finisher, breaker r1): H1 to H3 closed by tests, see Carry-forwards; no source change.
+  The tests build their trees in `os.tmpdir()`, so no fixture file was added.
 
 ## Result
 
