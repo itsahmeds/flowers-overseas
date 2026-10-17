@@ -63,6 +63,13 @@ links (PR 226 review nit 1).
 
 ## Carry-forwards
 
+- **For TASK-228 (product page):** the related-products heading's italic phrase, *our order* in
+  "Six more, in our order" (`product.related.heading`, `product-desktop.dc.html` `#rel-h`), is not
+  done here (work order fence: TASK-227 to TASK-230 own the product page). Mark it with
+  `HEADING_EM` (`src/modules/ui/primitives/typography.tsx`) the same way.
+- **For TASK-194 (motions):** the hero phrase is `#hero-heading em[data-fo-em]`, the hook for the
+  underline motion (cell 5); no motion is built here.
+
 - **From the site test (2026-10-14):**
   - QA-1 Q1-04 (P1): "Poland" reads "Polana" at 390 and every phone width.
     `.claude/state/qa-2026-10-14/QA-1-05.png`; QA-4 `QA-4-out/sent-en-390-mum-birthday.png`.
@@ -75,12 +82,104 @@ links (PR 226 review nit 1).
 
 ## Escalations
 
-_None recorded._
+- **E1 (2026-10-15), resolved the same day by spec 004 §14 A-founder-2026-10-14d (PR 227).** The
+  first build shipped the eight marked `en` values `reviewed: false`, which put `en` at 6.27 % and
+  `en-gb` at 6.46 % unreviewed and turned both non-indexable. Clause 3 of the amendment keeps the
+  founder's approval for a marker-only change, so every marked value keeps `reviewed`, `reviewedBy`
+  and `reviewedAt` and only its `sourceHash` follows the value; the share is unchanged (`en` 4.80 %,
+  `en-gb` 4.98 %).
+- **E2 (2026-10-15): the destinations heading is `destinationsHub.h1`, shared with the hub page.**
+  The home's "Where we can send flowers" is the destinations hub's `<h1>` key. It carries the marker
+  (the home's artboard draws the phrase), the home renders it in `<em>`, and the hub page renders
+  the marker as plain words (`DestinationsHubPage.tsx`, one line outside this fence) so the hub
+  looks as it did; the hub's `<title>` reads `seoTitle`, not this key. Whether the hub's own H1
+  shows the phrase (its artboard draws `<em class="sun">send flowers</em>`) is a hub-page task.
 
 ## Progress
 
-_Not started._
+- 2026-10-15: started on `task/TASK-231-home-to-artboards` (one feature PR with TASK-231/232).
+- 2026-10-15: implementation, unit and e2e tests; build slot once for the select clip probe, once
+  for `next build` + `next start` + the e2e suites; rebased on PR 227/232 (A-founder-2026-10-14d:
+  marked values keep their approval) and reworked the messages to match; PR 230 ready.
+- 2026-10-15 (stopped at the weekly usage cap): every Binding item of both briefs is built and
+  tested (see `## Result`), except TASK-232 item 7's house/camera/plus (E3) and the product
+  heading (carry-forward to TASK-228). CI on `ecf1b1e2`: spine green; `visual` red (baselines,
+  the orchestrator's `visual:baselines` label); `a11y` red on the two home FAQ cases that assumed
+  every question closed, fixed in the next commit (not yet re-run); `e2e` 1798 passed, 1 failed:
+  `language-popup.spec.ts:401` "a top sheet at 360 × 640" (CLS, AC-39), not yet investigated: the
+  hero's italic swap (0.0003 at 390) may be the cause, as the popup test excludes only the
+  sentence. Remaining: look at that case (likely `FONT_SWAP_REGIONS` in `language-popup.spec.ts`),
+  toggle `ci:full`, refresh visual baselines, `/review` and `/break`.
+- 2026-10-15 (finisher): rebased on `origin/main` (map regenerated); found the 360 × 640 CLS cause
+  (the H1 gaining a line on the italic swap, not a region the test should exclude) and fixed it in
+  `HomeHero` with e2e cases first (red at 360/375/389, then green); `ci:full` toggled on `98e46a1d`.
+- 2026-10-15 (finisher, session closing): e2e green on `5feaef5e` (1829 passed); Linux baselines
+  refreshed from run 38696273273 and committed (`ea1c1541`); `ci:full` toggled on the final head.
+  Next: read CI on that head (expect `visual` green now); remove the `visual:baselines` label;
+  `/review` and `/break`. A replacement must know: the scratchpad is shared, use a private subdir.
+- 2026-10-18: breaker r1 holes closed in `tests/unit/destinations-hub.test.tsx` (hub h1 has no `<em>`, exact words, 4 locales; watched red with `<em>{chunks}</em>`, 4 failed) and `tests/unit/home-round2.test.tsx` (h1 carries `max-[390px]:[&_em]:block`; watched red with the class removed, 1 failed). Source restored.
+- 2026-10-18 (finisher): rebased on main 83c8e777 (PR 225 copy); Linux baselines re-rendered from run 39075082050 (30 PNGs + manifest, every changed image opened; changes are TASK-226 copy plus this PR's home changes; listing/product shots moved by sub-pixel noise only, see the PR body); `ci:full` toggled.
 
 ## Result
 
-_Pending._
+- **PR:** https://github.com/itsahmeds/flowers-overseas/pull/230 (one feature PR with TASK-232).
+- **AC-52 (T-57).** The marked keys, words unchanged, review records unchanged (only `sourceHash`
+  recomputed, clause 3), `de`/`pl` one pair each:
+  - `home.hero.heading` "Flowers for someone <em>far away.</em>"
+  - `home.trending.heading` "Popular <em>choices</em>" (`de` "Beliebte <em>Auswahl</em>", `pl` "Popularne <em>wybory</em>")
+  - `home.dates.heading` "Dates worth <em>sending for</em>"
+  - `home.occasions.heading` "What is the <em>occasion?</em>"
+  - `home.howItWorks.heading` "Three people touch your order. <em>None of them is a courier.</em>"
+  - `trust.heading` "Our <em>promise</em>"
+  - `faq.heading` "Questions people <em>ask first</em>"
+  - `destinationsHub.h1` "Where we can <em>send flowers</em>" (E2: the hub page renders it plain)
+  Rendered by `t.rich` with `HEADING_EM` (`src/modules/ui/primitives/typography.tsx`); sunflower
+  on the phone cover. `i18n:check` counts tag pairs (check 4), with the `em-pair-missing` fixture.
+  Tests: `tests/unit/home-round2.test.tsx` (each heading in four locales; the marker keeps the
+  approval; no other `en` value has `<em>`), `tests/unit/i18n-check.test.ts`, and
+  `tests/e2e/home-round2.spec.ts` (computed italic 300 poppy at 1440, sunflower at 390, and no
+  other heading with an `em`). Mutations watched red: `<em>` removed from `faq.heading`.
+- **"Polana" (A21 clause 4; AC-43, AC-46).** The select's content box gains a quarter em past the
+  italic overhang (`SELECT_INK_ROOM`, `calc-size()`); e2e measures every destination's ink in four
+  locales at 320/360/390 and the chevron clear of it. Mutation watched red (the select back to its
+  old width: "Poland" inks 58.9 px in a 54.4 px box).
+- **"Continue →":** `arrow-end` after the label, `mirror-in-rtl`, unit-tested.
+- **Font swap.** The H1's italic is never preloaded (A21 clause 3), so its swap re-balances the
+  heading: 0.00012 at 1280, 0.00031 at 390 (`next start`, load average about 17). The header and
+  consent zero-shift tests exclude the hero copy with the sentence (`FONT_SWAP_REGIONS`), and
+  `tests/e2e/home.spec.ts` bounds the hero copy's own swap at 0.001, as it does the sentence's.
+- **Build slot:** taken twice, because the clipping and the swap cannot be judged without a
+  browser: a static probe of the select (Chromium), then `next build` + `next start` + the e2e
+  suites (`home-round2`, `home`, `home-v3`, `header`, `consent-banner`, `destinations-hub`,
+  `phone-chrome`, `honesty`, `links`; green but for `/dev/components` and `/ar-XB`, which a local
+  production start does not serve). Visual baselines are the orchestrator's `visual:baselines`.
+- **The 360 × 640 CLS (AC-39; finisher).** Cause: at 360 px the H1 is at its 50 px floor and
+  "someone far away." ran 318.4 of the 320 px the cover leaves, so whether "far away." wrapped hung
+  on sub-pixel advances. On Linux the metric-matched fallback kept it on line 2 and Fraunces pushed
+  it to line 3, and the cover's copy (bottom-anchored, `self-end`) rose 48 px when the italic
+  swapped in: one entry of 0.158 sourced on `[data-fo-hero-copy]`, outside the popup test's
+  excluded sentence. Not the test: the font swap moved real content a real Android phone sees.
+  Fix: below the artboard's 390 px the phrase takes its own line (`max-[390px]:[&_em]:block` on the
+  H1 in `HomeHero.tsx`), so the heading has three lines in either face; from 390 it follows
+  "someone" as drawn (30 px spare). No token, font or preload change. Numbers: CI before 0.158
+  (run 38646687793, `ba88aaa7`, both attempts); CI after, run 38692990715 on `5feaef5e`: the popup
+  case green, e2e 1829 passed, and the hero copy's swap at 360 logged `0` on all four homes (the
+  360 × 640 viewport added to `home.spec.ts`'s swap bounds). Locally (`next start`, fonts delayed
+  1.5 s, load average about 16) at 358 px, where macOS reproduces it: 0.15686 before, 0.00002
+  after (the popup's own "Current" tag). Tests first: `home-round2.spec.ts` "the hero H1 breaks the
+  same way before and after the swap" (320/360/375/389: phrase starts its line, three lines in
+  Fraunces and in the fallback; 390: after "someone", two lines), red at 360/375/389 before the
+  fix. Residual, not in AC-39's widths: any width where a line ends within a pixel or two of the
+  measure can still break differently on the swap (here, near the phone's one-line width).
+- **Visual baselines.** `visual:baselines` run 38696273273 on `5feaef5e`: 64 of 112 Linux PNGs
+  changed, all opened. The home sections match `home-desktop.dc.html` and `home-mobile.dc.html`
+  (order, two-column picks, stamps, "Occasions →", italic phrases, first FAQ open, chips), less
+  the ruled deviations (no prices on Popular choices, AC-53; E3 icons). Outside the home: the notice
+  bar on every page, and sub-threshold gradient or 1 px offsets on listing, product and footer
+  shots. `--verify` 112 of 112, `--check` clean.
+- **Build slot (finisher):** once, for `next build` + `next start` + the e2e suites above and the
+  CLS probe, because the swap cannot be judged without a browser; released.
+- **Gates (finisher, `ea1c1541`):** typecheck, lint, format:check, i18n:check, check:no-db and
+  codebase:map --check exit 0; tests 4171 of 4172, the one red a 5 s timeout in
+  `catalog-pricing-minor.test.ts` (untouched by this PR) at load average 35; it and the other
+  timeouts of the first run pass in isolation. CI's `test-unit` is the gate of record.

@@ -66,6 +66,19 @@ same PR changes `scripts/` gates.
 
 ## Carry-forwards
 
+- **For the designer (`docs/design/README.md`, "Where the sheet and the code currently differ";
+  this task's fence keeps it out of `docs/design/`):**
+  - the Andrzejki stamp (no page) sits flat with no lift, and a linked stamp underlines its name on
+    hover: the artboard draws all four alike, and the brief asks that the one with no page not
+    look like a link (QA-4 #10);
+  - the stamps are two across from 768 px and four across from 1024 px, the drawn five-column row
+    from 1280 px (QA-1 Q1-08: at 768 the five-column row cut the names and left half a row empty);
+  - "Occasions →" is not drawn where the occasions index does not exist (`/pl/okazje`, `/de/anlaesse`
+    today, `occasionsIndexHref()`), the footer's own rule (A20).
+- **`site-links.ts` surfaces:** the `occasions` link's `surfaces` still read `footer, listing`; the
+  home now draws it too. The list is descriptive (no gate reads it for `home`) and the file is
+  outside this fence: add `home` with the next `site-links.ts` change.
+
 - **From the site test (2026-10-14):** QA-3 D-03, D-07, D-08, D-09, D-10, D-11, D-12
   (`.claude/state/qa-2026-10-14/QA-3-chrome-1440-*`, `QA-3-home-1440-*`, `QA-3-home-390-*`,
   `QA-3-home-390-popular-sidebyside.png`, `QA-3-home-390-stamps-sidebyside.png`); QA-1 Q1-08
@@ -80,12 +93,53 @@ same PR changes `scripts/` gates.
 
 ## Escalations
 
-_None recorded._
+- **E3 (2026-10-15): the promise icons (item 7) wait for an answer.** The drawn `house` and `camera`
+  (home) and `plus` (product, outside this fence) are in design system v2's sheet
+  (`system/components.dc.html`, "Line icons") but not in the shipped set, and spec 004 §3 L122
+  rules out "an icon system beyond the five icons the chrome needs". Per the brief they are not
+  added. Question for the founder: may the set take `house`, `camera` and `plus`? The `leaf` did
+  ship, because item 1 needs it in the chrome (the notice bar), drawn on the sheet's own 34 grid
+  (`V2_GRID_ICONS`); the guarantee card uses that same leaf. The two other cards keep `florist`
+  (a house) and `document`.
 
 ## Progress
 
-_Not started._
+- 2026-10-15: started on `task/TASK-231-home-to-artboards` (one feature PR with TASK-231/232).
+- 2026-10-15: implementation, unit and e2e tests; build slot once for the select clip probe, once
+  for `next build` + `next start` + the e2e suites; rebased on PR 227/232 (A-founder-2026-10-14d:
+  marked values keep their approval) and reworked the messages to match; PR 230 ready.
+- 2026-10-15 (stopped at the weekly usage cap): every Binding item of both briefs is built and
+  tested (see `## Result`), except TASK-232 item 7's house/camera/plus (E3) and the product
+  heading (carry-forward to TASK-228). CI on `ecf1b1e2`: spine green; `visual` red (baselines,
+  the orchestrator's `visual:baselines` label); `a11y` red on the two home FAQ cases that assumed
+  every question closed, fixed in the next commit (not yet re-run); `e2e` 1798 passed, 1 failed:
+  `language-popup.spec.ts:401` "a top sheet at 360 × 640" (CLS, AC-39), not yet investigated: the
+  hero's italic swap (0.0003 at 390) may be the cause, as the popup test excludes only the
+  sentence. Remaining: look at that case (likely `FONT_SWAP_REGIONS` in `language-popup.spec.ts`),
+  toggle `ci:full`, refresh visual baselines, `/review` and `/break`.
+- 2026-10-15 (finisher): rebased; the 360 × 640 CLS fixed in the hero (TASK-231's `## Result`).
 
 ## Result
 
-_Pending._
+- **PR:** https://github.com/itsahmeds/flowers-overseas/pull/230 (with TASK-231).
+- **Item 1, notice bar:** no lead (`nav.notice.lead` deleted, it has no consumer), the v2 `leaf`
+  (added to the icon set on the sheet's 34 grid, `V2_GRID_ICONS`) before the promise in the bar's
+  sunflower `<strong>`. One line at 1024 on the home and at 1440 everywhere; at 1024 a page with the
+  price claim still wraps against the four-locale switcher until TASK-237 lists the shown locales
+  only (carry-forward). Tests: `ui-site-header.test.tsx`, e2e `home-round2` "the notice bar".
+- **Item 2, stamps:** the second name split at its ` · ` onto its own Fraunces 300 italic line, no
+  arrow, two across from `md`, four from `lg`, the drawn five from `xl`; Andrzejki (no page) has no
+  link and no lift. Mutations watched red: the five-column row at 768 (a name past the edge), the
+  name joined again (unit).
+- **Item 3, "Occasions →":** `nav.category.occasions` with the arrow icon, `occasionsIndexHref()`
+  from the page (so no link where the index does not exist); beside the heading at 1440, under it
+  at 390, 200 (e2e).
+- **Item 4, FAQ:** "All help topics" not rendered (`faq.allTopics` `retained` for spec 041's help
+  page), the first question open. Mutation watched red: the line back (unit, four locales).
+- **Item 5, Popular choices (AC-53, T-58):** two columns of five on the phone, 14 px apart;
+  `sizes` `calc(50vw - 27px)` equals the card width at 360 and 390 (e2e). No price in four locales at
+  1440 and 390 (e2e). Mutation watched red: the scroller back (5 columns, not 2).
+- **Item 6, chips:** one scrolling row below `md`, named by the heading, wrapped from `md` (AC-49).
+- **Item 7, icons:** E3 (house, camera, plus wait for the founder); the guarantee card uses the
+  leaf item 1 shipped.
+- **Gates:** `pnpm gates:cheap` PASS; e2e as in TASK-231's Result.

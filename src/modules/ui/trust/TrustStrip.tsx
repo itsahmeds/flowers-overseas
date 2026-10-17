@@ -25,7 +25,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { Grid, Stack } from "../primitives/layout.tsx";
-import { Text } from "../primitives/typography.tsx";
+import { HEADING_EM, Text } from "../primitives/typography.tsx";
 import { VisuallyHidden } from "../primitives/a11y.tsx";
 
 /**
@@ -77,7 +77,7 @@ export function TrustStrip({
           else: the artboards give it no visible heading, and inventing one would put a line of
           chrome into a design the founder approved without it. */}
       <VisuallyHidden as={headingLevel} id={HEADING_ID}>
-        {t("heading")}
+        {t.rich("heading", HEADING_EM)}
       </VisuallyHidden>
       {TRUST_CLAIMS.map((claim) => (
         <Stack gap="none" key={claim.id} data-fo-trust-claim={claim.id}>

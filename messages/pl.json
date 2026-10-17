@@ -524,7 +524,7 @@
   },
   "destinationsHub": {
     "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
-    "h1": "Where we can send flowers",
+    "h1": "Where we can <em>send flowers</em>",
     "intro": "Siedem krajów w Europie, a o każdym z nich napisaliśmy przewodnik: co się daje, czego nigdy się nie daje, jak pisze się adres i które daty liczą się tam w ciągu roku. Najpierw piszemy przewodnik, a dostawę otwieramy po nim. Tam, gdzie jeszcze nie dostarczamy, ta strona mówi to tymi samymi słowami w każdym wierszu.",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
     "readGuide": "Read the guide →",
@@ -552,7 +552,7 @@
     "allTopics": "All help topics",
     "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
     "eyebrow": "Before you order",
-    "heading": "Questions people ask first",
+    "heading": "Questions people <em>ask first</em>",
     "nobodyHome": {
       "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge.",
       "question": "What if nobody is home?"
@@ -610,7 +610,7 @@
   "home": {
     "dates": {
       "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth sending for",
+      "heading": "Dates worth <em>sending for</em>",
       "orderBy": "Order by {date}, {time}"
     },
     "destinations": {
@@ -619,7 +619,7 @@
     },
     "hero": {
       "eyebrow": "International flower delivery",
-      "heading": "Flowers for someone far away.",
+      "heading": "Flowers for someone <em>far away.</em>",
       "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
     },
     "howItWorks": {
@@ -632,7 +632,7 @@
         "title": "Delivered by hand. You get the photo."
       },
       "eyebrow": "How we send your flowers",
-      "heading": "Three people touch your order. None of them is a courier.",
+      "heading": "Three people touch your order. <em>None of them is a courier.</em>",
       "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
       "make": {
         "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you.",
@@ -641,7 +641,7 @@
     },
     "occasions": {
       "eyebrow": "Shop by occasion",
-      "heading": "What is the occasion?"
+      "heading": "What is the <em>occasion?</em>"
     },
     "proof": {
       "guarantee": {
@@ -678,7 +678,7 @@
     },
     "trending": {
       "basis": "Nasz wybór, dopóki nie pojawią się prawdziwe zamówienia.",
-      "heading": "Popularne wybory"
+      "heading": "Popularne <em>wybory</em>"
     }
   },
   "languagePopup": {
@@ -746,9 +746,6 @@
     "forFlorists": "For florists",
     "menu": {
       "label": "Menu"
-    },
-    "notice": {
-      "lead": "Krótka notka od nas:"
     },
     "search": {
       "help": "Search opens when the shop does.",
@@ -972,7 +969,7 @@
       "claim": "We redeliver or refund, your choice.",
       "name": "7-day freshness guarantee"
     },
-    "heading": "Our promise",
+    "heading": "Our <em>promise</em>",
     "local": {
       "claim": "Our florist there makes it by hand and hands it over in person.",
       "name": "Hand-made in the recipient's own town"

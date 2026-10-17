@@ -36,7 +36,9 @@
  * 4. **Argument sets agree** — a translation must take the same arguments as its `en` source,
  *    each of the same kind. A `de` value that drops `{language}`, renames it, or replaces a
  *    `plural` argument with a bare placeholder renders wrongly or throws; both are caught here
- *    rather than by a buyer.
+ *    rather than by a buyer. Tags are part of the set, **counted** (spec 004 §14
+ *    A-founder-2026-10-14d clause 4): a `de` heading whose value lacks the italic phrase's `<em>`
+ *    pair, or adds a second one, fails like a dropped argument.
  * 5. **Redundant overrides** — `en-gb` is a *thin* override (§13 Q5): a key whose value is
  *    byte-identical to the value it would inherit is noise that hides the real diff. Only locales
  *    that share their fallback's primary language are subject to it: `de` echoing English is
@@ -388,6 +390,9 @@ const ARGUMENT_KINDS: Readonly<Record<number, string>> = {
  */
 export function argumentSignature(message: string): ReadonlySet<string> {
   const found = new Set<string>();
+  // Tags are counted (A-founder-2026-10-14d clause 4): the second `<em>` pair is `em:tag#2`, so a
+  // locale that adds a pair or drops one of two differs from its source.
+  const tagCount = new Map<string, number>();
   const walk = (elements: readonly unknown[]): void => {
     for (const element of elements) {
       if (!isRecord(element)) continue;
@@ -395,7 +400,11 @@ export function argumentSignature(message: string): ReadonlySet<string> {
       if (typeof type !== "number") continue;
       const kind = ARGUMENT_KINDS[type];
       const name = element["value"];
-      if (kind !== undefined && typeof name === "string") {
+      if (kind === "tag" && typeof name === "string") {
+        const count = (tagCount.get(name) ?? 0) + 1;
+        tagCount.set(name, count);
+        found.add(count === 1 ? `${name}:tag` : `${name}:tag#${String(count)}`);
+      } else if (kind !== undefined && typeof name === "string") {
         found.add(`${name}:${kind}`);
       }
       const options = element["options"];

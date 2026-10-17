@@ -122,7 +122,10 @@ export function DestinationsHubPage({
         {/* v2 `.shop-intro`: the one `<h1>` and the lede. */}
         <div className="pt-lg md:pt-xl pb-[36px] md:pb-[56px]">
           <Display as="h1" size="display">
-            {hub("h1")}
+            {/* The value marks the home heading's italic phrase (spec 004 §14
+                A-founder-2026-10-14d; TASK-231). This page's heading is not on that list, so the
+                marker renders as plain words here. */}
+            {hub.rich("h1", { em: (chunks) => chunks })}
           </Display>
           <Text
             size="lg"

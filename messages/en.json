@@ -152,10 +152,7 @@
     "currency": {
       "label": "Prices shown in {currency}"
     },
-    "send": "Send flowers",
-    "notice": {
-      "lead": "A note from us:"
-    }
+    "send": "Send flowers"
   },
   "footer": {
     "group": {
@@ -231,7 +228,7 @@
   "destinationsHub": {
     "seoTitle": "Where we can send flowers",
     "seoDescription": "Seven countries in Europe, each with a guide we wrote ourselves: what is given, what is never given, and which dates matter in a year there.",
-    "h1": "Where we can send flowers",
+    "h1": "Where we can <em>send flowers</em>",
     "intro": "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where we are not delivering yet, this page says so in the same words on every row.",
     "regionLabel": "Region · {region}",
     "region": {
@@ -426,7 +423,7 @@
   "home": {
     "hero": {
       "eyebrow": "International flower delivery",
-      "heading": "Flowers for someone far away.",
+      "heading": "Flowers for someone <em>far away.</em>",
       "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
     },
     "proof": {
@@ -444,17 +441,17 @@
       }
     },
     "trending": {
-      "heading": "Popular choices",
+      "heading": "Popular <em>choices</em>",
       "basis": "Our picks until real orders start."
     },
     "dates": {
       "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth sending for",
+      "heading": "Dates worth <em>sending for</em>",
       "orderBy": "Order by {date}, {time}"
     },
     "occasions": {
       "eyebrow": "Shop by occasion",
-      "heading": "What is the occasion?"
+      "heading": "What is the <em>occasion?</em>"
     },
     "reviews": {
       "eyebrow": "Verified reviews",
@@ -470,7 +467,7 @@
     },
     "howItWorks": {
       "eyebrow": "How we send your flowers",
-      "heading": "Three people touch your order. None of them is a courier.",
+      "heading": "Three people touch your order. <em>None of them is a courier.</em>",
       "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
       "choose": {
         "title": "You choose the town, the day and a bouquet.",
@@ -545,7 +542,7 @@
     }
   },
   "trust": {
-    "heading": "Our promise",
+    "heading": "Our <em>promise</em>",
     "guarantee": {
       "name": "7-day freshness guarantee",
       "claim": "We redeliver or refund, your choice."
@@ -561,7 +558,7 @@
   },
   "faq": {
     "eyebrow": "Before you order",
-    "heading": "Questions people ask first",
+    "heading": "Questions people <em>ask first</em>",
     "allTopics": "All help topics",
     "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
     "photo": {

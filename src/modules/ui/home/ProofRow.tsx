@@ -37,7 +37,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { Icon, type IconName } from "../icons/Icon.tsx";
-import { Display } from "../primitives/typography.tsx";
+import { Display, HEADING_EM } from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
@@ -51,7 +51,9 @@ import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 export const PROOF_FACTS = [
   {
     id: "guarantee",
-    icon: "shield-check",
+    // The drawn leaf (`home-*.dc.html` `.proof3 .lead`; TASK-232, QA-3 D-11). The drawn house and
+    // camera of the other two are not in the shipped set yet: the brief's Escalations ask first.
+    icon: "leaf",
     titleKey: "proof.guarantee.title",
     bodyKey: "proof.guarantee.body",
   },
@@ -100,7 +102,7 @@ export function ProofRow({
         size="display-s"
         className="mb-[28px] md:mb-[48px]"
       >
-        {trust("heading")}
+        {trust.rich("heading", HEADING_EM)}
       </Display>
       {/* Round 2 (TASK-196; `home-desktop.dc.html` `.proof3`): three cards on paper, the
           guarantee first on leaf-wash, the two others white with a hairline. */}

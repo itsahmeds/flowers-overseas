@@ -573,7 +573,8 @@ describe("the shipped catalogues and manifests", () => {
     expect([...namespaces].sort()).toEqual(Object.keys(enSource).sort());
     expect(destinationName).toBe("Poland");
     expect(categoryLabel).toBe("Our selection");
-    expect(heroHeading).toBe("Flowers for someone far away.");
+    // TASK-231: the reviewed words, with the one italic phrase marked (the founder's "italic ok").
+    expect(heroHeading).toBe("Flowers for someone <em>far away.</em>");
     expect(finderSubmit).toBe("Continue");
     expect(guaranteeName).toBe("7-day freshness guarantee");
     expect(occasionSubtitle).toContain("Imieniny");

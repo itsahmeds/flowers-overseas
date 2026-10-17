@@ -29,6 +29,7 @@
 import { expect, test } from "@playwright/test";
 
 import {
+  HERO_COPY_REGION,
   SENTENCE_REGION,
   recordLayoutShifts,
   shiftInside,
@@ -200,9 +201,10 @@ test.describe("the locale home, above the fold", () => {
       await page.goto(path);
 
       await expect(page.locator(`${OCCASIONS} li`)).toHaveCount(6);
-      // Spec 004 §14 A20 (TASK-177): a tile whose occasion hub exists is a link to it.
+      // Spec 004 §14 A20 (TASK-177): a tile whose occasion hub exists is a link to it. The tiles
+      // only: since TASK-232 the section's head also links the occasions index ("Occasions →").
       const tiles = await page
-        .locator(`${OCCASIONS} a[href]`)
+        .locator(`${OCCASIONS} li a[href]`)
         .evaluateAll((nodes) =>
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );
@@ -335,13 +337,16 @@ test.describe("the locale home, above the fold", () => {
 
       const entries = page.locator(`${FAQ} details`);
       await expect(entries).toHaveCount(3);
-      // All closed on arrival: an answer visible in the served HTML would be five paragraphs of
-      // copy above the fold of the section.
-      await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
+      // The first open on arrival, as both round-2 artboards draw it (TASK-232, QA-3 D-10); the
+      // others closed.
+      await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(1);
+      await expect(entries.first()).toHaveAttribute("open", "");
 
       await entries.first().locator("summary").click();
+      await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
+      await entries.nth(1).locator("summary").click();
       await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(1);
-      await entries.first().locator("summary").click();
+      await entries.nth(1).locator("summary").click();
       await expect(page.locator(`${FAQ} details[open]`)).toHaveCount(0);
     });
   }
@@ -494,50 +499,67 @@ const SENTENCE_SHIFT_BOUND = 0.001;
 const SENTENCE_VIEWPORTS = [
   { width: 1280, height: 720 },
   { width: 390, height: 844 },
+  // The language popup's 360 × 640 case (AC-39): there the H1's italic swap once added a line to
+  // the cover's copy (0.158 in CI) until the phrase took its own line below 390 (TASK-231).
+  { width: 360, height: 640 },
 ] as const;
 
-test.describe("the home sentence's font swap stays small", () => {
+/**
+ * The hero copy's swap, under the same bound (TASK-231; spec 004 §14 A-founder-2026-10-14d). The
+ * H1's italic phrase is Fraunces 300 italic, which A21 clause 3 never preloads, so when it swaps in
+ * the balanced heading re-measures its lines: 0.00012 at 1280 on `next start`, 2026-10-15. The
+ * header and consent tests exclude the hero copy with the sentence (`FONT_SWAP_REGIONS`), so this
+ * is the one place that swap is measured.
+ */
+const SWAP_REGIONS = [
+  ["the sentence", SENTENCE_REGION],
+  ["the hero copy", HERO_COPY_REGION],
+] as const;
+
+test.describe("the home's display-face swaps stay small", () => {
   for (const path of LOCALES) {
     for (const viewport of SENTENCE_VIEWPORTS) {
-      test(`${path} at ${String(viewport.width)} px: the sentence shifts by at most ${String(SENTENCE_SHIFT_BOUND)}`, async ({
-        page,
-      }, testInfo) => {
-        await page.setViewportSize(viewport);
-        await page.addInitScript(() => {
-          Object.defineProperty(navigator, "languages", {
-            configurable: true,
-            get: () => [],
+      for (const [name, region] of SWAP_REGIONS) {
+        test(`${path} at ${String(viewport.width)} px: ${name} shifts by at most ${String(SENTENCE_SHIFT_BOUND)}`, async ({
+          page,
+        }, testInfo) => {
+          await page.setViewportSize(viewport);
+          await page.addInitScript(() => {
+            Object.defineProperty(navigator, "languages", {
+              configurable: true,
+              get: () => [],
+            });
           });
-        });
-        await recordLayoutShifts(page);
+          await recordLayoutShifts(page);
 
-        const response = await page.goto(path);
-        expect(response?.status()).toBe(200);
-        await expect(page.locator(SENTENCE_REGION)).toBeVisible();
-        // Every face the page asked for has arrived, so the swap has happened, then two frames
-        // and a settle for the entries to be reported.
-        await page.evaluate(async () => {
-          await document.fonts.ready;
-          await new Promise<void>((resolve) => {
-            requestAnimationFrame(() => {
+          const response = await page.goto(path);
+          expect(response?.status()).toBe(200);
+          await expect(page.locator(region)).toBeVisible();
+          // Every face the page asked for has arrived, so the swap has happened, then two frames
+          // and a settle for the entries to be reported.
+          await page.evaluate(async () => {
+            await document.fonts.ready;
+            await new Promise<void>((resolve) => {
               requestAnimationFrame(() => {
-                setTimeout(resolve, 500);
+                requestAnimationFrame(() => {
+                  setTimeout(resolve, 500);
+                });
               });
             });
           });
-        });
 
-        const shift = await shiftInside(page, SENTENCE_REGION);
-        testInfo.annotations.push({
-          type: "sentence-shift",
-          description: `${path} ${String(viewport.width)}: ${String(shift)}`,
+          const shift = await shiftInside(page, region);
+          testInfo.annotations.push({
+            type: "swap-shift",
+            description: `${name} ${path} ${String(viewport.width)}: ${String(shift)}`,
+          });
+          // The measured value, in the log CI keeps, for the escalation's before/after record.
+          console.log(
+            `swap-shift ${name} ${path} ${String(viewport.width)} ${String(shift)}`,
+          );
+          expect(shift).toBeLessThanOrEqual(SENTENCE_SHIFT_BOUND);
         });
-        // The measured value, in the log CI keeps, for the escalation's before/after record.
-        console.log(
-          `sentence-shift ${path} ${String(viewport.width)} ${String(shift)}`,
-        );
-        expect(shift).toBeLessThanOrEqual(SENTENCE_SHIFT_BOUND);
-      });
+      }
     }
   }
 });

@@ -18,16 +18,23 @@
  * **v2: Poland's dates as stamps** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `.stamps`). Each
  * date is a perforated stamp on its tint — a big day numeral (decorative: the formatted date
  * under it says the same thing to a screen reader), the date, the name and the fact or cutoff.
- * A stamp whose occasion has a hub that exists is **one link** ending in a cornflower arrow; one
- * without (Andrzejki) is a `<div>` with no arrow and no hover (A20). The mobile artboard's
- * 232 px rail is a horizontal scroll. The artboard's fifth "name days" stamp and the dates lede
+ * A stamp whose occasion has a hub that exists is **one link**; one without (Andrzejki) is a
+ * `<div>`, and it must not look like the linked ones (A20; QA-4 #10): it sits flat on the band, with
+ * no lift (`drop-shadow`) and no hover, while a linked stamp keeps the drawn lift and underlines
+ * its name on hover. The mobile artboard's 232 px rail is a horizontal scroll.
+ *
+ * **Round 2 (TASK-232; QA-3 D-09, QA-1 Q1-08).** The second name sits on its own line in Fraunces
+ * 300 italic (`.stamp-pl`), split from the one reviewed name at its ` · ` (no key changes, and a
+ * locale whose name has no second part renders it whole); the foot has no arrow. From `md` the
+ * stamps are two across, so at 768 and 820 px each name fits its stamp and the four stamps close
+ * the rows; four across from `lg`, and the artboard's five-column row from `xl`. The artboard's fifth "name days" stamp and the dates lede
  * are new copy and wait for the founder's batch (the brief's `## Result`).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
-import { Display, Eyebrow } from "../primitives/typography.tsx";
+import { Display, Eyebrow, HEADING_EM } from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 import { type OccasionDateView, occasionDateViews } from "./occasion-model.ts";
@@ -62,15 +69,29 @@ export interface OccasionDatesProps {
   readonly hubHrefs?: Readonly<Record<string, string>>;
 }
 
+/** The separator between a stamp's two names in one reviewed string ("Wigilia · Christmas Eve"). */
+const SECOND_NAME_SEPARATOR = " · ";
+
+/** A stamp's name and, when the reviewed string carries one after ` · `, its second name. */
+export function stampNames(name: string): {
+  readonly name: string;
+  readonly second: string | undefined;
+} {
+  const at = name.indexOf(SECOND_NAME_SEPARATOR);
+  if (at < 0) return { name, second: undefined };
+  return {
+    name: name.slice(0, at),
+    second: name.slice(at + SECOND_NAME_SEPARATOR.length),
+  };
+}
+
 function StampFace({
   date,
   tint,
-  linked,
   children,
 }: {
   readonly date: OccasionDateView;
   readonly tint: string;
-  readonly linked: boolean;
   readonly children: ReactNode;
 }): ReactElement {
   return (
@@ -85,12 +106,6 @@ function StampFace({
       </span>
       <span className="label text-ink-muted">{date.date}</span>
       {children}
-      {linked ? (
-        <span
-          aria-hidden="true"
-          className="text-link mt-auto pt-[16px] font-bold after:content-['→'] rtl:after:content-['←']"
-        />
-      ) : null}
     </div>
   );
 }
@@ -116,21 +131,30 @@ export function OccasionDates({
       <div className="mb-[28px] md:mb-[48px]">
         <Eyebrow className="mb-[14px]">{home("dates.eyebrow")}</Eyebrow>
         <Display as={headingLevel} id={HEADING_ID} size="display-s">
-          {home("dates.heading")}
+          {home.rich("dates.heading", HEADING_EM)}
         </Display>
       </div>
-      <ul className="-mx-[20px] grid auto-cols-[232px] grid-flow-col gap-[20px] overflow-x-auto px-[20px] md:mx-0 md:grid-flow-row md:grid-cols-5 md:overflow-visible md:px-0">
+      <ul className="-mx-[20px] grid auto-cols-[232px] grid-flow-col gap-[20px] overflow-x-auto px-[20px] md:mx-0 md:grid-flow-row md:grid-cols-2 md:overflow-visible md:px-0 lg:grid-cols-4 xl:grid-cols-5">
         {dates.map((date, index) => {
           const href =
             date.occasionKey === undefined
               ? undefined
               : hubHrefs[date.occasionKey];
           const tint = STAMP_TINTS[index % STAMP_TINTS.length] ?? "bg-blush";
+          const names = stampNames(t(date.nameKey));
           const face = (
-            <StampFace date={date} tint={tint} linked={href !== undefined}>
-              <NameHeading className="display text-md mt-[18px]">
-                {t(date.nameKey)}
+            <StampFace date={date} tint={tint}>
+              <NameHeading className="display text-md mt-[18px] [overflow-wrap:break-word] group-hover:underline">
+                {names.name}
               </NameHeading>
+              {names.second === undefined ? null : (
+                <span
+                  className="font-display text-ink-muted text-[17px] leading-(--line-height-tight) font-(--font-weight-display-em) [overflow-wrap:break-word] italic"
+                  data-fo-stamp-second
+                >
+                  {names.second}
+                </span>
+              )}
               {date.orderBy === undefined || !datesOpen ? (
                 date.noteKey === undefined ? null : (
                   <span className="text-ink-muted mt-[8px] text-sm leading-(--line-height-tight)">
@@ -151,8 +175,13 @@ export function OccasionDates({
           return (
             <li
               key={date.id}
-              className="drop-shadow-[0_8px_14px_var(--color-shade)]"
+              className={
+                href === undefined
+                  ? undefined
+                  : "drop-shadow-[0_8px_14px_var(--color-shade)]"
+              }
               data-fo-occasion-date={date.id}
+              data-fo-stamp-linked={href === undefined ? "false" : "true"}
             >
               {href === undefined ? (
                 <div className={stamp}>{face}</div>

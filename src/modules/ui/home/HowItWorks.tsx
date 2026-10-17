@@ -38,7 +38,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Display, Eyebrow } from "../primitives/typography.tsx";
+import { Display, Eyebrow, HEADING_EM } from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
@@ -94,7 +94,7 @@ export function HowItWorks({
         <div>
           <Eyebrow className="mb-[14px]">{home("howItWorks.eyebrow")}</Eyebrow>
           <Display as={headingLevel} id={HEADING_ID} size="display-s">
-            {home("howItWorks.heading")}
+            {home.rich("howItWorks.heading", HEADING_EM)}
           </Display>
           <p className="text-ink-muted mt-[18px] max-w-[44ch]">
             {home("howItWorks.intro")}

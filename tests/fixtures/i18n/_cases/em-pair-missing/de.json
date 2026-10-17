@@ -1,0 +1,15 @@
+{
+  "banner": {
+    "headline": "Diese Seite auf {language} lesen?"
+  },
+  "errors": {
+    "notFound": {
+      "heading": "Page not found"
+    }
+  },
+  "meta": {
+    "home": {
+      "title": "Blumen in ganz Europa senden"
+    }
+  }
+}

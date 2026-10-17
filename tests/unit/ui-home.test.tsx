@@ -128,7 +128,10 @@ describe("the hero band (AC-10)", () => {
     const html = hero("en");
 
     expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
-    expect(html).toMatch(/<h1[^>]*>Flowers for someone far away\.<\/h1>/);
+    // The reviewed words, with the one italic phrase in `<em>` (TASK-231; spec 004 §14 A21).
+    expect(html).toMatch(
+      /<h1[^>]*>Flowers for someone <em data-fo-em="">far away\.<\/em><\/h1>/,
+    );
   });
 
   it("renders the eyebrow and the founder-reviewed proposition, byte for byte", () => {
@@ -696,7 +699,7 @@ describe("the promise band (AC-10's trust strip in v2, AC-15)", () => {
 
     expect(PROOF_FACTS).toHaveLength(3);
     expect(band("en")).toMatch(
-      /<h2 id="promise-heading"[^>]*>Our promise<\/h2>/,
+      /<h2 id="promise-heading"[^>]*>Our <em data-fo-em="">promise<\/em><\/h2>/,
     );
     expect(rendered).toContain("Fresh-flower promise");
     expect(rendered).toContain(

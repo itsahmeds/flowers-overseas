@@ -77,6 +77,18 @@ export function Display({
   );
 }
 
+/**
+ * The one emotional phrase a heading message marks (spec 004 §14 A21 clauses 2 and 3; TASK-231;
+ * the founder's "italic ok", 2026-10-14): the `<em>` tag of a heading message, for `t.rich`, so
+ * the words stay one reviewed string and only the split is markup. Inside `Display` the `display`
+ * utility sets it in Fraunces 300 italic poppy; a caller recolours it where the surface asks
+ * (sunflower on the phone cover). `data-fo-em` is the hook a later motion (the hero underline)
+ * and the tests read.
+ */
+export const HEADING_EM = {
+  em: (chunks: ReactNode): ReactElement => <em data-fo-em="">{chunks}</em>,
+} as const;
+
 export const TEXT_SIZES = ["lg", "md", "sm", "xs"] as const;
 export type TextSize = (typeof TEXT_SIZES)[number];
 

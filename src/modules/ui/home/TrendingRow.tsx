@@ -37,7 +37,12 @@ import {
 } from "../../../config/site-links.ts";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { Display, Eyebrow, TextLink } from "../primitives/typography.tsx";
+import {
+  Display,
+  Eyebrow,
+  HEADING_EM,
+  TextLink,
+} from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 import {
@@ -155,7 +160,7 @@ export function TrendingRow({
             {t(`destinations.${DEMO_DESTINATION_ISO2.toLowerCase()}.name`)}
           </Eyebrow>
           <Display as={headingLevel} id={HEADING_ID} size="display-s">
-            {home("trending.heading")}
+            {home.rich("trending.heading", HEADING_EM)}
           </Display>
           {source.basis() === "picks" ? (
             <p
@@ -172,7 +177,9 @@ export function TrendingRow({
           </TextLink>
         )}
       </div>
-      <ul className="-mx-[20px] grid auto-cols-[72%] grid-flow-col gap-[16px] overflow-x-auto px-[20px] md:mx-0 md:grid-flow-row md:grid-cols-5 md:gap-x-[24px] md:gap-y-[40px] md:overflow-visible md:px-0">
+      {/* The phone draws the five as a two-column grid (`.M .grid5`, 32 px by 14 px; TASK-232,
+          QA-3 D-07), not a scroller: the `trending` slot's `sizes` states that card's width. */}
+      <ul className="m-0 grid list-none grid-cols-2 gap-x-[14px] gap-y-[32px] p-0 md:grid-cols-5 md:gap-x-[24px] md:gap-y-[40px]">
         {picks.map((pick) => (
           <li key={pick.id} data-fo-trending-pick={pick.id}>
             <CardLink href={trendingPickHref(pick.sku, productPages)}>

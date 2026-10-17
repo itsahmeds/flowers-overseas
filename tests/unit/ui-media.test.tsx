@@ -59,10 +59,11 @@ describe("the media slot table", () => {
   });
 
   it("states the trending row's rendered width, and leaves the listing grid's alone (TASK-168)", () => {
-    // Derived from `TrendingRow`'s layout (`Grid columns="2-5" gap="lg"` in `HOME_BLEED`):
-    // (100vw − 2·16 − 24) / 2 below `md`, (100vw − 2·56 − 4·24) / 5 from 768 px.
+    // Derived from `TrendingRow`'s layout (TASK-232: two columns 14 px apart inside 20 px gutters
+    // below `md`, five 24 px apart inside 56 px from it):
+    // (100vw − 2·20 − 14) / 2 below `md`, (100vw − 2·56 − 4·24) / 5 from 768 px.
     expect(mediaSlot("trending").sizes).toBe(
-      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 28px)",
+      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 27px)",
     );
     expect(mediaSlot("trending").ratio).toBe(mediaSlot("grid").ratio);
     expect(mediaSlot("grid").sizes).toBe("(min-width: 768px) 25vw, 50vw");

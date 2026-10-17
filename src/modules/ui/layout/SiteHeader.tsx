@@ -4,9 +4,10 @@
  *
  * It reproduces `docs/design/wireframes/chrome-desktop.dc.html` and `chrome-mobile.dc.html`:
  *
- *  1. **the notice bar** — `NoticeBar` (TASK-175's primitive): "A note from us:" in sunflower, then
- *     the cutoff once dates open, "Prices include delivery and VAT" (not on the home; the route
- *     decides) and "Fresh-flower promise" on the desktop artboard, the short cutoff centred on the
+ *  1. **the notice bar** — `NoticeBar` (TASK-175's primitive), round 2 (TASK-232): no lead (the
+ *     chrome annotation: round 2 removed "A note from us:"), the cutoff once dates open, "Prices
+ *     include delivery and VAT" (not on the home; the route decides) and, after the leaf mark,
+ *     "Fresh-flower promise" in sunflower on the desktop artboard, the short cutoff centred on the
  *     mobile one once dates open (nothing before). At its inline end, desktop
  *     only: the help line as a `tel:` link, spec 003's language switcher and the currency as text;
  *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
@@ -45,6 +46,7 @@ import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
+import { Icon } from "../icons/Icon.tsx";
 import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 import { Button } from "../primitives/Button.tsx";
@@ -252,15 +254,14 @@ export function SiteHeader({
             </>
           }
         >
-          {/* "A note from us:" in sunflower, then the claims on the desktop artboard and one short
-              sentence on the mobile one. The cutoff is gated (spec 004 §14 A19): it prints once a
-              destination takes delivery dates, and until then nothing takes its place (spec 004
-              §14 A23 clause 12 removed the dates-pending line), so the mobile row is empty and the
-              desktop claims open at the price claim, or at the promise on the home, whose slot is
-              empty. Whichever claim opens the line drops its leading `·`. */}
-          <span className="hidden md:inline">
-            <strong>{t("nav.notice.lead")}</strong>{" "}
-          </span>
+          {/* Round 2 (TASK-232; `chrome-desktop.dc.html` `.notice`): no lead, the claims on the
+              desktop artboard and one short sentence on the mobile one. The cutoff is gated (spec
+              004 §14 A19): it prints once a destination takes delivery dates, and until then
+              nothing takes its place (spec 004 §14 A23 clause 12 removed the dates-pending line),
+              so the mobile row is empty and the desktop claims open at the price claim, or at the
+              promise on the home, whose slot is empty. Whichever claim opens the line drops its
+              leading `·`. The promise is the bar's `<strong>`: sunflower and bold after the leaf
+              mark, plain text until spec 041 publishes the guarantee page (A20). */}
           {datesOpen ? (
             <span className="md:hidden">{t("nav.utility.cutoffShort")}</span>
           ) : null}
@@ -273,7 +274,15 @@ export function SiteHeader({
             data-fo-notice-claims
           >
             {datesOpen ? t("nav.utility.cutoff") : null}
-            {priceClaim} <Separator glyph="·" /> {t("nav.utility.guarantee")}
+            {priceClaim} <Separator glyph="·" />{" "}
+            <strong className="whitespace-nowrap" data-fo-notice-promise>
+              <Icon
+                name="leaf"
+                size={16}
+                className="me-[6px] inline-block align-[-3px]"
+              />
+              {t("nav.utility.guarantee")}
+            </strong>
           </span>
         </NoticeBar>
       </div>

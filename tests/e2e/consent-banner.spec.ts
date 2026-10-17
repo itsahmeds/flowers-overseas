@@ -32,7 +32,7 @@
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
 import {
-  SENTENCE_REGION,
+  FONT_SWAP_REGIONS,
   recordLayoutShifts,
   shiftOutside,
 } from "../support/layout-shift.ts";
@@ -73,12 +73,13 @@ async function emptyLanguages(target: Page | BrowserContext): Promise<void> {
 }
 
 /**
- * The shift the sheet can cause: every entry not wholly inside the home's sentence picker
+ * The shift the sheet can cause: every entry not wholly inside the home's font-swap regions, the sentence picker and
+ * the hero copy (`FONT_SWAP_REGIONS`, TASK-231)
  * (`../support/layout-shift.ts`), whose webfont swap is bounded by its own test in
  * `./home.spec.ts`. The sheet overlays, so any shift it causes moves something else.
  */
 function sheetShift(page: Page): Promise<number> {
-  return shiftOutside(page, SENTENCE_REGION);
+  return shiftOutside(page, FONT_SWAP_REGIONS);
 }
 
 /** Every `gtag('consent','update',…)` payload the page pushed, in order. */

@@ -12,9 +12,11 @@
  * this site, and a rich result pointing at a `noindex` page would be nonsense anyway. When 007
  * lifts the `noindex` it can add the schema from these same keys.
  *
- * **"All help topics" is text, not a link** — `/{locale}/help` is a `site-links.ts` row spec 007
- * publishes, and the artboards' underlined control renders as its label plus the line saying what
- * to do today (AC-14: never a dead link).
+ * **No "All help topics" line** (spec 004 §14 A20: a control with no page is not rendered at all;
+ * TASK-232, QA-3 D-10). `/{locale}/help` is spec 041's page (TASK-182 publishes it); until then the
+ * label is not drawn, as text or otherwise, and only the line saying what holds today stays
+ * (`faq.allTopicsPending`, copy for the founder's batch). `faq.allTopics` is `retained` for that
+ * page. **The first question renders open**, as both artboards draw it.
  *
  * The five answers are the artboards' own, in the first person (§14 A5). Two of them state
  * delivery timing — the redelivery window and the Warsaw cutoff — which the home page already
@@ -27,7 +29,12 @@ import type { ReactElement } from "react";
 
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { Grid, Stack } from "../primitives/layout.tsx";
-import { Display, Eyebrow, Text } from "../primitives/typography.tsx";
+import {
+  Display,
+  Eyebrow,
+  HEADING_EM,
+  Text,
+} from "../primitives/typography.tsx";
 
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 
@@ -85,12 +92,8 @@ export function HomeFaq({
       <Stack gap="sm">
         <Eyebrow>{t("eyebrow")}</Eyebrow>
         <Display as={headingLevel} id={HEADING_ID} size="display-s">
-          {t("heading")}
+          {t.rich("heading", HEADING_EM)}
         </Display>
-        {/* The unpublished help centre: its label as text, and what to do until 007 publishes it. */}
-        <Text as="span" size="sm" className="font-medium">
-          {t("allTopics")}
-        </Text>
         <Text size="sm" tone="subtle" measure>
           {t("allTopicsPending")}
         </Text>
@@ -100,11 +103,12 @@ export function HomeFaq({
           (§2: no component ships a bespoke grid), and a fifth option for a 22 px difference
           would be a token invented at a call site. */}
       <Stack gap="none" className="border-rule border-b md:col-span-2">
-        {FAQ_ENTRIES.map((entry) => (
+        {FAQ_ENTRIES.map((entry, index) => (
           <details
             className="border-rule group border-t py-[18px]"
             key={entry.id}
             data-fo-faq-entry={entry.id}
+            open={index === 0}
           >
             <summary className="display text-h3-s md:text-h3 gap-md flex min-h-[44px] cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
               {t(entry.questionKey)}

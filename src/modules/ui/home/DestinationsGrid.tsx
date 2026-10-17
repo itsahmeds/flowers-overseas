@@ -41,7 +41,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { Chip } from "../primitives/Chip.tsx";
-import { Display, Eyebrow } from "../primitives/typography.tsx";
+import { Display, Eyebrow, HEADING_EM } from "../primitives/typography.tsx";
 
 import {
   type DestinationStatusProvider,
@@ -75,6 +75,7 @@ export function DestinationsGrid({
 }: DestinationsGridProps): ReactElement {
   const t = useTranslations() as unknown as LabelTranslator;
   const home = useTranslations("home");
+  const hub = useTranslations("destinationsHub");
   const source = provider ?? getDestinationStatusProvider();
   // The provider owns the order (featured first, then collated); the grid does not re-sort.
   const destinations = source.list(locale, (nameKey) => t(nameKey));
@@ -92,13 +93,27 @@ export function DestinationsGrid({
             {home("destinations.eyebrow")}
           </Eyebrow>
           <Display as={headingLevel} id={HEADING_ID} size="display-s">
-            {t("destinationsHub.h1")}
+            {hub.rich("h1", HEADING_EM)}
           </Display>
           <p className="text-ink-muted text-body mt-[18px] max-w-[40ch] leading-[1.5] md:text-[21px]">
             {home("destinations.body")}
           </p>
         </div>
-        <ul className="flex flex-wrap gap-[10px]">
+        {/* The phone draws one row that scrolls (`.M .dest-chips`, spec 004 AC-49; TASK-232, QA-3
+            D-12), named by the heading; from `md` the chips wrap. With no chip a link, the row
+            takes the focus itself so the keyboard can scroll it. */}
+        <ul
+          aria-labelledby={HEADING_ID}
+          className="m-0 flex list-none gap-[10px] p-0 max-md:-mx-(--gutter-s) max-md:snap-x max-md:scroll-px-(--gutter-s) max-md:[scrollbar-width:none] max-md:overflow-x-auto max-md:overscroll-x-contain max-md:px-(--gutter-s) md:flex-wrap"
+          data-fo-destination-chips
+          {...(destinations.some(
+            (destination) =>
+              (destination.href ??
+                (destination.featured ? shopHref : undefined)) !== undefined,
+          )
+            ? {}
+            : { tabIndex: 0 })}
+        >
           {destinations.map((destination) => {
             // Every chip leads to its guide (plan/02 §11, spec 004 Q11/A2): the guide is the
             // page that ranks for "send flowers to Poland", and it links the shop root. Only
@@ -106,7 +121,11 @@ export function DestinationsGrid({
             const href =
               destination.href ?? (destination.featured ? shopHref : undefined);
             return (
-              <li key={destination.iso2} data-fo-destination={destination.iso2}>
+              <li
+                key={destination.iso2}
+                className="flex-none snap-start"
+                data-fo-destination={destination.iso2}
+              >
                 <Chip
                   tone={destination.delivering ? "accent" : "neutral"}
                   {...(href === undefined ? {} : { href })}

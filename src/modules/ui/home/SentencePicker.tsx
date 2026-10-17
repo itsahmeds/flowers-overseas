@@ -26,6 +26,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
+import { Icon } from "../icons/Icon.tsx";
 import { Button } from "../primitives/Button.tsx";
 
 import { SentenceIsland } from "./SentenceIsland.tsx";
@@ -56,9 +57,21 @@ export interface SentencePickerProps {
   readonly className?: string;
 }
 
-/** The select's skin: Fraunces 300 italic poppy, a dashed underline, no native chrome. */
-const SELECT =
-  "display-em text-lg-s md:text-lg appearance-none border-0 border-b-2 border-dashed border-accent bg-transparent ps-[2px] pe-[24px] leading-[40px] min-h-[44px] [field-sizing:content] cursor-pointer rounded-none hover:bg-blush focus-visible:rounded-md";
+/**
+ * The select's skin: Fraunces 300 italic poppy, a dashed underline, no native chrome.
+ *
+ * **The value never clips (TASK-231; QA-1 Q1-04, "Polana").** `field-sizing: content` sizes the
+ * select's content box to the selected label's *advance* width, and the browser clips the label at
+ * that box; an italic's last glyph inks past its advance (Fraunces 300 italic "d" by 0.18 em), so
+ * "Poland" lost the stem of its "d". `SELECT_INK_ROOM` widens the content box by a quarter em
+ * where `calc-size()` exists (Chromium); without `field-sizing` (Firefox) the select is as wide as
+ * its longest option and the label already has room. The chevron stays in the 24 px end padding,
+ * clear of the ink.
+ */
+export const SELECT_INK_ROOM =
+  "[inline-size:calc-size(fit-content,_size_+_0.25em)]";
+
+const SELECT = `display-em text-lg-s md:text-lg appearance-none border-0 border-b-2 border-dashed border-accent bg-transparent ps-[2px] pe-[24px] leading-[40px] min-h-[44px] [field-sizing:content] ${SELECT_INK_ROOM} cursor-pointer rounded-none hover:bg-blush focus-visible:rounded-md`;
 
 /** The drawn chevron, inline-end of the choice (the artboard's `.pick::after`). */
 const PICK =
@@ -214,6 +227,13 @@ export function SentencePicker({
           className="flex-auto md:flex-none"
         >
           {t("finder.submit")}
+          {/* "Continue →" (TASK-231; QA-3 D-19): the drawn arrow, `arrow-end`, decorative and
+              mirrored under `dir="rtl"` by the icon set (`mirror-in-rtl`); no new string. */}
+          <Icon
+            name="arrow-end"
+            size={16}
+            className="ms-[8px] inline-block align-[-2px]"
+          />
         </Button>
       </div>
     </form>

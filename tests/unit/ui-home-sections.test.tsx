@@ -205,10 +205,11 @@ describe("the 'Coming up in Poland' strip", () => {
       "Coming up in Poland",
       "Dates worth sending for",
       "Sun, 1 Nov",
-      "All Saints' Day · Wszystkich Świętych",
-      "Andrzejki · St Andrew's Eve",
-      "Wigilia · Christmas Eve",
-      "Women's Day · Dzień Kobiet",
+      // TASK-232: the second name on its own line, no longer joined with " · ".
+      "All Saints' Day Wszystkich Świętych",
+      "Andrzejki St Andrew's Eve",
+      "Wigilia Christmas Eve",
+      "Women's Day Dzień Kobiet",
       "Poland's biggest flower day",
     ]) {
       expect(rendered, fragment).toContain(fragment);
@@ -332,7 +333,7 @@ describe("the how-it-works explainer", () => {
 });
 
 describe("the FAQ", () => {
-  it("renders three native disclosures, all closed, and no JSON-LD (AC-16)", () => {
+  it("renders three native disclosures, the first open as drawn, and no JSON-LD (AC-16)", () => {
     const html = faq("en");
 
     // Three since TASK-177, two founder rulings of 2026-10-04: "What if the flowers do not
@@ -342,7 +343,12 @@ describe("the FAQ", () => {
     expect(FAQ_ENTRIES).toHaveLength(3);
     expect([...html.matchAll(/<details/g)]).toHaveLength(3);
     expect([...html.matchAll(/<summary/g)]).toHaveLength(3);
-    expect(html).not.toContain(" open");
+    // TASK-232 (QA-3 D-10): both artboards draw the first question open, the others closed.
+    expect(
+      [...html.matchAll(/<details([^>]*)>/g)].map((match) =>
+        /\sopen=""/.test(match[1] ?? ""),
+      ),
+    ).toEqual([true, false, false]);
     expect(html).not.toContain("application/ld+json");
   });
 
@@ -391,9 +397,13 @@ describe("the FAQ", () => {
     expect(html).not.toContain("onClick");
   });
 
-  it("renders the help-centre control as text, because 007 has not published it", () => {
-    expect(text(faq("en"))).toContain("All help topics");
-    expect(hrefs(faq("en"))).toEqual([]);
+  it("does not render the help-centre control at all while it has no page (A20; TASK-232)", () => {
+    for (const locale of LOCALES) {
+      expect(text(faq(locale)), locale).not.toContain("All help topics");
+      expect(hrefs(faq(locale)), locale).toEqual([]);
+    }
+    // The sentence saying what holds today stays (copy for the founder's batch).
+    expect(text(faq("en"))).toContain("Our help pages are being written.");
   });
 });
 

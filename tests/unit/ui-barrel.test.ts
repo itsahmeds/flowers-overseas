@@ -162,6 +162,7 @@ describe("src/modules/ui barrel", () => {
         "variantsFor",
         // the locale home's first band and the sentence picker (TASK-052, v2 by TASK-177)
         "DESTINATIONS_ANCHOR",
+        "HEADING_EM",
         "HOME_BLEED",
         "HOME_SECTION",
         "SENTENCE_FIELDS",

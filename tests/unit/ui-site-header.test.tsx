@@ -564,10 +564,21 @@ describe("the rendered header (AC-7, AC-14)", () => {
     expect(html).not.toContain(`>${COMPANY.tradingName}<`);
   });
 
-  it('prints the honest notice: "A note from us:", the price claim and "Fresh-flower promise", and no dates line', () => {
+  it('prints the honest notice, round 2: no lead, the price claim, the leaf and "Fresh-flower promise", and no dates line', () => {
     const html = render("en");
     const strip = html.slice(0, html.indexOf("data-fo-header="));
-    expect(strip).toContain("<strong>A note from us:</strong>");
+    // TASK-232 (QA-3 D-03): round 2 removed "A note from us:" (`chrome-desktop` annotation), in
+    // every locale, and the promise is the bar's sunflower `<strong>` opening on the leaf mark.
+    for (const locale of LOCALES) {
+      const bar = render(locale);
+      expect(bar, locale).not.toContain("A note from us");
+      expect(bar, locale).toMatch(
+        /<strong class="whitespace-nowrap" data-fo-notice-promise="true"><svg[^>]*viewBox="0 0 34 34"[^>]*>(?:(?!<\/svg>).)*<path d="M17 31V15"><\/path>/u,
+      );
+    }
+    expect(strip).toMatch(
+      /data-fo-notice-promise="true"><svg(?:(?!<\/strong>).)*<\/svg>Fresh-flower promise<\/strong>/u,
+    );
     // Spec 004 §14 A23 clause 12 (TASK-193): the dates-pending line is gone with nothing in its
     // place, so the claims open at the price claim and, below `md`, the sentence row is empty.
     expect(strip).not.toContain("first florist");
