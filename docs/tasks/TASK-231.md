@@ -118,6 +118,7 @@ links (PR 226 review nit 1).
   Next: read CI on that head (expect `visual` green now); remove the `visual:baselines` label;
   `/review` and `/break`. A replacement must know: the scratchpad is shared, use a private subdir.
 - 2026-10-18: breaker r1 holes closed in `tests/unit/destinations-hub.test.tsx` (hub h1 has no `<em>`, exact words, 4 locales; watched red with `<em>{chunks}</em>`, 4 failed) and `tests/unit/home-round2.test.tsx` (h1 carries `max-[390px]:[&_em]:block`; watched red with the class removed, 1 failed). Source restored.
+- 2026-10-18 (finisher): rebased on main 83c8e777 (PR 225 copy); Linux baselines re-rendered from run 39075082050 (30 PNGs + manifest, every changed image opened; changes are TASK-226 copy plus this PR's home changes; listing/product shots moved by sub-pixel noise only, see the PR body); `ci:full` toggled.
 
 ## Result
 
