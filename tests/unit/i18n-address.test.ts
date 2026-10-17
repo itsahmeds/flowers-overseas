@@ -307,7 +307,7 @@ describe("postcodeRegex (AC-19)", () => {
 });
 
 describe("the phones fixture (data only, spec 010 validates)", () => {
-  it("has a valid landline and mobile for PL, DE and GB and three rejections", () => {
+  it("has a valid landline and mobile for PL, DE and GB and four rejections", () => {
     for (const country of ["PL", "DE", "GB"]) {
       expect(
         phones.filter(
@@ -316,7 +316,7 @@ describe("the phones fixture (data only, spec 010 validates)", () => {
         country,
       ).toBeGreaterThanOrEqual(2);
     }
-    expect(phones.filter((phone) => phone.invalid === true)).toHaveLength(3);
+    expect(phones.filter((phone) => phone.invalid === true)).toHaveLength(4);
   });
 
   it("keeps every valid number in E.164 shape and every invalid one out of it", () => {

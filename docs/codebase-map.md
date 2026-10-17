@@ -17,7 +17,7 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +72 |
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +30 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts`, `support/forbidden-phrases.ts` +31 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/language-links.spec.ts` +82 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
@@ -164,8 +164,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 296 |
-| `tests/integration/` | 25 |
+| `tests/unit/` | 297 |
+| `tests/integration/` | 26 |
 | `tests/contract/` | 12 |
 | `tests/e2e/` | 59 |
 | `tests/a11y/` | 15 |

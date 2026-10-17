@@ -45,6 +45,7 @@
     "db:migrate": "node scripts/db-migrate.ts",
     "db:rollback": "node scripts/db-migrate.ts --down",
     "db:studio": "drizzle-kit studio",
+    "db:seed": "node seed/index.ts",
     "seed:project": "node seed/project.ts",
     "seed:check": "node seed/check.ts",
     "seed:diff": "node seed/diff.ts",

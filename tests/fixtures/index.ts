@@ -283,6 +283,183 @@ export const currencies: readonly CurrencyFixture[] = [
     locale: "en-GB",
     formatted: "HUF 123,450",
   },
+  {
+    code: "HUF",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "4,500 HUF",
+  },
+  // Spec 002 AC-34 (TASK-026): the other seeded currencies (`src/config/currencies.ts`, the
+  // `currency` rows `pnpm db:seed` writes), 45.00 in each launch locale's formatting tag, exactly
+  // as `Intl.NumberFormat(tag, { style: "currency", currency })` prints the decimal string.
+  {
+    code: "RON",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 RON",
+  },
+  {
+    code: "RON",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "RON 45.00",
+  },
+  {
+    code: "RON",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 RON",
+  },
+  {
+    code: "RON",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 RON",
+  },
+  {
+    code: "CZK",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 CZK",
+  },
+  {
+    code: "CZK",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "CZK 45.00",
+  },
+  {
+    code: "CZK",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 CZK",
+  },
+  {
+    code: "CZK",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 CZK",
+  },
+  {
+    code: "SEK",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 SEK",
+  },
+  {
+    code: "SEK",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "SEK 45.00",
+  },
+  {
+    code: "SEK",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 SEK",
+  },
+  {
+    code: "SEK",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 SEK",
+  },
+  {
+    code: "NOK",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 NOK",
+  },
+  {
+    code: "NOK",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "NOK 45.00",
+  },
+  {
+    code: "NOK",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 NOK",
+  },
+  {
+    code: "NOK",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 NOK",
+  },
+  {
+    code: "DKK",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 DKK",
+  },
+  {
+    code: "DKK",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "DKK 45.00",
+  },
+  {
+    code: "DKK",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 DKK",
+  },
+  {
+    code: "DKK",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 DKK",
+  },
+  {
+    code: "CHF",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 CHF",
+  },
+  {
+    code: "CHF",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "CHF 45.00",
+  },
+  {
+    code: "CHF",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 CHF",
+  },
+  {
+    code: "CHF",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 CHF",
+  },
+  {
+    code: "USD",
+    amount_minor: 4500,
+    locale: "en-150",
+    formatted: "45.00 US$",
+  },
+  {
+    code: "USD",
+    amount_minor: 4500,
+    locale: "en-GB",
+    formatted: "US$45.00",
+  },
+  {
+    code: "USD",
+    amount_minor: 4500,
+    locale: "de",
+    formatted: "45,00 $",
+  },
+  {
+    code: "USD",
+    amount_minor: 4500,
+    locale: "pl",
+    formatted: "45,00 USD",
+  },
 ];
 
 /**
@@ -600,6 +777,35 @@ export const phones: readonly PhoneFixture[] = [
     invalid: true,
     reason: "not-a-number",
   },
+  {
+    // Spec 002 AC-34 (TASK-026): an invalid case for every corpus country, DE included.
+    label: "DE — too short for the German numbering plan",
+    country: "DE",
+    e164: "+49151",
+    national: "0151",
+    invalid: true,
+    reason: "too-short",
+  },
+];
+
+/**
+ * Slug transliteration cases (spec 002 §6, TASK-026: slugs are ASCII-folded at seed time; spec
+ * 003's transliteration reads the same rows). `name` is what an author types, `slug` what
+ * `asciiFoldSlug` (`seed/copy.ts`) must make of it. Polish diacritics first, because `ł` has no
+ * Unicode decomposition and is the letter a naive `NFD` strip leaves behind.
+ */
+export interface SlugFixture {
+  readonly name: string;
+  readonly slug: string;
+}
+
+export const slugTransliterations: readonly SlugFixture[] = [
+  { name: "Łąka Żółta", slug: "laka-zolta" },
+  { name: "Dzień Matki", slug: "dzien-matki" },
+  { name: "Gdańsk Śnieżka", slug: "gdansk-sniezka" },
+  { name: "Źródło Ćmy", slug: "zrodlo-cmy" },
+  { name: "Kraków Spring", slug: "krakow-spring" },
+  { name: "Valentine's Day", slug: "valentines-day" },
 ];
 
 /* -------------------------------------------------------------------------- */
