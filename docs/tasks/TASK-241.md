@@ -112,6 +112,18 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   fix is not mine to make: attesting the copy is the founder's own act (`reviewed: true` via his
   approval script for "Categories"), or the spec writer rules another way (for example, the
   founder reviews other pending `en` keys first). Until then CI cannot be green on this PR.
+- **E-3 (2026-10-18, finisher): CI's numbers on head 02c192e7 (run 39073913406, e2e job
+  117519450482).** (a) Spec 004 rebound AC-34 (T-49) still fails at 390 × 844 in CI: shop root,
+  `FO-GS-001` price foot at y 847.9 (bound 844); country occasion, `items[0]`'s price outside the
+  first viewport (the local "fresh FX rate" explanation does not hold: CI builds the stale
+  snapshot). The country category passes T-49 at all three sizes. (b) T-43 (spec 004 AC-41,
+  clause 9; `frame-laptop-band.spec.ts`) fails on the shop root and the category at 1280 × 800
+  (H1 53.76 px, clause 9 wants 64.0) and 1512 × 945 (58 vs 70): the E-1 update set the listing H1
+  to the artboards' `--text-title-fluid`, which clause 9 does not allow. Restoring the display
+  size adds about 10 to 12 px above the grid, which the T-49 bounds at 1280 × 800 (785 of 800) may
+  not absorb. Question for the founder or the spec writer: which wins on the listings, PR 236's
+  title size or clause 9's display size, and does AC-34 hold at 390 on the shop root and the
+  occasion with the toolbar above the grid? Not tuned.
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
@@ -150,6 +162,15 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   category's chip row and counts a `<details>` after the grid. `docs/design/README.md`: PR 236's
   C3 row and this task's row replaced by one option A row. Local build not run (load average 112);
   judged in CI.
+- 2026-10-18 (finisher): rebased on origin/main 83c8e777 (PR 225). Ready, `ci:full`. E-2 found
+  (unit red). Linux baselines rendered (run 39073912876) and **not committed**: every image pins
+  "English (UK) BETA", E-2's effect; the category's own images show option A as specified (phone:
+  "Categories" beside the sort form under one rule; 1280: count, disclosure, button, sort on one
+  row, first-row prices at about y 780). CI e2e: T-39's first assertion read the attribute value
+  (`"true"`), and the JS-off case counted 20 chips where the spec says 22 (the test now takes the
+  set's size from the page; the exact set is the unit case); the phone rule cell was
+  `aria-hidden`, which AC-45's ornament probe counts (fixed). E-3 recorded. **Next:** E-2 and
+  E-3 rulings; then re-take the Linux baselines (`visual:baselines`), commit them, re-fire CI.
 
 ## Result
 
