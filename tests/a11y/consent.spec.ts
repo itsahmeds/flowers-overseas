@@ -14,6 +14,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { type Page, expect, test } from "@playwright/test";
 
+import { motionsSettled } from "../support/at-rest.ts";
+
 const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
 const AUDITED = ["/pl", "/ar-XB"] as const;
 
@@ -42,6 +44,8 @@ for (const path of AUDITED) {
       `${path} must be served; is ENABLE_PSEUDO_LOCALES=true on the target?`,
     ).toBe(200);
     await expect(page.locator(SHOWN)).toBeVisible();
+    // The sheet once its opening fade has ended: mid-fade its text reads as low contrast (TASK-194).
+    await motionsSettled(page);
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -72,6 +76,7 @@ for (const path of AUDITED) {
     await expect(page.locator(SHOWN)).toBeVisible();
     await page.locator(CHOOSE).click();
     await expect(page.locator(SETTINGS_OPEN)).toBeVisible();
+    await motionsSettled(page);
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

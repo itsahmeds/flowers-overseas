@@ -20,8 +20,18 @@
  * that vanishes from the tab order mid-interaction loses the keyboard user's place.
  *
  * `href` renders an `<a>` with the same skin: a control that navigates is a link (WCAG 4.1.2).
+ *
+ * **Motion** (spec 004 §14 A24 clause 9, `system/motion.dc.html` motions 3 and 6; TASK-194).
+ * A press scales the pill to 0.98 in `--duration-fast` (`transition-transform`: transform is the
+ * only property a button animates, AC-44; colours change at once). `pending` marks a form's
+ * primary submit: the client motion module (`../motion/MotionIsland.tsx`) sets `aria-busy="true"`
+ * and `disabled` on submit, and `globals.css` opens the 22 px bloom in the label's inline-end
+ * padding, absolutely placed, so the button keeps its width. With reduced motion only
+ * `aria-busy` changes; with JavaScript off nothing does.
  */
 import type { ReactElement, ReactNode } from "react";
+
+import { Mark } from "../icons/Mark.tsx";
 
 export const BUTTON_VARIANTS = [
   "primary",
@@ -52,7 +62,7 @@ export type ButtonState = (typeof BUTTON_STATES)[number];
 export type ForcedButtonState = "hover" | "active" | "focus-visible";
 
 const BASE =
-  "inline-flex items-center justify-center gap-[10px] rounded-full font-bold leading-[1.1] whitespace-nowrap transition-colors motion-fast ease-standard select-none";
+  "inline-flex items-center justify-center gap-[10px] rounded-full font-bold leading-[1.1] whitespace-nowrap transition-transform motion-fast ease-standard select-none";
 
 /** Block size and type per size. Every size clears the 44 px target (§5.3). */
 const SIZE_CLASS: Readonly<Record<ButtonSize, string>> = {
@@ -84,23 +94,23 @@ const VARIANT_SKIN: Readonly<Record<ButtonVariant, VariantSkin>> = {
   primary: {
     base: "bg-accent text-on-accent",
     pointer:
-      "hover:bg-accent-strong active:bg-accent-strong active:translate-y-px",
+      "hover:bg-accent-strong active:bg-accent-strong motion-safe:active:scale-[0.98]",
     hover: "bg-accent-strong",
-    active: "bg-accent-strong translate-y-px",
+    active: "bg-accent-strong scale-[0.98]",
   },
   accent: {
     base: "bg-accent text-on-accent",
     pointer:
-      "hover:bg-accent-strong active:bg-accent-strong active:translate-y-px",
+      "hover:bg-accent-strong active:bg-accent-strong motion-safe:active:scale-[0.98]",
     hover: "bg-accent-strong",
-    active: "bg-accent-strong translate-y-px",
+    active: "bg-accent-strong scale-[0.98]",
   },
   secondary: {
     base: "bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)]",
     pointer:
-      "hover:bg-surface-raised active:bg-surface-muted active:translate-y-px",
+      "hover:bg-surface-raised active:bg-surface-muted motion-safe:active:scale-[0.98]",
     hover: "bg-surface-raised",
-    active: "bg-surface-muted translate-y-px",
+    active: "bg-surface-muted scale-[0.98]",
   },
   quiet: {
     base: "bg-transparent text-link underline decoration-[1.5px] underline-offset-[5px]",
@@ -111,9 +121,9 @@ const VARIANT_SKIN: Readonly<Record<ButtonVariant, VariantSkin>> = {
   danger: {
     base: "bg-danger text-on-danger",
     pointer:
-      "hover:bg-danger-strong active:bg-danger-strong active:translate-y-px",
+      "hover:bg-danger-strong active:bg-danger-strong motion-safe:active:scale-[0.98]",
     hover: "bg-danger-strong",
-    active: "bg-danger-strong translate-y-px",
+    active: "bg-danger-strong scale-[0.98]",
   },
 };
 
@@ -136,6 +146,11 @@ export interface ButtonProps {
   readonly iconStart?: ReactNode;
   /** Gallery only (`/dev/components`): render a pointer state statically. */
   readonly forceState?: ForcedButtonState;
+  /**
+   * A form's primary submit (motion 3): renders the bloom slot the motion module shows while the
+   * next page loads. Ignored with `href`.
+   */
+  readonly pending?: boolean;
   readonly className?: string;
   readonly id?: string;
   readonly "aria-describedby"?: string;
@@ -153,6 +168,7 @@ export function Button({
   href,
   iconStart,
   forceState,
+  pending = false,
   className,
   id,
   ...aria
@@ -190,7 +206,20 @@ export function Button({
   const content = (
     <>
       {iconStart}
-      <span>{children}</span>
+      {pending && href === undefined ? (
+        <span className="relative">
+          {children}
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute start-full top-1/2 ms-[4px] size-[22px] -translate-y-1/2 opacity-0"
+            data-fo-pending-bloom
+          >
+            <Mark size={22} tone="current" />
+          </span>
+        </span>
+      ) : (
+        <span>{children}</span>
+      )}
     </>
   );
 
@@ -210,6 +239,7 @@ export function Button({
       disabled={disabled}
       aria-disabled={disabled ? true : undefined}
       aria-busy={busy ? true : undefined}
+      {...(pending ? { "data-fo-pending": "" } : {})}
       {...aria}
     >
       {content}

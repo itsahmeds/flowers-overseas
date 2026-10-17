@@ -133,6 +133,8 @@ export function TierSelector({
               className={BUY_SEGMENT}
               data-fo-segment={tier.tierKey}
               data-fo-tier={tier.tierKey}
+              // Motion 7 (TASK-194): from `md`, the 2 px ink ring settles on the chosen size.
+              data-fo-ring="ink"
             >
               <input
                 className="sr-only"
@@ -166,6 +168,7 @@ export function TierSelector({
             key={tier.tierKey}
             className={`${TIER} has-[:checked]:bg-surface has-[:focus-visible]:outline-focus after:bg-accent cursor-pointer after:absolute after:end-[12px] after:top-[12px] after:hidden after:size-[10px] after:rounded-full after:content-[''] hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-selected)] has-[:checked]:after:block has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
             data-fo-tier={tier.tierKey}
+            data-fo-ring="selected"
           >
             <input
               className="sr-only"

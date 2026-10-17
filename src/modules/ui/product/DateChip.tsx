@@ -139,6 +139,8 @@ export function DateChip({
       className={`${tone} ${edge} rounded-chip has-[:focus-visible]:outline-focus relative flex ${compact ? "min-h-[64px] w-full" : "min-h-[92px]"} flex-col items-center justify-start gap-[2px] px-[4px] py-[10px] text-center text-xs has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
       data-fo-date={date.date}
       data-fo-date-state={state}
+      // Motion 7 (TASK-194): the selection ring settles when a live date is chosen.
+      data-fo-ring="selected"
       {...(date.reasonKey === undefined
         ? {}
         : { "data-fo-date-reason": date.reasonKey })}

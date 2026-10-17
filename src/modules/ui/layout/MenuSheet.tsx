@@ -13,7 +13,7 @@
  *  4. the help line, the `tel:` link the notice bar carries from `lg` up.
  *
  * **A native disclosure** (`<details>`/`<summary>`): it opens and closes with JavaScript off, and
- * it is the one control below `md` besides the logo. With JavaScript on, `MenuEscape` adds `Esc`
+ * it is the one control below `md` besides the logo. With JavaScript on, the header's motion module (`MotionIsland`, TASK-194) adds `Esc`
  * (close, focus back on the summary) and renders nothing, so the header's box is the server's
  * (AC-7). Every target in the panel is at least 44 px tall.
  *
@@ -28,7 +28,6 @@
 import type { ReactElement, ReactNode } from "react";
 
 import { Button } from "../primitives/Button.tsx";
-import { MenuEscape } from "./MenuEscape.tsx";
 
 export interface MenuSheetLink {
   readonly id: string;
@@ -69,7 +68,7 @@ export function MenuSheet({
   return (
     <details
       className={["group", className].filter(Boolean).join(" ")}
-      // Written here, not imported from `./MenuEscape.tsx`: an export of a `"use client"` module
+      // Written here, not imported from `../motion/MotionIsland.tsx`: an export of a `"use client"` module
       // is a client reference on the server, not its value, and the attribute would be lost.
       data-fo-menu=""
     >
@@ -124,7 +123,6 @@ export function MenuSheet({
           </a>
         </p>
       </div>
-      <MenuEscape />
     </details>
   );
 }

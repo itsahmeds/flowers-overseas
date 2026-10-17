@@ -18,7 +18,7 @@
 
 /** The board's `.btn` base: pill, bold, at least 44 px. */
 const BUTTON_BASE =
-  "inline-flex min-h-(--target-min) min-w-(--target-min) cursor-pointer items-center justify-center gap-[10px] rounded-full font-bold leading-[1.15] text-center transition-colors motion-fast ease-standard select-none focus-visible:outline-[2.5px] focus-visible:outline-offset-[3px] focus-visible:outline-solid focus-visible:outline-focus";
+  "inline-flex min-h-(--target-min) min-w-(--target-min) cursor-pointer items-center justify-center gap-[10px] rounded-full font-bold leading-[1.15] text-center transition-transform motion-fast ease-standard select-none focus-visible:outline-[2.5px] focus-visible:outline-offset-[3px] focus-visible:outline-solid focus-visible:outline-focus";
 
 /** The three skins the checkout boards draw. */
 export const BUTTON_SKINS = {

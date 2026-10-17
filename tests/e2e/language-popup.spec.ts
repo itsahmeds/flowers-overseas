@@ -31,6 +31,7 @@ import {
   recordLayoutShifts,
   shiftOutside,
 } from "../support/layout-shift.ts";
+import { motionsSettled } from "../support/at-rest.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 test.use({ storageState: NO_LOCALE_CHOICE });
@@ -119,6 +120,8 @@ async function clearShifts(page: Page): Promise<void> {
 async function openFromRoot(page: Page): Promise<void> {
   await page.goto("/");
   await expect(page.locator(OPEN)).toBeVisible();
+  // Its shape is read at rest, once motion 10's opening has ended (TASK-194).
+  await motionsSettled(page);
   expect(new URL(page.url()).pathname).toBe("/en");
 }
 

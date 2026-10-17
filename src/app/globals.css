@@ -16,6 +16,10 @@
  */
 @import "tailwindcss" source(none);
 @source "../../src/**/*.{ts,tsx}";
+/* The bare word "transition" in a comment (the DST transition in `geo/delivery`) would ship
+   Tailwind's `.transition` utility, a colour/filter/display transition AC-44 forbids; no
+   component uses it (TASK-194, `tests/unit/motion-css.test.ts`). */
+@source not inline("transition");
 
 /*
  * Design tokens, v2 — "the letter home" (spec 004 §2 "Tokens", §14 A21 clauses 2–3, AC-1, AC-3;
@@ -331,6 +335,9 @@
   --duration-base: 200ms;
   --duration-slow: 320ms;
   --duration-photo: 700ms;
+  /* Motion (spec 004 §14 A24 clause 9 (a); TASK-194): the stroke draws and the loading bloom. */
+  --duration-draw: 600ms;
+  --duration-bloom: 1200ms;
   --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
   --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
   --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -803,5 +810,393 @@
 @supports not (animation-timeline: view()) {
   .pdp-bar {
     display: none;
+  }
+}
+
+/*
+ * Motion: the approved set (spec 004 §14 A23 clause 11 as A24 clause 9 amends it, AC-44, AC-6;
+ * TASK-194; `docs/design/system/motion.dc.html`, each cell's Trigger, Tokens, Reduced motion and
+ * Where rows). CSS and inline SVG only; the one client module (`MotionIsland`) toggles the
+ * attributes these rules read and nothing else.
+ *
+ *  - Only `transform` and `opacity` change over time, plus `stroke-dashoffset` on the bloom's
+ *    inline SVG stem (fixed `stroke-dasharray`). No layout property moves, so CLS stays 0
+ *    (`tests/unit/motion-css.test.ts` scans the shipped stylesheet).
+ *  - Everything that moves sits inside `prefers-reduced-motion: no-preference`; the one reduced
+ *    form that changes over time is motion 10's fade of `--duration-fast`, in `@layer base` below.
+ *  - Nothing here touches the LCP element (the home photograph, a lead or first-card photograph,
+ *    an H1) or its ancestors, and no hidden start state is in the server's HTML: motion 11 and 12
+ *    hide only what the module marked `pending`, which is never in the first viewport at load.
+ *  - Durations are the tokens. The sheet's 360 ms shimmer, 250 ms section rise and 1,600 ms bar
+ *    are drawn as literals; the build uses `--duration-slow`, `--duration-base` and
+ *    `--duration-bloom` (`docs/design/README.md`, the TASK-194 row).
+ */
+
+/* 1 and 3. The bloom: the stem draws, then five petals open, 60 ms apart, looping while it waits. */
+@keyframes fo-bloom-stem {
+  0% {
+    stroke-dashoffset: 40;
+  }
+
+  40%,
+  85% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes fo-bloom-petal {
+  0%,
+  35% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  60%,
+  85% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* 1. The 2 px poppy bar under the header. */
+@keyframes fo-nav-bar {
+  0% {
+    transform: scaleX(0);
+    opacity: 1;
+  }
+
+  70% {
+    transform: scaleX(0.82);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+/* 4. One sunflower line sweeps under a choice. */
+@keyframes fo-shimmer {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+
+[data-fo-nav-bar] {
+  transform-origin: 0 50%;
+}
+
+[dir="rtl"] [data-fo-nav-bar] {
+  transform-origin: 100% 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 1. The header's logo blooms and the bar runs while a navigation waits. */
+  html[data-fo-nav="pending"] [data-fo-nav-bar] {
+    animation: fo-nav-bar var(--duration-bloom) var(--ease-standard) infinite;
+  }
+
+  html[data-fo-nav="pending"] [data-fo-header-logo] [data-fo-bloom="stem"],
+  [data-fo-pending][aria-busy="true"] [data-fo-bloom="stem"] {
+    stroke-dasharray: 40;
+    animation: fo-bloom-stem var(--duration-bloom) var(--ease-standard) infinite;
+  }
+
+  html[data-fo-nav="pending"] [data-fo-header-logo] [data-fo-bloom="petal"],
+  [data-fo-pending][aria-busy="true"] [data-fo-bloom="petal"] {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: fo-bloom-petal var(--duration-bloom) var(--ease-emphasised)
+      infinite backwards;
+  }
+
+  :is(
+      html[data-fo-nav="pending"] [data-fo-header-logo],
+      [data-fo-pending][aria-busy="true"]
+    )
+    [data-fo-bloom="petal"]:nth-of-type(2) {
+    animation-delay: 60ms;
+  }
+
+  :is(
+      html[data-fo-nav="pending"] [data-fo-header-logo],
+      [data-fo-pending][aria-busy="true"]
+    )
+    [data-fo-bloom="petal"]:nth-of-type(3) {
+    animation-delay: 120ms;
+  }
+
+  :is(
+      html[data-fo-nav="pending"] [data-fo-header-logo],
+      [data-fo-pending][aria-busy="true"]
+    )
+    [data-fo-bloom="petal"]:nth-of-type(4) {
+    animation-delay: 180ms;
+  }
+
+  :is(
+      html[data-fo-nav="pending"] [data-fo-header-logo],
+      [data-fo-pending][aria-busy="true"]
+    )
+    [data-fo-bloom="petal"]:nth-of-type(5) {
+    animation-delay: 240ms;
+  }
+
+  /* 3. The pending button: the 22 px bloom shows in the label's inline-end padding. */
+  [data-fo-pending][aria-busy="true"] [data-fo-pending-bloom] {
+    opacity: 1;
+  }
+
+  /* 4. The sentence's choices: one shimmer under each, 400 ms apart, once. */
+  [data-fo-shimmer] [data-fo-pick]::before {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 2px;
+    block-size: 2px;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-sun),
+      transparent
+    );
+    pointer-events: none;
+    content: "";
+    opacity: 0;
+    transform: scaleX(0);
+    animation: fo-shimmer var(--duration-slow) var(--ease-standard) 1 backwards;
+  }
+
+  [data-fo-shimmer] [data-fo-pick]:nth-of-type(2)::before {
+    animation-delay: 400ms;
+  }
+
+  [data-fo-shimmer] [data-fo-pick]:nth-of-type(3)::before {
+    animation-delay: 800ms;
+  }
+
+  /* 7. Size and date: the ring settles from 106 % to 100 % on the chosen one. The ring is a
+     pseudo-element over the control's own ring or fill, so at rest it adds nothing; the label
+     transitions only into the checked state, so a page load (no previous style) plays nothing. */
+  [data-fo-ring]:has(> input[type="radio"]:not(:disabled))::before {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 2px var(--fo-ring, var(--color-selected));
+    pointer-events: none;
+    content: "";
+    opacity: 0;
+    transform: scale(1.06);
+  }
+
+  [data-fo-ring]:has(> input[type="radio"]:checked:not(:disabled))::before {
+    opacity: 1;
+    transform: none;
+    transition-property: transform, opacity;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-emphasised);
+  }
+
+  [data-fo-ring="ink"] {
+    --fo-ring: var(--color-ink);
+
+    position: relative;
+  }
+
+  /* The phone's segmented sizes draw no ring: the choice is lifted onto card white instead. */
+  @media (width < 48rem) {
+    [data-fo-ring="ink"]:has(> input[type="radio"]:not(:disabled))::before {
+      content: none;
+    }
+  }
+
+  /* 10. The language popup: fade and 8 px rise; on the phone, a sheet from the top edge. */
+  dialog[data-fo-language-popup][open] {
+    transition-property: opacity, transform;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  dialog[data-fo-language-popup][open]::backdrop {
+    transition-property: opacity;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  @starting-style {
+    dialog[data-fo-language-popup][open] {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    dialog[data-fo-language-popup][open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* 10. The phone Menu drops from the header's foot. */
+  details[data-fo-menu][open] [data-fo-menu-panel] {
+    transition-property: opacity, transform;
+    transition-duration: var(--duration-slow);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  @starting-style {
+    details[data-fo-menu][open] [data-fo-menu-panel] {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  /* 10. The consent sheet: from its edge on the phone, fade and 8 px rise from `sm`. */
+  [data-fo-consent-sheet="fixed"] {
+    transition-property: opacity, transform;
+    transition-duration: var(--duration-slow);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  @starting-style {
+    [data-fo-consent-sheet="fixed"] {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+  }
+
+  @media (width >= 40rem) {
+    [data-fo-consent-sheet="fixed"] {
+      transition-duration: var(--duration-base);
+    }
+
+    @starting-style {
+      [data-fo-consent-sheet="fixed"] {
+        transform: translateY(8px);
+      }
+    }
+  }
+
+  /* Standing on a sticky action bar (below `md`), the sheet only fades: rising from its edge it
+     would pass over the bar's action, which it never covers (AC-48, T-53). */
+  @media (width < 48rem) {
+    @starting-style {
+      body:has([data-fo-action-bar]) [data-fo-consent-sheet="fixed"] {
+        transform: none;
+      }
+    }
+  }
+
+  @media (width < 48rem) {
+    dialog[data-fo-language-popup][open] {
+      transition-duration: var(--duration-slow);
+    }
+
+    @starting-style {
+      dialog[data-fo-language-popup][open] {
+        opacity: 1;
+        transform: translateY(-100%);
+      }
+    }
+  }
+
+  /* 6. A product card lifts 2 px and its photograph zooms 3 % inside its clipped box, on a fine
+     pointer's hover only. The priority card (the LCP photograph) carries no `data-fo-card-motion`. */
+  @media (hover: hover) and (pointer: fine) {
+    a[data-fo-card-motion],
+    a[data-fo-card-motion] img {
+      transition-property: transform;
+      transition-duration: var(--duration-base);
+      transition-timing-function: var(--ease-standard);
+    }
+
+    a[data-fo-card-motion]:hover {
+      transform: translateY(-2px);
+    }
+
+    a[data-fo-card-motion]:hover img {
+      transform: scale(1.03);
+    }
+  }
+
+  /* 11. A below-the-fold image fades in over its paper box once it has loaded. */
+  html[data-fo-motion] img[data-fo-fade="pending"] {
+    opacity: 0;
+  }
+
+  html[data-fo-motion] img[data-fo-fade="in"] {
+    transition-property: opacity;
+    transition-duration: var(--duration-slow);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  /* 12. A section below the fold rises 12 px and fades in once, its children 60 ms apart. */
+  html[data-fo-motion] [data-fo-reveal="pending"] > * {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  html[data-fo-motion] [data-fo-reveal="in"] > * {
+    transition-property: opacity, transform;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(2) {
+    transition-delay: 60ms;
+  }
+
+  html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(3) {
+    transition-delay: 120ms;
+  }
+
+  html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(n + 4) {
+    transition-delay: 180ms;
+  }
+}
+
+/*
+ * Reduced motion (AC-6 as A24 clause 9 (c) reads it): the base layer's rule collapses every
+ * transition and animation to 0.01 ms, and the rules above do not apply at all. The one change over
+ * time left is motion 10's fade, `--duration-fast` (120 ms), opacity only. It has to be
+ * `!important` inside `@layer base` to win over that rule (an important layered declaration beats
+ * an unlayered one), and its attribute selectors outrank `*`.
+ */
+@layer base {
+  @media (prefers-reduced-motion: reduce) {
+    dialog[data-fo-language-popup][open],
+    details[data-fo-menu][open] [data-fo-menu-panel],
+    [data-fo-consent-sheet="fixed"] {
+      transition-property: opacity !important;
+      transition-duration: var(--duration-fast) !important;
+      transition-timing-function: var(--ease-standard);
+    }
+
+    @starting-style {
+      dialog[data-fo-language-popup][open],
+      details[data-fo-menu][open] [data-fo-menu-panel],
+      [data-fo-consent-sheet="fixed"] {
+        opacity: 0;
+      }
+    }
   }
 }

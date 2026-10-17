@@ -84,6 +84,7 @@ export function DestinationsGrid({
       className={`${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-destinations
+      data-fo-reveal=""
       id={DESTINATIONS_ANCHOR}
     >
       <div className="md:gap-2xl grid grid-cols-1 items-center gap-[32px] md:grid-cols-[5fr_6fr]">
