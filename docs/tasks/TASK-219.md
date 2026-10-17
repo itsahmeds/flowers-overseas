@@ -34,7 +34,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-18: registry (`src/config/feature-flags.ts`, with `FlagToggleSchema` and `dirtiedTags` for TASK-220) and reader (`src/lib/flags.ts`, `createFlagReader` with injectable loader and clock) shipped with `tests/unit/feature-flags.test.ts` (27) and `tests/integration/flags.test.ts` (3, PG16). Mutations watched red: TTL 120 s, `<` to `<=`, scope row ignored, registry check removed, a third key, demo guard not high-risk. Built in the TASK-217 feature PR.
 
 ## Result
 
