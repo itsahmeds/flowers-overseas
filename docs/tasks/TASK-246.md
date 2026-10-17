@@ -22,6 +22,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From TASK-202 escalation (a), 2026-10-18:** the defect and the suggested fix above.
+- **From `/review` round 1 of PR 243 (2026-10-18), carry-forward (c):** `listOrdersForPartner`, `listOrdersForAdmin` and the order engine's own-transaction path were tested only against a fake client because of this defect; add an integration case through each wrapper on PG16.
 
 ## Escalations
 
