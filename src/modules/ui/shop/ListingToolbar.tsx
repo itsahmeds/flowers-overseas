@@ -148,6 +148,12 @@ export interface ListingSortFormProps {
    * occasion has always drawn it, "Sort by" over the `<select>` (the C3 artboards, PR 236).
    */
   readonly variant?: "reorder" | "bare";
+  /**
+   * Below `md` the `reorder` form draws its own rule above and below (default). `false` where the
+   * row it sits on draws the rule across it and a neighbour (the country category's "Categories"
+   * button, spec 008 §14 A-founder-2026-10-15c).
+   */
+  readonly framed?: boolean;
 }
 
 /**
@@ -163,6 +169,7 @@ export function ListingSortForm({
   sort,
   id = "listing-sort",
   variant = "reorder",
+  framed = true,
 }: ListingSortFormProps): ReactElement {
   const t = useTranslations("shop");
   if (variant === "bare") {
@@ -176,7 +183,11 @@ export function ListingSortForm({
   return (
     <section
       aria-labelledby={headingId}
-      className="max-md:border-rule max-md:border-y max-md:py-[10px]"
+      className={
+        framed
+          ? "max-md:border-rule max-md:border-y max-md:py-[10px]"
+          : "max-md:py-[10px]"
+      }
       data-fo-listing-sort-form={sort}
     >
       <form

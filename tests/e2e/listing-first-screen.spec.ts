@@ -468,9 +468,11 @@ async function c3Layout(page: Page): Promise<C3Layout> {
     const parts: readonly (readonly [string, string])[] = [
       ["count", "main [data-fo-listing-count]"],
       ["disclosure", "main [data-fo-listing-disclosure]"],
+      // On the country category the chip row is the "Categories" disclosure's `<summary>`
+      // (A-founder-2026-10-15c, AC-33 amended).
       [
         "chips",
-        "main [data-fo-listing-chips], main [data-fo-hub-destinations]",
+        "main [data-fo-listing-chips], main [data-fo-hub-destinations], main [data-fo-listing-categories] > summary",
       ],
       ["sort", "main [data-fo-listing-sort-form]"],
       ["grid", "main [data-fo-listing-grid]"],
@@ -504,7 +506,9 @@ async function c3Layout(page: Page): Promise<C3Layout> {
       grid === null
         ? []
         : Array.from(
-            document.querySelectorAll("main form, main select, main nav"),
+            document.querySelectorAll(
+              "main form, main select, main nav, main details",
+            ),
           )
             .filter(
               (element) =>
@@ -545,14 +549,11 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
               "pager",
             );
           }
-          // From `md` up the shop root draws no chip line (its tiles are the categories, PR 236)
-          // and the country category folds its chips into the "Categories" button
-          // (A-founder-2026-10-15c, asserted below): the line is in the DOM, in order, and
-          // displayed below `md` only.
-          const chipsShown = !(
-            (url === pages[0] || url === pages[1]) &&
-            size.width >= 768
-          );
+          // From `md` up the shop root draws no chip line (its tiles are the categories, PR 236):
+          // the line is in the DOM, in order, and displayed below `md` only. The country
+          // category's "chips" are the "Categories" summary, displayed at every width
+          // (A-founder-2026-10-15c; T-39 below).
+          const chipsShown = !(url === pages[0] && size.width >= 768);
           if (!chipsShown) {
             expect(layout.bottoms["chips"]?.height ?? -1, "no chip row").toBe(
               0,
@@ -604,7 +605,12 @@ test.describe("C3: sort and the chips above the grid on every listing (AC-33, T-
           }
           // Below `md` the chip row is one horizontal scroller: every chip on one line
           // (A16 (e), spec 004 AC-49).
-          if (!hub && size.width < 768 && layout.order.includes("chips")) {
+          if (
+            !hub &&
+            url !== pages[1] &&
+            size.width < 768 &&
+            layout.order.includes("chips")
+          ) {
             const tops = await page
               .locator("main [data-fo-listing-chips] li")
               .evaluateAll((items) =>
@@ -715,135 +721,178 @@ test.describe("the country occasion's lead is one element (spec 008 §14 A16 (b)
 });
 
 /**
- * The founder's option A on E-1 (spec 008 §14 A-founder-2026-10-15c; TASK-241): on the country
- * category, from `md` up, the sibling chips fold into one "Categories" button, a native
- * `<details>`, on the toolbar row with the count and the sort form, so the first row of cards
- * keeps its place on the first screen (spec 004 rebound AC-34). Red with the chips put back as a
- * line: the button is gone and the first row's prices drop past the bound at 1280 × 800.
+ * T-39 (spec 008 §14 A-founder-2026-10-15c; TASK-241): on the country category, at every width,
+ * the sibling chips fold into one "Categories" disclosure, a native `<details>` closed in the
+ * server HTML, on the toolbar row, so the first row of cards keeps its place on the first screen
+ * (spec 004 rebound AC-34, T-49's bound). Red with the chip line restored above the grid (the
+ * first row's prices pass the bound at 1280 × 800, and a chip link renders outside the
+ * `<details>`), with the disclosure moved under the grid, and with the links rendered by client
+ * script only (the JS-off set empty).
  */
-test.describe('A-founder-2026-10-15c: the category\'s chips in a "Categories" button', () => {
-  const CATEGORIES_LABEL = (
-    JSON.parse(
-      readFileSync(
-        resolve(import.meta.dirname, "../../messages/en.json"),
-        "utf8",
-      ),
-    ) as { shop: { category: { chipsToggle: string } } }
-  ).shop.category.chipsToggle;
+test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-founder-2026-10-15c)', () => {
+  const label = (locale: string): string =>
+    (
+      JSON.parse(
+        readFileSync(
+          resolve(import.meta.dirname, `../../messages/${locale}.json`),
+          "utf8",
+        ),
+      ) as { shop: { category: { chipsToggle: string } } }
+    ).shop.category.chipsToggle;
+  const CATEGORIES = [
+    { url: CATEGORY, messages: "en" },
+    { url: "/de/polen/blumen/rosen", messages: "de" },
+  ] as const;
 
-  for (const size of SIZES) {
-    test(`${CATEGORY} at ${String(size.width)} × ${String(size.height)}`, async ({
-      page,
-    }) => {
-      await open(page, CATEGORY, size);
-      const toggle = page.locator("main details[data-fo-listing-categories]");
-      await expect(toggle).toHaveCount(1);
-      if (size.width >= 768) {
-        // On the toolbar row: displayed, its summary the button's words, vertically level with
-        // the sort form, before it in the DOM, and above the first card.
-        await expect(toggle.locator("summary")).toBeVisible();
-        await expect(toggle.locator("summary")).toContainText(CATEGORIES_LABEL);
-        await expect(page.locator("main [data-fo-listing-chips]")).toBeHidden();
+  for (const { url, messages } of CATEGORIES) {
+    for (const size of SIZES) {
+      test(`${url} at ${String(size.width)} × ${String(size.height)}`, async ({
+        page,
+      }) => {
+        await open(page, url, size);
+        const toggle = page.locator("main details");
+        await expect(toggle).toHaveCount(1);
+        await expect(toggle).toHaveAttribute("data-fo-listing-categories", "");
+        expect(
+          await toggle.evaluate(
+            (element) => (element as HTMLDetailsElement).open,
+          ),
+          "closed",
+        ).toBe(false);
+        const summary = toggle.locator("summary");
+        await expect(summary).toBeVisible();
+        await expect(summary).toHaveText(
+          new RegExp(`^${label(messages)}`, "u"),
+        );
+        // No chip line beside it: every chip link is inside the `<details>`.
+        await expect(page.locator("main [data-fo-listing-chips]")).toHaveCount(
+          0,
+        );
         const row = await page.evaluate(() => {
           const box = (query: string): DOMRect | undefined =>
             document.querySelector(query)?.getBoundingClientRect();
-          const summary = box("main [data-fo-listing-categories] summary");
+          const summaryBox = box("main [data-fo-listing-categories] > summary");
           const sort = box("main [data-fo-listing-sort-form] select");
           const count = box("main [data-fo-listing-count]");
-          const band = box("main [data-fo-listing-toolbar-band]");
           const card = box("main [data-fo-listing-grid] > li");
-          const details = document.querySelector(
-            "main [data-fo-listing-categories]",
+          const summaryElement = document.querySelector(
+            "main [data-fo-listing-categories] > summary",
           );
-          const form = document.querySelector(
-            "main [data-fo-listing-sort-form]",
-          );
+          const grid = document.querySelector("main [data-fo-listing-grid]");
+          const overlaps = (a?: DOMRect, b?: DOMRect): boolean =>
+            a !== undefined &&
+            b !== undefined &&
+            a.height > 0 &&
+            b.height > 0 &&
+            a.top < b.bottom &&
+            b.top < a.bottom;
           return {
-            summaryMid:
-              summary === undefined ? -1 : summary.top + summary.height / 2,
-            sortMid: sort === undefined ? -2 : sort.top + sort.height / 2,
-            countTop: count?.top ?? -1,
-            bandBottom: band?.bottom ?? Infinity,
-            summaryBottom: summary?.bottom ?? Infinity,
+            withSort: overlaps(summaryBox, sort),
+            withCount: overlaps(summaryBox, count),
+            summaryBottom: summaryBox?.bottom ?? Infinity,
             cardTop: card?.top ?? -1,
-            before:
-              details !== null &&
-              form !== null &&
-              (details.compareDocumentPosition(form) &
+            beforeGrid:
+              summaryElement !== null &&
+              grid !== null &&
+              (summaryElement.compareDocumentPosition(grid) &
                 Node.DOCUMENT_POSITION_FOLLOWING) !==
                 0,
           };
         });
-        expect(
-          Math.abs(row.summaryMid - row.sortMid),
-          "level with the sort form",
-        ).toBeLessThan(6);
-        expect(
-          row.summaryBottom,
-          "inside the toolbar band",
-        ).toBeLessThanOrEqual(row.bandBottom + 0.5);
+        expect(row.beforeGrid, "before the grid in the DOM").toBe(true);
+        expect(row.withSort, "on the sort form's row").toBe(true);
+        if (size.width >= 1280) {
+          expect(row.withCount, "on the count line's row").toBe(true);
+        }
         expect(row.summaryBottom, "above the first card").toBeLessThanOrEqual(
           row.cardTop + 0.5,
         );
-        expect(row.before, "before the sort form").toBe(true);
-        // It opens with the platform's own disclosure, and its links show.
-        await toggle.locator("summary").click();
+        // The first row's prices are within the first screen (T-49's bound).
+        const first = await firstRow(page);
+        expect(first.length).toBe(size.width < 768 ? 2 : 4);
+        for (const card of first) {
+          expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
+            size.height + 0.5,
+          );
+        }
+        // Opened, the chips wrap in normal flow under the toolbar row and push the grid down.
+        const before = row.cardTop;
+        await summary.click();
         await expect(toggle.locator("a").first()).toBeVisible();
-      } else {
-        // Below `md` the one chip scroller (A16 (e)) and no button.
-        await expect(toggle).toBeHidden();
-        await expect(
-          page.locator("main [data-fo-listing-chips]"),
-        ).toBeVisible();
-      }
-      // The first row's prices are within the first screen (the bound T-49 keeps).
-      const row = await firstRow(page);
-      expect(row.length).toBe(size.width < 768 ? 2 : 4);
-      for (const card of row) {
-        expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
-          size.height + 0.5,
+        const opened = await page.evaluate(() => {
+          const panel = document
+            .querySelector("main [data-fo-listing-categories] nav")
+            ?.getBoundingClientRect();
+          const card = document
+            .querySelector("main [data-fo-listing-grid] > li")
+            ?.getBoundingClientRect();
+          return {
+            panelBottom: panel?.bottom ?? Infinity,
+            cardTop: card?.top ?? -1,
+          };
+        });
+        expect(
+          opened.panelBottom,
+          "the panel above the grid",
+        ).toBeLessThanOrEqual(opened.cardTop + 0.5);
+        expect(opened.cardTop, "the grid pushed down").toBeGreaterThan(
+          before + 20,
         );
-      }
-    });
+      });
+    }
   }
 
-  test("with JavaScript off, every sibling link is in the HTML, closed", async ({
+  test("with JavaScript off, every sibling link is in the HTML, closed, and answers 200", async ({
     browser,
+    request,
   }) => {
     const context = await browser.newContext({
       javaScriptEnabled: false,
-      viewport: SIZES[1],
+      viewport: SIZES[2],
     });
     const page = await context.newPage();
     await page.goto(CATEGORY);
-    const hrefs = async (query: string): Promise<string[]> =>
-      (
-        await page
-          .locator(query)
-          .evaluateAll((links) =>
-            links.map((link) => link.getAttribute("href") ?? ""),
-          )
-      ).sort();
-    const inButton = await hrefs("main [data-fo-listing-categories] a[href]");
-    const inLine = await hrefs("main [data-fo-listing-chips] a[href]");
-    expect(inButton.length).toBeGreaterThan(5);
-    expect(inButton).toStrictEqual(inLine);
-    for (const href of inButton) {
-      expect(href).toMatch(/^\/en-gb\/poland\/flowers\/[a-z-]+$/u);
-    }
+    const chips = page.locator("main [data-fo-listing-categories] li");
+    const links = page.locator("main [data-fo-listing-categories] a[href]");
+    const hrefs = await links.evaluateAll((elements) =>
+      elements.map((element) => element.getAttribute("href") ?? ""),
+    );
+    const names = await chips.evaluateAll((elements) =>
+      elements.map((element) => element.textContent?.trim() ?? ""),
+    );
+    // The sibling set the chip row carried: 22 for Poland in the committed corpus, the current
+    // category marked and not a link, in the page's collation order (sortBy, by name).
+    expect(names).toHaveLength(22);
+    expect(hrefs).toHaveLength(21);
+    expect(names).toStrictEqual(
+      [...names].sort(new Intl.Collator("en-GB").compare),
+    );
     await expect(
       page.locator("main [data-fo-listing-categories] [aria-current='page']"),
     ).toHaveCount(1);
-    expect(
-      await page
-        .locator("main details[data-fo-listing-categories]")
-        .evaluate((element) => (element as HTMLDetailsElement).open),
-    ).toBe(false);
-    // Opens with no script: the summary is the platform's own control.
-    await page.locator("main [data-fo-listing-categories] summary").click();
-    await expect(
-      page.locator("main [data-fo-listing-categories] a").first(),
-    ).toBeVisible();
+    for (const href of hrefs) {
+      expect(href).toMatch(/^\/en-gb\/poland\/flowers\/[a-z-]+$/u);
+    }
+    // No chip link outside the `<details>`.
+    const all = await page
+      .locator("main a[href]")
+      .evaluateAll((elements) =>
+        elements
+          .filter((element) => element.closest("details") === null)
+          .map((element) => element.getAttribute("href") ?? ""),
+      );
+    for (const href of hrefs) {
+      expect(all, href).not.toContain(href);
+    }
+    // Opens by keyboard with no script: the summary is the platform's own control.
+    await page.locator("main [data-fo-listing-categories] > summary").focus();
+    await page.keyboard.press("Enter");
+    await expect(links.first()).toBeVisible();
+    await expect(links.last()).toBeVisible();
     await context.close();
+    for (const href of hrefs) {
+      const response = await request.get(href);
+      expect(response.status(), href).toBe(200);
+    }
   });
 });

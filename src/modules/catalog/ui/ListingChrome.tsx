@@ -679,12 +679,15 @@ export function ListingChipRow({
 }
 
 /**
- * The country category's sibling categories from `md` up, folded into one "Categories" button on
- * the toolbar row (spec 008 §14 A-founder-2026-10-15c, the founder's "A your pick" on E-1;
- * TASK-241 E-1): a native `<details>`/`<summary>`, so it opens and closes with no client script
- * and every chip link is in the server HTML whether the panel is open or not. The panel overlays
- * the grid rather than pushing it, so the first row of cards keeps its place on the first screen
- * (spec 004 rebound AC-34). Below `md` the page shows its one chip scroller instead.
+ * The country category's sibling categories, folded at every width into one "Categories" button on
+ * the toolbar row (spec 008 §14 A-founder-2026-10-15c, the founder's "A your pick" on TASK-241
+ * E-1): a native `<details>`/`<summary>`, closed in the server HTML, so it opens and closes with no
+ * client script and every chip link is in the HTML whether the panel is open or not. It is a
+ * direct child of `CountryListingResults`' toolbar grid. Where the browser exposes
+ * `::details-content`, the `<details>` box is dropped (`display: contents`), so the `<summary>` takes
+ * the toolbar row's button cell and the opened panel takes a full-width row under the toolbar row,
+ * in normal flow, pushing the grid down: no overlay. Elsewhere the whole `<details>` sits in the
+ * button cell and, opened, moves to that full-width row with its panel.
  */
 export function ListingCategoriesToggle({
   label,
@@ -700,10 +703,10 @@ export function ListingCategoriesToggle({
   if (chips.length === 0) return null;
   return (
     <details
-      className="group relative max-md:hidden"
+      className="group col-start-1 row-start-3 self-end open:col-span-full open:row-start-4 supports-[selector(::details-content)]:contents md:col-start-3 md:row-start-1 md:self-center md:open:row-start-3 lg:open:row-start-2 [&::details-content]:col-span-full [&::details-content]:row-start-4 md:[&::details-content]:row-start-3 lg:[&::details-content]:row-start-2 [&:not([open])::details-content]:hidden"
       data-fo-listing-categories
     >
-      <summary className="text-ink text-ui hover:bg-surface-raised flex min-h-(--control-sm) cursor-pointer list-none items-center gap-[8px] rounded-full px-[16px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)] [&::-webkit-details-marker]:hidden">
+      <summary className="text-ink text-ui hover:bg-surface-raised col-start-1 row-start-3 flex min-h-(--control-sm) w-fit cursor-pointer list-none items-center gap-[8px] self-end rounded-full px-[16px] font-bold whitespace-nowrap shadow-[inset_0_0_0_1.5px_var(--color-ink)] max-md:mb-[14px] md:col-start-3 md:row-start-1 md:self-center [&::-webkit-details-marker]:hidden">
         {label}
         {/* The FAQ's `+` (`HomeFaq`): the expand affordance, `aria-hidden` because `<details>`
             exposes the state; turned into a `×` only when open, so the closed first screen holds
@@ -717,7 +720,7 @@ export function ListingCategoriesToggle({
       </summary>
       <nav
         aria-label={heading}
-        className="bg-card rounded-field border-rule absolute end-0 top-[calc(100%+8px)] z-20 w-[min(720px,70vw)] border p-[20px] shadow-(--shadow-letter)"
+        className="bg-card rounded-field border-rule my-[8px] border p-[16px] md:p-[20px]"
       >
         <ul className="gap-sm flex list-none flex-wrap p-0">
           {chips.map((chip) => (
@@ -742,8 +745,9 @@ export interface CountryListingResultsProps {
   /** The page's `ListingChipRow`, where it has one. */
   readonly chips?: ReactNode;
   /**
-   * The country category's `ListingCategoriesToggle`: from `md` up its chips fold into one
-   * button on the count-and-sort row, before the sort form (A-founder-2026-10-15c).
+   * The country category's `ListingCategoriesToggle`: at every width its chips fold into one
+   * button on the sort form's row, before the sort form, and the page passes no `chips`
+   * (A-founder-2026-10-15c).
    */
   readonly chipsToggle?: ReactNode;
   /** The sort form (`ListingSortForm`). */
@@ -779,10 +783,11 @@ const TOOLBAR_PLACEMENT = {
  *
  * Below `md` each part is its own line, as the phone artboards draw them. From `md` up the count
  * and the sort form share one row (count on the start side, sort on the end side), the disclosure
- * between them from `lg` and on its own line under them before;
- * the country category's chips fold into a "Categories" button on that row, before the sort form
- * (A-founder-2026-10-15c), and the occasion's chip line sits under it. All of
- * it ends above the grid. Nothing that sorts or narrows the list follows it, and the ranking
+ * between them from `lg` and on its own line under them before; the occasion's chip line sits
+ * under that row. The country category passes no chip line: at every width its chips fold into a
+ * "Categories" button before the sort form, on the sort form's row (with the count from `md` up),
+ * and the opened panel takes a full-width row under it (A-founder-2026-10-15c). All of it ends
+ * above the grid. Nothing that sorts or narrows the list follows it, and the ranking
  * disclosure is visible above the grid at every width (§8 L240).
  */
 export function CountryListingResults({
@@ -798,13 +803,17 @@ export function CountryListingResults({
   pager,
 }: CountryListingResultsProps): ReactElement {
   const place = TOOLBAR_PLACEMENT[toolbar];
+  const toggled = chipsToggle !== undefined;
   return (
     <div data-fo-listing-results={toolbar}>
       <div
-        className={`md:border-rule grid grid-cols-1 gap-y-[10px] md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${chipsToggle === undefined ? "md:grid-cols-[auto_minmax(0,1fr)_auto]" : "md:grid-cols-[auto_minmax(0,1fr)_auto_auto]"}`}
+        className={`md:border-rule grid gap-y-[10px] md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
         data-fo-listing-toolbar-band
       >
-        <p className="md:col-start-1 md:row-start-1" data-fo-listing-count>
+        <p
+          className="col-span-full md:col-span-1 md:col-start-1 md:row-start-1"
+          data-fo-listing-count
+        >
           <Text as="span" size="sm" tone="muted" className="md:hidden">
             {count.phone}
           </Text>
@@ -814,7 +823,7 @@ export function CountryListingResults({
         </p>
         {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
         <div
-          className="-mt-[6px] max-w-[70ch] md:col-span-full md:row-start-2 md:mt-0 lg:col-span-1 lg:col-start-2 lg:row-start-1"
+          className="col-span-full -mt-[6px] max-w-[70ch] md:row-start-2 md:mt-0 lg:col-span-1 lg:col-start-2 lg:row-start-1"
           data-fo-listing-disclosure
         >
           <Text as="p" size="xs" tone="subtle" className="md:text-sm">
@@ -824,13 +833,20 @@ export function CountryListingResults({
         {chips === undefined ? null : (
           <div className={`min-w-0 ${place.chips}`}>{chips}</div>
         )}
-        {chipsToggle === undefined ? null : (
-          <div className="max-md:hidden md:col-start-3 md:row-start-1">
+        {toggled ? (
+          <>
+            {/* Below `md` the button and the sort form share one ruled row; the rule is drawn
+                once, across both, by this empty cell. */}
+            <div
+              aria-hidden="true"
+              className="border-rule col-span-full row-start-3 border-y md:hidden"
+            />
+            {/* A direct child of this grid: its `<summary>` and its opened panel take cells here. */}
             {chipsToggle}
-          </div>
-        )}
+          </>
+        ) : null}
         <div
-          className={`md:row-start-1 ${chipsToggle === undefined ? "md:col-start-3" : "md:col-start-4"}`}
+          className={`min-w-0 md:row-start-1 ${toggled ? "col-start-2 row-start-3 md:col-start-4" : "md:col-start-3"}`}
           data-fo-listing-sort
         >
           {sortForm}

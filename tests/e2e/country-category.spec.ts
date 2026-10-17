@@ -148,13 +148,12 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     // The sibling row is the whole browsing affordance (§13 Q6): links to pages that exist, the
     // current category marked and not a link to itself.
-    // Above the grid: the phone's chip scroller (spec 008 §14 A16 (e)), or from `md` up the
-    // "Categories" button holding the same links (A-founder-2026-10-15c; TASK-241). Exactly one
-    // of the two is displayed.
-    const siblings = page.locator(
-      "main [data-fo-listing-chips]:visible, main [data-fo-listing-categories]:visible",
-    );
+    // Above the grid, at every width, in the one "Categories" disclosure whose `<summary>` is
+    // displayed (A-founder-2026-10-15c; TASK-241); no chip line beside it.
+    const siblings = page.locator("main details[data-fo-listing-categories]");
     await expect(siblings).toHaveCount(1);
+    await expect(siblings.locator("> summary")).toBeVisible();
+    await expect(page.locator("main [data-fo-listing-chips]")).toHaveCount(0);
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
     // The demo sentence, the whole of the Phase 0 state.
@@ -259,15 +258,10 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     const page = await context.newPage();
     await page.goto("/en/poland/flowers/roses");
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
-    // The sibling categories: the phone's chip scroller (spec 004 §14 A24 clause 4; TASK-195's
-    // primitive), or from `md` up the "Categories" button whose links are in the HTML closed
-    // (A-founder-2026-10-15c; TASK-241). Real links either way.
+    // The sibling categories: the "Categories" disclosure, whose links are in the HTML closed
+    // (A-founder-2026-10-15c; TASK-241). Real links.
     await expect(
-      page
-        .locator(
-          "main [data-fo-listing-chips] a:visible, main [data-fo-listing-categories] summary:visible",
-        )
-        .first(),
+      page.locator("main [data-fo-listing-categories] > summary"),
     ).toBeVisible();
     await expect(
       page.locator("main [data-fo-listing-categories] a[href]"),
