@@ -36,11 +36,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-18: fix in `src/lib/db.ts` (`bindToTransaction`), integration suite `tests/integration/db-context.test.ts` (12 cases, red on old code, green on new), unit fake updated.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+`drizzle(tx)` threw on a real database because a postgres.js transaction handle has no `options` (Drizzle reads `client.options.parsers`) and no `begin`. `bindToTransaction` lends the handle the pool's `options` and maps `begin` to `savepoint` (so `db.transaction` nests), after the unchanged `SET LOCAL` preamble through `tx.unsafe`. New integration suite on a throwaway PG16: a query under each of the five roles (current_user = app_web, `app.*` set, nothing leaks to the next transaction), AC-16 partner isolation and admin/system/public/customer reads through typed Drizzle selects, AC-17 public reference read, date columns as ISO strings, commit and rollback, nested savepoint. Watched red on the old line (12 of 12: "reading 'parsers'"), green on the fix. The brief's `tests/support/sql-runner.ts` does not exist; the real-database helper is `tests/integration/support/scratch-db.ts`.
+
+**Owed (carry-forward c of PR 243 review r1):** PR 243 (TASK-202) had not merged when this started, so the integration cases through `listOrdersForPartner`, `listOrdersForAdmin` and the order engine's own-transaction path are not written. They belong with PR 243 or a follow-up once it lands; the seam they run through is now proven.
