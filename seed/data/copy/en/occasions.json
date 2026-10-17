@@ -26,14 +26,14 @@
       "locale": "en",
       "name": "Anniversary",
       "slug": "anniversary",
-      "descriptionMd": "An anniversary delivery is usually a surprise, so we favour flowers that arrive ready: roses or lilies in a vase, or peonies in season. Choose the date and we hold it. If the recipient is at work, a vase arrangement saves them hunting for one, and the card can be sealed. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "An anniversary delivery is usually a surprise, so we favour flowers that arrive ready: roses or lilies in a vase, or peonies in season. Choose the date and we keep to it. If the recipient is at work, a vase arrangement saves them hunting for one, and the card can be sealed. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Anniversary flower delivery across Europe",
       "seoDescription": "Roses or lilies in a vase and peonies in season, delivered on the date you choose. A vase arrangement saves hunting for one.",
       "translationStatus": "human",
       "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "202825423e0c96cb9de73362f2ad70677a58f15192bd9db3403aa7c31d5f3638"
+      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+      "reviewedAt": "2026-10-15T05:41:33Z",
+      "sourceHash": "88c1d66a60aba94452d5529a67b3db0090be762f9ab56865e1a644cd3008cc24"
     },
     {
       "entity": "occasion",
@@ -86,14 +86,14 @@
       "locale": "en",
       "name": "Get well",
       "slug": "get-well",
-      "descriptionMd": "Get-well flowers go to hospitals, clinics and sofas. Boxes and pots need no vase, low scent matters in a shared room, and small is often better than large. Freesias, gerberas and pastel mixes are the usual choice. If a ward refuses flowers we will hold the delivery for a home address instead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Get-well flowers go to hospitals, clinics and sofas. Boxes and pots need no vase, low scent matters in a shared room, and small is often better than large. Freesias, gerberas and pastel mixes are the usual choice. If a ward refuses flowers we will deliver to a home address instead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Get well flower delivery across Europe",
       "seoDescription": "Box and pot arrangements that need no vase, low in scent and easy to carry. Freesias, gerberas and pastel mixes for a get-well.",
       "translationStatus": "human",
       "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "67c42a1fad8f21e12e86a8eed64629fd2d6cc9c2a63c8dd381891501fe8b5137"
+      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+      "reviewedAt": "2026-10-15T05:41:33Z",
+      "sourceHash": "5bc5d49cad54f3130f70da4224f0a5d687956f0823c6c987bebba50a3b321578"
     },
     {
       "entity": "occasion",
@@ -146,14 +146,14 @@
       "locale": "en",
       "name": "Just because",
       "slug": "just-because",
-      "descriptionMd": "No occasion, no card required, nothing to remember: a seasonal bunch or a loose mixed bouquet at the lower end of our prices, sent because it is Tuesday. These are the orders our florists like most, because they get to choose what goes in rather than following a picture. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "No occasion, no card required, nothing to remember: a seasonal bunch or a loose mixed bouquet at the lower end of our prices, sent because it is Tuesday. Our florist likes these orders most, because they get to choose what goes in rather than following a picture. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Just because flower delivery across Europe",
       "seoDescription": "Seasonal bunches and loose mixed bouquets at the lower end of our prices, sent for no occasion. Our florist chooses what goes in.",
       "translationStatus": "human",
       "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "7804b327390698d633d01e748d397569e15ac69b7f69f3b3de9357ba0b48cc2a"
+      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+      "reviewedAt": "2026-10-15T05:41:33Z",
+      "sourceHash": "7a1fc218220443ce40d7c9af17da9c547f5e34d30696c939453e44fbcf4945d3"
     },
     {
       "entity": "occasion",
@@ -161,14 +161,14 @@
       "locale": "en",
       "name": "Wedding",
       "slug": "wedding",
-      "descriptionMd": "We deliver flowers to a wedding as a gift or a table piece, not as a wedding contract: no bridal work, no venue installation, no consultation. White roses, white peonies, lilies and an orchid are what people send to a couple. For anything more, a local florist should be booked directly, months ahead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "We deliver flowers to a wedding as a gift or a table piece, not as a wedding contract: no bridal work, no venue installation, no consultation. White roses, white peonies, lilies and an orchid are what people send to a couple. For bridal flowers and venue work, book a wedding florist months ahead. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Wedding flower delivery across Europe",
       "seoDescription": "White roses, peonies, lilies and orchids delivered to a wedding as a gift or table piece. We do not take bridal or venue work.",
       "translationStatus": "human",
       "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "c5a8cf5127c78dd041c82d70e92f12ff97ac64a177cdf1e2b6aad27bfce93202"
+      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+      "reviewedAt": "2026-10-15T05:41:33Z",
+      "sourceHash": "e0f5fd10275a7b1170a10a1e0a0671bc16c2b8f7fb75d799c7918ba4ffb2131d"
     },
     {
       "entity": "occasion",
@@ -221,14 +221,14 @@
       "locale": "en",
       "name": "Valentine's Day",
       "slug": "valentines-day",
-      "descriptionMd": "Valentine's Day is one date across the whole of Europe and the busiest day of our year. Red roses cost more that week because they cost our florists more, and a surcharge applies on the day itself — both are shown before you pay. Order early: cutoffs move forward that week. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Valentine's Day is one date across the whole of Europe and the busiest day of our year. Red roses cost more that week, everywhere in Europe, and a surcharge applies on the day itself. Both are shown before you pay. Order early: cutoffs move forward that week. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Valentine's Day flower delivery across Europe",
       "seoDescription": "Red roses delivered on 14 February across Europe. Higher seasonal prices and the day's surcharge are shown before you pay. Order early.",
       "translationStatus": "human",
       "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
+      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+      "reviewedAt": "2026-10-15T05:41:33Z",
+      "sourceHash": "6a650d0c2213005eea7bf672f0b440bca1468d334f0a6aff9caadebe9c5e3dc9"
     },
     {
       "entity": "occasion",
@@ -386,14 +386,14 @@
       "locale": "en",
       "name": "Sant Jordi",
       "slug": "sant-jordi",
-      "descriptionMd": "The twenty-third of April in Catalonia: a rose and a book, exchanged in the street. Single red roses are the tradition, and demand is concentrated into a single morning. We cover it where we have a florist in the city, and the destination page says whether that is the case this year. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "The twenty-third of April in Catalonia: a rose and a book, exchanged in the street. Single red roses are the tradition, and demand is concentrated into a single morning. The Barcelona page shows whether we deliver for Sant Jordi this year, and it is worth ordering early because the whole city wants roses that morning. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Sant Jordi rose delivery — 23 April in Catalonia",
-      "seoDescription": "Single red roses for Sant Jordi on 23 April, where we have a florist in the city. Demand is concentrated into one morning.",
+      "seoDescription": "Single red roses for Sant Jordi on 23 April. The Barcelona page shows whether we deliver this year. Demand is concentrated into one morning.",
       "translationStatus": "human",
       "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "8af11d90c6d6469c1071ed0883a1502b4b4d345051a69a48136c39bd32bf83fc"
+      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
+      "reviewedAt": "2026-10-15T05:41:33Z",
+      "sourceHash": "e789e463acbfe79016fd9bbdd6ff0f66ec9deda5912b42e69a97236035a2a6e7"
     },
     {
       "entity": "occasion",

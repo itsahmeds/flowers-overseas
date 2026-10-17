@@ -502,6 +502,9 @@ const CUSTOMER_COPY_EXEMPT_PATHS = [
   // The register itself (TASK-087). `src/config/voice.ts` *is* the nine words; scanning it for
   // them would be the one place the rule can only fail.
   "src/config/voice.ts",
+  // The relay-language check (TASK-226; spec 041 §14 A-founder-2026-10-14). Each pattern carries
+  // the sentence it must flag, so "our partner florist" is a fixture there, never copy.
+  "src/config/honesty.ts",
 ];
 
 /**

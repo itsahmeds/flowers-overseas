@@ -50,12 +50,12 @@
       "locale": "pl",
       "name": "Kwiaty pogrzebowe",
       "slug": "kwiaty-pogrzebowe",
-      "descriptionMd": "Wieńce, wiązanki, krzyż, serce, bukiety na grób i niskie kompozycje żałobne, w formach, jakich oczekuje się w każdym kraju. Jeśli podasz nam dom pogrzebowy lub cmentarz, przekażemy dane dalej i dopasujemy dostawę do terminu uroczystości. Kwiaty kondolencyjne do domu też są tutaj, na wypadek gdyby formalna wiązanka była zbyt oficjalna. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Wieńce, wiązanki, krzyż, serce, bukiety na grób i niskie kompozycje żałobne, w formach, jakich oczekuje się w każdym kraju. Podaj nam dom pogrzebowy lub cmentarz, a dopasujemy dostawę do terminu uroczystości. Kwiaty kondolencyjne do domu też są tutaj, na wypadek gdyby formalna wiązanka była zbyt oficjalna. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty pogrzebowe – wieńce i wiązanki w Europie",
       "seoDescription": "Wieńce, wiązanki, krzyże, serca, bukiety na grób i kompozycje żałobne w formach, jakich oczekuje każdy kraj, dopasowane do uroczystości.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "709c11263e911c0c256c3eeaf79d59810888f74c4e71643e348cbd60011a6eb8"
+      "sourceHash": "67e5e2fcacb91c07ac7803776370e01c376f72d5d3fd769541ccfeb08d7e74cc"
     },
     {
       "entity": "category",
@@ -63,12 +63,12 @@
       "locale": "pl",
       "name": "Kwiaty z prezentem",
       "slug": "kwiaty-z-prezentem",
-      "descriptionMd": "Bukiet z jednym dodatkiem: czekoladkami, szklanym wazonem, balonem lub małą przytulanką, kupionym przez tego samego florystę, który robi kwiaty. Nic nie jest wysyłane osobno, więc cały prezent dociera razem i w jednym stanie. Zestawy z jedzeniem pokazują alergeny przy kasie, a każda cena obejmuje dostawę i lokalny podatek. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiet z jednym dodatkiem: czekoladkami, szklanym wazonem, balonem lub małą przytulanką, dobranym do kwiatów i dostarczanym razem z nimi. Nic nie jest wysyłane osobno, więc cały prezent dociera razem i w jednym stanie. Zestawy z jedzeniem pokazują alergeny przy kasie, a każda cena obejmuje dostawę i lokalny podatek. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty z prezentem – bukiety z czekoladkami i więcej",
-      "seoDescription": "Bukiet z czekoladkami, wazonem, balonem lub przytulanką od tego samego florysty. Jedna dostawa, jedna cena, alergeny podane.",
+      "seoDescription": "Bukiet z czekoladkami, wazonem, balonem lub przytulanką, dobranym do kwiatów i dostarczanym razem z nimi. Jedna dostawa, jedna cena, alergeny podane.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "347ebb5893ba0df1a7d380df7ae3e2ca06d3c46acbfe1efd55303db366241da1"
+      "sourceHash": "36425942c35f8ac1fe217f43e84e980c065f39c1eb76b37fe4fbc94652ab5da7"
     },
     {
       "entity": "category",
@@ -141,12 +141,12 @@
       "locale": "pl",
       "name": "Kwiaty na powrót do zdrowia",
       "slug": "kwiaty-na-powrot-do-zdrowia",
-      "descriptionMd": "Bukiety i kompozycje wybrane do sali szpitalnej albo na kanapę: lekkie, o słabym zapachu, kilka w pudełku lub doniczce, więc wazon nie jest potrzebny. Są tu frezje, gerbery, pastelowe mieszanki i skrzydłokwiat. Niektóre oddziały nie przyjmują kwiatów, więc sprawdź to przed zamówieniem, a w razie potrzeby wstrzymamy dostawę. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bukiety i kompozycje wybrane do sali szpitalnej albo na kanapę: lekkie, o słabym zapachu, kilka w pudełku lub doniczce, więc wazon nie jest potrzebny. Są tu frezje, gerbery, pastelowe mieszanki i skrzydłokwiat. Niektóre oddziały nie pozwalają na kwiaty, więc sprawdź to przed zamówieniem; możemy dostarczyć je zamiast tego na adres domowy. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Kwiaty na powrót do zdrowia – dostawa w Europie",
       "seoDescription": "Bukiety i kompozycje w pudełku do sali szpitalnej lub na kanapę: lekkie, o słabym zapachu, bez wazonu. Frezje, gerbery, pastele.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "7c797184f0a2cc815c130065b6a075d46b053a28ad81234a61ab5b7f38708bec"
+      "sourceHash": "0f8aaa7d39cb2088e36703c1d62edd110f31f53a486d773d90aafa73149e21d7"
     },
     {
       "entity": "category",
@@ -224,7 +224,7 @@
       "seoDescription": "Tulipany kolorowe, żółte, białe, różowe i fioletowe, od piętnastu do trzydziestu pięciu łodyg z liśćmi. Kolor stały, odmiana zmienna.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "16e976a94cc63d21b9427f6474398bf9a94aed75dcfab90746df66f788f36696"
+      "sourceHash": "22ddbb532b4a5d2357b59fbf94188ccbb023a718006512c74ccaa4205c99a651"
     },
     {
       "entity": "category",
@@ -232,12 +232,12 @@
       "locale": "pl",
       "name": "Lilie",
       "slug": "lilie",
-      "descriptionMd": "Lilie orientalne białe i różowe, w wiązkach po pięć, osiem lub dwanaście łodyg oraz w kompozycji w szklanym wazonie. Trzy lub cztery kwiaty na łodydze i mocny zapach, więc nawet mały bukiet wypełnia pokój. Wysyłane na kondolencje, śluby i rocznice. Łodygi opuszczają kwiaciarnię częściowo zamknięte i rozwijają się przez pierwsze dni. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Lilie orientalne białe i różowe, w wiązkach po pięć, osiem lub dwanaście łodyg oraz w kompozycji w szklanym wazonie. Trzy lub cztery kwiaty na łodydze i mocny zapach, więc nawet mały bukiet wypełnia pokój. Wysyłane na kondolencje, śluby i rocznice. Łodygi docierają częściowo zamknięte i rozwijają się przez pierwsze dni. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Lilie z dostawą w Europie – białe i różowe",
       "seoDescription": "Lilie orientalne białe i różowe, od pięciu do dwunastu łodyg lub w szklanym wazonie. Mocny zapach; pąki rozwijają się przez kilka dni.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "0713af0e0d42601f66eb6221b32392605e7f9bc4f041bbb93f507be3525b377e"
+      "sourceHash": "e69c71fb1e7fd4ef478c1c1033f172c1a49d1b941a5c6333ee6126778ee82fa0"
     },
     {
       "entity": "category",
@@ -245,12 +245,12 @@
       "locale": "pl",
       "name": "Storczyki",
       "slug": "storczyki",
-      "descriptionMd": "Storczyki falenopsis białe i różowe, z jedną lub dwiema łodygami, w doniczce i z podporą, z pąkami i kwiatami, gdy opuszczają kwiaciarnię. Kwitną tygodniami i potrzebują wody raz w tygodniu, dlatego to roślina do wysłania, gdy nikt nie będzie w domu, by przycinać łodygi. Każdy w jednym rozmiarze, ze wskazówkami pielęgnacji. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Storczyki falenopsis białe i różowe, z jedną lub dwiema łodygami, w doniczce i z podporą, z pąkami i kwiatami, w dniu dostawy. Kwitną tygodniami i potrzebują wody raz w tygodniu, dlatego to roślina do wysłania, gdy nikt nie będzie w domu, by przycinać łodygi. Każdy w jednym rozmiarze, ze wskazówkami pielęgnacji. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Storczyki z dostawą w całej Europie",
       "seoDescription": "Storczyki falenopsis białe i różowe, z jedną lub dwiema łodygami, w doniczce z podporą. Kwitną tygodniami, podlewane raz w tygodniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "ff19ecf17df92956684407df3702bde01c6a360e70d5b664628bf2e69b3d7be9"
+      "sourceHash": "88d1d180e10c114b5460756939392d0c9a53e4fa4323808e1537d354f50e24c3"
     },
     {
       "entity": "category",
@@ -271,12 +271,12 @@
       "locale": "pl",
       "name": "Piwonie",
       "slug": "piwonie",
-      "descriptionMd": "Piwonie różowe, jasnoróżowe i białe, po dziewięć, piętnaście lub dwadzieścia jeden łodyg oraz w ciężkim wazonie. Sezon jest krótki, kilka tygodni późną wiosną, a poza nim nasz florysta mówi nam o tym, zanim przyjmiemy zamówienie, zamiast podstawiać coś innego. Ceny są na górze naszej skali, bo taki jest ten kwiat. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Piwonie różowe, jasnoróżowe i białe, po dziewięć, piętnaście lub dwadzieścia jeden łodyg oraz w ciężkim wazonie. Sezon jest krótki, kilka tygodni późną wiosną, więc bukiety z piwonii są dostępne tylko wtedy, gdy trwa. Ceny są na górze naszej skali, bo taki jest ten kwiat. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Piwonie z dostawą w Europie – różowe i białe",
       "seoDescription": "Piwonie różowe, jasnoróżowe i białe, od dziewięciu do dwudziestu jeden łodyg lub w ciężkim wazonie. Krótki sezon, bez cichych zamian.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "b390a4bab57dee0e13a1a7f635797993b3c2fe2cf4fe1ba001443a145f536022"
+      "sourceHash": "7319bf5a8b2514d01c4b92a1c090b28379667ec99d264601d37246a871953c29"
     },
     {
       "entity": "category",

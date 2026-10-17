@@ -34,9 +34,9 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "You are shown one amount in pounds sterling, with VAT and delivery already inside it, before you enter a card. That figure is the figure charged. Nothing is added afterwards, and the person receiving the flowers is shown no price at all."
   - q: "Who am I buying from, and who do I complain to?"
-    a: "You are buying from us, not from the shop that makes the bouquet, so your contract and your complaint are both with us rather than with a shop abroad. We have not begun delivering to Poland yet, so today there is nothing to claim against, and we would rather say that plainly."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver to Poland today?"
-    a: "No. We are still choosing the shops we want to work with, and until one of them has agreed we will not print a date or an hour on this page. We would rather turn you away than promise something we cannot honour."
+    a: "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips in spring, peonies in late May and June, roses all year round,
   gerberas for colour and freesias when a shop wants to show what it can do.
@@ -50,9 +50,9 @@ relatedIso2: ["DE", "RO", "NL"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Written for a sender in Britain
@@ -87,8 +87,7 @@ day are one more thing to find a vase for.
 A dozen roses is the default romantic gesture at home. It is the wrong count there.
 An odd number is for a living person and an even number is for a grave, and this is
 not a folk memory that has faded: shop staff apply it without being asked, and a bunch
-that arrives with an even count will be noticed. If we compose the bouquet, the shop
-does the counting and you do not need to think about it.
+that arrives with an even count will be noticed. Our florist counts the stems for you, so you do not need to think about it.
 
 ## Name days, which we simply do not have
 
@@ -98,7 +97,7 @@ imieniny more warmly than their birthday. There is no equivalent here, so it is 
 easiest thoughtful gesture available to a British sender: find the date from the
 first name, and send something modest on it.
 
-## What a shop there will build
+## What Polish florists are known for
 
 Loose, soft, hand-tied bunches, wrapped in paper and tied with ribbon. Seasonal
 material is genuinely seasonal, so tulips carry the spring, peonies own the turn of
@@ -114,13 +113,8 @@ inside it, before you enter a card, and that figure is what leaves your account.
 currency conversion is applied afterwards and no fee appears at the end. The person
 receiving the flowers is never shown a price, and there is no paperwork in the box.
 
-Your contract is with us, not with the shop that makes the bouquet. If something is
-wrong you complain to us and we sort it out; you never have to take up an argument with a shop
-abroad in a language you do not speak.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep. If something is wrong, tell us and we put it right.
 
 ## What we can honestly tell you today
 
-We are not delivering to Poland yet. We have written this guide, chosen the cities we
-want to begin in, and we are talking to the shops we would like to make your flowers.
-Until one of them has agreed to work with us there will be no date and no hour on this
-page. When that changes, this section is the first thing that changes with it.
+We are not delivering in Poland yet. When we start, this page will show the cities, the order-by time and what happens on the day.

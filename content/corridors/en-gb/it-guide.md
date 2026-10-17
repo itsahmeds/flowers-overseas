@@ -34,9 +34,9 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That figure is what leaves your account, nothing is added at the end, and the recipient is shown no price at all."
   - q: "Who do I deal with if an order goes wrong?"
-    a: "Us. Your contract is with us and not with the fiorista who makes the bouquet, so any complaint comes to us in English rather than to a shop abroad. We are not delivering in Italy yet, so there is nothing to buy today, and we would rather say it plainly."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver flowers in Italy at the moment?"
-    a: "No. We are choosing the shops we want to work with and have not finished. Until one of them has agreed, this page will carry no date, no hour and no claim about arrival."
+    a: "Not yet. Ordering for Italy is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Mimosa for a single day in March, ranunculus and anemones from the Ligurian
   coast in late winter, peonies and roses through May and June, sunflowers
@@ -51,9 +51,9 @@ relatedIso2: ["FR", "ES", "RO"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Two absolutes, and a pleasure
@@ -105,7 +105,7 @@ deal of the country leaves for the sea, and a small shop in a city may shut for 
 fortnight with nothing but a note in the window. If your date is in mid-August,
 assume the smaller shops are away.
 
-## What an Italian shop is good at
+## What Italian florists are known for
 
 Shape, above all. The style is more sculpted than the loose paper bunch a British
 florist produces: a clear silhouette, considered proportions, fewer varieties handled
@@ -121,12 +121,8 @@ before you enter a card, and that is what leaves your account. No conversion is
 applied at the end. No price travels with the flowers and there is no paperwork in
 the box.
 
-Your contract is with us and not with the fiorista who makes the bouquet. A complaint
-comes to us in English, rather than to a shop abroad.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We are not delivering in Italy. We wrote this guide because the customs are worth
-knowing whoever carries the flowers, and because a page that is true and incomplete
-is better than one that is complete and made up. Until a shop there has agreed to
-work with us, nothing here will claim an arrival.
+We are not delivering in Italy yet. When we start, this page will show the cities, the order-by time and what happens on the day.

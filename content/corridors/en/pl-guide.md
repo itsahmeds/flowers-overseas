@@ -19,7 +19,7 @@ faq:
   - q: "Which flowers should I not send in Poland?"
     a: "Chrysanthemums, above all. They belong on a grave there, and a beautiful bunch of them sent to a birthday will land as a shock rather than a gift. We would also avoid lilies for anything cheerful, for the same reason."
   - q: "Is it true that the number of flowers matters in Poland?"
-    a: "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florists count the stems so you do not have to."
+    a: "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florist counts the stems so you do not have to."
   - q: "What is a name day, and should I send flowers for it?"
     a: "A name day, or imieniny, is the feast day of the saint you are named after, and plenty of people in Poland celebrate it as warmly as a birthday. Flowers are the usual gift. If you know only the first name of the person you are sending to, that is enough to look the date up."
   - q: "When is Mother's Day in Poland?"
@@ -35,7 +35,7 @@ faq:
   - q: "Will the person paying in one currency and receiving in złoty cause confusion?"
     a: "No. You see one all-in amount in your own currency before you pay, and the person receiving the flowers never sees a price at all."
   - q: "Can you deliver to Poland today?"
-    a: "Not yet. We are still choosing the shops we want to work with there, and until we have, we will not put a date or a time on this page. We would rather tell you no than promise something we cannot honour."
+    a: "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips in spring, peonies in late May and June, roses all year, gerberas for
   something bright, and freesias when a florist wants to show off. Polish shops
@@ -49,9 +49,9 @@ relatedIso2: ["DE", "RO", "NL"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-10-05
-version: 2
-updatedAt: "2026-10-05"
+reviewedAt: 2026-10-15
+version: 3
+updatedAt: "2026-10-14"
 ---
 
 ## Why we started here
@@ -75,7 +75,7 @@ The second is counting. Give an odd number of stems to a living person and an ev
 number only at a funeral or a graveside. This is not a quaint survival that nobody
 observes any more: it is a live convention that shop staff apply without being asked,
 and a bunch of a dozen roses is the sort of thing that gets quietly re-counted before
-it goes out of the door. When we make a bouquet for you, the shop counts it correctly
+it goes out of the door. When we make a bouquet for you, our florist counts the stems for you
 as a matter of course.
 
 The third is that flowers there are given constantly, and not only romantically. A
@@ -117,12 +117,5 @@ same money than you would by insisting on roses in January.
 
 ## What we can honestly tell you today
 
-We are not delivering to Poland yet. We have written this guide, we have chosen
-the cities we want to start in, and we are meeting the shops we would like to make
-your flowers. Until one of them has agreed to work with us, we will not print a
-time, a date or a promise on this page — because a promise on a website is worth
-exactly as much as the arrangement behind it, and right now there is none.
-
-When that changes, this page changes: it will carry the cities we cover, what
-happens on the day, and who to speak to when something goes wrong. Until then,
-what you are reading is a guide, written by us, and honest about its limits.
+We are not delivering in Poland yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.

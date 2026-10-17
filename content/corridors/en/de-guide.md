@@ -36,7 +36,7 @@ faq:
   - q: "The recipient pays nothing, but will they see what I paid in euro?"
     a: "No. You see one all-in amount in your own currency before you pay, and nothing about money travels with the flowers."
   - q: "Can you send flowers to Germany right now?"
-    a: "Not yet. We have written this guide and chosen the cities we want to begin in, and until a shop there has agreed to work with us we will not put a date on this page. We would rather say no than say something we cannot honour."
+    a: "Not yet. Ordering for Germany is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips and daffodils from February, peonies and lily of the valley in late
   spring, sunflowers through August, asters and dahlias into the autumn, and
@@ -51,9 +51,9 @@ relatedIso2: ["PL", "FR", "NL"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country that buys flowers for itself
@@ -118,13 +118,5 @@ actually matters.
 
 ## What we can honestly tell you today
 
-We are not making deliveries in Germany. We have written this guide, we have
-decided which cities we want to begin in, and we are talking to the shops we would
-like to make your flowers. Until one of them has said yes, there will be no date,
-no time and no promise on this page, because a promise on a website is worth
-exactly as much as the arrangement standing behind it.
-
-When that changes, this page changes with it: it will name the cities we cover,
-explain what happens on the day, and tell you who to speak to when something goes
-wrong. Until then this is a guide, written by us, honest about what it does not
-yet know.
+We are not delivering in Germany yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.

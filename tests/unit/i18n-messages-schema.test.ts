@@ -335,8 +335,6 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.placeKind.work",
     "checkout.price.changed",
     "checkout.price.confirm",
-    "checkout.price.currencyLine",
-    "checkout.privacy.demoNotice",
     "checkout.progress.card",
     "checkout.progress.compact",
     "checkout.progress.label",

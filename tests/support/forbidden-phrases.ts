@@ -18,6 +18,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { stripMarkup } from "../../src/config/honesty.ts";
 import { splitCorridorFile } from "../../src/modules/geo/content/parse.ts";
 
 /** The four phrases, as AC-37 lists them. */
@@ -30,16 +31,11 @@ export const FORBIDDEN_PHRASES = [
 
 /**
  * Spec 004 §14 A23 open item (vii): the shipped, reviewed `en` copy that still matches, and nothing
- * else. Each entry waits for the founder's replacement wording (proposed in TASK-193's PR).
+ * else. The list may only shrink, and it is empty: the last six entries (five guide FAQ answers and
+ * `corridor.facts.orderBy.none`) left with the founder's replacement wording of 2026-10-14
+ * (TASK-226).
  */
-export const PHRASE_EXCEPTIONS: readonly string[] = [
-  "content/corridors/en-gb/es-guide.md › faq › Can you send flowers to Spain now?",
-  "content/corridors/en-gb/fr-guide.md › faq › Can you deliver to France today?",
-  "content/corridors/en-gb/pl-guide.md › faq › Can you deliver to Poland today?",
-  "content/corridors/en/es-guide.md › faq › Can you send flowers to Spain now?",
-  "content/corridors/en/pl-guide.md › faq › Can you deliver to Poland today?",
-  "corridor.facts.orderBy.none",
-];
+export const PHRASE_EXCEPTIONS: readonly string[] = [];
 
 /** One piece of copy: where it lives (a catalogue key, or a file and field) and its text. */
 export interface CopyRecord {
@@ -54,9 +50,9 @@ export function normaliseSpace(text: string): string {
   return text.replaceAll(/\s+/gu, " ").trim();
 }
 
-/** The forbidden phrases `text` contains, lower-cased, in list order. */
+/** The forbidden phrases `text` contains, lower-cased, in list order; markup is stripped first. */
 export function forbiddenPhrasesIn(text: string): readonly string[] {
-  const haystack = normaliseSpace(text).toLowerCase();
+  const haystack = normaliseSpace(stripMarkup(text)).toLowerCase();
   return FORBIDDEN_PHRASES.filter((phrase) => haystack.includes(phrase));
 }
 
@@ -85,9 +81,11 @@ export function catalogueCopy(): readonly CopyRecord[] {
   );
 }
 
-/** Every string of every `en`/`en-gb` seed copy record, named by file, row key and field. */
-export function seedCopy(): readonly CopyRecord[] {
-  return ["en", "en-gb"].flatMap((locale) => {
+/** Every string of every seed copy record in `locales` (default `en`/`en-gb`), named by file, row key and field. */
+export function seedCopy(
+  locales: readonly string[] = ["en", "en-gb"],
+): readonly CopyRecord[] {
+  return locales.flatMap((locale) => {
     const dir = `seed/data/copy/${locale}`;
     return readdirSync(join(ROOT, dir))
       .filter((name) => name.endsWith(".json"))
@@ -107,14 +105,16 @@ export function seedCopy(): readonly CopyRecord[] {
 }
 
 /**
- * Every `content/corridors/en*` file, parsed: each frontmatter string (a FAQ entry named by its
- * question) and the markdown body. A file that does not split is read whole, so it is scanned
- * rather than skipped.
+ * Every `content/corridors/en*` file (or, with `localePrefix: ""`, every locale's), parsed: each
+ * frontmatter string (a FAQ entry named by its question) and the markdown body. A file that does
+ * not split is read whole, so it is scanned rather than skipped.
  */
-export function corridorCopy(): readonly CopyRecord[] {
+export function corridorCopy(localePrefix = "en"): readonly CopyRecord[] {
   const base = "content/corridors";
   return readdirSync(join(ROOT, base), { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name.startsWith("en"))
+    .filter(
+      (entry) => entry.isDirectory() && entry.name.startsWith(localePrefix),
+    )
     .map((entry) => entry.name)
     .sort()
     .flatMap((locale) =>

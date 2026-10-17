@@ -146,8 +146,9 @@ const FIRST_SCREEN: Readonly<
  * that task must delete its row here. Recorded as an escalation in `docs/tasks/TASK-186.md`
  * ("AC-41's primary action on first screens TASK-186 does not own"); measured on the TASK-186 build:
  *
- *  - the `en-gb` birthday hub renders no way to a price in `<main>`, and the destinations hub's
- *    first destination ends at y 813 at 1280 × 800 (TASK-188's hub first screens); the occasions
+ *  - the `en-gb` birthday hub renders no way to a price in `<main>` (TASK-188's hub first
+ *    screens; the destinations hub's first destination came into view at 1280 × 800 when TASK-226
+ *    shortened its intro, so its row left this list); the occasions
  *    index's occasion links are 21 px inline links, and at 390 the category hub's destination link
  *    is 26 px tall where a primary action needs 44 (TASK-188's hub first screens);
  *  - the guide's way into the shop is at y 7,166 (TASK-189: the guide's first screen).
@@ -163,7 +164,6 @@ const PENDING: Readonly<
 > = {
   occasionHub: { inView: "TASK-188", primaryTarget: "TASK-188" },
   categoryHub: { primaryTarget: "TASK-188" },
-  destinationsHub: { "inView@1280": "TASK-188" },
   occasionsIndex: { target: "TASK-188", primaryTarget: "TASK-188" },
   guide: { inView: "TASK-189" },
 };

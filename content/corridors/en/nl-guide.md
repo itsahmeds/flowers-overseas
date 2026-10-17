@@ -36,7 +36,7 @@ faq:
   - q: "Do Dutch homes really buy flowers every week?"
     a: "Most do, or close to it. Flowers are cheap, the markets are everywhere and the front window is a semi-public space. It is the reason a gift of flowers here is a warm, casual gesture rather than a grand one."
   - q: "Can you deliver in the Netherlands today?"
-    a: "No. We have not started there. We are choosing the shops we want to work with, and until one has agreed to make your flowers we will not put a date, an hour or any claim about arrival on this page."
+    a: "Not yet. Ordering for the Netherlands is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips from January and in the fields from mid-April, then hyacinths,
   daffodils and narcissi, peonies in June, dahlias and sunflowers through the
@@ -51,9 +51,9 @@ relatedIso2: ["PL", "DE", "FR"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Flowers as groceries
@@ -119,12 +119,5 @@ is the biggest of them.
 
 ## What we can honestly tell you today
 
-We are not delivering in the Netherlands. We have written this guide because the
-habits here are worth explaining to anybody sending from outside, and because a page
-that is true and limited beats a page that is complete and invented. We are talking
-to shops we would like to work with. Until one of them has agreed, there will be no
-date, no hour and no claim of arrival anywhere on this page.
-
-When that changes, this section is the first thing we will rewrite: the towns we can
-reach, what happens on the day itself, and who you speak to when something has gone
-wrong.
+We are not delivering in the Netherlands yet. When we start, this page will show the
+cities, the order-by time and what happens on the day.

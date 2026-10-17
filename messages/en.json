@@ -232,7 +232,7 @@
     "seoTitle": "Where we can send flowers",
     "seoDescription": "Seven countries in Europe, each with a guide we wrote ourselves: what is given, what is never given, and which dates matter in a year there.",
     "h1": "Where we can send flowers",
-    "intro": "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We open a country only once we have chosen the florists ourselves, so the guide comes first and the delivery comes after it. Where we are not delivering yet, this page says so in the same words on every row.",
+    "intro": "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where we are not delivering yet, this page says so in the same words on every row.",
     "regionLabel": "Region · {region}",
     "region": {
       "centralEurope": "Central Europe",
@@ -260,7 +260,7 @@
     "addon": {
       "chocolates": {
         "name": "Box of chocolates",
-        "description": "A box of chocolates, sourced by the florist who makes the bouquet."
+        "description": "A box of good chocolates, delivered with the flowers."
       },
       "vase": {
         "name": "Glass vase",
@@ -272,11 +272,11 @@
       },
       "plush": {
         "name": "Soft toy",
-        "description": "A small soft toy, chosen by the florist from what they have in stock."
+        "description": "A small, new soft toy, chosen to suit the bouquet."
       },
       "wine": {
         "name": "Bottle of wine",
-        "description": "A bottle of local wine, where the florist is licensed to sell it."
+        "description": "A bottle of local wine, where local law allows it."
       },
       "card": {
         "name": "Printed card",
@@ -436,7 +436,7 @@
       },
       "local": {
         "title": "We make it in their own town",
-        "body": "Independent shops we chose ourselves"
+        "body": "Made by our florist, a few streets from their door."
       },
       "photo": {
         "title": "We photograph it at the door",
@@ -477,7 +477,7 @@
         "body": "Every price is final, and any order-by time we show is on the recipient's clock, not yours."
       },
       "make": {
-        "title": "A florist a few streets away accepts it.",
+        "title": "Our florist nearby makes it that morning.",
         "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you."
       },
       "deliver": {
@@ -487,7 +487,7 @@
     },
     "destinations": {
       "eyebrow": "Destinations",
-      "body": "We open each country only once we have local florists there we can stand behind."
+      "body": "We open one country at a time, and only when we can promise the same flowers and the same care."
     },
     "sentence": {
       "notYet": "{country} (not yet)",
@@ -566,7 +566,7 @@
     "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
     "photo": {
       "question": "Will the bouquet look like the photo?",
-      "answer": "Close, not identical. Our florists work with what is fresh that morning and substitute like for like in colour and value. Every change is noted on your delivery photo."
+      "answer": "Close, not identical. Our florist works with what is fresh that morning and substitutes like for like in colour and value. Every change is noted on your delivery photo."
     },
     "nobodyHome": {
       "question": "What if nobody is home?",
@@ -598,7 +598,7 @@
       },
       "orderBy": {
         "label": "Order by",
-        "none": "— no cutoff, because no florist has agreed to one",
+        "none": "None yet.",
         "value": "{time} in {zone} — the recipient's own time, not yours — for delivery the same day"
       },
       "deliveryDays": {
@@ -635,7 +635,7 @@
         "oneTitle": "You order from us",
         "oneBody": "In your own language and your own currency, with the whole price — delivery and VAT in it — shown before you pay.",
         "twoTitle": "Our florist makes it where it is going",
-        "twoBody": "We choose every one of them ourselves and we visit before we open a country. They see the recipient's address and your card message, and nothing else about you.",
+        "twoBody": "Our florist sees the recipient's address and your card message, and nothing else about you.",
         "threeTitle": "You get the photo",
         "threeBody": "The florist photographs what was handed over and we email it to you. If it is not what we promised, we make it right."
       },
@@ -643,7 +643,7 @@
         "oneTitle": "You order from anywhere",
         "oneBody": "In your language, in your currency, with the all-in price shown before you pay.",
         "twoTitle": "Our florist in {country} makes it",
-        "twoBody": "We chose them ourselves and we have stood in their shop. They see the recipient's details and your card message, and nothing about you.",
+        "twoBody": "Our florist sees the recipient's address and your card message, and nothing else about you.",
         "threeTitle": "You get the photo",
         "threeBody": "The florist photographs the delivered bouquet and we email it to you the same day."
       }
@@ -680,7 +680,7 @@
     },
     "shop": {
       "heading": "See what can arrive in {country}",
-      "body": "Bouquets our florists in {country} can make, priced for {country}, with delivery and VAT already in the price.",
+      "body": "Bouquets our florist in {country} can make, priced for {country}, with delivery and VAT already in the price.",
       "cta": "See flowers for {country}"
     },
     "weekday": {
@@ -734,7 +734,7 @@
       "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
       "siblingsHeading": "Also for {country}",
       "seoTitle": "{entity} for {country} — one all-in price",
-      "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet."
+      "seoDescription": "The {entity} our florist can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet."
     },
     "root": {
       "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
@@ -750,7 +750,7 @@
       "introHeading": "How it reaches {country}",
       "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
       "seoTitle": "Send flowers to {country} — what we can make there",
-      "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoDescription": "Every bouquet our florist can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "pageColumn": "Page",
       "occasionPageLink": "What we make for it",
       "tilesSubheading": "Narrow it down"
@@ -824,7 +824,7 @@
     "corridorLink": "What we can tell you about sending flowers to {country}",
     "legend": "When should it arrive?",
     "picker": {
-      "live": "Order by {time} in {city} — the recipient's time, not yours",
+      "live": "Order by {time} in {city}, the recipient's time, not yours",
       "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
       "unavailable": "Delivery dates for {country} open when ordering does."
     },
@@ -893,7 +893,7 @@
       "placing": "Placing your demo order…"
     },
     "privacy": {
-      "demoNotice": "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how an order reaches our florist, then we delete the personal details. {controllerLine}"
+      "demoNotice": "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how ordering works, then we delete the personal details. {controllerLine}"
     },
     "progress": {
       "label": "Checkout steps",
@@ -944,7 +944,7 @@
     "price": {
       "changed": "<b>The price changed from {old} to {new} since you opened the product page.</b> Please check it before you continue.",
       "confirm": "Continue at {new}",
-      "currencyLine": "You pay in {buyerCurrency}. Our florist is paid in {destinationCurrency}."
+      "currencyLine": "You pay in {buyerCurrency}."
     },
     "summary": {
       "title": "Your order",

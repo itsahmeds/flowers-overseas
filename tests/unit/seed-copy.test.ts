@@ -163,6 +163,70 @@ const context = {
   source: true,
 };
 
+const FOUNDER_226 =
+  /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-226\.py after reading the exact text it printed$/u;
+
+/** TASK-226: the rows reworded to the founder's relay-copy batches of 2026-10-14 and 2026-10-15. */
+const AWAITING_226: ReadonlySet<string> = new Set([
+  "category:funeral",
+  "category:get_well",
+  "category:gift_set",
+  "category:lilies",
+  "category:orchids",
+  "category:peonies",
+  "category:tulips",
+  "occasion:anniversary",
+  "occasion:get_well",
+  "occasion:just_because",
+  "occasion:sant_jordi",
+  "occasion:valentines",
+  "occasion:wedding",
+  "product:FO-AR-001",
+  "product:FO-AR-004",
+  "product:FO-AR-005",
+  "product:FO-AR-007",
+  "product:FO-AR-010",
+  "product:FO-AR-013",
+  "product:FO-AR-014",
+  "product:FO-BQ-004",
+  "product:FO-BQ-005",
+  "product:FO-BQ-010",
+  "product:FO-BQ-011",
+  "product:FO-BQ-014",
+  "product:FO-BQ-017",
+  "product:FO-BQ-019",
+  "product:FO-BQ-020",
+  "product:FO-BQ-023",
+  "product:FO-BQ-024",
+  "product:FO-BQ-025",
+  "product:FO-BQ-026",
+  "product:FO-BQ-031",
+  "product:FO-BQ-034",
+  "product:FO-BQ-038",
+  "product:FO-FN-001",
+  "product:FO-FN-003",
+  "product:FO-FN-004",
+  "product:FO-FN-005",
+  "product:FO-FN-006",
+  "product:FO-FN-008",
+  "product:FO-FN-009",
+  "product:FO-FN-010",
+  "product:FO-GS-001",
+  "product:FO-GS-002",
+  "product:FO-GS-003",
+  "product:FO-GS-004",
+  "product:FO-GS-005",
+  "product:FO-GS-006",
+  "product:FO-GS-007",
+  "product:FO-GS-008",
+  "product:FO-GS-009",
+  "product:FO-GS-010",
+  "product:FO-GS-011",
+  "product:FO-GS-012",
+  "product:FO-PT-001",
+  "product:FO-PT-002",
+]);
+
 describe("T-05: the copy rules fail on the cases spec 006 §2.3 rule 6 names", () => {
   it.each([
     [COPY_WORD_MIN - 1, true],
@@ -372,9 +436,22 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
 
   it("records a reviewer and a date on every authored row", () => {
     const attested: string[] = [];
+    const awaiting: string[] = [];
     for (const row of allRows("en")) {
       expect(row.translationStatus).toBe("human");
       expect(row.sourceHash).toBe(copySourceHash(row));
+      if (AWAITING_226.has(`${row.entity}:${row.key}`)) {
+        // Reworded to the founder's approved text of 2026-10-14 (TASK-226): unreviewed and
+        // unattributed until his own record run, then attested by it.
+        awaiting.push(`${row.entity}:${row.key}`);
+        if (row.reviewed) {
+          // Only the founder's own record-approval-226 run may attest it.
+          expect(row.reviewedBy, row.key).toMatch(FOUNDER_226);
+        } else {
+          expect(row.reviewedBy, row.key).toBeUndefined();
+        }
+        continue;
+      }
       const attestedHash = FOUNDER_179_ROWS.get(`${row.entity}:${row.key}`);
       if (attestedHash !== undefined) {
         // Reworded, then attested by the founder over exactly the text this hash names.
@@ -390,6 +467,7 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
       expect(row.reviewedAt).toBe("2026-09-09T00:00:00Z");
     }
     expect(attested.sort()).toEqual(["product:FO-BQ-001", "product:FO-BQ-003"]);
+    expect(awaiting.sort()).toEqual([...AWAITING_226].sort());
   });
 
   it("stays inside the SEO field limits", () => {

@@ -1,6 +1,6 @@
 ---
 seoTitle: "Sending flowers to the Netherlands from the UK"
-seoDescription: "Tulip season, Moederdag, Koningsdag and why less is more. For British senders, with sterling pricing, who you buy from and what we can honestly do today."
+seoDescription: "Tulip season, Moederdag, Koningsdag and why less is more. For British senders, with sterling prices and what we can do today."
 h1: "Sending flowers to the Netherlands from the UK"
 extends: en
 intro: >-
@@ -34,9 +34,9 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "A single figure in pounds sterling, with VAT and delivery already included, shown before you enter a card. That figure is what leaves your account, nothing is added afterwards, and the recipient is shown no price at all."
   - q: "Who am I buying from, and who handles a complaint?"
-    a: "You are buying from us, never from the shop that ties the bunch, so any complaint comes to us in English. We are not delivering in the Netherlands yet, so there is nothing to buy today and we would rather say so than imply otherwise."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you deliver in the Netherlands today?"
-    a: "No. We have not started there. We are choosing the shops we want to work with, and until one has agreed to make your flowers we will put no date, no hour and no claim about arrival on this page."
+    a: "Not yet. Ordering for the Netherlands is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Tulips from January and in the fields from mid-April, then hyacinths,
   daffodils and narcissi, peonies in June, dahlias and sunflowers in the late
@@ -50,9 +50,9 @@ relatedIso2: ["PL", "DE", "FR"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## The easiest destination we write about, with one catch
@@ -121,13 +121,8 @@ You pay in pounds sterling: one figure, VAT and delivery already inside it, show
 before you enter a card, and that is what leaves your account. No conversion afterwards
 and no fee at the end. Nothing about money travels with the flowers.
 
-Your contract is with us, never with the shop that ties the bunch, so a complaint
-comes to us in English rather than to a shop abroad.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We are not delivering in the Netherlands. We have written this guide because the
-habits here are worth explaining to anybody sending from outside, and because a page
-that is true and limited beats one that is complete and invented. Until a shop there
-has agreed to work with us there will be no date, no hour and no claim of arrival
-anywhere on this page.
+We are not delivering in the Netherlands yet. When we start, this page will show the cities, the order-by time and what happens on the day.

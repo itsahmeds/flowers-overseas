@@ -50,12 +50,12 @@
       "locale": "de",
       "name": "Quiet Blush",
       "slug": "quiet-blush",
-      "descriptionMd": "Pale pink, cream and white roses with grey-green foliage, tied loosely and left low and wide. Eighteen stems as standard, with twelve and twenty-four available. A gentle bouquet for an apology, a get-well message or a Tuesday that needed something. We hold the pastel colour scheme rather than the exact stems, so our florist can swap in the stems that came in that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Pale pink, cream and white roses with grey-green foliage, tied loosely and left low and wide. Eighteen stems as standard, with twelve and twenty-four available. A gentle bouquet for an apology, a get-well message or a Tuesday that needed something. We keep the pastel colour scheme rather than the exact stems, so our florist can swap in the stems that came in that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Quiet Blush — hand-tied pastel rose bouquet",
-      "seoDescription": "Pale pink, cream and white roses with grey-green foliage in a low, wide bouquet. Pastel colour scheme held; stems vary by market.",
+      "seoDescription": "Pale pink, cream and white roses with grey-green foliage in a low, wide bouquet. Pastel colour scheme fixed; stems vary by market.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "186a02e359489c3b801ac35e6628d287dd04af52a0f2bf94fcd5581fbb186bd2"
+      "sourceHash": "c301bb576764a7e268037f578f27cd6347ca5da2201dd196eb4cee88d3e2099b"
     },
     {
       "entity": "product",
@@ -63,12 +63,12 @@
       "locale": "de",
       "name": "Northern Light",
       "slug": "northern-light",
-      "descriptionMd": "White roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style. Eighteen stems as standard, twelve or twenty-four if you prefer. Chosen most often for weddings, anniversaries and congratulations, where anything busier would compete. White roses are always the flower; the foliage is whatever holds its shape longest that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "White roses with a single line of eucalyptus, trimmed to one height and tied tight in the minimal style. Eighteen stems as standard, twelve or twenty-four if you prefer. Chosen most often for weddings, anniversaries and congratulations, where anything busier would compete. White roses are always the flower; the foliage is whatever keeps its shape longest that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Northern Light — hand-tied white rose bouquet",
       "seoDescription": "Eighteen white roses with eucalyptus, trimmed to one height and tied tight. For weddings, anniversaries and congratulations.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "1b8448cf286148f20992c9af2cab003ef103954336a63664b7fada47cacca819"
+      "sourceHash": "d04539cf3049033f165e17f480c010c7202332704a4bb19f260c6179b1f07772"
     },
     {
       "entity": "product",
@@ -128,12 +128,12 @@
       "locale": "de",
       "name": "Sunday Market",
       "slug": "sunday-market",
-      "descriptionMd": "Yellow tulips, tied simply in a rustic bunch with their leaves left long and the stems showing. Twenty-five stems as standard; fifteen or thirty-five if you want less or more. Sent as a thank you, a get-well or an Easter table bunch. The yellow colour scheme is what we hold — variety and shade depend on the week's growers. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Yellow tulips, tied simply in a rustic bunch with their leaves left long and the stems showing. Twenty-five stems as standard; fifteen or thirty-five if you want less or more. Sent as a thank you, a get-well or an Easter table bunch. The yellow colour scheme is what we keep; variety and shade depend on the week's growers. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Sunday Market — hand-tied yellow tulip bouquet",
       "seoDescription": "Twenty-five yellow tulips tied in a rustic bunch with the leaves left long. A thank you, a get-well or an Easter table bunch.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "6fd174877534fddf3f1739be537d75e9d6a2978fe47b2b2aeac47e381b603c28"
+      "sourceHash": "73a38e15fef3e22275803d783cc46a6be129c7f6181999a4190f8d3ddc4e09b2"
     },
     {
       "entity": "product",
@@ -141,12 +141,12 @@
       "locale": "de",
       "name": "First Thaw",
       "slug": "first-thaw",
-      "descriptionMd": "White tulips only, cut to one length and tied close in the minimal style with no filler and no wrap beyond plain paper. Twenty-five stems as standard, with fifteen and thirty-five sizes. Quiet enough for an apology, a sympathy message or an early spring hello. White tulips are always the flower; the paper and tie change with what is in the shop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "White tulips only, cut to one length and tied close in the minimal style with no filler and no wrap beyond plain paper. Twenty-five stems as standard, with fifteen and thirty-five sizes. Quiet enough for an apology, a sympathy message or an early spring hello. White tulips are always the flower; the paper and tie change with the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "First Thaw — hand-tied white tulip bouquet",
       "seoDescription": "Twenty-five white tulips cut to one length and tied close, with no filler. Quiet enough for an apology or a sympathy message.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "40f9a760a76ab68d4fafb0e0268004e1045616fa33ca1d1fa71cf4f25833a9be"
+      "sourceHash": "b0c03cdd5266d16edffcab2cce9c054fac9a24c90c622ecfab3ac420a668290f"
     },
     {
       "entity": "product",
@@ -180,12 +180,12 @@
       "locale": "de",
       "name": "Tulip Parade",
       "slug": "tulip-parade",
-      "descriptionMd": "Tulips in strong mixed colour — orange, pink and red together — tied high with the heads at one level. Twenty-five stems as standard; fifteen and thirty-five sizes available. Sent for birthdays, graduations and congratulations where a bright bunch beats a subtle one. We hold the vibrant colour scheme; the exact colours follow the week's crop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Tulips in strong mixed colour (orange, pink and red together), tied high with the heads at one level. Twenty-five stems as standard; fifteen and thirty-five sizes available. Sent for birthdays, graduations and congratulations where a bright bunch beats a subtle one. We keep the vibrant colour scheme; the exact colours follow the week's crop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Tulip Parade — hand-tied vibrant tulip bouquet",
       "seoDescription": "Twenty-five tulips in strong orange, pink and red, tied with the heads at one level. For birthdays, graduations and congratulations.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "396728621427ec60e2799a52b1dad2d64348c01fdaa5cb99449d27cb964c6481"
+      "sourceHash": "37710e15317e74ffe1828693fe21cc4deb8adb46bda1109492deb6cf7aa9a39e"
     },
     {
       "entity": "product",
@@ -219,12 +219,12 @@
       "locale": "de",
       "name": "Snow Lantern",
       "slug": "snow-lantern",
-      "descriptionMd": "White lilies alone, three or four heads to a stem, tied with no filler and finished in plain grey paper. Eight stems as standard, with five and twelve sizes. Light and quiet, so it works as a get-well bouquet or a sympathy delivery to a home. Lilies are always in it; the wrap and tie depend on what our florist has in the shop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "White lilies alone, three or four heads to a stem, tied with no filler and finished in plain grey paper. Eight stems as standard, with five and twelve sizes. Light and quiet, so it works as a get-well bouquet or a sympathy delivery to a home. Lilies are always in it; the wrap and tie depend on what our florist has that day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Snow Lantern — hand-tied white lily bouquet",
       "seoDescription": "Eight white lilies with no filler, finished in plain grey paper. Light and quiet for a get-well or sympathy delivery.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "0da8c457df8d82c4b6748c37209716e7de1ffabd620bc0c196c70c4fede876c7"
+      "sourceHash": "dc4328dd2fe00d6ec74a08a26cdc201c72cfa6b36ce7281e8a46b6d9b09c2dfc"
     },
     {
       "entity": "product",
@@ -245,12 +245,12 @@
       "locale": "de",
       "name": "Peony Note",
       "slug": "peony-note",
-      "descriptionMd": "Pink peonies with a little soft foliage, tied close so the heads sit together, wrapped twice. Fifteen stems as standard, with nine and twenty-one stem sizes. Sent for romance, anniversaries and weddings in the short peony season. Peonies are always the flower; outside the season our florist tells us before we take the order rather than after. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Pink peonies with a little soft foliage, tied close so the heads sit together, wrapped twice. Fifteen stems as standard, with nine and twenty-one stem sizes. Sent for romance, anniversaries and weddings in the short peony season. Peonies are always the flower, in season from late spring into early summer. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Peony Note — hand-tied pink peony bouquet",
       "seoDescription": "Fifteen pink peonies tied close with soft foliage. For romance, anniversaries and weddings in the short peony season.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "f2ac03167773681d6dd23af63f8120388457f454417b5d1341839e53f1e8d038"
+      "sourceHash": "4634a8bf936d0d3ac3c22a6b35b7eebbabfc269dd22254f1dde31728891f15d9"
     },
     {
       "entity": "product",
@@ -258,12 +258,12 @@
       "locale": "de",
       "name": "Soft June",
       "slug": "soft-june",
-      "descriptionMd": "Peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome. Fifteen stems as standard, nine or twenty-one available. It suits a birthday, a new baby or Mother's Day. We hold the pastel colour scheme rather than the exact flowers, so the mix follows the market inside those shades. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Peonies in pale pink and cream with white filler flowers and grey-green leaves, tied in a loose classical dome. Fifteen stems as standard, nine or twenty-one available. It suits a birthday, a new baby or Mother's Day. We keep the pastel colour scheme rather than the exact flowers, so the mix follows the market inside those shades. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Soft June — hand-tied pastel peony bouquet",
       "seoDescription": "Fifteen peonies in pale pink and cream with white filler and grey-green leaves. For a birthday, a new baby or Mother's Day.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "5ff4fb5fc05100a65e61746e01fbd6fb71c035076920699bfe042eedfc6648a5"
+      "sourceHash": "997926b395142c90ca488dc12ff3841190864e4ee94441f45198234445e49c2d"
     },
     {
       "entity": "product",
@@ -297,12 +297,12 @@
       "locale": "de",
       "name": "Field of Gold",
       "slug": "field-of-gold",
-      "descriptionMd": "Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-held bunch. Nine stems as standard, with five and thirteen stem sizes. Sent for birthdays, congratulations and thank yous, and it holds up well in a warm room. Sunflowers are always the flower; head size varies by grower and the greenery follows the week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Sunflowers with ruscus and a few stems of seasonal green, tied in a rustic hand-tied bunch. Nine stems as standard, with five and thirteen stem sizes. Sent for birthdays, congratulations and thank yous, and it lasts well in a warm room. Sunflowers are always the flower; head size varies by grower and the greenery follows the week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Field of Gold — hand-tied sunflower bouquet",
-      "seoDescription": "Nine sunflowers with ruscus and seasonal green in a rustic hand-held bunch. Five and thirteen stem sizes available.",
+      "seoDescription": "Nine sunflowers with ruscus and seasonal green in a rustic hand-tied bunch. Five and thirteen stem sizes available.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "d1c903732cd8653930bd2e822f5d3b1cfdbd25d07370072530c57e258672d106"
+      "sourceHash": "08c782f5a29c6172ac740e93ee332fb22f386d25dc34c60449f894adfba8f9c8"
     },
     {
       "entity": "product",
@@ -310,12 +310,12 @@
       "locale": "de",
       "name": "High Summer",
       "slug": "high-summer",
-      "descriptionMd": "Sunflowers with wheat, grasses and yellow filler flowers, gathered loose and tied with twine. Nine stems as standard, five or thirteen on request. An easy summer bouquet for a get-well, a housewarming or no reason at all. We hold the yellow colour scheme rather than a fixed recipe, so our florist can use whatever summer stems are open that day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Sunflowers with wheat, grasses and yellow filler flowers, gathered loose and tied with twine. Nine stems as standard, five or thirteen on request. An easy summer bouquet for a get-well, a housewarming or no reason at all. We keep the yellow colour scheme rather than a fixed recipe, so our florist can use whatever summer stems are open that day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "High Summer — hand-tied yellow sunflower bouquet",
       "seoDescription": "Nine sunflowers with wheat, grasses and yellow filler, gathered loose and tied with twine. For a get-well, a housewarming or just because.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "d4683be73e9bad23bacf6617d36ea743c2d380acb6745d2740b80efb2be3dadd"
+      "sourceHash": "3466ed73b2dd192b25dcac95e9575949379dd7ee5bdfc66b6b03f7ab5f5c5c9e"
     },
     {
       "entity": "product",
@@ -323,12 +323,12 @@
       "locale": "de",
       "name": "Late Harvest",
       "slug": "late-harvest",
-      "descriptionMd": "Sunflowers with orange spray roses, rust foliage and dried grasses, tied for late summer and autumn. Nine stems as standard, with five and thirteen sizes. Sent as a thank you, a housewarming gift or a retirement bouquet. The orange colour scheme is what we hold; the supporting stems change every week as the season turns. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Sunflowers with orange spray roses, rust foliage and dried grasses, tied for late summer and autumn. Nine stems as standard, with five and thirteen sizes. Sent as a thank you, a housewarming gift or a retirement bouquet. The orange colour scheme is what we keep; the supporting stems change every week as the season turns. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Late Harvest — hand-tied orange sunflower bouquet",
       "seoDescription": "Nine sunflowers with orange spray roses, rust foliage and dried grasses. A thank you, a housewarming gift or a retirement bouquet.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "8811448bc336c4b89890f0b3e7c7683fb2f55b124456a3711b172ef25b539399"
+      "sourceHash": "a7bcd775f6cc227fecea8c0bc70966dbf962e6a33ffc093a0bc8fb35ddfcd01f"
     },
     {
       "entity": "product",
@@ -336,12 +336,12 @@
       "locale": "de",
       "name": "Bright Side",
       "slug": "bright-side",
-      "descriptionMd": "Gerberas in orange, pink and red with green filler, tied in a clean modern bunch with the heads level. Fifteen stems as standard, with ten and twenty-one sizes. Sent for a get-well, a birthday or a congratulations, and it lasts well on a desk. We hold the vibrant colour scheme rather than named colours; gerbera availability moves daily. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Gerberas in orange, pink and red with green filler, tied in a clean modern bunch with the heads level. Fifteen stems as standard, with ten and twenty-one sizes. Sent for a get-well, a birthday or a congratulations, and it lasts well on a desk. We keep the vibrant colour scheme rather than named colours; gerbera availability moves daily. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Bright Side — hand-tied vibrant gerbera bouquet",
       "seoDescription": "Fifteen gerberas in orange, pink and red with green filler, tied with the heads level. For a get-well, a birthday or congratulations.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "a18d93118cc32fdf13a9a4ec221d556c1a7b432dfef88e6d5e4a9b407e4fc6dd"
+      "sourceHash": "4370076810d23299f50194b81de7771e3565d7292e939aa92f9335c86553644b"
     },
     {
       "entity": "product",
@@ -401,12 +401,12 @@
       "locale": "de",
       "name": "Pastel Weekend",
       "slug": "pastel-weekend",
-      "descriptionMd": "Soft pastels only — pale pink, cream, white — cut short and tied in a small tight posy with minimal foliage. Eighteen stems as standard, twelve or twenty-four available. Sent for a new baby, a get-well or a quiet hello. We hold the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Soft pastels only (pale pink, cream, white), cut short and tied in a small tight posy with minimal foliage. Eighteen stems as standard, twelve or twenty-four available. Sent for a new baby, a get-well or a quiet hello. We keep the pastel colour scheme and let our florist choose the flowers inside it, so nothing arrives half-open. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Pastel Weekend — hand-tied pastel posy",
       "seoDescription": "A small tight posy in pale pink, cream and white with minimal foliage. For a new baby, a get-well or a quiet hello.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "112f50bf1efe27738c113093ce0ffa6a17caccfbe15bc27bc38dba464838bbbf"
+      "sourceHash": "debbe7491105459ac2cf00d4d1747fca7aee30d106ceb3b65d3acbf637677c4e"
     },
     {
       "entity": "product",
@@ -440,12 +440,12 @@
       "locale": "de",
       "name": "Season's Hand",
       "slug": "seasons-hand",
-      "descriptionMd": "Whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage. Eighteen stems as standard, with twelve and twenty-four sizes. A birthday bouquet or a just-because delivery when you would rather trust the shop than the catalogue. The whole mix is our florist's choice on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Whatever is at its peak that week, tied by hand in mixed colour: usually a focal flower, two supporting stems and seasonal foliage. Eighteen stems as standard, with twelve and twenty-four sizes. A birthday bouquet or a just-because delivery when you would rather trust our florist. The whole mix is our florist's choice on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Season's Hand — hand-tied seasonal bouquet",
       "seoDescription": "Whatever is at its peak that week, tied by hand in mixed colour. A birthday or just-because delivery chosen by our florist.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "ba36c1bb9e94352d6e2e9ede1f5a867c327bcc6f056d30cecf2fd93c226842e1"
+      "sourceHash": "a1ba10a00854552a98e7652cf4d386271a3a51150fa12c4b7f4e2b53de3e131c"
     },
     {
       "entity": "product",
@@ -492,12 +492,12 @@
       "locale": "de",
       "name": "Old Town",
       "slug": "old-town",
-      "descriptionMd": "Red carnations with ruscus, tied in the round in the old style and wrapped in plain paper. Eighteen stems as standard, with twelve and twenty-four sizes. A long-lasting, unfussy bouquet for a birthday, a name day or a Sunday visit; carnations often hold two weeks in water. Carnations are always the flower; the foliage follows the season. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Red carnations with ruscus, tied in the round in the old style and wrapped in plain paper. Eighteen stems as standard, with twelve and twenty-four sizes. A long-lasting, unfussy bouquet for a birthday, a name day or a Sunday visit; carnations often last two weeks in water. Carnations are always the flower; the foliage follows the season. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Old Town — hand-tied red carnation bouquet",
       "seoDescription": "Eighteen red carnations with ruscus, tied in the round in the old style. Long-lasting, for a birthday, a name day or a Sunday visit.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "d7f6a7ba07b1f5d7b113266a5cfdc85817ee0e607fc27472368152294b2f1665"
+      "sourceHash": "cc99199a088d6978ac55a9ad7c527423fa945ae568d5c1bd5bcf42d7c1591872"
     },
     {
       "entity": "product",
@@ -531,12 +531,12 @@
       "locale": "de",
       "name": "Small Kindness",
       "slug": "small-kindness",
-      "descriptionMd": "A small pastel arrangement in a lined box, made to stand on its own with no vase and no water to add. Three sizes: small, medium as standard, and large. Sent for a get-well, an apology or a quiet hello, and it travels well to a hospital or an office desk. We hold the pastel scheme; the flowers inside it are our florist's choice. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A small pastel arrangement in a lined box, made to stand on its own with no vase and no water to add. Three sizes: small, medium as standard, and large. Sent for a get-well, an apology or a quiet hello, and it travels well to a hospital or an office desk. We keep the pastel scheme; the flowers inside it are our florist's choice. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Small Kindness — pastel flowers in a box",
       "seoDescription": "A small pastel arrangement in a lined box, no vase needed. For a get-well, an apology or a quiet hello. Three sizes available.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "4432eae3f1a2828ddf28b12f9c437c809f12cb8553231634a14de6198483fcc8"
+      "sourceHash": "90f81c2d6752ccf35aae44062309c26162640d09424faa160acef8dd4204b222"
     },
     {
       "entity": "product",
@@ -570,12 +570,12 @@
       "locale": "de",
       "name": "Desk Bloom",
       "slug": "desk-bloom",
-      "descriptionMd": "Gerberas in strong pink and orange, arranged short in a low ceramic pot that fits on a desk or a windowsill. Small, medium as standard, and large. Sent for congratulations, birthdays and thank yous to an office, where a tall bouquet is a nuisance. We hold the vibrant colour scheme; the exact colours follow the day's delivery. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Gerberas in strong pink and orange, arranged short in a low ceramic pot that fits on a desk or a windowsill. Small, medium as standard, and large. Sent for congratulations, birthdays and thank yous to an office, where a tall bouquet is a nuisance. We keep the vibrant colour scheme; the exact colours follow the day's delivery. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Desk Bloom — gerberas in a low pot",
       "seoDescription": "Gerberas in strong pink and orange, arranged short in a low ceramic pot for a desk or windowsill. For congratulations and thank yous.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "508103960aef29fb5bacc21a5d80b4781b40adc87ba110c46d27db9b13bbb2ce"
+      "sourceHash": "6b0e89bc23b655df6b7f8180ea5d0cade41c79cdf2dd7dfdf1311e82efd533bc"
     },
     {
       "entity": "product",
@@ -583,12 +583,12 @@
       "locale": "de",
       "name": "Paper Window",
       "slug": "paper-window",
-      "descriptionMd": "Pink tulips arranged upright in a paper-wrapped container with their own leaves and nothing else. Small, medium as standard, or large. Sent for birthdays, Women's Day and quiet hellos in the spring months, and it needs no vase on arrival. The pink colour scheme is what we hold; tulip variety and shade depend on the week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Pink tulips arranged upright in a paper-wrapped container with their own leaves and nothing else. Small, medium as standard, or large. Sent for birthdays, Women's Day and quiet hellos in the spring months, and it needs no vase on arrival. The pink colour scheme is what we keep; tulip variety and shade depend on the week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Paper Window — pink tulips in a container",
       "seoDescription": "Pink tulips arranged upright in a paper-wrapped container with their own leaves. No vase needed. For birthdays and Women's Day.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "bd2a25850db28b69086c0ed1cf55e6f8e63fc2716ce3299fd76b8901f84498aa"
+      "sourceHash": "37a0e73fede254471576b9a58a1ca6d6d12c65b067b30c9a74155d443ddc1c7d"
     },
     {
       "entity": "product",
@@ -609,12 +609,12 @@
       "locale": "de",
       "name": "Kitchen Table",
       "slug": "kitchen-table",
-      "descriptionMd": "A seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centerpiece. Small, medium as standard, and large. Sent for housewarmings and thank yous, and it holds up in a warm room better than a tied bouquet. Our florist chooses the seasonal mix and the container on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centerpiece. Small, medium as standard, and large. Sent for housewarmings and thank yous, and it lasts in a warm room better than a tied bouquet. Our florist chooses the seasonal mix and the container on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Kitchen Table — seasonal flowers in a crate",
       "seoDescription": "A seasonal arrangement in a small crate or tin, low and dense for a kitchen table. For housewarmings and thank yous. Three sizes.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "bea9b6ff0e6dfce488efe9ed1a158ec0857a1f77870d0050bdca72918510a44d"
+      "sourceHash": "67a49f09bbc75bfb9fc371e3758ac41a0872e93460e78a821b41d96926e19e63"
     },
     {
       "entity": "product",
@@ -648,12 +648,12 @@
       "locale": "de",
       "name": "Studio Vase",
       "slug": "studio-vase",
-      "descriptionMd": "Pink peonies arranged in a heavy studio vase with almost no foliage, so the flowers are the whole object. The vase is included. Small, medium as standard, or large. Sent for anniversaries, weddings and romance in the peony months. Peonies are always the flower; where the season has ended our florist tells us before we take the order. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Pink peonies arranged in a heavy studio vase with almost no foliage, so the flowers are the whole object. The vase is included. Small, medium as standard, or large. Sent for anniversaries, weddings and romance in the peony months. Peonies are always the flower, in season from late spring into early summer. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Studio Vase — pink peonies in a heavy vase",
       "seoDescription": "Pink peonies arranged in a heavy studio vase with almost no foliage, vase included. For anniversaries, weddings and romance.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "901d905a5e5948b7ba94d84695f573a76100ae682975ef8efdc5ef106314be11"
+      "sourceHash": "eaf3200dcad8b9cbf34e53cd51b394cc5d688e4cf30a73eec808005b2494d4a9"
     },
     {
       "entity": "product",
@@ -687,12 +687,12 @@
       "locale": "de",
       "name": "Copper Bowl",
       "slug": "copper-bowl",
-      "descriptionMd": "Orange chrysanthemums arranged in a copper or brass bowl with autumn foliage; the vessel is included. Small, medium as standard, or large. Sent for All Saints' visits, thank yous and housewarmings, and chrysanthemums hold longer than most cut flowers. We keep the orange scheme; the bowl's exact finish depends on what our florist stocks. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Orange chrysanthemums arranged in a copper or brass bowl with autumn foliage; the vessel is included. Small, medium as standard, or large. Sent for All Saints' visits, thank yous and housewarmings, and chrysanthemums last longer than most cut flowers. We keep the orange scheme; the bowl's exact finish depends on what our florist stocks. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Copper Bowl — orange chrysanthemums in a bowl",
       "seoDescription": "Orange chrysanthemums arranged in a copper or brass bowl with autumn foliage, vessel included. For All Saints', thank yous and more.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "b69d61af3d3d6541b03d9003c625925d6abdd5b9d6319785b74d09f7c82120bf"
+      "sourceHash": "1f74d076079d5cbe8229637ee1865262be9a1940d10f78eee93c006cf2389d57"
     },
     {
       "entity": "product",
@@ -700,12 +700,12 @@
       "locale": "de",
       "name": "Linen Basket",
       "slug": "linen-basket",
-      "descriptionMd": "Pastel alstroemeria arranged in a lined linen-look basket, long-lasting and easy to keep topped up with water. Small, medium as standard, or large. Sent for a new baby, a get-well or a birthday; alstroemeria often holds two weeks. We hold the pastel scheme, and our florist chooses shades and any filler from the day's delivery. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Pastel alstroemeria arranged in a lined linen-look basket, long-lasting and easy to keep topped up with water. Small, medium as standard, or large. Sent for a new baby, a get-well or a birthday; alstroemeria often lasts two weeks. We keep the pastel scheme, and our florist chooses shades and any filler from the day's delivery. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Linen Basket — pastel alstroemeria in a basket",
       "seoDescription": "Pastel alstroemeria arranged in a lined linen-look basket, long-lasting. For a new baby, a get-well or a birthday. Three sizes.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "fdab215f52b053273b3e7ba191ac7f685aed25cd0623ecdb3b103e1eba0770b0"
+      "sourceHash": "76a2365c487fc14ac075ea4e3d08813a821d50dccb7492708ce7096a57f71f24"
     },
     {
       "entity": "product",
@@ -713,12 +713,12 @@
       "locale": "de",
       "name": "Moth Orchid White",
       "slug": "moth-orchid-white",
-      "descriptionMd": "One white moth orchid in a plain ceramic pot, staked and in bud and flower when it leaves the shop. A single size. Sent for housewarmings, congratulations and thank yous, and it flowers for weeks rather than days with a little water each week. The plant is always a white moth orchid; pot shape and finish depend on our florist's stock. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "One white moth orchid in a plain ceramic pot, staked and in bud and flower on the day it is delivered. A single size. Sent for housewarmings, congratulations and thank yous, and it flowers for weeks rather than days with a little water each week. The plant is always a white moth orchid; pot shape and finish depend on our florist's stock. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Moth Orchid White — white orchid plant in a pot",
       "seoDescription": "One white moth orchid in a plain ceramic pot, in bud and flower. Flowers for weeks. For housewarmings, congratulations and thank yous.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "f885c38ef72b2d6fbd835f5f0e4b3a8f3496a8dafb2ee173844cc78a1522f641"
+      "sourceHash": "0f3101abbcf25d9bff0ab8126e8ca17862bf709fcaf14542e2c479eed043f2b4"
     },
     {
       "entity": "product",
@@ -726,12 +726,12 @@
       "locale": "de",
       "name": "Moth Orchid Pink",
       "slug": "moth-orchid-pink",
-      "descriptionMd": "One pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered. A single size. Sent for birthdays, Mother's Day and thank yous, and it asks for very little care. The plant is always a pink moth orchid; shade ranges from pale to deep, and the pot depends on the shop. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "One pink moth orchid, staked and potted in a plain container, in bud and flower on the day it is delivered. A single size. Sent for birthdays, Mother's Day and thank yous, and it asks for very little care. The plant is always a pink moth orchid; shade ranges from pale to deep, and the pot depends on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Moth Orchid Pink — pink orchid plant in a pot",
       "seoDescription": "One pink moth orchid, staked and potted, in bud and flower. Easy care. For birthdays, Mother's Day and thank yous.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "d9f7638a434ffe312b91585e94c333df605fa2d26e868ba8821416dc40fed22c"
+      "sourceHash": "bd983aad73a9ae4ed74e0970aea5870ab9e451fe00dd169d6bfad3f898e9f003"
     },
     {
       "entity": "product",
@@ -817,12 +817,12 @@
       "locale": "de",
       "name": "Farewell Wreath",
       "slug": "farewell-wreath",
-      "descriptionMd": "A round funeral wreath of white chrysanthemums and greenery on a frame, made to stand at a graveside or lean against a headstone. Small, medium as standard, or large. Sent for funerals and for All Saints' visits. We hold the white scheme and the form; the flowers inside it are chosen by our florist from that morning's market. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A round funeral wreath of white chrysanthemums and greenery on a frame, made to stand at a graveside or lean against a headstone. Small, medium as standard, or large. Sent for funerals and for All Saints' visits. We keep the white scheme and the form; the flowers inside it are chosen by our florist from that morning's market. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Farewell Wreath — white funeral wreath",
       "seoDescription": "A round funeral wreath of white chrysanthemums and greenery on a frame, for a graveside or headstone. Small, medium and large.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "054f5e077edd9e7cf6d95f022b6a27e9a1f4f7827443945ab3fc691beeeec53c"
+      "sourceHash": "25c1135624e0963cf8583eb7c3e0529cdff17086473bb7d13503aee1281fa391"
     },
     {
       "entity": "product",
@@ -843,12 +843,12 @@
       "locale": "de",
       "name": "Casket Spray",
       "slug": "casket-spray",
-      "descriptionMd": "A casket spray of white lilies and greenery, made long and low to lie along the lid. Small, medium as standard, or large; the medium suits most caskets. Ordered by immediate family, and our florist will call the funeral home to check dimensions. The white scheme is held; flowers are chosen on the day from what will hold its shape for the service. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A casket spray of white lilies and greenery, made long and low to lie along the lid. Small, medium as standard, or large; the medium suits most caskets. Ordered by immediate family, and our florist will call the funeral home to check dimensions. The white scheme stays fixed; flowers are chosen on the day from what will keep its shape for the service. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Casket Spray — white lily casket spray",
       "seoDescription": "A casket spray of white lilies and greenery, long and low to lie along the lid. Three sizes; medium suits most caskets.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "d9073a5c8a5d740ba1876d19a334df06d0a61111ddc1d6d2c5d8eedf8a8d2039"
+      "sourceHash": "dc4ef04d9385595810ce30b58c3289e159eb2f0adbc9f17eaebe8a876ce41a69"
     },
     {
       "entity": "product",
@@ -856,12 +856,12 @@
       "locale": "de",
       "name": "White Heart",
       "slug": "white-heart",
-      "descriptionMd": "A heart-shaped tribute of white roses on a frame, filled edge to edge and finished with a green border. Small, medium as standard, or large. Ordered most often by a spouse or a child. The white scheme and the heart form are what we hold; rose variety and any filler are chosen by our florist on the morning of the service. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A heart-shaped tribute of white roses on a frame, filled edge to edge and finished with a green border. Small, medium as standard, or large. Ordered most often by a spouse or a child. The white scheme and the heart form are what we keep; rose variety and any filler are chosen by our florist on the morning of the service. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "White Heart — white rose heart tribute",
       "seoDescription": "A heart-shaped tribute of white roses on a frame, filled edge to edge with a green border. Small, medium and large.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "f535f25cc3b6ae5a73602bee46170c8eff2f8aeb19bcea6d76fdf943f925e8a4"
+      "sourceHash": "ff5d9adecbda617eaa0c3bb80824f39ce75487823b8e1ee06138d234604881d4"
     },
     {
       "entity": "product",
@@ -869,12 +869,12 @@
       "locale": "de",
       "name": "Sympathy Basket",
       "slug": "sympathy-basket",
-      "descriptionMd": "A sympathy basket of white and cream flowers with foliage, planted in foam so it can go straight to a home, a chapel or an office. Small, medium as standard, or large. Sent when a wreath would be too formal. We hold the white scheme; the mix is our florist's choice from that day's market. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A sympathy basket of white and cream flowers with foliage, planted in foam so it can go straight to a home, a chapel or an office. Small, medium as standard, or large. Sent when a wreath would be too formal. We keep the white scheme; the mix is our florist's choice from that day's market. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Sympathy Basket — white sympathy flowers in a basket",
       "seoDescription": "A sympathy basket of white and cream flowers with foliage, planted in foam. For a home, chapel or office when a wreath is too formal.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "c88084a03b764e86f8e7191ee994b71fc15178ec8bf9a0982172f5ef02beff67"
+      "sourceHash": "314995ba737e929bd933de6cee8eec95e87b214201df735b3ab5e3aaf6616a85"
     },
     {
       "entity": "product",
@@ -882,12 +882,12 @@
       "locale": "de",
       "name": "Grave Bouquet",
       "slug": "grave-bouquet",
-      "descriptionMd": "A grave bouquet of mixed chrysanthemums, tied flat so it can be laid on a stone or set in a grave vase. Small, medium as standard, or large. Sent for All Saints' visits and for anniversaries of a death, especially in Poland. We hold the mixed scheme and the flat form; colours follow what our florist can buy that week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A grave bouquet of mixed chrysanthemums, tied flat so it can be laid on a stone or set in a grave vase. Small, medium as standard, or large. Sent for All Saints' visits and for anniversaries of a death, especially in Poland. We keep the mixed scheme and the flat form; colours follow what our florist can buy that week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Grave Bouquet — mixed chrysanthemum grave bouquet",
       "seoDescription": "A grave bouquet of mixed chrysanthemums, tied flat to lay on a stone or set in a grave vase. For All Saints' and anniversaries.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "30629f5d6fa5f5918088c045fa251c7340f4f805dfa3487165927052438b11c3"
+      "sourceHash": "f1b9cf2a3f612f68c4457b6f433aa90121f6301d4dec6d76bc95875fe6d0b9a8"
     },
     {
       "entity": "product",
@@ -908,12 +908,12 @@
       "locale": "de",
       "name": "Quiet Wreath",
       "slug": "quiet-wreath",
-      "descriptionMd": "A wreath in pastel rather than pure white — pale pink, cream and soft green on a round frame — for a family that wants something gentler. Small, medium as standard, or large. Sent for funerals and memorials. We hold the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A wreath in pastel rather than pure white (pale pink, cream and soft green on a round frame), for a family that wants something gentler. Small, medium as standard, or large. Sent for funerals and memorials. We keep the pastel scheme and the round form, and our florist chooses the flowers from what is open that morning. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Quiet Wreath — pastel funeral wreath",
       "seoDescription": "A wreath in pale pink, cream and soft green on a round frame, gentler than pure white. For funerals and memorials. Three sizes.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "2a38905504b9fd60efd14e1788a50a25f9dbab5393e8a756f171c4fa13068a80"
+      "sourceHash": "303741415b4a6922ed31a7a93c8789fab69a34f6b11ffb1423240cc2982c45ce"
     },
     {
       "entity": "product",
@@ -921,12 +921,12 @@
       "locale": "de",
       "name": "Condolence Bouquet",
       "slug": "condolence-bouquet",
-      "descriptionMd": "A tied sheaf of white roses and foliage, made to be carried and then laid down or put into water. Small, medium as standard, or large. Sent by friends and colleagues to a home rather than to a service, where a framed tribute would be too much. The white scheme is held; the foliage follows the season. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A tied sheaf of white roses and foliage, made to be carried and then laid down or put into water. Small, medium as standard, or large. Sent by friends and colleagues to a home rather than to a service, where a framed tribute would be too much. The white scheme stays fixed; the foliage follows the season. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Condolence Bouquet — white rose sympathy sheaf",
       "seoDescription": "A tied sheaf of white roses and foliage, to be carried and then laid down or put into water. Sent to a home rather than a service.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "bb7d7bbc95fa92b6efba9ca094039c8f95b3680a097e52ccf0ff63d8322d6d3f"
+      "sourceHash": "9752c601f2a492265f7b472c89ad255f0fe4127c72e5faa0d3761196dfc719dc"
     },
     {
       "entity": "product",
@@ -934,12 +934,12 @@
       "locale": "de",
       "name": "Stone Garden",
       "slug": "stone-garden",
-      "descriptionMd": "A low white arrangement in a stone-look container, made to sit on a grave, a niche shelf or a windowsill without a vase. Small, medium as standard, or large. Sent for funerals, All Saints' and memorials. We hold the white scheme and the low form; the flowers and the container's finish are our florist's choice. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A low white arrangement in a stone-look container, made to sit on a grave, a niche shelf or a windowsill without a vase. Small, medium as standard, or large. Sent for funerals, All Saints' and memorials. We keep the white scheme and the low form; the flowers and the container's finish are our florist's choice. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Stone Garden — low white memorial arrangement",
       "seoDescription": "A low white arrangement in a stone-look container, for a grave, niche shelf or windowsill. No vase needed. Three sizes.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "a17bcc68912f68ca6bab8767bbb97f3a67df8869bd4f45ecb54329151fee418b"
+      "sourceHash": "8185cfb1acf148220ed6ff614502a2b4040fb00b632d0625958072bb07f44266"
     },
     {
       "entity": "product",
@@ -947,12 +947,12 @@
       "locale": "de",
       "name": "Amber Hour + Chocolates",
       "slug": "amber-hour-chocolates",
-      "descriptionMd": "Our orange rose bouquet with a box of chocolates from a maker near the recipient. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays and thank yous when flowers alone feel light. Contains chocolate: allergen information for the box supplied is listed at checkout. We hold the orange scheme and swap greenery for what the market has. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our orange rose bouquet with a box of chocolates from a maker near the recipient. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays and thank yous when flowers alone feel light. Contains chocolate: allergen information for the box supplied is listed at checkout. We keep the orange scheme and swap greenery for what the market has. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Amber Hour + Chocolates — roses and chocolates",
       "seoDescription": "Our orange rose bouquet with a box of local chocolates. Eighteen stems as standard. Contains chocolate; allergen details at checkout.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "30542767c4160eb85dfec9c6b83e99a5c48a895241fe90e1e97fd50d8c3104a2"
+      "sourceHash": "e479797d13318c0d4285c0d54ee693a2bbe0c9b1e63e6b363d0bf9ea4f1dead7"
     },
     {
       "entity": "product",
@@ -960,12 +960,12 @@
       "locale": "de",
       "name": "Baltic Dawn + Vase",
       "slug": "baltic-dawn-vase",
-      "descriptionMd": "Our pink rose bouquet with a plain glass vase, so nothing has to be found in a cupboard on arrival. Eighteen stems as standard, twelve or twenty-four available. Sent for birthdays, anniversaries and early romance. The pink scheme is held and the vase is always included; vase height and shape depend on what our florist stocks that week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our pink rose bouquet with a plain glass vase, so nothing has to be found in a cupboard on arrival. Eighteen stems as standard, twelve or twenty-four available. Sent for birthdays, anniversaries and early romance. The pink scheme stays fixed and the vase is always included; vase height and shape depend on what our florist stocks that week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Baltic Dawn + Vase — pink roses and a glass vase",
       "seoDescription": "Our pink rose bouquet with a plain glass vase included. Eighteen stems as standard. For birthdays, anniversaries and early romance.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "36eeac4eb8dc4b592d5fe812a6d20ef3b5160f641f23a77470847835676d4f81"
+      "sourceHash": "9703b4eb6e2da90b430e17b2fafe4f13a0809137c40734558c4ed7c1c7f99976"
     },
     {
       "entity": "product",
@@ -973,12 +973,12 @@
       "locale": "de",
       "name": "Welcome Baby Blue + Plush",
       "slug": "welcome-baby-blue-plush",
-      "descriptionMd": "A blue and white bouquet with a small soft toy for a new arrival, tied light so it can be carried with a baby in the other arm. Eighteen stems as standard, twelve or twenty-four available. We hold the blue scheme; the flowers and the toy are chosen by our florist from what is in the shop, and the toy is new and tagged. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A blue and white bouquet with a small soft toy for a new arrival, tied light so it can be carried with a baby in the other arm. Eighteen stems as standard, twelve or twenty-four available. We keep the blue scheme; the flowers and the toy are chosen by our florist on the day, and the toy is new and tagged. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Welcome Baby Blue + Plush — blue flowers and a soft toy",
       "seoDescription": "A blue and white bouquet with a small soft toy for a new arrival. Eighteen stems as standard. Toy chosen by our florist, new and tagged.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "7d3a945b83cfab04f5f85eeeb8237b1da554b5fbee0867c215869b065f7309d3"
+      "sourceHash": "fcf45b85086dbf694d80bad62f89e40547cb1c282182327f74f369459c5268ba"
     },
     {
       "entity": "product",
@@ -986,12 +986,12 @@
       "locale": "de",
       "name": "Welcome Baby Pink + Plush",
       "slug": "welcome-baby-pink-plush",
-      "descriptionMd": "A pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for new babies and congratulations. We hold the pink scheme; the flowers and the toy come from our florist's own shop, and the toy is new, tagged and suitable from birth. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "A pink and white bouquet with a small soft toy for a new baby, tied to be light in the hand. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for new babies and congratulations. We keep the pink scheme; the flowers and the toy come from our florist, and the toy is new, tagged and suitable from birth. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Welcome Baby Pink + Plush — pink flowers and a soft toy",
       "seoDescription": "A pink and white bouquet with a small soft toy for a new baby. Eighteen stems as standard. Toy new, tagged and suitable from birth.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "a5f4c30fdadae86c63062b826343efc2453f7c5ac4e9ebb3fba58b3a3f6ede1b"
+      "sourceHash": "dbea574edd5dff040c43f1989e4b2865bf60944f76b1ca21abaf292920a0ac49"
     },
     {
       "entity": "product",
@@ -999,12 +999,12 @@
       "locale": "de",
       "name": "Kraków Spring + Chocolates",
       "slug": "krakow-spring-chocolates",
-      "descriptionMd": "Our mixed tulip bunch with a box of chocolates bought near the recipient. Twenty-five stems as standard, with fifteen and thirty-five sizes. Sent for birthdays, Easter and Women's Day. Contains chocolate: allergen information for the box supplied is listed at checkout. We hold the mixed tulip scheme, because tulip colours change from week to week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our mixed tulip bunch with a box of chocolates bought near the recipient. Twenty-five stems as standard, with fifteen and thirty-five sizes. Sent for birthdays, Easter and Women's Day. Contains chocolate: allergen information for the box supplied is listed at checkout. We keep the mixed tulip scheme, because tulip colours change from week to week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Kraków Spring + Chocolates — tulips and chocolates",
       "seoDescription": "Our mixed tulip bunch with a box of local chocolates. Twenty-five stems as standard. Contains chocolate; allergen details at checkout.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "7a24120901ffe208c8372b20d41a471968c8788b7023bd6ca2fc9ece86d1fc96"
+      "sourceHash": "ffb7d33edaee70f2b43e02321492c235b21b9d8dbf75251ce669ecc4f986bd80"
     },
     {
       "entity": "product",
@@ -1012,12 +1012,12 @@
       "locale": "de",
       "name": "Quiet Blush + Vase",
       "slug": "quiet-blush-vase",
-      "descriptionMd": "Our pastel rose bouquet with a plain glass vase, sent when you are apologizing or when someone is unwell and cannot go looking for one. Eighteen stems as standard, twelve or twenty-four available. The pastel scheme is held and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our pastel rose bouquet with a plain glass vase, sent when you are apologizing or when someone is unwell and cannot go looking for one. Eighteen stems as standard, twelve or twenty-four available. The pastel scheme stays fixed and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Quiet Blush + Vase — pastel roses and a glass vase",
       "seoDescription": "Our pastel rose bouquet with a plain glass vase included. Eighteen stems as standard. For an apology or someone who is unwell.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "ffbd03c06547d7ce86cde69591c8b462b378664c26625766ab0dcc334a85f495"
+      "sourceHash": "03faa0caa80c0381f5abd13a2eb89d9c2b2bf85581122aded7eb0d5d8898b4ef"
     },
     {
       "entity": "product",
@@ -1025,12 +1025,12 @@
       "locale": "de",
       "name": "Field of Gold + Chocolates",
       "slug": "field-of-gold-chocolates",
-      "descriptionMd": "Our sunflower bunch with a box of chocolates from a shop near the recipient. Nine stems as standard, with five and thirteen sizes. Sent for birthdays and congratulations, and it is the cheerful end of our range. Contains chocolate: allergen information for the box supplied is listed at checkout. The yellow scheme is held; supporting stems follow the week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our sunflower bunch with a box of good chocolates, delivered with the flowers. Nine stems as standard, with five and thirteen sizes. Sent for birthdays and congratulations, and it is the cheerful end of our range. Contains chocolate: allergen information for the box supplied is listed at checkout. The yellow scheme stays fixed; supporting stems follow the week. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Field of Gold + Chocolates — sunflowers and chocolates",
       "seoDescription": "Our sunflower bunch with a box of local chocolates. Nine stems as standard. Contains chocolate; allergen details at checkout.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "fc8b31fb3ddee32257d37bd9bca2412a7ef0dc4e6a9c65fb06f8353ebbeeb8cb"
+      "sourceHash": "ed9502a758f6329df5f58783c24a789332838384478a70e371cc2994b6dc8411"
     },
     {
       "entity": "product",
@@ -1038,12 +1038,12 @@
       "locale": "de",
       "name": "Peony Note + Vase",
       "slug": "peony-note-vase",
-      "descriptionMd": "Our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are. Fifteen stems as standard, nine or twenty-one available. Sent for anniversaries, weddings and romance in the peony months. The pink scheme is held and the vase is included; outside the season our florist tells us before we take the order. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our pink peony bouquet with a heavier glass vase, priced at the top of the range because peonies are. Fifteen stems as standard, nine or twenty-one available. Sent for anniversaries, weddings and romance in the peony months. The pink scheme stays fixed and the vase is included. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Peony Note + Vase — pink peonies and a glass vase",
       "seoDescription": "Our pink peony bouquet with a heavier glass vase included. Fifteen stems as standard. For anniversaries, weddings and romance.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "cf9e79dbadd0f6fd641b409d5bbdc9c7b4c3896278b2e4be39a9ff57e4c9aeec"
+      "sourceHash": "e073137d1f4d009d53bc516fdca0243c34fdcc6c8c333ec365529c418c9271b2"
     },
     {
       "entity": "product",
@@ -1051,12 +1051,12 @@
       "locale": "de",
       "name": "Warsaw Morning + Balloon",
       "slug": "warsaw-morning-balloon",
-      "descriptionMd": "Our mixed bouquet with one helium balloon, tied on at the door so it arrives inflated. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays and congratulations, and it works for a child's party as well as an office. We hold the mixed scheme; the flowers and the balloon design are our florist's choice on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our mixed bouquet with one helium balloon, tied on at the door so it arrives inflated. Eighteen stems as standard, with twelve and twenty-four sizes. Sent for birthdays and congratulations, and it works for a child's party as well as an office. We keep the mixed scheme; the flowers and the balloon design are our florist's choice on the day. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Warsaw Morning + Balloon — mixed flowers and a balloon",
       "seoDescription": "Our mixed bouquet with one helium balloon, tied on at the door. Eighteen stems as standard. For birthdays and congratulations.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "203a49b60ce1d9512219f05cb3688a3872364ad935042798b7d5474bf596d9d5"
+      "sourceHash": "80ac215b3c8391676bbcc7eab1023418bc2ca045bfc9105a27715385f6849d80"
     },
     {
       "entity": "product",
@@ -1064,12 +1064,12 @@
       "locale": "de",
       "name": "Bright Side + Balloon",
       "slug": "bright-side-balloon",
-      "descriptionMd": "Our gerbera bouquet with one helium balloon, bright at both ends. Fifteen stems as standard, with ten and twenty-one sizes. Sent for a get-well, a birthday or a graduation, and the balloon is inflated by our florist rather than shipped flat. We hold the vibrant scheme; gerbera colours and the balloon design depend on the day's stock. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our gerbera bouquet with one helium balloon, bright at both ends. Fifteen stems as standard, with ten and twenty-one sizes. Sent for a get-well, a birthday or a graduation, and the balloon is inflated by our florist rather than shipped flat. We keep the vibrant scheme; gerbera colours and the balloon design depend on the day's stock. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Bright Side + Balloon — gerberas and a balloon",
       "seoDescription": "Our gerbera bouquet with one helium balloon, inflated by our florist. Fifteen stems as standard. For a get-well, birthday or graduation.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "8b3ba801295053297a80bdb0bd39e5d0a742823a0e7815b15a686e7cc6f62abd"
+      "sourceHash": "93c261d1e9450dd2400424bd75e2d97d398d5ed150402047e8387c8775667857"
     },
     {
       "entity": "product",
@@ -1077,12 +1077,12 @@
       "locale": "de",
       "name": "White Linen + Chocolates",
       "slug": "white-linen-chocolates",
-      "descriptionMd": "Our white lily sheaf with a box of chocolates bought locally. Eight stems as standard, five or twelve available. Sent for anniversaries and for thank yous where scent and something sweet are wanted together. Contains chocolate: allergen information for the box supplied is listed at checkout. The white scheme is held; lilies arrive part-closed and open over days. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our white lily sheaf with a box of chocolates bought locally. Eight stems as standard, five or twelve available. Sent for anniversaries and for thank yous where scent and something sweet are wanted together. Contains chocolate: allergen information for the box supplied is listed at checkout. The white scheme stays fixed; lilies arrive part-closed and open over days. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "White Linen + Chocolates — white lilies and chocolates",
       "seoDescription": "Our white lily sheaf with a box of local chocolates. Eight stems as standard. Contains chocolate; allergen details at checkout.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "32c2a747a3ba1127c72fde318215268c771a0e21afded11297d3d2caa344b711"
+      "sourceHash": "d58118cbc49f3219477137d3438b585b4a80afdf8112499661d56913628bfce1"
     },
     {
       "entity": "product",
@@ -1090,12 +1090,12 @@
       "locale": "de",
       "name": "Garden Letter + Plush",
       "slug": "garden-letter-plush",
-      "descriptionMd": "Our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home. Eighteen stems as standard, with twelve and twenty-four sizes. We hold the pastel scheme and our florist chooses the flowers and the toy from the shop; the toy is new, tagged and suitable from birth, and the bouquet is tied light enough to carry. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home. Eighteen stems as standard, with twelve and twenty-four sizes. We keep the pastel scheme and our florist chooses the flowers and the toy on the day; the toy is new, tagged and suitable from birth, and the bouquet is tied light enough to carry. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Garden Letter + Plush — pastel flowers and a soft toy",
       "seoDescription": "Our pastel garden bouquet with a small soft toy, for a new baby or someone recovering at home. Toy new, tagged and suitable from birth.",
       "translationStatus": "machine",
       "reviewed": false,
-      "sourceHash": "3f2fb56c30bfc72991a7d65b36168a7bc4e5845860c5a9c873aa918baa9ec6cc"
+      "sourceHash": "6302d80bad4db97be65757e28e3d59580c2d032fc166a7e39de8783fd39ca5d9"
     }
   ]
 }

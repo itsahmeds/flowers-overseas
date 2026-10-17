@@ -40,7 +40,7 @@
             "name": "Is it true that the number of flowers matters in Poland?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florists count the stems so you do not have to."
+              "text": "Yes, and it is the mistake we see most often. An odd number is what you give a living person; an even number is what you take to a funeral or a grave. Our florist counts the stems so you do not have to."
             }
           },
           {
@@ -104,7 +104,7 @@
             "name": "Can you deliver to Poland today?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Not yet. We are still choosing the shops we want to work with there, and until we have, we will not put a date or a time on this page. We would rather tell you no than promise something we cannot honour."
+              "text": "Not yet. Ordering for Poland is not open. When it opens, this page shows the delivery days and the order-by time."
             }
           }
         ]

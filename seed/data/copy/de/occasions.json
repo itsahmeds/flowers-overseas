@@ -29,7 +29,7 @@
       "seoDescription": "Rosen oder Lilien in der Vase und Pfingstrosen in der Saison, geliefert am Datum Ihrer Wahl. Ein Vasengesteck erspart die Suche nach einer Vase.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "202825423e0c96cb9de73362f2ad70677a58f15192bd9db3403aa7c31d5f3638"
+      "sourceHash": "88c1d66a60aba94452d5529a67b3db0090be762f9ab56865e1a644cd3008cc24"
     },
     {
       "entity": "occasion",
@@ -81,7 +81,7 @@
       "seoDescription": "Box- und Topfgestecke ohne Vase, wenig Duft und leicht zu tragen. Freesien, Gerbera und Pastellmischungen für gute Besserung.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "67c42a1fad8f21e12e86a8eed64629fd2d6cc9c2a63c8dd381891501fe8b5137"
+      "sourceHash": "5bc5d49cad54f3130f70da4224f0a5d687956f0823c6c987bebba50a3b321578"
     },
     {
       "entity": "occasion",
@@ -128,12 +128,12 @@
       "locale": "de",
       "name": "Einfach so",
       "slug": "einfach-so",
-      "descriptionMd": "Kein Anlass, keine Karte nötig, nichts, woran man denken muss: ein Saisonstrauß oder ein lockerer bunter Strauß im unteren Bereich unserer Preise, verschickt, weil Dienstag ist. Das sind die Bestellungen, die unsere Floristen am liebsten mögen, weil sie selbst wählen dürfen, was hineinkommt, statt einem Bild zu folgen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Kein Anlass, keine Karte nötig, nichts, woran man denken muss: ein Saisonstrauß oder ein lockerer bunter Strauß im unteren Bereich unserer Preise, verschickt, weil Dienstag ist. Diese Bestellungen mag unser Florist am liebsten, weil er selbst wählen darf, was hineinkommt, statt einem Bild zu folgen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Einfach so – Blumen europaweit verschicken",
       "seoDescription": "Saisonsträuße und lockere bunte Sträuße im unteren Preisbereich, ohne Anlass verschickt. Unser Florist wählt aus, was hineinkommt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "7804b327390698d633d01e748d397569e15ac69b7f69f3b3de9357ba0b48cc2a"
+      "sourceHash": "7a1fc218220443ce40d7c9af17da9c547f5e34d30696c939453e44fbcf4945d3"
     },
     {
       "entity": "occasion",
@@ -141,12 +141,12 @@
       "locale": "de",
       "name": "Hochzeit",
       "slug": "hochzeit",
-      "descriptionMd": "Wir liefern Blumen zu einer Hochzeit als Geschenk oder Tischschmuck, nicht als Hochzeitsauftrag: kein Brautstrauß, keine Dekoration vor Ort, keine Beratung. Weiße Rosen, weiße Pfingstrosen, Lilien und eine Orchidee sind das, was man einem Brautpaar schickt. Für alles Weitere sollte man Monate vorher direkt eine Floristin oder einen Floristen vor Ort buchen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Wir liefern Blumen zu einer Hochzeit als Geschenk oder Tischschmuck, nicht als Hochzeitsauftrag: kein Brautstrauß, keine Dekoration vor Ort, keine Beratung. Weiße Rosen, weiße Pfingstrosen, Lilien und eine Orchidee sind das, was man einem Brautpaar schickt. Für Brautsträuße und Dekoration vor Ort buchen Sie Monate vorher eine Hochzeitsfloristin oder einen Hochzeitsfloristen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Hochzeit – Blumen als Geschenk europaweit",
       "seoDescription": "Weiße Rosen, Pfingstrosen, Lilien und Orchideen als Geschenk oder Tischschmuck zur Hochzeit. Keine Brautsträuße und keine Dekoration vor Ort.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "c5a8cf5127c78dd041c82d70e92f12ff97ac64a177cdf1e2b6aad27bfce93202"
+      "sourceHash": "e0f5fd10275a7b1170a10a1e0a0671bc16c2b8f7fb75d799c7918ba4ffb2131d"
     },
     {
       "entity": "occasion",
@@ -193,12 +193,12 @@
       "locale": "de",
       "name": "Valentinstag",
       "slug": "valentinstag",
-      "descriptionMd": "Der Valentinstag ist ein Datum für ganz Europa und der geschäftigste Tag unseres Jahres. Rote Rosen kosten in dieser Woche mehr, weil sie unsere Floristen mehr kosten, und am Tag selbst gilt ein Aufpreis; beides wird vor dem Bezahlen angezeigt. Bestellen Sie früh: Der Bestellschluss rückt in dieser Woche nach vorn. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Der Valentinstag ist ein Datum für ganz Europa und der geschäftigste Tag unseres Jahres. Rote Rosen kosten in dieser Woche mehr, überall in Europa, und am Tag selbst gilt ein Aufpreis; beides wird vor dem Bezahlen angezeigt. Bestellen Sie früh: Der Bestellschluss rückt in dieser Woche nach vorn. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Valentinstag – Blumen europaweit verschicken",
       "seoDescription": "Rote Rosen zum 14. Februar in ganz Europa. Höhere Saisonpreise und der Aufpreis des Tages werden vor dem Bezahlen angezeigt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
+      "sourceHash": "6a650d0c2213005eea7bf672f0b440bca1468d334f0a6aff9caadebe9c5e3dc9"
     },
     {
       "entity": "occasion",
@@ -336,12 +336,12 @@
       "locale": "de",
       "name": "Sant Jordi",
       "slug": "sant-jordi",
-      "descriptionMd": "Der dreiundzwanzigste April in Katalonien: eine Rose und ein Buch, auf der Straße verschenkt. Einzelne rote Rosen sind die Tradition, und die Nachfrage ballt sich auf einen einzigen Vormittag. Wir sind dabei, wo wir einen Floristen in der Stadt haben, und die Seite des Ziellandes sagt, ob das in diesem Jahr der Fall ist. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Der dreiundzwanzigste April in Katalonien: eine Rose und ein Buch, auf der Straße verschenkt. Einzelne rote Rosen sind die Tradition, und die Nachfrage ballt sich auf einen einzigen Vormittag. Die Seite für Barcelona zeigt, ob wir in diesem Jahr zu Sant Jordi liefern, und es lohnt sich, früh zu bestellen, weil die ganze Stadt an diesem Morgen Rosen will. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Sant Jordi – Rosen zum 23. April in Katalonien",
-      "seoDescription": "Einzelne rote Rosen zu Sant Jordi am 23. April, wo wir einen Floristen in der Stadt haben. Die Nachfrage ballt sich auf einen Vormittag.",
+      "seoDescription": "Einzelne rote Rosen zu Sant Jordi am 23. April. Die Seite für Barcelona zeigt, ob wir in diesem Jahr liefern. Die Nachfrage ballt sich auf einen Vormittag.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "8af11d90c6d6469c1071ed0883a1502b4b4d345051a69a48136c39bd32bf83fc"
+      "sourceHash": "e789e463acbfe79016fd9bbdd6ff0f66ec9deda5912b42e69a97236035a2a6e7"
     },
     {
       "entity": "occasion",

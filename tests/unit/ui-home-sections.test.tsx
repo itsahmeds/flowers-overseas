@@ -312,7 +312,7 @@ describe("the how-it-works explainer", () => {
     for (const fragment of [
       "You choose the town, the day and a bouquet.",
       "any order-by time we show is on the recipient's clock, not yours.",
-      "A florist a few streets away accepts it.",
+      "Our florist nearby makes it that morning.",
       "Substitutions are like for like, and we tell you.",
       "Delivered by hand. You get the photo.",
       "A picture arrives when the flowers do, so you know it happened.",
@@ -353,7 +353,7 @@ describe("the FAQ", () => {
       "Before you order",
       "Questions people ask first",
       "Will the bouquet look like the photo?",
-      "substitute like for like in colour and value",
+      "substitutes like for like in colour and value",
       "What if nobody is home?",
       "Who delivers, and when?",
     ]) {

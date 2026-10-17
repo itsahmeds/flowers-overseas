@@ -27,11 +27,11 @@
         "name": "Printed card"
       },
       "chocolates": {
-        "description": "A box of chocolates, sourced by the florist who makes the bouquet.",
+        "description": "Pudełko dobrych czekoladek, dostarczane razem z kwiatami.",
         "name": "Box of chocolates"
       },
       "plush": {
-        "description": "A small soft toy, chosen by the florist from what they have in stock.",
+        "description": "Mała, nowa przytulanka dobrana do bukietu.",
         "name": "Soft toy"
       },
       "vase": {
@@ -39,7 +39,7 @@
         "name": "Glass vase"
       },
       "wine": {
-        "description": "A bottle of local wine, where the florist is licensed to sell it.",
+        "description": "Butelka lokalnego wina, tam gdzie pozwala na to lokalne prawo.",
         "name": "Bottle of wine"
       }
     },
@@ -255,10 +255,10 @@
     "price": {
       "changed": "<b>The price changed from {old} to {new} since you opened the product page.</b> Please check it before you continue.",
       "confirm": "Continue at {new}",
-      "currencyLine": "You pay in {buyerCurrency}. Our florist is paid in {destinationCurrency}."
+      "currencyLine": "Płacisz w {buyerCurrency}."
     },
     "privacy": {
-      "demoNotice": "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how an order reaches our florist, then we delete the personal details. {controllerLine}"
+      "demoNotice": "<b>Użyj przykładowych danych, a nie danych prawdziwej osoby.</b> To, co tu wpiszesz, przechowujemy przez {period, select, hours24 {24 godziny} other {7 dni}}, aby pokazać, jak działa zamawianie, a potem usuwamy dane osobowe. {controllerLine}"
     },
     "progress": {
       "card": "Card and you",
@@ -402,7 +402,7 @@
       "headingLive": "What happens on the day",
       "orderBy": {
         "label": "Order by",
-        "none": "— no cutoff, because no florist has agreed to one",
+        "none": "Na razie brak.",
         "value": "{time} in {zone} — the recipient's own time, not yours — for delivery the same day"
       },
       "prices": {
@@ -440,7 +440,7 @@
       "heading": "{count, plural, one {One more guide} other {# more guides}}"
     },
     "shop": {
-      "body": "Bouquets our florists in {country} can make, priced for {country}, with delivery and VAT already in the price.",
+      "body": "Bukiety, które nasz florysta w {country} może zrobić, w cenach dla {country}, z dostawą i VAT już w cenie.",
       "cta": "See flowers for {country}",
       "heading": "See what can arrive in {country}"
     },
@@ -452,7 +452,7 @@
         "oneTitle": "You order from us",
         "threeBody": "The florist photographs what was handed over and we email it to you. If it is not what we promised, we make it right.",
         "threeTitle": "You get the photo",
-        "twoBody": "We choose every one of them ourselves and we visit before we open a country. They see the recipient's address and your card message, and nothing else about you.",
+        "twoBody": "Nasz florysta widzi adres odbiorcy i treść Twojego bileciku, nic więcej o Tobie.",
         "twoTitle": "Our florist makes it where it is going"
       },
       "headingGuide": "The same three steps, everywhere we open",
@@ -462,7 +462,7 @@
         "oneTitle": "You order from anywhere",
         "threeBody": "The florist photographs the delivered bouquet and we email it to you the same day.",
         "threeTitle": "You get the photo",
-        "twoBody": "We chose them ourselves and we have stood in their shop. They see the recipient's details and your card message, and nothing about you.",
+        "twoBody": "Nasz florysta widzi adres odbiorcy i treść Twojego bileciku, nic więcej o Tobie.",
         "twoTitle": "Our florist in {country} makes it"
       }
     },
@@ -480,7 +480,7 @@
     "corridorLink": "What we can tell you about sending flowers to {country}",
     "legend": "When should it arrive?",
     "picker": {
-      "live": "Order by {time} in {city} — the recipient's time, not yours",
+      "live": "Zamów do {time} ({city}), według czasu odbiorcy, nie Twojego",
       "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
       "unavailable": "Delivery dates for {country} open when ordering does."
     },
@@ -525,7 +525,7 @@
   "destinationsHub": {
     "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
     "h1": "Where we can send flowers",
-    "intro": "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We open a country only once we have chosen the florists ourselves, so the guide comes first and the delivery comes after it. Where we are not delivering yet, this page says so in the same words on every row.",
+    "intro": "Siedem krajów w Europie, a o każdym z nich napisaliśmy przewodnik: co się daje, czego nigdy się nie daje, jak pisze się adres i które daty liczą się tam w ciągu roku. Najpierw piszemy przewodnik, a dostawę otwieramy po nim. Tam, gdzie jeszcze nie dostarczamy, ta strona mówi to tymi samymi słowami w każdym wierszu.",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
     "readGuide": "Read the guide →",
     "region": {
@@ -558,7 +558,7 @@
       "question": "What if nobody is home?"
     },
     "photo": {
-      "answer": "Close, not identical. Our florists work with what is fresh that morning and substitute like for like in colour and value. Every change is noted on your delivery photo.",
+      "answer": "Podobny, nie identyczny. Nasz florysta pracuje z tym, co tego ranka jest świeże, i zastępuje kwiaty odpowiednikami w kolorze i wartości. Każda zmiana jest odnotowana na zdjęciu, które od nas dostajesz.",
       "question": "Will the bouquet look like the photo?"
     },
     "whoDelivers": {
@@ -614,7 +614,7 @@
       "orderBy": "Order by {date}, {time}"
     },
     "destinations": {
-      "body": "We open each country only once we have local florists there we can stand behind.",
+      "body": "Otwieramy kraje jeden po drugim i tylko wtedy, gdy możemy obiecać te same kwiaty i tę samą troskę.",
       "eyebrow": "Destinations"
     },
     "hero": {
@@ -636,7 +636,7 @@
       "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
       "make": {
         "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you.",
-        "title": "A florist a few streets away accepts it."
+        "title": "Nasz florysta w pobliżu przygotowuje go tego samego ranka."
       }
     },
     "occasions": {
@@ -649,7 +649,7 @@
         "title": "Fresh-flower promise"
       },
       "local": {
-        "body": "Independent shops we chose ourselves",
+        "body": "Robi go nasz florysta, kilka ulic od ich drzwi.",
         "title": "We make it in their own town"
       },
       "photo": {
@@ -887,7 +887,7 @@
     },
     "category": {
       "lede": "{count, plural, one {Jeden bukiet, który nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
-      "seoDescription": "The {entity} our florists can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoDescription": "{entity}, które nasz florysta może zrobić w {country}, każdy z jedną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
       "seoTitle": "{entity} for {country} — one all-in price",
       "siblingsHeading": "Also for {country}"
     },
@@ -947,7 +947,7 @@
       "occasionsEyebrow": "Coming up in {country}",
       "occasionsHeading": "{country}'s own dates",
       "pageColumn": "Page",
-      "seoDescription": "Every bouquet our florists can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
+      "seoDescription": "Każdy bukiet, który nasz florysta może zrobić w {country}, z jedną pełną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
       "seoTitle": "Send flowers to {country} — what we can make there",
       "tileCount": "{noun, select, plant {{count, plural, one {# roślina, którą możemy wykonać dla {country}} few {# rośliny, które możemy wykonać dla {country}} many {# roślin, które możemy wykonać dla {country}} other {# rośliny, które możemy wykonać dla {country}}}} arrangement {{count, plural, one {# kompozycja, którą możemy wykonać dla {country}} few {# kompozycje, które możemy wykonać dla {country}} many {# kompozycji, które możemy wykonać dla {country}} other {# kompozycji, które możemy wykonać dla {country}}}} other {{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}}}",
       "tilesHeading": "By what it is",

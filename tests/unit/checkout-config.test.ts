@@ -196,13 +196,26 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
     const metaKeys = Object.keys(enMeta).filter((key) => KEY.test(key));
     expect(metaKeys.toSorted()).toEqual(checkoutKeys.toSorted());
     const reviewed = metaKeys.filter((key) => enMeta[key]?.reviewed === true);
-    expect(reviewed.toSorted()).toEqual([
-      "checkout.address.city",
-      "checkout.address.fullName",
-      "checkout.address.phone",
-      "checkout.address.postcode",
-      "checkout.address.street",
-    ]);
+    // TASK-226: two checkout keys of the founder's relay-copy batches are recorded by his own
+    // `record-approval-226.py` run, and by nothing else.
+    const recorded226 = [
+      "checkout.price.currencyLine",
+      "checkout.privacy.demoNotice",
+    ].filter((key) =>
+      /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-226\.py /u.test(
+        enMeta[key]?.reviewedBy ?? "",
+      ),
+    );
+    expect(reviewed.toSorted()).toEqual(
+      [
+        "checkout.address.city",
+        "checkout.address.fullName",
+        "checkout.address.phone",
+        "checkout.address.postcode",
+        "checkout.address.street",
+        ...recorded226,
+      ].toSorted(),
+    );
     for (const key of reviewed) {
       expect(enMeta[key]?.reviewedBy, key).toMatch(/^founder\b/u);
     }

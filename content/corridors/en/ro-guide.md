@@ -35,7 +35,7 @@ faq:
   - q: "Will the person receiving them see what I paid, or anything in lei?"
     a: "No. You see one all-in amount in your own currency before you pay, and nothing about money goes anywhere near the flowers or the card."
   - q: "Can you send flowers to Romania today?"
-    a: "Not yet. We are choosing the shops we would like to work with and have not finished. Until one of them has agreed, we will not put a date, an hour or an arrival claim on this page."
+    a: "Not yet. Ordering for Romania is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Snowdrops at the very start of March, then hyacinths, freesias and tulips
   through the spring, roses all year and in quantity, lilies and gerberas for
@@ -49,9 +49,9 @@ relatedIso2: ["PL", "ES", "IT"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country where flowers are ordinary and constant
@@ -108,7 +108,7 @@ Luminatia, on 1 November, is kept most strongly in Transylvania, where cemeterie
 are lit with candles and dressed with chrysanthemums. It is the reason the flower
 reads the way it does, and the reason to keep it away from a living room.
 
-## What a Romanian shop is good at
+## What Romanian florists are known for
 
 Volume and wrapping, done properly. A florist in Bucharest or Cluj will build
 something large, symmetrical and heavily finished, with ribbon, paper and often a
@@ -118,10 +118,5 @@ and freesias arrive in quantity and prices for them fall to their lowest.
 
 ## What we can honestly tell you today
 
-We have not begun delivering in Romania. We have written this guide, chosen the
-cities we would like to start in, and begun talking to shops. Until one of them has
-agreed to work with us, we will not put a date, an hour or a promise of arrival on
-this page, because a promise without an arrangement behind it is just words.
-
-When that changes, this section changes first: which cities we reach, what happens
-on the day, and who to speak to if something has gone wrong.
+We are not delivering in Romania yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.

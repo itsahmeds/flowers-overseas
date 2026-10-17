@@ -65,10 +65,10 @@ async function servedCopy(page: Page, plant?: string): Promise<string> {
 }
 
 test.describe("AC-37: no en/en-gb document says we have no florists yet (T-47)", () => {
-  test("the exception list resolves to text", () => {
-    // `corridor.facts.orderBy.none` and five FAQ answers: a list that resolved to nothing would
-    // excuse nothing and hide a broken read.
-    expect(EXCUSED).toHaveLength(6);
+  test("the exception list is empty, so nothing is cut out of the read", () => {
+    // TASK-226 replaced `corridor.facts.orderBy.none` and the guide FAQ answers with the
+    // founder's wording of 2026-10-14; the list left with them.
+    expect(EXCUSED).toHaveLength(0);
   });
 
   for (const { type, path } of PAGES) {

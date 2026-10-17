@@ -35,7 +35,7 @@ faq:
   - q: "Should I have the card written in Italian?"
     a: "Only if you want it that way. We will print it on our card in whatever language you write it, exactly as you type it. If you would like Italian and are unsure of the register, tell us the sense of it and we will help you phrase it warmly rather than stiffly."
   - q: "Can you deliver flowers in Italy at the moment?"
-    a: "No. We have not begun there. We are choosing which shops we want to work with, and until one of them has agreed, this page will carry no date, no hour and no claim about arrival."
+    a: "Not yet. Ordering for Italy is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Mimosa for a single day in March, then ranunculus and anemones from the
   Ligurian coast, peonies and roses through May and June, sunflowers across the
@@ -51,9 +51,9 @@ relatedIso2: ["FR", "ES", "RO"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## Two rules, learned in a minute
@@ -109,7 +109,7 @@ Then there is Ferragosto. Around the 15th of August much of the country leaves f
 the sea, and a small shop in a city may simply shut for a fortnight. If the date you
 care about is in mid-August, assume the smaller shops are away.
 
-## What an Italian shop is good at
+## What Italian florists are known for
 
 Shape. The style here is more sculpted than the loose paper-wrapped bunch you find
 further north: a clear silhouette, considered proportions, and a preference for
@@ -120,11 +120,5 @@ foreigners rarely think of.
 
 ## What we can honestly tell you today
 
-We are not delivering in Italy. We have written the guide because the customs are
-worth knowing regardless, and because we would rather publish a page that is true
-and incomplete than one that is complete and made up. We are talking to shops we
-admire. Until one of them has agreed to work with us, nothing here will claim an
-arrival.
-
-When that changes, this is the section that changes: the cities we cover, what
-happens on the day itself, and who you speak to when something goes wrong.
+We are not delivering in Italy yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.

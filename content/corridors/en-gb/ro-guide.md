@@ -34,9 +34,9 @@ faq:
   - q: "What will I pay, and in what currency?"
     a: "One figure in pounds sterling, VAT and delivery already inside it, shown before you enter a card. That is what leaves your account. Nothing about money reaches the recipient, in lei or in anything else."
   - q: "Who is my order with, and who puts it right?"
-    a: "Your order is with us, not with the florist who assembles the bouquet, so a complaint comes to us in English rather than to a shop abroad. We have not begun delivering in Romania, so there is nothing to buy today and we will not pretend there is."
+    a: "You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep."
   - q: "Can you send flowers to Romania today?"
-    a: "Not yet. We are choosing the shops we would like to work with and have not finished. Until one of them has agreed we will put no date, no hour and no arrival claim on this page."
+    a: "Not yet. Ordering for Romania is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Snowdrops at the very start of March, then hyacinths, freesias and tulips
   through the spring, roses all year and in quantity, lilies and gerberas for
@@ -50,9 +50,9 @@ relatedIso2: ["PL", "ES", "IT"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## A country that gives flowers constantly
@@ -105,7 +105,7 @@ Luminatia, on the 1st of November, is kept most strongly in Transylvania, where
 cemeteries are lit with candles and dressed with chrysanthemums. That is the reason
 the flower reads as it does, and the reason to keep it out of a living room.
 
-## What a Romanian shop is good at
+## What Romanian florists are known for
 
 Volume and finish. A florist in Bucharest or Cluj will build something large,
 symmetrical and heavily wrapped, with ribbon, paper and often a sleeve. Roses are
@@ -119,12 +119,8 @@ You pay in pounds sterling: one figure, VAT and delivery already included, shown
 before you enter a card, and that is the amount charged. No conversion is applied
 afterwards and no fee appears at the end. The recipient sees no figure of any kind.
 
-Your contract is with us, not with the florist who assembles the bouquet, so anything
-that goes wrong is ours to put right, in English.
+You buy from us, Flowers Overseas, and we look after everything, in English, from order to doorstep.
 
 ## What we can honestly tell you today
 
-We have not begun delivering in Romania. We have written this guide, chosen the
-cities we would like to start in, and begun talking to shops. Until one of them has
-agreed to work with us, this page will carry no date, no hour and no promise of
-arrival, because a promise with no arrangement behind it is just words.
+We are not delivering in Romania yet. When we start, this page will show the cities, the order-by time and what happens on the day.

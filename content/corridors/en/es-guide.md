@@ -6,8 +6,8 @@ intro: >-
   Spain is several flower cultures sharing one passport. A rose handed over in
   Barcelona on 23 April means something that would puzzle somebody in Bilbao; a
   saint's day is a bigger event in a village in Andalusia than a birthday is;
-  and the heat between June and September governs what a shop will agree to
-  make for you at all. This page gathers the parts we are confident about: the
+  and the heat between June and September decides which flowers will last at
+  all. This page gathers the parts we are confident about: the
   occasions that fill the shops, the flowers that belong to Holy Week and to
   cemeteries, the regional customs that a visitor would never guess, and the
   hours when a small shop simply locks the door and goes home for lunch. We
@@ -36,10 +36,10 @@ faq:
   - q: "Will the person receiving the flowers see the price in euro?"
     a: "No. You are shown one all-in amount in your own currency before you pay, and no figure of any kind travels with the flowers or the card."
   - q: "Can you send flowers to Spain now?"
-    a: "Not yet. We are still choosing the shops we want to work with, and until one of them has agreed to make your flowers we will put no date, no hour and no claim of arrival on this page."
+    a: "Not yet. Ordering for Spain is not open. When it opens, this page shows the delivery days and the order-by time."
 localFlowers: >-
   Carnations above all, which Spain grows and gives without any of the
-  reservations held further north; roses for 23 April; orange blossom in the
+  reservations felt further north; roses for 23 April; orange blossom in the
   south in spring; gerberas, lilies and gladioli all year; and potted plants
   through the hottest months, when cut material struggles.
 taboos: >-
@@ -51,9 +51,9 @@ relatedIso2: ["FR", "IT", "RO"]
 source: human
 reviewed: true
 reviewedBy: "Ahmed (founder)"
-reviewedAt: 2026-09-16
-version: 1
-updatedAt: "2026-09-16"
+reviewedAt: 2026-10-15
+version: 2
+updatedAt: "2026-10-14"
 ---
 
 ## One country, several flower cultures
@@ -104,7 +104,7 @@ The national holidays to plan around are 1 and 6 January, Good Friday, 1 May,
 those, every region and almost every town keeps its own fiesta, and on that day the
 shutters come down whatever the national calendar says.
 
-## Heat, hours and what a shop will agree to
+## Heat, hours and timing
 
 From June to September the heat decides. A good Spanish florist will not sell you
 something soft-headed for a flat with no air conditioning, and if you insist they
@@ -118,12 +118,5 @@ Madrid, Barcelona and Valencia are the exceptions rather than the rule.
 
 ## What we can honestly tell you today
 
-We are not making deliveries in Spain. We have written this guide because the
-customs are worth knowing whoever carries the flowers, and because we would rather
-publish something true and limited than something complete and invented. We are
-talking to shops. Until one of them has agreed to work with us, this page will
-carry no arrival claim of any kind.
-
-When that changes, this section is the one that changes first. It will name the
-cities we can reach, explain what happens on the day, and say who to contact when
-something has gone wrong.
+We are not delivering in Spain yet. When we start, this page will show the cities,
+the order-by time and what happens on the day.

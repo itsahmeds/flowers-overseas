@@ -271,7 +271,7 @@ describe("the sweep itself", () => {
       "Delivery dates for Poland open when ordering does.",
       "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
       "Our selection",
-      "— no cutoff, because no florist has agreed to one",
+      "None yet.",
       "Continue shows you where we deliver and where we are still choosing florists.",
     ]) {
       expect(

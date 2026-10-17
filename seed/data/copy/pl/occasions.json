@@ -29,7 +29,7 @@
       "seoDescription": "Róże lub lilie w wazonie i piwonie w sezonie, dostarczone w wybranym dniu. Kompozycja w wazonie oszczędza szukania naczynia.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "202825423e0c96cb9de73362f2ad70677a58f15192bd9db3403aa7c31d5f3638"
+      "sourceHash": "88c1d66a60aba94452d5529a67b3db0090be762f9ab56865e1a644cd3008cc24"
     },
     {
       "entity": "occasion",
@@ -81,7 +81,7 @@
       "seoDescription": "Kompozycje w pudełku i doniczce bez wazonu, o słabym zapachu i łatwe do niesienia. Frezje, gerbery i pastele z życzeniami zdrowia.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "67c42a1fad8f21e12e86a8eed64629fd2d6cc9c2a63c8dd381891501fe8b5137"
+      "sourceHash": "5bc5d49cad54f3130f70da4224f0a5d687956f0823c6c987bebba50a3b321578"
     },
     {
       "entity": "occasion",
@@ -128,12 +128,12 @@
       "locale": "pl",
       "name": "Bez okazji",
       "slug": "bez-okazji",
-      "descriptionMd": "Bez okazji, bez obowiązkowego bilecika, bez pamiętania o czymkolwiek: sezonowy bukiet albo luźny kolorowy bukiet z niższej części naszych cen, wysłany dlatego, że jest wtorek. To zamówienia, które nasi floryści lubią najbardziej, bo sami wybierają, co trafi do środka, zamiast odtwarzać zdjęcie. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Bez okazji, bez obowiązkowego bilecika, bez pamiętania o czymkolwiek: sezonowy bukiet albo luźny kolorowy bukiet z niższej części naszych cen, wysłany dlatego, że jest wtorek. Te zamówienia nasz florysta lubi najbardziej, bo sam wybiera, co trafi do środka, zamiast odtwarzać zdjęcie. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Bez okazji – wysyłka kwiatów w całej Europie",
       "seoDescription": "Sezonowe bukiety i luźne kolorowe bukiety w niższych cenach, wysłane bez okazji. Nasz florysta wybiera, co trafi do środka.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "7804b327390698d633d01e748d397569e15ac69b7f69f3b3de9357ba0b48cc2a"
+      "sourceHash": "7a1fc218220443ce40d7c9af17da9c547f5e34d30696c939453e44fbcf4945d3"
     },
     {
       "entity": "occasion",
@@ -141,12 +141,12 @@
       "locale": "pl",
       "name": "Ślub",
       "slug": "slub",
-      "descriptionMd": "Dostarczamy kwiaty na ślub jako prezent lub ozdobę stołu, a nie jako zlecenie ślubne: bez bukietów ślubnych, bez dekoracji sali, bez konsultacji. Białe róże, białe piwonie, lilie i storczyk to kwiaty, które wysyła się parze młodej. Do czegoś więcej warto zarezerwować lokalnego florystę bezpośrednio, z wielomiesięcznym wyprzedzeniem. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Dostarczamy kwiaty na ślub jako prezent lub ozdobę stołu, a nie jako zlecenie ślubne: bez bukietów ślubnych, bez dekoracji sali, bez konsultacji. Białe róże, białe piwonie, lilie i storczyk to kwiaty, które wysyła się parze młodej. Bukiety ślubne i dekorację sali zarezerwuj u florysty ślubnego z wielomiesięcznym wyprzedzeniem. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Ślub – kwiaty w prezencie z dostawą w Europie",
       "seoDescription": "Białe róże, piwonie, lilie i storczyki jako prezent lub ozdoba stołu na ślub. Nie przyjmujemy zleceń na bukiety ślubne ani dekoracje sal.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "c5a8cf5127c78dd041c82d70e92f12ff97ac64a177cdf1e2b6aad27bfce93202"
+      "sourceHash": "e0f5fd10275a7b1170a10a1e0a0671bc16c2b8f7fb75d799c7918ba4ffb2131d"
     },
     {
       "entity": "occasion",
@@ -193,12 +193,12 @@
       "locale": "pl",
       "name": "Walentynki",
       "slug": "walentynki",
-      "descriptionMd": "Walentynki to jedna data w całej Europie i najbardziej pracowity dzień naszego roku. Czerwone róże kosztują w tym tygodniu więcej, bo więcej kosztują naszych florystów, a w sam dzień obowiązuje dopłata; jedno i drugie widać przed zapłatą. Zamów wcześnie: terminy zamówień przesuwają się w tym tygodniu do przodu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Walentynki to jedna data w całej Europie i najbardziej pracowity dzień naszego roku. Czerwone róże kosztują w tym tygodniu więcej, w całej Europie, a w sam dzień obowiązuje dopłata; jedno i drugie widać przed zapłatą. Zamów wcześnie: terminy zamówień przesuwają się w tym tygodniu do przodu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Walentynki – wysyłka kwiatów w całej Europie",
       "seoDescription": "Czerwone róże na 14 lutego w całej Europie. Wyższe ceny sezonowe i dopłata tego dnia widoczne przed zapłatą. Zamów wcześnie.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "bac5c6f9e2a56c39759b0582ecf3d31871952b549327d01a940ecdcb0dd4d983"
+      "sourceHash": "6a650d0c2213005eea7bf672f0b440bca1468d334f0a6aff9caadebe9c5e3dc9"
     },
     {
       "entity": "occasion",
@@ -336,12 +336,12 @@
       "locale": "pl",
       "name": "Sant Jordi",
       "slug": "sant-jordi",
-      "descriptionMd": "Dwudziesty trzeci kwietnia w Katalonii: róża i książka, wymieniane na ulicy. Tradycją są pojedyncze czerwone róże, a popyt skupia się w jednym poranku. Obsługujemy ten dzień tam, gdzie mamy florystę w mieście, a strona kraju docelowego mówi, czy w tym roku tak jest. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Dwudziesty trzeci kwietnia w Katalonii: róża i książka, wymieniane na ulicy. Tradycją są pojedyncze czerwone róże, a popyt skupia się w jednym poranku. Strona Barcelony pokazuje, czy w tym roku dostarczamy na Sant Jordi, a warto zamówić wcześnie, bo tego ranka całe miasto chce róż. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Sant Jordi – róże na 23 kwietnia w Katalonii",
-      "seoDescription": "Pojedyncze czerwone róże na Sant Jordi 23 kwietnia, tam gdzie mamy florystę w mieście. Popyt skupia się w jednym poranku.",
+      "seoDescription": "Pojedyncze czerwone róże na Sant Jordi 23 kwietnia. Strona Barcelony pokazuje, czy w tym roku dostarczamy. Popyt skupia się w jednym poranku.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "8af11d90c6d6469c1071ed0883a1502b4b4d345051a69a48136c39bd32bf83fc"
+      "sourceHash": "e789e463acbfe79016fd9bbdd6ff0f66ec9deda5912b42e69a97236035a2a6e7"
     },
     {
       "entity": "occasion",
