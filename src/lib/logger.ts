@@ -68,6 +68,15 @@ export const REDACTED_KEYS: readonly string[] = [
   "sessiontoken",
   "publictoken",
   "objectkey",
+  // Spec 012 §8 (TASK-217): Auth.js's metadata names the sign-in address `identifier`; the admin
+  // profile's name is `display_name`. `identifier_hash`, the send log's SHA-256, stays readable.
+  // A bare `token` key is not on the list: `tests/unit/url-pii.test.ts` (AC-55 (b)) would then
+  // forbid the `?token=` of Auth.js's email callback, which the core builds in process and never
+  // sends over the wire; no log line of the core carries Auth.js metadata at all (`surface.ts`),
+  // and the two bearer tokens that are persisted are covered above (`sessiontoken`,
+  // `publictoken`). Recorded in `docs/tasks/TASK-217.md` `## Escalations`.
+  "identifier",
+  "displayname",
 ];
 
 export const REDACTED_KEY_PREFIXES: readonly string[] = ["address", "card"];

@@ -386,8 +386,31 @@ function customerCopy(source: string): string {
     );
 }
 
+/**
+ * Admin is not customer copy (spec 004 §14 A5: the words "stay in plan/, specs/ and admin"; spec
+ * 012 §2.2, TASK-217): the `admin-*` artboards are exempt from the voice scan, and so is the admin
+ * catalogue `messages/admin/` (which the catalogue scan below never reads: it lists `messages/`
+ * only). These two, and only these two.
+ */
+const VOICE_EXEMPT_ARTBOARD = /(?:^|\/)wireframes\/admin-[^/]+\.dc\.html$/u;
+const customerArtboards = artboards.filter(
+  (file) => !VOICE_EXEMPT_ARTBOARD.test(file),
+);
+
 describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
-  it.each(artboards)("%s uses no banned word", (file) => {
+  it("exempts exactly the admin-* wireframes", () => {
+    expect(
+      artboards.filter((file) => VOICE_EXEMPT_ARTBOARD.test(file)).length,
+    ).toBeGreaterThan(0);
+    expect(
+      artboards
+        .filter((file) => VOICE_EXEMPT_ARTBOARD.test(file))
+        .every((file) => /wireframes\/admin-/u.test(file)),
+    ).toBe(true);
+    expect(catalogues).not.toContain("admin");
+  });
+
+  it.each(customerArtboards)("%s uses no banned word", (file) => {
     const copy = customerCopy(readFileSync(join(designRoot, file), "utf8"));
     const found = BANNED.flatMap((word) => {
       const hits =
@@ -498,7 +521,8 @@ describe("every artboard speaks in the first person (spec 004 §14 A5)", () => {
  */
 const CUSTOMER_COPY_EXEMPT_PATHS = [
   "src/modules/admin/",
-  "src/app/(admin)/",
+  // The admin route tree is `src/app/admin/` (spec 012 §5.3: no route group; TASK-217).
+  "src/app/admin/",
   // The register itself (TASK-087). `src/config/voice.ts` *is* the nine words; scanning it for
   // them would be the one place the rule can only fail.
   "src/config/voice.ts",

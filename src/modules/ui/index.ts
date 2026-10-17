@@ -559,3 +559,20 @@ export { AddonPriceList } from "./product/AddonPriceList.tsx";
 export type { AddonPriceListProps } from "./product/AddonPriceList.tsx";
 export { PriceSummary } from "./product/PriceSummary.tsx";
 export type { PriceSummaryProps } from "./product/PriceSummary.tsx";
+
+// Admin chrome (spec 012 §5.3; TASK-217): presentational, every word a prop from the admin
+// catalogue. Drawn in the Admin group of `docs/design/system/components.dc.html`.
+export {
+  AdminBrand,
+  AdminCounter,
+  AdminEnvironmentChip,
+  AdminMailDisc,
+  AdminPageTitle,
+  AdminRemoveGlyph,
+  AdminShell,
+  AdminSignInCard,
+  AdminSignInTitle,
+  AdminTextField,
+  AdminTopBar,
+} from "./admin/AdminChrome";
+export type { AdminEnvironment, AdminShellNavEntry } from "./admin/AdminChrome";

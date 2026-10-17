@@ -59,6 +59,34 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "Google's tag loader takes the measurement id as `?id=` (ga4.ts L13)",
   },
+  // Spec 012 §2.2 (TASK-217): the admin sign-in core. None of these URLs is public or indexable
+  // (`/admin` is `noindex, nofollow` and disallowed), none carries personal data, and none is a
+  // listing key, so `QUERY_KEYS` (which the listing rewrites read) must not learn them.
+  {
+    entry: "src/lib/auth/surface.ts#t",
+    reason:
+      "the emailed sign-in link `{confirm}?t={token}`, spec 012 §2.2 and §5.2 `ConfirmSignInSchema`",
+  },
+  {
+    entry: "src/lib/auth/surface.ts#state",
+    reason:
+      "the sign-in page's state after a request, a confirm or a sign-out (`sent`, `expired`, `signed-out`)",
+  },
+  {
+    entry: "src/lib/auth/surface.ts#token",
+    reason:
+      "Auth.js's email callback reads `?token=`; the core builds that URL in process and never sends it",
+  },
+  {
+    entry: "src/lib/auth/surface.ts#callbackUrl",
+    reason:
+      "Auth.js's email callback's landing page (`/admin`), in the same in-process URL",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/users/actions.ts#result",
+    reason:
+      "/admin/users's outcome line after a grant, revoke or deactivate (`saved`, `conflict`, …)",
+  },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
 
@@ -458,7 +486,14 @@ const GA4_LIKE = [
 
 describe("the real tree (T-59)", () => {
   it("is green with EXTERNAL_QUERY_KEYS = [src/modules/analytics/ga4.ts#id]", () => {
-    expect(EXTERNAL).toEqual(["src/modules/analytics/ga4.ts#id"]);
+    expect(EXTERNAL).toEqual([
+      "src/modules/analytics/ga4.ts#id",
+      "src/lib/auth/surface.ts#t",
+      "src/lib/auth/surface.ts#state",
+      "src/lib/auth/surface.ts#token",
+      "src/lib/auth/surface.ts#callbackUrl",
+      "src/app/admin/(signed-in)/users/actions.ts#result",
+    ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);
   });
 
@@ -472,7 +507,7 @@ describe("the real tree (T-59)", () => {
     expect(named.some((n) => n.key === "page")).toBe(true);
   });
 
-  it("keeps today's four dynamic segments, none a PII key", () => {
+  it("keeps today's five dynamic segments, none a PII key", () => {
     const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
       const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
       return name === undefined ? [] : [name];
@@ -481,6 +516,7 @@ describe("the real tree (T-59)", () => {
       "child",
       "grandchild",
       "locale",
+      "nextauth",
       "segment",
     ]);
   });
@@ -501,7 +537,13 @@ describe("the real tree (T-59)", () => {
   });
 
   it("names ga4.ts:13 when the ga4.ts#id entry is removed", () => {
-    expect(urlPiiViolations(repoRoot, { external: [] })).toEqual([
+    expect(
+      urlPiiViolations(repoRoot, {
+        external: EXTERNAL.filter(
+          (entry) => !entry.startsWith("src/modules/analytics/ga4.ts#"),
+        ),
+      }),
+    ).toEqual([
       'src/modules/analytics/ga4.ts:13: query key "id" (literal) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
     ]);
   });
@@ -609,7 +651,11 @@ describe("scratch trees (T-59)", () => {
       "src/modules/analytics/ga4.ts": GA4_LIKE,
     };
     const violations = (): string[] =>
-      urlPiiViolations(scratchTree(files), { external: EXTERNAL });
+      urlPiiViolations(scratchTree(files), {
+        external: EXTERNAL.filter((entry) =>
+          entry.startsWith("src/modules/analytics/"),
+        ),
+      });
 
     it("reports each red case, naming its path, and nothing else", () => {
       expect(violations()).toEqual([
