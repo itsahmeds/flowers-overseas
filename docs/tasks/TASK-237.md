@@ -80,6 +80,12 @@ _None recorded._
   `visual-baselines` label and compare with the committed set (`881fee61` carries run
   38693547083's bytes). **A replacement must know:** the `visual:baselines` label is still on PR
   229; TASK-238's copy half is held on `task/TASK-238-support-line-hours` (see that brief).
+- 2026-10-18 (finisher): `a11y` red on `2735a129` was `tests/a11y/header.spec.ts` tab order: the
+  loop still pressed Tab seven times (sized for four locales), so with `de`/`pl` hidden it reached
+  two category links past the five expected stops. The loop now runs once per expected stop
+  (`9e5294dd`). Rebased onto `83c8e777` (TASK-226): map regenerated, baseline conflicts held for a
+  fresh `visual:baselines` run. Unit suite green at a 120 s timeout (gates' timeouts were load
+  average 100+). **Next:** commit the runner's baselines, remove the label, toggle `ci:full`.
 
 ## Result
 
