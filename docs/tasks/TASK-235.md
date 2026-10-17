@@ -52,6 +52,9 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
 
 ## Escalations
 
+- **E1 ruling (founder, 2026-10-15): "go with option a".** The page keeps non-critical chunks
+  from finishing before the LCP paint; that is TASK-244 (a spec 004 change), not this PR. This PR
+  keeps the warm-up and the evidence. Options b and c are not taken.
 - **E1 (implementer, 2026-10-15): the LCP edge is not a cold path, so no warm-up moves it.** The
   binding clause says: "If the cause turns out to be the page and not the warm-up, stop and
   escalate". The evidence is in `## Result` (C1 to C3). In short: the home documents' simulated
@@ -75,8 +78,10 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
 - 2026-10-15: CI run 38641145234 on 9570fde0 failed `test-unit` (`codebase-map.test` size cap:
   the new script's map row took the map from 17,375 B to 17,499 B, over 17,408 B), so `build` and
   `lighthouse` skipped. The warm-up moved into `lighthouse-urls.ts --warm` and the map is back to
-  17,375 B. Rebased on `origin/main` (TASKS.md conflict resolved to main plus this row). The head
-  needs a `ci:full` toggle from the orchestrator (work order §3), then two more for the dry runs.
+  17,375 B. Rebased on `origin/main` (TASKS.md conflict resolved to main plus this row). CI is green on f55552d0 (run
+  39072642233, `lighthouse` job success; `## Result` "After").
+- 2026-10-15: founder ruled on E1 ("go with option a"); the fix moves to TASK-244. Review r1
+  failed on docs only; this brief's `## Result` and the PR body are brought up to date.
 
 ## Result
 
@@ -140,7 +145,39 @@ and the measurement basis (A12, A18), not the warm-up: escalation E1.
 
 ### After (CI dry runs on this branch)
 
-_Pending: filled in from this PR's runs._
+CI run 39072642233 on head f55552d0 (`ci:full`): every job green, including `lighthouse`
+(blocking, no `continue-on-error`). The warm-up step fetched 14 documents and 25 distinct
+subresources, then one discarded Lighthouse pass of `/en`, then the measured runs. Budgets
+measured and met; no assertion fired. LCP of the three measured runs per URL (ms), from the job's
+step summary:
+
+| URL | LCP per run (ms) |
+|---|---|
+| `/en` | 1812 / 2019 / 1990 |
+| `/en-gb` | 1884 / 1946 / 1858 |
+| `/de` | 1849 / 1877 / 1943 |
+| `/pl` | 1964 / 1881 / 1795 |
+| `/en/send-flowers-to` | 1577 / 1669 / 1580 |
+| `/en-gb/send-flowers-to` | 1596 / 1582 / 1561 |
+| `/en/send-flowers-to/poland` | 1517 / 1685 / 1510 |
+| `/en-gb/send-flowers-to/poland` | 1582 / 1567 / 1617 |
+| `/en/poland/flowers` | 1845 / 1840 / 1778 |
+| `/en-gb/poland/flowers` | 1835 / 1778 / 1847 |
+| `/en/poland/flowers/roses` | 1792 / 1845 / 1845 |
+| `/en-gb/poland/flowers/roses` | 1782 / 1854 / 1780 |
+| `/en/occasions/mothers-day` | 1794 / 1798 / 1792 |
+| `/en-gb/occasions/mothers-day` | 1829 / 1790 / 1799 |
+
+The reported (optimistic, fastest-of-three) LCP is 1,517 to 1,990 ms. One single run is over
+2,000 ms (`/en` run 2, 2,019 ms) and `/en` run 3 reads 1,990, so the home-page margin is thin,
+as C2 and C3 predicted. One green run does not close it: the warm-up removes the cold path and
+keeps `median` honest, and the script-versus-paint race is TASK-244's.
+
+**Carry-forward to TASK-244 (spec 004):** make the page keep non-critical script chunks from
+finishing before the LCP paint (the founder's option a, E1), so the simulated LCP no longer
+depends on the origin's encode time. Acceptance: LCP under 2,000 ms on every run of every URL of
+`tests/fixtures/seo/lighthouse-urls.json`, not only the fastest of three, and it must hold under
+TASK-103's `median` over HTTP/2. The per-run LCP table this PR adds is the measure.
 
 ### Gates
 
