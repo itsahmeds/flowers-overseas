@@ -140,7 +140,7 @@ function render(view: ProductView): string {
       messages={loadMessages("en", [...NAMESPACES])}
       timeZone="UTC"
     >
-      <ProductPage breadcrumb={null} facts={null} view={view} />
+      <ProductPage breadcrumb={null} view={view} />
     </NextIntlClientProvider>,
   );
 }

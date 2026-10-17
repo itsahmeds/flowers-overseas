@@ -522,13 +522,22 @@ test.describe("/dev/components", () => {
       state("pickerUnavailable").locator("fieldset"),
     ).toHaveAttribute("disabled", "");
 
-    // AC-23: read-only add-on rows, the free card a visible zero line.
+    // AC-23 as amended, AC-34: read-only add-on rows in the page's currency with no VAT rate,
+    // and the free card "Included" (the approved "included", first letter set upright).
     await expect(
       state("addons").locator("input, button, select, textarea"),
     ).toHaveCount(0);
     await expect(
+      state("addons").locator('[data-fo-addon="chocolates"]'),
+    ).toContainText(money(500, "GBP"));
+    await expect(state("addons")).not.toContainText("%");
+    const card = state("addons").locator(
+      '[data-fo-addon="card"] [data-fo-addon-price]',
+    );
+    await expect(card).toHaveText(/^included$/iu);
+    await expect(
       state("addons").locator('[data-fo-addon="card"]'),
-    ).toContainText(money(0, "PLN"));
+    ).not.toContainText(money(0, "GBP"));
 
     // Each summary has exactly one total; the surcharge is a line; stale FX says so.
     for (const name of [

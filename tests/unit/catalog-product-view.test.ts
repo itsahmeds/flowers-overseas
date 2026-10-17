@@ -6,7 +6,8 @@
  * committed ECB snapshot (`fxAsOf 2026-09-08`), and every one of them is the figure
  * `docs/design/wireframes/product-desktop.dc.html` prints: Amber Hour (`FO-BQ-001`) to Poland is
  * 199 / 229 / 259 zł, projected to £40.90 / £46.90 / £52.90 for `en-gb`; the add-on column is
- * 25 / 35 / 18 / 39 / 0 zł at 23 %; the stale-FX state quotes PLN 229.00. `Intl` appears nowhere
+ * 25 / 35 / 18 / 39 / 0 zł at 23 %, projected like the bouquet (spec 009 AC-34); the stale-FX
+ * state quotes PLN 229.00 and the add-ons in zloty with it. `Intl` appears nowhere
  * in these assertions — formatting is the page's, and a formatted string would hide a
  * one-minor-unit error behind rounding.
  *
@@ -33,7 +34,7 @@ import {
   productView,
 } from "../../src/modules/catalog/product.ts";
 import { toMinor } from "../../src/modules/catalog/pricing/money.ts";
-import { formatPercentFromBasisPoints } from "../../src/modules/i18n/format.ts";
+import { addonPriceProjection } from "../../src/modules/catalog/pricing/project.ts";
 import { isProductIndexable } from "../../src/modules/catalog/read.ts";
 import { corridorState } from "../../src/modules/geo/index.ts";
 import { DeliveryWindowSchema } from "../../src/modules/geo/delivery/schemas.ts";
@@ -175,10 +176,51 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
   });
 });
 
-describe("add-on rows in the destination's currency at their own VAT rate (design round Q4, AC-23)", () => {
-  it("prints Poland's five offerable add-ons in PLN on an en-gb page quoting GBP", async () => {
+describe("add-on rows in the page's currency, the bouquet's FX rule (spec 009 §14 A-founder-2026-10-14c, AC-34, AC-23 as amended; T-38 model half)", () => {
+  const KEYS = ["chocolates", "vase", "balloon", "plush", "card"] as const;
+
+  it.each([
+    ["en", "EUR"],
+    ["en-gb", "GBP"],
+    ["pl", "PLN"],
+  ] as const)(
+    "%s: every add-on is in the bouquet's currency (%s) and equals `addonPriceProjection()` at the page's clock",
+    async (locale, currency) => {
+      const view = await amber(locale, "PL");
+      expect(view.price.displayPrice.currency).toBe(currency);
+      expect(view.addons.map((line) => line.key)).toEqual([...KEYS]);
+      for (const line of view.addons) {
+        const projection = await addonPriceProjection(line.key, "PL", locale, {
+          now: FX_LIVE,
+        });
+        expect(line.price, line.key).toEqual(projection.displayPrice);
+        expect(line.price.currency, line.key).toBe(currency);
+      }
+      // Pinned as well as derived, so a projection that agreed with itself on a wrong rule fails:
+      // the card is free in every currency, and a priced add-on is never the zloty figure on a
+      // converted page.
+      const card = view.addons.find((line) => line.key === "card");
+      expect(card?.price).toEqual({ amountMinor: 0, currency });
+      if (currency !== "PLN") {
+        expect(
+          view.addons.find((line) => line.key === "chocolates")?.price,
+        ).not.toEqual({ amountMinor: 2500, currency: "PLN" });
+      }
+    },
+  );
+
+  it("en-gb: the chocolates are the converted 25 zł, not 25.00 PLN beside a pound bouquet (QA summary 2)", async () => {
     const view = await amber("en-gb", "PL");
-    expect(view.price.displayPrice.currency).toBe("GBP");
+    const chocolates = view.addons.find((line) => line.key === "chocolates");
+    expect(chocolates?.price.currency).toBe("GBP");
+    expect(chocolates?.price.amountMinor).toBeGreaterThan(0);
+    expect(chocolates?.price.amountMinor).toBeLessThan(2500);
+  });
+
+  it("with stale FX the bouquet and every add-on fall back to the destination currency together", async () => {
+    const view = await amber("en-gb", "PL", { now: FX_STALE });
+    expect(view.fx.state).toBe("fallback");
+    expect(view.price.displayPrice.currency).toBe("PLN");
     expect(
       view.addons.map((line) => [line.key, line.price, line.vatRateBp]),
     ).toEqual([
@@ -191,35 +233,35 @@ describe("add-on rows in the destination's currency at their own VAT rate (desig
     ]);
     // Wine is absent because `addon.wine.PL` is off, and the add-on rate is not the flowers' 8 %.
     expect(view.addons.map((line) => line.key)).not.toContain("wine");
-    expect(view.addons.every((line) => line.vatRateBp !== 800)).toBe(true);
   });
 
-  it("states each add-on's own VAT rate in words — 23 %, never the flowers' 8 % beside it", async () => {
+  it("keeps each add-on's own VAT rate as data for spec 010's split, and no rate text a row could print", async () => {
     const view = await amber("en-gb", "PL");
-    // The expected text is pinned as well as derived, so a formatter that printed nothing would
-    // not pass by agreeing with itself.
-    const twentyThree = formatPercentFromBasisPoints(2300, "en-gb");
-    expect(twentyThree).toBe("23%");
-    expect(view.addons.map((line) => [line.key, line.vatRateText])).toEqual([
-      ["chocolates", twentyThree],
-      ["vase", twentyThree],
-      ["balloon", twentyThree],
-      ["plush", twentyThree],
-      ["card", twentyThree],
-    ]);
-  });
-
-  it("carries no selection state of any kind on a row — nothing can arrive pre-ticked", async () => {
-    const view = await amber("en-gb", "PL");
+    expect(view.addons.every((line) => line.vatRateBp === 2300)).toBe(true);
     for (const line of view.addons) {
+      // No selection state of any kind either: nothing can arrive pre-ticked.
       expect(Object.keys(line).sort()).toEqual([
         "key",
         "nameKey",
         "price",
         "vatRateBp",
-        "vatRateText",
       ]);
     }
+  });
+
+  it("refuses a view whose add-on quotes another currency than the bouquet (one page, one currency)", async () => {
+    const view = await amber("en-gb", "PL");
+    const [first, ...rest] = view.addons;
+    if (first === undefined) throw new Error("Poland offers add-ons");
+    const broken = {
+      ...view,
+      addons: [
+        { ...first, price: { amountMinor: 2500, currency: "PLN" } },
+        ...rest,
+      ],
+    };
+    expect(ProductViewSchema.safeParse(broken).success).toBe(false);
+    expect(ProductViewSchema.safeParse(view).success).toBe(true);
   });
 });
 

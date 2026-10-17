@@ -154,9 +154,7 @@ describe("A22: no future tense for our florist in rendered Polish", () => {
         { parameterised: false, now: FRESH },
       );
       expect(view, page.path).toBeDefined();
-      const text = render(
-        <ProductPage breadcrumb={null} facts={null} view={view!} />,
-      );
+      const text = render(<ProductPage breadcrumb={null} view={view!} />);
       expect(FUTURE.exec(text)?.[0], page.path).toBe(undefined);
     }
     // Eighty-four product pages, each a full `productView()` and render.

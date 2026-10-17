@@ -369,7 +369,7 @@ export const PRODUCT_STATES = {
   pickerUnavailable:
     "DeliveryDatePicker \u00b7 unavailable \u2014 no operations block: no dates, one honest sentence and the way out, the whole fieldset disabled.",
   addons:
-    "AddonPriceList \u2014 read-only rows: name, the destination's price and its own VAT rate. No input element, and the free card is a visible zero line (AC-23).",
+    "AddonPriceList \u2014 read-only rows: name and the all-in price in the page's currency, no VAT rate on a row and one inclusive line under them. No input element, and the free card reads Included (AC-23 as amended, AC-34).",
   summaryNormal:
     "PriceSummary \u00b7 normal \u2014 the tier's row, delivery and VAT as included rows, one You pay, the inclusive formula, and the demo box where a button would be.",
   summarySurcharge:
