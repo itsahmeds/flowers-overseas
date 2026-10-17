@@ -48,6 +48,7 @@ const OrderRow = z.object({
   destination_country_id: z.uuid(),
   destination_postcode: z.string().nullable(),
 });
+type OrderFacts = z.infer<typeof OrderRow>;
 const IdRow = z.object({ id: z.uuid() });
 const AssignmentRow = z.object({
   id: z.uuid(),
@@ -56,13 +57,13 @@ const AssignmentRow = z.object({
 
 async function pickPartner(
   executor: OrderExecutor,
-  order: z.infer<typeof OrderRow>,
-  partnerId: string | undefined,
+  order: OrderFacts,
+  namedFlorist: string | undefined,
   orderId: string,
 ): Promise<string> {
-  if (partnerId !== undefined) {
+  if (namedFlorist !== undefined) {
     const [named] = await executor.execute(sql`
-      SELECT id FROM fulfillment_partner WHERE id = ${partnerId} AND status = 'demo'`);
+      SELECT id FROM fulfillment_partner WHERE id = ${namedFlorist} AND status = 'demo'`);
     if (named === undefined) {
       throw new OrderEngineError("DEMO_ROUTE_PARTNER_INVALID", {
         orderId,
