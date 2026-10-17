@@ -1,0 +1,109 @@
+{
+  "admin": {
+    "meta": {
+      "title": "Admin · Flowers Overseas"
+    },
+    "shell": {
+      "brand": "Flowers Overseas",
+      "product": "Admin",
+      "environment": {
+        "development": "Development",
+        "test": "Test",
+        "preview": "Preview",
+        "staging": "Staging",
+        "production": "Production"
+      },
+      "signedInAs": "{roles} · times in {timeZone}",
+      "you": "(you)",
+      "signOut": "Sign out",
+      "menu": "Menu",
+      "navLabel": "Admin sections"
+    },
+    "nav": {
+      "home": "Home",
+      "orders": "Orders",
+      "applications": "Applications",
+      "partners": "Florists",
+      "flags": "Flags",
+      "audit": "Audit log",
+      "users": "Users"
+    },
+    "roles": {
+      "admin": "admin",
+      "ops": "ops",
+      "finance": "finance",
+      "content": "content"
+    },
+    "signIn": {
+      "title": "Sign in to admin",
+      "email": "Email",
+      "submit": "Email me a link",
+      "note": "Only people we have added can sign in. The link works once, for one hour.",
+      "sentTitle": "Check your email",
+      "sentBody": "If this address can sign in to admin, we have sent a link to it. It works once, for one hour.",
+      "confirmSubmit": "Continue to admin",
+      "expiredBody": "This link has expired or was already used. Ask for a new one.",
+      "signedOutTitle": "You are signed out",
+      "signedOutBody": "Your admin session has ended on this device.",
+      "signInAgain": "Sign in again"
+    },
+    "email": {
+      "subject": "Your link to sign in to Flowers Overseas admin",
+      "lead": "Sign in to admin:",
+      "body": "The link works once, for one hour. If you did not ask for it, you can ignore this email."
+    },
+    "home": {
+      "title": "Today",
+      "date": "{date} · times in {timeZone}",
+      "ordersToday": "Orders today",
+      "ordersOpen": "Open orders",
+      "applicationsNew": "New applications",
+      "applicationsWaiting": "Waiting for a reply.",
+      "applicationsOpen": "Open applications",
+      "partnersByStatus": "Florists by status",
+      "partnersOpen": "Open florists",
+      "partnerStatus": {
+        "demo": "Demo",
+        "onboarding": "Onboarding",
+        "active": "Active",
+        "paused": "Paused",
+        "offboarded": "Offboarded"
+      },
+      "nothingToday": "Nothing yet today.",
+      "noApplications": "No new applications."
+    },
+    "users": {
+      "title": "Users",
+      "lead": "Who can sign in to admin. Removing a role or deactivating someone signs them out at once.",
+      "grantEmail": "Email",
+      "grantName": "Name",
+      "grantRole": "Role",
+      "grantSubmit": "Grant role",
+      "columnName": "Name",
+      "columnEmail": "Email",
+      "columnRoles": "Roles",
+      "columnStatus": "Status",
+      "statusActive": "Active",
+      "statusDeactivated": "Deactivated",
+      "noRoles": "No roles",
+      "removeRole": "Remove {role} from {name}",
+      "deactivate": "Deactivate",
+      "deactivateConfirm": "Deactivate {name}? They are signed out at once and cannot sign in until a role is granted again.",
+      "cancel": "Cancel",
+      "ownLastAdmin": "You cannot remove your own last admin role.",
+      "none": "None",
+      "saved": "Saved.",
+      "conflict": "Someone changed this user in the meantime. Nothing was saved; the page shows the current state.",
+      "invalid": "Check the email, the name (2 to 80 characters) and the role."
+    },
+    "errors": {
+      "forbiddenTitle": "Not for your role",
+      "forbiddenBody": "Your roles do not include this page.",
+      "notFoundTitle": "Not found",
+      "notFoundBody": "There is nothing at this address.",
+      "unauthorizedTitle": "Signed out",
+      "unauthorizedBody": "Sign in to admin to continue.",
+      "backHome": "Back to admin home"
+    }
+  }
+}
