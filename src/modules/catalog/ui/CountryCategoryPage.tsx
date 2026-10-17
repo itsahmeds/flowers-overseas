@@ -61,7 +61,6 @@ import {
   CountryListingResults,
   GridProvenance,
   ListingCategoriesToggle,
-  ListingChipRow,
   ListingPageHead,
   ListingProse,
   ListingStateLine,
@@ -139,8 +138,9 @@ export function CountryCategoryPage({
           </VisuallyHidden>
           {/* The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33): the count, the ranking
               disclosure, the sibling categories and the sort form ("Change the order", A10), in
-              that order, above the grid at every width; then the grid; then the pager. From `md`
-              up the siblings fold into the "Categories" button (A-founder-2026-10-15c). */}
+              that order, above the grid at every width; then the grid; then the pager. At every
+              width the siblings fold into the "Categories" button (A-founder-2026-10-15c), the
+              only place their links render. */}
           <CountryListingResults
             count={{
               phone: shop("toolbar.count", { count: view.resultCount }),
@@ -154,13 +154,6 @@ export function CountryCategoryPage({
                   : shop("toolbar.count", { count: view.resultCount }),
             }}
             disclosure={shop("toolbar.disclosure")}
-            chips={
-              <ListingChipRow
-                phoneOnly
-                chips={siblings}
-                label={shop("category.siblingsHeading", { country })}
-              />
-            }
             chipsToggle={
               <ListingCategoriesToggle
                 chips={siblings}
@@ -194,7 +187,7 @@ export function CountryCategoryPage({
                 pageCount={view.pageCount}
               />
             }
-            sortForm={<ListingSortForm sort={view.sort} />}
+            sortForm={<ListingSortForm framed={false} sort={view.sort} />}
             toolbar="band"
           />
         </section>

@@ -84,17 +84,19 @@ describe("the populated country category (§5.3 row 2)", () => {
   // v2 (spec 004 §14 A21; `country-category-desktop.dc.html`): the grid comes straight after the
   // hero, and "Also for Poland" moves under it.
   it("follows the block order of the founder's C3: crumbs, hero, siblings, grid, intro", () => {
-    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): the sibling chip row is above the grid
-    // at every width, and none follows it.
+    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): the siblings are above the grid at
+    // every width, and none follows it; A-founder-2026-10-15c folds them into the one
+    // "Categories" disclosure, and no chip line renders beside it.
     const crumbs = html.indexOf("data-fo-breadcrumb");
-    const siblings = html.indexOf("data-fo-listing-chips");
+    const siblings = html.indexOf("data-fo-listing-categories");
     const grid = html.indexOf("data-fo-listing-grid=");
     const intro = html.indexOf("data-fo-shop-intro");
     expect(crumbs).toBeGreaterThan(-1);
     expect(crumbs).toBeLessThan(siblings);
     expect(siblings).toBeLessThan(grid);
     expect(grid).toBeLessThan(intro);
-    expect(html.match(/data-fo-listing-chips/gu) ?? []).toHaveLength(1);
+    expect(html.match(/data-fo-listing-categories/gu) ?? []).toHaveLength(1);
+    expect(html).not.toContain("data-fo-listing-chips");
   });
 
   it("carries the counted lede and the demo sentence", () => {
@@ -124,10 +126,8 @@ describe("the populated country category (§5.3 row 2)", () => {
 
   it("renders the sibling row from `links.chips` and nothing else", () => {
     expect(roses.links.chips.length).toBeGreaterThan(1);
-    // The row's name, on its `<nav>` (one line of the first screen, so the heading is not drawn).
-    expect(html).toMatch(
-      /<nav aria-label="Also for Poland" class="md:hidden" data-fo-listing-chips/u,
-    );
+    // The row's name, on the disclosure panel's `<nav>` (the heading is not drawn).
+    expect(html).toMatch(/<nav aria-label="Also for Poland"/u);
     for (const chip of roses.links.chips) {
       expect(text, chip.key).toContain(chip.name);
     }
@@ -154,6 +154,13 @@ describe("the populated country category (§5.3 row 2)", () => {
     );
     expect(html.slice(start, end)).not.toContain(" open");
     const panel = html.slice(start, end);
+    // Every sibling link is inside the `<details>`; none renders outside it (no phone chip line).
+    const outside = html.slice(0, start) + html.slice(end);
+    for (const chip of roses.links.chips) {
+      if (chip.current !== true) {
+        expect(outside, chip.key).not.toContain(`href="${chip.href}"`);
+      }
+    }
     expect(panel).toMatch(/<summary[^>]*>Categories</u);
     for (const chip of roses.links.chips) {
       if (chip.current === true) {
