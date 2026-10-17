@@ -86,6 +86,7 @@ export const SDK_ADAPTERS = [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
       "scripts/db-check.ts",
+      "scripts/db-check-live.ts",
       "seed/index.ts",
     ],
     use: "src/lib/db.ts",

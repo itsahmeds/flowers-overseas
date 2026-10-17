@@ -279,21 +279,20 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("--dry-run writes nothing and reports what a real run would; --only runs the named groups", async () => {
-      const empty = await scratchDatabase(server.url as string, "seeddry");
-      try {
-        const before = await fingerprint(empty.sql, plan);
-        const dry = await runSeed(empty.sql, plan, { dryRun: true });
-        expect(await fingerprint(empty.sql, plan)).toEqual(before);
-        expect(dry.dryRun).toBe(true);
-        const real = await runSeed(empty.sql, plan);
-        expect(dry.tables.map((t) => [t.table, t.inserted])).toEqual(
-          real.tables.map((t) => [t.table, t.inserted]),
-        );
-        const only = await runSeed(empty.sql, plan, { only: ["reference"] });
-        expect(only.tables.map((t) => t.table)).toEqual(["locale", "currency"]);
-      } finally {
-        await empty.drop();
-      }
+      // One scratch database per file: a second one would queue behind the round-trip suite's
+      // exclusive roles lock (`support/scratch-db.ts`).
+      await scratch.sql`UPDATE product SET stem_count = stem_count + 1 WHERE sku = 'FO-BQ-002'`;
+      const before = await fingerprint(scratch.sql, plan);
+      const dry = await runSeed(scratch.sql, plan, { dryRun: true });
+      expect(await fingerprint(scratch.sql, plan)).toEqual(before);
+      expect(dry.dryRun).toBe(true);
+      const real = await runSeed(scratch.sql, plan);
+      expect(dry.tables.map((t) => [t.table, t.inserted, t.updated])).toEqual(
+        real.tables.map((t) => [t.table, t.inserted, t.updated]),
+      );
+      expect(real.tables.find((t) => t.table === "product")?.updated).toBe(1);
+      const only = await runSeed(scratch.sql, plan, { only: ["reference"] });
+      expect(only.tables.map((t) => t.table)).toEqual(["locale", "currency"]);
     }, 120_000);
 
     it("the CLI prints one line per table and exits 0 on a rerun", async () => {

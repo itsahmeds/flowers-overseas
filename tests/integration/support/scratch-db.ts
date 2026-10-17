@@ -16,6 +16,8 @@
  *    empty PG16 (AC-4) as a side effect of setting up.
  *  - When no local server answers — a clean clone, where `tests/integration/setup.ts` falls back
  *    to the `.env.example` placeholder — the suites **skip**, with the reason in their title.
+ *    **Except in CI** (`CI` set): there a missing server throws, so the job fails rather than
+ *    reporting a green run that tested nothing (spec 002 AC-28, TASK-027).
  *
  * Concurrency. Vitest runs integration files in parallel, and the `app_owner` / `app_web` roles
  * of `0001` are cluster-wide. Two advisory locks on the *base* database's connection:
@@ -77,11 +79,38 @@ export function withDatabase(url: string, database: string): string {
  * Resolves once, at collection time: the local server's URL when one answers `SELECT 1` within a
  * few seconds, otherwise the reason to skip.
  */
-export async function probeLocalServer(): Promise<{
+export async function probeLocalServer(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): Promise<{
   url?: string;
   reason: string;
 }> {
-  const local = localServerUrl();
+  const result = await probe(environment);
+  // Spec 002 AC-28 (TASK-027): in CI a suite never skips for want of a database — the
+  // `postgres:16` service container is part of the job, so a missing one is a failure, not a
+  // quiet green tick with nothing tested.
+  if (result.url === undefined && isCi(environment)) {
+    throw new Error(
+      `the integration suite needs the Postgres service in CI: ${result.reason}`,
+    );
+  }
+  return result;
+}
+
+/** True on a CI runner (GitHub Actions sets `CI=true`). */
+export function isCi(
+  environment: Readonly<Record<string, string | undefined>>,
+): boolean {
+  const value = environment["CI"];
+  return (
+    value !== undefined && value !== "" && value !== "false" && value !== "0"
+  );
+}
+
+async function probe(
+  environment: Readonly<Record<string, string | undefined>>,
+): Promise<{ url?: string; reason: string }> {
+  const local = localServerUrl(environment);
   if (!("url" in local)) return { reason: local.reason };
   const sql = postgres(local.url, {
     max: 1,

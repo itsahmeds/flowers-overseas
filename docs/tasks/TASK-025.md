@@ -24,7 +24,7 @@ _None recorded._
 
 ## Progress
 
-- 2026-10-18: `src/jobs/retention.ts` + the `retention.sweep` entry in `src/jobs/handlers.ts`; T-20 in `tests/integration/retention-sweep.test.ts` (17 cases, 8 mutants red), pure half in `tests/unit/retention-sweep.test.ts`. Next: TASK-026 seed.
+- 2026-10-18: `src/jobs/retention.ts` + the `retention.sweep` entry in `src/jobs/handlers.ts`; T-20 in `tests/integration/retention-sweep.test.ts` (17 cases, 8 mutants red), pure half in `tests/unit/retention-sweep.test.ts`. Next: TASK-026 seed. Open: the production handler goes through `withSystemContext`, whose `drizzle(tx)` throws on a real postgres.js transaction (see TASK-027 Progress, "Found"); the sweep itself is tested through a runner and passes. No daily enqueue exists yet (no cron workflow calls the tick); `checkout_draft` and `demo_order_personal` report `no_handler` until TASK-207.
 
 ## Result
 

@@ -18,52 +18,24 @@
  * and in CI, where spec 002 has no Neon credentials. AC-4's own migrate/rollback round trip is
  * TASK-022's; this file asserts the *result* of a migration somebody has applied.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 
-import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
 
-/** `KEY=value` pairs of a dotenv-style file, without interpolation or quoting rules. */
-function readDotEnv(path: string): Record<string, string> {
-  if (!existsSync(path)) return {};
-  const entries: Record<string, string> = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (trimmed === "" || trimmed.startsWith("#")) continue;
-    const separator = trimmed.indexOf("=");
-    if (separator < 1) continue;
-    entries[trimmed.slice(0, separator).replace(/^export\s+/, "")] = trimmed
-      .slice(separator + 1)
-      .trim();
-  }
-  return entries;
-}
+import { probeLocalServer, scratchDatabase } from "./support/scratch-db.ts";
 
-/**
- * The direct connection string, or undefined when only the placeholder is available. The runner,
- * `db:check` and this suite all use the *unpooled* URL (spec 002 §13 Q6): a transaction pooler
- * keeps no session state, and these assertions read catalogues and open transactions.
- */
-function liveDatabaseUrl(): string | undefined {
-  const local = readDotEnv(join(process.cwd(), ".env.local"));
-  const url =
-    process.env.DATABASE_URL_UNPOOLED ??
-    local.DATABASE_URL_UNPOOLED ??
-    process.env.DATABASE_URL ??
-    local.DATABASE_URL;
-  if (url === undefined || url === "") return undefined;
-  // The `.env.example` placeholder, and any other localhost default, is not a database to assert
-  // against: skipping is honest, failing would be noise.
-  return /localhost|127\.0\.0\.1/.test(url) ? undefined : url;
-}
-
-const databaseUrl = liveDatabaseUrl();
-const sql =
-  databaseUrl === undefined ? undefined : postgres(databaseUrl, { max: 1 });
+// TASK-027 (spec 002 AC-28): a migrated scratch database of a disposable local Postgres 16 —
+// CI's service container included — and never a remote URL or `.env.local` (Phase 0's one
+// database is the live site's, §13 Q5). Before TASK-027 this suite read `.env.local` and skipped
+// on every local server, so it never ran in CI.
+const server = await probeLocalServer();
+const scratch =
+  server.url === undefined
+    ? undefined
+    : await scratchDatabase(server.url, "geo");
+const sql = scratch?.sql;
 
 afterAll(async () => {
-  await sql?.end();
+  await scratch?.drop();
 });
 
 /** The fifteen tables migration `0002` creates (§5.1 `i18n` + `geo`). */
