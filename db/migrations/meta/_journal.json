@@ -64,6 +64,13 @@
       "when": 1792291378649,
       "tag": "0008_serious_martin_li",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792345285603,
+      "tag": "0009_goofy_electro",
+      "breakpoints": true
     }
   ]
 }
