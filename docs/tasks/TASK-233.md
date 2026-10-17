@@ -82,6 +82,8 @@ _None recorded._
 - 2026-10-15: TASK-237 and TASK-238 joined this PR (feature PR). The switcher now reads
   `shownLocales()`, and `language-links.spec.ts` iterates it; see `docs/tasks/TASK-237.md` and
   `docs/tasks/TASK-238.md`.
+- 2026-10-18 (finisher): a11y tab-order fix, rebase onto TASK-226, fresh Linux baselines; see
+  `docs/tasks/TASK-237.md` `## Progress`.
 
 ## Result
 

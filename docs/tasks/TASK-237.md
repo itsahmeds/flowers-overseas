@@ -86,6 +86,9 @@ _None recorded._
   (`9e5294dd`). Rebased onto `83c8e777` (TASK-226): map regenerated, baseline conflicts held for a
   fresh `visual:baselines` run. Unit suite green at a 120 s timeout (gates' timeouts were load
   average 100+). **Next:** commit the runner's baselines, remove the label, toggle `ci:full`.
+- 2026-10-18 (finisher): runner baselines from run 39073535884 committed (`734b1fa9`, 25 PNGs and
+  the manifest, `--verify` 112/112, images looked at); `visual:baselines` removed; CI on
+  `734b1fa9`: `a11y`, `visual`, `e2e` green. **Next:** `/review` and `/break` on the head.
 
 ## Result
 
