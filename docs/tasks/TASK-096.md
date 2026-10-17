@@ -29,6 +29,11 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review 65` (2026-09-16, TASK-090):** (1) orchestrator ruling spec 007 §14 A5 — `robots.txt` disallows **sort parameters only** (`sort=`), not "the facet parameter shapes"; tighten `/*?*sort=` (matches `?resort=`, `?assortment=`) or pin a `?colour=red&sort=price-asc` and a `?resort=` case in `tests/fixtures/seo/robots/plan-02-disallow.json`; pin a `/search-results` near-miss for `Disallow: /search`. (2) Key `noindexHeaderRules()` on `isIndexingEnvironment()` instead of `deploymentEnvironment() !== "production"` so header and rule engine read one predicate and a production `*.vercel.app` alias is not left with `Disallow: /` and no header (spec 040 TASK-097 changes the input; the predicate unification lands here).
 
+- **From `/plan-tasks` (2026-10-15), spec 003 §14 A-founder-2026-10-15a clause 6:** the
+  head-copy change (TASK-242 and TASK-243, one feature PR) merges before the flip, and the
+  founder's record-approval run for its English texts lands before it too. A title rewrite
+  after the flip would be re-evaluated page by page; before it, it costs no ranking history.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
