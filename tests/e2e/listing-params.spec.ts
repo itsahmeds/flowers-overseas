@@ -192,7 +192,7 @@ test.describe("sorting (AC-9, T-09)", () => {
     page,
   }) => {
     await page.goto(SHOP);
-    // Round 2 (TASK-187): the form sits under the grid and the disclosure is its own line.
+    // C3 (TASK-241): the form sits above the grid and the disclosure is its own line.
     await expect(page.locator("[data-fo-listing-sort-form]")).toHaveAttribute(
       "data-fo-listing-sort-form",
       "default",

@@ -389,6 +389,16 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
     expect(html).toContain('scope="col"');
   });
 
+  it("puts its chip row of destinations above the grid, and none after it (AC-33; TASK-241)", () => {
+    // Spec 008 §14 A-founder-2026-10-14c: on a hub where a chip row renders, it precedes the grid.
+    const chips = html.indexOf("data-fo-hub-destinations");
+    const grid = html.indexOf("data-fo-listing-grid=");
+    expect(chips).toBeGreaterThan(-1);
+    expect(grid).toBeGreaterThan(-1);
+    expect(chips).toBeLessThan(grid);
+    expect(html.slice(grid)).not.toContain("data-fo-hub-destination");
+  });
+
   it("has two columns: the third is TASK-111's (§14 A10)", () => {
     expect(html.match(/scope="col"/gu)).toHaveLength(2);
     expect(text).not.toContain("Our page");

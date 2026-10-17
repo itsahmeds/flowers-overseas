@@ -55,12 +55,135 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
 
 ## Escalations
 
-_None recorded._
+- **E-1 (2026-10-15, implementer): AC-33 contradicts spec 004 rebound AC-34 (T-49) on six cases.** T-49
+  (`tests/e2e/listing-first-screen.spec.ts`, "rebound AC-34") requires the whole first row of
+  priced cards inside the first viewport. With the count line, the disclosure, the chip row and the
+  sort form above the grid (AC-33), measured on a local production build (load average about 28):
+  - shop root, 1280 × 800: first-row price foot at y 843.6 (bound 800); the designer's PR 236
+    predicted about 820;
+  - shop root, 390 × 844: y 887.3 (bound 844); PR 236's artboard measures 826;
+  - country category, 1440 × 900: y 948.6 (bound 900); 1280 × 800: y 891.7 (bound 800);
+    390 × 844: y 887.3 (bound 844). PR 236 notes the category's first row was already past the
+    fold on the artboard (TASK-187 E-1);
+  - country occasion, 390 × 844: `items[0]`'s price is outside the first viewport.
+
+  All 34 T-37 cases pass, and so do listing-params, country-category and hubs. The question for the
+  founder or the spec writer: does AC-33 (the later ruling) relax AC-34's first-row bound on these
+  pages, and to what (for example: "the first row's photographs start inside the first viewport"),
+  or must the toolbar be squeezed further (which the brief's fence and "no new words" leave little
+  room for)? I have not changed T-49. Until it is ruled, CI cannot be green on this PR.
+- **E-1 update (2026-10-15, after the orchestrator's instruction to match PR 236's spacing).** The
+  toolbar now shares one row from `md` up (count · disclosure · sort form), the chip row is one
+  scrolling line under it, the H1 takes the artboards' title size (`--text-title-fluid`, 32 px on
+  the phone), the disclosure is `text-xs` on the phone, and the gaps are the drawing's (band 6 px,
+  grid 16 px). First-row price foot, build vs bound, local production build:
+
+  | Case | Before (E-1) | Now | Bound | Artboard (PR 236) |
+  |---|---|---|---|---|
+  | shop root 1280 × 800 | 843.6 | 785 | 800 | 795 (designer) |
+  | shop root 1440 × 900 | 876 | 840 | 900 | 826 |
+  | shop root 390 × 844 | 887.3 | 809 | 844 | 808 / 826 (designer) |
+  | category 1440 × 900 | 948.6 | 894 | 900 | 1328 (magazine grid, TASK-187 E-1) |
+  | **category 1280 × 800** | 891.7 | **839** | 800 | grid at 662 (designer); first row past the fold |
+  | category 390 × 844 | 887.3 | 809 | 844 | 808 |
+  | occasion 390 × 844, `items[0]` price | outside | amount line ends 838 | 844 | 786 |
+
+  **Still red: the category at 1280 × 800.** Its chip line (44 px plus 10) is the difference, and
+  the drawing does not meet the bound there either. Measuring 22 sibling chips, two rows (count
+  row, chip line) are the floor. Escalated to the orchestrator for the founder.
+  The occasion at 390 fails locally only because this machine's build fetched a fresh ECB rate,
+  so the price block carries the equivalents line (to y 894). CI builds keep the stale snapshot, and
+  there the block is the amount line, ending at 838.
+- **E-1 ruled (founder, 2026-10-15, "A your pick"; spec 008 §14 A-founder-2026-10-15c).** On the
+  country category only, from `md` up, the sibling chips fold into a "Categories" button (native
+  `<details>`, new key `shop.category.chipsToggle`, `reviewed: false`) on the toolbar row with the
+  count and the sort form. Below `md` the chip scroller stays (A16 (e), spec 004 AC-49). Measured
+  after the build (local production build): category 1280 × 800 price foot 785 (bound 800),
+  1440 × 900 840 (900), 390 × 844 809 (844). Below `lg` the disclosure takes its own line under
+  the count-and-sort row (the four-part row does not fit at 768).
+- **E-2 (2026-10-18, finisher): the new key takes `en-gb` out of the index.** Spec 008 §14
+  A-founder-2026-10-15c requires one new key, `shop.category.chipsToggle`, shipped
+  `reviewed: false` in every locale ("`i18n:check` stays green", which it does). But `en-gb`'s
+  unreviewed share is at the 5 % threshold: with this one key it reads 0.05157 (> 0.05), so
+  `en-gb` becomes a beta, non-indexable locale, its hreflang alternates disappear, and its sitemap
+  children go (on `origin/main` 83c8e777 without the key, the same tests pass). Red on this branch:
+  `i18n-review` (2), `home-honesty` (2), `i18n-alternates` (3+), `seo-sitemap`, `corridor-route`,
+  `cache-cloudflare`, `catalog-read`, `destinations-hub`, `i18n-check`, `i18n-fifth-locale`. The
+  fix is not mine to make: attesting the copy is the founder's own act (`reviewed: true` via his
+  approval script for "Categories"), or the spec writer rules another way (for example, the
+  founder reviews other pending `en` keys first). Until then CI cannot be green on this PR.
+- **E-3 (2026-10-18, finisher): CI's numbers on head 02c192e7 (run 39073913406, e2e job
+  117519450482).** (a) Spec 004 rebound AC-34 (T-49) still fails at 390 × 844 in CI: shop root,
+  `FO-GS-001` price foot at y 847.9 (bound 844); country occasion, `items[0]`'s price outside the
+  first viewport (the local "fresh FX rate" explanation does not hold: CI builds the stale
+  snapshot). The country category passes T-49 at all three sizes. (b) T-43 (spec 004 AC-41,
+  clause 9; `frame-laptop-band.spec.ts`) fails on the shop root and the category at 1280 × 800
+  (H1 53.76 px, clause 9 wants 64.0) and 1512 × 945 (58 vs 70): the E-1 update set the listing H1
+  to the artboards' `--text-title-fluid`, which clause 9 does not allow. Restoring the display
+  size adds about 10 to 12 px above the grid, which the T-49 bounds at 1280 × 800 (785 of 800) may
+  not absorb. Question for the founder or the spec writer: which wins on the listings, PR 236's
+  title size or clause 9's display size, and does AC-34 hold at 390 on the shop root and the
+  occasion with the toolbar above the grid? Not tuned.
+- **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
+  as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
+  to the shop root and the category, whose forms carried it. The shop root shows its chip row below
+  `md` only (PR 236: its desktop's categories are the tiles).
 
 ## Progress
 
-_Not started._
+- 2026-10-15: draft PR 235 opened; shared `CountryListingResults` rebuilt to one order (count,
+  disclosure, chips, sort; grid; pager); `ListingChipRow` replaces `PhoneChipRow`; T-37 added,
+  T-36's R8 cases withdrawn; unit tests amended.
+- 2026-10-15: arrangements matched to PR 236's redrawn artboards (band / rows / column); chip row a
+  one-line scroller at every width; local e2e run: T-37 green, six T-49 cases red (E-1).
+- 2026-10-15: spacing matched to PR 236 (one count-and-sort row from `md`, title-size H1, phone
+  disclosure `text-xs`); five of the six T-49 cases now pass; the category at 1280 × 800 does not
+  (E-1 update).
+- 2026-10-15: rebased on origin/main (PRs 234, 236). Built option A (A-founder-2026-10-15c). Local
+  e2e (listing-first-screen, listing-params, country-category, country-occasion, country-shop,
+  hubs, listing-v2; desktop and mobile): 212 passed; the only red is the occasion at 390, which
+  fails locally because this build fetched a fresh rate (equivalents line), to be judged in CI.
+  Mutation: the chips put back as a line turns all four new A-founder-2026-10-15c cases red and
+  T-49 at 1280 red (y 833).
+  **Next (for whoever continues):** (1) add the `visual:baselines` label to PR 235, download the
+  Linux set and commit it per `docs/runbooks/visual-baselines.md` §2 (look at every image);
+  (2) replace PR 236's C3 row in `docs/design/README.md` ("TASK-241 builds it and moves this
+  row out") and update this task's own row to option A; (3) `gh pr ready 235`, add `ci:full`,
+  report CI on the head, judge the occasion at 390 there; (4) row to `in_review`.
+- 2026-10-18 (finisher): rebased on origin/main (PR 240's spec text, PR 237). The merged spec
+  (A-founder-2026-10-15c) differs from the E-1 build in four ways, so the build now follows the
+  spec: the disclosure renders **at every width** (below `md` on the sort form's row, the two under
+  one rule), no chip line renders on the category (no link outside the `<details>`), and the
+  opened panel is **in normal flow** in a full-width row under the toolbar, pushing the grid down
+  (no overlay). The `<details>` is `display: contents` where `::details-content` is supported, so
+  its `<summary>` and its panel take separate cells of the toolbar grid; elsewhere the whole
+  `<details>` sits in the button cell and, opened, moves to the panel row. T-39 written to the
+  spec (`en-gb` and `de`, 1440/1280/390, JS off, every link 200); T-37 reads the summary as the
+  category's chip row and counts a `<details>` after the grid. `docs/design/README.md`: PR 236's
+  C3 row and this task's row replaced by one option A row. Local build not run (load average 112);
+  judged in CI.
+- 2026-10-18 (finisher): rebased on origin/main 83c8e777 (PR 225). Ready, `ci:full`. E-2 found
+  (unit red). Linux baselines rendered (run 39073912876) and **not committed**: every image pins
+  "English (UK) BETA", E-2's effect; the category's own images show option A as specified (phone:
+  "Categories" beside the sort form under one rule; 1280: count, disclosure, button, sort on one
+  row, first-row prices at about y 780). CI e2e: T-39's first assertion read the attribute value
+  (`"true"`), and the JS-off case counted 20 chips where the spec says 22 (the test now takes the
+  set's size from the page; the exact set is the unit case); the phone rule cell was
+  `aria-hidden`, which AC-45's ornament probe counts (fixed). E-3 recorded. **Next:** E-2 and
+  E-3 rulings; then re-take the Linux baselines (`visual:baselines`), commit them, re-fire CI.
 
 ## Result
 
-_Pending._
+**Partial.** E-1 ruled (A-founder-2026-10-15c) and built; baselines, ready and `ci:full` not done (see `## Progress` Next). PR 235 is a draft.
+
+- AC-33: count line, disclosure, chip row and sort form above the grid on the shop root, the
+  country category and the country occasion, at every width; the occasion hub's destination chips
+  above its grid; the pager after the grid; nothing that sorts or narrows after it. One GET form,
+  no client script, "Change the order" on the shop root and the category.
+- Tests: T-37 in `tests/e2e/listing-first-screen.spec.ts` (four pages × 390/1440 × four locales =
+  32 cases, plus a JS-off sort case); unit order cases in `catalog-category-page`,
+  `catalog-occasion-page`, `catalog-hub-pages`. Mutation: the sort form moved back under the grid
+  turns the category and occasion unit cases red (2 failed); not re-run in the browser.
+- Local expensive runs, and why: one production build in the build slot to measure the first
+  screen, because the conflict in E-1 could not be judged without it (load average about 28).
+  Visual baselines not refreshed: they wait for the E-1 ruling, since the layout may still move.

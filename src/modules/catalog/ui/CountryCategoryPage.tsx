@@ -44,7 +44,6 @@ import type { ReactElement } from "react";
 
 import { sortBy } from "@/modules/i18n";
 import {
-  CategoryChipRow,
   Container,
   ListingGrid,
   ListingSortForm,
@@ -61,11 +60,11 @@ import {
   CountryListingHead,
   CountryListingResults,
   GridProvenance,
+  ListingCategoriesToggle,
   ListingPageHead,
   ListingProse,
   ListingStateLine,
   ListingSubsection,
-  PhoneChipRow,
   STATE_KEYS,
 } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
@@ -85,6 +84,8 @@ export function CountryCategoryPage({
   // Authored copy in this locale — the founder's category name, carried on the view model rather
   // than composed here (§7: this file writes no sentence).
   const entity = view.entity?.name ?? "";
+  // The sibling categories, once: the phone's chip line and the desktop's "Categories" panel.
+  const siblings = sortBy(view.links.chips, code, (chip) => chip.name);
 
   // AC-24's rule, asserted where the nomination is made: the first card of the one grid, and
   // nothing else on the page, carries `priority`.
@@ -129,24 +130,17 @@ export function CountryCategoryPage({
           />
         )}
 
-        {/* The phone's one chip row: the sibling categories, the current one marked (spec 008
-            §14 A16 (e), spec 004 AC-49). From `md` up the row sits under the grid. */}
-        {view.page === 1 ? (
-          <PhoneChipRow
-            chips={sortBy(view.links.chips, code, (chip) => chip.name)}
-            label={shop("category.siblingsHeading", { country })}
-          />
-        ) : null}
-
         <section aria-labelledby="category-grid-heading" data-fo-shop-listing>
           {/* The grid's heading repeats the H1 word for word, so it is visually hidden and stays
               the list's accessible name (spec 008 §14 A15 (d), AC-32). */}
           <VisuallyHidden as="h2" id="category-grid-heading">
             {shop("h1.countryCategory", { country, entity })}
           </VisuallyHidden>
-          {/* R8 (spec 008 §14 A15 (d), A16 (c)): the count and the ranking disclosure above the
-              grid from `md` up, the disclosure after the grid on a phone, both visible; the sort
-              form under the grid, "Change the order" (A10). */}
+          {/* The founder's C3 (spec 008 §14 A-founder-2026-10-14c, AC-33): the count, the ranking
+              disclosure, the sibling categories and the sort form ("Change the order", A10), in
+              that order, above the grid at every width; then the grid; then the pager. At every
+              width the siblings fold into the "Categories" button (A-founder-2026-10-15c), the
+              only place their links render. */}
           <CountryListingResults
             count={{
               phone: shop("toolbar.count", { count: view.resultCount }),
@@ -160,6 +154,13 @@ export function CountryCategoryPage({
                   : shop("toolbar.count", { count: view.resultCount }),
             }}
             disclosure={shop("toolbar.disclosure")}
+            chipsToggle={
+              <ListingCategoriesToggle
+                chips={siblings}
+                heading={shop("category.siblingsHeading", { country })}
+                label={shop("category.chipsToggle")}
+              />
+            }
             gridLabel={<GridProvenance cards={view.items} locale={code} />}
             grid={
               <ListingGrid
@@ -186,8 +187,8 @@ export function CountryCategoryPage({
                 pageCount={view.pageCount}
               />
             }
-            sortForm={<ListingSortForm sort={view.sort} />}
-            sortFormPlacement="below"
+            sortForm={<ListingSortForm framed={false} sort={view.sort} />}
+            toolbar="band"
           />
         </section>
 
@@ -199,23 +200,6 @@ export function CountryCategoryPage({
             </ListingProse>
           </div>
         ) : null}
-
-        {/* "Also for Poland" from `md` up: the other categories that clear the floor for this
-            destination, the current one marked and not a link. The phone shows its scroller above
-            the grid instead. */}
-        {view.links.chips.length === 0 ? null : (
-          <div
-            className="pt-[48px] max-md:hidden md:pt-(--section-fluid)"
-            data-fo-desktop-chips
-          >
-            <CategoryChipRow
-              heading={shop("category.siblingsHeading", { country })}
-              id="sibling-categories"
-              items={view.links.chips}
-              locale={code}
-            />
-          </div>
-        )}
 
         {/* One short intro, last rather than first. It is the **country's** paragraph, not the
             category's: the category's authored intro belongs to its destination-less hub (§2's

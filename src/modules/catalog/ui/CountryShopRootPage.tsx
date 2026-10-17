@@ -69,9 +69,9 @@ import {
   ListingProse,
   ListingStateLine,
   ListingSubsection,
+  ListingChipRow,
   ListingTiles,
   OccasionDatesTable,
-  PhoneChipRow,
   STATE_KEYS,
 } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
@@ -147,17 +147,6 @@ export function CountryShopRootPage({
               />
             )}
 
-            {view.page === 1 ? (
-              <PhoneChipRow
-                chips={view.tiles.map((tile) => ({
-                  key: tile.key,
-                  name: tile.name,
-                  href: tile.href,
-                }))}
-                label={shop("root.tilesHeading")}
-              />
-            ) : null}
-
             {/* Products before prose (§5.3 row 1). The grid's heading names the section for a
                 screen reader; the artboards draw none. */}
             <section aria-labelledby="shop-grid-heading" data-fo-shop-listing>
@@ -177,6 +166,20 @@ export function CountryShopRootPage({
                       : shop("toolbar.count", { count: view.resultCount }),
                 }}
                 disclosure={shop("toolbar.disclosure")}
+                /* The categories of this destination, as links to their pages, above the grid at
+                   every width (spec 008 §14 A-founder-2026-10-14c, AC-33). The tiles below the
+                   lede stay the browsing section with counts and prices. */
+                chips={
+                  <ListingChipRow
+                    phoneOnly
+                    chips={view.tiles.map((tile) => ({
+                      key: tile.key,
+                      name: tile.name,
+                      href: tile.href,
+                    }))}
+                    label={shop("root.tilesHeading")}
+                  />
+                }
                 gridLabel={<GridProvenance cards={view.items} locale={code} />}
                 grid={
                   <ListingGrid
@@ -208,10 +211,10 @@ export function CountryShopRootPage({
                     pageCount={view.pageCount}
                   />
                 }
-                /* The sort form under the grid, "Change the order" (the round-2 shop artboard);
-                   still a `<form method="get">` that works with JavaScript off (AC-9). */
+                /* The sort form above the grid, "Change the order" (C3, AC-33); still a
+                   `<form method="get">` that works with JavaScript off (AC-9). */
                 sortForm={<ListingSortForm sort={view.sort} />}
-                sortFormPlacement="below"
+                toolbar="band"
               />
             </section>
 

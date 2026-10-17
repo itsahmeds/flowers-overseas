@@ -731,6 +731,7 @@
       "countryShopRoot": "Flowers we make for {country}"
     },
     "category": {
+      "chipsToggle": "Categories",
       "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
       "siblingsHeading": "Also for {country}",
       "seoTitle": "{entity} for {country} — one all-in price",
