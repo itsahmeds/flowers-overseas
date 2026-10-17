@@ -324,12 +324,15 @@ export async function warm(
   return { pages, warmed, problems };
 }
 
+/** Node's `fetch`, with the request init (headers and the timeout signal) passed through whole. */
+export const defaultFetch: Fetch = (url, init) => fetch(url, init);
+
 export async function warmMain(
   argv: readonly string[],
   env: Readonly<Record<string, string | undefined>> = process.env,
   out: { write: (chunk: string) => unknown } = process.stdout,
   err: { write: (chunk: string) => unknown } = process.stderr,
-  fetchImpl: Fetch = (url, init) => fetch(url, init),
+  fetchImpl: Fetch = defaultFetch,
 ): Promise<number> {
   try {
     const file = resolve(

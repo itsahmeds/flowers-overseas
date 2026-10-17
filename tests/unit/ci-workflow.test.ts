@@ -502,6 +502,8 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     // that into a green job that warmed nothing (breaker r1, hole 2).
     const step = steps[warmup];
     expect(step?.["continue-on-error"]).toBeUndefined();
+    // `if: false` would skip the warm-up and the discarded run (the same step) and stay green.
+    expect(step?.if).toBeUndefined();
     expect(step?.run).toMatch(/^\s*set -euo pipefail$/m);
     const run = step?.run ?? "";
     expect(run).not.toMatch(/\|\|/);

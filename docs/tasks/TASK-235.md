@@ -24,6 +24,8 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
   that run's per-URL summary and its `lhr-*.json` (LCP element, LCP sub-parts, which resources
   were slow), and write the numbers in `- 2026-10-18: breaker r1 holes 1 to 4 closed (see Carry-forwards); cheap gates PASS; CI re-fired.
 
+- 2026-10-18: breaker r2 holes 5 and 6 closed (see Carry-forwards); cheap gates PASS; CI re-fired.
+
 ## Result`.
 - **The change:** before the measured collect, fetch every audited URL **with its subresources**
   (for example one discarded Lighthouse or headless-browser pass per URL, or the document plus
@@ -58,6 +60,10 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
   table's `select(.url != $u)`: 1 red, the step's own jq program is run on a fixture manifest;
   (4) `arrayBuffer()` removed: 1 red, every body is counted as read. Also added a 30 s request
   timeout (`AbortSignal.timeout`), 1 red when removed.
+- **Breaker r2 holes, closed 2026-10-18** (watched red, restored): (5) `if: false` on the warm
+  step (it holds the discarded run too): 1 red, `step.if` must be undefined; (6) the default
+  fetch dropping `signal`: 1 red in `defaultFetch` and 1 more in `warmMain` with no fetch given
+  (the default is now the exported `defaultFetch`, `fetch(url, init)` whole).
 
 ## Escalations
 

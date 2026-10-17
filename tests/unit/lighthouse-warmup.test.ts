@@ -19,6 +19,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 
 import {
   ACCEPT_ENCODING,
+  defaultFetch,
   type Fetch,
   REQUEST_TIMEOUT_MS,
   warmMain,
@@ -196,6 +197,30 @@ function stubFetch(
   return { fetch: fetchImpl, calls };
 }
 
+describe("the fetch `--warm` uses by default", () => {
+  it("passes the headers and the timeout signal to the real `fetch` unchanged", async () => {
+    const seen: RequestInit[] = [];
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation((_url, init) => {
+        seen.push(init ?? {});
+        return Promise.resolve(new Response("ok"));
+      });
+    try {
+      const init = {
+        headers: requestHeaders("document"),
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      };
+      await defaultFetch(`${BASE}/en`, init);
+      expect(seen).toHaveLength(1);
+      expect(seen[0]?.signal).toBe(init.signal);
+      expect(seen[0]?.headers).toBe(init.headers);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
 describe("the warm-up pass", () => {
   const pageA = `<link rel="stylesheet" href="/s.css"/><script src="/a.js"></script>`;
   const pageB = `<link rel="stylesheet" href="/s.css"/><script src="/b.js"></script>`;
@@ -316,6 +341,38 @@ describe("the CLI", () => {
     ]);
     expect(out.text()).toContain("lighthouse-warmup: /en + 1 subresources");
     expect(out.text()).toContain("2 documents, 1 distinct subresources warmed");
+  });
+
+  it("with no fetch given, `warmMain` sends every request through the real `fetch` with a timeout signal", async () => {
+    const seen: RequestInit[] = [];
+    const spy = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation((url, init) => {
+        seen.push(init ?? {});
+        return Promise.resolve(
+          new Response(
+            String(url).endsWith("/s.css")
+              ? ""
+              : `<link rel="stylesheet" href="/s.css"/>`,
+          ),
+        );
+      });
+    try {
+      const code = await warmMain(
+        ["--file", urls],
+        { LHCI_BASE_URL: BASE },
+        sink(),
+        sink(),
+      );
+      expect(code).toBe(0);
+      expect(seen).toHaveLength(3);
+      for (const init of seen) {
+        expect(init.signal).toBeInstanceOf(AbortSignal);
+        expect(init.headers).toBeInstanceOf(Headers);
+      }
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("exits 1 and names the problem when anything was not warmed", async () => {
