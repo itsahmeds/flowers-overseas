@@ -50,7 +50,8 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-18 · `src/lib/db.ts` cannot open a context against a real Postgres** (to the orchestrator; `open`). `withDbContext` calls `drizzle(tx)` on a postgres.js *transaction*, and Drizzle's driver reads `tx.options.parsers`, which a transaction object does not have: every call throws `TypeError: Cannot read properties of undefined (reading 'parsers')` before the callback runs (reproduced on PG16 16.14; `tests/unit/db.test.ts` uses a fake client, so nothing caught it). `listOrdersForPartner`, `listOrdersForAdmin` and the engine's no-connection path go through it. Outside this task's fence (bug in merged work, TASK-014): needs its own task row. A fix that keeps the module's contract: render each statement with `PgDialect` and run `tx.unsafe(text, params)`, as `tests/integration/support/sql-runner.ts` does. The engine and the writers take any `{ execute(query) }` (`SqlRunner`), so they need no change.
+- **2026-10-18 · spec 010 §14 A2 (AC-45) and A3.1 (AC-47) name TASK-202, but its row, this brief and the work order do not** (to the orchestrator; `open`). A2.2 and A3.1 need a new migration (`0013_order_engine_columns` + down: the `order_reference(uuid)` function, `order_reference_idx`, `"order".locale_code`), which is outside the fence ("§5.1 A migration only if missing"). Shipped here: A2.1's pure `orderReference` (`service/reference.ts`) and `place` drawing its own id with `crypto.randomUUID()`. Owed: the migration, `place`'s savepoint retry on `order_reference_idx` (A2.3, `ORDER_REFERENCE_UNAVAILABLE`), and `place` writing `locale_code` from the draft. Question: a follow-up PR under TASK-202, or a new row?
 
 ## Progress
 
@@ -58,11 +59,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-18 · Engine (`src/modules/orders/service/`), projections (`queries.ts`) and the guest writers (`src/modules/customers/writers.ts`) committed (c2258c67); PR 243 draft.
+- 2026-10-18 · Integration suite `tests/integration/order-engine.test.ts` (14 cases) and unit suite `tests/unit/order-engine.test.ts` (87 cases) green on local PG16; 12 mutations each turned a case red. Local PG16: embedded binaries of TASK-024's brief, port 54502.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 243](https://github.com/itsahmeds/flowers-overseas/pull/243). `orderService.place`, `transition`, `appendEvent`, `demoRoute` in `src/modules/orders/service/` over one transaction-scoped `OrderExecutor` (the caller's `{ db }`, a raw `{ executor }`, or a `system` transaction it opens); `ActorSchema`; the 36-name catalogue split 28/8 and the versioned registry with `OrderPlacedV1`, `OrderAuthorisedV1`, `OrderRoutedV1`, `AssignmentOfferedV1`; `outboxTargets` (all lists empty; buyer and recipient targets dropped for `demo`/`test` by construction); `listOrdersForPartner` (reads `partner_order`/`partner_order_line` only) and `listOrdersForAdmin` with `OrderListItemSchema`, `AdminOrderListItemSchema`, `OrderQueueFilterSchema`; `upsertGuestCustomer`, `createRecipient`. No migration: every §5.1 A item is on main (`0007`–`0009`), so this task tests them (T-23). Tests: unit 87 (`tests/unit/order-engine.test.ts`: 73-row statement record, refusals, T-24, source scan, reference, contexts), integration 14 (`tests/integration/order-engine.test.ts`: T-20, T-22 every row × every class = 292 outcomes, T-23, T-25, T-41–T-44, customers). AC-25 local: p95 place→visible 244.8 ms over 20 runs (median 134.5 ms) on PG16 at load average 179 / 133 / 94; **the staging measurement is owed** (no staging credentials). Decisions the spec left open, for the reviewer: an event with no registered schema is refused (`ORDER_EVENT_UNREGISTERED`); a payload whose `mode` differs from the order's is `ORDER_PAYLOAD_INVALID`; `place` refuses lines that do not sum to `buyerTotalMinor`; `demoRoute`'s named partner must be `demo` (its country is not checked); `createdOn` is a UTC day; the admin item's assigned partner is `{ partnerId, code }`. Not done here and left to their owners: recording `timeout` at `sla_expires_at` and hiding a cancelled order's open offer (spec 015/016), partner mode flips (TASK-221). See `## Escalations` for the `db.ts` defect and A2/A3.
