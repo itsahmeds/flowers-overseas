@@ -261,6 +261,15 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
     expect(issueSummary(registry)).toMatch(/^2\.shown: /mu);
   });
 
+  it('refuses a `shown` that is not a boolean: the strings "false" and "true", 1 and 0 (AC-45, breaker r1 H3)', () => {
+    // `z.coerce.boolean()` would read the string "false" as `true` and offer a hidden language.
+    for (const value of ["false", "true", "", 1, 0, null]) {
+      const registry = registryCopy();
+      registry[2] = { ...registry[2], shown: value };
+      expect(issueSummary(registry), String(value)).toMatch(/^2\.shown: /mu);
+    }
+  });
+
   it("rejects a shown pseudo-locale, naming the field (AC-45 / T-45)", () => {
     const pseudo = PSEUDO_LOCALES[0];
     // The pseudo-locale as authored parses beside the launch locales …

@@ -84,6 +84,8 @@ _None recorded._
   `docs/tasks/TASK-238.md`.
 - 2026-10-18 (finisher): a11y tab-order fix, rebase onto TASK-226, fresh Linux baselines; see
   `docs/tasks/TASK-237.md` `## Progress`.
+- 2026-10-18 (finisher): `/break` round 1 holes H1 to H3 (check 12 and `shown` coercion) belong to
+  TASK-237 AC-48 and AC-45; closed there by tests, see `docs/tasks/TASK-237.md`.
 
 ## Result
 
