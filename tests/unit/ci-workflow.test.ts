@@ -418,6 +418,41 @@ describe("the lighthouse job's step summary (spec 004 §11, AC-24; TASK-056)", (
   });
 });
 
+describe("the per-run LCP table's grouping (TASK-235)", () => {
+  const summary = (ci.jobs["lighthouse"]?.steps ?? []).find((step) =>
+    (step.run ?? "").includes("LCP of every measured run"),
+  );
+  // The program the runner runs, taken from the step itself, not retyped here.
+  const program = /jq -r '(\(reduce[^']*)'/.exec(summary?.run ?? "")?.[1];
+
+  it("groups the runs of each URL, in first-seen order, with that URL's own report files sorted", () => {
+    expect(program).toBeDefined();
+    const dir = mkdtempSync(join(tmpdir(), "lcp-table-"));
+    try {
+      const manifest = join(dir, "manifest.json");
+      writeFileSync(
+        manifest,
+        JSON.stringify([
+          { url: "http://o/en", jsonPath: "/r/en-2.json" },
+          { url: "http://o/de", jsonPath: "/r/de-1.json" },
+          { url: "http://o/en", jsonPath: "/r/en-1.json" },
+          { url: "http://o/de", jsonPath: "/r/de-2.json" },
+          { url: "http://o/en", jsonPath: "/r/en-3.json" },
+        ]),
+      );
+      const out = execFileSync("jq", ["-r", program ?? "", manifest], {
+        encoding: "utf8",
+      });
+      expect(out).toBe(
+        "http://o/en\t/r/en-1.json /r/en-2.json /r/en-3.json\n" +
+          "http://o/de\t/r/de-1.json /r/de-2.json\n",
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("the lighthouse job warms the audited pages before measuring (spec 004 §14 A18; TASK-235)", () => {
   const steps = ci.jobs["lighthouse"]?.steps ?? [];
   const indexOf = (predicate: (run: string) => boolean): number =>
@@ -460,6 +495,20 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     expect(run.match(version)?.[1]).toBe(
       steps[measured]?.run?.match(version)?.[1],
     );
+  });
+
+  it("lets a failed warm-up fail the job: no `|| true`, no `continue-on-error` on it or on the discarded run", () => {
+    // `--warm` exits 1 when a page or a subresource does not answer 2xx; any of these would turn
+    // that into a green job that warmed nothing (breaker r1, hole 2).
+    const step = steps[warmup];
+    expect(step?.["continue-on-error"]).toBeUndefined();
+    expect(step?.run).toMatch(/^\s*set -euo pipefail$/m);
+    const run = step?.run ?? "";
+    expect(run).not.toMatch(/\|\|/);
+    expect(run).not.toMatch(/\bset \+e\b/);
+    // The line of the warm command and the whole of the discarded run end with no fallthrough.
+    expect(run).toMatch(/^\s*node scripts\/seo\/lighthouse-urls\.ts --warm$/m);
+    expect(run).toMatch(/--url="\$LHCI_BASE_URL\$first"\)\s*$/);
   });
 
   it("keeps the reports: `.lighthouseci/` is a dot-directory `upload-artifact@v4` skips by default", () => {

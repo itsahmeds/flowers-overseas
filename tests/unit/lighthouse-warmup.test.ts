@@ -8,15 +8,19 @@
  * document names, requested the way Chrome requests it (`br`), each once — and that it fails out
  * loud rather than warming nothing.
  */
+import { execFile } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it, vi } from "vitest";
 
 import {
   ACCEPT_ENCODING,
   type Fetch,
+  REQUEST_TIMEOUT_MS,
   warmMain,
   requestHeaders,
   srcsetUrls,
@@ -155,6 +159,9 @@ describe("how it requests them", () => {
 interface Call {
   readonly url: string;
   readonly headers: Headers;
+  readonly signal: AbortSignal;
+  /** How many times the body of this response was read to the end. */
+  bodyReads: number;
 }
 
 function stubFetch(
@@ -163,15 +170,27 @@ function stubFetch(
 ): { fetch: Fetch; calls: Call[] } {
   const calls: Call[] = [];
   const fetchImpl: Fetch = (url, init) => {
-    calls.push({ url, headers: init.headers });
+    const call: Call = {
+      url,
+      headers: init.headers,
+      signal: init.signal,
+      bodyReads: 0,
+    };
+    calls.push(call);
     const path = url.replace(BASE, "");
     const code = status(path);
     const body = pages[path] ?? "";
     return Promise.resolve({
       ok: code >= 200 && code < 300,
       status: code,
-      text: () => Promise.resolve(body),
-      arrayBuffer: () => Promise.resolve(new TextEncoder().encode(body).buffer),
+      text: () => {
+        call.bodyReads += 1;
+        return Promise.resolve(body);
+      },
+      arrayBuffer: () => {
+        call.bodyReads += 1;
+        return Promise.resolve(new TextEncoder().encode(body).buffer);
+      },
     });
   };
   return { fetch: fetchImpl, calls };
@@ -203,6 +222,30 @@ describe("the warm-up pass", () => {
     ]);
     for (const call of calls) {
       expect(call.headers.get("accept-encoding"), call.url).toContain("br");
+    }
+  });
+
+  it("reads every body to the end, so the origin finishes each response it began (breaker r1, hole 4)", async () => {
+    const { fetch, calls } = stubFetch({ "/en": pageA });
+    await warm(BASE, ["/en"], fetch);
+    expect(calls).toHaveLength(3);
+    for (const call of calls) expect(call.bodyReads, call.url).toBe(1);
+  });
+
+  it("gives every request a 30 s timeout, so a hung origin fails the step instead of waiting 300 s", async () => {
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    try {
+      const { fetch, calls } = stubFetch({ "/en": pageA });
+      await warm(BASE, ["/en"], fetch);
+      expect(REQUEST_TIMEOUT_MS).toBe(30_000);
+      expect(timeout.mock.calls).toEqual([[30_000], [30_000], [30_000]]);
+      for (const call of calls) {
+        expect(call.signal, call.url).toBe(
+          timeout.mock.results[calls.indexOf(call)]?.value,
+        );
+      }
+    } finally {
+      timeout.mockRestore();
     }
   });
 
@@ -303,4 +346,84 @@ describe("the CLI", () => {
     expect(code).toBe(1);
     expect(err.text()).toMatch(/^lighthouse-warmup: /);
   });
+});
+
+/**
+ * The real script as a subprocess, against a real local server: the only thing that exercises the
+ * `--warm` dispatch at the bottom of the file, without which `--warm` would print the URL list
+ * and exit 0, warming nothing (breaker r1, hole 1).
+ */
+describe("`node scripts/seo/lighthouse-urls.ts --warm` as CI runs it", () => {
+  const script = resolve(__dirname, "../../scripts/seo/lighthouse-urls.ts");
+  const dir = mkdtempSync(join(tmpdir(), "lighthouse-warmup-cli-"));
+  const urls = join(dir, "urls.json");
+  writeFileSync(urls, JSON.stringify(["/en", "/de"]));
+  const servers: Server[] = [];
+  afterAll(() => {
+    for (const server of servers) server.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  async function serve(
+    missing: readonly string[],
+  ): Promise<{ base: string; hits: string[] }> {
+    const hits: string[] = [];
+    const server = createServer((request, response) => {
+      const path = request.url ?? "";
+      hits.push(path);
+      if (missing.includes(path)) {
+        response.writeHead(404).end("nope");
+      } else if (path === "/en" || path === "/de") {
+        response
+          .writeHead(200, { "content-type": "text/html" })
+          .end(`<link rel="stylesheet" href="/s.css"/>`);
+      } else {
+        response.writeHead(200).end("body");
+      }
+    });
+    servers.push(server);
+    await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
+    return {
+      base: `http://127.0.0.1:${String((server.address() as AddressInfo).port)}`,
+      hits,
+    };
+  }
+
+  const run = (
+    base: string,
+  ): Promise<{ code: number; stdout: string; stderr: string }> =>
+    new Promise((done) => {
+      execFile(
+        process.execPath,
+        [script, "--warm", "--file", urls, "--base", base],
+        (error, stdout, stderr) => {
+          done({
+            code:
+              error === null ? 0 : Number((error as { code?: number }).code),
+            stdout,
+            stderr,
+          });
+        },
+      );
+    });
+
+  it("fetches the documents and their subresource from the server, and exits 0", async () => {
+    const { base, hits } = await serve([]);
+    const result = await run(base);
+    expect(result.stderr).toBe("");
+    expect(result.code).toBe(0);
+    expect(hits).toEqual(["/en", "/s.css", "/de"]);
+    expect(result.stdout).toContain(
+      "lighthouse-warmup: 2 documents, 1 distinct subresources warmed",
+    );
+    // Not the URL list `main` prints without `--warm`.
+    expect(result.stdout).not.toContain("--collect.url=");
+  }, 30_000);
+
+  it("exits 1 and names the path when a subresource answers 404", async () => {
+    const { base } = await serve(["/s.css"]);
+    const result = await run(base);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("/en: /s.css answered 404");
+  }, 30_000);
 });

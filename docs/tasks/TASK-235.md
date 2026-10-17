@@ -22,7 +22,9 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
   `aggregationMethod`, so LHCI uses `optimistic` (the fastest of three, A18), which means all
   three `/en-gb` runs were above 2,000 ms, not just the first. **First establish the cause** from
   that run's per-URL summary and its `lhr-*.json` (LCP element, LCP sub-parts, which resources
-  were slow), and write the numbers in `## Result`.
+  were slow), and write the numbers in `- 2026-10-18: breaker r1 holes 1 to 4 closed (see Carry-forwards); cheap gates PASS; CI re-fired.
+
+## Result`.
 - **The change:** before the measured collect, fetch every audited URL **with its subresources**
   (for example one discarded Lighthouse or headless-browser pass per URL, or the document plus
   every `<link rel="preload|stylesheet">` and the LCP image `srcset` candidate it names), so no
@@ -49,6 +51,13 @@ Keeps the breaker (CI workflow and a `scripts/` gate).
 - **From the founder's work order (2026-10-14):** the `lighthouse` check went red on docs-only
   PRs 222 and 223 (LCP 2,023 ms on `/en-gb`). The orchestrator found the curl warm-up already in
   the job; this task covers what it leaves cold.
+- **Breaker r1 holes, closed 2026-10-18** (each watched red under its mutation, then restored):
+  (1) dropping the `--warm` dispatch: 2 red, a subprocess test runs the script against a local
+  server and counts hits (also exits 1 on a 404 subresource); (2) `|| true` on the warm command,
+  `continue-on-error` on the step, `|| true` on the discarded run: 1 red each; (3) the per-run
+  table's `select(.url != $u)`: 1 red, the step's own jq program is run on a fixture manifest;
+  (4) `arrayBuffer()` removed: 1 red, every body is counted as read. Also added a 30 s request
+  timeout (`AbortSignal.timeout`), 1 red when removed.
 
 ## Escalations
 

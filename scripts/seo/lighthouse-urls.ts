@@ -249,13 +249,23 @@ export function requestHeaders(kind: SubresourceKind | "document"): Headers {
  */
 export type Fetch = (
   url: string,
-  init: { readonly headers: Headers },
+  init: { readonly headers: Headers; readonly signal: AbortSignal },
 ) => Promise<{
   readonly ok: boolean;
   readonly status: number;
   text(): Promise<string>;
   arrayBuffer(): Promise<ArrayBuffer>;
 }>;
+
+/** A hung origin fails the step after this, not after undici's 300 s per request. */
+export const REQUEST_TIMEOUT_MS = 30_000;
+
+const requestInit = (
+  kind: SubresourceKind | "document",
+): { headers: Headers; signal: AbortSignal } => ({
+  headers: requestHeaders(kind),
+  signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+});
 
 export interface PageReport {
   readonly path: string;
@@ -284,9 +294,7 @@ export async function warm(
   const seen = new Set<string>();
   for (const path of paths) {
     const documentUrl = `${baseUrl}${path}`;
-    const document = await fetchImpl(documentUrl, {
-      headers: requestHeaders("document"),
-    });
+    const document = await fetchImpl(documentUrl, requestInit("document"));
     const html = await document.text();
     if (!document.ok) {
       problems.push(`${path}: document answered ${String(document.status)}`);
@@ -302,7 +310,7 @@ export async function warm(
     for (const { url, kind } of subresources) {
       if (seen.has(url)) continue;
       seen.add(url);
-      const response = await fetchImpl(url, { headers: requestHeaders(kind) });
+      const response = await fetchImpl(url, requestInit(kind));
       await response.arrayBuffer();
       warmed.push(url);
       if (!response.ok) {
