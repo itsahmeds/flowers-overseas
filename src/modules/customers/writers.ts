@@ -13,16 +13,22 @@
  * Both run in the caller's transaction (the checkout's placement), as `system`; neither logs a
  * value it writes.
  */
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 
-import type { DbTransaction } from "@/lib/db";
+/**
+ * What the writers need of the caller's transaction handle (`DbTransaction` of `src/lib/db.ts`
+ * satisfies it): one method that runs a statement and resolves to its rows.
+ */
+export interface SqlRunner {
+  execute(query: SQL): PromiseLike<unknown>;
+}
 
 const Phone = z.string().regex(/^\+[1-9][0-9]{1,14}$/);
 
 export const GuestCustomerInputSchema = z
   .object({
-    email: z.email(),
+    email: z.string().trim().toLowerCase().pipe(z.email()),
     name: z.string().trim().min(1).max(200).optional(),
     phoneE164: Phone.optional(),
     countryIso2: z
@@ -81,8 +87,8 @@ export function normaliseFullName(name: string): string {
 const IdRow = z.object({ id: z.uuid() });
 
 async function rows(
-  db: DbTransaction,
-  query: ReturnType<typeof sql>,
+  db: SqlRunner,
+  query: SQL,
 ): Promise<readonly Record<string, unknown>[]> {
   const result: unknown = await db.execute(query);
   return result as readonly Record<string, unknown>[];
@@ -94,7 +100,7 @@ export interface UpsertedCustomer {
 }
 
 export async function upsertGuestCustomer(
-  db: DbTransaction,
+  db: SqlRunner,
   raw: GuestCustomerInput,
 ): Promise<UpsertedCustomer> {
   const input = GuestCustomerInputSchema.parse(raw);
@@ -129,7 +135,7 @@ export interface CreatedRecipient {
 const RecipientRow = z.object({ id: z.uuid(), full_name: z.string() });
 
 export async function createRecipient(
-  db: DbTransaction,
+  db: SqlRunner,
   raw: RecipientInput,
 ): Promise<CreatedRecipient> {
   const input = RecipientInputSchema.parse(raw);

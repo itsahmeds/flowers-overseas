@@ -52,7 +52,12 @@ export type {
   OrderMode,
   TransitionEventType,
 } from "./events";
-export type { EngineConnection, OrderExecutor, RawRow } from "./executor";
+export type {
+  EngineConnection,
+  OrderExecutor,
+  RawRow,
+  SqlRunner,
+} from "./executor";
 export {
   OUTBOX_AUDIENCES,
   OUTBOX_ROUTES,

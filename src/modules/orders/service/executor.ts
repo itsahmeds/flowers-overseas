@@ -21,10 +21,16 @@
  */
 import { sql, type SQL } from "drizzle-orm";
 
-import type { DbTransaction } from "@/lib/db";
-
 /** A row as Postgres returns it, before the engine's zod parse. */
 export type RawRow = Readonly<Record<string, unknown>>;
+
+/**
+ * What the engine needs of a Drizzle transaction handle (`DbTransaction` of `src/lib/db.ts`
+ * satisfies it): one method that runs a statement and resolves to its rows.
+ */
+export interface SqlRunner {
+  execute(query: SQL): PromiseLike<unknown>;
+}
 
 /** Runs one statement inside the caller's open transaction. */
 export interface OrderExecutor {
@@ -36,12 +42,12 @@ export interface OrderExecutor {
  * wins when both are given; with neither, a `system` transaction is opened.
  */
 export interface EngineConnection {
-  readonly db?: DbTransaction;
+  readonly db?: SqlRunner;
   readonly executor?: OrderExecutor;
 }
 
 /** Wraps a Drizzle transaction handle. */
-export function drizzleExecutor(db: DbTransaction): OrderExecutor {
+export function drizzleExecutor(db: SqlRunner): OrderExecutor {
   return {
     async execute(query: SQL): Promise<readonly RawRow[]> {
       const rows: unknown = await db.execute(query);
@@ -74,7 +80,10 @@ export function textArray(values: readonly string[]): SQL {
   )}]::text[]`;
 }
 
-/** A JSON value as a `jsonb` parameter. */
+/**
+ * A JSON value as a `jsonb` parameter. The parameter is bound as `text` and cast, so no driver
+ * serializer for `json` can encode the already-encoded string a second time.
+ */
 export function jsonb(value: unknown): SQL {
-  return sql`${JSON.stringify(value)}::jsonb`;
+  return sql`(${JSON.stringify(value)}::text)::jsonb`;
 }
