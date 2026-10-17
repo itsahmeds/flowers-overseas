@@ -1842,13 +1842,31 @@ jobs:
           npx --yes wait-on http://127.0.0.1:3000/en --timeout 120000
           pnpm lighthouse:origin &
           npx --yes wait-on http://127.0.0.1:3001/en --timeout 60000
-          # Warm every measured URL once before the run. Measured locally: the first request to a
-          # cold `next start` reported LCP 2 679 ms on `/` against 1 459-1 492 ms on the two runs
-          # after it — a server start-up cost, not a page cost, and one that would decide a
-          # required check by whichever run happened to be first.
-          for path in $(node -e 'process.stdout.write(require("./tests/fixtures/seo/lighthouse-urls.json").join(" "))'); do
-            curl -sS -o /dev/null "http://127.0.0.1:3001$path"
-          done
+      # spec 004 §14 A18: the measurement basis is the Brotli origin, **warmed**. Measured locally
+      # at TASK-056, the first request to a cold `next start` reported LCP 2 679 ms on `/` against
+      # 1 459-1 492 ms on the two runs after it: a start-up cost, not a page cost, and one that
+      # would decide a required check by whichever run happened to be first.
+      #
+      # Until TASK-235 this warmed each document with a `curl` (no `br`, no subresource), so every
+      # stylesheet, preloaded font, LCP image candidate and script chunk, and the origin's Brotli
+      # path itself, were first fetched by a measured run. Two passes now, both before the
+      # measured collect and both discarded:
+      #  1. `lighthouse-urls.ts --warm` fetches every audited document and every
+      #     same-origin subresource it names, with `br` and Chrome's `accept`; it exits 1 if
+      #     anything answers non-2xx or a document names nothing to warm.
+      #  2. One Lighthouse run of the first audited URL with the measured settings, in
+      #     `$RUNNER_TEMP` so its report can never reach `.lighthouseci/` or an assertion: it
+      #     pays the cold browser start and whatever a page fetches that its HTML does not name.
+      #     Under TASK-103's `median` a cold first run would count; here it never runs measured.
+      - name: Warm every audited page and its subresources before measuring
+        run: |
+          set -euo pipefail
+          node scripts/seo/lighthouse-urls.ts --warm
+          first=$(node -p 'require("./tests/fixtures/seo/lighthouse-urls.json")[0]')
+          (cd "$RUNNER_TEMP" && npx --yes @lhci/cli@0.15.1 collect \
+            --config="$GITHUB_WORKSPACE/lighthouserc.json" \
+            --numberOfRuns=1 \
+            --url="$LHCI_BASE_URL$first")
       - name: Run Lighthouse CI against the Brotli origin
         id: lhci
         run: |
@@ -1900,6 +1918,26 @@ jobs:
                 echo "$row" | awk -F'|' -v m="$metrics" '{printf "|%s|%s|%s|%s| %s |\n", $2, $3, $4, $5, m}'
               done < /tmp/lh-rows.txt
               echo ""
+              # Every run, not only the representative one (TASK-235): a cold run shows as an
+              # outlier in the first column, and a whole-runner shift as every URL moving at once.
+              # Ordered by report file name, which carries the run's fetch time.
+              echo "LCP of every measured run, in run order:"
+              echo ""
+              echo "| URL | LCP per run (ms) |"
+              echo "|---|---|"
+              jq -r '(reduce .[].url as $u ([]; if any(.[]; . == $u) then . else . + [$u] end)) as $urls
+                | . as $all | $urls[] as $u
+                | "\($u)\t\([$all[] | select(.url == $u) | .jsonPath] | sort | join(" "))"' \
+                "$manifest" > /tmp/lh-runs.txt || true
+              while IFS=$'\t' read -r url files; do
+                values=""
+                for json in $files; do
+                  lcp=$(jq -r '.audits["largest-contentful-paint"].numericValue | floor' "$json")
+                  values="${values:+$values / }$lcp"
+                done
+                echo "| $url | $values |"
+              done < /tmp/lh-runs.txt
+              echo ""
             else
               # Said out loud rather than skipped, so the table going missing is a visible defect
               # in this summary and not an absence nobody notices.
@@ -1939,3 +1977,7 @@ jobs:
           path: .lighthouseci/
           retention-days: 7
           if-no-files-found: ignore
+          # `.lighthouseci/` is a dot-directory, which `upload-artifact@v4` skips by default: until
+          # TASK-235 this step logged "No files were found" and kept no report of any run, so the
+          # `lhr-*.json` a red LCP had to be diagnosed from did not exist.
+          include-hidden-files: true
