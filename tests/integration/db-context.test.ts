@@ -54,10 +54,12 @@ describe.skipIf(!server.url)(
         await tx`INSERT INTO partner_blackout (partner_id, date) VALUES (${partnerA}, DATE '2027-01-01')`;
       });
       db = await import("../../src/lib/db");
-    });
+      // The same budget as every scratch-database suite: creating one waits on the migrate lock
+      // while the other suites migrate theirs (`support/scratch-db.ts`), well past 10 s in CI.
+    }, 600_000);
 
     afterAll(async () => {
-      await scratch.drop();
+      await scratch?.drop();
     });
 
     it.each(APP_ROLES)(
