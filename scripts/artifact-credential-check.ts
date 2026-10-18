@@ -19,6 +19,9 @@
  *    bytes, and **deletes** a zip, or an HTML file whose embedded zip holds it, since neither can
  *    be rewritten in place; then it checks again.
  *
+ * `--basic` prints the `Basic …` header value `lighthouse` sends, from the same trimmed secret
+ * (exit 2 when there is none), so the job and this check derive the bytes in one place.
+ *
  * Exit codes: 0 clean (or no credential in scope: a push run, a fork, a local run) · 1 a file
  * still holds a form after the run; the file is named and the value never printed · 2 usage.
  *
@@ -44,19 +47,48 @@ export const MIN_PASSWORD_LENGTH = 8;
 
 export const REDACTED = "REDACTED";
 
-/** Every form the credential travels in, longest first so a scrub never leaves a fragment. */
+/**
+ * The one credential the jobs send: the secret with surrounding whitespace removed, as the
+ * GitHub UI easily adds a trailing newline or space to a pasted value. `lighthouse` builds its
+ * header with `--basic` below, from this function, so the job and the check cannot drift apart
+ * (`/review 263` round 2).
+ */
+export function wallCredential(raw: string | undefined): string {
+  return raw?.trim() ?? "";
+}
+
+/** `Basic <base64>` of `wallCredential`, or `""` when there is none. */
+export function basicAuthorization(raw: string | undefined): string {
+  const credential = wallCredential(raw);
+  return credential === ""
+    ? ""
+    : `Basic ${Buffer.from(credential).toString("base64")}`;
+}
+
+/**
+ * Every form the credential can travel in, longest first so a scrub never leaves a fragment. It
+ * starts from every variant of the secret a job could have used (the raw value as stored, and
+ * trimmed, trimmed at either end), and for each: the value, its Basic base64 and that base64 with
+ * `/` escaped as `\/` (JSON and HTML reports), its URL encoding, and the password alone (when it
+ * is long enough not to match by chance) and its URL encoding.
+ */
 export function credentialForms(raw: string | undefined): string[] {
-  const credential = raw?.trim() ?? "";
-  if (credential === "") return [];
-  const base64 = Buffer.from(credential).toString("base64");
-  const forms = new Set<string>([
-    credential,
-    base64,
-    base64.replaceAll("/", "\\/"),
-  ]);
-  const colon = credential.indexOf(":");
-  const password = colon === -1 ? "" : credential.slice(colon + 1);
-  if (password.length >= MIN_PASSWORD_LENGTH) forms.add(password);
+  if (raw === undefined || raw.trim() === "") return [];
+  const variants = new Set([raw, raw.trim(), raw.trimStart(), raw.trimEnd()]);
+  const forms = new Set<string>();
+  for (const variant of variants) {
+    const base64 = Buffer.from(variant).toString("base64");
+    forms.add(variant);
+    forms.add(base64);
+    forms.add(base64.replaceAll("/", "\\/"));
+    forms.add(encodeURIComponent(variant));
+    const colon = variant.indexOf(":");
+    const password = colon === -1 ? "" : variant.slice(colon + 1);
+    if (password.trim().length >= MIN_PASSWORD_LENGTH) {
+      forms.add(password);
+      forms.add(encodeURIComponent(password));
+    }
+  }
   return [...forms].sort((a, b) => b.length - a.length);
 }
 
@@ -167,6 +199,13 @@ export function main(
   env: Readonly<Record<string, string | undefined>> = process.env,
   out: { write: (chunk: string) => unknown } = process.stdout,
 ): number {
+  if (argv.includes("--basic")) {
+    // The header `lighthouse` sends, built by the same function the check reads.
+    const header = basicAuthorization(env["STAGING_BASIC_AUTH"]);
+    if (header === "") return 2;
+    out.write(`${header}\n`);
+    return 0;
+  }
   const doScrub = argv.includes("--scrub");
   const paths = argv.filter((arg) => arg !== "--scrub");
   if (paths.length === 0) {
