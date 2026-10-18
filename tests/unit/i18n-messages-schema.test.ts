@@ -577,7 +577,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-231: the reviewed words, with the one italic phrase marked (the founder's "italic ok").
     expect(heroHeading).toBe("Flowers for someone <em>far away.</em>");
     expect(finderSubmit).toBe("Continue");
-    expect(guaranteeName).toBe("7-day freshness guarantee");
+    expect(guaranteeName).toBe("Fresh-flower promise");
     expect(occasionSubtitle).toContain("Imieniny");
     expect(faqQuestion).toBe("Will the bouquet look like the photo?");
     expect(headline).toBe("Choose your preferred language");
