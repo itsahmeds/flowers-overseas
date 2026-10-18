@@ -130,6 +130,22 @@ describe("which subresources a document names", () => {
     ]);
     expect(srcsetUrls("")).toEqual([]);
   });
+
+  it("keeps a `data:` candidate whole, as the HTML srcset parser does, so its comma names no path", () => {
+    // A per-width `<picture>` selects a one-pixel `data:` GIF where its image is not displayed
+    // (`src/modules/ui/media/preload.ts`, BLANK_IMAGE_SRCSET); split on every comma, its base64
+    // tail became a relative path that answered 308 and failed the warm-up (PR 262).
+    const blank =
+      "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+    expect(srcsetUrls(blank)).toEqual([blank]);
+    expect(srcsetUrls(`${blank} 1x, /b.avif 2x`)).toEqual([blank, "/b.avif"]);
+    expect(srcsetUrls("/a.avif 1x,, /b.avif,")).toEqual(["/a.avif", "/b.avif"]);
+    expect(
+      paths(
+        `<picture><source media="(width < 48rem)" srcSet="${blank}"/><img src="/a.avif"/></picture>`,
+      ),
+    ).toEqual(["/a.avif"]);
+  });
 });
 
 describe("how it requests them", () => {

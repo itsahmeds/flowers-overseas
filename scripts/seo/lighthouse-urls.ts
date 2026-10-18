@@ -165,12 +165,41 @@ export function attributes(source: string): Map<string, string> {
   return result;
 }
 
-/** Every URL of a `srcset`, in order: `a.avif 384w, b.avif 640w` → `[a.avif, b.avif]`. */
+/**
+ * Every URL of a `srcset`, in order: `a.avif 384w, b.avif 640w` → `[a.avif, b.avif]`.
+ *
+ * It follows the HTML standard's candidate parser, not a split on every comma: a URL runs to the
+ * next whitespace and only its trailing commas are dropped, so a `data:` candidate (whose comma
+ * is part of the URL) stays one URL and is skipped as such by `subresourceUrls`.
+ */
 export function srcsetUrls(srcset: string): string[] {
-  return srcset
-    .split(",")
-    .map((candidate) => candidate.trim().split(/\s+/)[0] ?? "")
-    .filter((url) => url !== "");
+  const urls: string[] = [];
+  let position = 0;
+  const at = (index: number): string => srcset.charAt(index);
+  while (position < srcset.length) {
+    while (position < srcset.length && /[\s,]/.test(at(position))) position++;
+    if (position >= srcset.length) break;
+    const start = position;
+    while (position < srcset.length && !/\s/.test(at(position))) position++;
+    let url = srcset.slice(start, position);
+    if (url.endsWith(",")) {
+      // No descriptors: the trailing commas end the candidate.
+      url = url.replace(/,+$/, "");
+    } else {
+      // Skip the descriptors, up to the comma that ends the candidate (one inside parentheses
+      // does not).
+      let depth = 0;
+      while (position < srcset.length) {
+        const character = at(position);
+        if (character === "(") depth++;
+        else if (character === ")") depth = Math.max(0, depth - 1);
+        else if (character === "," && depth === 0) break;
+        position++;
+      }
+    }
+    if (url !== "") urls.push(url);
+  }
+  return urls;
 }
 
 function linkKind(as: string | undefined, rel: string): SubresourceKind {
