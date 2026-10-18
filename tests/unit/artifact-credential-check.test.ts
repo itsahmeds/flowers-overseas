@@ -22,10 +22,16 @@ import { crc32, deflateRawSync, gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  ArchiveBudgetError,
   basicAuthorization,
+  bytesHold,
   credentialForms,
   MAX_DEPTH,
+  inflateWithin,
+  MAX_INFLATED_BYTES,
   main,
+  newBudget,
+  textViews,
 } from "../../scripts/artifact-credential-check.ts";
 
 // Low-entropy stand-in (the secret scan must not read it as a key). Its Basic form has a `/`.
@@ -234,7 +240,7 @@ describe("a secret pasted with whitespace (/review 263 round 2)", () => {
 });
 
 describe("--scrub, then the check", () => {
-  it("redacts text files, deletes zips that hold it, and then passes", () => {
+  it("redacts text files, and fails loudly on a zip it cannot rewrite, deleting nothing", () => {
     const root = tree({
       "lhr-1.json": `{"Authorization":"Basic ${BASE64}"}`,
       "report.html": `"Basic ${BASE64.replaceAll("/", "\\/")}"`,
@@ -242,18 +248,21 @@ describe("--scrub, then the check", () => {
     });
     zipOf(root, "trace.zip", "trace.network", `Basic ${BASE64}`);
     const result = run(["--scrub", root]);
-    expect(result.status).toBe(0);
+    expect(result.status).toBe(1);
+    expect(result.output).toContain(
+      "trace.zip holds the staging wall's credential",
+    );
     expect(readFileSync(join(root, "lhr-1.json"), "utf8")).toBe(
       '{"Authorization":"Basic REDACTED"}',
     );
     expect(readFileSync(join(root, "report.html"), "utf8")).toBe(
       '"Basic REDACTED"',
     );
-    expect(existsSync(join(root, "trace.zip"))).toBe(false);
+    expect(existsSync(join(root, "trace.zip"))).toBe(true);
     expect(readFileSync(join(root, "keep.json"), "utf8")).toBe("{}");
   });
 
-  it("deletes an HTML report whose embedded zip holds it", () => {
+  it("fails loudly on an HTML report whose embedded zip holds it, and keeps the file", () => {
     const root = tree({});
     const zip = zipOf(root, "tmp/r.zip", "r.json", `Basic ${BASE64}`);
     const blob = readFileSync(zip).toString("base64");
@@ -262,8 +271,10 @@ describe("--scrub, then the check", () => {
       join(root, "index.html"),
       `"data:application/zip;base64,${blob}"`,
     );
-    expect(run(["--scrub", root]).status).toBe(0);
-    expect(existsSync(join(root, "index.html"))).toBe(false);
+    const result = run(["--scrub", root]);
+    expect(result.status).toBe(1);
+    expect(result.output).toContain("index.html holds");
+    expect(existsSync(join(root, "index.html"))).toBe(true);
   });
 });
 
@@ -410,7 +421,7 @@ describe("archives, nested and named anything (/break 263 round 2 hole 1)", () =
     ],
     [
       "a corrupt gzip stream",
-      Buffer.concat([Buffer.from([0x1f, 0x8b]), Buffer.alloc(30, 7)]),
+      Buffer.concat([Buffer.from([0x1f, 0x8b, 0x08]), Buffer.alloc(30, 7)]),
     ],
     [
       "gzip nested past the depth cap",
@@ -455,13 +466,15 @@ describe("file and directory names (/break 263 round 2 hole 2)", () => {
     expect(result.output).toContain("in its name");
   });
 
-  it("--scrub deletes a directory whose name holds it, then passes", () => {
+  it("--scrub fails loudly on a directory whose name holds it, and deletes nothing", () => {
     const root = tree({
       "r/aaaa?bbbb?cccc/a.txt": "clean",
       "r/keep.txt": "clean",
     });
-    expect(run(["--scrub", root]).status).toBe(0);
-    expect(existsSync(join(root, "r/aaaa?bbbb?cccc"))).toBe(false);
+    const result = run(["--scrub", root]);
+    expect(result.status).toBe(1);
+    expect(result.output).toContain("in its name");
+    expect(existsSync(join(root, "r/aaaa?bbbb?cccc/a.txt"))).toBe(true);
     expect(existsSync(join(root, "r/keep.txt"))).toBe(true);
   });
 
@@ -575,5 +588,300 @@ describe("--scrub replaces globally and longest first (/break 263 round 2 hole 4
   it("puts the longest form first, whatever order it is handed", () => {
     const forms = credentialForms(CREDENTIAL);
     expect(forms).toEqual([...forms].sort((a, b) => b.length - a.length));
+  });
+});
+
+describe("round 3 (/break 263 round 3)", () => {
+  const flaggedWith = (raw: string, files: Record<string, Buffer | string>) => {
+    const root = tree({});
+    for (const [name, body] of Object.entries(files)) {
+      mkdirSync(join(root, name, ".."), { recursive: true });
+      writeFileSync(join(root, name), body);
+    }
+    return run([root], { STAGING_BASIC_AUTH: raw });
+  };
+
+  describe("hole 1: any compression method but stored or deflate fails closed", () => {
+    it.each([12, 14, 99])(
+      "method %i, even on an entry with nothing in it",
+      (method) => {
+        const zip = makeZip([
+          { name: "a.txt", data: Buffer.from("clean ".repeat(50)) },
+        ]);
+        // Patch the method in the local header (offset 8) and the central header (10).
+        zip.writeUInt16LE(method, 8);
+        const central = zip.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
+        zip.writeUInt16LE(method, central + 10);
+        const result = flaggedWith(CREDENTIAL, { "trace.zip": zip });
+        expect(result.status).toBe(1);
+        expect(result.output).toContain(
+          "cannot be checked (unreadable archive)",
+        );
+      },
+    );
+  });
+
+  describe("hole 2: a short password and a non-ASCII credential, through every decoder", () => {
+    const SHORT = "ci-wall:Ab7?xYz"; // a 7-character password: only the whole credential is searched
+    const NON_ASCII = "wänd-üser>>?:pä~ß7";
+    const b64 = (raw: string) => Buffer.from(raw, "utf8").toString("base64");
+    const uEscape = (text: string) =>
+      text.replace(
+        /[^\x20-\x7e]|[/+]/gu,
+        (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`,
+      );
+
+    it.each([SHORT, NON_ASCII])(
+      "has only the whole credential to search for: %s",
+      (raw) => {
+        expect(credentialForms(raw).length).toBeGreaterThan(0);
+      },
+    );
+
+    it.each([
+      ["plain base64", (raw: string) => `Basic ${b64(raw)}`],
+      [
+        "base64 with `/` and `+` as \\u escapes",
+        (raw: string) => `{"h":"Basic ${uEscape(b64(raw))}"}`,
+      ],
+      [
+        "the raw credential with \\u escapes",
+        (raw: string) => `{"c":"${uEscape(raw)}"}`,
+      ],
+      [
+        "base64 wrapped every 8",
+        (raw: string) => b64(raw).replace(/(.{8})/gu, "$1\n"),
+      ],
+      ["base64 at string offset 2", (raw: string) => `QQ${b64(raw)}`],
+      [
+        "base64 inside a larger blob",
+        (raw: string) =>
+          Buffer.concat([
+            Buffer.from("A"),
+            Buffer.from(raw, "utf8"),
+            Buffer.from("tail tail"),
+          ]).toString("base64"),
+      ],
+    ])("finds %s for both", (_, encode) => {
+      for (const raw of [SHORT, NON_ASCII]) {
+        expect(flaggedWith(raw, { "r.json": encode(raw) }).status, raw).toBe(1);
+      }
+    });
+
+    it("finds both inside gzip, and in a directory name", () => {
+      for (const raw of [SHORT, NON_ASCII]) {
+        expect(
+          flaggedWith(raw, {
+            "t.gz": gzipSync(Buffer.from(`Basic ${b64(raw)}`)),
+          }).status,
+        ).toBe(1);
+        expect(
+          flaggedWith(raw, { [`d/${encodeURIComponent(raw)}/a.txt`]: "clean" })
+            .status,
+        ).toBe(1);
+      }
+    });
+  });
+
+  describe("hole 3: clean reports are never flagged, and nothing is ever deleted", () => {
+    /** Deterministic bytes, so the fixture is the same on every run. */
+    const noise = (seed: number, length: number): Buffer => {
+      const out = Buffer.alloc(length);
+      let x = seed >>> 0 || 1;
+      for (let i = 0; i < length; i += 1) {
+        x ^= x << 13;
+        x ^= x >>> 17;
+        x ^= x << 5;
+        out[i] = x & 0xff;
+      }
+      return out;
+    };
+    /** A Lighthouse-shaped report: ten JPEG thumbnails and a final screenshot as data URLs. */
+    const report = (seed: number): string =>
+      JSON.stringify({
+        lighthouseVersion: "12.6.0",
+        requestedUrl: `https://pr-263.flowersoverseas.com/en?run=${String(seed)}`,
+        configSettings: { extraHeaders: { Authorization: "Basic REDACTED" } },
+        audits: {
+          "screenshot-thumbnails": {
+            details: {
+              items: Array.from({ length: 10 }, (_, i) => ({
+                timing: i * 300,
+                data: `data:image/jpeg;base64,${Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), noise(seed * 100 + i, 12_000)]).toString("base64")}`,
+              })),
+            },
+          },
+          "final-screenshot": {
+            details: {
+              data: `data:image/jpeg;base64,${noise(seed * 7919, 40_000).toString("base64")}`,
+            },
+          },
+        },
+      });
+
+    it("passes 30 credential-free Lighthouse-shaped reports, untouched, under --scrub", () => {
+      const files = Object.fromEntries(
+        Array.from({ length: 30 }, (_, i) => [
+          `.lighthouseci/lhr-${String(i)}.json`,
+          report(i + 1),
+        ]),
+      );
+      const root = tree(files);
+      const result = run(["--scrub", root]);
+      expect(result.output).not.toContain("::error::");
+      expect(result.status).toBe(0);
+      for (const [name, body] of Object.entries(files)) {
+        expect(readFileSync(join(root, name), "utf8")).toBe(body);
+      }
+    });
+
+    it("decodes no base64 from the form-`+` view, which splits every image into short runs", () => {
+      const views = textViews("abc+def%2Bghi");
+      expect(
+        views.find((view) => view.text === "abc def+ghi")?.decodeBase64,
+      ).toBe(false);
+      expect(
+        views.find((view) => view.text === "abc+def+ghi")?.decodeBase64,
+      ).toBe(true);
+    });
+
+    it("treats a base64 run that only decodes to a gzip-looking header as not an archive", () => {
+      // A run whose decoding begins 1f 8b 08 and is not a gzip stream: a guess, not a file.
+      const fake = Buffer.concat([
+        Buffer.from([0x1f, 0x8b, 0x08]),
+        noise(3, 60),
+      ]).toString("base64");
+      const result = flaggedWith(CREDENTIAL, {
+        "lhr.json": `{"data":"${fake}"}`,
+      });
+      expect(result.status).toBe(0);
+    });
+
+    it("does not read a file starting 1f 8b with another method byte as gzip", () => {
+      const result = flaggedWith(CREDENTIAL, {
+        "shot.bin": Buffer.concat([
+          Buffer.from([0x1f, 0x8b, 0x00]),
+          noise(4, 200),
+        ]),
+      });
+      expect(result.status).toBe(0);
+    });
+
+    it("never deletes: a file it cannot scrub stays, and the job fails naming it", () => {
+      const zip = makeZip([
+        { name: "t", data: Buffer.from(`Basic ${BASE64}`) },
+      ]);
+      const root = tree({});
+      writeFileSync(join(root, "trace.zip"), zip);
+      const result = run(["--scrub", root]);
+      expect(result.status).toBe(1);
+      expect(readFileSync(join(root, "trace.zip")).equals(zip)).toBe(true);
+      expect(result.output).not.toContain("deleted");
+    });
+  });
+
+  it("hole 4: scrubs the lower-case percent-encoded credential to exactly REDACTED", () => {
+    const lower = encodeURIComponent(CREDENTIAL).replace(
+      /%[0-9A-F]{2}/gu,
+      (hex) => hex.toLowerCase(),
+    );
+    expect(lower).not.toBe(encodeURIComponent(CREDENTIAL));
+    const root = tree({ "u.txt": `url=${lower}&x=1` });
+    expect(run(["--scrub", root]).status).toBe(0);
+    expect(readFileSync(join(root, "u.txt"), "utf8")).toBe("url=REDACTED&x=1");
+  });
+
+  describe("hole 5: decompression bombs fail closed inside a budget", () => {
+    const wanted = [CREDENTIAL];
+    const kilobyte = Buffer.alloc(1024, 0x20);
+
+    it("stops inflating zip entries past the byte budget", () => {
+      const zip = makeZip(
+        Array.from({ length: 5 }, (_, i) => ({
+          name: `e${String(i)}`,
+          data: kilobyte,
+        })),
+      );
+      expect(() => bytesHold(zip, wanted, 0, newBudget(3000))).toThrow(
+        ArchiveBudgetError,
+      );
+      expect(bytesHold(zip, wanted, 0, newBudget(6000))).toBe(false);
+    });
+
+    it("stops a gzip stream past the byte budget", () => {
+      expect(() =>
+        bytesHold(gzipSync(Buffer.alloc(10_000)), wanted, 0, newBudget(5000)),
+      ).toThrow(ArchiveBudgetError);
+    });
+
+    it("stops past the entry budget", () => {
+      const zip = makeZip(
+        Array.from({ length: 3 }, (_, i) => ({
+          name: `e${String(i)}`,
+          data: kilobyte,
+        })),
+      );
+      expect(() => bytesHold(zip, wanted, 0, newBudget(1e9, 2))).toThrow(
+        ArchiveBudgetError,
+      );
+    });
+
+    it("never lets zlib allocate past what is left: it is told the remaining budget", () => {
+      const budget = newBudget(4096);
+      const asked: number[] = [];
+      inflateWithin(
+        budget,
+        (options) => {
+          asked.push(options.maxOutputLength);
+          return Buffer.alloc(1000);
+        },
+        "x",
+      );
+      inflateWithin(
+        budget,
+        (options) => {
+          asked.push(options.maxOutputLength);
+          return Buffer.alloc(10);
+        },
+        "y",
+      );
+      expect(asked).toEqual([4096, 3096]);
+      expect(budget.bytes).toBe(3086);
+    });
+
+    it("refuses a bomb carried as base64 inside a report, rather than calling it no archive", () => {
+      const megabyte = Buffer.alloc(1024 * 1024);
+      const zip = makeZip(
+        Array.from(
+          { length: Math.ceil(MAX_INFLATED_BYTES / megabyte.length) + 5 },
+          (_, i) => ({
+            name: `e${String(i)}`,
+            data: megabyte,
+          }),
+        ),
+      );
+      const result = flaggedWith(CREDENTIAL, {
+        "lhr.json": `{"attachment":"data:application/zip;base64,${zip.toString("base64")}"}`,
+      });
+      expect(result.status).toBe(1);
+      expect(result.output).toContain("cannot be checked (decompression bomb)");
+    });
+
+    it("refuses a real bomb with the default budget, named as one", () => {
+      const megabyte = Buffer.alloc(1024 * 1024);
+      const zip = makeZip(
+        Array.from(
+          { length: Math.ceil(MAX_INFLATED_BYTES / megabyte.length) + 5 },
+          (_, i) => ({
+            name: `e${String(i)}`,
+            data: megabyte,
+          }),
+        ),
+      );
+      expect(zip.length).toBeLessThan(2 * 1024 * 1024);
+      const result = flaggedWith(CREDENTIAL, { "bomb.zip": zip });
+      expect(result.status).toBe(1);
+      expect(result.output).toContain("cannot be checked (decompression bomb)");
+    });
   });
 });

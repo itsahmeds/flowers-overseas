@@ -21,15 +21,16 @@
  *
  * **What it opens.** A zip (by its `PK\x03\x04` magic, whatever its name) is read entry by entry
  * from its central directory, stored or deflated, and every entry name is checked too; a gzip
- * stream (`\x1f\x8b`) is inflated; a base64 run that decodes to either is opened as well. All of it
+ * stream (`\x1f\x8b\x08`) is inflated; a base64 run that decodes to either is opened as well. All of it
  * recursively, up to `MAX_DEPTH` levels. **It fails closed:** an archive it cannot open (encrypted,
  * zip64, an unknown method, a corrupt stream) or one nested deeper than `MAX_DEPTH` counts as
  * holding the credential.
  *
  * `--scrub` replaces every literal form of the credential with `REDACTED` (globally, longest form
- * first, so no fragment is left), then deletes any file the check still flags (an archive, a form
- * only a view reveals, a name that holds it) and any directory whose name holds it; then it checks
- * again. `--basic` prints the `Basic …` header `lighthouse` sends, from the same trimmed secret
+ * first, so no fragment is left) and then checks; it **never deletes** anything. A file it could
+ * not rewrite (an archive, a form only a view reveals, a name) fails the check loudly, by name,
+ * and the upload does not run. Every archive is read inside a budget (`MAX_INFLATED_BYTES`,
+ * `MAX_ENTRIES` per uploaded file), and a bomb fails closed. `--basic` prints the `Basic …` header `lighthouse` sends, from the same trimmed secret
  * (exit 2 when there is none), so the job and this check derive the bytes in one place.
  *
  * Exit codes: 0 clean (or no credential in scope: a push run, a fork, a local run) · 1 a file
@@ -42,7 +43,6 @@ import {
   readdirSync,
   readFileSync,
   realpathSync,
-  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
@@ -159,17 +159,34 @@ export function percentDecode(text: string, formPlus: boolean): string {
   ).toString("utf8");
 }
 
+export interface TextView {
+  readonly text: string;
+  /**
+   * Whether base64 runs are decoded from this view. Not from the form-`+` view: turning every `+`
+   * of a base64 image into a space splits it into thousands of short runs, and one of them in
+   * 65 536 decodes to a gzip-looking `1f 8b` (`/break 263` round 3 hole 3). A space never occurs
+   * inside base64, so that view only ever adds literal matches.
+   */
+  readonly decodeBase64: boolean;
+}
+
 /** Every distinct text view: as is, unescaped (once, twice), each percent-decoded both ways. */
-export function textViews(text: string): string[] {
+export function textViews(text: string): TextView[] {
   const once = jsonUnescape(text);
   const twice = jsonUnescape(once);
-  const views = new Set<string>();
+  const views = new Map<string, boolean>();
+  const add = (view: string, decodeBase64: boolean): void => {
+    views.set(view, (views.get(view) ?? false) || decodeBase64);
+  };
   for (const base of [text, once, twice]) {
-    views.add(base);
-    views.add(percentDecode(base, false));
-    views.add(percentDecode(base, true));
+    add(base, true);
+    add(percentDecode(base, false), true);
+    add(percentDecode(base, true), false);
   }
-  return [...views];
+  return [...views].map(([view, decodeBase64]) => ({
+    text: view,
+    decodeBase64,
+  }));
 }
 
 const BASE64_RUN =
@@ -207,11 +224,63 @@ export function base64Decodings(run: string): Buffer[] {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Archives, read in-process
+// ---------------------------------------------------------------------------------------------
+// Archives, read in-process, inside a budget
 // ---------------------------------------------------------------------------------------------
 
 export class UnreadableArchiveError extends Error {
   override name = "UnreadableArchiveError";
+}
+
+/** A decompression bomb: more bytes or entries than `Budget` allows. Always fails closed. */
+export class ArchiveBudgetError extends UnreadableArchiveError {
+  override name = "ArchiveBudgetError";
+}
+
+/** At most this many bytes are inflated per uploaded file, all levels together. */
+export const MAX_INFLATED_BYTES = 200 * 1024 * 1024;
+
+/** At most this many archive entries are read per uploaded file, all levels together. */
+export const MAX_ENTRIES = 10_000;
+
+/** What one uploaded file may still inflate (`/break 263` round 3 hole 5). */
+export interface Budget {
+  bytes: number;
+  entries: number;
+}
+
+export const newBudget = (
+  bytes = MAX_INFLATED_BYTES,
+  entries = MAX_ENTRIES,
+): Budget => ({ bytes, entries });
+
+/** Inflate with `inflate`, never past what is left of the budget; charge what it produced. */
+export function inflateWithin(
+  budget: Budget,
+  inflate: (options: { maxOutputLength: number }) => Buffer,
+  what: string,
+): Buffer {
+  let out: Buffer;
+  try {
+    out = inflate({ maxOutputLength: Math.max(1, budget.bytes) });
+  } catch (error) {
+    if (
+      error instanceof RangeError ||
+      (error as { code?: string }).code === "ERR_BUFFER_TOO_LARGE"
+    ) {
+      throw new ArchiveBudgetError(
+        `${what} inflates past ${String(MAX_INFLATED_BYTES)} bytes: a decompression bomb, refused`,
+      );
+    }
+    throw new UnreadableArchiveError(`${what}: corrupt compressed stream`);
+  }
+  budget.bytes -= out.length;
+  if (budget.bytes < 0) {
+    throw new ArchiveBudgetError(
+      `${what} inflates past ${String(MAX_INFLATED_BYTES)} bytes: a decompression bomb, refused`,
+    );
+  }
+  return out;
 }
 
 const ZIP_LOCAL = 0x04034b50;
@@ -220,8 +289,13 @@ const ZIP_END = 0x06054b50;
 
 export const isZip = (bytes: Buffer): boolean =>
   bytes.length >= 4 && bytes.readUInt32LE(0) === ZIP_LOCAL;
+
+/** Gzip's magic and its only defined method byte (deflate, 8): three bytes, not two. */
 export const isGzip = (bytes: Buffer): boolean =>
-  bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+  bytes.length >= 3 &&
+  bytes[0] === 0x1f &&
+  bytes[1] === 0x8b &&
+  bytes[2] === 0x08;
 
 export interface ZipEntry {
   readonly name: string;
@@ -229,11 +303,15 @@ export interface ZipEntry {
 }
 
 /**
- * The entries of a zip, from its central directory (so streamed zips with data descriptors read
- * too). Stored and deflated entries only; encrypted, zip64, other methods and corrupt data throw,
- * and the caller fails closed.
+ * The entries of a zip, one at a time from its central directory (so streamed zips with data
+ * descriptors read too, and a bomb is stopped by the budget before the next entry is inflated).
+ * Stored (0) and deflated (8) entries only: encryption, zip64, any other method (bzip2 12, LZMA
+ * 14, …) and corrupt data throw, and the caller fails closed.
  */
-export function zipEntries(bytes: Buffer): ZipEntry[] {
+export function* zipEntries(
+  bytes: Buffer,
+  budget: Budget = newBudget(),
+): Generator<ZipEntry> {
   let end = -1;
   for (
     let i = bytes.length - 22;
@@ -253,8 +331,13 @@ export function zipEntries(bytes: Buffer): ZipEntry[] {
   if (count === 0xffff || at === 0xffffffff) {
     throw new UnreadableArchiveError("zip64 is not read");
   }
-  const entries: ZipEntry[] = [];
   for (let n = 0; n < count; n += 1) {
+    budget.entries -= 1;
+    if (budget.entries < 0) {
+      throw new ArchiveBudgetError(
+        `more than ${String(MAX_ENTRIES)} archive entries: a decompression bomb, refused`,
+      );
+    }
     if (at + 46 > bytes.length || bytes.readUInt32LE(at) !== ZIP_CENTRAL) {
       throw new UnreadableArchiveError("corrupt central directory");
     }
@@ -275,30 +358,36 @@ export function zipEntries(bytes: Buffer): ZipEntry[] {
     if (local + 30 > bytes.length || bytes.readUInt32LE(local) !== ZIP_LOCAL) {
       throw new UnreadableArchiveError(`${name}: corrupt local header`);
     }
+    if (method !== 0 && method !== 8) {
+      throw new UnreadableArchiveError(
+        `${name}: compression method ${String(method)} is not read`,
+      );
+    }
     const start =
       local +
       30 +
       bytes.readUInt16LE(local + 26) +
       bytes.readUInt16LE(local + 28);
     const raw = bytes.subarray(start, start + compressed);
-    let data: Buffer;
+    const data =
+      method === 0
+        ? Buffer.from(raw)
+        : inflateWithin(
+            budget,
+            (options) => inflateRawSync(raw, options),
+            name,
+          );
     if (method === 0) {
-      data = Buffer.from(raw);
-    } else if (method === 8) {
-      try {
-        data = inflateRawSync(raw);
-      } catch {
-        throw new UnreadableArchiveError(`${name}: corrupt deflate stream`);
+      budget.bytes -= data.length;
+      if (budget.bytes < 0) {
+        throw new ArchiveBudgetError(
+          `${name} takes the archive past ${String(MAX_INFLATED_BYTES)} bytes: a decompression bomb, refused`,
+        );
       }
-    } else {
-      throw new UnreadableArchiveError(
-        `${name}: compression method ${String(method)}`,
-      );
     }
-    entries.push({ name, data });
+    yield { name, data };
     at += 46 + nameLength + extraLength + commentLength;
   }
-  return entries;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -306,9 +395,9 @@ export function zipEntries(bytes: Buffer): ZipEntry[] {
 // ---------------------------------------------------------------------------------------------
 
 /**
- * Does a text hold a needle in any view, or in any base64 it carries, decoded? A binary file (a
- * NUL in its first 8 KB: a screenshot) is not escaped text, so only its bytes as they are and its
- * base64 runs are read, which keeps a directory of screenshots fast.
+ * Does a text hold a needle in any view, or in any base64 it carries, decoded (read as latin-1 and
+ * as UTF-8, so a non-ASCII credential is found)? A binary file (a NUL in its first 8 KB: a
+ * screenshot) is not escaped text, so only its bytes as they are and its base64 runs are read.
  */
 function viewsHold(
   text: string,
@@ -316,9 +405,11 @@ function viewsHold(
   onDecoded: (decoded: Buffer) => boolean,
   binary = false,
 ): boolean {
-  for (const view of binary ? [text] : textViews(text)) {
-    if (wanted.some((needle) => view.includes(needle))) return true;
-    for (const run of base64Runs(view)) {
+  const views = binary ? [{ text, decodeBase64: true }] : textViews(text);
+  for (const view of views) {
+    if (wanted.some((needle) => view.text.includes(needle))) return true;
+    if (!view.decodeBase64) continue;
+    for (const run of base64Runs(view.text)) {
       for (const decoded of base64Decodings(run)) {
         if (onDecoded(decoded)) return true;
         const plain = decoded.toString("latin1");
@@ -342,13 +433,18 @@ export function textHolds(text: string, wanted: readonly string[]): boolean {
 }
 
 /**
- * Do these bytes hold the credential, read every way above? Throws `UnreadableArchiveError` on
- * an archive it cannot open or one nested deeper than `MAX_DEPTH`.
+ * Do these bytes hold the credential, read every way above? Throws `UnreadableArchiveError` on a
+ * real archive it cannot open, one nested deeper than `MAX_DEPTH`, or one past the budget.
+ *
+ * An archive found only by *decoding* a base64 run is a guess (four alignments of every run), so
+ * one that does not open is "not an archive", not "unreadable" (`/break 263` round 3 hole 3); one
+ * that opens is read like any other, and a bomb inside it still fails closed.
  */
 export function bytesHold(
   bytes: Buffer,
   wanted: readonly string[],
   depth = 0,
+  budget: Budget = newBudget(),
 ): boolean {
   if (wanted.length === 0) return false;
   if (depth > MAX_DEPTH) {
@@ -357,24 +453,34 @@ export function bytesHold(
     );
   }
   if (isGzip(bytes)) {
-    let inflated: Buffer;
-    try {
-      inflated = gunzipSync(bytes);
-    } catch {
-      throw new UnreadableArchiveError("corrupt gzip stream");
-    }
-    return bytesHold(inflated, wanted, depth + 1);
+    const inflated = inflateWithin(
+      budget,
+      (options) => gunzipSync(bytes, options),
+      "a gzip stream",
+    );
+    return bytesHold(inflated, wanted, depth + 1, budget);
   }
   if (isZip(bytes)) {
-    return zipEntries(bytes).some(
-      (entry) =>
+    for (const entry of zipEntries(bytes, budget)) {
+      if (
         textHolds(entry.name, wanted) ||
-        bytesHold(entry.data, wanted, depth + 1),
-    );
+        bytesHold(entry.data, wanted, depth + 1, budget)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
-  const onDecoded = (decoded: Buffer): boolean =>
-    (isZip(decoded) || isGzip(decoded)) &&
-    bytesHold(decoded, wanted, depth + 1);
+  const onDecoded = (decoded: Buffer): boolean => {
+    if (!isZip(decoded) && !isGzip(decoded)) return false;
+    try {
+      return bytesHold(decoded, wanted, depth + 1, budget);
+    } catch (error) {
+      if (error instanceof ArchiveBudgetError) throw error;
+      if (error instanceof UnreadableArchiveError) return false;
+      throw error;
+    }
+  };
   const binary = bytes.subarray(0, 8192).includes(0);
   const texts = binary
     ? [bytes.toString("latin1")]
@@ -397,7 +503,8 @@ export function filesUnder(paths: readonly string[]): string[] {
   return out;
 }
 
-export type Finding = "content" | "name" | "unreadable archive";
+export type Finding =
+  "content" | "name" | "unreadable archive" | "decompression bomb";
 
 /** Why a file is flagged, or `undefined` when it is clean. Its name is read from `root` down. */
 export function fileFinding(
@@ -410,14 +517,10 @@ export function fileFinding(
   try {
     return bytesHold(readFileSync(path), wanted) ? "content" : undefined;
   } catch (error) {
+    if (error instanceof ArchiveBudgetError) return "decompression bomb";
     if (error instanceof UnreadableArchiveError) return "unreadable archive";
     throw error;
   }
-}
-
-export interface ScrubAction {
-  readonly path: string;
-  readonly action: "redacted" | "deleted";
 }
 
 /** The root a path was reached from, so names are checked relative to what is uploaded. */
@@ -427,59 +530,35 @@ function rootOf(path: string, roots: readonly string[]): string {
   );
 }
 
-function directoriesUnder(path: string): string[] {
-  if (!existsSync(path) || !statSync(path).isDirectory()) return [];
-  return readdirSync(path)
-    .sort()
-    .map((entry) => join(path, entry))
-    .filter((child) => statSync(child).isDirectory())
-    .flatMap((child) => [child, ...directoriesUnder(child)]);
-}
-
 /**
- * Delete any directory whose name holds it; replace every literal form in every other file,
- * globally and longest first; then delete any file the check still flags.
+ * Replace every literal form in every file that is not an archive, globally and longest first.
+ * Returns the files it rewrote. It **never deletes**: whatever it cannot rewrite (an archive, a
+ * form only a view reveals, a name) is left for the check that follows, which fails the job by
+ * name, so nothing is ever lost silently (`/break 263` round 3 hole 3).
  */
 export function scrub(
   roots: readonly string[],
   forms: readonly string[],
-  wanted: readonly string[],
-): ScrubAction[] {
-  const actions: ScrubAction[] = [];
+): string[] {
+  const rewritten: string[] = [];
   const longestFirst = [...forms].sort((a, b) => b.length - a.length);
-  for (const root of roots) {
-    for (const dir of directoriesUnder(root)) {
-      if (
-        existsSync(dir) &&
-        textHolds(relative(root, dir).split(sep).join("/"), wanted)
-      ) {
-        rmSync(dir, { recursive: true, force: true });
-        actions.push({ path: dir, action: "deleted" });
-      }
-    }
-  }
   for (const path of filesUnder(roots)) {
     const bytes = readFileSync(path);
-    if (!isZip(bytes) && !isGzip(bytes)) {
-      const before = bytes.toString("latin1");
-      let text = before;
-      for (const form of longestFirst) {
-        text = text.replaceAll(
-          Buffer.from(form, "utf8").toString("latin1"),
-          REDACTED,
-        );
-      }
-      if (text !== before) {
-        writeFileSync(path, Buffer.from(text, "latin1"));
-        actions.push({ path, action: "redacted" });
-      }
+    if (isZip(bytes) || isGzip(bytes)) continue;
+    const before = bytes.toString("latin1");
+    let text = before;
+    for (const form of longestFirst) {
+      text = text.replaceAll(
+        Buffer.from(form, "utf8").toString("latin1"),
+        REDACTED,
+      );
     }
-    if (fileFinding(path, rootOf(path, roots), wanted) !== undefined) {
-      rmSync(path);
-      actions.push({ path, action: "deleted" });
+    if (text !== before) {
+      writeFileSync(path, Buffer.from(text, "latin1"));
+      rewritten.push(path);
     }
   }
-  return actions;
+  return rewritten;
 }
 
 export function main(
@@ -511,8 +590,8 @@ export function main(
   }
   if (doScrub) {
     const forms = credentialForms(env["STAGING_BASIC_AUTH"]);
-    for (const action of scrub(roots, forms, wanted)) {
-      out.write(`artifact-credential-check: ${action.action} ${action.path}\n`);
+    for (const path of scrub(roots, forms)) {
+      out.write(`artifact-credential-check: redacted ${path}\n`);
     }
   }
   const files = filesUnder(roots);
@@ -524,7 +603,9 @@ export function main(
     .filter((entry) => entry.finding !== undefined);
   for (const { path, finding } of flagged) {
     out.write(
-      `::error::artifact-credential-check: ${path} holds the staging wall's credential in its ${String(finding)} (value not printed); nothing may be uploaded\n`,
+      finding === "content" || finding === "name"
+        ? `::error::artifact-credential-check: ${path} holds the staging wall's credential in its ${finding} (value not printed); nothing may be uploaded\n`
+        : `::error::artifact-credential-check: ${path} is an archive that cannot be checked (${finding}), so it fails closed; nothing may be uploaded\n`,
     );
   }
   if (flagged.length > 0) return 1;
