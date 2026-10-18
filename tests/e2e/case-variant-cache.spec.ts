@@ -93,6 +93,7 @@ test("case variants answer 404 every time and the lowercase pages keep their own
       expect(response.status(), at).toBe(200);
       const title = titleOf(html);
       expect(title, at).toBeDefined();
+      expect(html, at).not.toMatch(NOT_FOUND_ROBOTS);
       // The variants were the not-found document, not this page under a second URL, and this
       // page is not the not-found document the variants were answered with.
       expect([...(variantTitles.get(page) ?? [])], at).not.toContain(title);
