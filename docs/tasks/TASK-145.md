@@ -40,9 +40,12 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
+## Progress
+
+- 2026-10-18: tests and support written, draft PR 256, local green on the committed tree, six mutations watched red and restored.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR 256. Tests and test support only: no copy, no message key, no product change. `tests/support/head-honesty.ts` holds the one in-browser read (`HEAD_READ`: `<title>`, `meta[name=description]`, `og:title`/`og:description`, `twitter:title`/`twitter:description` if emitted, every JSON-LD block) and the pure walk and judgement (`headStrings`, `headOffences`; JSON-LD prose keys `name`, `description`, `headline`, `text`). Patterns are the body sweep's own: `FORBIDDEN_RANKING_TEXT`, `FORBIDDEN_DELIVERY_PROMISE_TEXT`, and AC-19's review shapes, which moved from `tests/e2e/honesty.spec.ts` into `tests/support/listing-honesty.ts` as `FORBIDDEN_REVIEW_SHAPES` (partner name and customer count stay behind: "Blumen" is an ordinary German title word). `tests/e2e/chrome-honesty.spec.ts` gains a head describe: 26 documents (the 25 `PAGES` plus `/en/poland/product/amber-hour`; a count and page-type assertion), per-page scan, and a control that plants a claim into the title, the meta description and a JSON-LD block in one synchronous `evaluate`, requires exactly one named offence each, and requires the head restored. `tests/unit/head-honesty.test.ts`: 12 cases. The committed corpus is green: the pointing-not-promising form stays legal. Nothing handed on except Q18-08: "offer" is not a pattern here; add it to `HEAD_PATTERNS` only if TASK-251's answer bans the word.
 
-_Pending._
+Watched red then restored (local, `e2e-desktop`, built tree, build slot taken because the head can only be read from a served document): title not read (control red); meta tags not read (control red); JSON-LD not read (control red); title replaced by `body.innerText` (control red); `product page` dropped from `HEAD_PAGES` (count test red); `HEAD_PATTERNS` emptied (control red). The planted ranking claim (title), delivery-timing claim (description) and order-by cutoff (JSON-LD description) are the control's three cases. Local run: 67 passed, 4 failed in `honesty.spec.ts` AC-16 canonical cases only because the throwaway server ran on port 3145 while the site URL is `localhost:3000`; CI serves the right origin.
