@@ -60,12 +60,56 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Escalations
 
-_None recorded._
+- **E-1 (2026-10-18, implementer): A11's AC and T rows are not written into spec 009.** The brief
+  asks for them "in place of A9's three cases (`pnpm specs:index`)", but spec text is the spec
+  writer's, with the founder's approval (work order wo-172, rule of the road "no role edits a
+  spec"). The tests A11 lists are built as A11 words them. For the spec writer: one AC ("no
+  guarantee text, in any locale, states a number of days of freshness; `trust.guarantee.name`,
+  `home.proof.guarantee.title` and `nav.utility.guarantee` read the fresh-flower promise") and
+  T rows for the four A11 tests (scan fixture case, message and content scan, PDP unit case,
+  e2e case), replacing A9's 5 / 7 / absent cases; then `pnpm specs:index`.
 
 ## Progress
 
-_Not started._
+- 2026-10-18: `trust.guarantee.name` retired in `en`/`de`/`pl`; `src/config/freshness-claim.ts`
+  and `tests/unit/freshness-claim.test.ts` (fixture case, branch-deletion mutants, four-locale
+  message and content scan) pushed; PR 265 opened as draft.
+- 2026-10-18: PDP unit case (`tests/unit/product-page.test.tsx`), e2e case
+  (`tests/e2e/product-page.spec.ts`), the `freshnessGuarantee` comment, the review queue entry in
+  `tests/unit/i18n-messages-schema.test.ts`, the map. Next: rebase, ready, `ci:full`.
 
 ## Result
 
-_Pending._
+PR [#265](https://github.com/itsahmeds/flowers-overseas/pull/265).
+
+- **Retired:** `trust.guarantee.name` "7-day freshness guarantee" → `en` "Fresh-flower promise",
+  `de` "Frische-Versprechen", `pl` "Obietnica świeżych kwiatów" (the drafted translations
+  `nav.utility.guarantee` already carries, TASK-176); `en-gb` inherits `en`. All three
+  `reviewed: false`, `source: human`, `sourceHash` of the new `en` value. `home.proof.guarantee.title`
+  already read "Fresh-flower promise" in every locale (TASK-177): unchanged.
+- **Scan:** `src/config/freshness-claim.ts` (`freshnessClaims`, `FRESHNESS_TERMS`,
+  `FRESHNESS_WINDOW`, `DAY_ARGUMENT`), reusing `sentencesOf` from `honesty.ts`; TASK-182's
+  `pages:check` can call it. Beyond A11's lists it also reads the Polish combining forms
+  (`siedmio-`, `dwu-`…) and the compound week stems (`-wöchig`, `tygodniow-`), and measures the
+  window from the end of a whole ICU plural.
+- **Tests:** `tests/unit/freshness-claim.test.ts` (17): A11's pass and fail sentences, every
+  spelled-out number to thirty in three languages, every term, the window both ways, every
+  single-branch deletion of both patterns caught, the four-locale scan over every guarantee key
+  (`infoPages.*`, any key segment naming a guarantee, freshness or promise, the five named keys
+  asserted present) and `content/pages/*/guarantee.md`, and "7-day" / `{days}` /
+  `{freshnessDays}` restored in each named key in each locale reported.
+  `tests/unit/product-page.test.tsx` +1 (same trust text for `freshnessDays` 5, 7, 30 in four
+  locales; the view carries no `freshnessDays`; "72" present, 5/7/30 absent).
+  `tests/e2e/product-page.spec.ts` +8 (four locales × a 5-day and a 7-day product).
+- **Watched red:** "7-day freshness guarantee" restored in `de` → 2 red; `{days}` in the `en`
+  PDP body → `en` and `en-gb` red; `FRESHNESS_WINDOW` 4 → red; the PDP title with a
+  product-dependent number → the unit case red; "7-day freshness guarantee" as the PDP title →
+  "expected [7, 72] not to include 7". The e2e case was not run locally (load average 40+);
+  CI runs it.
+- **Copy share (`en-gb`, spec 003 A17):** 0.6 % (3/541) on `main` → 0.7 % (4/541). With PR 262's
+  keys about 3.3 % → 3.5 %.
+- **New lines for the founder's next copy batch:** `trust.guarantee.name` `en` "Fresh-flower
+  promise" (the batch's own words, re-used on a new key), `de` "Frische-Versprechen", `pl`
+  "Obietnica świeżych kwiatów".
+- **Not changed (outside the fence), still say "7-day":** code comments in
+  `src/modules/ui/icons/Icon.tsx` L46 and `src/modules/ui/trust/TrustStrip.tsx` L7.
