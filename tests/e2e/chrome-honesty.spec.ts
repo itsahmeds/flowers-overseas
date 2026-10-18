@@ -97,6 +97,19 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
 const HEAD_PAGES: readonly { readonly type: string; readonly path: string }[] =
   [...PAGES, { type: "product page", path: "/en/poland/product/amber-hour" }];
 
+/**
+ * The page types whose documents carry JSON-LD: the locale home (`Organization`, `WebSite`) and the
+ * destinations hub and corridor guide (breadcrumbs, FAQ). `JsonLd` renders it **in `<body>`**, not
+ * in `<head>`, so a read of `document.head` found none on any page and the scan below passed with
+ * its subject missing (`/break` round 2, hole 1). The country shop, listing, hub and product pages
+ * emit none today; the day one does, add its type here.
+ */
+const JSON_LD_TYPES: ReadonlySet<string> = new Set([
+  "home",
+  "destinations hub",
+  "corridor",
+]);
+
 /** Ten page types and 26 documents: dropping either a type or a row must fail a count. */
 const HEAD_PAGE_TYPES = [
   "category hub",
@@ -312,6 +325,15 @@ test.describe("A19 and AC-19: the head makes no promise or review-shaped claim e
           `${path}: no meta description`,
         ).toBe(true);
       }
+      // The JSON-LD half of the read saw its subject: a page known to carry blocks yields them.
+      if (JSON_LD_TYPES.has(type)) {
+        expect(read.jsonLd.length, `${path}: no JSON-LD read`).toBeGreaterThan(
+          0,
+        );
+        expect(read.jsonLd.length).toBe(
+          await page.locator('script[type="application/ld+json"]').count(),
+        );
+      }
       expect(headOffences(read), JSON.stringify(strings)).toEqual([]);
     });
   }
@@ -342,7 +364,8 @@ test.describe("A19 and AC-19: the head makes no promise or review-shaped claim e
       `json-ld[${served.jsonLd.length}].description: order-by cutoff promise`,
     ]);
 
-    // The key form: a rating node's values are numbers, which no text pattern reads.
+    // The key form, planted into `<body>` as the app renders its blocks: a rating node's values
+    // are numbers, which no text pattern reads.
     const at = `json-ld[${served.jsonLd.length}]`;
     const rating = await readHead(page, {
       jsonLd: {

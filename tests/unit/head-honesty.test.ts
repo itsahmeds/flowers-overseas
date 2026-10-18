@@ -526,9 +526,9 @@ describe("the head sweep, round 2: what the breaker slipped past", () => {
       expect(
         headOffences({ ...CLEAN, title: `same${zw}-day delivery` }),
       ).toEqual(["title: delivery-timing claim"]);
-      expect(
-        headOffences({ ...CLEAN, title: `Be${zw}st sellers` }),
-      ).toEqual(["title: ranking claim"]);
+      expect(headOffences({ ...CLEAN, title: `Be${zw}st sellers` })).toEqual([
+        "title: ranking claim",
+      ]);
     }
     expect(normaliseHeadText("be\u200Bst\u2060 sellers")).toBe("best sellers");
   });
