@@ -248,6 +248,18 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   set's size from the page; the exact set is the unit case); the phone rule cell was
   `aria-hidden`, which AC-45's ornament probe counts (fixed). E-3 recorded. **Next:** E-2 and
   E-3 rulings; then re-take the Linux baselines (`visual:baselines`), commit them, re-fire CI.
+- 2026-10-18 17:30 to 18:20 PKT (finisher, round 2): rebased on origin/main 4d8b6c45 (TASKS
+  conflicts taken from main). Built 18a (summary reads `nav.categories.label`, the key removed from
+  every catalogue and manifest; T-39 checks the words, a unit case checks no file holds the key)
+  and 18b (shop root and category H1 at `--text-title-fluid` at every width; T-43 to the title
+  step plus a 390 case). `gates:cheap` PASS on f44ec0dd. Local build (slot, load about 5): every
+  e2e in listing-first-screen, frame-laptop-band, country-category passes except T-49 shop root
+  at 390 (865.7) and T-39 `/de/…/rosen` at 390 (855); E-4 recorded. Linux baselines from run
+  39128438059: 11 images looked at and committed (ac00d261); label removed. CI run 39128438076
+  on f44ec0dd: unit, integration green (E-2 gone); visual red (baselines were not yet in);
+  e2e and lighthouse still running at the stop.
+  **Next:** read that run's e2e for the Linux T-49 numbers (add them to E-4); toggle `ci:full`
+  for head ac00d261 or later; wait for the E-4 ruling; then the row goes to `in_review`.
 
 ## Result
 
