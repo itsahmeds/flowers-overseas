@@ -37,6 +37,9 @@ import {
   hubView,
   listCorridorPages,
 } from "../../geo/index.ts";
+import type { InfoPageId } from "@/config/info-pages";
+
+import { infoPageAlternatePaths, infoPageView } from "../../content/index.ts";
 import {
   alternatesFor,
   catalogueUpdatedAt,
@@ -114,12 +117,48 @@ function hubEntry(
 }
 
 /**
+ * One trust page's row (spec 041 §6 "Sitemap membership", AC-20; TASK-182): present only when
+ * `pageIndexability()` says `index,follow` (the same call the page's `<head>` makes), with the
+ * page's own alternates and `<lastmod>` equal to its content file's `updatedAt`.
+ */
+function infoPageEntry(pageId: InfoPageId): StaticSitemapEntryBuilder {
+  return (locale, deployment) => {
+    if (routableLocale(locale) === undefined) return undefined;
+    const view = infoPageView(pageId, locale);
+    if (view === undefined) return undefined;
+    const verdict = pageIndexability(
+      { pageType: pageId, locale, exists: true, reviewed: view.reviewed },
+      deployment,
+    );
+    if (!verdict.indexable) return undefined;
+    const baseUrl = deployment.siteUrl;
+    const loc = absoluteUrl(view.path, { baseUrl });
+    const cluster =
+      alternatesFor(
+        { pathByLocale: infoPageAlternatePaths(pageId) },
+        { baseUrl },
+      ).find((candidate) => candidate.url === loc)?.alternates ?? [];
+    return {
+      loc,
+      lastmod: view.updatedAt,
+      alternates: cluster.map((alternate) => ({ ...alternate })),
+    };
+  };
+}
+
+/**
  * The registry: one builder per page type `static.xml` announces. This is the extension point —
  * the only edit a new standing page type needs here — and `staticSitemapEntries()` below reads
  * nothing else.
  */
 const STATIC_SITEMAP_ENTRY_BUILDERS = {
   destinationsHub: hubEntry,
+  // Spec 041's trust pages (TASK-182). The legal set joins with TASK-183's legal view.
+  "how-it-works": infoPageEntry("how-it-works"),
+  guarantee: infoPageEntry("guarantee"),
+  help: infoPageEntry("help"),
+  about: infoPageEntry("about"),
+  delivery: infoPageEntry("delivery"),
 } as const satisfies Readonly<
   Partial<Record<SeoPageType, StaticSitemapEntryBuilder>>
 >;

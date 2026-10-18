@@ -15,7 +15,7 @@
  */
 import { z } from "zod";
 
-import { INFO_PAGE_IDS } from "@/config/info-pages";
+import { INFO_PAGE_IDS } from "../../config/info-pages.ts";
 
 /** `seoTitle` ≤ 60 and `seoDescription` ≤ 155 characters (spec 041 §2, AC-18). */
 export const SEO_TITLE_MAX = 60;

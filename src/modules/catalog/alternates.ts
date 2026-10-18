@@ -14,6 +14,7 @@
  * An empty segment list is the locale home; a path the resolver refuses is `{}`.
  */
 import { launchLocaleCodes, localePath } from "@/modules/i18n";
+import { infoPageAlternatePaths } from "@/modules/content";
 import { corridorAlternatePaths } from "@/modules/geo";
 
 import { listingAlternatePaths } from "./listing";
@@ -91,6 +92,8 @@ export async function pageAlternatePaths(
         countryIso: match.iso2,
         entityKey: match.occasionKey,
       });
+    case "infoPage":
+      return infoPageAlternatePaths(match.pageId);
     case "product":
       return productAlternatePaths({
         sku: match.sku,

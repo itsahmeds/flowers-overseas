@@ -21,11 +21,13 @@ export {
   type InfoPageRef,
   type InfoPageView,
   type InfoSectionView,
+  infoPageAlternatePaths,
   infoPageExists,
   infoPageForSegment,
   infoPagePath,
   infoPageView,
   listInfoPages,
+  missingInfoPageLinkIds,
   parsedInfoFiles,
   trustContent,
 } from "./pages.ts";

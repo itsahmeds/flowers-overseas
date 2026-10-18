@@ -27,7 +27,7 @@ faq:
   - q: "Will the recipient know who sent them?"
     a: "Yes. Your name and your card message go with the bouquet. Write the message in any language; our florist prints it on our card as you wrote it."
   - q: "What do you do with the recipient's details?"
-    a: "We use their name, address and phone number only to deliver your gift, share them only with our florist who delivers it, and delete them once they are no longer needed. Ask us if you want to know exactly what we hold."
+    a: "We use their name, address and phone number only to deliver your gift, share them only with our florist who delivers it, and delete them once they are no longer needed. Ask us if you want to know exactly what we keep."
 links:
   - to: guarantee
     label: "Our guarantee"

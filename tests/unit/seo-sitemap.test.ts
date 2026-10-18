@@ -19,6 +19,7 @@
  * a reviewer can reach until the §12 flip) has an empty sitemap, and the interesting table is the
  * indexing one.
  */
+import { infoPageView } from "../../src/modules/content/index.ts";
 import { describe, expect, it, vi } from "vitest";
 
 import { countrySlug } from "../../src/config/countries.ts";
@@ -376,15 +377,29 @@ describe("AC-7: a fixture flip of `guidePublished` moves the sitemap row", () =>
 describe("static.xml is the page-type list applied (AC-13, AC-14)", () => {
   const ANNOUNCED: Record<StaticSitemapPageType, (locale: string) => string> = {
     destinationsHub: (locale) => `${ORIGIN}/${locale}/send-flowers-to`,
+    "how-it-works": (locale) => `${ORIGIN}/${locale}/how-it-works`,
+    guarantee: (locale) => `${ORIGIN}/${locale}/guarantee`,
+    help: (locale) => `${ORIGIN}/${locale}/help`,
+    about: (locale) => `${ORIGIN}/${locale}/about`,
+    delivery: (locale) => `${ORIGIN}/${locale}/delivery`,
   };
+
+  /**
+   * Spec 041's trust pages announce a row only once their content is reviewed (AC-20); while the
+   * founder's copy batch is pending they are `noindex` and absent, which is the same verdict.
+   */
+  function announced(pageType: StaticSitemapPageType, locale: string): boolean {
+    if (pageType === "destinationsHub") return true;
+    return infoPageView(pageType, locale)?.reviewed === true;
+  }
 
   it("emits one row per listed page type, in the list's order", () => {
     expect(STATIC_SITEMAP_PAGE_TYPES.length).toBeGreaterThan(0);
     for (const locale of ENGLISH_LOCALES) {
       expect(locs(staticSitemapEntries(locale, INDEXING))).toEqual(
-        STATIC_SITEMAP_PAGE_TYPES.map((pageType) =>
-          ANNOUNCED[pageType](locale),
-        ),
+        STATIC_SITEMAP_PAGE_TYPES.filter((pageType) =>
+          announced(pageType, locale),
+        ).map((pageType) => ANNOUNCED[pageType](locale)),
       );
     }
   });

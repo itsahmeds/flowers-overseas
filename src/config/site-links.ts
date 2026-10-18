@@ -37,6 +37,8 @@
  */
 import { z } from "zod";
 
+import { InfoPageIdSchema } from "./info-pages.ts";
+
 import { PATH_SEGMENT_KEYS } from "./locales.data.ts";
 
 /**
@@ -169,6 +171,15 @@ export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
       countryIso: CorridorIso2Schema.optional(),
     })
     .strict(),
+  /**
+   * **One info page** of spec 041 — a trust page, the imprint or a legal document (§2 "Links";
+   * TASK-182). Its own kind because a legal document's URL carries a per-locale leaf slug under
+   * the `legal` segment, and because its existence per locale is `infoPageExists()`'s answer
+   * (a content file in that locale, and the company registered for imprint, terms and privacy):
+   * permission here, existence there, the `corridor` kind's rule. The document layout asks
+   * `src/modules/content` and hands the missing ones to the footer.
+   */
+  z.object({ kind: z.literal("infoPage"), page: InfoPageIdSchema }).strict(),
   z.object({ kind: z.literal("pending") }).strict(),
 ]);
 
@@ -506,74 +517,73 @@ const siteLinks = [
   {
     id: "delivery-times",
     labelKey: "footer.link.deliveryAndPayment",
-    target: { kind: "pending" },
-    published: false,
-    requiresDeliveryDates: true,
-    owningSpec: "007",
+    target: { kind: "infoPage", page: "delivery" },
+    published: true,
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "guarantee",
     labelKey: "footer.link.guarantee",
-    target: { kind: "pending" },
-    published: false,
-    owningSpec: "007",
+    target: { kind: "infoPage", page: "guarantee" },
+    published: true,
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "how-it-works",
     labelKey: "footer.link.howItWorks",
-    target: { kind: "pending" },
-    published: false,
-    owningSpec: "007",
+    target: { kind: "infoPage", page: "how-it-works" },
+    published: true,
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "help-and-contact",
     labelKey: "footer.link.helpAndContact",
-    target: { kind: "pending" },
-    published: false,
-    owningSpec: "007",
+    target: { kind: "infoPage", page: "help" },
+    published: true,
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "imprint",
     labelKey: "footer.link.imprint",
-    target: { kind: "route", pageType: "legal" },
+    target: { kind: "infoPage", page: "imprint" },
     published: false,
-    owningSpec: "007",
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "terms",
     labelKey: "footer.link.terms",
-    target: { kind: "route", pageType: "legal" },
+    target: { kind: "infoPage", page: "terms" },
     published: false,
-    owningSpec: "007",
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "privacy",
     labelKey: "footer.link.privacy",
-    target: { kind: "route", pageType: "legal" },
+    target: { kind: "infoPage", page: "privacy" },
     published: false,
-    owningSpec: "007",
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "cookies",
     labelKey: "footer.link.cookies",
-    target: { kind: "route", pageType: "legal" },
+    target: { kind: "infoPage", page: "cookies" },
     published: false,
-    owningSpec: "007",
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   {
     id: "withdrawal-and-refunds",
     labelKey: "footer.link.withdrawal",
-    target: { kind: "route", pageType: "legal" },
+    target: { kind: "infoPage", page: "cancellation" },
     published: false,
-    owningSpec: "007",
+    owningSpec: "041",
     surfaces: ["footer"],
   },
   // The seven corridor country pages (spec 007 §2 "Internal links", AC-17, AC-20; TASK-092), in

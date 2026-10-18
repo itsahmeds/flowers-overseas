@@ -9,7 +9,7 @@ sections:
     body: "Flowers Overseas is run by its founder, {representativeName}."
   - id: why
     heading: "Why we do it this way"
-    body: "Sending flowers to someone abroad usually means a box that has spent days in transit, or a site that leaves you guessing once you have paid. We think both are the wrong way round. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person; we take the payment, put your message in the right language, and answer for the result."
+    body: "Sending flowers to someone abroad usually means a box that has spent days in transit, or a site that leaves you guessing once you have paid. We think both are the wrong way round. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person; we handle the payment, put your message in the right language, and answer for the result."
   - id: today
     heading: "Where we are today"
     body: "We are not taking orders yet. We have written guides for seven countries in Europe and will open them one at a time, starting with Poland."

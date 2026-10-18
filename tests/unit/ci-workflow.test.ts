@@ -97,6 +97,9 @@ const EXPECTED_JOBS = [
   // spec 007 AC-2 (TASK-087): the corridor content gate, on the same fan-out — it reads
   // `content/corridors/**` and writes the §11 published-set summary.
   "corridor-check",
+  // spec 041 AC-5 (TASK-182): the info-page content gate, on the same fan-out — it reads
+  // `content/pages/**` and `content/legal/**` and writes the §11 page × locale table.
+  "pages-check",
   // spec 006 AC-10, AC-30 (TASK-075): the seed-dataset gate, on the same fan-out for the same
   // reason — it reads `seed/data/**` and writes the §11 catalogue-health report.
   "seed-check",

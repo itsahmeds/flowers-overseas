@@ -30,6 +30,7 @@ import {
 
 import { destinationsHubHref, hubView } from "../geo/index.ts";
 import {
+  launchLocaleCodes,
   localePath,
   routableLocale,
   routableLocaleCodes,
@@ -154,6 +155,34 @@ export function infoPagePath(pageId: InfoPageId, locale: string): string {
 export interface InfoPageRef {
   readonly pageId: InfoPageId;
   readonly locale: string;
+}
+
+/**
+ * The `site-links.ts` ids whose info page does not exist in this locale (spec 041 AC-21): the
+ * document layout hands them to the footer, which then draws no entry for them, exactly as an
+ * unpublished row is not drawn. `src/modules/ui` may not read this module, so the layout composes.
+ */
+export function missingInfoPageLinkIds(
+  locale: string,
+  options: InfoPageOptions = {},
+): readonly string[] {
+  return INFO_PAGE_IDS.flatMap((pageId) => {
+    const linkId = infoPage(pageId).siteLinkId;
+    if (linkId === undefined) return [];
+    return infoPageExists(pageId, locale, options) ? [] : [linkId];
+  });
+}
+
+/** The page in each launch locale where it exists: the language links and the hreflang source. */
+export function infoPageAlternatePaths(
+  pageId: InfoPageId,
+  options: InfoPageOptions = {},
+): Readonly<Record<string, string>> {
+  return Object.fromEntries(
+    launchLocaleCodes()
+      .filter((code) => infoPageExists(pageId, code, options))
+      .map((code) => [code, infoPagePath(pageId, code)]),
+  );
 }
 
 /** Every (page, locale) that exists, in locale then registry order. */

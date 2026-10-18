@@ -10,7 +10,11 @@
 import { parse as parseYaml } from "yaml";
 import type { z } from "zod";
 
-import { INFO_PAGE_IDS, type InfoPageId, infoPage } from "@/config/info-pages";
+import {
+  INFO_PAGE_IDS,
+  type InfoPageId,
+  infoPage,
+} from "../../config/info-pages.ts";
 
 import {
   ExtendsEnSchema,

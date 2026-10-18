@@ -18,6 +18,7 @@ import {
   occasionsIndexHref,
   slugFor,
 } from "@/modules/catalog";
+import { infoPageExists, infoPagePath } from "@/modules/content";
 import { listingPath, localePath, routableLocale } from "@/modules/i18n";
 import {
   JsonLd,
@@ -220,7 +221,13 @@ export default async function LocaleHomePage({
         <HowItWorks />
         {/* The promise band: v2's form of AC-10's trust strip. */}
         <ProofRow />
-        <HomeFaq />
+        <HomeFaq
+          allTopicsHref={
+            infoPageExists("help", locale.code)
+              ? infoPagePath("help", locale.code)
+              : undefined
+          }
+        />
         <DestinationsGrid
           locale={locale.code}
           {...(links.shopHref === undefined
