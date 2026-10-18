@@ -13,10 +13,11 @@
  * become ready fails at once instead of burning fifteen minutes.
  */
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   type CloudflareRecord,
@@ -32,6 +33,7 @@ import {
   decide,
   isAllowedCloudflareRequest,
   isPreviewEnvironmentName,
+  liveDeps,
   main,
   missingCredentials,
   previewProjectResponseSchema,
@@ -272,10 +274,19 @@ function world(
     noEnvironment?: boolean;
     domainRace?: boolean;
     forbidden?: boolean;
+    /** `preview` already provisioned: domain, record and variables in place, head built. */
+    preWritten?: boolean;
+    /** How many `/api/health` reads still answer from the build made with staging's variables. */
+    staleHealth?: number;
+    /** Every Railway query throws, as an unreachable API does. */
+    railwayDown?: boolean;
+    records?: CloudflareRecord[];
   } = {},
 ) {
   const project = recorded();
-  if (options.noEnvironment === true) {
+  if (options.preWritten === true) {
+    // The recorded answer is exactly this state: everything in place, head SHA SUCCESS.
+  } else if (options.noEnvironment === true) {
     project.data.project.environments.edges.splice(1, 1);
   } else {
     const { web } = prWeb(project);
@@ -283,13 +294,19 @@ function world(
     if (web.latestDeployment?.meta)
       web.latestDeployment.meta["commitHash"] = "1".repeat(40);
   }
-  let variables: Record<string, string> = {
-    APP_ENV: "staging",
-    NEXT_PUBLIC_APP_ENV: "staging",
-    NEXT_PUBLIC_SITE_URL: "https://staging.flowersoverseas.com",
-    DATABASE_URL: SENTINEL,
-  };
-  const records: CloudflareRecord[] = [];
+  let variables: Record<string, string> =
+    options.preWritten === true
+      ? { ...previewVariables(PR), DATABASE_URL: SENTINEL }
+      : {
+          APP_ENV: "staging",
+          NEXT_PUBLIC_APP_ENV: "staging",
+          NEXT_PUBLIC_SITE_URL: "https://staging.flowersoverseas.com",
+          DATABASE_URL: SENTINEL,
+        };
+  const records: CloudflareRecord[] =
+    options.records ?? (options.preWritten === true ? [goodRecord] : []);
+  let staleHealth = options.staleHealth ?? 0;
+  const healthReads: string[] = [];
   const calls: string[] = [];
   const logs: string[] = [];
   let clock = Date.parse("2026-10-18T21:00:00.000Z");
@@ -298,6 +315,9 @@ function world(
     zoneId: ZONE,
     railway: (query, vars) => {
       calls.push(query.split("(")[0] ?? query);
+      if (options.railwayDown === true) {
+        return Promise.reject(new PreviewApiError("Railway API answered 502"));
+      }
       if (query === PREVIEW_PROJECT_QUERY) {
         return Promise.resolve(JSON.parse(JSON.stringify(project)));
       }
@@ -372,7 +392,25 @@ function world(
         records.push({ id: "bb22", ...b });
         return Promise.resolve({ success: true, result: {} });
       }
+      if (method === "DELETE") {
+        const id = path.split("/").pop();
+        records.splice(
+          records.findIndex((record) => record.id === id),
+          1,
+        );
+        return Promise.resolve({ success: true, result: { id } });
+      }
       throw new Error(`unexpected ${method}`);
+    },
+    health: (url) => {
+      healthReads.push(url);
+      const deployment = prWeb(project).web.latestDeployment;
+      const commit = String(deployment?.meta?.["commitHash"] ?? "");
+      if (staleHealth > 0) {
+        staleHealth -= 1;
+        return Promise.resolve({ appEnv: "staging", commit });
+      }
+      return Promise.resolve({ appEnv: variables["APP_ENV"] ?? "", commit });
     },
     sleep: (ms) => {
       clock += ms;
@@ -381,7 +419,14 @@ function world(
     now: () => new Date(clock),
     log: (line) => logs.push(line),
   };
-  return { deps, calls, logs, records, variables: () => variables };
+  return {
+    deps,
+    calls,
+    logs,
+    records,
+    healthReads,
+    variables: () => variables,
+  };
 }
 
 describe("the polling loop (AC-12, AC-26)", () => {
@@ -744,5 +789,476 @@ describe("the three properties of AC-26 on the resolved URL (`--assert`, spec 04
     const answers = good();
     (answers["bare"] as Answer).status = 200;
     expect(await main(args, env, undefined, fakeFetch(answers))).toBe(1);
+  });
+});
+
+describe("ready means served: the preview build, not the one made with staging's variables (/break 263 hole 6)", () => {
+  it("waits while the host still serves the earlier build, even though Railway lists the head as SUCCESS", async () => {
+    const w = world({ preWritten: true, staleHealth: 2 });
+    const result = await resolvePreview(
+      { pr: PR, sha: SHA, provision: false, attempts: 10, intervalMs: 1 },
+      w.deps,
+    );
+    expect(result).toEqual({ ok: true, url: `https://${HOST}` });
+    expect(w.healthReads).toEqual([
+      `https://${HOST}`,
+      `https://${HOST}`,
+      `https://${HOST}`,
+    ]);
+    expect(w.logs.join("\n").toLowerCase()).toContain(
+      `still serves appenv staging at ${SHA}, not the preview build`,
+    );
+  });
+
+  it("never reports a host that keeps serving the earlier build", async () => {
+    const w = world({ preWritten: true, staleHealth: 99 });
+    const result = await resolvePreview(
+      { pr: PR, sha: SHA, provision: false, attempts: 5, intervalMs: 1 },
+      w.deps,
+    );
+    expect(result.ok).toBe(false);
+    expect(!result.ok && result.reason).toContain(
+      "still serves appEnv staging",
+    );
+  });
+
+  it("waits while the host serves another commit, or does not answer", async () => {
+    const w = world({ preWritten: true });
+    let reads = 0;
+    const deps: PreviewDeps = {
+      ...w.deps,
+      health: () => {
+        reads += 1;
+        if (reads === 1) return Promise.resolve(undefined);
+        if (reads === 2) return Promise.reject(new Error("ENOTFOUND"));
+        if (reads === 3)
+          return Promise.resolve({ appEnv: "preview", commit: "1".repeat(40) });
+        return Promise.resolve({
+          appEnv: "preview",
+          commit: SHA.toUpperCase(),
+        });
+      },
+    };
+    const result = await resolvePreview(
+      { pr: PR, sha: SHA, provision: false, attempts: 10, intervalMs: 1 },
+      deps,
+    );
+    expect(result.ok).toBe(true);
+    expect(reads).toBe(4);
+  });
+});
+
+describe("main(), the command the jobs run (/break 263 hole 1)", () => {
+  const quiet = () => {
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+  };
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+  const ENV = {
+    RAILWAY_API_TOKEN: "t",
+    RAILWAY_PROJECT_ID: "p",
+    CLOUDFLARE_API_TOKEN: "t",
+    CLOUDFLARE_ZONE_ID: ZONE,
+  };
+
+  it("exits 1 when no environment appears in the 15 minutes: fails, never skips (AC-26)", async () => {
+    quiet();
+    const w = world({ noEnvironment: true });
+    expect(
+      await main(["--provision", "--pr", "263", "--sha", SHA], ENV, w.deps),
+    ).toBe(1);
+    // All 45 attempts were made, 20 s apart on the injected clock.
+    expect(
+      w.calls.filter((call) => call === "query PreviewEnvironments").length,
+    ).toBe(45);
+  });
+
+  it("exits 3 when an API refuses", async () => {
+    quiet();
+    const w = world({ railwayDown: true });
+    expect(
+      await main(["--provision", "--pr", "263", "--sha", SHA], ENV, w.deps),
+    ).toBe(3);
+  });
+
+  it("writes preview_url to $GITHUB_OUTPUT and the URL to stdout on success", async () => {
+    const out = vi
+      .spyOn(process.stdout, "write")
+      .mockImplementation(() => true);
+    const dir = mkdtempSync(join(tmpdir(), "fo-gh-output-"));
+    try {
+      const output = join(dir, "output");
+      writeFileSync(output, "");
+      const w = world();
+      expect(
+        await main(
+          ["--provision", "--pr", "263", "--sha", SHA],
+          { ...ENV, GITHUB_OUTPUT: output },
+          w.deps,
+        ),
+      ).toBe(0);
+      expect(readFileSync(output, "utf8")).toBe(
+        `preview_url=https://${HOST}\n`,
+      );
+      expect(out).toHaveBeenCalledWith(`https://${HOST}\n`);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("provisions only with --provision: without it, the same state times out having written nothing", async () => {
+    quiet();
+    const withFlag = world();
+    expect(
+      await main(
+        ["--provision", "--pr", "263", "--sha", SHA],
+        ENV,
+        withFlag.deps,
+      ),
+    ).toBe(0);
+    expect(withFlag.calls).toContain("mutation PreviewVariablesUpsert");
+    const withoutFlag = world();
+    expect(
+      await main(["--pr", "263", "--sha", SHA], ENV, withoutFlag.deps),
+    ).toBe(1);
+    expect(
+      withoutFlag.calls.filter(
+        (call) =>
+          call.startsWith("mutation") || /^(POST|PUT|DELETE) /u.test(call),
+      ),
+    ).toEqual([]);
+  });
+
+  it.each([["abc"], ["0"], ["-1"], ["263x"], [""]])(
+    "exits 2 for --pr %j even with every credential present, and calls nothing",
+    async (pr) => {
+      quiet();
+      const w = world();
+      expect(
+        await main(["--provision", "--pr", pr, "--sha", SHA], ENV, w.deps),
+      ).toBe(2);
+      expect(w.calls).toEqual([]);
+    },
+  );
+
+  it("--sweep deletes the records of removed environments, and only those", async () => {
+    quiet();
+    const stale: CloudflareRecord = {
+      ...goodRecord,
+      id: "dd44",
+      name: "pr-12.flowersoverseas.com",
+    };
+    const w = world({ preWritten: true, records: [stale, goodRecord] });
+    expect(await main(["--sweep"], ENV, w.deps)).toBe(0);
+    expect(w.calls.filter((call) => call.startsWith("DELETE"))).toEqual([
+      `DELETE /zones/${ZONE}/dns_records/dd44`,
+    ]);
+    expect(w.records).toEqual([goodRecord]);
+  });
+});
+
+describe("the live clients, over recorded HTTP (/break 263 hole 2)", () => {
+  interface Sent {
+    url: string;
+    method: string;
+    headers: Record<string, string>;
+    body: string | undefined;
+  }
+  const recorder = (answer: (url: string) => Response) => {
+    const sent: Sent[] = [];
+    const fetchImpl = ((input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      sent.push({
+        url,
+        method: init?.method ?? "GET",
+        headers: Object.fromEntries(new Headers(init?.headers).entries()),
+        body: typeof init?.body === "string" ? init.body : undefined,
+      });
+      return Promise.resolve(answer(url));
+    }) as typeof fetch;
+    return { sent, fetchImpl };
+  };
+  const ENV = {
+    RAILWAY_API_TOKEN: "railway-token",
+    RAILWAY_PROJECT_ID: "project-0000",
+    CLOUDFLARE_API_TOKEN: "cloudflare-token",
+    CLOUDFLARE_ZONE_ID: ZONE,
+  };
+  const json = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { "content-type": "application/json" },
+    });
+
+  it.each([401, 403])(
+    "a Railway %i ends the run at once: one request, never a 15-minute retry",
+    async (status) => {
+      const { sent, fetchImpl } = recorder(() => json({}, status));
+      const deps = {
+        ...liveDeps(ENV, fetchImpl),
+        sleep: () => Promise.resolve(),
+      };
+      await expect(
+        resolvePreview(
+          { pr: PR, sha: SHA, provision: true, attempts: 45, intervalMs: 1 },
+          deps,
+        ),
+      ).rejects.toBeInstanceOf(PreviewScopeError);
+      expect(sent.length).toBe(1);
+    },
+  );
+
+  it("a Railway 500 is an API error, not a scope error", async () => {
+    const { fetchImpl } = recorder(() => json({}, 500));
+    const error = await liveDeps(ENV, fetchImpl)
+      .railway("query X", {})
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(PreviewApiError);
+    expect(error).not.toBeInstanceOf(PreviewScopeError);
+  });
+
+  it("GraphQL `errors` in a 200 refuse the request, naming the message", async () => {
+    const { fetchImpl } = recorder(() =>
+      json({ errors: [{ message: "Domain already exists" }] }),
+    );
+    await expect(
+      liveDeps(ENV, fetchImpl).railway("mutation X", {}),
+    ).rejects.toThrow("Railway API refused the request: Domain already exists");
+  });
+
+  it("sends the Railway token as a bearer header to the GraphQL endpoint", async () => {
+    const { sent, fetchImpl } = recorder(() => json({ data: {} }));
+    await liveDeps(ENV, fetchImpl).railway("query X", { a: 1 });
+    expect(sent).toEqual([
+      {
+        url: "https://backboard.railway.com/graphql/v2",
+        method: "POST",
+        headers: {
+          authorization: "Bearer railway-token",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ query: "query X", variables: { a: 1 } }),
+      },
+    ]);
+  });
+
+  it.each([
+    ["GET", "/accounts/abc/tokens"],
+    ["PATCH", `/zones/${ZONE}/dns_records/aa11`],
+    ["PUT", `/zones/${ZONE}/settings/ssl`],
+    ["DELETE", `/zones/${ZONE}`],
+  ] as const)(
+    "refuses Cloudflare %s %s before any request leaves",
+    async (method, path) => {
+      const { sent, fetchImpl } = recorder(() =>
+        json({ success: true, result: [] }),
+      );
+      await expect(
+        liveDeps(ENV, fetchImpl).cloudflare(method as "GET", path),
+      ).rejects.toThrow("is not on PREVIEW_CLOUDFLARE_ENDPOINTS");
+      expect(sent).toEqual([]);
+    },
+  );
+
+  it("sends an allow-listed Cloudflare request with the zone token", async () => {
+    const { sent, fetchImpl } = recorder(() =>
+      json({ success: true, result: [] }),
+    );
+    await liveDeps(ENV, fetchImpl).cloudflare(
+      "POST",
+      `/zones/${ZONE}/dns_records`,
+      { a: 1 },
+    );
+    expect(sent).toEqual([
+      {
+        url: `https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records`,
+        method: "POST",
+        headers: {
+          authorization: "Bearer cloudflare-token",
+          "content-type": "application/json",
+        },
+        body: '{"a":1}',
+      },
+    ]);
+  });
+
+  it("a Cloudflare 403 is a scope error, named as the missing DNS Edit", async () => {
+    const { fetchImpl } = recorder(() => json({}, 403));
+    const error = await liveDeps(ENV, fetchImpl)
+      .cloudflare("GET", `/zones/${ZONE}/dns_records?name.contains=x`)
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(PreviewScopeError);
+    expect(String(error)).toContain("DNS Edit");
+  });
+
+  it("reads the served build from /api/health, and nothing from a 401 or a non-JSON body", async () => {
+    const body = {
+      status: "ok",
+      commit: SHA,
+      appEnv: "preview",
+      region: "europe-west4",
+    };
+    expect(
+      await liveDeps(ENV, recorder(() => json(body)).fetchImpl).health(
+        `https://${HOST}`,
+      ),
+    ).toEqual({
+      appEnv: "preview",
+      commit: SHA,
+    });
+    expect(
+      await liveDeps(ENV, recorder(() => json(body, 401)).fetchImpl).health(
+        `https://${HOST}`,
+      ),
+    ).toBeUndefined();
+    expect(
+      await liveDeps(
+        ENV,
+        recorder(() => new Response("<html>")).fetchImpl,
+      ).health(`https://${HOST}`),
+    ).toBeUndefined();
+  });
+});
+
+describe("a crowded project: the exact environment, service and domain are picked (/break 263 hole 8)", () => {
+  const crowded = (): PreviewProjectResponse =>
+    previewProjectResponseSchema.parse(
+      JSON.parse(
+        readFileSync(
+          resolve(
+            repoRoot,
+            "tests/fixtures/railway/preview-project-crowded.json",
+          ),
+          "utf8",
+        ),
+      ),
+    );
+
+  it("reads as ready despite a decoy xpr-263 environment, a worker listed first and a second domain", () => {
+    expect(decideOn(crowded())).toEqual({
+      kind: "ready",
+      url: `https://${HOST}`,
+    });
+  });
+
+  it("writes the PR host's record, not the other domain's", () => {
+    expect(decideOn(crowded(), { records: [], provision: true })).toEqual({
+      kind: "write-records",
+      records: [
+        {
+          name: HOST,
+          type: "CNAME",
+          content: "abc123.up.railway.app",
+          proxied: true,
+        },
+      ],
+    });
+  });
+
+  it.each(["flowers-overseas-xpr-263", "xpr-263", "pr-2633"])(
+    "%s is not the PR's environment",
+    (name) => {
+      expect(isPreviewEnvironmentName(name, PR)).toBe(false);
+    },
+  );
+});
+
+describe("the 401 wall means 401 (/review 263 item 2)", () => {
+  const answer = (
+    status: number,
+    headers: Record<string, string>,
+    body = "",
+  ) => ({
+    status,
+    headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+    text: () => Promise.resolve(body),
+  });
+  const health = JSON.stringify({
+    status: "ok",
+    commit: SHA,
+    appEnv: "preview",
+    region: "europe-west4-x",
+  });
+  const pageBody = (text: string) =>
+    `<link rel="canonical" href="${text}/en"/>`;
+
+  it.each([403, 500, 200])(
+    "a %i with a Basic challenge fails the auth-wall property",
+    async (status) => {
+      const results = await previewProperties(
+        `https://${HOST}`,
+        SHA,
+        "u:p",
+        (url, init) =>
+          Promise.resolve(
+            url.endsWith("/api/health")
+              ? answer(200, { "cf-ray": "x" }, health)
+              : init.headers["authorization"] === undefined
+                ? answer(status, {
+                    "www-authenticate": 'Basic realm="staging"',
+                    "cf-ray": "x",
+                  })
+                : answer(
+                    200,
+                    { "x-robots-tag": "noindex", "cf-ray": "x" },
+                    pageBody(`https://${HOST}`),
+                  ),
+          ),
+      );
+      expect(results.find((r) => r.name === "auth wall")?.ok).toBe(false);
+      expect(results.filter((r) => !r.ok).map((r) => r.name)).toEqual([
+        "auth wall",
+      ]);
+    },
+  );
+
+  it("fails own origin when the page names both the PR host and staging's", async () => {
+    const results = await previewProperties(
+      `https://${HOST}`,
+      SHA,
+      "u:p",
+      (url, init) =>
+        Promise.resolve(
+          url.endsWith("/api/health")
+            ? answer(200, { "cf-ray": "x" }, health)
+            : init.headers["authorization"] === undefined
+              ? answer(401, { "www-authenticate": "Basic", "cf-ray": "x" })
+              : answer(
+                  200,
+                  { "x-robots-tag": "noindex", "cf-ray": "x" },
+                  pageBody(`https://${HOST}`) +
+                    pageBody("https://staging.flowersoverseas.com"),
+                ),
+        ),
+    );
+    expect(results.filter((r) => !r.ok).map((r) => r.name)).toEqual([
+      "own origin",
+    ]);
+  });
+
+  it("names the region property, rather than throwing, when a 200 health body is not JSON", async () => {
+    const results = await previewProperties(
+      `https://${HOST}`,
+      SHA,
+      "u:p",
+      (url, init) =>
+        Promise.resolve(
+          url.endsWith("/api/health")
+            ? answer(200, { "cf-ray": "x" }, "<html>")
+            : init.headers["authorization"] === undefined
+              ? answer(401, { "www-authenticate": "Basic", "cf-ray": "x" })
+              : answer(
+                  200,
+                  { "x-robots-tag": "noindex", "cf-ray": "x" },
+                  pageBody(`https://${HOST}`),
+                ),
+        ),
+    );
+    expect(results.filter((r) => !r.ok).map((r) => r.name)).toEqual([
+      "region",
+      "build",
+    ]);
   });
 });

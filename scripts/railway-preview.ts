@@ -22,8 +22,16 @@
  *  4. prints `https://pr-<number>.flowersoverseas.com` on stdout (and to `$GITHUB_OUTPUT` as
  *     `preview_url` when that file is set).
  *
- * Without `--provision` (the `lighthouse` job) it changes nothing and only waits for the same
- * state, so two jobs never race to create one domain.
+ * Both `preview` and `lighthouse` pass `--provision`, because `lighthouse` runs without the
+ * `ci:full` label and so without `preview`; a write the other job made first is refused by the
+ * API and read again on the next attempt. Without `--provision` the command changes nothing and
+ * only waits for the same state.
+ *
+ * **Ready means served** (`/break 263` hole 6). Railway can still list the deployment built with
+ * staging's variables as the `SUCCESS` deployment of the head SHA for a moment after the other
+ * job wrote the preview variables. So before it reports the URL, the command reads the host's
+ * own `/api/health` (exempt from the wall) and waits until it answers `appEnv: preview` at the
+ * head SHA: the build the browser suites and Lighthouse then measure is the preview build.
  *
  * **It fails; it never skips** (AC-26). A missing credential exits 2 naming it. No environment,
  * no `SUCCESS` deployment of the head SHA, or no proxied record within 45 × 20 s (15 minutes)
@@ -574,6 +582,13 @@ export interface PreviewDeps {
   readonly sleep: (ms: number) => Promise<void>;
   readonly now: () => Date;
   readonly log: (line: string) => void;
+  /** The host's `/api/health` `appEnv` and `commit`, or `undefined` when it does not answer. */
+  readonly health: (url: string) => Promise<ServedBuild | undefined>;
+}
+
+export interface ServedBuild {
+  readonly appEnv: string;
+  readonly commit: string;
 }
 
 async function readState(
@@ -722,7 +737,24 @@ export async function resolvePreview(
       provision: options.provision,
       variablesWrittenAt,
     });
-    if (step.kind === "ready") return { ok: true, url: step.url };
+    if (step.kind === "ready") {
+      const served = await deps.health(step.url).catch(() => undefined);
+      if (
+        served?.appEnv === PREVIEW_APP_ENV &&
+        served.commit.toLowerCase() === options.sha.toLowerCase()
+      ) {
+        return { ok: true, url: step.url };
+      }
+      lastReason =
+        served === undefined
+          ? `${step.url}/api/health does not answer yet`
+          : `${step.url} still serves appEnv ${served.appEnv} at ${served.commit}, not the preview build of ${options.sha}`;
+      deps.log(
+        `railway-preview: attempt ${String(attempt)}/${String(options.attempts)}: ${lastReason}`,
+      );
+      if (attempt < options.attempts) await deps.sleep(options.intervalMs);
+      continue;
+    }
     if (step.kind === "fail") return { ok: false, reason: step.reason };
     if (step.kind === "wait") {
       lastReason = step.reason;
@@ -816,7 +848,16 @@ export type FetchLike = (
   text(): Promise<string>;
 }>;
 
-const healthSchema = z.object({
+/** JSON, or `undefined` for a body that is not: a non-JSON 200 fails its property by name. */
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return undefined;
+  }
+}
+
+export const healthSchema = z.object({
   status: z.string(),
   commit: z.string(),
   appEnv: z.string(),
@@ -864,7 +905,7 @@ export async function previewProperties(
   });
   const parsed = healthSchema.safeParse(
     healthResponse.status === 200
-      ? (JSON.parse(await healthResponse.text()) as unknown)
+      ? parseJson(await healthResponse.text())
       : undefined,
   );
   const health = parsed.success ? parsed.data : undefined;
@@ -961,8 +1002,14 @@ export function parseArgs(argv: readonly string[]): CliArgs {
   };
 }
 
-function liveDeps(
+/**
+ * The real clients (`/break 263` hole 2). `fetchImpl` is injectable so the tests drive them over
+ * recorded HTTP: a 401/403 ends the run (`PreviewScopeError`, never retried), GraphQL `errors`
+ * refuse, and the Cloudflare allow-list is checked before a request leaves the process.
+ */
+export function liveDeps(
   env: Readonly<Record<string, string | undefined>>,
+  fetchImpl: typeof fetch = fetch,
 ): PreviewDeps {
   const railwayToken = env["RAILWAY_API_TOKEN"] ?? "";
   const cloudflareToken = env["CLOUDFLARE_API_TOKEN"] ?? "";
@@ -970,7 +1017,7 @@ function liveDeps(
     projectId: env["RAILWAY_PROJECT_ID"] ?? "",
     zoneId: env["CLOUDFLARE_ZONE_ID"] ?? "",
     async railway(query, variables) {
-      const response = await fetch(RAILWAY_API_URL, {
+      const response = await fetchImpl(RAILWAY_API_URL, {
         method: "POST",
         headers: {
           authorization: `Bearer ${railwayToken}`,
@@ -1004,7 +1051,7 @@ function liveDeps(
           `${method} ${path.replace(/\?.*$/u, "")} is not on PREVIEW_CLOUDFLARE_ENDPOINTS`,
         );
       }
-      const response = await fetch(
+      const response = await fetchImpl(
         `https://api.cloudflare.com/client/v4${path}`,
         {
           method,
@@ -1026,6 +1073,16 @@ function liveDeps(
         );
       }
       return response.json();
+    },
+    async health(url) {
+      const response = await fetchImpl(`${url}/api/health`, {
+        redirect: "manual",
+      });
+      if (response.status !== 200) return undefined;
+      const parsed = healthSchema.safeParse(parseJson(await response.text()));
+      return parsed.success
+        ? { appEnv: parsed.data.appEnv, commit: parsed.data.commit }
+        : undefined;
     },
     sleep: (ms) => new Promise((done) => setTimeout(done, ms)),
     now: () => new Date(),
