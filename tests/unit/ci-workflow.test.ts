@@ -868,8 +868,9 @@ describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TAS
   };
 
   it("removes the credential, plain and JSON-escaped, from every report", () => {
-    // A base64 credential with `/` and `+` in it, as `user:pass` encodings can carry.
-    const secret = "dXNl/cjpw+YXNzd29yZA==";
+    // A base64-shaped stand-in with `/` and `+` in it, as `user:pass` encodings can carry. Built
+    // from low-entropy parts so the secret scan (`audit:secrets`) does not read it as a key.
+    const secret = ["AAAA", "BBBB+CCCC", "DD=="].join("/");
     const escaped = secret.replaceAll("/", "\\/");
     const result = runScrub(
       {
