@@ -171,6 +171,36 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   not absorb. Question for the founder or the spec writer: which wins on the listings, PR 236's
   title size or clause 9's display size, and does AC-34 hold at 390 on the shop root and the
   occasion with the toolbar above the grid? Not tuned.
+- **E-2 and E-3 ruled (founder, 2026-10-18, merged PR 257).** E-2: spec 008 §14
+  A-founder-2026-10-18a, the summary reads the reviewed `nav.categories.label`, no new key.
+  E-3 (b): spec 004 §14 A-founder-2026-10-18b, the shop root's and the category's H1 take
+  `--text-title-fluid` at every width (44 px at 390). E-3 (a): AC-34/T-49 not relaxed; at
+  390 × 844 the shop root and the occasion match the PR 236 artboards (808 to 826, and 786).
+- **E-4 (2026-10-18, finisher): at 390 × 844, 18b's 44 px H1 and the artboard bound cannot both
+  hold on the shop root.** Measured on a local production build (`.env.example`, FX off, load
+  about 5; CI's Linux text runs wider, earlier about +39 px on the shop root), first-row price
+  foot (`[data-fo-price] > :first-child`; on the occasion `items[0]`'s `[data-fo-price]`):
+
+  | Page at 390 × 844 | As built (44 px H1) | H1 at the artboard's 32 px | No state line | Both | Artboard |
+  |---|---|---|---|---|---|
+  | shop root `/en-gb/poland/flowers` | **865.7** | 808.8 | 836.7 | 779.8 | 808 |
+  | category `/en-gb/…/roses` | 809.7 | 752.8 | 780.7 | 723.8 | 808 |
+  | category `/de/…/rosen` | 833.5 | 776.6 | 804.5 | 747.6 | n/a |
+  | occasion (H1 not in 18b) | 838.3 | 838.3 | 809.3 | 809.3 | 786 |
+
+  Where the build departs from the drawing, element by element (shop root; occasion): the toolbar
+  (count, disclosure, chips, sort, label, grid gap) matches the artboards within 4 px (shop 270 px
+  count-to-grid vs 274 drawn; occasion 247 vs 274). The whole difference is in the hero: (1) the
+  H1, which the phone artboards draw at **32 px** while 18b sets 44 px (shop root +57 locally:
+  44 px takes two lines where 32 px takes one); (2) the **state line** (29 px), which spec 004
+  §14 A24 clause 1 and T-49 require under the H1 at 390 "although the phone artboards omit it";
+  (3) on the occasion, the **"Ordering opens soon" note** (50 px incl. gap), which the occasion
+  phone artboard does not draw (it draws the date line only). So "match the artboards at 390"
+  needs the artboard's 32 px phone H1 (against 18b's 44 px and T-43's new 390 case) and, on the
+  occasion, either no state line or no note on the phone. Question for the founder or the spec
+  writer: at 390, does the H1 take the artboards' 32 px (amend 18b's 390 case to 32), and on the
+  occasion which of the state line and the note gives way? Nothing tuned; T-43's 390 case is
+  written to 18b (44 px).
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
