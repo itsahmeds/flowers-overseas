@@ -136,6 +136,12 @@ One dated bullet per `/review`, newest last.
   - N-06 (P1, QA-2): the destinations hub lists Poland as "Guide · not delivering yet" with only a guide link, no path to `/en/poland/flowers`, while the home says Poland is where to shop (`QA-2-hub-1330-top.png`). R6 keeps "the same links", so check the artboard: if it draws no route to Poland's shop root, escalate to the orchestrator before building; do not invent one. TASK-239 changes Poland's state line, so the two must read alike.
   - N-10 (P2, QA-2) and QA-1: `occasionHub.productsHeading` still reads "Flowers for Birthday" and `categoryHub.h1` "Sending Roses" and "Sending Hand-tied bouquets": A3 and A2 are the approved replacements, so they ship here. `shop.card.noPrice` still has its em dash (Q18-07): P5 is its approved replacement. `occasionHub.dateUnknown` ("Omitted — we cannot compute this country's date yet") and `occasionsIndex.undatedNote` also hold an em dash and are in no approved batch: list them for the founder, change nothing without reviewed wording.
   - QA-2 design bar: the huge blank band to the right of the H1 on category and occasion pages is not caught by AC-45's vertical rule; it is drawn under TASK-252, item 9. Q1-13 (de/pl hub is English, "this line becomes a link") belongs to TASK-185; de and pl are hidden by TASK-237.
+- 2026-10-18 (`/review` r1 on `6af90018`, FAIL on AC-36's Lighthouse set, fixed on the next head; nits carried):
+  - Nit 1 (fixed here): `tests/visual/dated-blocks.css` did not mask the first-screen date cards, so the Mother's Day baselines (2027 dates) would fail with no code change by 2 May 2027. `[data-fo-card-date] > :first-child` now leaves the shot; the card, its name and its call to action stay.
+  - Nit 2 (open): `PRIORITY_MEDIA["below-md"]` is range syntax `(width < 48rem)`, false on Safari before 16.4 (the phone downloads the lead and gets no phone preload). Consider `(max-width: 47.99rem)`.
+  - Nit 4 (open, needs copy headroom): a literal `" · "` joins two messages in `CategoryHubPage`'s pill heading and in `DateFace` (month · weekday); each needs one message key.
+  - Nit 5 (open): `category-hub-mobile` draws the back link "‹ Flowers"; the build shows "‹ Home" because the Flowers crumb is text (TASK-195's rule). Add a `docs/design/README.md` row.
+  - Reviewer ruling: B2/A7 and N-06 do not block. TASK-188 may not move to `done` until a new row carries AC-38 A7/B2 (spec 006 amendment, restamp-only draft mode).
 
 ## Escalations
 
@@ -182,8 +188,4 @@ One line per coherent step, newest last.
 
 ## Result
 
-Partial, PR 262 (draft), with TASK-191. Built: R1 band registers, R2 lead figure (per-width
-priority image, never downloaded below `md`), R3 date cards, R4 count pills, R5 next six, R6
-guide-state line, the phone hub pattern, A1–A5, A8, P4, P5 (15 keys `reviewed: false`, `en`/`en-gb`
-3.1 %/3.3 % unreviewed with PR 260). Not built: B2 and A7 (escalated above). Leads for undrawn hubs
-are each hub's first product (listed in the PR). Local build used for geometry; CI not yet run.
+PR 262, ready, with TASK-191. Built: R1 band registers, R2 lead figure (per-width priority image, never downloaded below `md`), R3 date cards, R4 count pills, R5 next six, R6 guide-state line, the phone hub pattern, A1–A5, A8, P4, P5 (15 keys `reviewed: false`, `en`/`en-gb` 3.1 %/3.3 % unreviewed). Not built: AC-38 B2 and A7 (escalated; the reviewer rules a follow-up row carries them). Leads for undrawn hubs are each hub's first product (listed in the PR). Lighthouse now measures the category hub and the occasions index (AC-36). Local build used once for geometry; CI is the gate of record.

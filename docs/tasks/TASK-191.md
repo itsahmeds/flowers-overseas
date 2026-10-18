@@ -92,9 +92,9 @@ One line per coherent step, newest last.
 
 ## Result
 
-Built in PR 262 (draft, TASK-188's feature PR): the round-2 404 (ruled logo bar as `<main>`'s first
+Built in PR 262 (TASK-188's feature PR): the round-2 404 (ruled logo bar as `<main>`'s first
 block for AC-31, untilted letter, one `aria-hidden` dashed route, the document at least the
 viewport minus the header). T-42 (`tests/e2e/not-found-document.spec.ts`) passed locally against
 `next start` at 1440 × 900 and 390 × 844, axe clean; watched red with the Destinations link removed
 from `not-found.tsx`, and red with an `aria-hidden` `.postmark` element restored in the letter.
-CI pending PR 260.
+CI green on PR 262 with `ci:full` (run 39145492418 on `6af90018`), including the 404's `not-found-*` baselines.
