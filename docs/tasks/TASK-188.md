@@ -168,6 +168,8 @@ One line per coherent step, newest last.
 - 2026-10-18: local build in the slot (geometry cannot be judged otherwise): the new e2e cases,
   the frame spec's hub rows, the hub a11y audits and T-42 pass against `next start`; fixed the
   phone column overflow, the ink register's contrast and the destinations band's gap on the way.
+  e2e mutations watched red: a second eager grid image (T-38 at 390), the lead figure's
+  `displayedAt` removed (lead fetched at 390), and T-42's two (TASK-191).
 - 2026-10-18, left for a finisher: PR 260 (copy batch 4) must merge first. Then rebase on
   `origin/main` (conflict expected in `tests/unit/i18n-messages-schema.test.ts`'s queue: take
   main's list and re-add this task's 15 keys), push, run the `visual:baselines` label (hub, hubs
