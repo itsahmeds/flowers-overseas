@@ -1,5 +1,6 @@
 /**
- * The product route — `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`'s product branch
+ * The product route — `src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx`, the
+ * product page's own file since spec 009 AC-37 (TASK-228), reached by the product rewrite
  * (spec 009 §2, §5.4, AC-1, AC-8's "zero template edits"; T-01 unit half; TASK-127).
  *
  * The route is called as Next calls it — a `params` promise in, an element or a thrown
@@ -58,7 +59,7 @@ vi.mock("next-intl/server", () => ({
 }));
 
 const route =
-  await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+  await import("../../src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx");
 const { ProductPage } =
   await import("../../src/modules/ui/product/ProductPage.tsx");
 const { listProductPages, productAlternatePaths, productPageExists } =
@@ -318,7 +319,7 @@ describe("AC-3: the product existence counts reach the CI step summary once per 
     // A fresh module instance is a fresh build: the cases above already called the shared one.
     vi.resetModules();
     const build =
-      await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+      await import("../../src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx");
     try {
       const first = await build.generateStaticParams();
       const second = await build.generateStaticParams();

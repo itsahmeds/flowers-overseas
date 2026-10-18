@@ -720,15 +720,15 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     // touches, or a file nobody thought to name — is a second `noindex` branch (`/break 101` G4).
     // `src/app/` and `src/lib/` carry robots literals that predate spec 009 (layouts, health,
     // basic auth, the robots headers), so of `src/app/` the walk takes the one file spec 009 adds
-    // a page to: the depth-4 route that serves the PDP (`/review 101` HOLE 12, TASK-127).
+    // a page to: the route that serves the PDP (`/review 101` HOLE 12, TASK-127; its own file since
+    // spec 009 AC-37, TASK-228).
     const modules = fileURLToPath(
       new URL("../../src/modules/", import.meta.url),
     );
-    const route = fileURLToPath(
-      new URL(
-        "../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx",
-        import.meta.url,
-      ),
+    // Joined, not a `URL`: a URL would decode the folder's `%5F` to `_`.
+    const route = join(
+      fileURLToPath(new URL("../../src/app/", import.meta.url)),
+      "[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx",
     );
     const seo = join(modules, "seo");
     const walk = (dir: string): string[] =>
@@ -788,7 +788,10 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     const builder = join(src, "modules/catalog/product.ts");
     expect(files).toContain(builder);
     expect(files).toContain(
-      join(src, "app/[locale]/[segment]/[child]/[grandchild]/page.tsx"),
+      join(
+        src,
+        "app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx",
+      ),
     );
     for (const path of files) {
       const code = codeOf(readFileSync(path, "utf8"));

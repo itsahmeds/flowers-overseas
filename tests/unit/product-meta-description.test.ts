@@ -38,7 +38,7 @@ vi.mock("next-intl/server", () => ({
 }));
 
 const route =
-  await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+  await import("../../src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx");
 
 /** N1, spec 004 §14 A23 clause 12, byte for byte. */
 const N1 =

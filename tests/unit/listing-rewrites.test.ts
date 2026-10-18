@@ -250,7 +250,10 @@ describe("the listing rewrite (TASK-170)", () => {
     expect(source).toMatch(
       /import \{[^}]*\blistingRewriteRules\b[^}]*\} from "\.\/src\/lib\/listing-rewrites"/u,
     );
-    expect(source).toMatch(/beforeFiles:\s*listingRewriteRules\(\)/u);
+    // First in the list; the product rules follow (spec 009 AC-37, `product-script-budget.test.ts`).
+    expect(source).toMatch(
+      /beforeFiles:\s*\[\s*\.\.\.listingRewriteRules\(\),/u,
+    );
   });
 });
 

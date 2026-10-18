@@ -31,16 +31,35 @@ interface LighthouseRc {
       numberOfRuns?: number;
       settings?: { formFactor?: string; throttlingMethod?: string };
     };
-    assert: { assertions: Record<string, unknown> };
+    assert: {
+      assertions?: Record<string, unknown>;
+      assertMatrix: {
+        matchingUrlPattern?: string;
+        assertions: Record<string, unknown>;
+      }[];
+    };
     upload: { target?: string; outputDir?: string };
   };
 }
 
 const rc = JSON.parse(read("lighthouserc.json")) as LighthouseRc;
 
+/**
+ * The assertions that bind every URL: the matrix entry with no URL pattern (spec 004
+ * A-founder-2026-10-18a moved the budgets into `assertMatrix`, because LHCI refuses `assertions`
+ * beside it). The script budget is per URL now; `tests/unit/product-script-budget.test.ts` owns it.
+ */
+const everyUrl =
+  rc.ci.assert.assertMatrix.find(
+    (entry) => entry.matchingUrlPattern === undefined,
+  )?.assertions ?? {};
+
 describe("lighthouserc.json budgets (AC-23)", () => {
   it("asserts exactly the plan/01 §7 budgets, all as errors", () => {
-    expect(rc.ci.assert.assertions).toEqual({
+    // `assertions` beside `assertMatrix` makes LHCI throw before it asserts anything.
+    expect(rc.ci.assert.assertions).toBeUndefined();
+    expect(rc.ci.assert.assertMatrix).toHaveLength(3);
+    expect(everyUrl).toEqual({
       "categories:performance": ["error", { minScore: 0.95 }],
       // TASK-056: AC-24 names three categories, not one. `accessibility` and `best-practices`
       // were collected and never asserted, so a 404 favicon and an axe regression were both
@@ -53,8 +72,8 @@ describe("lighthouserc.json budgets (AC-23)", () => {
       // (spec 004 §13 Q13's restatement; the `//` note in the file spells it out).
       // 128 KB Brotli: spec 004 §13 Q13's restatement as corrected by §14 A1 (TASK-050 carried
       // the number here and into `scripts/client-js-budget.ts`; the job stays informational until
-      // TASK-056 flips it).
-      "resource-summary:script:size": ["error", { maxNumericValue: 131072 }],
+      // TASK-056 flips it). Per URL since spec 004 A-founder-2026-10-18a: 131 072 B on every URL
+      // but a product address, 133 120 B there (`product-script-budget.test.ts`).
       "resource-summary:image:size": ["error", { maxNumericValue: 204800 }],
     });
   });
@@ -97,7 +116,7 @@ describe("lighthouserc.json budgets (AC-23)", () => {
     it("records the `noindex` reason for not asserting categories:seo", () => {
       expect(note).toContain("categories:seo");
       expect(note).toContain("noindex");
-      expect(rc.ci.assert.assertions["categories:seo"]).toBeUndefined();
+      expect(everyUrl["categories:seo"]).toBeUndefined();
     });
 
     it("is read by nothing: the config the CLI consumes is `ci`", () => {

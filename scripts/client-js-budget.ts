@@ -97,6 +97,7 @@ import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
 import { launchLocales } from "../src/config/locales.ts";
+import { productRoutePathFor } from "../src/lib/product-rewrites.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
 
 import {
@@ -115,6 +116,27 @@ import {
  * `resource-summary:script:size`, now against the same encoding.
  */
 export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
+
+/**
+ * The product page's budget: 131 072 + 2 048 = **133 120 B** Brotli first-load, the island
+ * included (spec 004 §14 A-founder-2026-10-18a clause 1, spec 009 §14 A-founder-2026-10-18a,
+ * AC-14 as amended, AC-56). It binds **only** a product address — `productRoutePathFor()` of the
+ * URL, the same shape the rewrite to the product route matches. Every other measured URL keeps
+ * `CLIENT_JS_BUDGET_BYTES`, and growth past this number escalates with the numbers (clause 2).
+ */
+export const PRODUCT_CLIENT_JS_BUDGET_BYTES = CLIENT_JS_BUDGET_BYTES + 2 * 1024;
+
+/** The Brotli script budget of one measured URL (spec 004 AC-56). */
+export function budgetFor(url: string): number {
+  return productRoutePathFor(url) === null
+    ? CLIENT_JS_BUDGET_BYTES
+    : PRODUCT_CLIENT_JS_BUDGET_BYTES;
+}
+
+/** Whether `bytes` of Brotli script are within `url`'s budget. */
+export function withinBudgetFor(url: string, bytes: number): boolean {
+  return bytes <= budgetFor(url);
+}
 
 /** Spec 003 §6 / AC-27: the serialised client message payload, gzipped. */
 export const MESSAGES_PAYLOAD_BUDGET_BYTES = 4 * 1024;
@@ -155,6 +177,13 @@ export const DEFAULT_URLS = [
   "/en-gb/flowers/roses",
   "/en/occasions/mothers-day",
   "/en-gb/occasions/mothers-day",
+  // The country occasion, which shares the country category's route file (spec 009 AC-37).
+  "/en-gb/poland/occasions/mothers-day",
+  // The product page, one per English locale (spec 009 AC-14, T-14 as amended; spec 004 AC-56).
+  // Served by its own route file through the product rewrite, so its prerendered document is
+  // `en/_product/poland/product/amber-hour.html`; measured against `PRODUCT_CLIENT_JS_BUDGET_BYTES`.
+  "/en/poland/product/amber-hour",
+  "/en-gb/poland/product/amber-hour",
 ] as const;
 
 export const DEFAULT_DIST = ".next";
@@ -229,6 +258,8 @@ export interface PageMeasurement {
   readonly documentBrotliBytes: number;
   /** Brotli total of the route's `next/dynamic` chunks, printed so the delta is never hidden. */
   readonly lazyBrotliBytes: number;
+  /** This URL's budget: `budgetFor(url)`, 133 120 B on a product address, 131 072 B elsewhere. */
+  readonly budgetBytes: number;
   readonly withinBudget: boolean;
   /**
    * The URL whose prerendered document was actually read, when this URL has none of its own
@@ -550,7 +581,10 @@ export function measurePages(
   urls: readonly string[],
 ): PageMeasurement[] {
   return urls.map((url) => {
-    const source = documentSourceFor(dist, url);
+    // A product address is rewritten to the product route (`src/lib/product-rewrites.ts`), so its
+    // document and its route entry live under that path; the row keeps the address a visitor asks.
+    const served = productRoutePathFor(url) ?? url;
+    const source = documentSourceFor(dist, served);
     const html = source.html;
     const documentTags = parseScriptTags(html);
     const documented = new Set(documentTags.map((tag) => tag.asset));
@@ -581,7 +615,7 @@ export function measurePages(
     const lazyTags = reachableAssets(
       dist,
       loaded,
-      loadableAssetsFor(dist, url).filter(
+      loadableAssetsFor(dist, served).filter(
         (tag) => !documented.has(tag.asset) && !referenced.has(tag.asset),
       ),
     );
@@ -611,7 +645,8 @@ export function measurePages(
       lazyBrotliBytes: fetched
         .filter((asset) => asset.kind === "lazy")
         .reduce((total, asset) => total + asset.brotliBytes, 0),
-      withinBudget: fetchedBrotliBytes <= CLIENT_JS_BUDGET_BYTES,
+      budgetBytes: budgetFor(url),
+      withinBudget: withinBudgetFor(url, fetchedBrotliBytes),
     };
   });
 }
@@ -768,6 +803,59 @@ export function catalogueLeaks(
     }
   }
   return leaks;
+}
+
+/**
+ * Strings only the product island's chunk holds (spec 009 §14 A-founder-2026-10-18a, AC-37, T-41;
+ * TASK-228): the selectors `CardMessageField` queries, which a minifier keeps as written.
+ * `tests/unit/product-script-budget.test.ts` pins them equal to the island's exported constants,
+ * so a renamed selector turns that test red instead of turning this check quiet.
+ */
+export const PRODUCT_ISLAND_MARKERS = [
+  "[data-fo-card-text]",
+  "[data-fo-tier-slot]",
+] as const;
+
+/**
+ * A measured URL on the wrong side of AC-37: a page that is not the product page fetching a chunk
+ * with the island in it (`product: false`, with the chunk), or a product page fetching none
+ * (`product: true`), which is also what a stale marker looks like.
+ */
+export interface ProductIslandHit {
+  readonly url: string;
+  readonly product: boolean;
+  readonly marker: string;
+  readonly asset?: string;
+}
+
+/** AC-37 over the build output: only a product address fetches the product island. */
+export function productIslandHits(
+  dist: string,
+  pages: readonly PageMeasurement[],
+): ProductIslandHit[] {
+  const hits: ProductIslandHit[] = [];
+  for (const page of pages) {
+    const product = productRoutePathFor(page.url) !== null;
+    const found = new Map<string, string>();
+    for (const asset of page.assets) {
+      if (asset.noModule) continue;
+      const source = readFileSync(join(dist, asset.asset), "utf8");
+      for (const marker of PRODUCT_ISLAND_MARKERS) {
+        if (!found.has(marker) && source.includes(marker)) {
+          found.set(marker, asset.asset);
+        }
+      }
+    }
+    for (const marker of PRODUCT_ISLAND_MARKERS) {
+      const asset = found.get(marker);
+      if (product && asset === undefined) {
+        hits.push({ url: page.url, product, marker });
+      } else if (!product && asset !== undefined) {
+        hits.push({ url: page.url, product, marker, asset });
+      }
+    }
+  }
+  return hits;
 }
 
 /** One of A21 clause 3's font budgets, measured. */
@@ -1022,7 +1110,9 @@ export function formatMarkdownTable(
       `| \`${page.url}\`${measured} | ${kb(page.documentBrotliBytes)} | ${kb(page.lazyBrotliBytes)} | ${kb(
         page.fetchedBrotliBytes,
       )} | ${kb(page.fetchedGzipBytes)} | ${delta} | ${kb(fontBytesFor(page.url, fonts))} | ${
-        page.withinBudget ? "within 128 KB br" : "**over 128 KB br**"
+        page.withinBudget
+          ? `within ${String(page.budgetBytes / 1024)} KB br`
+          : `**over ${String(page.budgetBytes / 1024)} KB br**`
       } |`,
     );
   }
@@ -1119,6 +1209,7 @@ export function main(
     const messages = messagesPayloadSizes();
     const forbidden = forbiddenModuleHits(dist, pages);
     const leaks = catalogueLeaks(dist, pages);
+    const islandHits = productIslandHits(dist, pages);
     const fonts = fontTransfer(root);
 
     if (argv.includes("--update-baseline")) {
@@ -1134,9 +1225,10 @@ export function main(
     const breaches = [
       ...pages
         .filter((page) => !page.withinBudget)
-        .map(
-          (page) =>
-            `${page.url} ships ${kb(page.fetchedBrotliBytes)} of Brotli-encoded JavaScript, over the 128 KB budget of plan/01 §7 as restated by spec 004 §13 Q13 and corrected by §14 A1`,
+        .map((page) =>
+          page.budgetBytes === CLIENT_JS_BUDGET_BYTES
+            ? `${page.url} ships ${kb(page.fetchedBrotliBytes)} of Brotli-encoded JavaScript, over the 128 KB budget of plan/01 §7 as restated by spec 004 §13 Q13 and corrected by §14 A1`
+            : `${page.url} ships ${kb(page.fetchedBrotliBytes)} of Brotli-encoded JavaScript, over the product page's ${kb(page.budgetBytes)} budget of spec 004 §14 A-founder-2026-10-18a`,
         ),
       ...messages
         .filter((size) => !size.withinBudget)
@@ -1151,6 +1243,11 @@ export function main(
       ...leaks.map(
         (leak) =>
           `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
+      ),
+      ...islandHits.map((hit) =>
+        hit.product
+          ? `${hit.url} fetches no chunk with the product island's \`${hit.marker}\`: the product page must still load its island (spec 009 AC-37), or the marker in PRODUCT_ISLAND_MARKERS no longer matches the island`
+          : `${hit.url} fetches the product island (${hit.asset} holds \`${hit.marker}\`), which spec 009 AC-37 keeps off every page but the product page`,
       ),
       ...fontBreaches(fonts),
       ...grown.map(
