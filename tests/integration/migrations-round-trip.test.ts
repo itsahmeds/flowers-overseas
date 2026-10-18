@@ -64,6 +64,8 @@ const FUNCTIONS = [
   "order_event_append_only",
   "order_insert_guard",
   "order_mode_immutable",
+  // 0013 (TASK-245): the reference function `order_reference_idx` reads (spec 010 §14 A2.2).
+  "order_reference",
   "order_status_guard",
   "partner_application_media_check",
   "partner_coverage_country_check",

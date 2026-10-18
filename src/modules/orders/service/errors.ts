@@ -20,6 +20,11 @@ export const ORDER_ERROR_CODES = [
   "ORDER_PAYLOAD_INVALID",
   /** `place`'s input failed `PlaceOrderInputSchema`. */
   "ORDER_INPUT_INVALID",
+  /**
+   * `place` drew five ids in a row whose references were taken (`order_reference_idx`, §14 A2.3):
+   * nothing was written, and the caller's transaction is still usable.
+   */
+  "ORDER_REFERENCE_UNAVAILABLE",
   /** No order has this id (A1.5: after the actor and payload). */
   "ORDER_NOT_FOUND",
   /** No `order_transition` row for `(current status, event)` (AC-22). */

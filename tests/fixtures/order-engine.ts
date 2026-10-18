@@ -69,6 +69,7 @@ export function placeInput(
 ): PlaceOrderInput {
   return {
     mode: "demo",
+    localeCode: "en",
     customerId: parents.customerId,
     recipientId: parents.recipientId,
     destinationCountryId: parents.countryId,

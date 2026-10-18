@@ -31,6 +31,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -189,9 +190,20 @@ export const order = pgTable(
     recipientSnapshot: jsonb("recipient_snapshot").notNull(),
     source: text("source").notNull().default("real"),
     ...timestamps,
+    /**
+     * Spec 010 §14 A3.1 (`0013`): the checkout draft's locale at placement, always written by
+     * `orderService.place`; the default only backfills orders placed before `0013`. After the
+     * timestamps, where `ALTER TABLE … ADD COLUMN` puts it.
+     */
+    localeCode: text("locale_code")
+      .notNull()
+      .default("en")
+      .references(() => locale.code, { onDelete: "restrict" }),
   },
   (table) => [
     unique("order_public_token_key").on(table.publicToken),
+    /** Spec 010 §14 A2.2 (`0013`): one order per reference; `order_reference()` is SQL. */
+    uniqueIndex("order_reference_idx").on(sql`order_reference(${table.id})`),
     unique("order_id_buyer_currency_code_key").on(
       table.id,
       table.buyerCurrencyCode,

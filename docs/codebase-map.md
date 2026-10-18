@@ -164,14 +164,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 295 |
-| `tests/integration/` | 24 |
+| `tests/unit/` | 296 |
+| `tests/integration/` | 25 |
 | `tests/contract/` | 12 |
 | `tests/e2e/` | 59 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 322 |
+| `tests/fixtures/` | 323 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

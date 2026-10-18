@@ -110,7 +110,9 @@ function fkKey(
 /**
  * The shape of `table` as the migration text declares it. `later` is the text of the migrations
  * after the one that creates it: a key it adds with `ALTER TABLE … ADD CONSTRAINT … FOREIGN KEY`
- * (a key that waited for its parent table) belongs to the table's shape too.
+ * (a key that waited for its parent table), a column it adds with `ALTER TABLE … ADD COLUMN`
+ * (appended, as Postgres appends it) and an index it creates on the table belong to the table's
+ * shape too.
  */
 export function sqlShape(sql: string, table: string, later = ""): Shape {
   const body = tableBody(sql, table);
@@ -149,14 +151,26 @@ export function sqlShape(sql: string, table: string, later = ""): Shape {
     )
     .sort();
   const indexes = [
-    ...sql.matchAll(
+    ...`${sql}\n${later}`.matchAll(
       new RegExp(`CREATE (UNIQUE )?INDEX (\\w+)\\s+ON ${quoted(table)} `, "g"),
     ),
   ]
     .map((m) => `${m[1] === undefined ? "" : "unique "}${m[2] ?? ""}`)
     .sort();
+  const added = [
+    ...later.matchAll(
+      new RegExp(
+        `ALTER TABLE ${quoted(table)} ADD COLUMN (\\w+) ([a-z[\\]0-9]+)([^;]*);`,
+        "gi",
+      ),
+    ),
+  ].map((m) => ({
+    name: m[1] ?? "",
+    type: SQL_TYPE[m[2] ?? ""] ?? m[2] ?? "",
+    notNull: /\bNOT NULL\b/.test(m[3] ?? ""),
+  }));
   return {
-    columns: columnsOf(sql, table),
+    columns: [...columnsOf(sql, table), ...added],
     checks: named("CHECK"),
     uniques: named("UNIQUE"),
     primaryKeys: named("PRIMARY KEY"),
