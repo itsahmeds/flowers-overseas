@@ -16,7 +16,16 @@
  *     over the catalogue with "7-day", `{days}` or `{freshnessDays}` restored in any of the named
  *     keys, in any locale, reports it.
  */
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -26,7 +35,11 @@ import {
   FRESHNESS_TERMS,
   FRESHNESS_WINDOW,
   type FreshnessTerms,
+  GUARANTEE_TERMS,
+  SEVEN_DAY,
   freshnessClaims,
+  guaranteeDayClaims,
+  guaranteeTextViolations,
 } from "../../src/config/freshness-claim.ts";
 import { resolveCatalogue } from "../../src/modules/i18n/messages.ts";
 import { branchDeletions } from "./support/regex-branches.ts";
@@ -215,9 +228,57 @@ const TERM_MUST_FAIL = [
   "7 days and still fresh",
 ] as const;
 
+/**
+ * The breaker's and reviewer's round-1 sentences (PR 265): ICU arguments of any name, digits in
+ * any script, format characters, every dash, decomposed and case-folded letters, and a word or a
+ * `+` between the number and the day word. Each passed the scan on `e6a4fa76`.
+ */
+const ROUND_1_MUST_FAIL = [
+  // An ICU argument of any name, and a plural's `#`.
+  "Fresh for {count} days.",
+  "Stays fresh for {n, number} days after delivery.",
+  "Fresh for {n, plural, one {# day} other {# days}}.",
+  "{n, plural, other {fresh for # days}}",
+  "fresh for {tage}",
+  "świeże przez {dni}",
+  // Digits in any script.
+  "fresh for \u0667 days",
+  "fresh for \u096d days",
+  "fresh for \uff17 days",
+  "Frisch für \u0667 Tage.",
+  // Format characters and entities between the number and the day word.
+  "Fresh for 7\u200bdays.",
+  "Fresh for 7\u2060days.",
+  "fresh for 7\u00addays",
+  "fresh for 7&nbsp;days",
+  "fresh for 7&#160;days",
+  // Every dash, spaced or not.
+  "fresh for 7\u2011days",
+  "7\u2012days fresh",
+  "7\u2014day freshness",
+  "7 \u2013 day freshness",
+  "7\u2015day freshness",
+  "7\u2212days fresh",
+  // Decomposed and case-folded letters.
+  "świeże przez 7 dni".normalize("NFD"),
+  "Siebentägige Frische".normalize("NFD"),
+  "DREISSIG TAGE FRISCH",
+  "dreissig Tage frisch",
+  "DREI\u1e9eIG TAGE FRISCH",
+  "FRESH FOR SEVEN DAYS",
+  // A word or a `+` between the number and the day word.
+  "Fresh for 7 full days.",
+  "7 volle Tage frisch",
+  "fresh for 7+ days",
+  "fresh for seven long days",
+  "fresh for 7 business days",
+  "7\u00bd days fresh",
+] as const;
+
 const MUST_FAIL: readonly string[] = [
   ...SPEC_MUST_FAIL,
   ...TERM_MUST_FAIL,
+  ...ROUND_1_MUST_FAIL,
   ...EN_SPELLED.map((n) => `fresh for ${n} days`),
   ...DE_SPELLED.map((n) => `${n} Tage frisch`),
   ...PL_SPELLED.map((n) => `świeże przez ${n} dni`),
@@ -258,9 +319,16 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
       {
         claim: "7 days",
         freshness: "fresh",
-        sentence: "Our bouquets stay fresh for 7 days.",
+        // The sentence as the scan read it: normalised and lower-cased.
+        sentence: "our bouquets stay fresh for 7 days.",
       },
     ]);
+  });
+
+  it("fails every round-1 dodge: any ICU argument, any digit, format characters, any dash, NFD, \u00df, a word between", () => {
+    for (const sentence of ROUND_1_MUST_FAIL) {
+      expect(freshnessClaims(sentence).length, sentence).toBeGreaterThan(0);
+    }
   });
 
   it("goes red when any single term is deleted from either pattern", () => {
@@ -290,6 +358,69 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
     for (const value of ["{country}", "{hours}", "72 hours"]) {
       expect(DAY_ARGUMENT.test(value), value).toBe(false);
     }
+  });
+});
+
+/** Each guarantee word beside a day count, and the retired string in every hyphen and locale. */
+const GUARANTEE_MUST_FAIL = [
+  "7 day guarantee",
+  "7\u2011day guarantee",
+  "Seven-day guarantee",
+  "a guaranteed 7 days",
+  "7-Tage-Garantie",
+  "Garantie für 7 Tage",
+  "7-dniowa gwarancja",
+  "Gwarancja 7 dni",
+  "our 7-day promise",
+  "Unser 7-Tage-Versprechen",
+  "obietnica 7 dni",
+] as const;
+
+describe("A11: one guarantee value, all four checks (guaranteeTextViolations)", () => {
+  it("passes the shipped promise in every language", () => {
+    for (const text of [
+      ...MUST_PASS,
+      "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
+      "We redeliver or refund, your choice.",
+      "The guarantee",
+    ]) {
+      expect(guaranteeTextViolations(text), text).toEqual([]);
+    }
+  });
+
+  it("each check fires on the value only it reads, so deleting any one turns this red", () => {
+    const checks = (text: string): readonly string[] =>
+      [...new Set(guaranteeTextViolations(text).map((v) => v.check))].sort();
+    // The retired "7-day" with no freshness or guarantee word beside it.
+    expect(checks("Your 7-day plan.")).toEqual(["sevenDay"]);
+    expect(checks("Your 7\u2011day plan.")).toEqual(["sevenDay"]);
+    // `{days}` in a value with no freshness word, no guarantee word and no day word after it.
+    expect(checks("Delivered within {days}.")).toEqual(["dayArgument"]);
+    // A freshness claim with no 7 and no guarantee word.
+    expect(checks("Fresh for 5 days.")).toEqual(["freshnessClaim"]);
+    // A day count beside a guarantee word, with no 7 and no freshness word.
+    expect(checks("5-Tage-Garantie")).toEqual(["guaranteeDays"]);
+  });
+
+  it("catches a day count beside every guarantee word, in every locale", () => {
+    for (const text of GUARANTEE_MUST_FAIL) {
+      expect(guaranteeTextViolations(text).length, text).toBeGreaterThan(0);
+      expect(
+        guaranteeDayClaims(text).length + (SEVEN_DAY.test(text) ? 1 : 0),
+        text,
+      ).toBeGreaterThan(0);
+    }
+  });
+
+  it("goes red when any single guarantee word is deleted", () => {
+    const survivors = branchDeletions(GUARANTEE_TERMS)
+      .filter(({ mutant }) =>
+        GUARANTEE_MUST_FAIL.every(
+          (text) => guaranteeDayClaims(text, mutant).length > 0,
+        ),
+      )
+      .map(({ branch }) => branch);
+    expect(survivors).toStrictEqual([]);
   });
 });
 
@@ -330,15 +461,9 @@ function guaranteeValues(
   );
 }
 
-/** What A11 forbids in one guarantee value, as readable reasons. */
+/** What A11 forbids in one guarantee value, as readable reasons (`guaranteeTextViolations`). */
 function violations(text: string): readonly string[] {
-  return [
-    ...(/7-day/iu.test(text) ? ['"7-day"'] : []),
-    ...(DAY_ARGUMENT.test(text) ? ["an ICU argument naming days"] : []),
-    ...freshnessClaims(text).map(
-      (claim) => `"${claim.claim}" beside "${claim.freshness}"`,
-    ),
-  ];
+  return guaranteeTextViolations(text).map((v) => `${v.check}: ${v.detail}`);
 }
 
 function catalogueViolations(
@@ -364,9 +489,11 @@ function withValue(
   return copy;
 }
 
-/** `content/pages/<locale>/guarantee.md`, for every locale directory that has one. */
-function guaranteeContent(): readonly (readonly [string, string])[] {
-  const pages = join(repoRoot, "content/pages");
+/** `content/pages/<locale>/guarantee.md` under `root`, for every locale directory that has one. */
+function guaranteeContent(
+  root: string = repoRoot,
+): readonly (readonly [string, string])[] {
+  const pages = join(root, "content/pages");
   if (!existsSync(pages)) return [];
   return readdirSync(pages, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -374,6 +501,59 @@ function guaranteeContent(): readonly (readonly [string, string])[] {
     .filter((file) => existsSync(file))
     .map((file) => [file, readFileSync(file, "utf8")] as const);
 }
+
+describe("A11: the readers read what they claim to (positive controls)", () => {
+  it("selects every infoPages.* value and every key with a guarantee, fresh or promise segment, and nothing else", () => {
+    // The shipped catalogues have no `infoPages` key and no `promise` segment yet (TASK-182 adds
+    // them), so the selector is proven on a catalogue built for it.
+    const catalogue = {
+      infoPages: { guarantee: { body: "Fresh for 7 days." } },
+      help: { promise: "Guaranteed for 7 days." },
+      trust: { guarantee: { name: "7-day guarantee" } },
+      product: { trust: { freshness: { title: "Fresh for {days} days" } } },
+      faq: { photo: { answer: "They stay fresh for 7 days." } },
+      checkout: { action: { pay: "Pay" } },
+    };
+    expect(guaranteeValues(catalogue).map(([key]) => key)).toStrictEqual([
+      "infoPages.guarantee.body",
+      "help.promise",
+      "trust.guarantee.name",
+      "product.trust.freshness.title",
+    ]);
+    expect(
+      catalogueViolations(catalogue).map((line) => line.split(":")[0]),
+    ).toEqual(
+      expect.arrayContaining([
+        "infoPages.guarantee.body",
+        "help.promise",
+        "trust.guarantee.name",
+        "product.trust.freshness.title",
+      ]),
+    );
+    // A11's scope: copy outside the guarantee keys (the FAQ) is not read (TASK-172 brief).
+    expect(catalogueViolations(catalogue).join("\n")).not.toContain("faq.");
+  });
+
+  it("reads content/pages/<locale>/guarantee.md and nothing else under content/pages", () => {
+    const root = mkdtempSync(join(tmpdir(), "fo-freshness-"));
+    try {
+      mkdirSync(join(root, "content/pages/de"), { recursive: true });
+      mkdirSync(join(root, "content/pages/en"), { recursive: true });
+      writeFileSync(
+        join(root, "content/pages/de/guarantee.md"),
+        "# Garantie\n\nIhre Blumen bleiben 7 Tage frisch.\n",
+      );
+      writeFileSync(join(root, "content/pages/en/about.md"), "# About\n");
+      const found = guaranteeContent(root);
+      expect(found.map(([file]) => file)).toStrictEqual([
+        join(root, "content/pages/de/guarantee.md"),
+      ]);
+      expect(violations(found[0]?.[1] ?? "")).not.toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+});
 
 describe("A11: no guarantee value promises a number of days, in any locale", () => {
   for (const locale of LOCALES) {
@@ -391,6 +571,17 @@ describe("A11: no guarantee value promises a number of days, in any locale", () 
           "7-day freshness guarantee",
           "Fresh for {days} days",
           "Guaranteed for {freshnessDays, number} days",
+          // Round 1 (PR 265): each passed the scan on `e6a4fa76`.
+          "7 day guarantee",
+          "7\u2011day guarantee",
+          "7-Tage-Garantie",
+          "7-dniowa gwarancja",
+          "Delivered within {days}",
+          "Fresh for {count} days.",
+          "Fresh for {n, plural, one {# day} other {# days}}.",
+          "Fresh for 7\u200bdays.",
+          "Fresh for 7 full days.",
+          "Frisch für \u0667 Tage.",
         ]) {
           expect(
             catalogueViolations(withValue(catalogue, key, restored)).length,
@@ -413,6 +604,14 @@ describe("A11: no guarantee value promises a number of days, in any locale", () 
       // A11: "Fresh-flower promise" in every locale; `de` and `pl` reuse their own drafted
       // translation of it from the header (TASK-176), reviewed: false.
       expect(name, locale).toBe(nav);
+      expect(name, locale).toBe(
+        {
+          en: "Fresh-flower promise",
+          "en-gb": "Fresh-flower promise",
+          de: "Frische-Versprechen",
+          pl: "Obietnica świeżych kwiatów",
+        }[locale],
+      );
     }
     expect(
       leaves(resolveCatalogue("en")).find(

@@ -21,6 +21,23 @@
  * no freshness word within that window, so it never matches; "Fresh flowers are an exception to
  * the usual 14-day right to cancel" keeps seven words between the two and passes.
  *
+ * **Text is normalised before it is read** (`normaliseForScan`): NFKC (full-width digits become
+ * ASCII, NFD "świeże" is composed), `&nbsp;`-style entities become spaces, every format character
+ * (`\p{Cf}`: soft hyphen, zero-width space, word joiner) is removed, and the text is lower-cased
+ * with `ß` folded to `ss`, so "DREISSIG", "dreißig" and "DREIẞIG" read alike. A digit is any
+ * decimal digit (`\p{Nd}`: ٧ and ७ count). The join between a number and its day word is nothing,
+ * whitespace, or any dash (`\p{Pd}`, U+2212) with optional spaces around it.
+ *
+ * **Two widenings past A11's letter, both stricter, never looser** (reviewer to rule, TASK-172
+ * brief): one word may sit between the number and the day word ("7 full days", "7 volle Tage"),
+ * and a number may carry a `+` ("7+ days"). An ICU argument of any name (`{count}`,
+ * `{n, number}`) or a plural's `#` counts as a number, and a claim inside an ICU argument spans
+ * the whole argument, so A9's plural cannot come back under another name.
+ *
+ * `guaranteeTextViolations` is the whole rule for one guarantee value: the freshness scan, a
+ * day count beside a guarantee word ("7-Tage-Garantie", "gwarancja 7 dni"), the retired "7-day"
+ * in any hyphen, and any ICU argument naming days.
+ *
  * One matcher for every reader: the message-and-content unit scan
  * (`tests/unit/freshness-claim.test.ts`) and, from TASK-182, spec 041's `pnpm pages:check`.
  * `FRESHNESS_TERMS` is exported so the unit test can delete each branch and watch a fixture go
@@ -32,8 +49,11 @@ import { sentencesOf } from "./honesty.ts";
 const WORD_CHAR = String.raw`[\p{L}\p{N}_]`;
 /** Any further letters: a stem such as `fresh*`. */
 const STEM = String.raw`\p{L}*`;
-/** "Directly followed, hyphenated or not": nothing, one space or one hyphen-like mark. */
-const JOIN = String.raw`[\s\u00a0\u202f\-\u2010\u2011\u2013]?`;
+/**
+ * "Directly followed, hyphenated or not": nothing, any dash with optional spaces, or whitespace
+ * with at most one word in it (the widening above).
+ */
+const JOIN = String.raw`(?:\s*[\p{Pd}\u2212]\s*|\s+(?:\p{L}+\s+)?)?`;
 
 /** `one`…`thirty`. "twenty-seven days" is caught by its "seven days". */
 const EN_NUMBERS = [
@@ -84,7 +104,7 @@ const DE_NUMBERS = [
   "neunzehn",
   "zwanzig",
   "(?:ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun)undzwanzig",
-  "dreißig",
+  "dreissig",
 ];
 
 /**
@@ -116,9 +136,14 @@ const PL_NUMBERS = [
   "(?:jedno|dwu|cztero|pięcio|sześcio|siedmio|ośmio|dziewięcio|dziesięcio|czternasto|trzydziesto)",
 ];
 
-/** A digit run or a spelled-out number. */
+/**
+ * A digit run in any script (with an optional `+`), an ICU argument of any name, a plural's `#`,
+ * or a spelled-out number.
+ */
 const COUNT = [
-  String.raw`\d+`,
+  String.raw`\p{Nd}+\+?`,
+  String.raw`\{[^{}]*\}`,
+  "#",
   ...EN_NUMBERS,
   ...DE_NUMBERS,
   ...PL_NUMBERS,
@@ -142,8 +167,14 @@ const WEEK_SUFFIX = `(?:wöchig|tygodniow)${STEM}`;
  */
 const FRESHNESS_WORD = `fresh${STEM}|last(?:s|ing)?|frisch${STEM}|hält|halten|haltbar${STEM}|śwież${STEM}|trwał${STEM}|wytrzym${STEM}`;
 
-/** An ICU argument whose name contains `day`: `{days}`, `{freshnessDays}`, `{days, plural, …}`. */
-const DAY_ARGUMENT_SOURCE = String.raw`\{\s*[\p{L}\p{N}_]*day[\p{L}\p{N}_]*\s*[,}]`;
+/**
+ * An ICU argument whose name contains a day word: `{days}`, `{freshnessDays}`, `{tage}`, `{dni}`,
+ * `{days, plural, …}`.
+ */
+const DAY_ARGUMENT_SOURCE = String.raw`\{\s*[\p{L}\p{N}_]*(?:day|tage|dni)[\p{L}\p{N}_]*\s*[,}]`;
+
+/** Guarantee words: `guarantee*`, `Garantie*`, `gwarancj*`, `promise*`, `Versprechen*`, `obietnic*`. */
+const GUARANTEE_WORD = `guarant${STEM}|garantie${STEM}|gwarancj${STEM}|promis${STEM}|versprech${STEM}|obietnic${STEM}`;
 
 function bounded(source: string): RegExp {
   return new RegExp(`(?<!${WORD_CHAR})(?:${source})(?!${WORD_CHAR})`, "giu");
@@ -166,6 +197,9 @@ export const FRESHNESS_TERMS = {
   ),
   freshness: bounded(FRESHNESS_WORD),
 } as const;
+
+/** Guarantee words, read beside a day claim by `guaranteeTextViolations`. */
+export const GUARANTEE_TERMS = bounded(GUARANTEE_WORD);
 
 export type FreshnessTerms = Readonly<
   Record<keyof typeof FRESHNESS_TERMS, RegExp>
@@ -190,36 +224,44 @@ function spans(pattern: RegExp, sentence: string): readonly Span[] {
   const global = pattern.flags.includes("g")
     ? pattern
     : new RegExp(pattern.source, `${pattern.flags}g`);
+  const groups = braceGroups(sentence);
   return [...sentence.matchAll(global)].map((found) => {
-    const start = found.index;
-    const end = found[0].startsWith("{")
-      ? argumentEnd(sentence, start)
-      : start + found[0].length;
+    const group = groups.find(
+      ([from, to]) => found.index >= from && found.index < to,
+    );
+    const start = group?.[0] ?? found.index;
+    const end = Math.max(group?.[1] ?? 0, found.index + found[0].length);
     return { text: sentence.slice(start, end), start, end };
   });
 }
 
 /**
- * Where the ICU argument opening at `start` closes, nested braces included, so that a plural
- * (`{days, plural, one {# day} other {# days}}`) counts as one word-free span and the window is
- * measured from its end.
+ * The outermost ICU arguments of a sentence, nested braces included, as `[from, to)` ranges. A
+ * claim that starts inside one spans all of it, so a plural (`{n, plural, one {# day} other
+ * {# days}}`) counts as one word-free span and the window is measured from its edges.
  */
-function argumentEnd(sentence: string, start: number): number {
+function braceGroups(sentence: string): readonly (readonly [number, number])[] {
+  const groups: (readonly [number, number])[] = [];
   let depth = 0;
-  for (let index = start; index < sentence.length; index += 1) {
+  let from = 0;
+  for (let index = 0; index < sentence.length; index += 1) {
     const char = sentence.charAt(index);
-    if (char === "{") depth += 1;
-    if (char === "}") depth -= 1;
-    if (depth === 0) return index + 1;
+    if (char === "{") {
+      if (depth === 0) from = index;
+      depth += 1;
+    } else if (char === "}" && depth > 0) {
+      depth -= 1;
+      if (depth === 0) groups.push([from, index + 1]);
+    }
   }
-  return sentence.length;
+  if (depth > 0) groups.push([from, sentence.length]);
+  return groups;
 }
 
 /** Words in a gap: runs of letters and digits, a hyphenated compound counting as one. */
 function wordsIn(gap: string): number {
   return (
-    gap.match(/[\p{L}\p{N}]+(?:['\u2019\-\u2010\u2011][\p{L}\p{N}]+)*/gu)
-      ?.length ?? 0
+    gap.match(/[\p{L}\p{N}]+(?:['\u2019\p{Pd}][\p{L}\p{N}]+)*/gu)?.length ?? 0
   );
 }
 
@@ -227,21 +269,30 @@ function wordsIn(gap: string): number {
 export const FRESHNESS_WINDOW = 3;
 
 /**
- * Every freshness claim in `text`, sentence by sentence (markup stripped, as `sentencesOf` reads
- * it). An empty array means the text promises no number of days of freshness.
- *
- * `terms` exists for the unit test's mutations; every scan passes the default.
+ * The text as the scan reads it: NFKC, entities for a no-break space decoded, format characters
+ * (`\p{Cf}`: soft hyphen, zero-width space, word joiner, BOM) removed, lower-cased with `ß`
+ * folded to `ss`.
  */
-export function freshnessClaims(
+export function normaliseForScan(text: string): string {
+  return text
+    .normalize("NFKC")
+    .replaceAll(/&(?:nbsp|#160|#x0*a0);/giu, " ")
+    .replaceAll(/\p{Cf}/gu, "")
+    .toLowerCase()
+    .replaceAll("ß", "ss");
+}
+
+function claimsNear(
   text: string,
-  terms: FreshnessTerms = FRESHNESS_TERMS,
+  dayClaim: RegExp,
+  near: RegExp,
 ): readonly FreshnessClaim[] {
-  return sentencesOf(text).flatMap((sentence) => {
-    const claims = spans(terms.dayClaim, sentence);
+  return sentencesOf(normaliseForScan(text)).flatMap((sentence) => {
+    const claims = spans(dayClaim, sentence);
     if (claims.length === 0) return [];
-    const words = spans(terms.freshness, sentence);
+    const words = spans(near, sentence);
     return claims.flatMap((claim) => {
-      const near = words.find((word) => {
+      const found = words.find((word) => {
         if (word.start < claim.end && claim.start < word.end) return true;
         const gap =
           word.start >= claim.end
@@ -249,11 +300,25 @@ export function freshnessClaims(
             : sentence.slice(word.end, claim.start);
         return wordsIn(gap) <= FRESHNESS_WINDOW;
       });
-      return near === undefined
+      return found === undefined
         ? []
-        : [{ claim: claim.text, freshness: near.text, sentence }];
+        : [{ claim: claim.text, freshness: found.text, sentence }];
     });
   });
+}
+
+/**
+ * Every freshness claim in `text`, sentence by sentence (normalised by `normaliseForScan`, markup
+ * stripped as `sentencesOf` reads it). An empty array means the text promises no number of days
+ * of freshness. `sentence` is reported in its normalised (lower-case) form.
+ *
+ * `terms` exists for the unit test's mutations; every scan passes the default.
+ */
+export function freshnessClaims(
+  text: string,
+  terms: FreshnessTerms = FRESHNESS_TERMS,
+): readonly FreshnessClaim[] {
+  return claimsNear(text, terms.dayClaim, terms.freshness);
 }
 
 /**
@@ -261,3 +326,60 @@ export function freshnessClaims(
  * guarantee message may take one at all, whatever sits beside it.
  */
 export const DAY_ARGUMENT = new RegExp(DAY_ARGUMENT_SOURCE, "iu");
+
+/**
+ * Every day claim within three words of a guarantee word ("7-Tage-Garantie", "gwarancja 7 dni",
+ * "a 7 day guarantee"). `near` exists for the unit test's mutations.
+ */
+export function guaranteeDayClaims(
+  text: string,
+  near: RegExp = GUARANTEE_TERMS,
+): readonly FreshnessClaim[] {
+  return claimsNear(text, FRESHNESS_TERMS.dayClaim, near);
+}
+
+/** The retired "7-day" in any hyphen, dash or spacing ("7 day", "7‑day", "7—days"). */
+export const SEVEN_DAY =
+  /(?<!\p{Nd})7(?:\s*[\p{Pd}\u2212]\s*|\s+)?days?(?![\p{L}\p{N}_])/u;
+
+/** Which of `guaranteeTextViolations`' four checks fired. */
+export type GuaranteeCheck =
+  "sevenDay" | "dayArgument" | "freshnessClaim" | "guaranteeDays";
+
+export interface GuaranteeViolation {
+  readonly check: GuaranteeCheck;
+  readonly detail: string;
+}
+
+/**
+ * Everything A11 forbids in one guarantee value (a message under a guarantee key, an
+ * `infoPages.*` value, a `guarantee.md`): the retired "7-day" in any hyphen, an ICU argument
+ * naming days, a freshness claim, and a day claim within three words of a guarantee word
+ * ("7-Tage-Garantie", "gwarancja 7 dni"). An empty array means the value is clean.
+ */
+export function guaranteeTextViolations(
+  text: string,
+): readonly GuaranteeViolation[] {
+  const normalised = normaliseForScan(text);
+  return [
+    ...(SEVEN_DAY.test(normalised)
+      ? [{ check: "sevenDay" as const, detail: '"7-day"' }]
+      : []),
+    ...(DAY_ARGUMENT.test(normalised)
+      ? [
+          {
+            check: "dayArgument" as const,
+            detail: "an ICU argument naming days",
+          },
+        ]
+      : []),
+    ...freshnessClaims(text).map((claim) => ({
+      check: "freshnessClaim" as const,
+      detail: `"${claim.claim}" beside "${claim.freshness}"`,
+    })),
+    ...guaranteeDayClaims(text).map((claim) => ({
+      check: "guaranteeDays" as const,
+      detail: `"${claim.claim}" beside "${claim.freshness}"`,
+    })),
+  ];
+}
