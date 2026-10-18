@@ -134,13 +134,16 @@ test.describe("AC-15: nothing on a served page claims what we cannot support", (
  * TASK-093 that is exactly two nodes in one document: `Organization` (name, url, logo — nothing
  * `company.ts` does not hold) and `WebSite` without a `SearchAction`. The assertion is therefore
  * "nothing but those two", which is stricter than the old "none at all" in the direction that
- * matters: a third node, a rating or a product would fail it. The canonical and the hreflang
- * cluster are still spec 007's and still absent here (TASK-094, TASK-096).
+ * matters: a third node, a rating or a product would fail it. The canonical is spec 007's too
+ * (AC-10; TASK-234, QA-1 Q1-17): the home emits exactly one, its own URL, which is the AC-10
+ * narrowing applied, not a 004 canonical. The hreflang cluster is still spec 007's and still
+ * absent here (TASK-096).
  */
-test.describe("AC-16: no structured data, canonical or hreflang from a 004 page", () => {
+test.describe("AC-16: no structured data or hreflang from a 004 page; the canonical is spec 007's", () => {
   for (const path of LOCALES) {
-    test(`${path} emits only spec 007's identity JSON-LD, no canonical and no alternate`, async ({
+    test(`${path} emits only spec 007's identity JSON-LD and self-canonical, no alternate`, async ({
       page,
+      baseURL,
     }) => {
       await page.goto(path);
 
@@ -162,7 +165,13 @@ test.describe("AC-16: no structured data, canonical or hreflang from a 004 page"
       expect(blocks[0]).not.toContain("Product");
       expect(blocks[0]).not.toContain("Review");
 
-      await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+      // Spec 007 AC-10: exactly one canonical, the page's own URL (never another locale's).
+      const canonical = page.locator('link[rel="canonical"]');
+      await expect(canonical).toHaveCount(1);
+      await expect(canonical).toHaveAttribute(
+        "href",
+        new URL(path, baseURL).toString(),
+      );
       await expect(page.locator('link[rel="alternate"]')).toHaveCount(0);
       // The document is still `noindex,nofollow` until spec 007 says otherwise (spec 003 AC-7).
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
