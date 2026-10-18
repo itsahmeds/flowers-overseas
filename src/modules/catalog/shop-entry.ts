@@ -28,11 +28,88 @@
  * Nothing here reads a cookie, a header, the clock or a database.
  */
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
+import { isLocaleCode } from "@/config/locales";
 import { isPublished, listingLinkId } from "@/config/site-links";
-import { corridorSlug } from "@/modules/geo";
-import { listingPath } from "@/modules/i18n";
+import { type CorridorShopChip, corridorSlug } from "@/modules/geo";
+import { listingPath, sortBy } from "@/modules/i18n";
 
+import { copyRow, copyRows } from "./copy";
 import { listingExists } from "./listing";
+import { countProductsIn } from "./read";
+import { slugFor } from "./slugs";
+
+/**
+ * How many country categories the state-B chip row carries (spec 007 §2 "up to 6 country
+ * categories", §14 A10). The shop has twenty; the six are the ones with the most products in the
+ * destination, ties broken by the corpus's own order, so the row names the shelves a buyer is most
+ * likely to want and is the same on every build. The occasions are not capped: spec 007 says "the
+ * indexable country occasions", and the existence rule already keeps that set short.
+ */
+export const CORRIDOR_CHIP_CATEGORY_LIMIT = 6;
+
+/** The chip row's two families, as `site-links.ts` ids and as `listingExists()` page types. */
+const FAMILIES = [
+  { family: "category", pageType: "countryCategory" },
+  { family: "occasion", pageType: "countryOccasion" },
+] as const;
+
+/**
+ * The state-B chip row for one destination: each family asked of its own link id
+ * (`isPublished(listingLinkId(…))`, the gate `listingView()` puts on the same links) **and** of
+ * `listingExists()`, the predicate the router, the sitemap and the crawl read. Either failing
+ * drops the chip, and a family with no chip left leaves no trace. Categories come first, then
+ * occasions, each family in the locale's collation.
+ */
+async function corridorShopChips(
+  locale: string,
+  iso2: CountryIso2,
+): Promise<readonly CorridorShopChip[]> {
+  if (!isLocaleCode(locale)) return [];
+  const chips: CorridorShopChip[] = [];
+  for (const { family, pageType } of FAMILIES) {
+    if (!isPublished(listingLinkId(pageType))) continue;
+    const found: { chip: CorridorShopChip; count: number }[] = [];
+    for (const row of copyRows(family, locale)) {
+      const slug = slugFor(family, row.key, locale);
+      if (slug === undefined) continue;
+      const exists = await listingExists({
+        pageType,
+        locale,
+        countryIso: iso2,
+        entityKey: row.key,
+      });
+      if (!exists) continue;
+      found.push({
+        count: family === "category" ? await countProductsIn(row.key, iso2) : 0,
+        chip: {
+          family,
+          key: row.key,
+          name: copyRow(family, row.key, locale)?.name ?? row.key,
+          href: listingPath(locale, {
+            pageType,
+            country: corridorSlug(iso2, locale),
+            slug,
+          }),
+        },
+      });
+    }
+    // `Array.prototype.sort` is stable, so equal counts keep the corpus's order.
+    const kept =
+      family === "category"
+        ? [...found]
+            .sort((a, b) => b.count - a.count)
+            .slice(0, CORRIDOR_CHIP_CATEGORY_LIMIT)
+        : found;
+    chips.push(
+      ...sortBy(
+        kept.map((entry) => entry.chip),
+        locale,
+        (chip) => chip.name,
+      ),
+    );
+  }
+  return chips;
+}
 
 /**
  * The corridor page's shop-entry href for one destination, or `undefined` while the site may not
@@ -40,11 +117,19 @@ import { listingExists } from "./listing";
  *
  * Returned as `CorridorLiveSlots`-shaped data rather than a bare string so the route's one
  * composition line stays one line as spec 005's `fromPrice` joins it in Phase 1.
+ *
+ * `{ chips: true }` adds the state-B chip row (`shopChips`): up to six country categories and the
+ * country occasions that exist, each family behind its own link id (spec 007 §14 A10; TASK-147).
+ * It never returns chips without the shop-root link: the row lives in that link's section.
  */
 export async function corridorShopEntry(
   locale: string,
   iso2: CountryIso2 | string,
-): Promise<{ readonly shopEntryHref?: string }> {
+  options: { readonly chips?: boolean } = {},
+): Promise<{
+  readonly shopEntryHref?: string;
+  readonly shopChips?: readonly CorridorShopChip[];
+}> {
   if (!isCountryIso2(iso2)) return {};
   if (!isPublished(listingLinkId("countryShopRoot"))) return {};
   const exists = await listingExists({
@@ -53,10 +138,15 @@ export async function corridorShopEntry(
     countryIso: iso2,
   });
   if (!exists) return {};
-  return {
-    shopEntryHref: listingPath(locale, {
-      pageType: "countryShopRoot",
-      country: corridorSlug(iso2, locale),
-    }),
-  };
+  const shopEntryHref = listingPath(locale, {
+    pageType: "countryShopRoot",
+    country: corridorSlug(iso2, locale),
+  });
+  if (options.chips !== true) return { shopEntryHref };
+  // The state-B chip row (spec 007 §14 A10; TASK-147) is asked for by the one caller that renders
+  // it. The home grid and the send route read the href alone and pay for nothing else.
+  const shopChips = await corridorShopChips(locale, iso2);
+  return shopChips.length === 0
+    ? { shopEntryHref }
+    : { shopEntryHref, shopChips };
 }
