@@ -1,9 +1,10 @@
 /**
  * The all-destinations hub's visual baselines (spec 007 AC-26, T-28's hub rows; TASK-092).
  *
- * Two PNGs per width: the head of the page (the `h1` and its intro) and the first region group,
- * which is where the artboards fix the geometry — the tile's rule, the state chip's placement and
- * the gap between the heading pair and the grid. `tests/visual/corridor.spec.ts`'s reasoning
+ * Two PNGs per width: the head of the page (the `h1` and its intro) and, from `md` up, the first
+ * region group, or below `md` the phone list of rows. That is where the artboards fix the
+ * geometry: the tile's rule, the state line's placement and the gap between the heading pair and
+ * the list. `tests/visual/corridor.spec.ts`'s reasoning
  * applies unchanged: a full-page shot at the project's default width would show neither block at
  * the width it was drawn at.
  *
@@ -42,26 +43,31 @@ async function recordConsentRefusal(
   ]);
 }
 
-const PARTS = [
-  { suffix: "head", selector: "[data-fo-destinations-hub] h1" },
-  {
-    suffix: "region",
-    selector: "[data-fo-hub-region='centralEurope']",
-  },
-] as const;
+const HEAD = {
+  suffix: "head",
+  selector: "[data-fo-destinations-hub] h1",
+} as const;
 
 const CASES = [
   {
     name: "all-destinations-desktop",
     viewport: { width: 1440, height: 900 },
+    // From `md` up the first region group is where the artboard fixes the geometry.
+    parts: [
+      HEAD,
+      { suffix: "region", selector: "[data-fo-hub-region='centralEurope']" },
+    ],
   },
   {
     name: "all-destinations-mobile",
     viewport: { width: 390, height: 844 },
+    // Below `md` the region groups are hidden: `all-destinations-mobile` (round 2) draws
+    // one list of rows, each the country and its state line (spec 004 §14 A24; TASK-188).
+    parts: [HEAD, { suffix: "rows", selector: "[data-fo-hub-phone-rows]" }],
   },
 ] as const;
 
-for (const { name, viewport } of CASES) {
+for (const { name, viewport, parts } of CASES) {
   test(`/en/send-flowers-to at ${String(viewport.width)}px matches ${name}-*`, async ({
     page,
     context,
@@ -80,7 +86,7 @@ for (const { name, viewport } of CASES) {
     expect(response?.status()).toBe(200);
     await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
-    for (const { suffix, selector } of PARTS) {
+    for (const { suffix, selector } of parts) {
       // The sticky header's chip row would paint over the top of a region taller than the
       // viewport (`./static-header.css`).
       await expect(page.locator(selector)).toHaveScreenshot(
