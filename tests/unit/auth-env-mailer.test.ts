@@ -5,11 +5,10 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { authSecret, mailerConfig } from "../../src/lib/env.auth.ts";
 import {
   DEVELOPMENT_AUTH_SECRET,
   EnvValidationError,
-  authSecret,
-  mailerConfig,
   validateRuntimeEnv,
 } from "../../src/lib/env.schema.ts";
 import { capturingMailer } from "../../src/modules/notifications/mailer.ts";

@@ -16,7 +16,7 @@ import { z } from "zod";
 
 import { adminProfile } from "../../../db/schema/admin";
 import { userRole, users } from "../../../db/schema/auth";
-import { authSecret } from "../env.schema";
+import { authSecret } from "../env.auth";
 import { renderAdminSignInEmail } from "@/modules/admin/sign-in-email";
 
 import { type AuthRunner, systemAuthRunner } from "./adapter";

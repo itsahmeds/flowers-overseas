@@ -11,7 +11,7 @@
  *    `preview`. The e2e suite reads them through `GET /api/internal/mail-capture`, which is behind
  *    `INTERNAL_CRON_SECRET` and refused in `production` and `staging`.
  *
- * Which one runs is `mailerConfig()` in `src/lib/env.schema.ts` (`MAILER`, else the environment's
+ * Which one runs is `mailerConfig()` in `src/lib/env.auth.ts` (`MAILER`, else the environment's
  * default). `MailMessageSchema` carries a **tag** from a closed registry: `admin_sign_in` here;
  * spec 011 adds `florist_sign_in` and `florist_application_alert`.
  *
@@ -19,7 +19,7 @@
  */
 import { z } from "zod";
 
-import { type MailerConfig, mailerConfig } from "@/lib/env.schema";
+import { type MailerConfig, mailerConfig } from "@/lib/env.auth";
 
 /** The tag registry: every kind of message the application sends. */
 export const mailTags = ["admin_sign_in"] as const;
