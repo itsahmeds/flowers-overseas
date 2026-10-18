@@ -97,6 +97,8 @@ One dated bullet per `/review`, newest last.
 
 _None._
 
+- **From the orchestrator (2026-10-18):** TASK-244 now lands before this task. When this task merges, add the motions module to TASK-244's declared deferred set in `src/modules/ui` and extend its unit test (spec 004 A-founder-2026-10-15b clause 2); the motion chunk must load after the LCP paint (clause 1).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.

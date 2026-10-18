@@ -7,8 +7,7 @@ file, not the row.
 ## Binding
 
 On 2026-10-15 the founder answered TASK-235 escalation E1 with "go with option a". The founder
-approved the amendment the same day ("specs ok (237 and 240)"). Until PR 237 merges, read it with
-`git show origin/docs/spec-emdash-titles:specs/004-design-system-layout.md`. The class is **keeps
+approved the amendment the same day ("specs ok (237 and 240)"). PR 237 has merged; read it on `main`. The class is **keeps
 the breaker**: it touches CWV, the LCP assertion and the CI budget (`CLAUDE.md` DoD §4).
 
 - **Spec 004 §14 A-founder-2026-10-15b. Owned: AC-55 (T-60). Re-verified: §9 AC-24.**
@@ -32,8 +31,11 @@ the breaker**: it touches CWV, the LCP assertion and the CI budget (`CLAUDE.md` 
     warm-up stays.
   - **TASK-194 (PR 221, the motions)** has to build to clause 1 before it merges (clause 4). Its own
     motion module loads after the LCP paint. This task then adds that module to the declared set.
-    This task starts after TASK-194 merges, because the set must name the motions. Never run it
-    beside TASK-194: both live in `src/modules/ui`.
+    *Re-sequenced by the orchestrator, 2026-10-18:* this task no longer waits for TASK-194. The
+    LCP flake (2,009 to 2,117 ms on `/en`) turned CI red on most PRs of 2026-10-17/18, and TASK-194
+    is blocked on a founder budget ruling. This task declares the deferred set with a reserved
+    entry for the motions module; TASK-194 adds its module to the set when it lands (a
+    carry-forward in its brief). Never run it beside a TASK-194 finisher: both live in `src/modules/ui`.
   - **The language popup.** TASK-119 shipped it and is merged (PR 205), so making it lazy is this
     task's job. T-60's red case is the popup module imported eagerly again. TASK-237 (in TASK-233's
     feature, PR 229) changes the popup and the phone Menu. This task starts after PR 229 merges.
