@@ -48,4 +48,7 @@ Recorded by the implementer on 2026-10-18. Each is a question about seed **data*
 
 ## Result
 
-_Pending._
+PR #245. AC-29, AC-32 (with E1-E9 above left for the founder; defaults seeded), AC-34.
+
+- `seed/plan.ts` (pure plan from the registries and the projected dataset), `seed/index.ts` (`pnpm db:seed`, `--only`, `--dry-run`; one statement per table; updates only what differs; `source = 'real'` rows untouched). Seeds 4 locales, 11 currencies, 7 demo countries, PL holidays, 32 occasions and 126 rules, 84 products with `en`/`en-gb` translations only, tiers, add-ons, 3,332 prices, 21 demo florists with coverage and 4,956 payout mappings at `plan/10` §2.3's shares.
+- Tests: `tests/integration/seed.test.ts` (15), `tests/unit/fixtures-barrel.test.ts` (T-34). Mutants red: IS DISTINCT guard, real guard, de/pl locales, dry-run rollback, demo status. Fixtures: every seeded currency in four tags, a DE invalid phone, `slugTransliterations`.

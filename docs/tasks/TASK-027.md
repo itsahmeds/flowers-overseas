@@ -61,4 +61,9 @@ _None recorded._
 
 ## Result
 
-_Pending._
+PR #245. AC-6 (regression), AC-26, AC-28.
+
+- `scripts/db-check-live.ts` + `scripts/db-check.snapshot.json`, run by `pnpm db:check` when `DATABASE_URL_UNPOOLED` is set; `--write-snapshot`. Covers the carry-forwards: CHECK expressions, `NULLS NOT DISTINCT`, index predicates, trigger functions, `SECURITY DEFINER`/`search_path`, `security_barrier`, policies.
+- CI: `test-integration` fails on any skipped test and seeds twice (second run must be 0/0); `db-check` migrates a PG16 service first and runs with `pipefail`.
+- Tests: `tests/integration/db-check-live.test.ts` (22; mutants L1-L10 all red: no-policy, RLS off, bytea, minor without currency, float money, drift both ways, snapshot compare, index query, recipient email), `tests/integration/rls-leak.test.ts` (attack + control), `tests/unit/no-float-money-enabled.test.ts` (removing `scripts/**` from the rule's files turns 2 cases red), `tests/unit/test-harness.test.ts` (no `.skip`; probe throws in CI). Three suites that read `.env.local` now use scratch databases.
+- Not done: Drizzle `meta/` snapshots stop at `0007`, so no mirror-vs-meta check (would be red; `db/` outside the fence).

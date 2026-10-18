@@ -28,4 +28,8 @@ _None recorded._
 
 ## Result
 
-_Pending._
+PR #245 (feature PR with TASK-026 and TASK-027). AC-20 covered.
+
+- `src/jobs/retention.ts`: one handler per `retention_policy.key` on an injected clock; `recipient_contact` (snapshot keeps initials and city-level keys by allow-list; recipient row, phone and address lines cleared once every order qualifies; dispute-open and recipient-became-customer or `is_self` skipped), `delivery_photo` (variants then original through the storage seam, then rows; dispute-open kept; `storage_unavailable` with no storage wired), `buyer_personal` (guest buyers 3 years after their last order; account holders and dispute-open skipped), `fraud_signals`, `consent_records` (superseded records 5 years after the superseding one), `invoice_archive` kept, spec 010 keys `no_handler` until TASK-207. `dryRun` reports the same counts and writes nothing.
+- Tests: `tests/integration/retention-sweep.test.ts` (17, incl. the PR 210 HOLE 2 positive case), `tests/unit/retention-sweep.test.ts` (5). Mutants red: dispute filter, dry-run guard, city kept, cutoff, linked-customer skip, phone kept, photo object deletes, consent latest record.
+- Open: production runs through `withSystemContext`, whose `drizzle(tx)` defect is TASK-246 (PR 247); no cron enqueues the sweep yet.
