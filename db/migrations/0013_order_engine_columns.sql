@@ -55,8 +55,9 @@ GRANT EXECUTE ON FUNCTION public.order_reference(uuid) TO app_web;
 
 CREATE UNIQUE INDEX order_reference_idx ON public."order" (public.order_reference(id));
 
+ALTER TABLE public."order" ADD COLUMN locale_code text NOT NULL DEFAULT 'en';
+
 ALTER TABLE public."order"
-  ADD COLUMN locale_code text NOT NULL DEFAULT 'en',
   ADD CONSTRAINT order_locale_code_locale_code_fk FOREIGN KEY (locale_code)
     REFERENCES public.locale (code) ON DELETE RESTRICT;
 

@@ -39,6 +39,8 @@ import {
 
 const up = readMigration("0007_orders_payments.sql");
 const down = readMigration("0007_orders_payments.down.sql");
+/** `0013` (TASK-245) adds `"order".locale_code`, its key and `order_reference_idx`. */
+const later = readMigration("0013_order_engine_columns.sql");
 
 const TABLES = [
   "order_status",
@@ -92,7 +94,7 @@ describe("migration 0007 — shape", () => {
 
   for (const table of TABLES) {
     it(`${table}: columns, nullability, checks, keys, foreign keys and indexes equal the mirror's`, () => {
-      expect(mirrorShape(table)).toEqual(sqlShape(up, table));
+      expect(mirrorShape(table)).toEqual(sqlShape(up, table, later));
     });
   }
 
