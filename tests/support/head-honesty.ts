@@ -63,31 +63,38 @@ export const HEAD_META: readonly (readonly [string, string])[] = [
 ];
 
 /**
- * The JSON-LD keys that make a review or rating claim by their *name*, wherever they sit: their
- * values are numbers and nodes, which no text pattern reads (AC-19: review, rating, review count).
+ * A review or rating by the *name* of a JSON-LD key, wherever it sits: its value is a number or a
+ * node, which no text pattern reads (AC-19: review, rating, review count). Matched by shape, not
+ * by a list of names, so `aggregateRating`, `reviewRating`, `ratingValue`, `bestRating`,
+ * `reviewCount`, `ratingCount`, `reviewBody`, `UserReviews` and `interactionStatistic` are all
+ * caught and the next one schema.org coins is too. `operatingSystem` is not: it has no capital
+ * `R` and does not start with the word.
  */
-export const JSON_LD_CLAIM_KEYS: readonly string[] = [
-  "aggregaterating",
-  "review",
-  "reviews",
-  "reviewrating",
-  "ratingvalue",
-  "reviewcount",
-  "ratingcount",
-];
+export function isClaimKey(key: string): boolean {
+  return (
+    /^(?:review|rating)/iu.test(key) ||
+    /[a-z](?:Review|Rating)/u.test(key) ||
+    /^(?:interactionStatistic|userInteractionCount)$/iu.test(key)
+  );
+}
 
-/** The JSON-LD `@type`s that are a review or a rating by themselves. */
-export const JSON_LD_CLAIM_TYPES: readonly string[] = [
-  "aggregaterating",
-  "review",
-  "rating",
-];
+/**
+ * A JSON-LD `@type` that is a review, a rating or an interaction count by itself: `Review`,
+ * `CriticReview`, `UserReview`, `Rating`, `AggregateRating`, `EmployerAggregateRating`,
+ * `InteractionCounter`.
+ */
+export function isClaimType(type: string): boolean {
+  return isClaimKey(type) || /^InteractionCounter$/iu.test(type);
+}
 
-/** A claim planted into the live head by the sweep's own controls. */
+/** A claim planted into the live document by the sweep's own controls. */
 export interface HeadPlant {
   readonly title?: string;
   readonly description?: string;
-  /** Becomes the whole of a new JSON-LD block, as a real node would be. */
+  /**
+   * Becomes the whole of a new JSON-LD block, appended to `<body>` **as the app renders it**
+   * (`JsonLd` sits in the page, not in `<head>`; a read of `document.head` alone saw none).
+   */
   readonly jsonLd?: Record<string, unknown>;
   /** Becomes a new `<meta property="og:title">`, which a page without one never had. */
   readonly ogTitle?: string;
@@ -138,7 +145,7 @@ export const HEAD_READ = ({
       "@context": "https://schema.org",
       ...plant.jsonLd,
     });
-    document.head.append(script);
+    document.body.append(script);
     restore.push(() => script.remove());
   }
   if (plant.ogTitle !== undefined) {
@@ -151,20 +158,35 @@ export const HEAD_READ = ({
   const read: HeadRead = {
     title: document.title,
     metas: metas.flatMap(([attribute, value]) =>
-      [...document.head.querySelectorAll(`meta[${attribute}="${value}"]`)].map(
+      [...document.querySelectorAll(`meta[${attribute}="${value}"]`)].map(
         (tag) => ({ key: value, content: tag.getAttribute("content") ?? "" }),
       ),
     ),
     jsonLd: [
-      ...document.head.querySelectorAll('script[type="application/ld+json"]'),
+      ...document.querySelectorAll('script[type="application/ld+json"]'),
     ].map((script) => script.textContent ?? ""),
   };
   for (const undo of restore) undo();
   return read;
 };
 
-/** A string that is a link, not prose: `@context`, `url`, `sameAs`, `image`, `logo` and the like. */
-const URL_VALUE = /^(?:https?:)?\/\/\S+$|^mailto:|^tel:/iu;
+/**
+ * A string that is a link, not prose: `url`, `sameAs`, `image`, `logo`, `@id` and the like. Only a
+ * string with **no whitespace at all** that is an absolute `http(s)` URL, a protocol-relative one,
+ * a `mailto:` address or a `tel:` number. "Tel: same-day delivery" is a sentence, and is read.
+ */
+export function isUriValue(text: string): boolean {
+  if (/\s/u.test(text)) return false;
+  if (/^\/\/[^/]\S*$/u.test(text)) return true;
+  if (/^mailto:[^@]+@[^@]+$/iu.test(text)) return true;
+  if (/^tel:\+?[\d().-]+$/iu.test(text)) return true;
+  if (!/^https?:\/\//iu.test(text)) return false;
+  try {
+    return new URL(text).hostname !== "";
+  } catch {
+    return false;
+  }
+}
 
 interface Walk {
   readonly strings: { source: string; text: string }[];
@@ -180,7 +202,7 @@ function walkJsonLd(value: unknown, path: string, out: Walk): void {
     value.forEach((item, index) => {
       const at = `${path}[${index}]`;
       if (typeof item === "string") {
-        if (!URL_VALUE.test(item)) out.strings.push({ source: at, text: item });
+        if (!isUriValue(item)) out.strings.push({ source: at, text: item });
       } else walkJsonLd(item, at, out);
     });
     return;
@@ -190,25 +212,22 @@ function walkJsonLd(value: unknown, path: string, out: Walk): void {
     const at = `${path}.${key}`;
     if (key === "@type") {
       const types = Array.isArray(child) ? child : [child];
-      if (
-        types.some(
-          (type) =>
-            typeof type === "string" &&
-            JSON_LD_CLAIM_TYPES.includes(type.toLowerCase()),
-        )
-      ) {
+      if (types.some((type) => typeof type === "string" && isClaimType(type))) {
         out.structure.push(`${at}: review/rating type`);
       }
       continue;
     }
-    // `@context`, `@id`, `@language`: keywords whose strings are not prose. `@graph` and `@list`
-    // hold nodes, which are walked like any other.
-    if (key.startsWith("@") && typeof child === "string") continue;
-    if (JSON_LD_CLAIM_KEYS.includes(key.toLowerCase())) {
+    // `@context`, `@id`, `@language`: keywords whose strings are not prose. `@value` is prose
+    // (`{"@value": "...", "@language": "en"}`), and `@graph` and `@list` hold nodes, which are
+    // walked like any other.
+    if (key.startsWith("@") && key !== "@value" && typeof child === "string") {
+      continue;
+    }
+    if (isClaimKey(key)) {
       out.structure.push(`${at}: review/rating key`);
     }
     if (typeof child === "string") {
-      if (!URL_VALUE.test(child)) out.strings.push({ source: at, text: child });
+      if (!isUriValue(child)) out.strings.push({ source: at, text: child });
     } else walkJsonLd(child, at, out);
   }
 }
@@ -224,13 +243,14 @@ function walked(read: HeadRead): Walk {
 
 /**
  * What a reader sees, not what the bytes are: composed (NFC) so a decomposed `ś` is one letter,
- * every dash-like character folded to `-` so "same\u2011day" is "same-day", the soft hyphen
- * dropped, and whitespace (a no-break space included) collapsed to one space.
+ * every dash-like character folded to `-` so "same\u2011day" is "same-day", the soft hyphen and
+ * the zero-width characters dropped, and whitespace (a no-break space included) collapsed to one
+ * space.
  */
 export function normaliseHeadText(text: string): string {
   return text
     .normalize("NFC")
-    .replaceAll("\u00AD", "")
+    .replaceAll(/[\u00AD\u200B-\u200D\u2060\uFEFF]/gu, "")
     .replaceAll(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/gu, "-")
     .replaceAll(/\s+/gu, " ")
     .trim();

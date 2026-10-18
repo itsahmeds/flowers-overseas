@@ -10,6 +10,9 @@ import {
   HEAD_PARTNER_NAMES,
   HEAD_PATTERNS,
   type HeadRead,
+  isClaimKey,
+  isClaimType,
+  isUriValue,
   headOffences,
   headStrings,
   headStructure,
@@ -357,14 +360,21 @@ describe("the head sweep reads what a person reads", () => {
     ).toEqual(["title: order-by cutoff promise"]);
   });
 
-  it.each(["\u2010", "\u2011", "\u2012", "\u2013", "\u2212"])(
-    "reads same%sday as same-day",
-    (dash) => {
-      expect(
-        headOffences({ ...CLEAN, title: `Same${dash}day delivery` }),
-      ).toEqual(["title: delivery-timing claim"]);
-    },
-  );
+  it.each([
+    "\u2010",
+    "\u2011",
+    "\u2012",
+    "\u2013",
+    "\u2015",
+    "\u2212",
+    "\uFE58",
+    "\uFE63",
+    "\uFF0D",
+  ])("reads same%sday as same-day", (dash) => {
+    expect(
+      headOffences({ ...CLEAN, title: `Same${dash}day delivery` }),
+    ).toEqual(["title: delivery-timing claim"]);
+  });
 
   it("drops a soft hyphen", () => {
     expect(normaliseHeadText("same\u00AD-day")).toBe("same-day");
@@ -402,5 +412,124 @@ describe("the head sweep's read list is pinned", () => {
       ["name", "twitter:description"],
       ["name", "twitter:image:alt"],
     ]);
+  });
+});
+
+describe("the head sweep, round 2: what the breaker slipped past", () => {
+  it("reads a sentence that merely starts like a tel: or mailto: URI", () => {
+    expect(
+      headOffences(
+        withLd({
+          "@type": "Thing",
+          name: "Tel: same-day delivery",
+          alternateName: "mailto: best sellers",
+        }),
+      ),
+    ).toEqual([
+      "json-ld[0].name: delivery-timing claim",
+      "json-ld[0].alternateName: ranking claim",
+    ]);
+  });
+
+  it.each([
+    "https://schema.org/InStock",
+    "//cdn.test/a.png",
+    "mailto:hello@flowersoverseas.com",
+    "tel:+442012345678",
+    "tel:+44(20)1234-5678",
+  ])("treats %s as a URI, not prose", (uri) => {
+    expect(isUriValue(uri)).toBe(true);
+  });
+
+  it.each([
+    "Tel: same-day delivery",
+    "https://x.test same-day delivery",
+    "https:// same-day",
+    "tel:same-day",
+    "mailto:same-day delivery",
+    "Same-day",
+  ])("treats %s as prose", (text) => {
+    expect(isUriValue(text)).toBe(false);
+  });
+
+  it("walks @value, and skips the other @-keyword strings", () => {
+    expect(
+      headOffences(
+        withLd({
+          "@type": "Thing",
+          description: { "@value": "Same-day delivery", "@language": "en" },
+        }),
+      ),
+    ).toEqual(["json-ld[0].description.@value: delivery-timing claim"]);
+    expect(
+      headOffences(
+        withLd({
+          "@id": "same-day-delivery",
+          "@language": "best sellers",
+          "@type": "Thing",
+        }),
+      ),
+    ).toEqual([]);
+  });
+
+  it.each([
+    "CriticReview",
+    "UserReview",
+    "Review",
+    "Rating",
+    "AggregateRating",
+    "EmployerAggregateRating",
+    "InteractionCounter",
+  ])("flags the type %s", (type) => {
+    expect(isClaimType(type)).toBe(true);
+    expect(headStructure(withLd({ "@type": type }))).toEqual([
+      "json-ld[0].@type: review/rating type",
+    ]);
+  });
+
+  it.each([
+    "aggregateRating",
+    "reviewRating",
+    "ratingValue",
+    "bestRating",
+    "worstRating",
+    "reviewCount",
+    "ratingCount",
+    "reviewBody",
+    "UserReviews",
+    "contentRating",
+    "interactionStatistic",
+    "userInteractionCount",
+  ])("flags the key %s", (key) => {
+    expect(isClaimKey(key)).toBe(true);
+    expect(headStructure(withLd({ "@type": "Thing", [key]: 4 }))).toEqual([
+      `json-ld[0].${key}: review/rating key`,
+    ]);
+  });
+
+  it.each(["name", "description", "operatingSystem", "integratingWith", "url"])(
+    "does not flag the key %s",
+    (key) => {
+      expect(isClaimKey(key)).toBe(false);
+    },
+  );
+
+  it.each(["Product", "WebPage", "Organization", "BreadcrumbList", "Offer"])(
+    "does not flag the type %s",
+    (type) => {
+      expect(isClaimType(type)).toBe(false);
+    },
+  );
+
+  it("strips zero-width characters before matching", () => {
+    for (const zw of ["\u200B", "\u200C", "\u200D", "\u2060", "\uFEFF"]) {
+      expect(
+        headOffences({ ...CLEAN, title: `same${zw}-day delivery` }),
+      ).toEqual(["title: delivery-timing claim"]);
+      expect(
+        headOffences({ ...CLEAN, title: `Be${zw}st sellers` }),
+      ).toEqual(["title: ranking claim"]);
+    }
+    expect(normaliseHeadText("be\u200Bst\u2060 sellers")).toBe("best sellers");
   });
 });
