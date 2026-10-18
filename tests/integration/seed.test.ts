@@ -115,6 +115,8 @@ describe.skipIf(server.url === undefined)(
     it.each(SOURCE_TABLES)(
       "AC-29: a %s row flipped to source = 'real' is left exactly as it is",
       async (table) => {
+        // Never Poland's row: the AC-32 case below reads its seeded VAT rate and cutoff, and an
+        // id-ordered pick lands on it on some runs (PR 245's CI).
         const edit: Record<(typeof SOURCE_TABLES)[number], string> = {
           country: "vat_rate_bp = 1234",
           product: "stem_count = 99",
@@ -124,7 +126,7 @@ describe.skipIf(server.url === undefined)(
         };
         const [target] = await scratch.sql.unsafe<{ id: string }[]>(
           `UPDATE public."${table}" SET source = 'real', ${edit[table]}
-           WHERE id = (SELECT id FROM public."${table}" WHERE source = 'seed' ORDER BY id LIMIT 1)
+           WHERE id = (SELECT id FROM public."${table}" WHERE source = 'seed' ${table === "country" ? "AND iso2 <> 'PL'" : ""} ORDER BY id LIMIT 1)
            RETURNING id`,
         );
         const before = await scratch.sql.unsafe<{ row: unknown }[]>(

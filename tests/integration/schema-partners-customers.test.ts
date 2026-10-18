@@ -315,15 +315,25 @@ describe.skipIf(sql === undefined)(
       const options = { max: 1, connection: { lock_timeout: 10_000 } } as const;
 
       /** True once `pid` is waiting on a lock; false if it never does within five seconds. */
-      const waitsOnLock = async (pid: number): Promise<boolean> => {
-        for (let attempt = 0; attempt < 100; attempt += 1) {
-          const [row] = await db<
-            { wait: string | null; state: string | null }[]
-          >`
-            SELECT wait_event_type AS wait, state FROM pg_stat_activity WHERE pid = ${pid}
+      /**
+       * True once session `pid` waits on a lock; false once `pending` settled without waiting.
+       * "idle" alone is not an answer: on a fast runner the poll can read the session before the
+       * statement has even reached the server (PR 245's first CI run of this suite).
+       */
+      const waitsOnLock = async (
+        pid: number,
+        pending: Promise<unknown>,
+      ): Promise<boolean> => {
+        let settled = false;
+        void pending.finally(() => {
+          settled = true;
+        });
+        for (let attempt = 0; attempt < 400; attempt += 1) {
+          const [row] = await db<{ wait: string | null }[]>`
+            SELECT wait_event_type AS wait FROM pg_stat_activity WHERE pid = ${pid}
           `;
           if (row?.wait === "Lock") return true;
-          if (row?.state === "idle") return false;
+          if (settled) return false;
           await new Promise((done) => setTimeout(done, 50));
         }
         return false;
@@ -375,7 +385,7 @@ describe.skipIf(sql === undefined)(
               () => "CHANGED",
               (error: unknown) => rejectedBy(error),
             );
-            waited = await waitsOnLock(pidRow?.pid ?? 0);
+            waited = await waitsOnLock(pidRow?.pid ?? 0, pending);
           });
           const outcome = await pending;
           const [count] = await db<{ n: number }[]>`
@@ -434,7 +444,7 @@ describe.skipIf(sql === undefined)(
                 () => "LISTED",
                 (error: unknown) => rejectedBy(error),
               );
-              waited = await waitsOnLock(pidRow?.pid ?? 0);
+              waited = await waitsOnLock(pidRow?.pid ?? 0, pending);
             });
             expect({ waited, outcome: await pending }).toEqual({
               waited: true,
