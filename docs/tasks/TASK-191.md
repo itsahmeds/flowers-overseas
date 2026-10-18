@@ -88,6 +88,7 @@ One line per coherent step, newest last.
   `noticeShell.ts`: the ruled logo bar, the untilted letter, the one dashed route, the document
   at least the viewport minus the header. T-42 in `tests/e2e/not-found-document.spec.ts`; ships in
   TASK-188's feature PR 262.
+- 2026-10-18: rebased with TASK-188's PR 262; baselines `not-found-*`, `error-global-*`, `error-locale-*` re-taken on the runner (run 39128181535). Next: CI on the head, breaker and review. The 404 stays the x-default English document (spec 003 §5.3).
 
 ## Result
 
