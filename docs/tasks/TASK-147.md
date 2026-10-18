@@ -35,6 +35,17 @@ One dated bullet per `/review`, newest last.
 
 - **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
 
+- **From `/review 249` round 1 (2026-10-18), PASS with one required change:** (1) record spec 008
+  §14 **A17** (the one-row AC-20 amendment above) when the orchestrator edits the spec, since an
+  implementer may not; (2) readings 1 and 2 above (which six categories; "indexable occasions" =
+  every occasion `listingExists()` accepts) are **accepted** by the reviewer. Both are one function
+  in `src/modules/catalog/shop-entry.ts` if the founder wants them changed.
+- **From `/break 249`:** hole 1 (which six categories) and hole 2 (the chips' collation order) are
+  closed by tests in `tests/unit/corridor-shop-chips.test.tsx`: the exact six keys for Poland, the
+  get_well/sympathy tie at 17, and the exact German and Polish orders. Watched red under ascending
+  sort, no sort, a constant 0 count, a reversed tie-break and `sortBy` removed.
+
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -52,18 +63,6 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   every country occasion that exists by `listingExists()` (Poland has one, Mother's Day); spec 008's
   indexability is a by-rule verdict of the page, not a second existence set. Say if either should
   change; both are one function.
-
-## Carry-forwards
-
-- **From `/review 249` round 1 (2026-10-18), PASS with one required change:** (1) record spec 008
-  §14 **A17** (the one-row AC-20 amendment above) when the orchestrator edits the spec, since an
-  implementer may not; (2) readings 1 and 2 above (which six categories; "indexable occasions" =
-  every occasion `listingExists()` accepts) are **accepted** by the reviewer. Both are one function
-  in `src/modules/catalog/shop-entry.ts` if the founder wants them changed.
-- **From `/break 249`:** hole 1 (which six categories) and hole 2 (the chips' collation order) are
-  closed by tests in `tests/unit/corridor-shop-chips.test.tsx`: the exact six keys for Poland, the
-  get_well/sympathy tie at 17, and the exact German and Polish orders. Watched red under ascending
-  sort, no sort, a constant 0 count, a reversed tie-break and `sortBy` removed.
 
 ## Progress
 
