@@ -2168,8 +2168,8 @@ jobs:
       # Lighthouse writes `extraHeaders` into every report, so on a pull request the wall's
       # credential would be in a public artifact. `artifact-credential-check.ts` reads the secret
       # itself (no earlier step can forget to hand it on, /break 263 hole 3), redacts every form of
-      # it, deletes what it cannot rewrite, and fails if anything still holds it; the upload below
-      # runs only after it succeeded.
+      # it, deletes nothing, and fails the job by name if anything still holds it (an archive, a
+      # form it cannot rewrite, a bomb); the upload below runs only after it succeeded.
       - name: Scrub the wall's credential from the reports
         id: scrub
         if: always()

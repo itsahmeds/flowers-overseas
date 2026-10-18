@@ -127,3 +127,15 @@ and longest first. `artifact-credential-check.test.ts` 65 cases; every handling 
 went red (the `\+` escape is covered by two layers; removing both goes red). 108 MB of
 screenshots and docs check in 10 s with no false positive.
 
+**Round 3 fixes (2026-10-19).** /break 263 round 3: (1) any zip method but stored or deflate fails
+closed, even on a clean entry; (2) short-password and non-ASCII credentials are detected through
+`\u` escapes and the UTF-8 decoded view; (3) false positives: 6 of 30 credential-free
+Lighthouse-shaped reports were flagged on `1eb1925d` because the form-`+` view split base64 images
+into runs that decoded to a 2-byte gzip magic; now the form-`+` view is not base64-decoded, gzip
+needs `1f 8b 08`, a guessed (decoded) archive that does not open is not an archive, and
+`--scrub` **never deletes**: what it cannot rewrite fails the job by name; the 30-report fixture
+passes untouched; (4) the lower-case percent form is scrubbed to exactly `REDACTED`; (5) bombs: at
+most 200 MB inflated and 10 000 entries per uploaded file, zlib told the remaining budget, a bomb
+(also one carried as base64) fails closed as "decompression bomb". 89 cases, each handling removed
+in turn went red.
+
