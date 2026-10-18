@@ -23,6 +23,8 @@ One dated bullet per `/review`, newest last.
 
 - **From spec 040 A4 (2026-09-29):** once this task has created staging's `worker`, remove AC-44's case (b) (staging `worker` absent → expected red) from `src/lib/railway.ts` and `scripts/railway-check.ts`, and make T-45's staging-`worker` cases unlabelled, in this task's PR. After that, a missing staging `worker` is a real fault.
 
+- **From `/review 263` round 1 (2026-10-18):** **E-1 accepted as a carry-forward, and it binds:** TASK-103 is not `done` until a spec 040 amendment adopting option (a) (AC-27 and T-28 read "no proxy on the pull-request path") is written via `/spec` and approved by the founder. `/break 263` hole 7 (worker statuses, custom domains, unreported `latestDeployment`, PR clause) closed on this branch.
+
 ## Escalations
 
 - **E-1 (2026-10-18, to the orchestrator → founder; open): AC-27's proxy deletion against AC-38.**
@@ -54,6 +56,7 @@ One dated bullet per `/review`, newest last.
 - 2026-10-18 21:20 `lighthouserc.json` `median` on every assertion (first commit of PR 263).
 - 2026-10-18 21:40 `lighthouse` on the PR environment for pull requests; proxy kept for push runs (E-1).
 - 2026-10-18 21:50 worker seat in `railway:check`; AC-44 case (b) retired; rollback rehearsal written.
+- 2026-10-18 23:30 review r1 and breaker r1 fixes: artifact credential check, executed workflow steps, served-build wait, worker seat fail-closed.
 
 ## Result
 
@@ -71,3 +74,8 @@ unlabelled and the retired lines are asserted never to print. **AC-13**: step 1 
 section of `docs/runbooks/rollback.md` now states the AC (image redeploy, no rebuild, under five
 minutes) and a rehearsal procedure; the rehearsal (T-13) is the founder's. Mutations watched red:
 the domain, running-deployment, unreported-domains and missing-seat checks.
+
+**Round 1 fixes (2026-10-18).** /break 263 hole 7: `NEEDS_APPROVAL` joins the running statuses;
+all seven, a custom domain, an unreported `latestDeployment` (now fails closed) and a PR
+environment's `worker` each have a case in `railway-check.test.ts` (101 tests), each shown red.
+

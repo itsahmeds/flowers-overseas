@@ -56,8 +56,9 @@ What spec 040 AC-13 holds this step to: it is a **redeploy of the previous image
 dashboard (or `railway redeploy` against that deployment from the CLI), it **requires no
 rebuild** (the deployment's log shows no build phase: Railway reuses the image), and it is done,
 `/api/health` answering 200 with the previous `commit`, **in under five minutes** from the click.
-If a rollback ever starts a build, stop and use the Vercel cold fallback (Immediate actions,
-item 1) while it runs.
+If a rollback ever starts a build, it is not an AC-13 rollback: let it finish, record it as a
+failed rehearsal, and tell the orchestrator. Do not count on the Vercel cold fallback here: its
+project builds nothing (Ignored Build Step), so it serves a frozen, older build.
 
 ### Rehearsal (spec 040 AC-13, T-13; T-43 extends it with step 2)
 

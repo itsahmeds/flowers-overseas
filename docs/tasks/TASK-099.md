@@ -20,7 +20,12 @@ founder ruling of 2026-10-18 ("go with (a) for the speed test": spec 040 as writ
 
 One dated bullet per `/review`, newest last.
 
-- **From TASK-134 / orchestrator ruling (2026-09-18):** regenerate the stale `tests/visual/__screenshots__/visual/linux/` Playwright baselines (3 PNGs vs 82 `darwin`; TASK-056 deferral) from the first green `visual` job artefact once this task's preview rewrite makes `preview` → `visual` runnable on a PR (`ci:full` label). `darwin/` untouched. TASK-134's `## Escalations` has the analysis of `ci.yml`'s `needs: preview` gate.
+- **From TASK-134 / orchestrator ruling (2026-09-18):** regenerate the stale `tests/visual/__screenshots__/visual/linux/` Playwright baselines (3 PNGs vs 82 `darwin`; TASK-056 deferral) from the first green `visual` job artefact once this task's preview rewrite makes `preview` → `visual` runnable on a PR (`ci:full` label). `darwin/` untouched. TASK-134's `- **From `/review 263` round 1 and `/break 263` round 1 (2026-10-18):** all three required changes and holes 1 to 9 closed on this branch (see `
+- 2026-10-18 23:30 review r1 and breaker r1 fixes: artifact credential check, executed workflow steps, served-build wait, worker seat fail-closed.
+
+## Result`). Carried: **E-3 needs a task** that emits `x-fo-region` from the health route (`src/lib/health.ts`, outside this fence), or a spec 040 amendment to AC-26's wording; the reviewer accepted the body `region` field until then. Nits logged: Lighthouse `extraHeaders` reach `media.flowersoverseas.com` too (written in the runbook); the cast on the raw Railway JSON.
+
+## Escalations` has the analysis of `ci.yml`'s `needs: preview` gate.
 
 - **From `/review 80` (2026-09-18, TASK-098):** (1) **TAKEN by TASK-135 (2026-09-18) — do not build twice.** Add a `container` job to `ci.yml` — `docker build --target runtime`, run it, `curl /api/health` — so spec 040 T-08 is a test, not a runbook step; (2) make `STAGING_BASIC_AUTH` **required** on `staging` and `preview` in `src/lib/railway.ts` (still unexpected on `production`) so `railway:check --env` catches a missing wall.
 - **From `/review 104` round 3 (2026-09-28):** spec 040 A2 clause 2 (~L890) says `lighthouse` moves off the runner-served origin. If this task re-points `lighthouse` at the PR URL, it becomes `needs: preview`, **skips on every push to `main`**, and spec 040 A3's gate 1 (which requires `lighthouse` = `success`) halts every release. Keep `lighthouse` on `needs: build` with no `if:`, or raise it as an escalation. T-39 goes red otherwise.
@@ -96,3 +101,18 @@ lighthouse origin and scrub executed against temp files, sweep), `lighthouse-bud
 `lighthouse-warmup` +2, `playwright-wall-credentials` 9 (new). Mutations watched red: proxied check,
 head-SHA check, variables-age guard, `WAITING` fail, env-name anchoring, sweep filter, race retry,
 scrub (escaped form), upload gate, `continue-on-error` on resolve, mask line, browser-job credential.
+
+**Round 1 fixes (2026-10-18).** /review 263 item 1 and /break 263 holes 3 and 9:
+`scripts/artifact-credential-check.ts` (`artifact-credential-check.test.ts`, 14) reads
+`STAGING_BASIC_AUTH` itself, redacts raw, password, Basic and JSON-escaped forms, reads inside
+trace zips and embedded report zips, and fails if anything survives; it runs before every upload
+in `e2e`, `visual`, `a11y` and `lighthouse`, and Playwright records no trace while the credential
+is set (`playwright-wall-credentials.test.ts`). Item 2: 403/500/200 fail the wall (`railway-preview`
+"the 401 wall means 401"). Item 3: docstrings of `security-headers.spec.ts` and both consent specs.
+Holes 1, 2, 6, 8: `main()` exit codes, `--provision`, `GITHUB_OUTPUT`, sweep DELETEs; `liveDeps` over
+recorded HTTP; ready waits for `/api/health` `appEnv preview` at the head SHA; a crowded fixture.
+Holes 4, 5: `tests/support/run-workflow-step.ts` executes the lighthouse origin, scrub and preview
+assert steps with their `${{ }}` mapping resolved; a pull request can never reach the runner
+origin. Every breaker mutation (M1-M10, P4-P8, R1, L2, L3b, L11, L13-L16) and the reviewer's
+`>= 400` now turn a case red.
+
