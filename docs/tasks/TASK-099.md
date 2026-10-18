@@ -20,7 +20,15 @@ founder ruling of 2026-10-18 ("go with (a) for the speed test": spec 040 as writ
 
 One dated bullet per `/review`, newest last.
 
-- **From TASK-134 / orchestrator ruling (2026-09-18):** regenerate the stale `tests/visual/__screenshots__/visual/linux/` Playwright baselines (3 PNGs vs 82 `darwin`; TASK-056 deferral) from the first green `visual` job artefact once this task's preview rewrite makes `preview` → `visual` runnable on a PR (`ci:full` label). `darwin/` untouched. TASK-134's `## Escalations
+- **From TASK-134 / orchestrator ruling (2026-09-18):** regenerate the stale `tests/visual/__screenshots__/visual/linux/` Playwright baselines (3 PNGs vs 82 `darwin`; TASK-056 deferral) from the first green `visual` job artefact once this task's preview rewrite makes `preview` → `visual` runnable on a PR (`ci:full` label). `darwin/` untouched. TASK-134's `## Escalations` has the analysis of `ci.yml`'s `needs: preview` gate.
+
+- **From `/review 80` (2026-09-18, TASK-098):** (1) **TAKEN by TASK-135 (2026-09-18) — do not build twice.** Add a `container` job to `ci.yml` — `docker build --target runtime`, run it, `curl /api/health` — so spec 040 T-08 is a test, not a runbook step; (2) make `STAGING_BASIC_AUTH` **required** on `staging` and `preview` in `src/lib/railway.ts` (still unexpected on `production`) so `railway:check --env` catches a missing wall.
+- **From `/review 104` round 3 (2026-09-28):** spec 040 A2 clause 2 (~L890) says `lighthouse` moves off the runner-served origin. If this task re-points `lighthouse` at the PR URL, it becomes `needs: preview`, **skips on every push to `main`**, and spec 040 A3's gate 1 (which requires `lighthouse` = `success`) halts every release. Keep `lighthouse` on `needs: build` with no `if:`, or raise it as an escalation. T-39 goes red otherwise.
+- **Rescued from `/review 90` round 2 (2026-09-21, via PR 105, 2026-09-28):** `playwright.config.ts` L9–18 still describe the Vercel preview (`baseURL` from the `preview` job's output; `x-vercel-protection-bypass` on every request). Neither is true in CI since TASK-137: the origin is the runner's `http://localhost:3000`, and `protectionBypassHeaders` is `{}`. Spec 040 A2 clause 3 lists three docstrings to correct and leaves this file out. Correct it with AC-26 here.
+
+## Escalations
+
+One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - **E-2 (2026-10-18, to the orchestrator → founder; open): "Wait for CI" against PR environments.**
   F4 turned Wait for CI on for staging `web`. If a PR environment copies it, Railway holds the PR
@@ -53,6 +61,8 @@ One dated bullet per `/review`, newest last.
      Settings → Environments.
   5. Then T-12 (manual): open a PR → the environment appears with `APP_ENV=preview` and staging's
      database; close it → the environment is gone, and the next nightly run removes its record.
+
+**Order (2026-09-30):** starts once TASK-100's PR has merged: both edit `.github/workflows/ci.yml` and `tests/unit/ci-workflow.test.ts` (`CLAUDE.md` "Working on this machine").
 
 ## Progress
 
