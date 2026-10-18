@@ -206,6 +206,18 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         enMeta[key]?.reviewedBy ?? "",
       ),
     );
+    // Copy batch 4: the four confirmation recap labels are recorded by the founder's own
+    // `record-approval-batch4.py` run, and by nothing else.
+    const recordedBatch4 = [
+      "confirmation.recap.card",
+      "confirmation.recap.date",
+      "confirmation.recap.nothingCharged",
+      "confirmation.recap.recipient",
+    ].filter((key) =>
+      /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-batch4\.py /u.test(
+        enMeta[key]?.reviewedBy ?? "",
+      ),
+    );
     expect(reviewed.toSorted()).toEqual(
       [
         "checkout.address.city",
@@ -214,6 +226,7 @@ describe("the message keys the checkout names (Appendix A pending the founder)",
         "checkout.address.postcode",
         "checkout.address.street",
         ...recorded226,
+        ...recordedBatch4,
       ].toSorted(),
     );
     for (const key of reviewed) {

@@ -410,7 +410,10 @@ describe("spec 004 T-40: A9 and A10 byte for byte, unreviewed (AC-38)", () => {
       resolve(import.meta.dirname, "../../messages/en.meta.json"),
       "utf8",
     ),
-  ) as Record<string, { reviewed: boolean; sourceHash: string }>;
+  ) as Record<
+    string,
+    { reviewed: boolean; reviewedBy?: string; sourceHash: string }
+  >;
 
   it('A10: the label of the toolbar under the grid is "Change the order"', () => {
     expect(messages.shop.toolbar.reorderLabel).toBe("Change the order");
@@ -444,7 +447,12 @@ describe("spec 004 T-40: A9 and A10 byte for byte, unreviewed (AC-38)", () => {
       "shop.toolbar.reorderLabel": messages.shop.toolbar.reorderLabel ?? "",
     };
     for (const [key, value] of Object.entries(flat)) {
-      expect(meta[key]?.reviewed, key).toBe(false);
+      // Unreviewed, unless the founder's own `record-approval-batch4.py` run recorded it.
+      const recorded =
+        /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-batch4\.py /u.test(
+          meta[key]?.reviewedBy ?? "",
+        );
+      expect(meta[key]?.reviewed, key).toBe(recorded);
       expect(meta[key]?.sourceHash, key).toBe(
         createHash("sha256").update(value, "utf8").digest("hex"),
       );
