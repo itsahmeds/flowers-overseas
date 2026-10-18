@@ -298,6 +298,20 @@ function isInjected(key: string): boolean {
 }
 
 /** `production`, `staging`, or `preview` for any PR environment (§5.3's environment table). */
+/**
+ * Keys an environment **must** carry beyond the contract (`/review 80` carry-forward, TASK-099):
+ * the access wall is absent-means-off (spec 040 §12), so on `staging` and on every PR environment
+ * a missing `STAGING_BASIC_AUTH` would open the site, and `railway:check --env` names it as
+ * missing. `production` must never carry it (AC-25), which `OPTIONAL_VARIABLE_KEYS` already holds.
+ */
+export const ENVIRONMENT_REQUIRED_KEYS: Readonly<
+  Record<"production" | "staging" | "preview", readonly string[]>
+> = Object.freeze({
+  production: [],
+  staging: [STAGING_BASIC_AUTH_KEY],
+  preview: [STAGING_BASIC_AUTH_KEY],
+});
+
 export function environmentKind(
   environmentName: string,
 ): "production" | "staging" | "preview" {
@@ -325,7 +339,12 @@ export function compareVariableKeys(
 ): VariableKeyReport {
   const optional = OPTIONAL_VARIABLE_KEYS[environmentKind(environmentName)];
   const live = new Set(liveKeys);
-  const missing = REQUIRED_VARIABLE_KEYS.filter((key) => !live.has(key)).sort();
+  const missing = [
+    ...REQUIRED_VARIABLE_KEYS,
+    ...ENVIRONMENT_REQUIRED_KEYS[environmentKind(environmentName)],
+  ]
+    .filter((key) => !live.has(key))
+    .sort();
   const unexpected = [...live]
     .filter(
       (key) =>

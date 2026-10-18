@@ -315,6 +315,29 @@ describe("variable key sets (AC-11, T-11)", () => {
     expect(REQUIRED_VARIABLE_KEYS).not.toContain(FX_REFRESH_AT_KEY);
   });
 
+  it.each(["staging", "flowers-overseas-pr-263"])(
+    "requires the access wall on %s: a missing STAGING_BASIC_AUTH is named (/review 80; TASK-099)",
+    (environmentName) => {
+      const keys = [...REQUIRED_VARIABLE_KEYS];
+      const report = compareVariableKeys(keys, environmentName);
+      expect(report.ok).toBe(false);
+      expect(report.missing).toEqual(["STAGING_BASIC_AUTH"]);
+      expect(
+        compareVariableKeys([...keys, "STAGING_BASIC_AUTH"], environmentName)
+          .ok,
+      ).toBe(true);
+    },
+  );
+
+  it("does not require the wall on production, where it is refused (AC-25)", () => {
+    const keys = [...REQUIRED_VARIABLE_KEYS];
+    expect(compareVariableKeys(keys, "production").ok).toBe(true);
+    expect(
+      compareVariableKeys([...keys, "STAGING_BASIC_AUTH"], "production")
+        .unexpected,
+    ).toEqual(["STAGING_BASIC_AUTH"]);
+  });
+
   it("accepts the switch on a PR environment, which is gated like staging", () => {
     const report = runRailwayCheck({
       declared,
