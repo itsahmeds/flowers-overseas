@@ -18,6 +18,8 @@
  */
 import { randomUUID } from "node:crypto";
 
+import postgres from "postgres";
+
 import {
   afterAll,
   beforeAll,
@@ -92,6 +94,19 @@ describe.skipIf(server.url === undefined)(
         secret: () => SECRET,
         siteOrigin: () => ORIGIN,
         now: () => clock,
+        defer: (task) => {
+          if (runDeferred) deferred.push(task());
+        },
+      });
+    /** The same instance with its allowlist replaced (the AC-2 timing case). */
+    const authAllowing = (allow: (email: string) => Promise<boolean>) =>
+      createAdminAuth({
+        run,
+        mailer: () => mailer,
+        secret: () => SECRET,
+        siteOrigin: () => ORIGIN,
+        now: () => clock,
+        allow,
         defer: (task) => {
           if (runDeferred) deferred.push(task());
         },
@@ -349,8 +364,49 @@ describe.skipIf(server.url === undefined)(
         },
         body: new URLSearchParams({ email: FOUNDER }).toString(),
       });
-      await auth().requestSignIn(hostile);
+      const response = await auth().requestSignIn(hostile);
+      // The deferred send (Next's `after()` in production) runs before the assertion: without
+      // `flush()` the case would pass whatever the origin check did.
+      await flush();
+      expect(response.headers.get("location")).toBe("/admin/sign-in");
       expect(mailer.messages()).toHaveLength(0);
+      const [row] = await scratch.sql<{ sends: number }[]>`
+        SELECT count(*)::int AS sends FROM auth_email_send`;
+      expect(row?.sends).toBe(0);
+    });
+
+    it("T-11: a cross-origin POST of the confirm form signs nobody in and leaves the token usable", async () => {
+      await requestLink(FOUNDER);
+      const t = tokenOf(linkIn(mailer.messages(FOUNDER)[0]?.text ?? ""));
+      expect(t).not.toBe("");
+      const sessionsOf = async (): Promise<number> => {
+        const [row] = await scratch.sql<{ n: number }[]>`
+          SELECT count(*)::int AS n FROM sessions
+          WHERE user_id = ${ids[FOUNDER] ?? ""}`;
+        return row?.n ?? -1;
+      };
+      const before = await sessionsOf();
+      const hostile = new Request(`${ORIGIN}/admin/api/auth/confirm`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          host: "admin.example.test",
+          origin: "https://evil.example",
+          "x-forwarded-proto": "https",
+        },
+        body: new URLSearchParams({ t }).toString(),
+      });
+      const refused = await auth().confirm(hostile);
+      expect(refused.status).toBe(303);
+      expect(refused.headers.get("location")).toBe(
+        "/admin/sign-in?state=expired",
+      );
+      expect(refused.headers.getSetCookie()).toEqual([]);
+      expect(await sessionsOf()).toBe(before);
+      // The token was not spent by the refused request: the person's own click still works.
+      const own = await auth().confirm(form({ t }, "/admin/api/auth/confirm"));
+      expect(own.headers.get("location")).toBe("/admin");
+      expect(await sessionsOf()).toBe(before + 1);
     });
 
     it("AC-9: a session of someone who is not an admin (a florist's) authenticates nothing on admin", async () => {
@@ -461,6 +517,76 @@ describe.skipIf(server.url === undefined)(
                (SELECT count(*)::int FROM verification_tokens
                 WHERE identifier = ${FOUNDER} AND expires > now()) AS tokens`;
       expect(row?.sends).toBe(0);
+    });
+
+    it("AC-2: the allowlist is not consulted before the response, so its time is not in the answer", async () => {
+      // An allowlist that takes a second and says yes: had the core awaited it before answering,
+      // the answer would take at least that long and the call would be counted by then.
+      const ALLOW_MS = 1000;
+      let calls = 0;
+      const slowAllow = async (): Promise<boolean> => {
+        calls += 1;
+        await new Promise((resolve) => setTimeout(resolve, ALLOW_MS));
+        return true;
+      };
+      runDeferred = false;
+      try {
+        const started = performance.now();
+        const response = await authAllowing(slowAllow).requestSignIn(
+          form({ email: FOUNDER }, "/admin/api/auth/request"),
+        );
+        const elapsed = performance.now() - started;
+        expect(calls).toBe(0);
+        expect(elapsed).toBeLessThan(ALLOW_MS);
+        expect(await snapshot(response)).toEqual(
+          await snapshot(await requestLink(STRANGER)),
+        );
+      } finally {
+        runDeferred = true;
+      }
+      expect(calls).toBe(0);
+    });
+
+    it("AC-2: twenty concurrent requests for one address send exactly five links", async () => {
+      // A pool as wide as the burst, so the twenty deferred sends really run side by side (the
+      // suite's own pool has four connections), each in its own transaction as in production.
+      const wide = postgres(scratch.url, {
+        max: 20,
+        onnotice: () => undefined,
+      });
+      const wideRun: AuthRunner = (fn) =>
+        wide.begin(async (tx) => {
+          await asApp(tx, { role: "system" });
+          return fn(drizzleOver(tx, wide));
+        }) as never;
+      const burst = createAdminAuth({
+        run: wideRun,
+        mailer: () => mailer,
+        secret: () => SECRET,
+        siteOrigin: () => ORIGIN,
+        now: () => clock,
+        defer: (task) => {
+          deferred.push(task());
+        },
+      });
+      const responses = await Promise.all(
+        Array.from({ length: 20 }, () =>
+          burst.requestSignIn(
+            form({ email: FOUNDER }, "/admin/api/auth/request"),
+          ),
+        ),
+      );
+      // Every deferred send runs at once, as twenty `after()` tasks would.
+      try {
+        await flush();
+      } finally {
+        await wide.end({ timeout: 5 });
+      }
+      expect(responses.every((r) => r.status === 303)).toBe(true);
+      expect(mailer.messages(FOUNDER)).toHaveLength(5);
+      const [row] = await scratch.sql<{ sends: number }[]>`
+        SELECT count(*)::int AS sends FROM auth_email_send`;
+      expect(row?.sends).toBe(5);
     });
 
     it("every Auth.js endpoint under /admin/api/auth answers the same empty 404, whoever asks", async () => {

@@ -19,7 +19,7 @@ task actually touches.
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts` +32 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts` +87 |
-| `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | `contract/resend-mailer.test.ts`, `integration/auth-core.test.ts`, `unit/auth-env-mailer.test.ts` |
+| `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts`, `integration/auth-core.test.ts` +1 |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
@@ -187,8 +187,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 316 |
-| `tests/integration/` | 33 |
+| `tests/unit/` | 318 |
+| `tests/integration/` | 34 |
 | `tests/contract/` | 14 |
 | `tests/e2e/` | 64 |
 | `tests/a11y/` | 15 |
