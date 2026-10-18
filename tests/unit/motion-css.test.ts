@@ -94,16 +94,6 @@ const KEYFRAME_ALLOWED = new Set([
 ]);
 const TRANSITION_ALLOWED = new Set([...TRANSFORM_FAMILY, "opacity", "none"]);
 
-/**
- * The one keyframe that moves something besides transform and opacity, and why it is not layout:
- * the product page's docked bar (TASK-197) flips `visibility` with a `step-end` scroll timeline, a
- * discrete paint switch with no duration, so its hidden bar is not focusable. Named here so a new
- * entry is a reviewed diff.
- */
-const KEYFRAME_EXCEPTIONS: Readonly<Record<string, readonly string[]>> = {
-  "pdp-bar-reveal": ["visibility"],
-};
-
 /** Every property a stylesheet animates or transitions that AC-44 does not allow. */
 function disallowedMotion(css: string): string[] {
   const found: string[] = [];
@@ -111,10 +101,9 @@ function disallowedMotion(css: string): string[] {
     const keyframes = rule.context.find((at) => at.startsWith("@keyframes"));
     if (keyframes !== undefined) {
       const name = keyframes.replace("@keyframes", "").trim();
-      const allowed = KEYFRAME_EXCEPTIONS[name] ?? [];
       for (const property of rule.declarations.keys()) {
         if (property.startsWith("--")) continue;
-        if (!KEYFRAME_ALLOWED.has(property) && !allowed.includes(property)) {
+        if (!KEYFRAME_ALLOWED.has(property)) {
           found.push(`@keyframes ${name}: ${property}`);
         }
       }
