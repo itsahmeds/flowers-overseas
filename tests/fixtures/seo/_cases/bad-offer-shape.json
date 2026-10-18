@@ -1,0 +1,24 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Amber Hour — hand-tied rose bouquet",
+    "sku": "FO-BQ-001",
+    "offers": {
+      "@type": "Offer",
+      "eligibleRegion": "PL",
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": "9.90",
+          "currency": "EUR"
+        }
+      },
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow"
+      }
+    }
+  }
+}

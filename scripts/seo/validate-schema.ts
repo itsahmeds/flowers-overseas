@@ -191,19 +191,94 @@ export const URL_PROPERTIES: readonly string[] = [
  * cardinalities schema.org fixes for the types themselves (a `Question` without an `acceptedAnswer`
  * is not a Question; a `BreadcrumbList` is an ordered list from 1).
  *
- * **`Product` and `Offer` are deliberately absent.** Their row is spec 009's and their builder is
- * TASK-130's; requiring `sku` or `image[]` here would make this task legislate for one that has not
- * been written, and would fail a fixture whose author never agreed to the rule. `Offer` already has
- * the price gate below, which is the rule `CLAUDE.md` actually states.
+ * **`Product` and `Offer`** are the "Product (country-scoped)" row (spec 009 §6, AC-18; TASK-130):
+ * a `Product` names itself and carries its `offers`, and an `Offer` states a `price`, a
+ * `priceCurrency` and an `availability` — the three things an offer is, and the three the price
+ * gate below needs to say "schema price = visible price". `productProblems()` adds the row's
+ * cardinality (exactly one `Offer`) and its fixed values (delivery included, no returns of cut
+ * flowers). The fixtures are regenerated from the builders, so these rules are the part of the
+ * gate that does not take the builder's word for it (TASK-093's lesson).
  */
 export const REQUIRED_PROPERTIES: Readonly<Record<string, readonly string[]>> =
   {
     Answer: ["text"],
     ListItem: ["name"],
+    Offer: ["price", "priceCurrency", "availability"],
     Organization: ["name", "url", "logo"],
+    Product: ["name", "offers"],
     Question: ["name", "acceptedAnswer"],
     WebSite: ["name", "url"],
   };
+
+/** The return position the perishability disclosure states (CRD Art. 16(d); spec 009 §6). */
+const RETURN_NOT_PERMITTED = "https://schema.org/MerchantReturnNotPermitted";
+
+/** U+2014 anywhere, or a hyphen / U+2013 with a space on either side (spec 009 AC-36). */
+const DASH_IN_NAME = /\u2014|\s[-\u2013]|[-\u2013]\s/u;
+
+/** `Product` problems: one named product, exactly one `Offer`, delivery inside the price. */
+function productProblems(node: Readonly<Record<string, unknown>>): string[] {
+  const problems: string[] = [];
+  const name = node["name"];
+  if (typeof name === "string" && DASH_IN_NAME.test(name)) {
+    problems.push(
+      `Product.name ${JSON.stringify(name)} carries an em dash, a spaced hyphen or a spaced en dash (spec 009 AC-36)`,
+    );
+  }
+  const offers = node["offers"];
+  const list = Array.isArray(offers) ? offers : [offers];
+  if (offers === undefined) return problems;
+  if (list.length !== 1) {
+    problems.push(
+      `Product.offers must be exactly one Offer, found ${String(list.length)} (spec 009 §6: one country, one price)`,
+    );
+  }
+  for (const offer of list) {
+    if (!isRecord(offer) || !typesOf(offer["@type"]).includes("Offer")) {
+      problems.push(
+        "Product.offers is not an Offer (an AggregateOffer or a bare value states a price range or nothing; spec 009 §6)",
+      );
+      continue;
+    }
+    problems.push(...offerShapeProblems(offer));
+  }
+  return problems;
+}
+
+/** The fixed values of the PDP's `Offer`: shipping 0 in the offer's currency, no returns. */
+function offerShapeProblems(
+  offer: Readonly<Record<string, unknown>>,
+): string[] {
+  const problems: string[] = [];
+  const shipping = offer["shippingDetails"];
+  if (shipping !== undefined) {
+    const rate = isRecord(shipping) ? shipping["shippingRate"] : undefined;
+    const value = isRecord(rate) ? rate["value"] : undefined;
+    const normalised = typeof value === "string" ? normaliseMoney(value) : null;
+    if (normalised !== "0.00") {
+      problems.push(
+        `Offer.shippingDetails.shippingRate.value is ${JSON.stringify(value)}, expected 0: delivery is inside the price (spec 009 §6)`,
+      );
+    }
+    if (isRecord(rate) && rate["currency"] !== offer["priceCurrency"]) {
+      problems.push(
+        `Offer.shippingDetails.shippingRate.currency ${JSON.stringify(rate["currency"])} is not the Offer's priceCurrency ${JSON.stringify(offer["priceCurrency"])}`,
+      );
+    }
+  }
+  const policy = offer["hasMerchantReturnPolicy"];
+  if (policy !== undefined) {
+    const category = isRecord(policy)
+      ? policy["returnPolicyCategory"]
+      : undefined;
+    if (category !== RETURN_NOT_PERMITTED) {
+      problems.push(
+        `Offer.hasMerchantReturnPolicy.returnPolicyCategory is ${JSON.stringify(category)}, expected ${RETURN_NOT_PERMITTED}: cut flowers are exempt from withdrawal and the page says so (spec 009 §6)`,
+      );
+    }
+  }
+  return problems;
+}
 
 /** The smallest trail worth announcing — a parent and the page (`breadcrumbList.ts`'s own rule). */
 const BREADCRUMB_MIN_ITEMS = 2;
@@ -294,6 +369,7 @@ export function shapeProblems(node: TypedNode): string[] {
     if (type === "BreadcrumbList")
       problems.push(...breadcrumbProblems(node.node));
     if (type === "FAQPage") problems.push(...faqPageProblems(node.node));
+    if (type === "Product") problems.push(...productProblems(node.node));
   }
 
   for (const property of URL_PROPERTIES) {

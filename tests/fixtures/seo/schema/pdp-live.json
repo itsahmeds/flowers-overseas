@@ -1,0 +1,79 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://flowersoverseas.com/en"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Send flowers to",
+            "item": "https://flowersoverseas.com/en/send-flowers-to"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Poland",
+            "item": "https://flowersoverseas.com/en/send-flowers-to/poland"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Flowers",
+            "item": "https://flowersoverseas.com/en/poland/flowers"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "Roses",
+            "item": "https://flowersoverseas.com/en/poland/flowers/roses"
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "Amber Hour"
+          }
+        ]
+      },
+      {
+        "@type": "Product",
+        "name": "Amber Hour",
+        "sku": "FO-BQ-001",
+        "url": "https://flowersoverseas.com/en/poland/product/amber-hour",
+        "offers": {
+          "@type": "Offer",
+          "price": "54.90",
+          "priceCurrency": "EUR",
+          "availability": "https://schema.org/InStock",
+          "eligibleRegion": "PL",
+          "url": "https://flowersoverseas.com/en/poland/product/amber-hour",
+          "shippingDetails": {
+            "@type": "OfferShippingDetails",
+            "shippingRate": {
+              "@type": "MonetaryAmount",
+              "value": "0.00",
+              "currency": "EUR"
+            },
+            "deliveryTime": {
+              "@type": "ShippingDeliveryTime",
+              "cutoffTime": "14:00"
+            }
+          },
+          "hasMerchantReturnPolicy": {
+            "@type": "MerchantReturnPolicy",
+            "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted"
+          }
+        }
+      }
+    ]
+  },
+  "visiblePrice": "54.90",
+  "visibleCurrency": "EUR"
+}

@@ -35,14 +35,27 @@ import type { JsonLdNode } from "./JsonLd.tsx";
 export interface BreadcrumbCrumb {
   /** The message key the visible label is rendered from — never a literal. */
   readonly labelKey: string;
+  /**
+   * Authored copy the label takes as `{name}` (a category or a product name: spec 008's
+   * `ListingCrumb`, which `ListingBreadcrumb` renders as `t(labelKey, { name: labelValue })`).
+   * Passed to `label` the same way, so the JSON-LD name and the visible name are one message with
+   * one value (spec 009 AC-18; TASK-130).
+   */
+  readonly labelValue?: string | undefined;
   /** The path the crumb links to, or `undefined` when it renders as text. */
-  readonly href: string | undefined;
+  readonly href?: string | undefined;
   /** The page itself: rendered with `aria-current="page"` and never as a link. */
   readonly current: boolean;
 }
 
-/** Resolves a dotted registry/message key to the label the page shows. */
-export type BreadcrumbLabel = (key: string) => string;
+/**
+ * Resolves a dotted registry/message key to the label the page shows, with the crumb's authored
+ * value where it has one.
+ */
+export type BreadcrumbLabel = (
+  key: string,
+  values?: Readonly<Record<string, string>>,
+) => string;
 
 /** The smallest trail worth announcing: a parent and the page itself. */
 export const BREADCRUMB_MIN_ITEMS = 2;
@@ -57,7 +70,10 @@ export function breadcrumbList(
   return {
     "@type": "BreadcrumbList",
     itemListElement: crumbs.map((crumb, index) => {
-      const name = label(crumb.labelKey);
+      const name =
+        crumb.labelValue === undefined
+          ? label(crumb.labelKey)
+          : label(crumb.labelKey, { name: crumb.labelValue });
       if (name.trim() === "") {
         throw new TypeError(
           `breadcrumb label for \`${crumb.labelKey}\` resolved to nothing: a ListItem without a name claims a trail the page does not show (spec 007 AC-15)`,

@@ -150,4 +150,10 @@ export {
   organization,
 } from "./schema/organization.ts";
 
+export {
+  type ProductOfferInput,
+  type ProductOfferOffer,
+  productOffer,
+} from "./schema/productOffer.ts";
+
 export { webSite } from "./schema/webSite.ts";
