@@ -15,7 +15,7 @@
  * the behaviour the fix makes universal. Unlike the per-page variant cases elsewhere, nothing
  * here is skipped on a Mac: this file is the one that must run where the defect lived.
  */
-import { type APIResponse, expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /** One real page per page type, with the case variants QA-2 N-01 used and a few more. */
 const PAGES: readonly { page: string; variants: readonly string[] }[] = [
@@ -46,12 +46,12 @@ function titleOf(html: string): string | undefined {
   return /<title>([^<]*)<\/title>/u.exec(html)?.[1];
 }
 
-/** `noindex` by the robots meta of the document or by the response header. */
-function isNoindex(response: APIResponse, html: string): boolean {
-  const header = response.headers()["x-robots-tag"] ?? "";
-  const meta = /<meta name="robots" content="([^"]*)"/u.exec(html)?.[1] ?? "";
-  return /noindex/u.test(header) || /noindex/u.test(meta);
-}
+/**
+ * The `noindex` Next writes into a not-found document and into no other (`app-render.js`). The
+ * exact form matters: every page outside production also carries `noindex,nofollow` and an
+ * `X-Robots-Tag`, so a looser check would pass on the real page served under a second URL.
+ */
+const NOT_FOUND_ROBOTS = /<meta name="robots" content="noindex"\s*\/?>/u;
 
 const pause = (ms: number): Promise<void> =>
   new Promise((done) => setTimeout(done, ms));
@@ -74,7 +74,9 @@ test("case variants answer 404 every time and the lowercase pages keep their own
         expect(response.status(), at).toBe(404);
         // ADR-0006: parsed, never redirected; a 404, not a case-fixing 3xx.
         expect(response.headers()["location"], at).toBeUndefined();
-        expect(isNoindex(response, html), `${at} is noindex`).toBe(true);
+        expect(html, `${at} is the noindex 404 document`).toMatch(
+          NOT_FOUND_ROBOTS,
+        );
         const titles = variantTitles.get(page) ?? new Set();
         titles.add(titleOf(html));
         variantTitles.set(page, titles);
