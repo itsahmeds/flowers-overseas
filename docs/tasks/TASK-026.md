@@ -28,6 +28,8 @@ Branch `task/TASK-026-seed-and-fixtures`. §13 Q8 resolved: A3 and A4 defaults a
   - A coverage row naming both a city and a zone must name a zone in that city
     (`partner_coverage_zone_city_fkey`).
 
+- **Reviewer carry-forward, PR 245 round 1 (2026-10-18): the seed rewrites `status` on rows that are not `real`.** `country.status` and `fulfillment_partner.status` are seeded values, so a country or florist an admin flips to `live`/`active` while its `source` is still `seed` goes back to `demo` on the next `pnpm db:seed`. `plan/10` §4 makes go-live "a data flip in admin"; the flip must therefore also set `source = 'real'` (spec 012's admin, TASK-221), or the seed must stop updating `status` on an existing row. Recorded for spec 012; not changed here.
+
 ## Escalations
 
 Recorded by the implementer on 2026-10-18. Each is a question about seed **data**; the seed is built with the default named, so a ruling is a one-line data edit in `seed/plan.ts`, not a code change.

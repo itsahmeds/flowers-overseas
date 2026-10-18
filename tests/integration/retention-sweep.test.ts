@@ -23,7 +23,13 @@ import {
   type RetentionSweepResult,
 } from "../../src/jobs/retention.ts";
 import { InMemoryStorage } from "../../src/lib/storage.ts";
-import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
+import {
+  FIXTURE_ACTOR,
+  applyTransition,
+  insertPlacedOrder,
+  shortestPath,
+  walkOrderTo,
+} from "../fixtures/order-state.ts";
 import * as make from "./support/rows.ts";
 import {
   asApp,
@@ -98,10 +104,47 @@ interface Delivered {
   readonly paymentId: string;
 }
 
+/**
+ * Walks the order to `delivered` along legal rows, writing the last event at a whole
+ * millisecond (`order_event` is append-only, so its time is chosen at insert, the way
+ * `applyTransition` writes it, never edited).
+ */
+async function deliverAtWholeMillisecond(
+  tx: Tx,
+  orderId: string,
+): Promise<void> {
+  const edges = await tx<{ from: string; event: string; to: string }[]>`
+    SELECT from_status AS "from", event, to_status AS "to" FROM order_transition`;
+  const path = shortestPath(edges, "placed", "delivered") ?? [];
+  const last = path[path.length - 1];
+  if (last === undefined) throw new Error("no path to delivered");
+  for (const step of path.slice(0, -1)) {
+    await applyTransition(tx, orderId, step.event, step.to);
+  }
+  const [current] = await tx<{ seq: number }[]>`
+    SELECT max(seq) AS seq FROM order_event WHERE order_id = ${orderId}`;
+  await tx`SELECT set_config('app.allow_status_write', 'on', true)`;
+  await tx`SELECT set_config('app.transition_event', ${last.event}, true)`;
+  await tx`UPDATE "order" SET status = 'delivered' WHERE id = ${orderId}`;
+  await tx`SELECT set_config('app.allow_status_write', '', true)`;
+  await tx`SELECT set_config('app.transition_event', '', true)`;
+  await tx`
+    INSERT INTO order_event (order_id, seq, type, from_status, to_status, actor, payload,
+                             payload_version, occurred_at)
+    VALUES (${orderId}, ${(current?.seq ?? 0) + 1}, ${last.event}, ${last.from}, 'delivered',
+            ${FIXTURE_ACTOR}, '{}'::jsonb, 1, date_trunc('milliseconds', now()))`;
+}
+
 /** A live order, paid, delivered today, with its recipient's address, one line and a payment. */
 async function deliveredOrder(
   tx: Tx,
-  options: { status?: string; linkCustomer?: boolean } = {},
+  options: {
+    status?: string;
+    linkCustomer?: boolean;
+    isSelf?: boolean;
+    /** Deliver at a whole millisecond, so a JS clock can stand exactly on the boundary. */
+    exactDelivery?: boolean;
+  } = {},
 ): Promise<Delivered> {
   const parents = await make.orderParents(tx);
   const orderId = await insertPlacedOrder(tx, { ...parents, mode: "live" });
@@ -121,7 +164,14 @@ async function deliveredOrder(
                          currency_code, captured_at)
     VALUES (${orderId}, 'stripe', ${make.unique("pi_")}, 'captured', 'card', 18900, 'PLN', now())
     RETURNING id`;
-  await walkOrderTo(tx, orderId, "delivered");
+  if (options.exactDelivery === true) {
+    await deliverAtWholeMillisecond(tx, orderId);
+  } else {
+    await walkOrderTo(tx, orderId, "delivered");
+  }
+  if (options.isSelf === true) {
+    await tx`UPDATE recipient SET is_self = true WHERE id = ${parents.recipientId}`;
+  }
   if (options.status !== undefined && options.status !== "delivered") {
     await walkOrderTo(tx, orderId, options.status);
   }
@@ -351,10 +401,20 @@ describe.skipIf(server.url === undefined)(
         const photo = await deliveryPhoto(tx, storage, order.orderId, 0);
         await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, received_at)
                  VALUES ('stripe', ${make.unique("evt_")}, true, '{}'::jsonb, now())`;
+        // A consent record withdrawn long enough before the clock to be due (hole 5).
+        const subject = randomUUID();
+        for (const daysAgo of [2000, 1000]) {
+          await tx`INSERT INTO consent_log (subject_kind, anonymous_id, choices, policy_version, occurred_at)
+                   VALUES ('visitor', ${subject}, '{"analytics": true}'::jsonb, 1,
+                           now() - make_interval(days => ${daysAgo}))`;
+        }
         const clock = daysFromNow(1100);
         const before = await everything(tx);
 
         const dry = await sweep(tx, { now: clock, dryRun: true, storage });
+        expect(policy(dry, "consent_records").counts).toEqual({
+          consent_log: 1,
+        });
 
         expect(await everything(tx)).toBe(before);
         const [bucket] = await tx<{ bucket: string }[]>`
@@ -400,6 +460,75 @@ describe.skipIf(server.url === undefined)(
           );
         }
         expect(await everything(tx)).toBe(after);
+      });
+    });
+
+    it("AC-20: exactly 90 days after delivery is due; one millisecond earlier is not (hole 3)", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const order = await deliveredOrder(tx, { exactDelivery: true });
+        const [event] = await tx<{ ms: string }[]>`
+          SELECT (extract(epoch FROM occurred_at) * 1000)::bigint::text AS ms
+          FROM order_event WHERE order_id = ${order.orderId} AND to_status = 'delivered'`;
+        const boundary = new Date(Number(event?.ms) + 90 * DAY_MS);
+
+        const early = await sweep(tx, {
+          now: new Date(boundary.getTime() - 1),
+          dryRun: true,
+        });
+        expect(
+          policy(early, "recipient_contact").counts["order_snapshots"],
+        ).toBe(0);
+        const due = await sweep(tx, { now: boundary, dryRun: true });
+        expect(policy(due, "recipient_contact").counts["order_snapshots"]).toBe(
+          1,
+        );
+      });
+    });
+
+    it("AC-20: an order with a chargeback open is skipped like a dispute (hole 4)", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const order = await deliveredOrder(tx, { status: "chargeback_open" });
+        const before = await recipientState(tx, order);
+        const result = await sweep(tx, { now: daysFromNow(91) });
+        expect(
+          policy(result, "recipient_contact").skipped["dispute_open"],
+        ).toBe(1);
+        expect(await recipientState(tx, order)).toEqual(before);
+      });
+    });
+
+    it("AC-20: a recipient who is the buyer (is_self) is skipped, row and snapshot (hole 4)", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const order = await deliveredOrder(tx, { isSelf: true });
+        const before = await recipientState(tx, order);
+        const result = await sweep(tx, { now: daysFromNow(91) });
+        expect(policy(result, "recipient_contact")).toMatchObject({
+          counts: { order_snapshots: 0, recipients: 0, recipient_addresses: 0 },
+          skipped: { recipient_is_customer: 1 },
+        });
+        expect(await recipientState(tx, order)).toEqual(before);
+      });
+    });
+
+    it("keeps a buyer whose account is over 3 years old but who ordered last week (hole 2)", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const recent = await deliveredOrder(tx);
+        await tx`UPDATE customer SET created_at = now() - interval '4 years'
+                 WHERE id = ${recent.customerId}`;
+        await tx`UPDATE "order" SET created_at = now() - interval '7 days'
+                 WHERE id = ${recent.orderId}`;
+        const idle = await make.customer(tx);
+        await tx`UPDATE customer SET created_at = now() - interval '4 years' WHERE id = ${idle}`;
+
+        const result = await sweep(tx, { now: new Date() });
+
+        expect(policy(result, "buyer_personal").counts["customers"]).toBe(1);
+        const rows = await tx<{ id: string; redacted: boolean }[]>`
+          SELECT id, redacted FROM customer WHERE id IN (${recent.customerId}, ${idle})`;
+        const redacted = Object.fromEntries(
+          rows.map((row) => [row.id, row.redacted]),
+        );
+        expect(redacted).toEqual({ [recent.customerId]: false, [idle]: true });
       });
     });
 

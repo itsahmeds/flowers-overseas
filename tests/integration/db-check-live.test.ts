@@ -123,6 +123,36 @@ describe.skipIf(server.url === undefined)(
         "money: public.product.list_price is numeric; money is integer minor units (*_minor bigint) plus a currency",
       ],
       [
+        "a *_minor column that is not bigint (hole 7)",
+        "ALTER TABLE public.country_price ADD COLUMN deposit_minor integer",
+        "money: public.country_price.deposit_minor is integer; a *_minor column is bigint",
+      ],
+      [
+        "a numeric fee (hole 7)",
+        "ALTER TABLE public.product ADD COLUMN service_fee numeric",
+        "money: public.product.service_fee is numeric;",
+      ],
+      [
+        "a numeric total (hole 7)",
+        "ALTER TABLE public.product ADD COLUMN grand_total numeric",
+        "money: public.product.grand_total is numeric;",
+      ],
+      [
+        "a real price (hole 7)",
+        "ALTER TABLE public.product ADD COLUMN list_price real",
+        "money: public.product.list_price is real;",
+      ],
+      [
+        "a double-precision price (hole 7)",
+        "ALTER TABLE public.product ADD COLUMN list_price double precision",
+        "money: public.product.list_price is double precision;",
+      ],
+      [
+        "a money-typed price (hole 7)",
+        "ALTER TABLE public.product ADD COLUMN list_price money",
+        "money: public.product.list_price is money;",
+      ],
+      [
         "a bytea column (AC-22)",
         "ALTER TABLE public.media_asset ADD COLUMN body bytea",
         "bytea: public.media_asset.body stores bytes; media lives in R2 and the database keeps keys (ADR-0015, AC-22)",

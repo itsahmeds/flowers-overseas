@@ -90,6 +90,34 @@ describe("integration suite (spec 001 AC-16, spec 002 AC-28 / T-28)", () => {
     expect(suites).not.toContain("db.test.ts");
   });
 
+  it("refuses every non-local URL, Neon's included, before connecting (hole 6, PR 245)", async () => {
+    const { localServerUrl } =
+      await import("../integration/support/scratch-db.ts");
+    for (const url of [
+      "postgresql://u:p@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require",
+      "postgres://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/fo",
+      "postgres://u:p@db.example.com:5432/fo",
+      "postgres://u:p@10.0.0.5:5432/fo",
+    ]) {
+      expect(localServerUrl({ DATABASE_URL: url }), url).toEqual({
+        reason:
+          "DATABASE_URL is not a local, disposable server; the shared Phase 0 database is never used",
+      });
+    }
+    // The unpooled URL is read first, so a local pooled one cannot launder a remote direct one.
+    expect(
+      localServerUrl({
+        DATABASE_URL: "postgres://postgres@127.0.0.1:5432/fo",
+        DATABASE_URL_UNPOOLED:
+          "postgres://u:p@ep-x.eu-central-1.aws.neon.tech/fo",
+      }),
+    ).toHaveProperty("reason");
+    for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
+      const url = `postgres://postgres@${host}:5432/fo`;
+      expect(localServerUrl({ DATABASE_URL: url })).toEqual({ url });
+    }
+  });
+
   it("fails rather than skips in CI when no Postgres answers", async () => {
     const { probeLocalServer } =
       await import("../integration/support/scratch-db.ts");

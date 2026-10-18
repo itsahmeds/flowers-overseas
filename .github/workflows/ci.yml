@@ -476,6 +476,12 @@ jobs:
         run: |
           set -o pipefail
           pnpm db:check 2>&1 | tee db-check.log
+          # The connected half runs only when DATABASE_URL_UNPOOLED is set; without it the CLI
+          # exits 0 on the offline half alone. Fail unless the live half reported (PR 245 hole 8).
+          if ! grep -q '^RLS coverage: ' db-check.log; then
+            echo "::error::db:check did not run its connected half (no 'RLS coverage:' line); is DATABASE_URL_UNPOOLED set?"
+            exit 1
+          fi
       - name: Summarise the migration set
         if: always()
         run: |
