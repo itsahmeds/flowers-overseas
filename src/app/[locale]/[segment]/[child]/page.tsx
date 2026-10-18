@@ -16,6 +16,7 @@ import {
 import {
   CorridorPage,
   corridorAlternatePaths,
+  corridorState,
   corridorView,
 } from "@/modules/geo";
 import { LanguageAlternates, alternatesFor } from "@/modules/i18n";
@@ -261,7 +262,10 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
     // shop root exists in this locale, so the corridor still links at no 404 (spec 004 AC-14).
     const view = corridorView(match.iso2, match.locale, {
       from: windowStart(),
-      liveSlots: await corridorShopEntry(match.locale, match.iso2),
+      // The state-B chip row (spec 007 §14 A10; TASK-147) is asked for only where it can render.
+      liveSlots: await corridorShopEntry(match.locale, match.iso2, {
+        chips: corridorState(match.iso2, match.locale) === "live",
+      }),
     });
     if (view === undefined) notFound();
     setRequestLocale(match.locale);

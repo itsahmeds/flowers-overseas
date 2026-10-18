@@ -39,7 +39,26 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-18 (implementer, to the orchestrator): spec 008 §14 needs one row for AC-20.** AC-20 says
+  the corridor page renders the five link ids "with **no markup change**"; spec 007 §14 A10 already
+  rules that the state-B chip row is a markup change for this one row. Spec 008 §14 should record
+  the same amendment (A10 names it as part of this task, but an implementer may not edit a spec).
+  Suggested row: "A16 (2026-10-18, TASK-147). AC-20's 'no markup change' holds for state A; the
+  state-B corridor page adds the chip row of spec 007 §14 A10 (up to six country categories, the
+  country occasions that exist, each behind its own link id)." Status: open.
+- **2026-10-18 (implementer): two readings the brief left open, taken and recorded.** (1) "Up to six
+  country categories": the six with the most products in the destination, ties in corpus order,
+  shown in the locale's collation; the shop has twenty. (2) "The indexable country occasions":
+  every country occasion that exists by `listingExists()` (Poland has one, Mother's Day); spec 008's
+  indexability is a by-rule verdict of the page, not a second existence set. Say if either should
+  change; both are one function.
+
+## Progress
+
+- 2026-10-18: view model (`corridorShopEntry(…, { chips: true })`), `CorridorShopEntry` component,
+  route wiring, unit tests with one mutation case per family, fixture page
+  `/dev/components/corridor-state-b`, e2e, visual and axe specs written. Linux baselines pending
+  (`visual:baselines` label).
 
 ## Result
 

@@ -117,6 +117,7 @@ export {
   type CorridorCrumb,
   type CorridorFactsView,
   type CorridorLiveSlots,
+  type CorridorShopChip,
   type CorridorOccasionView,
   type CorridorPageParams,
   type CorridorRelatedView,
