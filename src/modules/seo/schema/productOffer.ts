@@ -90,12 +90,15 @@ export function productOffer(
     );
   }
   const { offer } = input;
+  const price = required(offer.price, "Offer.price");
+  const priceCurrency = required(offer.priceCurrency, "Offer.priceCurrency");
+  const availability = required(offer.availability, "Offer.availability");
   if (!ZERO_DECIMAL.test(offer.shippingRate.value)) {
     throw new TypeError(
       `shippingRate ${offer.shippingRate.value} ${offer.shippingRate.currency} is not zero: delivery is inside the price (spec 009 §6, AC-18)`,
     );
   }
-  if (offer.shippingRate.currency !== offer.priceCurrency) {
+  if (offer.shippingRate.currency !== priceCurrency) {
     throw new TypeError(
       `shippingRate is in ${offer.shippingRate.currency} on an Offer priced in ${offer.priceCurrency}: one page, one currency`,
     );
@@ -109,9 +112,9 @@ export function productOffer(
     url,
     offers: {
       "@type": "Offer",
-      price: required(offer.price, "Offer.price"),
-      priceCurrency: required(offer.priceCurrency, "Offer.priceCurrency"),
-      availability: required(offer.availability, "Offer.availability"),
+      price,
+      priceCurrency,
+      availability,
       eligibleRegion: required(offer.eligibleRegion, "Offer.eligibleRegion"),
       url,
       ...(offer.priceValidUntil === null

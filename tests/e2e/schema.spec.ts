@@ -19,7 +19,17 @@
  * Note the scan visits **no 404**: §14 A6 puts the unknown-slug, casing and other-locale shapes out
  * of the rendered set entirely, and a 404 document has no page type to describe.
  */
-import { expect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+import {
+  type APIRequestContext,
+  expect,
+  test,
+  type Page,
+} from "@playwright/test";
+
+import { pdpJsonLdProblems } from "../support/pdp-jsonld-scan.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
@@ -230,6 +240,104 @@ test.describe("AC-15: the locale home carries the site identity (T-17)", () => {
 
       const website = nodes.find((node) => node.types.includes("WebSite"));
       expect(website?.node["potentialAction"]).toBeUndefined();
+    });
+  }
+});
+
+/* -------------------------------------------------------------------------- */
+/* The product page (spec 009 AC-18, T-18; TASK-130).                         */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Every PDP, per locale: the existence set, read from the committed fixture that
+ * `tests/unit/product-url-fixture.test.ts` regenerates from `listProductPages()` (Playwright cannot
+ * import `modules/catalog`; `shop-reachability.spec.ts` has the same arrangement).
+ */
+const PDPS = JSON.parse(
+  readFileSync(
+    resolve(import.meta.dirname, "../fixtures/shop/product-urls.json"),
+    "utf8",
+  ),
+) as Readonly<Record<string, readonly string[]>>;
+
+/** One served PDP's problems under AC-18: its status, then the shared scan of its HTML. */
+async function pdpProblems(
+  request: APIRequestContext,
+  path: string,
+): Promise<string[]> {
+  const response = await request.get(path, { maxRedirects: 0 });
+  if (response.status() !== 200) {
+    return [`${path}: ${String(response.status())}`];
+  }
+  return pdpJsonLdProblems(await response.text(), path);
+}
+
+/** How many PDPs are asked at once: enough to finish in seconds, few enough for `next start`. */
+const PDP_CONCURRENCY = 8;
+
+test.describe("AC-18: no PDP emits a forbidden type, in any locale (T-18)", () => {
+  for (const [locale, paths] of Object.entries(PDPS)) {
+    test(`every ${locale} PDP carries one BreadcrumbList and none of the eight`, async ({
+      request,
+    }, testInfo) => {
+      // Raw HTML, so one viewport says everything; the phone project would repeat 2 352 requests.
+      test.skip(
+        testInfo.project.name !== "e2e-desktop",
+        "a request-level scan: one project",
+      );
+      test.setTimeout(300_000);
+      expect(paths.length, `${locale} has PDPs`).toBeGreaterThan(0);
+
+      const problems: string[] = [];
+      for (let start = 0; start < paths.length; start += PDP_CONCURRENCY) {
+        const batch = paths.slice(start, start + PDP_CONCURRENCY);
+        for (const found of await Promise.all(
+          batch.map((path) => pdpProblems(request, path)),
+        )) {
+          problems.push(...found);
+        }
+      }
+      expect(problems, `${String(paths.length)} PDPs scanned`).toStrictEqual(
+        [],
+      );
+    });
+  }
+});
+
+test.describe("AC-18: the served PDP BreadcrumbList is the visible trail (T-18)", () => {
+  for (const path of [
+    "/en/poland/product/amber-hour",
+    "/en-gb/poland/product/amber-hour",
+    "/de/polen/produkt/amber-hour",
+    "/pl/polska/produkt/amber-hour",
+  ]) {
+    test(`${path} announces the trail its <nav> shows`, async ({ page }) => {
+      await page.goto(path);
+
+      const visible = await page
+        .locator("[data-fo-breadcrumb-trail] li")
+        .allTextContents();
+      const trail = visible.map((item) =>
+        item
+          .replace(/^\s*\/\s*/, "")
+          .replaceAll(/\s+/g, " ")
+          .trim(),
+      );
+      expect(trail.length).toBeGreaterThanOrEqual(3);
+
+      const breadcrumb = (await nodesOf(page)).find((node) =>
+        node.types.includes("BreadcrumbList"),
+      );
+      const items = (breadcrumb?.node["itemListElement"] ??
+        []) as readonly Record<string, unknown>[];
+      expect(items.map((item) => item["name"])).toEqual(trail);
+      items.forEach((item, index) => {
+        expect(item["position"]).toBe(index + 1);
+      });
+      // The last crumb is the page and the `<h1>`'s name.
+      await expect(page.locator("#pdp-h1 bdi").first()).toHaveText(
+        String(items.at(-1)?.["name"]),
+      );
     });
   }
 });
