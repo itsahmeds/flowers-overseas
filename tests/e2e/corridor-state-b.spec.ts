@@ -71,8 +71,9 @@ test.describe("state B: the shop entry's chip row (A10)", () => {
     const name = await page
       .locator(ROW)
       .getAttribute("aria-labelledby")
-      .then((id) => page.locator(`#${id ?? "!"}`).innerText());
-    expect(name.trim()).toBe("Also for Poland");
+      .then((id) => page.locator(`#${id ?? "!"}`).textContent());
+    // `textContent`, not `innerText`: the eyebrow is drawn upper-case by CSS.
+    expect((name ?? "").trim()).toBe("Also for Poland");
   });
 
   test("the real guide page, state A, carries the shop-root link and no chip (A9)", async ({

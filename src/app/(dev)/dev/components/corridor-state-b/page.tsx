@@ -24,7 +24,7 @@ import { documentFallbackLocale } from "@/modules/i18n";
  * Same gate as the gallery: a 404 unless `ENABLE_DEV_UI=true`, and `noindex`.
  */
 export const metadata: Metadata = {
-  title: "Corridor state B fixture",
+  title: "Country guide, live state fixture",
   robots: { index: false, follow: false },
 };
 
