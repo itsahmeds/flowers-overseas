@@ -99,6 +99,9 @@ One dated bullet per `/review`, newest last.
   `destinations.state.guideNotDelivering` (and the guide's other state keys); this task renders
   the key and pins no old wording. Whichever merges second rebases and never restores the old
   text.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q1-14 (P2), all 7 guides in en and en-gb, still on `c8d3b334`: the empty "Photo slot · Poland" box (`QA-1-N08.png`) and the raw identifiers `fixed` and `easter_offset` in the RULE column (`QA-1-N09.png`). A11's words and the guide state in place of the photo slot are this task: one case per id, each red on `c8d3b334`.
+  - Em dashes in `corridor.facts.orderBy.value`, `corridor.facts.*.none`, `corridor.steps.guide.oneBody` and `corridor.calendar.intro` (QA-1 and QA-2 re-test, delivery facts and guides): not in an approved batch. List them for the founder; change nothing without reviewed wording (`en-gb` is at 4.98% of 5%). The "offer" in two guide descriptions is TASK-251's.
 
 ## Escalations
 

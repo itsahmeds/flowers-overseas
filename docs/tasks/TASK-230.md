@@ -55,6 +55,9 @@ A bug in merged work (TASK-197, PR 215), so a new task (founder rule, 2026-10-14
   TASK-239's, after this PR: style the chips beside whatever reason text renders, and pin no
   notice, caption or cutoff wording in a new assertion. Spec 009 AC-35 (TASK-229, same PR)
   removes the delivery-facts block, so no test here may lean on it.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q1-09 (P1), still on `c8d3b334`: Sunday chips (18 and 25 Oct, today is 18 Oct) look live, and the sixth chip is cut at every desktop width, not only at 390 (`QA-1-N02.png`).
+  - N-05 (P1, QA-2): the chips are disabled radios that look like live buttons, and tapping one does nothing and says nothing. Muting them is this task. Whether the "Add something" add-ons (static rows today) become selectable is spec 010's, not this task's: do not make them controls. How a static add-on row should look is TASK-252, item 8.
 
 ## Escalations
 

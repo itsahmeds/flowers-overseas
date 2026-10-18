@@ -47,6 +47,8 @@ it edits the same header strip, phone Menu and footer; that PR keeps the breaker
 
 - **From the site test (2026-10-14):** QA summary "Words and look": the help number sits beside
   "24/7, we reply within a few hours", and the footer reads "24/7 — we reply".
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - QA 2026-10-18 re-test: the footer line "Message us any time, 24/7 — we reply within a few hours" is still on `c8d3b334` (PR 229's WhatsApp help links were not in that build, so they are untested). Re-test the help link and `company.support.hours` once PR 229 and this task merge.
 
 ## Escalations
 

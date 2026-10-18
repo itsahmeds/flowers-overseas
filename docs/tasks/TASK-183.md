@@ -85,6 +85,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   It is ⚖️ for the lawyer and goes to the founder in batch 2; never mark it reviewed yourself.
   With the RoPA row 2 edit, also correct **RoPA row 3's Transfers cell**: it says "None" while its
   Recipients cell names row 2's platform log, so it follows row 2's transfer in Phase 0.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q1-11 (P1), still on `c8d3b334`: the footer has no legal links (terms, privacy, cookies, withdrawal and refunds, imprint). Publishing them as footer items is this task: add a footer-crawl case in en and en-gb that each published legal page is linked from the footer. The help number +1 (213) 592-5150 QA-1 flags is the founder's WhatsApp number (TASK-238, D4), not a defect.
 
 ## Escalations
 

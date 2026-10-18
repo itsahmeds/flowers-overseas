@@ -33,6 +33,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From TASK-234 (2026-10-18):** `Product`/`Offer` and the PDP `BreadcrumbList` stay with this task; TASK-234 only fixes the locale home's canonical. The PDP emits no JSON-LD today.
 - **From TASK-115 (todo today, spec 008 breadcrumb types):** it extends `breadcrumbList` to six listing page types and inherits `shapeProblems()`. If it merges first, rebase on its signature; if not, do not widen `breadcrumbList` for it, and tell whichever of the two lands second to merge the `shapeProblems()` additions by hand.
 - **Not concurrent** with TASK-228 to TASK-230, TASK-128 or TASK-129 on `ProductPage.tsx` and the route file; this task mounts one `<JsonLd>` in the product branch and should not edit the layout.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q18-09 (P2): QA-1 found no `Product`, `Offer` or `BreadcrumbList` JSON-LD on any of the 2,352 products on `c8d3b334`. `Product` and `Offer` are gated and emit nothing in Phase 0 on purpose; the PDP `BreadcrumbList` is this task. Flag it in the ranking plan before TASK-096's indexing flip.
 
 ## Escalations
 

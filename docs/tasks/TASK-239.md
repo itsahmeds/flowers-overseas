@@ -64,6 +64,8 @@ Founder ruling D2 A, 2026-10-14 ("R ok, D1–D5, …"; `docs/decisions-log.md`).
   in places; QA-5: "not yet" said four ways per page. `.claude/state/qa-2026-10-14/QA-5-content.md`.
 - **Not this task:** spec 007 §13 Q11 (the `de`/`pl` destination rows' links) is open; with `de`
   and `pl` hidden (TASK-237) it affects only visitors who reach them by URL.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - N-06 (P1, QA-2): the destinations hub reads Poland as "Guide · not delivering yet" while the home says Poland is where to shop. When this task sets Poland's state line to "Ordering opens soon", the hub's line for Poland must agree (TASK-188 R6 prints the hub's state line).
 
 ## Escalations
 

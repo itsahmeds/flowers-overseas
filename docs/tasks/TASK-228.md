@@ -80,6 +80,8 @@ says "this is the price you will pay" and shows another tier's price.
   The QA figures above stay as evidence only.
 - **From the founder's ruling D2 (PR 227):** TASK-239 changes the primary-action status text to
   "Ordering opens soon" after this PR; do not pin "Ordering is not open yet" in a new assertion.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q1-01 (P1), still on `c8d3b334`: add-ons are priced in PLN with "VAT 23%" on the EUR and GBP pages, de and pl show Polish zloty add-ons half in English, and the printed card reads "0.00 PLN" (`QA-1-N06.png`). Choosing a size still leaves every price unchanged (PR 239 in review). **Done when** the add-on rows in en, en-gb, de and pl carry the page's currency, no VAT line, and the free card reads "Included", each a case red on `c8d3b334`.
 
 ## Escalations
 

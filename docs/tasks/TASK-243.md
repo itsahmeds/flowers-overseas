@@ -76,6 +76,8 @@ Same rulings as TASK-242. "Specs ok" approves the proposed wordings below as the
 
 - **From the 2026-10-14 site test, QA-1 Q1-03:** "Amber Hour — hand-tied rose bouquet" on every
   product page, 28 times per bouquet.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q18-09 (P2): the same product `<title>` ("Amber Hour — hand-tied rose bouquet", English) is on 28 URLs (7 countries × 4 locales), and the em dash is in every product, category and shop title on `c8d3b334`; this task's "Name: descriptor" shape fixes the dash. The same title across 7 countries is a ranking question for the founder (duplicate titles across country pages), not a change here: the spec fixes the title shape without a country.
 
 ## Escalations
 

@@ -31,6 +31,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From `/review 135` round 1 (2026-10-03, TASK-127):** read and plant inside one synchronous `evaluate`; removing a server node before hydration is React #418 and re-renders the lifted lines back (the `e2e-mobile` race).
 - **From the TASK-242 and TASK-243 brief (2026-10-15):** that feature adds a built-site head scan for em dashes (`tests/e2e/phrase-scan.spec.ts`, beside `relay-scan.spec.ts`) and the head-punctuation check of `i18n:check`. This task scans for *claims*, not punctuation. Do not run beside TASK-242 or TASK-243, and do not share a helper with them unless one of the two has merged; if both want a "read the head" helper, the second to land reuses the first's.
 - **Pages now exist that the list lacks:** the product page (`/en/poland/product/<slug>`, TASK-127) is not in `PAGES`; add it.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q18-08 (P2): the fr and ro guide `seoDescription`s say "what we can honestly offer there today" and "what we can offer in Romania today"; `RELAY_PATTERNS` does not match "offer" and the sweep cannot see `<head>`. TASK-251 asks the founder whether the word is banned; if it is, add it to the head scan this task widens.
 
 ## Escalations
 
