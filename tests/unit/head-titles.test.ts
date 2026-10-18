@@ -2,7 +2,8 @@
  * The titles the head-copy amendment owns, rendered by the route code that emits them (spec 003
  * §14 A-founder-2026-10-15a; TASK-243): the locale home (spec 004 AC-54 / T-59, unit half), the
  * country shop root and the country listings on pages 1 and 2 (spec 008 AC-34 / T-38, unit half)
- * and the product page with and without a descriptor (spec 009 AC-36 / T-40, unit half).
+ * and the product page with and without a descriptor (spec 009 AC-36 / T-40, unit half; the
+ * product route since PR 239 is `src/app/[locale]/-product/…`).
  *
  * `next-intl/server` is the one stand-in: `getTranslations` is next-intl's own `createTranslator`
  * over the **resolved committed catalogue** (`resolveCatalogue()`, the fallback chain the app
@@ -56,7 +57,7 @@ vi.mock("../../src/modules/catalog/index.ts", async (importOriginal) => {
 
 const home = await import("../../src/app/[locale]/page.tsx");
 const product =
-  await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+  await import("../../src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx");
 const { countryShopRootMetadata } =
   await import("../../src/app/[locale]/country-shop-root.tsx");
 const { countryListingMetadata } =
