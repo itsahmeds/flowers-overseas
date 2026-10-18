@@ -1,5 +1,6 @@
 /**
- * @purpose The deployment environment and its chip label, for the admin chrome (spec 012 §5.3)
+ * @purpose The admin environment chip (§5.3)
+ * @spec 012
  */
 import { appEnvironment } from "@/lib/env.schema";
 import { adminT } from "@/modules/admin";

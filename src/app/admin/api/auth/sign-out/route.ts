@@ -1,5 +1,6 @@
 /**
- * @purpose POST: admin sign-out; deletes the session row and expires the cookie (spec 012 §2.2)
+ * @purpose POST: admin sign-out (§2.2)
+ * @spec 012
  */
 import { adminAuth } from "@/lib/auth/admin";
 

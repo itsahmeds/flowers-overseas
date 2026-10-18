@@ -1,5 +1,6 @@
 /**
- * @purpose 401 inside admin: no data, noindex, a way back to sign-in (spec 012 §5.3, AC-1)
+ * @purpose Admin 401, noindex (AC-1)
+ * @spec 012
  */
 import type { ReactElement } from "react";
 

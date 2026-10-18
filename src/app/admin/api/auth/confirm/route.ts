@@ -1,5 +1,6 @@
 /**
- * @purpose POST: the confirm page's "Continue"; consumes the token in process (spec 012 §2.2, AC-9)
+ * @purpose POST: confirm sign-in, use the token (AC-9)
+ * @spec 012
  */
 import { adminAuth } from "@/lib/auth/admin";
 

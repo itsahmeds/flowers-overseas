@@ -1,5 +1,6 @@
 /**
- * @purpose GET: secret-gated read of captured sign-in mail for e2e (spec 012 §2.2)
+ * @purpose GET: captured sign-in mail for e2e (§2.2)
+ * @spec 012
  *
  * Thin by design (`plan/01` §5): the gate, the environment rule and the body are
  * `@/modules/notifications`' `mailCaptureResponse`.

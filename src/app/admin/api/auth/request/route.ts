@@ -1,5 +1,6 @@
 /**
- * @purpose POST: the admin email form; the same 303 for every address (spec 012 §2.2, AC-2)
+ * @purpose POST: ask for a link, one 303 for all (AC-2)
+ * @spec 012
  */
 import { adminAuth } from "@/lib/auth/admin";
 

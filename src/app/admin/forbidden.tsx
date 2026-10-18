@@ -1,5 +1,6 @@
 /**
- * @purpose 403 inside admin: no data, noindex (spec 012 §5.3)
+ * @purpose Admin 403, noindex (§5.3)
+ * @spec 012
  */
 import type { ReactElement } from "react";
 

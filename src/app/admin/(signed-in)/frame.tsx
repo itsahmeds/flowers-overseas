@@ -1,5 +1,6 @@
 /**
- * @purpose The admin shell around a signed-in page: navigation for the role, the person, sign-out (spec 012 §5.3)
+ * @purpose Signed-in admin shell: nav, person, sign-out (§5.3)
+ * @spec 012
  */
 import type { ReactElement, ReactNode } from "react";
 

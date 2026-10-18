@@ -1,5 +1,6 @@
 /**
- * @purpose GET /admin/sign-in: the email form and its sent, expired and signed-out states (spec 012 §2.2)
+ * @purpose GET /admin/sign-in: form and its states (§2.2)
+ * @spec 012
  *
  * The only admin page reachable without a session (AC-1). `?state=` names the state and nothing
  * else; no URL here ever carries an address (AC-9). The form posts to the core's

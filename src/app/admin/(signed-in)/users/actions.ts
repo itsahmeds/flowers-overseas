@@ -1,5 +1,6 @@
 /**
- * @purpose Server actions of /admin/users: grant, revoke, deactivate, each guarded first (spec 012 §2.2, AC-3, AC-4)
+ * @purpose /admin/users actions, each guarded first (AC-3, AC-4)
+ * @spec 012
  *
  * Thin (`plan/01` §5): `requirePermission("users.manage")` is the first statement of each (T-02
  * scans for it), then the `src/modules/admin` command, then a redirect that names the outcome and

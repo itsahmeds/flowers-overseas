@@ -1,5 +1,6 @@
 /**
- * @purpose The admin document: English, noindex, its own catalogue (spec 012 §2.2, §5.3)
+ * @purpose Admin document: English, noindex (§5.3)
+ * @spec 012
  *
  * Admin's own document layout (spec 012 §5.3; TASK-217): `lang` from the admin catalogue's locale
  * constant, `<meta name="robots" content="noindex,nofollow">` on every admin document (AC-5),

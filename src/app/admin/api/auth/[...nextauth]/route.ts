@@ -1,5 +1,6 @@
 /**
- * @purpose Every Auth.js endpoint under /admin/api/auth answers 404; the core uses Auth.js in process (spec 012 §2.2)
+ * @purpose Every Auth.js endpoint answers 404 (§2.2)
+ * @spec 012
  *
  * The sign-in core needs none of Auth.js's own HTTP endpoints: the link is requested at
  * `/admin/api/auth/request`, consumed at `/admin/api/auth/confirm` (which invokes Auth.js's email

@@ -1,5 +1,6 @@
 /**
- * @purpose GET /admin: three counters, each a link where its page exists (spec 012 §5.3)
+ * @purpose GET /admin: three counters (§5.3)
+ * @spec 012
  */
 import type { ReactElement } from "react";
 

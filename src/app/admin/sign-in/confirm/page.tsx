@@ -1,5 +1,6 @@
 /**
- * @purpose GET /admin/sign-in/confirm?t=: one "Continue" button; the GET uses nothing up (spec 012 §2.2, AC-9)
+ * @purpose GET: one Continue button, uses nothing (AC-9)
+ * @spec 012
  *
  * A mail scanner's or a chat app's preview fetches this page and burns nothing: the token is
  * consumed only by the button's `POST` to `/admin/api/auth/confirm`. A malformed `t` shows the

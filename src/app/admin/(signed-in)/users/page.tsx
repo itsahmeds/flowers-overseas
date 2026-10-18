@@ -1,5 +1,6 @@
 /**
- * @purpose GET /admin/users: roles, grant, revoke, deactivate; own last admin role not removable (spec 012 §2.2)
+ * @purpose GET /admin/users: grant, revoke, deactivate (§2.2)
+ * @spec 012
  *
  * Controls that cannot act are absent with the reason as text (spec 004 §14 A20): no remove
  * control on your own admin role, no controls on a deactivated row. The deactivate confirmation
