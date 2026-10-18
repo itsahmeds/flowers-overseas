@@ -17,20 +17,21 @@ task actually touches.
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/pdp-schema.test.ts` +76 |
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts` +33 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts` +85 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts` +32 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts` +84 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
 | `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts` +20 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx` +44 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx` +45 |
 
 ## Config (`src/config/`)
 
 | File | Purpose | Spec |
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country (spec 003 §2, §5.2, §7; `plan/03` §8;… | spec 003 |
+| `card-message.ts` | The printed card's one limit (spec 004 §14 A-founder-2026-10-14c, AC-51; spec… | spec 004 |
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates, vase, balloon, plush,… | spec 005 |
 | `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product types + 10 occasion… | spec 005 |
 | `catalogue/fx.data.ts` | The committed FX snapshot: one dated set of ECB euro reference rates (spec 005… | spec 005 |
@@ -74,6 +75,7 @@ task actually touches.
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
+| `[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_product/{segment}/{child}/{grandchild}` — **the product page's own… | spec 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the **depth-4 parameter… | spec 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
 | `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page except the home (spec 004… | spec 004 |
@@ -165,10 +167,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 305 |
+| `tests/unit/` | 306 |
 | `tests/integration/` | 28 |
 | `tests/contract/` | 13 |
-| `tests/e2e/` | 62 |
+| `tests/e2e/` | 63 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
