@@ -143,12 +143,11 @@ test.describe("what the hubs render (AC-11, §13 Q4)", () => {
     await page.goto("/en/flowers/roses");
     await expect(page.locator("h1")).toHaveCount(1);
     const blocks = await page
-      .locator("[data-fo-hub-destinations], [data-fo-hub-products]")
+      // TASK-188: the destinations are the first screen's pills (R4), still before the products.
+      .locator("[data-fo-hub-pills], [data-fo-hub-products]")
       .evaluateAll((nodes) =>
         nodes.map((node) =>
-          node.hasAttribute("data-fo-hub-destinations")
-            ? "destinations"
-            : "products",
+          node.hasAttribute("data-fo-hub-pills") ? "destinations" : "products",
         ),
       );
     expect(blocks).toEqual(["destinations", "products"]);

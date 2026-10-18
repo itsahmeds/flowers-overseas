@@ -41,13 +41,16 @@ import {
  * Tailwind reads class names from the source text.
  */
 const GROUND: Readonly<Record<ListingRegister, string>> = {
-  warm: "md:bg-butter md:shadow-[0_0_0_100vmax_var(--color-butter)]",
-  quiet: "md:bg-paper-2 md:shadow-[0_0_0_100vmax_var(--color-paper-2)]",
-  dated: "md:bg-blush md:shadow-[0_0_0_100vmax_var(--color-blush)]",
+  warm: "md:bg-butter md:shadow-[0_0_0_100vmax_var(--color-butter)] md:[&_h1_em]:underline md:[&_h1_em]:decoration-sun md:[&_h1_em]:decoration-[0.09em] md:[&_h1_em]:underline-offset-[0.1em] md:[&_h1_em]:[text-decoration-skip-ink:none]",
+  // `quiet`: the italic in ink-2, not poppy (R1), and no underline.
+  quiet:
+    "md:bg-paper-2 md:shadow-[0_0_0_100vmax_var(--color-paper-2)] md:[&_h1_em]:text-ink-muted",
+  dated:
+    "md:bg-blush md:shadow-[0_0_0_100vmax_var(--color-blush)] md:[&_h1_em]:underline md:[&_h1_em]:decoration-sun md:[&_h1_em]:decoration-[0.09em] md:[&_h1_em]:underline-offset-[0.1em] md:[&_h1_em]:[text-decoration-skip-ink:none]",
   cream: "md:bg-paper-2 md:shadow-[0_0_0_100vmax_var(--color-paper-2)]",
   leaf: "md:bg-leaf-wash md:shadow-[0_0_0_100vmax_var(--color-leaf-wash)]",
   sky: "md:bg-sage-wash md:shadow-[0_0_0_100vmax_var(--color-sage-wash)]",
-  ink: "md:bg-surface-inverse md:shadow-[0_0_0_100vmax_var(--color-surface-inverse)] md:text-on-inverse md:[&_.eyebrow]:text-on-inverse-accent md:[&_h1]:text-on-inverse md:[&_h1_em]:text-on-inverse-accent md:[&_nav_a]:text-on-inverse md:[&_nav_li]:text-on-inverse",
+  ink: "md:bg-surface-inverse md:shadow-[0_0_0_100vmax_var(--color-surface-inverse)] md:text-on-inverse md:[&_.eyebrow]:text-on-inverse-accent md:[&_h1]:text-on-inverse md:[&_h1_em]:text-on-inverse-accent md:[&_nav_a]:text-on-inverse md:[&_nav_li]:text-on-inverse md:[&_nav_[aria-current]]:text-on-inverse md:[&_[data-fo-hub-pills-label]]:text-on-inverse",
 };
 
 /** The ink register's muted text (deck, notes, captions) from `md` up. */
@@ -103,15 +106,15 @@ export function HubBand({
   return (
     <section
       aria-labelledby={labelledBy}
-      className={`${GROUND[register]} md:pb-[48px] md:[clip-path:inset(0_-100vmax)]`}
+      className={`${GROUND[register]} flow-root md:pb-[48px] md:[clip-path:inset(0_-100vmax)]`}
       data-fo-hub-band
       data-register={register}
       {...dataHook}
     >
       {breadcrumb}
-      <div className="grid grid-cols-1 items-start pt-[8px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)] md:pt-[32px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start pt-[8px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)] md:pt-[32px]">
         <div
-          className={`grid min-w-0 justify-items-start gap-[12px] md:gap-[20px] ${COPY_COLUMNS[split]} ${flip ? "md:col-start-7 md:row-start-1" : ""}`}
+          className={`grid min-w-0 grid-cols-[minmax(0,1fr)] justify-items-start gap-[12px] md:gap-[20px] ${COPY_COLUMNS[split]} ${flip ? "md:col-start-7 md:row-start-1" : ""}`}
           data-fo-hub-copy
         >
           {children}
@@ -273,7 +276,10 @@ export function HubPills({
     <>
       <div className="hidden gap-[10px] md:grid" data-fo-hub-pills>
         {heading === undefined ? null : (
-          <p className="text-ink-subtle text-xs font-bold tracking-[0.12em] uppercase">
+          <p
+            className="text-ink-subtle text-xs font-bold tracking-[0.12em] uppercase"
+            data-fo-hub-pills-label
+          >
             {heading}
           </p>
         )}

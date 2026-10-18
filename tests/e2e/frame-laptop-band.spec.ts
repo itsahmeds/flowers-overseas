@@ -131,23 +131,26 @@ const FIRST_SCREEN: Readonly<
   },
   countryOccasion: { h1: "display", action: "main [data-fo-price]" },
   // TASK-188: a hub's way to a price is its first destination pill from `md` up and the first
-  // chip of the phone's chip row below `md` (`boxOf` takes the first displayed match).
+  // chip of the phone's chip row below `md`; `:visible` picks the one displayed at the width.
   occasionHub: {
     h1: "display",
-    action: "main a[data-fo-hub-destination], main a[data-fo-hub-chip]",
+    action:
+      "main a[data-fo-hub-destination]:visible, main a[data-fo-hub-chip]:visible",
   },
   categoryHub: {
     h1: "display",
-    action: "main a[data-fo-hub-destination], main a[data-fo-hub-chip]",
+    action:
+      "main a[data-fo-hub-destination]:visible, main a[data-fo-hub-chip]:visible",
   },
   // R5's "next six": each card links its hub (the first-screen block, TASK-188).
   occasionsIndex: {
     h1: "display",
-    action: "main a[data-fo-next-occasion], main [data-fo-phone-date-cards] a",
+    action:
+      "main a[data-fo-next-occasion]:visible, main [data-fo-phone-date-cards] a:visible",
   },
   destinationsHub: {
     h1: "display",
-    action: "main a[data-fo-hub-pill], main a[data-fo-hub-row]",
+    action: "main a[data-fo-hub-pill]:visible, main a[data-fo-hub-row]:visible",
   },
   guide: { h1: "display", action: "main [data-fo-corridor-shop] a" },
   product: { h1: "title", action: "main [data-fo-pdp-price]" },

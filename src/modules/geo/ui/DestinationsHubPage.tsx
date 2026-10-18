@@ -212,12 +212,12 @@ export function DestinationsHubPage({
             line. No photograph: the LCP element is the `<h1>` (A23 clause 7). */}
         <section
           aria-labelledby="destinations-h1"
-          className="md:bg-paper-2 md:pb-[32px] md:shadow-[0_0_0_100vmax_var(--color-paper-2)] md:[clip-path:inset(0_-100vmax)]"
+          className="md:bg-paper-2 flow-root md:pb-[20px] md:shadow-[0_0_0_100vmax_var(--color-paper-2)] md:[clip-path:inset(0_-100vmax)]"
           data-fo-hub-band
           data-register="cream"
         >
           <CorridorBreadcrumb crumbs={view.breadcrumb} />
-          <div className="md:bg-card md:rounded-letter md:shadow-letter grid grid-cols-1 items-start gap-[8px] pt-[8px] md:mt-[28px] md:grid-cols-12 md:gap-x-[32px] md:px-[52px] md:pt-[48px] md:pb-[52px]">
+          <div className="md:bg-card md:rounded-letter md:shadow-letter grid grid-cols-1 items-start gap-[8px] pt-[8px] md:mt-[28px] md:grid-cols-12 md:gap-x-[32px] md:px-[52px] md:pt-[48px] md:pb-[40px]">
             <div className="grid justify-items-start gap-[8px] md:col-span-6 md:gap-[18px]">
               <Eyebrow className="max-md:hidden">
                 {footer("link.destinations")}
@@ -302,7 +302,7 @@ export function DestinationsHubPage({
         </section>
 
         {/* The lede, directly under the first screen (A24 clause 2: over two lines, it moves). */}
-        <div className="pt-[32px] max-md:hidden md:pt-[40px]" data-fo-hub-lede>
+        <div className="pt-[32px] max-md:hidden md:pt-[28px]" data-fo-hub-lede>
           <Text size="lg" tone="muted" className="max-w-(--measure-lede)">
             {hub("intro")}
           </Text>

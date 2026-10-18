@@ -288,24 +288,33 @@ test.describe("AC-36 (T-38): one priority image per width, and none on the index
   test("the lead figure's photograph is never requested on a phone (A24 clause 5)", async ({
     page,
   }) => {
-    const requested: string[] = [];
-    page.on("request", (request) => {
-      if (request.resourceType() === "image") requested.push(request.url());
-    });
     await open(page, BIRTHDAY, PHONE);
     await page.waitForLoadState("networkidle");
-    const asset = await page
-      .locator("main figure[data-fo-hub-lead] [data-fo-media-asset]")
-      .getAttribute("data-fo-media-asset");
-    expect(asset).not.toBeNull();
-    const firstCard = await page
-      .locator("main [data-fo-listing-grid] > li [data-fo-media-asset]")
-      .first()
-      .getAttribute("data-fo-media-asset");
-    expect(firstCard).not.toBe(asset);
-    expect(
-      requested.filter((url) => url.includes(`/${asset ?? "-"}/`)),
-    ).toEqual([]);
+    const facts = await page.evaluate(() => {
+      const figure = document.querySelector("main figure[data-fo-hub-lead]");
+      const img = figure?.querySelector("img");
+      const asset =
+        figure
+          ?.querySelector("[data-fo-media-asset]")
+          ?.getAttribute("data-fo-media-asset") ?? "";
+      return {
+        asset,
+        currentSrc: img?.currentSrc ?? "",
+        // The figure's own fetch: by its `<img>` (the picture's source) or by its preload. The
+        // same product's grid card, if it is on the page, fetches as a lazy grid image and is
+        // not the figure.
+        preloaded: performance
+          .getEntriesByType("resource")
+          .filter(
+            (entry) =>
+              entry.name.includes(`/${asset}/`) &&
+              (entry as PerformanceResourceTiming).initiatorType === "link",
+          ).length,
+      };
+    });
+    expect(facts.asset).not.toBe("");
+    expect(facts.currentSrc.startsWith("data:"), facts.currentSrc).toBe(true);
+    expect(facts.preloaded).toBe(0);
   });
 });
 
