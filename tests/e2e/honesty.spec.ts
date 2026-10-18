@@ -16,6 +16,8 @@
  */
 import { expect, test } from "@playwright/test";
 
+import { FORBIDDEN_REVIEW_SHAPES } from "../support/listing-honesty.ts";
+
 const LOCALES = ["/en", "/en-gb", "/de", "/pl"] as const;
 
 /**
@@ -26,17 +28,7 @@ const FORBIDDEN: readonly {
   readonly name: string;
   readonly pattern: RegExp;
 }[] = [
-  { name: "review", pattern: /\breviews?\b/iu },
-  { name: "rating", pattern: /\bratings?\b|\brated\b/iu },
-  { name: "star", pattern: /\bstars?\b|★|⭐/iu },
-  { name: "testimonial", pattern: /\btestimonials?\b/iu },
-  { name: "review count", pattern: /\d[\d\s,.]*\s*(reviews?|ratings?)\b/iu },
-  {
-    name: "out-of-five score",
-    pattern: /\b\d(?:[.,]\d)?\s*(?:\/|out of)\s*5\b/iu,
-  },
-  { name: "Trustpilot mark", pattern: /trustpilot|feefo|reviews\.io/iu },
-  { name: "florist count", pattern: /\d[\d\s,.]*\s*florists?\b/iu },
+  ...FORBIDDEN_REVIEW_SHAPES,
   {
     name: "customer count",
     pattern: /\d[\d\s,.]*\s*(customers?|orders? delivered|deliveries)\b/iu,

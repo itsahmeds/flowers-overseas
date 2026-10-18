@@ -16,9 +16,23 @@
  *
  * The assertion is an absence, so it is only worth making if it can fail: the last test plants a
  * promise into the served DOM and requires the same scan to catch it.
+ *
+ * **The head** (TASK-145): `body.innerText` cannot see `<head>`, and since TASK-112 the hubs, and
+ * since TASK-127 the product page, render authored `seoTitle`/`seoDescription` copy there. The
+ * second `describe` reads `<title>`, the meta description, the `og:`/`twitter:` copy if emitted and
+ * every JSON-LD prose string of the same pages with the same patterns, and plants a claim into
+ * each of three places to prove the read sees them.
  */
 import { type Page, expect, test } from "@playwright/test";
 
+import {
+  HEAD_META,
+  HEAD_READ,
+  type HeadPlant,
+  type HeadRead,
+  headOffences,
+  headStrings,
+} from "../support/head-honesty.ts";
 import {
   FORBIDDEN_DELIVERY_PROMISE_TEXT,
   FORBIDDEN_RANKING_TEXT,
@@ -74,6 +88,41 @@ const PAGES: readonly { readonly type: string; readonly path: string }[] = [
   { type: "occasion hub", path: "/en-gb/occasions/mothers-day" },
   { type: "gallery", path: "/dev/components" },
 ];
+
+/**
+ * `PAGES` and the one product page, the third page type with authored head copy
+ * (`/en/poland/product/<slug>`, TASK-127). The product page is not in `PAGES` because its body is
+ * the buy section's, which the body sweep's lift design does not cover (spec 009).
+ */
+const HEAD_PAGES: readonly { readonly type: string; readonly path: string }[] =
+  [...PAGES, { type: "product page", path: "/en/poland/product/amber-hour" }];
+
+/**
+ * The page types whose documents carry JSON-LD: the locale home (`Organization`, `WebSite`) and the
+ * destinations hub and corridor guide (breadcrumbs, FAQ). `JsonLd` renders it **in `<body>`**, not
+ * in `<head>`, so a read of `document.head` found none on any page and the scan below passed with
+ * its subject missing (`/break` round 2, hole 1). The country shop, listing, hub and product pages
+ * emit none today; the day one does, add its type here.
+ */
+const JSON_LD_TYPES: ReadonlySet<string> = new Set([
+  "home",
+  "destinations hub",
+  "corridor",
+]);
+
+/** Ten page types and 26 documents: dropping either a type or a row must fail a count. */
+const HEAD_PAGE_TYPES = [
+  "category hub",
+  "corridor",
+  "country category",
+  "country occasion",
+  "country shop root",
+  "destinations hub",
+  "gallery",
+  "home",
+  "occasion hub",
+  "product page",
+] as const;
 
 function offences(rendered: string): readonly string[] {
   return PATTERNS.filter(({ pattern }) => pattern.test(rendered)).map(
@@ -242,5 +291,122 @@ test.describe("A19: no same-day, cutoff or ranking promise renders while no dest
     });
     expect(both.lifted).toBe(served.lifted + 1);
     expect(offences(both.text)).toEqual(["order-by cutoff promise"]);
+  });
+});
+
+/** The head of the served document, optionally with claims planted and restored in the same call. */
+async function readHead(page: Page, plant: HeadPlant = {}): Promise<HeadRead> {
+  return page.evaluate(HEAD_READ, { plant, metas: HEAD_META });
+}
+
+test.describe("A19 and AC-19: the head makes no promise or review-shaped claim either", () => {
+  test("the sweep covers every page type, the product page included", () => {
+    expect([...new Set(HEAD_PAGES.map(({ type }) => type))].toSorted()).toEqual(
+      [...HEAD_PAGE_TYPES],
+    );
+    expect(HEAD_PAGES).toHaveLength(26);
+  });
+
+  for (const { type, path } of HEAD_PAGES) {
+    test(`${type} ${path} — title, description, og/twitter, JSON-LD`, async ({
+      page,
+    }) => {
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(200);
+      const read = await readHead(page);
+      const strings = headStrings(read);
+
+      // The read saw something: a title, and for every indexable type a meta description. An
+      // empty read would pass the absence below with its subject missing.
+      expect(read.title.trim(), path).not.toBe("");
+      if (type !== "gallery") {
+        expect(
+          read.metas.some(({ key }) => key === "description"),
+          `${path}: no meta description`,
+        ).toBe(true);
+      }
+      // The JSON-LD half of the read saw its subject: a page known to carry blocks yields them.
+      if (JSON_LD_TYPES.has(type)) {
+        expect(read.jsonLd.length, `${path}: no JSON-LD read`).toBeGreaterThan(
+          0,
+        );
+        expect(read.jsonLd.length).toBe(
+          await page.locator('script[type="application/ld+json"]').count(),
+        );
+      }
+      expect(headOffences(read), JSON.stringify(strings)).toEqual([]);
+    });
+  }
+
+  test("the scan catches a claim planted into the title, the description, an og tag and a JSON-LD block", async ({
+    page,
+  }) => {
+    await page.goto("/en/send-flowers-to/poland");
+    const served = await readHead(page);
+    expect(headOffences(served)).toEqual([]);
+
+    const title = await readHead(page, {
+      title: "Best sellers: roses to Poland",
+    });
+    expect(headOffences(title)).toEqual(["title: ranking claim"]);
+
+    const description = await readHead(page, {
+      description: "Flowers to Warsaw with same-day delivery.",
+    });
+    expect(headOffences(description)).toEqual([
+      "description: delivery-timing claim",
+    ]);
+
+    const jsonLd = await readHead(page, {
+      jsonLd: { "@type": "WebPage", description: "Order by 14:00 in Warsaw." },
+    });
+    expect(headOffences(jsonLd)).toEqual([
+      `json-ld[${served.jsonLd.length}].description: order-by cutoff promise`,
+    ]);
+
+    // The key form, planted into `<body>` as the app renders its blocks: a rating node's values
+    // are numbers, which no text pattern reads.
+    const at = `json-ld[${served.jsonLd.length}]`;
+    const rating = await readHead(page, {
+      jsonLd: {
+        "@type": "Product",
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: 4.8,
+          reviewCount: 120,
+        },
+      },
+    });
+    expect(headOffences(rating)).toEqual([
+      `${at}.aggregateRating: review/rating key`,
+      `${at}.aggregateRating.@type: review/rating type`,
+      `${at}.aggregateRating.ratingValue: review/rating key`,
+      `${at}.aggregateRating.reviewCount: review/rating key`,
+    ]);
+
+    // An `og:` tag the page does not carry: the read must look for one.
+    const og = await readHead(page, {
+      ogTitle: "Best sellers: roses to Poland",
+    });
+    expect(headOffences(og)).toEqual(["og:title: ranking claim"]);
+
+    // The read restores what it planted: the head is the one the server sent.
+    expect(await readHead(page)).toEqual(served);
+  });
+
+  test("a read of `body.innerText` is blind to a planted head claim", async ({
+    page,
+  }) => {
+    // The control's own control: the failure the head read exists to fix, shown to be real. If
+    // this ever sees the claim, the body sweep already covered the head and this file is moot.
+    await page.goto("/en/send-flowers-to/poland");
+    const body = await page.evaluate(() => {
+      const before = document.title;
+      document.title = "Best sellers: roses to Poland";
+      const text = document.body.innerText;
+      document.title = before;
+      return text;
+    });
+    expect(offences(body.replaceAll(/\s+/g, " "))).toEqual([]);
   });
 });

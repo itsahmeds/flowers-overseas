@@ -71,6 +71,28 @@ export const FORBIDDEN_DELIVERY_PROMISE_TEXT: readonly HonestyPattern[] = [
   },
 ];
 
+/**
+ * **Spec 007 AC-19's review-shaped claims**, word-bounded for the reason `tests/e2e/honesty.spec.ts`
+ * documents ("Start again from the home page" contains `star`): a review, rating, star,
+ * testimonial, review count, out-of-five score, Trustpilot mark and florist count. Moved here from
+ * that file by TASK-145 so the served-`<head>` sweep (`tests/support/head-honesty.ts`) reads the
+ * very same list as the body scan, never a second one. Partner names and customer counts stay in
+ * that file: "Blumen" is an ordinary word in a German title.
+ */
+export const FORBIDDEN_REVIEW_SHAPES: readonly HonestyPattern[] = [
+  { name: "review", pattern: /\breviews?\b/iu },
+  { name: "rating", pattern: /\bratings?\b|\brated\b/iu },
+  { name: "star", pattern: /\bstars?\b|★|⭐/iu },
+  { name: "testimonial", pattern: /\btestimonials?\b/iu },
+  { name: "review count", pattern: /\d[\d\s,.]*\s*(reviews?|ratings?)\b/iu },
+  {
+    name: "out-of-five score",
+    pattern: /\b\d(?:[.,]\d)?\s*(?:\/|out of)\s*5\b/iu,
+  },
+  { name: "Trustpilot mark", pattern: /trustpilot|feefo|reviews\.io/iu },
+  { name: "florist count", pattern: /\d[\d\s,.]*\s*florists?\b/iu },
+];
+
 /** Claims in words. Run against rendered **text**, per locale. */
 export const FORBIDDEN_LISTING_TEXT: readonly HonestyPattern[] = [
   { name: "rating", pattern: /\bratings?\b|\brated\b|\bbewertung/iu },
