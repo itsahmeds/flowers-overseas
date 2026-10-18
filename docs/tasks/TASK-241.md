@@ -201,6 +201,31 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   writer: at 390, does the H1 take the artboards' 32 px (amend 18b's 390 case to 32), and on the
   occasion which of the state line and the note gives way? Nothing tuned; T-43's 390 case is
   written to 18b (44 px).
+- **E-4 answered (founder, 2026-10-18, "ok"; spec 004 §14 A-founder-2026-10-18c, spec 008
+  pointer; PR 264).** Below `md` the shop root's and the country category's H1 take
+  `--text-3xl-fluid` (32 px), `--text-title-fluid` from `md` up; the country occasion's N1 follows
+  the grid below `md` (new AC-57, T-62); the state line stays. Built in this PR. **Mechanism of
+  clause 3 (the implementer's, recorded here):** one render per band. The hero's row (date card
+  and note) is `display: none` below `md` (`data-fo-hero-note-row`, `max-md:hidden`); the
+  after-grid copy (`ListingPhoneNote`, `data-fo-listing-note="after-grid"`, `role="note"`, named by
+  `shop.note.label`) is `display: none` from `md` up, placed by `CountryListingResults`'s
+  `afterGrid` slot directly after the grid and before the fx line and the pager. Neither copy is
+  `aria-hidden`. **Reading taken:** "the H1 keeps its line height and tracking; only its step
+  changes" is built as a font-size-only override (`max-md:text-(length:--text-3xl-fluid)`), so the
+  title step's 0.98 line height and -0.025em tracking stay. On the desktop the hero's note keeps its
+  drawn "P.S." mark over N1 (unchanged), so T-62 reads the note's text as N1 below `md` and "P.S."
+  then N1 from `md` up.
+- **E-5 (2026-10-18, finisher): AC-57's paged URL does not exist.** AC-57 and T-62 name "a country
+  occasion with more than 12 products, so that a pager renders (today
+  `/en-gb/poland/occasions/birthday`, 27 products per spec 008 §14 A15 (a))". On this branch's
+  production build that URL answers 404, and so does every `/en-gb/{country}/occasions/{slug}`
+  except `mothers-day`, which is the only country occasion built, in seven destinations
+  (France, Germany, Italy, Netherlands, Poland, Romania, Spain), none with a pager (the 27 of
+  A15 (a) is the birthday **hub**). So T-62 runs on the two Mother's Day URLs only, and the
+  note-before-the-pager order is a unit case (`catalog-occasion-page.test.tsx`, a view with
+  `pageCount: 2`; red with the note moved after the pager). Question for the spec writer: drop
+  the third URL until a paged country occasion exists, or name one. Not blocking: the behaviour
+  is specified and built; only its paged e2e case has no page to run on.
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
@@ -260,6 +285,19 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   e2e and lighthouse still running at the stop.
   **Next:** read that run's e2e for the Linux T-49 numbers (add them to E-4); toggle `ci:full`
   for head ac00d261 or later; wait for the E-4 ruling; then the row goes to `in_review`.
+
+- 2026-10-18 21:30 to 22:05 PKT (finisher, round 3): built A-founder-2026-10-18c (PR 264):
+  phone H1 at 32 px on the shop root and category, the occasion's N1 after the grid below `md`.
+  T-43's 390 case to 32 px plus the 767/768 band-edge pair; T-62 in `listing-first-screen.spec.ts`
+  (e2e) and `tests/a11y/country-occasion.spec.ts` (axe); unit order cases. Local production build
+  in the slot (`.env.example`, load 7 to 9): frame-laptop-band + listing-first-screen 234 passed
+  (every T-49 case green), a11y country-occasion 7 passed. First-row price foot at 390 × 844:
+  shop root 830.4, category `en-gb` 774.4, `de` 798.2, occasion 788.3 (bound 844). Mutations
+  watched red (three rebuilds): H1 on the title step below `md` (390 and 767 red); 3xl step from
+  `md` up (768, 1280, 1512 red); the note back in the hero below `md` (note top 292 vs last card
+  1990); both notes displayed (two N1 elements); the phone copy `aria-hidden` (no `note`).
+  E-4 answered, E-5 recorded. **Next:** rebase after PR 264 merges, Linux baselines
+  (`visual:baselines`), re-fire `ci:full`, CI's T-49 numbers.
 
 ## Result
 
