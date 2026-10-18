@@ -141,7 +141,10 @@ const FIRST_SCREEN: Readonly<
     action: "main a[data-fo-hub-destination], main a[data-fo-hub-chip]",
   },
   // R5's "next six": each card links its hub (the first-screen block, TASK-188).
-  occasionsIndex: { h1: "display", action: "main a[data-fo-next-occasion]" },
+  occasionsIndex: {
+    h1: "display",
+    action: "main a[data-fo-next-occasion], main [data-fo-phone-date-cards] a",
+  },
   destinationsHub: {
     h1: "display",
     action: "main a[data-fo-hub-pill], main a[data-fo-hub-row]",
@@ -280,7 +283,7 @@ async function boxOf(page: Page, selector: string): Promise<Box> {
  * that page the logo *is* the first block and the frame is asserted through its x alone.
  */
 const logoOf = (type: PageType): string =>
-  type === "notFound" ? "main#main > a:first-child" : "[data-fo-header-logo]";
+  type === "notFound" ? "main#main > header a" : "[data-fo-header-logo]";
 
 test.describe("T-33: the first block in <main> starts at the logo's edge (AC-31)", () => {
   for (const width of [1440, 1024, 768, 390] as const) {

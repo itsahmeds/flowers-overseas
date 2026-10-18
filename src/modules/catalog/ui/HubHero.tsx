@@ -413,12 +413,13 @@ export function HubDateCards({
     const box =
       "bg-card rounded-photo-s grid h-full min-h-[120px] content-start gap-[2px] p-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)] no-underline md:p-[16px]";
     return entry.href === undefined ? (
-      <div className={box} {...hook}>
+      <div className={box} data-fo-card-date={entry.date ?? ""} {...hook}>
         {body}
       </div>
     ) : (
       <a
         className={`${box} hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
+        data-fo-card-date={entry.date ?? ""}
         href={entry.href}
         {...hook}
       >

@@ -105,21 +105,30 @@ export const NOTICE_LETTER =
  * is TASK-194's). No stamp, no postmark, no airmail edge.
  */
 
-/** The ruled header: 64 px on a phone and 82 from `md`, plus its 1 px rule. */
+/**
+ * The page: `PAGE_FRAME` (so the logo and the document sit on every page's frame, AC-31), the
+ * header bar, then the document under it.
+ */
+export const NOTICE_404_PAGE =
+  "mx-auto flex min-h-svh w-full max-w-[calc(var(--container-page)+2*var(--gutter))] flex-col px-(--gutter-s) md:px-(--gutter)";
+
+/** The header bar: 64 px on a phone and 82 from `md`; the logo alone. */
 export const NOTICE_404_HEADER =
-  "border-rule bg-surface box-border flex h-[65px] items-center border-b md:h-[83px]";
+  "flex h-[65px] flex-none items-center md:h-[83px]";
 
-/** The header's frame: `PAGE_FRAME`, so the logo sits where every page's logo sits (AC-31). */
-export const NOTICE_404_HEADER_FRAME =
-  "mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+/** The header's inner box (the frame is the page's own). */
+export const NOTICE_404_HEADER_FRAME = "flex items-center";
 
-/** The document: at least the viewport minus the header, the letter centred in it (AC-40). */
+/**
+ * The document: the raised paper painted to the viewport's edges (a 100vmax spread clipped to the
+ * block, the hub bands' device), the header's rule on its top edge, and at least the viewport
+ * minus the header tall (AC-40), with the letter centred.
+ */
 export const NOTICE_404_MAIN =
-  "bg-surface-raised relative grid min-h-[calc(100svh-65px)] place-items-center overflow-hidden pt-[40px] pb-[56px] md:min-h-[calc(100svh-83px)] md:pt-[48px] md:pb-[72px]";
+  "border-rule bg-surface-raised relative grid min-h-[calc(100svh-65px)] place-items-center overflow-hidden border-t pt-[40px] pb-[56px] shadow-[0_0_0_100vmax_var(--color-surface-raised)] [clip-path:inset(0_-100vmax)] md:min-h-[calc(100svh-83px)] md:pt-[48px] md:pb-[72px]";
 
-/** The letter's frame inside the document: `PAGE_FRAME`, above the route. */
-export const NOTICE_404_FRAME =
-  "relative z-[1] mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+/** The letter's box inside the document, above the route. */
+export const NOTICE_404_FRAME = "relative z-[1] w-full";
 
 /** The dashed route behind the letter: the cornflower link colour, faint, never a target. */
 export const NOTICE_404_ROUTE =

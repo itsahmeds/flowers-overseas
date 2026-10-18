@@ -30,6 +30,7 @@ import {
   NOTICE_404_HEADER,
   NOTICE_404_HEADER_FRAME,
   NOTICE_404_MAIN,
+  NOTICE_404_PAGE,
   NOTICE_404_ROUTE,
   NOTICE_LETTER,
   NOTICE_LETTER_BODY,
@@ -97,12 +98,14 @@ export function NoticeDocument({
   if (letter) {
     // The round-2 404 (spec 004 §14 A24 clause 6; TASK-191): the logo alone in a ruled header,
     // then the document, the dashed route behind the letter. The route's path is the artboard's.
+    // The header bar is the first block of `<main>`, so the logo is where AC-31 measures every
+    // page's first block (x 56 at 1440, x 20 at 390), while the letter is centred as drawn.
     return (
-      <>
+      <main className={NOTICE_404_PAGE} id="main">
         <header className={NOTICE_404_HEADER}>
           <div className={NOTICE_404_HEADER_FRAME}>{lockupElement}</div>
         </header>
-        <main className={NOTICE_404_MAIN} data-fo-notice-404 id="main">
+        <div className={NOTICE_404_MAIN} data-fo-notice-404>
           <svg
             aria-hidden="true"
             className={NOTICE_404_ROUTE}
@@ -131,8 +134,8 @@ export function NoticeDocument({
               {children}
             </div>
           </div>
-        </main>
-      </>
+        </div>
+      </main>
     );
   }
 

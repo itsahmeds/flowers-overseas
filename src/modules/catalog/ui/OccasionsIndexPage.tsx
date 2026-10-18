@@ -133,10 +133,7 @@ export function OccasionsIndexPage({
                     name: entry.name,
                     date: entry.nextDate,
                     href: entry.href,
-                    hook: {
-                      "data-fo-next-occasion": entry.key,
-                      "data-fo-next-date": entry.nextDate ?? "",
-                    },
+                    hook: { "data-fo-next-occasion": entry.key },
                   }))}
                   label={shop("root.occasionsEyebrow", {
                     country: dateCountry,
