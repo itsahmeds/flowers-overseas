@@ -9,7 +9,7 @@
  *     include delivery and VAT" (not on the home; the route decides) and, after the leaf mark,
  *     "Fresh-flower promise" in sunflower on the desktop artboard, the short cutoff centred on the
  *     mobile one once dates open (nothing before). At its inline end, desktop
- *     only: the help line as a `tel:` link, spec 003's language switcher and the currency as text;
+ *     only: the help line as a WhatsApp link, spec 003's language switcher and the currency as text;
  *  2. **the header** — sticky, on paper (opaque: Tailwind inlines a literal colour into the 94 % mix, which AC-1 forbids), a rule below: the logo (the `Mark` and
  *     the outlined `Wordmark`, A21 clause 3) linked to the locale home, the eight category links
  *     (spec 008 §14 A14) and the "Send flowers" pill to the home's sentence (`#send`). Desktop
@@ -43,7 +43,7 @@ import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
 import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
-import { COMPANY } from "../../../config/company.ts";
+import { COMPANY, whatsappHref } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
 import { Icon } from "../icons/Icon.tsx";
@@ -160,6 +160,14 @@ export interface SiteHeaderProps {
    * gallery, a unit render) shows the full notice.
    */
   readonly priceClaim?: ReactNode;
+  /**
+   * The language links, decided **by the route** like `priceClaim` (spec 003 §2 L79, §5.3; spec
+   * 004 §14 A24 AC-47; TASK-233). The document layout passes its `@switcher` slot: `LocaleSwitcher`
+   * with this page's own path in each locale that has it, and the locale home elsewhere. The same
+   * node is drawn in the utility strip and in the phone menu. Defaults to the switcher's locale
+   * homes, for a header with no route behind it (the gallery, a unit render).
+   */
+  readonly switcher?: ReactNode;
 }
 
 /**
@@ -180,6 +188,7 @@ export function SiteHeader({
   locale,
   listingHrefs = {},
   priceClaim = <NoticePriceClaim />,
+  switcher = <LocaleSwitcher locale={locale} />,
 }: SiteHeaderProps): ReactElement {
   const t = useTranslations();
   // Namespace-bound for the one key with an ICU argument (`{currency}`).
@@ -221,13 +230,13 @@ export function SiteHeader({
           className="[&>div]:max-w-[calc(var(--container-page)+2*var(--gutter))] max-lg:[&>div]:flex-col max-lg:[&>div]:gap-0 max-lg:[&>div>div]:flex max-lg:[&>div>div]:flex-wrap max-lg:[&>div>div]:justify-center max-lg:[&>div>div]:gap-x-[12px] max-lg:[&>div>div]:gap-y-0"
           utilities={
             <>
-              {/* The help channel: one number, dialled from the E.164 form in `company.ts`. From
+              {/* The help channel: one number, opening WhatsApp from the E.164 form in `company.ts`. From
                   `lg` only: on a phone the row holds the languages and the currency, and the
                   number is the footer's Help & WhatsApp column. */}
               {/* The span carries the breakpoint: `NoticeBar` sets `inline-flex` on every link
                   from its own wrapper, which outranks a class on the link. */}
               <span className="max-lg:hidden">
-                <a href={`tel:${contact.phoneE164}`}>
+                <a href={whatsappHref(contact)}>
                   {t("company.support.label")} {contact.phoneDisplay}
                 </a>
               </span>
@@ -243,7 +252,7 @@ export function SiteHeader({
                 className="[&_[aria-current]]:font-bold [&_[data-beta]]:ms-0 [&_[data-beta]]:text-xs [&_[data-beta]]:tracking-[0.08em] [&_[data-beta]]:uppercase [&_[data-beta]]:opacity-80 [&_li]:inline-flex [&_li]:items-center [&_li]:gap-[4px] lg:[&_li]:gap-[6px] [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:items-center [&_ul]:gap-[10px] [&_ul]:p-0 max-lg:[&_ul]:flex-wrap max-lg:[&_ul]:justify-center lg:[&_ul]:gap-[14px]"
                 data-fo-header-switcher
               >
-                <LocaleSwitcher locale={locale} />
+                {switcher}
               </div>
               <span
                 aria-label={nav("currency.label", { currency })}
@@ -348,7 +357,7 @@ export function SiteHeader({
               label: nav("currency.label", { currency }),
             }}
             help={{
-              href: `tel:${contact.phoneE164}`,
+              href: whatsappHref(contact),
               label: `${t("company.support.label")} ${contact.phoneDisplay}`,
             }}
             label={t("nav.menu.label")}
@@ -359,7 +368,7 @@ export function SiteHeader({
             }))}
             navLabel={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
             send={{ href: headerSendHref(locale), label: t("nav.send") }}
-            switcher={<LocaleSwitcher locale={locale} />}
+            switcher={switcher}
           />
         </div>
       </header>

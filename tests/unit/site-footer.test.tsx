@@ -158,9 +158,11 @@ describe("SiteFooter: the Phase-0 colophon", () => {
   it("renders the language list and the cookie-settings control (AC-9)", () => {
     expect(phase0).toContain("Cookie settings");
     expect(phase0).toContain(CONSENT_REOPEN_ATTRIBUTE);
-    // Spec 003's switcher, unchanged: the other three locales as links, this one as current.
-    expect(phase0).toContain('href="/de"');
+    // Spec 003's switcher, unchanged but for its list: the other shown locale as a link, this one
+    // as current, and no hidden locale (spec 003 §14 A-founder-2026-10-14c, AC-46).
+    expect(phase0).toContain('href="/en-gb"');
     expect(phase0).toContain('aria-current="page"');
+    expect(phase0).not.toMatch(/href="\/(?:de|pl)"/);
   });
 });
 
@@ -169,7 +171,8 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
     const hrefs = [...phase0.matchAll(/href="([^"]*)"/g)].map(
       (match) => match[1],
     );
-    // Every href in the footer belongs to the locale switcher, to `tel:`, or to a footer target
+    // Every href in the footer belongs to the locale switcher (the shown locales), to the help
+    // channel's WhatsApp link (spec 041 AC-34), or to a footer target
     // whose page exists: spec 007's all-destinations hub, and spec 008's occasions index from the
     // day TASK-113 built its route. No other `site-links.ts` row has a page, so no other row is a
     // link (spec 004 AC-14).
@@ -181,7 +184,8 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       hrefs.filter(
         (href) =>
           href !== undefined &&
-          !/^(?:\/(?:en|en-gb|de|pl)$|tel:)/.test(href) &&
+          !/^\/(?:en|en-gb)$/.test(href) &&
+          href !== "https://wa.me/12135925150" &&
           !published.includes(href),
       ),
     ).toEqual([]);
@@ -259,7 +263,11 @@ describe("AC-9: the company block tells the truth about a company that does not 
     expect(phase0).toContain("Flowers Overseas");
     expect(phase0).toContain("We send flowers across Europe");
     expect(phase0).toContain("Help &amp; WhatsApp");
-    expect(phase0).toContain('href="tel:+12135925150"');
+    // Spec 041 §14 A-founder-2026-10-14d clause 3 (AC-34): the help channel opens WhatsApp, with
+    // no query string, and the footer carries no `tel:` link at all.
+    expect(phase0).toContain('href="https://wa.me/12135925150"');
+    expect(phase0).not.toContain("tel:");
+    expect(phase0).not.toContain("wa.me/12135925150?");
     expect(phase0).toContain("+1 (213) 592-5150");
     // Founder copy batch, 2026-10-04: the support line replaces "Mon–Sat 8–20 CET".
     expect(phase0).toContain(

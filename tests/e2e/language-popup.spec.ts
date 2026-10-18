@@ -5,13 +5,15 @@
  * Every test starts from a **first visit** (`NO_LOCALE_CHOICE`; the config seeds `fo_locale` for
  * every other suite) and enters through `/`, which is one 308 to `/en`.
  *
- *  (a) the popup opens after hydration: the heading, the four native names once each in registry
- *      order, English marked as the default;
- *  (b) the hint only highlights: `["de-DE","de"]` marks Deutsch and nothing navigates; with
- *      `cf-ipcountry: PL` and `["en-US"]` Polski carries no mark and nothing asks `/api/geo`;
+ *  (a) the popup opens after hydration: the heading, the shown locales' native names once each in
+ *      registry order (English and English (UK); spec 003 §14 A-founder-2026-10-14c), English
+ *      marked as the default;
+ *  (b) the hint only highlights: `["en-GB"]` marks English (UK) and nothing navigates;
+ *      `["de-DE","de"]` marks nothing, because `de` is hidden (AC-46); with `cf-ipcountry: PL`
+ *      and `["en-US"]` nothing carries a hint and nothing asks `/api/geo`;
  *  (c) the close button, `Esc` and a tap outside each close it at `/en` and set `fo_locale=en`,
  *      with the §13 Q4 attributes, and it does not reopen on reload;
- *  (d) choosing Deutsch follows its link to `/de` with `fo_locale=de`;
+ *  (d) choosing English (UK) follows its link to `/en-gb` with `fo_locale=en-gb`;
  *  (e) a valid cookie means it never renders; a forged `fo_locale=zz` means it opens, and the next
  *      act rewrites the value;
  *  (f) the consent sheet is never on screen with it (also `consent-banner.spec.ts`);
@@ -20,9 +22,9 @@
  *      no layout shift at any size;
  *  (h) a close button of at least 44 × 44 CSS px, and nothing left of the old strip.
  *
- * "Mark" in (b) means the popup's own marks (current, default, browser match). The "Beta" tag on
- * Deutsch and Polski is the registry's machine-draft tag the header switcher shows too, and it is
- * not a hint: it is there whatever the browser says.
+ * "Mark" in (b) means the popup's own marks (current, default, browser match). The "Beta" tag is
+ * the registry's machine-draft tag the header switcher shows too, and it is not a hint; with `de`
+ * and `pl` hidden, no option carries it today.
  */
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
@@ -123,7 +125,7 @@ async function openFromRoot(page: Page): Promise<void> {
 }
 
 test.describe("(a) it opens on the first view of /en", () => {
-  test("with L1, the four native names in registry order, and English the default", async ({
+  test("with L1, the shown native names in registry order, and English the default", async ({
     page,
   }) => {
     await forceLanguages(page, ["en-US"]);
@@ -135,7 +137,7 @@ test.describe("(a) it opens on the first view of /en", () => {
     const names = await page
       .locator(`${OPEN} a[data-fo-language-option] > span:first-child`)
       .allTextContents();
-    expect(names).toEqual(["English", "English (UK)", "Deutsch", "Polski"]);
+    expect(names).toEqual(["English", "English (UK)"]);
     expect(await marksOn(page, "en")).toEqual(["current", "default"]);
     await expect(
       page.locator(`${option("en")} [data-fo-mark="default"]`),
@@ -162,10 +164,10 @@ test.describe("(a) it opens on the first view of /en", () => {
 });
 
 test.describe("(b) the hint only highlights", () => {
-  test("a German browser gets Deutsch highlighted, and nothing navigates", async ({
+  test("a British browser gets English (UK) highlighted, and nothing navigates", async ({
     page,
   }) => {
-    await forceLanguages(page, ["de-DE", "de"]);
+    await forceLanguages(page, ["en-GB"]);
     await page.goto("/");
     await expect(page.locator(OPEN)).toBeVisible();
 
@@ -177,7 +179,7 @@ test.describe("(b) the hint only highlights", () => {
 
     expect(navigations).toEqual([]);
     expect(new URL(page.url()).pathname).toBe("/en");
-    expect(await marksOn(page, "de")).toEqual(["hint", "beta"]);
+    expect(await marksOn(page, "en-gb")).toEqual(["hint"]);
     await expect(page.locator(`${OPEN} [data-fo-mark="hint"]`)).toHaveCount(1);
     // The list is not reordered.
     const order = await page
@@ -185,11 +187,37 @@ test.describe("(b) the hint only highlights", () => {
       .evaluateAll((nodes) =>
         nodes.map((node) => node.getAttribute("data-fo-language-option")),
       );
-    expect(order).toEqual(["en", "en-gb", "de", "pl"]);
+    expect(order).toEqual(["en", "en-gb"]);
     // And no cookie was written by highlighting.
     expect(
       (await page.context().cookies()).filter((c) => c.name === "fo_locale"),
     ).toEqual([]);
+  });
+
+  test("a German browser on /en gets two options and no highlight beyond English's default mark (AC-46)", async ({
+    page,
+  }) => {
+    await forceLanguages(page, ["de-DE", "de"]);
+    await openFromRoot(page);
+
+    const order = await page
+      .locator(`${OPEN} [data-fo-language-option]`)
+      .evaluateAll((nodes) =>
+        nodes.map((node) => [
+          node.getAttribute("data-fo-language-option"),
+          node.getAttribute("hreflang"),
+        ]),
+      );
+    expect(order).toEqual([
+      ["en", "en"],
+      ["en-gb", "en-GB"],
+    ]);
+    expect(await marksOn(page, "en")).toEqual(["current", "default"]);
+    expect(await marksOn(page, "en-gb")).toEqual([]);
+    await expect(page.locator(`${OPEN} [data-fo-mark="hint"]`)).toHaveCount(0);
+    await expect(
+      page.locator(`${OPEN} [lang="de"], ${OPEN} [lang="pl"]`),
+    ).toHaveCount(0);
   });
 
   test("a country header picks nothing, and nothing asks /api/geo", async ({
@@ -203,9 +231,8 @@ test.describe("(b) the hint only highlights", () => {
     await openFromRoot(page);
     await page.waitForLoadState("networkidle");
 
-    expect(await marksOn(page, "pl")).toEqual(["beta"]);
     expect(await marksOn(page, "en-gb")).toEqual([]);
-    expect(await marksOn(page, "de")).toEqual(["beta"]);
+    await expect(page.locator(option("pl"))).toHaveCount(0);
     await expect(page.locator(`${OPEN} [data-fo-mark="hint"]`)).toHaveCount(0);
     expect(requested.filter((url) => url.includes("/api/geo"))).toEqual([]);
   });
@@ -266,7 +293,7 @@ test.describe("(c) T-12: each way to close sets fo_locale=en and it never reopen
 });
 
 test.describe("(d) choosing follows a link", () => {
-  test("Deutsch goes to /de with fo_locale=de, and nothing redirects on reload", async ({
+  test("English (UK) goes to /en-gb with fo_locale=en-gb, and nothing redirects on reload", async ({
     page,
     context,
     baseURL,
@@ -275,14 +302,14 @@ test.describe("(d) choosing follows a link", () => {
     await openFromRoot(page);
 
     await Promise.all([
-      page.waitForURL(/\/de$/u),
-      page.locator(option("de")).click(),
+      page.waitForURL(/\/en-gb$/u),
+      page.locator(option("en-gb")).click(),
     ]);
-    await expectLocaleCookie(context, "de", baseURL);
+    await expectLocaleCookie(context, "en-gb", baseURL);
 
     const response = await page.reload();
     expect(response?.status()).toBe(200);
-    expect(new URL(page.url()).pathname).toBe("/de");
+    expect(new URL(page.url()).pathname).toBe("/en-gb");
     await page.waitForLoadState("networkidle");
     await expect(page.locator(POPUP)).toHaveCount(0);
   });
@@ -501,11 +528,11 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
     ({ isMobile }) => isMobile,
     "viewport-specific: runs in e2e-desktop",
   );
-  test("1440 × 900: a centred native dialog card with four real links and L1, L3, L4, L6", async ({
+  test("1440 × 900: a centred native dialog card with two real links and L1, L3, L4, L6", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
-    await forceLanguages(page, ["de-DE"]);
+    await forceLanguages(page, ["en-GB"]);
     await openFromRoot(page);
 
     expect(await page.locator(OPEN).evaluate((node) => node.tagName)).toBe(
@@ -523,8 +550,6 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
     expect(links).toEqual([
       ["/en", "en", "en"],
       ["/en-gb", "en-GB", "en-GB"],
-      ["/de", "de", "de"],
-      ["/pl", "pl", "pl"],
     ]);
     await expect(
       page.locator(`${option("en")} [data-fo-mark="current"]`),
@@ -532,7 +557,7 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
     // Both L4 wordings are in the DOM and CSS shows one: assert the visible one's text (the
     // marks are `text-transform: uppercase`, so `innerText` would read capitals).
     await expect(
-      page.locator(`${option("de")} [data-fo-mark="hint"] > span:visible`),
+      page.locator(`${option("en-gb")} [data-fo-mark="hint"] > span:visible`),
     ).toHaveText("Matches your browser");
     await expect(page.locator(`${OPEN} p`).last()).toHaveText(
       "You can change it any time at the top of every page.",
@@ -543,13 +568,13 @@ test.describe("T-41: AC-39's boxes, links and strings", () => {
 
   test("390 × 844: a top sheet with the short L4", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await forceLanguages(page, ["de-DE"]);
+    await forceLanguages(page, ["en-GB"]);
     await openFromRoot(page);
     const box = await page.locator(OPEN).boundingBox();
     expect(box!.y).toBe(0);
     expect(box!.height).toBeLessThanOrEqual(260);
     await expect(
-      page.locator(`${option("de")} [data-fo-mark="hint"] > span:visible`),
+      page.locator(`${option("en-gb")} [data-fo-mark="hint"] > span:visible`),
     ).toHaveText("Your browser");
     await page.waitForLoadState("networkidle");
     await expect(page.locator(CONSENT_SHOWN)).toHaveCount(0);
@@ -574,9 +599,9 @@ test.describe("each option is the same page in that locale (A14 Shape)", () => {
       "href",
       "/en-gb/send-flowers-to/poland",
     );
-    // Deutsch: no German Poland guide exists (`corridorAlternatePaths()` lists `en` and `en-gb`
-    // only), so the option falls back to the German home rather than linking a 404.
-    await expect(page.locator(option("de"))).toHaveAttribute("href", "/de");
+    // `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c): no option for either.
+    await expect(page.locator(option("de"))).toHaveCount(0);
+    await expect(page.locator(option("pl"))).toHaveCount(0);
 
     await Promise.all([
       page.waitForURL(/\/en-gb\/send-flowers-to\/poland$/u),

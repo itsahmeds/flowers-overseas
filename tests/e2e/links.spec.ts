@@ -31,7 +31,7 @@ import { SITE_LINKS, type SiteLink, isPublished } from "@/config/site-links";
 // By path and not through the barrel: `@/modules/i18n`'s index re-exports the suggestion
 // banner's `next/dynamic` loader, which Playwright's ESM loader cannot resolve outside the Next
 // build. `routing.ts` is the URL builder and imports only the registry.
-import { localePath } from "@/modules/i18n/routing";
+import { localePath, shownLocales } from "@/modules/i18n/routing";
 
 /**
  * The four launch locales, restated the way every other spec in this directory restates them
@@ -39,8 +39,20 @@ import { localePath } from "@/modules/i18n/routing";
  */
 const LAUNCH_LOCALES = ["en", "en-gb", "de", "pl"] as const;
 
-/** The four locale homes — AC-14's page set, less `/`, which is a 308 since spec 003 §14 A16. */
-const PAGES = LAUNCH_LOCALES.map((locale) => `/${locale}`);
+/**
+ * The locales the chrome offers (spec 004 §14 A-founder-2026-10-14e: AC-14's crawl reads "the
+ * shown locales plus `/`"), and the launch locales reached by URL only. Both are crawled: `/de`
+ * and `/pl` keep AC-14's link rule on their own pages.
+ */
+const SHOWN_LOCALES = shownLocales().map((locale) => locale.code);
+const HIDDEN_LOCALES = LAUNCH_LOCALES.filter(
+  (locale) => !SHOWN_LOCALES.includes(locale),
+);
+
+/** The locale homes — AC-14's page set, less `/`, which is a 308 since spec 003 §14 A16. */
+const PAGES = [...SHOWN_LOCALES, ...HIDDEN_LOCALES].map(
+  (locale) => `/${locale}`,
+);
 
 /** A path that is a link target rather than a page fetch. */
 function isFetchable(href: string): boolean {
@@ -137,6 +149,31 @@ test.describe("AC-14: the site links to nothing that is not there", () => {
           `${path} links to the unpublished target ${href ?? ""}`,
         ).toBe(false);
       }
+    });
+  }
+
+  test("pins the shown set: English and English (UK), with German and Polish by URL only", () => {
+    expect(SHOWN_LOCALES).toEqual(["en", "en-gb"]);
+    expect(HIDDEN_LOCALES).toEqual(["de", "pl"]);
+  });
+
+  for (const locale of SHOWN_LOCALES) {
+    test(`/${locale} links into no hidden locale (spec 003 §14 A-founder-2026-10-14c clause 6)`, async ({
+      page,
+    }) => {
+      await page.goto(`/${locale}`);
+      const hrefs = await page
+        .locator("a[href]")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(
+        hrefs.filter((href) =>
+          HIDDEN_LOCALES.some(
+            (hidden) => href === `/${hidden}` || href.startsWith(`/${hidden}/`),
+          ),
+        ),
+      ).toEqual([]);
     });
   }
 
@@ -261,8 +298,11 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         }
       }
       // Exactly: the header's eight (the footer's two are among them), five products, the
-      // lockup's home and the switcher's three sibling homes. A ninth control is a diff here.
-      expect(hrefs.size).toBe(8 + 5 + 1 + 3);
+      // lockup's home and the switcher's sibling shown homes (one on a shown locale, both English
+      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c). A ninth control is a diff here.
+      const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
+      expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
+      expect(hrefs.size).toBe(8 + 5 + 1 + siblings);
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }

@@ -129,6 +129,8 @@ const FAKE_FIFTH: LocaleConfig = {
   nativeName: "Pseudo Arabic",
   dir: "rtl",
   isLaunch: true,
+  // Spec 003 §14 A-founder-2026-10-14c: `shown` is required; a fake launch locale states it.
+  shown: true,
   // TASK-042: a pseudo-locale is a registry flag now; a fake launch locale states it.
   isPseudo: false,
   fallbackCode: "en",
@@ -225,24 +227,24 @@ describe("the `[locale]` document (AC-6)", () => {
     expect(html).toContain("Skip to content");
   });
 
-  it("renders the locale switcher: three links out and the current locale marked", async () => {
+  it("renders the locale switcher on a hidden locale: the shown locales as links, not its own", async () => {
     const html = await renderLocaleDocument("de");
 
-    // §6 "Internal links": every locale root links to the other three, so the Phase 0 crawl graph
-    // is complete. The current locale is a `<span aria-current="page">`, not a link.
+    // Spec 003 §14 A-founder-2026-10-14c clause 2: `/de` is reached by URL only. Its switcher
+    // lists the shown locales (`en`, `en-gb`) as links, and neither the page's own hidden locale
+    // nor the other hidden one: no `aria-current` entry, no `Deutsch`, no `Polski`, no `/pl`.
     expect(html).toContain('<nav aria-label="Change language">');
-    expect(html).toContain(
-      '<span aria-current="page" lang="de">Deutsch</span>',
-    );
-    for (const href of ['href="/en"', 'href="/en-gb"', 'href="/pl"']) {
-      expect(html).toContain(href);
-    }
+    expect(html).toContain('lang="en" hrefLang="en">English</a>');
+    expect(html).toContain('lang="en-GB" hrefLang="en-GB">English (UK)</a>');
+    expect(html).not.toContain('<span aria-current="page" lang="de">');
+    expect(html).not.toContain(">Deutsch<");
+    expect(html).not.toContain(">Polski<");
+    expect(html).not.toMatch(/href="\/pl[/"]/);
     // The masthead lockup links to the locale home (AC-7) and is the only element that may: the
-    // v2 footer draws the logo but links it nowhere (TASK-176), and the switcher's current entry
-    // is the `<span aria-current="page">` asserted above (spec 003 §5.3). So `/de` appears exactly
-    // once on the `/de` document, as `tests/e2e/locale-routing.spec.ts` asserts on the build.
+    // v2 footer draws the logo but links it nowhere (TASK-176), and the switcher no longer offers
+    // the page's own hidden locale. So `/de` appears exactly once on the `/de` document, as
+    // `tests/e2e/locale-routing.spec.ts` asserts on the build.
     expect(html.match(/href="\/de"/g)).toHaveLength(1);
-    expect(html).toContain('lang="pl" hrefLang="pl">Polski</a>');
   });
 
   it("gives every locale a non-empty localised title and description (AC-25)", async () => {
@@ -444,8 +446,10 @@ describe("the AC-5 registry seam", () => {
     const options = [
       ...html.matchAll(/data-fo-language-option="([^"]+)"/g),
     ].map((match) => match[1]);
-    expect(options).toEqual(["en", "en-gb", "de", "pl", "ar-xb"]);
-    expect(popupCandidates()).toHaveLength(4);
+    // The fake fifth locale is `shown: true`; `de` and `pl` are hidden (spec 003 §14
+    // A-founder-2026-10-14c), so the popup offers the shown three.
+    expect(options).toEqual(["en", "en-gb", "ar-xb"]);
+    expect(popupCandidates()).toHaveLength(2);
   });
 
   it("adds the fifth locale to `generateStaticParams` with no change under `src/app/`", async () => {

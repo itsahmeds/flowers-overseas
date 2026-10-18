@@ -9,7 +9,7 @@
  *  - `localeBetaTag(locale)` — `plan/03` §6's 5 % rule: above the threshold the locale is marked
  *    "beta" in the switcher, because the buyer deserves to know the page is machine-drafted.
  *  - `isLocaleIndexable(locale)` — the hard gate of `plan/03` §6.4 and `plan/02` §12: `isLaunch`
- *    **and** an unreviewed share at or below the same 5 % threshold. Spec 007 consumes it for
+ *    **and** `shown` (§14 A-founder-2026-10-14c) **and** an unreviewed share at or below the same 5 % threshold. Spec 007 consumes it for
  *    robots meta, hreflang membership (`alternates.ts` already does) and sitemap membership, so
  *    an English page served at `/de/` — textbook duplicate thin content — cannot be indexed.
  *
@@ -208,12 +208,15 @@ export function localeBetaTag(locale: string): boolean {
 }
 
 /**
- * The `noindex` gate (spec 003 §2, §6): a live locale whose copy is reviewed. Pseudo-locales are
- * structurally incapable of passing it — they are never `isLaunch` (§2 "Pseudo-locales", AC-29) —
- * so there is no pseudo-locale list to keep in step here.
+ * The `noindex` gate (spec 003 §2, §6): a live, **shown** locale whose copy is reviewed —
+ * `isLaunch ∧ shown ∧ share ≤ 5 %` (§14 A-founder-2026-10-14c clause 3, AC-47). A hidden locale is
+ * `noindex`, out of hreflang and out of the sitemaps whatever its share, until its `shown` flag is
+ * flipped. Pseudo-locales are structurally incapable of passing it — they are never `isLaunch` nor
+ * `shown` (§2 "Pseudo-locales", AC-29) — so there is no pseudo-locale list to keep in step here.
  */
 export function isLocaleIndexable(locale: string): boolean {
-  if (getLocaleRegistry().get(locale)?.isLaunch !== true) return false;
+  const config = getLocaleRegistry().get(locale);
+  if (config?.isLaunch !== true || !config.shown) return false;
   return unreviewedShare(locale) <= UNREVIEWED_SHARE_THRESHOLD;
 }
 

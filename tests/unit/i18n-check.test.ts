@@ -21,8 +21,10 @@
  * ones a future edit is most likely to get wrong.
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
@@ -555,6 +557,150 @@ describe("the italic phrase's `<em>` pair is part of the argument set (AC-52)", 
       ...argumentSignature("<em>Kwiaty</em> dla kogoś <em>daleko.</em>"),
     ]).toEqual(["em:tag", "em:tag#2"]);
     expect([...argumentSignature("Kwiaty dla kogoś daleko.")]).toEqual([]);
+  });
+});
+
+describe("check 12: a shown locale in another language is reviewed (spec 003 AC-48 / T-48)", () => {
+  it("exits non-zero naming `pl` when `pl` is shown with its drafts unreviewed", () => {
+    // The committed catalogues, the committed registry but for one field: `pl` is `shown: true`.
+    const result = runCli("--registry", `${casesDir}/registry-pl-shown.json`);
+    expect(result.status).toBe(1);
+    const lines = result.stderr
+      .split("\n")
+      .filter((line) => line.includes("`shown: true`"));
+    expect(lines).toEqual([
+      `  - ${casesDir}/registry-pl-shown.json: locale \`pl\` is \`shown: true\` with 100.0% of its counted keys unreviewed, above the 5.0% threshold: a language is offered to visitors only once a person has reviewed it (spec 003 §14 A-founder-2026-10-14c). Set \`shown: false\`, or have its catalogue reviewed first`,
+    ]);
+  });
+
+  it("exits 0 on the same registry with `pl` hidden, and on the committed tree", () => {
+    expect(runCli("--registry", `${casesDir}/registry-valid.json`).status).toBe(
+      0,
+    );
+    expect(runCli().status).toBe(0);
+  });
+});
+
+/**
+ * A throwaway tree for check 12's edges (breaker r1 H1, H2): `total` English keys, `en` and
+ * `en-gb` (an empty catalogue that falls back to `en`) and `de`, each `shown` as given. The
+ * registry is the committed one's `en`, `en-gb` and `de` rows (fallbacks intact); `de` carries
+ * `deUnreviewed` machine drafts and the rest reviewed; `en` is `enReviewed` or not at all.
+ */
+function check12Tree(options: {
+  readonly total: number;
+  readonly enReviewed: boolean;
+  readonly deUnreviewed: number;
+}): {
+  readonly messagesDir: string;
+  readonly src: string;
+  readonly registry: string;
+} {
+  const root = mkdtempSync(join(tmpdir(), "i18n-check12-"));
+  const srcDir = join(root, "src");
+  mkdirSync(srcDir);
+  const keys = Array.from(
+    { length: options.total },
+    (_, index) => `k${String(index).padStart(2, "0")}`,
+  );
+  const english = Object.fromEntries(keys.map((key) => [key, `Value ${key}`]));
+  const hash = (value: string): string =>
+    createHash("sha256").update(value, "utf8").digest("hex");
+  const meta = (reviewed: (index: number) => boolean): object =>
+    Object.fromEntries(
+      keys.map((key, index) => [
+        `grid.${key}`,
+        reviewed(index)
+          ? {
+              source: "human",
+              reviewed: true,
+              reviewedBy: "founder",
+              reviewedAt: "2026-09-08T00:00:00Z",
+              sourceHash: hash(`Value ${key}`),
+            }
+          : {
+              source: "machine",
+              reviewed: false,
+              sourceHash: hash(`Value ${key}`),
+            },
+      ]),
+    );
+  const write = (name: string, value: object): void =>
+    writeFileSync(join(root, name), `${JSON.stringify(value, null, 2)}\n`);
+  write("en.json", { grid: english });
+  write(
+    "en.meta.json",
+    meta(() => options.enReviewed),
+  );
+  write("en-gb.json", {});
+  write("en-gb.meta.json", {});
+  write("de.json", { grid: english });
+  write(
+    "de.meta.json",
+    meta((index) => index >= options.deUnreviewed),
+  );
+  writeFileSync(
+    join(srcDir, "usage.ts"),
+    `declare function useTranslations(namespace: string): (key: string) => string;\nconst grid = useTranslations("grid");\nexport const rendered: readonly string[] = [\n${keys.map((key) => `  grid("${key}"),`).join("\n")}\n];\n`,
+  );
+  const committed = JSON.parse(
+    readFileSync(resolve(repoRoot, casesDir, "registry-valid.json"), "utf8"),
+  ) as Record<string, unknown>[];
+  const registry = committed
+    .filter((row) => ["en", "en-gb", "de"].includes(row["code"] as string))
+    .map((row) => ({ ...row, shown: true }));
+  write("registry.json", registry);
+  return {
+    messagesDir: root,
+    src: srcDir,
+    registry: join(root, "registry.json"),
+  };
+}
+
+function runCheck12Tree(tree: ReturnType<typeof check12Tree>): CliResult {
+  return runCli(
+    "--messages-dir",
+    tree.messagesDir,
+    "--src",
+    tree.src,
+    "--registry",
+    tree.registry,
+  );
+}
+
+describe("check 12's two edges (spec 003 AC-48, breaker r1 H1 and H2)", () => {
+  it("never judges the source language: `en` and `en-gb` shown and 100% unreviewed exit 0 (H1)", () => {
+    const tree = check12Tree({ total: 20, enReviewed: false, deUnreviewed: 0 });
+    const result = runCheck12Tree(tree);
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+  });
+
+  it("passes a shown locale at exactly 5.00% unreviewed (1 of 20) and fails at 2 of 20 (H2)", () => {
+    const at = runCheck12Tree(
+      check12Tree({ total: 20, enReviewed: true, deUnreviewed: 1 }),
+    );
+    expect(at.stderr).toBe("");
+    expect(at.status).toBe(0);
+
+    const over = runCheck12Tree(
+      check12Tree({ total: 20, enReviewed: true, deUnreviewed: 2 }),
+    );
+    expect(over.status).toBe(1);
+    expect(
+      over.stderr.split("\n").filter((line) => line.includes("`shown: true`")),
+    ).toHaveLength(1);
+    expect(over.stderr).toContain("locale `de` is `shown: true` with 10.0%");
+  });
+
+  it("the control: the same tree with `de` at 3 of 20 unreviewed names `de` and only `de`", () => {
+    const result = runCheck12Tree(
+      check12Tree({ total: 20, enReviewed: false, deUnreviewed: 3 }),
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("locale `de` is `shown: true` with 15.0%");
+    expect(result.stderr).not.toContain("locale `en`");
+    expect(result.stderr).not.toContain("locale `en-gb`");
   });
 });
 
