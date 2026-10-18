@@ -2596,7 +2596,7 @@ AC-41 is unchanged (its viewports are the laptop band; 18b's font-size bullet st
 `/en-gb/poland/flowers/roses` expects 32 ± 0.5 px (was 44) and covers AC-43. It gains a band-edge
 pair for the same two URLs: 32 ± 0.5 px at 767 × 1024 and 44 ± 0.5 px at 768 × 1024. Red with the
 two H1s on `--text-title-fluid` below `md` (44 ≠ 32 at 390), and red with `--text-3xl-fluid` kept
-from `md` up (32 ≠ 53.8 at 1280).
+from `md` up (46 ≠ 53.8 at 1280, where `--text-3xl-fluid` reaches its 46 px maximum; 32 ≠ 44 at 768).
 
 **Rebound AC-34 and T-49:** text unchanged. T-49's 390 × 844 shop root and occasion cases are the
 fold checks this amendment answers.
