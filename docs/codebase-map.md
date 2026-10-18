@@ -189,6 +189,7 @@ task actually touches.
 | `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed info-page… |
 | `pr-policy.ts` | `pr-policy` | PR policy |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift… |
+| `railway-preview.ts` | — | Railway PR environment for CI: provision the proxied… |
 | `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm… |
 | `seo/brotli-origin.ts` | `lighthouse:origin` | `pnpm lighthouse:origin` — a Brotli reverse proxy in… |
 | `seo/generate-hreflang-fixtures.ts` | — | `node scripts/seo/generate-hreflang-fixtures.ts… |
@@ -208,14 +209,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 357 |
+| `tests/unit/` | 358 |
 | `tests/integration/` | 41 |
-| `tests/contract/` | 25 |
+| `tests/contract/` | 26 |
 | `tests/e2e/` | 69 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 351 |
+| `tests/fixtures/` | 356 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
