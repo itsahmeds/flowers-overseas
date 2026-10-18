@@ -194,6 +194,17 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       // spec 009 §6: the PDP is `index,follow` iff exists ∧ `corridorState(iso2) === 'live'` ∧
       // `isProductIndexable()` ∧ `isLocaleIndexable()` ∧ `isIndexingEnvironment()` (TASK-125).
       product: "byRule",
+      // spec 041 §6, AC-17 (TASK-182): the ten info pages, by page id.
+      "how-it-works": "byRule",
+      guarantee: "byRule",
+      help: "byRule",
+      about: "byRule",
+      delivery: "byRule",
+      imprint: "byRule",
+      terms: "byRule",
+      privacy: "byRule",
+      cookies: "byRule",
+      cancellation: "byRule",
     });
   });
 });

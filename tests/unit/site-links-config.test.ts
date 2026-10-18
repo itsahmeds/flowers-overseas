@@ -27,6 +27,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { INFO_PAGE_IDS } from "../../src/config/info-pages.ts";
 import { launchLocales } from "../../src/config/locales.ts";
 import { COUNTRY_CODES } from "../../src/config/countries.ts";
 import { CATEGORIES } from "../../src/config/categories.ts";
@@ -145,6 +146,12 @@ describe("src/config/site-links.ts", () => {
         );
         continue;
       }
+      if (link.target.kind === "infoPage") {
+        // Spec 041's info pages (TASK-182): the target names a page id of the registry; whether
+        // the page exists in a locale is `infoPageExists()`'s answer, asked by the layout.
+        expect(INFO_PAGE_IDS, link.id).toContain(link.target.page);
+        continue;
+      }
       expect(link.target.kind, link.id).toBe("pending");
       expect(isPublished(link.id), link.id).toBe(false);
     }
@@ -163,6 +170,11 @@ describe("src/config/site-links.ts", () => {
       "locale-home",
       "destinations",
       "occasions",
+      // Spec 041's four trust links (TASK-182).
+      "delivery-times",
+      "guarantee",
+      "how-it-works",
+      "help-and-contact",
       "corridor-pl",
       "corridor-de",
       "corridor-fr",
@@ -554,6 +566,12 @@ describe("src/config/site-links.ts", () => {
       // the listing cards print (spec 009 AC-20), not a phrase the homepage artboard could carry.
       if (link.id === "product") continue;
       const label = messageAt(link.labelKey) as string;
+      // Spec 041 §2 "Links" relabels "Delivery times and cutoffs" as "Delivery and payment"
+      // (Appendix A.1, TASK-182): spec 041's copy, which the 2026-09 homepage canvas predates.
+      if (link.id === "delivery-times") {
+        expect(label).toBe("Delivery and payment");
+        continue;
+      }
       // A row gated on `anyDeliveryDatesOpen()` is not drawn (spec 004 §14 A19; TASK-120): the
       // artboard carries a TASK-120 comment in its place, so the drawing states the absence.
       if (link.requiresDeliveryDates) {

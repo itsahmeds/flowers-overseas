@@ -16,15 +16,16 @@ task actually touches.
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +80 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
+| `content` | The only import path into the content module: the trust… | 041 | `unit/info-pages.test.ts`, `unit/seo-sitemap.test.ts` |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +33 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +89 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +90 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +22 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts` +47 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +23 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts` +48 |
 
 ## Config (`src/config/`)
 
@@ -52,7 +53,8 @@ task actually touches.
 | `currencies.ts` | Currency configuration | 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
 | `freshness-claim.ts` | Freshness scan | 009 |
-| `honesty.ts` | Relay-language check | 041 |
+| `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
+| `info-pages.ts` | The info-page registry | 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free… | 004 |
 | `locales.ts` | Locale registry | 003 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2… | 004 |
@@ -168,6 +170,8 @@ task actually touches.
 | `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product that has… |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` |
 | `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only <assetId>]… |
+| `pages-check.ts` | `pages:check` | `pnpm pages:check` — the info-page honesty gate (spec… |
+| `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed info-page… |
 | `pr-policy.ts` | `pr-policy` | PR policy |
 | `railway-check.ts` | `railway:check` | `pnpm railway:check [--env <name>]` — the Railway drift… |
 | `release.ts` | `release:status` | `pnpm release:status`, `pnpm release:promote` and `pnpm… |
@@ -189,7 +193,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 323 |
+| `tests/unit/` | 324 |
 | `tests/integration/` | 35 |
 | `tests/contract/` | 14 |
 | `tests/e2e/` | 65 |

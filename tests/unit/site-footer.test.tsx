@@ -68,6 +68,9 @@ const REGISTERED = {
     countryIso2: "EE",
   },
   contact: COMPANY.contact,
+  // Spec 041 §5.1 (TASK-182): the person and the mailbox the registered identity needs.
+  representative: COMPANY.representative,
+  supportEmail: "help@flowersoverseas.com",
   descriptionKey: COMPANY.descriptionKey,
   operatedByKey: COMPANY.operatedByKey,
 } as const;
@@ -93,13 +96,15 @@ describe("SiteFooter: the Phase-0 colophon", () => {
   });
 
   it("renders the one link column with a page behind it, as a named nav, and no empty one", () => {
-    // `Sending` keeps Destinations and Occasions. `Company` and the legal row have no entry with
-    // a page (TASK-174 builds them), so neither is drawn: no heading over nothing, and no empty
-    // `navigation` landmark (spec 004 §14 A20; TASK-173). The language list is spec 003's nav.
+    // `Sending` keeps Destinations, Occasions, Delivery and payment and the guarantee; `Company`
+    // gains How it works and Help and contact (spec 041, TASK-182). The legal row still has no
+    // entry with a page (TASK-183 builds them), so it is not drawn: no heading over nothing, and
+    // no empty `navigation` landmark (spec 004 §14 A20; TASK-173). The language list is spec
+    // 003's nav.
     expect(phase0).toContain('aria-labelledby="footer-group-sending"');
-    expect(phase0).not.toContain('aria-labelledby="footer-group-company"');
+    expect(phase0).toContain('aria-labelledby="footer-group-company"');
     expect(phase0).not.toContain('aria-label="Legal"');
-    expect(phase0.match(/<nav/g)).toHaveLength(2);
+    expect(phase0.match(/<nav/g)).toHaveLength(3);
   });
 
   it("prints the labels whose page exists, and none of the ones whose page does not", () => {
@@ -117,16 +122,11 @@ describe("SiteFooter: the Phase-0 colophon", () => {
         group.surface === "footer" &&
         group.linkIds.every((id) => !isPublished(id as SiteLinkId)),
     );
-    // The set is not vacuous: the guarantee, the Company column and the legal row are in it.
+    // The set is not vacuous: the for-florists entry, the imprint and the legal row are in it.
     expect(unpublished.map((link) => link.id)).toEqual(
-      expect.arrayContaining([
-        "guarantee",
-        "for-florists",
-        "imprint",
-        "cookies",
-      ]),
+      expect.arrayContaining(["for-florists", "imprint", "cookies"]),
     );
-    expect(emptyGroups.map((group) => group.id)).toEqual(["company", "legal"]);
+    expect(emptyGroups.map((group) => group.id)).toEqual(["legal"]);
     for (const locale of ["en", "en-gb", "de", "pl"]) {
       const html = render(<SiteFooter locale={locale} />, locale);
       const messages = loadMessages(locale, MESSAGE_NAMESPACES) as Record<
@@ -179,6 +179,11 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
     const published = [
       localePath("en", "destinations"),
       localePath("en", "occasions"),
+      // Spec 041's trust pages (TASK-182).
+      localePath("en", "delivery"),
+      localePath("en", "guarantee"),
+      localePath("en", "howItWorks"),
+      localePath("en", "help"),
     ];
     expect(
       hrefs.filter(
@@ -203,7 +208,15 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
     // these two, is a failing test rather than a link to a 404 in production.
     expect(
       footerLinks.filter((link) => link.published).map((l) => l.id),
-    ).toEqual(["destinations", "occasions"]);
+    ).toEqual([
+      "destinations",
+      "occasions",
+      // Spec 041's four trust links (TASK-182).
+      "delivery-times",
+      "guarantee",
+      "how-it-works",
+      "help-and-contact",
+    ]);
   });
 
   it("draws nothing for a published row whose page does not exist in this locale", () => {
@@ -225,7 +238,12 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       <SiteFooter
         locale="de"
         view={footerView("de", {
-          unavailable: ["occasions", "destinations"],
+          unavailable: [
+            "occasions",
+            "destinations",
+            "delivery-times",
+            "guarantee",
+          ],
         })}
       />,
       "de",
@@ -247,14 +265,14 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       columns: view.columns.map((group) => ({
         ...group,
         links: group.links.map((link) =>
-          link.id === "guarantee" ? { ...link, href: "/en/guarantee" } : link,
+          link.id === "imprint" ? { ...link, href: "/en/imprint" } : link,
         ),
       })),
     };
     const markup = render(<SiteFooter locale="en" view={populated} />);
-    expect(markup).toContain('href="/en/guarantee"');
-    expect(markup).toContain(">The guarantee<");
-    expect(phase0).not.toContain(">The guarantee<");
+    expect(markup).toContain('href="/en/imprint"');
+    expect(markup).toContain(">Imprint<");
+    expect(phase0).not.toContain(">Imprint<");
   });
 });
 

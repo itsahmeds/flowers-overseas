@@ -314,6 +314,15 @@ describe("the shipped catalogues and manifests", () => {
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
+    // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
+    // "Status" label ship `reviewed: false` until the founder's own record-approval run.
+    "footer.link.deliveryAndPayment",
+    "infoPages.company.notRegistered",
+    "infoPages.contact.body",
+    "infoPages.contact.heading",
+    "infoPages.contact.privacy",
+    "infoPages.delivery.status",
+    "infoPages.status.notYetOpen",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
@@ -468,6 +477,9 @@ describe("the shipped catalogues and manifests", () => {
       // confirmation recap, resolved by the page and handed to the components as props.
       "checkout",
       "confirmation",
+      // Spec 041 §7's namespace (TASK-182): the trust pages' status, contact and company lines.
+      // Server Components only, so no client provider.
+      "infoPages",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

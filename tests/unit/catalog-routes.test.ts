@@ -241,8 +241,9 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
       // Every prebuilt URL at this depth resolves, and to one of the depth's two page types —
       // never to `notFound`, which with `dynamicParams = false` would be a prebuilt 404
       // (spec 008 AC-3; TASK-113).
+      // Spec 041's top-level info pages joined this depth (TASK-182).
       expect(
-        ["destinationsHub", "occasionsIndex"],
+        ["destinationsHub", "occasionsIndex", "infoPage"],
         `${param.locale}/${param.segment}`,
       ).toContain(match.kind);
       kinds.set(`${param.locale}/${param.segment}`, match.kind);

@@ -287,6 +287,7 @@ describe("Organization carries only what company.ts has (AC-15, T-16)", () => {
         city: "Tallinn",
         countryIso2: "EE",
       },
+      supportEmail: "help@flowersoverseas.com",
     });
     const node = organization(registered, {
       ...BASE,

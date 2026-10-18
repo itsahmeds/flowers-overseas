@@ -49,6 +49,8 @@ const registered = {
     city: "Tallinn",
     countryIso2: "EE",
   },
+  // Spec 041 §5.1 (TASK-182): the flip also needs the support mailbox.
+  supportEmail: "help@flowersoverseas.com",
 };
 
 describe("src/config/company.ts", () => {

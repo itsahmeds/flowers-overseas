@@ -594,6 +594,7 @@
     },
     "link": {
       "cookies": "Cookies",
+      "deliveryAndPayment": "Delivery and payment",
       "destinations": "Zielländer",
       "guarantee": "Die Garantie",
       "helpAndContact": "Hilfe und Kontakt",
@@ -602,8 +603,7 @@
       "occasions": "Anlässe",
       "privacy": "Datenschutz",
       "terms": "AGB",
-      "withdrawal": "Widerruf und Erstattung",
-      "deliveryAndPayment": "Delivery and payment"
+      "withdrawal": "Widerruf und Erstattung"
     },
     "payment": {
       "heading": "Zahlung",
@@ -691,6 +691,22 @@
     "trending": {
       "basis": "Von uns ausgewählt, bis die ersten echten Bestellungen eingehen.",
       "heading": "Beliebte <em>Auswahl</em>"
+    }
+  },
+  "infoPages": {
+    "company": {
+      "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
+    },
+    "contact": {
+      "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
+      "heading": "Talk to us",
+      "privacy": "Questions about your personal data come to the same number."
+    },
+    "delivery": {
+      "status": "Status"
+    },
+    "status": {
+      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
     }
   },
   "languagePopup": {
@@ -1001,22 +1017,6 @@
     "price": {
       "claim": "What you see is what we charge, in your own currency.",
       "name": "The price includes delivery and VAT"
-    }
-  },
-  "infoPages": {
-    "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
-    },
-    "company": {
-      "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
-    },
-    "contact": {
-      "heading": "Talk to us",
-      "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
-      "privacy": "Questions about your personal data come to the same number."
-    },
-    "delivery": {
-      "status": "Status"
     }
   }
 }

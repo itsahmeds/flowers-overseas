@@ -43,6 +43,8 @@ describe("plan/01 §5 layout manifest (T-03)", () => {
         "analytics",
         "catalog",
         "checkout",
+        // spec 041 §13 Q7 (TASK-182): the trust and legal pages' content.
+        "content",
         "customers",
         "geo",
         "i18n",
