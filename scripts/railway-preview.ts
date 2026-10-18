@@ -486,6 +486,11 @@ export class PreviewApiError extends Error {
   override name = "PreviewApiError";
 }
 
+/** A 403: the token lacks a scope. Retrying cannot fix it, so it always ends the run. */
+export class PreviewScopeError extends PreviewApiError {
+  override name = "PreviewScopeError";
+}
+
 export type RailwayCall = (
   query: string,
   variables: Record<string, unknown>,
@@ -643,6 +648,52 @@ async function writeRecords(
   }
 }
 
+/** Carry out one provisioning step. Returns the time of a variable write, when it made one. */
+async function act(
+  step: Extract<
+    PreviewStep,
+    { kind: "create-domain" | "write-records" | "set-variables" }
+  >,
+  state: PreviewState,
+  pr: number,
+  deps: PreviewDeps,
+): Promise<string | undefined> {
+  const environment = state.environment;
+  if (environment === undefined) return undefined;
+  if (step.kind === "create-domain") {
+    const web = environment.web;
+    if (web === undefined) return undefined;
+    await deps.railway(CUSTOM_DOMAIN_CREATE, {
+      input: {
+        domain: previewHost(pr),
+        environmentId: environment.id,
+        projectId: deps.projectId,
+        serviceId: web.serviceId,
+      },
+    });
+    deps.log(
+      `railway-preview: added ${previewHost(pr)} to ${environment.name} \`${WEB_SERVICE}\``,
+    );
+    return undefined;
+  }
+  if (step.kind === "write-records") {
+    await writeRecords(deps, state, step.records, pr);
+    return undefined;
+  }
+  const writtenAt = deps.now().toISOString();
+  await deps.railway(VARIABLES_UPSERT, {
+    input: {
+      projectId: deps.projectId,
+      environmentId: environment.id,
+      variables: previewVariables(pr),
+    },
+  });
+  deps.log(
+    `railway-preview: set ${Object.keys(previewVariables(pr)).join(", ")} on ${environment.name} (names only; Railway rebuilds it)`,
+  );
+  return writtenAt;
+}
+
 export interface ResolveOptions {
   readonly pr: number;
   readonly sha: string;
@@ -671,50 +722,28 @@ export async function resolvePreview(
       provision: options.provision,
       variablesWrittenAt,
     });
-    switch (step.kind) {
-      case "ready":
-        return { ok: true, url: step.url };
-      case "fail":
-        return { ok: false, reason: step.reason };
-      case "create-domain": {
-        const environment = state.environment;
-        const web = environment?.web;
-        if (environment === undefined || web === undefined) break;
-        await deps.railway(CUSTOM_DOMAIN_CREATE, {
-          input: {
-            domain: previewHost(options.pr),
-            environmentId: environment.id,
-            projectId: deps.projectId,
-            serviceId: web.serviceId,
-          },
-        });
-        deps.log(
-          `railway-preview: added ${previewHost(options.pr)} to ${environment.name} \`${WEB_SERVICE}\``,
-        );
+    if (step.kind === "ready") return { ok: true, url: step.url };
+    if (step.kind === "fail") return { ok: false, reason: step.reason };
+    if (step.kind === "wait") {
+      lastReason = step.reason;
+    } else {
+      // `preview` and `lighthouse` both provision, so one may find the other has just done it:
+      // Railway refuses a second domain, Cloudflare a second record. A refused write is read
+      // again on the next attempt instead of failing the job; a missing scope (403) is not
+      // something a retry fixes, so it still ends the run.
+      try {
+        const written = await act(step, state, options.pr, deps);
+        if (written !== undefined) variablesWrittenAt = written;
         continue;
+      } catch (error) {
+        if (
+          !(error instanceof PreviewApiError) ||
+          error instanceof PreviewScopeError
+        ) {
+          throw error;
+        }
+        lastReason = `${step.kind} was refused, read again next attempt (another job may have done it first): ${error.message}`;
       }
-      case "write-records":
-        await writeRecords(deps, state, step.records, options.pr);
-        continue;
-      case "set-variables": {
-        const environment = state.environment;
-        if (environment === undefined) break;
-        variablesWrittenAt = deps.now().toISOString();
-        await deps.railway(VARIABLES_UPSERT, {
-          input: {
-            projectId: deps.projectId,
-            environmentId: environment.id,
-            variables: previewVariables(options.pr),
-          },
-        });
-        deps.log(
-          `railway-preview: set ${Object.keys(previewVariables(options.pr)).join(", ")} on ${environment.name} (names only; Railway rebuilds it)`,
-        );
-        continue;
-      }
-      case "wait":
-        lastReason = step.reason;
-        break;
     }
     deps.log(
       `railway-preview: attempt ${String(attempt)}/${String(options.attempts)}: ${lastReason}`,
@@ -949,6 +978,11 @@ function liveDeps(
         },
         body: JSON.stringify({ query, variables }),
       });
+      if (response.status === 401 || response.status === 403) {
+        throw new PreviewScopeError(
+          `Railway API answered ${String(response.status)}: RAILWAY_API_TOKEN is not a workspace token that can read and change this project`,
+        );
+      }
       if (!response.ok) {
         throw new PreviewApiError(
           `Railway API answered ${String(response.status)} (no body is printed: it can carry variable values)`,
@@ -982,7 +1016,7 @@ function liveDeps(
         },
       );
       if (response.status === 403) {
-        throw new PreviewApiError(
+        throw new PreviewScopeError(
           `Cloudflare answered 403 to ${method} ${path.replace(/\?.*$/u, "")}: the zone token lacks DNS Edit (spec 040 AC-24)`,
         );
       }
