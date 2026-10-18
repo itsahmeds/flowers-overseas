@@ -267,16 +267,21 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).toContain("pnpm seo:validate");
   });
 
-  it("measures this repository's own bytes, Brotli-encoded, not a preview (AC-24)", () => {
-    // TASK-056's answer to the question `lighthouserc.json` left open: `resource-summary:script:
-    // size` is transfer size, `next start` sends gzip and a protected preview sends Brotli plus
-    // tens of KB of `vercel.live` that is in no build output of ours. So the job builds, serves
-    // and measures itself.
+  it("measures the PR's Railway environment on a pull request and its own Brotli origin otherwise (spec 040 AC-26, AC-27; TASK-099)", () => {
+    // A pull request: `pr-<n>.flowersoverseas.com` through Cloudflare, which serves the Brotli
+    // the budget is written in. Any other event: TASK-056's own build behind the Brotli proxy,
+    // because there is no PR environment and staging waits for this very run (TASK-103 E-1).
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     expect(job).toMatch(/needs: build/);
+    expect(job).toContain('if [ "$EVENT_NAME" = "pull_request" ]; then');
+    expect(job).toContain(
+      'node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA"',
+    );
     expect(job).toContain("pnpm lighthouse:origin");
-    expect(job).toContain("LHCI_BASE_URL: http://127.0.0.1:3001");
+    expect(job).toContain('echo "LHCI_BASE_URL=http://127.0.0.1:3001"');
+    expect(job).toContain('echo "LHCI_BASE_URL=$url"');
     expect(job).toContain("lighthouserc.json");
+    // It resolves the environment itself: `needs: preview` would skip it on every push (AC-38).
     expect(job).not.toContain("needs.preview.outputs.preview_url");
   });
 
@@ -306,7 +311,7 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(ci).not.toContain("honest verdict");
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     const runIndex = job.indexOf(
-      "name: Run Lighthouse CI against the Brotli origin",
+      "name: Run Lighthouse CI against the measured origin",
     );
     const summaryIndex = job.indexOf(
       "name: Summarise what Lighthouse actually measured",
@@ -331,13 +336,15 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(job).not.toContain("if-no-files-found: warn");
   });
 
-  it("needs no deployment secret at all now that it serves what it measures", () => {
-    // The bypass header was how the job reached a protected preview. It measures a local origin
-    // since TASK-056, so the secret is neither needed nor present in this job — one fewer place a
-    // secret can leak into a log line. The Playwright jobs still carry it.
+  it("carries no Vercel secret, and the wall's credential only into the masked origin step", () => {
+    // The bypass header was how the job reached a protected Vercel preview; that host is gone
+    // from CI (spec 040 §14 A2). The PR environment's wall takes `STAGING_BASIC_AUTH`, read in
+    // one step, masked in its Basic form, and scrubbed from the reports before upload.
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     expect(job).not.toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
     expect(job).not.toContain("x-vercel-protection-bypass");
-    expect(ci).toContain("x-vercel-protection-bypass");
+    expect(job.match(/secrets\.STAGING_BASIC_AUTH/gu)?.length).toBe(1);
+    expect(job).toContain('echo "::add-mask::$basic"');
+    expect(job).toContain("name: Scrub the wall's credential from the reports");
   });
 });
