@@ -60,22 +60,62 @@ describe("lighthouserc.json budgets (AC-23)", () => {
     expect(rc.ci.assert.assertions).toBeUndefined();
     expect(rc.ci.assert.assertMatrix).toHaveLength(3);
     expect(everyUrl).toEqual({
-      "categories:performance": ["error", { minScore: 0.95 }],
+      "categories:performance": [
+        "error",
+        { minScore: 0.95, aggregationMethod: "median" },
+      ],
       // TASK-056: AC-24 names three categories, not one. `accessibility` and `best-practices`
       // were collected and never asserted, so a 404 favicon and an axe regression were both
       // invisible to the gate that publishes their scores.
-      "categories:accessibility": ["error", { minScore: 0.95 }],
-      "categories:best-practices": ["error", { minScore: 0.95 }],
-      "largest-contentful-paint": ["error", { maxNumericValue: 2000 }],
-      "cumulative-layout-shift": ["error", { maxNumericValue: 0.05 }],
+      "categories:accessibility": [
+        "error",
+        { minScore: 0.95, aggregationMethod: "median" },
+      ],
+      "categories:best-practices": [
+        "error",
+        { minScore: 0.95, aggregationMethod: "median" },
+      ],
+      "largest-contentful-paint": [
+        "error",
+        { maxNumericValue: 2000, aggregationMethod: "median" },
+      ],
+      "cumulative-layout-shift": [
+        "error",
+        { maxNumericValue: 0.05, aggregationMethod: "median" },
+      ],
       // 120 KB and 200 KB in bytes: **transfer** size, i.e. Brotli over the wire on Vercel
       // (spec 004 §13 Q13's restatement; the `//` note in the file spells it out).
       // 128 KB Brotli: spec 004 §13 Q13's restatement as corrected by §14 A1 (TASK-050 carried
       // the number here and into `scripts/client-js-budget.ts`; the job stays informational until
       // TASK-056 flips it). Per URL since spec 004 A-founder-2026-10-18a: 131 072 B on every URL
       // but a product address, 133 120 B there (`product-script-budget.test.ts`).
-      "resource-summary:image:size": ["error", { maxNumericValue: 204800 }],
+      "resource-summary:image:size": [
+        "error",
+        { maxNumericValue: 204800, aggregationMethod: "median" },
+      ],
     });
+  });
+
+  /**
+   * spec 040 AC-27 / T-28 (TASK-103), spec 004 §14 A18's ruling. `@lhci/cli` reads
+   * `aggregationMethod` from each assertion's own options and defaults it to `optimistic`, which
+   * for a `maxNumericValue` assertion takes the **fastest** run: one lucky run passed a page whose
+   * median was over budget, and one unlucky run could not fail it. `median` is set on every
+   * assertion of every `assertMatrix` entry (the per-URL script budgets included), so no budget is
+   * judged by its best run.
+   */
+  it("aggregates every assertion by the median of the runs (AC-27), never the optimistic default", () => {
+    const entries = rc.ci.assert.assertMatrix.flatMap((entry) =>
+      Object.entries(entry.assertions),
+    );
+    // 6 every-URL assertions + the 131 072 B and 133 120 B script budgets.
+    expect(entries.length).toBe(8);
+    for (const [name, assertion] of entries) {
+      expect(Array.isArray(assertion), name).toBe(true);
+      const [level, options] = assertion as [string, Record<string, unknown>];
+      expect(level, name).toBe("error");
+      expect(options["aggregationMethod"], name).toBe("median");
+    }
   });
 
   it("collects three mobile runs, so one noisy run cannot fail or pass the PR", () => {

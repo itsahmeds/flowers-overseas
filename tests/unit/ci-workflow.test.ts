@@ -491,8 +491,8 @@ describe("the lighthouse job's step summary (spec 004 §11, AC-24; TASK-056)", (
   });
 
   it("prints every measured run's LCP per URL, not only the representative run (TASK-235)", () => {
-    // Under `optimistic` a red LCP means all three runs were over, which the representative row
-    // cannot show; the per-run table is what tells a cold first run from a slow runner.
+    // Under `median` (TASK-103) a red LCP means two of the three runs were over, which the
+    // representative row cannot show; the per-run table is what tells a cold run from a slow runner.
     const run = summaryStep?.run ?? "";
     expect(run).toContain("LCP of every measured run");
     expect(run).toContain('.audits["largest-contentful-paint"].numericValue');

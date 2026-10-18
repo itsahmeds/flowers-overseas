@@ -51,7 +51,15 @@
     "every URL that is not a product address, the third 133 120 B for product addresses only. The",
     "product pattern names each locale's `product` segment (`pathSegments.product`) and is pinned",
     "against the registry by `tests/unit/product-script-budget.test.ts`, so it cannot widen to a",
-    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here."
+    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here.",
+    "",
+    "**4. How the runs are aggregated: `median` (spec 040 AC-27, spec 004 §14 A18's ruling,",
+    "TASK-103).** `@lhci/cli` reads `aggregationMethod` from each assertion's own options and",
+    "defaults it to `optimistic`, which for a `maxNumericValue` assertion takes the fastest of the",
+    "three runs: a page whose middle run was over budget passed on its luckiest one, and a page",
+    "could only fail when all three were over. Every assertion in every `assertMatrix` entry carries",
+    "`aggregationMethod: \"median\"`, so each budget is judged by the middle of `numberOfRuns` (three,",
+    "unchanged by spec 004 §14 A-founder-2026-10-15a clause 3)."
   ],
   "ci": {
     "collect": {
@@ -81,37 +89,43 @@
             "categories:performance": [
               "error",
               {
-                "minScore": 0.95
+                "minScore": 0.95,
+                "aggregationMethod": "median"
               }
             ],
             "categories:accessibility": [
               "error",
               {
-                "minScore": 0.95
+                "minScore": 0.95,
+                "aggregationMethod": "median"
               }
             ],
             "categories:best-practices": [
               "error",
               {
-                "minScore": 0.95
+                "minScore": 0.95,
+                "aggregationMethod": "median"
               }
             ],
             "largest-contentful-paint": [
               "error",
               {
-                "maxNumericValue": 2000
+                "maxNumericValue": 2000,
+                "aggregationMethod": "median"
               }
             ],
             "cumulative-layout-shift": [
               "error",
               {
-                "maxNumericValue": 0.05
+                "maxNumericValue": 0.05,
+                "aggregationMethod": "median"
               }
             ],
             "resource-summary:image:size": [
               "error",
               {
-                "maxNumericValue": 204800
+                "maxNumericValue": 204800,
+                "aggregationMethod": "median"
               }
             ]
           }
@@ -122,7 +136,8 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 131072
+                "maxNumericValue": 131072,
+                "aggregationMethod": "median"
               }
             ]
           }
@@ -133,7 +148,8 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 133120
+                "maxNumericValue": 133120,
+                "aggregationMethod": "median"
               }
             ]
           }
