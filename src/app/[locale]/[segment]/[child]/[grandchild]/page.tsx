@@ -78,7 +78,7 @@ import {
  * (`src/lib/product-rewrites.ts`). Turbopack puts every client module a route file reaches into
  * that route's script set, so while this file mounted `ProductPage` the country category and
  * occasion fetched the product island's chunk. This file must never import `ProductPage` or
- * anything under `src/modules/ui/product/` again (`tests/unit/product-rewrites.test.ts`).
+ * anything under `src/modules/ui/product/` again (`tests/unit/product-script-budget.test.ts`).
  */
 export const revalidate = 3600;
 // Inert under the `[locale]` layout's `dynamicParams = false` (spec 003's locale gate), which binds

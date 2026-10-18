@@ -1458,6 +1458,45 @@ describe("TASK-228 (spec 009 AC-31, T-34 unit half; spec 004 AC-48): each size c
     }
   });
 
+  it("in `live` with a surcharged date chosen, every size's total carries the date's fee (breaker H5)", async () => {
+    const plain = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
+    const surcharged = plain.delivery.dates.find(
+      (date) => date.selectable && date.surcharge !== undefined,
+    );
+    if (surcharged?.surcharge === undefined) {
+      throw new Error("the Women's Day week has a surcharged selectable date");
+    }
+    const view = await liveViewOf("en", AMBER, {
+      now: WOMENS_DAY_WEEK,
+      selection: { date: surcharged.date },
+    });
+    expect(view.selectedDate).toBe(surcharged.date);
+    const html = render(view);
+    const say = sayOf(html);
+    // The page's one total for the selected size, as the server prints it.
+    const pageTotal = decode(
+      /data-fo-price-total[^>]*>([^<]+)</u.exec(html)?.[1] ?? "",
+    );
+    expect(say.get(view.selectedTierKey)?.total).toBe(pageTotal);
+    for (const tier of view.tiers) {
+      const at = tier.tierKey;
+      const undated = formatMoney(tier.price, "en");
+      const own = say.get(tier.tierKey)?.total;
+      // Not the size's own price: the chosen date's fee is in it, for every size.
+      expect(own, at).not.toBe(undated);
+      const entry = view.totals[tier.tierKey]?.[surcharged.date];
+      expect(entry, at).toBe(
+        tier.price.amountMinor + surcharged.surcharge.amountMinor,
+      );
+      expect(own, at).toBe(
+        formatMoney(
+          { amountMinor: entry ?? -1, currency: tier.price.currency },
+          "en",
+        ),
+      );
+    }
+  });
+
   it("every place that shows the size prints the selected size's server string, so the island and the server agree", async () => {
     for (const view of await sizeCases()) {
       const where = `${view.locale} ${view.fx.state} ${view.delivery.state} ${view.selectedTierKey}`;

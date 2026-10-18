@@ -23,7 +23,7 @@
  * One source per locale in the registry, naming that locale's own `product` segment as the third
  * segment, the country and the slug as the two wildcards. A country category or occasion cannot
  * match, because its third segment is the locale's `shopCategory` or `occasions` segment (pinned
- * distinct by `tests/unit/product-rewrites.test.ts`). It holds no catalogue data, so it is not a
+ * distinct by `tests/unit/product-script-budget.test.ts`). It holds no catalogue data, so it is not a
  * second copy of the existence set: an unknown country or slug is rewritten, and the product route
  * answers it 404 through the `[locale]` layout's `dynamicParams = false` and `resolveLocalePath()`,
  * exactly as before. The locale and the segment are captured, not written (`/break 143` hole 1):

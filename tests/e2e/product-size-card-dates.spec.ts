@@ -169,6 +169,61 @@ test.describe("T-56 (browser half): one 200-grapheme card limit", () => {
   });
 });
 
+test.describe("breaker H3: a paste past the limit keeps what fits", () => {
+  test("at 390: 250 letters pasted into a field holding 10 keep the first 200 and read 200 of 200", async ({
+    page,
+  }) => {
+    await page.setViewportSize(PHONE);
+    await open(page);
+    await hydrated(page);
+    const field = page.locator("#pdp-card-message");
+    const counter = page.locator("#pdp-card-message-count");
+    await field.fill("b".repeat(10));
+    await expect(counter).toHaveText(/^10 \/ 200$/u);
+    // A paste, as one input event carrying the whole value, not 250 key presses.
+    await field.fill(`${"b".repeat(10)}${"c".repeat(240)}`);
+    await expect(field).toHaveValue(`${"b".repeat(10)}${"c".repeat(190)}`);
+    await expect(counter).toHaveText(/^200 \/ 200$/u);
+  });
+});
+
+test.describe("breaker H4: a size the browser restored is the size every place shows", () => {
+  test("at 1440: with another size checked in the served document, the island shows that size on load", async ({
+    page,
+  }) => {
+    await page.setViewportSize(DESKTOP);
+    // The document as a browser restoring form state would leave it: another size checked before
+    // the island mounts. The radios are server HTML, so moving `checked` is all a restore does.
+    let other = "";
+    await page.route(`**${PDP}`, async (route) => {
+      const response = await route.fetch();
+      const html = await response.text();
+      const radios = [...html.matchAll(/<input[^>]*name="tier"[^>]*>/gu)].map(
+        (match) => match[0],
+      );
+      const checked = radios.find((tag) => /\bchecked=""/u.test(tag));
+      const target = radios.find((tag) => !/\bchecked=""/u.test(tag));
+      if (checked === undefined || target === undefined) {
+        throw new Error("the served page has a checked size and another one");
+      }
+      other = /data-fo-say-price="([^"]*)"/u.exec(target)?.[1] ?? "";
+      await route.fulfill({
+        response,
+        body: html
+          .replace(checked, checked.replace(/\schecked=""/u, ""))
+          .replace(target, target.replace("<input", '<input checked=""')),
+      });
+    });
+    await open(page);
+    await hydrated(page);
+    expect(other).not.toBe("");
+    const decoded = other.replaceAll("&amp;", "&").replaceAll("&#x27;", "'");
+    await expect(
+      page.locator('[data-fo-pdp-buy] [data-fo-tier-slot="price"]').first(),
+    ).toHaveText(decoded);
+  });
+});
+
 test.describe("AC-49 and the artboards' card section (TASK-229)", () => {
   // 1024 from the 2026-10-18 site test (Q1-07: the card text cut at 320, 360 and 1024).
   for (const width of [320, 360, 390, 1024]) {

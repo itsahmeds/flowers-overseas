@@ -23,12 +23,14 @@ import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 
 import { getPathMatch } from "next/dist/shared/lib/router/utils/path-match";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import {
   budgetFor,
   CLIENT_JS_BUDGET_BYTES,
   DEFAULT_URLS,
+  main,
+  measurePages,
   type PageMeasurement,
   PRODUCT_CLIENT_JS_BUDGET_BYTES,
   PRODUCT_ISLAND_MARKERS,
@@ -341,5 +343,122 @@ describe("AC-37: the build check fails a listing that fetches the island", () =>
     } finally {
       rmSync(dist, { recursive: true, force: true });
     }
+  });
+});
+
+/**
+ * Breaker H1 and H2 (round 1 on `6ff55192`): the budget and the island check as the real run wires
+ * them, over a fake build output laid out the way `next build` lays out the two route files.
+ */
+describe("AC-56 and AC-37 through `measurePages()` and `main()` (breaker H1, H2)", () => {
+  const PRODUCT_SERVED = "en/-product/poland/product/amber-hour";
+  const GB_PRODUCT_SERVED = "en-gb/-product/poland/product/amber-hour";
+  let dist = "";
+
+  /** Bytes that Brotli cannot shrink: its output is the input plus a few bytes of framing. */
+  function incompressible(length: number): Buffer {
+    const out = Buffer.alloc(length);
+    let state = 0x2545f491;
+    for (let index = 0; index < length; index += 1) {
+      state ^= state << 13;
+      state ^= state >>> 17;
+      state ^= state << 5;
+      out[index] = state & 0xff;
+    }
+    return out;
+  }
+
+  const doc = (relative: string, chunks: readonly string[]): void => {
+    const file = join(dist, "server/app", `${relative}.html`);
+    mkdirSync(join(file, ".."), { recursive: true });
+    writeFileSync(
+      file,
+      chunks
+        .map((chunk) => `<script src="/_next/static/chunks/${chunk}"></script>`)
+        .join(""),
+    );
+  };
+
+  beforeAll(() => {
+    dist = mkdtempSync(join(tmpdir(), "fo-product-budget-"));
+    mkdirSync(join(dist, "static/chunks"), { recursive: true });
+    writeFileSync(
+      join(dist, "app-path-routes-manifest.json"),
+      JSON.stringify({
+        "/[locale]/[segment]/[child]/[grandchild]/page":
+          "/[locale]/[segment]/[child]/[grandchild]",
+        "/[locale]/-product/[segment]/[child]/[grandchild]/page":
+          "/[locale]/-product/[segment]/[child]/[grandchild]",
+      }),
+    );
+    writeFileSync(join(dist, "static/chunks/shared.js"), "export const a=1;");
+    writeFileSync(
+      join(dist, "static/chunks/island.js"),
+      PRODUCT_ISLAND_MARKERS.map((marker) => `q("${marker}");`).join(""),
+    );
+    // Between the two budgets: over 131 072 B, under 133 120 B, with the other chunks.
+    writeFileSync(join(dist, "static/chunks/big.js"), incompressible(132_000));
+    // The product page's own document, under the product route; and a decoy at the bare address,
+    // which a measurement that forgot the rewrite would read instead.
+    doc(PRODUCT_SERVED, ["shared.js", "island.js", "big.js"]);
+    doc("en/poland/product/amber-hour", ["shared.js"]);
+    // A product page whose island is missing.
+    doc(GB_PRODUCT_SERVED, ["shared.js"]);
+    // A listing between the budgets, a listing that loads the island, a clean listing.
+    doc("en/poland/flowers/roses", ["shared.js", "big.js"]);
+    doc("en-gb/poland/occasions/mothers-day", ["shared.js", "island.js"]);
+    doc("en-gb/poland/flowers/roses", ["shared.js"]);
+  });
+
+  afterAll(() => {
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it("measures a product URL from the product route's document, against 133 120 B", () => {
+    const [product] = measurePages(dist, [PRODUCT]);
+    expect(product?.assets.map((asset) => asset.asset).sort()).toEqual([
+      "static/chunks/big.js",
+      "static/chunks/island.js",
+      "static/chunks/shared.js",
+    ]);
+    expect(product?.budgetBytes).toBe(133_120);
+    expect(product?.fetchedBrotliBytes).toBeGreaterThan(131_072);
+    expect(product?.fetchedBrotliBytes).toBeLessThanOrEqual(133_120);
+    expect(product?.withinBudget).toBe(true);
+  });
+
+  it("holds a listing of the same size to 131 072 B", () => {
+    const [listing] = measurePages(dist, [LISTINGS[0]]);
+    expect(listing?.budgetBytes).toBe(131_072);
+    expect(listing?.fetchedBrotliBytes).toBeGreaterThan(131_072);
+    expect(listing?.withinBudget).toBe(false);
+  });
+
+  const run = (url: string): { code: number; out: string } => {
+    const out: string[] = [];
+    const write = (chunk: string): number => out.push(chunk);
+    const code = main(["--dist", dist, "--url", url], { write }, { write });
+    return { code, out: out.join("") };
+  };
+
+  it("fails the run when a listing fetches the product island", () => {
+    const { code, out } = run(LISTINGS[2]);
+    expect(code).toBe(1);
+    expect(out).toContain(
+      `${LISTINGS[2]} fetches the product island (static/chunks/island.js`,
+    );
+  });
+
+  it("fails the run when a product page fetches no island", () => {
+    const { code, out } = run(PRODUCT_GB);
+    expect(code).toBe(1);
+    expect(out).toContain(
+      `${PRODUCT_GB} fetches no chunk with the product island's`,
+    );
+  });
+
+  it("passes a clean listing", () => {
+    const { code, out } = run(LISTINGS[1]);
+    expect(code, out).toBe(0);
   });
 });
