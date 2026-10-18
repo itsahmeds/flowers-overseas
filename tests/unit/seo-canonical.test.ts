@@ -14,7 +14,9 @@
  * here as a type-level fact (the signature) and observed end to end in the parked e2e half,
  * `tests/e2e/seo-canonical.spec.ts`, once TASK-091 ships a route.
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+import { type MessageNamespace, loadMessages } from "../../src/modules/i18n";
 
 import {
   absoluteUrl,
@@ -22,6 +24,35 @@ import {
   canonicalPath,
   siteOrigin,
 } from "../../src/modules/seo/index.ts";
+
+/**
+ * `next-intl/server` resolves against the real shipped messages, as in `app-shell.test.tsx`: the
+ * locale home's `generateMetadata` needs its translator, and only Next's per-request plumbing is
+ * stubbed. The builder cases above and below do not touch it.
+ */
+vi.mock("next-intl/server", () => ({
+  setRequestLocale: (): void => undefined,
+  getLocale: (): Promise<string> => Promise.resolve("en"),
+  getTranslations: ({
+    locale,
+    namespace,
+  }: {
+    locale: string;
+    namespace: MessageNamespace;
+  }): Promise<(key: string) => string> => {
+    const messages = loadMessages(locale, [namespace])[namespace];
+    return Promise.resolve((key: string) => {
+      let value: unknown = messages;
+      for (const part of key.split(".")) {
+        value = (value as Record<string, unknown> | undefined)?.[part];
+      }
+      if (typeof value !== "string") {
+        throw new Error(`missing message key: ${namespace}.${key}`);
+      }
+      return value;
+    });
+  },
+}));
 
 const SITE = { baseUrl: "https://flowersoverseas.com" } as const;
 const CORRIDOR = "/en-gb/send-flowers-to/poland";
@@ -131,4 +162,44 @@ describe("canonicalFor(): self-referencing, never cross-locale (AC-10)", () => {
       `https://flowersoverseas.com${CORRIDOR}`,
     );
   });
+});
+
+/**
+ * T-11 on the locale home (TASK-234; QA-1 Q1-17). `/en`, `/en-gb`, `/de` and `/pl` are in Phase
+ * 0's indexable set (`plan/09` Phase 0 AC 1) and printed a title and a description only. Each
+ * locale is asserted against its **own** URL, one string each, so a canonical removed, given a
+ * trailing slash or pointed at another locale (`/en-gb` → `/en`) fails here, not just "some
+ * canonical exists". The robots line and the hreflang cluster are unchanged by this task: the
+ * layout's `noindex,nofollow` default still stands (TASK-096 lifts it at the flip), and the home
+ * prints no `languages` set.
+ */
+describe("the locale home emits its self-referencing canonical (AC-10, T-11)", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  const HOMES = [
+    ["en", "https://flowersoverseas.com/en"],
+    ["en-gb", "https://flowersoverseas.com/en-gb"],
+    ["de", "https://flowersoverseas.com/de"],
+    ["pl", "https://flowersoverseas.com/pl"],
+  ] as const;
+
+  for (const [locale, expected] of HOMES) {
+    it(`/${locale} canonicalises to ${expected}`, async () => {
+      // A trailing slash on the configured origin must not reach the canonical.
+      vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://flowersoverseas.com/");
+      const { generateMetadata } = await import("../../src/app/[locale]/page");
+
+      const metadata = await generateMetadata({
+        params: Promise.resolve({ locale }),
+      });
+
+      expect(metadata.alternates?.canonical).toBe(expected);
+      // The hreflang cluster is unchanged (none on the home today) and no robots branch is added
+      // in `app/`: the segment default from the layout stands.
+      expect(metadata.alternates?.languages).toBeUndefined();
+      expect(metadata.robots).toBeUndefined();
+    });
+  }
 });

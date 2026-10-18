@@ -49,8 +49,21 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-18: tests first (unit half red 4/4), then `generateMetadata` emits `alternates.canonical`
+  from `canonicalFor(locale, localePath(locale, "home"))`; mutations watched red; cheap gates
+  green; PR 248 opened. Next: CI on head with `ci:full`, then `/review` and `/break`.
 
 ## Result
 
-_Pending._
+- **PR:** https://github.com/itsahmeds/flowers-overseas/pull/248.
+- **AC-10 (T-11):** `/en`, `/en-gb`, `/de`, `/pl` each emit one self canonical from the spec 007
+  builder (`src/app/[locale]/page.tsx` `generateMetadata`). Robots stays the layout's segment
+  default (TASK-096 lifts it); no hreflang added (the home has none); no new message key.
+- **Tests:** `tests/unit/seo-canonical.test.ts` +4 (one exact string per home, no `languages`, no
+  `robots`); `tests/e2e/seo-canonical.spec.ts` +8 (the four homes join both observed cases).
+- **Mutations watched red (unit):** canonical removed 4/4; trailing slash appended 4/4; `/en-gb`
+  pointing at `/en` red on en-gb.
+- **Outside the fence:** `tests/unit/app-shell.test.tsx` stubs `NEXT_PUBLIC_SITE_URL` in the AC-25
+  case, which calls the home's `generateMetadata` and now needs an origin (the builder throws on
+  none, as on every route; the build refuses a missing one). No assertion changed.
+- **No expensive gate run locally**; CI is the gate of record (`seo:validate`, e2e).

@@ -3,7 +3,7 @@
  * it, TASK-091 turns it on).
  *
  * **Un-parked by TASK-091**: the route exists and the list below is the committed set. The hub
- * arrives with TASK-092 and joins this list there.
+ * arrives with TASK-092 and joins this list there; the four locale homes join it with TASK-234.
  *
  * AC-10's last clause — a `noindex` page keeps its canonical **and appears in no sitemap** — is
  * completed by `tests/e2e/sitemap.spec.ts` (TASK-094): the canonical is asserted here, the absence
@@ -31,6 +31,13 @@ const CORRIDOR_URLS = ["en", "en-gb"].flatMap((locale) =>
   SLUGS.map((slug) => `/${locale}/send-flowers-to/${slug}`),
 );
 
+/**
+ * The four locale homes (TASK-234; QA-1 Q1-17): in Phase 0's indexable set (`plan/09` Phase 0
+ * AC 1) and, until this task, printing no canonical. Each is asserted against its own URL below,
+ * so `/en-gb` canonicalising to `/en` fails the self-reference check, not just the count.
+ */
+const HOME_URLS = ["/en", "/en-gb", "/de", "/pl"] as const;
+
 const canonicals = (html: string): string[] =>
   [
     ...html.matchAll(
@@ -39,7 +46,7 @@ const canonicals = (html: string): string[] =>
   ].map((match) => match[1] ?? "");
 
 test.describe("canonical, observed (AC-10, T-11)", () => {
-  for (const url of CORRIDOR_URLS) {
+  for (const url of [...HOME_URLS, ...CORRIDOR_URLS]) {
     test(`${url} emits exactly one self-referencing canonical`, async ({
       request,
       baseURL,
