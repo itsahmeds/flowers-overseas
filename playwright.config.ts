@@ -131,7 +131,11 @@ export default defineConfig({
     // `NO_LOCALE_CHOICE` (`tests/support/locale-choice.ts`).
     storageState: recordedLocaleChoice(baseURL),
     ...(httpCredentials === undefined ? {} : { httpCredentials }),
-    trace: "on-first-retry",
+    // A trace records the request headers Playwright sent, the wall's `authorization` among
+    // them, and CI uploads `test-results/` from a public repository. So with the credential in
+    // scope no trace is recorded at all; `scripts/artifact-credential-check.ts` then checks every
+    // uploaded file anyway (spec 040 AC-25; `/review 263` item 1, TASK-099).
+    trace: httpCredentials === undefined ? "on-first-retry" : "off",
     screenshot: "only-on-failure",
     ignoreHTTPSErrors: false,
   },

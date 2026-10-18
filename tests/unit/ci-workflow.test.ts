@@ -24,6 +24,7 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import { parse } from "yaml";
 
 import { GITLEAKS_VERSION } from "../../scripts/audit-secrets.ts";
+import { runWorkflowStep } from "../support/run-workflow-step.ts";
 
 const repoRoot = resolve(__dirname, "../..");
 const read = (relative: string): string =>
@@ -736,6 +737,47 @@ describe("the preview job resolves the Railway PR environment and asserts AC-26 
     expect(assertStep?.run).toContain('exit "$status"');
   });
 
+  it.each([
+    [0, 0],
+    [1, 1],
+    [3, 3],
+  ])(
+    "the assert step exits with the property check's own status: %i → %i (/break 263 hole 5)",
+    (nodeExit, stepExit) => {
+      const result = runWorkflowStep(
+        assertStep,
+        {
+          github: {
+            event_name: "pull_request",
+            event: {
+              pull_request: { number: 263, head: { sha: "a".repeat(40) } },
+            },
+          },
+          secrets: { STAGING_BASIC_AUTH: "ci-wall:aaaa?bbbb?cccc" },
+          steps: {
+            resolve: {
+              outputs: { preview_url: "https://pr-263.flowersoverseas.com" },
+            },
+          },
+        },
+        {
+          stubs: {
+            node: `echo "node $*" >> "$STUB_LOG"; echo "FAIL auth wall: stub"; exit ${String(nodeExit)}`,
+          },
+        },
+      );
+      try {
+        expect(result.status).toBe(stepExit);
+        expect(result.stubLog).toEqual([
+          `node scripts/railway-preview.ts --assert --pr 263 --sha ${"a".repeat(40)}`,
+        ]);
+        expect(result.summary).toContain("FAIL auth wall: stub");
+      } finally {
+        result.cleanup();
+      }
+    },
+  );
+
   it("fails, never skips: no step is conditional or allowed to fail (AC-26)", () => {
     for (const step of steps) {
       expect(step.if, step.name).toBeUndefined();
@@ -775,6 +817,56 @@ describe("the preview job resolves the Railway PR environment and asserts AC-26 
       );
     },
   );
+
+  it.each(BROWSER_JOBS)(
+    "%s scrubs and checks its report for the wall's credential before uploading it (/review 263 item 1)",
+    (name) => {
+      const jobSteps = ci.jobs[name]?.steps ?? [];
+      const scan = jobSteps.find((step) => step.id === "credscan");
+      const upload = jobSteps.find((step) =>
+        (step.uses ?? "").startsWith("actions/upload-artifact@"),
+      );
+      expect(scan?.if).toBe("failure()");
+      expect(upload?.if).toBe(
+        "failure() && steps.credscan.outcome == 'success'",
+      );
+      expect(jobSteps.indexOf(scan as Step)).toBeLessThan(
+        jobSteps.indexOf(upload as Step),
+      );
+      // Every path the upload names is one the scan covered.
+      const scanned = (scan?.run ?? "").split(/\s+/u);
+      for (const path of (upload?.with?.["path"] ?? "")
+        .split("\n")
+        .filter(Boolean)) {
+        expect(scanned, path).toContain(path.replace(/\/$/u, ""));
+      }
+      const credential = "ci-wall:aaaa?bbbb?cccc";
+      const basic = Buffer.from(credential).toString("base64");
+      const result = runWorkflowStep(
+        scan,
+        { secrets: { STAGING_BASIC_AUTH: credential } },
+        {
+          files: {
+            "test-results/a/error-context.md": `authorization: Basic ${basic}`,
+            "playwright-report/index.html": `<pre>${credential}</pre>`,
+          },
+        },
+      );
+      try {
+        expect(result.status).toBe(0);
+        for (const file of [
+          "test-results/a/error-context.md",
+          "playwright-report/index.html",
+        ]) {
+          const body = readFileSync(join(result.workspace, file), "utf8");
+          expect(body).not.toContain(basic);
+          expect(body).not.toContain(credential);
+        }
+      } finally {
+        result.cleanup();
+      }
+    },
+  );
 });
 
 describe("the nightly sweep of closed pull requests' records (spec 040 AC-12; TASK-099)", () => {
@@ -810,25 +902,143 @@ describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TAS
     (step.uses ?? "").startsWith("actions/upload-artifact@"),
   );
 
-  it("chooses its origin in one unconditional step that exits on any failure", () => {
+  it("chooses its origin in one unconditional step", () => {
     expect(origin?.if).toBeUndefined();
     expect(origin?.["continue-on-error"]).toBeUndefined();
-    expect(origin?.run).toMatch(/^\s*set -euo pipefail$/mu);
-    expect(origin?.run).toContain("exit 2");
   });
 
-  it("masks the Basic form of the credential before anything can print it", () => {
-    const run = origin?.run ?? "";
-    expect(run.indexOf('echo "::add-mask::$basic"')).toBeGreaterThan(-1);
-    expect(run.indexOf('echo "::add-mask::$basic"')).toBeLessThan(
-      run.indexOf("$GITHUB_ENV"),
+  const SHA = "abcdef0123456789abcdef0123456789abcdef01";
+  const CREDENTIAL = "ci-wall:aaaa?bbbb?cccc";
+  const BASIC = Buffer.from(CREDENTIAL).toString("base64");
+  const SECRETS = {
+    RAILWAY_API_TOKEN: "railway-token",
+    RAILWAY_PROJECT_ID: "project-0000",
+    CLOUDFLARE_API_TOKEN: "cloudflare-token",
+    CLOUDFLARE_ZONE_ID: "0123abcd",
+    STAGING_BASIC_AUTH: CREDENTIAL,
+  };
+  const pullRequest = (secrets: Record<string, string> = SECRETS) => ({
+    github: {
+      event_name: "pull_request",
+      event: {
+        action: "labeled",
+        pull_request: {
+          number: 263,
+          head: { sha: SHA },
+          base: { sha: "1".repeat(40) },
+        },
+      },
+    },
+    secrets,
+  });
+  const push = { github: { event_name: "push", event: {} }, secrets: SECRETS };
+  /** `node` that answers `railway-preview.ts` with the PR URL and logs every call. */
+  const stubs = {
+    node: 'echo "node $*" >> "$STUB_LOG"; case "$*" in *railway-preview.ts*) echo "https://pr-263.flowersoverseas.com";; esac',
+    pnpm: 'echo "pnpm $*" >> "$STUB_LOG"',
+    npx: 'echo "npx $*" >> "$STUB_LOG"',
+  };
+
+  it("on a pull request, resolves the PR environment for the head SHA and measures it behind the wall (/break 263 hole 4)", () => {
+    const result = runWorkflowStep(origin, pullRequest(), { stubs });
+    try {
+      expect(result.status).toBe(0);
+      expect(result.stubLog).toContain(
+        `node scripts/railway-preview.ts --provision --pr 263 --sha ${SHA}`,
+      );
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBe(
+        "https://pr-263.flowersoverseas.com",
+      );
+      expect(result.githubEnv["LHCI_AUTHORIZATION"]).toBe(`Basic ${BASIC}`);
+      const config = result.githubEnv["LHCI_CONFIG"] ?? "";
+      expect(config.startsWith(result.runnerTemp)).toBe(true);
+      const rc = JSON.parse(readFileSync(config, "utf8")) as {
+        ci: {
+          collect: { settings: { extraHeaders?: Record<string, string> } };
+        };
+      };
+      expect(rc.ci.collect.settings.extraHeaders).toEqual({
+        Authorization: `Basic ${BASIC}`,
+      });
+      // Masked before anything else can print it; the raw secret never reaches GITHUB_ENV.
+      expect(result.stdout).toContain(`::add-mask::${BASIC}`);
+      expect(JSON.stringify(result.githubEnv)).not.toContain(CREDENTIAL);
+      expect(result.stubLog.some((line) => line.startsWith("pnpm"))).toBe(
+        false,
+      );
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("on a pull request without the wall's secret, exits 2 instead of measuring anything", () => {
+    const result = runWorkflowStep(
+      origin,
+      pullRequest({ ...SECRETS, STAGING_BASIC_AUTH: "" }),
+      { stubs },
     );
+    try {
+      expect(result.status).toBe(2);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+      expect(result.stubLog).toEqual([]);
+    } finally {
+      result.cleanup();
+    }
   });
 
-  it("hands Lighthouse the credential through a derived config outside the workspace", () => {
-    const run = origin?.run ?? "";
-    expect(run).toContain('config="$RUNNER_TEMP/lighthouserc.json"');
-    expect(run).toContain(".ci.collect.settings.extraHeaders");
+  it("on a pull request whose PR environment never comes, fails rather than falling back", () => {
+    const result = runWorkflowStep(origin, pullRequest(), {
+      stubs: { ...stubs, node: 'echo "node $*" >> "$STUB_LOG"; exit 1' },
+    });
+    try {
+      expect(result.status).toBe(1);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+      expect(result.stubLog.some((line) => line.startsWith("pnpm"))).toBe(
+        false,
+      );
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("on a push, builds and measures the runner's Brotli origin, with no credential", () => {
+    const result = runWorkflowStep(origin, push, {
+      stubs,
+      files: { ".env.example": "APP_ENV=\n" },
+    });
+    try {
+      expect(result.status).toBe(0);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBe("http://127.0.0.1:3001");
+      expect(result.githubEnv["LHCI_CONFIG"]).toBe(
+        join(result.workspace, "lighthouserc.json"),
+      );
+      expect(result.githubEnv["LHCI_AUTHORIZATION"]).toBeUndefined();
+      expect(result.stubLog).toContain("pnpm lighthouse:origin");
+      expect(
+        result.stubLog.some((line) => line.includes("railway-preview")),
+      ).toBe(false);
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("refuses the runner path whenever a pull request number is present, whatever the event reads", () => {
+    const context = pullRequest();
+    const result = runWorkflowStep(
+      origin,
+      { ...context, github: { ...context.github, event_name: "labeled" } },
+      { stubs, files: { ".env.example": "" } },
+    );
+    try {
+      expect(result.status).toBe(1);
+      expect(result.stdout).toContain("reached the runner-origin path");
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it("measures with that config: the discarded run and the measured run both read LHCI_CONFIG", () => {
     const measured = steps.map((step) => step.run ?? "").join("\n");
     expect(measured.match(/--config="\$LHCI_CONFIG"/gu)?.length).toBe(2);
   });
@@ -841,61 +1051,43 @@ describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TAS
     );
   });
 
-  const runScrub = (files: Record<string, string>, secret: string) => {
-    const dir = mkdtempSync(join(tmpdir(), "fo-lhci-scrub-"));
-    try {
-      for (const [name, body] of Object.entries(files)) {
-        mkdirSync(join(dir, ".lighthouseci", "reports"), { recursive: true });
-        writeFileSync(join(dir, ".lighthouseci", name), body);
-      }
-      const run = spawnSync(
-        "bash",
-        ["--noprofile", "--norc", "-eo", "pipefail", "-c", scrub?.run ?? ""],
-        {
-          cwd: dir,
-          encoding: "utf8",
-          env: {
-            PATH: process.env["PATH"] ?? "",
-            NODE_ENV: "test",
-            LHCI_SCRUB: secret,
-          },
-        },
-      );
-      const after = Object.keys(files).map((name) =>
-        readFileSync(join(dir, ".lighthouseci", name), "utf8"),
-      );
-      return { status: run.status, after, stdout: run.stdout };
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
-  };
-
-  it("removes the credential, plain and JSON-escaped, from every report", () => {
-    // A base64-shaped stand-in with `/` and `+` in it, as `user:pass` encodings can carry. Built
-    // from low-entropy parts so the secret scan (`audit:secrets`) does not read it as a key.
-    const secret = ["AAAA", "BBBB+CCCC", "DD=="].join("/");
-    const escaped = secret.replaceAll("/", "\\/");
-    const result = runScrub(
-      {
-        "lhr-1.json": `{"extraHeaders":{"Authorization":"Basic ${secret}"}}`,
-        "reports/en.report.html": `<script>window.__LH={"a":"Basic ${escaped}"}</script>`,
-        "reports/manifest.json": "[]",
+  it("scrubs every form of the credential, reading the secret itself, not a value handed on (/break 263 hole 3)", () => {
+    const escaped = BASIC.replaceAll("/", "\\/");
+    const result = runWorkflowStep(scrub, pullRequest(), {
+      files: {
+        ".lighthouseci/lhr-1.json": `{"extraHeaders":{"Authorization":"Basic ${BASIC}"}}`,
+        ".lighthouseci/reports/en.report.html": `<script>window.__LH={"a":"Basic ${escaped}"}</script>`,
+        ".lighthouseci/reports/manifest.json": "[]",
       },
-      secret,
-    );
-    expect(result.status).toBe(0);
-    for (const body of result.after) {
-      expect(body).not.toContain(secret);
-      expect(body).not.toContain(escaped);
+    });
+    try {
+      expect(result.status).toBe(0);
+      for (const name of ["lhr-1.json", "reports/en.report.html"]) {
+        const body = readFileSync(
+          join(result.workspace, ".lighthouseci", name),
+          "utf8",
+        );
+        expect(body).toContain("Basic REDACTED");
+        expect(body).not.toContain(BASIC);
+        expect(body).not.toContain(escaped);
+      }
+    } finally {
+      result.cleanup();
     }
-    expect(result.after[0]).toContain("Basic REDACTED");
-    expect(result.after[1]).toContain("Basic REDACTED");
   });
 
-  it("does nothing on a push run, which carries no credential", () => {
-    const result = runScrub({ "lhr-1.json": "{}" }, "");
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain("nothing to scrub");
+  it("has nothing to scrub on a push run without the secret, and passes", () => {
+    const result = runWorkflowStep(
+      scrub,
+      { ...push, secrets: {} },
+      { files: { ".lighthouseci/lhr-1.json": "{}" } },
+    );
+    try {
+      expect(result.status).toBe(0);
+      expect(result.stdout).toContain("not in scope");
+    } finally {
+      result.cleanup();
+    }
   });
 });
 

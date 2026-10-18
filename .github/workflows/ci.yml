@@ -1660,9 +1660,16 @@ jobs:
             echo ""
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-          status=0
-          node scripts/railway-preview.ts --assert --pr "$PR_NUMBER" --sha "$HEAD_SHA" \
-            | tee -a "$GITHUB_STEP_SUMMARY" || status=$?
+          # No `||` anywhere: the exit status is taken from `if`, so no edit to this script can
+          # swallow a failed property and still read as blocking (/break 263 hole 5).
+          out="$RUNNER_TEMP/preview-assert.txt"
+          if node scripts/railway-preview.ts --assert --pr "$PR_NUMBER" --sha "$HEAD_SHA" > "$out"; then
+            status=0
+          else
+            status=$?
+          fi
+          cat "$out"
+          cat "$out" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           exit "$status"
 
@@ -1694,8 +1701,17 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-e2e.json
         run: pnpm test:e2e --reporter=github,json,list
-      - name: Upload the Playwright report
+      # No trace is recorded with the wall's credential in scope (`playwright.config.ts`), and
+      # every file is checked before upload anyway: a call log or an error context can still name
+      # it, and the repository is public (spec 040 AC-25; /review 263 item 1).
+      - name: Scrub and check the report for the wall's credential
+        id: credscan
         if: failure()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub playwright-report test-results
+      - name: Upload the Playwright report
+        if: failure() && steps.credscan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-e2e
@@ -1746,8 +1762,17 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-visual.json
         run: pnpm test:visual --reporter=github,json,list
-      - name: Upload the Playwright report (with the diff images)
+      # No trace is recorded with the wall's credential in scope (`playwright.config.ts`), and
+      # every file is checked before upload anyway: a call log or an error context can still name
+      # it, and the repository is public (spec 040 AC-25; /review 263 item 1).
+      - name: Scrub and check the report for the wall's credential
+        id: credscan
         if: failure()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub playwright-report test-results tests/visual/__screenshots__
+      - name: Upload the Playwright report (with the diff images)
+        if: failure() && steps.credscan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-visual
@@ -1797,8 +1822,17 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-a11y.json
         run: pnpm test:a11y --reporter=github,json,list
-      - name: Upload the Playwright report (with the axe attachment)
+      # No trace is recorded with the wall's credential in scope (`playwright.config.ts`), and
+      # every file is checked before upload anyway: a call log or an error context can still name
+      # it, and the repository is public (spec 040 AC-25; /review 263 item 1).
+      - name: Scrub and check the report for the wall's credential
+        id: credscan
         if: failure()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub playwright-report test-results
+      - name: Upload the Playwright report (with the axe attachment)
+        if: failure() && steps.credscan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-a11y
@@ -1977,7 +2011,7 @@ jobs:
               exit 2
             fi
             url=$(node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA")
-            basic=$(printf '%s' "$STAGING_BASIC_AUTH" | base64 -w0)
+            basic=$(printf '%s' "$STAGING_BASIC_AUTH" | base64 | tr -d '\n')
             echo "::add-mask::$basic"
             config="$RUNNER_TEMP/lighthouserc.json"
             jq --arg auth "Basic $basic" \
@@ -1987,10 +2021,15 @@ jobs:
               echo "LHCI_BASE_URL=$url"
               echo "LHCI_CONFIG=$config"
               echo "LHCI_AUTHORIZATION=Basic $basic"
-              echo "LHCI_SCRUB=$basic"
             } >> "$GITHUB_ENV"
             echo "measured=$url (the pull request's Railway environment through Cloudflare)" >> "$GITHUB_OUTPUT"
           else
+            # A pull request is never measured here: if the event were ever read wrongly, the
+            # pull request number would still be set, and this refuses (/break 263 hole 4).
+            if [ -n "$PR_NUMBER" ]; then
+              echo "::error::pull request #$PR_NUMBER reached the runner-origin path; a pull request is measured on its Railway environment (spec 040 AC-26)"
+              exit 1
+            fi
             # The same clean-clone build the `build` job makes, from the committed placeholders.
             cp .env.example .env.local
             pnpm build
@@ -2124,30 +2163,16 @@ jobs:
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
       # Lighthouse writes `extraHeaders` into every report, so on a pull request the wall's
-      # credential would be in a public artifact. Replaced in every file, then proven absent (in
-      # its plain and its JSON-escaped form) before anything is uploaded; a file that still holds
-      # it fails the job and the upload below never runs.
+      # credential would be in a public artifact. `artifact-credential-check.ts` reads the secret
+      # itself (no earlier step can forget to hand it on, /break 263 hole 3), redacts every form of
+      # it, deletes what it cannot rewrite, and fails if anything still holds it; the upload below
+      # runs only after it succeeded.
       - name: Scrub the wall's credential from the reports
         id: scrub
         if: always()
-        run: |
-          set -euo pipefail
-          if [ -z "${LHCI_SCRUB:-}" ] || [ ! -d .lighthouseci ]; then
-            echo "nothing to scrub"
-            exit 0
-          fi
-          escaped=${LHCI_SCRUB//\//\\/}
-          files=$(grep -rlF -e "$LHCI_SCRUB" -e "$escaped" .lighthouseci || true)
-          for file in $files; do
-            # Literal matches (`\Q…\E`), so a `/` or `+` in the base64 is never read as syntax.
-            SCRUB_PLAIN="$LHCI_SCRUB" SCRUB_ESCAPED="$escaped" perl -pi -e \
-              's/\Q$ENV{SCRUB_PLAIN}\E/REDACTED/g; s/\Q$ENV{SCRUB_ESCAPED}\E/REDACTED/g' "$file"
-          done
-          if grep -rqF -e "$LHCI_SCRUB" -e "$escaped" .lighthouseci; then
-            echo "::error::the staging wall's credential is still in .lighthouseci after the scrub; the reports are not uploaded"
-            exit 1
-          fi
-          echo "scrubbed $(echo "$files" | grep -c . || true) file(s)"
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub .lighthouseci
 
       - name: Upload the Lighthouse reports
         if: always() && steps.scrub.outcome == 'success'
