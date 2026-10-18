@@ -27,6 +27,7 @@ import {
   srcsetUrls,
   subresourceUrls,
   warm,
+  withAuthorization,
 } from "../../scripts/seo/lighthouse-urls.ts";
 
 const BASE = "http://127.0.0.1:3001";
@@ -525,4 +526,48 @@ describe("`node scripts/seo/lighthouse-urls.ts --warm` as CI runs it", () => {
     expect(result.code).toBe(1);
     expect(result.stderr).toContain("/en: /s.css answered 404");
   }, 30_000);
+});
+
+describe("the warm-up behind the PR environment's wall (spec 040 AC-25, AC-26; TASK-099)", () => {
+  const seen = (): { url: string; auth: string | null }[] => [];
+  const recorder = () => {
+    const calls = seen();
+    const fetchImpl: Fetch = (url, init) => {
+      calls.push({ url, auth: init.headers.get("authorization") });
+      return Promise.resolve(new Response("ok"));
+    };
+    return { calls, fetchImpl };
+  };
+
+  it("sends LHCI_AUTHORIZATION to the audited origin only", async () => {
+    const { calls, fetchImpl } = recorder();
+    const wrapped = withAuthorization(
+      fetchImpl,
+      "https://pr-263.flowersoverseas.com",
+      "Basic dXNlcjpwYXNz",
+    );
+    const init = () => ({
+      headers: new Headers(),
+      signal: new AbortController().signal,
+    });
+    await wrapped("https://pr-263.flowersoverseas.com/en", init());
+    await wrapped("https://media.flowersoverseas.com/a.avif", init());
+    expect(calls).toEqual([
+      {
+        url: "https://pr-263.flowersoverseas.com/en",
+        auth: "Basic dXNlcjpwYXNz",
+      },
+      { url: "https://media.flowersoverseas.com/a.avif", auth: null },
+    ]);
+  });
+
+  it("adds nothing when it is unset or blank (the runner origin on a push)", async () => {
+    const { fetchImpl } = recorder();
+    expect(
+      withAuthorization(fetchImpl, "http://127.0.0.1:3001", undefined),
+    ).toBe(fetchImpl);
+    expect(withAuthorization(fetchImpl, "http://127.0.0.1:3001", " ")).toBe(
+      fetchImpl,
+    );
+  });
 });

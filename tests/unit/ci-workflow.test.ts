@@ -64,11 +64,6 @@ interface Workflow {
   jobs: Record<string, Job>;
 }
 
-/** The origin the browser suites run against, served by CI itself (TASK-137). */
-const PREVIEW_ORIGIN_SCRIPT = ".github/actions/preview-origin/serve.sh";
-/** The build the `preview` job publishes and the three browser jobs re-serve (TASK-137). */
-const PREVIEW_ARTIFACT = "preview-build";
-
 const ci = parse(read(".github/workflows/ci.yml")) as Workflow;
 const jobs = Object.entries(ci.jobs);
 
@@ -542,6 +537,7 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
   const indexOf = (predicate: (run: string) => boolean): number =>
     steps.findIndex((step) => predicate(step.run ?? ""));
   const serve = indexOf((run) => run.includes("pnpm lighthouse:origin"));
+  // The same step resolves the PR environment on a pull request (TASK-099).
   const warmup = indexOf((run) =>
     run.includes("node scripts/seo/lighthouse-urls.ts --warm"),
   );
@@ -553,11 +549,13 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     expect(measured).toBeGreaterThan(warmup);
   });
 
-  it("warms through the Brotli origin, not `next start` directly", () => {
-    // The script reads `LHCI_BASE_URL`; the job pins it to the proxy on :3001.
-    expect(ci.jobs["lighthouse"]?.env?.["LHCI_BASE_URL"]).toBe(
-      "http://127.0.0.1:3001",
-    );
+  it("warms the measured origin: the proxy on :3001 on a push, the PR host on a pull request", () => {
+    // The script reads `LHCI_BASE_URL`; the origin step sets it for both paths (TASK-099), and
+    // never to `next start`'s own :3000.
+    const origin = steps.find((step) => step.id === "origin")?.run ?? "";
+    expect(origin).toContain('echo "LHCI_BASE_URL=http://127.0.0.1:3001"');
+    expect(origin).toContain('echo "LHCI_BASE_URL=$url"');
+    expect(origin).not.toContain("LHCI_BASE_URL=http://127.0.0.1:3000");
     expect(steps[warmup]?.run).not.toMatch(/--base\s/);
   });
 
@@ -569,9 +567,7 @@ describe("the lighthouse job warms the audited pages before measuring (spec 004 
     );
     expect(discarded).toContain("--numberOfRuns=1");
     // Same settings as the measured runs, so it warms what they will fetch.
-    expect(discarded).toContain(
-      '--config="$GITHUB_WORKSPACE/lighthouserc.json"',
-    );
+    expect(discarded).toContain('--config="$LHCI_CONFIG"');
     // Never `autorun` or `assert`: a warm-up run must not be able to fail or pass a budget.
     expect(run).not.toMatch(/autorun|lhci\/cli@[\d.]+ assert/);
     // The same pinned version as the measured run.
@@ -691,107 +687,196 @@ describe("the unit project's test budget (TASK-134)", () => {
 });
 
 /**
- * TASK-137: the origin the Playwright suites run against is CI's own.
+ * Spec 040 AC-26, T-27 (preview half), §14 A2 (TASK-099): `preview` resolves the pull request's
+ * Railway environment behind Cloudflare and asserts its three properties, and the browser suites
+ * run against it.
  *
- * Measured on PRs 84, 85 and 87: `preview` polled the GitHub Deployments API for a Vercel
- * preview, and the deployment either never appeared or answered `/api/health` with 500 — the
- * cold fallback of ADR-0018 carries an empty environment store. `e2e`, `visual` and `a11y` are
- * each `needs: preview`, so **no Playwright suite had ever run in CI on this project**.
- *
- * The job now builds the app on the runner from the committed `.env.example` placeholders,
- * publishes that build as an artifact, serves it and gates on `/api/health` 200 before handing
- * the origin to the three browser jobs, which serve the same bytes through
- * `.github/actions/preview-origin`. No secret is a build input (spec 001 §14 A17, spec 040 §14
- * A1): the values are the ones `.env.example` publishes.
+ * TASK-137's interim (a CI-built origin served on each runner, with the Vercel probe beside it as
+ * `continue-on-error` evidence) is deleted, as §14 A2 clauses 1 and 2 require: the probe is
+ * blocking on the Railway environment, and `.github/actions/preview-origin` is retired.
  */
-describe("the preview job serves an origin CI owns (TASK-137)", () => {
+describe("the preview job resolves the Railway PR environment and asserts AC-26 on it (TASK-099)", () => {
   const preview = ci.jobs["preview"];
   const steps = preview?.steps ?? [];
   const script = steps.map((step) => step.run ?? "").join("\n");
   const BROWSER_JOBS = ["e2e", "visual", "a11y"] as const;
+  const resolveStep = steps.find((step) => step.id === "resolve");
+  const assertStep = steps.find((step) =>
+    (step.run ?? "").includes("scripts/railway-preview.ts --assert"),
+  );
 
-  it("builds the app on the runner rather than waiting for a third party to deploy it", () => {
-    expect(script).toContain("pnpm build");
-    // The 15-minute Deployments-API poll that produced no origin is gone from the critical path:
-    // no step of this job may block the browser suites on a deployment we do not control.
-    const blocking = steps.filter(
-      (step) =>
-        (step.run ?? "").includes("gh api") &&
-        step["continue-on-error"] !== true,
+  it("resolves (and provisions) the pull request's environment for its head SHA", () => {
+    expect(resolveStep?.run).toBe(
+      'node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA"',
     );
-    expect(blocking).toEqual([]);
-  });
-
-  it("gives the build only the committed placeholders — no secret is a build input", () => {
-    expect(script).toContain("cp .env.example .env.local");
-    const envValues = steps
-      .flatMap((step) => Object.values(step.env ?? {}))
-      .join("\n");
-    // `VERCEL_AUTOMATION_BYPASS_SECRET` may still reach the evidence step below; nothing else may.
-    const otherSecrets = envValues
-      .split("\n")
-      .filter(
-        (value) =>
-          value.includes("secrets.") &&
-          !value.includes("secrets.VERCEL_AUTOMATION_BYPASS_SECRET"),
-      );
-    expect(otherSecrets).toEqual([]);
-    expect(script).not.toMatch(/--build-arg/u);
-  });
-
-  it("gates on /api/health 200 before it can declare an origin healthy", () => {
-    const serve = steps.find((step) => step.id === "serve");
-    expect(serve).toBeDefined();
-    const serveScript = (serve?.run ?? "") + (serve?.uses ?? "");
-    expect(serveScript).toContain(PREVIEW_ORIGIN_SCRIPT);
-    const gate = read(PREVIEW_ORIGIN_SCRIPT);
-    expect(gate).toContain("/api/health");
-    expect(gate).toContain('"status":"ok"');
-    expect(gate).toMatch(/::error::[^\n]*\/api\/health/);
-  });
-
-  it("publishes the served origin as `preview_url`", () => {
+    expect(resolveStep?.env).toEqual({
+      RAILWAY_API_TOKEN: "${{ secrets.RAILWAY_API_TOKEN }}",
+      RAILWAY_PROJECT_ID: "${{ secrets.RAILWAY_PROJECT_ID }}",
+      CLOUDFLARE_API_TOKEN: "${{ secrets.CLOUDFLARE_API_TOKEN }}",
+      CLOUDFLARE_ZONE_ID: "${{ secrets.CLOUDFLARE_ZONE_ID }}",
+      PR_NUMBER: "${{ github.event.pull_request.number }}",
+      HEAD_SHA: "${{ github.event.pull_request.head.sha }}",
+    });
     expect(preview?.outputs?.["preview_url"]).toBe(
-      "${{ steps.serve.outputs.preview_url }}",
-    );
-    expect(read(PREVIEW_ORIGIN_SCRIPT)).toContain(
-      'preview_url=$origin" >> "$GITHUB_OUTPUT',
+      "${{ steps.resolve.outputs.preview_url }}",
     );
   });
 
-  it("publishes the build so the browser jobs measure the same bytes, not three of their own", () => {
-    const upload = steps.find((step) =>
-      (step.uses ?? "").startsWith("actions/upload-artifact"),
+  it("waits 15 minutes at most inside a job that allows it", () => {
+    // 45 x 20 s in the script (pinned in tests/contract/railway-preview.test.ts), plus setup.
+    expect(preview?.["timeout-minutes"]).toBeGreaterThan(15);
+  });
+
+  it("asserts the three properties on it, blocking, behind the wall's credential", () => {
+    expect(assertStep).toBeDefined();
+    expect(assertStep?.env?.["STAGING_BASIC_AUTH"]).toBe(
+      "${{ secrets.STAGING_BASIC_AUTH }}",
     );
-    expect(upload?.with?.["name"]).toBe(PREVIEW_ARTIFACT);
-    const action = read(".github/actions/preview-origin/action.yml");
-    expect(action).toContain("actions/download-artifact");
-    expect(action).toContain(PREVIEW_ARTIFACT);
-    expect(action).toContain(PREVIEW_ORIGIN_SCRIPT);
+    expect(assertStep?.run).toMatch(/^\s*set -euo pipefail$/mu);
+    expect(assertStep?.run).toContain('exit "$status"');
+  });
+
+  it("fails, never skips: no step is conditional or allowed to fail (AC-26)", () => {
+    for (const step of steps) {
+      expect(step.if, step.name).toBeUndefined();
+      expect(step["continue-on-error"], step.name).toBeUndefined();
+    }
+    expect(preview?.["continue-on-error"]).toBeUndefined();
+  });
+
+  it("deletes TASK-137's interim: no runner build, no artifact, no Vercel probe (§14 A2)", () => {
+    expect(script).not.toContain("pnpm build");
+    expect(script).not.toContain("gh api");
+    expect(script).not.toMatch(/vercel/iu);
+    expect(steps.map((step) => step.uses ?? "")).not.toContain(
+      "actions/upload-artifact@v4",
+    );
+    expect(preview?.permissions).toEqual({ contents: "read" });
+    expect(
+      existsSync(
+        resolve(repoRoot, ".github/actions/preview-origin/action.yml"),
+      ),
+    ).toBe(false);
   });
 
   it.each(BROWSER_JOBS)(
-    "%s starts that origin through the shared action and targets the job's output",
+    "%s runs against the resolved URL with the wall's credential, not a runner origin",
     (name) => {
       const job = ci.jobs[name];
       expect(job?.needs).toBe("preview");
       expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(
         "${{ needs.preview.outputs.preview_url }}",
       );
-      expect((job?.steps ?? []).map((step) => step.uses)).toContain(
+      expect(job?.env?.["STAGING_BASIC_AUTH"]).toBe(
+        "${{ secrets.STAGING_BASIC_AUTH }}",
+      );
+      expect((job?.steps ?? []).map((step) => step.uses)).not.toContain(
         "./.github/actions/preview-origin",
       );
     },
   );
+});
 
-  it("keeps the Vercel probe as evidence and never as a blocker (ADR-0018)", () => {
-    // The `Vercel` check stays on the pull request and keeps meaning what it says; what changed
-    // is that a host we are leaving can no longer deny four suites an origin. The probe still
-    // asserts Deployment Protection, `fra1` and `noindex` when a deployment exists, and its
-    // verdict is written to the step summary either way.
-    const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
-    expect(probe?.["continue-on-error"]).toBe(true);
-    expect(script).toContain("GITHUB_STEP_SUMMARY");
+/**
+ * Spec 040 AC-26, AC-27 (TASK-099, TASK-103): `lighthouse` measures the PR environment on a
+ * pull request and stays on `needs: build` with no `if:` (AC-38, `/review 104` round 3), so on a
+ * push it still runs, against the runner's Brotli origin. The credential it needs on a pull
+ * request must never reach the uploaded reports.
+ */
+describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TASK-099)", () => {
+  const job = ci.jobs["lighthouse"];
+  const steps = job?.steps ?? [];
+  const origin = steps.find((step) => step.id === "origin");
+  const scrub = steps.find((step) => step.id === "scrub");
+  const upload = steps.find((step) =>
+    (step.uses ?? "").startsWith("actions/upload-artifact@"),
+  );
+
+  it("chooses its origin in one unconditional step that exits on any failure", () => {
+    expect(origin?.if).toBeUndefined();
+    expect(origin?.["continue-on-error"]).toBeUndefined();
+    expect(origin?.run).toMatch(/^\s*set -euo pipefail$/mu);
+    expect(origin?.run).toContain("exit 2");
+  });
+
+  it("masks the Basic form of the credential before anything can print it", () => {
+    const run = origin?.run ?? "";
+    expect(run.indexOf('echo "::add-mask::$basic"')).toBeGreaterThan(-1);
+    expect(run.indexOf('echo "::add-mask::$basic"')).toBeLessThan(
+      run.indexOf("$GITHUB_ENV"),
+    );
+  });
+
+  it("hands Lighthouse the credential through a derived config outside the workspace", () => {
+    const run = origin?.run ?? "";
+    expect(run).toContain('config="$RUNNER_TEMP/lighthouserc.json"');
+    expect(run).toContain(".ci.collect.settings.extraHeaders");
+    const measured = steps.map((step) => step.run ?? "").join("\n");
+    expect(measured.match(/--config="\$LHCI_CONFIG"/gu)?.length).toBe(2);
+  });
+
+  it("uploads the reports only after the scrub step succeeded", () => {
+    expect(scrub?.if).toBe("always()");
+    expect(upload?.if).toBe("always() && steps.scrub.outcome == 'success'");
+    expect(steps.indexOf(scrub as Step)).toBeLessThan(
+      steps.indexOf(upload as Step),
+    );
+  });
+
+  const runScrub = (files: Record<string, string>, secret: string) => {
+    const dir = mkdtempSync(join(tmpdir(), "fo-lhci-scrub-"));
+    try {
+      for (const [name, body] of Object.entries(files)) {
+        mkdirSync(join(dir, ".lighthouseci", "reports"), { recursive: true });
+        writeFileSync(join(dir, ".lighthouseci", name), body);
+      }
+      const run = spawnSync(
+        "bash",
+        ["--noprofile", "--norc", "-eo", "pipefail", "-c", scrub?.run ?? ""],
+        {
+          cwd: dir,
+          encoding: "utf8",
+          env: {
+            PATH: process.env["PATH"] ?? "",
+            NODE_ENV: "test",
+            LHCI_SCRUB: secret,
+          },
+        },
+      );
+      const after = Object.keys(files).map((name) =>
+        readFileSync(join(dir, ".lighthouseci", name), "utf8"),
+      );
+      return { status: run.status, after, stdout: run.stdout };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  };
+
+  it("removes the credential, plain and JSON-escaped, from every report", () => {
+    // A base64 credential with `/` and `+` in it, as `user:pass` encodings can carry.
+    const secret = "dXNl/cjpw+YXNzd29yZA==";
+    const escaped = secret.replaceAll("/", "\\/");
+    const result = runScrub(
+      {
+        "lhr-1.json": `{"extraHeaders":{"Authorization":"Basic ${secret}"}}`,
+        "reports/en.report.html": `<script>window.__LH={"a":"Basic ${escaped}"}</script>`,
+        "reports/manifest.json": "[]",
+      },
+      secret,
+    );
+    expect(result.status).toBe(0);
+    for (const body of result.after) {
+      expect(body).not.toContain(secret);
+      expect(body).not.toContain(escaped);
+    }
+    expect(result.after[0]).toContain("Basic REDACTED");
+    expect(result.after[1]).toContain("Basic REDACTED");
+  });
+
+  it("does nothing on a push run, which carries no credential", () => {
+    const result = runScrub({ "lhr-1.json": "{}" }, "");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("nothing to scrub");
   });
 });
 
