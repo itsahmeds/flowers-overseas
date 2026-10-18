@@ -429,21 +429,17 @@ export interface TriggerReport {
    *  - `production-services` (AC-42, until TASK-104): a declared production service with status
    *    `absent`, while the production environment is in the response and its `web` row is
    *    `absent` too;
-   *  - `staging-worker` (AC-44, until TASK-103): staging's `worker` with status `absent`, no
-   *    instance and no live trigger. Staging's `web` is never this, so a response without the
-   *    staging environment (both of its rows absent) is never labelled.
+   * AC-44's second case, staging's missing `worker`, retired with TASK-103 (spec 040 §14 A4):
+   * a missing staging `worker` is now a plain failure, like any other missing service.
    * A service that exists with no trigger, a wrong branch, or a missing production `worker` while
    * production `web` exists is never expected. The CLI also withholds the label when another
-   * check failed (`failureVerdict`). TASK-103's PR deletes `staging-worker`.
+   * check failed (`failureVerdict`).
    */
   readonly expectedAbsences: readonly ExpectedAbsence[];
 }
 
-/** AC-44's two expected cases, in the order the label names them. */
-export const EXPECTED_ABSENCES = [
-  "production-services",
-  "staging-worker",
-] as const;
+/** AC-44's expected case still open: production's services, until TASK-104 (case (b) retired with TASK-103). */
+export const EXPECTED_ABSENCES = ["production-services"] as const;
 export type ExpectedAbsence = (typeof EXPECTED_ABSENCES)[number];
 
 /** `<environment> · <service> · triggers on <live>, declared <declared>` (AC-34's line). */
@@ -463,8 +459,6 @@ function expectedAbsenceOf(
   if (row.status !== "absent") return undefined;
   if (row.environment === "production" && productionWebAbsent)
     return "production-services";
-  if (row.environment === "staging" && row.service === "worker")
-    return "staging-worker";
   return undefined;
 }
 
