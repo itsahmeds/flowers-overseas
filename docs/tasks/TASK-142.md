@@ -39,21 +39,36 @@ florist is confirmed, stop and say so.
 **Phase 1.** Nothing a Phase 0 visitor sees depends on this. It is recorded now so that the
 ownership gap is not rediscovered on go-live day, which is the worst possible time to find it.
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+**Status: BLOCKED, and the block is not a formality.** Two things must be true before an agent is dispatched; neither is in the repo's gift.
+
+1. **A confirmed Polish florist exists.** The live state says a florist exists. Until the founder says one is confirmed (plan/13 C2 keeps PL as the only live corridor; B13 validates the first three florists), do not write or merge this file.
+2. **The founder's copy batch.** `pl-live.md` and its `en-gb` override are new public (indexable) corridor copy, reviewed by the founder's own `record-approval` run. en-gb's unreviewed share is at 4.98% of the 5% line, so this copy cannot ship `reviewed: false` into the tree without tipping en-gb. The agent drafts the files, lists every English string for the founder, and **stops**. It never sets `reviewed: true`.
+
+**What binds (spec 007, AC ids in the row: AC-18, live half).**
+
+- **AC-18.** "`relatedIso2` is reciprocal across the committed set, names only countries with an existing page in that locale (others are omitted, not rendered dead), and never names the file's own country", in the 2 to 3 band of §14 A3 (reciprocity only where the target has a free slot). The live files carry `relatedIso2` too; adding or changing it must keep the whole set reciprocal.
+- **AC-2's authoring rules still apply to a live file**, except the `guide`-only claim rules. §2 `corridor:check`: not `source: machine`; intro 120 to 200 words; 8 to 12 FAQ items with at least half country-specific; `seoTitle` present and at most 60 characters; `seoDescription` present and at most 155; the own-slug and other-country rules (§14 A1: URL-shaped own slug, the seven known destinations); the nine banned words (`docs/design/README.md` §Voice, no word boundaries on purpose); **no price literal anywhere in copy** (prices are data, `formatMoney` only); no digit-bearing scale claim ("200+ florists"); a `live` file for a country with an incomplete `operations` block fails `live-operations`. Token distinctness is **5-gram shingle distinctness at least 0.80** against every other corridor file in the same locale, including `pl-guide.md` (§14 A4). An `en-gb` file that `extends: en` must override title, description and at least two FAQ answers.
+- **§14 A-founder-2026-10-15a (AC-36, `dash-in-head`).** No U+2014, no spaced hyphen, no spaced U+2013 in `seoTitle`, `seoDescription` or any FAQ question. That rule lands with TASK-242; write the live files to it anyway. No em dash in prose either (founder rule).
+- **§14 A-founder-2026-10-14c (AC-33 to AC-35).** A country is `status: "live"` only while ordering is open there (`deliveryDatesOpen`), which is `pickerState("PL") === "live"`. Poland is `demo` today. Opening Poland is one data flip: the `operations` block (landed by TASK-124), an active-partner provider answering true, `status: "live"`, and the live content file, **together**. Without the four, `corridorState("PL","en")` stays `guide`. Live-state copy may name a cutoff only where the facts block renders it from data; the prose carries no time of day and no zone name as a literal (AC-34's scan).
+- **§2 live state.** The same template with the delivery-facts block populated, the from-price and the shop entry; "zero template edits between the two" (AC-8). This task authors content only. If the live state needs a template change, escalate.
+- **Tripwires that go red by design when this lands** (TASK-124 hand-off 3): `tests/unit/listing-params.test.ts` (the `corridorState("PL","en")` equals `guide` carry-forward) and `tests/unit/corridor-route.test.ts` "keeps Poland in the guide state even with a florist and a cutoff". Move each onto the shop root per their own comments, in the same PR; do not delete them.
+- **Class: keeps the breaker.** The files feed `<title>`, meta description and the `FAQPage` JSON-LD (SEO gate), and carry the go-live honesty claim.
+- **Watch red, then restore:** a live file for a country with the `operations` block removed (`live-operations`); a price literal in the body; a 13th FAQ item; a one-sided `relatedIso2`; an en-gb file that overrides no FAQ answer; a U+2014 in `seoTitle`; a live body whose shingle overlap with `pl-guide.md` is above 0.20.
+- **Gates:** `pnpm corridor:check`, `pnpm seed:check`, `pnpm i18n:check`, `pnpm gates:cheap` with its block pasted; CI green with `ci:full`.
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/007-corridor-pages.md`: `## 0. Index`, then §2 ("`pnpm corridor:check`", "The page, in its two states"), §9 AC-2, AC-8, AC-18, AC-19, §14 A1, A3, A4, A-founder-2026-10-14c, A-founder-2026-10-15a.
+- Files: `content/corridors/en/pl-guide.md` and `content/corridors/en-gb/pl-guide.md` (the twins this must differ from and match in shape), `scripts/corridor-check.ts` and `scripts/corridor-check-cases.ts` (the rules and the cases), `src/modules/geo/content/` (provider and `corridorState`), `src/config/countries.ts` (PL `operations`, `status`).
+- `docs/tasks/TASK-088.md` (how the guide corpus was authored and gated), `docs/tasks/TASK-124.md` hand-off 3, `docs/tasks/TASK-114.md` E-5. Note: `docs/runbooks/corridor-content.md` is named by spec 007 AC-28 but does not exist yet; do not depend on it.
 
 ## Carry-forwards
 
-One dated bullet per `/review`, newest last.
-
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From `/review 93` round 3 (2026-09-21), E-5:** the go-live tripwire needs two files; this row is the owner of the second. Both must exist before `corridorState("PL","en")` leaves `guide`.
+- **From TASK-124 (2026-10-03), hand-off 3:** landing `pl-live.md` turns `listing-params.test.ts` and `corridor-route.test.ts` red by design. Move each assertion onto the shop root where AC-15 bites; keep the comments' archaeology.
+- **From TASK-114 (2026-09-22), E-6 and its tripwire:** the depth-4 listings now carry the parameter policy (TASK-146), so the go-live flip no longer announces `index,follow` on a parameterised shop URL. Re-run `listing-params` and `listing-depth4-params` on the live fixture.
+- **From spec 007 §14 A-founder-2026-10-14c (2026-10-14):** the go-live flip also sets Poland's `status` to `live`; AC-35's unit test (`status === "live"` iff `deliveryDatesOpen`) must stay green. The flip is the go-live task's; this task only supplies the copy.
+- **From TASK-096 (2026-10-15):** the head-copy change (TASK-242, TASK-243) merges before the indexing flip; write these files to its rules.
 
 ## Escalations
 
