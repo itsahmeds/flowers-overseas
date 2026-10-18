@@ -21,6 +21,9 @@ const AUDITED = [
   "/en/send-flowers-to/poland",
   "/en-gb/send-flowers-to/poland",
   "/ar-XB/send-flowers-to/poland",
+  // State B, with the shop entry's chip row (spec 007 §14 A10; TASK-147): no real page renders it
+  // in Phase 0, so the fixture is the page axe can read.
+  "/dev/components/corridor-state-b",
 ] as const;
 
 async function audit(
