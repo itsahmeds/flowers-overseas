@@ -108,6 +108,12 @@ says "this is the price you will pay" and shows another tier's price.
   (`countGraphemes` parity), and leave TASK-129 no room. **Founder/spec decision needed:** (a) the
   coarser PDP-only counter; (b) a PDP script budget above 131,072 B (spec 004 A1, spec 009 AC-14);
   or (c) a task that cuts shared script. Nothing was changed for it in this run.
+  **Answered (founder, 2026-10-18 ~05:50Z, in chat, verbatim: "approve..", approving the
+  orchestrator's pick 1: "raise the product-page budget by 2 KB, and fix the defect where category
+  pages load the product page's script").** Recorded by PR 257 (merged) as spec 004 §14
+  A-founder-2026-10-18a (AC-56, T-61) and spec 009 §14 A-founder-2026-10-18a (AC-37, T-41). Built
+  in this PR: the product page has its own route file behind a rewrite; the full grapheme counter
+  stays.
 - **The related heading's poppy *our order*** (folded in by the work order from TASK-231) cannot land before PR 230. It needs AC-52's marker rules: `i18n:check` tag pairs, and `record-approval` comparing the tag-stripped value so the founder's approval survives. It is not built here. It is one line (`t.rich` with `HEADING_EM` on `product.related.heading`) once PR 230 merges.
 
 ## Progress
@@ -116,6 +122,8 @@ says "this is the price you will pay" and shows another tier's price.
 - 2026-10-15 06:50Z: e2e (size, card, chips), mutations watched red on `next dev`; rebased on `origin/main`.
 - 2026-10-15 07:20Z (session closing, partial on CI only): CI on `6a04ec94` had spine green, `visual` red (product and gallery baselines, expected: needs `visual:baselines`), `e2e` red only on `dev-components.spec.ts`'s add-on line (fixed in `32bf3cc3`, pushed, `ci:full` toggled), `lighthouse` still running. **Next:** read CI on the new head; if green except `visual`, the orchestrator adds `visual:baselines`; then `/review` + `/break`. The related heading `<em>` waits for PR 230. **Open:** `lighthouse` on `6a04ec94` failed `resource-summary.script.size` on `/en{,-gb}/poland/flowers/roses` at 131,517 B (budget 131,072, +445 B). That is a listing page, not the PDP. Not yet diagnosed: check whether main is also over budget, or whether the island's growth (602 → 1,133 B br) or `ui/checkout/graphemes.ts` landed in a chunk the listing shares.
 - 2026-10-18 03:05Z (finisher): rebased on `67ac748d` (head `7d7fd8b9`); cheap gates green except unit timeouts at load ~150, all 83 changed files + 3 always-run green with `--testTimeout=120000`; `visual:baselines` added, `ci:full` toggled. Script budget diagnosed and escalated (see Escalations); not fixed.
+
+- 2026-10-18 11:15Z (finisher 2): AC-37 built (product route `src/app/[locale]/%5Fproduct/…` behind `src/lib/product-rewrites.ts`; the shared depth-4 route serves only the listings), AC-56 wired (`budgetFor()` 133,120 B on product URLs, `productIslandHits()`, `lighthouserc.json` `assertMatrix`), QA 2026-10-18 widths added to the e2e; rebased on `d1f5fc69` (after PR 257); cheap gates PASS on `e0e97c78`. **Open:** `tests/fixtures/seo/bundle-baseline.json` has no row for the three new measured URLs until a build measures them (`budget:client-js --update-baseline`), so CI `build` is red on that step until then.
 
 ## Result
 

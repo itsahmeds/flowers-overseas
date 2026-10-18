@@ -67,6 +67,7 @@ _None recorded._
 
 - 2026-10-15 06:35Z: disabled chips muted; unit test.
 - 2026-10-15 06:50Z: e2e (look and the 390 row end), mutations watched red.
+- 2026-10-18 11:15Z (finisher 2): QA 2026-10-18 Q1-09: the date-row end case now runs at 390, 1024, 1280 and 1440. N-05 (chips that look live) is this PR's muted, dashed disabled chip; add-ons stay static rows (spec 010, TASK-252). Judged by CI `e2e` on the head; not watched red against `c8d3b334` in this run.
 
 ## Result
 

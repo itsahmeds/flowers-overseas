@@ -91,6 +91,7 @@ A bug in merged work (TASK-179 and TASK-197), so a new task (founder rule, 2026-
 
 - 2026-10-15 06:35Z: card section to `.pv-card`, one 200-grapheme limit (`src/config/card-message.ts`), no facts block; unit tests.
 - 2026-10-15 06:50Z: e2e at 320/360/390/768/1440, mutations watched red.
+- 2026-10-18 11:15Z (finisher 2): QA 2026-10-18 cases in `tests/e2e/product-size-card-dates.spec.ts`: the card-section layout case now runs at 768, 1024 and 1440 (Q18-06, Q1-21/22), the wrap case at 1024 too (Q1-07), the no-facts case at 1024 too (Q1-06/Q1-05). Judged by CI `e2e` on the head; not watched red against `c8d3b334` in this run.
 
 ## Result
 
