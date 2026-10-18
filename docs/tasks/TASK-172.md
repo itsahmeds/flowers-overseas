@@ -67,7 +67,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
   guarantee text, in any locale, states a number of days of freshness; `trust.guarantee.name`,
   `home.proof.guarantee.title` and `nav.utility.guarantee` read the fresh-flower promise") and
   T rows for the four A11 tests (scan fixture case, message and content scan, PDP unit case,
-  e2e case), replacing A9's 5 / 7 / absent cases; then `pnpm specs:index`.
+  e2e case), replacing A9's 5 / 7 / absent cases; then `pnpm specs:index`. The reviewer's
+  round-1 ruling (PR 265): E-1 does not block the merge; the orchestrator opens a separate
+  spec-writer row. That item also carries the words outside A11's closed lists that the reviewer
+  listed: "fortnight" ("stays fresh for a fortnight"), "keeps" ("keeps for 7 days"), "vase life"
+  ("7 days of vase life"), and "blooms for 7 days".
 
 ## Progress
 
@@ -77,6 +81,48 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 - 2026-10-18: PDP unit case (`tests/unit/product-page.test.tsx`), e2e case
   (`tests/e2e/product-page.spec.ts`), the `freshnessGuarantee` comment, the review queue entry in
   `tests/unit/i18n-messages-schema.test.ts`, the map. Next: rebase, ready, `ci:full`.
+
+## Round 1 fixes (review FAIL and breaker HOLES on `e6a4fa76`)
+
+Each hole, and the test that now closes it (all in `tests/unit/freshness-claim.test.ts` unless
+named):
+
+- **Hole 1 / required change 3, "7-day" untested and ASCII-only:** `SEVEN_DAY` takes any dash or
+  space, and a new check flags a day count within three words of a guarantee word (`guarant*`,
+  `garantie*`, `gwarancj*`, `promis*`, `versprech*`, `obietnic*`). Closed by "each check fires on
+  the value only it reads" ("Your 7-day plan." → `sevenDay` only), "catches a day count beside
+  every guarantee word" ("7 day guarantee", "7‑day guarantee", "7-Tage-Garantie", "7-dniowa
+  gwarancja"…), "goes red when any single guarantee word is deleted", and the per-key
+  restorations in four locales.
+- **Hole 2, `DAY_ARGUMENT` unguarded:** "Delivered within {days}." → `dayArgument` only, and the
+  same value restored in every named key.
+- **Hole 3 / required change 1, ICU of any name:** an ICU argument of any name and a plural's `#`
+  count as a number, and a claim inside an ICU argument spans the whole argument. "Fresh for
+  {count} days.", "{n, number}", "{n, plural, one {# day} other {# days}}", "{n, plural, other
+  {fresh for # days}}", `{tage}`, `{dni}` in "fails every round-1 dodge"; the branch-deletion
+  sweep covers both new count branches.
+- **Hole 4 / required change 2, Unicode:** `normaliseForScan` (NFKC, `&nbsp;`/`&#160;` decoded,
+  `\p{Cf}` stripped, lower-case, `ß`→`ss`), `\p{Nd}` digits, `\p{Pd}` and U+2212 joins with
+  optional spaces. Fixtures: ٧, ७, ７; ZWSP, word joiner, soft hyphen, `&nbsp;`; U+2011, U+2012,
+  U+2014, spaced U+2013, U+2015, U+2212; NFD "świeże" and "Siebentägige"; "DREISSIG",
+  "dreissig", "DREIẞIG". Removing NFKC, the `Cf` strip or the `ss` fold each turns cases red.
+- **Hole 5, a word between number and day word:** caught, as a widening past A11's "directly
+  followed" (stricter, never looser; the reviewer decides): at most one word, or a `+`. "7 full
+  days", "7 volle Tage", "7+ days", "seven long days", "7 business days", "7½ days". Two words
+  ("seven or more days") still pass, which is A11's letter. Removing the one-word gap turns six
+  cases red.
+- **Hole 6, vacuous readers:** "selects every infoPages.* value and every key with a guarantee,
+  fresh or promise segment" (a built catalogue, exact key list; dropping the `infoPages.` clause
+  or `promise` turns it red) and "reads content/pages/<locale>/guarantee.md" (a temp root with a
+  seeded claim; pointing the reader elsewhere turns it red).
+- **Hole 7, copy outside the guarantee keys** (`faq.photo.answer` + "They stay fresh for 7
+  days."): A11's scope is guarantee text, so it is not read; the reader test asserts the FAQ key
+  stays out. For the reviewer to accept or route to the spec writer with E-1.
+- **Nit 1:** the `de`/`pl` `trust.guarantee.name` literals are pinned. **Nits 2, 4, 5** stay
+  carry-forwards (stale comments in `Icon.tsx`/`TrustStrip.tsx`; content root empty until
+  TASK-182; "fresh, and you have 14 days to cancel" is a conservative false positive, and so is
+  any guarantee sentence with "14 days" within three words of "promise", for TASK-182's
+  `pages:check`).
 
 ## Result
 

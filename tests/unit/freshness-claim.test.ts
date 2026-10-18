@@ -507,7 +507,7 @@ describe("A11: the readers read what they claim to (positive controls)", () => {
     // The shipped catalogues have no `infoPages` key and no `promise` segment yet (TASK-182 adds
     // them), so the selector is proven on a catalogue built for it.
     const catalogue = {
-      infoPages: { guarantee: { body: "Fresh for 7 days." } },
+      infoPages: { howItWorks: { body: "Fresh for 7 days." } },
       help: { promise: "Guaranteed for 7 days." },
       trust: { guarantee: { name: "7-day guarantee" } },
       product: { trust: { freshness: { title: "Fresh for {days} days" } } },
@@ -515,7 +515,7 @@ describe("A11: the readers read what they claim to (positive controls)", () => {
       checkout: { action: { pay: "Pay" } },
     };
     expect(guaranteeValues(catalogue).map(([key]) => key)).toStrictEqual([
-      "infoPages.guarantee.body",
+      "infoPages.howItWorks.body",
       "help.promise",
       "trust.guarantee.name",
       "product.trust.freshness.title",
@@ -524,7 +524,7 @@ describe("A11: the readers read what they claim to (positive controls)", () => {
       catalogueViolations(catalogue).map((line) => line.split(":")[0]),
     ).toEqual(
       expect.arrayContaining([
-        "infoPages.guarantee.body",
+        "infoPages.howItWorks.body",
         "help.promise",
         "trust.guarantee.name",
         "product.trust.freshness.title",
