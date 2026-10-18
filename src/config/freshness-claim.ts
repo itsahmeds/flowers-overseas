@@ -38,6 +38,9 @@
  * day count beside a guarantee word ("7-Tage-Garantie", "gwarancja 7 dni"), the retired "7-day"
  * in any hyphen, and any ICU argument naming days.
  *
+ * **Build-time only.** `entities` is a devDependency: this module is read by the unit scan and
+ * (from TASK-182) `pnpm pages:check`, never by a page, a route or anything else a server runs.
+ *
  * One matcher for every reader: the message-and-content unit scan
  * (`tests/unit/freshness-claim.test.ts`) and, from TASK-182, spec 041's `pnpm pages:check`.
  * `FRESHNESS_TERMS` is exported so the unit test can delete each branch and watch a fixture go
@@ -326,7 +329,9 @@ const CONFUSABLES: Readonly<Record<string, string>> = {
 
 /**
  * "N days a week" says when we answer, not how long flowers last (a support-hours line, TASK-182
- * and TASK-238), so it is removed before the scan, in all four locales.
+ * and TASK-238), so it is removed before the scan, in all four locales, **unless** a freshness or
+ * guarantee word sits within `FRESHNESS_WINDOW` words of it in the same sentence: "We answer 7
+ * days a week" is exempt, "Fresh for 7 days a week" and "Gwarancja 7 dni w tygodniu" are not.
  */
 export const DAYS_A_WEEK =
   /(?<![\p{L}\p{N}_])(?:\p{Nd}+|seven|sieben|siedem)\s*(?:days? (?:a|per) week|tage (?:die|pro|in der) woche|dni w tygodniu)(?![\p{L}\p{N}_])/gu;
@@ -346,7 +351,33 @@ export function normaliseForScan(text: string): string {
     .replaceAll(/_+/gu, "")
     .toLowerCase()
     .replaceAll("ß", "ss");
-  return folded.replaceAll(DAYS_A_WEEK, " ");
+  return folded.replaceAll(DAYS_A_WEEK, (phrase: string, offset: number) =>
+    claimWordNear(folded, offset, offset + phrase.length) ? phrase : " ",
+  );
+}
+
+/** Words, as `wordsIn` counts them. */
+const WORDS = /[\p{L}\p{N}]+(?:['\u2019\p{Pd}][\p{L}\p{N}]+)*/gu;
+
+/**
+ * Whether a freshness or guarantee word is among the `FRESHNESS_WINDOW` words before `start` or
+ * after `end`, inside the same sentence. Reads non-global copies of the patterns, so no
+ * `lastIndex` leaks between calls.
+ */
+function claimWordNear(text: string, start: number, end: number): boolean {
+  const before =
+    text
+      .slice(0, start)
+      .split(/[.!?\u2026]\s/u)
+      .at(-1) ?? "";
+  const after = text.slice(end).split(/[.!?\u2026](?:\s|$)/u)[0] ?? "";
+  const window = [
+    ...(before.match(WORDS) ?? []).slice(-FRESHNESS_WINDOW),
+    ...(after.match(WORDS) ?? []).slice(0, FRESHNESS_WINDOW),
+  ].join(" ");
+  return [FRESHNESS_TERMS.freshness, GUARANTEE_TERMS].some((pattern) =>
+    new RegExp(pattern.source, "iu").test(window),
+  );
 }
 
 function claimsNear(

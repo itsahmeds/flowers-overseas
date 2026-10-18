@@ -150,6 +150,19 @@ The reviewer accepted holes 5 and 7. Each new hole and its closing test (`tests/
 - Watched red: removing the entity decoder, the look-alike map, the keycap strip, the underscore strip, the days-a-week
   exemption or the reverse branch, or cutting the gap to one word, turns 1 to 7 cases red each.
 
+## Scoped review on `0b15b9a3`
+
+- **"N days a week" could hide a claim** ("Fresh for 7 days a week", "Stays fresh 7 days a week", "Lasts 7 days a week", "7
+  days a week fresh"). The phrase is now exempt only when no freshness or guarantee word, in any locale, is among the three
+  words either side of it in the same sentence. The `de` and `pl` forms get the same rule. "exempts N days a week in all four
+  locales, only with no freshness or guarantee word near it" covers both sides ("We answer 7 days a week" passes, "Always
+  fresh. We answer 7 days a week." passes, and fifteen en/de/pl abuses fail). With the old unconditional exemption, the case
+  goes red at "Fresh for 7 days a week". Every message value in four locales still flags only `checkout.privacy.demoNotice`.
+- **`entities` moved to devDependencies.** Its one importer is `src/config/freshness-claim.ts`, which only the unit test
+  imports (TASK-182's `pages:check` script will be the second). No page, route or server module imports it.
+- **HOLE 13 carried** (not fixed here): backticks or `~~` around the number ("fresh for `7` days", "fresh for ~~7~~ days")
+  are not stripped before the scan. For TASK-182's `pages:check`, which reads markdown content.
+
 ## Result
 
 PR [#265](https://github.com/itsahmeds/flowers-overseas/pull/265).

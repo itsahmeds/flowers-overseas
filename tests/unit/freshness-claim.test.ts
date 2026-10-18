@@ -379,16 +379,17 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
     }
   });
 
-  it('exempts "N days a week" in all four locales, and only that', () => {
+  it('exempts "N days a week" in all four locales, only with no freshness or guarantee word near it', () => {
     for (const text of [
       "We answer 7 days a week.",
       "We answer seven days a week.",
-      "Fresh flowers, 7 days a week.",
       "We answer 7 days per week.",
+      "Always fresh. We answer 7 days a week.",
+      "We answer 7 days a week. Fresh flowers, always.",
       "Wir antworten 7 Tage die Woche.",
-      "Frische Blumen, 7 Tage pro Woche.",
+      "Wir sind 7 Tage pro Woche erreichbar.",
       "Odpowiadamy 7 dni w tygodniu.",
-      "Świeże kwiaty, siedem dni w tygodniu.",
+      "Odpowiadamy siedem dni w tygodniu.",
     ]) {
       expect(guaranteeTextViolations(text), text).toEqual([]);
     }
@@ -398,6 +399,23 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
       "Fresh for 7 days, a week of joy.",
       "7 Tage frisch, die Woche lang.",
       "Świeże przez 7 dni.",
+      // The exemption is not a way round the scan (scoped review, PR 265 head `0b15b9a3`): a
+      // freshness or guarantee word within three words keeps the phrase in.
+      "Fresh for 7 days a week",
+      "Stays fresh 7 days a week",
+      "Lasts 7 days a week",
+      "7 days a week fresh",
+      "Fresh flowers, 7 days a week.",
+      "Guaranteed 7 days a week",
+      "Frisch 7 Tage die Woche",
+      "Hält 7 Tage pro Woche",
+      "7 Tage die Woche frisch",
+      "Frische Blumen, 7 Tage pro Woche.",
+      "Garantie: 7 Tage in der Woche",
+      "Świeże 7 dni w tygodniu",
+      "Świeże kwiaty, siedem dni w tygodniu.",
+      "7 dni w tygodniu świeże",
+      "Gwarancja 7 dni w tygodniu",
     ]) {
       expect(guaranteeTextViolations(text).length, text).toBeGreaterThan(0);
     }
