@@ -182,5 +182,31 @@ remove its three entries from `.claude/settings.json`.
 | `pnpm branch-protection` exits 1 with `UNAVAILABLE ON THIS PLAN` | private repo on GitHub Free | expected; see `docs/runbooks/branch-protection.md` §0 |
 | `pnpm test:integration` reports everything skipped | no schema until spec 002 | expected (spec 001 AC-16) |
 
+### 6.1 Reproducing the case-variant cache defect on a Mac (TASK-247)
+
+Only a case-insensitive volume (macOS APFS) can show it; CI and Railway run case-sensitive Linux.
+`tests/e2e/case-variant-cache.spec.ts` goes red on the old code only against a build whose
+prerenders are past their revalidate window, so make one by hand, inside the build slot, in a
+scratch worktree (`git worktree add --detach ../fo-repro-247 origin/main`), never the main
+checkout. The main checkout's `.env.local` holds the founder's real environment, including the
+production database URL, so it must never be overwritten or built against: the copy below only
+runs where no `.env.local` exists.
+
+```sh
+cd ../fo-repro-247 && pnpm install
+[ -e .env.local ] || cp .env.example .env.local
+pnpm build
+# stand in for a server that has been up for over an hour: age every prerender by two hours
+find .next/server/app -type f \( -name '*.html' -o -name '*.meta' -o -name '*.rsc' \) -exec touch -A -020000 {} +
+rm -rf .next/server/route-cache            # runtime entries from an earlier run
+node node_modules/next/dist/bin/next start -p 3247 &   # note the PID; stop it by that PID
+PLAYWRIGHT_BASE_URL=http://localhost:3247 pnpm exec playwright test tests/e2e/case-variant-cache.spec.ts --project=e2e-desktop
+```
+
+With the guard in `src/lib/csp-cache-handler.ts` disabled the run fails at
+`/EN (round 1)`: 404 expected, 200 received (the real page under a second URL), and after a
+restart `/en` itself answers 404. With the guard in place it passes. Delete `.next` afterwards: a
+poisoned `route-cache` entry survives restarts.
+
 Still stuck: `README.md` "Troubleshooting" has the same list in short form, and
 `docs/architecture.md` §4 lists everything spec 001 deliberately left undone.
