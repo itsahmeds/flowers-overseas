@@ -20,7 +20,8 @@ be green. One paragraph or a short list — no restatement of the spec.
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q18-09 (P2): QA-1 found no `BreadcrumbList` on any shop, category or occasion page on `c8d3b334` (only the guides carry `BreadcrumbList` and `FAQPage`). That is this task's scope, not a defect to fix elsewhere; flag it in the ranking plan before TASK-096's indexing flip.
 
 ## Escalations
 

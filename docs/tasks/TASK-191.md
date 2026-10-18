@@ -67,7 +67,8 @@ Recorded as a carry-forward in `docs/tasks/TASK-179.md` (the file exists on `mai
 
 One dated bullet per `/review`, newest last.
 
-_None._
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q1-24 and N-11 (P2), still on `c8d3b334`: the 404 has a logo header but no nav or footer, the card is tilted about 1 degree, and `/de/nope` is English (`QA-2-404-sheet.png`). AC-40 as A24 rebinds it: no stamp, postmark or airmail edge, the dashed route only, two real links, in four locales. Add a case that the card's computed rotation is 0 unless the artboard draws a tilt, red on `c8d3b334`.
 
 ## Escalations
 

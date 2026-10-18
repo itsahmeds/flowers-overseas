@@ -78,6 +78,10 @@ A bug in merged work (TASK-179 and TASK-197), so a new task (founder rule, 2026-
 - **From PR 226's review (2026-10-14):** spec 004 §13 Q18 (a tablet-width spill gate at 768 and
   1024) is open; it also concerns TASK-232's 768 px stamps. Not built here.
 - Same agent and PR as TASK-228; never beside TASK-227 (PR 223) on the product page.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q18-06 (P2), 768: the "What should the card say?" textarea and the printed-card preview take the left half only, the right half is empty and the "0 / 400" counter floats at the far right edge of the empty half (`QA-1-N05.png`).
+  - Q1-06 (P1), 1024: the delivery-facts value column is about 70 px, one word per line, "delivering" spills past the edge, with a big empty block under the price summary (`QA-1-N02.png`). Q1-05: the dashed rows "— none to state", "— no date", "— none named". Both go with the facts block this task removes: add a case that no facts block renders on the product page at 768, 1024 and 1440.
+  - Q1-07 (P2): the card preview text is cut at 320, 360 and 1024 ("printed on" cut mid-line, `QA-1-N04.png`). Q1-21 and Q1-22 (QA-2): the counter sits far from the textarea and the ruled lines cut through the text. One case per id, each red on `c8d3b334`.
 
 ## Escalations
 

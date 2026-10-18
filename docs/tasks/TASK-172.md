@@ -55,6 +55,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 - **From `/plan-tasks` (2026-10-04):** dispatch after TASK-177 (PR 174) and TASK-179 (PR 170) have
   merged: both edit the three message files and the PDP.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - N-13 (P2, QA-2): the fresh-flower promise on the home and the product page (`trust.guarantee.body`) reads "send us a photo within 72 hours of delivery and we'll replace them or refund you in full". Ask the founder whether "refund you in full" is allowed before purchase: his no-refund-talk ruling of 2026-10-14 names the confirmation, tracking and emails. Do not change the copy before the answer.
 
 ## Escalations
 

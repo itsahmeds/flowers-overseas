@@ -96,6 +96,9 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
 
 - **From the site test (2026-10-14):** QA-2 12, QA-2 13: sort and filters sit below the products.
   `.claude/state/qa-2026-10-14/QA-2-12.png`, `QA-2-13.png`.
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q18-02 and N-02 (P1), 768 and 820, about 1,000 of 1,100 listing URLs: "84 bouquets · page 1 of 7" sits in a 50 to 63 px column, one word per line, 7 lines tall, beside "Our order is the order we chose ourselves..." (boxes overlap 30 × 42 px; `QA-1-N01.png`, `QA-2-shop-820.png`). This task rebuilds that toolbar row: add to T-37 a 768 and a 820 case that the count line is one line tall and its box does not meet the disclosure's box, red on `c8d3b334`. TASK-248 holds the general gate.
+  - QA 2026-10-18 re-confirms QA-2 13 (sort lost on Next: `?sort=price-asc` then Next gives an unsorted page 2). That is spec 008 §13 Q12, still open; not this task. Founder ruling needed.
 
 ## Escalations
 

@@ -216,7 +216,8 @@ Each must be watched red with its subject removed, then green (CLAUDE.md DoD §4
 
 ## Carry-forwards
 
-_None recorded._
+- **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
+  - Q1-02, Q1-03, Q1-13 and Q1-16 (QA-1 and QA-2 re-test, still on `c8d3b334`): de and pl still show English nav, home hero, product body copy, home title and descriptions, every product `<title>`, "(not yet)", "Geburtstag, country by country", the hub's "We have not written a guide in this language yet...", and country names left in the nominative in templates ("Flowers we make for Polen", "Polska", "Sending Rosen"). Polish and German need the country in the case the sentence asks for: restructure the sentence or add per-locale case forms, never inflect the brand (spec 003 glossary). de and pl are hidden by TASK-237 until reviewed, so this reaches no buyer yet.
 
 ## Escalations
 
