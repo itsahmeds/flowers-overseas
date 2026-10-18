@@ -192,6 +192,7 @@ export const WORKER_RUNNING_STATUSES: readonly string[] = [
   "INITIALIZING",
   "QUEUED",
   "WAITING",
+  "NEEDS_APPROVAL",
 ];
 
 /**
@@ -215,6 +216,13 @@ export function compareWorkerService(live: RailwayServiceInstance): string[] {
         `public domain ${names.join(", ")}: none is allowed until spec 002 TASK-024 (spec 040 AC-10)`,
       );
     }
+  }
+  // `null` is Railway saying "no deployment"; a missing field is an answer that did not say, and
+  // fails closed like `domains` (`/break 263` hole 7).
+  if (live.latestDeployment === undefined) {
+    failures.push(
+      "latestDeployment not reported, so zero running replicas is unproven (spec 040 AC-10)",
+    );
   }
   const status = live.latestDeployment?.status;
   if (status !== undefined && WORKER_RUNNING_STATUSES.includes(status)) {
