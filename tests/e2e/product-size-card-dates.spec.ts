@@ -170,7 +170,8 @@ test.describe("T-56 (browser half): one 200-grapheme card limit", () => {
 });
 
 test.describe("AC-49 and the artboards' card section (TASK-229)", () => {
-  for (const width of [320, 360, 390]) {
+  // 1024 from the 2026-10-18 site test (Q1-07: the card text cut at 320, 360 and 1024).
+  for (const width of [320, 360, 390, 1024]) {
     test(`at ${String(width)}: a 90-letter word and a long link wrap inside the field and the card, and nothing scrolls sideways`, async ({
       page,
     }) => {
@@ -196,78 +197,84 @@ test.describe("AC-49 and the artboards' card section (TASK-229)", () => {
     });
   }
 
-  test("at 1440: the card is upright beside the field, grows with the message and shows all of it; the counter sits under the field, end-aligned", async ({
-    page,
-  }) => {
-    await page.setViewportSize(DESKTOP);
-    await open(page);
-    await hydrated(page);
-    const box = (selector: string) =>
-      page.locator(selector).evaluate((node) => {
-        const b = node.getBoundingClientRect();
-        return { left: b.left, right: b.right, top: b.top, bottom: b.bottom };
-      });
-    const field = await box("#pdp-card-message");
-    const counter = await box("#pdp-card-message-count");
-    const card = await box("[data-fo-card-preview]");
-    // Upright: no rotation on the card or anything inside it (a translate, as the logo mark's
-    // own SVG group carries, is not a tilt).
-    const tilts = await page
-      .locator("[data-fo-card-preview], [data-fo-card-preview] *")
-      .evaluateAll((nodes) =>
-        nodes.flatMap((node) => {
-          const style = getComputedStyle(node);
-          const matrix = new DOMMatrixReadOnly(
-            style.transform === "none" ? undefined : style.transform,
-          );
-          return Math.abs(matrix.b) > 1e-6 ||
-            Math.abs(matrix.c) > 1e-6 ||
-            style.rotate !== "none"
-            ? [`${node.tagName} ${style.transform} ${style.rotate}`]
-            : [];
-        }),
+  // 768 and 1024 from the 2026-10-18 site test (Q18-06: the field and card in the left half with
+  // the counter at the far edge at 768; Q1-21/Q1-22: the counter far from the field).
+  for (const width of [768, 1024, 1440]) {
+    test(`at ${String(width)}: the card is upright beside the field, grows with the message and shows all of it; the counter sits under the field, end-aligned`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: DESKTOP.height });
+      await open(page);
+      await hydrated(page);
+      const box = (selector: string) =>
+        page.locator(selector).evaluate((node) => {
+          const b = node.getBoundingClientRect();
+          return { left: b.left, right: b.right, top: b.top, bottom: b.bottom };
+        });
+      const field = await box("#pdp-card-message");
+      const counter = await box("#pdp-card-message-count");
+      const card = await box("[data-fo-card-preview]");
+      // Upright: no rotation on the card or anything inside it (a translate, as the logo mark's
+      // own SVG group carries, is not a tilt).
+      const tilts = await page
+        .locator("[data-fo-card-preview], [data-fo-card-preview] *")
+        .evaluateAll((nodes) =>
+          nodes.flatMap((node) => {
+            const style = getComputedStyle(node);
+            const matrix = new DOMMatrixReadOnly(
+              style.transform === "none" ? undefined : style.transform,
+            );
+            return Math.abs(matrix.b) > 1e-6 ||
+              Math.abs(matrix.c) > 1e-6 ||
+              style.rotate !== "none"
+              ? [`${node.tagName} ${style.transform} ${style.rotate}`]
+              : [];
+          }),
+        );
+      expect(tilts).toEqual([]);
+      // Beside the field, its top level with the field's, 200 px wide (`.pv-card`).
+      expect(card.left).toBeGreaterThanOrEqual(field.right);
+      expect(Math.abs(card.top - field.top)).toBeLessThanOrEqual(1);
+      expect(Math.round(card.right - card.left)).toBe(200);
+      // The counter is under the field, its end edge on the field's end edge.
+      expect(counter.top).toBeGreaterThanOrEqual(field.bottom);
+      expect(counter.top - field.bottom).toBeLessThanOrEqual(12);
+      expect(Math.abs(counter.right - field.right)).toBeLessThanOrEqual(1);
+      // A long message: the card grows and every line of it is visible.
+      const before = card.bottom - card.top;
+      const words = Array.from(
+        { length: 30 },
+        (_, i) => `word${String(i)}`,
+      ).join(" ");
+      await page.locator("#pdp-card-message").fill(words);
+      await expect(page.locator("#pdp-card-message-count")).toContainText(
+        String(words.length),
       );
-    expect(tilts).toEqual([]);
-    // Beside the field, its top level with the field's, 200 px wide (`.pv-card`).
-    expect(card.left).toBeGreaterThanOrEqual(field.right);
-    expect(Math.abs(card.top - field.top)).toBeLessThanOrEqual(1);
-    expect(Math.round(card.right - card.left)).toBe(200);
-    // The counter is under the field, its end edge on the field's end edge.
-    expect(counter.top).toBeGreaterThanOrEqual(field.bottom);
-    expect(counter.top - field.bottom).toBeLessThanOrEqual(12);
-    expect(Math.abs(counter.right - field.right)).toBeLessThanOrEqual(1);
-    // A long message: the card grows and every line of it is visible.
-    const before = card.bottom - card.top;
-    const words = Array.from({ length: 30 }, (_, i) => `word${String(i)}`).join(
-      " ",
-    );
-    await page.locator("#pdp-card-message").fill(words);
-    await expect(page.locator("#pdp-card-message-count")).toContainText(
-      String(words.length),
-    );
-    const grown = await box("[data-fo-card-preview]");
-    expect(grown.bottom - grown.top).toBeGreaterThan(before);
-    const clipped = await page
-      .locator("[data-fo-card-text]")
-      .evaluate((node) => {
-        const own = node.getBoundingClientRect();
-        let parent = node.parentElement;
-        while (parent !== null) {
-          const style = getComputedStyle(parent);
-          if (style.overflow !== "visible" || style.overflowY !== "visible") {
-            const b = parent.getBoundingClientRect();
-            if (own.bottom > b.bottom + 0.5) return true;
+      const grown = await box("[data-fo-card-preview]");
+      expect(grown.bottom - grown.top).toBeGreaterThan(before);
+      const clipped = await page
+        .locator("[data-fo-card-text]")
+        .evaluate((node) => {
+          const own = node.getBoundingClientRect();
+          let parent = node.parentElement;
+          while (parent !== null) {
+            const style = getComputedStyle(parent);
+            if (style.overflow !== "visible" || style.overflowY !== "visible") {
+              const b = parent.getBoundingClientRect();
+              if (own.bottom > b.bottom + 0.5) return true;
+            }
+            parent = parent.parentElement;
           }
-          parent = parent.parentElement;
-        }
-        return node.scrollHeight > node.clientHeight + 1;
-      });
-    expect(clipped).toBe(false);
-  });
+          return node.scrollHeight > node.clientHeight + 1;
+        });
+      expect(clipped).toBe(false);
+    });
+  }
 });
 
 test.describe("T-39 (browser half): no delivery-facts block on the product page", () => {
-  for (const width of [390, 768, 1440]) {
+  // 1024 from the 2026-10-18 site test (Q1-06: the facts column one word per line at 1024).
+  for (const width of [390, 768, 1024, 1440]) {
     test(`at ${String(width)}: no facts block and no facts heading`, async ({
       page,
     }) => {
@@ -327,32 +334,39 @@ test.describe("TASK-230: a date chip that cannot be chosen looks it", () => {
     ).toBeGreaterThan(0);
   });
 
-  test("at 390: the date row's visible end never cuts a chip's words, and the page does not scroll sideways", async ({
-    page,
-  }) => {
-    await page.setViewportSize(PHONE);
-    await open(page);
-    const cut = await page
-      .locator("[data-fo-date-grid] [data-fo-scroller]")
-      .evaluate((row) => {
-        const edge = Math.min(
-          row.getBoundingClientRect().right,
-          window.innerWidth,
-        );
-        const found: string[] = [];
-        for (const word of row.querySelectorAll("label[data-fo-date] b")) {
-          const b = word.getBoundingClientRect();
-          if (b.left < edge - 0.5 && b.right > edge + 0.5) {
-            found.push(word.textContent ?? "");
-          }
-        }
-        return found;
+  // The desktop widths from the 2026-10-18 site test (Q1-09: the sixth chip cut at every desktop
+  // width, not only at 390).
+  for (const width of [390, 1024, 1280, 1440]) {
+    test(`at ${String(width)}: the date row's visible end never cuts a chip's words, and the page does not scroll sideways`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({
+        width,
+        height: width === 390 ? PHONE.height : DESKTOP.height,
       });
-    expect(cut).toEqual([]);
-    const widths = await page.evaluate(() => ({
-      scroll: document.documentElement.scrollWidth,
-      viewport: window.innerWidth,
-    }));
-    expect(widths.scroll).toBe(widths.viewport);
-  });
+      await open(page);
+      const cut = await page
+        .locator("[data-fo-date-grid] [data-fo-scroller]")
+        .evaluate((row) => {
+          const edge = Math.min(
+            row.getBoundingClientRect().right,
+            window.innerWidth,
+          );
+          const found: string[] = [];
+          for (const word of row.querySelectorAll("label[data-fo-date] b")) {
+            const b = word.getBoundingClientRect();
+            if (b.left < edge - 0.5 && b.right > edge + 0.5) {
+              found.push(word.textContent ?? "");
+            }
+          }
+          return found;
+        });
+      expect(cut).toEqual([]);
+      const widths = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        viewport: window.innerWidth,
+      }));
+      expect(widths.scroll).toBe(widths.viewport);
+    });
+  }
 });

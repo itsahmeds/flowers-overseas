@@ -251,6 +251,8 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
     ["/en/poland/product/amber-hour", "€", /zł|PLN|£/u],
     ["/en-gb/poland/product/amber-hour", "£", /zł|PLN|€/u],
     ["/pl/polska/produkt/amber-hour", "zł", /€|£|EUR|GBP/u],
+    // From the 2026-10-18 site test (Q1-01: de showed złoty add-ons with "VAT 23%").
+    ["/de/polen/produkt/amber-hour", "€", /zł|PLN|£/u],
   ] as const) {
     test(`${url}: the add-ons are in the bouquet's ${symbol}, with no VAT rate, the card Included, and no input`, async ({
       page,
