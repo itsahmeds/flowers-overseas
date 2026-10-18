@@ -283,6 +283,7 @@ export function DestinationsHubPage({
                     ) : (
                       <a
                         className="text-ink relative grid min-h-(--target-min) gap-[2px] py-[14px] pe-[28px] [text-decoration:none]"
+                        data-fo-hub-row={destination.iso2}
                         href={destination.href}
                       >
                         {row}

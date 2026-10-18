@@ -203,27 +203,42 @@ export interface HubPill {
 const PILL =
   "inline-flex flex-none items-baseline gap-[8px] min-h-(--target-min) px-[18px] py-[10px] rounded-full whitespace-nowrap bg-card text-ink shadow-[inset_0_0_0_1px_var(--color-rule)] no-underline";
 
+/**
+ * A pill with a fine line (R4's count, or the pending sentence): the name and the arrow on the
+ * first line, the fine line under them, so a row of seven stays three rows tall in the copy column
+ * and a count never becomes a one-word column (QA 2026-10-18 Q18-03).
+ */
+const PILL_STACKED =
+  "grid h-full min-h-(--target-min) grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-[8px] gap-y-[2px] rounded-field bg-card px-[16px] py-[10px] text-ink shadow-[inset_0_0_0_1px_var(--color-rule)] no-underline";
+
 function Pill({ pill }: { readonly pill: HubPill }): ReactElement {
-  const body = (
+  const stacked = pill.detail !== undefined;
+  const arrow =
+    pill.href === undefined ? null : (
+      <Icon className="text-link self-center" name="arrow-end" size={16} />
+    );
+  const body = stacked ? (
     <>
       <span className="font-bold">{pill.name}</span>
-      {pill.detail === undefined ? null : (
-        <span className="text-ink-subtle text-xs font-normal">
-          {pill.detail}
-        </span>
-      )}
-      {pill.href === undefined ? null : (
-        <Icon className="text-link self-center" name="arrow-end" size={16} />
-      )}
+      {arrow ?? <span />}
+      <span className="text-ink-subtle col-span-2 text-xs font-normal">
+        {pill.detail}
+      </span>
+    </>
+  ) : (
+    <>
+      <span className="font-bold">{pill.name}</span>
+      {arrow}
     </>
   );
+  const box = stacked ? PILL_STACKED : PILL;
   return pill.href === undefined ? (
-    <span className={PILL} {...(pill.hook ?? {})}>
+    <span className={box} {...(pill.hook ?? {})}>
       {body}
     </span>
   ) : (
     <a
-      className={`${PILL} hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
+      className={`${box} hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
       href={pill.href}
       {...(pill.label === undefined ? {} : { "aria-label": pill.label })}
       {...(pill.hook ?? {})}
@@ -264,7 +279,11 @@ export function HubPills({
         )}
         <ul
           aria-label={label}
-          className="flex list-none flex-wrap gap-[10px] p-0"
+          className={
+            pills.some((pill) => pill.detail !== undefined)
+              ? "grid list-none grid-cols-2 gap-[10px] p-0 lg:grid-cols-3"
+              : "flex list-none flex-wrap gap-[10px] p-0"
+          }
         >
           {pills.map((pill) => (
             <li key={pill.key}>
@@ -280,9 +299,15 @@ export function HubPills({
             items={pills.map((pill) => ({
               key: pill.key,
               // The phone copy of the same link: no fine line (the chip row is one line), and
-              // no hook, so a probe counts each destination once.
+              // its own hook, so a probe counts each destination once per row.
               node: (
-                <Pill pill={{ ...pill, detail: undefined, hook: undefined }} />
+                <Pill
+                  pill={{
+                    ...pill,
+                    detail: undefined,
+                    hook: { "data-fo-hub-chip": pill.key },
+                  }}
+                />
               ),
             }))}
             label={label}

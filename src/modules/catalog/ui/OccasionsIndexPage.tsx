@@ -133,7 +133,10 @@ export function OccasionsIndexPage({
                     name: entry.name,
                     date: entry.nextDate,
                     href: entry.href,
-                    hook: { "data-fo-next-occasion": entry.key },
+                    hook: {
+                      "data-fo-next-occasion": entry.key,
+                      "data-fo-next-date": entry.nextDate ?? "",
+                    },
                   }))}
                   label={shop("root.occasionsEyebrow", {
                     country: dateCountry,
@@ -161,7 +164,7 @@ export function OccasionsIndexPage({
           )}
           {everyday.length === 0 ? null : (
             <a
-              className="link text-ui font-bold max-md:hidden"
+              className="link text-ui inline-flex min-h-[24px] items-center font-bold max-md:hidden"
               href="#occasions-everyday-heading"
             >
               {index("everydayHeading")}
