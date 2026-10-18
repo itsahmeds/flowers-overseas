@@ -7,6 +7,8 @@
  * every table is classified in `db/rls.ts`; each class gets exactly the policies its class says,
  * and no other; the rollback undoes every policy, every `ENABLE` and every helper.
  */
+import { readdirSync } from "node:fs";
+
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import { describe, expect, it } from "vitest";
 
@@ -22,9 +24,32 @@ import {
   SELF_SCOPED_TABLES,
   STAFF_ONLY_TABLES,
 } from "../../db/rls.ts";
-import { readMigration } from "./support/migration-sql.ts";
+import {
+  MIGRATIONS_DIR,
+  createdTables,
+  readMigration,
+} from "./support/migration-sql.ts";
 
-const up = readMigration("0011_rls_policies.sql");
+/**
+ * The RLS of a table created **after** `0011` lives in the migration that creates it (spec 012's
+ * `0013_admin_identity`, TASK-217): its `ENABLE ROW LEVEL SECURITY` and staff policy are read
+ * from there, and its rollback drops the table (and the policies with it) instead of disabling
+ * RLS in `0011`'s rollback.
+ */
+const LATER_MIGRATIONS = readdirSync(MIGRATIONS_DIR)
+  .filter((file) => /^\d{4}_[a-z0-9_]+\.sql$/.test(file))
+  .filter((file) => !file.endsWith(".down.sql") && file > "0011_")
+  .filter((file) => !file.startsWith("0011_"))
+  .sort();
+const LATER_TABLES = new Set(
+  LATER_MIGRATIONS.flatMap((file) => createdTables(readMigration(file))),
+);
+const LATER_DOWNS = LATER_MIGRATIONS.map((file) =>
+  readMigration(file.replace(/\.sql$/, ".down.sql")),
+).join("\n");
+
+const up0011 = readMigration("0011_rls_policies.sql");
+const up = [up0011, ...LATER_MIGRATIONS.map(readMigration)].join("\n");
 const down = readMigration("0011_rls_policies.down.sql");
 
 const MIRROR = Object.values(schema)
@@ -65,8 +90,10 @@ const policiesOf = (table: string): Policy[] =>
 
 describe("migration 0011 — coverage", () => {
   it("opens with the ownership preamble, closes with RESET ROLE, and never forces RLS", () => {
-    expect(up.trimStart().startsWith("SET LOCAL ROLE app_owner;")).toBe(true);
-    expect(up.trimEnd().endsWith("RESET ROLE;")).toBe(true);
+    expect(up0011.trimStart().startsWith("SET LOCAL ROLE app_owner;")).toBe(
+      true,
+    );
+    expect(up0011.trimEnd().endsWith("RESET ROLE;")).toBe(true);
     expect(up).not.toMatch(/FORCE ROW LEVEL SECURITY/);
   });
 
@@ -261,7 +288,7 @@ describe("migration 0011 — each class gets exactly its policies", () => {
 
 describe("rollback 0011", () => {
   it("drops the views, every policy, RLS on every table, and every function it created", () => {
-    for (const policy of POLICIES) {
+    for (const policy of POLICIES.filter((p) => !LATER_TABLES.has(p.table))) {
       expect(down, policy.name).toMatch(
         new RegExp(
           `DROP POLICY IF EXISTS ${policy.name} ON ${ref(policy.table)};`,
@@ -269,13 +296,19 @@ describe("rollback 0011", () => {
       );
     }
     for (const table of MIRROR) {
+      if (LATER_TABLES.has(table)) {
+        expect(LATER_DOWNS, table).toContain(
+          `DROP TABLE IF EXISTS public.${table};`,
+        );
+        continue;
+      }
       expect(down, table).toMatch(
         new RegExp(`ALTER TABLE ${ref(table)} DISABLE ROW LEVEL SECURITY;`),
       );
     }
-    const helpers = [...up.matchAll(/CREATE FUNCTION public\.(\w+)\(/g)].map(
-      (m) => m[1],
-    );
+    const helpers = [
+      ...up0011.matchAll(/CREATE FUNCTION public\.(\w+)\(/g),
+    ].map((m) => m[1]);
     expect(helpers).toHaveLength(14);
     for (const view of [
       ...Object.keys(PARTNER_VIEWS),

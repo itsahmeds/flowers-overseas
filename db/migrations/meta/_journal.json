@@ -57,6 +57,13 @@
       "when": 1791833341443,
       "tag": "0007_real_bruce_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792279213822,
+      "tag": "0008_exotic_micromax",
+      "breakpoints": true
     }
   ]
 }

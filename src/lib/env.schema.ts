@@ -128,6 +128,10 @@ const bucketName = z
 const logLevels = ["fatal", "error", "warn", "info", "debug", "trace"] as const;
 export type LogLevel = (typeof logLevels)[number];
 
+/** The two `Mailer` implementations `MAILER` may name (spec 012 §2.2; TASK-217). */
+export const mailerKinds = ["resend", "capture"] as const;
+export type MailerKind = (typeof mailerKinds)[number];
+
 export const clientEnvSchema = z.object({
   /** Absolute origin of the site. Used for canonicals and absolute URLs from spec 007. */
   NEXT_PUBLIC_SITE_URL: requiredUrl,
@@ -258,6 +262,41 @@ export const serverEnvSchema = z.object({
       .min(32, "must be at least 32 characters (`openssl rand -hex 32`)")
       .optional(),
   ),
+  /**
+   * The secret the shared sign-in core (spec 012 §2.2, §5.2; TASK-217) hashes sign-in tokens with
+   * and Auth.js signs its CSRF token with. SECRET — never logged, never in a URL. At least 32
+   * characters (`openssl rand -hex 32`).
+   *
+   * **Optional at server start, required at use**, for `QUOTE_SIGNING_SECRET`'s reason: absent in
+   * `development` and `test`, a clearly-named development secret is used; absent in a deployed
+   * environment, the first sign-in throws naming this key (`authSecret()` below). Required at boot
+   * once the founder has set it on Railway (spec 012 §12 founder action 3; TASK-223).
+   */
+  AUTH_SECRET: z.preprocess(
+    emptyToUndefined,
+    z
+      .string()
+      .min(32, "must be at least 32 characters (`openssl rand -hex 32`)")
+      .optional(),
+  ),
+  /**
+   * Resend API key for the sign-in mail of both surfaces (spec 012 §2.2, ADR-0013; TASK-217).
+   * SECRET. Read only by `resendMailer` through `mailerConfig()`; required at use where the mailer
+   * is `resend` (staging and production by default).
+   */
+  RESEND_API_KEY: optionalText,
+  /**
+   * The sender of the sign-in mail, `Name <address>` or a bare address on the domain verified in
+   * Resend (spec 012 §2.2; TASK-217). Not secret. Required at use where the mailer is `resend`.
+   */
+  EMAIL_FROM: optionalText,
+  /**
+   * Which `Mailer` sends (spec 012 §2.2; TASK-217): `resend` or `capture`. **Absent means the
+   * environment's default**: `resend` in `staging` and `production`, `capture` in `development`,
+   * `test` and `preview`. `capture` is refused in `staging` and `production` at boot, so a
+   * configuration mistake cannot swallow every sign-in link there.
+   */
+  MAILER: z.preprocess(emptyToUndefined, z.enum(mailerKinds).optional()),
   /** Logger threshold (`src/lib/logger.ts`). */
   LOG_LEVEL: z.enum(logLevels).default("info"),
   /**
@@ -730,6 +769,29 @@ export function validateRuntimeEnv(source: EnvSource): {
     });
   }
 
+  // Spec 012 §2.2 (TASK-217): the capturing mailer keeps every sign-in link in memory and serves
+  // it to the e2e suite, so it is refused where real people sign in; and the committed
+  // development auth secret is refused wherever `authSecret()` would refuse it.
+  if (
+    PRODUCTION_LIKE_ENVIRONMENTS.includes(environment) &&
+    source[MAILER_KEY]?.trim() === "capture"
+  ) {
+    issues.push({
+      key: MAILER_KEY,
+      message: `must not be \`capture\` in ${environment}: sign-in mail goes through Resend there (spec 012 §2.2). Unset it or set it to \`resend\`.`,
+    });
+  }
+  if (
+    source[AUTH_SECRET_KEY] === DEVELOPMENT_AUTH_SECRET &&
+    (DEPLOYED_ENVIRONMENTS.includes(environment) ||
+      source["NODE_ENV"] === "production")
+  ) {
+    issues.push({
+      key: AUTH_SECRET_KEY,
+      message: `must not be the committed development secret in ${environment}; generate one with \`openssl rand -hex 32\``,
+    });
+  }
+
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
     // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
     // because no database existed to point at; with Neon and R2 provisioned, a deployed
@@ -894,4 +956,127 @@ export function parseEnv(source: EnvSource): {
     throw new EnvValidationError(result.issues, environment);
   }
   return { client: result.client, server: result.server, environment };
+}
+
+/** The sign-in core's secret's name (spec 012 §2.2; TASK-217). */
+export const AUTH_SECRET_KEY = "AUTH_SECRET" as const;
+/** The mailer switch's name (spec 012 §2.2; TASK-217). */
+export const MAILER_KEY = "MAILER" as const;
+
+/**
+ * The secret sign-in tokens are hashed with where no real one is configured: `development` and
+ * `test` only. **Not a secret**, named so it cannot be mistaken for one; `authSecret()` refuses
+ * it everywhere else.
+ */
+export const DEVELOPMENT_AUTH_SECRET =
+  "phase-0-development-auth-secret-not-a-production-key";
+
+/** The sender the capturing mailer stamps when `EMAIL_FROM` is unset; it never leaves the process. */
+export const DEVELOPMENT_EMAIL_FROM = "sign-in@localhost.invalid";
+
+/** Whether the environment is positively a laptop or a test run (`quoteSigningSecret()`'s rule). */
+function developmentFallbackAllowed(source: EnvSource): boolean {
+  const { environment, unparseable } = resolveEnvironment(source);
+  return (
+    (environment === "development" || environment === "test") &&
+    source["NODE_ENV"] !== "production" &&
+    !unparseable
+  );
+}
+
+/**
+ * The sign-in core's secret (spec 012 §2.2; TASK-217): the configured value, or the development
+ * secret where the environment is positively development or test; anything else throws naming
+ * `AUTH_SECRET` and no value.
+ */
+export function authSecret(source: EnvSource): string {
+  const { environment } = resolveEnvironment(source);
+  const parsed = serverEnvSchema.shape.AUTH_SECRET.safeParse(
+    source[AUTH_SECRET_KEY],
+  );
+  if (!parsed.success) {
+    throw new EnvValidationError(
+      collect(parsed.error, source).map((issue) => ({
+        key: AUTH_SECRET_KEY,
+        message: issue.message,
+      })),
+      environment,
+    );
+  }
+  const allowed = developmentFallbackAllowed(source);
+  if (
+    parsed.data !== undefined &&
+    (allowed || parsed.data !== DEVELOPMENT_AUTH_SECRET)
+  ) {
+    return parsed.data;
+  }
+  if (parsed.data === undefined && allowed) return DEVELOPMENT_AUTH_SECRET;
+  throw new EnvValidationError(
+    [
+      {
+        key: AUTH_SECRET_KEY,
+        message:
+          "must be set to a real secret before anyone signs in outside development and test (`openssl rand -hex 32`; spec 012 §2.2)",
+      },
+    ],
+    environment,
+  );
+}
+
+/** What `mailerConfig()` resolves: which mailer, and what it needs. */
+export type MailerConfig =
+  | { readonly kind: "resend"; readonly apiKey: string; readonly from: string }
+  | { readonly kind: "capture"; readonly from: string };
+
+/**
+ * The mailer this environment uses (spec 012 §2.2; TASK-217): `MAILER` when set, else `resend`
+ * in `staging` and `production` and `capture` elsewhere. `capture` is refused in `staging` and
+ * `production`; `resend` without `RESEND_API_KEY` and `EMAIL_FROM` throws naming the missing
+ * keys and no value.
+ */
+export function mailerConfig(source: EnvSource): MailerConfig {
+  const { environment } = resolveEnvironment(source);
+  const productionLike = PRODUCTION_LIKE_ENVIRONMENTS.includes(environment);
+  const parsed = serverEnvSchema.shape.MAILER.safeParse(source[MAILER_KEY]);
+  if (!parsed.success) {
+    throw new EnvValidationError(
+      [{ key: MAILER_KEY, message: "must be `resend` or `capture`" }],
+      environment,
+    );
+  }
+  const kind: MailerKind =
+    parsed.data ?? (productionLike ? "resend" : "capture");
+  const from = serverEnvSchema.shape.EMAIL_FROM.parse(source["EMAIL_FROM"]);
+  if (kind === "capture") {
+    if (productionLike) {
+      throw new EnvValidationError(
+        [
+          {
+            key: MAILER_KEY,
+            message: `must not be \`capture\` in ${environment} (spec 012 §2.2)`,
+          },
+        ],
+        environment,
+      );
+    }
+    return { kind, from: from ?? DEVELOPMENT_EMAIL_FROM };
+  }
+  const apiKey = serverEnvSchema.shape.RESEND_API_KEY.parse(
+    source["RESEND_API_KEY"],
+  );
+  const missing = [
+    ...(apiKey === undefined ? ["RESEND_API_KEY"] : []),
+    ...(from === undefined ? ["EMAIL_FROM"] : []),
+  ];
+  if (apiKey === undefined || from === undefined) {
+    throw new EnvValidationError(
+      missing.map((key) => ({
+        key,
+        message:
+          "must be set before sign-in mail is sent through Resend (spec 012 §2.2, §12 founder action 3)",
+      })),
+      environment,
+    );
+  }
+  return { kind, apiKey, from };
 }

@@ -155,7 +155,11 @@ export const SELF_SCOPED_TABLES = [
 /** Staff only (`admin`, `system`): no other policy. */
 export const STAFF_ONLY_TABLES = [
   "accounts",
+  // spec 012 (migration `0013_admin_identity`, TASK-217): the admin profile and the sign-in
+  // core's send log. RLS and the staff policy are in `0013` itself, not in `0011`.
+  "admin_profile",
   "audit_log",
+  "auth_email_send",
   "consent_log",
   "db_usage_sample",
   "feature_flag",

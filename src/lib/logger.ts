@@ -68,9 +68,36 @@ export const REDACTED_KEYS: readonly string[] = [
   "sessiontoken",
   "publictoken",
   "objectkey",
+  // Spec 012 §8 (TASK-217): Auth.js's metadata names the sign-in address `identifier`; the admin
+  // profile's name is `display_name`. `identifier_hash`, the send log's SHA-256, stays readable.
+  // The sign-in link's `token` is a credential, not personal data: it is redacted by
+  // `REDACTED_CREDENTIAL_KEYS` below and, inside any string, by `TOKEN_IN_URL_PATTERN`.
+  "identifier",
+  "displayname",
 ];
 
 export const REDACTED_KEY_PREFIXES: readonly string[] = ["address", "card"];
+
+/**
+ * Credential keys (spec 012 §8; TASK-217): redacted in every log line and Sentry event like the
+ * PII keys above, but kept off `REDACTED_KEYS` because they are not personal data. `isRedactedKey`
+ * is also the predicate of spec 001 AC-55 ("no PII in our URLs"), and the sign-in core's links
+ * carry a token by design (spec 012 §2.2: `{confirm}?t=…`, and Auth.js's email callback reads
+ * `?token=` in process). A credential in a URL is spec 012's decision; a credential in a log line
+ * is never anyone's.
+ */
+export const REDACTED_CREDENTIAL_KEYS: readonly string[] = ["token"];
+
+/** What `redact()` and Sentry's scrub treat as a key whose value never leaves the process. */
+export function isRedactedLogKey(key: string): boolean {
+  const normalised = key.replace(/[_\-\s]/g, "").toLowerCase();
+  return (
+    isRedactedKey(key) ||
+    REDACTED_CREDENTIAL_KEYS.some((credential) =>
+      normalised.endsWith(credential),
+    )
+  );
+}
 
 /**
  * Spec 002 §8 widens `name` to `*name`: `full_name`, `legal_name`, `recipient_name` and
@@ -138,11 +165,23 @@ export const PHONE_PATTERN = new RegExp(
   "gu",
 );
 
-/** `text` with every email and phone match replaced by its marker (AC-54). */
+export const REDACTED_TOKEN = "[REDACTED:token]" as const;
+
+/**
+ * A sign-in token inside a URL or any other text (spec 012 §8; TASK-217): the emailed link's
+ * `?t=` and Auth.js's email callback's `?token=`, raw or percent-encoded (the value ends at `&`, `%`, a space or a quote), wherever a URL ends up
+ * in a string (a message, an error, a stack, a field value). The parameter name stays, the value
+ * becomes the marker.
+ */
+export const TOKEN_IN_URL_PATTERN =
+  /((?:[?&]|%3F|%26)(?:t|token)(?:=|%3D))(?!\[REDACTED)[^&\s#"'<>%]+/giu;
+
+/** `text` with every email, phone and sign-in token match replaced by its marker (AC-54). */
 export function scrubText(text: string): string {
   return text
     .replace(EMAIL_PATTERN, REDACTED_EMAIL)
-    .replace(PHONE_PATTERN, REDACTED_PHONE);
+    .replace(PHONE_PATTERN, REDACTED_PHONE)
+    .replace(TOKEN_IN_URL_PATTERN, `$1${REDACTED_TOKEN}`);
 }
 
 /**
@@ -175,7 +214,7 @@ export function redact(
   const out: Record<string, unknown> = {};
   for (const [key, item] of Object.entries(value)) {
     // A key can be personal data too (a record keyed by an email), so it gets the value scan.
-    out[scrubText(key)] = isRedactedKey(key) ? REDACTED : redact(item, seen);
+    out[scrubText(key)] = isRedactedLogKey(key) ? REDACTED : redact(item, seen);
   }
   return out;
 }

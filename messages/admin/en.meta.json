@@ -1,0 +1,417 @@
+{
+  "admin.email.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1af985a7dfe1732fdec2a38bce41287891742734d70630916e583170939460a7"
+  },
+  "admin.email.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d5c6cbc658c4040a78df8ed74c40e779d25d98d0454b51b61d151ff63df80991"
+  },
+  "admin.email.subject": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3ad9d607819dca3af7db75b840405a12190a2f31d32122062e053a22bd8127c3"
+  },
+  "admin.errors.backHome": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0facfba3ab6770e8cdebf1522fa9f94b9d06a74e23c339fec26837ac36b4e1ed"
+  },
+  "admin.errors.forbiddenBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5d7041f2bc4f4a234170388fb665a122f2312c9c1d429ce1f8d51989810cf6d3"
+  },
+  "admin.errors.forbiddenTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d7d1cd7d4d55211e21a45456c81e1128781bddede1c316522d11938deb550b92"
+  },
+  "admin.errors.notFoundBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2fffbc93267aa2bdbdd6eb406b8d43a421f04a8ce2f437a77bb20b3844ff846e"
+  },
+  "admin.errors.notFoundTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31"
+  },
+  "admin.errors.unauthorizedBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9e46ab6b89f2655b628909b6705580feb8b2c2850e3b82878c3712f87a5f5a5d"
+  },
+  "admin.errors.unauthorizedTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "80c6e7caffee367d7a8b9e6db3620dada71015d6f27f1fd07d1a4310075c1548"
+  },
+  "admin.home.applicationsNew": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1ae412be2a7a46bdaf3b5bbce24b034f4356de6f01e9afe408b3ab3b15ab6b13"
+  },
+  "admin.home.applicationsOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dda0ec2731a99d9486c1a660e6bd2d8148c72b775ba53df2e328ad5dce9f770b"
+  },
+  "admin.home.applicationsWaiting": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "20a6f59964c249e110881b657c2d9890b604ba47104956fddd269e4c05ed0dc9"
+  },
+  "admin.home.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e5143e7901e9998479812dbd53928ea4c000de584da03631d0258b7c86c038ba"
+  },
+  "admin.home.noApplications": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5bce5b935823aa453b87899a3eb59a41bf8e7bc353453e49f56fccade63775e3"
+  },
+  "admin.home.nothingToday": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "463d9584009731830d957e06de77459f67b0321cf5639e6f6cbf7da2a4f5cbfe"
+  },
+  "admin.home.ordersOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bf98116896a845a3a2879c663d566805202bcef108ad839dd5d93dd0c7c2edf2"
+  },
+  "admin.home.ordersToday": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2bdf730113471e27d19c2e9df6cf7c093ec89c495a4634b771194cd7eece3a52"
+  },
+  "admin.home.partnerStatus.active": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "admin.home.partnerStatus.demo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a2cc0673b1c428315fe84c0138d95c3ddda30baf81e7d9aa821f1ca47098193"
+  },
+  "admin.home.partnerStatus.offboarded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc5f0c93d1c5dc9479a27079f2f6cfb051dcfbe9cd577aca368606ba2b2c1bfc"
+  },
+  "admin.home.partnerStatus.onboarding": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a2198f472ce2fbee82a5546090a5dd896b1da3bb678e8963d19eaa03e08ca092"
+  },
+  "admin.home.partnerStatus.paused": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "admin.home.partnersByStatus": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "46d46ab9b311b0e63de255bbe79ec950079144e7c303feb62a3a516bfec77965"
+  },
+  "admin.home.partnersOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "afb40142f32d36ea30a5ad3e581bc9f26c7b2d2b5336b41cbb5d94606cac09c1"
+  },
+  "admin.home.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "admin.meta.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a0f717f1f371c44943abeb13b0c3af69280cedb25f91426dcaea154b74097c92"
+  },
+  "admin.nav.applications": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "98e33b0f3104fcf1b812ba2c679c0f15a94f583559b731d6580df2d8307d3edf"
+  },
+  "admin.nav.audit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e4d36f9a4e22d3a26e8128c1cc3926515194a835a446ff348ddbe8beab52f749"
+  },
+  "admin.nav.flags": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"
+  },
+  "admin.nav.home": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3a78695388b38b5cceefaf6796b0137877514593543b91af2752d5a17e3d736c"
+  },
+  "admin.nav.orders": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "admin.nav.partners": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36191ae287a09a15058574e81d6342c84317d4226df019720e39409e10b69066"
+  },
+  "admin.nav.users": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b0cc904d081a8c11cfdaec667f05132cbfa8a57f5040d27d5fc0f2fc50d0dc6"
+  },
+  "admin.roles.admin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+  },
+  "admin.roles.content": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ed7002b439e9ac845f22357d822bac1444730fbdb6016d3ec9432297b9ec9f73"
+  },
+  "admin.roles.finance": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eab762a03fd979a04cc4706e6536d382bc89d2d1356afcd054a16b2235ecd471"
+  },
+  "admin.roles.ops": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a92c36e66a25ee99ff862faa8e87987be6c7cd13c3ee661c400a45b0f1e3b132"
+  },
+  "admin.shell.brand": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c53b599f0e3ae771d83a879a35e03af0fba8c81519ccb75be64d7d71292bc8f3"
+  },
+  "admin.shell.environment.development": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "21b6a798321a49f75b9c3827fa3cfdb7efe2c4e05c3d13aefe1c825b9774a158"
+  },
+  "admin.shell.environment.preview": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "324b134f57c70c729ae3dc4d298bb451656717d70523e942c1ce667b8024ea07"
+  },
+  "admin.shell.environment.production": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "13a7c655a7d4213c0c7e77e83a7be6b267baa3f16937c401bf73371545cc9db8"
+  },
+  "admin.shell.environment.staging": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a8e7ac92a1164ad80744cc29090a3a539332a92e0a4907693914d04dca3629b5"
+  },
+  "admin.shell.environment.test": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "532eaabd9574880dbf76b9b8cc00832c20a6ec113d682299550d7a6e0f345e25"
+  },
+  "admin.shell.menu": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99af6606ff9d6cd5154d4d4e9c21e325086d3e904677cdb41d363c8a3480f862"
+  },
+  "admin.shell.navLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "94683bc66f53f38339850593da32d5c2500e42ded5b6f8ca5ab53c2203efa531"
+  },
+  "admin.shell.product": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c1c224b03cd9bc7b6a86d77f5dace40191766c485cd55dc48caf9ac873335d6f"
+  },
+  "admin.shell.signOut": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48f0d3d397d49f135f116d947a805b49f084f637154a8e9913e7233a11dc16a0"
+  },
+  "admin.shell.signedInAs": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3673333b8eac5cb16bd161a4baa1e8075863e999f396f7e3062dedb74b837221"
+  },
+  "admin.shell.you": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d1eb47c7757662c8610c7f80bda382d39eee60bf5652a6749657dafd820d9421"
+  },
+  "admin.signIn.confirmSubmit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "23964ba0b81c262189ba3d74cca7073e1d19922ace0bd8c45962c63b1fce8237"
+  },
+  "admin.signIn.email": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "admin.signIn.expiredBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "285bafa98c36fe604321e613379eca4f838565817caa3fd3fad5a1df49b4cda0"
+  },
+  "admin.signIn.note": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0e4eaeae62baea54767aa934156189394a743b38bf67fe4827cde15fe55f629e"
+  },
+  "admin.signIn.sentBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f2087facb2d5e75101b8ce39d03abc3cd03e0f9735326f7325cf6b69cecf6ff6"
+  },
+  "admin.signIn.sentTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7732287944e204a9b51ad6c271126f3e0140974f66936e21caed22f0d9c792fd"
+  },
+  "admin.signIn.signInAgain": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51fbe1dc8a7319b7974fb540f157a3ea3edaa985b8f1d970cec9406a20122dc2"
+  },
+  "admin.signIn.signedOutBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c7914a34083b8f70fa377d9187b52220fc98929780e7e5412412d8d347521843"
+  },
+  "admin.signIn.signedOutTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9cd3c84ed56f1f6aaa4284f3bd0864be6b6f1bc8104a33e20f0ce1ddd7288b7c"
+  },
+  "admin.signIn.submit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3759255024901bf37c81f6830b411b47e8502b633ff20afb63ba02ef33bb804c"
+  },
+  "admin.signIn.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "352d20a32ba44ae9f2ddc928666925ab664340b598b6864ee9f80790b394652b"
+  },
+  "admin.users.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.users.columnEmail": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "admin.users.columnName": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "admin.users.columnRoles": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c25337055464f8d31fb1498bc94025cba5eae3b0e1cf07741f09f8b873d00103"
+  },
+  "admin.users.columnStatus": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.users.conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9f1a31828cba015799495546ba8c9e13465e07a7328758c9f2d4789fb3c146a6"
+  },
+  "admin.users.deactivate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fb1e6fa55327160ed84ef7986791adb62976e5ec010cf9b3fcd5009fef19f048"
+  },
+  "admin.users.deactivateConfirm": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4be6651031137cffdb3077577a6634a614e9b2b3d98be5293c34b479c33bb06c"
+  },
+  "admin.users.grantEmail": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "admin.users.grantName": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "admin.users.grantRole": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "14736a2eb9f4159f4b6b86f192c3c222243fd9659aadf2ecc0139e3d72bed85c"
+  },
+  "admin.users.grantSubmit": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4549a77f3b6c3e9d26764e4c8e2073d778aab4b106499b378d01b50b5bdafe6a"
+  },
+  "admin.users.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "02e2d9bbfb825a898a9e7aa7c2da0efb22b3fa92b31d0c64936e18fb1e5026fc"
+  },
+  "admin.users.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "df7795fda9b87e4ecd739e34684121eb004058686826ff1e60706424dd3595fc"
+  },
+  "admin.users.noRoles": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1527d51f71196377f7e8bc9acd3b8fd3c7467ffcf0cdfdd2e6779e55f484b1c1"
+  },
+  "admin.users.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.users.ownLastAdmin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3b114546f932e1cd0f8497e00f38c9aa47cf8c789f114f3d3d4524b0a29ed41b"
+  },
+  "admin.users.removeRole": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "50870837c1e29ff9dbbeb1ac58ad34a262c996239ddbc3c98df41b39d28ae11d"
+  },
+  "admin.users.saved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fca046ccd586c67f7fe0b3c12c29873a8abf9376f7cd514fc6272ec03b2de0b3"
+  },
+  "admin.users.statusActive": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "admin.users.statusDeactivated": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4840a57222fc401c46320814b710acd454f12f20a0859c0522be3209aa110277"
+  },
+  "admin.users.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6b0cc904d081a8c11cfdaec667f05132cbfa8a57f5040d27d5fc0f2fc50d0dc6"
+  }
+}

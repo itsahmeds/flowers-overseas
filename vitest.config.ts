@@ -35,6 +35,10 @@ const unitTestTimeout = process.env.CI
 export default defineConfig({
   resolve: { alias },
   test: {
+    // `next-auth` (spec 012's sign-in core, TASK-217) imports `next/server` without an extension,
+    // which Node's ESM resolver refuses because `next` has no `exports` map. Inlining it lets
+    // Vite resolve the import the way Next's bundler does.
+    server: { deps: { inline: ["next-auth"] } },
     // Two suites, two commands (spec 001 §2 "Testing harness", AC-16): `pnpm test` runs `unit`,
     // `pnpm test:integration` runs `integration`. The integration project needs `DATABASE_URL`
     // (a Postgres service container in CI) and holds no live tests until spec 002.
