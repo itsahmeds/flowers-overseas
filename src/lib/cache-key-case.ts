@@ -102,9 +102,13 @@ const volumes = new Map<string, boolean>();
 /**
  * Whether `serverDistDir` sits on a case-insensitive volume: the directory is still found when
  * its own name is spelled in the other case. Memoised per directory; `false` when the directory
- * does not exist yet (nothing to collide with).
+ * does not exist yet (nothing to collide with). `exists` is `existsSync`; the unit tests pass a
+ * fake to reach the insensitive branch on the case-sensitive Linux of CI.
  */
-export function caseInsensitiveVolume(serverDistDir: string): boolean {
+export function caseInsensitiveVolume(
+  serverDistDir: string,
+  exists: (file: string) => boolean = existsSync,
+): boolean {
   const known = volumes.get(serverDistDir);
   if (known !== undefined) return known;
   const name = path.basename(serverDistDir);
@@ -112,8 +116,8 @@ export function caseInsensitiveVolume(serverDistDir: string): boolean {
     name === name.toUpperCase() ? name.toLowerCase() : name.toUpperCase();
   const insensitive =
     swapped !== name &&
-    existsSync(serverDistDir) &&
-    existsSync(path.join(path.dirname(serverDistDir), swapped));
+    exists(serverDistDir) &&
+    exists(path.join(path.dirname(serverDistDir), swapped));
   volumes.set(serverDistDir, insensitive);
   return insensitive;
 }

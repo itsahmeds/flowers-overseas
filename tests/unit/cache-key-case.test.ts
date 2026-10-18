@@ -16,9 +16,11 @@
 import {
   existsSync,
   mkdirSync,
-  readdirSync,
   mkdtempSync,
+  readdirSync,
+  realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -31,7 +33,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   type CaseProbe,
   caseInsensitiveVolume,
+  defaultCaseProbe,
   keyCollidesWithOtherCase,
+  realTrueCasePath,
   responseCacheFiles,
 } from "../../src/lib/cache-key-case.ts";
 import CspCacheHandler from "../../src/lib/csp-cache-handler.ts";
@@ -270,6 +274,13 @@ describe("keyCollidesWithOtherCase", () => {
     expect(keyCollidesWithOtherCase(dist, key, kind, trueCase)).toBe(true);
   });
 
+  it("collides with nothing when the dist directory itself cannot be resolved", () => {
+    const nothing = (): string | undefined => undefined;
+    expect(keyCollidesWithOtherCase(dist, "/EN", "APP_PAGE", nothing)).toBe(
+      false,
+    );
+  });
+
   it.each([
     ["/en", "APP_PAGE"],
     ["/en-XA", "APP_PAGE"],
@@ -304,7 +315,23 @@ describe("responseCacheFiles", () => {
 });
 
 describe("caseInsensitiveVolume", () => {
-  it("answers for the volume the directory is on, and false for a missing one", () => {
+  it("is true where the directory is found under its name in the other case", () => {
+    // A fake volume that folds case, so the insensitive branch runs on Linux too.
+    const folded = new Set(["/vol-a/.next/server"]);
+    const exists = (file: string): boolean => folded.has(file.toLowerCase());
+    expect(caseInsensitiveVolume("/vol-a/.next/server", exists)).toBe(true);
+  });
+
+  it("is false where only the exact spelling is found, and for a missing directory", () => {
+    const exact = new Set(["/vol-b/.next/server"]);
+    const exists = (file: string): boolean => exact.has(file);
+    expect(caseInsensitiveVolume("/vol-b/.next/server", exists)).toBe(false);
+    expect(caseInsensitiveVolume("/vol-c/.next/server", () => false)).toBe(
+      false,
+    );
+  });
+
+  it("answers for the real volume the directory is on", () => {
     const dir = mkdtempSync(join(tmpdir(), "fo-vol-"));
     try {
       const server = join(dir, "server");
@@ -316,5 +343,54 @@ describe("caseInsensitiveVolume", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("realTrueCasePath, the production resolver", () => {
+  let dir = "";
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "fo-true-"));
+  });
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("is what the cache handler uses unless a test injects a probe", () => {
+    expect(defaultCaseProbe.trueCasePath).toBe(realTrueCasePath);
+    expect(defaultCaseProbe.caseInsensitive).toBe(caseInsensitiveVolume);
+  });
+
+  it("answers the stored path, resolved through links, and undefined for nothing", () => {
+    // `realpath(3)`, not the path as asked: a link is resolved on every host, so a resolver that
+    // echoed its argument (or gave up) fails here on Linux as well as on a Mac.
+    const real = join(dir, "real");
+    mkdirSync(join(real, "app"), { recursive: true });
+    writeFileSync(join(real, "app", "en.html"), "x");
+    symlinkSync(real, join(dir, "link"));
+    const stored = join(realpathSync.native(real), "app", "en.html");
+
+    expect(realTrueCasePath(join(dir, "link", "app", "en.html"))).toBe(stored);
+    expect(realTrueCasePath(join(real, "app", "en.html"))).toBe(stored);
+    expect(realTrueCasePath(join(real, "app", "de.html"))).toBeUndefined();
+  });
+
+  it("answers the stored spelling for another spelling on a case-insensitive volume, and nothing on a case-sensitive one", () => {
+    mkdirSync(join(dir, "app"));
+    writeFileSync(join(dir, "app", "en.html"), "x");
+    const asked = realTrueCasePath(join(dir, "APP", "EN.html"));
+    if (existsSync(join(dir, "APP", "EN.html"))) {
+      expect(asked).toBe(join(realpathSync.native(dir), "app", "en.html"));
+    } else {
+      expect(asked).toBeUndefined();
+    }
+  });
+
+  it("makes /EN collide with en.html through the real resolver wherever the volume folds case", () => {
+    const server = join(dir, "server");
+    mkdirSync(join(server, "app"), { recursive: true });
+    writeFileSync(join(server, "app", "en.html"), "x");
+    const folds = existsSync(join(server, "app", "EN.html"));
+    expect(keyCollidesWithOtherCase(server, "/EN", "APP_PAGE")).toBe(folds);
+    expect(keyCollidesWithOtherCase(server, "/en", "APP_PAGE")).toBe(false);
   });
 });
