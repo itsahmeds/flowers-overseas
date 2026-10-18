@@ -56,6 +56,10 @@ One dated bullet per `/review`, newest last.
   7. T-20 (hole 7) asserts the `order.placed` payload, `place`'s actor, the line currency (EUR over a PLN base) and the outbox `payload_version` (3).
   8. Observation closed: `withSwitch` (`service/switch.ts`) resets both settings in a `finally`-style path for `transition` and `place`.
   Not pinned and not asked: the "first product line" order of the projections (`ORDER BY id`, arbitrary among product lines).
+- **From `/break` round 2 and scoped `/review` round 2 of PR 243 (a6abfd0c, 2026-10-18).** Holes 1 to 8 confirmed closed; the review accepted the money rule. Three survivors, each now pinned by a test:
+  1. FX band width and edges: unit cases at ±10 % exactly, one ppm inside and outside on each side, ±50 %, a case measured against the buyer total and not the conversion, and the reviewer's base × rate × 1.025 rounded up (4 610 EUR minor from 19 900 PLN minor at 226 000 ppm).
+  2. Offer existence: a real offer named with another florist, and with another attempt, is `ORDER_PAYLOAD_INVALID`.
+  3. `assignment.offered` by a `partner` actor is `ORDER_ACTOR_NOT_ALLOWED`; by an admin it is appended. The code already refused it; the case now pins it.
 
 ## Escalations
 
@@ -73,6 +77,7 @@ here.
 - 2026-10-18 · Engine (`src/modules/orders/service/`), projections (`queries.ts`) and the guest writers (`src/modules/customers/writers.ts`) committed (c2258c67); PR 243 draft.
 - 2026-10-18 · Integration suite `tests/integration/order-engine.test.ts` (14 cases) and unit suite `tests/unit/order-engine.test.ts` (87 cases) green on local PG16; 12 mutations each turned a case red. Local PG16: embedded binaries of TASK-024's brief, port 54502.
 - 2026-10-18 · Breaker round 1 holes 1–8 fixed or pinned (see Carry-forwards). Unit 94 (+ the new registry file), integration 22; all 24 of the breaker's mutations replayed, each red.
+- 2026-10-18 · Breaker round 2 survivors 1–3 pinned (unit +9 FX cases, integration hole 1 +3 cases). 7 mutations replayed (band 50 %, `<=`→`<`, lower side only, against the conversion, no `partner_id`, no `attempt`, `partner` allowed), each red. No hole left open.
 
 ## Result
 

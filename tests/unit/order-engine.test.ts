@@ -748,3 +748,77 @@ describe("breaker round 1 on PR 243 (holes 1, 2, 3, 8)", () => {
     ]);
   });
 });
+
+describe("breaker round 2 on PR 243: the FX band's width and edges (hole 1)", () => {
+  /** A two-currency order whose buyer total is 10 000 EUR minor and whose base is 10 000 PLN minor. */
+  const at = (
+    fxRatePpm: number,
+    buyerTotalMinor = 10_000,
+    baseTotalMinor = 10_000,
+  ) =>
+    placeInput(PARENTS, {
+      buyerCurrency: "EUR",
+      buyerTotalMinor,
+      baseCurrency: "PLN",
+      baseTotalMinor,
+      fxRatePpm,
+      vatBreakdown: [
+        {
+          rateBp: 0,
+          netMinor: buyerTotalMinor,
+          vatMinor: 0,
+          grossMinor: buyerTotalMinor,
+        },
+      ],
+      lines: [
+        {
+          kind: "product",
+          productId: PARENTS.productId,
+          tierKey: "classic",
+          qty: 1,
+          unitRetailMinor: buyerTotalMinor,
+          vatRateBp: 0,
+        },
+      ],
+    });
+
+  async function accepted(input: ReturnType<typeof at>): Promise<boolean> {
+    const { executor } = recorder();
+    try {
+      await placeWith(executor, input);
+      return true;
+    } catch (error) {
+      if (isOrderEngineError(error, "ORDER_INPUT_INVALID")) return false;
+      throw error;
+    }
+  }
+
+  // converted = 10 000 × rate / 10^6 against a buyer total of 10 000: the band is ±10 % of 10 000.
+  it.each([
+    ["exact conversion", 1_000_000, true],
+    ["upper edge, exactly +10 %", 1_100_000, true],
+    ["just inside the upper edge", 1_099_999, true],
+    ["just outside the upper edge", 1_100_001, false],
+    ["lower edge, exactly -10 %", 900_000, true],
+    ["just inside the lower edge", 900_001, true],
+    ["just outside the lower edge", 899_999, false],
+    ["far above (+50 %)", 1_500_000, false],
+    ["far below (-50 %)", 500_000, false],
+  ] as const)(
+    "%s (rate %i ppm) → accepted %s",
+    async (_label, rate, expected) => {
+      expect(await accepted(at(rate))).toBe(expected);
+    },
+  );
+
+  it("measures against the buyer total, not the converted amount", async () => {
+    // Converted 11 000.1 against a buyer total of 10 000: 10.001 % of the buyer total (outside),
+    // but only 9.09 % of the converted amount, so a band measured on the conversion would pass it.
+    expect(await accepted(at(1_100_010))).toBe(false);
+  });
+
+  it("accepts the reviewer's case: base × rate × 1.025, rounded up", async () => {
+    // 19 900 PLN minor at 226 000 ppm = 4 497.4 EUR minor; × 1.025 = 4 609.835, rounded up 4 610.
+    expect(await accepted(at(226_000, 4_610, 19_900))).toBe(true);
+  });
+});

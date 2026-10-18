@@ -1280,9 +1280,52 @@ describe.skipIf(server.url === undefined)(
               db(tx),
             ),
           ),
+          // Round 2: a real offer, but another florist or another attempt.
+          otherFlorist: await refusal(
+            appendEvent(
+              orderId,
+              "assignment.offered",
+              "system:demo_router",
+              { ...offer, partnerId: w.countryPartner },
+              db(tx),
+            ),
+          ),
+          otherAttempt: await refusal(
+            appendEvent(
+              orderId,
+              "assignment.offered",
+              "system:demo_router",
+              { ...offer, attempt: 2 },
+              db(tx),
+            ),
+          ),
+          // Round 2: a florist cannot record an offer, even a real one.
+          partnerOffer: await refusal(
+            appendEvent(
+              orderId,
+              "assignment.offered",
+              `partner:${partnerId}`,
+              offer,
+              db(tx),
+            ),
+          ),
         };
+        const adminSeq = await undone(
+          tx,
+          async (sp) =>
+            (
+              await appendEvent(
+                orderId,
+                "assignment.offered",
+                ACTOR_OF.admin,
+                offer,
+                db(sp),
+              )
+            ).seq,
+        );
         return {
           codes,
+          adminSeq,
           before,
           after: await snapshot(tx, orderId),
           settings: await settings(tx),
@@ -1294,7 +1337,11 @@ describe.skipIf(server.url === undefined)(
         ghostOffer: "ORDER_PAYLOAD_INVALID",
         otherOrdersOffer: "ORDER_PAYLOAD_INVALID",
         wrongMode: "ORDER_PAYLOAD_INVALID",
+        otherFlorist: "ORDER_PAYLOAD_INVALID",
+        otherAttempt: "ORDER_PAYLOAD_INVALID",
+        partnerOffer: "ORDER_ACTOR_NOT_ALLOWED",
       });
+      expect(result.adminSeq).toBe(5);
       expect(result.after).toEqual(result.before);
       expect(result.settings).toEqual(["", ""]);
     });
