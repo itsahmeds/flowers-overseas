@@ -83,14 +83,59 @@ says "this is the price you will pay" and shows another tier's price.
 - **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
   - Q1-01 (P1), still on `c8d3b334`: add-ons are priced in PLN with "VAT 23%" on the EUR and GBP pages, de and pl show Polish zloty add-ons half in English, and the printed card reads "0.00 PLN" (`QA-1-N06.png`). Choosing a size still leaves every price unchanged (PR 239 in review). **Done when** the add-on rows in en, en-gb, de and pl carry the page's currency, no VAT line, and the free card reads "Included", each a case red on `c8d3b334`.
 
+- **From the 2026-10-18 finisher (PR 239):** (1) TASK-129, the date half: with a surcharged date
+  chosen in `live`, the surcharge line and the chip fees still show the default size's fee after a
+  size change (the total is right, from the totals table). (2) `docs/design/README.md` needs a
+  difference row for C4: the docked bar shows from load with its price on the first screen,
+  where the artboard has the price join the bar once scrolled (outside this fence). (3) The related
+  heading's *our order* `<em>` waits for PR 230 (see Escalations).
+
 ## Escalations
 
-_None recorded._
+- **The PDP's script budget cannot be met with AC-51 and AC-31 as specified (2026-10-18, finisher;
+  rows 228 and 229 `blocked`).** `lighthouse` fails `resource-summary.script.size` only on
+  `/en{,-gb}/poland/flowers/roses`, a category listing served by the same
+  `[segment]/[child]/[grandchild]/page.tsx` as the PDP, so it loads the PDP island's chunk too
+  (the Lighthouse set holds no product URL; a product URL pays the same bytes): 131,517 B on this PR (run 38698876578) against
+  130,950 B on main (run 38701069633) and a 131,072 B budget. Shared script is 130,099 B on both,
+  so main leaves the PDP 122 B of headroom while spec 009 AC-14 promises the island 2,048 B. The
+  whole +567 B is the island (esbuild, minified, React external, Brotli 11: main 415 B, this PR
+  955 B; `ui/checkout/graphemes.ts` alone 388 B, the size-follow ~135 B). A rewrite as a
+  render-null island over a server-drawn `<textarea>` with the same `graphemes.ts` measures 734 B,
+  still about 200 B over. Only dropping checkout's grapheme approximation fits: a one-regex PDP
+  counter measures 498 B (+83 B, under budget by ~40 B by proxy), but it would count Indic
+  conjuncts, Thai SARA AM and CRLF differently from checkout, against TASK-229's binding clause
+  (`countGraphemes` parity), and leave TASK-129 no room. **Founder/spec decision needed:** (a) the
+  coarser PDP-only counter; (b) a PDP script budget above 131,072 B (spec 004 A1, spec 009 AC-14);
+  or (c) a task that cuts shared script. Nothing was changed for it in this run.
+  **Answered (founder, 2026-10-18 ~05:50Z, in chat, verbatim: "approve..", approving the
+  orchestrator's pick 1: "raise the product-page budget by 2 KB, and fix the defect where category
+  pages load the product page's script").** Recorded by PR 257 (merged) as spec 004 §14
+  A-founder-2026-10-18a (AC-56, T-61) and spec 009 §14 A-founder-2026-10-18a (AC-37, T-41). Built
+  in this PR: the product page has its own route file behind a rewrite; the full grapheme counter
+  stays.
+- **The related heading's poppy *our order*** (folded in by the work order from TASK-231) cannot land before PR 230. It needs AC-52's marker rules: `i18n:check` tag pairs, and `record-approval` comparing the tag-stripped value so the founder's approval survives. It is not built here. It is one line (`t.rich` with `HEADING_EM` on `product.related.heading`) once PR 230 merges.
 
 ## Progress
 
-_Not started._
+- 2026-10-15 06:35Z: view model (per-tier equivalents, add-ons by `addonPriceProjection`, no `facts`), the island's size half, bar on load; unit tests; draft PR 239.
+- 2026-10-15 06:50Z: e2e (size, card, chips), mutations watched red on `next dev`; rebased on `origin/main`.
+- 2026-10-15 07:20Z (session closing, partial on CI only): CI on `6a04ec94` had spine green, `visual` red (product and gallery baselines, expected: needs `visual:baselines`), `e2e` red only on `dev-components.spec.ts`'s add-on line (fixed in `32bf3cc3`, pushed, `ci:full` toggled), `lighthouse` still running. **Next:** read CI on the new head; if green except `visual`, the orchestrator adds `visual:baselines`; then `/review` + `/break`. The related heading `<em>` waits for PR 230. **Open:** `lighthouse` on `6a04ec94` failed `resource-summary.script.size` on `/en{,-gb}/poland/flowers/roses` at 131,517 B (budget 131,072, +445 B). That is a listing page, not the PDP. Not yet diagnosed: check whether main is also over budget, or whether the island's growth (602 → 1,133 B br) or `ui/checkout/graphemes.ts` landed in a chunk the listing shares.
+- 2026-10-18 03:05Z (finisher): rebased on `67ac748d` (head `7d7fd8b9`); cheap gates green except unit timeouts at load ~150, all 83 changed files + 3 always-run green with `--testTimeout=120000`; `visual:baselines` added, `ci:full` toggled. Script budget diagnosed and escalated (see Escalations); not fixed.
+
+- 2026-10-18 11:15Z (finisher 2): AC-37 built (product route `src/app/[locale]/%5Fproduct/…` behind `src/lib/product-rewrites.ts`; the shared depth-4 route serves only the listings), AC-56 wired (`budgetFor()` 133,120 B on product URLs, `productIslandHits()`, `lighthouserc.json` `assertMatrix`), QA 2026-10-18 widths added to the e2e; rebased on `d1f5fc69` (after PR 257); cheap gates PASS on `e0e97c78`. **Open:** `tests/fixtures/seo/bundle-baseline.json` has no row for the three new measured URLs until a build measures them (`budget:client-js --update-baseline`), so CI `build` is red on that step until then.
+- 2026-10-18 11:20Z (finisher 2, stopping at the time limit, partial): head `508b9508` adds the `@switcher/%5Fproduct` mirror (without it the product page's language links fell back to the homes; `tests/unit/product-switcher-slot.test.tsx`). Unit mutations watched red: pattern widened to `flowers`, off-by-one budget, product budget removed, `ProductPage` imported back into the shared route, slot mirror deleted. **Next:** (1) `tests/fixtures/seo/bundle-baseline.json` needs rows for `/en/poland/product/amber-hour`, `/en-gb/poland/product/amber-hour`, `/en-gb/poland/occasions/mothers-day`: build in the slot (`cp .env.example .env.local`, `pnpm build`, `pnpm budget:client-js --update-baseline`), check the listings are back at the shared number and the PDP is under 133,120 B, commit, push, toggle `ci:full`; until then CI `build` fails that step and `lighthouse` (needs `build`) skips. The slot was held by `unknown` since 10:45Z for this whole run. (2) The rebase took main's copy of four visual files that conflicted (`dev-components-desktop`, `laptop-country-shop`, `product-mobile-picker-preview` PNGs and the manifest): `visual:baselines` again after CI, runbook §2. (3) The QA width cases are judged by CI `e2e`; not watched red against `c8d3b334`.
+- 2026-10-18 12:05Z (finisher 2): the internal segment is `-product`, not `_product`: with the `%5Fproduct` folder Next 16.3.8 prerendered no product page (only the `[grandchild]` fallback shell; 1,287 routes against 4,809). Local build in the slot: every listing and home measures 126,297 B (no island, `productIslandHits` clean), the PDP 127,334 B against 133,120 B; three baseline rows added. `client-js-budget.spec.ts` (14 cases, AC-37 included) passed on `next start`.
 
 ## Result
 
-_Pending._
+**PR 239** (feature PR with TASK-229 and TASK-230).
+
+- **AC-31 client half, T-34; AC-48:** each size radio carries the server's strings for that size (`data-fo-say-price`, `-label`, `-total`, `-equivalents`; `TierSelector`'s `say`). The island (`CardMessageField`, still the PDP's only island) copies the chosen size's strings into every `data-fo-tier-slot`: buy price, "The price" tier row (label and price), equivalents line, the `aria-live` total, the bar's price and caption. It computes no money. The server HTML holds one amount per place. The view model gains `equivalents.tiers`; the selected size's entry must equal `equivalents.price`. The total per size is the totals table's entry for the chosen date, or the size's own price when no date is chosen.
+- **AC-34, AC-23 as amended, T-38:** `AddonLine.price` comes from `addonPriceProjection(key, iso2, locale, { now })`, which uses the same `convertForDisplay()` as the bouquet at the page's clock. `vatRateText` is gone from the shape, so a row cannot print a rate. The schema refuses an add-on in another currency. One `catalog.price.inclusive` line sits under the rows. The card reads the approved `product.included` with `first-letter:uppercase`. A new "Included" key (`reviewed: false`) pushed `en` past spec 003's 5 % share and turned 34 SEO and i18n cases red, so it was dropped.
+- **C4 (AC-46 phone, T-51):** the bar shows from load. The scroll-timeline reveal in `globals.css` is gone. The price stays in the bar on the first screen, which differs from the artboard ("price joins the bar" once scrolled). Hiding it would shift the action and break AC-48's CLS 0. This needs a row in `docs/design/README.md`, which is outside this fence.
+- **Tests:** unit: `product-page.test.tsx` (+5 cases: say strings, slots equal the checked size, per-size equivalents, T-38 render ×3 locales, stale FX), `catalog-product-view.test.ts` (T-38 model ×3 locales, stale FX, schema refusal), `product-equivalents.test.tsx` (E-1 superseded). e2e: `product-size-card-dates.spec.ts` T-34 at 1440 and 390; `product-page.spec.ts` T-38 ×3; `product-v3.spec.ts` C4 case and reduced motion.
+- **Watched red:** unit: card as `formatMoney(0)`, add-ons back in PLN, bar slot dropped, tier row reading another size, every size's equivalents from the selected size. e2e on `next dev`: bar price pinned, tier row not following, total not following, bar hidden on the first screen. "Equivalents left on the old size" is red at unit level only, because the committed FX snapshot is stale locally and the line is absent. The e2e case covers it where FX is fresh (a deployment).
+- **Island:** 1,133 B Brotli (vite, minified, React external), up from 602, which leaves 915 B of the shared 2,048 B for TASK-129.
+- **Local expensive run** (build slot held, `next dev` on :3228, load average 28 to 40): `product-size-card-dates` (12), `product-v3`, `product-page`: 53 passed. The 3 failures were the A12 count (fixed) and `/dev/components` (404 without `ENABLE_DEV_UI`, not this change). Product a11y: 7 passed, `/ar-XB` is not served locally. Visual baselines go through the orchestrator's `visual:baselines` label.
+- **Carry-forwards:** (1) the related heading's *our order* `<em>` (TASK-231 → here) waits for PR 230's AC-52 machinery (`t.rich` + `HEADING_EM`, tag-stripped approval). Without it, the founder's approval of `product.related.heading` would be lost. It is one line after PR 230 merges. (2) To TASK-129: with a surcharged date chosen in `live`, the surcharge line and the chip fees still show the default size's fee after a size change. The total is right (totals table). This is the date half.

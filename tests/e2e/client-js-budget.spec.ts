@@ -27,14 +27,15 @@
  * Vercel preview the chunk hashes belong to a different build, so the file-level comparison would
  * be meaningless. The static half runs everywhere, in CI's `build` job.
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { expect, test } from "@playwright/test";
 
 import {
-  CLIENT_JS_BUDGET_BYTES,
+  budgetFor,
   measurePages,
+  PRODUCT_ISLAND_MARKERS,
 } from "../../scripts/client-js-budget.ts";
 
 const DIST = resolve(import.meta.dirname, "../../.next");
@@ -60,6 +61,20 @@ const URLS = [
   "/en-gb/poland/flowers",
   // The depth-4 listings (TASK-110, TASK-111) are prerendered and measured directly.
   "/en/poland/flowers/roses",
+  // The product page (spec 009 AC-14 as amended, AC-37): served by its own route file through the
+  // product rewrite, measured against its own 133 120 B (`budgetFor`).
+  "/en/poland/product/amber-hour",
+] as const;
+
+/**
+ * Spec 009 AC-37 (T-41's e2e half): the three listing documents that share the product page's URL
+ * depth fetch no chunk holding the product island, and the product page still fetches it.
+ */
+const ISLAND_CASES = [
+  { url: "/en/poland/flowers/roses", island: false },
+  { url: "/en-gb/poland/flowers/roses", island: false },
+  { url: "/en-gb/poland/occasions/mothers-day", island: false },
+  { url: "/en/poland/product/amber-hour", island: true },
 ] as const;
 
 const SCRIPT_URL = /\/_next\/(static\/.+\.js)(?:\?|$)/;
@@ -108,7 +123,47 @@ test.describe("the script set a browser fetches (AC-24, §14 A1)", () => {
       expect(
         measured?.fetchedBrotliBytes ?? Number.POSITIVE_INFINITY,
         `${url}: Brotli transfer of the ${String(fetched.size)} scripts the browser fetched`,
-      ).toBeLessThanOrEqual(CLIENT_JS_BUDGET_BYTES);
+      ).toBeLessThanOrEqual(budgetFor(url));
+    });
+  }
+
+  for (const { url, island } of ISLAND_CASES) {
+    test(`${url} ${island ? "fetches" : "fetches no chunk of"} the product island (spec 009 AC-37)`, async ({
+      page,
+    }) => {
+      const fetched = new Set<string>();
+      page.on("response", (response) => {
+        const asset = SCRIPT_URL.exec(response.url())?.[1];
+        if (asset !== undefined) fetched.add(asset);
+      });
+
+      const response = await page.goto(url);
+      expect(response?.status()).toBe(200);
+      await page.waitForLoadState("networkidle");
+      await page.waitForTimeout(1_000);
+
+      const holding = [...fetched].filter((asset) => {
+        const file = resolve(DIST, asset);
+        if (!existsSync(file)) return false;
+        const source = readFileSync(file, "utf8");
+        return PRODUCT_ISLAND_MARKERS.every((marker) =>
+          source.includes(marker),
+        );
+      });
+      if (island) {
+        expect(
+          holding.length,
+          `${url}: chunks holding the island`,
+        ).toBeGreaterThan(0);
+      } else {
+        expect(holding, `${url}: chunks holding the island`).toEqual([]);
+      }
+
+      const [measured] = measurePages(DIST, [url]);
+      expect(
+        measured?.fetchedBrotliBytes ?? Number.POSITIVE_INFINITY,
+        `${url}: Brotli script transfer`,
+      ).toBeLessThanOrEqual(budgetFor(url));
     });
   }
 });

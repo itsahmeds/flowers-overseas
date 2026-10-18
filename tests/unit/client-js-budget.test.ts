@@ -75,6 +75,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   CLIENT_FORBIDDEN_NAMESPACES,
   CLIENT_JS_BUDGET_BYTES,
+  PRODUCT_CLIENT_JS_BUDGET_BYTES,
   DEFAULT_URLS,
   type PageMeasurement,
   FORBIDDEN_CLIENT_MODULES,
@@ -122,14 +123,25 @@ describe("the budget constants are plan/01 §7's as spec 004 §13 Q13 restated t
     ) as {
       ci: {
         assert: {
-          assertions: Record<string, [string, { maxNumericValue?: number }]>;
+          assertMatrix: {
+            matchingUrlPattern?: string;
+            assertions: Record<string, [string, { maxNumericValue?: number }]>;
+          }[];
         };
       };
     };
+    // Per URL since spec 004 §14 A-founder-2026-10-18a: the product pattern's number is
+    // `PRODUCT_CLIENT_JS_BUDGET_BYTES`, every other URL's this one
+    // (`tests/unit/product-script-budget.test.ts` asserts which URL gets which).
     expect(
-      rc.ci.assert.assertions["resource-summary:script:size"]?.[1]
-        ?.maxNumericValue,
-    ).toBe(CLIENT_JS_BUDGET_BYTES);
+      rc.ci.assert.assertMatrix
+        .map(
+          (entry) =>
+            entry.assertions["resource-summary:script:size"]?.[1]
+              ?.maxNumericValue,
+        )
+        .filter((value) => value !== undefined),
+    ).toEqual([CLIENT_JS_BUDGET_BYTES, PRODUCT_CLIENT_JS_BUDGET_BYTES]);
   });
 });
 
@@ -961,6 +973,7 @@ describe("the AC-25 clauses TASK-056 added", () => {
           fetchedBrotliBytes: bytes,
           documentBrotliBytes: bytes,
           lazyBrotliBytes: 0,
+          budgetBytes: CLIENT_JS_BUDGET_BYTES,
           withinBudget: true,
         }) satisfies PageMeasurement;
       const committed = {

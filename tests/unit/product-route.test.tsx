@@ -1,5 +1,6 @@
 /**
- * The product route — `src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx`'s product branch
+ * The product route — `src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx`, the
+ * product page's own file since spec 009 AC-37 (TASK-228), reached by the product rewrite
  * (spec 009 §2, §5.4, AC-1, AC-8's "zero template edits"; T-01 unit half; TASK-127).
  *
  * The route is called as Next calls it — a `params` promise in, an element or a thrown
@@ -58,7 +59,7 @@ vi.mock("next-intl/server", () => ({
 }));
 
 const route =
-  await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+  await import("../../src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx");
 const { ProductPage } =
   await import("../../src/modules/ui/product/ProductPage.tsx");
 const { listProductPages, productAlternatePaths, productPageExists } =
@@ -318,7 +319,7 @@ describe("AC-3: the product existence counts reach the CI step summary once per 
     // A fresh module instance is a fresh build: the cases above already called the shared one.
     vi.resetModules();
     const build =
-      await import("../../src/app/[locale]/[segment]/[child]/[grandchild]/page.tsx");
+      await import("../../src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx");
     try {
       const first = await build.generateStaticParams();
       const second = await build.generateStaticParams();
@@ -331,5 +332,52 @@ describe("AC-3: the product existence counts reach the CI step summary once per 
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+});
+
+describe("AC-18: the product route mounts the product JSON-LD (TASK-130, moved here by AC-37)", () => {
+  it("renders one `<JsonLd>` whose BreadcrumbList is the page's own trail", async () => {
+    // A deployment with a site URL, so the schema has a base to resolve the trail against.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", `https://${CANONICAL_HOST}`);
+    let element: ReactElement;
+    try {
+      element = await call(AMBER);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    const children = (
+      element.props as { children: readonly unknown[] }
+    ).children.filter(
+      (
+        child,
+      ): child is ReactElement<{
+        nodes: readonly (Record<string, unknown> | undefined)[];
+      }> =>
+        // By name: the AC-3 case above resets the module registry, so the route's `JsonLd` and a
+        // fresh import of it are different function objects.
+        isValidElement(child) &&
+        (child.type as { name?: string }).name === "JsonLd",
+    );
+    expect(children).toHaveLength(1);
+    const nodes = children[0]?.props.nodes ?? [];
+    const trail = nodes.find((node) => node?.["@type"] === "BreadcrumbList");
+    expect(trail).toBeDefined();
+    const view = await productView(
+      {
+        locale: "en",
+        countryIso: "PL",
+        sku:
+          (await listProductPages("en")).find(
+            (page) =>
+              page.slug === AMBER.grandchild &&
+              page.countrySlug === AMBER.segment,
+          )?.sku ?? "",
+      },
+      { parameterised: false },
+    );
+    const items = trail?.itemListElement as readonly unknown[];
+    expect(items).toHaveLength(view?.breadcrumb.length ?? -1);
+    // Phase 0: the Product + Offer gate is shut on every PDP.
+    expect(nodes.some((node) => node?.["@type"] === "Product")).toBe(false);
   });
 });

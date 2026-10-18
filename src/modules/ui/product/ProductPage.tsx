@@ -9,8 +9,9 @@
  * text, the sizes, the dates as `pickerState()` renders them, the primary action and the
  * destination line), then the visible trail, then the sections below the action in A12's default
  * order (description with "Read more" and the exclusion sentence outside the clamp, the trust
- * block, the card message with its printed preview, the add-ons, "The price", spec 007's
- * delivery facts (A12 open item (b)), related products). No CSS `order` and no placement moves a
+ * block, the card message with its printed preview, the add-ons, "The price", related products).
+ * There is **no delivery-facts block** (spec 009 §14 A-founder-2026-10-14d, AC-35): the picker says
+ * what is true about delivery, and nothing else does. No CSS `order` and no placement moves a
  * section out of its DOM place; the desktop's two columns below the action are auto-placed row by
  * row, so reading left to right, top to bottom is the DOM order.
  *
@@ -30,18 +31,25 @@
  * handle** (A24 clause 4 (d): a grip invites a drag that does nothing). The demo sentence (N2)
  * stays under the status, although the phone artboard drops it (A24 clause 1). The docked bar
  * (`StickyActionBar`, AC-48) repeats the selected size, its price (the same `formatMoney` of the
- * same `TierOption` the sheet prints) and an in-page link to the status; it appears only once the
- * buy section has scrolled out, by a CSS scroll-driven animation in `globals.css` (no island), and
- * a browser without scroll timelines never shows it, which loses nothing because it only repeats.
+ * same `TierOption` the sheet prints) and an in-page link to the status. It is on the first screen
+ * from load, where `product-mobile.dc.html` draws the dock (spec 004 §14 A-founder-2026-10-14h),
+ * so the primary action is in view before any scroll.
  *
- * **It renders from one `ProductView` and decides nothing a view model could.** Two blocks arrive
- * as slots (spec 008's breadcrumb, spec 007's delivery facts) because `catalog` and `geo` import
- * this module at runtime. **No purchase affordance** (§13 Q6, Q7): Phase 0's primary action is the
+ * **Every figure of the size follows the buyer** (spec 009 §14 A12, AC-31; spec 004 AC-48;
+ * TASK-228). The buy price, "The price" tier row and equivalents line, the total and the bar's
+ * size and price are `data-fo-tier-slot`s; each size's radio carries the server's string for each
+ * slot (`TierSelector`'s `say`), and the page's one island copies the chosen size's strings in. The
+ * server HTML holds one amount per place, the selected tier's, and no money is computed in the
+ * browser.
+ *
+ * **It renders from one `ProductView` and decides nothing a view model could.** One block arrives
+ * as a slot (spec 008's breadcrumb) because `catalog` imports this module at runtime. **No purchase affordance** (§13 Q6, Q7): Phase 0's primary action is the
  * "Ordering is not open yet" status, never a disabled button.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
+import { CARD_MESSAGE_MAX } from "@/config/card-message";
 import { isPublished } from "@/config/site-links";
 import type { ProductView } from "@/modules/catalog";
 import { formatMoney, formatNumber, localePath } from "@/modules/i18n";
@@ -50,6 +58,7 @@ import { Icon } from "../icons/Icon.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
 import { StickyActionBar } from "../primitives/StickyActionBar.tsx";
 import { Display, Eyebrow } from "../primitives/typography.tsx";
+import { equivalentsMessageValues } from "../shop/equivalents.ts";
 import { ProductCard } from "../shop/ProductCard.tsx";
 
 import { AddonPriceList } from "./AddonPriceList.tsx";
@@ -66,15 +75,10 @@ export interface ProductPageProps {
   readonly view: ProductView;
   /** Spec 008's breadcrumb over `view.breadcrumb`, mounted by the route. */
   readonly breadcrumb: ReactNode;
-  /** Spec 007's delivery-facts block over `view.facts`, mounted by the route. */
-  readonly facts: ReactNode;
 }
 
 /** The related row's full length, which the approved heading names in words ("Six more"). */
 const RELATED_SHOWN = 6;
-
-/** The card message's limit — the artboards' counter, and the field's `maxLength`. */
-export const CARD_MESSAGE_MAX = 400;
 
 /** The `h2` of every section below the action: the display face at `--text-md` (`.pv-sec h2`). */
 const H2 = STEP_HEADING;
@@ -95,11 +99,9 @@ export const BUY_ACTION_ID = "buy";
 export function ProductPage({
   view,
   breadcrumb,
-  facts,
 }: ProductPageProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
-  const corridor = useTranslations("corridor");
   const catalog = useTranslations("catalog");
   const code = localeOf(view.locale);
   const country = messageFor(t, view.country.nameKey);
@@ -113,6 +115,39 @@ export function ProductPage({
     selectedTier === undefined
       ? undefined
       : formatMoney(selectedTier.price, code);
+  // What each size's radio carries for the island (AC-31): the total of that size on the selected
+  // date (the totals table's entry, or the size's own price when no date is chosen) and its own
+  // equivalents line. Strings formatted here, from the view model's amounts; never summed.
+  const say = new Map(
+    view.tiers.map((tier) => {
+      const total =
+        view.selectedDate === undefined
+          ? tier.price.amountMinor
+          : view.totals[tier.tierKey]?.[view.selectedDate];
+      const line = view.equivalents.tiers?.[tier.tierKey];
+      return [
+        tier.tierKey,
+        {
+          ...(total === undefined
+            ? {}
+            : {
+                total: formatMoney(
+                  { amountMinor: total, currency: tier.price.currency },
+                  code,
+                ),
+              }),
+          ...(line === undefined
+            ? {}
+            : {
+                equivalents: catalog(
+                  "price.equivalents",
+                  equivalentsMessageValues(line, code),
+                ),
+              }),
+        },
+      ] as const;
+    }),
+  );
 
   const descriptor =
     view.h1.formKey === undefined
@@ -186,7 +221,7 @@ export function ProductPage({
                 data-fo-pdp-price
               >
                 <strong className="display num text-[26px] leading-none font-normal md:text-[30px]">
-                  <bdi>{selectedPrice}</bdi>
+                  <bdi data-fo-tier-slot="price">{selectedPrice}</bdi>
                 </strong>
                 <span className="text-included max-w-[11ch] text-xs font-bold md:max-w-none md:text-sm">
                   {catalog("price.inclusive")}
@@ -198,6 +233,7 @@ export function ProductPage({
               <TierSelector
                 locale={code}
                 look="buy"
+                say={say}
                 selectedTierKey={view.selectedTierKey}
                 tiers={view.tiers}
               />
@@ -344,20 +380,27 @@ export function ProductPage({
             <StepLegend id="pdp-card-legend">
               {product("card.legend")}
             </StepLegend>
-            <div className="grid items-start gap-[16px] md:grid-cols-[minmax(0,1fr)_200px] md:gap-[24px]">
-              <CardMessageField
-                labelledBy="pdp-card-legend"
-                className="bg-card text-ink text-body rounded-letter block min-h-[190px] w-full resize-y border-0 bg-[0_17px] bg-(image:--card-lines) px-[22px] py-[18px] leading-[38px] shadow-[inset_0_0_0_1.5px_var(--color-field-edge),0_14px_30px_-18px_var(--color-shade)]"
-                id="pdp-card-message"
-                limit={formatNumber(CARD_MESSAGE_MAX, code)}
-                maxLength={CARD_MESSAGE_MAX}
-              />
-              <div className="max-w-[440px]">
-                <PrintedCardPreview
-                  printed={product("card.printed")}
-                  sample={catalog("addon.card.description")}
+            {/* The artboards' `.pv-card`: the field with its counter under it, end-aligned, and the
+                "printed" line, beside an upright card 200 px wide from `md` (under the field on
+                the phone) that grows with the message (TASK-229). */}
+            <div
+              className="grid items-start gap-[16px] md:grid-cols-[minmax(0,1fr)_200px] md:gap-[24px]"
+              data-fo-pdp-card-row
+            >
+              <div className="min-w-0" data-fo-pdp-card-field>
+                <CardMessageField
+                  labelledBy="pdp-card-legend"
+                  className="bg-card text-ink text-body rounded-letter block min-h-[190px] w-full resize-y border-0 bg-[0_17px] bg-(image:--card-lines) px-[22px] py-[18px] leading-[38px] wrap-anywhere shadow-[inset_0_0_0_1.5px_var(--color-field-edge),0_14px_30px_-18px_var(--color-shade)]"
+                  counterClassName="text-ink-subtle num m-0 mt-[6px] text-end text-xs"
+                  id="pdp-card-message"
+                  limit={formatNumber(CARD_MESSAGE_MAX, code)}
+                  max={CARD_MESSAGE_MAX}
                 />
+                <p className="text-ink-muted m-0 mt-[6px] text-sm">
+                  {product("card.printed")}
+                </p>
               </div>
+              <PrintedCardPreview sample={catalog("addon.card.description")} />
             </div>
           </fieldset>
 
@@ -379,23 +422,6 @@ export function ProductPage({
           <div className={`${LEFT} max-w-[440px]`} data-fo-pdp-the-price>
             <PriceSummary view={view} />
           </div>
-
-          <section
-            aria-labelledby="pdp-facts-heading"
-            className={RIGHT}
-            data-fo-pdp-facts
-          >
-            <Eyebrow className="mb-[4px]">{corridor("facts.eyebrow")}</Eyebrow>
-            <h2
-              className="display text-h3-s md:text-h3 m-0 mb-[12px]"
-              id="pdp-facts-heading"
-            >
-              {live
-                ? corridor("facts.headingLive")
-                : corridor("facts.headingGuide")}
-            </h2>
-            {facts}
-          </section>
         </div>
 
         {view.related.length === 0 ? null : (
@@ -432,16 +458,23 @@ export function ProductPage({
           </section>
         )}
       </main>
-      {/* The phone's docked bar (AC-48): the selected size and its price, the same string the
-          sheet prints, and an in-page link to the status in the flow. Shown only after the buy
-          section has scrolled out (`[data-fo-pdp-bar]` in `globals.css`). */}
+      {/* The phone's docked bar (AC-48): the selected size and its price, the same strings the
+          sheet prints and the same slots the island fills, and an in-page link to the status in
+          the flow. On the first screen from load (spec 004 §14 A-founder-2026-10-14h). */}
       <StickyActionBar
         action={{ href: `#${BUY_ACTION_ID}`, label: product("demo.heading") }}
-        className="pdp-bar [&_a]:bg-surface-muted [&_a]:text-ink-muted [&_a:hover]:bg-surface-muted [&_a]:text-sm [&_a]:shadow-[inset_0_0_0_1px_var(--color-rule)]"
+        className="[&_a]:bg-surface-muted [&_a]:text-ink-muted [&_a:hover]:bg-surface-muted [&_a]:text-sm [&_a]:shadow-[inset_0_0_0_1px_var(--color-rule)]"
         price={
           selectedTier === undefined || selectedPrice === undefined
             ? undefined
-            : { amount: selectedPrice, caption: tierLabel(t, selectedTier) }
+            : {
+                amount: <bdi data-fo-tier-slot="price">{selectedPrice}</bdi>,
+                caption: (
+                  <span data-fo-tier-slot="label">
+                    {tierLabel(t, selectedTier)}
+                  </span>
+                ),
+              }
         }
       />
     </>

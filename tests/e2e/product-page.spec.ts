@@ -245,24 +245,60 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
     });
   }
 
-  test("the add-ons are rows with a price and a VAT rate, the card a zero line, and no input", async ({
-    page,
-  }) => {
-    await page.goto(POLAND_PDPS[0]);
-    const list = page.locator("[data-fo-addon-list]");
-    await expect(list.locator("input, button, select, textarea")).toHaveCount(
-      0,
-    );
-    const rows = list.locator("[data-fo-addon]");
-    expect(await rows.count()).toBeGreaterThan(1);
-    for (const row of await rows.all()) {
-      await expect(row.locator("[data-fo-addon-price]")).toHaveText(/\d/u);
-      await expect(row).toContainText("VAT ");
-    }
-    await expect(
-      list.locator('[data-fo-addon="card"] [data-fo-addon-price]'),
-    ).toHaveText(/^\D*0[.,]00\D*$/u);
-  });
+  // Spec 009 §14 A-founder-2026-10-14c, AC-34 (T-38's browser half): every add-on price in the
+  // bouquet's currency, no VAT rate on a row, the card "Included", no input.
+  for (const [url, symbol, foreign] of [
+    ["/en/poland/product/amber-hour", "€", /zł|PLN|£/u],
+    ["/en-gb/poland/product/amber-hour", "£", /zł|PLN|€/u],
+    ["/pl/polska/produkt/amber-hour", "zł", /€|£|EUR|GBP/u],
+    // From the 2026-10-18 site test (Q1-01: de showed złoty add-ons with "VAT 23%").
+    ["/de/polen/produkt/amber-hour", "€", /zł|PLN|£/u],
+  ] as const) {
+    test(`${url}: the add-ons are in the bouquet's ${symbol}, with no VAT rate, the card Included, and no input`, async ({
+      page,
+    }) => {
+      await page.goto(url);
+      // With a stale rate the bouquet and every add-on quote the destination's złoty together.
+      const stale =
+        (await page
+          .locator("[data-fo-price-summary]")
+          .getAttribute("data-fo-fx-state")) === "fallback";
+      const shown = stale ? "zł" : symbol;
+      const other = stale ? /€|£|EUR|GBP/u : foreign;
+      await expect(page.locator("[data-fo-pdp-price] bdi")).toContainText(
+        stale ? /zł|PLN/u : symbol,
+      );
+      const list = page.locator("[data-fo-addon-list]");
+      await expect(list.locator("input, button, select, textarea")).toHaveCount(
+        0,
+      );
+      const rows = list.locator("[data-fo-addon]");
+      expect(await rows.count()).toBeGreaterThan(1);
+      for (const row of await rows.all()) {
+        const text = await row.innerText();
+        expect(text, text).not.toContain("%");
+        expect(other.exec(text)?.[0], text).toBe(undefined);
+        if ((await row.getAttribute("data-fo-addon")) === "card") continue;
+        await expect(row.locator("[data-fo-addon-price]")).toContainText(
+          shown === "zł" ? /zł|PLN/u : shown,
+        );
+      }
+      const card = list.locator('[data-fo-addon="card"] [data-fo-addon-price]');
+      await expect(card).not.toHaveText(/\d|[€£]|zł|PLN/u);
+      await expect(card).not.toHaveText("");
+      if (symbol !== "zł") {
+        // The approved "included", its first letter set upright: it reads "Included".
+        await expect(card).toHaveText(/^included$/iu);
+        expect(
+          await card.evaluate(
+            (node) => getComputedStyle(node, "::first-letter").textTransform,
+          ),
+        ).toBe("uppercase");
+      }
+      // The section says once that its prices include VAT.
+      await expect(page.locator("[data-fo-addon-vat]")).toHaveCount(1);
+    });
+  }
 });
 
 test.describe("one priority image with its preload, and none without a photograph (AC-25, T-25)", () => {

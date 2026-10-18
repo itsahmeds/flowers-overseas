@@ -40,6 +40,8 @@ import { resolve } from "node:path";
 
 import { type Page, expect, test } from "@playwright/test";
 
+import { productRoutePathFor } from "../../src/lib/product-rewrites";
+
 const ROOT = resolve(import.meta.dirname, "../..");
 const NEXT_BIN = resolve(ROOT, "node_modules/.bin/next");
 const BUILD_ID = resolve(ROOT, ".next/BUILD_ID");
@@ -281,14 +283,14 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
     // the copy Next promoted to `server/route-cache/APP_PAGE/<sha256 of the source route>/$<path>`
     // (Next 16.3.8 scopes its response cache; it reads only the promoted file when one exists).
     // The payload goes into both, so the stored document the server really reads carries it.
-    const seed = resolve(ROOT, `.next/server/app${path ?? ""}.html`);
+    // A product address is served by the product route since spec 009 AC-37 (TASK-228), so its
+    // stored document lives under that route's path (`src/lib/product-rewrites.ts`).
+    const stored = productRoutePathFor(path ?? "") ?? path ?? "";
+    const seed = resolve(ROOT, `.next/server/app${stored}.html`);
     const original = readFileSync(seed, "utf8");
     expect(original).toContain("</body>");
     const promotedBefore = new Map(
-      promotedCopies(path ?? "").map((file) => [
-        file,
-        readFileSync(file, "utf8"),
-      ]),
+      promotedCopies(stored).map((file) => [file, readFileSync(file, "utf8")]),
     );
     const inject = (html: string): string =>
       html.replace("</body>", `${payload}</body>`);

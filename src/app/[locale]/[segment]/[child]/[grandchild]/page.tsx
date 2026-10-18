@@ -1,34 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { isPublished } from "@/config/site-links";
 import {
-  ListingBreadcrumb,
   type LocalePathResolution,
-  type ProductView,
   listingRequest,
   localeGrandchildParams,
-  localeProductParams,
-  productAlternatePaths,
-  productJsonLd,
-  productView,
   resolveLocalePath,
-  writeProductExistenceSummary,
 } from "@/modules/catalog";
-import { DeliveryFacts } from "@/modules/geo";
-import { LanguageAlternates } from "@/modules/i18n";
-import {
-  type BreadcrumbLabel,
-  JsonLd,
-  canonicalFor,
-  deploymentDescriptor,
-  pageMetadata,
-  schemaOptions,
-} from "@/modules/seo";
-// Imported directly, not through the `ui` barrel: `ProductPage` mounts the printed-card preview,
-// Caveat's one importer, so the barrel must not reach it (`tests/unit/fonts.test.ts`).
-import { ProductPage } from "@/modules/ui/product/ProductPage";
 
 import {
   CountryListing,
@@ -69,12 +47,9 @@ import {
  * Nothing in this file names a country, a category, an occasion or a floor, which is why lifting
  * a category over `PRODUCT_COUNT_FLOOR` adds its URL with `git diff --stat src/app` empty.
  *
- * **The existence summaries** (AC-3). The listings' table is written once per build by the depth-3
+ * **The existence summary** (AC-3). The listings' table is written once per build by the depth-3
  * file's `generateStaticParams`, where `/review 76` ruling 4 put it; counting the same set twice
- * would print two tables into one CI step summary. The **product** table (spec 009 AC-3, §11) is
- * written here, by the `generateStaticParams` that emits the prebuilt product params it counts,
- * behind the same once-per-process guard (`/review 96`'s carry-forward to TASK-127); its
- * "Prebuilt" column equals its "PDPs" column since A6.
+ * would print two tables into one CI step summary.
  *
  * **Rendering: ISR, `revalidate` 3600 s** with §5.4's tags, through `src/lib/cache.ts` as the only
  * invalidation seam. Nothing here reads a cookie or a request header, so no response carries a
@@ -96,55 +71,24 @@ import {
  * slug has no page and therefore no alternate (AC-16, §13 Q10). JSON-LD is TASK-115's; the slot
  * is here and empty.
  *
- * **The product page is the third page type here** (spec 009 §2, §5.4; TASK-127):
- *
- * ```
- * /{locale}/{countrySlug}/{product}/{productSlug}        spec 009's product detail page
- * ```
- *
- * **Its params are its existence set** (spec 009 §14 **A6**, AC-3; TASK-127 E-1): every product
- * page per (locale, published destination), 2 352 in production's four locales. The
- * `[locale]` layout exports `dynamicParams = false` (spec 003's locale gate) and Next computes a
- * route's `dynamicParams` as `every` segment's, so a URL this build did not emit is a router 404
- * whatever this file says — rendered as the x-default `not-found.tsx` document with its `lang`,
- * which is why the gate stays where spec 003 put it. A top-24 prebuild under that gate left 420
- * of 588 product pages per locale answering 404. `dynamicParams = true` below is therefore
- * **inert** while the layout's is `false`; it is kept so that, if the gate ever moves (spec 003
- * §14 A3's Cache Components tripwire), the route already resolves on demand through
- * `productPageExists()` rather than silently refusing.
- *
- * The product branch mounts one module page component, `ProductPage`, over one `productView()`;
- * the two blocks that page cannot import — spec 008's breadcrumb and spec 007's delivery facts —
- * are mounted here over the same view and handed in as slots (the import direction is in
- * `ProductPage`'s header). It renders the bare URL: `?tier=` / `?date=` and their form are
- * TASK-128's, so this branch reads no search parameter and stays ISR.
- *
- * **Its JSON-LD** (spec 009 AC-18; TASK-130) is `productJsonLd()` over the same view: the
- * `BreadcrumbList` of `product.breadcrumb`, and a `Product` + `Offer` only behind the gate, which
- * is shut on every Phase 0 PDP. The listing branches' JSON-LD is still TASK-115's.
+ * **The product page is not served here** (spec 009 §14 A-founder-2026-10-18a, AC-37; TASK-228).
+ * Its address, `/{locale}/{countrySlug}/{product}/{productSlug}`, has the same depth, but
+ * `next.config.ts` rewrites it to its own route file,
+ * `src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx`
+ * (`src/lib/product-rewrites.ts`). Turbopack puts every client module a route file reaches into
+ * that route's script set, so while this file mounted `ProductPage` the country category and
+ * occasion fetched the product island's chunk. This file must never import `ProductPage` or
+ * anything under `src/modules/ui/product/` again (`tests/unit/product-script-budget.test.ts`).
  */
 export const revalidate = 3600;
+// Inert under the `[locale]` layout's `dynamicParams = false` (spec 003's locale gate), which binds
+// this subtree; unchanged when the product page moved out.
 export const dynamicParams = true;
-
-/**
- * Next calls `generateStaticParams` more than once per build (the collection pass and the render
- * pass), and the counts describe the build rather than the call: one process, one table.
- */
-let productSummaryWritten = false;
 
 export async function generateStaticParams(): Promise<
   { locale: string; segment: string; child: string; grandchild: string }[]
 > {
-  const params = [
-    ...(await localeGrandchildParams()),
-    ...(await localeProductParams()),
-  ];
-  // The product counts of the set just emitted, where CI reads them (spec 009 AC-3).
-  if (!productSummaryWritten) {
-    productSummaryWritten = true;
-    await writeProductExistenceSummary();
-  }
-  return params;
+  return [...(await localeGrandchildParams())];
 }
 
 interface GrandchildParams {
@@ -156,43 +100,20 @@ interface GrandchildParams {
   }>;
 }
 
-/** The three resolutions this depth serves; everything else the resolver returns is a 404 here. */
+/**
+ * The two resolutions this file serves; everything else the resolver returns is a 404 here. A
+ * product address never reaches this file (`next.config.ts` rewrites it to the product route), and
+ * if one did it would be a 404 rather than a product page that loads the island here again.
+ */
 type Depth4Match = Extract<
   LocalePathResolution,
-  { kind: "countryCategory" | "countryOccasion" | "product" }
+  { kind: "countryCategory" | "countryOccasion" }
 >;
 
-/** The product resolution of this depth. */
-type ProductMatch = Extract<Depth4Match, { kind: "product" }>;
-
 function depth4(match: LocalePathResolution): Depth4Match | undefined {
-  return match.kind === "countryCategory" ||
-    match.kind === "countryOccasion" ||
-    match.kind === "product"
+  return match.kind === "countryCategory" || match.kind === "countryOccasion"
     ? match
     : undefined;
-}
-
-/**
- * The product page's one view model (spec 009 §5.2, T-32). `undefined` after the resolver said
- * the page exists can only mean the data moved under the page, and the honest answer is the 404
- * the existence rule now gives. The bare URL: `parameterised` is `false` because this branch reads
- * no search parameter (TASK-128 owns `?tier=` / `?date=`).
- */
-async function productViewFor(
-  match: ProductMatch,
-  deployment?: Parameters<typeof productView>[1]["deployment"],
-): Promise<ProductView> {
-  const view = await productView(
-    { locale: match.locale, countryIso: match.iso2, sku: match.sku },
-    {
-      parameterised: false,
-      productLinks: isPublished("product"),
-      ...(deployment === undefined ? {} : { deployment }),
-    },
-  );
-  if (view === undefined) notFound();
-  return view;
 }
 
 export async function generateMetadata({
@@ -203,40 +124,6 @@ export async function generateMetadata({
     await resolveLocalePath(locale, [segment, child, grandchild]),
   );
   if (match === undefined) notFound();
-
-  const deployment = deploymentDescriptor(process.env);
-
-  if (match.kind === "product") {
-    const view = await productViewFor(match, deployment);
-    const t = await getTranslations({ locale: match.locale });
-    const label = t as unknown as (
-      key: string,
-      values?: Record<string, string>,
-    ) => string;
-    // The description is the shop's demo sentence (N1, spec 004 §14 A23 clause 12): it is true of
-    // every product page in Phase 0, and a PDP writes no new `<head>` copy of its own while every
-    // one is `noindex`.
-    const shop = await getTranslations({
-      locale: match.locale,
-      namespace: "shop",
-    });
-    return pageMetadata({
-      title:
-        view.h1.formKey === undefined
-          ? view.h1.name
-          : label(view.h1.key, {
-              name: view.h1.name,
-              descriptor: label(view.h1.formKey, {
-                flower: label(view.h1.flowerKey),
-              }),
-            }),
-      description: shop("root.demoNotice"),
-      directive: view.indexability.directive,
-      canonical: canonicalFor(match.locale, view.path, {
-        baseUrl: deployment.siteUrl,
-      }),
-    });
-  }
 
   return countryListingMetadata(match, listingRequest());
 }
@@ -249,54 +136,6 @@ export default async function LocaleGrandchildRoute({
     await resolveLocalePath(locale, [segment, child, grandchild]),
   );
   if (match === undefined) notFound();
-
-  if (match.kind === "product") {
-    const product = await productViewFor(match);
-    setRequestLocale(match.locale);
-    const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
-    // The translator `ListingBreadcrumb` reads, so the JSON-LD label and the visible label are one
-    // message with one value (the `[child]` route's `registryLabels()` cast, for its reason).
-    const t = await getTranslations({ locale: match.locale });
-    const label = t as unknown as BreadcrumbLabel;
-    // The popup's options go to this product in each locale that has it (TASK-197, owed from
-    // the TASK-179 review); nothing here touches the head.
-    const productAlternates = (
-      <LanguageAlternates
-        paths={await productAlternatePaths({
-          sku: match.sku,
-          countryIso: match.iso2,
-        })}
-      />
-    );
-    return (
-      <>
-        <ProductPage
-          breadcrumb={
-            // The product page keeps its trail on the phone and shows no back link (spec 004
-            // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.
-            <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
-          }
-          facts={
-            <DeliveryFacts
-              facts={product.facts}
-              locale={product.locale}
-              nameKey={product.country.nameKey}
-              prices="omit"
-            />
-          }
-          view={product}
-        />
-        {productAlternates}
-        {/* `BreadcrumbList` from the trail above, and the gated `Product` + `Offer` (spec 009
-            AC-18; TASK-130): one `productView()` in, so the markup cannot disagree with the page. */}
-        <JsonLd
-          nodes={
-            options === undefined ? [] : productJsonLd(product, label, options)
-          }
-        />
-      </>
-    );
-  }
 
   return <CountryListing match={match} request={listingRequest()} />;
 }

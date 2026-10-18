@@ -109,7 +109,7 @@ function render(view: ProductView): string {
       messages={loadMessages(view.locale, [...NAMESPACES])}
       timeZone="UTC"
     >
-      <ProductPage breadcrumb={null} facts={null} view={view} />
+      <ProductPage breadcrumb={null} view={view} />
     </NextIntlClientProvider>,
   );
 }
@@ -440,16 +440,16 @@ describe("the one line converts the selected tier's price, not the surcharged to
   });
 });
 
-describe("add-ons stay in the destination's currency (spec 009 E-1)", () => {
-  it("prices every add-on in złoty on a euro page, with no equivalents line in the list", async () => {
+describe("add-ons in the page's currency (spec 009 §14 A-founder-2026-10-14c, AC-34; E-1 superseded)", () => {
+  it("prices every add-on in euro on a euro page, with no equivalents line in the list", async () => {
     const view = await viewOf("en", { now: FRESH });
     expect(view.price.displayPrice.currency).toBe("EUR");
     expect(view.addons.length).toBeGreaterThan(0);
     expect(new Set(view.addons.map((addon) => addon.price.currency))).toEqual(
-      new Set(["PLN"]),
+      new Set(["EUR"]),
     );
     const addons = block(render(view), "data-fo-pdp-addons");
-    expect(addons).toContain("PLN");
+    expect(addons).not.toContain("PLN");
     expect(occurrences(addons, LINE)).toBe(0);
   });
 });

@@ -22,6 +22,10 @@ import {
   mediaCacheHeaderRules,
   mediaHeaderRules,
 } from "./src/lib/media-headers";
+import {
+  productRewriteRules,
+  productRouteHeaderRules,
+} from "./src/lib/product-rewrites";
 import { noindexHeaderRules } from "./src/lib/robots-headers";
 import { rootRedirectRules } from "./src/lib/root-redirect";
 
@@ -99,6 +103,10 @@ const headerRules = [
   // this source does not match. After `noindexHeaderRules()`, so its value is the one served on a
   // direct hit (`src/lib/listing-rewrites.ts`; TASK-170, `/review 143`).
   ...parameterRouteHeaderRules(),
+  // The same header on a **direct** request to the internal product route (`/{locale}/-product/…`);
+  // a product address rewritten there keeps the address it was asked for, which this source does
+  // not match (`src/lib/product-rewrites.ts`; spec 009 AC-37, TASK-228).
+  ...productRouteHeaderRules(),
   // `X-Robots-Tag: noindex, follow` on a hub address that carries a listing key: the hubs honour
   // no parameter and are served their prebuilt document, so the header supplies AC-15's
   // `noindex` half that document cannot (`src/lib/listing-rewrites.ts`; TASK-146).
@@ -160,7 +168,11 @@ const nextConfig: NextConfig = {
   // address in the browser does not change (`src/lib/listing-rewrites.ts`).
   rewrites: () =>
     Promise.resolve({
-      beforeFiles: listingRewriteRules(),
+      // Every product address goes to the product page's own route file, so no listing that shares
+      // its depth loads the product island (spec 009 §14 A-founder-2026-10-18a, AC-37; TASK-228;
+      // `src/lib/product-rewrites.ts`). Unconditional, and disjoint from the listing rules: its
+      // third segment is the locale's `product` segment.
+      beforeFiles: [...listingRewriteRules(), ...productRewriteRules()],
       afterFiles: [],
       fallback: [],
     }),

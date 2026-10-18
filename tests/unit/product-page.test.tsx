@@ -34,15 +34,16 @@ import { COUNTRY_CODES } from "../../src/config/countries.ts";
 import {
   ListingBreadcrumb,
   type ProductView,
+  priceEquivalents,
   priceProjection,
   productView,
 } from "../../src/modules/catalog";
 import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
-import { DeliveryFacts } from "../../src/modules/geo";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
 import { zoneCity } from "../../src/modules/ui/product/labels.ts";
+import { equivalentsMessageValues } from "../../src/modules/ui/shop/equivalents.ts";
 import { lcpNominations } from "../support/lcp-nomination.ts";
 import { listingHonestyViolations, textOf } from "../support/listing-honesty";
 
@@ -115,19 +116,11 @@ function liveViewOf(
   );
 }
 
-/** The page as the route mounts it: the two slots are the route's own components. */
+/** The page as the route mounts it: the breadcrumb slot is the route's own component. */
 function mount(view: ProductView): ReactElement {
   return (
     <ProductPage
       breadcrumb={<ListingBreadcrumb crumbs={view.breadcrumb} />}
-      facts={
-        <DeliveryFacts
-          facts={view.facts}
-          locale={view.locale}
-          nameKey={view.country.nameKey}
-          prices="omit"
-        />
-      }
       view={view}
     />
   );
@@ -204,6 +197,9 @@ function block(html: string, marker: string): string {
   }
   return html.slice(open);
 }
+
+/** Every run of white space (the formatter's no-break spaces included) as one plain space. */
+const spaced = (text: string): string => text.replace(/\s+/gu, " ");
 
 const decode = (text: string): string =>
   text.replaceAll("&#x27;", "'").replaceAll("&amp;", "&");
@@ -457,14 +453,17 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
         decode(
           firstText(
             block(bar, "data-fo-action-bar-price"),
-            /<strong[^>]*>([^<]*)<\/strong>/u,
+            /<strong[^>]*>(?:<bdi[^>]*>)?([^<]*)</u,
           ),
         ),
         where,
       ).toBe(price);
       expect(
         decode(
-          firstText(block(html, "data-fo-pdp-price"), /<bdi>([^<]*)<\/bdi>/u),
+          firstText(
+            block(html, "data-fo-pdp-price"),
+            /<bdi[^>]*>([^<]*)<\/bdi>/u,
+          ),
         ),
         where,
       ).toBe(price);
@@ -482,19 +481,6 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
 const RELATIVE =
   /\b(today|tomorrow|tonight|heute|morgen|dzisiaj|dziś|jutro)\b|\bin \d+ ?(h|hours?|min|minutes?)\b|order within|noch \d+|countdown/iu;
 
-/**
- * The one "today" the page may print: spec 007's facts heading, "What we can say about delivering
- * here today", which the product artboards draw verbatim above the reused block. It is a statement
- * about what is known now, not a day label on a date or a deadline, so it is lifted out before the
- * scan — exactly this sentence in each locale, and nothing like it.
- */
-function withoutFactsHeading(text: string, locale: string): string {
-  const corridor = loadMessages(locale as Locale, ["corridor"]) as {
-    corridor: { facts: { headingGuide: string } };
-  };
-  return text.replaceAll(corridor.corridor.facts.headingGuide, "");
-}
-
 describe("AC-10: absolute dates and an absolute cutoff, in every state and locale", () => {
   it("renders no relative day label and no countdown", async () => {
     for (const locale of LOCALES) {
@@ -503,7 +489,9 @@ describe("AC-10: absolute dates and an absolute cutoff, in every state and local
         await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
         await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
       ]) {
-        const text = withoutFactsHeading(readable(render(view)), locale);
+        // No exemption: the facts heading's "today" left the page with the facts block (spec 009
+        // §14 A-founder-2026-10-14d, AC-35), so the scan covers every word.
+        const text = readable(render(view));
         expect(
           RELATIVE.exec(text)?.[0],
           `${locale} ${view.delivery.state}`,
@@ -581,7 +569,7 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
     }
   });
 
-  it("renders no cutoff line and no cutoff time in the `preview` picker, and the facts row's `none`", async () => {
+  it("renders no cutoff line and no cutoff time in the `preview` picker", async () => {
     for (const locale of LOCALES) {
       const view = await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK });
       expect(view.delivery.state, locale).toBe("preview");
@@ -599,13 +587,6 @@ describe("A8: the `preview` picker states no cutoff time, in every locale", () =
       expect(timesInPicker(picker, view), `${locale}: raw markup`).toEqual([]);
       expect(html, `${locale}: anywhere on the page`).not.toContain(
         "data-fo-cutoff",
-      );
-      // The facts row keeps its honest `none` text.
-      const corridor = loadMessages(locale as Locale, ["corridor"]) as {
-        corridor: { facts: { orderBy: { none: string } } };
-      };
-      expect(readable(html), `${locale}: facts row`).toContain(
-        corridor.corridor.facts.orderBy.none,
       );
     }
   });
@@ -1021,7 +1002,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
       ]) {
         const html = render(view);
-        const text = withoutFactsHeading(readable(html), locale);
+        const text = readable(html);
         const where = `${locale} ${view.delivery.state}`;
         // The listing scan forbids any "order by 14:00": a listing has no calendar to back one.
         // The picker's cutoff line is the one place the PDP may print it — in `live` only, since
@@ -1043,7 +1024,7 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
         );
         expect(
           listingHonestyViolations({
-            text: withoutFactsHeading(readable(scanned), locale),
+            text: readable(scanned),
             html: scanned,
           }),
           where,
@@ -1103,7 +1084,7 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
         );
         const shown = firstText(
           block(html, "data-fo-pdp-price"),
-          /<bdi>([^<]*)<\/bdi>/u,
+          /<bdi[^>]*>([^<]*)<\/bdi>/u,
         );
         const total = firstText(
           block(html, "data-fo-summary-total"),
@@ -1187,30 +1168,77 @@ describe("no N-day freshness promise on the product page (founder, 2026-10-04)",
   });
 });
 
-describe("AC-23: the add-ons are a priced, read-only list", () => {
-  it("prints name, per-country price and own VAT rate per row, with no input element", async () => {
-    const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s currency, no VAT rate, the card "Included"', () => {
+  /** The destination currency's own spellings, which a converted page's add-on may not print. */
+  const ZLOTY = /zł|PLN/u;
+
+  it.each([
+    ["en", "EUR"],
+    ["en-gb", "GBP"],
+    ["pl", "PLN"],
+  ] as const)(
+    "%s: every add-on row prints its projected amount in %s, no %% rate, and the card reads Included",
+    async (locale, currency) => {
+      const view = await viewOf(locale, "PL", AMBER, { now: IN_WINDOW });
+      expect(view.price.displayPrice.currency).toBe(currency);
+      const html = render(view);
+      const list = block(html, "data-fo-addon-list");
+      const say = createTranslator({
+        locale,
+        messages: loadMessages(locale, ["product", "catalog"]),
+      }) as unknown as (key: string) => string;
+      // The approved `product.included`, its first letter set upright by CSS
+      // (`first-letter:uppercase`), so the row reads "Included" with no new string.
+      const included = say("product.included");
+      expect(view.addons.length).toBeGreaterThan(1);
+      // Read-only rows (§13 Q6, AC-22): nothing to tick.
+      expect(list).not.toMatch(/<(input|button|select|textarea)[\s>]/u);
+      for (const addon of view.addons) {
+        const row = readable(block(list, `data-fo-addon="${addon.key}"`));
+        // No VAT rate on any row (AC-34): no percentage at all.
+        expect(row, addon.key).not.toContain("%");
+        if (addon.key === "card") {
+          // "Included", with no digit and no currency (A-founder-2026-10-14c clause 3).
+          expect(row, addon.key).toContain(included);
+          expect(
+            /<span[^>]*class="([^"]*)"[^>]*data-fo-addon-price="included"/u.exec(
+              block(list, 'data-fo-addon="card"'),
+            )?.[1],
+            addon.key,
+          ).toMatch(/\bfirst-letter:uppercase\b/u);
+          expect(row, addon.key).not.toMatch(/\d/u);
+          expect(spaced(row), addon.key).not.toContain(
+            spaced(formatMoney({ amountMinor: 0, currency }, locale)),
+          );
+          continue;
+        }
+        expect(addon.price.currency, addon.key).toBe(currency);
+        expect(spaced(row), addon.key).toContain(
+          spaced(formatMoney(addon.price, locale)),
+        );
+        if (currency !== "PLN") {
+          expect(ZLOTY.exec(row)?.[0], addon.key).toBe(undefined);
+        }
+      }
+      // The section says once that its prices include VAT, with the approved inclusive key.
+      const note = readable(block(html, "data-fo-addon-vat"));
+      expect(note).toBe(say("catalog.price.inclusive"));
+      expect(html.split("data-fo-addon-vat").length - 1).toBe(1);
+    },
+  );
+
+  it("with stale FX the bouquet and every add-on show the destination currency together", async () => {
+    const view = await viewOf("en-gb", "PL", AMBER, { now: WOMENS_DAY_WEEK });
+    expect(view.fx.state).toBe("fallback");
     const list = block(render(view), "data-fo-addon-list");
-    expect(view.addons.length).toBeGreaterThan(0);
-    expect(list).not.toMatch(/<(input|button|select|textarea)[\s>]/u);
-    for (const addon of view.addons) {
-      const row = block(list, `data-fo-addon="${addon.key}"`);
-      expect(decode(row), addon.key).toContain(
-        `>${formatMoney(addon.price, "en")}<`,
-      );
-      expect(row, addon.key).toContain(`VAT ${addon.vatRateText}`);
+    for (const addon of view.addons.filter((line) => line.key !== "card")) {
+      expect(addon.price.currency, addon.key).toBe("PLN");
+      expect(
+        spaced(readable(block(list, `data-fo-addon="${addon.key}"`))),
+      ).toContain(spaced(formatMoney(addon.price, "en-gb")));
     }
-    const card = view.addons.find((addon) => addon.price.amountMinor === 0);
-    expect(card?.key).toBe("card");
-    expect(decode(block(list, 'data-fo-addon="card"'))).toContain(
-      `>${formatMoney({ amountMinor: 0, currency: card?.price.currency ?? "PLN" }, "en")}<`,
-    );
   });
 });
-
-/* -------------------------------------------------------------------------- */
-/* AC-25 — one priority image with its preload; the placeholder has none.     */
-/* -------------------------------------------------------------------------- */
 
 describe("AC-25: one `priority` image with a matching preload, and none without a photograph", () => {
   it("preloads the hero, and only the hero, from the srcset it renders", async () => {
@@ -1325,6 +1353,339 @@ describe("withdrawn photographs render the honest placeholder (TASK-190, TASK-19
       const html = render(view);
       expect(html, sku).toMatch(/data-fo-gallery="placeholder"/u);
       expect(block(html, "data-fo-pdp-gallery"), sku).not.toMatch(/<img/u);
+    }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* TASK-228 — every figure of the size follows the buyer (spec 009 §14 A12,   */
+/* AC-31, T-34 unit half; spec 004 AC-48).                                    */
+/* -------------------------------------------------------------------------- */
+
+/** Every `data-fo-say-<slot>` of each size radio, by tier key, entity-decoded. */
+function sayOf(
+  html: string,
+): ReadonlyMap<string, Readonly<Record<string, string>>> {
+  const found = new Map<string, Record<string, string>>();
+  for (const match of html.matchAll(/<input[^>]*name="tier"[^>]*>/gu)) {
+    const tag = match[0];
+    const say: Record<string, string> = {};
+    for (const attr of tag.matchAll(/data-fo-say-([a-z]+)="([^"]*)"/gu)) {
+      say[attr[1] ?? ""] = decode(attr[2] ?? "");
+    }
+    found.set(/value="([^"]+)"/u.exec(tag)?.[1] ?? "", say);
+  }
+  return found;
+}
+
+/** Every element that shows a figure of the size: its slot and its server text, in order. */
+function slotsOf(html: string): readonly (readonly [string, string])[] {
+  return [
+    ...html.matchAll(
+      /<([a-z]+)[^>]*data-fo-tier-slot="([a-z]+)"[^>]*>([^<]*)<\/\1>/gu,
+    ),
+  ].map((match) => [match[2] ?? "", decode(match[3] ?? "")] as const);
+}
+
+/** The views T-34 names: fresh and stale FX, a non-default size, and `live` with a chosen date. */
+async function sizeCases(): Promise<readonly ProductView[]> {
+  const fresh = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+  // Read the other size from the dataset, never by name (TASK-240 moves the stem counts).
+  const other = fresh.tiers.find((tier) => !tier.isDefault)?.tierKey;
+  if (other === undefined) throw new Error("Amber Hour has more than one size");
+  return [
+    fresh,
+    await viewOf("en-gb", "PL", AMBER, {
+      now: IN_WINDOW,
+      selection: { tierKey: other },
+    }),
+    await viewOf("pl", "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+    await viewOf("de", "DE", AMBER, { now: IN_WINDOW }),
+    await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK }),
+  ];
+}
+
+describe("TASK-228 (spec 009 AC-31, T-34 unit half; spec 004 AC-48): each size carries what every place shows for it", () => {
+  it("each size's radio carries its own price, label, total and equivalents line, from the view model", async () => {
+    for (const view of await sizeCases()) {
+      const where = `${view.locale} ${view.fx.state} ${view.delivery.state} ${view.selectedTierKey}`;
+      const html = render(view);
+      const say = sayOf(html);
+      const labels = tierLabels(html);
+      const t = createTranslator({
+        locale: view.locale,
+        messages: loadMessages(view.locale as Locale, ["catalog"]),
+      }) as unknown as (key: string, values?: Record<string, string>) => string;
+      expect([...say.keys()], where).toEqual(
+        view.tiers.map((tier) => tier.tierKey),
+      );
+      for (const tier of view.tiers) {
+        const own = say.get(tier.tierKey) ?? {};
+        const at = `${where}: ${tier.tierKey}`;
+        expect(own.price, at).toBe(
+          formatMoney(tier.price, view.locale as Locale),
+        );
+        expect(own.label, at).toBe(
+          firstText(
+            labels.get(tier.tierKey) ?? "",
+            /data-fo-tier-label[^>]*>([^<]*)</u,
+          ),
+        );
+        // The size's total on the chosen date is the totals table's entry; with no date, its
+        // own price. Read off the view, never summed.
+        const total =
+          view.selectedDate === undefined
+            ? tier.price.amountMinor
+            : view.totals[tier.tierKey]?.[view.selectedDate];
+        expect(own.total, at).toBe(
+          formatMoney(
+            { amountMinor: total ?? -1, currency: tier.price.currency },
+            view.locale as Locale,
+          ),
+        );
+        const line = view.equivalents.tiers?.[tier.tierKey];
+        if (line === undefined) {
+          expect(own.equivalents, at).toBeUndefined();
+        } else {
+          expect(own.equivalents, at).toBe(
+            t(
+              "catalog.price.equivalents",
+              equivalentsMessageValues(line, view.locale as Locale),
+            ),
+          );
+        }
+      }
+    }
+  });
+
+  it("in `live` with a surcharged date chosen, every size's total carries the date's fee (breaker H5)", async () => {
+    const plain = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
+    const surcharged = plain.delivery.dates.find(
+      (date) => date.selectable && date.surcharge !== undefined,
+    );
+    if (surcharged?.surcharge === undefined) {
+      throw new Error("the Women's Day week has a surcharged selectable date");
+    }
+    const view = await liveViewOf("en", AMBER, {
+      now: WOMENS_DAY_WEEK,
+      selection: { date: surcharged.date },
+    });
+    expect(view.selectedDate).toBe(surcharged.date);
+    const html = render(view);
+    const say = sayOf(html);
+    // The page's one total for the selected size, as the server prints it.
+    const pageTotal = decode(
+      /data-fo-price-total[^>]*>([^<]+)</u.exec(html)?.[1] ?? "",
+    );
+    expect(say.get(view.selectedTierKey)?.total).toBe(pageTotal);
+    for (const tier of view.tiers) {
+      const at = tier.tierKey;
+      const undated = formatMoney(tier.price, "en");
+      const own = say.get(tier.tierKey)?.total;
+      // Not the size's own price: the chosen date's fee is in it, for every size.
+      expect(own, at).not.toBe(undated);
+      const entry = view.totals[tier.tierKey]?.[surcharged.date];
+      expect(entry, at).toBe(
+        tier.price.amountMinor + surcharged.surcharge.amountMinor,
+      );
+      expect(own, at).toBe(
+        formatMoney(
+          { amountMinor: entry ?? -1, currency: tier.price.currency },
+          "en",
+        ),
+      );
+    }
+  });
+
+  it("every place that shows the size prints the selected size's server string, so the island and the server agree", async () => {
+    for (const view of await sizeCases()) {
+      const where = `${view.locale} ${view.fx.state} ${view.delivery.state} ${view.selectedTierKey}`;
+      const html = render(view);
+      const checked = sayOf(html).get(view.selectedTierKey) ?? {};
+      const slots = slotsOf(html);
+      // The buy price, "The price" tier row and the bar; the tier row's and the bar's label; the
+      // one total; the one equivalents line where FX is fresh.
+      const count = (slot: string): number =>
+        slots.filter(([kind]) => kind === slot).length;
+      expect(count("price"), where).toBe(3);
+      expect(count("label"), where).toBe(2);
+      expect(count("total"), where).toBe(1);
+      expect(count("equivalents"), where).toBe(
+        view.equivalents.price === undefined ? 0 : 1,
+      );
+      for (const [slot, text] of slots) {
+        expect(text, `${where}: ${slot}`).toBe(checked[slot]);
+      }
+      // The total slot is the one `aria-live` total, and it is the view's price, byte for byte.
+      expect(
+        firstText(html, /data-fo-tier-slot="total"[^>]*>([^<]*)</u),
+        where,
+      ).toBe(formatMoney(view.price.displayPrice, view.locale as Locale));
+    }
+  });
+
+  it("each size's equivalents line converts that size's price, not the selected one's", async () => {
+    const view = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
+    const lines = view.equivalents.tiers ?? {};
+    expect(Object.keys(lines).sort()).toEqual(
+      view.tiers.map((tier) => tier.tierKey).sort(),
+    );
+    expect(lines[view.selectedTierKey]).toEqual(view.equivalents.price);
+    for (const tier of view.tiers) {
+      const expected = await priceEquivalents(
+        await priceProjection("en", {
+          productId: AMBER,
+          tierKey: tier.tierKey,
+          countryIso: "PL",
+          now: IN_WINDOW,
+        }),
+        IN_WINDOW,
+      );
+      expect(lines[tier.tierKey], tier.tierKey).toEqual({
+        asOf: expected?.asOf,
+        amounts: [...(expected?.amounts ?? [])],
+      });
+    }
+    // Three sizes, three prices, three different lines.
+    expect(
+      new Set(Object.values(lines).map((line) => JSON.stringify(line))).size,
+    ).toBe(view.tiers.length);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Spec 009 AC-35 / T-39 — no delivery-facts block on the product page.       */
+/* -------------------------------------------------------------------------- */
+
+describe("spec 009 AC-35 / T-39 (unit half): the product page has no delivery-facts block", () => {
+  /** Every `corridor.facts.*` sentence a reader could recognise: whole phrases, no placeholder. */
+  function factsPhrases(locale: Locale): readonly string[] {
+    const found: string[] = [];
+    const walk = (node: unknown): void => {
+      if (typeof node === "string") {
+        // Three words or more: a label such as "Order by" is also the live picker's own
+        // cutoff line, which the page keeps (AC-8); the block's sentences are its own.
+        if (!node.includes("{") && node.trim().split(/\s+/u).length >= 3) {
+          found.push(node);
+        }
+        return;
+      }
+      if (node !== null && typeof node === "object") {
+        for (const value of Object.values(node)) walk(value);
+      }
+    };
+    walk(
+      (loadMessages(locale, ["corridor"]) as { corridor: { facts: unknown } })
+        .corridor.facts,
+    );
+    return found;
+  }
+
+  it("renders no facts block and no `corridor.facts` value in four locales and three picker states, and the sections follow A12's order without it", async () => {
+    for (const locale of LOCALES) {
+      const phrases = factsPhrases(locale);
+      expect(phrases.length, locale).toBeGreaterThan(5);
+      for (const view of [
+        await viewOf(locale, "DE", AMBER),
+        await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+        await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
+      ]) {
+        const where = `${locale} ${view.delivery.state}`;
+        const html = render(view);
+        expect(html, where).not.toContain("data-fo-pdp-facts");
+        expect(html, where).not.toContain("data-fo-facts");
+        const text = readable(html);
+        for (const phrase of phrases) {
+          expect(text.includes(readable(phrase)), `${where}: ${phrase}`).toBe(
+            false,
+          );
+        }
+        // A12's order below the action, without the facts: about, trust, card, add-ons, "The
+        // price", then related products, and no other section between them.
+        const more = block(html, "data-fo-pdp-more");
+        const sections = [
+          ...more.matchAll(
+            /data-fo-pdp-(about|trust|card|addons|the-price)(?=[\s=>])/gu,
+          ),
+        ].map((match) => match[1]);
+        expect(sections, where).toEqual([
+          "about",
+          "trust",
+          "card",
+          "addons",
+          "the-price",
+        ]);
+        expect(html.indexOf("data-fo-pdp-related"), where).toBeGreaterThan(
+          html.indexOf("data-fo-pdp-the-price"),
+        );
+      }
+    }
+  });
+
+  it("the view model carries no facts field, so no template can render one", async () => {
+    const view = await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK });
+    expect(Object.keys(view)).not.toContain("facts");
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* TASK-230 — a date chip that cannot be chosen looks it (spec 009 AC-7, AC-28). */
+/* -------------------------------------------------------------------------- */
+
+describe("TASK-230 (spec 009 AC-7, AC-28): every disabled chip is muted beside its worded reason, never struck", () => {
+  it("mutes exactly the chips whose radio is disabled, in `preview` and `live`, in four locales", async () => {
+    for (const locale of LOCALES) {
+      for (const view of [
+        await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
+        await liveViewOf(locale, AMBER, { now: WOMENS_DAY_WEEK }),
+      ]) {
+        const where = `${locale} ${view.delivery.state}`;
+        const html = render(view);
+        const found = chips(html);
+        expect(found.size, where).toBe(view.delivery.dates.length);
+        let muted = 0;
+        for (const [date, chip] of found) {
+          const open = /<label[^>]*>/u.exec(chip)?.[0] ?? "";
+          const disabled = /<input[^>]*\sdisabled=""/u.test(chip);
+          expect(open.includes("data-fo-date-muted"), `${where} ${date}`).toBe(
+            disabled,
+          );
+          if (!disabled) {
+            expect(open, `${where} ${date}`).toContain("bg-card");
+            expect(open, `${where} ${date}`).not.toContain("border-dashed");
+            continue;
+          }
+          muted += 1;
+          // The muted band, the subtle ink and a dashed edge: a shape cue as well as a colour.
+          expect(open, `${where} ${date}`).toContain("bg-surface-muted");
+          expect(open, `${where} ${date}`).toContain("text-ink-subtle");
+          expect(open, `${where} ${date}`).toContain("border-dashed");
+          expect(open, `${where} ${date}`).not.toMatch(/\bbg-card\b/u);
+          // Its reason is still words in its accessible name (AC-7): its own caption line or
+          // the picker's shared notice, named by `aria-labelledby`.
+          const ids =
+            /aria-labelledby="([^"]+)"/u.exec(chip)?.[1]?.split(" ") ?? [];
+          expect(ids.length, `${where} ${date}: named by its reason`).toBe(2);
+          const reason = readable(
+            new RegExp(`id="${ids[1] ?? "!"}"[^>]*>([^<]+)<`, "u").exec(
+              html,
+            )?.[1] ?? "",
+          );
+          expect(
+            reason.length,
+            `${where} ${date}: reason words`,
+          ).toBeGreaterThan(10);
+        }
+        // `preview` closes every date; `live` closes at least the Sundays.
+        expect(muted, where).toBeGreaterThan(0);
+        if (view.delivery.state === "preview") {
+          expect(muted, where).toBe(found.size);
+        }
+        // Never struck through (AC-21; the README's 2026-10-14 ruling).
+        expect(block(html, "data-fo-date-grid"), where).not.toMatch(
+          /line-through/u,
+        );
+      }
     }
   });
 });

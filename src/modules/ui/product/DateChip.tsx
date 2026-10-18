@@ -120,16 +120,22 @@ export function DateChip({
   );
 
   // v2's date chip (product artboards; components sheet "Date chip"): card white with a hairline
-  // inset, the chip radius, 92 px tall. A closed day (and every `preview` day) sits on the cream
-  // band; its reason is still in words inside the label (WCAG 1.4.1), never a strike or a fade.
-  // Checked is the cornflower fill. An occasion day carries a poppy inset and its name as a tag on
-  // the chip's top edge, in the Fraunces italic.
-  const tone =
-    state === "closed" || pickerState === "preview"
-      ? "bg-surface-raised text-ink-muted"
-      : "bg-card text-ink cursor-pointer has-[:checked]:bg-selected has-[:checked]:text-on-selected has-[:checked]:shadow-none";
-  const edge =
-    occasions.length > 0
+  // inset, the chip radius. Checked is the cornflower fill. An occasion day carries a poppy inset
+  // and its name as a tag on the chip's top edge, in the Fraunces italic.
+  //
+  // A chip that cannot be chosen **looks it** (TASK-230; spec 009 AC-7, AC-28): every disabled
+  // radio's chip (a closed day, and every `preview` day) is muted — the muted band, the subtle ink
+  // (ink-3 on paper-3 is a body-text pair of the contrast manifest) and a dashed edge in place of
+  // the solid one, a shape cue as well as a colour. The muted look is **added to** the reason in
+  // words beside the date (the caption line or the picker's notice, both in the radio's name), it
+  // never replaces it, and a closed day is never struck through (AC-21; README 2026-10-14 ruling).
+  const muted = state === "closed" || pickerState === "preview";
+  const tone = muted
+    ? "bg-surface-muted text-ink-subtle cursor-not-allowed"
+    : "bg-card text-ink cursor-pointer has-[:checked]:bg-selected has-[:checked]:text-on-selected has-[:checked]:shadow-none";
+  const edge = muted
+    ? `border-[1.5px] border-dashed ${occasions.length > 0 ? "border-accent" : "border-rule"}`
+    : occasions.length > 0
       ? "shadow-[inset_0_0_0_1.5px_var(--color-accent)]"
       : "shadow-[inset_0_0_0_1.5px_var(--color-rule)]";
 
@@ -139,6 +145,7 @@ export function DateChip({
       className={`${tone} ${edge} rounded-chip has-[:focus-visible]:outline-focus relative flex ${compact ? "min-h-[64px] w-full" : "min-h-[92px]"} flex-col items-center justify-start gap-[2px] px-[4px] py-[10px] text-center text-xs has-[:focus-visible]:outline-[2.5px] has-[:focus-visible]:outline-offset-2`}
       data-fo-date={date.date}
       data-fo-date-state={state}
+      data-fo-date-muted={muted ? "" : undefined}
       {...(date.reasonKey === undefined
         ? {}
         : { "data-fo-date-reason": date.reasonKey })}

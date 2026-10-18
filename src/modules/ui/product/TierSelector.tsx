@@ -12,6 +12,10 @@
  * cannot be operated and cannot be answered wrongly.
  *
  * The radios carry `name="tier"` so the page's `GET` form (TASK-128) submits them as `?tier=`.
+ * Each radio also carries, as `data-fo-say-<slot>` attributes, the text every other place on the
+ * page shows for that size (its price and label, and the caller's `say` strings: the total and
+ * the equivalents line), so the page's one island can show the chosen size everywhere from the
+ * server's own strings (spec 009 §14 A12, AC-31; TASK-228).
  * The "selected" marker follows the checked radio through CSS (`has-[:checked]`) and is
  * `aria-hidden`, because the radio's own checked state is what a screen reader announces.
  */
@@ -40,6 +44,28 @@ export interface TierSelectorProps {
    * page never carries two groups of `name="tier"` that would uncheck each other.
    */
   readonly look?: "step" | "buy";
+  /**
+   * Per tier, the other strings the page prints for that size, keyed by slot (`total`,
+   * `equivalents`), each already formatted on the server. The radio carries them, with the tier's
+   * own `price` and `label`, as `data-fo-say-<slot>` (TASK-228).
+   */
+  readonly say?: ReadonlyMap<string, Readonly<Record<string, string>>>;
+}
+
+/** The `data-fo-say-<slot>` attributes of one tier's radio: what the page shows for that size. */
+export function sayAttributes(
+  price: string,
+  label: string,
+  extra: Readonly<Record<string, string>> = {},
+): Readonly<Record<`data-fo-say-${string}`, string>> {
+  const out: Record<`data-fo-say-${string}`, string> = {
+    "data-fo-say-price": price,
+    "data-fo-say-label": label,
+  };
+  for (const [slot, text] of Object.entries(extra)) {
+    out[`data-fo-say-${slot}`] = text;
+  }
+  return out;
 }
 
 /** A tier's own label: the ICU plural takes the stem count, the size and single keys take none. */
@@ -83,6 +109,7 @@ export function TierSelector({
   name = "tier",
   step,
   look = "step",
+  say,
 }: TierSelectorProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -140,6 +167,11 @@ export function TierSelector({
                 name={name}
                 type="radio"
                 value={tier.tierKey}
+                {...sayAttributes(
+                  formatMoney(tier.price, code),
+                  tierLabel(t, tier),
+                  say?.get(tier.tierKey),
+                )}
               />
               <b className="text-ink text-ui" data-fo-tier-label>
                 {tierLabel(t, tier)}
@@ -173,6 +205,11 @@ export function TierSelector({
               name={name}
               type="radio"
               value={tier.tierKey}
+              {...sayAttributes(
+                formatMoney(tier.price, code),
+                tierLabel(t, tier),
+                say?.get(tier.tierKey),
+              )}
             />
             <span className="font-bold" data-fo-tier-label>
               {tierLabel(t, tier)}

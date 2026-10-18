@@ -24,8 +24,10 @@
  * so the total row no longer docks: it stays in the flow. The equivalents line lives here, and
  * only here, for the product (A12 move 2).
  *
- * The total sits in an `aria-live="polite"` region, which announces only on change — the one
- * island (TASK-129) swaps it from numbers already in the HTML.
+ * The total sits in an `aria-live="polite"` region, which announces only on change. **The size
+ * follows the buyer** (spec 009 §14 A12, AC-31; TASK-228): the tier row's label and price, the
+ * equivalents line and the total are `data-fo-tier-slot`s, which the page's one island fills from
+ * the strings the server printed on the chosen size's radio, never from arithmetic.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
@@ -92,9 +94,13 @@ export function PriceSummary({
         <dl className="text-ui m-0 grid gap-[8px]">
           {tier === undefined ? null : (
             <div className={row} data-fo-summary-row="tier">
-              <dt className="text-ink-muted">{tierLabel(t, tier)}</dt>
+              <dt className="text-ink-muted" data-fo-tier-slot="label">
+                {tierLabel(t, tier)}
+              </dt>
               <dd className="m-0 text-end tabular-nums">
-                <bdi>{formatMoney(tier.price, code)}</bdi>
+                <bdi data-fo-tier-slot="price">
+                  {formatMoney(tier.price, code)}
+                </bdi>
               </dd>
             </div>
           )}
@@ -132,6 +138,7 @@ export function PriceSummary({
           <p
             className="num text-ink-subtle m-0 mt-[8px] text-xs leading-[1.35]"
             data-fo-price-equivalents
+            data-fo-tier-slot="equivalents"
           >
             {catalog(
               "price.equivalents",
@@ -153,6 +160,7 @@ export function PriceSummary({
             <bdi
               className="display num text-[32px] leading-[1.1]"
               data-fo-price-total
+              data-fo-tier-slot="total"
             >
               {formatMoney(view.price.displayPrice, code)}
             </bdi>

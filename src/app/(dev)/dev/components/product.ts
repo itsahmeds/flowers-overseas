@@ -193,23 +193,26 @@ export const PRODUCT_CHIPS: Readonly<Record<string, DeliveryDate>> = {
 export const PRODUCT_CHIP_ZONE = ZONE;
 export const PRODUCT_CHIP_CUTOFF = CUTOFF;
 
-/** The add-on rows: prices in the destination's currency, each with its own VAT rate. */
+/**
+ * The add-on rows: prices in the page's currency (spec 009 AC-34), the destination's zloty
+ * figures converted by this gallery's own fixture rate (`pln(x * 5)` is `gbp(x)` below), each
+ * keeping its own VAT rate as data, which no row prints.
+ */
 export const PRODUCT_ADDONS: readonly AddonLine[] =
   AddonLineSchema.array().parse(
     (
       [
-        { key: "chocolates", amountMinor: 2500 },
-        { key: "vase", amountMinor: 3500 },
-        { key: "balloon", amountMinor: 1800 },
-        { key: "plush", amountMinor: 3900 },
+        { key: "chocolates", amountMinor: 500 },
+        { key: "vase", amountMinor: 700 },
+        { key: "balloon", amountMinor: 360 },
+        { key: "plush", amountMinor: 780 },
         { key: "card", amountMinor: 0 },
       ] as const
     ).map(({ key, amountMinor }) => ({
       key,
       nameKey: `catalog.addon.${key}.name`,
-      price: pln(amountMinor),
+      price: gbp(amountMinor),
       vatRateBp: 2300,
-      vatRateText: "23%",
     })),
   );
 

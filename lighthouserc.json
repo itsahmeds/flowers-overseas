@@ -43,7 +43,15 @@
     "`categories:seo` is collected but deliberately **not** asserted: every page in Phase 0 is",
     "`noindex` (ADR-0007, spec 001 §6), so the SEO category would score the robots directive rather",
     "than the page, and nobody should be able to make a number green by indexing early. Spec 007",
-    "asserts it when there is an indexable set."
+    "asserts it when there is an indexable set.",
+    "",
+    "**3. The product page's script budget is 133 120 B; every other URL keeps 131 072 B** (spec 004",
+    "§14 A-founder-2026-10-18a, AC-56; spec 009 AC-14 as amended). `assertMatrix` holds it: the first",
+    "entry carries every other assertion for every URL, the second the 131 072 B script assertion for",
+    "every URL that is not a product address, the third 133 120 B for product addresses only. The",
+    "product pattern names each locale's `product` segment (`pathSegments.product`) and is pinned",
+    "against the registry by `tests/unit/product-script-budget.test.ts`, so it cannot widen to a",
+    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here."
   ],
   "ci": {
     "collect": {
@@ -67,50 +75,70 @@
       }
     },
     "assert": {
-      "assertions": {
-        "categories:performance": [
-          "error",
-          {
-            "minScore": 0.95
+      "assertMatrix": [
+        {
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.95
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.95
+              }
+            ],
+            "categories:best-practices": [
+              "error",
+              {
+                "minScore": 0.95
+              }
+            ],
+            "largest-contentful-paint": [
+              "error",
+              {
+                "maxNumericValue": 2000
+              }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              {
+                "maxNumericValue": 0.05
+              }
+            ],
+            "resource-summary:image:size": [
+              "error",
+              {
+                "maxNumericValue": 204800
+              }
+            ]
           }
-        ],
-        "categories:accessibility": [
-          "error",
-          {
-            "minScore": 0.95
+        },
+        {
+          "matchingUrlPattern": "^(?!https?://[^/]+/[^/]+/[^/]+/(?:product|produkt)/[^/?#]+/?(?:[?#].*)?$)",
+          "assertions": {
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 131072
+              }
+            ]
           }
-        ],
-        "categories:best-practices": [
-          "error",
-          {
-            "minScore": 0.95
+        },
+        {
+          "matchingUrlPattern": "^https?://[^/]+/[^/]+/[^/]+/(?:product|produkt)/[^/?#]+/?(?:[?#].*)?$",
+          "assertions": {
+            "resource-summary:script:size": [
+              "error",
+              {
+                "maxNumericValue": 133120
+              }
+            ]
           }
-        ],
-        "largest-contentful-paint": [
-          "error",
-          {
-            "maxNumericValue": 2000
-          }
-        ],
-        "cumulative-layout-shift": [
-          "error",
-          {
-            "maxNumericValue": 0.05
-          }
-        ],
-        "resource-summary:script:size": [
-          "error",
-          {
-            "maxNumericValue": 131072
-          }
-        ],
-        "resource-summary:image:size": [
-          "error",
-          {
-            "maxNumericValue": 204800
-          }
-        ]
-      }
+        }
+      ]
     },
     "upload": {
       "target": "filesystem",
