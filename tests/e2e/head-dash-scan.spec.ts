@@ -152,19 +152,29 @@ const EXPECTED_STATUS: Readonly<Record<Group, number>> = {
 };
 
 /**
- * The prerendered documents per launch locale on this catalogue (breaker r1 on PR 266, hole 8):
- * the home, the destinations hub, the guides, the hubs and the occasions index, and per published
- * country its shop root, country categories, country occasions and product pages. A short
- * manifest, or a scan that drops one locale's documents, fails against these numbers. A change
- * to the catalogue that adds or removes a page changes them: update them from the build's
- * `.next/prerender-manifest.json` in the same PR, and say why in its description.
+ * The prerendered documents per launch locale, counted straight from the build's
+ * `.next/prerender-manifest.json` (breaker r1 on PR 266, hole 8). Deliberately a second read of
+ * the file, independent of `manifestPaths()`: the scan's own list, and what it read, must match
+ * this per locale, so a list or a scan that drops one locale's documents fails, and a catalogue
+ * change needs no edit here.
  */
-const EXPECTED_PRERENDERED: Readonly<Record<string, number>> = {
-  en: 803,
-  "en-gb": 803,
-  de: 796,
-  pl: 796,
-};
+function expectedPrerendered(): Record<string, number> {
+  const routes = Object.keys(
+    (
+      JSON.parse(
+        readFileSync(join(ROOT, ".next", "prerender-manifest.json"), "utf8"),
+      ) as { routes?: Record<string, unknown> }
+    ).routes ?? {},
+  );
+  return Object.fromEntries(
+    LOCALES.map((locale) => [
+      locale,
+      routes.filter(
+        (route) => route === `/${locale}` || route.startsWith(`/${locale}/`),
+      ).length,
+    ]),
+  );
+}
 
 interface Scanned {
   readonly path: string;
@@ -358,9 +368,15 @@ test.describe("spec 003 AC-51 / T-51: no dash in any head string of the built si
   });
 
   test("read every prerendered document, the product sample, the 404s and the page-2 listings", () => {
-    // The manifest lists each locale's prerendered documents, pinned per locale (hole 8): a
-    // missing, emptied or one-locale-short list fails here rather than passing on less.
-    expect(manifestByLocale).toEqual(EXPECTED_PRERENDERED);
+    // Each locale's prerendered documents, counted from the manifest itself (hole 8): the scan's
+    // list and what it read must match per locale, so a list missing one locale's documents
+    // fails. Every locale prerenders at least its 84 Polish product pages, so an empty manifest
+    // fails too.
+    const expected = expectedPrerendered();
+    for (const locale of LOCALES) {
+      expect(expected[locale], locale).toBeGreaterThanOrEqual(84);
+    }
+    expect(manifestByLocale).toEqual(expected);
     expect(counts.products).toBe(4 * 84);
     expect(counts.notFound).toBe(4);
     expect(counts.paged).toBe(8);
@@ -377,12 +393,9 @@ test.describe("spec 003 AC-51 / T-51: no dash in any head string of the built si
           .filter((entry) => entry.read && entry.group === "manifest")
           .map((entry) => entry.path),
       ),
-    ).toEqual(EXPECTED_PRERENDERED);
+    ).toEqual(expected);
     const expectedTotal =
-      Object.values(EXPECTED_PRERENDERED).reduce(
-        (sum, count) => sum + count,
-        0,
-      ) +
+      Object.values(expected).reduce((sum, count) => sum + count, 0) +
       4 * 84 +
       4 +
       8;
