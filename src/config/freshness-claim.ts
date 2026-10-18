@@ -43,6 +43,8 @@
  * `FRESHNESS_TERMS` is exported so the unit test can delete each branch and watch a fixture go
  * red.
  */
+import { decodeHTML } from "entities";
+
 import { sentencesOf } from "./honesty.ts";
 
 /** A letter, digit or underscore: what a Unicode word boundary may not have on either side. */
@@ -51,9 +53,9 @@ const WORD_CHAR = String.raw`[\p{L}\p{N}_]`;
 const STEM = String.raw`\p{L}*`;
 /**
  * "Directly followed, hyphenated or not": nothing, any dash with optional spaces, or whitespace
- * with at most one word in it (the widening above).
+ * with at most two words in it (the widening above: "7 full days", "5 or more days").
  */
-const JOIN = String.raw`(?:\s*[\p{Pd}\u2212]\s*|\s+(?:\p{L}+\s+)?)?`;
+const JOIN = String.raw`(?:\s*[\p{Pd}\u2212]\s*|\s+(?:\p{L}+\s+){0,2})?`;
 
 /** `one`…`thirty`. "twenty-seven days" is caught by its "seven days". */
 const EN_NUMBERS = [
@@ -152,6 +154,24 @@ const COUNT = [
 /** Day words: `day`, `days`, `Tag`, `Tage`, `Tagen`, `tägig*`, `dzień`, `dni`, `dniow*`. */
 const DAY_WORD = `days?|tag(?:e|en)?|tägig${STEM}|dzień|dni|dniow${STEM}`;
 
+/**
+ * The day words a label puts before its number ("Fresh days: 5", "Frische (Tage): 5", "Garantie
+ * in Tagen: 5"), read by the reverse day count.
+ */
+const REVERSE_DAY_WORD = `days?|tag(?:e|en)?|dzień|dni`;
+
+/**
+ * Between a label's day word and its number: punctuation and spaces, and at most one word
+ * ("days: about 5"). Never a brace or `#`, which belong to the count.
+ */
+const REVERSE_GAP = String.raw`[^\p{L}\p{N}{}#]*(?:\p{L}+[^\p{L}\p{N}{}#]+)?`;
+
+/**
+ * A label's number: a digit run (with an optional `+`), an ICU argument or a plural's `#`. A
+ * spelled-out number after a label ("days: five") is not read.
+ */
+const REVERSE_COUNT = String.raw`\p{Nd}+\+?|\{[^{}]*\}|#`;
+
 /** Week words: `week`, `weeks`, `Woche`, `Wochen`, `tydzień`, `tygodnie`, `tygodni`. */
 const WEEK_WORD = `weeks?|wochen?|tydzień|tygodnie?`;
 
@@ -189,6 +209,9 @@ export const FRESHNESS_TERMS = {
   dayClaim: new RegExp(
     [
       bounded(`(?:${COUNT})${JOIN}(?:${DAY_WORD})`).source,
+      bounded(
+        `(?:${REVERSE_DAY_WORD})(?!${WORD_CHAR})${REVERSE_GAP}(?:${REVERSE_COUNT})`,
+      ).source,
       bounded(WEEK_WORD).source,
       `${WEEK_SUFFIX}(?!${WORD_CHAR})`,
       DAY_ARGUMENT_SOURCE,
@@ -269,17 +292,61 @@ function wordsIn(gap: string): number {
 export const FRESHNESS_WINDOW = 3;
 
 /**
- * The text as the scan reads it: NFKC, entities for a no-break space decoded, format characters
- * (`\p{Cf}`: soft hyphen, zero-width space, word joiner, BOM) removed, lower-cased with `ß`
- * folded to `ss`.
+ * Cyrillic and Greek letters that look like the Latin letters of a day or freshness word ("dаys"
+ * with a Cyrillic `а`). No launch locale writes Cyrillic or Greek, so folding them is clean.
+ */
+const CONFUSABLES: Readonly<Record<string, string>> = {
+  "\u0430": "a",
+  "\u0435": "e",
+  "\u043e": "o",
+  "\u0440": "p",
+  "\u0441": "c",
+  "\u0443": "y",
+  "\u0445": "x",
+  "\u0456": "i",
+  "\u0455": "s",
+  "\u0458": "j",
+  "\u0501": "d",
+  "\u04cf": "l",
+  "\u0410": "a",
+  "\u0415": "e",
+  "\u041e": "o",
+  "\u0420": "p",
+  "\u0421": "c",
+  "\u0425": "x",
+  "\u03b1": "a",
+  "\u03b5": "e",
+  "\u03bf": "o",
+  "\u03b9": "i",
+  "\u03ba": "k",
+  "\u03bd": "v",
+  "\u03c4": "t",
+  "\u03c5": "u",
+};
+
+/**
+ * "N days a week" says when we answer, not how long flowers last (a support-hours line, TASK-182
+ * and TASK-238), so it is removed before the scan, in all four locales.
+ */
+export const DAYS_A_WEEK =
+  /(?<![\p{L}\p{N}_])(?:\p{Nd}+|seven|sieben|siedem)\s*(?:days? (?:a|per) week|tage (?:die|pro|in der) woche|dni w tygodniu)(?![\p{L}\p{N}_])/gu;
+
+/**
+ * The text as the scan reads it: every HTML entity decoded (`entities`' HTML5 decoder: `&ndash;`,
+ * `&#8209;`, `&shy;`, `&#53;`, `&auml;`), NFKC, Cyrillic and Greek look-alikes folded to Latin,
+ * format characters (`\p{Cf}`: soft hyphen, zero-width space, word joiner, BOM), variation
+ * selectors and the keycap mark ("5️⃣" reads 5) removed, markdown underscores (`_x_`, `__x__`)
+ * removed, lower-cased with `ß` folded to `ss`, and "N days a week" removed.
  */
 export function normaliseForScan(text: string): string {
-  return text
-    .normalize("NFKC")
-    .replaceAll(/&(?:nbsp|#160|#x0*a0);/giu, " ")
-    .replaceAll(/\p{Cf}/gu, "")
+  const folded = [...decodeHTML(text).normalize("NFKC")]
+    .map((char) => CONFUSABLES[char] ?? char)
+    .join("")
+    .replaceAll(/[\p{Cf}\uFE00-\uFE0F\u20E3]/gu, "")
+    .replaceAll(/_+/gu, "")
     .toLowerCase()
     .replaceAll("ß", "ss");
+  return folded.replaceAll(DAYS_A_WEEK, " ");
 }
 
 function claimsNear(

@@ -275,10 +275,52 @@ const ROUND_1_MUST_FAIL = [
   "7\u00bd days fresh",
 ] as const;
 
+/**
+ * The breaker's round-2 sentences (PR 265, `08c39016`): a day word before its number, HTML
+ * entities, markdown underscores, two words between number and day word, a keycap digit and
+ * Cyrillic look-alikes.
+ */
+const ROUND_2_MUST_FAIL = [
+  // A label's day word before its number (the reverse day count).
+  "Fresh days: 5",
+  "fresh day: 1",
+  "Fresh days: about 5",
+  "Frisch, Tag: 1",
+  "Frische (Tage): 5",
+  "Frische in Tagen: 5",
+  "Świeżość, dzień: 1",
+  "Świeżość (dni): 5",
+  "Fresh days: {count}",
+  "{n, plural, other {fresh days: #}}",
+  // HTML entities, named and numeric.
+  "fresh for 7&ndash;days",
+  "fresh for 7&#8209;days",
+  "fresh for 7&shy;days",
+  "fresh for &#53; days",
+  "h&auml;lt 7 Tage",
+  "&#347;wie&#380;e przez 7 dni",
+  // Markdown emphasis.
+  "_Fresh_ for 7 days",
+  "__Fresh__ for 7 days",
+  "fresh for _7_ days",
+  "fresh for __7__ days",
+  "*Fresh* for 7 days",
+  "**Fresh** for **7** days",
+  // Two words between the number and the day word.
+  "Fresh for 5 or more days",
+  "fresh for seven or more days",
+  "5 oder mehr Tage frisch",
+  // A keycap digit and Cyrillic look-alikes.
+  "fresh for 5\ufe0f\u20e3 days",
+  "fresh for 7 d\u0430ys",
+  "fr\u0435sh for 7 days",
+] as const;
+
 const MUST_FAIL: readonly string[] = [
   ...SPEC_MUST_FAIL,
   ...TERM_MUST_FAIL,
   ...ROUND_1_MUST_FAIL,
+  ...ROUND_2_MUST_FAIL,
   ...EN_SPELLED.map((n) => `fresh for ${n} days`),
   ...DE_SPELLED.map((n) => `${n} Tage frisch`),
   ...PL_SPELLED.map((n) => `świeże przez ${n} dni`),
@@ -328,6 +370,36 @@ describe("A11: the freshness-claim scan's own fixture case", () => {
   it("fails every round-1 dodge: any ICU argument, any digit, format characters, any dash, NFD, \u00df, a word between", () => {
     for (const sentence of ROUND_1_MUST_FAIL) {
       expect(freshnessClaims(sentence).length, sentence).toBeGreaterThan(0);
+    }
+  });
+
+  it("fails every round-2 dodge: a day word before its number, entities, markdown, two words, keycaps, look-alikes", () => {
+    for (const sentence of ROUND_2_MUST_FAIL) {
+      expect(freshnessClaims(sentence).length, sentence).toBeGreaterThan(0);
+    }
+  });
+
+  it('exempts "N days a week" in all four locales, and only that', () => {
+    for (const text of [
+      "We answer 7 days a week.",
+      "We answer seven days a week.",
+      "Fresh flowers, 7 days a week.",
+      "We answer 7 days per week.",
+      "Wir antworten 7 Tage die Woche.",
+      "Frische Blumen, 7 Tage pro Woche.",
+      "Odpowiadamy 7 dni w tygodniu.",
+      "Świeże kwiaty, siedem dni w tygodniu.",
+    ]) {
+      expect(guaranteeTextViolations(text), text).toEqual([]);
+    }
+    for (const text of [
+      "Fresh for 7 days.",
+      "We answer within 7 days.",
+      "Fresh for 7 days, a week of joy.",
+      "7 Tage frisch, die Woche lang.",
+      "Świeże przez 7 dni.",
+    ]) {
+      expect(guaranteeTextViolations(text).length, text).toBeGreaterThan(0);
     }
   });
 
@@ -541,7 +613,7 @@ describe("A11: the readers read what they claim to (positive controls)", () => {
       mkdirSync(join(root, "content/pages/en"), { recursive: true });
       writeFileSync(
         join(root, "content/pages/de/guarantee.md"),
-        "# Garantie\n\nIhre Blumen bleiben 7 Tage frisch.\n",
+        "# Garantie\n\nIhre Blumen bleiben __7__ Tage _frisch_.\n",
       );
       writeFileSync(join(root, "content/pages/en/about.md"), "# About\n");
       const found = guaranteeContent(root);
@@ -582,6 +654,15 @@ describe("A11: no guarantee value promises a number of days, in any locale", () 
           "Fresh for 7\u200bdays.",
           "Fresh for 7 full days.",
           "Frisch für \u0667 Tage.",
+          // Round 2 (PR 265, `08c39016`).
+          "Fresh days: 5",
+          "Frische (Tage): 5",
+          "Garantie in Tagen: 5",
+          "Fresh for 5 or more days",
+          "fresh for 7&ndash;days",
+          "fresh for 5\ufe0f\u20e3 days",
+          "fresh for 7 d\u0430ys",
+          "_Fresh_ for __7__ days",
         ]) {
           expect(
             catalogueViolations(withValue(catalogue, key, restored)).length,
