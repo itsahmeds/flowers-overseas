@@ -516,6 +516,31 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
     }
   });
 
+  it("the home and strip guarantee names carry no day count in any locale", () => {
+    // `trust.guarantee.name` is TASK-172's change (PR 265, open when this task shipped); its
+    // case joins this list when that PR lands (docs/tasks/TASK-182.md, carry-forward).
+    for (const locale of ["en", "de", "pl"]) {
+      const catalogue = JSON.parse(
+        readFileSync(resolve(ROOT, `messages/${locale}.json`), "utf8"),
+      ) as {
+        nav: { utility: { guarantee: string } };
+        home: { proof: { guarantee: { title: string } } };
+      };
+      for (const value of [
+        catalogue.nav.utility.guarantee,
+        catalogue.home.proof.guarantee.title,
+      ]) {
+        expect(value, `${locale}: ${value}`).not.toMatch(SEVEN_DAY_PATTERN);
+        expect(
+          freshnessClaimsIn(`fresh ${value}`),
+          `${locale}: ${value}`,
+        ).toEqual([]);
+      }
+    }
+    // The scan the case relies on is not vacuous: the retired name fails it.
+    expect("7-day freshness guarantee").toMatch(SEVEN_DAY_PATTERN);
+  });
+
   it("restoring a day count to the guarantee turns the scan red (mutation)", () => {
     const mutated = source("pages/en/guarantee.md").replace(
       "so we do not promise a number of days.",
