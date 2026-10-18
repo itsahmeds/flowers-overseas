@@ -6,21 +6,33 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+**Owned: spec 009 AC-18 (T-18, and T-32 as its schema consumer).** Spec 009 §14 has no amendment that rewrites AC-18; two that touch it are quoted below.
+
+- **AC-18, in the spec's words.** "Every PDP emits a `BreadcrumbList` equal to the visible breadcrumb in order and label. **No PDP emits `Product`, `Offer`, `AggregateOffer`, `aggregateRating`, `review`, `Event`, `LocalBusiness` or `FloristShop`** in Phase 0, asserted by a JSON-LD type scan over every rendered PDP in every locale. The gated builder, exercised on a fixture with a live country and a purchase path, produces exactly one `Offer` whose `price` equals the rendered `displayPrice` to the cent, whose `priceCurrency` equals the currency in the HTML, whose `shippingRate` is 0, whose `deliveryTime.cutoffTime` equals the rendered cutoff and whose `hasMerchantReturnPolicy` is `MerchantReturnNotPermitted`; `pnpm seo:validate` (schema) passes on both fixtures."
+- **Gate, not emission (§6 "Schema types", §13 Q8).** In Phase 0 the page emits `BreadcrumbList` only. The `Product` + single `Offer` builder is written and tested here but **emits only when the page is indexable and a purchase path exists** (`corridorState(iso2) === "live"`, `pickerState() === "live"`). Fed by spec 005's `offerProjection(view.price)`, so `Offer.price === renderedDisplayPrice` by construction (spec 005 AC-11). `eligibleRegion` is the destination ISO. **No cross-country canonical** (Q8).
+- **One input.** The page, the JSON-LD builder and the sitemap row all read `productView()` (T-32: a fake provider changes all three together). The `BreadcrumbList` is built from `view.breadcrumb`, the same list the visible trail renders (TASK-125 carry-forward); the route may not call the price functions itself.
+- **Amendments that bind (§14).** A12 invariant: "When the gated `Offer` emits (AC-18), `Offer.price` equals the buy section's price", and equivalents never reach JSON-LD, `<meta>`, a sitemap or `priceTable`. A-founder-2026-10-14c clause 4: nothing about add-ons reaches JSON-LD (Q8 stands). A-founder-2026-10-15a clause 3 and AC-36: `Product.name` and every JSON-LD `name` contain no U+2014, no spaced hyphen, no spaced U+2013 (the breadcrumb's last item is the product name). TASK-228 makes every price follow the chosen size: on the bare page the `Offer` is the default tier's all-in price, and the fixture asserts it against the rendered buy-section string, not a literal.
+- **Validator (TASK-093 hand-off).** `scripts/seo/validate-schema.ts` deliberately gave `Product`/`Offer` no required properties ("that row is spec 009's and the builder is TASK-130's"). Add them in `shapeProblems()`, read off the same `plan/02` §9 table as `ALLOWED_TYPES`. A fixture whose `Offer` lacks `price`, `priceCurrency` or `availability` must exit 1 naming the problem. Both states get fixtures in `tests/fixtures/seo/schema/` (`pdp-product-offer.json` exists from TASK-069; the Phase 0 breadcrumb-only state is new). Fixtures are rebuilt from the builders, so also keep one hand-written bad document that no builder would emit (TASK-093's lesson: a validator fed only by its own builders agrees with itself).
+- **Tests owned:** T-18 (e2e JSON-LD type scan over every rendered PDP in every locale for the eight forbidden types; contract test on the gated builder with a live fixture asserting price, currency, `shippingRate` 0, `cutoffTime`, return policy; `seo:validate` green on both fixtures) and T-32's schema case.
+- **Copy.** None. This is structured data from existing view-model fields; no message key is added. If a field needs a new string (a return-policy label, for instance), stop and escalate. en-gb's unreviewed share is 4.98% of the 5% line, so any new public key waits for the founder's copy batch.
+- **Class: keeps the breaker** (SEO gate: structured data; price display).
+- **Watch red, then restore (name each in `## Result`):** `Offer.price` moved by one minor unit (validator and identity test both red); `priceCurrency` from the destination instead of the HTML's; `Product` emitted in Phase 0 (type scan red); `aggregateRating` or `review` planted; a breadcrumb item reordered or relabelled against the visible trail; the gate predicate forced true on a not-live country; the type scan's list shortened by one of the eight; `shippingRate` non-zero; a U+2014 in `Product.name`.
+- **Gates:** `pnpm gates:cheap` with its block pasted; `pnpm seo:validate`; e2e is CI's.
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/009-product-page-date-picker.md`: `## 0. Index`, then §6 "Schema types" and "Sitemap membership", §9 AC-18, §10 T-18 and T-32, §13 Q8, §14 A12 (the invariants), A-founder-2026-10-14c clause 4, A-founder-2026-10-15a clause 3 and AC-36.
+- `specs/007-corridor-pages.md` AC-15 and AC-16 (the builders' contract and the type scan they extend), `plan/02` §9 (the type table).
+- Files: `src/modules/seo/schema/breadcrumbList.ts` and `JsonLd.tsx` (the builders to follow), `src/modules/catalog/pricing/project.ts` (`offerProjection`), `src/modules/catalog/product.ts` (`productView()`, `breadcrumb`, `price`), `scripts/seo/validate-schema.ts`, `tests/unit/seo-validate-schema.test.ts`, `tests/contract/seo-schema-fixtures.test.ts`, `tests/unit/catalog-offer-schema-identity.test.ts`, `tests/e2e/schema.spec.ts`, `tests/fixtures/seo/schema/`.
+- `docs/tasks/TASK-093.md` (why the validator could not fail, and the mutation list) and `docs/tasks/TASK-125.md` (the hand-off to this task).
 
 ## Carry-forwards
 
-One dated bullet per `/review`, newest last.
-
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From TASK-093 and `/review 93` (2026-09-21):** `shapeProblems()` must give `Product` and `Offer` their required properties; a builder defect would otherwise agree with itself in every gate because fixtures are regenerated from the builders. Keep a hand-written bad `Offer` document in the unit suite.
+- **From TASK-125 (2026-09-23):** build the `Offer` from `offerProjection(view.price)` and the `BreadcrumbList` from `view.breadcrumb`; T-32's fake-provider case already asserts `offerProjection(view.price).price` moves with the page. Membership and the robots directive are `view.indexability`, never a second call to `productPageIndexability()` (pinned by `catalog-product-view-source.test.ts`).
+- **From TASK-234 (2026-10-18):** `Product`/`Offer` and the PDP `BreadcrumbList` stay with this task; TASK-234 only fixes the locale home's canonical. The PDP emits no JSON-LD today.
+- **From TASK-115 (todo today, spec 008 breadcrumb types):** it extends `breadcrumbList` to six listing page types and inherits `shapeProblems()`. If it merges first, rebase on its signature; if not, do not widen `breadcrumbList` for it, and tell whichever of the two lands second to merge the `shapeProblems()` additions by hand.
+- **Not concurrent** with TASK-228 to TASK-230, TASK-128 or TASK-129 on `ProductPage.tsx` and the route file; this task mounts one `<JsonLd>` in the product branch and should not edit the layout.
 
 ## Escalations
 
