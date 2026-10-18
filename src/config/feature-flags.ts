@@ -11,7 +11,8 @@
  * In v0 it registers exactly the two flags spec 010's checkout reads:
  *
  *  - `checkout.open`, country scope: the demo checkout is open for a destination. A toggle dirties
- *    `catalog:{iso2}`, so the product pages' demo button follows within 60 s (spec 010 §5.4).
+ *    the destination's `catalog` cache entity (the tag `catalog:{iso2}`, built only by spec 005's
+ *    `cacheTagsFor`), so the product pages' demo button follows within 60 s (spec 010 §5.4).
  *  - `checkout.demo_guard`, global and high-risk: every checkout is a demo while it is on. It
  *    dirties no public page (spec 012 §5.4). High-risk means admin-only, with the key typed to
  *    confirm (TASK-220).
@@ -52,12 +53,15 @@ const SCOPE_REF_PATTERNS: Readonly<Record<FlagScopeKind, RegExp>> = {
 };
 
 /**
- * The placeholder a dirtied-tag template may carry, per scope kind: a country toggle fills
- * `{iso2}` with the country's code. A template whose placeholder no scope kind of its key can
- * fill is refused by the schema.
+ * The cache entities a toggle may dirty, each named by its `CacheEntity` kind (spec 005
+ * `src/modules/catalog/cache.ts`, the only builder of tags) and keyed by the scope kind that
+ * fills it: `catalog` takes the toggled country. The tags themselves are built by
+ * `dirtiedTags()` in `src/lib/flags.ts`, never spelled here.
  */
-const TAG_PLACEHOLDERS: Readonly<Partial<Record<FlagScopeKind, string>>> = {
-  country: "{iso2}",
+export const flagDirtyKinds = ["catalog"] as const;
+export type FlagDirtyKind = (typeof flagDirtyKinds)[number];
+const DIRTY_SCOPE: Readonly<Record<FlagDirtyKind, FlagScopeKind>> = {
+  catalog: "country",
 };
 
 /** A scope as a reader names it: `{ kind: "country", ref: "PL" }`. */
@@ -76,22 +80,17 @@ const FeatureFlagDefinitionSchema = z
     scopeKinds: z.array(z.enum(flagScopeKinds)).min(1),
     description: z.string().trim().min(1),
     risk: z.enum(flagRiskLevels),
-    dirties: z.array(z.string().min(1)),
+    dirties: z.array(z.enum(flagDirtyKinds)),
   })
   .strict()
   .superRefine((flag, context) => {
-    for (const tag of flag.dirties) {
-      for (const placeholder of tag.match(/\{[a-z0-9]+\}/gu) ?? []) {
-        const fillable = flag.scopeKinds.some(
-          (kind) => TAG_PLACEHOLDERS[kind] === placeholder,
-        );
-        if (!fillable) {
-          context.addIssue({
-            code: "custom",
-            message: `${flag.key}: no scope kind of this key fills ${placeholder} in ${tag}`,
-            path: ["dirties"],
-          });
-        }
+    for (const kind of flag.dirties) {
+      if (!flag.scopeKinds.includes(DIRTY_SCOPE[kind])) {
+        context.addIssue({
+          code: "custom",
+          message: `${flag.key}: dirtying ${kind} needs the ${DIRTY_SCOPE[kind]} scope kind`,
+          path: ["dirties"],
+        });
       }
     }
   });
@@ -120,7 +119,7 @@ const REGISTRY = [
     description:
       "The demo checkout is open for a destination country (spec 010 checkoutMode()). A toggle refreshes that country's product pages within 60 s.",
     risk: "standard",
-    dirties: ["catalog:{iso2}"],
+    dirties: ["catalog"],
   },
   {
     key: "checkout.demo_guard",
@@ -163,16 +162,6 @@ export function flagDefinition(key: FlagKey): FeatureFlagDefinition {
   const flag = BY_KEY.get(key);
   if (flag === undefined) throw new UnregisteredFlagError(String(key));
   return flag;
-}
-
-/** The cache tags a toggle of `key` at `scope` dirties, placeholders filled. */
-export function dirtiedTags(key: FlagKey, scope?: FlagScope): string[] {
-  return flagDefinition(key).dirties.map((tag) => {
-    const placeholder =
-      scope === undefined ? undefined : TAG_PLACEHOLDERS[scope.kind];
-    if (scope === undefined || placeholder === undefined) return tag;
-    return tag.replaceAll(placeholder, scope.ref);
-  });
 }
 
 /**

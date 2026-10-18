@@ -136,7 +136,11 @@ const SDK_TABLE: readonly {
       "drizzle-orm/postgres-js",
       "drizzle-orm/postgres-js/driver",
     ],
-    allowedIn: ["src/lib/db.ts", "scripts/db-migrate.ts"],
+    allowedIn: [
+      "src/lib/db.ts",
+      "scripts/db-migrate.ts",
+      "scripts/admin-grant.ts",
+    ],
   },
   {
     lock: "stripe",

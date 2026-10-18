@@ -26,8 +26,7 @@ export default async function AdminConfirmPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
-  const { t } = await searchParams;
-  const parsed = ConfirmSignInSchema.safeParse({ t });
+  const parsed = ConfirmSignInSchema.safeParse(await searchParams);
   const env = adminEnvironment();
   return (
     <>

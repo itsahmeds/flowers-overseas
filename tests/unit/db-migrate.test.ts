@@ -174,6 +174,7 @@ describe("the committed migration set", () => {
       "0010_auth.sql",
       "0011_rls_policies.sql",
       "0012_pgboss.sql",
+      "0013_admin_identity.sql",
     ]);
   });
 });

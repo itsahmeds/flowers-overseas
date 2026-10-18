@@ -1,4 +1,4 @@
-/** Public barrel for `notifications` (email + WhatsApp senders, templates, outbox consumer). Owned by: spec 017; the `Mailer` seam by spec 012. */
+/** Public barrel for `notifications` (email + WhatsApp senders, templates, outbox consumer). Owned by: spec 017. */
 export {
   CAPTURE_LIMIT,
   type CapturedMail,

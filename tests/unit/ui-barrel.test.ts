@@ -24,6 +24,18 @@ describe("src/modules/ui barrel", () => {
   it("exports exactly the documented surface", () => {
     expect(Object.keys(ui).sort()).toEqual(
       [
+        // admin chrome (spec 012 §5.3; TASK-217)
+        "AdminBrand",
+        "AdminCounter",
+        "AdminEnvironmentChip",
+        "AdminMailDisc",
+        "AdminPageTitle",
+        "AdminRemoveGlyph",
+        "AdminShell",
+        "AdminSignInCard",
+        "AdminSignInTitle",
+        "AdminTextField",
+        "AdminTopBar",
         // fonts
         "bodyFont",
         "displayFont",

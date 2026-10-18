@@ -33,6 +33,8 @@ import {
   isRegisteredFlagKey,
 } from "@/config/feature-flags";
 
+import { cacheTagsFor } from "@/modules/catalog";
+
 import { featureFlag, featureFlagScope } from "../../db/schema/ops";
 import { type DbTransaction, withSystemContext } from "./db";
 
@@ -212,4 +214,25 @@ const reader = createFlagReader();
  */
 export function isEnabled(key: FlagKey, scope?: FlagScope): Promise<boolean> {
   return reader.isEnabled(key, scope);
+}
+
+/**
+ * The cache tags a toggle of `key` at `scope` dirties (spec 012 §2.4, §5.4): each registered dirty
+ * kind built by spec 005's `cacheTagsFor`, the one builder of tags. A country-scoped toggle on PL gives
+ * exactly that country's catalog tag; a flag that dirties nothing gives none. TASK-220 hands these to
+ * `invalidate()`.
+ */
+export function dirtiedTags(key: FlagKey, scope?: FlagScope): string[] {
+  const { flag, scope: resolved } = checkRequest(key, scope);
+  return flag.dirties.flatMap((kind) => {
+    switch (kind) {
+      case "catalog":
+        return [
+          ...cacheTagsFor({
+            kind: "catalog",
+            countryIso: resolved.ref as never,
+          }),
+        ];
+    }
+  });
 }

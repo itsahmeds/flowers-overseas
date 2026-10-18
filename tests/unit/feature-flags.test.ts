@@ -14,7 +14,6 @@ import {
   FEATURE_FLAGS,
   FeatureFlagRegistrySchema,
   FlagToggleSchema,
-  dirtiedTags,
   flagDefinition,
   isRegisteredFlagKey,
 } from "../../src/config/feature-flags.ts";
@@ -25,6 +24,7 @@ import {
   FlagScopeError,
   UnregisteredFlagError,
   createFlagReader,
+  dirtiedTags,
 } from "../../src/lib/flags.ts";
 
 /* -------------------------------------------------------------------------- */
@@ -44,7 +44,7 @@ describe("T-16 — the registry", () => {
       key: "checkout.open",
       scopeKinds: ["country"],
       risk: "standard",
-      dirties: ["catalog:{iso2}"],
+      dirties: ["catalog"],
       description: expect.stringMatching(/\S/u) as unknown as string,
     });
   });
@@ -72,18 +72,18 @@ describe("T-16 — the registry", () => {
     ).toThrow(/duplicate/u);
   });
 
-  it("refuses a tag placeholder the key's scope kinds cannot fill", () => {
+  it("refuses a dirty kind the key's scope kinds cannot fill", () => {
     expect(() =>
       FeatureFlagRegistrySchema.parse([
         {
           key: "checkout.demo_guard",
           scopeKinds: ["global"],
           risk: "high",
-          dirties: ["catalog:{iso2}"],
+          dirties: ["catalog"],
           description: "x",
         },
       ]),
-    ).toThrow(/iso2/u);
+    ).toThrow(/country scope kind/u);
   });
 
   it("refuses a key the database's feature_flag_key_check would refuse", () => {

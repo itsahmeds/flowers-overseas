@@ -1,12 +1,13 @@
 /**
- * The admin sign-in email (spec 012 §2.2, §5.2 `emails/`; artboard
+ * The admin sign-in email (spec 012 §2.2, §5.2 `emails/`, kept in `src/modules/admin/` because a new
+ * top-level code root would need every repository-wide scan widened; artboard
  * `docs/design/wireframes/admin-sign-in-desktop.dc.html`, "The admin sign-in email"; TASK-217).
  *
  * English only, a plain-text part and a minimal HTML part, every word from the admin catalogue.
  * Rendered as strings rather than through React Email: no dependency is added for one message,
  * and the HTML is escaped here. The link carries no address (AC-9).
  */
-import { adminT } from "@/modules/admin/messages";
+import { adminT } from "./messages";
 
 function escapeHtml(value: string): string {
   return value
