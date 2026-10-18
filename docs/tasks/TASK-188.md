@@ -177,6 +177,7 @@ One line per coherent step, newest last.
   `ci:full`. Without PR 260 `en`/`en-gb` sit at 7.4 % unreviewed and turn `noindex`, which reds
   about 20 unit files that this diff does not touch.
 - 2026-10-18: PR 260 merged; rebased on `origin/main` (queue conflict resolved: main's list plus this task's 15 keys), Linux baselines from visual-baselines run 39128181535 committed (15 images: hubs, laptop hubs, destinations hub, the 404 and both 500s untilted, the dev gallery's hub card text P5), PR ready with `ci:full`. Next: read CI on the head; a breaker and `/review`. A successor: B2/A7 and N-06 stay escalated; local unit timeouts in `module-boundaries` and `catalog-pricing-minor` were load (avg 13 to 46), not this diff.
+- 2026-10-18 (stopped for the usage window): `ci:full` run 39128887822 on `a1cfee7a`: every job green except `visual` (failed, cause not yet read) with `e2e` and `lighthouse` still running. Next: read the `visual` diff artifact (a baseline the label run did not re-take, or a non-deterministic hub image), fix or re-take, toggle `ci:full`.
 
 ## Result
 
