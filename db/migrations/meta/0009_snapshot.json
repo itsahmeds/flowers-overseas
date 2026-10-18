@@ -54,12 +54,8 @@
           "name": "admin_profile_user_id_users_id_fk",
           "tableFrom": "admin_profile",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -228,12 +224,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -241,10 +233,7 @@
       "compositePrimaryKeys": {
         "accounts_pkey": {
           "name": "accounts_pkey",
-          "columns": [
-            "provider",
-            "provider_account_id"
-          ]
+          "columns": ["provider", "provider_account_id"]
         }
       },
       "uniqueConstraints": {},
@@ -297,12 +286,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -343,12 +328,8 @@
           "name": "user_role_user_id_users_id_fk",
           "tableFrom": "user_role",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -356,10 +337,7 @@
       "compositePrimaryKeys": {
         "user_role_pkey": {
           "name": "user_role_pkey",
-          "columns": [
-            "user_id",
-            "role"
-          ]
+          "columns": ["user_id", "role"]
         }
       },
       "uniqueConstraints": {},
@@ -429,9 +407,7 @@
         "users_email_key": {
           "name": "users_email_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -471,10 +447,7 @@
       "compositePrimaryKeys": {
         "verification_tokens_pkey": {
           "name": "verification_tokens_pkey",
-          "columns": [
-            "identifier",
-            "token"
-          ]
+          "columns": ["identifier", "token"]
         }
       },
       "uniqueConstraints": {},
@@ -534,9 +507,7 @@
         "addon_key_key": {
           "name": "addon_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -658,12 +629,8 @@
           "name": "addon_country_price_addon_id_addon_id_fk",
           "tableFrom": "addon_country_price",
           "tableTo": "addon",
-          "columnsFrom": [
-            "addon_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["addon_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -671,12 +638,8 @@
           "name": "addon_country_price_country_id_country_id_fk",
           "tableFrom": "addon_country_price",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -684,12 +647,8 @@
           "name": "addon_country_price_currency_code_currency_code_fk",
           "tableFrom": "addon_country_price",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -697,11 +656,7 @@
       "compositePrimaryKeys": {
         "addon_country_price_pkey": {
           "name": "addon_country_price_pkey",
-          "columns": [
-            "addon_id",
-            "country_id",
-            "active_from"
-          ]
+          "columns": ["addon_id", "country_id", "active_from"]
         }
       },
       "uniqueConstraints": {},
@@ -807,12 +762,8 @@
           "name": "addon_translation_addon_id_addon_id_fk",
           "tableFrom": "addon_translation",
           "tableTo": "addon",
-          "columnsFrom": [
-            "addon_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["addon_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -820,12 +771,8 @@
           "name": "addon_translation_locale_code_locale_code_fk",
           "tableFrom": "addon_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -833,10 +780,7 @@
       "compositePrimaryKeys": {
         "addon_translation_pkey": {
           "name": "addon_translation_pkey",
-          "columns": [
-            "addon_id",
-            "locale_code"
-          ]
+          "columns": ["addon_id", "locale_code"]
         }
       },
       "uniqueConstraints": {},
@@ -894,9 +838,7 @@
         "category_key_key": {
           "name": "category_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -1011,12 +953,8 @@
           "name": "category_translation_category_id_category_id_fk",
           "tableFrom": "category_translation",
           "tableTo": "category",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1024,12 +962,8 @@
           "name": "category_translation_locale_code_locale_code_fk",
           "tableFrom": "category_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1037,20 +971,14 @@
       "compositePrimaryKeys": {
         "category_translation_pkey": {
           "name": "category_translation_pkey",
-          "columns": [
-            "category_id",
-            "locale_code"
-          ]
+          "columns": ["category_id", "locale_code"]
         }
       },
       "uniqueConstraints": {
         "category_translation_locale_slug_key": {
           "name": "category_translation_locale_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "locale_code",
-            "slug"
-          ]
+          "columns": ["locale_code", "slug"]
         }
       },
       "policies": {},
@@ -1216,12 +1144,8 @@
           "name": "country_price_product_id_product_id_fk",
           "tableFrom": "country_price",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1229,12 +1153,8 @@
           "name": "country_price_country_id_country_id_fk",
           "tableFrom": "country_price",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1242,12 +1162,8 @@
           "name": "country_price_currency_code_currency_code_fk",
           "tableFrom": "country_price",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1255,14 +1171,8 @@
           "name": "country_price_tier_fkey",
           "tableFrom": "country_price",
           "tableTo": "product_tier",
-          "columnsFrom": [
-            "product_id",
-            "tier_key"
-          ],
-          "columnsTo": [
-            "product_id",
-            "tier_key"
-          ],
+          "columnsFrom": ["product_id", "tier_key"],
+          "columnsTo": ["product_id", "tier_key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1419,9 +1329,7 @@
         "product_sku_key": {
           "name": "product_sku_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "sku"
-          ]
+          "columns": ["sku"]
         }
       },
       "policies": {},
@@ -1517,12 +1425,8 @@
           "name": "product_category_product_id_product_id_fk",
           "tableFrom": "product_category",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1530,12 +1434,8 @@
           "name": "product_category_category_id_category_id_fk",
           "tableFrom": "product_category",
           "tableTo": "category",
-          "columnsFrom": [
-            "category_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["category_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1543,10 +1443,7 @@
       "compositePrimaryKeys": {
         "product_category_pkey": {
           "name": "product_category_pkey",
-          "columns": [
-            "product_id",
-            "category_id"
-          ]
+          "columns": ["product_id", "category_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1612,12 +1509,8 @@
           "name": "product_occasion_product_id_product_id_fk",
           "tableFrom": "product_occasion",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1625,12 +1518,8 @@
           "name": "product_occasion_occasion_id_occasion_id_fk",
           "tableFrom": "product_occasion",
           "tableTo": "occasion",
-          "columnsFrom": [
-            "occasion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["occasion_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1638,10 +1527,7 @@
       "compositePrimaryKeys": {
         "product_occasion_pkey": {
           "name": "product_occasion_pkey",
-          "columns": [
-            "product_id",
-            "occasion_id"
-          ]
+          "columns": ["product_id", "occasion_id"]
         }
       },
       "uniqueConstraints": {},
@@ -1729,12 +1615,8 @@
           "name": "product_tier_product_id_product_id_fk",
           "tableFrom": "product_tier",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1742,10 +1624,7 @@
       "compositePrimaryKeys": {
         "product_tier_pkey": {
           "name": "product_tier_pkey",
-          "columns": [
-            "product_id",
-            "tier_key"
-          ]
+          "columns": ["product_id", "tier_key"]
         }
       },
       "uniqueConstraints": {},
@@ -1865,12 +1744,8 @@
           "name": "product_translation_product_id_product_id_fk",
           "tableFrom": "product_translation",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1878,12 +1753,8 @@
           "name": "product_translation_locale_code_locale_code_fk",
           "tableFrom": "product_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1891,20 +1762,14 @@
       "compositePrimaryKeys": {
         "product_translation_pkey": {
           "name": "product_translation_pkey",
-          "columns": [
-            "product_id",
-            "locale_code"
-          ]
+          "columns": ["product_id", "locale_code"]
         }
       },
       "uniqueConstraints": {
         "product_translation_locale_slug_key": {
           "name": "product_translation_locale_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "locale_code",
-            "slug"
-          ]
+          "columns": ["locale_code", "slug"]
         }
       },
       "policies": {},
@@ -2004,12 +1869,8 @@
           "name": "address_customer_id_customer_id_fk",
           "tableFrom": "address",
           "tableTo": "customer",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["customer_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2237,12 +2098,8 @@
           "name": "customer_user_id_users_id_fk",
           "tableFrom": "customer",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2362,12 +2219,8 @@
           "name": "recipient_customer_id_customer_id_fk",
           "tableFrom": "recipient",
           "tableTo": "customer",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["customer_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2375,12 +2228,8 @@
           "name": "recipient_linked_customer_id_customer_id_fk",
           "tableFrom": "recipient",
           "tableTo": "customer",
-          "columnsFrom": [
-            "linked_customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["linked_customer_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2504,12 +2353,8 @@
           "name": "recipient_address_recipient_id_recipient_id_fk",
           "tableFrom": "recipient_address",
           "tableTo": "recipient",
-          "columnsFrom": [
-            "recipient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["recipient_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2517,12 +2362,8 @@
           "name": "recipient_address_country_id_country_id_fk",
           "tableFrom": "recipient_address",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2530,14 +2371,8 @@
           "name": "recipient_address_postcode_zone_fkey",
           "tableFrom": "recipient_address",
           "tableTo": "postcode_zone",
-          "columnsFrom": [
-            "postcode_zone_id",
-            "country_id"
-          ],
-          "columnsTo": [
-            "id",
-            "country_id"
-          ],
+          "columnsFrom": ["postcode_zone_id", "country_id"],
+          "columnsTo": ["id", "country_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2630,12 +2465,8 @@
           "name": "city_country_id_country_id_fk",
           "tableFrom": "city",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2643,14 +2474,8 @@
           "name": "city_region_fkey",
           "tableFrom": "city",
           "tableTo": "region",
-          "columnsFrom": [
-            "region_id",
-            "country_id"
-          ],
-          "columnsTo": [
-            "id",
-            "country_id"
-          ],
+          "columnsFrom": ["region_id", "country_id"],
+          "columnsTo": ["id", "country_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2660,10 +2485,7 @@
         "city_id_country_key": {
           "name": "city_id_country_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "country_id"
-          ]
+          "columns": ["id", "country_id"]
         }
       },
       "policies": {},
@@ -2725,12 +2547,8 @@
           "name": "city_translation_locale_code_locale_code_fk",
           "tableFrom": "city_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -2738,14 +2556,8 @@
           "name": "city_translation_city_fkey",
           "tableFrom": "city_translation",
           "tableTo": "city",
-          "columnsFrom": [
-            "city_id",
-            "country_id"
-          ],
-          "columnsTo": [
-            "id",
-            "country_id"
-          ],
+          "columnsFrom": ["city_id", "country_id"],
+          "columnsTo": ["id", "country_id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2753,21 +2565,14 @@
       "compositePrimaryKeys": {
         "city_translation_pkey": {
           "name": "city_translation_pkey",
-          "columns": [
-            "city_id",
-            "locale_code"
-          ]
+          "columns": ["city_id", "locale_code"]
         }
       },
       "uniqueConstraints": {
         "city_translation_locale_country_slug_key": {
           "name": "city_translation_locale_country_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "locale_code",
-            "country_id",
-            "slug"
-          ]
+          "columns": ["locale_code", "country_id", "slug"]
         }
       },
       "policies": {},
@@ -2882,12 +2687,8 @@
           "name": "country_currency_code_currency_code_fk",
           "tableFrom": "country",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -2897,17 +2698,12 @@
         "country_iso2_key": {
           "name": "country_iso2_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "iso2"
-          ]
+          "columns": ["iso2"]
         },
         "country_id_iso2_key": {
           "name": "country_id_iso2_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "iso2"
-          ]
+          "columns": ["id", "iso2"]
         }
       },
       "policies": {},
@@ -2989,12 +2785,8 @@
           "name": "country_holiday_country_id_country_id_fk",
           "tableFrom": "country_holiday",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3002,10 +2794,7 @@
       "compositePrimaryKeys": {
         "country_holiday_pkey": {
           "name": "country_holiday_pkey",
-          "columns": [
-            "country_id",
-            "date"
-          ]
+          "columns": ["country_id", "date"]
         }
       },
       "uniqueConstraints": {},
@@ -3120,12 +2909,8 @@
           "name": "country_locale_content_country_id_country_id_fk",
           "tableFrom": "country_locale_content",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3133,12 +2918,8 @@
           "name": "country_locale_content_locale_code_locale_code_fk",
           "tableFrom": "country_locale_content",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3146,11 +2927,7 @@
       "compositePrimaryKeys": {
         "country_locale_content_pkey": {
           "name": "country_locale_content_pkey",
-          "columns": [
-            "country_id",
-            "locale_code",
-            "state"
-          ]
+          "columns": ["country_id", "locale_code", "state"]
         }
       },
       "uniqueConstraints": {},
@@ -3220,12 +2997,8 @@
           "name": "country_translation_country_id_country_id_fk",
           "tableFrom": "country_translation",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3233,12 +3006,8 @@
           "name": "country_translation_locale_code_locale_code_fk",
           "tableFrom": "country_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3246,20 +3015,14 @@
       "compositePrimaryKeys": {
         "country_translation_pkey": {
           "name": "country_translation_pkey",
-          "columns": [
-            "country_id",
-            "locale_code"
-          ]
+          "columns": ["country_id", "locale_code"]
         }
       },
       "uniqueConstraints": {
         "country_translation_locale_slug_key": {
           "name": "country_translation_locale_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "locale_code",
-            "slug"
-          ]
+          "columns": ["locale_code", "slug"]
         }
       },
       "policies": {},
@@ -3385,12 +3148,8 @@
           "name": "fx_rate_base_code_currency_code_fk",
           "tableFrom": "fx_rate",
           "tableTo": "currency",
-          "columnsFrom": [
-            "base_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["base_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -3398,12 +3157,8 @@
           "name": "fx_rate_quote_code_currency_code_fk",
           "tableFrom": "fx_rate",
           "tableTo": "currency",
-          "columnsFrom": [
-            "quote_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["quote_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3411,11 +3166,7 @@
       "compositePrimaryKeys": {
         "fx_rate_pkey": {
           "name": "fx_rate_pkey",
-          "columns": [
-            "base_code",
-            "quote_code",
-            "as_of"
-          ]
+          "columns": ["base_code", "quote_code", "as_of"]
         }
       },
       "uniqueConstraints": {},
@@ -3477,9 +3228,7 @@
         "occasion_key_key": {
           "name": "occasion_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -3565,12 +3314,8 @@
           "name": "occasion_country_occasion_id_occasion_id_fk",
           "tableFrom": "occasion_country",
           "tableTo": "occasion",
-          "columnsFrom": [
-            "occasion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["occasion_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3578,12 +3323,8 @@
           "name": "occasion_country_country_id_country_id_fk",
           "tableFrom": "occasion_country",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3591,10 +3332,7 @@
       "compositePrimaryKeys": {
         "occasion_country_pkey": {
           "name": "occasion_country_pkey",
-          "columns": [
-            "occasion_id",
-            "country_id"
-          ]
+          "columns": ["occasion_id", "country_id"]
         }
       },
       "uniqueConstraints": {},
@@ -3673,12 +3411,8 @@
           "name": "occasion_translation_occasion_id_occasion_id_fk",
           "tableFrom": "occasion_translation",
           "tableTo": "occasion",
-          "columnsFrom": [
-            "occasion_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["occasion_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3686,12 +3420,8 @@
           "name": "occasion_translation_locale_code_locale_code_fk",
           "tableFrom": "occasion_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3699,20 +3429,14 @@
       "compositePrimaryKeys": {
         "occasion_translation_pkey": {
           "name": "occasion_translation_pkey",
-          "columns": [
-            "occasion_id",
-            "locale_code"
-          ]
+          "columns": ["occasion_id", "locale_code"]
         }
       },
       "uniqueConstraints": {
         "occasion_translation_locale_slug_key": {
           "name": "occasion_translation_locale_slug_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "locale_code",
-            "slug"
-          ]
+          "columns": ["locale_code", "slug"]
         }
       },
       "policies": {},
@@ -3790,14 +3514,8 @@
           "name": "postcode_zone_city_fkey",
           "tableFrom": "postcode_zone",
           "tableTo": "city",
-          "columnsFrom": [
-            "city_id",
-            "country_id"
-          ],
-          "columnsTo": [
-            "id",
-            "country_id"
-          ],
+          "columnsFrom": ["city_id", "country_id"],
+          "columnsTo": ["id", "country_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3807,26 +3525,17 @@
         "postcode_zone_country_prefix_key": {
           "name": "postcode_zone_country_prefix_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "country_id",
-            "prefix"
-          ]
+          "columns": ["country_id", "prefix"]
         },
         "postcode_zone_id_country_key": {
           "name": "postcode_zone_id_country_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "country_id"
-          ]
+          "columns": ["id", "country_id"]
         },
         "postcode_zone_id_city_key": {
           "name": "postcode_zone_id_city_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "city_id"
-          ]
+          "columns": ["id", "city_id"]
         }
       },
       "policies": {},
@@ -3888,12 +3597,8 @@
           "name": "region_country_id_country_id_fk",
           "tableFrom": "region",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -3903,18 +3608,12 @@
         "region_country_code_key": {
           "name": "region_country_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "country_id",
-            "code"
-          ]
+          "columns": ["country_id", "code"]
         },
         "region_id_country_key": {
           "name": "region_id_country_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "country_id"
-          ]
+          "columns": ["id", "country_id"]
         }
       },
       "policies": {},
@@ -3984,12 +3683,8 @@
           "name": "locale_fallback_code_locale_code_fk",
           "tableFrom": "locale",
           "tableTo": "locale",
-          "columnsFrom": [
-            "fallback_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["fallback_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4097,12 +3792,8 @@
           "name": "message_catalog_locale_code_locale_code_fk",
           "tableFrom": "message_catalog",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4112,11 +3803,7 @@
         "message_catalog_locale_namespace_key_key": {
           "name": "message_catalog_locale_namespace_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "locale_code",
-            "namespace",
-            "key"
-          ]
+          "columns": ["locale_code", "namespace", "key"]
         }
       },
       "policies": {},
@@ -4283,9 +3970,7 @@
         "media_asset_object_key_key": {
           "name": "media_asset_object_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "object_key"
-          ]
+          "columns": ["object_key"]
         }
       },
       "policies": {},
@@ -4426,12 +4111,8 @@
           "name": "media_variant_media_asset_id_media_asset_id_fk",
           "tableFrom": "media_variant",
           "tableTo": "media_asset",
-          "columnsFrom": [
-            "media_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["media_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4439,20 +4120,14 @@
       "compositePrimaryKeys": {
         "media_variant_pkey": {
           "name": "media_variant_pkey",
-          "columns": [
-            "media_asset_id",
-            "variant",
-            "format"
-          ]
+          "columns": ["media_asset_id", "variant", "format"]
         }
       },
       "uniqueConstraints": {
         "media_variant_object_key_key": {
           "name": "media_variant_object_key_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "object_key"
-          ]
+          "columns": ["object_key"]
         }
       },
       "policies": {},
@@ -4574,12 +4249,8 @@
           "name": "product_media_product_id_product_id_fk",
           "tableFrom": "product_media",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4587,12 +4258,8 @@
           "name": "product_media_media_asset_id_media_asset_id_fk",
           "tableFrom": "product_media",
           "tableTo": "media_asset",
-          "columnsFrom": [
-            "media_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["media_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4602,10 +4269,7 @@
         "product_media_product_asset_key": {
           "name": "product_media_product_asset_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "product_id",
-            "media_asset_id"
-          ]
+          "columns": ["product_id", "media_asset_id"]
         }
       },
       "policies": {},
@@ -4660,12 +4324,8 @@
           "name": "product_media_alt_product_media_id_product_media_id_fk",
           "tableFrom": "product_media_alt",
           "tableTo": "product_media",
-          "columnsFrom": [
-            "product_media_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_media_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4673,12 +4333,8 @@
           "name": "product_media_alt_locale_code_locale_code_fk",
           "tableFrom": "product_media_alt",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4686,10 +4342,7 @@
       "compositePrimaryKeys": {
         "product_media_alt_pkey": {
           "name": "product_media_alt_pkey",
-          "columns": [
-            "product_media_id",
-            "locale_code"
-          ]
+          "columns": ["product_media_id", "locale_code"]
         }
       },
       "uniqueConstraints": {},
@@ -4823,12 +4476,8 @@
           "name": "outbox_order_id_order_id_fk",
           "tableFrom": "outbox",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4838,9 +4487,7 @@
         "outbox_event_id_key": {
           "name": "outbox_event_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "event_id"
-          ]
+          "columns": ["event_id"]
         }
       },
       "policies": {},
@@ -4923,12 +4570,8 @@
           "name": "outbox_attempt_outbox_id_outbox_id_fk",
           "tableFrom": "outbox_attempt",
           "tableTo": "outbox",
-          "columnsFrom": [
-            "outbox_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["outbox_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -4938,10 +4581,7 @@
         "outbox_attempt_outbox_id_attempt_key": {
           "name": "outbox_attempt_outbox_id_attempt_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "outbox_id",
-            "attempt"
-          ]
+          "columns": ["outbox_id", "attempt"]
         }
       },
       "policies": {},
@@ -5062,12 +4702,8 @@
           "name": "audit_log_actor_user_id_users_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "users",
-          "columnsFrom": [
-            "actor_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -5292,12 +4928,8 @@
           "name": "feature_flag_scope_flag_key_feature_flag_key_fk",
           "tableFrom": "feature_flag_scope",
           "tableTo": "feature_flag",
-          "columnsFrom": [
-            "flag_key"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["flag_key"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5307,11 +4939,7 @@
         "feature_flag_scope_flag_key_scope_scope_ref_key": {
           "name": "feature_flag_scope_flag_key_scope_scope_ref_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "flag_key",
-            "scope",
-            "scope_ref"
-          ]
+          "columns": ["flag_key", "scope", "scope_ref"]
         }
       },
       "policies": {},
@@ -5498,12 +5126,8 @@
           "name": "delivery_proof_order_id_order_id_fk",
           "tableFrom": "delivery_proof",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5511,12 +5135,8 @@
           "name": "delivery_proof_media_asset_id_media_asset_id_fk",
           "tableFrom": "delivery_proof",
           "tableTo": "media_asset",
-          "columnsFrom": [
-            "media_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["media_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5526,9 +5146,7 @@
         "delivery_proof_media_asset_id_key": {
           "name": "delivery_proof_media_asset_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "media_asset_id"
-          ]
+          "columns": ["media_asset_id"]
         }
       },
       "policies": {},
@@ -5790,12 +5408,8 @@
           "name": "order_customer_id_customer_id_fk",
           "tableFrom": "order",
           "tableTo": "customer",
-          "columnsFrom": [
-            "customer_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["customer_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5803,12 +5417,8 @@
           "name": "order_recipient_id_recipient_id_fk",
           "tableFrom": "order",
           "tableTo": "recipient",
-          "columnsFrom": [
-            "recipient_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["recipient_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5816,12 +5426,8 @@
           "name": "order_destination_country_id_country_id_fk",
           "tableFrom": "order",
           "tableTo": "country",
-          "columnsFrom": [
-            "destination_country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["destination_country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5829,12 +5435,8 @@
           "name": "order_destination_city_id_city_id_fk",
           "tableFrom": "order",
           "tableTo": "city",
-          "columnsFrom": [
-            "destination_city_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["destination_city_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5842,12 +5444,8 @@
           "name": "order_status_order_status_key_fk",
           "tableFrom": "order",
           "tableTo": "order_status",
-          "columnsFrom": [
-            "status"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["status"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5855,12 +5453,8 @@
           "name": "order_buyer_currency_code_currency_code_fk",
           "tableFrom": "order",
           "tableTo": "currency",
-          "columnsFrom": [
-            "buyer_currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["buyer_currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5868,12 +5462,8 @@
           "name": "order_base_currency_code_currency_code_fk",
           "tableFrom": "order",
           "tableTo": "currency",
-          "columnsFrom": [
-            "base_currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["base_currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -5881,12 +5471,8 @@
           "name": "order_locale_code_locale_code_fk",
           "tableFrom": "order",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -5896,17 +5482,12 @@
         "order_public_token_key": {
           "name": "order_public_token_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "public_token"
-          ]
+          "columns": ["public_token"]
         },
         "order_id_buyer_currency_code_key": {
           "name": "order_id_buyer_currency_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "buyer_currency_code"
-          ]
+          "columns": ["id", "buyer_currency_code"]
         }
       },
       "policies": {},
@@ -6067,12 +5648,8 @@
           "name": "order_assignment_order_id_order_id_fk",
           "tableFrom": "order_assignment",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6080,12 +5657,8 @@
           "name": "order_assignment_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "order_assignment",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6095,10 +5668,7 @@
         "order_assignment_order_id_attempt_key": {
           "name": "order_assignment_order_id_attempt_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "order_id",
-            "attempt"
-          ]
+          "columns": ["order_id", "attempt"]
         }
       },
       "policies": {},
@@ -6196,12 +5766,8 @@
           "name": "order_event_order_id_order_id_fk",
           "tableFrom": "order_event",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6209,12 +5775,8 @@
           "name": "order_event_from_status_order_status_key_fk",
           "tableFrom": "order_event",
           "tableTo": "order_status",
-          "columnsFrom": [
-            "from_status"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["from_status"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6222,12 +5784,8 @@
           "name": "order_event_to_status_order_status_key_fk",
           "tableFrom": "order_event",
           "tableTo": "order_status",
-          "columnsFrom": [
-            "to_status"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["to_status"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6237,10 +5795,7 @@
         "order_event_order_id_seq_key": {
           "name": "order_event_order_id_seq_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "order_id",
-            "seq"
-          ]
+          "columns": ["order_id", "seq"]
         }
       },
       "policies": {},
@@ -6386,12 +5941,8 @@
           "name": "order_line_product_id_product_id_fk",
           "tableFrom": "order_line",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6399,12 +5950,8 @@
           "name": "order_line_addon_id_addon_id_fk",
           "tableFrom": "order_line",
           "tableTo": "addon",
-          "columnsFrom": [
-            "addon_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["addon_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6412,12 +5959,8 @@
           "name": "order_line_currency_code_currency_code_fk",
           "tableFrom": "order_line",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6425,12 +5968,8 @@
           "name": "order_line_payout_currency_code_currency_code_fk",
           "tableFrom": "order_line",
           "tableTo": "currency",
-          "columnsFrom": [
-            "payout_currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["payout_currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6438,14 +5977,8 @@
           "name": "order_line_order_fkey",
           "tableFrom": "order_line",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id",
-            "currency_code"
-          ],
-          "columnsTo": [
-            "id",
-            "buyer_currency_code"
-          ],
+          "columnsFrom": ["order_id", "currency_code"],
+          "columnsTo": ["id", "buyer_currency_code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6580,12 +6113,8 @@
           "name": "order_transition_from_status_order_status_key_fk",
           "tableFrom": "order_transition",
           "tableTo": "order_status",
-          "columnsFrom": [
-            "from_status"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["from_status"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6593,12 +6122,8 @@
           "name": "order_transition_to_status_order_status_key_fk",
           "tableFrom": "order_transition",
           "tableTo": "order_status",
-          "columnsFrom": [
-            "to_status"
-          ],
-          "columnsTo": [
-            "key"
-          ],
+          "columnsFrom": ["to_status"],
+          "columnsTo": ["key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6606,10 +6131,7 @@
       "compositePrimaryKeys": {
         "order_transition_pkey": {
           "name": "order_transition_pkey",
-          "columns": [
-            "from_status",
-            "event"
-          ]
+          "columns": ["from_status", "event"]
         }
       },
       "uniqueConstraints": {},
@@ -6708,12 +6230,8 @@
           "name": "review_order_id_order_id_fk",
           "tableFrom": "review",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6721,12 +6239,8 @@
           "name": "review_locale_code_locale_code_fk",
           "tableFrom": "review",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -6736,9 +6250,7 @@
         "review_order_id_key": {
           "name": "review_order_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "order_id"
-          ]
+          "columns": ["order_id"]
         }
       },
       "policies": {},
@@ -6850,12 +6362,8 @@
           "name": "substitution_note_order_id_order_id_fk",
           "tableFrom": "substitution_note",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -6863,12 +6371,8 @@
           "name": "substitution_note_media_asset_id_media_asset_id_fk",
           "tableFrom": "substitution_note",
           "tableTo": "media_asset",
-          "columnsFrom": [
-            "media_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["media_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7011,12 +6515,8 @@
           "name": "fulfillment_partner_country_id_country_id_fk",
           "tableFrom": "fulfillment_partner",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7024,12 +6524,8 @@
           "name": "fulfillment_partner_payout_currency_code_currency_code_fk",
           "tableFrom": "fulfillment_partner",
           "tableTo": "currency",
-          "columnsFrom": [
-            "payout_currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["payout_currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7039,17 +6535,12 @@
         "fulfillment_partner_code_key": {
           "name": "fulfillment_partner_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         },
         "fulfillment_partner_id_payout_currency_key": {
           "name": "fulfillment_partner_id_payout_currency_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "payout_currency_code"
-          ]
+          "columns": ["id", "payout_currency_code"]
         }
       },
       "policies": {},
@@ -7237,12 +6728,8 @@
           "name": "partner_application_country_id_country_id_fk",
           "tableFrom": "partner_application",
           "tableTo": "country",
-          "columnsFrom": [
-            "country_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["country_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7250,12 +6737,8 @@
           "name": "partner_application_language_code_locale_code_fk",
           "tableFrom": "partner_application",
           "tableTo": "locale",
-          "columnsFrom": [
-            "language_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["language_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7263,12 +6746,8 @@
           "name": "partner_application_converted_partner_fkey",
           "tableFrom": "partner_application",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "converted_partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["converted_partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7339,12 +6818,8 @@
           "name": "partner_blackout_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "partner_blackout",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7352,10 +6827,7 @@
       "compositePrimaryKeys": {
         "partner_blackout_pkey": {
           "name": "partner_blackout_pkey",
-          "columns": [
-            "partner_id",
-            "date"
-          ]
+          "columns": ["partner_id", "date"]
         }
       },
       "uniqueConstraints": {},
@@ -7467,12 +6939,8 @@
           "name": "partner_catalog_mapping_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "partner_catalog_mapping",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7480,12 +6948,8 @@
           "name": "partner_catalog_mapping_product_id_product_id_fk",
           "tableFrom": "partner_catalog_mapping",
           "tableTo": "product",
-          "columnsFrom": [
-            "product_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["product_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7493,12 +6957,8 @@
           "name": "partner_catalog_mapping_currency_code_currency_code_fk",
           "tableFrom": "partner_catalog_mapping",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7506,14 +6966,8 @@
           "name": "partner_catalog_mapping_tier_fkey",
           "tableFrom": "partner_catalog_mapping",
           "tableTo": "product_tier",
-          "columnsFrom": [
-            "product_id",
-            "tier_key"
-          ],
-          "columnsTo": [
-            "product_id",
-            "tier_key"
-          ],
+          "columnsFrom": ["product_id", "tier_key"],
+          "columnsTo": ["product_id", "tier_key"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7521,14 +6975,8 @@
           "name": "partner_catalog_mapping_partner_currency_fkey",
           "tableFrom": "partner_catalog_mapping",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id",
-            "currency_code"
-          ],
-          "columnsTo": [
-            "id",
-            "payout_currency_code"
-          ],
+          "columnsFrom": ["partner_id", "currency_code"],
+          "columnsTo": ["id", "payout_currency_code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7636,12 +7084,8 @@
           "name": "partner_coverage_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "partner_coverage",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7649,12 +7093,8 @@
           "name": "partner_coverage_city_id_city_id_fk",
           "tableFrom": "partner_coverage",
           "tableTo": "city",
-          "columnsFrom": [
-            "city_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["city_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7662,12 +7102,8 @@
           "name": "partner_coverage_postcode_zone_id_postcode_zone_id_fk",
           "tableFrom": "partner_coverage",
           "tableTo": "postcode_zone",
-          "columnsFrom": [
-            "postcode_zone_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["postcode_zone_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7675,14 +7111,8 @@
           "name": "partner_coverage_zone_city_fkey",
           "tableFrom": "partner_coverage",
           "tableTo": "postcode_zone",
-          "columnsFrom": [
-            "postcode_zone_id",
-            "city_id"
-          ],
-          "columnsTo": [
-            "id",
-            "city_id"
-          ],
+          "columnsFrom": ["postcode_zone_id", "city_id"],
+          "columnsTo": ["id", "city_id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7758,12 +7188,8 @@
           "name": "partner_member_user_id_users_id_fk",
           "tableFrom": "partner_member",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -7771,12 +7197,8 @@
           "name": "partner_member_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "partner_member",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7784,10 +7206,7 @@
       "compositePrimaryKeys": {
         "partner_member_pkey": {
           "name": "partner_member_pkey",
-          "columns": [
-            "user_id",
-            "partner_id"
-          ]
+          "columns": ["user_id", "partner_id"]
         }
       },
       "uniqueConstraints": {},
@@ -7860,12 +7279,8 @@
           "name": "partner_translation_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "partner_translation",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -7873,12 +7288,8 @@
           "name": "partner_translation_locale_code_locale_code_fk",
           "tableFrom": "partner_translation",
           "tableTo": "locale",
-          "columnsFrom": [
-            "locale_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["locale_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -7886,10 +7297,7 @@
       "compositePrimaryKeys": {
         "partner_translation_pkey": {
           "name": "partner_translation_pkey",
-          "columns": [
-            "partner_id",
-            "locale_code"
-          ]
+          "columns": ["partner_id", "locale_code"]
         }
       },
       "uniqueConstraints": {},
@@ -7972,12 +7380,8 @@
           "name": "payout_partner_id_fulfillment_partner_id_fk",
           "tableFrom": "payout",
           "tableTo": "fulfillment_partner",
-          "columnsFrom": [
-            "partner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["partner_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7985,12 +7389,8 @@
           "name": "payout_currency_code_currency_code_fk",
           "tableFrom": "payout",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -7998,12 +7398,8 @@
           "name": "payout_statement_media_asset_id_media_asset_id_fk",
           "tableFrom": "payout",
           "tableTo": "media_asset",
-          "columnsFrom": [
-            "statement_media_asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["statement_media_asset_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8013,19 +7409,12 @@
         "payout_partner_period_key": {
           "name": "payout_partner_period_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "partner_id",
-            "period_start",
-            "period_end"
-          ]
+          "columns": ["partner_id", "period_start", "period_end"]
         },
         "payout_id_currency_code_key": {
           "name": "payout_id_currency_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "currency_code"
-          ]
+          "columns": ["id", "currency_code"]
         }
       },
       "policies": {},
@@ -8145,12 +7534,8 @@
           "name": "payout_line_order_id_order_id_fk",
           "tableFrom": "payout_line",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["order_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8158,12 +7543,8 @@
           "name": "payout_line_currency_code_currency_code_fk",
           "tableFrom": "payout_line",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8171,14 +7552,8 @@
           "name": "payout_line_payout_fkey",
           "tableFrom": "payout_line",
           "tableTo": "payout",
-          "columnsFrom": [
-            "payout_id",
-            "currency_code"
-          ],
-          "columnsTo": [
-            "id",
-            "currency_code"
-          ],
+          "columnsFrom": ["payout_id", "currency_code"],
+          "columnsTo": ["id", "currency_code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8314,12 +7689,8 @@
           "name": "payment_currency_code_currency_code_fk",
           "tableFrom": "payment",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8327,14 +7698,8 @@
           "name": "payment_order_fkey",
           "tableFrom": "payment",
           "tableTo": "order",
-          "columnsFrom": [
-            "order_id",
-            "currency_code"
-          ],
-          "columnsTo": [
-            "id",
-            "buyer_currency_code"
-          ],
+          "columnsFrom": ["order_id", "currency_code"],
+          "columnsTo": ["id", "buyer_currency_code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8344,17 +7709,12 @@
         "payment_provider_ref_key": {
           "name": "payment_provider_ref_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "provider_ref"
-          ]
+          "columns": ["provider_ref"]
         },
         "payment_id_currency_code_key": {
           "name": "payment_id_currency_code_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "id",
-            "currency_code"
-          ]
+          "columns": ["id", "currency_code"]
         }
       },
       "policies": {},
@@ -8474,12 +7834,8 @@
           "name": "refund_currency_code_currency_code_fk",
           "tableFrom": "refund",
           "tableTo": "currency",
-          "columnsFrom": [
-            "currency_code"
-          ],
-          "columnsTo": [
-            "code"
-          ],
+          "columnsFrom": ["currency_code"],
+          "columnsTo": ["code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -8487,14 +7843,8 @@
           "name": "refund_payment_fkey",
           "tableFrom": "refund",
           "tableTo": "payment",
-          "columnsFrom": [
-            "payment_id",
-            "currency_code"
-          ],
-          "columnsTo": [
-            "id",
-            "currency_code"
-          ],
+          "columnsFrom": ["payment_id", "currency_code"],
+          "columnsTo": ["id", "currency_code"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -8504,9 +7854,7 @@
         "refund_provider_ref_key": {
           "name": "refund_provider_ref_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "provider_ref"
-          ]
+          "columns": ["provider_ref"]
         }
       },
       "policies": {},
@@ -8620,10 +7968,7 @@
         "webhook_inbox_provider_event_id_key": {
           "name": "webhook_inbox_provider_event_id_key",
           "nullsNotDistinct": false,
-          "columns": [
-            "provider",
-            "event_id"
-          ]
+          "columns": ["provider", "event_id"]
         }
       },
       "policies": {},
