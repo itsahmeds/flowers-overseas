@@ -81,6 +81,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 - 2026-10-18: PDP unit case (`tests/unit/product-page.test.tsx`), e2e case
   (`tests/e2e/product-page.spec.ts`), the `freshnessGuarantee` comment, the review queue entry in
   `tests/unit/i18n-messages-schema.test.ts`, the map. Next: rebase, ready, `ci:full`.
+- 2026-10-18/19: round 1 (holes 1 to 6) and round 2 (holes 8 to 12, and the "N days a week" false positive) fixed and
+  pushed; head `b135bf13` with `ci:full` toggled, CI run 39155587167 still running when the work paused (usage limit).
+  Next: read that run on the head; if lighthouse is red only on LCP within 2200 ms, report it as the known flake.
 
 ## Round 1 fixes (review FAIL and breaker HOLES on `e6a4fa76`)
 
