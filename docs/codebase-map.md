@@ -101,7 +101,7 @@ task actually touches.
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters, each a link where its page exists (spec 012 §5.3) | spec 012 |
 | `admin/(signed-in)/users/actions.ts` | Server actions of /admin/users: grant, revoke, deactivate, each guarded first… | spec 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: roles, grant, revoke, deactivate; own last admin role not… | spec 012 |
-| `admin/api/auth/[...nextauth]/route.ts` | The admin instance's Auth.js handlers at /admin/api/auth (spec 012 §5.2) | spec 012 |
+| `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint under /admin/api/auth answers 404; the core uses Auth.js… | spec 012 |
 | `admin/api/auth/confirm/route.ts` | POST: the confirm page's "Continue"; consumes the token in process (spec 012… | spec 012 |
 | `admin/api/auth/request/route.ts` | POST: the admin email form; the same 303 for every address (spec 012 §2.2, AC-2) | spec 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out; deletes the session row and expires the cookie (spec 012… | spec 012 |
