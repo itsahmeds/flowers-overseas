@@ -376,6 +376,9 @@ test.describe("AC-22 (T-24): after a Save with every category on, from the foote
     await expect(page.locator(CONSENT.saved)).toBeVisible();
     await page.waitForLoadState("networkidle");
 
+    // `_vercel*` comes only from Vercel Deployment Protection on the cold fallback (ADR-0018);
+    // the CI target is the Railway PR environment behind Basic auth (spec 040 §14 A2), which sets
+    // no cookie.
     const names = (await context.cookies())
       .map((cookie) => cookie.name)
       .filter((name) => !name.startsWith("_vercel"));
@@ -387,6 +390,9 @@ test.describe("AC-22 (T-24): after a Save with every category on, from the foote
     const local = new Set(["localhost", "127.0.0.1", "::1", "[::1]"]);
     const allowed = new Set([
       MEDIA_ORIGIN,
+      // Tolerated only for the cold Vercel fallback (ADR-0018). The CI target is the Railway PR
+      // environment (spec 040 §14 A2), whose policy names no `vercel.live` (AC-6), so in CI
+      // nothing loads it.
       ...(local.has(base.hostname) ? [] : ["https://vercel.live"]),
     ]);
     expect([

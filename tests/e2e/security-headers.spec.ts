@@ -4,16 +4,18 @@
  * `tests/unit/csp.test.ts` asserts the two policy *strings*; this file asserts that the deployment
  * actually sends them, on the response classes that exist today — two locale homes (`/en`,
  * `/de`, SSG through `generateStaticParams`) and an API route (`/api/health`, `force-dynamic`).
- * `/` is a 308 since spec 003 §14 A16 and has no document to protect. The unit test cannot tell whether `next.config.ts`'s
- * `headers()` reached a cached edge response, which is the only thing that matters about a policy
- * on an SSG site.
+ * `/` is a 308 since spec 003 §14 A16 and has no document to protect.
  *
- * The target is `PLAYWRIGHT_BASE_URL` — the Vercel preview in CI, `http://localhost:3000` locally
- * against `pnpm build && pnpm start`. Neither is production, so both carry the preview policy and
- * the `vercel.live` allowance; the production-only clauses (`vercel.live` absent, HSTS present) are
- * asserted in the unit test, which is the only place they can be asserted before there is a
- * production deployment to point at. Both facts are written down here so nobody reads this file as
- * evidence that production is covered.
+ * The target is `PLAYWRIGHT_BASE_URL`: in CI, the pull request's Railway environment through
+ * Cloudflare (`https://pr-<n>.flowersoverseas.com`, `APP_ENV=preview`; spec 040 AC-26, §14 A2,
+ * TASK-099); locally, `http://localhost:3000` against `pnpm build && pnpm start`. In CI the
+ * headers are read off a response that crossed the real edge, so this file does prove that
+ * `next.config.ts`'s `headers()` survives Cloudflare; locally it proves only the origin. Neither
+ * target is production. A Railway host carries no `vercel.live` allowance in any environment
+ * (spec 040 AC-6), and HSTS is production-only, so the production-only clauses are asserted in
+ * the unit test (`tests/unit/csp.test.ts`), the only place they can be asserted before there is a
+ * production deployment to point at. Nobody should read this file as evidence that production is
+ * covered.
  */
 import { expect, test } from "@playwright/test";
 
@@ -107,7 +109,9 @@ test.describe("security headers (AC-23)", () => {
     // adds, because `*.vercel.app` is itself on the HSTS preload list. Our own header is
     // production-only (`sendsHsts()`), so "no HSTS on a preview" is not an assertion this suite can
     // make: it would be asserting the platform's behaviour, and it would fail on a preview and pass
-    // on a local `next start` for reasons that have nothing to do with this repository.
+    // on a local `next start` for reasons that have nothing to do with this repository. The CI
+    // target is now the Railway PR environment through Cloudflare (spec 040 §14 A2), where HSTS
+    // can only come from the zone's own setting, so the same reasoning holds there.
     //
     // What *is* worth pinning is the direction: whatever HSTS reaches a client must be a real,
     // long-lived policy, never a `max-age=0` that would switch protection off.
