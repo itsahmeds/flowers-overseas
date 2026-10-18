@@ -95,13 +95,18 @@ import { fileURLToPath } from "node:url";
 
 import { z } from "zod";
 
-import { DELIVERY_TIMING_PATTERN, wordCount } from "../seed/copy.ts";
+import { wordCount } from "../seed/copy.ts";
 import {
   COUNTRIES,
   hasCompleteOperations,
   isCountryIso2,
 } from "../src/config/countries.ts";
 import { launchLocales } from "../src/config/locales.ts";
+import {
+  CLAIM_PATTERNS,
+  PRICE_LITERAL_PATTERN,
+  SCALE_CLAIM_PATTERN,
+} from "../src/config/honesty.ts";
 import { bannedVoiceWordsIn } from "../src/config/voice.ts";
 import {
   describeHeadDashes,
@@ -500,44 +505,13 @@ function containsSlugAsUrl(haystack: string, slug: string): boolean {
   ).test(haystack);
 }
 
-/** The claims a `guide` file may not make (§8, AC-19), each named so a failure is actionable. */
-const GUIDE_CLAIM_PATTERNS: readonly { label: string; pattern: RegExp }[] = [
-  { label: "delivery timing", pattern: DELIVERY_TIMING_PATTERN },
-  { label: "cutoff", pattern: /\bcut[- ]?offs?\b/iu },
-  {
-    label: "delivery date",
-    pattern:
-      /\b(?:delivery dates?|deliver(?:ed|y|s)? (?:today|tomorrow)|by tomorrow|on the day you choose)\b/iu,
-  },
-  {
-    label: "florist count",
-    pattern:
-      /\b(?:\d[\d,.]*\+?|dozens|hundreds|thousands|a network of)\s+(?:of\s+)?florists?\b/iu,
-  },
-  { label: "rating", pattern: /\b(?:ratings?|stars?|star[- ]rated)\b/iu },
-  { label: "review", pattern: /\b(?:reviews?|testimonials?|trustpilot)\b/iu },
-  {
-    label: "delivery photo",
-    pattern:
-      /\b(?:delivery photos?|photos? of the delivery|photographed at the door|proof of delivery)\b/iu,
-  },
-];
-
-/** A digit-bearing claim of scale ("200+ florists", "1,200 cities"). */
-const SCALE_CLAIM_PATTERN =
-  /\b\d[\d,.]*\s*\+?\s*(?:florists?|shops?|partners?|cities|towns|countries|deliveries|customers|orders|bouquets)\b|\b\d[\d,.]*\+/iu;
-
 /**
- * A price literal in copy. Prices are data (`formatMoney`), never a sentence.
- *
- * The currency alternation closes on the Unicode-aware `(?![\p{L}\p{N}])` lookahead this file
- * uses in `containsTerm()` / `containsSlugAsUrl()`, **not** on `\b`: JS `\b` is ASCII-only, so
- * after a branch ending in `ł` there is no word boundary and every `129 zł` form escaped the rule
- * (`/review 63`). `złotych` survived only because it ends in an ASCII `h`. Any currency word added
- * here that ends in a non-ASCII letter falls into the same trap, which the lookahead closes.
+ * The claim, scale and price-literal patterns live in `src/config/honesty.ts` since spec 041 §2
+ * ("One list, two readers"; TASK-182): `pnpm pages:check` reads the same list, so they were moved
+ * there, not copied. `PRICE_LITERAL_PATTERN` is re-exported for `seed/check.ts`, which imported it
+ * from here first.
  */
-export const PRICE_LITERAL_PATTERN =
-  /(?:[£€$]\s?\d|\b\d[\d,.]*\s?(?:zł|złotych|pln|eur|gbp|euros?|pounds?|lei|ron)(?![\p{L}\p{N}]))/iu;
+export { PRICE_LITERAL_PATTERN };
 
 /* -------------------------------------------------------------------------- */
 /* The rules.                                                                 */
@@ -820,7 +794,7 @@ export function checkCorridorCorpus(
 
     /* 13. guide-claims --------------------------------------------------- */
     if (content.state === "guide") {
-      for (const claim of GUIDE_CLAIM_PATTERNS) {
+      for (const claim of CLAIM_PATTERNS) {
         const match = claim.pattern.exec(prose);
         if (match !== null) {
           problems.push(
