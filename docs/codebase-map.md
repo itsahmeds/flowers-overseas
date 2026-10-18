@@ -165,10 +165,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 300 |
+| `tests/unit/` | 301 |
 | `tests/integration/` | 28 |
 | `tests/contract/` | 12 |
-| `tests/e2e/` | 59 |
+| `tests/e2e/` | 60 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
