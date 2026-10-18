@@ -155,6 +155,7 @@ task actually touches.
 | Script | `pnpm` | Purpose |
 |---|---|---|
 | `admin-grant.ts` | `admin:grant` | Create or update an admin (§2.2) |
+| `artifact-credential-check.ts` | — | CI artifact check: no upload carries the staging wall's… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the… |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build`… |
@@ -214,14 +215,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 363 |
+| `tests/unit/` | 364 |
 | `tests/integration/` | 46 |
 | `tests/contract/` | 26 |
 | `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 356 |
+| `tests/fixtures/` | 357 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
