@@ -21,37 +21,42 @@ const ROOTS = [
   "scripts/ac6-specimen.ts",
 ] as const;
 
-describe("T-07 — fo/no-float-money on the three roots (AC-6)", () => {
-  it.each(ROOTS)("%s: `const total = 45.9` fails lint", async (path) => {
-    expect(
-      await floatMoneyErrors("export const total = 45.9;\n", path),
-    ).toBeGreaterThan(0);
-  });
+// The first lint loads the whole config and its type-aware parser: seconds, not milliseconds.
+describe(
+  "T-07 — fo/no-float-money on the three roots (AC-6)",
+  { timeout: 60_000 },
+  () => {
+    it.each(ROOTS)("%s: `const total = 45.9` fails lint", async (path) => {
+      expect(
+        await floatMoneyErrors("export const total = 45.9;\n", path),
+      ).toBeGreaterThan(0);
+    });
 
-  it.each(ROOTS)(
-    "%s: parseFloat(price) and amount.toFixed(2) fail",
-    async (path) => {
+    it.each(ROOTS)(
+      "%s: parseFloat(price) and amount.toFixed(2) fail",
+      async (path) => {
+        expect(
+          await floatMoneyErrors(
+            "declare const price: string;\nexport const parsed = parseFloat(price);\n",
+            path,
+          ),
+        ).toBeGreaterThan(0);
+        expect(
+          await floatMoneyErrors(
+            "declare const amount: number;\nexport const shown = amount.toFixed(2);\n",
+            path,
+          ),
+        ).toBeGreaterThan(0);
+      },
+    );
+
+    it.each(ROOTS)("%s: integer minor units pass", async (path) => {
       expect(
         await floatMoneyErrors(
-          "declare const price: string;\nexport const parsed = parseFloat(price);\n",
+          "export const total_minor = 4590;\nexport const retailMinor = 4590;\n",
           path,
         ),
-      ).toBeGreaterThan(0);
-      expect(
-        await floatMoneyErrors(
-          "declare const amount: number;\nexport const shown = amount.toFixed(2);\n",
-          path,
-        ),
-      ).toBeGreaterThan(0);
-    },
-  );
-
-  it.each(ROOTS)("%s: integer minor units pass", async (path) => {
-    expect(
-      await floatMoneyErrors(
-        "export const total_minor = 4590;\nexport const retailMinor = 4590;\n",
-        path,
-      ),
-    ).toBe(0);
-  });
-});
+      ).toBe(0);
+    });
+  },
+);
