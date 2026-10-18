@@ -112,6 +112,12 @@ export interface MediaAssetProps {
    * caller hides the box outside the range (`md:hidden` / `max-md:hidden`).
    */
   readonly displayedAt?: PriorityAt;
+  /**
+   * The box's own `sizes`, where it is not its slot's (a hub's lead figure: about 30vw from `md`
+   * up, A24 clause 5). It replaces the slot's string on the `<picture>` and in the preload alike,
+   * so the two still come from one lookup (AC-19).
+   */
+  readonly sizes?: string;
 }
 
 export function MediaAsset({
@@ -124,15 +130,20 @@ export function MediaAsset({
   ratio,
   className,
   displayedAt,
+  sizes,
 }: MediaAssetProps): ReactElement {
   const t = useTranslations("media");
-  const resolved = resolveMedia({
+  const lookedUp = resolveMedia({
     assetId,
     locale,
     ...(slot === undefined ? {} : { slot }),
     ...(productName === undefined ? {} : { productName }),
     ...(manifest === undefined ? {} : { manifest }),
   });
+  const resolved =
+    sizes === undefined || lookedUp.kind !== "image"
+      ? lookedUp
+      : { ...lookedUp, sizes };
 
   const box = resolved.kind === "image" ? resolved.slot : (slot ?? "grid");
   if (priority && !mediaSlot(box).aboveFold) {

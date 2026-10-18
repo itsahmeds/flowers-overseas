@@ -52,9 +52,7 @@ const GROUND: Readonly<Record<ListingRegister, string>> = {
 
 /** The ink register's muted text (deck, notes, captions) from `md` up. */
 export function onGround(register: ListingRegister, muted: string): string {
-  return register === "ink"
-    ? `${muted} md:text-[color-mix(in_oklab,var(--color-paper)_84%,var(--color-ink))]`
-    : muted;
+  return register === "ink" ? `${muted} md:text-on-inverse` : muted;
 }
 
 export interface HubBandProps {
@@ -167,6 +165,7 @@ export function HubLeadFigure({
           priority
           productName={lead.name}
           ratio="card"
+          sizes={LEAD_SIZES}
           slot={lead.photo.slot}
         />
       ) : null}
@@ -182,6 +181,13 @@ export function HubLeadFigure({
   );
 }
 
+/**
+ * The lead figure's `sizes`: about 30vw from `md` up (columns 8–12, capped at 416 px), and never
+ * displayed below `md`. Its own string, not the grid's, so the figure and a first grid card of the
+ * same product never collapse into one preload (React dedupes on `imagesrcset` + `imagesizes`).
+ */
+const LEAD_SIZES = "(min-width: 768px) 30vw, 100vw";
+
 /** One pill: a link with its accessible name, or plain text where no page exists (A20). */
 export interface HubPill {
   readonly key: string;
@@ -191,7 +197,7 @@ export interface HubPill {
   readonly label?: string | undefined;
   /** The fine line inside the pill: a count (R4) or a region (R6). */
   readonly detail?: string | undefined;
-  readonly hook?: Readonly<Record<`data-${string}`, string>>;
+  readonly hook?: Readonly<Record<`data-${string}`, string>> | undefined;
 }
 
 const PILL =
@@ -273,7 +279,11 @@ export function HubPills({
             itemsFocusable={pills.some((pill) => pill.href !== undefined)}
             items={pills.map((pill) => ({
               key: pill.key,
-              node: <Pill pill={{ ...pill, detail: undefined }} />,
+              // The phone copy of the same link: no fine line (the chip row is one line), and
+              // no hook, so a probe counts each destination once.
+              node: (
+                <Pill pill={{ ...pill, detail: undefined, hook: undefined }} />
+              ),
             }))}
             label={label}
           />
@@ -354,7 +364,8 @@ export function HubDateCards({
       : columns === 4
         ? "md:grid-cols-4"
         : "md:grid-cols-3";
-  const card = (entry: HubDateCard): ReactElement => {
+  const card = (entry: HubDateCard, hooked = true): ReactElement => {
+    const hook = hooked ? (entry.hook ?? {}) : {};
     const body = (
       <>
         {entry.date === null ? (
@@ -377,14 +388,14 @@ export function HubDateCards({
     const box =
       "bg-card rounded-photo-s grid h-full min-h-[120px] content-start gap-[2px] p-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)] no-underline md:p-[16px]";
     return entry.href === undefined ? (
-      <div className={box} {...(entry.hook ?? {})}>
+      <div className={box} {...hook}>
         {body}
       </div>
     ) : (
       <a
         className={`${box} hover:shadow-[inset_0_0_0_1.5px_var(--color-ink-3)]`}
         href={entry.href}
-        {...(entry.hook ?? {})}
+        {...hook}
       >
         {body}
       </a>
@@ -406,7 +417,7 @@ export function HubDateCards({
           itemsFocusable={cards.some((entry) => entry.href !== undefined)}
           items={cards.map((entry) => ({
             key: entry.key,
-            node: <div className="w-[132px]">{card(entry)}</div>,
+            node: <div className="w-[132px]">{card(entry, false)}</div>,
           }))}
           label={label}
         />
