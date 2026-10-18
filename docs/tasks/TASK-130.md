@@ -57,6 +57,9 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-18 10:30Z: unit suite (builder refusals, Phase 0 scan, trail equality, scanner bites),
   T-32 schema case, product URL fixture, e2e scan of every PDP; every named mutation watched red.
 
+- 2026-10-18 11:35Z (finisher, `/break 258` round 1 HOLES): rebased on `d1f5fc69`; holes 1-6
+  closed with tests, each watched red under its mutation (see `## Result`).
+
 ## Result
 
 [PR 258](https://github.com/itsahmeds/flowers-overseas/pull/258). The PDP now serves one JSON-LD
@@ -79,3 +82,15 @@ planted on Product; `review` planted on the trail; trail reordered; trail relabe
 from the scan list (scanner-bites case); `shippingRate` 4.90 and U+2014 in `Product.name` (builder
 throws, contract suite red; builder checks removed: unit refusal cases red). Local `cutoffTime` is
 `HH:MM` as rendered, with no offset (see the PR's "Found vs suggested"). No message key added.
+
+**Breaker round 1 holes, closed** (each case red under the named mutation, restored after):
+(1) exact "Offer requires a non-empty price (plan/02 §9), and has undefined" messages, one property
+missing at a time: red with `price` dropped from `REQUIRED_PROPERTIES.Offer`; (2) `AggregateRating`
+and `Review` planted as types: red when either is dropped from the scan list; (3) a `Product` inside
+a two-node `@graph` and an `Offer` inside an array: red when `walk()` stops descending arrays; (4)
+selected tier in another currency at the same amount: red with the currency guard dropped; (5)
+gate forced open on Germany (`offerProjection()` null): red with the null guard dropped;
+`priceValidUntil` "2026-12-31" carried: red when always omitted; (6) the shared scan now refuses a
+dashed `name` on every served PDP (AC-36): red with the dash rule dropped. Not runnable locally,
+as the breaker said: removing the route's `<JsonLd>` mount is caught only by the e2e scan (one
+BreadcrumbList per PDP).

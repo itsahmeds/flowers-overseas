@@ -25,6 +25,12 @@ export const PDP_FORBIDDEN_TYPES = [
 ] as const;
 export const PDP_FORBIDDEN_PROPERTIES = ["aggregateRating", "review"] as const;
 
+/**
+ * Spec 009 AC-36: no JSON-LD `name` carries U+2014, a spaced hyphen or a spaced U+2013. The
+ * breadcrumb's names are the trail's (country, category, product), so every served PDP is checked.
+ */
+const DASH_IN_NAME = /\u2014|\s[-\u2013]|[-\u2013]\s/u;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -32,7 +38,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 /** Every `@type` (string or array) and every property key, at every depth. */
 function walk(
   value: unknown,
-  found: { types: string[]; keys: Set<string> },
+  found: { types: string[]; keys: Set<string>; names: string[] },
 ): void {
   if (Array.isArray(value)) {
     for (const entry of value) walk(entry, found);
@@ -41,6 +47,7 @@ function walk(
   if (!isRecord(value)) return;
   for (const [key, child] of Object.entries(value)) {
     found.keys.add(key);
+    if (key === "name" && typeof child === "string") found.names.push(child);
     if (key === "@type") {
       for (const type of [child].flat()) {
         if (typeof type === "string") found.types.push(type);
@@ -62,7 +69,8 @@ export function jsonLdBlocks(html: string): readonly string[] {
 
 /**
  * What is wrong with one PDP's served HTML under AC-18 in Phase 0: anything but exactly one
- * JSON-LD block carrying exactly one `BreadcrumbList`, and any of the eight. Empty means it holds.
+ * JSON-LD block carrying exactly one `BreadcrumbList`, any of the eight, and any `name` with a
+ * forbidden dash (AC-36). Empty means it holds.
  */
 export function pdpJsonLdProblems(html: string, where: string): string[] {
   const blocks = jsonLdBlocks(html);
@@ -72,7 +80,11 @@ export function pdpJsonLdProblems(html: string, where: string): string[] {
       `${where}: ${String(blocks.length)} JSON-LD blocks, expected 1`,
     );
   }
-  const found = { types: [] as string[], keys: new Set<string>() };
+  const found = {
+    types: [] as string[],
+    keys: new Set<string>(),
+    names: [] as string[],
+  };
   for (const block of blocks) {
     try {
       walk(JSON.parse(block) as unknown, found);
@@ -88,6 +100,13 @@ export function pdpJsonLdProblems(html: string, where: string): string[] {
   }
   for (const property of PDP_FORBIDDEN_PROPERTIES) {
     if (found.keys.has(property)) problems.push(`${where}: ${property}`);
+  }
+  for (const name of found.names) {
+    if (DASH_IN_NAME.test(name)) {
+      problems.push(
+        `${where}: name ${JSON.stringify(name)} carries a dash (AC-36)`,
+      );
+    }
   }
   return problems;
 }

@@ -520,13 +520,32 @@ describe("required shape, not just allowed types (AC-15)", () => {
   });
 
   it("requires Product's name and offers, and Offer's price, priceCurrency and availability (spec 009 AC-18; TASK-130)", () => {
-    const product = shapeOf({ "@type": "Product" }).join(" ");
-    expect(product).toContain("Product requires a non-empty name");
-    expect(product).toContain("Product requires a non-empty offers");
-    const offer = shapeOf({ "@type": "Offer" }).join(" ");
-    expect(offer).toContain("Offer requires a non-empty price");
-    expect(offer).toContain("Offer requires a non-empty priceCurrency");
-    expect(offer).toContain("Offer requires a non-empty availability");
+    // Whole messages, element by element: "non-empty price" is also a prefix of "non-empty
+    // priceCurrency", so a substring match would pass with `price` dropped (`/break 258` hole 1).
+    const missing = (type: string, property: string): string =>
+      `${type} requires a non-empty ${property} (plan/02 §9), and has undefined`;
+    expect(shapeOf({ "@type": "Product" })).toStrictEqual([
+      missing("Product", "name"),
+      missing("Product", "offers"),
+    ]);
+    expect(shapeOf({ "@type": "Offer" })).toStrictEqual([
+      missing("Offer", "price"),
+      missing("Offer", "priceCurrency"),
+      missing("Offer", "availability"),
+    ]);
+    // One property missing at a time names exactly that property.
+    for (const property of ["price", "priceCurrency", "availability"]) {
+      const offer: Record<string, unknown> = {
+        "@type": "Offer",
+        price: "54.90",
+        priceCurrency: "EUR",
+        availability: "https://schema.org/InStock",
+      };
+      delete offer[property];
+      expect(shapeOf(offer), property).toStrictEqual([
+        missing("Offer", property),
+      ]);
+    }
   });
 
   /** One Offer the builder would emit, for the cases below to break one property at a time. */
@@ -646,9 +665,9 @@ describe("the required-shape gate fails the CLI, not just the unit test (AC-15)"
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("bad-offer-shape.json");
     for (const problem of [
-      "Offer requires a non-empty price",
-      "Offer requires a non-empty priceCurrency",
-      "Offer requires a non-empty availability",
+      "Offer requires a non-empty price (plan/02 §9)",
+      "Offer requires a non-empty priceCurrency (plan/02 §9)",
+      "Offer requires a non-empty availability (plan/02 §9)",
       "expected 0: delivery is inside the price",
       "expected https://schema.org/MerchantReturnNotPermitted",
       "AC-36",
