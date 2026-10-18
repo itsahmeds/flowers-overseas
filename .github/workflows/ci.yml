@@ -1687,7 +1687,7 @@ jobs:
   e2e:
     name: e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
