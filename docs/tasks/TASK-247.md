@@ -38,6 +38,7 @@ here.
 
 - 2026-10-18 frontend-247: guard in `src/lib/csp-cache-handler.ts` + `src/lib/cache-key-case.ts`, unit test (simulated case-insensitive volume, red with the guard removed: 8 cases), e2e `tests/e2e/case-variant-cache.spec.ts`; PR 261 draft. Next: reproduce on a local production build in the build slot (guard off, then on).
 - 2026-10-18 frontend-247: reproduced (see Result); scoped keys live under `server/route-cache/`, not `app/`, so `responseCacheFiles` fixed and a scoped-key unit case added; unit simulation now models APFS case-preserving lookup; e2e visits the real pages first. Done; `in_review`.
+- 2026-10-18 frontend-247 (finisher, breaker round 1 HOLES): tests for the real resolver (`realTrueCasePath`, links resolved, so red on Linux), the default probe's identity, the volume probe's insensitive branch through an injected `exists` (red on Linux), and `base === undefined`; manual e2e repro documented in `docs/runbooks/local-setup.md` §6.1 (chosen over a Mac-only backdating step inside the spec).
 
 ## Result
 
