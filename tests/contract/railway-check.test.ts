@@ -128,6 +128,90 @@ describe("service drift (AC-9, T-10)", () => {
   });
 });
 
+/*
+ * Spec 040 AC-10 / T-10 (TASK-103): the `worker` seat exists in production and staging, has no
+ * public domain and runs nothing until spec 002 TASK-024.
+ */
+describe("the `worker` seat (AC-10, T-10)", () => {
+  const check = (name: string, environmentName = "staging") =>
+    runRailwayCheck({
+      declared,
+      environmentName,
+      environment: railwayEnvironmentResponseSchema.parse(fixture(name)),
+    });
+
+  it("passes on a seat with no domain and no deployment, and says so", () => {
+    const report = check("environment-staging.json");
+    expect(report.ok).toBe(true);
+    expect(report.lines).toContain(
+      "service worker: no public domain and no running deployment (spec 040 AC-10)",
+    );
+  });
+
+  it("fails on a public domain on `worker`, naming the field and the domain", () => {
+    const report = check("environment-staging-worker-domain.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toContain(
+      "service worker: public domain worker-staging.up.railway.app: none is allowed until spec 002 TASK-024 (spec 040 AC-10)",
+    );
+  });
+
+  it("fails on a running deployment of `worker`", () => {
+    const report = check("environment-staging-worker-running.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines).toContain(
+      "service worker: latestDeployment is SUCCESS: zero running replicas until spec 002 TASK-024 (spec 040 AC-10)",
+    );
+  });
+
+  it("fails closed when the answer does not report `worker`'s domains", () => {
+    const report = check("environment-staging-worker-unreported.json");
+    expect(report.ok).toBe(false);
+    expect(report.lines.join("\n")).toContain("domains not reported");
+  });
+
+  it.each(["staging", "production"])(
+    "fails when %s has no `worker` at all",
+    (environmentName) => {
+      const report = check(
+        "environment-staging-no-worker.json",
+        environmentName,
+      );
+      expect(report.ok).toBe(false);
+      expect(report.lines).toContain(
+        `service worker: not found in environment ${environmentName} (spec 040 AC-10)`,
+      );
+    },
+  );
+
+  it("does not require the seat in a PR environment", () => {
+    const report = check(
+      "environment-staging-no-worker.json",
+      "flowers-overseas-pr-263",
+    );
+    expect(report.lines.join("\n")).not.toContain("service worker");
+    expect(report.ok).toBe(true);
+  });
+
+  it("fails on the command line too, with exit 1", () => {
+    const run = spawnSync(
+      process.execPath,
+      [
+        "scripts/railway-check.ts",
+        "--fixture-environment",
+        "tests/fixtures/railway/environment-staging-worker-domain.json",
+      ],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: { PATH: process.env["PATH"] ?? "", NODE_ENV: "test" },
+      },
+    );
+    expect(run.status).toBe(1);
+    expect(run.stdout).toContain("service worker: public domain");
+  });
+});
+
 describe("the declared key set (AC-11)", () => {
   it("is AC-11's 33: the 31 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
     // 29 since TASK-200 added QUOTE_SIGNING_SECRET (spec 005 §13 Q5, spec 010 §8); 33 since TASK-217

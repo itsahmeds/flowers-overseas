@@ -46,6 +46,9 @@ import {
   type RailwayVariablesResponse,
   type TriggerReport,
   WEB_SERVICE_NAME,
+  WORKER_ENVIRONMENTS,
+  WORKER_SERVICE_NAME,
+  compareWorkerService,
   compareDeployTriggers,
   compareVariableKeys,
   compareWebService,
@@ -97,6 +100,30 @@ export function runRailwayCheck(input: RailwayCheckInput): RailwayCheckReport {
     if (mismatches.length === 0) {
       lines.push(
         `service ${WEB_SERVICE_NAME}: region, numReplicas, healthcheckPath and restart policy match ${RAILWAY_CONFIG_PATH}`,
+      );
+    }
+  }
+
+  // Spec 040 AC-10 (TASK-103): the `worker` seat, in production and staging, with no public
+  // domain and nothing running. A PR environment forked from staging may carry it too, and is held
+  // to the same two rules when it does.
+  const worker = findServiceInstance(input.environment, WORKER_SERVICE_NAME);
+  if (worker === undefined) {
+    if (WORKER_ENVIRONMENTS.includes(input.environmentName)) {
+      ok = false;
+      lines.push(
+        `service ${WORKER_SERVICE_NAME}: not found in environment ${input.environmentName} (spec 040 AC-10)`,
+      );
+    }
+  } else {
+    const failures = compareWorkerService(worker);
+    for (const failure of failures) {
+      ok = false;
+      lines.push(`service ${WORKER_SERVICE_NAME}: ${failure}`);
+    }
+    if (failures.length === 0) {
+      lines.push(
+        `service ${WORKER_SERVICE_NAME}: no public domain and no running deployment (spec 040 AC-10)`,
       );
     }
   }
@@ -184,6 +211,17 @@ const ENVIRONMENT_QUERY = `query Environment($id: String!) {
           restartPolicyType
           restartPolicyMaxRetries
           startCommand
+          domains {
+            serviceDomains {
+              domain
+            }
+            customDomains {
+              domain
+            }
+          }
+          latestDeployment {
+            status
+          }
         }
       }
     }

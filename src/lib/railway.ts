@@ -76,6 +76,19 @@ export const railwayServiceInstanceSchema = z.object({
   restartPolicyType: z.string().nullable().optional(),
   restartPolicyMaxRetries: z.number().int().nullable().optional(),
   startCommand: z.string().nullable().optional(),
+  /**
+   * Spec 040 AC-10 (TASK-103): what `worker` must not have. Optional so a response recorded
+   * before the query asked for them still parses; `compareWorkerService` fails closed on their
+   * absence rather than reading it as "no domain".
+   */
+  domains: z
+    .object({
+      serviceDomains: z.array(z.object({ domain: z.string() })),
+      customDomains: z.array(z.object({ domain: z.string() })),
+    })
+    .nullable()
+    .optional(),
+  latestDeployment: z.object({ status: z.string() }).nullable().optional(),
 });
 export type RailwayServiceInstance = z.infer<
   typeof railwayServiceInstanceSchema
@@ -159,6 +172,57 @@ export function findServiceInstance(
   return response.data.environment.serviceInstances.edges
     .map((edge) => edge.node)
     .find((node) => node.serviceName === serviceName);
+}
+
+/** The service spec 002 TASK-024 will run jobs on; until then a seat with nothing running. */
+export const WORKER_SERVICE_NAME = "worker";
+
+/** The environments AC-10 requires the `worker` seat in. */
+export const WORKER_ENVIRONMENTS: readonly string[] = ["production", "staging"];
+
+/**
+ * Deployment statuses that mean a replica is running or about to: AC-10 allows none of them on
+ * `worker` until spec 002 TASK-024. A failed, removed, crashed, skipped or sleeping deployment,
+ * or none at all, runs nothing.
+ */
+export const WORKER_RUNNING_STATUSES: readonly string[] = [
+  "SUCCESS",
+  "DEPLOYING",
+  "BUILDING",
+  "INITIALIZING",
+  "QUEUED",
+  "WAITING",
+];
+
+/**
+ * Spec 040 AC-10 (TASK-103): the `worker` seat has no public domain and runs no replica. One line
+ * per failure, naming the field; empty when it holds. Missing `domains` fails: an answer that does
+ * not report them cannot prove there are none.
+ */
+export function compareWorkerService(live: RailwayServiceInstance): string[] {
+  const failures: string[] = [];
+  if (live.domains === undefined || live.domains === null) {
+    failures.push(
+      "domains not reported, so the absence of a public domain is unproven (spec 040 AC-10)",
+    );
+  } else {
+    const names = [
+      ...live.domains.serviceDomains,
+      ...live.domains.customDomains,
+    ].map((domain) => domain.domain);
+    if (names.length > 0) {
+      failures.push(
+        `public domain ${names.join(", ")}: none is allowed until spec 002 TASK-024 (spec 040 AC-10)`,
+      );
+    }
+  }
+  const status = live.latestDeployment?.status;
+  if (status !== undefined && WORKER_RUNNING_STATUSES.includes(status)) {
+    failures.push(
+      `latestDeployment is ${status}: zero running replicas until spec 002 TASK-024 (spec 040 AC-10)`,
+    );
+  }
+  return failures;
 }
 
 /** The declared contract: AC-11's 29 keys, straight from the zod schemas. */
