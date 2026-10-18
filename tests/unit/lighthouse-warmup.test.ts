@@ -131,6 +131,32 @@ describe("which subresources a document names", () => {
     expect(srcsetUrls("")).toEqual([]);
   });
 
+  it("reads a comma inside a descriptor's parentheses as part of the descriptor, with no nesting", () => {
+    // HTML's descriptor tokenizer: "(" enters the paren state, the first ")" leaves it, and a
+    // comma ends the candidate only outside it (/break r1 on PR 262, hole 1).
+    expect(srcsetUrls("/a.avif 1x (x, y), /b.avif 2x")).toEqual([
+      "/a.avif",
+      "/b.avif",
+    ]);
+    expect(srcsetUrls("/a.avif 1x (( ), /b.avif 2x")).toEqual([
+      "/a.avif",
+      "/b.avif",
+    ]);
+  });
+
+  it("splits on HTML's ASCII whitespace only: tab, LF, FF and CR separate, NBSP does not", () => {
+    // /break r1 on PR 262, hole 2.
+    expect(srcsetUrls("/a.avif\t1x,\n/b.avif\f2x,\r/c.avif")).toEqual([
+      "/a.avif",
+      "/b.avif",
+      "/c.avif",
+    ]);
+    expect(srcsetUrls("/a\u00a0b.avif 1x, /c.avif 2x")).toEqual([
+      "/a\u00a0b.avif",
+      "/c.avif",
+    ]);
+  });
+
   it("keeps a `data:` candidate whole, as the HTML srcset parser does, so its comma names no path", () => {
     // A per-width `<picture>` selects a one-pixel `data:` GIF where its image is not displayed
     // (`src/modules/ui/media/preload.ts`, BLANK_IMAGE_SRCSET); split on every comma, its base64

@@ -165,22 +165,32 @@ export function attributes(source: string): Map<string, string> {
   return result;
 }
 
+/** HTML's ASCII whitespace: space, tab, LF, FF and CR (not `\s`, which also matches NBSP). */
+const ASCII_WHITESPACE = /[\t\n\f\r ]/;
+const WHITESPACE_OR_COMMA = /[\t\n\f\r ,]/;
+
 /**
  * Every URL of a `srcset`, in order: `a.avif 384w, b.avif 640w` → `[a.avif, b.avif]`.
  *
  * It follows the HTML standard's candidate parser, not a split on every comma: a URL runs to the
- * next whitespace and only its trailing commas are dropped, so a `data:` candidate (whose comma
- * is part of the URL) stays one URL and is skipped as such by `subresourceUrls`.
+ * next ASCII whitespace and only its trailing commas are dropped, so a `data:` candidate (whose
+ * comma is part of the URL) stays one URL and is skipped as such by `subresourceUrls`. The
+ * descriptors run to the next comma outside parentheses; "(" enters the paren state and the
+ * first ")" leaves it, with no nesting, as the standard's descriptor tokenizer does.
  */
 export function srcsetUrls(srcset: string): string[] {
   const urls: string[] = [];
   let position = 0;
   const at = (index: number): string => srcset.charAt(index);
   while (position < srcset.length) {
-    while (position < srcset.length && /[\s,]/.test(at(position))) position++;
+    while (position < srcset.length && WHITESPACE_OR_COMMA.test(at(position))) {
+      position++;
+    }
     if (position >= srcset.length) break;
     const start = position;
-    while (position < srcset.length && !/\s/.test(at(position))) position++;
+    while (position < srcset.length && !ASCII_WHITESPACE.test(at(position))) {
+      position++;
+    }
     let url = srcset.slice(start, position);
     if (url.endsWith(",")) {
       // No descriptors: the trailing commas end the candidate.
@@ -188,12 +198,16 @@ export function srcsetUrls(srcset: string): string[] {
     } else {
       // Skip the descriptors, up to the comma that ends the candidate (one inside parentheses
       // does not).
-      let depth = 0;
+      let inParens = false;
       while (position < srcset.length) {
         const character = at(position);
-        if (character === "(") depth++;
-        else if (character === ")") depth = Math.max(0, depth - 1);
-        else if (character === "," && depth === 0) break;
+        if (inParens) {
+          if (character === ")") inParens = false;
+        } else if (character === "(") {
+          inParens = true;
+        } else if (character === ",") {
+          break;
+        }
         position++;
       }
     }
