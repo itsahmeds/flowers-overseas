@@ -138,7 +138,7 @@ PR [#265](https://github.com/itsahmeds/flowers-overseas/pull/265).
   `pages:check` can call it. Beyond A11's lists it also reads the Polish combining forms
   (`siedmio-`, `dwu-`…) and the compound week stems (`-wöchig`, `tygodniow-`), and measures the
   window from the end of a whole ICU plural.
-- **Tests:** `tests/unit/freshness-claim.test.ts` (17): A11's pass and fail sentences, every
+- **Tests:** `tests/unit/freshness-claim.test.ts` (17 at `e6a4fa76`, 24 after round 1): A11's pass and fail sentences, every
   spelled-out number to thirty in three languages, every term, the window both ways, every
   single-branch deletion of both patterns caught, the four-locale scan over every guarantee key
   (`infoPages.*`, any key segment naming a guarantee, freshness or promise, the five named keys
