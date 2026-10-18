@@ -814,10 +814,14 @@ function headFixture(
       const path = edit.key.split(".");
       let node = catalogue;
       for (const segment of path.slice(0, -1)) {
+        // `en-gb` is a thin override: an override of a key it does not carry yet creates it.
+        node[segment] ??= {};
         node = node[segment] as Record<string, unknown>;
       }
       const leaf = path.at(-1) ?? "";
-      expect(typeof node[leaf], `${locale} ${edit.key}`).toBe("string");
+      if (locale !== "en-gb") {
+        expect(typeof node[leaf], `${locale} ${edit.key}`).toBe("string");
+      }
       node[leaf] = edit.value;
     }
     // An English edit keeps every record of the key fresh, so check 7 (stale `sourceHash`) stays
@@ -921,6 +925,76 @@ describe("check 13: no dash in head copy (spec 003 AC-50 / T-50)", () => {
     expect(result.status).toBe(0);
   });
 
+  it("reads `en-gb` too: an `en-gb` override of `meta.home.title` with a dash is named as `en-gb`'s (hole 3)", () => {
+    const result = headFixture([
+      {
+        locale: "en-gb",
+        key: "meta.home.title",
+        value: "Flowers Overseas \u2014 Send Flowers Abroad",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result)).toEqual([
+      "  - messages/en-gb.json [meta.home.title]: in locale `en-gb` is head copy (it reaches a `<title>`, a meta description or a JSON-LD name) and carries an em dash (U+2014): use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)",
+    ]);
+  });
+
+  it("reads description keys: `meta.home.description` and `shop.root.seoDescription` with a dash are named (hole 3)", () => {
+    const result = headFixture([
+      {
+        locale: "en",
+        key: "meta.home.description",
+        value: "Order flowers for someone in another country \u2013 by hand.",
+      },
+      {
+        locale: "en",
+        key: "shop.root.seoDescription",
+        value: "Every bouquet for {country} - one all-in price.",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result).map((line) => line.split(":")[0])).toEqual([
+      "  - messages/en.json [meta.home.description]",
+      "  - messages/en.json [shop.root.seoDescription]",
+    ]);
+  });
+
+  it("reads the `BreadcrumbList` labels: a `pl` `breadcrumb.shopRoot` with a spaced en dash is named (hole 7)", () => {
+    const result = headFixture([
+      {
+        locale: "pl",
+        key: "breadcrumb.shopRoot",
+        value: "Kwiaty \u2013 sklep",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result).map((line) => line.split(":")[0])).toEqual([
+      "  - messages/pl.json [breadcrumb.shopRoot]",
+    ]);
+  });
+
+  it("refuses the other dash characters and a double hyphen (hole 1)", () => {
+    const result = headFixture([
+      {
+        locale: "en",
+        key: "meta.home.title",
+        value: "Flowers Overseas \u2015 Send Flowers Abroad",
+      },
+      {
+        locale: "en",
+        key: "meta.notFound.title",
+        value: "Page not found -- Flowers Overseas",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(
+      headLines(result).map((line) => line.split(" and carries ")[1]),
+    ).toEqual([
+      "a horizontal bar (U+2015): use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)",
+      "a double hyphen (--): use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)",
+    ]);
+  });
+
   it("the committed tree carries no dash in any head key, in any locale", () => {
     expect(headLines(runCli())).toEqual([]);
   });
@@ -934,8 +1008,20 @@ describe("check 13: no dash in head copy (spec 003 AC-50 / T-50)", () => {
       ).not.toEqual([]);
     }
     expect(keys.filter((key) => isHeadMessageKey(key)).sort()).toEqual([
+      "breadcrumb.destinations",
+      "breadcrumb.entity",
+      "breadcrumb.occasions",
+      "breadcrumb.shopRoot",
       "catalog.descriptor.name",
       "categoryHub.h1",
+      "common.homeLink",
+      "destinations.de.name",
+      "destinations.es.name",
+      "destinations.fr.name",
+      "destinations.it.name",
+      "destinations.nl.name",
+      "destinations.pl.name",
+      "destinations.ro.name",
       "destinationsHub.seoDescription",
       "destinationsHub.seoTitle",
       "meta.error.description",

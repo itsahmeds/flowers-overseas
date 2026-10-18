@@ -78,6 +78,7 @@ _None recorded._
 
 - 2026-10-18: check 13 (head punctuation) in `i18n:check` over `HEAD_MESSAGE_KEYS` (`src/modules/i18n/head-punctuation.ts`), T-50 cases in `tests/unit/i18n-check.test.ts`; copy changed with TASK-243.
 - 2026-10-18: `seed:check` and `corridor:check` rules with fixtures; the built-site scan, run locally once (3,546 documents, green). Done; `in_review`.
+- 2026-10-18: breaker r1 HOLES 1 to 9 closed, each with a test that went red under its mutation: every Unicode dash and "--" (holes 1, 2: `tests/unit/head-punctuation.test.ts`, one-sided and edge dashes refused, the suspended hyphen kept, NBSP pinned); check 13 on `en-gb`, descriptions, breadcrumbs (hole 3, 7: `i18n-check.test.ts`; `breadcrumb.*`, `common.homeLink`, `destinations.*.name` added to `HEAD_MESSAGE_KEYS`, no dash found in them); seed `name`, every locale's occasions, the ": " shape (holes 4, 5: `seed-check.test.ts`); the `en-gb` guide (hole 6: `corridor-check.test.ts`); the scan pins per-locale counts (en 803, en-gb 803, de 796, pl 796) and counts only documents that answered 200 or the expected 404 (holes 8, 9). The pinned counts change when the catalogue gains or loses a page.
 
 ## Result
 

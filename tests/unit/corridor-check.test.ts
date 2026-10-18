@@ -477,6 +477,34 @@ const DASH_IN_HEAD_CASES: readonly (CorridorCheckCase & {
   {
     rule: "dash-in-head",
     field: "seoTitle",
+    expect: "carries an em dash (U+2014)",
+    why: "the en-gb guides write their own head copy (breaker r1 on PR 266, hole 6).",
+    file: "en-gb/pl-guide.md",
+    ops: [
+      {
+        op: "setField",
+        field: "seoTitle",
+        value: "Send flowers to Poland \u2014 a British guide",
+      },
+    ],
+  },
+  {
+    rule: "dash-in-head",
+    field: "seoDescription",
+    expect: "carries a horizontal bar (U+2015)",
+    why: "every dash character counts, not only U+2014 (hole 1).",
+    file: "en/pl-guide.md",
+    ops: [
+      {
+        op: "setField",
+        field: "seoDescription",
+        value: "What is given in Poland \u2015 and what is never given.",
+      },
+    ],
+  },
+  {
+    rule: "dash-in-head",
+    field: "seoTitle",
     expect: "carries a spaced hyphen",
     why: "swapping the em dash for a hyphen does not meet the ruling.",
     file: "en/pl-guide.md",
@@ -516,7 +544,7 @@ describe("spec 007 AC-36: `dash-in-head` names the file and the field (T-37)", (
       problems.map((problem) => [problem.file, problem.field, problem.rule]),
       formatCorridorProblems(problems),
     ).toStrictEqual([
-      ["content/corridors/en/pl-guide.md", field, "dash-in-head"],
+      [`content/corridors/${testCase.file}`, field, "dash-in-head"],
     ]);
     expect(problems[0]?.message).toContain(testCase.expect);
     expect(corridorCheckExitCode(problems)).toBe(1);

@@ -2206,6 +2206,88 @@ describe("spec 006 AC-33: `copy/dash-in-head` and `copy/product-seo-title-shape`
     TREE_TIMEOUT,
   );
 
+  /** The committed tree with one row's fields replaced (an inline case, not a fixture file). */
+  const withRow = (
+    replaces: string,
+    key: string,
+    set: Record<string, unknown>,
+  ): SeedTree =>
+    applySeedCheckCase(
+      tree,
+      SeedCheckCaseSchema.parse({
+        family: "copy",
+        rule: "dash-in-head",
+        replaces,
+        expect: "inline case",
+        why: "spec 006 AC-33, breaker r1 on PR 266: an inline edit of one committed row.",
+        ops: [{ op: "setRow", match: { key }, set }],
+      }),
+      () => {
+        throw new Error("no fixture file");
+      },
+    );
+  const ruleLines = (mutated: SeedTree, rule: string): readonly string[] =>
+    checkSeedDataset(mutated)
+      .filter((problem) => problem.rule === rule)
+      .map((problem) => `${problem.file} ${problem.key} ${problem.message}`);
+
+  it.each([
+    ["en", "birthday"],
+    ["en-gb", "apology"],
+    ["de", "birthday"],
+    ["pl", "birthday"],
+  ])(
+    "reads every locale's occasions: a `%s` occasion `seoTitle` with an em dash is named (hole 4)",
+    (locale, key) => {
+      const lines = ruleLines(
+        withRow(`copy/${locale}/occasions.json`, key, {
+          seoTitle: "Occasion \u2014 flowers",
+        }),
+        "dash-in-head",
+      );
+      expect(lines).toEqual([
+        `seed/data/copy/${locale}/occasions.json occasion:${key} (${locale}) \`seoTitle\` "Occasion \u2014 flowers" carries an em dash (U+2014): head copy takes a colon or a full stop (spec 006 §14 A-founder-2026-10-15a)`,
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "reads `name`: a category `name` with an em dash is named, field and all (hole 4)",
+    () => {
+      const lines = ruleLines(
+        withRow("copy/en/categories.json", "roses", {
+          name: "Roses \u2014 red",
+        }),
+        "dash-in-head",
+      );
+      expect(lines).toEqual([
+        'seed/data/copy/en/categories.json category:roses (en) `name` "Roses \u2014 red" carries an em dash (U+2014): head copy takes a colon or a full stop (spec 006 §14 A-founder-2026-10-15a)',
+      ]);
+    },
+    TREE_TIMEOUT,
+  );
+
+  it.each([
+    ["Amber Hour hand-tied orange rose bouquet", 1],
+    ["Amber Hourglass: hand-tied orange rose bouquet", 1],
+    ["Amber Hour, hand-tied orange rose bouquet", 1],
+    ["Amber Hour:hand-tied orange rose bouquet", 1],
+    ["Amber Hour: hand-tied orange rose bouquet", 0],
+    ["Amber Hour", 0],
+  ])(
+    '`product-seo-title-shape`: %j gives %i problem(s), so the ": " is pinned (hole 5, review nit 1)',
+    (seoTitle, count) => {
+      expect(
+        ruleLines(
+          withRow("copy/en/products.json", "FO-BQ-001", { seoTitle }),
+          "product-seo-title-shape",
+        ),
+      ).toHaveLength(count);
+    },
+    TREE_TIMEOUT,
+  );
+
   it(
     'passes "Amber Hour: hand-tied, all-in": a hyphenated word is not a dash',
     () => {

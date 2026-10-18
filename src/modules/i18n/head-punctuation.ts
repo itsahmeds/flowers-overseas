@@ -14,8 +14,21 @@
  * function over every prerendered document, which is the backstop for a key that reaches the head
  * but is missing from the list below: the fix is to add it here.
  *
- * Hyphenated words ("hand-tied", "all-in") and unspaced ranges pass. The middle dot of
- * `shop.pagination.titleSuffix` and `plan/02` §5.3's "·" and "|" separators are not dashes.
+ * What counts as a dash (breaker r1 on PR 266, holes 1 and 2):
+ *
+ *  - **always a dash**, wherever it stands: U+2014 em dash, U+2012 figure dash, U+2015 horizontal
+ *    bar, U+2212 minus sign, U+2E3A and U+2E3B two- and three-em dashes, U+FE58 small em dash,
+ *    U+FE63 small hyphen-minus, U+FF0D fullwidth hyphen-minus, and a double hyphen ("--");
+ *  - **a dash unless it joins two characters**: the hyphen-minus, U+2010 hyphen, U+2011
+ *    non-breaking hyphen and U+2013 en dash. Inside a word or a range ("hand-tied", "10\u201312")
+ *    they pass; with whitespace on both sides ("a - b") they are a spaced dash; with whitespace on
+ *    one side, or at the start or end of the string ("a -b", "a- b", "- a", "a \u2013"), they are
+ *    a one-sided dash. The one exception is the suspended hyphen of German and Polish compounds:
+ *    a hyphen after a letter, followed by a space and a conjunction or by a comma ("Box- und
+ *    Topfgestecke", "Box-, Topf- und", "dwu- i trzypokojowe"), which is correct spelling.
+ *
+ * The middle dot of `shop.pagination.titleSuffix` and `plan/02` §5.3's "·" and "|" separators
+ * are not dashes.
  *
  * Import-free on purpose: the three gates run under plain `node`, outside the Next graph.
  */
@@ -44,6 +57,11 @@ export const HEAD_MESSAGE_KEYS: readonly string[] = [
   // The occasions index reuses these as its `<title>` and description.
   "occasionsIndex.h1",
   "occasionsIndex.intro",
+  // The `BreadcrumbList` item names (breaker r1 on PR 266, hole 7): the trail's labels, the home
+  // crumb and the country names, which also fill `{country}` in the shop titles.
+  "breadcrumb.*",
+  "common.homeLink",
+  "destinations.*.name",
 ];
 
 function patternMatches(pattern: string, key: string): boolean {
@@ -65,32 +83,83 @@ export function isHeadMessageKey(
 
 /** One refused mark: what it is, in words a CI log reader understands. */
 export interface HeadDash {
-  readonly mark:
-    "an em dash (U+2014)" | "a spaced hyphen" | "a spaced en dash (U+2013)";
+  readonly mark: string;
+}
+
+/** Characters that are a dash wherever they stand. */
+const ALWAYS_DASH: ReadonlyMap<string, string> = new Map([
+  ["\u2012", "a figure dash (U+2012)"],
+  ["\u2014", "an em dash (U+2014)"],
+  ["\u2015", "a horizontal bar (U+2015)"],
+  ["\u2212", "a minus sign (U+2212)"],
+  ["\u2e3a", "a two-em dash (U+2E3A)"],
+  ["\u2e3b", "a three-em dash (U+2E3B)"],
+  ["\ufe58", "a small em dash (U+FE58)"],
+  ["\ufe63", "a small hyphen-minus (U+FE63)"],
+  ["\uff0d", "a fullwidth hyphen-minus (U+FF0D)"],
+]);
+
+/** Characters that join two characters, and are a dash when they do not. */
+const JOINERS: ReadonlyMap<string, string> = new Map([
+  ["-", "hyphen"],
+  ["\u2010", "hyphen (U+2010)"],
+  ["\u2011", "non-breaking hyphen (U+2011)"],
+  ["\u2013", "en dash (U+2013)"],
+]);
+
+const HYPHENS = new Set(["-", "\u2010", "\u2011"]);
+
+const WHITESPACE = /\s/u;
+const LETTER = /\p{L}/u;
+
+/** The words after which a hyphen is a suspended compound ("Box- und"), not a dash. */
+const SUSPENDED_HYPHEN_FOLLOWERS =
+  /^\s+(?:und|oder|bis|sowie|bzw\.|i|lub|albo|oraz|czy)(?=\s)/u;
+
+function isSuspendedHyphen(chars: readonly string[], index: number): boolean {
+  const before = chars[index - 1];
+  if (before === undefined || !LETTER.test(before)) return false;
+  if (chars[index + 1] === ",") return true;
+  return SUSPENDED_HYPHEN_FOLLOWERS.test(chars.slice(index + 1).join(""));
 }
 
 /**
- * Whitespace on **both** sides makes a hyphen or an en dash a dash (spec 003 clause 2: " - " and
- * " \u2013 "), so "hand-tied", "10\u201312" and German's suspended hyphen ("Box- und
- * Topfgestecke", a committed `de` description) pass while "a - b" does not. The `Product.name`
- * guard of `src/modules/seo/schema/productOffer.ts` is stricter (either side), which is safe for a
- * product name and would refuse correct German here.
- */
-const SPACED_HYPHEN = /\s-\s/u;
-const SPACED_EN_DASH = /\s\u2013\s/u;
-const EM_DASH = /\u2014/u;
-
-/**
- * The dashes a head string carries, in a fixed order; empty when the value is clean. The value is
- * read as written (an ICU message is checked as its source text, placeholders and all).
+ * The dashes a head string carries, each kind once, in the order they first appear; empty when
+ * the value is clean. The value is read as written (an ICU message is checked as its source text,
+ * placeholders and all).
  */
 export function headDashesIn(value: string): readonly HeadDash[] {
-  const found: HeadDash[] = [];
-  if (EM_DASH.test(value)) found.push({ mark: "an em dash (U+2014)" });
-  if (SPACED_HYPHEN.test(value)) found.push({ mark: "a spaced hyphen" });
-  if (SPACED_EN_DASH.test(value))
-    found.push({ mark: "a spaced en dash (U+2013)" });
-  return found;
+  const chars = [...value];
+  const marks: string[] = [];
+  const add = (mark: string): void => {
+    if (!marks.includes(mark)) marks.push(mark);
+  };
+  chars.forEach((char, index) => {
+    const always = ALWAYS_DASH.get(char);
+    if (always !== undefined) {
+      add(always);
+      return;
+    }
+    const joiner = JOINERS.get(char);
+    if (joiner === undefined) return;
+    const before = chars[index - 1];
+    const after = chars[index + 1];
+    if (char === "-" && (before === "-" || after === "-")) {
+      add("a double hyphen (--)");
+      return;
+    }
+    const openBefore = before === undefined || WHITESPACE.test(before);
+    const openAfter = after === undefined || WHITESPACE.test(after);
+    if (!openBefore && !openAfter) return;
+    if (HYPHENS.has(char) && isSuspendedHyphen(chars, index)) return;
+    const spaced =
+      before !== undefined &&
+      after !== undefined &&
+      WHITESPACE.test(before) &&
+      WHITESPACE.test(after);
+    add(spaced ? `a spaced ${joiner}` : `a one-sided ${joiner}`);
+  });
+  return marks.map((mark) => ({ mark }));
 }
 
 /** The marks, joined for a problem line: "an em dash (U+2014), a spaced hyphen". */

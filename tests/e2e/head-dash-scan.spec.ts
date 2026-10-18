@@ -142,9 +142,36 @@ function headStringsOf(html: string): readonly HeadString[] {
 /* The documents.                                                             */
 /* -------------------------------------------------------------------------- */
 
+/** Which set a document came from, and the status it must answer with to count as read. */
+type Group = "manifest" | "product" | "notFound" | "paged";
+const EXPECTED_STATUS: Readonly<Record<Group, number>> = {
+  manifest: 200,
+  product: 200,
+  notFound: 404,
+  paged: 200,
+};
+
+/**
+ * The prerendered documents per launch locale on this catalogue (breaker r1 on PR 266, hole 8):
+ * the home, the destinations hub, the guides, the hubs and the occasions index, and per published
+ * country its shop root, country categories, country occasions and product pages. A short
+ * manifest, or a scan that drops one locale's documents, fails against these numbers. A change
+ * to the catalogue that adds or removes a page changes them: update them from the build's
+ * `.next/prerender-manifest.json` in the same PR, and say why in its description.
+ */
+const EXPECTED_PRERENDERED: Readonly<Record<string, number>> = {
+  en: 803,
+  "en-gb": 803,
+  de: 796,
+  pl: 796,
+};
+
 interface Scanned {
   readonly path: string;
+  readonly group: Group;
   readonly status: number;
+  /** The document answered with its group's expected status; only then is it counted as read. */
+  readonly read: boolean;
   readonly title: string | undefined;
   readonly strings: readonly HeadString[];
   /** One line per dash found, `path: where "value" carries …`. */
@@ -228,6 +255,7 @@ function pagedSample(): readonly string[] {
 async function scanOne(
   request: APIRequestContext,
   path: string,
+  group: Group,
 ): Promise<Scanned> {
   const response = await request.get(path, { maxRedirects: 0 });
   const html = await response.text();
@@ -242,7 +270,9 @@ async function scanOne(
   });
   return {
     path,
+    group,
     status: response.status(),
+    read: response.status() === EXPECTED_STATUS[group],
     title: strings.find((entry) => entry.where === "<title>")?.value,
     strings,
     faults,
@@ -251,19 +281,30 @@ async function scanOne(
 
 async function scanAll(
   request: APIRequestContext,
-  paths: readonly string[],
+  documents: readonly { readonly path: string; readonly group: Group }[],
 ): Promise<readonly Scanned[]> {
-  const results: Scanned[] = new Array<Scanned>(paths.length);
+  const results: Scanned[] = [];
   let next = 0;
   const worker = async (): Promise<void> => {
-    while (next < paths.length) {
-      const index = next;
+    while (next < documents.length) {
+      const document = documents[next];
       next += 1;
-      results[index] = await scanOne(request, paths[index] ?? "");
+      if (document === undefined) continue;
+      results.push(await scanOne(request, document.path, document.group));
     }
   };
   await Promise.all(Array.from({ length: 12 }, worker));
   return results;
+}
+
+/** Documents per locale, by the first path segment. */
+function perLocale(paths: readonly string[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const path of paths) {
+    const locale = path.split("/")[1] ?? "";
+    counts[locale] = (counts[locale] ?? 0) + 1;
+  }
+  return counts;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -276,12 +317,15 @@ test.describe("spec 003 AC-51 / T-51: no dash in any head string of the built si
   let scanned: readonly Scanned[] = [];
   const byPath = new Map<string, Scanned>();
   let counts = { manifest: 0, products: 0, notFound: 0, paged: 0 };
+  let manifestByLocale: Record<string, number> = {};
 
   test.beforeAll(async ({ playwright }, testInfo) => {
     testInfo.skip(
       testInfo.project.name !== "e2e-desktop",
       "the documents do not depend on the viewport; one read is enough",
     );
+    // Thousands of documents: the hook gets the describe's budget, not the 30 s default.
+    testInfo.setTimeout(600_000);
     const request = await playwright.request.newContext({
       ...(testInfo.project.use.baseURL === undefined
         ? {}
@@ -299,30 +343,50 @@ test.describe("spec 003 AC-51 / T-51: no dash in any head string of the built si
       notFound: NOT_FOUND.length,
       paged: paged.length,
     };
+    manifestByLocale = perLocale(manifest);
     scanned = await scanAll(request, [
-      ...manifest,
-      ...products,
-      ...NOT_FOUND,
-      ...paged,
+      ...manifest.map((path) => ({ path, group: "manifest" as const })),
+      ...products.map((path) => ({ path, group: "product" as const })),
+      ...NOT_FOUND.map((path) => ({ path, group: "notFound" as const })),
+      ...paged.map((path) => ({ path, group: "paged" as const })),
     ]);
     for (const entry of scanned) byPath.set(entry.path, entry);
     await request.dispose();
     console.log(
-      `head-dash-scan: read ${String(scanned.length)} documents (${String(counts.manifest)} prerendered in en, en-gb, de, pl; ${String(counts.products)} Polish product pages; ${String(counts.notFound)} 404s; ${String(counts.paged)} page-2 listings)`,
+      `head-dash-scan: read ${String(scanned.filter((entry) => entry.read).length)} of ${String(scanned.length)} documents (${String(counts.manifest)} prerendered in en, en-gb, de, pl; ${String(counts.products)} Polish product pages; ${String(counts.notFound)} 404s; ${String(counts.paged)} page-2 listings)`,
     );
   });
 
   test("read every prerendered document, the product sample, the 404s and the page-2 listings", () => {
-    // The manifest of a real build lists thousands of documents in these four locales; a missing
-    // or emptied manifest, or a sample that came back short, fails here rather than passing on
-    // nothing.
-    expect(counts.manifest).toBeGreaterThan(1000);
+    // The manifest lists each locale's prerendered documents, pinned per locale (hole 8): a
+    // missing, emptied or one-locale-short list fails here rather than passing on less.
+    expect(manifestByLocale).toEqual(EXPECTED_PRERENDERED);
     expect(counts.products).toBe(4 * 84);
     expect(counts.notFound).toBe(4);
     expect(counts.paged).toBe(8);
-    expect(scanned.length).toBe(
-      counts.manifest + counts.products + counts.notFound + counts.paged,
-    );
+    // Every document answered as it must (200, or 404 for the not-found documents), so an error
+    // page is never counted as read (hole 9).
+    expect(
+      scanned
+        .filter((entry) => !entry.read)
+        .map((entry) => `${entry.path} answered ${String(entry.status)}`),
+    ).toEqual([]);
+    expect(
+      perLocale(
+        scanned
+          .filter((entry) => entry.read && entry.group === "manifest")
+          .map((entry) => entry.path),
+      ),
+    ).toEqual(EXPECTED_PRERENDERED);
+    const expectedTotal =
+      Object.values(EXPECTED_PRERENDERED).reduce(
+        (sum, count) => sum + count,
+        0,
+      ) +
+      4 * 84 +
+      4 +
+      8;
+    expect(scanned.filter((entry) => entry.read)).toHaveLength(expectedTotal);
     expect(
       scanned
         .filter((entry) => entry.title === undefined)
