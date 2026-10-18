@@ -336,14 +336,15 @@ describe("ci.yml lighthouse and seo-validate jobs (AC-22, AC-23)", () => {
     expect(job).not.toContain("if-no-files-found: warn");
   });
 
-  it("carries no Vercel secret, and the wall's credential only into the masked origin step", () => {
+  it("carries no Vercel secret, and the wall's credential only into the origin and scrub steps", () => {
     // The bypass header was how the job reached a protected Vercel preview; that host is gone
     // from CI (spec 040 §14 A2). The PR environment's wall takes `STAGING_BASIC_AUTH`, read in
-    // one step, masked in its Basic form, and scrubbed from the reports before upload.
+    // the origin step (masked in its Basic form) and by the scrub step, which reads the secret
+    // itself before the reports are uploaded (/break 263 hole 3).
     const job = ci.slice(ci.indexOf("  lighthouse:"));
     expect(job).not.toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
     expect(job).not.toContain("x-vercel-protection-bypass");
-    expect(job.match(/secrets\.STAGING_BASIC_AUTH/gu)?.length).toBe(1);
+    expect(job.match(/secrets\.STAGING_BASIC_AUTH/gu)?.length).toBe(2);
     expect(job).toContain('echo "::add-mask::$basic"');
     expect(job).toContain("name: Scrub the wall's credential from the reports");
   });
