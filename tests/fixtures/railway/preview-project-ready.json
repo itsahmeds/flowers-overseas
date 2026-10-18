@@ -1,0 +1,89 @@
+{
+  "_fixture": "Railway GraphQL `project(id)` answer, the PREVIEW_PROJECT_QUERY shape of scripts/railway-preview.ts, for a project whose PR environment `flowers-overseas-pr-263` has its `web` service on the custom domain pr-263.flowersoverseas.com and a SUCCESS deployment of the head SHA (spec 040 AC-12, AC-26; TASK-099). Shape from the public API schema; no token, no project id and no variable value appears in this file. The contract test derives every other state (no environment, no domain, another SHA, FAILED, WAITING) from this one.",
+  "data": {
+    "project": {
+      "id": "project-0000",
+      "environments": {
+        "edges": [
+          {
+            "node": {
+              "id": "env-staging",
+              "name": "staging",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-web",
+                      "serviceName": "web",
+                      "latestDeployment": {
+                        "id": "dep-staging",
+                        "status": "SUCCESS",
+                        "createdAt": "2026-10-18T19:00:00.000Z",
+                        "meta": {
+                          "commitHash": "1111111111111111111111111111111111111111",
+                          "branch": "main"
+                        }
+                      },
+                      "domains": {
+                        "customDomains": [
+                          {
+                            "id": "cd-staging",
+                            "domain": "staging.flowersoverseas.com",
+                            "status": { "dnsRecords": [] }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "env-pr-263",
+              "name": "flowers-overseas-pr-263",
+              "serviceInstances": {
+                "edges": [
+                  {
+                    "node": {
+                      "serviceId": "svc-web",
+                      "serviceName": "web",
+                      "latestDeployment": {
+                        "id": "dep-pr-263",
+                        "status": "SUCCESS",
+                        "createdAt": "2026-10-18T20:00:00.000Z",
+                        "meta": {
+                          "commitHash": "ABCDEF0123456789ABCDEF0123456789ABCDEF01",
+                          "branch": "task/TASK-099-pr-environments"
+                        }
+                      },
+                      "domains": {
+                        "customDomains": [
+                          {
+                            "id": "cd-pr-263",
+                            "domain": "pr-263.flowersoverseas.com",
+                            "status": {
+                              "dnsRecords": [
+                                {
+                                  "fqdn": "pr-263.flowersoverseas.com",
+                                  "hostlabel": "pr-263",
+                                  "recordType": "DNS_RECORD_TYPE_CNAME",
+                                  "requiredValue": "abc123.up.railway.app"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
