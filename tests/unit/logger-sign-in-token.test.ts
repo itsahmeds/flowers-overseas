@@ -92,3 +92,23 @@ describe("a sign-in token never reaches a Sentry event", () => {
     expect(JSON.stringify(event)).not.toContain(TOKEN);
   });
 });
+
+describe("a failure log still names the error (`/review 246` change 3)", () => {
+  it("keeps error_name, and still redacts the names of people", () => {
+    const { lines, log } = capture();
+    log.error(
+      {
+        error_name: "TypeError",
+        display_name: "Jane Doe",
+        full_name: "Jane Doe",
+        name: "Jane",
+      },
+      "admin.sign_in.failed",
+    );
+    const line = JSON.parse(lines[0] ?? "{}") as Record<string, unknown>;
+    expect(line["error_name"]).toBe("TypeError");
+    expect(line["display_name"]).toBe(REDACTED);
+    expect(line["full_name"]).toBe(REDACTED);
+    expect(line["name"]).toBe(REDACTED);
+  });
+});

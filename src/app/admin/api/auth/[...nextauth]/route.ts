@@ -1,19 +1,24 @@
 /**
- * @purpose The admin instance's Auth.js handlers at /admin/api/auth (spec 012 §5.2)
+ * @purpose Every Auth.js endpoint under /admin/api/auth answers 404; the core uses Auth.js in process (spec 012 §2.2)
  *
- * Thin: the instance is `@/lib/auth/admin`. The core uses Auth.js's email callback in process
- * (`confirm`); these handlers answer Auth.js's own endpoints (`session`, `csrf`, `providers`).
+ * The sign-in core needs none of Auth.js's own HTTP endpoints: the link is requested at
+ * `/admin/api/auth/request`, consumed at `/admin/api/auth/confirm` (which invokes Auth.js's email
+ * callback **in process**), and the session is read from the database. Served, those endpoints
+ * would be a second sign-in path outside the allowlist's identical answer and the send limit
+ * (`signin/email`), an uncatalogued, unrobotted HTML page (`signout`, `error`, `verify-request`)
+ * and a token consumed by a `GET` (`callback/email`). So the catch-all answers every method with
+ * the same empty 404, with the admin headers. `tests/integration/auth-core.test.ts` crawls them.
  */
-import type { NextRequest } from "next/server";
-
-import { adminAuth } from "@/lib/auth/admin";
+import { AUTH_RESPONSE_HEADERS } from "@/lib/auth/surface";
 
 export const dynamic = "force-dynamic";
 
-export function GET(request: NextRequest): Promise<Response> {
-  return adminAuth.handlers.GET(request);
+function notFound(): Response {
+  return new Response(null, { status: 404, headers: AUTH_RESPONSE_HEADERS });
 }
 
-export function POST(request: NextRequest): Promise<Response> {
-  return adminAuth.handlers.POST(request);
-}
+export const GET = notFound;
+export const POST = notFound;
+export const PUT = notFound;
+export const PATCH = notFound;
+export const DELETE = notFound;

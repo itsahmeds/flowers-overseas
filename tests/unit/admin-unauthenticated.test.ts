@@ -17,8 +17,13 @@ import { describe, expect, it, vi } from "vitest";
 // `unauthorized()` and `forbidden()` behave as in the deployed server.
 vi.stubEnv("__NEXT_EXPERIMENTAL_AUTH_INTERRUPTS", "true");
 
+const request = vi.hoisted(() => ({ cookie: "" }));
+
 vi.mock("next/headers", () => ({
-  headers: () => Promise.resolve(new Headers()),
+  headers: () =>
+    Promise.resolve(
+      new Headers(request.cookie === "" ? {} : { cookie: request.cookie }),
+    ),
   cookies: () => Promise.resolve({ get: () => undefined }),
 }));
 
@@ -119,6 +124,35 @@ describe("T-01 — no session, nothing admin (AC-1)", () => {
           ),
         );
         expect(digestOf(error), method).toBe("NEXT_HTTP_ERROR_FALLBACK;401");
+      }
+    },
+  );
+
+  it.each([
+    "__Secure-fo-admin.session-token=%E0%A4%A",
+    "__Secure-fo-admin.session-token=%",
+    "__Secure-fo-admin.session-token=",
+  ])(
+    "a malformed cookie (%s) redirects to sign-in, never a 500 (B4)",
+    async (cookie) => {
+      request.cookie = cookie;
+      try {
+        for (const file of pages) {
+          const loaded = (await import(`../../${file}`)) as {
+            default: (props: unknown) => unknown;
+          };
+          const error = await thrown(() =>
+            loaded.default({
+              searchParams: Promise.resolve({}),
+              children: null,
+            }),
+          );
+          expect(digestOf(error), file).toMatch(
+            /^NEXT_REDIRECT;[a-z]+;\/admin\/sign-in;30[37];/u,
+          );
+        }
+      } finally {
+        request.cookie = "";
       }
     },
   );

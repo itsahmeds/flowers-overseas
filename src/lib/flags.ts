@@ -33,7 +33,7 @@ import {
   isRegisteredFlagKey,
 } from "@/config/feature-flags";
 
-import { cacheTagsFor } from "@/modules/catalog";
+import { CacheEntitySchema, cacheTagsFor } from "@/modules/catalog";
 
 import { featureFlag, featureFlagScope } from "../../db/schema/ops";
 import { type DbTransaction, withSystemContext } from "./db";
@@ -228,10 +228,12 @@ export function dirtiedTags(key: FlagKey, scope?: FlagScope): string[] {
     switch (kind) {
       case "catalog":
         return [
-          ...cacheTagsFor({
-            kind: "catalog",
-            countryIso: resolved.ref as never,
-          }),
+          ...cacheTagsFor(
+            CacheEntitySchema.parse({
+              kind: "catalog",
+              countryIso: resolved.ref,
+            }),
+          ),
         ];
     }
   });

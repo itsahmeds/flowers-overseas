@@ -112,7 +112,15 @@ export function isRedactedLogKey(key: string): boolean {
  * spelled as one lowercase word ending in `name`; every name field in `plan/01` §4 and spec 002
  * §5.1 is `<something>_name`.
  */
+/**
+ * `*name` keys that name a thing, never a person (spec 012 §8, `/review 246` change 3): an error's
+ * class (`error_name`, what the sign-in core logs on a failure) must survive, or a failure log
+ * says nothing. Exact keys, compared like `REDACTED_KEYS`; every other `*name` stays redacted.
+ */
+export const NON_PERSONAL_NAME_KEYS: readonly string[] = ["errorname"];
+
 export function isNameKey(key: string): boolean {
+  if (NON_PERSONAL_NAME_KEYS.includes(normaliseKey(key))) return false;
   if (normaliseKey(key) === "name") return true;
   return /[_\-\s]name$/i.test(key) || /[a-z0-9]Name$/.test(key);
 }

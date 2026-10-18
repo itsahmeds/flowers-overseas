@@ -262,22 +262,83 @@ describe("AC-6 — admin is never discoverable (source half; the built-HTML half
     expect(DISALLOWED_PATHS).toContain("/admin/");
   });
 
-  it("links to /admin from no public source", () => {
-    const adminOwned = [
-      "src/app/admin/",
-      "src/lib/auth/",
-      "src/modules/admin/",
-      "src/modules/ui/admin/",
-      "src/lib/admin-headers.ts",
-      "src/modules/seo/robots.ts",
-    ];
-    const linking = walk("src").filter(
-      (f) =>
-        /\.tsx?$/u.test(f) &&
-        !adminOwned.some((owned) => f.startsWith(owned)) &&
-        /href=\{?["'`]\/admin/u.test(read(f)),
+  /** Admin's own files: the only ones that may name an admin path or the admin cookie. */
+  const adminOwned = [
+    "src/app/admin/",
+    "src/lib/auth/",
+    "src/modules/admin/",
+    "src/modules/ui/admin/",
+    "src/lib/admin-headers.ts",
+    // `robots.txt`'s `Disallow: /admin/` is the one public mention, and it is the point.
+    "src/modules/seo/robots.ts",
+  ];
+  const publicSources = walk("src").filter(
+    (f) =>
+      /\.tsx?$/u.test(f) && !adminOwned.some((owned) => f.startsWith(owned)),
+  );
+
+  /** Every string and template literal of a source file, by the TypeScript parser. */
+  function literals(file: string): string[] {
+    const source = ts.createSourceFile(
+      file,
+      read(file),
+      ts.ScriptTarget.Latest,
+      true,
     );
-    expect(linking).toEqual([]);
+    const found: string[] = [];
+    const visit = (node: ts.Node): void => {
+      if (ts.isStringLiteralLike(node)) found.push(node.text);
+      else if (ts.isTemplateExpression(node)) {
+        found.push(
+          node.head.text,
+          ...node.templateSpans.map((span) => span.literal.text),
+        );
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    return found;
+  }
+
+  it("names no /admin path in any literal of a public source (JSX href, object href, URL, redirect)", () => {
+    const naming = publicSources.flatMap((file) =>
+      literals(file)
+        .filter((text) => /(?:^|[\s"'(=])\/admin(?:[/?#"'\s]|$)/u.test(text))
+        .map((text) => `${file}: ${text}`),
+    );
+    expect(naming).toEqual([]);
+  });
+
+  it("names the admin cookie in no public source", () => {
+    const naming = publicSources.filter((file) =>
+      literals(file).some((text) => text.includes("fo-admin")),
+    );
+    expect(naming).toEqual([]);
+  });
+
+  it("puts no /admin link in a public message catalogue", () => {
+    const catalogues = readdirSync(join(repoRoot, "messages")).filter((f) =>
+      f.endsWith(".json"),
+    );
+    expect(
+      catalogues.filter((f) => read(`messages/${f}`).includes("/admin")),
+    ).toEqual([]);
+  });
+
+  it("goes red on each shape a link can take (the scan bites)", () => {
+    for (const text of [
+      "/admin",
+      "/admin/users",
+      "/admin?x=1",
+      "go to /admin/",
+    ]) {
+      expect(/(?:^|[\s"'(=])\/admin(?:[/?#"'\s]|$)/u.test(text), text).toBe(
+        true,
+      );
+    }
+    expect(
+      /(?:^|[\s"'(=])\/admin(?:[/?#"'\s]|$)/u.test("/administration"),
+    ).toBe(false);
   });
 });
 
@@ -320,6 +381,22 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
     expect(
       importers.filter((f) => !allowed.some((a) => f.startsWith(a))),
     ).toEqual([]);
+  });
+
+  it("keeps the admin chrome out of the ui barrel and out of every public import", () => {
+    const barrel = read("src/modules/ui/index.ts");
+    expect(barrel).not.toMatch(/from\s+["']\.\/admin/u);
+    expect(barrel).not.toMatch(/\bAdmin[A-Z]\w*/u);
+    const importers = walk("src").filter(
+      (f) =>
+        /\.tsx?$/u.test(f) &&
+        !f.startsWith("src/app/admin/") &&
+        !f.startsWith("src/modules/ui/admin/") &&
+        /["'](?:@\/modules\/ui\/admin|[./]+\/admin\/AdminChrome)[^"']*["']/u.test(
+          read(f),
+        ),
+    );
+    expect(importers).toEqual([]);
   });
 
   it("adds no admin namespace to a public catalogue", () => {

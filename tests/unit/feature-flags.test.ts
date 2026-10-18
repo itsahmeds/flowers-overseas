@@ -115,6 +115,10 @@ describe("T-16 — the registry", () => {
       dirtiedTags("checkout.open", { kind: "country", ref: "PL" }),
     ).toEqual(["catalog:PL"]);
     expect(dirtiedTags("checkout.demo_guard")).toEqual([]);
+    // The country is parsed, never cast: a code that is not a destination is refused.
+    expect(() =>
+      dirtiedTags("checkout.open", { kind: "country", ref: "ZZ" }),
+    ).toThrow();
   });
 });
 

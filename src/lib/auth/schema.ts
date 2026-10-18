@@ -7,6 +7,8 @@
  */
 import { z } from "zod";
 
+import { mailTags } from "@/modules/notifications/mailer";
+
 /** A path under the site: leading slash, no trailing slash, no query, nothing but path characters. */
 const PathSchema = z
   .string()
@@ -50,7 +52,7 @@ export const AuthSurfaceSchema = z
       })
       .strict(),
     /** The mail tag of the surface's sign-in email. */
-    mailTag: z.string().regex(/^[a-z]+(?:_[a-z]+)*$/u),
+    mailTag: z.enum(mailTags),
     /** May this normalised address receive a link? */
     allow: z.custom<(email: string) => Promise<boolean>>(
       (value) => typeof value === "function",

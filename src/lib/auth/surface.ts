@@ -34,7 +34,7 @@
 import { and, eq, gt } from "drizzle-orm";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import type { EmailConfig } from "next-auth/providers/email";
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 
 import { sessions } from "../../../db/schema/auth";
 import { logger } from "../logger";
@@ -88,6 +88,13 @@ export interface AuthSurfaceDeps {
   readonly renderEmail: (link: string) => SignInEmail;
   /** The clock. */
   readonly now?: () => Date;
+  /** Runs a task after the response. Default: Next's `after()`. */
+  readonly defer?: (task: () => Promise<void>) => void;
+}
+
+/** Next's `after()`: the task runs once the response has been sent. */
+function deferAfterResponse(task: () => Promise<void>): void {
+  after(task);
 }
 
 /** The three cookie names of a surface. */
@@ -123,7 +130,12 @@ export function readCookie(
     const index = part.indexOf("=");
     if (index === -1) continue;
     if (part.slice(0, index).trim() === name) {
-      return decodeURIComponent(part.slice(index + 1).trim());
+      try {
+        return decodeURIComponent(part.slice(index + 1).trim());
+      } catch {
+        // A malformed `%` sequence is no session: the caller redirects, it does not 500.
+        return undefined;
+      }
     }
   }
   return undefined;
@@ -156,11 +168,6 @@ export interface AuthSurface {
   readonly cookies: ReturnType<typeof cookieNames>;
   /** The Auth.js configuration (for the contract test and the route). */
   authConfig(): NextAuthConfig;
-  /** The Auth.js route handlers, for `{basePath}/[...nextauth]/route.ts`. */
-  readonly handlers: {
-    GET(request: NextRequest): Promise<Response>;
-    POST(request: NextRequest): Promise<Response>;
-  };
   /** `POST` of the email form. */
   requestSignIn(request: Request): Promise<Response>;
   /** `POST` of the confirm page's "Continue". */
@@ -249,18 +256,12 @@ export function createAuthSurface(
   const lazy = (): ReturnType<typeof NextAuth> =>
     (nextAuth ??= NextAuth(authConfig()));
 
-  async function requestSignIn(request: Request): Promise<Response> {
-    if (!sameOrigin(request)) return seeOther(signInLocation());
-    let parsed: ReturnType<typeof SignInRequestSchema.safeParse>;
-    try {
-      parsed = SignInRequestSchema.safeParse(
-        Object.fromEntries(await request.formData()),
-      );
-    } catch {
-      return seeOther(signInLocation());
-    }
-    if (!parsed.success) return seeOther(signInLocation());
-    const { email } = parsed.data;
+  /**
+   * Everything that depends on who the address is — the allowlist, the send limit, the token,
+   * the mail — runs **after** the response (`defer`, Next's `after()` by default). The answer is
+   * then the same bytes at the same moment for every address: no content and no timing oracle.
+   */
+  async function sendLink(email: string): Promise<void> {
     const identifier_hash = hashIdentifier(email);
     try {
       if (!(await config.allow(email))) {
@@ -284,20 +285,30 @@ export function createAuthSurface(
         );
         const message = deps.renderEmail(link.toString());
         const mailer = (deps.mailer ?? getMailer)();
-        await mailer.send({
-          tag: config.mailTag as never,
-          to: email,
-          ...message,
-        });
+        await mailer.send({ tag: config.mailTag, to: email, ...message });
         log.info({ identifier_hash }, `${config.name}.sign_in.sent`);
       }
     } catch (error) {
-      // The answer stays identical: a failure must not tell an outsider anything either.
       log.error(
         { error_name: error instanceof Error ? error.name : "unknown" },
         `${config.name}.sign_in.failed`,
       );
     }
+  }
+
+  async function requestSignIn(request: Request): Promise<Response> {
+    if (!sameOrigin(request)) return seeOther(signInLocation());
+    let parsed: ReturnType<typeof SignInRequestSchema.safeParse>;
+    try {
+      parsed = SignInRequestSchema.safeParse(
+        Object.fromEntries(await request.formData()),
+      );
+    } catch {
+      return seeOther(signInLocation());
+    }
+    if (!parsed.success) return seeOther(signInLocation());
+    const { email } = parsed.data;
+    (deps.defer ?? deferAfterResponse)(() => sendLink(email));
     return seeOther(signInLocation("sent"));
   }
 
@@ -388,10 +399,6 @@ export function createAuthSurface(
     config,
     cookies: names,
     authConfig,
-    handlers: {
-      GET: (request) => lazy().handlers.GET(request),
-      POST: (request) => lazy().handlers.POST(request),
-    },
     requestSignIn,
     confirm,
     signOut,

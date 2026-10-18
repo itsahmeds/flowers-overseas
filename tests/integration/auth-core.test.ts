@@ -82,6 +82,9 @@ describe.skipIf(server.url === undefined)(
     let clock = new Date();
     const ids: Record<string, string> = {};
 
+    /** Tasks the core deferred past the response (Next's `after()` in production). */
+    let deferred: Promise<void>[] = [];
+    let runDeferred = true;
     const auth = () =>
       createAdminAuth({
         run,
@@ -89,7 +92,15 @@ describe.skipIf(server.url === undefined)(
         secret: () => SECRET,
         siteOrigin: () => ORIGIN,
         now: () => clock,
+        defer: (task) => {
+          if (runDeferred) deferred.push(task());
+        },
       });
+    async function flush(): Promise<void> {
+      const pending = deferred;
+      deferred = [];
+      await Promise.all(pending);
+    }
 
     beforeAll(async () => {
       scratch = await scratchDatabase(server.url as string, "authcore");
@@ -123,7 +134,11 @@ describe.skipIf(server.url === undefined)(
     });
 
     async function requestLink(email: string): Promise<Response> {
-      return auth().requestSignIn(form({ email }, "/admin/api/auth/request"));
+      const response = await auth().requestSignIn(
+        form({ email }, "/admin/api/auth/request"),
+      );
+      await flush();
+      return response;
     }
 
     function tokenOf(link: string): string {
@@ -412,6 +427,121 @@ describe.skipIf(server.url === undefined)(
       const [row] = await scratch.sql<{ n: number }[]>`
         SELECT count(*)::int AS n FROM sessions WHERE session_token = ${token}`;
       expect(row?.n).toBe(0);
+    });
+
+    it("T-03: the window is a full hour: five sends, then a request at +59 minutes sends nothing", async () => {
+      const start = clock;
+      for (let i = 0; i < 5; i += 1) await requestLink(FOUNDER);
+      expect(mailer.messages(FOUNDER)).toHaveLength(5);
+      clock = new Date(start.getTime() + 59 * 60 * 1000);
+      await requestLink(FOUNDER);
+      expect(mailer.messages(FOUNDER)).toHaveLength(5);
+    });
+
+    it("AC-9: the emailed link lives exactly one hour", async () => {
+      await requestLink(FOUNDER);
+      const [row] = await scratch.sql<{ ms: number }[]>`
+        SELECT (extract(epoch FROM expires) * 1000)::bigint::float8 AS ms
+        FROM verification_tokens ORDER BY expires DESC LIMIT 1`;
+      expect((row?.ms ?? 0) - clock.getTime()).toBe(60 * 60 * 1000);
+    });
+
+    it("AC-2: the response does nothing that depends on the address; the work runs after it", async () => {
+      runDeferred = false;
+      try {
+        const allowed = await snapshot(await requestLink(FOUNDER));
+        const stranger = await snapshot(await requestLink(STRANGER));
+        expect(allowed).toEqual(stranger);
+      } finally {
+        runDeferred = true;
+      }
+      expect(mailer.messages()).toHaveLength(0);
+      const [row] = await scratch.sql<{ sends: number; tokens: number }[]>`
+        SELECT (SELECT count(*)::int FROM auth_email_send) AS sends,
+               (SELECT count(*)::int FROM verification_tokens
+                WHERE identifier = ${FOUNDER} AND expires > now()) AS tokens`;
+      expect(row?.sends).toBe(0);
+    });
+
+    it("every Auth.js endpoint under /admin/api/auth answers the same empty 404, whoever asks", async () => {
+      const route =
+        await import("../../src/app/admin/api/auth/[...nextauth]/route.ts");
+      await requestLink(FOUNDER);
+      const t = tokenOf(linkIn(mailer.messages(FOUNDER)[0]?.text ?? ""));
+      const actions = [
+        "signin",
+        "signin/email",
+        "signout",
+        "session",
+        "csrf",
+        "providers",
+        "callback/email",
+        "verify-request",
+        "error",
+        "webauthn-options/email",
+      ];
+      const answers: unknown[] = [];
+      for (const action of actions) {
+        for (const [method, handler] of Object.entries(route)) {
+          if (typeof handler !== "function") continue;
+          for (const email of [FOUNDER, STRANGER]) {
+            const query = action === "callback/email" ? `?token=${t}` : "";
+            const init: RequestInit = {
+              method,
+              headers: {
+                host: "admin.example.test",
+                origin: ORIGIN,
+                "content-type": "application/x-www-form-urlencoded",
+              },
+              ...(method === "GET"
+                ? {}
+                : {
+                    body: new URLSearchParams({
+                      email,
+                      csrfToken: "x",
+                    }).toString(),
+                  }),
+            };
+            const response = await (
+              handler as (r: Request) => Response | Promise<Response>
+            )(new Request(`${ORIGIN}/admin/api/auth/${action}${query}`, init));
+            answers.push(await snapshot(response));
+          }
+        }
+      }
+      expect(answers.length).toBeGreaterThanOrEqual(actions.length * 2 * 2);
+      const [first] = answers;
+      expect(first).toEqual({
+        status: 404,
+        headers: [
+          ["cache-control", "no-store, private"],
+          ["x-robots-tag", "noindex, nofollow"],
+        ],
+        body: "",
+      });
+      for (const answer of answers) expect(answer).toEqual(first);
+      expect(mailer.messages(FOUNDER)).toHaveLength(1);
+      expect(mailer.messages(STRANGER)).toHaveLength(0);
+      // The GET of the callback used nothing up: the token still signs in through the core.
+      const confirmed = await auth().confirm(
+        form({ t }, "/admin/api/auth/confirm"),
+      );
+      expect(confirmed.headers.get("location")).toBe("/admin");
+    });
+
+    it("B4: a malformed session cookie is no session, never an exception", async () => {
+      const request = new Request(`${ORIGIN}/admin/api/auth/sign-out`, {
+        method: "POST",
+        headers: {
+          host: "admin.example.test",
+          origin: ORIGIN,
+          cookie: "__Secure-fo-admin.session-token=%E0%A4%A",
+        },
+      });
+      const response = await auth().signOut(request);
+      expect(response.headers.get("location")).toBe(
+        "/admin/sign-in?state=signed-out",
+      );
     });
   },
 );

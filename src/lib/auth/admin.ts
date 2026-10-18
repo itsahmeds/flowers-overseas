@@ -89,6 +89,7 @@ export function createAdminAuth(
       run,
       ...(overrides.mailer === undefined ? {} : { mailer: overrides.mailer }),
       ...(overrides.now === undefined ? {} : { now: overrides.now }),
+      ...(overrides.defer === undefined ? {} : { defer: overrides.defer }),
     },
   );
 }
