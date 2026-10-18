@@ -18,7 +18,7 @@ task actually touches.
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts` +32 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts` +87 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts` +88 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts`, `integration/auth-core.test.ts` +1 |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
@@ -51,6 +51,7 @@ task actually touches.
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | spec 012 |
+| `freshness-claim.ts` | Freshness-claim scan (spec 009 §14 A11; spec 041 AC-16, T-16; TASK-172) | spec 009 |
 | `honesty.ts` | Relay-language check (spec 041 §14) | spec 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
@@ -187,7 +188,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 318 |
+| `tests/unit/` | 319 |
 | `tests/integration/` | 34 |
 | `tests/contract/` | 14 |
 | `tests/e2e/` | 64 |
