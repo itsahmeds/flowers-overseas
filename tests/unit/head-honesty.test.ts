@@ -445,6 +445,7 @@ describe("the head sweep, round 2: what the breaker slipped past", () => {
     "Tel: same-day delivery",
     "https://x.test same-day delivery",
     "https:// same-day",
+    "https://x.test/ same-day delivery",
     "tel:same-day",
     "mailto:same-day delivery",
     "Same-day",
@@ -531,5 +532,21 @@ describe("the head sweep, round 2: what the breaker slipped past", () => {
       ]);
     }
     expect(normaliseHeadText("be\u200Bst\u2060 sellers")).toBe("best sellers");
+  });
+
+  it("reads a sentence that opens with a URL the parser would accept", () => {
+    // `new URL` takes a space in the path, so only the whitespace gate stops this being skipped.
+    expect(
+      headOffences(
+        withLd({
+          "@type": "Thing",
+          description: "https://x.test/ same-day delivery",
+          alternateName: "https://x.test same-day delivery",
+        }),
+      ),
+    ).toEqual([
+      "json-ld[0].description: delivery-timing claim",
+      "json-ld[0].alternateName: delivery-timing claim",
+    ]);
   });
 });
