@@ -41,4 +41,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 246](https://github.com/itsahmeds/flowers-overseas/pull/246), with TASK-217. `src/config/feature-flags.ts` registers exactly `checkout.open` (country, dirties the `catalog` cache entity) and `checkout.demo_guard` (global, high-risk), with `FeatureFlagRegistrySchema` and `FlagToggleSchema`; `src/lib/flags.ts` gives `isEnabled(key, scope?)` over `feature_flag`/`feature_flag_scope` under a system context with a 60 s in-process cache, refuses unregistered keys, wrong scope kinds and unseeded flags, and `dirtiedTags()` builds the tags through `cacheTagsFor`. Tests: unit 27 (`feature-flags.test.ts`, fake clock), integration 3 (`flags.test.ts`, PG16). For TASK-220: the toggle schema and `dirtiedTags()` are ready. Runtime reads go through `withSystemContext`, so they share the `src/lib/db.ts` defect recorded in TASK-217's Escalations.
