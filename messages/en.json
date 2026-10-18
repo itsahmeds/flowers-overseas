@@ -1,15 +1,15 @@
 {
   "meta": {
     "home": {
-      "title": "Flowers Overseas — send flowers to Europe",
-      "description": "Order flowers for someone in another European country. Our florist in their town makes the bouquet by hand and hands it over in person."
+      "title": "Flowers Overseas | Send Flowers Abroad",
+      "description": "Order flowers for someone in another country. Our florist in their town makes the bouquet by hand and hands it over in person."
     },
     "notFound": {
-      "title": "Page not found — Flowers Overseas",
+      "title": "Page not found. Flowers Overseas",
       "description": "That page does not exist. Start again from the home page."
     },
     "error": {
-      "title": "Something went wrong — Flowers Overseas",
+      "title": "Something went wrong. Flowers Overseas",
       "description": "The page could not be loaded. Nothing you were doing was lost."
     }
   },
@@ -368,7 +368,7 @@
     },
     "floristSentence": "Every order is made by hand and delivered in person by our florist in the recipient's city.",
     "descriptor": {
-      "name": "{name} — {descriptor}",
+      "name": "{name}: {descriptor}",
       "form": {
         "bouquet": "hand-tied {flower} bouquet",
         "arrangement": "{flower} arrangement",
@@ -731,7 +731,7 @@
     "category": {
       "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
       "siblingsHeading": "Also for {country}",
-      "seoTitle": "{entity} for {country} — one all-in price",
+      "seoTitle": "{entity} for {country}: one all-in price",
       "seoDescription": "The {entity} our florist can make in {country}, each with one price that includes VAT and delivery. Nothing can be ordered yet."
     },
     "root": {
@@ -747,7 +747,7 @@
       "dateColumn": "Date",
       "introHeading": "How it reaches {country}",
       "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
-      "seoTitle": "Send flowers to {country} — what we can make there",
+      "seoTitle": "Send flowers to {country}: what we can make there",
       "seoDescription": "Every bouquet our florist can make in {country}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
       "pageColumn": "Page",
       "occasionPageLink": "What we make for it",
@@ -760,7 +760,7 @@
       "lede": "These are the ones we make for it, and our florist in {country} hands them over in person.",
       "siblingsHeading": "Also in {country}",
       "shopRootLink": "Flowers for {country}",
-      "seoTitle": "{occasion} flowers for {country} — and {country}'s own date for it",
+      "seoTitle": "{occasion} flowers for {country}: {country}'s own date for it",
       "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet."
     },
     "card": {

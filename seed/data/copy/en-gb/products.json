@@ -12,13 +12,11 @@
       "name": "Kitchen Table",
       "slug": "kitchen-table",
       "descriptionMd": "A seasonal arrangement in a small crate or tin, made low and dense so it works as a kitchen centrepiece. Small, medium as standard, and large. Sent for housewarmings and thank yous, and it lasts in a warm room better than a tied bouquet. Our florist chooses the seasonal mix and the container on the day. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Kitchen Table — seasonal flowers in a crate",
+      "seoTitle": "Kitchen Table: seasonal flowers in a crate",
       "seoDescription": "A seasonal arrangement in a small crate or tin, low and dense for a kitchen table. For housewarmings and thank yous. Three sizes.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "67a49f09bbc75bfb9fc371e3758ac41a0872e93460e78a821b41d96926e19e63"
+      "reviewed": false,
+      "sourceHash": "fc1d749ec40ceb9ae2f52b935baad4ba3c04bc4958b0c4c437d8726ab7fd9a20"
     },
     {
       "entity": "product",
@@ -27,13 +25,11 @@
       "name": "Quiet Blush + Vase",
       "slug": "quiet-blush-vase",
       "descriptionMd": "Our pastel rose bouquet with a plain glass vase, sent when you are apologising or when someone is unwell and cannot go looking for one. Eighteen stems as standard, twelve or twenty-four available. The pastel scheme stays fixed and the vase is always included; the flowers inside the scheme and the vase's shape are our florist's choice. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Quiet Blush + Vase — pastel roses and a glass vase",
+      "seoTitle": "Quiet Blush + Vase: pastel roses and a glass vase",
       "seoDescription": "Our pastel rose bouquet with a plain glass vase included. Eighteen stems as standard. For an apology or someone who is unwell.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "03faa0caa80c0381f5abd13a2eb89d9c2b2bf85581122aded7eb0d5d8898b4ef"
+      "reviewed": false,
+      "sourceHash": "6d723a88535fa29512490a3042689338835aab2b08589c0c02992efffe1669c0"
     }
   ]
 }

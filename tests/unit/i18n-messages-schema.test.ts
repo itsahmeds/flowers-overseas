@@ -259,6 +259,10 @@ describe("the shipped catalogues and manifests", () => {
    * that half.
    */
   const AWAITING_FOUNDER_REVIEW = [
+    // TASK-242/243 (spec 003 §14 A-founder-2026-10-15a): head copy without a dash. The approved
+    // targets ("specs ok", 2026-10-15; the home title and description by the founder's own words,
+    // 2026-10-18) ship `reviewed: false` until the founder's record run attests the exact values.
+    "catalog.descriptor.name",
     // TASK-120's honest-chrome sweep (spec 004 §14 A19, `/review 70`) added eight of these: the
     // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
     // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
@@ -372,6 +376,10 @@ describe("the shipped catalogues and manifests", () => {
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
     "destinationsHub.phoneIntro",
+    "meta.error.title",
+    "meta.home.description",
+    "meta.home.title",
+    "meta.notFound.title",
     "occasionHub.about.birthday.eyebrow",
     "occasionHub.aboutHeading",
     "occasionHub.dateUnknown",
@@ -408,7 +416,9 @@ describe("the shipped catalogues and manifests", () => {
     "occasionsIndex.eyebrow",
     "occasionsIndex.undatedEyebrow",
     "shop.card.noPrice",
+    "shop.category.seoTitle",
     "shop.occasion.seoTitle",
+    "shop.root.seoTitle",
     // TASK-187 (spec 004 §14 A23 clause 6, Appendix A A9 and A10; A24 clause 10 P3): the tile noun,
     // "Change the order" and the phone pager's page line ("Next" reuses the reviewed key, so
     // `en-gb` stays under spec 003's 5 %). A9 and A10 are approved English text;

@@ -516,7 +516,7 @@ describe("pseudo-locales route but are invisible to buyers and crawlers (AC-29)"
       // now, the artboards' headline.
       const accented = loadMessages(PSEUDO_ACCENT_LOCALE, ["meta"]);
       expect(accented.meta.home.title).toBe(
-        pseudoAccent("Flowers Overseas — send flowers to Europe"),
+        pseudoAccent("Flowers Overseas | Send Flowers Abroad"),
       );
       const rtl = loadMessages(PSEUDO_RTL_LOCALE, ["a11y"]);
       expect(rtl.a11y.skipToContent.startsWith(RTL_MARK)).toBe(true);

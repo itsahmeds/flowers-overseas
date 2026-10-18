@@ -40,6 +40,15 @@ import {
   scopeEntryFor,
 } from "../../src/modules/i18n/review-scope.ts";
 import { PAGE_TYPES, localePath } from "../../src/modules/i18n/routing.ts";
+import {
+  ERROR_COPY,
+  X_DEFAULT_ERROR_COPY,
+} from "../../src/modules/i18n/error-copy.data.ts";
+import {
+  HEAD_MESSAGE_KEYS,
+  headDashesIn,
+  isHeadMessageKey,
+} from "../../src/modules/i18n/head-punctuation.ts";
 import enCatalogue from "../../messages/en.json";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -770,5 +779,195 @@ describe("the summary formatter (§11)", () => {
     expect(formatShare(0.05)).toBe("5.0%");
     expect(formatShare(0)).toBe("0.0%");
     expect(formatShare(1)).toBe("100.0%");
+  });
+});
+
+/**
+ * Check 13, head punctuation (spec 003 §14 A-founder-2026-10-15a clause 4, AC-50 / T-50; TASK-242).
+ * The spec numbers it 12; TASK-237 took 12 for "shown", so it is 13 (the header of
+ * `scripts/i18n-check.ts` says so). Each fixture is the committed catalogues with one value
+ * changed, written to a throwaway directory and checked against the committed `src/`, so the only
+ * new fault in the tree is the one the case is named after.
+ */
+function headFixture(
+  edits: readonly {
+    readonly locale: string;
+    readonly key: string;
+    readonly value: string;
+  }[],
+): CliResult {
+  const root = mkdtempSync(join(tmpdir(), "i18n-check13-"));
+  const hash = (value: string): string =>
+    createHash("sha256").update(value, "utf8").digest("hex");
+  const englishEdits = edits.filter((edit) => edit.locale === "en");
+  for (const locale of ["en", "en-gb", "de", "pl"]) {
+    const catalogue = JSON.parse(
+      readFileSync(resolve(repoRoot, "messages", `${locale}.json`), "utf8"),
+    ) as Record<string, unknown>;
+    const meta = JSON.parse(
+      readFileSync(
+        resolve(repoRoot, "messages", `${locale}.meta.json`),
+        "utf8",
+      ),
+    ) as Record<string, { sourceHash: string }>;
+    for (const edit of edits.filter((entry) => entry.locale === locale)) {
+      const path = edit.key.split(".");
+      let node = catalogue;
+      for (const segment of path.slice(0, -1)) {
+        node = node[segment] as Record<string, unknown>;
+      }
+      const leaf = path.at(-1) ?? "";
+      expect(typeof node[leaf], `${locale} ${edit.key}`).toBe("string");
+      node[leaf] = edit.value;
+    }
+    // An English edit keeps every record of the key fresh, so check 7 (stale `sourceHash`) stays
+    // quiet and the case's only fault is the one it is named after.
+    for (const edit of englishEdits) {
+      const record = meta[edit.key];
+      if (record !== undefined) record.sourceHash = hash(edit.value);
+    }
+    writeFileSync(
+      join(root, `${locale}.json`),
+      `${JSON.stringify(catalogue, null, 2)}\n`,
+    );
+    writeFileSync(
+      join(root, `${locale}.meta.json`),
+      `${JSON.stringify(meta, null, 2)}\n`,
+    );
+  }
+  const result = runCli("--messages-dir", root, "--src", "src");
+  // The throwaway directory stands in for `messages/`; the lines are compared as the committed
+  // tree would print them.
+  return {
+    ...result,
+    stderr: result.stderr.split(`${root}/`).join("messages/"),
+  };
+}
+
+/** The check-13 lines of a run, so another check's fault cannot pass a case. */
+function headLines(result: CliResult): string[] {
+  return result.stderr
+    .split("\n")
+    .filter((line) => line.includes("is head copy"));
+}
+
+describe("check 13: no dash in head copy (spec 003 AC-50 / T-50)", () => {
+  it("refuses `meta.home.title` with an em dash, naming `en` and the key", () => {
+    const result = headFixture([
+      {
+        locale: "en",
+        key: "meta.home.title",
+        value: "Flowers Overseas — send flowers to Europe",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result)).toEqual([
+      "  - messages/en.json [meta.home.title]: in locale `en` is head copy (it reaches a `<title>`, a meta description or a JSON-LD name) and carries an em dash (U+2014): use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)",
+    ]);
+  });
+
+  it("refuses `shop.category.seoTitle` with a spaced hyphen, naming `en` and the key", () => {
+    const result = headFixture([
+      {
+        locale: "en",
+        key: "shop.category.seoTitle",
+        value: "{entity} for {country} - one all-in price",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result)).toEqual([
+      "  - messages/en.json [shop.category.seoTitle]: in locale `en` is head copy (it reaches a `<title>`, a meta description or a JSON-LD name) and carries a spaced hyphen: use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)",
+    ]);
+  });
+
+  it("refuses `pl`'s `meta.notFound.title` with a spaced en dash, naming `pl` and the key", () => {
+    const result = headFixture([
+      {
+        locale: "pl",
+        key: "meta.notFound.title",
+        value: "Nie znaleziono strony – Flowers Overseas",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result)).toEqual([
+      "  - messages/pl.json [meta.notFound.title]: in locale `pl` is head copy (it reaches a `<title>`, a meta description or a JSON-LD name) and carries a spaced en dash (U+2013): use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)",
+    ]);
+  });
+
+  it("refuses `de` too: a German head key with an em dash is named as `de`'s", () => {
+    const result = headFixture([
+      {
+        locale: "de",
+        key: "shop.root.seoTitle",
+        value: "Blumen nach {country} — was wir dort binden",
+      },
+    ]);
+    expect(result.status).toBe(1);
+    expect(headLines(result)).toHaveLength(1);
+    expect(headLines(result)[0]).toContain(
+      "messages/de.json [shop.root.seoTitle]: in locale `de`",
+    );
+  });
+
+  it('passes hyphenated words: "hand-tied, all-in" is not a dash', () => {
+    const result = headFixture([
+      {
+        locale: "en",
+        key: "shop.category.seoTitle",
+        value: "{entity} for {country}: hand-tied, all-in",
+      },
+    ]);
+    expect(headLines(result)).toEqual([]);
+    expect(result.status).toBe(0);
+  });
+
+  it("the committed tree carries no dash in any head key, in any locale", () => {
+    expect(headLines(runCli())).toEqual([]);
+  });
+
+  it("every `HEAD_MESSAGE_KEYS` entry reaches an `en` key, and the list is the spec's", () => {
+    const keys = leafKeys(enCatalogue as Record<string, unknown>);
+    for (const pattern of HEAD_MESSAGE_KEYS) {
+      expect(
+        keys.filter((key) => isHeadMessageKey(key, [pattern])),
+        pattern,
+      ).not.toEqual([]);
+    }
+    expect(keys.filter((key) => isHeadMessageKey(key)).sort()).toEqual([
+      "catalog.descriptor.name",
+      "categoryHub.h1",
+      "destinationsHub.seoDescription",
+      "destinationsHub.seoTitle",
+      "meta.error.description",
+      "meta.error.title",
+      "meta.home.description",
+      "meta.home.title",
+      "meta.notFound.description",
+      "meta.notFound.title",
+      "occasionHub.h1",
+      "occasionsIndex.h1",
+      "occasionsIndex.intro",
+      "shop.category.seoDescription",
+      "shop.category.seoTitle",
+      "shop.occasion.seoDescription",
+      "shop.occasion.seoTitle",
+      "shop.pagination.titleSuffix",
+      "shop.root.seoDescription",
+      "shop.root.seoTitle",
+    ]);
+  });
+
+  it("no title in `error-copy.data.ts` (the 500 boundary's static copy) carries a dash", () => {
+    const titles = [
+      X_DEFAULT_ERROR_COPY.title,
+      ...Object.values(ERROR_COPY).map((copy) => copy.title),
+    ];
+    expect(Object.keys(ERROR_COPY).sort()).toEqual(["de", "en", "en-gb", "pl"]);
+    for (const title of titles) {
+      expect(headDashesIn(title), title).toEqual([]);
+    }
+    expect(X_DEFAULT_ERROR_COPY.title).toBe(
+      "Something went wrong. Flowers Overseas",
+    );
   });
 });

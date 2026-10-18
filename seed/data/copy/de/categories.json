@@ -12,11 +12,11 @@
       "name": "Blumensträuße",
       "slug": "blumenstraeusse",
       "descriptionMd": "Von Hand gebundene Blumen, verpackt geliefert und bereit, angeschnitten und ins Wasser gestellt zu werden. Hier liegt der größte Teil unseres Sortiments: Rosen, Tulpen, Lilien, Pfingstrosen, Sonnenblumen, Gerbera und saisonale Mischungen, jeweils in drei Stielgrößen. Die Preise auf dieser Seite enthalten Lieferung und örtliche Steuer, und die Größe, die Sie wählen, ist die Größe, die gebunden wird. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumensträuße – von Hand gebunden, europaweit geliefert",
+      "seoTitle": "Blumensträuße: von Hand gebunden, europaweit geliefert",
       "seoDescription": "Rosen, Tulpen, Lilien, Pfingstrosen, Sonnenblumen und saisonale Mischungen, von Hand gebunden in drei Stielgrößen. Lieferung und Steuer inklusive.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "89e0afbba06a95e1e69e35be9a9c76d6bdfcf62d7a170a2f1c0e2fa4a59e18b1"
+      "sourceHash": "38ef5a457c017ae8c04017fe2c9cea4731437d32f8b1dba91a65e90f5134bff8"
     },
     {
       "entity": "category",
@@ -25,11 +25,11 @@
       "name": "Blumengestecke",
       "slug": "blumengestecke",
       "descriptionMd": "Blumen, in einer Box, einem Korb, einem Topf oder einer Vase arrangiert, sodass bei der Ankunft nichts angeschnitten oder gesucht werden muss. Praktisch, wenn die Person im Krankenhaus oder im Büro ist oder keine Vase zur Hand hat. Jedes Stück gibt es in drei Größen, und wo eine Vase oder ein Gefäß dazugehört, steht es auf der Seite und ist im Preis enthalten. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumengestecke – fertig arrangiert geliefert",
+      "seoTitle": "Blumengestecke: fertig arrangiert geliefert",
       "seoDescription": "Blumen in Box, Korb, Topf oder Vase, fertig zum Aufstellen, ohne Anschneiden. Drei Größen; ein Gefäß ist im Preis enthalten.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "696f78c3c2ecb422cdd56840ef5dc63620f7827c9fe5d0873bf47d29de2ba142"
+      "sourceHash": "37331ac2fc815f9c78df681828867e300aa22ab20be9578ece3944d4a3c08eb2"
     },
     {
       "entity": "category",
@@ -38,11 +38,11 @@
       "name": "Pflanzen",
       "slug": "pflanzen",
       "descriptionMd": "Lebende Pflanzen statt Schnittblumen: Orchideen, ein Einblatt, eine Anthurie, Jasmin, eine Azalee und ein kleiner Olivenbaum. Sie halten Monate oder Jahre statt Tage, deshalb werden sie so oft nach einer Beerdigung, zum Einzug oder ins Büro geschickt. Jede gibt es in einer Größe, getopft und mit Pflegehinweisen von der Person, die die Pflanze ausgesucht hat. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blühende Pflanzen – Orchideen, Einblatt und mehr",
+      "seoTitle": "Blühende Pflanzen: Orchideen, Einblatt und mehr",
       "seoDescription": "Orchideen, Einblatt, Anthurie, Jasmin, Azalee und Olivenbaum, getopft und mit Pflegehinweisen geliefert. Pflanzen, die Monate halten.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "03b92202eedbc7b866f4295a20245550d36c740ec3c2bf61c292ea5cf06f3ad6"
+      "sourceHash": "626a1883a6c7c670f5c610806b4e649193ba0fa5a85632a030dce0395fafeceb"
     },
     {
       "entity": "category",
@@ -51,7 +51,7 @@
       "name": "Trauerfloristik",
       "slug": "trauerfloristik",
       "descriptionMd": "Kränze, Gestecke, ein Kreuz, ein Herz, Grabsträuße und niedrige Trauergestecke, in den Formen, die in jedem Land erwartet werden. Nennen Sie uns das Bestattungsinstitut oder den Friedhof, und wir stimmen die Lieferung auf die Trauerfeier ab. Blumen zum Beileid an eine Wohnadresse finden Sie hier ebenfalls, wenn ein förmliches Gesteck zu viel wäre. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Trauerfloristik – Kränze und Gestecke europaweit",
+      "seoTitle": "Trauerfloristik: Kränze und Gestecke europaweit",
       "seoDescription": "Kränze, Gestecke, Kreuze, Herzen, Grabsträuße und Trauergestecke in den Formen, die jedes Land erwartet, abgestimmt auf die Trauerfeier.",
       "translationStatus": "human",
       "reviewed": false,
@@ -64,11 +64,11 @@
       "name": "Blumen mit Geschenk",
       "slug": "blumen-mit-geschenk",
       "descriptionMd": "Ein Strauß mit einer Beigabe: Pralinen, eine Glasvase, ein Ballon oder ein kleines Kuscheltier, passend zu den Blumen ausgewählt und zusammen geliefert. Nichts wird getrennt verschickt, also kommt das ganze Geschenk zusammen und in einem Zustand an. Sets mit Lebensmitteln zeigen die Allergene an der Kasse, und jeder Preis enthält Lieferung und örtliche Steuer. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen mit Geschenk – Sträuße mit Pralinen, Vase und mehr",
+      "seoTitle": "Blumen mit Geschenk: Sträuße mit Pralinen, Vase und mehr",
       "seoDescription": "Ein Strauß mit Pralinen, Vase, Ballon oder Kuscheltier, passend zu den Blumen ausgewählt und zusammen geliefert. Eine Lieferung, ein Preis, Allergene angegeben.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "36425942c35f8ac1fe217f43e84e980c065f39c1eb76b37fe4fbc94652ab5da7"
+      "sourceHash": "fa133766d183c74e857939ff5e16158e8a925af0e78612be8c6a36f8268d1777"
     },
     {
       "entity": "category",
@@ -77,7 +77,7 @@
       "name": "Geburtstagsblumen",
       "slug": "geburtstagsblumen",
       "descriptionMd": "Sträuße, Gestecke und Pflanzen, die zum Geburtstag wirklich verschickt werden: leuchtende Tulpen und Gerbera, rosa und orange Rosen, ein am Tag ausgesuchter bunter Strauß oder eine Orchidee für alle, die Pflanzen mögen. Die meisten gibt es in drei Größen, und eine gedruckte Karte kann dazukommen. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommt der Strauß an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Geburtstagsblumen – europaweit geliefert",
+      "seoTitle": "Geburtstagsblumen: europaweit geliefert",
       "seoDescription": "Leuchtende Tulpen, Gerbera, Rosen, bunte Sträuße und Orchideen zum Geburtstag, in drei Größen. Datum wählen, Karte dazu.",
       "translationStatus": "human",
       "reviewed": false,
@@ -90,7 +90,7 @@
       "name": "Blumen zum Jahrestag",
       "slug": "blumen-zum-jahrestag",
       "descriptionMd": "Rote und weiße Rosen, Pfingstrosen in der Saison, Lilien und Vasengestecke: die Blumen, die man zum Jahrestag schickt und nicht zum Geburtstag. Mehrere sind in einer Vase arrangiert, was zählt, wenn die Lieferung eine Überraschung ist und niemand eine Vase bereithält. Die Preise enthalten Lieferung und örtliche Steuer, und die gezeigte Größe ist die gebundene Größe. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zum Jahrestag – europaweit geliefert",
+      "seoTitle": "Blumen zum Jahrestag: europaweit geliefert",
       "seoDescription": "Rote und weiße Rosen, Pfingstrosen in der Saison, Lilien und Vasengestecke zum Jahrestag. Lieferung und Steuer in jedem Preis enthalten.",
       "translationStatus": "human",
       "reviewed": false,
@@ -103,11 +103,11 @@
       "name": "Romantische Blumen",
       "slug": "romantische-blumen",
       "descriptionMd": "Rote Rosen, tiefrosa Pfingstrosen und ein Rosengesteck in der Vase: eine bewusst kurze Auswahl, denn bei diesem Anlass ist Raten schlechter als Wählen. Die Größen reichen von zwölf bis vierundzwanzig Stielen, und eine Karte mit Ihren eigenen Worten ist kostenlos. Für den Valentinstag gilt ein eigener Bestellschluss, der auf der Seite des Ziellandes steht. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Romantische Blumen – rote Rosen und Pfingstrosen",
+      "seoTitle": "Romantische Blumen: rote Rosen und Pfingstrosen",
       "seoDescription": "Rote Rosen, tiefrosa Pfingstrosen und Rosengestecke in der Vase, zwölf bis vierundzwanzig Stiele. Eine Karte mit eigenen Worten ist kostenlos.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "56279dce7464a5f37f9ba030e8887ebb11d1aa9914c423295ebe6a34de17c247"
+      "sourceHash": "9ffcd4023563271de49243cc2503983d7b831741f1c03983f61b796887612042"
     },
     {
       "entity": "category",
@@ -116,7 +116,7 @@
       "name": "Blumen zur Gratulation",
       "slug": "blumen-zur-gratulation",
       "descriptionMd": "Leuchtende Sträuße, ein Schreibtischgesteck, ein weißer Rosenwürfel und eine Orchidee: Blumen für eine neue Stelle, eine bestandene Prüfung, die erste Wohnung oder ein eröffnetes Geschäft. Mehrere stehen ohne Vase auf einem Schreibtisch, wo sie meistens landen. Die meisten gibt es in drei Größen, und Lieferung und örtliche Steuer sind im Preis enthalten. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zur Gratulation – europaweit geliefert",
+      "seoTitle": "Blumen zur Gratulation: europaweit geliefert",
       "seoDescription": "Leuchtende Sträuße, Schreibtischgestecke, Rosenwürfel und Orchideen für eine neue Stelle, eine Prüfung oder die erste Wohnung.",
       "translationStatus": "human",
       "reviewed": false,
@@ -129,7 +129,7 @@
       "name": "Blumen zur Geburt",
       "slug": "blumen-zur-geburt",
       "descriptionMd": "Sträuße in Pastell, ein kleiner Korb mit Alstroemerien und zwei Geschenksets mit Kuscheltier, alle so leicht gebunden oder arrangiert, dass man sie mit einem Baby im anderen Arm tragen kann. Nichts hier duftet stark. Die Spielsachen sind neu und etikettiert, und geht die Lieferung auf eine Entbindungsstation, fragen wir an der Kasse nach dem Namen der Station. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zur Geburt – europaweit geliefert",
+      "seoTitle": "Blumen zur Geburt: europaweit geliefert",
       "seoDescription": "Pastellsträuße, Alstroemerienkörbe und Geschenksets mit neuem, etikettiertem Kuscheltier. Leicht zu tragen und nie stark duftend.",
       "translationStatus": "human",
       "reviewed": false,
@@ -142,7 +142,7 @@
       "name": "Blumen zur Genesung",
       "slug": "blumen-zur-genesung",
       "descriptionMd": "Sträuße und Gestecke für ein Krankenzimmer oder ein Sofa: leicht zu tragen, wenig Duft, und mehrere in einer Box oder einem Topf, damit keine Vase nötig ist. Freesien, Gerbera, Pastellmischungen und ein Einblatt sind hier zu finden. Manche Stationen erlauben keine Blumen, fragen Sie also vor der Bestellung nach; wir können stattdessen an eine Wohnadresse liefern. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zur Genesung – Gute Besserung europaweit",
+      "seoTitle": "Blumen zur Genesung: Gute Besserung europaweit",
       "seoDescription": "Sträuße und Boxgestecke für Krankenzimmer oder Sofa: leicht, wenig Duft, ohne Vase. Freesien, Gerbera und Pastellmischungen.",
       "translationStatus": "human",
       "reviewed": false,
@@ -155,7 +155,7 @@
       "name": "Blumen zum Beileid",
       "slug": "blumen-zum-beileid",
       "descriptionMd": "Weiße Lilien, weiße Rosen, ein Einblatt und niedrige weiße Gestecke: Blumen, die nach einem Todesfall an eine Wohnung oder ein Büro gehen und nicht zur Trauerfeier. Förmliche Trauergestecke stehen unter Trauerfloristik. Wenn der Zeitpunkt wichtig ist, nennen Sie uns das Datum, und wir liefern nicht früher. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zum Beileid – europaweit geliefert",
+      "seoTitle": "Blumen zum Beileid: europaweit geliefert",
       "seoDescription": "Weiße Lilien, weiße Rosen, Einblatt und niedrige weiße Gestecke an eine Wohnung oder ein Büro nach einem Todesfall.",
       "translationStatus": "human",
       "reviewed": false,
@@ -168,7 +168,7 @@
       "name": "Blumen zum Dank",
       "slug": "blumen-zum-dank",
       "descriptionMd": "Sträuße, die nach Danke aussehen und nach nichts anderem: Sonnenblumen, gelbe Tulpen, Freesien, orange Mischungen und ein am Tag ausgesuchter Saisonstrauß. Die meisten liegen in der Mitte unserer Preisspanne, und eine gedruckte Karte ist kostenlos dabei, damit der Grund mit den Blumen ankommt. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zum Dank – europaweit geliefert",
+      "seoTitle": "Blumen zum Dank: europaweit geliefert",
       "seoDescription": "Sonnenblumen, gelbe Tulpen, Freesien und Saisonsträuße, die nach Danke aussehen. Eine gedruckte Karte ist kostenlos dabei.",
       "translationStatus": "human",
       "reviewed": false,
@@ -181,11 +181,11 @@
       "name": "Blumen zur Entschuldigung",
       "slug": "blumen-zur-entschuldigung",
       "descriptionMd": "Zarte Rosen, weiße Tulpen, Freesien und eine kleine Box mit Pastellblumen: eher leise als groß, was beim Entschuldigen meistens der richtige Ton ist. Eine gedruckte Karte ist kostenlos und lohnt sich hier. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommen die Blumen an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen zur Entschuldigung – europaweit geliefert",
+      "seoTitle": "Blumen zur Entschuldigung: europaweit geliefert",
       "seoDescription": "Zarte Rosen, weiße Tulpen, Freesien und kleine Pastellboxen: leise statt groß. Mit kostenloser gedruckter Karte, am gewählten Tag geliefert.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "645805e485a25dcab117b093a530e97bdac7bf7164085ec191a4d34d97fa51a4"
+      "sourceHash": "f110c4c15353e1ec86b620e4db5d069b167b9c2d660463d081d1416c9c5bac37"
     },
     {
       "entity": "category",
@@ -194,7 +194,7 @@
       "name": "Blumen einfach so",
       "slug": "blumen-einfach-so",
       "descriptionMd": "Ganz ohne Anlass: ein Saisonstrauß, ein lockerer bunter Strauß, ein kleines Sträußchen oder ein duftender Jasmin, meist im unteren Bereich unserer Preise, damit daraus eine Gewohnheit werden kann und kein Ereignis. Mehrere stellt unser Florist am Tag selbst zusammen, und genau deshalb sehen sie gepflückt aus und nicht bestellt. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Blumen einfach so – europaweit geliefert",
+      "seoTitle": "Blumen einfach so: europaweit geliefert",
       "seoDescription": "Saisonsträuße, lockere bunte Sträuße, kleine Sträußchen und duftende Pflanzen, meist im unteren Preisbereich. Kein Anlass nötig.",
       "translationStatus": "human",
       "reviewed": false,
@@ -207,11 +207,11 @@
       "name": "Rosen",
       "slug": "rosen",
       "descriptionMd": "Rosen in Rot, Rosa, Weiß, Orange und Pastell, von Hand gebunden mit zwölf, achtzehn oder vierundzwanzig Stielen, dazu Rosengestecke in der Vase und zwei weiße Trauergestecke aus Rosen. Rote Rosen für die Liebe, weiße für Hochzeiten und Beileid, rosa und orange für Geburtstage und Dank. Die Rose selbst steht bei jedem Strauß fest; nur das Grün wechselt. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Rosen europaweit geliefert – rot, rosa und weiß",
+      "seoTitle": "Rosen europaweit geliefert: rot, rosa und weiß",
       "seoDescription": "Rosen in Rot, Rosa, Weiß, Orange und Pastell, von Hand gebunden mit zwölf bis vierundzwanzig Stielen, dazu Vasengestecke.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "3754ad3241652fa5872109f335e3139a16fe498cd371a6e23b226ca3ca0ae9c4"
+      "sourceHash": "37e95c006993302709ea017acfc78e4738579ef805b4bafcae1a4280e31bc395"
     },
     {
       "entity": "category",
@@ -220,11 +220,11 @@
       "name": "Tulpen",
       "slug": "tulpen",
       "descriptionMd": "Tulpen in Bunt, Gelb, Weiß, Rosa und Lila, gebündelt zu fünfzehn, fünfundzwanzig oder fünfunddreißig Stielen, mit ihrem eigenen Laub und ohne Füllgrün. Eine Frühlingsblume: Die Züchter wechseln die Sorten jede Woche, deshalb bleibt die Farbe gleich und überlassen unserem Floristen die Sorte. Verkauft wird im Bund, nicht nach Stiel. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Tulpen europaweit geliefert – bunt, gelb und rosa",
+      "seoTitle": "Tulpen europaweit geliefert: bunt, gelb und rosa",
       "seoDescription": "Tulpen in Bunt, Gelb, Weiß, Rosa und Lila, fünfzehn bis fünfunddreißig Stiele mit eigenem Laub. Die Farbe steht fest, die Sorte wechselt.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "22ddbb532b4a5d2357b59fbf94188ccbb023a718006512c74ccaa4205c99a651"
+      "sourceHash": "c8746d778ef591e577fc59afec758eb7de8f2cb528672dc6f30777e6f6e30b9f"
     },
     {
       "entity": "category",
@@ -233,11 +233,11 @@
       "name": "Lilien",
       "slug": "lilien",
       "descriptionMd": "Orientalische Lilien in Weiß und Rosa, als Bund mit fünf, acht oder zwölf Stielen und als Gesteck in einer Glasvase. Drei oder vier Blüten an einem Stiel und kräftiger Duft, sodass schon ein kleiner Strauß einen Raum füllt. Verschickt zum Beileid, zur Hochzeit und zum Jahrestag. Die Stiele kommen halb geschlossen an und öffnen sich in den ersten Tagen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Lilien europaweit geliefert – weiß und rosa",
+      "seoTitle": "Lilien europaweit geliefert: weiß und rosa",
       "seoDescription": "Orientalische Lilien in Weiß und Rosa, fünf bis zwölf Stiele oder in der Glasvase. Kräftiger Duft; die Knospen öffnen sich über Tage.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "e69c71fb1e7fd4ef478c1c1033f172c1a49d1b941a5c6333ee6126778ee82fa0"
+      "sourceHash": "e080258f21375bf1821e044032943a1bd6d13a7834d6e2148d22445a8382cd97"
     },
     {
       "entity": "category",
@@ -272,11 +272,11 @@
       "name": "Pfingstrosen",
       "slug": "pfingstrosen",
       "descriptionMd": "Pfingstrosen in Rosa, Zartrosa und Weiß, mit neun, fünfzehn oder einundzwanzig Stielen und in einer schweren Studiovase. Die Saison ist kurz, ein paar Wochen im späten Frühling, deshalb gibt es Pfingstrosensträuße nur, solange sie dauert. Sie liegen am oberen Ende unserer Preise, weil die Blume selbst dort liegt. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Pfingstrosen europaweit geliefert – rosa und weiß",
+      "seoTitle": "Pfingstrosen europaweit geliefert: rosa und weiß",
       "seoDescription": "Pfingstrosen in Rosa, Zartrosa und Weiß, neun bis einundzwanzig Stiele oder in der Studiovase. Kurze Saison im späten Frühling, kein stiller Ersatz.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "7319bf5a8b2514d01c4b92a1c090b28379667ec99d264601d37246a871953c29"
+      "sourceHash": "2f5562d30b36313d09814deefe6652ba07cc1c62d4b095ba003efc63dc50679f"
     },
     {
       "entity": "category",
@@ -298,7 +298,7 @@
       "name": "Gemischte Blumen",
       "slug": "gemischte-blumen",
       "descriptionMd": "Sträuße ohne festes Rezept: Unser Florist bindet sie aus dem, was der Großmarkt an diesem Morgen hatte, innerhalb der Farbe und Größe, die Sie wählen. Pastell, kräftig, Orange, Weiß oder ganz bunt, zwölf bis vierundzwanzig Stiele. Dieser Teil des Sortiments sieht am wenigsten nach Katalog aus, und Floristen würden selbst am ehesten so etwas verschicken. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
-      "seoTitle": "Gemischte Blumensträuße – europaweit geliefert",
+      "seoTitle": "Gemischte Blumensträuße: europaweit geliefert",
       "seoDescription": "Sträuße ohne festes Rezept, gebunden aus dem Angebot des Morgens, in der Farbe und Größe Ihrer Wahl. Zwölf bis vierundzwanzig Stiele.",
       "translationStatus": "human",
       "reviewed": false,

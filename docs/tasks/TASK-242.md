@@ -76,7 +76,7 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-18: check 13 (head punctuation) in `i18n:check` over `HEAD_MESSAGE_KEYS` (`src/modules/i18n/head-punctuation.ts`), T-50 cases in `tests/unit/i18n-check.test.ts`; copy changed with TASK-243. Next: `seed:check` and `corridor:check` rules, the built-site scan.
 
 ## Result
 

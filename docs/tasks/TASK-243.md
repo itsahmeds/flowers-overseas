@@ -85,7 +85,7 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-18: the eight message keys, `error-copy.data.ts`, every dashed seed row (en, en-gb, de, pl) and the snapshot changed; de/pl redrafted with `i18n:draft`. Home title and description per the founder's ruling of 2026-10-18 (see `## Result`). Next: T-38, T-40, T-59 unit tests.
 
 ## Result
 
