@@ -193,6 +193,97 @@ describe("the `worker` seat (AC-10, T-10)", () => {
     expect(report.ok).toBe(true);
   });
 
+  /** environment-staging.json with its `worker` node changed by `change`. */
+  const withWorker = (
+    change: (worker: Record<string, unknown>) => void,
+    environmentName = "staging",
+  ) => {
+    const raw = fixture("environment-staging.json") as {
+      data: {
+        environment: {
+          name: string;
+          serviceInstances: { edges: { node: Record<string, unknown> }[] };
+        };
+      };
+    };
+    raw.data.environment.name = environmentName;
+    const worker = raw.data.environment.serviceInstances.edges.find(
+      (edge) => edge.node["serviceName"] === "worker",
+    )?.node;
+    if (worker === undefined) throw new Error("fixture has no worker");
+    change(worker);
+    return runRailwayCheck({
+      declared,
+      environmentName,
+      environment: railwayEnvironmentResponseSchema.parse(raw),
+    });
+  };
+
+  it.each([
+    "SUCCESS",
+    "DEPLOYING",
+    "BUILDING",
+    "INITIALIZING",
+    "QUEUED",
+    "WAITING",
+    "NEEDS_APPROVAL",
+  ])("fails on a %s deployment of `worker` (/break 263 hole 7)", (status) => {
+    const report = withWorker((worker) => {
+      worker["latestDeployment"] = { status };
+    });
+    expect(report.ok).toBe(false);
+    expect(report.lines).toContain(
+      `service worker: latestDeployment is ${status}: zero running replicas until spec 002 TASK-024 (spec 040 AC-10)`,
+    );
+  });
+
+  it.each(["FAILED", "CRASHED", "REMOVED", "SKIPPED", "SLEEPING"])(
+    "passes a %s deployment of `worker`: nothing runs",
+    (status) => {
+      expect(
+        withWorker((worker) => {
+          worker["latestDeployment"] = { status };
+        }).ok,
+      ).toBe(true);
+    },
+  );
+
+  it("fails on a custom domain on `worker`, not only a Railway one", () => {
+    const report = withWorker((worker) => {
+      worker["domains"] = {
+        serviceDomains: [],
+        customDomains: [{ domain: "jobs.flowersoverseas.com" }],
+      };
+    });
+    expect(report.ok).toBe(false);
+    expect(report.lines.join("\n")).toContain(
+      "public domain jobs.flowersoverseas.com",
+    );
+  });
+
+  it("fails closed when the answer does not report `worker`'s latestDeployment", () => {
+    const report = withWorker((worker) => {
+      delete worker["latestDeployment"];
+    });
+    expect(report.ok).toBe(false);
+    expect(report.lines).toContain(
+      "service worker: latestDeployment not reported, so zero running replicas is unproven (spec 040 AC-10)",
+    );
+  });
+
+  it("holds a PR environment's `worker`, when it has one, to the same two rules", () => {
+    const report = withWorker((worker) => {
+      worker["domains"] = {
+        serviceDomains: [{ domain: "worker-pr-263.up.railway.app" }],
+        customDomains: [],
+      };
+    }, "flowers-overseas-pr-263");
+    expect(report.ok).toBe(false);
+    expect(report.lines.join("\n")).toContain(
+      "service worker: public domain worker-pr-263.up.railway.app",
+    );
+  });
+
   it("fails on the command line too, with exit 1", () => {
     const run = spawnSync(
       process.execPath,
