@@ -166,6 +166,37 @@ const context = {
 const FOUNDER_226 =
   /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-226\.py after reading the exact text it printed$/u;
 
+const FOUNDER_242 =
+  /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-242\.py after reading the exact text it printed$/u;
+
+/**
+ * TASK-243 (spec 006 §14 A-founder-2026-10-15a): every product row (its `seoTitle` became
+ * "{name}: {descriptor}") and the category and occasion rows whose head copy lost an em dash.
+ * Unreviewed and unattributed until the founder's own record run attests the exact text.
+ */
+const AWAITING_243_ROWS: ReadonlySet<string> = new Set([
+  "category:bouquet",
+  "category:arrangement",
+  "category:plant",
+  "category:gift_set",
+  "category:romance",
+  "category:apology",
+  "category:roses",
+  "category:tulips",
+  "category:lilies",
+  "category:peonies",
+  "occasion:housewarming",
+  "occasion:womens_day",
+  "occasion:all_saints",
+  "occasion:sant_jordi",
+  "occasion:fete_des_grands_meres",
+  "occasion:muguet",
+  "occasion:omatag",
+  "occasion:17_mai",
+]);
+const awaiting243 = (id: string): boolean =>
+  id.startsWith("product:") || AWAITING_243_ROWS.has(id);
+
 /** TASK-226: the rows reworded to the founder's relay-copy batches of 2026-10-14 and 2026-10-15. */
 const AWAITING_226: ReadonlySet<string> = new Set([
   "category:funeral",
@@ -437,9 +468,20 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
   it("records a reviewer and a date on every authored row", () => {
     const attested: string[] = [];
     const awaiting: string[] = [];
+    const awaitingHead: string[] = [];
     for (const row of allRows("en")) {
       expect(row.translationStatus).toBe("human");
       expect(row.sourceHash).toBe(copySourceHash(row));
+      if (awaiting243(`${row.entity}:${row.key}`)) {
+        // TASK-243's head copy: only the founder's own record-approval-242 run may attest it.
+        awaitingHead.push(`${row.entity}:${row.key}`);
+        if (row.reviewed) {
+          expect(row.reviewedBy, row.key).toMatch(FOUNDER_242);
+        } else {
+          expect(row.reviewedBy, row.key).toBeUndefined();
+        }
+        continue;
+      }
       if (AWAITING_226.has(`${row.entity}:${row.key}`)) {
         // Reworded to the founder's approved text of 2026-10-14 (TASK-226): unreviewed and
         // unattributed until his own record run, then attested by it.
@@ -466,8 +508,12 @@ describe("AC-5: the committed `en` copy passes every rule", () => {
       expect(row.reviewedBy).toMatch(/TASK-073/u);
       expect(row.reviewedAt).toBe("2026-09-09T00:00:00Z");
     }
-    expect(attested.sort()).toEqual(["product:FO-BQ-001", "product:FO-BQ-003"]);
-    expect(awaiting.sort()).toEqual([...AWAITING_226].sort());
+    // FO-BQ-001 and FO-BQ-003 (TASK-179's attested rows) are products, so TASK-243 changed them too.
+    expect(attested.sort()).toEqual([]);
+    expect(awaiting.sort()).toEqual(
+      [...AWAITING_226].filter((id) => !awaiting243(id)).sort(),
+    );
+    expect(awaitingHead).toHaveLength(84 + 10 + 8);
   });
 
   it("stays inside the SEO field limits", () => {
@@ -844,7 +890,9 @@ describe("spec 006 §7: the `media.*` and catalogue message keys exist and are f
   it.each(KEYS.map((key) => [key]))("`%s` is authored and retained", (key) => {
     expect(catalogue[key]).toBeDefined();
     expect(meta[key]?.retained).toBe(true);
-    expect(meta[key]?.reviewed).toBe(true);
+    // `catalog.descriptor.name` became "{name}: {descriptor}" (TASK-243) and waits for the
+    // founder's record run; every other key here stays reviewed.
+    expect(meta[key]?.reviewed).toBe(key !== "catalog.descriptor.name");
   });
 
   it("speaks in the first person and never says `relay`, `partner` or `network`", () => {
