@@ -137,10 +137,16 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
     await expect(page.locator("[data-fo-listing-grid]")).toHaveCount(1);
     const cards = await page.locator("[data-fo-product-card]").count();
     expect(cards).toBeGreaterThanOrEqual(6);
+    // N1 is rendered once per band (spec 004 §14 A-founder-2026-10-18c clause 3): in the hero
+    // from `md` up, after the grid below, the other copy `display: none`. The one `note` in the
+    // accessibility tree carries it at this project's size.
     await expect(
-      page.getByText(
-        "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-      ),
+      page
+        .locator("main")
+        .getByRole("note")
+        .getByText(
+          "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
+        ),
     ).toBeVisible();
     // The sort form is the one control (spec 008 §14 A15 (a); TASK-187): a `GET` form that can
     // act with no JavaScript. Seven products are one page, so there is no pager.
