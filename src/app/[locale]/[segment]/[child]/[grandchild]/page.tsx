@@ -11,6 +11,7 @@ import {
   localeGrandchildParams,
   localeProductParams,
   productAlternatePaths,
+  productJsonLd,
   productView,
   resolveLocalePath,
   writeProductExistenceSummary,
@@ -18,9 +19,12 @@ import {
 import { DeliveryFacts } from "@/modules/geo";
 import { LanguageAlternates } from "@/modules/i18n";
 import {
+  type BreadcrumbLabel,
+  JsonLd,
   canonicalFor,
   deploymentDescriptor,
   pageMetadata,
+  schemaOptions,
 } from "@/modules/seo";
 // Imported directly, not through the `ui` barrel: `ProductPage` mounts the printed-card preview,
 // Caveat's one importer, so the barrel must not reach it (`tests/unit/fonts.test.ts`).
@@ -114,6 +118,10 @@ import {
  * are mounted here over the same view and handed in as slots (the import direction is in
  * `ProductPage`'s header). It renders the bare URL: `?tier=` / `?date=` and their form are
  * TASK-128's, so this branch reads no search parameter and stays ISR.
+ *
+ * **Its JSON-LD** (spec 009 AC-18; TASK-130) is `productJsonLd()` over the same view: the
+ * `BreadcrumbList` of `product.breadcrumb`, and a `Product` + `Offer` only behind the gate, which
+ * is shut on every Phase 0 PDP. The listing branches' JSON-LD is still TASK-115's.
  */
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -245,6 +253,11 @@ export default async function LocaleGrandchildRoute({
   if (match.kind === "product") {
     const product = await productViewFor(match);
     setRequestLocale(match.locale);
+    const options = schemaOptions(deploymentDescriptor(process.env).siteUrl);
+    // The translator `ListingBreadcrumb` reads, so the JSON-LD label and the visible label are one
+    // message with one value (the `[child]` route's `registryLabels()` cast, for its reason).
+    const t = await getTranslations({ locale: match.locale });
+    const label = t as unknown as BreadcrumbLabel;
     // The popup's options go to this product in each locale that has it (TASK-197, owed from
     // the TASK-179 review); nothing here touches the head.
     const productAlternates = (
@@ -274,6 +287,13 @@ export default async function LocaleGrandchildRoute({
           view={product}
         />
         {productAlternates}
+        {/* `BreadcrumbList` from the trail above, and the gated `Product` + `Offer` (spec 009
+            AC-18; TASK-130): one `productView()` in, so the markup cannot disagree with the page. */}
+        <JsonLd
+          nodes={
+            options === undefined ? [] : productJsonLd(product, label, options)
+          }
+        />
       </>
     );
   }

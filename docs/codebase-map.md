@@ -14,17 +14,17 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +72 |
+| `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/pdp-schema.test.ts` +75 |
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
-| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts`, `support/forbidden-phrases.ts` +31 |
-| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/language-links.spec.ts` +82 |
+| `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/seed.test.ts` +32 |
+| `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts` +84 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +18 |
-| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx`, `unit/checkout-ui-components.test.tsx` +43 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts` +20 |
+| `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx` +44 |
 
 ## Config (`src/config/`)
 
@@ -165,14 +165,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 301 |
+| `tests/unit/` | 303 |
 | `tests/integration/` | 28 |
-| `tests/contract/` | 12 |
+| `tests/contract/` | 13 |
 | `tests/e2e/` | 60 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 323 |
+| `tests/fixtures/` | 327 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

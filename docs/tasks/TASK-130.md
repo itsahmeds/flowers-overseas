@@ -40,11 +40,62 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-18 (implementer, non-blocking; built the fail-closed answer): the brief binds both
+  "build the `Offer` from `offerProjection(view.price)`" and A12/AC-31 "`Offer.price` equals the
+  buy section's price". On the bare page they agree unless the preselected first date carries a
+  surcharge (a peak day such as Women's Day 8 March 2027): `view.price` is then the dated total
+  and the buy section prints the tier price. `productOfferNode()` emits **no** `Product`/`Offer`
+  in that case (pinned by the contract test). Alternative for a later task: carry the undated
+  projection of the selected tier on `ProductView` and build the `Offer` from it. To the
+  orchestrator; `open`.
+
+## Progress
+
+- 2026-10-18 10:15Z: builder (`seo/schema/productOffer.ts`), gate and composition
+  (`catalog/productSchema.ts`), route mount, validator rules, live and Phase 0 fixtures; contract
+  suite green. Pushed `df2e24f2`, draft PR 258.
+- 2026-10-18 10:30Z: unit suite (builder refusals, Phase 0 scan, trail equality, scanner bites),
+  T-32 schema case, product URL fixture, e2e scan of every PDP; every named mutation watched red.
+
+- 2026-10-18 11:35Z (finisher, `/break 258` round 1 HOLES): rebased on `d1f5fc69`; holes 1-6
+  closed with tests, each watched red under its mutation (see `## Result`).
+
+- 2026-10-18 (finisher, `/break 258` round 2 hole): the AC-36 scan rule is now tested branch by
+  branch: spaced hyphen and spaced en dash, space before only, after only, and both; unspaced
+  "Hand-tied", "Forget-me-not" and "12–18" pass. Red when either dash, either side is dropped, or
+  when any hyphen is flagged.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+[PR 258](https://github.com/itsahmeds/flowers-overseas/pull/258). The PDP now serves one JSON-LD
+block: `BreadcrumbList` built from `view.breadcrumb` (the array `ListingBreadcrumb` renders, with the
+crumb's authored value passed as `{name}` the same way), and a `Product` with exactly one `Offer`
+from `offerProjection(view.price)` behind the gate (indexable, `country.state` live,
+`delivery.state` live), shut on every Phase 0 PDP. `validate-schema` gives `Product` (`name`,
+`offers`) and `Offer` (`price`, `priceCurrency`, `availability`) their required properties, plus
+one-Offer cardinality, shipping 0 in the offer's currency, `MerchantReturnNotPermitted` and AC-36's
+dash rule on `Product.name`. Tests: contract `pdp-schema.test.ts` (14: live fixture identities
+against the rendered buy section and cutoff line, Phase 0 breadcrumb-only, each gate term, the
+peak-day fail-closed case, both fixtures regenerated and `seo:validate` green); unit
+`catalog-product-schema.test.tsx` (11), `seo-validate-schema.test.ts` (+7, one hand-written bad
+document `_cases/bad-offer-shape.json`), `product-url-fixture.test.ts` (2), T-32's served-Offer case;
+e2e `schema.spec.ts` (+4 request-level scans over all 2,352 PDPs on `e2e-desktop`, +4 trail
+equality pages). Mutations watched red: Offer.price +1 minor unit (identity test, fixture compare,
+and `seo:validate` exit 1 on the regenerated fixture); `priceCurrency` from the destination;
+gate forced true (Phase 0 scan, trail and fixture cases); country term forced true; `aggregateRating`
+planted on Product; `review` planted on the trail; trail reordered; trail relabelled; "Event" removed
+from the scan list (scanner-bites case); `shippingRate` 4.90 and U+2014 in `Product.name` (builder
+throws, contract suite red; builder checks removed: unit refusal cases red). Local `cutoffTime` is
+`HH:MM` as rendered, with no offset (see the PR's "Found vs suggested"). No message key added.
 
-_Pending._
+**Breaker round 1 holes, closed** (each case red under the named mutation, restored after):
+(1) exact "Offer requires a non-empty price (plan/02 §9), and has undefined" messages, one property
+missing at a time: red with `price` dropped from `REQUIRED_PROPERTIES.Offer`; (2) `AggregateRating`
+and `Review` planted as types: red when either is dropped from the scan list; (3) a `Product` inside
+a two-node `@graph` and an `Offer` inside an array: red when `walk()` stops descending arrays; (4)
+selected tier in another currency at the same amount: red with the currency guard dropped; (5)
+gate forced open on Germany (`offerProjection()` null): red with the null guard dropped;
+`priceValidUntil` "2026-12-31" carried: red when always omitted; (6) the shared scan now refuses a
+dashed `name` on every served PDP (AC-36): red with the dash rule dropped. Not runnable locally,
+as the breaker said: removing the route's `<JsonLd>` mount is caught only by the e2e scan (one
+BreadcrumbList per PDP).

@@ -56,6 +56,34 @@ vi.mock("../../src/modules/catalog/providers.ts", async () => {
 const { productView } = await import("../../src/modules/catalog/product.ts");
 const { offerProjection } =
   await import("../../src/modules/catalog/pricing/project.ts");
+const { productJsonLd } =
+  await import("../../src/modules/catalog/productSchema.ts");
+
+/**
+ * The view with the gate open (TASK-130): a florist, a live picker, an indexable page. The builder
+ * reads only the view, so opening the gate on the view is opening it for the builder; the price,
+ * the tiers and the cutoff it reads are the view's own.
+ */
+function gateOpen(view: NonNullable<Awaited<ReturnType<typeof productView>>>) {
+  return {
+    ...view,
+    country: { ...view.country, state: "live" as const },
+    delivery: { ...view.delivery, state: "live" as const },
+    indexability: { ...view.indexability, indexable: true },
+  };
+}
+
+/** The `Offer.price` of the PDP's own JSON-LD, as the route builds it (spec 009 AC-18, T-32). */
+function servedOfferPrice(
+  view: NonNullable<Awaited<ReturnType<typeof productView>>>,
+): unknown {
+  const product = productJsonLd(gateOpen(view), (key) => key, {
+    baseUrl: "https://flowersoverseas.com",
+  }).find((node) => node?.["@type"] === "Product");
+  return (product?.["offers"] as Record<string, unknown> | undefined)?.[
+    "price"
+  ];
+}
 
 afterEach(() => {
   bumpMinor = 0;
@@ -77,6 +105,7 @@ async function consumers() {
     pageOtherTier: view.tiers.find((tier) => tier.tierKey === "stems_12")?.price
       .amountMinor,
     jsonLdOfferPrice: offerProjection(view.price)?.price,
+    jsonLdServedOfferPrice: servedOfferPrice(view),
     sitemapRow: {
       loc: view.path,
       indexable: view.indexability.indexable,
@@ -91,6 +120,7 @@ describe("a fake provider moves every consumer together (T-32)", () => {
       pageTierRow: 22_900,
       pageOtherTier: 19_900,
       jsonLdOfferPrice: "229.00",
+      jsonLdServedOfferPrice: "229.00",
       sitemapRow: { loc: "/pl/polska/produkt/amber-hour", indexable: false },
     });
   });
@@ -103,6 +133,7 @@ describe("a fake provider moves every consumer together (T-32)", () => {
       // The other tiers are other rows: a consumer that moved them would be computing, not reading.
       pageOtherTier: 19_900,
       jsonLdOfferPrice: "329.00",
+      jsonLdServedOfferPrice: "329.00",
       sitemapRow: { loc: "/pl/polska/produkt/amber-hour", indexable: false },
     });
   });

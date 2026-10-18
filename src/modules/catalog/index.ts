@@ -503,6 +503,16 @@ export {
   trustClaims,
 } from "./product";
 
+// The product page's structured data (spec 009 §6, §13 Q8, AC-18, AC-31, AC-36; TASK-130): the
+// `BreadcrumbList` from `view.breadcrumb`, and the **gated** `Product` + single `Offer` from
+// `offerProjection(view.price)`, emitted only on an indexable page with a live destination and a
+// live picker. One `ProductView` in, nodes out.
+export {
+  productJsonLd,
+  productOfferGateOpen,
+  productOfferNode,
+} from "./productSchema";
+
 // The country shop root's page component and its breadcrumb (spec 008 §5.3, AC-1/AC-8/AC-24;
 // TASK-109). The page component lives in the module that owns its view model — spec 007's
 // `CorridorPage` precedent — so `app/` holds one resolve and one mount, and every decision about

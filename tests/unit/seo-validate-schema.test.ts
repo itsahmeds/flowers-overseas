@@ -359,9 +359,8 @@ describe("hasCommaDecimalSeparator (schema.org requires '.')", () => {
  *
  * The rules are the `plan/02` §9 table read a second way — the row names `Organization`'s
  * `name`/`url`/`logo`, and "markup stays valid" is the FAQ row's own wording — plus the property
- * cardinalities schema.org fixes for the types themselves. `Product` and `Offer` are deliberately
- * **not** given required properties here: their row is spec 009's (TASK-130's), and inventing the
- * requirement before the builder exists would be this task legislating for another.
+ * cardinalities schema.org fixes for the types themselves. `Product` and `Offer` gained theirs with
+ * the builder that emits them (spec 009 AC-18; TASK-130).
  */
 describe("required shape, not just allowed types (AC-15)", () => {
   const shapeOf = (jsonld: unknown): string[] =>
@@ -520,9 +519,120 @@ describe("required shape, not just allowed types (AC-15)", () => {
     ).toContain("item");
   });
 
-  it("leaves Product and Offer to spec 009: no required property is invented here", () => {
-    expect(shapeOf({ "@type": "Product" })).toStrictEqual([]);
-    expect(shapeOf({ "@type": "Offer" })).toStrictEqual([]);
+  it("requires Product's name and offers, and Offer's price, priceCurrency and availability (spec 009 AC-18; TASK-130)", () => {
+    // Whole messages, element by element: "non-empty price" is also a prefix of "non-empty
+    // priceCurrency", so a substring match would pass with `price` dropped (`/break 258` hole 1).
+    const missing = (type: string, property: string): string =>
+      `${type} requires a non-empty ${property} (plan/02 §9), and has undefined`;
+    expect(shapeOf({ "@type": "Product" })).toStrictEqual([
+      missing("Product", "name"),
+      missing("Product", "offers"),
+    ]);
+    expect(shapeOf({ "@type": "Offer" })).toStrictEqual([
+      missing("Offer", "price"),
+      missing("Offer", "priceCurrency"),
+      missing("Offer", "availability"),
+    ]);
+    // One property missing at a time names exactly that property.
+    for (const property of ["price", "priceCurrency", "availability"]) {
+      const offer: Record<string, unknown> = {
+        "@type": "Offer",
+        price: "54.90",
+        priceCurrency: "EUR",
+        availability: "https://schema.org/InStock",
+      };
+      delete offer[property];
+      expect(shapeOf(offer), property).toStrictEqual([
+        missing("Offer", property),
+      ]);
+    }
+  });
+
+  /** One Offer the builder would emit, for the cases below to break one property at a time. */
+  const offer = {
+    "@type": "Offer",
+    price: "54.90",
+    priceCurrency: "EUR",
+    availability: "https://schema.org/InStock",
+    shippingDetails: {
+      "@type": "OfferShippingDetails",
+      shippingRate: {
+        "@type": "MonetaryAmount",
+        value: "0.00",
+        currency: "EUR",
+      },
+    },
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    },
+  } as const;
+  const product = (overrides: Record<string, unknown>): unknown => ({
+    "@type": "Product",
+    name: "Amber Hour",
+    offers: offer,
+    ...overrides,
+  });
+
+  it("accepts the Product + Offer the PDP builder emits", () => {
+    expect(shapeOf(product({}))).toStrictEqual([]);
+  });
+
+  it("rejects more than one Offer, and an offers value that is not an Offer", () => {
+    expect(shapeOf(product({ offers: [offer, offer] })).join(" ")).toContain(
+      "exactly one Offer, found 2",
+    );
+    expect(
+      shapeOf(product({ offers: { "@type": "Thing", price: "1" } })).join(" "),
+    ).toContain("Product.offers is not an Offer");
+  });
+
+  it("rejects a non-zero shipping rate, or one in another currency", () => {
+    const rated = (value: string, currency: string) =>
+      product({
+        offers: {
+          ...offer,
+          shippingDetails: {
+            "@type": "OfferShippingDetails",
+            shippingRate: { "@type": "MonetaryAmount", value, currency },
+          },
+        },
+      });
+    expect(shapeOf(rated("0.01", "EUR")).join(" ")).toContain(
+      "expected 0: delivery is inside the price",
+    );
+    expect(shapeOf(rated("0", "PLN")).join(" ")).toContain(
+      "is not the Offer's priceCurrency",
+    );
+  });
+
+  it("rejects a return policy other than MerchantReturnNotPermitted", () => {
+    expect(
+      shapeOf(
+        product({
+          offers: {
+            ...offer,
+            hasMerchantReturnPolicy: {
+              "@type": "MerchantReturnPolicy",
+              returnPolicyCategory:
+                "https://schema.org/MerchantReturnFiniteReturnWindow",
+            },
+          },
+        }),
+      ).join(" "),
+    ).toContain("expected https://schema.org/MerchantReturnNotPermitted");
+  });
+
+  it("rejects a Product.name with an em dash, a spaced hyphen or a spaced en dash (AC-36)", () => {
+    for (const name of [
+      "Amber Hour\u2014roses",
+      "Amber Hour - roses",
+      "Amber Hour \u2013 roses",
+    ]) {
+      expect(shapeOf(product({ name })).join(" "), name).toContain("AC-36");
+    }
+    // A hyphenated word is not a dash between two phrases.
+    expect(shapeOf(product({ name: "Forget-me-not" }))).toStrictEqual([]);
   });
 });
 
@@ -543,5 +653,26 @@ describe("the required-shape gate fails the CLI, not just the unit test (AC-15)"
     );
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("acceptedAnswer");
+  });
+
+  it("fails on a hand-written Product whose Offer lacks price, priceCurrency and availability (TASK-130)", () => {
+    // Written by hand, not by a builder: a document no builder would emit is the one that proves
+    // the gate does not merely agree with the code it checks (TASK-093's lesson).
+    const result = withFixtureDir(
+      { "bad-offer-shape.json": "bad-offer-shape.json" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("bad-offer-shape.json");
+    for (const problem of [
+      "Offer requires a non-empty price (plan/02 §9)",
+      "Offer requires a non-empty priceCurrency (plan/02 §9)",
+      "Offer requires a non-empty availability (plan/02 §9)",
+      "expected 0: delivery is inside the price",
+      "expected https://schema.org/MerchantReturnNotPermitted",
+      "AC-36",
+    ]) {
+      expect(result.stderr, problem).toContain(problem);
+    }
   });
 });

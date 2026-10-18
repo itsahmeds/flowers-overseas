@@ -224,6 +224,15 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
         ).toEqual(["verdict.indexable"]);
         continue;
       }
+      // TASK-130: the PDP's `Product` + `Offer` gate reads the view's verdict — the same one the
+      // robots tag and the sitemap row read (spec 009 §6) — once, and asks for no second one.
+      if (path.endsWith(join("modules", "catalog", "productSchema.ts"))) {
+        expect(
+          [...code.matchAll(/[\w$.]*\.indexable\b/gu)].map((match) => match[0]),
+          path,
+        ).toEqual(["view.indexability.indexable"]);
+        continue;
+      }
       expect(code, path).not.toMatch(/\.indexable\b/);
     }
   });

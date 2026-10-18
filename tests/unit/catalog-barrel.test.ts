@@ -333,6 +333,11 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productView",
         "tierOptions",
         "trustClaims",
+        // spec 009's structured data (TASK-130): the PDP's JSON-LD nodes from one `ProductView`,
+        // the gate that decides whether the `Product` + `Offer` emits, and that node alone.
+        "productJsonLd",
+        "productOfferGateOpen",
+        "productOfferNode",
         // the corridor's shop entry (TASK-113): the one function that composes "may the site
         // link into the shop" with "does this destination have a shop root in this locale", so
         // `src/modules/geo` never reads the catalogue (spec 008 AC-20).
@@ -369,6 +374,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/pricing/round.ts`,
       `${moduleDir}/pricing/vat.ts`,
       `${moduleDir}/product.ts`,
+      // The PDP's JSON-LD over its view (spec 009 AC-18; TASK-130).
+      `${moduleDir}/productSchema.ts`,
       `${moduleDir}/providers.ts`,
       `${moduleDir}/read.ts`,
       `${moduleDir}/routes.ts`,
