@@ -677,7 +677,7 @@
   "categoryHub.h1": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "33f46a0509d292c68111452969ebe246863cd99f424cd5e541fb69410226d7bc"
+    "sourceHash": "0b3c59d0436c6c910a8fc7635b5c027d697aa7432286a5a1423ed15251ac7a85"
   },
   "categoryHub.productsEyebrow": {
     "source": "machine",
@@ -2407,7 +2407,7 @@
   "occasionHub.productsHeading": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "8b65d7668eccbf4c6e6123dfc000c5b4dcc66b33cdbd9ec253a1f7a5b117f989"
+    "sourceHash": "109c0e507b16cb8f827d55146ffe3c8404a6c973ffe44a44ee1070a0c5859e17"
   },
   "occasions.anniversary.name": {
     "source": "machine",
@@ -2682,7 +2682,7 @@
   "shop.card.noPrice": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "293d08f61bba4dfa72c29578c5013b9fecbed58e92f96c0600902c98a1f069cf"
+    "sourceHash": "df56d1d22013b14a2f19d85f4580b6094f307bc150377c0c4a9363969ae83fa9"
   },
   "shop.cardNote.heading": {
     "source": "machine",
@@ -3008,5 +3008,65 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
+  },
+  "occasionHub.deck.birthday": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9e053580e0d594dabe44d673f78c085d4ecac95724ef9deee4763efc2f8b3a10"
+  },
+  "occasionHub.productsHeadingPlain": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8b65d7668eccbf4c6e6123dfc000c5b4dcc66b33cdbd9ec253a1f7a5b117f989"
+  },
+  "occasionHub.aboutHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a96ae05cf685ff3dce3b894b9eec75c4a69f8c9c6614918fe04e8841a27728d4"
+  },
+  "occasionHub.about.birthday.eyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "616e15c52f23e6ba8ab1756c1fa4e262e51cfb86a49f6ebc867d1da06f5c7aa5"
+  },
+  "categoryHub.deck.roses": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9ebdc631909fcc688e3e8baee4040eb2ca5645b5b51f5c86bfedc41c71ef4e9f"
+  },
+  "categoryHub.deck.bouquet": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d82205c3c16eaee9162a7a79d7c5a1cf29d25bc6e49a31337dceaba142c1035b"
+  },
+  "categoryHub.deck.plant": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6154330eb8cb1877888941ab7a2c00d11e833eed26e47bb8593cff71fbcf87a3"
+  },
+  "categoryHub.about.roses.eyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a879d03c3ea91d5ed67613bb4fbb5489842b803423296faeb87e3a2ba97f4e3e"
+  },
+  "categoryHub.about.roses.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2f08daa42d3465a978e62cecd605544f6c98cd86d5eff6659490af4864ffbff8"
+  },
+  "occasionsIndex.eyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d96eedd00853777f74a67113274699a8cac52fd9d7df93de2ed9852f04344b66"
+  },
+  "occasionsIndex.undatedEyebrow": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "661dc70eb68b41708ad5af6916a7317319e7684f5a3165e9ea88f397f6fc8f39"
+  },
+  "destinationsHub.phoneIntro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fcb2b92fcbc41b400242a461b156398dba9b146e8e9b97d8b6307e50392f5577"
   }
 }

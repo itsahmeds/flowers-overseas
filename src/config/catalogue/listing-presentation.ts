@@ -64,6 +64,21 @@ export const OccasionPresentationSchema = z
     register: z.enum(LISTING_REGISTERS),
     leadSku: Sku.optional(),
     deckSentence: z.int().positive().optional(),
+    /**
+     * The hub's approved deck as a message key (A23 clause 6: A1 for Birthday, A5 for the three
+     * categories the artboards draw). It wins over `deckSentence`; TASK-188.
+     */
+    deckKey: z.string().min(1).optional(),
+    /** The about block's approved eyebrow (A4: "About birthdays", "About roses"), as a key. */
+    aboutEyebrowKey: z.string().min(1).optional(),
+    /** The about block's approved heading where it is per entity (A4: roses), as a key. */
+    aboutHeadingKey: z.string().min(1).optional(),
+    /**
+     * A23 open item (iii): an occasion where A3's "{entity} flowers" reads badly ("I am sorry
+     * flowers") keeps the shipped heading, "Flowers for {entity}", until the founder approves a
+     * string of its own.
+     */
+    plainProductsHeading: z.literal(true).optional(),
   })
   .strict();
 
@@ -85,9 +100,16 @@ const categories = [
     register: "cream",
     countNoun: "bouquet",
     leadSku: "FO-BQ-009",
+    deckKey: "categoryHub.deck.bouquet",
   },
   { key: "arrangement", register: "cream", countNoun: "arrangement" },
-  { key: "plant", register: "leaf", countNoun: "plant", leadSku: "FO-PT-002" },
+  {
+    key: "plant",
+    register: "leaf",
+    countNoun: "plant",
+    leadSku: "FO-PT-002",
+    deckKey: "categoryHub.deck.plant",
+  },
   { key: "funeral", register: "quiet", countNoun: "arrangement" },
   { key: "gift_set", register: "cream", countNoun: "bouquet" },
   { key: "birthday", register: "warm", countNoun: "bouquet" },
@@ -100,7 +122,15 @@ const categories = [
   { key: "thank_you", register: "warm", countNoun: "bouquet" },
   { key: "apology", register: "warm", countNoun: "bouquet" },
   { key: "just_because", register: "warm", countNoun: "bouquet" },
-  { key: "roses", register: "ink", countNoun: "bouquet", leadSku: "FO-BQ-002" },
+  {
+    key: "roses",
+    register: "ink",
+    countNoun: "bouquet",
+    leadSku: "FO-BQ-002",
+    deckKey: "categoryHub.deck.roses",
+    aboutEyebrowKey: "categoryHub.about.roses.eyebrow",
+    aboutHeadingKey: "categoryHub.about.roses.heading",
+  },
   { key: "tulips", register: "cream", countNoun: "bouquet" },
   { key: "lilies", register: "cream", countNoun: "bouquet" },
   { key: "orchids", register: "cream", countNoun: "plant" },
@@ -112,15 +142,21 @@ const categories = [
 
 /** Every seasonal occasion is `dated` (R1); the evergreen ones are celebrations but sympathy. */
 const occasions = [
-  { key: "birthday", register: "warm", leadSku: "FO-BQ-023" },
+  {
+    key: "birthday",
+    register: "warm",
+    leadSku: "FO-BQ-023",
+    deckKey: "occasionHub.deck.birthday",
+    aboutEyebrowKey: "occasionHub.about.birthday.eyebrow",
+  },
   { key: "anniversary", register: "warm" },
-  { key: "romance", register: "warm" },
+  { key: "romance", register: "warm", plainProductsHeading: true },
   { key: "congratulations", register: "warm" },
   { key: "new_baby", register: "warm" },
   { key: "get_well", register: "warm" },
-  { key: "sympathy", register: "quiet", leadSku: "FO-BQ-016" },
+  { key: "sympathy", register: "quiet", leadSku: "FO-BQ-016", deckSentence: 3 },
   { key: "thank_you", register: "warm" },
-  { key: "apology", register: "warm" },
+  { key: "apology", register: "warm", plainProductsHeading: true },
   { key: "just_because", register: "warm" },
   { key: "wedding", register: "warm" },
   { key: "graduation", register: "warm" },
@@ -128,7 +164,12 @@ const occasions = [
   { key: "retirement", register: "warm" },
   { key: "valentines", register: "dated" },
   { key: "womens_day", register: "dated" },
-  { key: "mothers_day", register: "dated", leadSku: "FO-BQ-007" },
+  {
+    key: "mothers_day",
+    register: "dated",
+    leadSku: "FO-BQ-007",
+    deckSentence: 1,
+  },
   { key: "fathers_day", register: "dated" },
   { key: "grandparents_day", register: "dated" },
   { key: "easter", register: "dated" },
@@ -138,11 +179,15 @@ const occasions = [
   { key: "name_day", register: "dated" },
   { key: "teachers_day", register: "dated" },
   { key: "sant_jordi", register: "dated" },
-  { key: "fete_des_grands_meres", register: "dated" },
-  { key: "muguet", register: "dated" },
+  {
+    key: "fete_des_grands_meres",
+    register: "dated",
+    plainProductsHeading: true,
+  },
+  { key: "muguet", register: "dated", plainProductsHeading: true },
   { key: "konfirmation", register: "dated" },
   { key: "student", register: "dated" },
-  { key: "omatag", register: "dated" },
+  { key: "omatag", register: "dated", plainProductsHeading: true },
   { key: "17_mai", register: "dated" },
 ] as const;
 

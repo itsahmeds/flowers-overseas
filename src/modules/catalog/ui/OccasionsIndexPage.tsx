@@ -48,16 +48,14 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Chip, Container, Display, Eyebrow, Text } from "@/modules/ui";
+import { Chip, Container, Display, Eyebrow, Icon, Text } from "@/modules/ui";
+
+import { HubBand, HubDateCards, HubHeading } from "./HubHero";
 
 import type { ListingOccasionEntry, ListingView } from "../listing";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
-import {
-  ListingIntro,
-  ListingSubsection,
-  OccasionDatesTable,
-} from "./ListingChrome";
+import { ListingSubsection, OccasionDatesTable } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
 export interface OccasionsIndexPageProps {
@@ -92,6 +90,7 @@ export function OccasionsIndexPage({
 }: OccasionsIndexPageProps): ReactElement {
   const t = useTranslations();
   const index = useTranslations("occasionsIndex");
+  const shop = useTranslations("shop");
   const code = localeCode(view.locale);
 
   const entries = view.occasions ?? [];
@@ -112,18 +111,79 @@ export function OccasionsIndexPage({
     view.occasionsDateCountryKey === undefined
       ? undefined
       : registryLabel(t, view.occasionsDateCountryKey);
+  // R5: the "next six", already chronological in the view model (`nextOccasionsOf`).
+  const next = view.nextOccasions ?? [];
 
   return (
     <Container as="main" id="main" data-fo-occasions-index>
       <div className="pb-(--section-fluid)">
-        <ListingBreadcrumb crumbs={view.breadcrumb} />
+        {/* The first screen (spec 004 §14 A23 R5, A24 clause 2; TASK-188): the `sky` band with A8's
+            eyebrow, the `<h1>` and the way to the everyday group; on the end side R5's "next six",
+            the six soonest dated occasions **in date order**, as plain cards linking their hubs.
+            No photograph above the fold: the LCP element is the `<h1>` (A23 clause 7). On a phone,
+            the `<h1>`, the block's label as the one muted line, and the cards as one scroller.
+            The lede moves directly under the first screen (A24 clause 2). */}
+        <HubBand
+          aside={
+            next.length === 0 || dateCountry === undefined ? undefined : (
+              <figure className="m-0" data-fo-occasions-next={next.length}>
+                <HubDateCards
+                  cards={next.map((entry) => ({
+                    key: entry.key,
+                    name: entry.name,
+                    date: entry.nextDate,
+                    href: entry.href,
+                    hook: { "data-fo-next-occasion": entry.key },
+                  }))}
+                  label={shop("root.occasionsEyebrow", {
+                    country: dateCountry,
+                  })}
+                  locale={code}
+                />
+                <figcaption className="text-ink-subtle mt-[14px] text-sm max-md:hidden">
+                  {index("datedCaption", { country: dateCountry })}
+                </figcaption>
+              </figure>
+            )
+          }
+          breadcrumb={<ListingBreadcrumb crumbs={view.breadcrumb} />}
+          labelledBy="occasions-h1"
+          register="sky"
+          split="5-7"
+        >
+          <HubHeading eyebrow={index("eyebrow")} id="occasions-h1">
+            {index("h1")}
+          </HubHeading>
+          {next.length === 0 || dateCountry === undefined ? null : (
+            <p className="text-ink-subtle text-sm md:hidden">
+              {shop("root.occasionsEyebrow", { country: dateCountry })}
+            </p>
+          )}
+          {everyday.length === 0 ? null : (
+            <a
+              className="link text-ui font-bold max-md:hidden"
+              href="#occasions-everyday-heading"
+            >
+              {index("everydayHeading")}
+              <Icon
+                className="ms-[6px] inline align-[-3px]"
+                name="arrow-end"
+                size={18}
+              />
+            </a>
+          )}
+        </HubBand>
 
-        <ListingIntro heading={index("h1")} lede={index("intro")} />
+        <div className="pt-[32px] md:pt-[40px]" data-fo-occasions-lede>
+          <Text size="lg" tone="muted" className="max-w-(--measure-lede)">
+            {index("intro")}
+          </Text>
+        </div>
 
         {dated.length === 0 || dateCountry === undefined ? null : (
           <section
             aria-labelledby="occasions-dated-heading"
-            className="gap-lg md:gap-2xl grid grid-cols-1 items-start md:grid-cols-[4fr_7fr]"
+            className="gap-lg md:gap-2xl grid grid-cols-1 items-start pt-[48px] md:grid-cols-[4fr_7fr] md:pt-(--section-fluid)"
             data-fo-occasions-dated={dated.length}
           >
             <div>
@@ -157,6 +217,7 @@ export function OccasionsIndexPage({
         {undated.length === 0 ? null : (
           <ListingSubsection
             dataHook={{ "data-fo-occasions-undated": String(undated.length) }}
+            eyebrow={index("undatedEyebrow")}
             heading={index("undatedHeading")}
             id="occasions-undated-heading"
           >

@@ -88,6 +88,13 @@ export interface ProductCardProps {
    * element at every width; only its CSS differs.
    */
   readonly lead?: boolean;
+  /**
+   * Where `priority` holds (spec 004 §14 A24 clause 5): `below-md` on a hub, whose lead figure is
+   * the priority image from `md` up. The card then carries its photograph twice in one box slot,
+   * each displayed at one width: the priority copy below `md` (preloaded with `media`, and never
+   * downloaded from `md` up) and a lazy copy from `md` up. One card, one link, one heading.
+   */
+  readonly priorityAt?: "below-md";
 }
 
 /** The 4∶5 box, in every state. Named once so the four states cannot drift apart. */
@@ -101,13 +108,38 @@ export function ProductCard({
   manifest,
   provenance = "card",
   lead = false,
+  priorityAt,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
   const media = useTranslations("media");
   const shop = useTranslations("shop");
 
   const photo =
-    card.photo.kind === "asset" ? (
+    card.photo.kind === "asset" && priority && priorityAt === "below-md" ? (
+      <>
+        <MediaAsset
+          assetId={card.photo.assetId}
+          className="md:hidden"
+          displayedAt="below-md"
+          locale={locale}
+          priority
+          productName={card.name}
+          ratio={CARD_RATIO}
+          slot={card.photo.slot}
+          {...(manifest === undefined ? {} : { manifest })}
+        />
+        <MediaAsset
+          assetId={card.photo.assetId}
+          className="max-md:hidden"
+          displayedAt="md-up"
+          locale={locale}
+          productName={card.name}
+          ratio={CARD_RATIO}
+          slot={card.photo.slot}
+          {...(manifest === undefined ? {} : { manifest })}
+        />
+      </>
+    ) : card.photo.kind === "asset" ? (
       <MediaAsset
         assetId={card.photo.assetId}
         locale={locale}

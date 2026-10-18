@@ -401,6 +401,40 @@ export const ListingViewSchema = z
     occasionDates: z.array(ListingOccasionDateSchema).readonly().optional(),
     occasions: z.array(ListingOccasionEntrySchema).readonly().optional(),
     /**
+     * The occasions index's "next six" block (spec 004 §14 A23 **R5**; TASK-188): the six soonest
+     * dated occasions in the index's date country, **in chronological order**, from the same
+     * `nextDate` values the table prints. Fewer when fewer fall in the next twelve months, and
+     * absent (never empty) when none does, so the block renders nothing.
+     */
+    nextOccasions: z.array(ListingOccasionEntrySchema).readonly().optional(),
+    /**
+     * A hub's lead figure (spec 004 §14 A23 **R2**; TASK-188): the registry's `leadSku`, falling
+     * back to the hub's first product. A card view with no money, like every hub card. It is not
+     * a grid card and not an `ItemList` element: the grid keeps every product in its own place.
+     */
+    hubLead: HubCardViewSchema.optional(),
+    /**
+     * A hub's deck (A23 clause 6): an approved message (`key`, A1 and A5), or one verbatim
+     * sentence of the hub's own authored intro, chosen by the registry's `deckSentence`. Absent
+     * when the hub has neither: no deck renders.
+     */
+    hubDeck: z
+      .union([
+        z.object({ key: z.string().min(1) }).strict(),
+        z.object({ sentence: z.string().min(1) }).strict(),
+      ])
+      .optional(),
+    /** The about block's approved eyebrow and heading keys (A23 clause 6, A4), where approved. */
+    hubAbout: z
+      .object({
+        eyebrowKey: z.string().min(1).optional(),
+        headingKey: z.string().min(1).optional(),
+        /** A3's exception: the grid keeps the shipped "Flowers for {entity}" (open item (iii)). */
+        plainProductsHeading: z.literal(true).optional(),
+      })
+      .strict()
+      .optional(),
+    /**
      * The destination whose calendar the **occasions index** quotes, as its `nameKey` (§14 design
      * round **Q4**: "the occasions index prints the soonest date in Poland, the only published
      * destination, with the caption saying so"; TASK-113). Its premise is out of date: TASK-091
@@ -1472,6 +1506,18 @@ export async function listingView(
     options.deployment ?? deploymentDescriptor(process.env),
   );
 
+  const links = await linksFor(locale, pageType, iso2, entityKey, kind, path);
+  const hubPresentation =
+    hub && entityKey !== undefined && kind !== undefined
+      ? kind === "category"
+        ? categoryPresentation(entityKey)
+        : occasionPresentation(entityKey)
+      : undefined;
+  const occasions =
+    pageType === "occasionsIndex"
+      ? await occasionEntries(locale, from)
+      : undefined;
+
   const view: ListingView = {
     pageType,
     locale,
@@ -1541,16 +1587,44 @@ export async function listingView(
     items,
     hubItems,
     tiles,
+    ...(hubPresentation === undefined
+      ? {}
+      : await hubFirstScreen(
+          hubPresentation,
+          ordered,
+          locale,
+          authoredIntro(kind ?? "category", entityKey ?? "", locale),
+        )),
     ...(pageType === "occasionHub" && entityKey !== undefined
       ? {
-          occasionDates: publishedCountries().map((country2) => ({
-            iso2: country2,
-            nameKey: countryConfig(country2).nameKey,
-            observed: isObservedIn(entityKey, country2),
-            date: isObservedIn(entityKey, country2)
-              ? nextDateIn(entityKey, country2, from)
-              : null,
-          })),
+          occasionDates: publishedCountries().map((country2) => {
+            // R3: an entry links only where its **country occasion page** exists: the picker's own
+            // link, decided once in `linksFor()` by the existence rule (spec 004 AC-14), and only
+            // when it is that page (not the same-key category the picker falls back to).
+            const linked = links.destinations.find(
+              (destination) => destination.iso2 === country2,
+            )?.href;
+            const href =
+              entitySlug !== undefined &&
+              linked ===
+                pathOf(
+                  locale,
+                  "countryOccasion",
+                  corridorSlug(country2, locale),
+                  entitySlug,
+                )
+                ? linked
+                : undefined;
+            return {
+              iso2: country2,
+              nameKey: countryConfig(country2).nameKey,
+              observed: isObservedIn(entityKey, country2),
+              date: isObservedIn(entityKey, country2)
+                ? nextDateIn(entityKey, country2, from)
+                : null,
+              ...(href === undefined ? {} : { href }),
+            };
+          }),
         }
       : {}),
     ...(pageType === "countryShopRoot" && iso2 !== undefined
@@ -1571,9 +1645,14 @@ export async function listingView(
           ],
         }
       : {}),
-    ...(pageType === "occasionsIndex"
+    ...(occasions === undefined
+      ? {}
+      : nextOccasionsOf(occasions).length === 0
+        ? {}
+        : { nextOccasions: nextOccasionsOf(occasions) }),
+    ...(occasions !== undefined
       ? {
-          occasions: await occasionEntries(locale, from),
+          occasions,
           ...(occasionsIndexDateCountry() === undefined
             ? {}
             : {
@@ -1588,12 +1667,92 @@ export async function listingView(
     page,
     pageCount,
     sort,
-    links: await linksFor(locale, pageType, iso2, entityKey, kind, path),
+    links,
     indexable: verdict.indexable,
     directive: verdict.directive,
   };
 
   return ListingViewSchema.parse(view);
+}
+
+/** How many dated occasions the occasions index's "next six" block shows (A23 R5). */
+export const NEXT_OCCASIONS_COUNT = 6;
+
+/**
+ * The occasions index's "next six" (spec 004 §14 A23 **R5**): the dated entries, **by date**, the
+ * soonest first, at most six. `nextDate` is already inside the twelve-month window
+ * (`upcomingOccasions()`), so "fewer than six in the next twelve months" needs no second rule. The
+ * index's own groups stay in `collator(locale)` order; only this block is chronological. Ties
+ * (two occasions on one day) keep the groups' collated order, because the sort is stable.
+ */
+export function nextOccasionsOf(
+  entries: readonly ListingOccasionEntry[],
+): readonly ListingOccasionEntry[] {
+  return entries
+    .filter((entry) => entry.kind === "seasonal" && entry.nextDate !== null)
+    .toSorted((a, b) => (a.nextDate ?? "").localeCompare(b.nextDate ?? ""))
+    .slice(0, NEXT_OCCASIONS_COUNT);
+}
+
+/**
+ * The sentences of an authored intro, split the way `seed/copy.ts`'s `trailingSentence()` reads
+ * one: at `. `, `! ` or `? `. Catalogue prose has no abbreviations by rule, so the naive split is
+ * exact, and the deck it feeds prints a sentence **verbatim** (A23 clause 6: not new copy).
+ */
+export function introSentences(intro: string): readonly string[] {
+  return intro
+    .trim()
+    .split(/(?<=[.!?])\s+/u)
+    .filter((sentence) => sentence !== "");
+}
+
+/**
+ * A hub's first-screen extras (spec 004 §14 A23 **R2** and clause 6; TASK-188), all read off the
+ * presentation registry and never chosen by a component: the lead figure (the registry's
+ * `leadSku`, else the hub's first product in its own order), the deck (an approved message, else
+ * the intro sentence the registry names, else none) and the about block's approved keys.
+ */
+async function hubFirstScreen(
+  row: {
+    readonly leadSku?: string | undefined;
+    readonly deckKey?: string | undefined;
+    readonly deckSentence?: number | undefined;
+    readonly aboutEyebrowKey?: string | undefined;
+    readonly aboutHeadingKey?: string | undefined;
+    readonly plainProductsHeading?: true | undefined;
+  },
+  ordered: readonly Product[],
+  locale: LocaleCode,
+  intro: string | undefined,
+): Promise<Pick<ListingView, "hubLead" | "hubDeck" | "hubAbout">> {
+  const leadProduct =
+    ordered.find((product) => product.sku === row.leadSku) ?? ordered[0];
+  const sentence =
+    row.deckSentence === undefined || intro === undefined
+      ? undefined
+      : introSentences(intro)[row.deckSentence - 1];
+  const about = {
+    ...(row.aboutEyebrowKey === undefined
+      ? {}
+      : { eyebrowKey: row.aboutEyebrowKey }),
+    ...(row.aboutHeadingKey === undefined
+      ? {}
+      : { headingKey: row.aboutHeadingKey }),
+    ...(row.plainProductsHeading === undefined
+      ? {}
+      : { plainProductsHeading: row.plainProductsHeading }),
+  };
+  return {
+    ...(leadProduct === undefined
+      ? {}
+      : { hubLead: await hubCardView(leadProduct, locale) }),
+    ...(row.deckKey !== undefined
+      ? { hubDeck: { key: row.deckKey } }
+      : sentence === undefined
+        ? {}
+        : { hubDeck: { sentence } }),
+    ...(Object.keys(about).length === 0 ? {} : { hubAbout: about }),
+  };
 }
 
 /**
@@ -1883,6 +2042,17 @@ async function linksFor(
     const linkable = familyPublished(
       kind === "category" ? "countryCategory" : "countryOccasion",
     );
+    // An occasion hub whose country occasion page does not exist (every evergreen occasion: §14
+    // A1) links that country's **category of the same key** where one exists — "Birthday flowers
+    // for France" goes to `/france/flowers/birthday-flowers`, as `occasion-hub-desktop` draws it
+    // ("The links go to each country's sympathy-flowers category"). Without it an evergreen hub
+    // is a dead end (QA 2026-10-18 Q1-12) and AC-35's destination link cannot exist.
+    const categorySlug =
+      kind === "occasion" ? slugFor("category", entityKey, locale) : undefined;
+    const categoryLinkable =
+      kind === "occasion" &&
+      categorySlug !== undefined &&
+      familyPublished("countryCategory");
     for (const country of publishedCountries()) {
       const exists =
         linkable &&
@@ -1890,6 +2060,17 @@ async function linksFor(
         (kind === "category"
           ? await countryCategoryExists(entityKey, country, locale, memo)
           : await countryOccasionExists(entityKey, country, locale, memo));
+      const categoryHref =
+        !exists &&
+        categoryLinkable &&
+        (await countryCategoryExists(entityKey, country, locale, memo))
+          ? pathOf(
+              locale,
+              "countryCategory",
+              corridorSlug(country, locale),
+              categorySlug,
+            )
+          : undefined;
       destinations.push(
         ListingDestinationLinkSchema.parse({
           iso2: country,
@@ -1898,16 +2079,18 @@ async function linksFor(
             kind === "category"
               ? await countIn(memo, entityKey, country)
               : await countFor(memo, entityKey, country),
-          ...(!exists || slug === undefined
-            ? {}
-            : {
+          ...(exists && slug !== undefined
+            ? {
                 href: pathOf(
                   locale,
                   kind === "category" ? "countryCategory" : "countryOccasion",
                   corridorSlug(country, locale),
                   slug,
                 ),
-              }),
+              }
+            : categoryHref === undefined
+              ? {}
+              : { href: categoryHref }),
         }),
       );
     }

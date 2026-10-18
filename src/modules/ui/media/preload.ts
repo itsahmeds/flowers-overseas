@@ -51,8 +51,37 @@ export interface MediaPreloadArgs {
     readonly imageSizes: string;
     readonly type: string;
     readonly fetchPriority: "high";
+    /**
+     * The width range the image is painted in, where it is the priority image at one width only
+     * (spec 004 §14 A24 clause 5, "the priority image, per width"): a preload whose `media`
+     * does not match is not fetched, so each width preloads exactly the image it paints.
+     */
+    readonly media?: string;
   };
 }
+
+/**
+ * The two width ranges a per-width priority image is scoped to (spec 004 §14 A24 clause 5): the
+ * design system's one split, `md` (48rem, `globals.css`'s own `(min-width: 48rem)`).
+ */
+export const PRIORITY_MEDIA = {
+  "md-up": "(min-width: 48rem)",
+  "below-md": "(width < 48rem)",
+} as const;
+export type PriorityAt = keyof typeof PRIORITY_MEDIA;
+
+/** The other range: where a per-width image is **not** displayed and must not download. */
+export const PRIORITY_MEDIA_ELSEWHERE: Readonly<Record<PriorityAt, string>> = {
+  "md-up": PRIORITY_MEDIA["below-md"],
+  "below-md": PRIORITY_MEDIA["md-up"],
+};
+
+/**
+ * A one-pixel transparent GIF: the `<source>` a per-width `<picture>` selects where its image is
+ * not displayed, so the browser fetches nothing there (an inline `data:` URL is no request).
+ */
+export const BLANK_IMAGE_SRCSET =
+  "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 /** The last (largest) candidate URL of an ascending `srcset`, or `""` for an empty ladder. */
 function largestCandidate(srcSet: string): string {
@@ -67,6 +96,7 @@ function largestCandidate(srcSet: string): string {
  */
 export function preloadArgsFor(
   image: ResolvedImage,
+  priorityAt?: PriorityAt,
 ): MediaPreloadArgs | undefined {
   const first = image.sources[0];
   if (first === undefined) return undefined;
@@ -80,6 +110,9 @@ export function preloadArgsFor(
       imageSizes: image.sizes,
       type: first.type,
       fetchPriority: "high",
+      ...(priorityAt === undefined
+        ? {}
+        : { media: PRIORITY_MEDIA[priorityAt] }),
     },
   };
 }

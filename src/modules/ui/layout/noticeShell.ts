@@ -89,9 +89,41 @@ export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-transparent tex
 export const NOTICE_LETTER_MAIN =
   "mx-auto flex min-h-dvh w-full max-w-[calc(var(--container-page)+2*var(--gutter))] flex-col gap-[56px] px-(--gutter-s) pt-[24px] pb-[72px] md:gap-[112px] md:px-(--gutter) md:pb-[160px]";
 
-/** The letter: card white, the letter shadow and tilt, 640 px at most. */
+/**
+ * The letter: card white, the letter shadow, 640 px at most. **Not tilted**: round 2 tilts
+ * nothing (spec 004 §14 A24 clauses 2 and 6; the `errors-*` round-2 artboards; TASK-191), so the
+ * letter's computed rotation is 0 on the 404 and on both 500s.
+ */
 export const NOTICE_LETTER =
-  "bg-card shadow-letter rounded-letter mx-auto flex w-full max-w-[640px] rotate-(--tilt-letter-s) flex-col px-[24px] py-[40px] md:rotate-(--tilt-letter) md:px-[56px] md:pt-[56px] md:pb-[48px]";
+  "bg-card shadow-letter rounded-letter relative mx-auto flex w-full max-w-[640px] flex-col px-[22px] pt-[34px] pb-[30px] md:px-[56px] md:pt-[52px] md:pb-[46px]";
+
+/*
+ * The 404 as round 2 draws it (`errors-{desktop,mobile}.dc.html`; spec 004 §14 A24 clause 6,
+ * AC-40 as rebound; TASK-191): the logo alone in a ruled header (no navigation, no footer), and a
+ * `<main>` that fills the rest of the first viewport on the raised paper, with the letter centred
+ * over its one decoration, the faint dashed route (an `aria-hidden` inline SVG, static: motion 13
+ * is TASK-194's). No stamp, no postmark, no airmail edge.
+ */
+
+/** The ruled header: 64 px on a phone and 82 from `md`, plus its 1 px rule. */
+export const NOTICE_404_HEADER =
+  "border-rule bg-surface box-border flex h-[65px] items-center border-b md:h-[83px]";
+
+/** The header's frame: `PAGE_FRAME`, so the logo sits where every page's logo sits (AC-31). */
+export const NOTICE_404_HEADER_FRAME =
+  "mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+
+/** The document: at least the viewport minus the header, the letter centred in it (AC-40). */
+export const NOTICE_404_MAIN =
+  "bg-surface-raised relative grid min-h-[calc(100svh-65px)] place-items-center overflow-hidden pt-[40px] pb-[56px] md:min-h-[calc(100svh-83px)] md:pt-[48px] md:pb-[72px]";
+
+/** The letter's frame inside the document: `PAGE_FRAME`, above the route. */
+export const NOTICE_404_FRAME =
+  "relative z-[1] mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)";
+
+/** The dashed route behind the letter: the cornflower link colour, faint, never a target. */
+export const NOTICE_404_ROUTE =
+  "text-sky pointer-events-none absolute inset-0 h-full w-full opacity-55";
 
 /** The status code, in the cornflower eyebrow voice. */
 export const NOTICE_LETTER_META = "eyebrow m-0 mb-[14px]";
