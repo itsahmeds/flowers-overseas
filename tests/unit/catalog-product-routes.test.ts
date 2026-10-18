@@ -563,23 +563,24 @@ describe("`ProductParamsSchema` is the boundary a path segment arrives at (§5.2
 
 describe("the per-locale counts CI prints (§11)", () => {
   it("counts the pages that exist, the ones prebuilt (all of them, §14 A6) and the honest zero", async () => {
-    // `withoutDescription: 0` in English: FO-BQ-001 and FO-BQ-003's present-tense wording
-    // (TASK-179) carries the founder's attestation of 2026-10-04 (TASK-192). No PDP is indexable
-    // yet anyway.
+    // `withoutDescription: 84` in English until the founder's record run: TASK-243 changed every
+    // product row's `seoTitle` to "{name}: {descriptor}", and a row's review triple covers the
+    // whole row, so each description counts as unreviewed meanwhile (spec 003 §14
+    // A-founder-2026-10-15a clause 5). The description still renders; no PDP is indexable yet.
     expect(await productExistenceCounts()).toEqual([
       {
         locale: "en",
         exists: 588,
         prebuilt: 588,
         indexablePages: 0,
-        withoutDescription: 0,
+        withoutDescription: 84,
       },
       {
         locale: "en-gb",
         exists: 588,
         prebuilt: 588,
         indexablePages: 0,
-        withoutDescription: 0,
+        withoutDescription: 84,
       },
       {
         locale: "de",

@@ -74,7 +74,7 @@
         "giftSet": "{flower} bouquet and gift",
         "plant": "{flower} plant"
       },
-      "name": "{name} — {descriptor}"
+      "name": "{name}: {descriptor}"
     },
     "facet": {
       "colour": {
@@ -719,15 +719,15 @@
   "meta": {
     "error": {
       "description": "The page could not be loaded. Nothing you were doing was lost.",
-      "title": "Something went wrong — Flowers Overseas"
+      "title": "Something went wrong. Flowers Overseas"
     },
     "home": {
-      "description": "Order flowers for someone in another European country. Our florist in their town makes the bouquet by hand and hands it over in person.",
-      "title": "Flowers Overseas — send flowers to Europe"
+      "description": "Order flowers for someone in another country. Our florist in their town makes the bouquet by hand and hands it over in person.",
+      "title": "Flowers Overseas | Send Flowers Abroad"
     },
     "notFound": {
       "description": "That page does not exist. Start again from the home page.",
-      "title": "Page not found — Flowers Overseas"
+      "title": "Page not found. Flowers Overseas"
     }
   },
   "nav": {
@@ -909,7 +909,7 @@
     "category": {
       "lede": "{count, plural, one {Jeden bukiet, który nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
       "seoDescription": "{entity}, które nasz florysta może zrobić w {country}, każdy z jedną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
-      "seoTitle": "{entity} for {country} — one all-in price",
+      "seoTitle": "{entity} for {country}: one all-in price",
       "siblingsHeading": "Also for {country}"
     },
     "empty": {
@@ -942,7 +942,7 @@
       "datedLine": "{occasion} in {country} is {date}.",
       "lede": "These are the ones we make for it, and our florist in {country} hands them over in person.",
       "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
-      "seoTitle": "{occasion} flowers for {country} — and {country}'s own date for it",
+      "seoTitle": "{occasion} flowers for {country}: {country}'s own date for it",
       "shopRootLink": "Flowers for {country}",
       "siblingsHeading": "Also in {country}",
       "undatedLine": "We are not printing a date for {occasion} in {country}. We do not have a rule we can work it out from, and a date we cannot stand behind is worse than none."
@@ -969,7 +969,7 @@
       "occasionsHeading": "{country}'s own dates",
       "pageColumn": "Page",
       "seoDescription": "Każdy bukiet, który nasz florysta może zrobić w {country}, z jedną pełną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
-      "seoTitle": "Send flowers to {country} — what we can make there",
+      "seoTitle": "Send flowers to {country}: what we can make there",
       "tileCount": "{noun, select, plant {{count, plural, one {# roślina, którą możemy wykonać dla {country}} few {# rośliny, które możemy wykonać dla {country}} many {# roślin, które możemy wykonać dla {country}} other {# rośliny, które możemy wykonać dla {country}}}} arrangement {{count, plural, one {# kompozycja, którą możemy wykonać dla {country}} few {# kompozycje, które możemy wykonać dla {country}} many {# kompozycji, które możemy wykonać dla {country}} other {# kompozycji, które możemy wykonać dla {country}}}} other {{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}}}",
       "tilesHeading": "By what it is",
       "tilesSubheading": "Narrow it down"

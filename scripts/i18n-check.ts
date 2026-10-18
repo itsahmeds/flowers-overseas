@@ -17,7 +17,7 @@
  * the unit suite can point the checks at a fixture tree in a child process (the spec 001 validator
  * style, `tests/fixtures/i18n/_cases/`) instead of mutating the committed catalogues.
  *
- * ## The twelve checks
+ * ## The checks
  *
  * 1. **Key sets agree after fallback resolution** — every `en` key must resolve to a string for
  *    every registry locale, and no locale may define a key `en` does not have. Resolution is
@@ -81,6 +81,14 @@
  *    registry and the tree being checked. `en` and `en-gb` stay outside it: an English share above
  *    5 % turns English `noindex` (A17) but never breaks the build. It reads the registry the run
  *    reads, so `--registry` exercises it on a fixture.
+ * 13. **Head punctuation** (spec 003 §14 A-founder-2026-10-15a clause 4, AC-50; TASK-242) — no
+ *    value of a key in `HEAD_MESSAGE_KEYS` (`src/modules/i18n/head-punctuation.ts`), the closed
+ *    list of keys that reach a `<title>`, a meta description or a JSON-LD name, carries an em dash
+ *    (U+2014), a spaced hyphen or a spaced en dash (U+2013), in any authored catalogue (`en`,
+ *    `en-gb`, `de`, `pl`). Each problem names the locale and the key. The spec calls this "check
+ *    12"; TASK-237 had already taken 12 for "shown", so it is 13 here, with the behaviour the spec
+ *    gives it. The 500 boundary's copy (`error-copy.data.ts`) is held to the same rule by
+ *    `tests/unit/i18n-check.test.ts`, which reads it.
  *
  * ## The usage heuristic (check 2) and its limits
  *
@@ -125,6 +133,11 @@ import {
   type LocaleConfig,
 } from "../src/config/locales.ts";
 import { scopeProblems, validScopeEntries } from "./i18n-check-scope.ts";
+import {
+  describeHeadDashes,
+  headDashesIn,
+  isHeadMessageKey,
+} from "../src/modules/i18n/head-punctuation.ts";
 import {
   SOURCE_LOCALE as PSEUDO_SOURCE_LOCALE,
   pseudoFileProblems,
@@ -905,6 +918,9 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
   // 12: a shown locale in another language is reviewed (A-founder-2026-10-14c clause 4, AC-48).
   problems.push(...shownLocaleProblems(input.locales, input.registryFile));
 
+  // 13: no dash in head copy (A-founder-2026-10-15a clause 4, AC-50).
+  problems.push(...headPunctuationProblems(input.locales));
+
   const unapproved = [...sourceFlat.keys()].filter((key) => {
     const entry = scopeEntryFor(key);
     return (
@@ -936,6 +952,27 @@ function shownLocaleProblems(
       file: registryFile,
       reason: `locale \`${locale.code}\` is \`shown: true\` with ${formatShare(share)} of its counted keys unreviewed, above the ${formatShare(UNREVIEWED_SHARE_THRESHOLD)} threshold: a language is offered to visitors only once a person has reviewed it (spec 003 §14 A-founder-2026-10-14c). Set \`shown: false\`, or have its catalogue reviewed first`,
     });
+  }
+  return problems;
+}
+
+/**
+ * Check 13. Every authored value, locale by locale, so a dash in `pl` alone is named as `pl`'s
+ * (a value `en-gb` inherits from `en` is `en`'s problem, reported once, where it is written).
+ */
+function headPunctuationProblems(locales: readonly LoadedLocale[]): Problem[] {
+  const problems: Problem[] = [];
+  for (const locale of locales) {
+    for (const [key, value] of locale.flat) {
+      if (!isHeadMessageKey(key)) continue;
+      const found = headDashesIn(value);
+      if (found.length === 0) continue;
+      problems.push({
+        file: locale.cataloguePath,
+        key,
+        reason: `in locale \`${locale.code}\` is head copy (it reaches a \`<title>\`, a meta description or a JSON-LD name) and carries ${describeHeadDashes(found)}: use a colon or a full stop (spec 003 §14 A-founder-2026-10-15a)`,
+      });
+    }
   }
   return problems;
 }

@@ -17,7 +17,7 @@
  * are the intentions, executable. A corridor page exists because a human wrote something true
  * about that country, and this is the assertion behind that claim.
  *
- * ## The eighteen rules (AC-2)
+ * ## The rules (AC-2, and rule 19 from spec 007 §14 A-founder-2026-10-15a)
  *
  * | # | rule | fails when |
  * |---|---|---|
@@ -39,6 +39,7 @@
  * | 16 | `live-operations` | a `live` file for a country with no complete `operations` block |
  * | 17 | `en-gb-overrides` | an `en-gb` file that `extends: en` without overriding title, description and ≥2 FAQ answers |
  * | 18 | `related-targets` | `relatedIso2` names an unknown country, or a related file with a free slot that does not name it back |
+ * | 19 | `dash-in-head` | `seoTitle`, `seoDescription` or a FAQ question (`faq[].q`, the `FAQPage` `Question.name`) carries an em dash, a spaced hyphen or a spaced en dash (spec 007 §14 A-founder-2026-10-15a, AC-36; TASK-242) |
  *
  * ## Three properties that are design, not accident
  *
@@ -102,6 +103,10 @@ import {
 } from "../src/config/countries.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { bannedVoiceWordsIn } from "../src/config/voice.ts";
+import {
+  describeHeadDashes,
+  headDashesIn,
+} from "../src/modules/i18n/head-punctuation.ts";
 import type { CorridorSourceFile } from "../src/modules/geo/content/corpus.ts";
 import {
   readCorridorCorpus,
@@ -125,7 +130,7 @@ import {
 
 const CLI_NAME = "corridor:check";
 
-/** The eighteen rules, in the order AC-2 lists them. */
+/** The rules, in the order AC-2 lists them, then `dash-in-head` (spec 007 AC-36). */
 export const CORRIDOR_CHECK_RULES = [
   "parses",
   "source-human",
@@ -145,6 +150,7 @@ export const CORRIDOR_CHECK_RULES = [
   "live-operations",
   "en-gb-overrides",
   "related-targets",
+  "dash-in-head",
 ] as const;
 
 export type CorridorCheckRule = (typeof CORRIDOR_CHECK_RULES)[number];
@@ -724,6 +730,28 @@ export function checkCorridorCorpus(
           "seoDescription",
           "seo-description",
           `seoDescription is ${String(content.seoDescription.length)} characters; the limit is ${String(SEO_DESCRIPTION_MAX)} (plan/02 §5.3)`,
+        ),
+      );
+    }
+
+    /* 19. dash-in-head (spec 007 §14 A-founder-2026-10-15a, AC-36) ------- */
+    // Run here, beside the other head fields; reported under rule 19.
+    for (const [field, value] of [
+      ["seoTitle", content.seoTitle],
+      ["seoDescription", content.seoDescription],
+      ...content.faq.map(
+        (item, index) => [`faq[${String(index)}].q`, item.q] as const,
+      ),
+    ] as const) {
+      if (value === undefined) continue;
+      const found = headDashesIn(value);
+      if (found.length === 0) continue;
+      problems.push(
+        problem(
+          file,
+          field,
+          "dash-in-head",
+          `${JSON.stringify(value)} carries ${describeHeadDashes(found)}: it reaches the \`<title>\`, the meta description or the \`FAQPage\` \`Question.name\`, so it takes a colon or a full stop (spec 007 §14 A-founder-2026-10-15a)`,
         ),
       );
     }

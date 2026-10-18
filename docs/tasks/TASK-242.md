@@ -76,8 +76,37 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-18: check 13 (head punctuation) in `i18n:check` over `HEAD_MESSAGE_KEYS` (`src/modules/i18n/head-punctuation.ts`), T-50 cases in `tests/unit/i18n-check.test.ts`; copy changed with TASK-243.
+- 2026-10-18: `seed:check` and `corridor:check` rules with fixtures; the built-site scan, run locally once (3,546 documents, green). Done; `in_review`.
+- 2026-10-18: breaker r1 HOLES 1 to 9 closed, each with a test that went red under its mutation: every Unicode dash and "--" (holes 1, 2: `tests/unit/head-punctuation.test.ts`, one-sided and edge dashes refused, the suspended hyphen kept, NBSP pinned); check 13 on `en-gb`, descriptions, breadcrumbs (hole 3, 7: `i18n-check.test.ts`; `breadcrumb.*`, `common.homeLink`, `destinations.*.name` added to `HEAD_MESSAGE_KEYS`, no dash found in them); seed `name`, every locale's occasions, the ": " shape (holes 4, 5: `seed-check.test.ts`); the `en-gb` guide (hole 6: `corridor-check.test.ts`); the scan pins per-locale counts (en 803, en-gb 803, de 796, pl 796) and counts only documents that answered 200 or the expected 404 (holes 8, 9). The pinned counts change when the catalogue gains or loses a page.
+- 2026-10-19: rebased on main after PR 239 (review queue merged by hand, both sides' keys kept; en-gb share now 4.5%). Hole 8 reworked per the orchestrator: the expected per-locale count is read from the build's prerender manifest itself, not pinned; dropping `de` documents from the scan list still goes red (`de` 3 against 796). T-40's unit test now imports the product route PR 239 moved to `src/app/[locale]/-product/`.
 
 ## Result
 
-_Pending._
+PR: https://github.com/itsahmeds/flowers-overseas/pull/266 (one feature PR with TASK-243).
+
+- **Check number: 13.** Spec 003 calls it "check 12"; TASK-237 (PR 229) took 12 for "shown" and
+  10 is reserved for TASK-185's drafts, so the head-punctuation check is **13**, recorded in the
+  `scripts/i18n-check.ts` header. Behaviour as the spec gives it.
+- **One rule, three gates.** `src/modules/i18n/head-punctuation.ts`: `HEAD_MESSAGE_KEYS` (the
+  spec's closed list; `*` is one key segment) and `headDashesIn()` (U+2014; a hyphen or U+2013 with
+  whitespace on **both** sides). Both sides, because German's suspended hyphen ("Box- und
+  Topfgestecke", a committed `de` occasion description) is correct and the either-side reading of
+  `productOffer.ts`'s `Product.name` guard would refuse it.
+- `i18n:check` check 13 over every authored catalogue; `seed:check` `copy/dash-in-head` and
+  `copy/product-seo-title-shape` (four fixtures under `tests/fixtures/seed/_cases/copy/`; the case
+  table is now 40); `corridor:check` rule 19 `dash-in-head` over `seoTitle`, `seoDescription` and
+  `faq[i].q` (new case op `setFaqQuestion`).
+- **The scan** (`tests/e2e/head-dash-scan.spec.ts`, e2e-desktop only): every route of
+  `.next/prerender-manifest.json` in `en`, `en-gb`, `de`, `pl` (3,198 on this build), one Polish
+  PDP per SKU per locale (336), the four localised 404s and eight page-2 listings: **3,546
+  documents read, zero dashes**, 19 s against a local `next start` (build slot taken for this one
+  measurement: the scan cannot be judged without a build; load average 16.7 at the build).
+- **Watched red:** check 13 skipping `de`/`pl` (2 cases red); `HEAD_MESSAGE_KEYS` emptied (5 red);
+  `copy/dash-in-head` filtered out (2 red); corridor rule skipping `faq[].q` (1 red);
+  `meta.home.title` reverted (T-59 red); `catalog.descriptor.name` reverted (T-40 red);
+  `shop.category.seoTitle` reverted (T-38 red); the scan's manifest list emptied (read 348,
+  "Expected > 1000, Received 0"). The scan with `meta.home.title` reverted needs a rebuild and was
+  not run locally; its T-59 case pins the exact served title.
+- Copy: see TASK-243's `## Result`.
+

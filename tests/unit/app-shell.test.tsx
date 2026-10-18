@@ -279,7 +279,7 @@ describe("the `[locale]` document (AC-6)", () => {
     });
 
     expect(metadata.robots).toBe("noindex,nofollow");
-    expect(metadata.title).toBe("Something went wrong — Flowers Overseas");
+    expect(metadata.title).toBe("Something went wrong. Flowers Overseas");
   });
 
   it("refuses an unknown segment centrally, on the layout (AC-8)", () => {
@@ -379,7 +379,7 @@ describe("the 404's metadata (AC-25)", () => {
   it("titles the document from the catalogue", async () => {
     const metadata = await notFoundMetadata();
 
-    expect(metadata.title).toBe("Page not found — Flowers Overseas");
+    expect(metadata.title).toBe("Page not found. Flowers Overseas");
     // The authored string, not `String(…).length > 0`, which `undefined` passes (TASK-143).
     expect(metadata.description).toBe(fallbackMeta().notFound.description);
   });
@@ -396,7 +396,7 @@ describe("the global 500 document (spec 003 §5.3, AC-25)", () => {
     // file untouched and the 500 page renders in the fallback stack. Noted in both PRs.
     expect(html).toContain('<html lang="en" dir="ltr">');
     expect(html).toContain(
-      "<title>Something went wrong — Flowers Overseas</title>",
+      "<title>Something went wrong. Flowers Overseas</title>",
     );
   });
 

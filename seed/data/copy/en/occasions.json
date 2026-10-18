@@ -193,12 +193,10 @@
       "slug": "housewarming",
       "descriptionMd": "A new home usually has no vase, so most of this range is arranged in a basket, crate, bowl or pot, or is a plant that will still be there next year. An olive sapling, a peace lily or an anthurium all qualify. Delivery to a new address is easier with a floor and a door code. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Housewarming flower delivery across Europe",
-      "seoDescription": "Baskets, crates, bowls and plants for a home with no vase — olive saplings, peace lilies and anthuriums. A door code helps.",
+      "seoDescription": "Baskets, crates, bowls and plants for a home with no vase: olive saplings, peace lilies and anthuriums. A door code helps.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "797d3cd7e668f50d4b7b9b2f79b374bfa2d9cd0668cc36648d8d2c3c50e83b9a"
+      "reviewed": false,
+      "sourceHash": "8d742c888a5a109aeb30800d6a30b19f799f19b7ac8116ed05d0cf7722a9e887"
     },
     {
       "entity": "occasion",
@@ -237,13 +235,11 @@
       "name": "Women's Day",
       "slug": "womens-day",
       "descriptionMd": "The eighth of March is a working, flower-buying holiday in Poland and much of central and eastern Europe, and barely marked elsewhere. Tulips are the traditional gift, single stems and small bunches most of all. A surcharge applies on the day, and cutoffs are earlier than usual. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Women's Day flower delivery — 8 March across Europe",
+      "seoTitle": "Women's Day flower delivery: 8 March across Europe",
       "seoDescription": "Tulips for 8 March, the flower-buying holiday of Poland and central Europe. Earlier cutoffs and a day surcharge, both shown up front.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "9ca5499ea91368df506370ba94717f83eabf4e031f32fe501b154c3aa39a5d0e"
+      "reviewed": false,
+      "sourceHash": "853b3850fbd8876034faae7ec961981b03839d478c015cbb6a1f871667677267"
     },
     {
       "entity": "occasion",
@@ -312,13 +308,11 @@
       "name": "All Saints' Day",
       "slug": "all-saints-day",
       "descriptionMd": "The first of November is the largest flower day of the year in Poland and is marked across Catholic Europe. Chrysanthemums are the flower: grave bouquets, wreaths, a cross, a low arrangement in a stone-look pot. Cemetery deliveries need the cemetery name and the plot or section, and cutoffs are days earlier than usual. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "All Saints' Day flower delivery — 1 November",
+      "seoTitle": "All Saints' Day flower delivery: 1 November",
       "seoDescription": "Chrysanthemum grave bouquets, wreaths and crosses for 1 November. Cemetery deliveries need the cemetery name and plot; cutoffs earlier.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "fac9a815538dec0235008900f49c942ecf2a4ffc161344874ce66d8293ca05e3"
+      "reviewed": false,
+      "sourceHash": "b7a19a2e8c34b0681bf58ceb6439077c4e12ef8163cca8c80e0538dc0a65f370"
     },
     {
       "entity": "occasion",
@@ -387,13 +381,11 @@
       "name": "Sant Jordi",
       "slug": "sant-jordi",
       "descriptionMd": "The twenty-third of April in Catalonia: a rose and a book, exchanged in the street. Single red roses are the tradition, and demand is concentrated into a single morning. The Barcelona page shows whether we deliver for Sant Jordi this year, and it is worth ordering early because the whole city wants roses that morning. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Sant Jordi rose delivery — 23 April in Catalonia",
+      "seoTitle": "Sant Jordi rose delivery: 23 April in Catalonia",
       "seoDescription": "Single red roses for Sant Jordi on 23 April. The Barcelona page shows whether we deliver this year. Demand is concentrated into one morning.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "e789e463acbfe79016fd9bbdd6ff0f66ec9deda5912b42e69a97236035a2a6e7"
+      "reviewed": false,
+      "sourceHash": "d910202f560e6140c4e969f21c629146aefd76ff8b8fa07de3a52f29a896f7f5"
     },
     {
       "entity": "occasion",
@@ -402,13 +394,11 @@
       "name": "Grandmothers' Day in France",
       "slug": "grandmothers-day-in-france",
       "descriptionMd": "France marks a grandmothers' day on the first Sunday of March, which is not the same as any other country's grandparents' day. Long-lasting flowers and plants suit it: an azalea, an orchid, carnations, a pastel basket. The destination page carries this year's date for France. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Grandmothers' Day in France — flower delivery",
+      "seoTitle": "Grandmothers' Day in France: flower delivery",
       "seoDescription": "Azaleas, orchids, carnations and pastel baskets for the French grandmothers' day on the first Sunday of March. This year's date shown.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "3e4713ec4b002b93509e67dae86208610154f347d207ed4e2ed499916232657f"
+      "reviewed": false,
+      "sourceHash": "7791b706cfaba62ad12cf29c43118e3a850a1f7c604d80664f71848fab4d96d3"
     },
     {
       "entity": "occasion",
@@ -417,13 +407,11 @@
       "name": "May Day lily of the valley",
       "slug": "may-day-lily-of-the-valley",
       "descriptionMd": "The first of May in France means lily of the valley, sold on the street and given as a charm. It is a one-day flower with a one-day supply, so where we can source it we say so on the destination page and where we cannot we do not pretend otherwise. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "May Day lily of the valley — 1 May delivery in France",
+      "seoTitle": "May Day lily of the valley: 1 May delivery in France",
       "seoDescription": "Lily of the valley for 1 May in France, a one-day flower with a one-day supply. The destination page says where we can source it.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "5b17baae769606aa59a16ffe755ccde3f49f0fcd7f0a058286445556c50b7bb8"
+      "reviewed": false,
+      "sourceHash": "04561a5a48f8e03753acb767e4985e7b8b4857a20b329a789b18d9b906a4fd98"
     },
     {
       "entity": "occasion",
@@ -462,13 +450,11 @@
       "name": "Grandmother's Day in Estonia",
       "slug": "grandmothers-day-in-estonia",
       "descriptionMd": "Estonia keeps its own grandmother's day, and it is not the French or the Polish one. Plants and long-lasting flowers work well here, because the visit and the flowers rarely coincide: an azalea, an orchid, carnations or a pastel basket. The destination page carries the date. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Grandmother's Day in Estonia — flower delivery",
+      "seoTitle": "Grandmother's Day in Estonia: flower delivery",
       "seoDescription": "Azaleas, orchids, carnations and pastel baskets for the Estonian grandmother's day. Long-lasting choices; the date is shown on the page.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "32da19def9789e32e64af02b8b5cc55a077a8eb79661726b3e3ad39c5f4b9d4e"
+      "reviewed": false,
+      "sourceHash": "bdc25783e5f6d0926ce205eddaba2b32b382bcbb93d1ba3e5e1d99a2d4c91fe5"
     },
     {
       "entity": "occasion",
@@ -477,13 +463,11 @@
       "name": "Norwegian Constitution Day",
       "slug": "norwegian-constitution-day",
       "descriptionMd": "The seventeenth of May is a national day in Norway, spent outdoors in a parade rather than at home. Flowers are sent to a home for the breakfast beforehand, so a morning slot and a bouquet that needs no arranging are the useful combination. The destination page shows whether we cover the city. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Norwegian Constitution Day flower delivery — 17 May",
+      "seoTitle": "Norwegian Constitution Day flower delivery: 17 May",
       "seoDescription": "Bouquets delivered to a home for the 17 May breakfast in Norway, in a morning slot and needing no arranging. City coverage shown.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "c8b6f7fe53f166d934b63b79a85d0b5e950b817f7b4dd278b8de75094e4b7077"
+      "reviewed": false,
+      "sourceHash": "0eee099766351673a55ea3a744e05566495f4765925a431fd92cb6eb5ee40fac"
     }
   ]
 }

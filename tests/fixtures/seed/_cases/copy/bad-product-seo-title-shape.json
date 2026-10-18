@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "product-seo-title-shape",
+  "replaces": "copy/en/products.json",
+  "expect": "`seoTitle` \"Hand-tied orange roses: Amber Hour\" does not start with the row's name",
+  "why": "spec 006 §14 A-founder-2026-10-15a clause 4, AC-33: a product's authored `seoTitle` reads \"{name}: {descriptor}\" (or is the bare name), the same shape the product page composes from `catalog.descriptor.name`, so the two titles of one product never disagree.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "FO-BQ-001"
+      },
+      "set": {
+        "seoTitle": "Hand-tied orange roses: Amber Hour"
+      }
+    }
+  ]
+}

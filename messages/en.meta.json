@@ -361,10 +361,8 @@
   },
   "catalog.descriptor.name": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (spec 006 §7 media/catalogue namespaces; TASK-073)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "86b32415f72369695301ed8a98dc7bfa293b6446fd19f347ef1f03d1ed86429d",
+    "reviewed": false,
+    "sourceHash": "2e0c5344e46934879e95fa4fd15d25ec14de492f9a15e03aa7f2551c907769df",
     "retained": true
   },
   "catalog.facet.colour.blue": {
@@ -3093,24 +3091,18 @@
   },
   "meta.error.title": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "ebc0911a2c1d164dca3e1dd80c3fc31de2be2e39c399dd7972fc7d700327c21e"
+    "reviewed": false,
+    "sourceHash": "52eb43219d0299cf643676c618ea5f069bb9d0154e13b3be4e93a5a276e2a57c"
   },
   "meta.home.description": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
-    "reviewedAt": "2026-10-18T10:42:45Z",
-    "sourceHash": "4a60f8a09a0845e03839aa55029bf648ea6602da0049dc5d0311d7979bdb7d28"
+    "reviewed": false,
+    "sourceHash": "78d401815a99feb28962a4344548c7324094ed23aba3f3d028b983de6c670670"
   },
   "meta.home.title": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "3a14f48cb6bf7e6d9092b3dbfef0274dfccd22570b2a3ed2c3faedd36578e2b1"
+    "reviewed": false,
+    "sourceHash": "2a7bac0ff89453ea30f76d425523f415c33b0279e9bb044eff1dfad43c59f138"
   },
   "meta.notFound.description": {
     "source": "human",
@@ -3121,10 +3113,8 @@
   },
   "meta.notFound.title": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-08T00:00:00Z",
-    "sourceHash": "818d2a6d9e512a5d58fa63040a92fe2c2c21c3cffe6376f11e1e41d6b076b39a"
+    "reviewed": false,
+    "sourceHash": "238130dcfec391f52524b2d1be86048cecd2111b77646e0453feb534c82c3efb"
   },
   "nav.account.orders": {
     "source": "human",
@@ -3790,10 +3780,8 @@
   },
   "shop.category.seoTitle": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-category-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-110)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "640e90b06a3fb641abfc6f77f5d66bec5fd24a6749ba31e4f9c40ac575061484"
+    "reviewed": false,
+    "sourceHash": "9de410ae3b9bfc254288cd00fea41580e2e7d9de568a27ec2a22b76ad58d0e6a"
   },
   "shop.category.siblingsHeading": {
     "source": "human",
@@ -3924,7 +3912,7 @@
   "shop.occasion.seoTitle": {
     "source": "human",
     "reviewed": false,
-    "sourceHash": "d29c83f2febc750e7bb9284658dbe41e436bc363b15b844e2beda127aa4f4319"
+    "sourceHash": "9bc1b17799b0b181b5dba56231b528fbb46be44647ffa81336b4ed62ffaf4f4a"
   },
   "shop.occasion.shopRootLink": {
     "source": "human",
@@ -4082,10 +4070,8 @@
   },
   "shop.root.seoTitle": {
     "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder (docs/design/wireframes/country-shop-desktop.dc.html and -mobile, 2026-09-16 design round; transcribed by TASK-109)",
-    "reviewedAt": "2026-09-18T00:00:00Z",
-    "sourceHash": "bed3361c2941d2361a85255e919003ad4af4317c19c4d365c6e1e9d3f9cd53a0"
+    "reviewed": false,
+    "sourceHash": "44d2ff98c5c8a80e809f59968b20708e21de8ec29cefd6ada1d74c3c22d587e7"
   },
   "shop.root.tileCount": {
     "source": "human",

@@ -12,13 +12,11 @@
       "name": "Hand-tied bouquets",
       "slug": "hand-tied-bouquets",
       "descriptionMd": "Flowers tied by hand and delivered wrapped, ready to be cut and put into water. Most of our range sits here: roses, tulips, lilies, peonies, sunflowers, gerberas and seasonal mixes, in three stem sizes each. Prices on this page include delivery and local tax, and the size you choose is the size that is made. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Hand-tied bouquets — flowers delivered across Europe",
+      "seoTitle": "Hand-tied bouquets: flowers delivered across Europe",
       "seoDescription": "Roses, tulips, lilies, peonies, sunflowers and seasonal mixes, tied by hand in three stem sizes. Delivery and local tax included.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "89e0afbba06a95e1e69e35be9a9c76d6bdfcf62d7a170a2f1c0e2fa4a59e18b1"
+      "reviewed": false,
+      "sourceHash": "38ef5a457c017ae8c04017fe2c9cea4731437d32f8b1dba91a65e90f5134bff8"
     },
     {
       "entity": "category",
@@ -27,13 +25,11 @@
       "name": "Arrangements",
       "slug": "arrangements",
       "descriptionMd": "Flowers arranged in a box, basket, pot or vase, so nothing has to be trimmed or found on arrival. Useful when the recipient is in hospital, in an office, or unlikely to have a vase to hand. Three sizes on every piece, and where a vase or vessel is part of it the page says so and the price includes it. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Flower arrangements — delivered ready to display",
+      "seoTitle": "Flower arrangements: delivered ready to display",
       "seoDescription": "Flowers arranged in a box, basket, pot or vase, ready to display with no trimming. Three sizes; any vessel is included in the price.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "696f78c3c2ecb422cdd56840ef5dc63620f7827c9fe5d0873bf47d29de2ba142"
+      "reviewed": false,
+      "sourceHash": "37331ac2fc815f9c78df681828867e300aa22ab20be9578ece3944d4a3c08eb2"
     },
     {
       "entity": "category",
@@ -42,13 +38,11 @@
       "name": "Plants",
       "slug": "plants",
       "descriptionMd": "Living plants rather than cut flowers: orchids, a peace lily, an anthurium, jasmine, azalea and a small olive. They last months or years instead of days, which is why they are so often sent after a funeral, to a new home or to an office. One size each, potted, with care notes from the person who chose the plant. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Flowering plants — orchids, peace lilies and more",
+      "seoTitle": "Flowering plants: orchids, peace lilies and more",
       "seoDescription": "Orchids, peace lilies, anthurium, jasmine, azalea and olive, potted and delivered with care notes. Living plants that last months.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "03b92202eedbc7b866f4295a20245550d36c740ec3c2bf61c292ea5cf06f3ad6"
+      "reviewed": false,
+      "sourceHash": "626a1883a6c7c670f5c610806b4e649193ba0fa5a85632a030dce0395fafeceb"
     },
     {
       "entity": "category",
@@ -72,13 +66,11 @@
       "name": "Flowers and gift sets",
       "slug": "flowers-and-gift-sets",
       "descriptionMd": "A bouquet with one thing added: chocolates, a glass vase, a balloon or a small soft toy, chosen to go with the flowers and delivered together. Nothing is shipped separately, so the whole gift arrives at once and in one condition. Sets that contain food carry allergen information at checkout, and every price includes delivery and local tax. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Flowers and gift sets — bouquets with chocolates, a vase or more",
+      "seoTitle": "Flowers and gift sets: bouquets with chocolates, a vase or more",
       "seoDescription": "A bouquet with chocolates, a vase, a balloon or a soft toy, chosen to go with the flowers and delivered together. One delivery, one price, allergen details shown.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "36425942c35f8ac1fe217f43e84e980c065f39c1eb76b37fe4fbc94652ab5da7"
+      "reviewed": false,
+      "sourceHash": "fa133766d183c74e857939ff5e16158e8a925af0e78612be8c6a36f8268d1777"
     },
     {
       "entity": "category",
@@ -117,13 +109,11 @@
       "name": "Romantic flowers",
       "slug": "romantic-flowers",
       "descriptionMd": "Red roses, deep pink peonies and a rose arrangement in a vase: a short list on purpose, because this is the one occasion where guessing is worse than choosing. Sizes run from twelve stems to twenty-four, and a card in your own words is free. Valentine's Day has its own cutoff, shown on the page for the destination country. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Romantic flowers — red roses and peonies delivered",
+      "seoTitle": "Romantic flowers: red roses and peonies delivered",
       "seoDescription": "Red roses, deep pink peonies and rose arrangements in a vase, twelve to twenty-four stems. A card in your own words is free.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "56279dce7464a5f37f9ba030e8887ebb11d1aa9914c423295ebe6a34de17c247"
+      "reviewed": false,
+      "sourceHash": "9ffcd4023563271de49243cc2503983d7b831741f1c03983f61b796887612042"
     },
     {
       "entity": "category",
@@ -207,13 +197,11 @@
       "name": "Sorry flowers",
       "slug": "sorry-flowers",
       "descriptionMd": "Pale roses, white tulips, freesias and a small box of pastel flowers — quiet rather than grand, which is usually the right register when you are apologizing. A printed card is free and worth using here. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Sorry flowers — apology flowers delivered across Europe",
+      "seoTitle": "Sorry flowers: apology flowers delivered across Europe",
       "seoDescription": "Pale roses, white tulips, freesias and small pastel boxes: quiet rather than grand. A free printed card, and it arrives on the date you pick.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "645805e485a25dcab117b093a530e97bdac7bf7164085ec191a4d34d97fa51a4"
+      "reviewed": false,
+      "sourceHash": "f110c4c15353e1ec86b620e4db5d069b167b9c2d660463d081d1416c9c5bac37"
     },
     {
       "entity": "category",
@@ -237,13 +225,11 @@
       "name": "Roses",
       "slug": "roses",
       "descriptionMd": "Roses in red, pink, white, orange and pastel, hand-tied in twelve, eighteen or twenty-four stems, plus rose arrangements in a vase and two white rose tributes. Red roses for romance, white for weddings and sympathy, pink and orange for birthdays and thank yous. The rose itself is fixed on every one of these; only the greenery moves. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Roses delivered across Europe — red, pink and white",
+      "seoTitle": "Roses delivered across Europe: red, pink and white",
       "seoDescription": "Roses in red, pink, white, orange and pastel, hand-tied in twelve to twenty-four stems, plus vase arrangements and tributes.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "3754ad3241652fa5872109f335e3139a16fe498cd371a6e23b226ca3ca0ae9c4"
+      "reviewed": false,
+      "sourceHash": "37e95c006993302709ea017acfc78e4738579ef805b4bafcae1a4280e31bc395"
     },
     {
       "entity": "category",
@@ -252,13 +238,11 @@
       "name": "Tulips",
       "slug": "tulips",
       "descriptionMd": "Tulips in mixed, yellow, white, pink and purple, bunched in fifteen, twenty-five or thirty-five stems, with their own leaves and no filler. A spring flower: growers change varieties weekly, so we keep the colour and let our florist choose the variety. A spring flower, sold by the bunch rather than by the stem. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Tulips delivered across Europe — mixed, yellow and pink",
+      "seoTitle": "Tulips delivered across Europe: mixed, yellow and pink",
       "seoDescription": "Tulips in mixed, yellow, white, pink and purple, in fifteen to thirty-five stems with their own leaves. Colour fixed; variety by week.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "22ddbb532b4a5d2357b59fbf94188ccbb023a718006512c74ccaa4205c99a651"
+      "reviewed": false,
+      "sourceHash": "c8746d778ef591e577fc59afec758eb7de8f2cb528672dc6f30777e6f6e30b9f"
     },
     {
       "entity": "category",
@@ -267,13 +251,11 @@
       "name": "Lilies",
       "slug": "lilies",
       "descriptionMd": "Oriental lilies in white and pink, in sheaves of five, eight or twelve stems, and in a glass vase arrangement. Three or four heads to a stem and strongly scented, so a small bouquet fills a room. Sent for sympathy, weddings and anniversaries. Stems arrive part-closed and open over the first few days. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Lilies delivered across Europe — white and pink",
+      "seoTitle": "Lilies delivered across Europe: white and pink",
       "seoDescription": "Oriental lilies in white and pink, in sheaves of five to twelve stems or a glass vase. Strongly scented; buds open over days.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "e69c71fb1e7fd4ef478c1c1033f172c1a49d1b941a5c6333ee6126778ee82fa0"
+      "reviewed": false,
+      "sourceHash": "e080258f21375bf1821e044032943a1bd6d13a7834d6e2148d22445a8382cd97"
     },
     {
       "entity": "category",
@@ -312,13 +294,11 @@
       "name": "Peonies",
       "slug": "peonies",
       "descriptionMd": "Peonies in pink, pale pink and white, in nine, fifteen or twenty-one stems, and in a heavy studio vase. The season is short, a few weeks in late spring, so peony bouquets are only available while it lasts. Priced at the top of our range because the flower is. Every order is made by hand and delivered in person by our florist in the recipient's city.",
-      "seoTitle": "Peonies delivered across Europe — pink and white",
+      "seoTitle": "Peonies delivered across Europe: pink and white",
       "seoDescription": "Peonies in pink, pale pink and white, in nine to twenty-one stems or a heavy studio vase. Short late-spring season, no silent swaps.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "founder, 2026-10-15: ran record-approval-226.py after reading the exact text it printed",
-      "reviewedAt": "2026-10-15T05:41:33Z",
-      "sourceHash": "7319bf5a8b2514d01c4b92a1c090b28379667ec99d264601d37246a871953c29"
+      "reviewed": false,
+      "sourceHash": "2f5562d30b36313d09814deefe6652ba07cc1c62d4b095ba003efc63dc50679f"
     },
     {
       "entity": "category",

@@ -1,0 +1,18 @@
+{
+  "family": "copy",
+  "rule": "dash-in-head",
+  "replaces": "copy/en/categories.json",
+  "expect": "`seoDescription` \"Roses for every occasion — red, pink and white",
+  "why": "spec 006 §14 A-founder-2026-10-15a, AC-33: the founder approved the copy \"just no em dash\" (2026-10-05) and banned the spaced hyphen and spaced en dash too (2026-10-15); a seed `name`, `seoTitle` or `seoDescription` reaches the `<title>`, the meta description or a JSON-LD name, so none may carry one.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "key": "roses"
+      },
+      "set": {
+        "seoDescription": "Roses for every occasion — red, pink and white, made by our florist in the recipient's city."
+      }
+    }
+  ]
+}
