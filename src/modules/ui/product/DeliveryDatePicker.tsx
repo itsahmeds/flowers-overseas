@@ -165,10 +165,15 @@ export function DeliveryDatePicker({
           columns with the rest of the window one scroll away, so the buy column stays one row
           tall (AC-46). `overflow-x: auto`, never the artboards' `hidden`; with no focusable chip
           (every date closed) the row itself takes focus and is named by the legend's question.
-          The block padding leaves room for an occasion tag on a chip's top edge. */}
+          The block padding leaves room for an occasion tag on a chip's top edge.
+          From `md` the row is as wide as the whole 66 px chips (and their 8 px gaps) that fit the
+          column, `round(down, 100% + 8px, 74px) - 8px`, so its visible end never cuts a chip
+          (QA 2026-10-18 Q1-09: "Fri 23 Oct" cut at 1440); the rest stays one scroll away. The
+          artboard's seven 48-55 px columns do not hold the absolute date spec 009 prints
+          (`docs/design/README.md`, the TASK-197 row, item (h)). */}
       <div data-fo-date-grid>
         <HorizontalScroller
-          className="pt-[10px] pb-[4px] [&>li]:flex [&>li]:w-[66px]"
+          className="pt-[10px] pb-[4px] md:w-[calc(round(down,100%_+_8px,74px)_-_8px)] [&>li]:flex [&>li]:w-[66px]"
           items={delivery.dates.map((date) => ({
             key: date.date,
             node: (
