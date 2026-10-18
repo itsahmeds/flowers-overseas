@@ -23,6 +23,8 @@ import {
   type PreviewDeps,
   type PreviewProjectResponse,
   PREVIEW_ATTEMPTS,
+  PreviewApiError,
+  PreviewScopeError,
   PREVIEW_CLOUDFLARE_ENDPOINTS,
   PREVIEW_INTERVAL_MS,
   PREVIEW_PROJECT_QUERY,
@@ -265,7 +267,13 @@ describe("it fails at once on a deployment that cannot become ready (AC-26: fail
 });
 
 /** A fake Railway + Cloudflare pair whose state moves as the command acts on it. */
-function world(options: { noEnvironment?: boolean } = {}) {
+function world(
+  options: {
+    noEnvironment?: boolean;
+    domainRace?: boolean;
+    forbidden?: boolean;
+  } = {},
+) {
   const project = recorded();
   if (options.noEnvironment === true) {
     project.data.project.environments.edges.splice(1, 1);
@@ -297,6 +305,30 @@ function world(options: { noEnvironment?: boolean } = {}) {
         return Promise.resolve({ data: { variables } });
       }
       if (query.includes("customDomainCreate")) {
+        if (options.forbidden === true) {
+          return Promise.reject(
+            new PreviewScopeError("Railway API answered 403"),
+          );
+        }
+        if (options.domainRace === true) {
+          // The other job created it a moment earlier; Railway refuses the second create.
+          options.domainRace = false;
+          prWeb(project).web.domains.customDomains.push({
+            id: "cd-pr-263",
+            domain: HOST,
+            status: {
+              dnsRecords: [
+                {
+                  fqdn: HOST,
+                  hostlabel: "pr-263",
+                  recordType: "DNS_RECORD_TYPE_CNAME",
+                  requiredValue: "abc123.up.railway.app",
+                },
+              ],
+            },
+          });
+          return Promise.reject(new PreviewApiError("Domain already exists"));
+        }
         prWeb(project).web.domains.customDomains.push({
           id: "cd-pr-263",
           domain: HOST,
@@ -367,6 +399,26 @@ describe("the polling loop (AC-12, AC-26)", () => {
       expect.objectContaining({ name: HOST, type: "CNAME", proxied: true }),
     ]);
     expect(w.variables()).toMatchObject(previewVariables(PR));
+  });
+
+  it("reads again when the other job provisioned first, instead of failing", async () => {
+    const w = world({ domainRace: true });
+    const result = await resolvePreview(
+      { pr: PR, sha: SHA, provision: true, attempts: 10, intervalMs: 1 },
+      w.deps,
+    );
+    expect(result).toEqual({ ok: true, url: `https://${HOST}` });
+    expect(w.logs.join("\n")).toContain("create-domain was refused");
+  });
+
+  it("ends the run on a missing scope: a retry cannot fix a 403", async () => {
+    const w = world({ forbidden: true });
+    await expect(
+      resolvePreview(
+        { pr: PR, sha: SHA, provision: true, attempts: 10, intervalMs: 1 },
+        w.deps,
+      ),
+    ).rejects.toThrow(PreviewScopeError);
   });
 
   it("changes nothing without --provision: only queries and GETs", async () => {
