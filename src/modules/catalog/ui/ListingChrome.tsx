@@ -573,14 +573,11 @@ export function CountryListingHead({
       data-fo-listing-hero
     >
       <div>
-        {/* The C3 artboards' title size (PR 236): `--text-title-fluid` from `md` up, 32 px on a
-            phone, so the toolbar above the grid still leaves the first row on the first screen
-            (spec 004 rebound AC-34). */}
-        <Display
-          as="h1"
-          size="title"
-          className="max-md:text-[32px] max-md:leading-[1.08]"
-        >
+        {/* Spec 004 §14 A-founder-2026-10-18b: the shop root's and the country category's H1
+            take `--text-title-fluid` at every width (44 px at 390, 53.8 px at 1280 × 800, 58 px
+            from 1440), the PR 236 artboards' size, so the toolbar above the grid still leaves
+            the first row's prices on the first screen (rebound AC-34). */}
+        <Display as="h1" size="title">
           {emphasise(heading, emphasis)}
         </Display>
         {stateLine}
@@ -697,7 +694,7 @@ export function ListingCategoriesToggle({
   heading,
   chips,
 }: {
-  /** The button's words, `shop.category.chipsToggle` ("Categories"). */
+  /** The button's words, the reviewed `nav.categories.label` ("Categories"; spec 008 §14 A-founder-2026-10-18a). */
   readonly label: string;
   /** The row's name ("Also for Poland"), on the panel's `<nav>`. */
   readonly heading: string;

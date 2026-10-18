@@ -158,7 +158,7 @@ export function CountryCategoryPage({
               <ListingCategoriesToggle
                 chips={siblings}
                 heading={shop("category.siblingsHeading", { country })}
-                label={shop("category.chipsToggle")}
+                label={t("nav.categories.label")}
               />
             }
             gridLabel={<GridProvenance cards={view.items} locale={code} />}

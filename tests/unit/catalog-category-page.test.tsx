@@ -12,6 +12,9 @@
  * that the delivery-facts panel the artboard draws is absent (§14 **A9**), and that the page
  * claims nothing in any locale it exists in.
  */
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -41,6 +44,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  // The "Categories" button's reviewed label (spec 008 §14 A-founder-2026-10-18a).
+  "nav",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -139,6 +144,34 @@ describe("the populated country category (§5.3 row 2)", () => {
     );
     expect(html).not.toContain('href="/en/poland/flowers/roses"><');
     expect(html).toContain('aria-current="page"');
+  });
+
+  it("labels the disclosure with the reviewed `nav.categories.label`, and no catalogue holds a key of its own (A-founder-2026-10-18a; T-39)", () => {
+    const messagesDir = resolve(import.meta.dirname, "../../messages");
+    const files = readdirSync(messagesDir).filter((file) =>
+      file.endsWith(".json"),
+    );
+    expect(files.length).toBeGreaterThan(4);
+    for (const file of files) {
+      expect(
+        readFileSync(resolve(messagesDir, file), "utf8"),
+        file,
+      ).not.toContain("chipsToggle");
+    }
+    const en = JSON.parse(
+      readFileSync(resolve(messagesDir, "en.json"), "utf8"),
+    ) as { nav: { categories: { label: string } } };
+    const start = html.indexOf("data-fo-listing-categories");
+    const summary = html.slice(
+      html.indexOf("<summary", start),
+      html.indexOf("</summary>", start),
+    );
+    expect(
+      summary
+        .replace(/<span aria-hidden="true"[^>]*>[^<]*<\/span>/gu, "")
+        .replace(/<[^>]+>/gu, "")
+        .trim(),
+    ).toBe(en.nav.categories.label);
   });
 
   it('folds the siblings into a native "Categories" disclosure on the toolbar row, every link in the HTML (A-founder-2026-10-15c; TASK-241)', () => {

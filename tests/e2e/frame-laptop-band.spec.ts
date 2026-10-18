@@ -124,9 +124,12 @@ const FIRST_SCREEN: Readonly<
   },
   // The first price line: the amount with its "all in". The approximate-equivalents line under
   // it (spec 004 §14 A21 clause 6) is not the price (TASK-187, D-1 in its brief).
-  countryShop: { h1: "display", action: "main [data-fo-price] > :first-child" },
+  // Spec 004 §14 A-founder-2026-10-18b (AC-41 and T-43 amended): the shop root's and the country
+  // category's H1 take the title step, the PR 236 artboards' size, so the first row's prices
+  // stay on the first screen with the toolbar above the grid (rebound AC-34).
+  countryShop: { h1: "title", action: "main [data-fo-price] > :first-child" },
   countryCategory: {
-    h1: "display",
+    h1: "title",
     action: "main [data-fo-price] > :first-child",
   },
   countryOccasion: { h1: "display", action: "main [data-fo-price]" },
@@ -403,6 +406,26 @@ const inViewport = (
   box.left >= 0 &&
   box.bottom <= viewport.height &&
   box.right <= viewport.width;
+
+test.describe("T-43: the shop root's and the category's H1 on the phone (A-founder-2026-10-18b)", () => {
+  for (const type of ["countryShop", "countryCategory"] as const) {
+    test(`${PAGE_TYPES[type]} at 390 × 844: H1 at the title step's 44 px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await open(page, type);
+      const fontSize = await page
+        .locator("main h1")
+        .evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
+      const expected = resolveStep("title", 390, 844);
+      expect(expected).toBe(44);
+      expect(
+        Math.abs(fontSize - expected),
+        `H1 ${String(fontSize)} px, clause 9 --text-title-fluid = ${expected.toFixed(1)} px`,
+      ).toBeLessThanOrEqual(0.5);
+    });
+  }
+});
 
 test.describe("T-43: the laptop band's first screen (AC-41)", () => {
   for (const viewport of [

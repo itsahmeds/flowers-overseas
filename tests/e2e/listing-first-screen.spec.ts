@@ -775,6 +775,8 @@ test.describe("the country occasion's lead is one element (spec 008 §14 A16 (b)
  * script only (the JS-off set empty).
  */
 test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-founder-2026-10-15c)', () => {
+  // The summary reads the reviewed `nav.categories.label` (A-founder-2026-10-18a), resolved from
+  // the locale's own catalogue (`en-gb` inherits `en`'s).
   const label = (locale: string): string =>
     (
       JSON.parse(
@@ -782,8 +784,8 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
           resolve(import.meta.dirname, `../../messages/${locale}.json`),
           "utf8",
         ),
-      ) as { shop: { category: { chipsToggle: string } } }
-    ).shop.category.chipsToggle;
+      ) as { nav: { categories: { label: string } } }
+    ).nav.categories.label;
   const CATEGORIES = [
     { url: CATEGORY, messages: "en" },
     { url: "/de/polen/blumen/rosen", messages: "de" },
@@ -806,9 +808,19 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
         ).toBe(false);
         const summary = toggle.locator("summary");
         await expect(summary).toBeVisible();
-        await expect(summary).toHaveText(
-          new RegExp(`^${label(messages)}`, "u"),
-        );
+        // Its words, without the `aria-hidden` "+", are exactly the label.
+        expect(
+          await summary.evaluate((element) => {
+            const copy = element.cloneNode(true) as HTMLElement;
+            for (const hidden of Array.from(
+              copy.querySelectorAll("[aria-hidden='true']"),
+            )) {
+              hidden.remove();
+            }
+            return copy.textContent?.trim() ?? "";
+          }),
+          "the summary's words",
+        ).toBe(label(messages));
         // No chip line beside it: every chip link is inside the `<details>`.
         await expect(page.locator("main [data-fo-listing-chips]")).toHaveCount(
           0,
