@@ -75,4 +75,4 @@ _Not started._
 
 ## Result
 
-_Pending._
+[PR 267](https://github.com/itsahmeds/flowers-overseas/pull/267), merged 2026-10-18: the design judgments drawn as artboards in `docs/design/`; the founder's answers (Escalations) decide which builds `/plan-tasks` opens next.

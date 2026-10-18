@@ -40,4 +40,4 @@ _Not started._
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 260](https://github.com/itsahmeds/flowers-overseas/pull/260), merged 2026-10-18: the founder's own `record-approval-batch4.py` run marked 28 English keys reviewed; en-gb's unreviewed share went from 4.99% to 0.56%.
