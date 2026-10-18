@@ -176,6 +176,7 @@ describe("the committed migration set", () => {
       "0011_rls_policies.sql",
       "0012_pgboss.sql",
       "0013_order_engine_columns.sql",
+      "0014_admin_identity.sql",
     ]);
   });
 });

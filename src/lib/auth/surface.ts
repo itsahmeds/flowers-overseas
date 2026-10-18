@@ -251,10 +251,14 @@ export function createAuthSurface(
 
   async function requestSignIn(request: Request): Promise<Response> {
     if (!sameOrigin(request)) return seeOther(signInLocation());
-    const form = await request.formData().catch(() => undefined);
-    const parsed = SignInRequestSchema.safeParse({
-      email: form?.get("email") ?? undefined,
-    });
+    let parsed: ReturnType<typeof SignInRequestSchema.safeParse>;
+    try {
+      parsed = SignInRequestSchema.safeParse(
+        Object.fromEntries(await request.formData()),
+      );
+    } catch {
+      return seeOther(signInLocation());
+    }
     if (!parsed.success) return seeOther(signInLocation());
     const { email } = parsed.data;
     const identifier_hash = hashIdentifier(email);
@@ -273,8 +277,11 @@ export function createAuthSurface(
           token: hashSignInToken(token, deps.secret()),
           expires: new Date(now().getTime() + SIGN_IN_LINK_MAX_AGE_MS),
         });
-        const link = new URL(config.pages.confirm, deps.siteOrigin());
-        link.searchParams.set("t", token);
+        // The token is base64url, so it needs no escaping in a query value.
+        const link = new URL(
+          `${config.pages.confirm}?t=${token}`,
+          deps.siteOrigin(),
+        );
         const message = deps.renderEmail(link.toString());
         const mailer = (deps.mailer ?? getMailer)();
         await mailer.send({
@@ -297,17 +304,20 @@ export function createAuthSurface(
   async function confirm(request: Request): Promise<Response> {
     const expired = seeOther(signInLocation("expired"));
     if (!sameOrigin(request)) return expired;
-    const form = await request.formData().catch(() => undefined);
-    const parsed = ConfirmSignInSchema.safeParse({
-      t: form?.get("t") ?? undefined,
-    });
+    let parsed: ReturnType<typeof ConfirmSignInSchema.safeParse>;
+    try {
+      parsed = ConfirmSignInSchema.safeParse(
+        Object.fromEntries(await request.formData()),
+      );
+    } catch {
+      return expired;
+    }
     if (!parsed.success) return expired;
+    // Built in process and handed to Auth.js directly: never sent, never logged.
     const callback = new URL(
-      `${config.basePath}/callback/${EMAIL_PROVIDER_ID}`,
+      `${config.basePath}/callback/${EMAIL_PROVIDER_ID}?${new URLSearchParams({ token: parsed.data.t, callbackUrl: config.pages.home }).toString()}`,
       request.url,
     );
-    callback.searchParams.set("token", parsed.data.t);
-    callback.searchParams.set("callbackUrl", config.pages.home);
     const headers = new Headers();
     for (const name of [
       "cookie",

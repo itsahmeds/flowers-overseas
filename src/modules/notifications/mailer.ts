@@ -84,9 +84,12 @@ export function resendMailer(
       if (!response.ok) {
         throw new MailerError(`HTTP ${String(response.status)}`);
       }
-      const parsed = ResendResponseSchema.safeParse(
-        await response.json().catch(() => undefined),
-      );
+      let parsed: ReturnType<typeof ResendResponseSchema.safeParse>;
+      try {
+        parsed = ResendResponseSchema.safeParse(await response.json());
+      } catch {
+        throw new MailerError("unexpected response body");
+      }
       if (!parsed.success) throw new MailerError("unexpected response body");
       return { providerRef: parsed.data.id };
     },

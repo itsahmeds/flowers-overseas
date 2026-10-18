@@ -142,6 +142,7 @@ const SDK_TABLE: readonly {
       "scripts/db-check.ts",
       "scripts/db-check-live.ts",
       "seed/index.ts",
+      "scripts/admin-grant.ts",
     ],
   },
   {
