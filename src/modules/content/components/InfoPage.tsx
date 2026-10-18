@@ -55,6 +55,8 @@ interface BandLayout {
   readonly below?: string;
   /** The intro sits beside the `<h1>`, on the card's columns (how it works). */
   readonly introAside?: boolean;
+  /** Top-align the copy and the card (delivery's `c57` grid) rather than centring them. */
+  readonly alignStart?: boolean;
 }
 
 const BAND: Readonly<Record<string, BandLayout>> = {
@@ -76,6 +78,7 @@ const BAND: Readonly<Record<string, BandLayout>> = {
     ground: "bg-paper-2 shadow-[0_0_0_100vmax_var(--color-paper-2)]",
     inCopy: "how",
     aside: "where",
+    alignStart: true,
   },
 };
 
@@ -194,10 +197,7 @@ function DestinationTable({
       <tbody>
         {ordered.map((row) => (
           <tr key={row.iso2} data-fo-destination-row={row.iso2}>
-            <th
-              scope="row"
-              className={`${cell} font-display text-md font-normal`}
-            >
+            <th scope="row" className={`${cell} font-normal`}>
               {row.href === undefined ? (
                 label(t, row.nameKey)
               ) : (
@@ -626,7 +626,7 @@ export function InfoPage({
           </>
         ) : (
           <div
-            className={`${GRID} pt-[28px] ${layout.introAside === true ? "md:items-end" : "items-center"}`}
+            className={`${GRID} pt-[28px] ${layout.introAside === true ? "md:items-end" : layout.alignStart === true ? "items-start" : "items-center"}`}
           >
             <div className="md:col-span-6">
               <Head t={t} view={view}>
