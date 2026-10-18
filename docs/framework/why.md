@@ -206,6 +206,21 @@ breaker. The 5 % reviewed-copy gate is unchanged.
 
 On 2026-10-03 the founder asked for the whole build in two weeks and approved four changes: more agents at once, lighter checks, Phase 1 specs in parallel, and feature-sized tasks. Docs PRs that day spent three review rounds on wording. What this narrows, and what it keeps: the breaker stays the default (W-21), and review-only is still the named exception — docs and pure presentation; what changes is that `docs/framework/` joined the review-only list while `CLAUDE.md` and everything under `.claude/` (agents, templates, skills, guards) did not, because binding rules live there too; copy that feeds `<title>`, a meta description or structured data is an SEO gate, not presentation; review is capped at two full rounds (round 2 fails only on real defects; nits are logged), and one PR may close a feature's sibling tasks. The four-or-five cap of W-11 was about machine load from builds and browsers; spec writers, advisors and reviewers barely load it, so they run beside the heavy agents while the load average stays under 16. ("Cloud" agents were tried the same day: on this account they run as local worktrees, so the cap is set by load, not by location.)
 
+## W-23 · At most two breaker rounds; late holes block only where a buyer, Google or an attacker meets them
+
+**2026-10-18, founder's decision ("yes").** Six weeks in, the founder asked why a site that looks
+plain had taken so long. Part of the answer was the breaker loop: on 2026-10-18 alone, a check for
+dashes in page titles, a scan for day-count freshness claims and a credential scrubber for CI
+uploads each went through three or four breaker rounds, every round finding rarer inputs (minus
+signs, Arabic digits, zips inside zips) that no real page or artifact produced. Each round cost a
+fix, a CI run and a re-check. W-15 and W-21 stand: the breaker still runs on every PR that is not
+review-only, and round 1's holes are still closed or accepted. What changes: round 2 is the last
+breaker round. The reviewer rules each new round-2 hole: it blocks only when it is a defect a
+buyer, Google or an attacker would actually meet in money, payments, orders, delivery dates, VAT,
+legal or compliance text, security, privacy or ranking, and then a scoped review closes it; every other new round-2 hole is carried into the
+brief. Round-1 holes are still closed or accepted, whatever their subject (W-13). The same day the founder asked to put the buying path (checkout, payments, legal
+pages, launch) ahead of polish.
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the
