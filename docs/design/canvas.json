@@ -775,6 +775,22 @@
       "y": 433581,
       "w": 390,
       "h": 6385
+    },
+    {
+      "file": "wireframes/qa-judgments-2026-10-18-desktop.dc.html",
+      "title": "QA judgments 2026-10-18 · desktop 1440 · TASK-252, awaiting founder",
+      "x": 0,
+      "y": 440132,
+      "w": 1440,
+      "h": 12900
+    },
+    {
+      "file": "wireframes/qa-judgments-2026-10-18-mobile.dc.html",
+      "title": "QA judgments 2026-10-18 · mobile 390 · TASK-252, awaiting founder",
+      "x": 1520,
+      "y": 440132,
+      "w": 390,
+      "h": 23300
     }
   ],
   "annotations": [
@@ -1113,6 +1129,13 @@
       "y": 433535,
       "w": 1400,
       "text": "Spec 016 · Emails · founder: the no-florist alert with the grace window, and the WhatsApp copies (offer and stop message) to paste."
+    },
+    {
+      "id": "qa-2026-10-18-judgments",
+      "x": 0,
+      "y": 440086,
+      "w": 1400,
+      "text": "TASK-252 · QA judgments of 2026-10-18, awaiting founder: cookie card placement, cookie settings length, the phone Menu, Esc, the phone Popular choices row, short screens, the listing card, static add-on rows. Answer each with one word (1A, 2B...)."
     }
   ],
   "launch": {
