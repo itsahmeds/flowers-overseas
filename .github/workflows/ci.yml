@@ -1567,6 +1567,17 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: pnpm cloudflare:check --require-token 2>&1 | tee cloudflare-check.log
+      # Spec 040 AC-12, "closing the PR removes it": Railway deletes the environment, and this
+      # removes the `pr-<n>` records `preview` wrote for it, so no proxied name is left pointing at
+      # a Railway target nobody owns (TASK-099). Nightly only: a pull request run deletes nothing.
+      - name: Remove the DNS records of closed pull requests' environments
+        if: github.event_name == 'schedule'
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: node scripts/railway-preview.ts --sweep
       - name: Summarise the verdict
         if: always()
         run: |

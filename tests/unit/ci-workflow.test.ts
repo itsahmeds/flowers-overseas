@@ -777,6 +777,24 @@ describe("the preview job resolves the Railway PR environment and asserts AC-26 
   );
 });
 
+describe("the nightly sweep of closed pull requests' records (spec 040 AC-12; TASK-099)", () => {
+  const steps = ci.jobs["cloudflare-check"]?.steps ?? [];
+  const sweep = steps.find((step) =>
+    (step.run ?? "").includes("scripts/railway-preview.ts --sweep"),
+  );
+
+  it("runs on the nightly schedule only, so a pull request run deletes nothing", () => {
+    expect(sweep?.if).toBe("github.event_name == 'schedule'");
+    expect(sweep?.["continue-on-error"]).toBeUndefined();
+    expect(Object.keys(sweep?.env ?? {}).sort()).toEqual([
+      "CLOUDFLARE_API_TOKEN",
+      "CLOUDFLARE_ZONE_ID",
+      "RAILWAY_API_TOKEN",
+      "RAILWAY_PROJECT_ID",
+    ]);
+  });
+});
+
 /**
  * Spec 040 AC-26, AC-27 (TASK-099, TASK-103): `lighthouse` measures the PR environment on a
  * pull request and stays on `needs: build` with no `if:` (AC-38, `/review 104` round 3), so on a
