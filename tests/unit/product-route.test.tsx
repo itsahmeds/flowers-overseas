@@ -334,3 +334,50 @@ describe("AC-3: the product existence counts reach the CI step summary once per 
     }
   });
 });
+
+describe("AC-18: the product route mounts the product JSON-LD (TASK-130, moved here by AC-37)", () => {
+  it("renders one `<JsonLd>` whose BreadcrumbList is the page's own trail", async () => {
+    // A deployment with a site URL, so the schema has a base to resolve the trail against.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", `https://${CANONICAL_HOST}`);
+    let element: ReactElement;
+    try {
+      element = await call(AMBER);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    const children = (
+      element.props as { children: readonly unknown[] }
+    ).children.filter(
+      (
+        child,
+      ): child is ReactElement<{
+        nodes: readonly (Record<string, unknown> | undefined)[];
+      }> =>
+        // By name: the AC-3 case above resets the module registry, so the route's `JsonLd` and a
+        // fresh import of it are different function objects.
+        isValidElement(child) &&
+        (child.type as { name?: string }).name === "JsonLd",
+    );
+    expect(children).toHaveLength(1);
+    const nodes = children[0]?.props.nodes ?? [];
+    const trail = nodes.find((node) => node?.["@type"] === "BreadcrumbList");
+    expect(trail).toBeDefined();
+    const view = await productView(
+      {
+        locale: "en",
+        countryIso: "PL",
+        sku:
+          (await listProductPages("en")).find(
+            (page) =>
+              page.slug === AMBER.grandchild &&
+              page.countrySlug === AMBER.segment,
+          )?.sku ?? "",
+      },
+      { parameterised: false },
+    );
+    const items = trail?.itemListElement as readonly unknown[];
+    expect(items).toHaveLength(view?.breadcrumb.length ?? -1);
+    // Phase 0: the Product + Offer gate is shut on every PDP.
+    expect(nodes.some((node) => node?.["@type"] === "Product")).toBe(false);
+  });
+});

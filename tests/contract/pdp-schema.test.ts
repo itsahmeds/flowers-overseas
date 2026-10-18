@@ -64,7 +64,6 @@ const {
   productOfferNode,
   productView,
 } = await import("../../src/modules/catalog/index.ts");
-const { DeliveryFacts } = await import("../../src/modules/geo/index.ts");
 const { withActivePartnersProvider } =
   await import("../../src/modules/geo/partners.ts");
 const { formatMoney, loadMessages } =
@@ -153,12 +152,7 @@ function render(view: ProductView): string {
       crumbs: view.breadcrumb,
       phone: "trail",
     }),
-    facts: createElement(DeliveryFacts, {
-      facts: view.facts,
-      locale: view.locale,
-      nameKey: view.country.nameKey,
-      prices: "omit",
-    }),
+    // No delivery-facts slot: the PDP mounts none (spec 009 AC-35; TASK-229).
     view,
   });
   return renderToStaticMarkup(
@@ -177,7 +171,8 @@ function render(view: ProductView): string {
 
 /** The buy section's price string: the `<bdi>` inside `[data-fo-pdp-price]`. */
 function renderedPrice(html: string): string {
-  const match = /data-fo-pdp-price[^>]*>[\s\S]*?<bdi>([^<]+)<\/bdi>/u.exec(
+  // The `<bdi>` carries the island's slot name since TASK-228 (`data-fo-tier-slot="price"`).
+  const match = /data-fo-pdp-price[^>]*>[\s\S]*?<bdi[^>]*>([^<]+)<\/bdi>/u.exec(
     html,
   );
   if (match?.[1] === undefined) throw new Error("no buy-section price");
