@@ -287,7 +287,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-179's `catalog.floristSentence` left this queue on the founder's attestation, 2026-10-04.
     // TASK-193's neutral batch, N1–N7 (spec 004 §14 A23 clause 12), left this queue on the
     // founder's `record-approval-193.py` run, 2026-10-05.
-    "categoryHub.destinationLink",
     // TASK-201, spec 010's checkout primitives: 66 strings, the implementer's wording from spec 010
     // Appendix A and the boards, all waiting for the founder's batch approval (listed in PR 206's
     // "Copy for the founder"). Not counted in the unreviewed share (`review-scope.ts`, A17), but
@@ -349,10 +348,6 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.summary.total",
     "checkout.summary.vat",
     "checkout.summary.vatOf",
-    "confirmation.recap.card",
-    "confirmation.recap.date",
-    "confirmation.recap.nothingCharged",
-    "confirmation.recap.recipient",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -360,24 +355,14 @@ describe("the shipped catalogues and manifests", () => {
     // 2026-10-03, and the three the page needed beyond them (the calendar reasons
     // `beforeEarliest` and `notDeliveryDay`, and the trust block's substitution sentence) the
     // same day ("approve 3"), so none of the page's keys waits here.
-    "faq.whoDelivers.answer",
-    "faq.whoDelivers.answerCutoff",
-    "footer.payment.methods",
-    "home.howItWorks.choose.body",
-    "home.proof.photo.body",
     // TASK-177 (v2 home): the occasion labels' possessive forms ("her birthday", "a loss"). The
     // founder approved the sentence frame and the who options (copy batch, 2026-10-04), not these.
     // `home.sentence.who`, with "my partner" (§14 A22), was attested by the founder on 2026-10-04
     // (09:54:22Z) and left this queue.
-    "home.sentence.occasion",
     // TASK-119's seven `languagePopup.*` strings left this queue on the founder's own
     // record-approval-119 run, 2026-10-05.
-    "meta.home.description",
-    "nav.utility.cutoff",
-    "nav.utility.cutoffShort",
+    // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
     "occasionHub.dateUnknown",
-    "occasionHub.datesCaption",
-    "occasionHub.destinationsHeading",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
     // these two are the implementer's generalisation of the artboard's name-day-specific prose
@@ -393,15 +378,11 @@ describe("the shipped catalogues and manifests", () => {
     // On 2026-10-03 the founder signed off `datedCaption` and `undatedNote` as written (chat, "go
     // ahead whatever u feel is good"; TASK-171), so they left this queue; `undatedHeading` was
     // not in that sign-off and still waits.
-    "occasionsIndex.undatedHeading",
     // TASK-179, the v2 product page: the eyebrow "{descriptor} · for {country}" was attested with
     // the 2026-10-04 copy batch by mistake. It is not one of the batch's 14 items (orchestrator
     // check, 2026-10-04), so it waits here for the founder.
-    "product.eyebrow",
     // TASK-197, product v3: spec 004 §14 A24 clause 10's P2 (the phone sheet's eyebrow) and P1
     // ("Read more"), proposed copy that ships `reviewed: false` until the founder attests it.
-    "product.eyebrowPhone",
-    "product.readMore",
     // TASK-111, the country occasion page. Five of its eleven strings are transcribed from the
     // founder-approved artboards (`wireframes/country-occasion-{desktop,mobile}.dc.html`,
     // `country-shop-{desktop,mobile}.dc.html`) and carry his attestation; these six are wording
@@ -409,19 +390,11 @@ describe("the shipped catalogues and manifests", () => {
     // Poland-specific sentence, the honest blank for an occasion with no computable rule
     // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
     // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
-    "shop.occasion.dateNote",
-    "shop.occasion.lede",
-    "shop.occasion.seoDescription",
     "shop.occasion.seoTitle",
-    "shop.occasion.undatedLine",
     // TASK-187 (spec 004 §14 A23 clause 6, Appendix A A9 and A10; A24 clause 10 P3): the tile noun,
     // "Change the order" and the phone pager's page line ("Next" reuses the reviewed key, so
     // `en-gb` stays under spec 003's 5 %). A9 and A10 are approved English text;
     // each still ships `reviewed: false` until the founder's own script attests the exact value.
-    "shop.pagination.pageOf",
-    "shop.root.occasionPageLink",
-    "shop.root.tileCount",
-    "shop.toolbar.reorderLabel",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
