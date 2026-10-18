@@ -26,6 +26,9 @@ const AUDITED = [
   "/en-gb/occasions/mothers-day",
   // An evergreen hub: the same page with no date table at all (§14 A1).
   "/en/occasions/birthday",
+  // TASK-188's first screens: the quiet register and the occasions index's "next six".
+  "/en-gb/occasions/sympathy",
+  "/en-gb/occasions",
   "/ar-XB/flowers/roses",
   "/ar-XB/occasions/mothers-day",
 ] as const;

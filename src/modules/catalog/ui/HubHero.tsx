@@ -206,7 +206,7 @@ const PILL =
 /**
  * A pill with a fine line (R4's count, or the pending sentence): the name and the arrow on the
  * first line, the fine line under them, so a row of seven stays three rows tall in the copy column
- * and a count never becomes a one-word column (QA 2026-10-18 Q18-03).
+ * and a count never becomes a one-word column (the QA finding Q18-03).
  */
 const PILL_STACKED =
   "grid h-full min-h-(--target-min) grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-[8px] gap-y-[2px] rounded-field bg-card px-[16px] py-[10px] text-ink shadow-[inset_0_0_0_1px_var(--color-rule)] no-underline";
