@@ -18,7 +18,9 @@ import {
 } from "../../src/lib/logger.ts";
 import { scrubEvent } from "../../src/lib/sentry.ts";
 
-const TOKEN = "Xq3vB7_kLm9-Pq2rSt4uVw8xYz0aBcDeFgHiJkLmNoP";
+// A sign-in token is 43 base64url characters. Low-entropy on purpose, so the secret scanner
+// (gitleaks, \`pnpm audit:secrets\`) does not read a test fixture as a credential.
+const TOKEN = "tokenfixture".repeat(4).slice(0, 43);
 const CONFIRM = `https://flowersoverseas.com/admin/sign-in/confirm?t=${TOKEN}`;
 const CALLBACK = `https://flowersoverseas.com/admin/api/auth/callback/email?token=${TOKEN}&callbackUrl=%2Fadmin`;
 
