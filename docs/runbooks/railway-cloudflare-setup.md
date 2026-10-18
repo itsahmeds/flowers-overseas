@@ -459,6 +459,14 @@ nightly `cloudflare-check` run deletes its DNS records (`--sweep`).
 **Until P1–P4 are done, `preview` and `lighthouse` are red on every pull request**, naming the
 missing step. That is deliberate: AC-26 says the job fails and never skips.
 
+`lighthouse` has no `ci:full` gate, so **every** ready pull request provisions its environment
+and may wait up to 15 minutes for it, and a pull request from a fork (which gets no secrets) is
+always red on `preview` and `lighthouse`. Both are accepted for a repository with one writer.
+Lighthouse sends the wall's credential (`extraHeaders`) to every origin the page loads, which
+today means the PR host and `media.flowersoverseas.com` (our own R2 bucket); Playwright scopes it
+to the PR host only. No artifact keeps it: every upload is checked by
+`scripts/artifact-credential-check.ts` first, and Playwright records no trace while it is set.
+
 ### P1 — turn PR environments on, forked from `staging`
 
 1. Railway → the Flowers Overseas project → **Settings** (the project's) → **Environments**.
