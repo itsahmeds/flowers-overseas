@@ -116,3 +116,14 @@ assert steps with their `${{ }}` mapping resolved; a pull request can never reac
 origin. Every breaker mutation (M1-M10, P4-P8, R1, L2, L3b, L11, L13-L16) and the reviewer's
 `>= 400` now turn a case red.
 
+**Round 2 fixes (2026-10-18).** /review 263 round 2: `lighthouse` takes its header from
+`artifact-credential-check --basic` (the trimmed secret the check searches with). /break 263
+round 2 holes 1 to 4: the check now opens zips (by magic, from the central directory, stored or
+deflated, streamed included) and gzip recursively to depth 6 and fails closed on anything it cannot
+read; checks file, directory and zip-entry names; and searches the trimmed secret and password
+through JSON unescaping (twice), percent-decoding (either case, form `+`) and base64 decoding of
+every run (escaped, URL-safe, line-wrapped, all four alignments, nested blobs); scrub is global
+and longest first. `artifact-credential-check.test.ts` 65 cases; every handling removed in turn
+went red (the `\+` escape is covered by two layers; removing both goes red). 108 MB of
+screenshots and docs check in 10 s with no false positive.
+
