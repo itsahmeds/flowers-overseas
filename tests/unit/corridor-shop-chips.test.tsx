@@ -170,6 +170,66 @@ describe("corridorShopEntry(…, { chips: true }) hands the chips the shop build
     }
   });
 
+  // Which six, and in what order, is the row's whole content (TASK-147 `/break` holes 1 and 2).
+  // Poland's category counts at the time of writing: mixed 50, bouquet 40, birthday 27, thank_you
+  // 25, congratulations 19, get_well 17, sympathy 17, then the rest at 16 or fewer.
+  it("hands Poland exactly the six categories with the most products, in the locale's collation", async () => {
+    const { shopChips } = await corridorShopEntry("en", "PL", { chips: true });
+    expect(
+      (shopChips ?? [])
+        .filter((chip) => chip.family === "category")
+        .map((chip) => chip.key),
+      "the six, collated by English name",
+    ).toEqual([
+      "birthday",
+      "congratulations",
+      "get_well",
+      "bouquet",
+      "mixed",
+      "thank_you",
+    ]);
+  });
+
+  it("breaks the 17-product tie between get_well and sympathy in corpus order", async () => {
+    const keys = (
+      (await corridorShopEntry("en", "PL", { chips: true })).shopChips ?? []
+    ).map((chip) => chip.key);
+    expect(keys).toContain("get_well");
+    expect(keys).not.toContain("sympathy");
+  });
+
+  it("collates each family by the locale's own rules, in German and Polish", async () => {
+    const expected = {
+      de: [
+        "thank_you", // Blumen zum Dank
+        "get_well", // Blumen zur Genesung
+        "congratulations", // Blumen zur Gratulation
+        "bouquet", // Blumensträuße
+        "birthday", // Geburtstagsblumen
+        "mixed", // Gemischte Blumen
+        "mothers_day", // Muttertag
+      ],
+      pl: [
+        "bouquet", // Bukiety
+        "mixed", // Bukiety mieszane
+        "thank_you", // Kwiaty na podziękowanie
+        "get_well", // Kwiaty na powrót do zdrowia
+        "birthday", // Kwiaty na urodziny
+        "congratulations", // Kwiaty z gratulacjami
+        "mothers_day", // Dzień Matki
+      ],
+    } as const;
+    for (const locale of ["de", "pl"] as const) {
+      const { shopChips } = await corridorShopEntry(locale, "PL", {
+        chips: true,
+      });
+      expect(
+        (shopChips ?? []).map((chip) => chip.key),
+        locale,
+      ).toEqual(expected[locale]);
+    }
+  });
+
   it("hands nothing for a country the registry does not know or a locale with no shop root", async () => {
     expect(await corridorShopEntry("en", "PT", { chips: true })).toEqual({});
     expect(await corridorShopEntry("fr", "PL", { chips: true })).toEqual({});
