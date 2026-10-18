@@ -20,7 +20,7 @@ import { useTranslations } from "next-intl";
 import { type PopupCandidate } from "../hints.ts";
 import { documentFallbackLocale } from "../registry.ts";
 import { localeBetaTag } from "../review.ts";
-import { type PageType, launchLocales, localePath } from "../routing.ts";
+import { type PageType, localePath, shownLocales } from "../routing.ts";
 
 import { LanguagePopupLoader } from "./LanguagePopupLoader.tsx";
 import { languagePopupCopy } from "./languagePopupCopy.ts";
@@ -34,11 +34,15 @@ export interface LanguagePopupProps {
   pageType?: PageType;
 }
 
-/** The registry projection that crosses into the browser. */
+/**
+ * The registry projection that crosses into the browser: the shown locales only (spec 003 §14
+ * A-founder-2026-10-14c clause 2), so the browser hint can only ever highlight an option that is
+ * offered, and a `de` or `pl` preference matches nothing while those locales are hidden.
+ */
 export function popupCandidates(
   pageType: PageType = "home",
 ): readonly PopupCandidate[] {
-  return launchLocales().map((locale) => ({
+  return shownLocales().map((locale) => ({
     code: locale.code,
     bcp47: locale.bcp47,
     hreflangAliases: locale.hreflangAliases,

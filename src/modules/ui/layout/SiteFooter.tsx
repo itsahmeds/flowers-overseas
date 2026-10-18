@@ -6,11 +6,11 @@
  * `chrome-mobile.dc.html`: paper-2, the third and last airmail edge on its top (A21 clause 2,
  * `airmail-edge-footer`), the sign-off, four columns — about (the logo and
  * `company.description`), the link columns the registry publishes (`Sending` today), Help &
- * WhatsApp (the `tel:` number and the hours) and Payment — and the fine row with the language list
+ * WhatsApp (the number, opening WhatsApp, and the support line) and Payment — and the fine row with the language list
  * and the "Cookie settings" control. One column on mobile.
  *
  * **Zero client JavaScript.** A synchronous Server Component: every link is an `<a>`, and the
- * language list is spec 003's `LocaleSwitcher` (four plain links), laid out from a wrapper.
+ * language list is spec 003's `LocaleSwitcher` (one plain link per shown locale), laid out from a wrapper.
  *
  * **What it is allowed to say**, each enforced by data rather than by this file:
  *
@@ -33,7 +33,7 @@
  * Logical CSS only (`fo/no-physical-css`, AC-5); every colour is a token utility.
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { LocaleSwitcher } from "@/modules/i18n";
 
@@ -82,6 +82,12 @@ export interface SiteFooterProps {
   readonly marks?: readonly TrustMark[];
   /** Gallery only: makes every id in this instance unique (see `FOOTER_ID_PREFIX`). */
   readonly idPrefix?: string;
+  /**
+   * The language row, decided by the route: the document layout passes its `@switcher` slot, so
+   * each locale links this page's own path where it exists and its home elsewhere (spec 003 §2
+   * L79; TASK-233). Defaults to the switcher's locale homes, for a footer with no route behind it.
+   */
+  readonly switcher?: ReactNode;
 }
 
 /** The column heading: the label voice in muted ink (`.ftr h2`). */
@@ -157,6 +163,7 @@ export function SiteFooter({
   view,
   marks = [],
   idPrefix = FOOTER_ID_PREFIX,
+  switcher = <LocaleSwitcher locale={locale} />,
 }: SiteFooterProps): ReactElement {
   const translate = useTranslations();
   /**
@@ -231,12 +238,12 @@ export function SiteFooter({
             />
           ))}
 
-          {/* Help & WhatsApp: one number, dialled from `company.ts`, and its hours. */}
+          {/* Help & WhatsApp: one number from `company.ts`, opening WhatsApp, and the support line. */}
           <div>
             <h2 className={HEADING}>{label(company.contact.labelKey)}</h2>
             <ul className="gap-xs m-0 grid list-none p-0">
               <li>
-                <a href={company.contact.phoneHref} className={COLUMN_LINK}>
+                <a href={company.contact.helpHref} className={COLUMN_LINK}>
                   {company.contact.phoneDisplay}
                 </a>
               </li>
@@ -287,7 +294,7 @@ export function SiteFooter({
             className="[&_ul]:gap-y-xs [&_[aria-current]]:text-ink [&_[aria-current]]:font-bold [&_[data-beta]]:before:content-['·_'] [&_a]:inline-flex [&_a]:min-h-(--target-min) [&_a]:items-center [&_a]:underline-offset-4 [&_li]:inline-flex [&_li]:min-h-(--target-min) [&_li]:items-center [&_ul]:m-0 [&_ul]:flex [&_ul]:list-none [&_ul]:flex-wrap [&_ul]:items-center [&_ul]:gap-x-[18px] [&_ul]:p-0"
             data-fo-footer-languages
           >
-            <LocaleSwitcher locale={locale} />
+            {switcher}
           </div>
           {/* Withdrawal of consent, on every page (`plan/04` §11, §8). */}
           <button

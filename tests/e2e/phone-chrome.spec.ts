@@ -147,12 +147,25 @@ test.describe("T-52: the phone header (AC-47)", () => {
         );
         const switcher = page.locator("[data-fo-menu-switcher] nav");
         await expect(switcher).toHaveAttribute("aria-label", "Change language");
-        await expect(switcher.locator("li")).toHaveCount(4);
+        // T-52's Menu case (spec 004 §14 A-founder-2026-10-14e): the language links of
+        // `shownLocales()`, today English and English (UK), and no hidden locale.
+        await expect(switcher.locator("li")).toHaveCount(2);
         await expect(switcher.locator('[aria-current="page"]')).toHaveCount(1);
+        expect(
+          await switcher
+            .locator("a")
+            .evaluateAll((nodes) =>
+              nodes.map((node) => node.getAttribute("hreflang")),
+            ),
+        ).toEqual(["en"]);
         const currency = page.locator("[data-fo-menu-currency]");
         await expect(currency).toHaveText("GBP");
         await expect(currency).toHaveAttribute("aria-label", /GBP$/u);
-        await expect(page.locator(`${PANEL} a[href^="tel:"]`)).toHaveCount(1);
+        // Spec 041 AC-34: the help line opens WhatsApp, never `tel:`.
+        await expect(page.locator(`${PANEL} a[href^="tel:"]`)).toHaveCount(0);
+        await expect(
+          page.locator(`${PANEL} a[href="https://wa.me/12135925150"]`),
+        ).toHaveCount(1);
 
         // Every target in the panel, scrolled into view inside the panel, is ≥ 44 px tall.
         const heights = await page.locator(`${PANEL} a`).evaluateAll((nodes) =>
@@ -161,12 +174,14 @@ test.describe("T-52: the phone header (AC-47)", () => {
             height: Math.round(node.getBoundingClientRect().height),
           })),
         );
-        expect(heights.length).toBe((await items.count()) + 1 + 3 + 1);
+        expect(heights.length).toBe((await items.count()) + 1 + 1 + 1);
         for (const { href, height } of heights) {
           expect(height, href).toBeGreaterThanOrEqual(MIN_TARGET);
         }
         // The last target is reachable inside the panel (it scrolls in itself under the header).
-        const help = page.locator(`${PANEL} a[href^="tel:"]`);
+        const help = page.locator(
+          `${PANEL} a[href="https://wa.me/12135925150"]`,
+        );
         await help.scrollIntoViewIfNeeded();
         await expect(help).toBeInViewport();
 

@@ -62,7 +62,9 @@ for (const locale of LOCALES) {
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );
 
-      // Only the language list and the `tel:` channel carry a URL in Phase 0.
+      // Only the language list, the footer's published targets and the help channel's WhatsApp
+      // link carry a URL in Phase 0 (spec 041 AC-34: never `tel:`).
+      expect(hrefs.filter((href) => href.startsWith("tel:"))).toEqual([]);
       const internal = hrefs.filter((href) => href.startsWith("/"));
       expect(internal.length).toBeGreaterThan(0);
       for (const href of internal) {
@@ -182,10 +184,14 @@ test.describe("the footer adds no client JavaScript (§14 A1)", () => {
 
     const footer = page.getByRole("contentinfo");
     await expect(footer).toBeVisible();
-    // The language list is four plain links: navigation, not a handler.
+    // The language list is plain links to the shown locales: navigation, not a handler. `/de` is
+    // reached by URL only and lists English and English (UK) (spec 003 §14 A-founder-2026-10-14c).
     await expect(
-      footer.locator('nav[aria-label] a[href="/pl"]').first(),
+      footer.locator('nav[aria-label] a[href="/en-gb"]').first(),
     ).toBeVisible();
+    await expect(footer.locator('nav[aria-label] a[href="/pl"]')).toHaveCount(
+      0,
+    );
     await context.close();
   });
 });

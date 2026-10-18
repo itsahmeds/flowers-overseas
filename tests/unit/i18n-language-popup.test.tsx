@@ -26,6 +26,12 @@ import enMeta from "../../messages/en.meta.json";
 import en from "../../messages/en.json";
 import plMeta from "../../messages/pl.meta.json";
 import { loadMessages } from "../../src/modules/i18n";
+import { LOCALES } from "../../src/config/locales.ts";
+import {
+  localeRegistryOf,
+  withLocaleRegistry,
+} from "../../src/modules/i18n/registry.ts";
+import { decideLanguagePopup } from "../../src/modules/i18n/hints.ts";
 import { popupCandidates } from "../../src/modules/i18n/ui/LanguagePopup.tsx";
 import {
   ALTERNATES_ATTRIBUTE,
@@ -145,9 +151,70 @@ describe("the popup's copy (spec 004 T-40 for L1, L3–L6)", () => {
   });
 });
 
+/**
+ * Every launch locale shown: the registry as the data flip of spec 003 §14 A-founder-2026-10-14c
+ * clause 4 leaves it once `de` and `pl` are reviewed. The markup cases below are about the
+ * popup's behaviour with four options (marks, hint, links), so they render this set; what the
+ * committed registry offers is pinned in the `popupCandidates` block.
+ */
+const allShown = localeRegistryOf(
+  LOCALES.map((locale) =>
+    locale.isLaunch ? { ...locale, shown: true } : locale,
+  ),
+);
+const fourCandidates = await withLocaleRegistry(allShown, () =>
+  popupCandidates(),
+);
+
 describe("popupCandidates (the props the island renders)", () => {
-  it("projects every launch locale in registry order, linked by `localePath()`", () => {
+  it("projects the shown locales in registry order, linked by `localePath()` (AC-46)", () => {
+    // `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c clause 2): the popup offers
+    // English and English (UK) only, so a German or Polish browser hint has nothing to highlight.
     expect(popupCandidates().map((c) => [c.code, c.href])).toEqual([
+      ["en", "/en"],
+      ["en-gb", "/en-gb"],
+    ]);
+  });
+
+  it("highlights nothing beyond English's default mark for a German browser on /en (AC-46)", () => {
+    const decision = decideLanguagePopup({
+      urlLocale: "en",
+      languages: ["de-DE", "de"],
+      cookie: null,
+      candidates: popupCandidates(),
+    });
+    expect(decision).toEqual({ open: true, current: "en", hint: null });
+    const html = renderToStaticMarkup(
+      <PopupBody
+        candidates={popupCandidates()}
+        copy={copyFor("en")}
+        current="en"
+        defaultLocale="en"
+        headingId="lp-h"
+        hint={null}
+        onChoose={() => undefined}
+        onDismiss={() => undefined}
+        pageLang="en"
+      />,
+    );
+    expect(
+      [...html.matchAll(/data-fo-language-option="([^"]+)"/g)].map((m) => m[1]),
+    ).toEqual(["en", "en-gb"]);
+    expect(html).not.toContain('data-fo-mark="hint"');
+    // The same German browser on a registry that shows `de` would be highlighted: the hint is
+    // gone because `de` is hidden, not because the hint code is broken.
+    expect(
+      decideLanguagePopup({
+        urlLocale: "en",
+        languages: ["de-DE", "de"],
+        cookie: null,
+        candidates: fourCandidates,
+      }),
+    ).toEqual({ open: true, current: "en", hint: "de" });
+  });
+
+  it("offers a hidden locale once its `shown` flag is flipped, with no code change (AC-48)", () => {
+    expect(fourCandidates.map((c) => [c.code, c.href])).toEqual([
       ["en", "/en"],
       ["en-gb", "/en-gb"],
       ["de", "/de"],
@@ -168,8 +235,16 @@ describe("popupCandidates (the props the island renders)", () => {
     }
   });
 
-  it("links the localised segment of a page type it is given", () => {
+  it("links the localised segment of a page type it is given", async () => {
     expect(popupCandidates("legal").map((c) => c.href)).toEqual([
+      "/en/legal",
+      "/en-gb/legal",
+    ]);
+    expect(
+      (await withLocaleRegistry(allShown, () => popupCandidates("legal"))).map(
+        (c) => c.href,
+      ),
+    ).toEqual([
       "/en/legal",
       "/en-gb/legal",
       "/de/rechtliches",
@@ -187,7 +262,7 @@ function render(
 ): string {
   return renderToStaticMarkup(
     <PopupBody
-      candidates={popupCandidates()}
+      candidates={fourCandidates}
       copy={overrides.copy ?? copyFor("en")}
       current={overrides.current === undefined ? "en" : overrides.current}
       defaultLocale="en"
@@ -216,7 +291,7 @@ describe("PopupBody (the markup; AC-39's links, AC-28 (a), (b))", () => {
     );
   });
 
-  it("lists the four native names once each, in registry order, as real links with `lang` and `hreflang`", () => {
+  it("lists the four native names once each, in registry order, as real links with `lang` and `hreflang` (all shown)", () => {
     const html = render();
     const links = [
       ...html.matchAll(
@@ -304,10 +379,7 @@ describe('the same path in every locale (A14 Shape: "a real `<a>` to the same pa
   };
 
   it("links each option to the page's own path in that locale, not to its home", () => {
-    const linked = linkedCandidates(
-      popupCandidates(),
-      JSON.stringify(corridor),
-    );
+    const linked = linkedCandidates(fourCandidates, JSON.stringify(corridor));
     expect(linked.map((c) => [c.code, c.href])).toEqual([
       ["en", "/en/send-flowers-to/poland"],
       ["en-gb", "/en-gb/send-flowers-to/poland"],
@@ -329,7 +401,7 @@ describe('the same path in every locale (A14 Shape: "a real `<a>` to the same pa
 
   it("refuses a path outside the option's own locale prefix", () => {
     const linked = linkedCandidates(
-      popupCandidates(),
+      fourCandidates,
       JSON.stringify({ de: "https://evil.example/", pl: "/de/x", en: "/enx" }),
     );
     expect(linked.map((c) => c.href)).toEqual(["/en", "/en-gb", "/de", "/pl"]);

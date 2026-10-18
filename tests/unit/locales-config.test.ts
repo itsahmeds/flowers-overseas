@@ -24,6 +24,7 @@ import {
   LOCALES,
   LOCALE_ROW_COLUMNS,
   LocaleConfigSchema,
+  PSEUDO_LOCALES,
   LocaleRegistrySchema,
   PATH_SEGMENT_KEYS,
   defaultLocale,
@@ -239,6 +240,61 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
     const two = registryCopy();
     two[3] = { ...two[3], hreflangAliases: ["pl", "pl-PL", "x-default"] };
     expect(issueSummary(two)).toMatch(/x-default/);
+  });
+
+  it("pins `shown`: English and English (UK) offered, German and Polish hidden (AC-45 / T-45)", () => {
+    expect(
+      LOCALES.map((locale) => [locale.code, locale.isLaunch, locale.shown]),
+    ).toEqual([
+      ["en", true, true],
+      ["en-gb", true, true],
+      ["de", true, false],
+      ["pl", true, false],
+    ]);
+  });
+
+  it("rejects a locale with no `shown`, naming the field (AC-45 / T-45)", () => {
+    const registry = registryCopy();
+    const withoutShown = { ...registry[2] };
+    delete withoutShown["shown"];
+    registry[2] = withoutShown;
+    expect(issueSummary(registry)).toMatch(/^2\.shown: /mu);
+  });
+
+  it('refuses a `shown` that is not a boolean: the strings "false" and "true", 1 and 0 (AC-45, breaker r1 H3)', () => {
+    // `z.coerce.boolean()` would read the string "false" as `true` and offer a hidden language.
+    for (const value of ["false", "true", "", 1, 0, null]) {
+      const registry = registryCopy();
+      registry[2] = { ...registry[2], shown: value };
+      expect(issueSummary(registry), String(value)).toMatch(/^2\.shown: /mu);
+    }
+  });
+
+  it("rejects a shown pseudo-locale, naming the field (AC-45 / T-45)", () => {
+    const pseudo = PSEUDO_LOCALES[0];
+    // The pseudo-locale as authored parses beside the launch locales …
+    expect(
+      LocaleRegistrySchema.safeParse([...registryCopy(), pseudo]).success,
+    ).toBe(true);
+    // … and the same row with `shown: true` fails on `shown`, and on nothing else.
+    const summary = issueSummary([
+      ...registryCopy(),
+      { ...pseudo, shown: true },
+    ]);
+    expect(summary).toMatch(
+      /^4\.shown: pseudo-locale `en-XA` must not be shown/mu,
+    );
+    expect(summary.split("\n")).toHaveLength(1);
+  });
+
+  it("rejects an x-default locale that is not shown, naming the field (AC-45 / T-45)", () => {
+    const registry = registryCopy();
+    registry[0] = { ...registry[0], shown: false };
+    const summary = issueSummary(registry);
+    expect(summary).toMatch(
+      /^0\.shown: the `x-default` locale `en` must be shown/mu,
+    );
+    expect(summary.split("\n")).toHaveLength(1);
   });
 
   it("rejects an hreflang alias claimed by two locales", () => {

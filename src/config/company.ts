@@ -20,8 +20,8 @@
  *
  * The contact numbers are data, not copy: `plan/13`'s help channel is one WhatsApp-capable
  * number, so it is stored once (E.164 for `tel:`/`wa.me` and the founder's display form for the
- * printed line) and the surrounding words are message keys (`company.*`). Opening hours are copy
- * because they are localised prose ("Mon–Sat 8–20 CET").
+ * printed line) and the surrounding words are message keys (`company.*`). The support line is copy
+ * because it is localised prose ("Message us on WhatsApp. We reply the same day.").
  *
  * No database is read here and none may be (`pnpm check:no-db`, spec 004 AC-2). Spec 007's
  * `/legal/company` page and the `Organization` schema it may emit read this same object, which is
@@ -74,12 +74,25 @@ export const CompanyContactSchema = z
     whatsapp: z.boolean(),
     /** "Help & WhatsApp" — the channel label. */
     labelKey: MessageKeySchema,
-    /** "Mon–Sat 8–20 CET" — localised prose, so a message key rather than structured hours. */
+    /** "Message us on WhatsApp. We reply the same day." — localised prose, so a message key. */
     hoursKey: MessageKeySchema,
   })
   .strict();
 
 export type CompanyContact = z.infer<typeof CompanyContactSchema>;
+
+/**
+ * The help channel's one link target (spec 041 §14 A-founder-2026-10-14d clause 3, AC-34): every
+ * control labelled "Help & WhatsApp" opens `https://wa.me/` plus the E.164 number without its
+ * `+`. No `text` parameter and no other query (a prefilled message would put words in the buyer's
+ * mouth and could carry PII into a URL), and never `tel:`: WhatsApp is the founder's only support
+ * line.
+ */
+export function whatsappHref(
+  contact: Pick<CompanyContact, "phoneE164">,
+): string {
+  return `https://wa.me/${contact.phoneE164.slice(1)}`;
+}
 
 export const CompanySchema = z
   .object({
