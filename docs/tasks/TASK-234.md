@@ -52,6 +52,8 @@ _None recorded._
 - 2026-10-18: tests first (unit half red 4/4), then `generateMetadata` emits `alternates.canonical`
   from `canonicalFor(locale, localePath(locale, "home"))`; mutations watched red; cheap gates
   green; PR 248 opened. Next: CI on head with `ci:full`, then `/review` and `/break`.
+- 2026-10-18: CI run 39085338310 red only on `honesty.spec.ts` AC-16 (the stale "no canonical"
+  pin); updated to the narrowed reading; CI re-fired.
 
 ## Result
 
@@ -66,4 +68,8 @@ _None recorded._
 - **Outside the fence:** `tests/unit/app-shell.test.tsx` stubs `NEXT_PUBLIC_SITE_URL` in the AC-25
   case, which calls the home's `generateMetadata` and now needs an origin (the builder throws on
   none, as on every route; the build refuses a missing one). No assertion changed.
+  `tests/e2e/honesty.spec.ts` (spec 004 AC-16 case) pinned "no canonical" on the four homes and went
+  red on CI run 39085338310; per this brief's Binding (004 AC-16 narrowed, 007 owns the canonical)
+  it now asserts exactly one canonical equal to the page's own URL. No alternate and the identity
+  JSON-LD stay pinned.
 - **No expensive gate run locally**; CI is the gate of record (`seo:validate`, e2e).
