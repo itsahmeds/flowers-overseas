@@ -50,7 +50,7 @@ task actually touches.
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
-| `feature-flags.ts` | The feature-flag registry (spec 012 §2.4, §5.2, AC-14 registry half; decisions… | spec 012 |
+| `feature-flags.ts` | The feature-flag registry (AC-14) | spec 012 |
 | `honesty.ts` | Relay-language check (spec 041 §14) | spec 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
@@ -96,28 +96,28 @@ task actually touches.
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
-| `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out (§5.3) | spec 012 |
+| `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | spec 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | spec 012 |
-| `admin/(signed-in)/page.tsx` | GET /admin: three counters (§5.3) | spec 012 |
+| `admin/(signed-in)/page.tsx` | GET /admin: three counters | spec 012 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3, AC-4) | spec 012 |
-| `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate (§2.2) | spec 012 |
-| `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 (§2.2) | spec 012 |
+| `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | spec 012 |
+| `admin/api/auth/[...nextauth]/route.ts` | Every Auth.js endpoint answers 404 | spec 012 |
 | `admin/api/auth/confirm/route.ts` | POST: confirm sign-in, use the token (AC-9) | spec 012 |
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | spec 012 |
-| `admin/api/auth/sign-out/route.ts` | POST: admin sign-out (§2.2) | spec 012 |
-| `admin/environment.ts` | The admin environment chip (§5.3) | spec 012 |
-| `admin/forbidden.tsx` | Admin 403, noindex (§5.3) | spec 012 |
-| `admin/layout.tsx` | Admin document: English, noindex (§5.3) | spec 012 |
-| `admin/not-found.tsx` | Admin 404, noindex (§5.3) | spec 012 |
+| `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | spec 012 |
+| `admin/environment.ts` | The admin environment chip | spec 012 |
+| `admin/forbidden.tsx` | Admin 403, noindex | spec 012 |
+| `admin/layout.tsx` | Admin document: English, noindex | spec 012 |
+| `admin/not-found.tsx` | Admin 404, noindex | spec 012 |
 | `admin/sign-in/confirm/page.tsx` | GET: one Continue button, uses nothing (AC-9) | spec 012 |
-| `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states (§2.2) | spec 012 |
+| `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states | spec 012 |
 | `admin/unauthorized.tsx` | Admin 401, noindex (AC-1) | spec 012 |
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
 | `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron (spec 002 AC-23) | spec 002 |
 | `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts only (spec 002 AC-21) | spec 002 |
-| `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e (§2.2) | spec 012 |
+| `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | spec 012 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's action (spec 004 §14… | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
@@ -131,7 +131,7 @@ task actually touches.
 
 | Script | `pnpm` | Purpose |
 |---|---|---|
-| `admin-grant.ts` | `admin:grant` | `pnpm admin:grant --email <e> --name <n> --role <r>` — create or update an… |
+| `admin-grant.ts` | `admin:grant` | Create or update an admin (§2.2) |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the dependency/secret audit gate |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2 "Branch protection", §12… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build` with the result inlined… |

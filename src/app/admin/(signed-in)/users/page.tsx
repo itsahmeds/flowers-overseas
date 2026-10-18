@@ -1,5 +1,5 @@
 /**
- * @purpose GET /admin/users: grant, revoke, deactivate (§2.2)
+ * @purpose GET /admin/users: grant, revoke, deactivate
  * @spec 012
  *
  * Controls that cannot act are absent with the reason as text (spec 004 §14 A20): no remove

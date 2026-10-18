@@ -1,5 +1,5 @@
 /**
- * @purpose The admin environment chip (§5.3)
+ * @purpose The admin environment chip
  * @spec 012
  */
 import { appEnvironment } from "@/lib/env.schema";

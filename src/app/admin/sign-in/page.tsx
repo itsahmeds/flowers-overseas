@@ -1,5 +1,5 @@
 /**
- * @purpose GET /admin/sign-in: form and its states (§2.2)
+ * @purpose GET /admin/sign-in: form and its states
  * @spec 012
  *
  * The only admin page reachable without a session (AC-1). `?state=` names the state and nothing

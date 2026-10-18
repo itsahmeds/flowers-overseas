@@ -1,4 +1,7 @@
 /**
+ * @purpose The feature-flag registry (AC-14)
+ * @spec 012
+ *
  * The feature-flag registry (spec 012 §2.4, §5.2, AC-14 registry half; decisions log 2026-10-05
  * ruling R5; TASK-219).
  *

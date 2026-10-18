@@ -1,5 +1,5 @@
 /**
- * @purpose POST: admin sign-out (§2.2)
+ * @purpose POST: admin sign-out
  * @spec 012
  */
 import { adminAuth } from "@/lib/auth/admin";

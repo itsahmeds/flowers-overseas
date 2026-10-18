@@ -1,5 +1,5 @@
 /**
- * @purpose Admin document: English, noindex (§5.3)
+ * @purpose Admin document: English, noindex
  * @spec 012
  *
  * Admin's own document layout (spec 012 §5.3; TASK-217): `lang` from the admin catalogue's locale

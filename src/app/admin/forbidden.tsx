@@ -1,5 +1,5 @@
 /**
- * @purpose Admin 403, noindex (§5.3)
+ * @purpose Admin 403, noindex
  * @spec 012
  */
 import type { ReactElement } from "react";

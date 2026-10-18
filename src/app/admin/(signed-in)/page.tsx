@@ -1,5 +1,5 @@
 /**
- * @purpose GET /admin: three counters (§5.3)
+ * @purpose GET /admin: three counters
  * @spec 012
  */
 import type { ReactElement } from "react";

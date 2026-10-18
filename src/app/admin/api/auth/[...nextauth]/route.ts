@@ -1,5 +1,5 @@
 /**
- * @purpose Every Auth.js endpoint answers 404 (§2.2)
+ * @purpose Every Auth.js endpoint answers 404
  * @spec 012
  *
  * The sign-in core needs none of Auth.js's own HTTP endpoints: the link is requested at

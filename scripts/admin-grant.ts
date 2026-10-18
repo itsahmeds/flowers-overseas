@@ -1,4 +1,7 @@
 /**
+ * @purpose Create or update an admin (§2.2)
+ * @spec 012
+ *
  * `pnpm admin:grant --email <e> --name <n> --role <r>` — create or update an admin over the direct
  * URL (spec 012 §2.2 "Bootstrap and users", §12 founder action 4; TASK-217).
  *
