@@ -19,8 +19,8 @@ import {
   AdminPageTitle,
   AdminRemoveGlyph,
   AdminTextField,
-  Button,
-} from "@/modules/ui";
+} from "@/modules/ui/admin/AdminChrome";
+import { Button } from "@/modules/ui";
 
 import { AdminFrame } from "../frame";
 import {

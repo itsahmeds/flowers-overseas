@@ -3,7 +3,7 @@
  */
 import { appEnvironment } from "@/lib/env.schema";
 import { adminT } from "@/modules/admin";
-import type { AdminEnvironment } from "@/modules/ui";
+import type { AdminEnvironment } from "@/modules/ui/admin/AdminChrome";
 
 export function adminEnvironment(): {
   environment: AdminEnvironment;

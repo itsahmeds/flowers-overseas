@@ -5,7 +5,7 @@ import type { ReactElement, ReactNode } from "react";
 
 import type { AdminSession } from "@/lib/auth/admin";
 import { type AdminNavItem, adminNavFor, adminT } from "@/modules/admin";
-import { AdminShell } from "@/modules/ui";
+import { AdminShell } from "@/modules/ui/admin/AdminChrome";
 
 import { adminEnvironment } from "../environment";
 

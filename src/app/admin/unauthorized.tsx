@@ -4,7 +4,11 @@
 import type { ReactElement } from "react";
 
 import { adminT } from "@/modules/admin";
-import { AdminSignInCard, AdminSignInTitle, Button } from "@/modules/ui";
+import {
+  AdminSignInCard,
+  AdminSignInTitle,
+} from "@/modules/ui/admin/AdminChrome";
+import { Button } from "@/modules/ui";
 
 export default function AdminUnauthorized(): ReactElement {
   return (

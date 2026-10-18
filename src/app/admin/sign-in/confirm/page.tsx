@@ -14,8 +14,8 @@ import {
   AdminSignInCard,
   AdminSignInTitle,
   AdminTopBar,
-  Button,
-} from "@/modules/ui";
+} from "@/modules/ui/admin/AdminChrome";
+import { Button } from "@/modules/ui";
 
 import { adminEnvironment } from "../../environment";
 

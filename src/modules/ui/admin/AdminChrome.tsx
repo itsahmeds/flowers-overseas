@@ -1,5 +1,6 @@
 /**
- * Admin chrome (spec 012 §5.3 "Admin primitives"; artboards `admin-sign-in-*`, `admin-home-*`,
+ * Admin chrome (spec 012 §5.3 "Admin primitives"; imported by `src/app/admin` from this file and
+ * kept out of the `src/modules/ui` barrel, so no public page's client graph can reach it; artboards `admin-sign-in-*`, `admin-home-*`,
  * `admin-users-*` and the Admin group of `docs/design/system/components.dc.html`; TASK-217).
  *
  * Presentational only: every word arrives as a prop from the admin catalogue, so this module

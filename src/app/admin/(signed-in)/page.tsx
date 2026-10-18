@@ -11,7 +11,7 @@ import {
   requireAdminPage,
 } from "@/modules/admin";
 import { formatDate, formatNumber } from "@/modules/i18n";
-import { AdminCounter, AdminPageTitle } from "@/modules/ui";
+import { AdminCounter, AdminPageTitle } from "@/modules/ui/admin/AdminChrome";
 
 import { AdminFrame } from "./frame";
 
