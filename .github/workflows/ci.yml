@@ -1939,16 +1939,19 @@ jobs:
               exit 2
             fi
             url=$(node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA")
-            basic=$(printf '%s' "$STAGING_BASIC_AUTH" | base64 | tr -d '\n')
+            # The header comes from the same function the artifact check searches with (trimmed
+            # secret), so the bytes Lighthouse records are always bytes the scrub looks for.
+            authorization=$(node scripts/artifact-credential-check.ts --basic)
+            basic=${authorization#Basic }
             echo "::add-mask::$basic"
             config="$RUNNER_TEMP/lighthouserc.json"
-            jq --arg auth "Basic $basic" \
+            jq --arg auth "$authorization" \
               '.ci.collect.settings.extraHeaders = {"Authorization": $auth}' \
               lighthouserc.json > "$config"
             {
               echo "LHCI_BASE_URL=$url"
               echo "LHCI_CONFIG=$config"
-              echo "LHCI_AUTHORIZATION=Basic $basic"
+              echo "LHCI_AUTHORIZATION=$authorization"
             } >> "$GITHUB_ENV"
             echo "measured=$url (the pull request's Railway environment through Cloudflare)" >> "$GITHUB_OUTPUT"
           else

@@ -21,6 +21,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
+  basicAuthorization,
   credentialForms,
   main,
 } from "../../scripts/artifact-credential-check.ts";
@@ -74,17 +75,37 @@ const run = (
 };
 
 describe("the forms it looks for", () => {
-  it("covers user:password, the password, the Basic base64 and its JSON-escaped form", () => {
+  it("covers user:password, the password, the Basic base64, its JSON-escaped and URL-encoded forms", () => {
     expect(BASE64).toContain("/");
-    expect(credentialForms(CREDENTIAL).sort()).toEqual(
-      [
-        CREDENTIAL,
-        "aaaa?bbbb?cccc",
-        BASE64,
-        BASE64.replaceAll("/", "\\/"),
-      ].sort(),
-    );
+    const forms = credentialForms(CREDENTIAL);
+    for (const form of [
+      CREDENTIAL,
+      "aaaa?bbbb?cccc",
+      BASE64,
+      BASE64.replaceAll("/", "\\/"),
+      encodeURIComponent(CREDENTIAL),
+      encodeURIComponent("aaaa?bbbb?cccc"),
+    ]) {
+      expect(forms, form).toContain(form);
+    }
   });
+
+  it.each([
+    ["a trailing newline", "\n"],
+    ["a trailing space", " "],
+    ["a leading space", " "],
+    ["a trailing CRLF", "\r\n"],
+  ])(
+    "covers the secret with %s both as stored and trimmed (/review 263 round 2)",
+    (label, ws) => {
+      const raw = label.includes("leading") ? ws + CREDENTIAL : CREDENTIAL + ws;
+      const forms = credentialForms(raw);
+      expect(forms).toContain(Buffer.from(raw).toString("base64"));
+      expect(forms).toContain(BASE64);
+      expect(forms).toContain(raw);
+      expect(forms).toContain(CREDENTIAL);
+    },
+  );
 
   it("does not search a short password alone, which could match by chance", () => {
     expect(credentialForms("u:short")).not.toContain("short");
@@ -168,6 +189,45 @@ describe("the check fails on every place the credential can sit", () => {
 
   it("exits 2 with no path", () => {
     expect(run([]).status).toBe(2);
+  });
+});
+
+describe("a secret pasted with whitespace (/review 263 round 2)", () => {
+  it.each([
+    ["a trailing newline", "\n"],
+    ["a trailing space", " "],
+  ])(
+    "with %s, finds and scrubs the base64 of the stored and of the trimmed value",
+    (_, tail) => {
+      const raw = CREDENTIAL + tail;
+      const untrimmed = Buffer.from(raw).toString("base64");
+      const root = tree({
+        "lhr-1.json": `{"Authorization":"Basic ${untrimmed}"}`,
+        "lhr-2.json": `{"Authorization":"Basic ${BASE64}"}`,
+      });
+      expect(run([root], { STAGING_BASIC_AUTH: raw }).status).toBe(1);
+      expect(run(["--scrub", root], { STAGING_BASIC_AUTH: raw }).status).toBe(
+        0,
+      );
+      for (const name of ["lhr-1.json", "lhr-2.json"]) {
+        expect(readFileSync(join(root, name), "utf8")).toBe(
+          '{"Authorization":"Basic REDACTED"}',
+        );
+      }
+    },
+  );
+
+  it("--basic prints the header of the trimmed secret, the one the job sends", () => {
+    expect(basicAuthorization(`${CREDENTIAL}\n`)).toBe(`Basic ${BASE64}`);
+    const result = run(["--basic"], {
+      STAGING_BASIC_AUTH: ` ${CREDENTIAL} \n`,
+    });
+    expect(result.status).toBe(0);
+    expect(result.output).toBe(`Basic ${BASE64}\n`);
+  });
+
+  it("--basic exits 2 on a secret that is only whitespace", () => {
+    expect(run(["--basic"], { STAGING_BASIC_AUTH: " \n" }).status).toBe(2);
   });
 });
 

@@ -135,6 +135,8 @@ export function runWorkflowStep(
         RUNNER_TEMP: runnerTemp,
         GITHUB_WORKSPACE: workspace,
         NODE_ENV: "test",
+        // A `node` stub may hand a call it does not fake to the real one.
+        REAL_NODE: process.execPath,
         ...files,
         ...(options.env ?? {}),
         ...stepEnv,

@@ -931,7 +931,7 @@ describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TAS
   const push = { github: { event_name: "push", event: {} }, secrets: SECRETS };
   /** `node` that answers `railway-preview.ts` with the PR URL and logs every call. */
   const stubs = {
-    node: 'echo "node $*" >> "$STUB_LOG"; case "$*" in *railway-preview.ts*) echo "https://pr-263.flowersoverseas.com";; esac',
+    node: 'echo "node $*" >> "$STUB_LOG"; case "$*" in *railway-preview.ts*) echo "https://pr-263.flowersoverseas.com";; *) exec "$REAL_NODE" "$@";; esac',
     pnpm: 'echo "pnpm $*" >> "$STUB_LOG"',
     npx: 'echo "npx $*" >> "$STUB_LOG"',
   };
@@ -963,6 +963,67 @@ describe("the lighthouse job's origin and credential (spec 040 AC-26, AC-27; TAS
       expect(result.stubLog.some((line) => line.startsWith("pnpm"))).toBe(
         false,
       );
+    } finally {
+      result.cleanup();
+    }
+  });
+
+  it.each([
+    ["a trailing newline", "\n"],
+    ["a trailing space", " "],
+    ["a trailing CRLF", "\r\n"],
+  ])(
+    "with %s on the secret, the header Lighthouse records is one the scrub then removes (/review 263 round 2)",
+    (_, tail) => {
+      const secrets = { ...SECRETS, STAGING_BASIC_AUTH: CREDENTIAL + tail };
+      const resolved = runWorkflowStep(origin, pullRequest(secrets), { stubs });
+      try {
+        expect(resolved.status).toBe(0);
+        const header = resolved.githubEnv["LHCI_AUTHORIZATION"] ?? "";
+        // Built from the trimmed secret, by the helper the check uses.
+        expect(header).toBe(`Basic ${BASIC}`);
+        const rc = readFileSync(
+          resolved.githubEnv["LHCI_CONFIG"] ?? "",
+          "utf8",
+        );
+        expect(rc).toContain(header);
+        // What the old job sent: the untrimmed secret's base64. The scrub must remove it too.
+        const untrimmed = Buffer.from(CREDENTIAL + tail).toString("base64");
+        const scrubbed = runWorkflowStep(scrub, pullRequest(secrets), {
+          files: {
+            ".lighthouseci/lhr-1.json": `{"extraHeaders":{"Authorization":"${header}"}}`,
+            ".lighthouseci/lhr-2.json": `{"extraHeaders":{"Authorization":"Basic ${untrimmed}"}}`,
+          },
+        });
+        try {
+          expect(scrubbed.status).toBe(0);
+          for (const name of ["lhr-1.json", "lhr-2.json"]) {
+            const body = readFileSync(
+              join(scrubbed.workspace, ".lighthouseci", name),
+              "utf8",
+            );
+            expect(body).toBe(
+              '{"extraHeaders":{"Authorization":"Basic REDACTED"}}',
+            );
+          }
+        } finally {
+          scrubbed.cleanup();
+        }
+      } finally {
+        resolved.cleanup();
+      }
+    },
+  );
+
+  it("exits non-zero on a secret that is only whitespace, measuring nothing", () => {
+    const result = runWorkflowStep(
+      origin,
+      pullRequest({ ...SECRETS, STAGING_BASIC_AUTH: " \n" }),
+      { stubs },
+    );
+    try {
+      expect(result.status).not.toBe(0);
+      expect(result.githubEnv["LHCI_BASE_URL"]).toBeUndefined();
     } finally {
       result.cleanup();
     }
