@@ -36,7 +36,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-18 frontend-247: guard in `src/lib/csp-cache-handler.ts` + `src/lib/cache-key-case.ts`, unit test (simulated case-insensitive volume, red with the guard removed: 8 cases), e2e `tests/e2e/case-variant-cache.spec.ts`; PR 261 draft. Next: reproduce on a local production build in the build slot (guard off, then on).
 
 ## Result
 
