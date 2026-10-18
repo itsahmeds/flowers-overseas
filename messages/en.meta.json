@@ -1028,7 +1028,9 @@
   },
   "categoryHub.destinationLink": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "401d41f4d61cc74f76a6bb229c21b43d312434cde799f1b7907f154a4c186e57"
   },
   "categoryHub.destinationPending": {
@@ -1457,22 +1459,30 @@
   },
   "confirmation.recap.card": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "be3702e3f1af559a8df03568294283934a2558521fd8895f68eda09e3ce4f8a3"
   },
   "confirmation.recap.date": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
   },
   "confirmation.recap.nothingCharged": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "85c3bd5a9c62a30b574d1db45f099f735466e22019e86fd3cc9489d0b8808462"
   },
   "confirmation.recap.recipient": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
   },
   "consent.accept": {
@@ -2493,12 +2503,16 @@
   },
   "faq.whoDelivers.answer": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "4fb42a019a8d260a954d26c052b027ca592a91bedc73d0e16e78d92bd2d87a1d"
   },
   "faq.whoDelivers.answerCutoff": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "be34d26efe25b3db5c225065e69831317af1dc6db2b5b2855f85c52e6c0f4e03"
   },
   "faq.whoDelivers.question": {
@@ -2636,7 +2650,9 @@
   },
   "footer.payment.methods": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "3f97e4c1d4f328bc4d4697b63f2b14234c5d6f15915a60f17fb812af7a9ae2e3"
   },
   "footer.payment.processor": {
@@ -2751,7 +2767,9 @@
   },
   "home.howItWorks.choose.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "42c8abf145906610fe314621659195c2b485d56425412d6fefd5484454bf6cfb"
   },
   "home.howItWorks.choose.title": {
@@ -2854,7 +2872,9 @@
   },
   "home.proof.photo.body": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "7c8aaf317e0a2891275c4ccb3e3f3c5c12e15d9e18d6b0c0811de76de46dfd7f"
   },
   "home.proof.photo.title": {
@@ -2943,7 +2963,9 @@
   },
   "home.sentence.occasion": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "e967f7b81145e520e1f6f0a2eec50164054de8f806cf9c899152cd3e2c12a94b"
   },
   "home.sentence.who": {
@@ -3080,7 +3102,9 @@
   },
   "meta.home.description": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "4a60f8a09a0845e03839aa55029bf648ea6602da0049dc5d0311d7979bdb7d28"
   },
   "meta.home.title": {
@@ -3262,12 +3286,16 @@
   },
   "nav.utility.cutoff": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "cd97c8c6aa325c5dbdfc6459243c12152315031633a9acc18ce413ccf30a80cf"
   },
   "nav.utility.cutoffShort": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "bad21fbae17ec6d6a7769ec0e51a852218691bf82a71af6c9a19c297ead08b6e"
   },
   "nav.utility.guarantee": {
@@ -3305,7 +3333,9 @@
   },
   "occasionHub.datesCaption": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "6b775d818b5d6a0e88a9620075989dd5dec50856b14b6a53cd5ff04750153775"
   },
   "occasionHub.datesEyebrow": {
@@ -3331,7 +3361,9 @@
   },
   "occasionHub.destinationsHeading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "b0816f007940e32dda26c92eed56c902f8fc47d5a28425b685bbc1456c3d2db6"
   },
   "occasionHub.h1": {
@@ -3553,7 +3585,9 @@
   },
   "occasionsIndex.undatedHeading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "9722548d436ef46e2b6a551ab73e8d78778b973158ceb3d6cca24f9554067eb4"
   },
   "occasionsIndex.undatedNote": {
@@ -3621,12 +3655,16 @@
   },
   "product.eyebrow": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "08cb5e418a89588652633f7cbe19a198f9a93e4a6c6a2004dbd53ea49eb85675"
   },
   "product.eyebrowPhone": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "7c443a3d824a90c76332856e3b73f90bfcd3529910a974af196774d44b6d8bce"
   },
   "product.included": {
@@ -3638,7 +3676,9 @@
   },
   "product.readMore": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "83b794145c0cc3f560cb6dfb6b5bcf7afac4dba15e5c6dbc54d103dae029fec6"
   },
   "product.related.heading": {
@@ -3861,7 +3901,9 @@
   },
   "shop.occasion.dateNote": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "24f43d2f7633db915fd1bbd348cb27bb2fd638017eb8df33b3d01d982f42deb3"
   },
   "shop.occasion.datedLine": {
@@ -3873,12 +3915,16 @@
   },
   "shop.occasion.lede": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "450182926e299b38403f1119d5c38f41c51be68157b75853df7840cd65d275c5"
   },
   "shop.occasion.seoDescription": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "8abe14c83c44c1abe8be8032b4c8cc8b1a15fac5c4db452bb9ded8342d66cef3"
   },
   "shop.occasion.seoTitle": {
@@ -3902,7 +3948,9 @@
   },
   "shop.occasion.undatedLine": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "45ad4802571d3361bb13db873558e37d2761fe5cb9ef89ca3064e070289c2693"
   },
   "shop.pagination.label": {
@@ -3928,7 +3976,9 @@
   },
   "shop.pagination.pageOf": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "d746a867988f8812e38c18d6484cbe1ce83069579ee8cfb99a556f1436e633f2"
   },
   "shop.pagination.previous": {
@@ -3996,7 +4046,9 @@
   },
   "shop.root.occasionPageLink": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "d2b2901ebd36c8640300a9b96366ce4707cac214167e51d3120f8f7d0babb7aa"
   },
   "shop.root.occasionsCaption": {
@@ -4043,7 +4095,9 @@
   },
   "shop.root.tileCount": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "9a2fe94d745a9d6495ca2c361cb9190bfa9cd7cf1ad42878abb415b8eea304e4"
   },
   "shop.root.tilesHeading": {
@@ -4097,7 +4151,9 @@
   },
   "shop.toolbar.reorderLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-18: ran record-approval-batch4.py after reading the exact text it printed",
+    "reviewedAt": "2026-10-18T10:42:45Z",
     "sourceHash": "55e62a99425a5df4c30472d64e5d03e5bd702172d0fbbb5237a6b1505b2ae8fa"
   },
   "shop.toolbar.sortLabel": {
