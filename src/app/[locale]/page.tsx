@@ -18,9 +18,10 @@ import {
   occasionsIndexHref,
   slugFor,
 } from "@/modules/catalog";
-import { listingPath, routableLocale } from "@/modules/i18n";
+import { listingPath, localePath, routableLocale } from "@/modules/i18n";
 import {
   JsonLd,
+  canonicalFor,
   deploymentDescriptor,
   organization,
   schemaOptions,
@@ -66,7 +67,9 @@ import {
  * line for the dev server, where params are not pre-resolved.
  *
  * The `<title>`/description pair is this page's own (§7's per-route `meta.*`); the layout carries
- * only the segment default, so a page added later cannot inherit the home page's title.
+ * only the segment default, so a page added later cannot inherit the home page's title. The
+ * self-referencing canonical is spec 007's (AC-10, TASK-234): `canonicalFor()` on
+ * `localePath(locale, "home")`, so no URL is written here and a cross-locale one throws.
  *
  * **TASK-052 replaced the placeholder `<h1>` with the real above-the-fold band**, and the page
  * stayed thin: it resolves the locale, publishes it to next-intl and mounts two Server Components
@@ -153,7 +156,19 @@ export async function generateMetadata({
   if (locale === undefined) notFound();
   const t = await getTranslations({ locale: locale.code, namespace: "meta" });
 
-  return { title: t("home.title"), description: t("home.description") };
+  return {
+    title: t("home.title"),
+    description: t("home.description"),
+    // Spec 007 §2 "Canonical", AC-10 (TASK-234): the home's self-canonical from the one builder,
+    // on its own path, emitted whatever the robots line says. Only the canonical: the robots
+    // directive stays the layout's segment default until TASK-096's flip, and the home carries no
+    // hreflang cluster of its own, so neither is touched here.
+    alternates: {
+      canonical: canonicalFor(locale.code, localePath(locale.code, "home"), {
+        baseUrl: deploymentDescriptor(process.env).siteUrl,
+      }),
+    },
+  };
 }
 
 export default async function LocaleHomePage({
