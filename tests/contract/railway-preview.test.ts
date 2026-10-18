@@ -33,6 +33,7 @@ import {
   main,
   missingCredentials,
   previewProjectResponseSchema,
+  previewProperties,
   previewState,
   previewVariables,
   previewVariablesResponseSchema,
@@ -69,6 +70,8 @@ const goodVariables = {
   APP_ENV: "preview",
   NEXT_PUBLIC_APP_ENV: "preview",
   NEXT_PUBLIC_SITE_URL: `https://${HOST}`,
+  ENABLE_PSEUDO_LOCALES: "true",
+  ENABLE_DEV_UI: "true",
 };
 const goodRecord: CloudflareRecord = {
   id: "aa11",
@@ -204,6 +207,8 @@ describe("it waits, never reports, until every fact holds (AC-26)", () => {
     ["APP_ENV", "staging"],
     ["NEXT_PUBLIC_APP_ENV", "staging"],
     ["NEXT_PUBLIC_SITE_URL", "https://staging.flowersoverseas.com"],
+    ["ENABLE_PSEUDO_LOCALES", "false"],
+    ["ENABLE_DEV_UI", "false"],
   ] as const)(
     "sets the variables when %s is staging's, and waits without provisioning",
     (key, value) => {
@@ -397,13 +402,21 @@ describe("the polling loop (AC-12, AC-26)", () => {
   });
 });
 
-describe("the variables answer keeps three names and drops every other value (no value printed)", () => {
-  it("parses to exactly APP_ENV, NEXT_PUBLIC_APP_ENV and NEXT_PUBLIC_SITE_URL", () => {
+describe("the variables answer keeps five names and drops every other value (no value printed)", () => {
+  it("parses to the names it sets and nothing else", () => {
     const parsed = previewVariablesResponseSchema.parse({
-      data: { variables: { DATABASE_URL: SENTINEL, APP_ENV: "preview" } },
+      data: {
+        variables: {
+          DATABASE_URL: SENTINEL,
+          STAGING_BASIC_AUTH: SENTINEL,
+          ...previewVariables(PR),
+        },
+      },
     });
     expect(Object.keys(parsed).sort()).toEqual([
       "APP_ENV",
+      "ENABLE_DEV_UI",
+      "ENABLE_PSEUDO_LOCALES",
       "NEXT_PUBLIC_APP_ENV",
       "NEXT_PUBLIC_SITE_URL",
     ]);
@@ -495,5 +508,189 @@ describe("the command line fails, never skips (AC-26)", () => {
   it("exits 2 without a PR number or SHA", async () => {
     expect(await main(["--sha", SHA], {})).toBe(2);
     expect(await main(["--pr", "0", "--sha", SHA], {})).toBe(2);
+  });
+});
+
+describe("the three properties of AC-26 on the resolved URL (`--assert`, spec 040 §14 A2 clause 1)", () => {
+  const URL_ = `https://${HOST}`;
+  interface Answer {
+    status: number;
+    headers: Record<string, string>;
+    body: string;
+  }
+  const good = (): Record<string, Answer> => ({
+    bare: {
+      status: 401,
+      headers: {
+        "www-authenticate": 'Basic realm="staging"',
+        "cf-ray": "8d-AMS",
+      },
+      body: "",
+    },
+    health: {
+      status: 200,
+      headers: { "cf-ray": "8d-AMS" },
+      body: JSON.stringify({
+        status: "ok",
+        commit: SHA,
+        appEnv: "preview",
+        region: "europe-west4-drams3a",
+      }),
+    },
+    authed: {
+      status: 200,
+      headers: { "x-robots-tag": "noindex, nofollow", "cf-ray": "8d-AMS" },
+      body: `<link rel="canonical" href="${URL_}/en"/>`,
+    },
+  });
+  const fakeFetch =
+    (answers: Record<string, Answer>) =>
+    (url: string, init: { headers: Record<string, string> }) => {
+      const key = url.endsWith("/api/health")
+        ? "health"
+        : init.headers["authorization"] === undefined
+          ? "bare"
+          : "authed";
+      const answer = answers[key] as Answer;
+      return Promise.resolve({
+        status: answer.status,
+        headers: {
+          get: (name: string) => answer.headers[name.toLowerCase()] ?? null,
+        },
+        text: () => Promise.resolve(answer.body),
+      });
+    };
+  const failing = async (answers: Record<string, Answer>) =>
+    (await previewProperties(URL_, SHA, "user:pass", fakeFetch(answers)))
+      .filter((r) => !r.ok)
+      .map((r) => r.name);
+
+  it("passes all six on a PR host that is walled, Amsterdam, noindex, proxied and its own", async () => {
+    expect(await failing(good())).toEqual([]);
+  });
+
+  it("sends the credential only on the walled request, as Basic user:password", async () => {
+    const seen: Record<string, string>[] = [];
+    await previewProperties(URL_, SHA, "user:pass", (url, init) => {
+      seen.push(init.headers);
+      return fakeFetch(good())(url, init);
+    });
+    expect(seen.filter((h) => h["authorization"] !== undefined)).toEqual([
+      { authorization: `Basic ${Buffer.from("user:pass").toString("base64")}` },
+    ]);
+  });
+
+  it.each<[string, (a: Record<string, Answer>) => void, string]>([
+    [
+      "an SSO-style 302",
+      (a) => {
+        (a["bare"] as Answer).status = 302;
+      },
+      "auth wall",
+    ],
+    [
+      "a 401 with no Basic challenge",
+      (a) => {
+        (a["bare"] as Answer).headers = { "cf-ray": "x" };
+      },
+      "auth wall",
+    ],
+    [
+      "no cf-ray (the railway.app host)",
+      (a) => {
+        delete (a["bare"] as Answer).headers["cf-ray"];
+      },
+      "edge",
+    ],
+    [
+      "a region outside Amsterdam",
+      (a) => {
+        (a["health"] as Answer).body = (a["health"] as Answer).body.replace(
+          "europe-west4-drams3a",
+          "us-west2",
+        );
+      },
+      "region",
+    ],
+    [
+      "an x-fo-region header that disagrees",
+      (a) => {
+        (a["health"] as Answer).headers["x-fo-region"] = "us-east4";
+      },
+      "region",
+    ],
+    [
+      "health 500",
+      (a) => {
+        (a["health"] as Answer).status = 500;
+      },
+      "region",
+    ],
+    [
+      "appEnv staging",
+      (a) => {
+        (a["health"] as Answer).body = (a["health"] as Answer).body.replace(
+          '"preview"',
+          '"staging"',
+        );
+      },
+      "build",
+    ],
+    [
+      "another commit",
+      (a) => {
+        (a["health"] as Answer).body = (a["health"] as Answer).body.replace(
+          SHA,
+          "1".repeat(40),
+        );
+      },
+      "build",
+    ],
+    [
+      "no X-Robots-Tag",
+      (a) => {
+        (a["authed"] as Answer).headers = { "cf-ray": "x" };
+      },
+      "noindex",
+    ],
+    [
+      "the credential refused",
+      (a) => {
+        (a["authed"] as Answer).status = 401;
+      },
+      "noindex",
+    ],
+    [
+      "staging's origin in the page",
+      (a) => {
+        (a["authed"] as Answer).body =
+          '<link rel="canonical" href="https://staging.flowersoverseas.com/en"/>';
+      },
+      "own origin",
+    ],
+  ])("fails on %s, naming that property", async (_, mutate, name) => {
+    const answers = good();
+    mutate(answers);
+    expect(await failing(answers)).toContain(name);
+  });
+
+  it("exits 2 without the wall's credential instead of skipping the noindex read", async () => {
+    expect(
+      await main(
+        ["--assert", "--pr", String(PR), "--sha", SHA],
+        {},
+        undefined,
+        fakeFetch(good()),
+      ),
+    ).toBe(2);
+  });
+
+  it("exits 0 when all hold and 1 when one does not", async () => {
+    const env = { STAGING_BASIC_AUTH: "user:pass" };
+    const args = ["--assert", "--pr", String(PR), "--sha", SHA];
+    expect(await main(args, env, undefined, fakeFetch(good()))).toBe(0);
+    const answers = good();
+    (answers["bare"] as Answer).status = 200;
+    expect(await main(args, env, undefined, fakeFetch(answers))).toBe(1);
   });
 });
