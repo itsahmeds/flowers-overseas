@@ -165,9 +165,20 @@ One line per coherent step, newest last.
   screens, per-width priority image (`MediaAsset` `displayedAt`/`sizes`), the copy batch keys;
   unit tests (`hub-first-screens`, `catalog-hub-pages`), e2e (`hub-first-screens`), frame-spec
   PENDING rows removed; draft PR 262.
-- 2026-10-18: waiting on PR 260 (copy batch 4) to merge before `ci:full` and the visual
-  baselines: without it `en`/`en-gb` sit at 7.4 % unreviewed and turn `noindex`.
+- 2026-10-18: local build in the slot (geometry cannot be judged otherwise): the new e2e cases,
+  the frame spec's hub rows, the hub a11y audits and T-42 pass against `next start`; fixed the
+  phone column overflow, the ink register's contrast and the destinations band's gap on the way.
+- 2026-10-18, left for a finisher: PR 260 (copy batch 4) must merge first. Then rebase on
+  `origin/main` (conflict expected in `tests/unit/i18n-messages-schema.test.ts`'s queue: take
+  main's list and re-add this task's 15 keys), push, run the `visual:baselines` label (hub, hubs
+  laptop band, destinations hub and notices baselines move), commit the images, `gh pr ready`,
+  `ci:full`. Without PR 260 `en`/`en-gb` sit at 7.4 % unreviewed and turn `noindex`, which reds
+  about 20 unit files that this diff does not touch.
 
 ## Result
 
-_Pending._
+Partial, PR 262 (draft), with TASK-191. Built: R1 band registers, R2 lead figure (per-width
+priority image, never downloaded below `md`), R3 date cards, R4 count pills, R5 next six, R6
+guide-state line, the phone hub pattern, A1–A5, A8, P4, P5 (15 keys `reviewed: false`, `en`/`en-gb`
+3.1 %/3.3 % unreviewed with PR 260). Not built: B2 and A7 (escalated above). Leads for undrawn hubs
+are each hub's first product (listed in the PR). Local build used for geometry; CI not yet run.
