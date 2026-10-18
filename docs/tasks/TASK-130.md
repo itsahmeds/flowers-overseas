@@ -60,6 +60,11 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-18 11:35Z (finisher, `/break 258` round 1 HOLES): rebased on `d1f5fc69`; holes 1-6
   closed with tests, each watched red under its mutation (see `## Result`).
 
+- 2026-10-18 (finisher, `/break 258` round 2 hole): the AC-36 scan rule is now tested branch by
+  branch: spaced hyphen and spaced en dash, space before only, after only, and both; unspaced
+  "Hand-tied", "Forget-me-not" and "12–18" pass. Red when either dash, either side is dropped, or
+  when any hyphen is flagged.
+
 ## Result
 
 [PR 258](https://github.com/itsahmeds/flowers-overseas/pull/258). The PDP now serves one JSON-LD

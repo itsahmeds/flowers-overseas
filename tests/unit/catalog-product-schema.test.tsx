@@ -303,6 +303,38 @@ describe("Phase 0: every PDP emits BreadcrumbList and none of AC-18's forbidden 
     ).toStrictEqual([
       'dash: name "Amber Hour \u2014 roses" carries a dash (AC-36)',
     ]);
+    // Every branch of the rule, one side at a time (`/break 258` round 2): a spaced hyphen and a
+    // spaced en dash, each with the space only before, only after, and on both sides.
+    const named = (name: string): string =>
+      served([
+        {
+          ...trail,
+          itemListElement: [
+            trail.itemListElement[0],
+            { "@type": "ListItem", position: 2, name },
+          ],
+        },
+      ]);
+    for (const name of [
+      "Amber Hour - roses",
+      "Amber Hour -roses",
+      "Amber Hour- roses",
+      "Amber Hour \u2013 roses",
+      "Amber Hour \u2013roses",
+      "Amber Hour\u2013 roses",
+    ]) {
+      expect(pdpJsonLdProblems(named(name), name), name).toStrictEqual([
+        `${name}: name ${JSON.stringify(name)} carries a dash (AC-36)`,
+      ]);
+    }
+    // An unspaced hyphen or en dash inside a word or a range is not a dash between phrases.
+    for (const name of [
+      "Hand-tied roses",
+      "Forget-me-not",
+      "12\u201318 stems",
+    ]) {
+      expect(pdpJsonLdProblems(named(name), name), name).toStrictEqual([]);
+    }
     // And a second block, or a missing trail, is a problem too.
     expect(
       pdpJsonLdProblems(served([trail]) + served([trail]), "two").length,
