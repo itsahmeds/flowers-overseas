@@ -141,13 +141,32 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-18 (implementer, to the orchestrator; `open`). **B2 and A7 (the seed copy) are not
+  shipped.** B2 replaces the hub intros' closing sentence only, but spec 006 §7 and
+  `seed/copy.ts` decision 1 make every description, hub intros included, end with the one
+  `catalog.floristSentence` (`seed:check`'s `floristSentence` rule; `pnpm i18n:draft --sync-copy`
+  re-flows it). A second closing sentence for 55 hub rows needs a spec 006 ruling (a hub-only
+  sentence key and an entity-aware rule), not an implementer's call. A7 (and B2) also change the
+  `en` rows the `de`/`pl` drafts hash (`sourceHash`), so both need a `pnpm i18n:draft` pass with a
+  provider, which "the `de`/`pl` hub intros stay byte-identical" (open item (v)) forbids as
+  written. Asked: may a follow-up task carry B2 and A7 with a spec 006 amendment for the closing
+  sentence and a restamp-only draft mode? AC-38's A7 and B2 cases are not written here.
+- 2026-10-18 (implementer, to the orchestrator; `open`). **N-06 (QA-2): no route to Poland's shop
+  root on the destinations hub.** `all-destinations-{desktop,mobile}` draw only guide links (the
+  pills and the rows go to `/send-flowers-to/{country}`), and R6 keeps "the same links", so
+  nothing was invented. The guide itself carries the shop entry (spec 007). If the founder wants a
+  shop link per destination on the hub, it is a spec 007 ruling and a design row.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-18: view model (R2 lead, R3 links, R5 next six, deck and about keys), the four hub first
+  screens, per-width priority image (`MediaAsset` `displayedAt`/`sizes`), the copy batch keys;
+  unit tests (`hub-first-screens`, `catalog-hub-pages`), e2e (`hub-first-screens`), frame-spec
+  PENDING rows removed; draft PR 262.
+- 2026-10-18: waiting on PR 260 (copy batch 4) to merge before `ci:full` and the visual
+  baselines: without it `en`/`en-gb` sit at 7.4 % unreviewed and turn `noindex`.
 
 ## Result
 
