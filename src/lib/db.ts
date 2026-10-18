@@ -90,14 +90,36 @@ export interface DbActor {
  */
 interface SqlTransaction {
   unsafe(query: string): Promise<unknown>;
+  savepoint<T>(fn: (tx: SqlTransaction) => Promise<T>): Promise<T>;
+}
+
+interface SqlClient {
+  begin<T>(fn: (tx: SqlTransaction) => Promise<T>): Promise<T>;
+  /** The pool's parser and serializer maps, which every transaction of the pool shares. */
   options: {
     parsers: Record<string, unknown>;
     serializers: Record<string, unknown>;
   };
 }
 
-interface SqlClient {
-  begin<T>(fn: (tx: SqlTransaction) => Promise<T>): Promise<T>;
+/**
+ * A Drizzle instance bound to an open postgres.js transaction.
+ *
+ * `drizzle(tx)` throws on a real database: Drizzle's postgres-js driver reads
+ * `client.options.parsers`, and a transaction handle (unlike the pool) has no `options` and no
+ * `begin`. The transaction runs on the pool's connection and parses with the pool's maps, so the
+ * pool's `options` are lent to the handle (Drizzle installs its pass-through date parsers on that
+ * shared object, which is what it does for the pool itself), and `begin` is a savepoint, so a
+ * `db.transaction(...)` inside the callback nests instead of opening a second connection. The
+ * transaction-local session context is untouched: it is already set, by `tx.unsafe`, before this
+ * runs.
+ */
+function bindToTransaction(sql: SqlClient, tx: SqlTransaction): DbTransaction {
+  const handle = Object.assign(tx, {
+    options: sql.options,
+    begin: <T>(fn: (inner: SqlTransaction) => Promise<T>) => tx.savepoint(fn),
+  });
+  return drizzle(handle as never);
 }
 
 /**
@@ -171,7 +193,7 @@ export async function withDbContext<T>(
       for (const statement of preamble(context)) {
         await tx.unsafe(statement);
       }
-      return fn(drizzle(tx as never));
+      return fn(bindToTransaction(sql, tx));
     });
   } finally {
     logger.info(

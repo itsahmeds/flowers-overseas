@@ -29,11 +29,14 @@ const fakeTransaction = {
     statements.push(query);
     return Promise.resolve(undefined);
   },
-  // Drizzle's postgres-js driver decorates these two maps when it wraps a client.
-  options: { parsers: {}, serializers: {} },
+  // A real transaction handle has no `options` and no `begin`; the module lends it the pool's.
+  savepoint: <T>(fn: (tx: unknown) => Promise<T>): Promise<T> =>
+    fn(fakeTransaction),
 };
 
 const fakeClient = {
+  // Drizzle's postgres-js driver decorates these two maps when it wraps a client.
+  options: { parsers: {}, serializers: {} },
   begin: async <T>(
     fn: (tx: typeof fakeTransaction) => Promise<T>,
   ): Promise<T> => fn(fakeTransaction),
