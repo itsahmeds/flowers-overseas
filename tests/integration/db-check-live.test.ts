@@ -169,8 +169,8 @@ describe.skipIf(server.url === undefined)(
         "function payout_currency_check() differs",
       ],
       [
-        "a trigger dropped",
-        "DROP TRIGGER country_set_updated_at ON public.country",
+        "a trigger renamed away",
+        "ALTER TRIGGER country_set_updated_at ON public.country RENAME TO country_touch",
         "trigger country country_set_updated_at is in the snapshot but not in the database",
       ],
       [
