@@ -75,13 +75,14 @@ export type {
 } from "./outbox";
 export {
   BuyerSnapshotSchema,
+  ORDER_REFERENCE_ATTEMPTS,
   OrderLineInputSchema,
   place,
   PlaceOrderInputSchema,
   RecipientSnapshotSchema,
   VatSplitSchema,
 } from "./place";
-export type { PlaceOrderInput, PlaceResult } from "./place";
+export type { PlaceOptions, PlaceOrderInput, PlaceResult } from "./place";
 export { ORDER_REFERENCE_PATTERN, orderReference } from "./reference";
 export { transition } from "./transition";
 export type { EngineOptions, TransitionResult } from "./transition";

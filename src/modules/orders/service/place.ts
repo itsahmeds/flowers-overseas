@@ -1,21 +1,30 @@
 /**
  * `orderService.place` — the only writer of `"order"` rows (ADR-0009; spec 010 §2, §5.2;
- * §14 A1.3; AC-20, AC-42; TASK-202).
+ * §14 A1.3, A2.3, A3.1; AC-20, AC-42, AC-45, AC-47; TASK-202, TASK-245).
  *
  * In the caller's transaction (or one it opens):
  *
  *   1. parse `PlaceOrderInputSchema` and the `order.placed` payload, before anything is read;
  *   2. read the destination country's `supply_model` (the order keeps a snapshot, spec 002 §5.1);
- *   3. `set_config('app.allow_status_write', 'on', true)` — the insert trigger of `0008` needs the
+ *   3. `SAVEPOINT`, and nothing written before it (A2.3);
+ *   4. `set_config('app.allow_status_write', 'on', true)` — the insert trigger of `0008` needs the
  *      switch and **no event** (A1.3: `order.placed` has no row, an insert has no `from_status`),
- *      so `app.transition_event` is never touched here;
- *   4. one `INSERT INTO "order"` at status `placed` with an id `place` draws itself
- *      (`crypto.randomUUID()`, A2.1);
- *   5. reset the switch to `''` straight away — the insert trigger does not clear it, and a switch
+ *      so `app.transition_event` is never touched here. It is set after each savepoint, because a
+ *      rollback to the savepoint undoes it;
+ *   5. one `INSERT INTO "order"` at status `placed`, with an id `place` draws itself
+ *      (`crypto.randomUUID()`, A2.1) and the input's `localeCode` (A3.1: the draft's, never the
+ *      column default);
+ *   6. reset the switch to `''` straight away — the insert trigger does not clear it, and a switch
  *      left on would let a raw `INSERT INTO "order"` later in the same transaction through
  *      (A1.3; AC-42);
- *   6. the `order_line` rows, then `order.placed` at seq 1 by the given actor, and an outbox row
- *      only when `outboxTargets('order.placed', mode)` is non-empty.
+ *   7. if the insert raised a unique violation on **`order_reference_idx`** (`0013`: another order
+ *      already has this id's reference), `ROLLBACK TO SAVEPOINT`, log `orders.reference_clash
+ *      {attempt}` (no id, no reference: §8) and go back to 3 with a new id, at most
+ *      `ORDER_REFERENCE_ATTEMPTS` times in all, then refuse with `ORDER_REFERENCE_UNAVAILABLE`,
+ *      nothing written and the transaction usable. Any other error, a unique violation on any
+ *      other constraint included, is raised as it came, once;
+ *   8. `RELEASE SAVEPOINT`, then the `order_line` rows, then `order.placed` at seq 1 by the given
+ *      actor, and an outbox row only when `outboxTargets('order.placed', mode)` is non-empty.
  *
  * `terms_version` is written only for a `live` order (the schema refuses one without it, and
  * refuses one on a demo or test order: no contract is formed there, §5.1 A).
@@ -25,6 +34,8 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { logger } from "@/lib/logger";
+
 import { ActorSchema, BUYER_ACTOR } from "./actor";
 import { OrderEngineError } from "./errors";
 import { writeEvent } from "./event-writer";
@@ -33,6 +44,38 @@ import { jsonb, withExecutor, type OrderExecutor } from "./executor";
 import type { OutboxTargetResolver } from "./outbox";
 import { withSwitch } from "./switch";
 import type { EngineOptions } from "./transition";
+
+/** A2.3: the attempts `place` makes before it refuses with `ORDER_REFERENCE_UNAVAILABLE`. */
+export const ORDER_REFERENCE_ATTEMPTS = 5;
+
+/** `0013`'s unique index on `order_reference(id)`: the one violation `place` retries. */
+const ORDER_REFERENCE_INDEX = "order_reference_idx";
+
+/**
+ * The fields of the driver's error (postgres.js `PostgresError`) that name a reference clash:
+ * SQLSTATE `23505` (unique violation) on `order_reference_idx`, and nothing else.
+ */
+const ReferenceClashSchema = z.object({
+  code: z.literal("23505"),
+  constraint_name: z.literal(ORDER_REFERENCE_INDEX),
+});
+
+/**
+ * True when `error`, or an error it wraps as `cause` (Drizzle's `DrizzleQueryError` carries the
+ * driver's error there), is a unique violation of `order_reference_idx`.
+ */
+function isReferenceClash(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (typeof current !== "object" || current === null) return false;
+    if (ReferenceClashSchema.safeParse(current).success) return true;
+    current = (current as { readonly cause?: unknown }).cause;
+  }
+  return false;
+}
+
+/** The savepoint each attempt runs in; one name, released or rolled back every time. */
+const SAVEPOINT = "order_place_attempt";
 
 const CurrencyCode = z.string().regex(/^[A-Z]{3}$/);
 
@@ -142,6 +185,11 @@ export const RecipientSnapshotSchema = z
 export const PlaceOrderInputSchema = z
   .object({
     mode: OrderModeSchema,
+    /**
+     * The checkout draft's `locale_code` (A3.1): the language buyer emails are written in. A
+     * `locale.code`; one that is not raises the foreign-key error at the insert.
+     */
+    localeCode: z.string().regex(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/),
     customerId: z.uuid(),
     recipientId: z.uuid(),
     destinationCountryId: z.uuid(),
@@ -216,6 +264,11 @@ export interface PlaceResult {
   readonly orderId: string;
 }
 
+export interface PlaceOptions extends EngineOptions {
+  /** Replaces `crypto.randomUUID()` as the id generator (tests: a forced reference clash). */
+  readonly newId?: () => string;
+}
+
 const CountryRow = z.object({
   supply_model: z.enum(["principal", "agent"]).nullable(),
 });
@@ -256,26 +309,46 @@ export async function placeWith(
   }
   const supplyModel = CountryRow.parse(country).supply_model;
 
-  const orderId = newId();
-  const [inserted] = await withSwitch(executor, () =>
-    executor.execute(sql`
-    INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id,
-                         destination_country_id, destination_city_id, destination_postcode,
-                         delivery_date, delivery_window, status, buyer_currency_code,
-                         buyer_total_minor, fx_rate_ppm, base_currency_code, base_total_minor,
-                         vat_breakdown, supply_model, terms_version, buyer_snapshot,
-                         recipient_snapshot)
-    VALUES (${orderId}, ${publicToken()}, ${input.mode}, ${input.customerId}, ${input.recipientId},
-            ${input.destinationCountryId}, ${input.destinationCityId ?? null},
-            ${input.destinationPostcode ?? null}, ${input.deliveryDate}::date,
-            ${input.deliveryWindow ?? null}, 'placed', ${input.buyerCurrency},
-            ${input.buyerTotalMinor}, ${input.fxRatePpm ?? null}, ${input.baseCurrency},
-            ${input.baseTotalMinor}, ${jsonb(input.vatBreakdown)}, ${supplyModel},
-            ${input.termsVersion ?? null}, ${jsonb(input.buyerSnapshot)},
-            ${jsonb(input.recipientSnapshot)})
-    RETURNING id`),
-  );
-  IdRow.parse(inserted);
+  let orderId: string | undefined;
+  for (let attempt = 1; attempt <= ORDER_REFERENCE_ATTEMPTS; attempt += 1) {
+    const candidate = newId();
+    await executor.execute(sql.raw(`SAVEPOINT ${SAVEPOINT}`));
+    try {
+      const [inserted] = await withSwitch(executor, () =>
+        executor.execute(sql`
+        INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id,
+                             destination_country_id, destination_city_id, destination_postcode,
+                             delivery_date, delivery_window, status, buyer_currency_code,
+                             buyer_total_minor, fx_rate_ppm, base_currency_code, base_total_minor,
+                             vat_breakdown, supply_model, terms_version, buyer_snapshot,
+                             recipient_snapshot, locale_code)
+        VALUES (${candidate}, ${publicToken()}, ${input.mode}, ${input.customerId},
+                ${input.recipientId}, ${input.destinationCountryId},
+                ${input.destinationCityId ?? null}, ${input.destinationPostcode ?? null},
+                ${input.deliveryDate}::date, ${input.deliveryWindow ?? null}, 'placed',
+                ${input.buyerCurrency}, ${input.buyerTotalMinor}, ${input.fxRatePpm ?? null},
+                ${input.baseCurrency}, ${input.baseTotalMinor}, ${jsonb(input.vatBreakdown)},
+                ${supplyModel}, ${input.termsVersion ?? null}, ${jsonb(input.buyerSnapshot)},
+                ${jsonb(input.recipientSnapshot)}, ${input.localeCode})
+        RETURNING id`),
+      );
+      IdRow.parse(inserted);
+    } catch (error) {
+      if (!isReferenceClash(error)) throw error;
+      await executor.execute(sql.raw(`ROLLBACK TO SAVEPOINT ${SAVEPOINT}`));
+      await executor.execute(sql.raw(`RELEASE SAVEPOINT ${SAVEPOINT}`));
+      logger.warn({ attempt }, "orders.reference_clash");
+      continue;
+    }
+    await executor.execute(sql.raw(`RELEASE SAVEPOINT ${SAVEPOINT}`));
+    orderId = candidate;
+    break;
+  }
+  if (orderId === undefined) {
+    throw new OrderEngineError("ORDER_REFERENCE_UNAVAILABLE", {
+      event: "order.placed",
+    });
+  }
 
   for (const line of input.lines) {
     await executor.execute(sql`
@@ -307,9 +380,9 @@ export async function placeWith(
 /** `orderService.place(input)` (§5.2). */
 export async function place(
   input: PlaceOrderInput,
-  options: EngineOptions = {},
+  options: PlaceOptions = {},
 ): Promise<PlaceResult> {
   return withExecutor(options, "orders.place", (executor) =>
-    placeWith(executor, input, options.outboxTargets),
+    placeWith(executor, input, options.outboxTargets, options.newId),
   );
 }
