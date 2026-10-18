@@ -12,18 +12,18 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | — |
+| `admin` | Public barrel for `admin` (admin queries and actions) | spec 012 | `integration/admin-users.test.ts`, `unit/admin-permissions.test.ts`, `unit/admin-scans.test.ts` |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the gated GA4 tag; GA4 event… | spec 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing module (spec 005 §2, §5.2;… | spec 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts`, `contract/support/catalog-provider-contract.ts` +70 |
 | `checkout` | Checkout's import path (spec 010; TASK-200) | spec 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts`, `unit/checkout-config.test.ts` +4 |
 | `customers` | Public barrel for `customers` (customers, recipients, consent) | spec 019 | — |
 | `geo` | The only import path into the geo module (spec 007 §5.2; TASK-087) | spec 007, 002, 009 | `contract/seo-schema-fixtures.test.ts`, `support/forbidden-phrases.ts`, `unit/cache-cloudflare.test.ts` +29 |
 | `i18n` | The only import path for the i18n module (spec 003 §5.2, AC-3; TASK-034) | spec 003 | `contract/seo-schema-fixtures.test.ts`, `e2e/dev-components.spec.ts`, `e2e/shop-reachability.spec.ts` +78 |
-| `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017 | — |
+| `notifications` | Public barrel for `notifications` (email + WhatsApp senders, templates, outbox… | spec 017, 012 | `contract/resend-mailer.test.ts`, `integration/auth-core.test.ts`, `unit/auth-env-mailer.test.ts` |
 | `orders` | Public barrel for `orders` (state machine, order service, assignment/routing… | spec 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners, coverage, payouts) | spec 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/… | spec 013, 014 | — |
-| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/cache-cloudflare.test.ts` +17 |
+| `seo` | Indexability rule engine, canonical builder, robots policy, page metadata,… | spec 007 | `contract/seo-schema-fixtures.test.ts`, `integration/sitemap.test.ts`, `unit/admin-scans.test.ts` +18 |
 | `ui` | The only import path for the design system (spec 004 §2 "Where the design… | spec 004 | `e2e/home-v3.spec.ts`, `unit/catalog-occasion-page.test.tsx`, `unit/checkout-ui-components.test.tsx` +42 |
 
 ## Config (`src/config/`)
@@ -49,6 +49,7 @@ task actually touches.
 | `cookies.ts` | The cookie register (spec 004 §2 "Consent", §5.1, §8, AC-22; TASK-050) | spec 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
+| `feature-flags.ts` | The feature-flag registry (spec 012 §2.4, §5.2, AC-14 registry half; decisions… | spec 012 |
 | `honesty.ts` | Relay-language check (spec 041 §14) | spec 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |
@@ -87,11 +88,28 @@ task actually touches.
 | `[locale]/error.tsx` | Localised 500 boundary (spec 003 §5.3; TASK-034, rewired by TASK-085) | spec 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6,… | spec 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4; TASK-034, extended by… | spec 003 |
+| `admin/(signed-in)/frame.tsx` | The admin shell around a signed-in page: navigation for the role, the person,… | spec 012 |
+| `admin/(signed-in)/layout.tsx` | The signed-in admin group: no session redirects to /admin/sign-in (spec 012… | spec 012 |
+| `admin/(signed-in)/page.tsx` | GET /admin: three counters, each a link where its page exists (spec 012 §5.3) | spec 012 |
+| `admin/(signed-in)/users/actions.ts` | Server actions of /admin/users: grant, revoke, deactivate, each guarded first… | spec 012 |
+| `admin/(signed-in)/users/page.tsx` | GET /admin/users: roles, grant, revoke, deactivate; own last admin role not… | spec 012 |
+| `admin/api/auth/[...nextauth]/route.ts` | The admin instance's Auth.js handlers at /admin/api/auth (spec 012 §5.2) | spec 012 |
+| `admin/api/auth/confirm/route.ts` | POST: the confirm page's "Continue"; consumes the token in process (spec 012… | spec 012 |
+| `admin/api/auth/request/route.ts` | POST: the admin email form; the same 303 for every address (spec 012 §2.2, AC-2) | spec 012 |
+| `admin/api/auth/sign-out/route.ts` | POST: admin sign-out; deletes the session row and expires the cookie (spec 012… | spec 012 |
+| `admin/environment.ts` | The deployment environment and its chip label, for the admin chrome (spec 012… | spec 012 |
+| `admin/forbidden.tsx` | 403 inside admin: no data, noindex (spec 012 §5.3) | spec 012 |
+| `admin/layout.tsx` | The admin document: English, noindex, its own catalogue (spec 012 §2.2, §5.3) | spec 012 |
+| `admin/not-found.tsx` | 404 inside admin: no data, noindex (spec 012 §5.3) | spec 012 |
+| `admin/sign-in/confirm/page.tsx` | GET /admin/sign-in/confirm?t=: one "Continue" button; the GET uses nothing up… | spec 012 |
+| `admin/sign-in/page.tsx` | GET /admin/sign-in: the email form and its sent, expired and signed-out states… | spec 012 |
+| `admin/unauthorized.tsx` | 401 inside admin: no data, noindex, a way back to sign-in (spec 012 §5.3, AC-1) | spec 012 |
 | `api/consent/route.ts` | `POST /api/consent` (spec 004 §5.2, AC-19; TASK-050) | spec 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` (spec 004 §5.2, AC-23, ADR-0016; TASK-046) | spec 004 |
 | `api/health/route.ts` | `GET /api/health` (spec 001 §5.2, §5.4, AC-14, TASK-006) | spec 001 |
 | `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron (spec 002 AC-23) | spec 002 |
 | `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts only (spec 002 AC-21) | spec 002 |
+| `api/internal/mail-capture/route.ts` | GET: secret-gated read of captured sign-in mail for e2e (spec 012 §2.2) | spec 012 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup stub (spec 004 design… | spec 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's action (spec 004 §14… | spec 004 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and `src/app/global-error.tsx`… | spec 003 |
@@ -105,6 +123,7 @@ task actually touches.
 
 | Script | `pnpm` | Purpose |
 |---|---|---|
+| `admin-grant.ts` | `admin:grant` | `pnpm admin:grant --email <e> --name <n> --role <r>` — create or update an… |
 | `audit-secrets.ts` | `audit:secrets` | `pnpm audit:secrets` — the gitleaks half of the dependency/secret audit gate |
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2 "Branch protection", §12… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build` with the result inlined… |
@@ -159,14 +178,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 291 |
-| `tests/integration/` | 22 |
-| `tests/contract/` | 12 |
+| `tests/unit/` | 297 |
+| `tests/integration/` | 27 |
+| `tests/contract/` | 13 |
 | `tests/e2e/` | 56 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 320 |
+| `tests/fixtures/` | 321 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

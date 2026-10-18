@@ -79,8 +79,9 @@ export const SDK_ADAPTERS = [
     // §13 Q22: `drizzle-orm/postgres-js` is the driver's other entry point.
     packages: ["postgres", "drizzle-orm/postgres-js"],
     regex: "^(?:postgres|drizzle-orm/postgres-js)(?:/|$)",
-    // `scripts/db-migrate.ts`: a `node scripts/*.ts` run cannot resolve `@/lib/db`.
-    files: ["src/lib/db.ts", "scripts/db-migrate.ts"],
+    // `scripts/db-migrate.ts` and `scripts/admin-grant.ts` (spec 012 §2.2's `pnpm admin:grant`,
+    // over the direct URL; TASK-217): a `node scripts/*.ts` run cannot resolve `@/lib/db`.
+    files: ["src/lib/db.ts", "scripts/db-migrate.ts", "scripts/admin-grant.ts"],
     use: "src/lib/db.ts",
   },
   {
