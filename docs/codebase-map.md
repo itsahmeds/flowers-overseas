@@ -80,6 +80,7 @@ task actually touches.
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
 | `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page except the home (spec 004… | spec 004 |
 | `[locale]/@notice/page.tsx` | The locale home's `@notice` slot: **no** price claim (founder, 2026-10-04:… | — |
+| `[locale]/@switcher/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | spec 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | spec 003 |
 | `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | spec 003 |
 | `[locale]/@switcher/[segment]/page.tsx` | Depth-2 language links | spec 003 |
@@ -167,7 +168,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 306 |
+| `tests/unit/` | 307 |
 | `tests/integration/` | 28 |
 | `tests/contract/` | 13 |
 | `tests/e2e/` | 63 |
