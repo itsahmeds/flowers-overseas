@@ -246,6 +246,9 @@ describe("the `[locale]` document (AC-6)", () => {
   });
 
   it("gives every locale a non-empty localised title and description (AC-25)", async () => {
+    // The home's metadata now carries its canonical (spec 007 AC-10, TASK-234), which needs the
+    // site origin the build always has; the canonical itself is asserted in `seo-canonical.test.ts`.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://flowersoverseas.com");
     for (const locale of ["en", "en-gb", "de", "pl"]) {
       const metadata = await localeHomeMetadata({
         params: Promise.resolve({ locale }),
@@ -263,6 +266,7 @@ describe("the `[locale]` document (AC-6)", () => {
       expect(metadata.title, locale).toBe(meta.home.title);
       expect(metadata.description, locale).toBe(meta.home.description);
     }
+    vi.unstubAllEnvs();
   });
 
   it("keeps the segment's `noindex,nofollow` default and a fallback title", async () => {
