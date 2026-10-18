@@ -35,7 +35,8 @@ describe("the 404 letter", () => {
     expect(letter).toContain(">That page does not exist.<");
     expect(letter).toContain('<span data-fo-action="true">Home</span>');
     expect(html.match(/<h1/gu)).toHaveLength(1);
-    expect(html).toContain(shell.NOTICE_LETTER_MAIN);
+    expect(html).toContain(shell.NOTICE_404_MAIN);
+    expect(html).toContain(`<main class="${shell.NOTICE_404_PAGE}" id="main">`);
   });
 
   it("leaves the chooser's column unchanged when `letter` is not passed", () => {

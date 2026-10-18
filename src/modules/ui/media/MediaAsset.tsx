@@ -37,7 +37,12 @@ import { Photo, type PhotoRatio } from "../primitives/Photo.tsx";
 
 import type { MediaManifest } from "./manifest.ts";
 
-import { preloadArgsFor } from "./preload.ts";
+import {
+  BLANK_IMAGE_SRCSET,
+  PRIORITY_MEDIA_ELSEWHERE,
+  type PriorityAt,
+  preloadArgsFor,
+} from "./preload.ts";
 import { type ResolvedImage, resolveMedia } from "./resolve.ts";
 import { type MediaSlot, mediaSlot } from "./slots.ts";
 
@@ -100,6 +105,19 @@ export interface MediaAssetProps {
    */
   readonly ratio?: PhotoRatio;
   readonly className?: string;
+  /**
+   * A per-width image (spec 004 §14 A24 clause 5): displayed, and the priority candidate when
+   * `priority` is set, only in this width range. Outside it the `<picture>` selects a blank
+   * source, so nothing is downloaded there, and the preload carries the matching `media`. The
+   * caller hides the box outside the range (`md:hidden` / `max-md:hidden`).
+   */
+  readonly displayedAt?: PriorityAt;
+  /**
+   * The box's own `sizes`, where it is not its slot's (a hub's lead figure: about 30vw from `md`
+   * up, A24 clause 5). It replaces the slot's string on the `<picture>` and in the preload alike,
+   * so the two still come from one lookup (AC-19).
+   */
+  readonly sizes?: string;
 }
 
 export function MediaAsset({
@@ -111,15 +129,21 @@ export function MediaAsset({
   manifest,
   ratio,
   className,
+  displayedAt,
+  sizes,
 }: MediaAssetProps): ReactElement {
   const t = useTranslations("media");
-  const resolved = resolveMedia({
+  const lookedUp = resolveMedia({
     assetId,
     locale,
     ...(slot === undefined ? {} : { slot }),
     ...(productName === undefined ? {} : { productName }),
     ...(manifest === undefined ? {} : { manifest }),
   });
+  const resolved =
+    sizes === undefined || lookedUp.kind !== "image"
+      ? lookedUp
+      : { ...lookedUp, sizes };
 
   const box = resolved.kind === "image" ? resolved.slot : (slot ?? "grid");
   if (priority && !mediaSlot(box).aboveFold) {
@@ -154,7 +178,7 @@ export function MediaAsset({
   const fallback = resolved.sources.at(-1);
 
   // AC-19: the LCP candidate's preload, hoisted into `<head>` by React (see `preloadLcpCandidate`).
-  if (priority) preloadLcpCandidate(resolved);
+  if (priority) preloadLcpCandidate(resolved, displayedAt);
 
   return (
     <Photo
@@ -170,6 +194,14 @@ export function MediaAsset({
       }}
     >
       <picture className="block h-full w-full">
+        {displayedAt === undefined ? null : (
+          // Where this image is not displayed it is not downloaded (A24 clause 5): the first
+          // matching `<source>` wins, and this one matches only outside the image's range.
+          <source
+            media={PRIORITY_MEDIA_ELSEWHERE[displayedAt]}
+            srcSet={BLANK_IMAGE_SRCSET}
+          />
+        )}
         {negotiated.map((source) => (
           <source
             key={source.format}
@@ -216,8 +248,11 @@ export function MediaAsset({
  * same breath. `./preload.ts` explains the `href` React's API requires and why it never reaches the
  * markup.
  */
-function preloadLcpCandidate(image: ResolvedImage): void {
-  const args = preloadArgsFor(image);
+function preloadLcpCandidate(
+  image: ResolvedImage,
+  displayedAt: PriorityAt | undefined,
+): void {
+  const args = preloadArgsFor(image, displayedAt);
   if (args === undefined) return;
   preload(args.href, args.options);
 }

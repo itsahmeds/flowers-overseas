@@ -60,6 +60,8 @@ export interface ListingGridProps {
    */
   readonly lead?: boolean;
   readonly leadItemClassName?: string;
+  /** Where the first card's `priority` holds (`ProductCard`'s `priorityAt`; the hubs). */
+  readonly priorityAt?: "below-md";
 }
 
 /** The card after which the interlude band sits (the artboard: after the eighth). */
@@ -75,6 +77,7 @@ export function ListingGrid({
   provenance = "card",
   lead = false,
   leadItemClassName,
+  priorityAt,
 }: ListingGridProps): ReactElement | null {
   const t = useTranslations("shop");
 
@@ -112,6 +115,7 @@ export function ListingGrid({
             lead={lead && index === 0}
             locale={locale}
             priority={priority && index === 0}
+            {...(priorityAt === undefined || index !== 0 ? {} : { priorityAt })}
             provenance={provenance}
             {...(manifest === undefined ? {} : { manifest })}
           />

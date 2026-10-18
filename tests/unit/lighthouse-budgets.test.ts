@@ -158,6 +158,12 @@ describe("tests/fixtures/seo/lighthouse-urls.json (AC-23)", () => {
       // the occasions index joins with TASK-113.
       "/en/occasions/mothers-day",
       "/en-gb/occasions/mothers-day",
+      // …and the two hub types spec 004 AC-36 adds, "Lighthouse mobile: one URL per page type"
+      // (TASK-188): the category hub, whose phone LCP is now the first grid card under the pill
+      // row, and the occasions index, whose LCP is the `<h1>` beside the "next six" cards. One
+      // locale each: the template is the same in `en`, and the occasion hub already measures both.
+      "/en-gb/flowers/roses",
+      "/en-gb/occasions",
     ]);
   });
 

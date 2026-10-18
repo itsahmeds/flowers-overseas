@@ -100,6 +100,9 @@ const LEAD_PHOTO: Readonly<Partial<Record<PageType, string>>> = {
   // placed over the hero from `md` up (spec 008 §14 A16 (b)); the shop root and the country
   // category draw no lead figure.
   countryOccasion: "main li[data-fo-lead-item] img",
+  // TASK-188: the hubs' lead figure (R2), from `md` up only (A24 clause 2 (c)).
+  occasionHub: "main figure[data-fo-hub-lead] img",
+  categoryHub: "main figure[data-fo-hub-lead] img",
 };
 
 /** `--hero-photo-max`: `min(520px, 60svh)`. No browser chrome in a headless window, so svh = vh. */
@@ -127,12 +130,27 @@ const FIRST_SCREEN: Readonly<
     action: "main [data-fo-price] > :first-child",
   },
   countryOccasion: { h1: "display", action: "main [data-fo-price]" },
-  occasionHub: { h1: "display", action: "main [data-fo-hub-destination] a" },
-  categoryHub: { h1: "display", action: "main [data-fo-hub-destination] a" },
-  occasionsIndex: { h1: "display", action: "main a[data-fo-occasion]" },
+  // TASK-188: a hub's way to a price is its first destination pill from `md` up and the first
+  // chip of the phone's chip row below `md`; `:visible` picks the one displayed at the width.
+  occasionHub: {
+    h1: "display",
+    action:
+      "main a[data-fo-hub-destination]:visible, main a[data-fo-hub-chip]:visible",
+  },
+  categoryHub: {
+    h1: "display",
+    action:
+      "main a[data-fo-hub-destination]:visible, main a[data-fo-hub-chip]:visible",
+  },
+  // R5's "next six": each card links its hub (the first-screen block, TASK-188).
+  occasionsIndex: {
+    h1: "display",
+    action:
+      "main a[data-fo-next-occasion]:visible, main [data-fo-phone-date-cards] a:visible",
+  },
   destinationsHub: {
     h1: "display",
-    action: "main [data-fo-hub-destination] a",
+    action: "main a[data-fo-hub-pill]:visible, main a[data-fo-hub-row]:visible",
   },
   guide: { h1: "display", action: "main [data-fo-corridor-shop] a" },
   product: { h1: "title", action: "main [data-fo-pdp-price]" },
@@ -162,9 +180,6 @@ const PENDING: Readonly<
     >
   >
 > = {
-  occasionHub: { inView: "TASK-188", primaryTarget: "TASK-188" },
-  categoryHub: { primaryTarget: "TASK-188" },
-  occasionsIndex: { target: "TASK-188", primaryTarget: "TASK-188" },
   guide: { inView: "TASK-189" },
 };
 
@@ -271,7 +286,7 @@ async function boxOf(page: Page, selector: string): Promise<Box> {
  * that page the logo *is* the first block and the frame is asserted through its x alone.
  */
 const logoOf = (type: PageType): string =>
-  type === "notFound" ? "main#main > a:first-child" : "[data-fo-header-logo]";
+  type === "notFound" ? "main#main > header a" : "[data-fo-header-logo]";
 
 test.describe("T-33: the first block in <main> starts at the logo's edge (AC-31)", () => {
   for (const width of [1440, 1024, 768, 390] as const) {

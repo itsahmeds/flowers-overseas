@@ -136,19 +136,56 @@ One dated bullet per `/review`, newest last.
   - N-06 (P1, QA-2): the destinations hub lists Poland as "Guide · not delivering yet" with only a guide link, no path to `/en/poland/flowers`, while the home says Poland is where to shop (`QA-2-hub-1330-top.png`). R6 keeps "the same links", so check the artboard: if it draws no route to Poland's shop root, escalate to the orchestrator before building; do not invent one. TASK-239 changes Poland's state line, so the two must read alike.
   - N-10 (P2, QA-2) and QA-1: `occasionHub.productsHeading` still reads "Flowers for Birthday" and `categoryHub.h1` "Sending Roses" and "Sending Hand-tied bouquets": A3 and A2 are the approved replacements, so they ship here. `shop.card.noPrice` still has its em dash (Q18-07): P5 is its approved replacement. `occasionHub.dateUnknown` ("Omitted — we cannot compute this country's date yet") and `occasionsIndex.undatedNote` also hold an em dash and are in no approved batch: list them for the founder, change nothing without reviewed wording.
   - QA-2 design bar: the huge blank band to the right of the H1 on category and occasion pages is not caught by AC-45's vertical rule; it is drawn under TASK-252, item 9. Q1-13 (de/pl hub is English, "this line becomes a link") belongs to TASK-185; de and pl are hidden by TASK-237.
+- 2026-10-18 (`/review` r1 on `6af90018`, FAIL on AC-36's Lighthouse set, fixed on the next head; nits carried):
+  - Nit 1 (fixed here): `tests/visual/dated-blocks.css` did not mask the first-screen date cards, so the Mother's Day baselines (2027 dates) would fail with no code change by 2 May 2027. `[data-fo-card-date] > :first-child` now leaves the shot; the card, its name and its call to action stay.
+  - Nit 2 (open): `PRIORITY_MEDIA["below-md"]` is range syntax `(width < 48rem)`, false on Safari before 16.4 (the phone downloads the lead and gets no phone preload). Consider `(max-width: 47.99rem)`.
+  - Nit 4 (open, needs copy headroom): a literal `" · "` joins two messages in `CategoryHubPage`'s pill heading and in `DateFace` (month · weekday); each needs one message key.
+  - Nit 5 (open): `category-hub-mobile` draws the back link "‹ Flowers"; the build shows "‹ Home" because the Flowers crumb is text (TASK-195's rule). Add a `docs/design/README.md` row.
+  - Reviewer ruling: B2/A7 and N-06 do not block. TASK-188 may not move to `done` until a new row carries AC-38 A7/B2 (spec 006 amendment, restamp-only draft mode).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-18 (implementer, to the orchestrator; `open`). **B2 and A7 (the seed copy) are not
+  shipped.** B2 replaces the hub intros' closing sentence only, but spec 006 §7 and
+  `seed/copy.ts` decision 1 make every description, hub intros included, end with the one
+  `catalog.floristSentence` (`seed:check`'s `floristSentence` rule; `pnpm i18n:draft --sync-copy`
+  re-flows it). A second closing sentence for 55 hub rows needs a spec 006 ruling (a hub-only
+  sentence key and an entity-aware rule), not an implementer's call. A7 (and B2) also change the
+  `en` rows the `de`/`pl` drafts hash (`sourceHash`), so both need a `pnpm i18n:draft` pass with a
+  provider, which "the `de`/`pl` hub intros stay byte-identical" (open item (v)) forbids as
+  written. Asked: may a follow-up task carry B2 and A7 with a spec 006 amendment for the closing
+  sentence and a restamp-only draft mode? AC-38's A7 and B2 cases are not written here.
+- 2026-10-18 (implementer, to the orchestrator; `open`). **N-06 (QA-2): no route to Poland's shop
+  root on the destinations hub.** `all-destinations-{desktop,mobile}` draw only guide links (the
+  pills and the rows go to `/send-flowers-to/{country}`), and R6 keeps "the same links", so
+  nothing was invented. The guide itself carries the shop entry (spec 007). If the founder wants a
+  shop link per destination on the hub, it is a spec 007 ruling and a design row.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-18: view model (R2 lead, R3 links, R5 next six, deck and about keys), the four hub first
+  screens, per-width priority image (`MediaAsset` `displayedAt`/`sizes`), the copy batch keys;
+  unit tests (`hub-first-screens`, `catalog-hub-pages`), e2e (`hub-first-screens`), frame-spec
+  PENDING rows removed; draft PR 262.
+- 2026-10-18: local build in the slot (geometry cannot be judged otherwise): the new e2e cases,
+  the frame spec's hub rows, the hub a11y audits and T-42 pass against `next start`; fixed the
+  phone column overflow, the ink register's contrast and the destinations band's gap on the way.
+  e2e mutations watched red: a second eager grid image (T-38 at 390), the lead figure's
+  `displayedAt` removed (lead fetched at 390), and T-42's two (TASK-191).
+- 2026-10-18, left for a finisher: PR 260 (copy batch 4) must merge first. Then rebase on
+  `origin/main` (conflict expected in `tests/unit/i18n-messages-schema.test.ts`'s queue: take
+  main's list and re-add this task's 15 keys), push, run the `visual:baselines` label (hub, hubs
+  laptop band, destinations hub and notices baselines move), commit the images, `gh pr ready`,
+  `ci:full`. Without PR 260 `en`/`en-gb` sit at 7.4 % unreviewed and turn `noindex`, which reds
+  about 20 unit files that this diff does not touch.
+- 2026-10-18: PR 260 merged; rebased on `origin/main` (queue conflict resolved: main's list plus this task's 15 keys), Linux baselines from visual-baselines run 39128181535 committed (15 images: hubs, laptop hubs, destinations hub, the 404 and both 500s untilted, the dev gallery's hub card text P5), PR ready with `ci:full`. Next: read CI on the head; a breaker and `/review`. A successor: B2/A7 and N-06 stay escalated; local unit timeouts in `module-boundaries` and `catalog-pricing-minor` were load (avg 13 to 46), not this diff.
+- 2026-10-18 (stopped for the usage window): `ci:full` run 39128887822 on `a1cfee7a`: every job green except `visual` (failed, cause not yet read) with `e2e` and `lighthouse` still running. Next: read the `visual` diff artifact (a baseline the label run did not re-take, or a non-deterministic hub image), fix or re-take, toggle `ci:full`.
+- 2026-10-18 (finisher): `ci:full` run 39128887822 read. `visual`: no pixel diff; the 390 px destinations case waited on `[data-fo-hub-region='centralEurope']`, which this PR hides below `md` (the round-2 phone list replaces the region groups), so it timed out. The mobile part now shoots `[data-fo-hub-phone-rows]` (`all-destinations-mobile-rows.png`, from visual-baselines run 39144388601, the only image that run changed; the stale mobile region baselines removed). `lighthouse`: no budget measured; the warm-up split the per-width `<picture>`'s `data:` GIF `srcset` on its comma and fetched `/en/occasions/R0lG...` (308). `scripts/seo/lighthouse-urls.ts` `srcsetUrls` now follows the HTML candidate parser (unit case red before the fix). Rebased on `d70da141`.
 
 ## Result
 
-_Pending._
+PR 262, ready, with TASK-191. Built: R1 band registers, R2 lead figure (per-width priority image, never downloaded below `md`), R3 date cards, R4 count pills, R5 next six, R6 guide-state line, the phone hub pattern, A1–A5, A8, P4, P5 (15 keys `reviewed: false`, `en`/`en-gb` 3.1 %/3.3 % unreviewed). Not built: AC-38 B2 and A7 (escalated; the reviewer rules a follow-up row carries them). Leads for undrawn hubs are each hub's first product (listed in the PR). Lighthouse now measures the category hub and the occasions index (AC-36). Local build used once for geometry; CI is the gate of record.

@@ -28,23 +28,39 @@
  * which is `collator(locale)` — the label is a message key and only a rendering component can
  * resolve it, so the collation cannot happen in the view model (§7).
  *
- * Server Component: no island, no state, no fetch (§5.4). `BreadcrumbList` and `ItemList` are
- * TASK-115's; the slot is here and empty.
+ * **The first screen, round 2** (spec 004 §14 A23 R1, R2, R4, clause 5; A24 clauses 2 (c) and 5;
+ * TASK-188): from `md` up the register's band holds the trail, the subject as the eyebrow, the
+ * `<h1>` (A2), the deck (A5), R4's destination pills (each one link named by
+ * `categoryHub.destinationLink`, its visible text the country and the count), the no-money
+ * sentence and R2's lead figure. Below `md`, the phone shop list. The authored intro moves under
+ * the grid (A23 clause 6), under A4's pair where it is approved (roses).
+ *
+ * Server Component: no island, no state, no fetch (§5.4).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
 import { sortBy } from "@/modules/i18n";
-import { Container, ListingGrid, assertSinglePriority } from "@/modules/ui";
+import {
+  Container,
+  Display,
+  Eyebrow,
+  ListingGrid,
+  assertSinglePriority,
+} from "@/modules/ui";
 
 import type { ListingDestinationLink, ListingView } from "../listing";
 
-import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
-  HubDestinations,
-  ListingIntro,
-  ListingSubsection,
-} from "./ListingChrome";
+  HubBand,
+  HubDeck,
+  HubHeading,
+  HubLeadFigure,
+  HubNote,
+  HubPills,
+} from "./HubHero";
+import { ListingBreadcrumb } from "./ListingBreadcrumb";
+import { ListingProse, emphasise } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
 export interface CategoryHubPageProps {
@@ -57,11 +73,21 @@ export function CategoryHubPage({ view }: CategoryHubPageProps): ReactElement {
   const shop = useTranslations("shop");
   const code = localeCode(view.locale);
   const entity = view.entity?.name ?? "";
+  const register = view.entity?.register ?? "cream";
+  const lead = view.hubLead;
 
-  // AC-24's nomination, made where it is made on every listing: the first card of the one grid.
-  const lcp = view.hubItems[0];
+  // One priority image per width (A24 clause 5): the lead figure from `md` up, the first grid
+  // card below `md`.
   assertSinglePriority(
-    lcp !== undefined && lcp.photo.kind === "asset" ? [lcp.photo.assetId] : [],
+    lead !== undefined && lead.photo.kind === "asset"
+      ? [lead.photo.assetId]
+      : [],
+  );
+  const first = view.hubItems[0];
+  assertSinglePriority(
+    first !== undefined && first.photo.kind === "asset"
+      ? [first.photo.assetId]
+      : [],
   );
 
   const named = (destination: ListingDestinationLink): string =>
@@ -76,6 +102,12 @@ export function CategoryHubPage({ view }: CategoryHubPageProps): ReactElement {
     code,
     named,
   );
+  const deck =
+    view.hubDeck === undefined
+      ? undefined
+      : "key" in view.hubDeck
+        ? registryLabel(t, view.hubDeck.key)
+        : view.hubDeck.sentence;
 
   return (
     <Container
@@ -85,51 +117,101 @@ export function CategoryHubPage({ view }: CategoryHubPageProps): ReactElement {
       data-fo-hub-entity={view.entity?.key ?? ""}
     >
       <div className="pb-(--section-fluid)">
-        <ListingBreadcrumb crumbs={view.breadcrumb} />
-
-        {/* v2 `.shop-intro`: the subject as the eyebrow and in the poppy italic, and the authored
-            intro (40–120 words, human-written, gated by `seed:check`) as the lede. An intro that
-            is not yet `reviewed` leaves the page `noindex` rather than unpublished (§6, §5.3). */}
-        <ListingIntro
-          emphasis={entity}
-          eyebrow={entity}
-          heading={hub("h1", { entity })}
-          {...(view.intro === undefined ? {} : { lede: view.intro })}
-        />
-
-        {/* Countries first: the hub's job is the destination (§13 Q4). */}
-        <HubDestinations
-          eyebrow={hub("destinationsEyebrow")}
-          heading={hub("destinationsHeading")}
-          id="hub-destinations-heading"
-          noMoney={shop("hub.noMoney")}
-          rows={[...linked, ...unlinked].map((destination) => ({
-            iso2: destination.iso2,
-            name: named(destination),
-            ...(destination.href === undefined
-              ? { pending: hub("destinationPending") }
-              : {
-                  href: destination.href,
-                  count: hub("destinationCount", { count: destination.count }),
-                  link: hub("destinationLink", {
-                    country: named(destination),
-                  }),
-                }),
-          }))}
-        />
-
-        {/* Then what we make: names and photographs, no price and no tier. This is the only page
-            type on the site permitted to show a product without a price, and it is permitted only
-            because the sentence above says why there is none. */}
-        <ListingSubsection
-          dataHook={{ "data-fo-hub-products": true }}
-          emphasis={entity}
-          eyebrow={hub("productsEyebrow")}
-          heading={hub("productsHeading", { entity })}
-          id="hub-products-heading"
+        <HubBand
+          aside={
+            lead === undefined ? undefined : (
+              <HubLeadFigure lead={lead} locale={code} register={register} />
+            )
+          }
+          breadcrumb={<ListingBreadcrumb crumbs={view.breadcrumb} />}
+          labelledBy="hub-h1"
+          register={register}
         >
-          <ListingGrid cards={view.hubItems} locale={code} priority />
-        </ListingSubsection>
+          <HubHeading eyebrow={entity} id="hub-h1">
+            {emphasise(hub("h1", { entity }), entity)}
+          </HubHeading>
+          {deck === undefined ? null : (
+            <HubDeck register={register}>{deck}</HubDeck>
+          )}
+          {/* Countries first (spec 008 §13 Q4), now inside the first screen (R4). A destination
+              below the floor is text with the pending sentence, never a link (AC-14). */}
+          <HubPills
+            heading={`${hub("destinationsEyebrow")} · ${hub("destinationsHeading")}`}
+            label={hub("destinationsHeading")}
+            pills={[...linked, ...unlinked].map((destination) => ({
+              key: destination.iso2,
+              name: named(destination),
+              ...(destination.href === undefined
+                ? {
+                    detail: hub("destinationPending"),
+                    hook: {
+                      "data-fo-hub-destination": destination.iso2,
+                      "data-fo-hub-destination-kind": "text",
+                    },
+                  }
+                : {
+                    href: destination.href,
+                    label: hub("destinationLink", {
+                      country: named(destination),
+                    }),
+                    detail: hub("destinationCount", {
+                      count: destination.count,
+                    }),
+                    hook: {
+                      "data-fo-hub-destination": destination.iso2,
+                      "data-fo-hub-destination-kind": "link",
+                    },
+                  }),
+            }))}
+          />
+          <HubNote register={register}>{shop("hub.noMoney")}</HubNote>
+        </HubBand>
+
+        {/* Then what we make: names and photographs, no price and no tier. */}
+        <section
+          aria-labelledby="hub-products-heading"
+          className="pt-[16px] md:pt-(--section-fluid)"
+          data-fo-hub-products
+        >
+          <div className="mb-[28px] max-md:sr-only md:mb-[48px]">
+            <Eyebrow className="mb-[14px]">{hub("productsEyebrow")}</Eyebrow>
+            <Display as="h2" id="hub-products-heading" size="2xl">
+              {emphasise(hub("productsHeading", { entity }), entity)}
+            </Display>
+          </div>
+          <ListingGrid
+            cards={view.hubItems}
+            locale={code}
+            priority
+            {...(lead === undefined ? {} : { priorityAt: "below-md" as const })}
+          />
+        </section>
+
+        {view.intro === undefined ? null : (
+          /* The authored intro, under the grid (A23 clause 6): under A4's pair where it is
+             approved (roses), with no eyebrow and no heading elsewhere (open item (iii)). */
+          <section
+            {...(view.hubAbout?.headingKey === undefined
+              ? {}
+              : { "aria-labelledby": "hub-about-heading" })}
+            className="gap-lg md:gap-2xl grid grid-cols-1 items-start pt-[48px] md:grid-cols-[4fr_7fr] md:pt-(--section-fluid)"
+            data-fo-hub-about
+          >
+            <div>
+              {view.hubAbout?.eyebrowKey === undefined ? null : (
+                <Eyebrow className="mb-[14px]">
+                  {registryLabel(t, view.hubAbout.eyebrowKey)}
+                </Eyebrow>
+              )}
+              {view.hubAbout?.headingKey === undefined ? null : (
+                <Display as="h2" size="2xl" id="hub-about-heading">
+                  {registryLabel(t, view.hubAbout.headingKey)}
+                </Display>
+              )}
+            </div>
+            <ListingProse>{view.intro}</ListingProse>
+          </section>
+        )}
       </div>
     </Container>
   );

@@ -390,6 +390,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/CountryCategoryPage.tsx`,
       `${moduleDir}/ui/CountryOccasionPage.tsx`,
       `${moduleDir}/ui/CountryShopRootPage.tsx`,
+      `${moduleDir}/ui/HubHero.tsx`,
       `${moduleDir}/ui/ListingBreadcrumb.tsx`,
       `${moduleDir}/ui/ListingChrome.tsx`,
       `${moduleDir}/ui/OccasionHubPage.tsx`,

@@ -74,14 +74,27 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-18 (implementer; recorded, not blocking). QA N-11 says `/de/nope` is English. Every 404
+  is the x-default document by spec 003 §5.3's recorded deviation (§14 A3), pinned by
+  `tests/e2e/locale-routing.spec.ts`; AC-40 asks for `lang` and the two real links, which hold in
+  four locales. A localised 404 per locale is a spec 003 change, not this task's.
 
 ## Progress
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-18: re-measured: `main` drew the letter tilted, the lockup inside `<main>`, no route and
+  no full-viewport document. Built the round-2 document in `NoticeDocument` (letter mode) and
+  `noticeShell.ts`: the ruled logo bar, the untilted letter, the one dashed route, the document
+  at least the viewport minus the header. T-42 in `tests/e2e/not-found-document.spec.ts`; ships in
+  TASK-188's feature PR 262.
+- 2026-10-18: rebased with TASK-188's PR 262; baselines `not-found-*`, `error-global-*`, `error-locale-*` re-taken on the runner (run 39128181535). Next: CI on the head, breaker and review. The 404 stays the x-default English document (spec 003 §5.3).
 
 ## Result
 
-_Pending._
+Built in PR 262 (TASK-188's feature PR): the round-2 404 (ruled logo bar as `<main>`'s first
+block for AC-31, untilted letter, one `aria-hidden` dashed route, the document at least the
+viewport minus the header). T-42 (`tests/e2e/not-found-document.spec.ts`) passed locally against
+`next start` at 1440 × 900 and 390 × 844, axe clean; watched red with the Destinations link removed
+from `not-found.tsx`, and red with an `aria-hidden` `.postmark` element restored in the letter.
+CI green on PR 262 with `ci:full` (run 39145492418 on `6af90018`), including the 404's `not-found-*` baselines.

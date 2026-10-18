@@ -182,12 +182,23 @@
     }
   },
   "categoryHub": {
+    "about": {
+      "roses": {
+        "eyebrow": "About roses",
+        "heading": "Which rose says what"
+      }
+    },
+    "deck": {
+      "bouquet": "Tied by hand the morning they go, and handed over wrapped, ready for water.",
+      "plant": "Something that is still there next season.",
+      "roses": "Red for love, white for a loss, pink and orange for everything in between."
+    },
     "destinationCount": "{count, plural, one {We can make # of them there.} other {We can make # of them there.}}",
     "destinationLink": "See them with prices for {country}",
     "destinationPending": "No page yet. This becomes a link the day we start delivering here.",
     "destinationsEyebrow": "First, the destination",
     "destinationsHeading": "Where are they?",
-    "h1": "Sending {entity}",
+    "h1": "{entity} to send abroad",
     "productsEyebrow": "Then, what we make",
     "productsHeading": "Our {entity}"
   },
@@ -527,6 +538,7 @@
     "h1": "Where we can <em>send flowers</em>",
     "intro": "Sieben Länder in Europa, und zu jedem haben wir einen Ratgeber geschrieben: was man schenkt, was man nie schenkt, wie eine Adresse geschrieben wird und welche Daten dort im Jahr zählen. Wir schreiben zuerst den Ratgeber und öffnen danach die Lieferung. Wo wir noch nicht liefern, sagt diese Seite das in jeder Zeile mit denselben Worten.",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
+    "phoneIntro": "Seven countries in Europe, each with a guide we wrote ourselves.",
     "readGuide": "Read the guide →",
     "region": {
       "centralEurope": "Central Europe",
@@ -761,17 +773,27 @@
     }
   },
   "occasionHub": {
+    "about": {
+      "birthday": {
+        "eyebrow": "About birthdays"
+      }
+    },
+    "aboutHeading": "What people send",
     "countryColumn": "Country",
     "dateColumn": "Date",
     "dateUnknown": "Omitted — we cannot compute this country's date yet",
     "datesCaption": "{entity} in every destination we cover, computed from each country's own rule",
     "datesEyebrow": "The dates",
     "datesHeading": "When it falls, where we deliver",
+    "deck": {
+      "birthday": "Bright flowers for the day itself, made by our florist in the town where they live."
+    },
     "destinationLink": "{entity} flowers for {country}",
     "destinationsHeading": "Where we have a page for it",
     "h1": "{entity}, country by country",
     "productsEyebrow": "What we make for it",
-    "productsHeading": "Flowers for {entity}"
+    "productsHeading": "{entity} flowers",
+    "productsHeadingPlain": "Flowers for {entity}"
   },
   "occasions": {
     "anniversary": {
@@ -823,9 +845,11 @@
     "everydayEyebrow": "Everyday",
     "everydayHeading": "Any day of the year",
     "everydayNote": "These carry no date because they have none.",
+    "eyebrow": "Every occasion, on every calendar",
     "h1": "Occasions",
     "intro": "Some of these fall on a date, and the date is different in every country. Some of them are any day of the year. Each one has a page with what we make for it, and the dated ones carry the date for every destination we cover.",
     "occasionColumn": "Occasion",
+    "undatedEyebrow": "Dated elsewhere",
     "undatedHeading": "Kept on a date we cannot compute here",
     "undatedNote": "These fall on a date, but not one we can work out from {country}'s calendar — the day belongs to another country, or the rule names no day at all. Each page says so in full. We would rather print nothing than a date we guessed."
   },
@@ -877,7 +901,7 @@
   },
   "shop": {
     "card": {
-      "noPrice": "No price here — the price depends on the destination"
+      "noPrice": "No price here. The price depends on the destination."
     },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."

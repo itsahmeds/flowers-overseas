@@ -464,7 +464,7 @@ export function OccasionDatesTable({
                 row.name
               ) : (
                 <a
-                  className="link-inline"
+                  className="link-inline inline-flex min-h-[24px] items-center"
                   href={row.nameHref}
                   {...(row.nameHook ?? {})}
                 >

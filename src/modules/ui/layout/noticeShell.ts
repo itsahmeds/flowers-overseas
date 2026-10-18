@@ -89,9 +89,50 @@ export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-transparent tex
 export const NOTICE_LETTER_MAIN =
   "mx-auto flex min-h-dvh w-full max-w-[calc(var(--container-page)+2*var(--gutter))] flex-col gap-[56px] px-(--gutter-s) pt-[24px] pb-[72px] md:gap-[112px] md:px-(--gutter) md:pb-[160px]";
 
-/** The letter: card white, the letter shadow and tilt, 640 px at most. */
+/**
+ * The letter: card white, the letter shadow, 640 px at most. **Not tilted**: round 2 tilts
+ * nothing (spec 004 §14 A24 clauses 2 and 6; the `errors-*` round-2 artboards; TASK-191), so the
+ * letter's computed rotation is 0 on the 404 and on both 500s.
+ */
 export const NOTICE_LETTER =
-  "bg-card shadow-letter rounded-letter mx-auto flex w-full max-w-[640px] rotate-(--tilt-letter-s) flex-col px-[24px] py-[40px] md:rotate-(--tilt-letter) md:px-[56px] md:pt-[56px] md:pb-[48px]";
+  "bg-card shadow-letter rounded-letter relative mx-auto flex w-full max-w-[640px] flex-col px-[22px] pt-[34px] pb-[30px] md:px-[56px] md:pt-[52px] md:pb-[46px]";
+
+/*
+ * The 404 as round 2 draws it (`errors-{desktop,mobile}.dc.html`; spec 004 §14 A24 clause 6,
+ * AC-40 as rebound; TASK-191): the logo alone in a ruled header (no navigation, no footer), and a
+ * `<main>` that fills the rest of the first viewport on the raised paper, with the letter centred
+ * over its one decoration, the faint dashed route (an `aria-hidden` inline SVG, static: motion 13
+ * is TASK-194's). No stamp, no postmark, no airmail edge.
+ */
+
+/**
+ * The page: `PAGE_FRAME` (so the logo and the document sit on every page's frame, AC-31), the
+ * header bar, then the document under it.
+ */
+export const NOTICE_404_PAGE =
+  "mx-auto flex min-h-svh w-full max-w-[calc(var(--container-page)+2*var(--gutter))] flex-col px-(--gutter-s) md:px-(--gutter)";
+
+/** The header bar: 64 px on a phone and 82 from `md`; the logo alone. */
+export const NOTICE_404_HEADER =
+  "flex h-[65px] flex-none items-center md:h-[83px]";
+
+/** The header's inner box (the frame is the page's own). */
+export const NOTICE_404_HEADER_FRAME = "flex items-center";
+
+/**
+ * The document: the raised paper painted to the viewport's edges (a 100vmax spread clipped to the
+ * block, the hub bands' device), the header's rule on its top edge, and at least the viewport
+ * minus the header tall (AC-40), with the letter centred.
+ */
+export const NOTICE_404_MAIN =
+  "border-rule bg-surface-raised relative grid min-h-[calc(100svh-65px)] place-items-center overflow-hidden border-t pt-[40px] pb-[56px] shadow-[0_0_0_100vmax_var(--color-surface-raised)] [clip-path:inset(0_-100vmax)] md:min-h-[calc(100svh-83px)] md:pt-[48px] md:pb-[72px]";
+
+/** The letter's box inside the document, above the route. */
+export const NOTICE_404_FRAME = "relative z-[1] w-full";
+
+/** The dashed route behind the letter: the cornflower link colour, faint, never a target. */
+export const NOTICE_404_ROUTE =
+  "text-sky pointer-events-none absolute inset-0 h-full w-full opacity-55";
 
 /** The status code, in the cornflower eyebrow voice. */
 export const NOTICE_LETTER_META = "eyebrow m-0 mb-[14px]";

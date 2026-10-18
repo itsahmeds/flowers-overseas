@@ -293,6 +293,15 @@ describe("the shipped catalogues and manifests", () => {
     // not exempt from the founder's tick (A17 clause 5). The five address-format labels
     // (`checkout.address.{city,fullName,phone,postcode,street}`), which a shared module reads and
     // which therefore count, were approved by the founder in chat on 2026-10-12 and are not here.
+    // TASK-188 (spec 004 §14 A23 clause 6, Appendix A A1-A5 and A8; A24 clause 10 P4 and P5): the
+    // approved hub copy and the two proposed lines, each `reviewed: false` until the founder's own
+    // script attests the exact value. The A3 exception keeps the shipped wording under a new key.
+    "categoryHub.about.roses.eyebrow",
+    "categoryHub.about.roses.heading",
+    "categoryHub.deck.bouquet",
+    "categoryHub.deck.plant",
+    "categoryHub.deck.roses",
+    "categoryHub.h1",
     "checkout.action.toCard",
     "checkout.action.toReview",
     "checkout.buyer.country",
@@ -362,6 +371,9 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-119's seven `languagePopup.*` strings left this queue on the founder's own
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
+    "destinationsHub.phoneIntro",
+    "occasionHub.about.birthday.eyebrow",
+    "occasionHub.aboutHeading",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
@@ -390,6 +402,12 @@ describe("the shipped catalogues and manifests", () => {
     // Poland-specific sentence, the honest blank for an occasion with no computable rule
     // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
     // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
+    "occasionHub.deck.birthday",
+    "occasionHub.productsHeading",
+    "occasionHub.productsHeadingPlain",
+    "occasionsIndex.eyebrow",
+    "occasionsIndex.undatedEyebrow",
+    "shop.card.noPrice",
     "shop.occasion.seoTitle",
     // TASK-187 (spec 004 §14 A23 clause 6, Appendix A A9 and A10; A24 clause 10 P3): the tile noun,
     // "Change the order" and the phone pager's page line ("Next" reuses the reviewed key, so

@@ -26,10 +26,15 @@ import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
 
 import {
+  NOTICE_404_FRAME,
+  NOTICE_404_HEADER,
+  NOTICE_404_HEADER_FRAME,
+  NOTICE_404_MAIN,
+  NOTICE_404_PAGE,
+  NOTICE_404_ROUTE,
   NOTICE_LETTER,
   NOTICE_LETTER_BODY,
   NOTICE_LETTER_HEADING,
-  NOTICE_LETTER_MAIN,
   NOTICE_LETTER_META,
   NOTICE_BLOCK,
   NOTICE_BODY,
@@ -91,16 +96,44 @@ export function NoticeDocument({
     );
 
   if (letter) {
+    // The round-2 404 (spec 004 §14 A24 clause 6; TASK-191): the logo alone in a ruled header,
+    // then the document, the dashed route behind the letter. The route's path is the artboard's.
+    // The header bar is the first block of `<main>`, so the logo is where AC-31 measures every
+    // page's first block (x 56 at 1440, x 20 at 390), while the letter is centred as drawn.
     return (
-      <main className={NOTICE_LETTER_MAIN} id="main">
-        {lockupElement}
-        <div className={NOTICE_LETTER} data-fo-notice-letter>
-          {meta === undefined ? null : (
-            <p className={NOTICE_LETTER_META}>{meta}</p>
-          )}
-          <h1 className={NOTICE_LETTER_HEADING}>{heading}</h1>
-          <p className={NOTICE_LETTER_BODY}>{body}</p>
-          {children}
+      <main className={NOTICE_404_PAGE} id="main">
+        <header className={NOTICE_404_HEADER}>
+          <div className={NOTICE_404_HEADER_FRAME}>{lockupElement}</div>
+        </header>
+        <div className={NOTICE_404_MAIN} data-fo-notice-404>
+          <svg
+            aria-hidden="true"
+            className={NOTICE_404_ROUTE}
+            data-fo-notice-route
+            fill="none"
+            focusable="false"
+            preserveAspectRatio="none"
+            viewBox="0 0 1440 700"
+          >
+            <path
+              d="M-20 520 C 200 420, 260 640, 470 560 S 760 300, 640 220 S 420 260, 520 120 S 980 60, 1060 260 S 1300 520, 1460 380"
+              stroke="currentColor"
+              strokeDasharray="8 9"
+              strokeLinecap="round"
+              strokeWidth="2"
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+          <div className={NOTICE_404_FRAME}>
+            <div className={NOTICE_LETTER} data-fo-notice-letter>
+              {meta === undefined ? null : (
+                <p className={NOTICE_LETTER_META}>{meta}</p>
+              )}
+              <h1 className={NOTICE_LETTER_HEADING}>{heading}</h1>
+              <p className={NOTICE_LETTER_BODY}>{body}</p>
+              {children}
+            </div>
+          </div>
         </div>
       </main>
     );

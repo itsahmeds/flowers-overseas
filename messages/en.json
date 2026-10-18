@@ -238,7 +238,8 @@
     },
     "readGuide": "Read the guide →",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
-    "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked."
+    "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
+    "phoneIntro": "Seven countries in Europe, each with a guide we wrote ourselves."
   },
   "catalog": {
     "tier": {
@@ -763,7 +764,7 @@
       "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet."
     },
     "card": {
-      "noPrice": "No price here — the price depends on the destination"
+      "noPrice": "No price here. The price depends on the destination."
     },
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
@@ -780,14 +781,25 @@
     }
   },
   "categoryHub": {
-    "h1": "Sending {entity}",
+    "h1": "{entity} to send abroad",
     "destinationsEyebrow": "First, the destination",
     "destinationsHeading": "Where are they?",
     "destinationCount": "{count, plural, one {We can make # of them there.} other {We can make # of them there.}}",
     "destinationLink": "See them with prices for {country}",
     "destinationPending": "No page yet. This becomes a link the day we start delivering here.",
     "productsEyebrow": "Then, what we make",
-    "productsHeading": "Our {entity}"
+    "productsHeading": "Our {entity}",
+    "deck": {
+      "roses": "Red for love, white for a loss, pink and orange for everything in between.",
+      "bouquet": "Tied by hand the morning they go, and handed over wrapped, ready for water.",
+      "plant": "Something that is still there next season."
+    },
+    "about": {
+      "roses": {
+        "eyebrow": "About roses",
+        "heading": "Which rose says what"
+      }
+    }
   },
   "occasionHub": {
     "h1": "{entity}, country by country",
@@ -798,9 +810,19 @@
     "dateColumn": "Date",
     "dateUnknown": "Omitted — we cannot compute this country's date yet",
     "productsEyebrow": "What we make for it",
-    "productsHeading": "Flowers for {entity}",
+    "productsHeading": "{entity} flowers",
     "destinationsHeading": "Where we have a page for it",
-    "destinationLink": "{entity} flowers for {country}"
+    "destinationLink": "{entity} flowers for {country}",
+    "deck": {
+      "birthday": "Bright flowers for the day itself, made by our florist in the town where they live."
+    },
+    "productsHeadingPlain": "Flowers for {entity}",
+    "aboutHeading": "What people send",
+    "about": {
+      "birthday": {
+        "eyebrow": "About birthdays"
+      }
+    }
   },
   "occasionsIndex": {
     "h1": "Occasions",
@@ -815,7 +837,9 @@
     "everydayEyebrow": "Everyday",
     "everydayHeading": "Any day of the year",
     "everydayNote": "These carry no date because they have none.",
-    "dateSource": "Every date is computed from the destination's own rule, not copied from a list."
+    "dateSource": "Every date is computed from the destination's own rule, not copied from a list.",
+    "eyebrow": "Every occasion, on every calendar",
+    "undatedEyebrow": "Dated elsewhere"
   },
   "delivery": {
     "corridorLink": "What we can tell you about sending flowers to {country}",
