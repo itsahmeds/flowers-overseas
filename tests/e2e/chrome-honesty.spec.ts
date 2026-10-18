@@ -316,7 +316,7 @@ test.describe("A19 and AC-19: the head makes no promise or review-shaped claim e
     });
   }
 
-  test("the scan catches a claim planted into the title, the description and a JSON-LD block", async ({
+  test("the scan catches a claim planted into the title, the description, an og tag and a JSON-LD block", async ({
     page,
   }) => {
     await page.goto("/en/send-flowers-to/poland");
@@ -336,11 +336,36 @@ test.describe("A19 and AC-19: the head makes no promise or review-shaped claim e
     ]);
 
     const jsonLd = await readHead(page, {
-      jsonLdDescription: "Order by 14:00 in Warsaw.",
+      jsonLd: { "@type": "WebPage", description: "Order by 14:00 in Warsaw." },
     });
     expect(headOffences(jsonLd)).toEqual([
       `json-ld[${served.jsonLd.length}].description: order-by cutoff promise`,
     ]);
+
+    // The key form: a rating node's values are numbers, which no text pattern reads.
+    const at = `json-ld[${served.jsonLd.length}]`;
+    const rating = await readHead(page, {
+      jsonLd: {
+        "@type": "Product",
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: 4.8,
+          reviewCount: 120,
+        },
+      },
+    });
+    expect(headOffences(rating)).toEqual([
+      `${at}.aggregateRating: review/rating key`,
+      `${at}.aggregateRating.@type: review/rating type`,
+      `${at}.aggregateRating.ratingValue: review/rating key`,
+      `${at}.aggregateRating.reviewCount: review/rating key`,
+    ]);
+
+    // An `og:` tag the page does not carry: the read must look for one.
+    const og = await readHead(page, {
+      ogTitle: "Best sellers: roses to Poland",
+    });
+    expect(headOffences(og)).toEqual(["og:title: ranking claim"]);
 
     // The read restores what it planted: the head is the one the server sent.
     expect(await readHead(page)).toEqual(served);

@@ -6,10 +6,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  HEAD_META,
+  HEAD_PARTNER_NAMES,
   HEAD_PATTERNS,
   type HeadRead,
   headOffences,
   headStrings,
+  headStructure,
+  normaliseHeadText,
 } from "../support/head-honesty.ts";
 import {
   FORBIDDEN_DELIVERY_PROMISE_TEXT,
@@ -89,6 +93,7 @@ describe("the head sweep judges them with the body sweep's patterns", () => {
       ...FORBIDDEN_RANKING_TEXT,
       ...FORBIDDEN_DELIVERY_PROMISE_TEXT,
       ...FORBIDDEN_REVIEW_SHAPES,
+      ...HEAD_PARTNER_NAMES,
     ]);
     expect(HEAD_PATTERNS.map(({ name }) => name)).toEqual([
       "ranking claim",
@@ -102,6 +107,7 @@ describe("the head sweep judges them with the body sweep's patterns", () => {
       "out-of-five score",
       "Trustpilot mark",
       "florist count",
+      "partner name",
     ]);
   });
 
@@ -163,5 +169,228 @@ describe("the head sweep judges them with the body sweep's patterns", () => {
     ],
   ])("fails a claim in the %s, naming where", (_where, read, expected) => {
     expect(headOffences(read)).toContain(expected);
+  });
+});
+
+describe("the head sweep reads every string of the JSON-LD, not a list of keys", () => {
+  it("collects headline, reviewBody, alternateName, slogan and handlingTime, which no key list named", () => {
+    const read = withLd({
+      "@type": "Article",
+      headline: "H",
+      reviewBody: "RB",
+      alternateName: "AN",
+      slogan: "SL",
+      deliveryTime: { "@type": "ShippingDeliveryTime", handlingTime: "HT" },
+    });
+    expect(
+      headStrings(read)
+        .filter(({ source }) => source.startsWith("json-ld"))
+        .map(({ source, text }) => [source, text]),
+    ).toEqual([
+      ["json-ld[0].headline", "H"],
+      ["json-ld[0].reviewBody", "RB"],
+      ["json-ld[0].alternateName", "AN"],
+      ["json-ld[0].slogan", "SL"],
+      ["json-ld[0].deliveryTime.handlingTime", "HT"],
+    ]);
+  });
+
+  it.each([
+    [
+      "headline",
+      { headline: "Best sellers to Poland" },
+      "headline: ranking claim",
+    ],
+    [
+      "reviewBody",
+      { reviewBody: "Rated by 120 reviews" },
+      "reviewBody: review",
+    ],
+    [
+      "alternateName",
+      { alternateName: "Same-day delivery" },
+      "alternateName: delivery-timing claim",
+    ],
+    ["slogan", { slogan: "Best sellers" }, "slogan: ranking claim"],
+    [
+      "handlingTime",
+      { deliveryTime: { handlingTime: "same day" } },
+      "deliveryTime.handlingTime: delivery-timing claim",
+    ],
+  ])("fails a claim in %s", (_key, node, expected) => {
+    expect(headOffences(withLd({ "@type": "Thing", ...node }))).toContain(
+      `json-ld[0].${expected}`,
+    );
+  });
+
+  it("reads strings inside an array, under any key and at the top level", () => {
+    expect(
+      headOffences(
+        withLd({
+          "@type": "Thing",
+          description: ["Fine", "Same-day delivery"],
+        }),
+      ),
+    ).toEqual(["json-ld[0].description[1]: delivery-timing claim"]);
+    expect(headOffences(withLd(["Best sellers"]))).toEqual([
+      "json-ld[0][0]: ranking claim",
+    ]);
+  });
+
+  it("reads every JSON-LD block, the claim in the second one included", () => {
+    expect(
+      headOffences(
+        withLd(
+          { "@type": "Organization", name: "Flowers Overseas" },
+          { "@type": "WebPage", description: "Order by 14:00 in Warsaw" },
+        ),
+      ),
+    ).toEqual(["json-ld[1].description: order-by cutoff promise"]);
+  });
+
+  it("does not read a URL or an @-keyword as prose", () => {
+    const read = withLd({
+      "@context": "https://schema.org",
+      "@id": "https://same-day.test/#org",
+      "@type": "Organization",
+      url: "https://best-sellers.test/",
+      logo: "//cdn.test/same-day.png",
+      sameAs: ["https://example.test/interflora"],
+      name: "Flowers Overseas",
+    });
+    expect(headOffences(read)).toEqual([]);
+    expect(headStrings(read).map(({ source }) => source)).toEqual([
+      "title",
+      "description",
+      "json-ld[0].name",
+    ]);
+  });
+});
+
+describe("the head sweep flags a review or rating by structure", () => {
+  const AGGREGATE = {
+    "@type": "Product",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      reviewCount: 120,
+      ratingCount: 120,
+    },
+  };
+
+  it("flags the exact AC-19 shape: every claim key and the AggregateRating type, wherever", () => {
+    expect(headStructure(withLd(AGGREGATE))).toEqual([
+      "json-ld[0].aggregateRating: review/rating key",
+      "json-ld[0].aggregateRating.@type: review/rating type",
+      "json-ld[0].aggregateRating.ratingValue: review/rating key",
+      "json-ld[0].aggregateRating.reviewCount: review/rating key",
+      "json-ld[0].aggregateRating.ratingCount: review/rating key",
+    ]);
+    expect(headOffences(withLd(AGGREGATE))).toHaveLength(5);
+  });
+
+  it("flags review, reviews and reviewRating keys and the Review and Rating types, nested in a graph", () => {
+    const read = withLd({
+      "@graph": [
+        {
+          "@type": ["Product", "Review"],
+          review: [{ "@type": "Review", reviewRating: { "@type": "Rating" } }],
+          reviews: [],
+        },
+      ],
+    });
+    expect(headStructure(read)).toEqual([
+      "json-ld[0].@graph[0].@type: review/rating type",
+      "json-ld[0].@graph[0].review: review/rating key",
+      "json-ld[0].@graph[0].review[0].@type: review/rating type",
+      "json-ld[0].@graph[0].review[0].reviewRating: review/rating key",
+      "json-ld[0].@graph[0].review[0].reviewRating.@type: review/rating type",
+      "json-ld[0].@graph[0].reviews: review/rating key",
+    ]);
+  });
+
+  it("flags nothing in the identity graph a locale home publishes", () => {
+    expect(
+      headStructure(
+        withLd({
+          "@graph": [
+            { "@type": "Organization", name: "Flowers Overseas" },
+            { "@type": "WebSite", name: "Flowers Overseas" },
+          ],
+        }),
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe("the head sweep names the competitor marks and nothing else as a partner", () => {
+  it.each(["Interflora", "Euroflorist", "FLEUROP", "kwiaciarnia"])(
+    "fails %s in a title",
+    (mark) => {
+      expect(headOffences({ ...CLEAN, title: `Flowers via ${mark}` })).toEqual([
+        "title: partner name",
+      ]);
+    },
+  );
+
+  it("passes the ordinary words the body list also bans: Blumen, fleurs, kwiaty", () => {
+    expect(
+      headOffences({
+        ...CLEAN,
+        title: "Blumen verschicken, des fleurs, kwiaty do Polski",
+      }),
+    ).toEqual([]);
+  });
+});
+
+describe("the head sweep reads what a person reads", () => {
+  it("collapses whitespace, so a claim a line break splits is still read", () => {
+    expect(
+      headStrings({ ...CLEAN, title: "Order by\n\t 14:00  in  Warsaw" })[0]
+        ?.text,
+    ).toBe("Order by 14:00 in Warsaw");
+    expect(
+      headOffences({ ...CLEAN, title: "Order by\n14:00 in Warsaw" }),
+    ).toEqual(["title: order-by cutoff promise"]);
+    expect(
+      headOffences({ ...CLEAN, title: "Order\u00A0by 14:00 in Warsaw" }),
+    ).toEqual(["title: order-by cutoff promise"]);
+  });
+
+  it.each(["\u2010", "\u2011", "\u2012", "\u2013", "\u2212"])(
+    "reads same%sday as same-day",
+    (dash) => {
+      expect(
+        headOffences({ ...CLEAN, title: `Same${dash}day delivery` }),
+      ).toEqual(["title: delivery-timing claim"]);
+    },
+  );
+
+  it("drops a soft hyphen", () => {
+    expect(normaliseHeadText("same\u00AD-day")).toBe("same-day");
+  });
+
+  it("composes decomposed Polish diacritics, so jeszcze dzi\u015b is read", () => {
+    const decomposed = "dostawa jeszcze dzis\u0301".normalize("NFD");
+    expect(decomposed).not.toBe(decomposed.normalize("NFC"));
+    expect(headOffences({ ...CLEAN, title: decomposed })).toEqual([
+      "title: delivery-timing claim",
+    ]);
+  });
+});
+
+describe("the head sweep's read list is pinned", () => {
+  it("names every meta tag that carries copy", () => {
+    expect(HEAD_META).toEqual([
+      ["name", "description"],
+      ["name", "keywords"],
+      ["property", "og:title"],
+      ["property", "og:description"],
+      ["property", "og:site_name"],
+      ["property", "og:image:alt"],
+      ["name", "twitter:title"],
+      ["name", "twitter:description"],
+      ["name", "twitter:image:alt"],
+    ]);
   });
 });

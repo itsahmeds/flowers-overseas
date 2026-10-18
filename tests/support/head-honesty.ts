@@ -9,8 +9,10 @@
  *
  *  - {@link HEAD_READ} is the one in-browser read: every head string a claim could sit in, as the
  *    served document has it, plus the raw text of every JSON-LD block. It returns data only.
- *  - {@link headStrings} and {@link headOffences} are pure Node: they walk the JSON-LD and apply
- *    the **same patterns** the body sweep uses, never a second list.
+ *  - {@link headStrings}, {@link headStructure} and {@link headOffences} are pure Node: they walk
+ *    the JSON-LD and apply the **same patterns** the body sweep uses, never a second list, plus
+ *    two head-only checks the body has no use for: partner marks, and review/rating *structure*
+ *    (the keys and types of a rating node, whose values are numbers no text pattern reads).
  *
  * The scan reads what exists. A page with no `og:` or `twitter:` tags contributes none, and the
  * sweep's own control (a claim planted into the title, the description and a JSON-LD block, read
@@ -23,36 +25,72 @@ import {
   type HonestyPattern,
 } from "./listing-honesty.ts";
 
-/** Ranking, delivery-timing and cutoff promises, and spec 007 AC-19's review-shaped claims. */
+/**
+ * **Partner marks**, head only. Spec 007 AC-19 forbids a partner name; the body sweep
+ * (`tests/e2e/honesty.spec.ts`) also lists `blumen`, `fleurs` and `kwiaciarnia`, which are ordinary
+ * German, French and Polish words and would ban a legitimate title. A competitor *brand* is never
+ * an ordinary word, so these are checked in every head. `kwiaciarnia` (Polish "florist's shop")
+ * is here at the coordinator's instruction: no `<title>`, meta description or JSON-LD string of the
+ * committed corpus uses it (its only uses are body copy: `messages/pl.json` `floristCount` and the
+ * `pl` guide's body), so it is a ban nothing trips today.
+ */
+export const HEAD_PARTNER_NAMES: readonly HonestyPattern[] = [
+  {
+    name: "partner name",
+    pattern: /\b(?:kwiaciarnia|interflora|euroflorist|fleurop)\b/iu,
+  },
+];
+
+/** Ranking, delivery-timing and cutoff promises, AC-19's review-shaped claims, partner marks. */
 export const HEAD_PATTERNS: readonly HonestyPattern[] = [
   ...FORBIDDEN_RANKING_TEXT,
   ...FORBIDDEN_DELIVERY_PROMISE_TEXT,
   ...FORBIDDEN_REVIEW_SHAPES,
+  ...HEAD_PARTNER_NAMES,
 ];
 
 /** The `<meta>` tags that carry copy, as `[attribute, value]` selectors. */
 export const HEAD_META: readonly (readonly [string, string])[] = [
   ["name", "description"],
+  ["name", "keywords"],
   ["property", "og:title"],
   ["property", "og:description"],
+  ["property", "og:site_name"],
+  ["property", "og:image:alt"],
   ["name", "twitter:title"],
   ["name", "twitter:description"],
+  ["name", "twitter:image:alt"],
 ];
 
-/** The JSON-LD keys that hold prose. Every other key is a URL, a type or an identifier. */
-export const JSON_LD_PROSE_KEYS: readonly string[] = [
-  "name",
-  "description",
-  "headline",
-  "text",
+/**
+ * The JSON-LD keys that make a review or rating claim by their *name*, wherever they sit: their
+ * values are numbers and nodes, which no text pattern reads (AC-19: review, rating, review count).
+ */
+export const JSON_LD_CLAIM_KEYS: readonly string[] = [
+  "aggregaterating",
+  "review",
+  "reviews",
+  "reviewrating",
+  "ratingvalue",
+  "reviewcount",
+  "ratingcount",
+];
+
+/** The JSON-LD `@type`s that are a review or a rating by themselves. */
+export const JSON_LD_CLAIM_TYPES: readonly string[] = [
+  "aggregaterating",
+  "review",
+  "rating",
 ];
 
 /** A claim planted into the live head by the sweep's own controls. */
 export interface HeadPlant {
   readonly title?: string;
   readonly description?: string;
-  /** Becomes a `description` inside a new JSON-LD block, as a real node's would be. */
-  readonly jsonLdDescription?: string;
+  /** Becomes the whole of a new JSON-LD block, as a real node would be. */
+  readonly jsonLd?: Record<string, unknown>;
+  /** Becomes a new `<meta property="og:title">`, which a page without one never had. */
+  readonly ogTitle?: string;
 }
 
 /** What one read of the head returns: raw, so the walk stays testable without a browser. */
@@ -66,7 +104,7 @@ export interface HeadRead {
  * The one read, run by `page.evaluate`. **Read and plant in one synchronous call**: it sets the
  * planted values, reads, and restores before returning, so nothing interleaves and the DOM left
  * behind is the one the server sent (the `/review 135` round 1 rule; a removed server node is
- * React #418). The only node it ever removes is the JSON-LD script it created itself.
+ * React #418). The only nodes it ever removes are the ones it created itself.
  */
 export const HEAD_READ = ({
   plant,
@@ -93,16 +131,22 @@ export const HEAD_READ = ({
       else tag.setAttribute("content", before);
     });
   }
-  if (plant.jsonLdDescription !== undefined) {
+  if (plant.jsonLd !== undefined) {
     const script = document.createElement("script");
     script.type = "application/ld+json";
     script.textContent = JSON.stringify({
       "@context": "https://schema.org",
-      "@type": "WebPage",
-      description: plant.jsonLdDescription,
+      ...plant.jsonLd,
     });
     document.head.append(script);
     restore.push(() => script.remove());
+  }
+  if (plant.ogTitle !== undefined) {
+    const tag = document.createElement("meta");
+    tag.setAttribute("property", "og:title");
+    tag.setAttribute("content", plant.ogTitle);
+    document.head.append(tag);
+    restore.push(() => tag.remove());
   }
   const read: HeadRead = {
     title: document.title,
@@ -119,49 +163,103 @@ export const HEAD_READ = ({
   return read;
 };
 
-/** Every prose string under a parsed JSON-LD value, by the path it sits at. */
-function proseIn(
-  value: unknown,
-  path: string,
-  out: { source: string; text: string }[],
-): void {
+/** A string that is a link, not prose: `@context`, `url`, `sameAs`, `image`, `logo` and the like. */
+const URL_VALUE = /^(?:https?:)?\/\/\S+$|^mailto:|^tel:/iu;
+
+interface Walk {
+  readonly strings: { source: string; text: string }[];
+  readonly structure: string[];
+}
+
+/**
+ * Every string under a parsed JSON-LD value, by the path it sits at, except URL-valued ones and
+ * the `@`-keywords; and every review/rating key or type, wherever it sits.
+ */
+function walkJsonLd(value: unknown, path: string, out: Walk): void {
   if (Array.isArray(value)) {
-    value.forEach((item, index) => proseIn(item, `${path}[${index}]`, out));
+    value.forEach((item, index) => {
+      const at = `${path}[${index}]`;
+      if (typeof item === "string") {
+        if (!URL_VALUE.test(item)) out.strings.push({ source: at, text: item });
+      } else walkJsonLd(item, at, out);
+    });
     return;
   }
   if (typeof value !== "object" || value === null) return;
   for (const [key, child] of Object.entries(value)) {
-    if (typeof child === "string") {
-      if (JSON_LD_PROSE_KEYS.includes(key)) {
-        out.push({ source: `${path}.${key}`, text: child });
+    const at = `${path}.${key}`;
+    if (key === "@type") {
+      const types = Array.isArray(child) ? child : [child];
+      if (
+        types.some(
+          (type) =>
+            typeof type === "string" &&
+            JSON_LD_CLAIM_TYPES.includes(type.toLowerCase()),
+        )
+      ) {
+        out.structure.push(`${at}: review/rating type`);
       }
-    } else proseIn(child, `${path}.${key}`, out);
+      continue;
+    }
+    // `@context`, `@id`, `@language`: keywords whose strings are not prose. `@graph` and `@list`
+    // hold nodes, which are walked like any other.
+    if (key.startsWith("@") && typeof child === "string") continue;
+    if (JSON_LD_CLAIM_KEYS.includes(key.toLowerCase())) {
+      out.structure.push(`${at}: review/rating key`);
+    }
+    if (typeof child === "string") {
+      if (!URL_VALUE.test(child)) out.strings.push({ source: at, text: child });
+    } else walkJsonLd(child, at, out);
   }
+}
+
+function walked(read: HeadRead): Walk {
+  const out: Walk = { strings: [], structure: [] };
+  read.jsonLd.forEach((block, index) => {
+    // A block that is not JSON is a defect the scan must not hide behind a silent skip.
+    walkJsonLd(JSON.parse(block) as unknown, `json-ld[${index}]`, out);
+  });
+  return out;
+}
+
+/**
+ * What a reader sees, not what the bytes are: composed (NFC) so a decomposed `ś` is one letter,
+ * every dash-like character folded to `-` so "same\u2011day" is "same-day", the soft hyphen
+ * dropped, and whitespace (a no-break space included) collapsed to one space.
+ */
+export function normaliseHeadText(text: string): string {
+  return text
+    .normalize("NFC")
+    .replaceAll("\u00AD", "")
+    .replaceAll(/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/gu, "-")
+    .replaceAll(/\s+/gu, " ")
+    .trim();
 }
 
 /** Every head string a claim could sit in, each with the place it was read from. */
 export function headStrings(
   read: HeadRead,
 ): readonly { readonly source: string; readonly text: string }[] {
-  const out: { source: string; text: string }[] = [
+  return [
     { source: "title", text: read.title },
     ...read.metas.map(({ key, content }) => ({ source: key, text: content })),
-  ];
-  read.jsonLd.forEach((block, index) => {
-    // A block that is not JSON is a defect the scan must not hide behind a silent skip.
-    proseIn(JSON.parse(block) as unknown, `json-ld[${index}]`, out);
-  });
-  return out.map(({ source, text }) => ({
-    source,
-    text: text.replaceAll(/\s+/gu, " ").trim(),
-  }));
+    ...walked(read).strings,
+  ].map(({ source, text }) => ({ source, text: normaliseHeadText(text) }));
+}
+
+/** Review and rating keys and types in the JSON-LD, each with the path it sits at. */
+export function headStructure(read: HeadRead): readonly string[] {
+  return walked(read).structure;
 }
 
 /** `"<source>: <pattern name>"` for every pattern that matches a head string; `[]` when clean. */
 export function headOffences(read: HeadRead): readonly string[] {
-  return headStrings(read).flatMap(({ source, text }) =>
-    HEAD_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(
-      ({ name }) => `${source}: ${name}`,
+  return [
+    ...headStrings(read).flatMap(({ source, text }) =>
+      HEAD_PATTERNS.filter(({ pattern }) => pattern.test(text)).map(
+        ({ name }) => `${source}: ${name}`,
+      ),
     ),
-  );
+    ...headStructure(read),
+  ];
 }
