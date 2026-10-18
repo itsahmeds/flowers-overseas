@@ -14,8 +14,9 @@
  *     domain `pr-<number>.flowersoverseas.com`, writes the DNS records Railway asks for into the
  *     Cloudflare zone (the CNAME **proxied**, so every request crosses the same edge production
  *     does), and sets `APP_ENV=preview`, `NEXT_PUBLIC_APP_ENV=preview` and
- *     `NEXT_PUBLIC_SITE_URL=https://pr-<number>.flowersoverseas.com` on the environment, which
- *     makes Railway rebuild it with its own origin baked in (spec 040 §14 A1);
+ *     `NEXT_PUBLIC_SITE_URL=https://pr-<number>.flowersoverseas.com` on the environment (with
+ *     the two preview-only switches, `previewVariables`), which makes Railway rebuild it with its
+ *     own origin baked in (spec 040 §14 A1);
  *  3. waits until the environment's latest `web` deployment is of the pull request's head SHA,
  *     made after any variable change of this run, and `SUCCESS`;
  *  4. prints `https://pr-<number>.flowersoverseas.com` on stdout (and to `$GITHUB_OUTPUT` as
@@ -38,7 +39,7 @@
  * Credentials, from the environment only: `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_ID`,
  * `CLOUDFLARE_API_TOKEN` (the zone token of spec 040 AC-24: its DNS Edit scope is the one used
  * here), `CLOUDFLARE_ZONE_ID`. Nothing this command prints carries a variable value or a token:
- * the variables query is parsed into the three keys above and nothing else is kept.
+ * the variables query is parsed into `PREVIEW_VARIABLE_KEYS` and nothing else is kept.
  *
  * Exit codes: 0 ready (or swept) · 1 not ready in time, or a deployment that cannot become ready ·
  * 2 a missing credential or argument · 3 an API refused a request or the request was not
@@ -75,14 +76,30 @@ export function previewUrl(pr: number): string {
   return `https://${previewHost(pr)}`;
 }
 
-/** The three variables a PR environment must carry instead of staging's (AC-12). */
+/**
+ * The variables a PR environment must carry instead of staging's (AC-12): its own environment
+ * name and origin, and the two switches `.env.example` says are `true` "on previews (where the
+ * visual and a11y suites run)" and that the schema refuses on staging, which the environment was
+ * forked from: the `pseudo-rtl` visual project and `/dev/components` need them.
+ */
 export function previewVariables(pr: number): Readonly<Record<string, string>> {
   return {
     APP_ENV: PREVIEW_APP_ENV,
     NEXT_PUBLIC_APP_ENV: PREVIEW_APP_ENV,
     NEXT_PUBLIC_SITE_URL: previewUrl(pr),
+    ENABLE_PSEUDO_LOCALES: "true",
+    ENABLE_DEV_UI: "true",
   };
 }
+
+/** The names `previewVariables` sets: the only variables this command ever reads back. */
+export const PREVIEW_VARIABLE_KEYS = [
+  "APP_ENV",
+  "NEXT_PUBLIC_APP_ENV",
+  "NEXT_PUBLIC_SITE_URL",
+  "ENABLE_PSEUDO_LOCALES",
+  "ENABLE_DEV_UI",
+] as const;
 
 /**
  * Railway names a PR environment `<project>-pr-<n>`. The match is anchored on the number, so
@@ -158,19 +175,18 @@ export type PreviewProjectResponse = z.infer<
   typeof previewProjectResponseSchema
 >;
 
-/** Only the three keys; every other value is dropped at the boundary and can never be printed. */
+/** Only `PREVIEW_VARIABLE_KEYS`; every other value is dropped at the boundary and can never be printed. */
 export const previewVariablesResponseSchema = z
   .object({ data: z.object({ variables: z.record(z.string(), z.unknown()) }) })
   .transform(({ data }) => {
-    const pick = (key: string): string | undefined => {
+    const picked: Partial<
+      Record<(typeof PREVIEW_VARIABLE_KEYS)[number], string>
+    > = {};
+    for (const key of PREVIEW_VARIABLE_KEYS) {
       const value = data.variables[key];
-      return typeof value === "string" ? value : undefined;
-    };
-    return {
-      APP_ENV: pick("APP_ENV"),
-      NEXT_PUBLIC_APP_ENV: pick("NEXT_PUBLIC_APP_ENV"),
-      NEXT_PUBLIC_SITE_URL: pick("NEXT_PUBLIC_SITE_URL"),
-    };
+      if (typeof value === "string") picked[key] = value;
+    }
+    return picked;
   });
 export type PreviewVariables = z.output<typeof previewVariablesResponseSchema>;
 
@@ -747,6 +763,132 @@ export async function sweep(deps: PreviewDeps): Promise<number> {
 }
 
 // ---------------------------------------------------------------------------------------------
+// The three properties of AC-26, asserted on the resolved URL (`--assert`)
+// ---------------------------------------------------------------------------------------------
+
+/** The Amsterdam region Railway reports for the replica (`config/railway.json`'s region). */
+export const AMSTERDAM_REGION_PREFIX = "europe-west4";
+
+export interface PropertyResult {
+  readonly name: string;
+  readonly ok: boolean;
+  readonly detail: string;
+}
+
+export type FetchLike = (
+  url: string,
+  init: {
+    readonly headers: Record<string, string>;
+    readonly redirect: "manual";
+  },
+) => Promise<{
+  readonly status: number;
+  readonly headers: { get(name: string): string | null };
+  text(): Promise<string>;
+}>;
+
+const healthSchema = z.object({
+  status: z.string(),
+  commit: z.string(),
+  appEnv: z.string(),
+  region: z.string(),
+});
+
+/**
+ * AC-26's three properties in their Railway form (spec 040 §14 A2 clause 1), plus the two facts
+ * that make them about *this* pull request: the request crossed Cloudflare, and the deployment
+ * answering is the head SHA built as `preview` with its own origin.
+ *
+ *  1. **auth wall**: `/en` without a credential → 401 with a `Basic` challenge (not an SSO 302);
+ *  2. **region**: `/api/health` (exempt from the wall) reports a region in `europe-west4`, and an
+ *     `x-fo-region` header, when the response carries one, agrees with it;
+ *  3. **noindex**: `/en` with the credential → 200 and `X-Robots-Tag: noindex`;
+ *  4. **edge**: the response carries `cf-ray`, so the URL the suites get is Cloudflare's;
+ *  5. **build**: `/api/health` says `appEnv` `preview` and `commit` the head SHA, and `/en`
+ *     names the PR host and not staging's (its own `NEXT_PUBLIC_SITE_URL`, AC-12).
+ */
+export async function previewProperties(
+  url: string,
+  sha: string,
+  credential: string,
+  fetchFn: FetchLike,
+): Promise<PropertyResult[]> {
+  const results: PropertyResult[] = [];
+  const authorization = `Basic ${Buffer.from(credential).toString("base64")}`;
+
+  const bare = await fetchFn(`${url}/en`, { headers: {}, redirect: "manual" });
+  const challenge = bare.headers.get("www-authenticate") ?? "";
+  results.push({
+    name: "auth wall",
+    ok: bare.status === 401 && /^basic\b/iu.test(challenge),
+    detail: `GET /en without a credential → ${String(bare.status)}, WWW-Authenticate ${challenge === "" ? "absent" : `\`${challenge.split(" ")[0] ?? ""}\``}`,
+  });
+  results.push({
+    name: "edge",
+    ok: (bare.headers.get("cf-ray") ?? "") !== "",
+    detail: `cf-ray ${bare.headers.get("cf-ray") === null ? "absent: the URL does not cross Cloudflare" : "present"}`,
+  });
+
+  const healthResponse = await fetchFn(`${url}/api/health`, {
+    headers: {},
+    redirect: "manual",
+  });
+  const parsed = healthSchema.safeParse(
+    healthResponse.status === 200
+      ? (JSON.parse(await healthResponse.text()) as unknown)
+      : undefined,
+  );
+  const health = parsed.success ? parsed.data : undefined;
+  const header = healthResponse.headers.get("x-fo-region");
+  const regionOk =
+    health !== undefined &&
+    health.region.startsWith(AMSTERDAM_REGION_PREFIX) &&
+    (header === null || header.startsWith(AMSTERDAM_REGION_PREFIX));
+  results.push({
+    name: "region",
+    ok: regionOk,
+    detail:
+      health === undefined
+        ? `GET /api/health → ${String(healthResponse.status)}, no health body`
+        : `region ${health.region}; x-fo-region ${header ?? "absent"}`,
+  });
+  results.push({
+    name: "build",
+    ok:
+      health !== undefined &&
+      health.appEnv === PREVIEW_APP_ENV &&
+      health.commit.toLowerCase() === sha.toLowerCase(),
+    detail:
+      health === undefined
+        ? "no health body"
+        : `appEnv ${health.appEnv}, commit ${health.commit}`,
+  });
+
+  const authed = await fetchFn(`${url}/en`, {
+    headers: { authorization },
+    redirect: "manual",
+  });
+  const robots = authed.headers.get("x-robots-tag") ?? "";
+  results.push({
+    name: "noindex",
+    ok: authed.status === 200 && /\bnoindex\b/u.test(robots),
+    detail: `GET /en with the credential → ${String(authed.status)}, X-Robots-Tag ${robots === "" ? "absent" : robots}`,
+  });
+  const body = authed.status === 200 ? await authed.text() : "";
+  results.push({
+    name: "own origin",
+    ok:
+      body.includes(`${url}/`) && !body.includes("staging.flowersoverseas.com"),
+    detail: body.includes(`${url}/`)
+      ? body.includes("staging.flowersoverseas.com")
+        ? "the page still names staging's origin"
+        : `the page names ${url}`
+      : `the page does not name ${url}: NEXT_PUBLIC_SITE_URL is not the PR host`,
+  });
+  return results;
+}
+
+// ---------------------------------------------------------------------------------------------
 // The command line
 // ---------------------------------------------------------------------------------------------
 
@@ -772,6 +914,7 @@ export interface CliArgs {
   readonly sha: string | undefined;
   readonly provision: boolean;
   readonly sweep: boolean;
+  readonly assert: boolean;
 }
 
 export function parseArgs(argv: readonly string[]): CliArgs {
@@ -785,6 +928,7 @@ export function parseArgs(argv: readonly string[]): CliArgs {
     sha: value("--sha"),
     provision: argv.includes("--provision"),
     sweep: argv.includes("--sweep"),
+    assert: argv.includes("--assert"),
   };
 }
 
@@ -855,10 +999,41 @@ function liveDeps(
   };
 }
 
+/** `--assert`: AC-26's properties on the PR host, one line each; exit 1 when any is false. */
+export async function assertMain(
+  pr: number,
+  sha: string,
+  env: Readonly<Record<string, string | undefined>>,
+  fetchFn: FetchLike,
+): Promise<number> {
+  const credential = env["STAGING_BASIC_AUTH"] ?? "";
+  if (credential.trim() === "") {
+    process.stderr.write(
+      "railway-preview --assert: missing STAGING_BASIC_AUTH: the noindex property is read behind the wall, and this check fails rather than skips (spec 040 AC-26). Founder step P2 of docs/runbooks/railway-cloudflare-setup.md “PR environments” adds it as a repository secret.\n",
+    );
+    return 2;
+  }
+  const results = await previewProperties(
+    previewUrl(pr),
+    sha,
+    credential,
+    fetchFn,
+  );
+  for (const result of results) {
+    process.stdout.write(
+      `${result.ok ? "ok  " : "FAIL"} ${result.name}: ${result.detail}\n`,
+    );
+  }
+  return results.every((result) => result.ok) ? 0 : 1;
+}
+
+const nodeFetch: FetchLike = (url, init) => fetch(url, init);
+
 export async function main(
   argv: readonly string[],
   env: Readonly<Record<string, string | undefined>> = process.env,
   deps: PreviewDeps | undefined = undefined,
+  fetchFn: FetchLike = nodeFetch,
 ): Promise<number> {
   const args = parseArgs(argv);
   if (!args.sweep && (args.pr === undefined || args.sha === undefined)) {
@@ -866,6 +1041,9 @@ export async function main(
       "railway-preview: needs --pr <number> and --sha <head sha> (or --sweep)\n",
     );
     return 2;
+  }
+  if (args.assert) {
+    return assertMain(args.pr ?? 0, args.sha ?? "", env, fetchFn);
   }
   const missing = deps === undefined ? missingCredentials(env) : [];
   if (missing.length > 0) {
