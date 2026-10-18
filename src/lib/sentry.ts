@@ -40,7 +40,7 @@
 import { captureMessage, getCurrentScope } from "@sentry/nextjs";
 import type { ErrorEvent, EventHint } from "@sentry/nextjs";
 
-import { REDACTED, isRedactedKey, redact, scrubText } from "./logger";
+import { REDACTED, isRedactedLogKey, redact, scrubText } from "./logger";
 
 /**
  * Tags that may be attached to an event, with the reason each is not PII (spec 003 §11).
@@ -129,7 +129,7 @@ function omit(value: object, keys: readonly string[]): Record<string, unknown> {
 function scrubRecord(record: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(record)) {
-    out[scrubText(key)] = isRedactedKey(key) ? REDACTED : redact(value);
+    out[scrubText(key)] = isRedactedLogKey(key) ? REDACTED : redact(value);
   }
   return out;
 }

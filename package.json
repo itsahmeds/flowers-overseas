@@ -40,6 +40,7 @@
     "release:status": "node scripts/release.ts status",
     "release:promote": "node scripts/release.ts promote",
     "release:rollback": "node scripts/release.ts rollback",
+    "admin:grant": "node scripts/admin-grant.ts",
     "db:check": "node scripts/db-check.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/db-migrate.ts",

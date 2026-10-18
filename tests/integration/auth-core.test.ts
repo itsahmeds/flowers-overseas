@@ -18,7 +18,15 @@
  */
 import { randomUUID } from "node:crypto";
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import {
   createAdminAuth,
@@ -220,6 +228,31 @@ describe.skipIf(server.url === undefined)(
         SELECT round(extract(epoch FROM expires - now()) / 3600)::int AS hours
         FROM sessions WHERE session_token = ${token ?? ""}`;
       expect(row?.hours).toBe(12);
+    });
+
+    it("§8: no log line of the whole flow carries the token, the link or the address", async () => {
+      const lines: string[] = [];
+      const spy = vi
+        .spyOn(process.stdout, "write")
+        .mockImplementation((chunk: string | Uint8Array) => {
+          lines.push(String(chunk));
+          return true;
+        });
+      try {
+        await requestLink(FOUNDER);
+        await requestLink(STRANGER);
+        const t = tokenOf(linkIn(mailer.messages(FOUNDER)[0]?.text ?? ""));
+        await auth().confirm(form({ t }, "/admin/api/auth/confirm"));
+        await auth().confirm(form({ t }, "/admin/api/auth/confirm"));
+        const out = lines.join("");
+        expect(lines.length).toBeGreaterThan(0);
+        expect(out).not.toContain(t);
+        expect(out).not.toContain(FOUNDER);
+        expect(out).not.toContain(STRANGER);
+        expect(out).not.toMatch(/[?&](?:t|token)=(?!\[REDACTED)/u);
+      } finally {
+        spy.mockRestore();
+      }
     });
 
     it("T-11: a second POST of the same token lands on the expired page and sets no session", async () => {
