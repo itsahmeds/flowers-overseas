@@ -7,8 +7,8 @@
  * page answered 404 to every later visitor until a restart.
  *
  * CI runs on case-sensitive Linux, where the defect cannot occur, so the volume is **simulated**
- * here: `foldingFs` stores every path below the dist directory in lower case, exactly as APFS
- * resolves `EN.html` to an existing `en.html`, and `foldingProbe` answers the handler's two
+ * here: `foldingFs` resolves every path below the dist directory to the spelling already on disk,
+ * exactly as APFS resolves `EN.html` to an existing `en.html`, and `foldingProbe` answers the handler's two
  * volume questions the way `realpath(3)` does on that volume. The first `describe` proves the
  * simulation reproduces the defect against Next's real `FileSystemCache`; the rest pin the rule.
  * The production-build regression is `tests/e2e/case-variant-cache.spec.ts`.
@@ -16,12 +16,13 @@
 import {
   existsSync,
   mkdirSync,
+  readdirSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 
 import FileSystemCacheModule from "next/dist/server/lib/incremental-cache/file-system-cache.js";
 import { nodeFs } from "next/dist/server/lib/node-fs-methods.js";
@@ -38,12 +39,28 @@ import CspCacheHandler from "../../src/lib/csp-cache-handler.ts";
 type FsMethods = typeof nodeFs;
 type AtomicData = Parameters<NonNullable<FsMethods["writeFileAtomic"]>>[1];
 
-/** `nodeFs`, with every path below `root` folded to lower case: a case-insensitive volume. */
+/**
+ * A path below `root` as a case-insensitive, case-preserving volume (APFS) resolves it: each
+ * component takes the spelling of an existing entry that matches it case-insensitively, and keeps
+ * its own spelling when nothing matches (so the first writer's spelling is the stored one).
+ */
+function foldPath(root: string, file: string): string {
+  const rel = relative(root, file);
+  if (rel === "" || rel.startsWith("..")) return file;
+  let resolved = root;
+  for (const part of rel.split(sep)) {
+    const entries = existsSync(resolved) ? readdirSync(resolved) : [];
+    const stored = entries.find(
+      (entry) => entry.toLowerCase() === part.toLowerCase(),
+    );
+    resolved = join(resolved, stored ?? part);
+  }
+  return resolved;
+}
+
+/** `nodeFs` on that volume below `root`. */
 function foldingFs(root: string): FsMethods {
-  const fold = (file: string): string => {
-    const rel = relative(root, file);
-    return rel.startsWith("..") ? file : join(root, rel.toLowerCase());
-  };
+  const fold = (file: string): string => foldPath(root, file);
   const atomic = nodeFs.writeFileAtomic;
   return {
     ...nodeFs,
@@ -70,14 +87,12 @@ function foldingFs(root: string): FsMethods {
   };
 }
 
-/** What `realpath(3)` answers on that volume: the stored (lower-case) spelling, if anything is there. */
+/** What `realpath(3)` answers on that volume: the stored spelling, if anything is there. */
 function foldingProbe(root: string, insensitive = true): CaseProbe {
   return {
     caseInsensitive: () => insensitive,
     trueCasePath: (file) => {
-      const rel = relative(root, file);
-      if (rel.startsWith("..")) return existsSync(file) ? file : undefined;
-      const stored = join(root, rel.toLowerCase());
+      const stored = foldPath(root, file);
       return existsSync(stored) ? stored : undefined;
     },
   };
@@ -177,6 +192,28 @@ describe("a case-insensitive cache volume", () => {
       });
     }
 
+    it("a scoped variant key never overwrites the scoped entry of the lowercase page (the 16.3 route cache)", async () => {
+      // What QA-2 N-01 hit: `/en` is regenerated after its revalidate window into
+      // `route-cache/APP_PAGE/<owner>/$/en.html`; the variant's 404 regeneration then targets
+      // `$/EN.html`, which is that same file on the volume.
+      const scoped = "/route-cache/APP_PAGE/owner/$";
+      const handler = new CspCacheHandler(ctx(foldingProbe(server)));
+      await handler.set(
+        `${scoped}/en`,
+        { ...notFoundEntry, html: HOME, status: 200 },
+        WRITE,
+      );
+      expect(await handler.get(`${scoped}/EN`, READ)).toBeNull();
+      await handler.set(`${scoped}/EN`, notFoundEntry, WRITE);
+
+      const after = await new CspCacheHandler(ctx(foldingProbe(server))).get(
+        `${scoped}/en`,
+        READ,
+      );
+      expect(statusOf(after)).toBe(200);
+      expect(htmlOf(after)).toBe(HOME);
+    });
+
     it("still serves and rewrites the lowercase page through its own key", async () => {
       const handler = new CspCacheHandler(ctx(foldingProbe(server)));
       expect(htmlOf(await handler.get("/en", READ))).toBe(HOME);
@@ -216,7 +253,7 @@ describe("keyCollidesWithOtherCase", () => {
     "/srv/.next/server/app/en.html",
     "/srv/.next/server/app/en-XA.html",
     "/srv/.next/server/app/en/poland/product/amber-hour.html",
-    "/srv/.next/server/app/route-cache/APP_PAGE/abc/$/en.html",
+    "/srv/.next/server/route-cache/APP_PAGE/abc/$/en.html",
   ]);
   /** A case-insensitive volume holding exactly `stored`, spelled as stored. */
   const trueCase = (file: string): string | undefined =>
@@ -259,7 +296,7 @@ describe("responseCacheFiles", () => {
         "APP_PAGE",
       ),
     ).toEqual([
-      "app/route-cache/APP_PAGE/abc/$/en/occasions.html",
+      "route-cache/APP_PAGE/abc/$/en/occasions.html",
       "app/en/occasions.html",
     ]);
     expect(responseCacheFiles("abc123", "FETCH")).toEqual([]);

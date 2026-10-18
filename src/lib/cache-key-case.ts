@@ -5,17 +5,18 @@
  *
  * ## The defect
  *
- * Next's `FileSystemCache` stores a page under `.next/server/app/<path>.html` (`.rsc`, `.meta`,
- * and since 16.3 also under `app/route-cache/<owner>/$/<path>.html`). The key is the request path
- * exactly as it arrived, so `/EN` and `/en` are two keys. On a **case-insensitive volume** — macOS
- * APFS, which is where the founder and the QA agents run `pnpm start` — they are one file. A
- * request for `/EN` (or `/en/Occasions`, `/en/poland/product/AMBER-HOUR`) then *reads* the
- * prerender of `/en`, which Next does not have in its prerender manifest under that key, treats as
- * revalidate-after-one-second and regenerates; the regeneration of a key the router refuses is
- * the 404 document, and it is *written* through the variant key into the lowercase page's own
- * files. Every later visitor of `/en` is served the 404 until the server restarts (QA-2 N-01:
- * nine real pages in 25 minutes). On case-sensitive Linux — CI, the Railway container — the two
- * keys are two files and `/EN` is simply a miss, which `dynamicParams = false` answers as 404.
+ * Next's `FileSystemCache` stores a page under `.next/server/app/<path>.html` at build time and,
+ * once the page is regenerated (after its revalidate window, or a tag revalidation), under
+ * `.next/server/route-cache/APP_PAGE/<owner>/$/<path>.html`. The key is the request path exactly
+ * as it arrived, so `/EN` and `/en` are two keys. On a **case-insensitive volume** (macOS APFS,
+ * where the founder and the QA agents run `pnpm start`) they are one file. Reproduced on a
+ * production build (TASK-247 `## Result`): after `/en` had been regenerated, a request for `/EN`
+ * answered **200 with the real page** (a duplicate URL), Next then regenerated the variant as the
+ * router's 404 and wrote it through `$/EN.html` into `$/en.html`, and from the next restart (or
+ * the next memory-cache eviction) `/en` itself answered 404, across restarts until `.next` was
+ * deleted (QA-2 N-01: nine real pages in 25 minutes). On case-sensitive Linux (CI, the Railway
+ * container) the two keys are two files and `/EN` is a miss, which `dynamicParams = false`
+ * answers as a 404.
  *
  * ## The rule
  *
@@ -54,16 +55,21 @@ const RESPONSE_KINDS = new Set(["APP_PAGE", "APP_ROUTE", "PAGES"]);
 /** Next's marker between a scoped key's owner prefix and the request path (16.3 route cache). */
 const SCOPE_MARKER = "/$/";
 
+/** Next's directory for scoped response entries, under `serverDistDir` (16.3 route cache). */
+const SCOPED_PREFIX = "/route-cache/";
+
 /**
- * The files a response-cache key reads or writes, relative to `serverDistDir`: the primary
- * payload of the key itself and, for a scoped key, the build seed of its request path, which
- * `FileSystemCache.get` also consults.
+ * The files a response-cache key reads or writes, relative to `serverDistDir`, as Next's
+ * `FileSystemCache.getFilePath` places them: a plain key under `app/` (`pages/`), a scoped key
+ * (`/route-cache/<kind>/<owner>/$/<path>`) under `serverDistDir` itself, plus the build seed of
+ * its request path under `app/`, which `FileSystemCache.get` also consults.
  */
 export function responseCacheFiles(key: string, kind: string): string[] {
   if (!RESPONSE_KINDS.has(kind)) return [];
   const root = kind === "PAGES" ? "pages" : "app";
   const suffix = kind === "APP_ROUTE" ? ".body" : ".html";
-  const files = [`${root}${key}${suffix}`];
+  if (!key.startsWith(SCOPED_PREFIX)) return [`${root}${key}${suffix}`];
+  const files = [`${key.slice(1)}${suffix}`];
   const marker = key.indexOf(SCOPE_MARKER);
   if (marker !== -1) {
     files.push(

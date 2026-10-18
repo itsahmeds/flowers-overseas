@@ -8,11 +8,14 @@
  * written into `/en`'s own files, so the real page answered 404 to every later visitor until the
  * build was rebuilt. `src/lib/cache-key-case.ts` keeps every key to its own file.
  *
- * The order of this file is the point: **every variant first, twice, with a pause long enough
- * for the variant's one-second revalidation to run, and only then the lowercase pages.** On the
- * old code against a local macOS build the lowercase pages come back 404 here; on case-sensitive
- * Linux (CI, Railway) the files never collided and the whole file holds either way, which is
- * the behaviour the fix makes universal. Unlike the per-page variant cases elsewhere, nothing
+ * The order of this file is the point: **the real pages, then every variant twice with a pause
+ * long enough for the variant's one-second revalidation to run, then the real pages again.** On
+ * the old code against a local macOS build whose prerenders are past their revalidate window
+ * (the state of any server up for an hour; `touch -A -020000` on `.next/server/app` reproduces
+ * it), the first variant request answers 200 with the real page and the regenerated 404 is
+ * written into the real page's scoped entry. On case-sensitive Linux (CI, Railway) the files
+ * never collided and the whole file holds either way, which is the behaviour the fix makes
+ * universal. Unlike the per-page variant cases elsewhere, nothing
  * here is skipped on a Mac: this file is the one that must run where the defect lived.
  */
 import { expect, test } from "@playwright/test";
@@ -62,6 +65,16 @@ test("case variants answer 404 every time and the lowercase pages keep their own
   test.setTimeout(120_000);
   /** The `<title>` each variant was answered with, per real page. */
   const variantTitles = new Map<string, Set<string | undefined>>();
+
+  // The real pages first, twice, with a pause: a page past its revalidate window is regenerated in
+  // the background into its scoped route-cache entry, which is the file a variant collided with.
+  for (const visit of [1, 2]) {
+    for (const { page } of PAGES) {
+      const response = await request.get(page, { maxRedirects: 0 });
+      expect(response.status(), `${page} (before, visit ${visit})`).toBe(200);
+    }
+    await pause(1_500);
+  }
 
   // Two rounds, 1.5 s apart: Next treats a key it did not prerender as revalidate-after-one-second,
   // so the second round reads whatever the first round's regeneration wrote.
