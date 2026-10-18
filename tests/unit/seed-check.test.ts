@@ -237,10 +237,11 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(SEED_CHECK_FAMILIES).toHaveLength(10);
   });
 
-  it("declares its cases from a table of 36 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
+  it("declares its cases from a table of 40 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
     // The `describe.each` below declares its cases from this directory; an emptied or thinned
-    // directory would otherwise just declare fewer cases and stay green.
-    expect(cases).toHaveLength(36);
+    // directory would otherwise just declare fewer cases and stay green. Spec 006 AC-33 added four
+    // (`copy/bad-dash-in-head-*`, `copy/bad-product-seo-title-shape`; TASK-242).
+    expect(cases).toHaveLength(40);
     // Spec 008 AC-2's eight cases are the `copy/bad-intro-*` and the three listing-slug files;
     // `copy/delivery-timing` also has spec 006's English product case, so it is counted by file.
     const spec008 = cases.filter(
@@ -1395,12 +1396,13 @@ describe("§11: a locale or a country cannot look ready in CI while it is gated 
       );
       expect(byLocale.get(locale)?.ready, locale).toBe(false);
     }
-    // `en` is ready: the two rows reworded into the present tense (FO-BQ-001 and FO-BQ-003's
-    // `seoDescription`; TASK-179) carry the founder's attestation of 2026-10-04 (TASK-192), and
-    // every other row was already reviewed.
+    // `en` is not ready while TASK-243's rows wait for the founder: every product `seoTitle` took
+    // "{name}: {descriptor}" and 10 category and 8 occasion rows lost their em dash (spec 006
+    // §14 A-founder-2026-10-15a), and each changed row ships `reviewed: false` until the
+    // founder's own record run, which turns this back to ready (84 + 10 + 8 = 102 rows).
     const en = byLocale.get("en");
-    expect(en?.ready).toBe(true);
-    expect((en?.rows ?? 0) - (en?.reviewed ?? 0)).toBe(0);
+    expect(en?.ready).toBe(false);
+    expect((en?.rows ?? 0) - (en?.reviewed ?? 0)).toBe(102);
     for (const locale of launchLocales) {
       expect(byLocale.has(locale), locale).toBe(true);
     }
@@ -2144,4 +2146,116 @@ describe("spec 006 AC-30 / T-30: the `seed-check` CI job", () => {
     expect(seedReadme).toContain("ten rule families");
     expect(seedReadme).toContain("`--report`");
   });
+});
+
+/* -------------------------------------------------------------------------- */
+/* Spec 006 AC-33 / T-33: no dash in head copy (TASK-242).                    */
+/* -------------------------------------------------------------------------- */
+
+describe("spec 006 AC-33: `copy/dash-in-head` and `copy/product-seo-title-shape` (T-33)", () => {
+  const AC33_CASES = [
+    "bad-dash-in-head-product-title.json",
+    "bad-dash-in-head-category-description.json",
+    "bad-dash-in-head-spaced-hyphen.json",
+    "bad-product-seo-title-shape.json",
+  ];
+
+  /** The entity key and locale each fixture's line must name; the field is in its `expect`. */
+  const AC33_KEYS: Readonly<Record<string, string>> = {
+    "bad-dash-in-head-product-title.json": "product:FO-BQ-001 (en)",
+    "bad-dash-in-head-category-description.json": "category:roses (en)",
+    "bad-dash-in-head-spaced-hyphen.json": "product:FO-BQ-001 (en)",
+    "bad-product-seo-title-shape.json": "product:FO-BQ-001 (en)",
+  };
+
+  it("has its four fixtures in the case table, each naming the file, key, locale and field", () => {
+    const own = cases.filter((testCase) => AC33_CASES.includes(testCase.name));
+    expect(own.map((testCase) => testCase.name).sort()).toEqual(
+      [...AC33_CASES].sort(),
+    );
+    for (const testCase of own) {
+      const problems = runCase(testCase).filter(
+        (problem) => problem.rule === testCase.value.rule,
+      );
+      expect(
+        problems.some(
+          (problem) =>
+            problem.file === `seed/data/${testCase.value.replaces}` &&
+            problem.key === AC33_KEYS[testCase.name] &&
+            problem.message.includes(testCase.value.expect),
+        ),
+        `${testCase.name}:\n${formatSeedProblems(problems)}`,
+      ).toBe(true);
+    }
+  });
+
+  it(
+    "names the one fault of the em-dash product title and nothing else in the copy family",
+    () => {
+      const testCase = cases.find(
+        (candidate) => candidate.name === "bad-dash-in-head-product-title.json",
+      );
+      if (testCase === undefined) throw new Error("fixture missing");
+      const lines = formatSeedProblems(
+        runCase(testCase).filter((problem) => problem.rule === "dash-in-head"),
+      );
+      expect(lines).toBe(
+        'seed/data/copy/en/products.json: [copy/dash-in-head] `product:FO-BQ-001 (en)` `seoTitle` "Amber Hour \u2014 hand-tied orange rose bouquet" carries an em dash (U+2014): head copy takes a colon or a full stop (spec 006 §14 A-founder-2026-10-15a)',
+      );
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    'passes "Amber Hour: hand-tied, all-in": a hyphenated word is not a dash',
+    () => {
+      const mutated = applySeedCheckCase(
+        tree,
+        SeedCheckCaseSchema.parse({
+          family: "copy",
+          rule: "dash-in-head",
+          replaces: "copy/en/products.json",
+          expect: "none: this fixture passes",
+          why: "spec 006 AC-33's passing fixture: hyphenated words and the colon shape are clean head copy.",
+          ops: [
+            {
+              op: "setRow",
+              match: { key: "FO-BQ-001" },
+              set: { seoTitle: "Amber Hour: hand-tied, all-in" },
+            },
+          ],
+        }),
+        () => {
+          throw new Error("no fixture file");
+        },
+      );
+      expect(
+        formatSeedProblems(
+          checkSeedDataset(mutated).filter(
+            (problem) =>
+              problem.rule === "dash-in-head" ||
+              problem.rule === "product-seo-title-shape",
+          ),
+        ),
+      ).toBe("");
+    },
+    TREE_TIMEOUT,
+  );
+
+  it(
+    "the committed tree: no copy row in any locale carries a dash in a head field, and every product title has the shape",
+    () => {
+      const own = checkSeedDataset(tree).filter(
+        (problem) =>
+          problem.rule === "dash-in-head" ||
+          problem.rule === "product-seo-title-shape",
+      );
+      expect(formatSeedProblems(own)).toBe("");
+      // The rule read every locale's rows: the four locales' product files are in the tree.
+      for (const locale of ["en", "en-gb", "de", "pl"]) {
+        expect(tree.raw.has(`copy/${locale}/products.json`), locale).toBe(true);
+      }
+    },
+    TREE_TIMEOUT,
+  );
 });

@@ -37,7 +37,13 @@ export type CorridorCaseOp =
   /** Append a sentence to the markdown body. */
   | { readonly op: "appendBody"; readonly text: string }
   /** Keep the first `count` FAQ items (or repeat the first until there are `count`). */
-  | { readonly op: "setFaqCount"; readonly count: number };
+  | { readonly op: "setFaqCount"; readonly count: number }
+  /** Replace one FAQ question, keeping its answer (spec 007 AC-36's `faq[].q` fixture). */
+  | {
+      readonly op: "setFaqQuestion";
+      readonly index: number;
+      readonly q: string;
+    };
 
 /** One case: what it breaks, where, and what the gate must say about it. */
 export interface CorridorCheckCase {
@@ -105,6 +111,18 @@ function applyOps(
         const first = faq[0];
         while (faq.length < op.count && first !== undefined) faq.push(first);
         frontmatter["faq"] = faq.slice(0, op.count);
+        break;
+      }
+      case "setFaqQuestion": {
+        const faq = Array.isArray(frontmatter["faq"])
+          ? [...(frontmatter["faq"] as Record<string, unknown>[])]
+          : [];
+        const item = faq[op.index];
+        if (item === undefined) {
+          throw new Error(`fixture base has no FAQ item ${String(op.index)}`);
+        }
+        faq[op.index] = { ...item, q: op.q };
+        frontmatter["faq"] = faq;
         break;
       }
     }
@@ -359,5 +377,18 @@ export const CORRIDOR_CHECK_CASES: readonly CorridorCheckCase[] = [
     why: "spec 007 §14 A3 made reciprocity owed wherever the target can carry it, so the fixture has to be an omission rather than a full target: the Netherlands guide drops Germany and keeps only two neighbours, while Germany still names `NL`. That edge now points one way into a page with a slot going spare, which is the authoring mistake the rule exists to catch — and it is one field on one file, so nothing else moves.",
     file: "en/nl-guide.md",
     ops: [{ op: "setField", field: "relatedIso2", value: ["FR", "PL"] }],
+  },
+  {
+    rule: "dash-in-head",
+    expect: "carries an em dash (U+2014)",
+    why: "spec 007 §14 A-founder-2026-10-15a, AC-36: the guide's `seoTitle` is its `<title>`, and the founder approved the copy on the condition that it carries no em dash.",
+    file: "en/pl-guide.md",
+    ops: [
+      {
+        op: "setField",
+        field: "seoTitle",
+        value: "Send flowers to Poland \u2014 a guide",
+      },
+    ],
   },
 ];

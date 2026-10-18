@@ -106,6 +106,10 @@ import {
 import { floristSentenceFor } from "../scripts/i18n-draft.ts";
 import { COUNTRIES, COUNTRY_CODES } from "../src/config/countries.ts";
 import {
+  describeHeadDashes,
+  headDashesIn,
+} from "../src/modules/i18n/head-punctuation.ts";
+import {
   NEXT_AVAILABLE_HORIZON_DAYS,
   pickerState,
 } from "../src/modules/geo/delivery/state.ts";
@@ -1787,6 +1791,54 @@ function checkHubIntros(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   return problems;
 }
 
+/**
+ * `copy/dash-in-head` and `copy/product-seo-title-shape` (spec 006 §14 A-founder-2026-10-15a
+ * clause 4, AC-33; TASK-242). A row's `name`, `seoTitle` and `seoDescription` reach a `<title>`, a
+ * meta description or a JSON-LD name, so none may carry an em dash, a spaced hyphen or a spaced en
+ * dash (the one rule, `src/modules/i18n/head-punctuation.ts`), in any locale and any entity. A
+ * product's `seoTitle` starts with the row's own `name` and ": ", or is the name, so the authored
+ * title and the composed one (`catalog.descriptor.name`) have one shape. One line per problem,
+ * naming the file, the entity key, the locale and the field.
+ */
+function headCopyProblems(
+  path: string,
+  locale: string,
+  rows: readonly SeedCopy[],
+): SeedProblem[] {
+  const problems: SeedProblem[] = [];
+  for (const row of rows) {
+    const key = `${row.entity}:${row.key} (${locale})`;
+    for (const [field, value] of [
+      ["name", row.name],
+      ["seoTitle", row.seoTitle],
+      ["seoDescription", row.seoDescription],
+    ] as const) {
+      if (typeof value !== "string") continue;
+      const found = headDashesIn(value);
+      if (found.length === 0) continue;
+      problems.push({
+        family: "copy",
+        file: dataFile(path),
+        key,
+        rule: "dash-in-head",
+        message: `\`${field}\` ${JSON.stringify(value)} carries ${describeHeadDashes(found)}: head copy takes a colon or a full stop (spec 006 §14 A-founder-2026-10-15a)`,
+      });
+    }
+    if (row.entity !== "product" || typeof row.seoTitle !== "string") continue;
+    if (row.seoTitle === row.name || row.seoTitle.startsWith(`${row.name}: `)) {
+      continue;
+    }
+    problems.push({
+      family: "copy",
+      file: dataFile(path),
+      key,
+      rule: "product-seo-title-shape",
+      message: `\`seoTitle\` ${JSON.stringify(row.seoTitle)} does not start with the row's name and ": " (${JSON.stringify(`${row.name}: `)}): a product title reads "{name}: {descriptor}" (spec 006 §14 A-founder-2026-10-15a)`,
+    });
+  }
+  return problems;
+}
+
 function checkCopy(tree: SeedTree, parsed: Parsed): SeedProblem[] {
   const problems: SeedProblem[] = [];
 
@@ -1832,6 +1884,10 @@ function checkCopy(tree: SeedTree, parsed: Parsed): SeedProblem[] {
         message: problem.message,
       });
     }
+
+    // spec 006 §14 A-founder-2026-10-15a clause 4: no dash in head copy, and a product's
+    // `seoTitle` is "{name}: {descriptor}" or its bare name.
+    problems.push(...headCopyProblems(path, locale, rows));
 
     // spec 006 §14 A4: no copy states a lead time, a "next day"/"same day" claim or a punctuality
     // promise. There is no such data (`src/config/countries.ts` carries no `delivery_days`) and the

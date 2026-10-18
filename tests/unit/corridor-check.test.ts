@@ -2,7 +2,7 @@
  * T-03 / AC-2 (spec 007 §9, §10; TASK-087): `pnpm corridor:check`.
  *
  * The order is the acceptance criterion's: the committed corpus passes, then **one deliberately
- * failing fixture per rule** (eighteen) fails with the file, the field and the rule named, then
+ * failing fixture per rule** (nineteen) fails with the file, the field and the rule named, then
  * the published-set summary, then the wiring (`package.json`, CI, `check:no-db`).
  *
  * Three assertions here are the ones worth defending in review:
@@ -61,7 +61,7 @@ function rulesOf(
 }
 
 describe("the committed corpus passes (AC-2)", () => {
-  it("has no problem in any of the eighteen rules", () => {
+  it("has no problem in any of the nineteen rules", () => {
     const problems = checkCorridorCorpus(corpus);
     expect(formatCorridorProblems(problems)).toBe("");
     expect(corridorCheckExitCode(problems)).toBe(0);
@@ -88,7 +88,7 @@ describe("the committed corpus passes (AC-2)", () => {
 });
 
 describe("one deliberately failing fixture per rule (T-03)", () => {
-  it("covers all eighteen rules, once each", () => {
+  it("covers all nineteen rules, once each", () => {
     expect(CORRIDOR_CHECK_CASES.map((testCase) => testCase.rule)).toStrictEqual(
       [...CORRIDOR_CHECK_RULES],
     );
@@ -435,5 +435,110 @@ describe("the gate is wired in (AC-2, AC-28)", () => {
     expect(readFileSync(resolve(repoRoot, "README.md"), "utf8")).toContain(
       "corridor:check",
     );
+  });
+});
+
+/**
+ * Spec 007 §14 A-founder-2026-10-15a, AC-36 / T-37 (TASK-242): `dash-in-head` over the three head
+ * fields of a guide. The rule's pinned case above is the em dash in `seoTitle`; these are the other
+ * three of AC-36's four fixtures, each named by its file and field (the FAQ item by index).
+ */
+const DASH_IN_HEAD_CASES: readonly (CorridorCheckCase & {
+  readonly field: string;
+})[] = [
+  {
+    rule: "dash-in-head",
+    field: "seoDescription",
+    expect: "carries an em dash (U+2014)",
+    why: "the meta description is head copy too.",
+    file: "en/pl-guide.md",
+    ops: [
+      {
+        op: "setField",
+        field: "seoDescription",
+        value: "What is given in Poland \u2014 and what is never given.",
+      },
+    ],
+  },
+  {
+    rule: "dash-in-head",
+    field: "faq[2].q",
+    expect: "carries an em dash (U+2014)",
+    why: "a FAQ question is the FAQPage Question.name in the JSON-LD.",
+    file: "en/pl-guide.md",
+    ops: [
+      {
+        op: "setFaqQuestion",
+        index: 2,
+        q: "Can I send flowers to Poland \u2014 on a Sunday?",
+      },
+    ],
+  },
+  {
+    rule: "dash-in-head",
+    field: "seoTitle",
+    expect: "carries a spaced hyphen",
+    why: "swapping the em dash for a hyphen does not meet the ruling.",
+    file: "en/pl-guide.md",
+    ops: [
+      {
+        op: "setField",
+        field: "seoTitle",
+        value: "Send flowers to Poland - a guide",
+      },
+    ],
+  },
+];
+
+describe("spec 007 AC-36: `dash-in-head` names the file and the field (T-37)", () => {
+  it("the pinned case names `content/corridors/en/pl-guide.md` and `seoTitle`", () => {
+    const testCase = CORRIDOR_CHECK_CASES.find(
+      (candidate) => candidate.rule === "dash-in-head",
+    );
+    if (testCase === undefined) throw new Error("no dash-in-head case");
+    const problems = checkCorridorCorpus({
+      files: applyCorridorCheckCase(corpus.files, testCase),
+      names: corpus.names,
+    });
+    expect(formatCorridorProblems(problems)).toBe(
+      'content/corridors/en/pl-guide.md: [dash-in-head] `seoTitle` "Send flowers to Poland \u2014 a guide" carries an em dash (U+2014): it reaches the `<title>`, the meta description or the `FAQPage` `Question.name`, so it takes a colon or a full stop (spec 007 §14 A-founder-2026-10-15a)',
+    );
+  });
+
+  it.each(
+    DASH_IN_HEAD_CASES.map((testCase) => [testCase.field, testCase] as const),
+  )("%s", (field, testCase) => {
+    const problems = checkCorridorCorpus({
+      files: applyCorridorCheckCase(corpus.files, testCase),
+      names: corpus.names,
+    });
+    expect(
+      problems.map((problem) => [problem.file, problem.field, problem.rule]),
+      formatCorridorProblems(problems),
+    ).toStrictEqual([
+      ["content/corridors/en/pl-guide.md", field, "dash-in-head"],
+    ]);
+    expect(problems[0]?.message).toContain(testCase.expect);
+    expect(corridorCheckExitCode(problems)).toBe(1);
+  });
+
+  it('passes a hyphenated word and a colon: "Send flowers to Poland: a hand-tied guide"', () => {
+    const problems = checkCorridorCorpus({
+      files: applyCorridorCheckCase(corpus.files, {
+        rule: "dash-in-head",
+        expect: "",
+        why: "the passing shape.",
+        file: "en/pl-guide.md",
+        ops: [
+          {
+            op: "setField",
+            field: "seoTitle",
+            value: "Send flowers to Poland: a hand-tied guide",
+          },
+        ],
+      }),
+      names: corpus.names,
+    });
+    expect(formatCorridorProblems(problems)).toBe("");
   });
 });

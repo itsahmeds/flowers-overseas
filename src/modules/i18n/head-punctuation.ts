@@ -70,12 +70,14 @@ export interface HeadDash {
 }
 
 /**
- * Whitespace on either side makes a hyphen or an en dash a dash, so "hand-tied" and "10–12" pass
- * while "a - b", "a -b" and "a- b" do not: the same reading as the `Product.name` guard of
- * `src/modules/seo/schema/productOffer.ts` (spec 009 AC-36), so the gates and the builder agree.
+ * Whitespace on **both** sides makes a hyphen or an en dash a dash (spec 003 clause 2: " - " and
+ * " \u2013 "), so "hand-tied", "10\u201312" and German's suspended hyphen ("Box- und
+ * Topfgestecke", a committed `de` description) pass while "a - b" does not. The `Product.name`
+ * guard of `src/modules/seo/schema/productOffer.ts` is stricter (either side), which is safe for a
+ * product name and would refuse correct German here.
  */
-const SPACED_HYPHEN = /\s-|-\s/u;
-const SPACED_EN_DASH = /\s\u2013|\u2013\s/u;
+const SPACED_HYPHEN = /\s-\s/u;
+const SPACED_EN_DASH = /\s\u2013\s/u;
 const EM_DASH = /\u2014/u;
 
 /**
