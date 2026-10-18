@@ -94,5 +94,6 @@ One line per coherent step, newest last.
 Built in PR 262 (draft, TASK-188's feature PR): the round-2 404 (ruled logo bar as `<main>`'s first
 block for AC-31, untilted letter, one `aria-hidden` dashed route, the document at least the
 viewport minus the header). T-42 (`tests/e2e/not-found-document.spec.ts`) passed locally against
-`next start` at 1440 × 900 and 390 × 844, axe clean; red with the Destinations link removed and
-with a stamp element restored (the device scan). CI pending PR 260.
+`next start` at 1440 × 900 and 390 × 844, axe clean. Its two named mutations (the Destinations
+link removed; a postmark element restored) are not yet watched red: they need a rebuild each.
+CI pending PR 260.
