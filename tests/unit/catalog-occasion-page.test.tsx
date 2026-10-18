@@ -123,6 +123,40 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text).toContain("Mother's Day flowers for Poland");
   });
 
+  it("renders N1 twice, one per band: in the hero from `md` up, after the grid below (spec 004 §14 A-founder-2026-10-18c, AC-57)", () => {
+    const notice = "Ordering opens soon.";
+    const notes = [...html.matchAll(/<div[^>]*role="note"[^>]*>/gu)].map(
+      (match) => ({ tag: match[0], at: match.index }),
+    );
+    expect(notes).toHaveLength(2);
+    const [hero, phone] = notes;
+    const grid = html.indexOf("data-fo-listing-grid=");
+    const lede = html.indexOf("data-fo-shop-lede");
+    // The hero's copy precedes the grid; its row is `display: none` below `md`.
+    expect(hero!.at).toBeLessThan(grid);
+    const heroRow = html.lastIndexOf(
+      "<div",
+      html.indexOf("data-fo-hero-note-row"),
+    );
+    expect(heroRow).toBeLessThan(hero!.at);
+    expect(html.slice(heroRow, html.indexOf(">", heroRow))).toMatch(
+      /class="[^"]*(?<![\w:-])max-md:hidden\b/u,
+    );
+    // The phone's copy follows the grid, before the lede, and is `display: none` from `md` up.
+    expect(phone!.at).toBeGreaterThan(grid);
+    expect(phone!.at).toBeLessThan(lede);
+    expect(phone!.tag).toMatch(/class="[^"]*(?<![\w:-])md:hidden\b/u);
+    for (const { tag, at } of notes) {
+      expect(tag).toContain('aria-label="A note before you choose"');
+      expect(tag).not.toContain("aria-hidden");
+      expect(readable(html.slice(at, html.indexOf("</div>", at)))).toContain(
+        notice,
+      );
+    }
+    // Nowhere else: N1's sentence appears exactly twice in the document.
+    expect(text.split(notice)).toHaveLength(3);
+  });
+
   it("prints the destination's own date, formatted and never typed", () => {
     // 26 May is Poland's fixed rule; the window starts in September 2026, so the next one is 2027.
     expect(en.occasionDates?.[0]?.date).toBe("2027-05-26");

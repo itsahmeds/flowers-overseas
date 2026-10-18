@@ -61,6 +61,7 @@ import {
   GridProvenance,
   ListingChipRow,
   ListingPageHead,
+  ListingPhoneNote,
   ListingProse,
   ListingStateLine,
   ListingSubsection,
@@ -213,7 +214,13 @@ export function CountryOccasionPage({
                     {shop("occasion.dateNote", { country })}
                   </Text>
                 )}
-                <div className="mt-[8px] flex items-start gap-[32px] md:mt-[28px]">
+                {/* From `md` up: the date card and N1 beside it. Below `md` neither renders here:
+                    the card is the desktop's, and N1 follows the grid (`ListingPhoneNote`; spec
+                    004 §14 A-founder-2026-10-18c clause 3), so this row is `display: none`. */}
+                <div
+                  className="mt-[28px] flex items-start gap-[32px] max-md:hidden"
+                  data-fo-hero-note-row
+                >
                   {parts === undefined ? null : (
                     /* The date card: the day, month, weekday and year of that **one** value,
                        set apart (spec 004 §14 A23 clause 5; `formatDateParts`). */
@@ -287,6 +294,14 @@ export function CountryOccasionPage({
                 />
               }
               gridLabel={<GridProvenance cards={view.items} locale={code} />}
+              afterGrid={
+                firstPage ? (
+                  <ListingPhoneNote
+                    label={shop("note.label")}
+                    note={shop("root.demoNotice")}
+                  />
+                ) : undefined
+              }
               grid={
                 <ListingGrid
                   cards={view.items}

@@ -46,3 +46,31 @@ for (const path of AUDITED) {
     expect(await audit(page), path).toEqual([]);
   });
 }
+
+/**
+ * T-62's axe half (spec 004 §14 A-founder-2026-10-18c, AC-57; TASK-241): with N1 after the grid
+ * below `md` and in the hero from `md` up, the three AC-57 URLs stay clean at a phone and a laptop
+ * size, so the two renders of the note (one `display: none` in each band) leave no duplicate or
+ * hidden-but-focusable structure behind.
+ */
+const NOTE_AUDITED = [
+  "/en-gb/poland/occasions/mothers-day",
+  "/de/polen/anlaesse/muttertag",
+  "/en-gb/poland/occasions/birthday",
+] as const;
+
+for (const path of NOTE_AUDITED) {
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 1280, height: 800 },
+  ] as const) {
+    test(`${path} at ${String(size.width)} × ${String(size.height)} has no serious or critical violations (T-62)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(size);
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(200);
+      expect(await audit(page), path).toEqual([]);
+    });
+  }
+}

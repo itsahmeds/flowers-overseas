@@ -407,23 +407,45 @@ const inViewport = (
   box.bottom <= viewport.height &&
   box.right <= viewport.width;
 
-test.describe("T-43: the shop root's and the category's H1 on the phone (A-founder-2026-10-18b)", () => {
+/**
+ * Spec 004 §14 A-founder-2026-10-18c (AC-43 and T-43 amended): below `md` the shop root's and the
+ * country category's H1 take `--text-3xl-fluid` (its 32 px minimum, the phone artboards' size);
+ * from `md` up `--text-title-fluid` (A-founder-2026-10-18b). The band-edge pair proves the switch
+ * sits at `md` (768): red with the title step kept below `md` (44 ≠ 32 at 390 and 767), and red
+ * with the 3xl step kept from `md` up (32 ≠ 44 at 768; 46 ≠ 53.8 at 1280, in the laptop block).
+ */
+const PHONE_H1_CASES = [
+  { width: 390, height: 844, step: "3xl", expected: 32 },
+  { width: 767, height: 1024, step: "3xl", expected: 32 },
+  { width: 768, height: 1024, step: "title", expected: 44 },
+] as const satisfies readonly {
+  width: number;
+  height: number;
+  step: Step;
+  expected: number;
+}[];
+
+test.describe("T-43: the shop root's and the category's H1 on the phone (A-founder-2026-10-18c)", () => {
   for (const type of ["countryShop", "countryCategory"] as const) {
-    test(`${PAGE_TYPES[type]} at 390 × 844: H1 at the title step's 44 px`, async ({
-      page,
-    }) => {
-      await page.setViewportSize({ width: 390, height: 844 });
-      await open(page, type);
-      const fontSize = await page
-        .locator("main h1")
-        .evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
-      const expected = resolveStep("title", 390, 844);
-      expect(expected).toBe(44);
-      expect(
-        Math.abs(fontSize - expected),
-        `H1 ${String(fontSize)} px, clause 9 --text-title-fluid = ${expected.toFixed(1)} px`,
-      ).toBeLessThanOrEqual(0.5);
-    });
+    for (const { width, height, step, expected } of PHONE_H1_CASES) {
+      test(`${PAGE_TYPES[type]} at ${String(width)} × ${String(height)}: H1 at ${String(expected)} px (--text-${step}-fluid)`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width, height });
+        await open(page, type);
+        const fontSize = await page
+          .locator("main h1")
+          .evaluate((element) =>
+            parseFloat(getComputedStyle(element).fontSize),
+          );
+        // The restated formula agrees with the spec's table, so a drifted step fails here too.
+        expect(resolveStep(step, width, height)).toBe(expected);
+        expect(
+          Math.abs(fontSize - expected),
+          `H1 ${String(fontSize)} px, clause 9 --text-${step}-fluid = ${String(expected)} px`,
+        ).toBeLessThanOrEqual(0.5);
+      });
+    }
   }
 });
 

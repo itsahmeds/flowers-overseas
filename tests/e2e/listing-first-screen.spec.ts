@@ -954,3 +954,154 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
     }
   });
 });
+
+/**
+ * T-62 (spec 004 §14 A-founder-2026-10-18c clause 3, AC-57; spec 008's pointer; TASK-241): on page
+ * 1 of the country occasion, N1 (`shop.root.demoNotice`) follows the grid's last card below `md`,
+ * before the pager where one renders, as `country-occasion-mobile` draws it, and keeps its place in
+ * the hero from `md` up. At every size exactly one element displays N1, and the accessibility tree
+ * holds exactly one `note`, named by `shop.note.label`, whose text is N1.
+ *
+ * The mechanism (recorded in the brief): one render per band, the other `display: none`; the hero's
+ * copy is hidden below `md`, the after-grid copy from `md` up. Red with the note put back in the
+ * hero below `md` (its box above the grid), with a second copy displayed below `md` (two displayed
+ * notes), and with the displayed phone copy `aria-hidden` (no `note` in the tree).
+ */
+const NOTE_PAGES = [
+  { url: OCCASION, locale: "en-gb", pager: false },
+  { url: "/de/polen/anlaesse/muttertag", locale: "de", pager: false },
+  // More than 12 products, so a pager renders (spec 008 §14 A15 (a): 27 today).
+  { url: "/en-gb/poland/occasions/birthday", locale: "en-gb", pager: true },
+] as const;
+
+const NOTE_SIZES = [
+  { width: 390, height: 844, band: "phone" },
+  { width: 360, height: 640, band: "phone" },
+  { width: 1280, height: 800, band: "desktop" },
+  { width: 1440, height: 900, band: "desktop" },
+] as const;
+
+const escapeRegExp = (value: string): string =>
+  value.replaceAll(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+
+/** A `shop` message as the locale resolves it: its own catalogue, else `en`'s (the overlay). */
+function shopMessage(locale: string, path: readonly string[]): string {
+  const read = (code: string): unknown => {
+    let node: unknown = (
+      JSON.parse(
+        readFileSync(
+          resolve(import.meta.dirname, `../../messages/${code}.json`),
+          "utf8",
+        ),
+      ) as { shop?: unknown }
+    ).shop;
+    for (const key of path) {
+      node =
+        typeof node === "object" && node !== null
+          ? (node as Record<string, unknown>)[key]
+          : undefined;
+    }
+    return node;
+  };
+  const value = read(locale) ?? read("en");
+  if (typeof value !== "string") throw new Error(`no shop.${path.join(".")}`);
+  return value;
+}
+
+test.describe("T-62: the country occasion's note after the grid on the phone (AC-57)", () => {
+  for (const { url, locale, pager } of NOTE_PAGES) {
+    const text = shopMessage(locale, ["root", "demoNotice"]);
+    const label = shopMessage(locale, ["note", "label"]);
+    const mark = shopMessage(locale, ["note", "mark"]);
+    for (const size of NOTE_SIZES) {
+      test(`${url} at ${String(size.width)} × ${String(size.height)}: one note, ${size.band === "phone" ? "after the grid" : "in the hero"}`, async ({
+        page,
+      }) => {
+        await open(page, url, size);
+        const probe = await page.evaluate((n1) => {
+          const main = document.querySelector("main");
+          const grid = main?.querySelector("[data-fo-listing-grid]");
+          const h1 = main?.querySelector("h1");
+          if (!main || !grid || !h1) return null;
+          // The innermost displayed elements whose own text is N1.
+          const shown = Array.from(main.querySelectorAll("*")).filter(
+            (element) =>
+              (element.textContent ?? "").trim() === n1 &&
+              !Array.from(element.children).some(
+                (child) => (child.textContent ?? "").trim() === n1,
+              ) &&
+              element.checkVisibility({ visibilityProperty: true }) &&
+              element.getBoundingClientRect().height > 0,
+          );
+          const cards = Array.from(grid.querySelectorAll(":scope > li"))
+            .map((li) => li.getBoundingClientRect())
+            .filter((rect) => rect.height > 0);
+          const pagerNav = main.querySelector("[data-fo-pagination]");
+          const count = main.querySelector("[data-fo-listing-count]");
+          const follows = (a: Element, b: Element): boolean =>
+            (a.compareDocumentPosition(b) &
+              Node.DOCUMENT_POSITION_FOLLOWING) !==
+            0;
+          return {
+            notes: shown.map((element) => {
+              const rect = element.getBoundingClientRect();
+              return {
+                top: rect.top,
+                bottom: rect.bottom,
+                beforeGrid: follows(element, grid),
+                betweenH1AndGrid:
+                  follows(h1, element) && follows(element, grid),
+                beforePager:
+                  pagerNav === null ? null : follows(element, pagerNav),
+              };
+            }),
+            lastCardBottom: Math.max(...cards.map((rect) => rect.bottom)),
+            pagerTop: pagerNav?.getBoundingClientRect().top ?? null,
+            countTop: count?.getBoundingClientRect().top ?? null,
+          };
+        }, text);
+        expect(probe, "main, its h1 and its grid").not.toBeNull();
+        if (probe === null) return;
+        expect(probe.notes, "displayed N1 elements").toHaveLength(1);
+        const [note] = probe.notes;
+        if (note === undefined) return;
+        expect(probe.pagerTop !== null, "a pager renders").toBe(pager);
+
+        if (size.band === "phone") {
+          expect(
+            note.top,
+            "note top vs the last card's bottom",
+          ).toBeGreaterThanOrEqual(probe.lastCardBottom - 0.5);
+          expect(note.betweenH1AndGrid, "N1 between the H1 and the grid").toBe(
+            false,
+          );
+          if (probe.pagerTop !== null) {
+            expect(note.beforePager, "note before the pager in the DOM").toBe(
+              true,
+            );
+            expect(note.bottom).toBeLessThanOrEqual(probe.pagerTop + 0.5);
+          }
+        } else {
+          expect(note.beforeGrid, "note before the grid in the DOM").toBe(true);
+          expect(probe.countTop).not.toBeNull();
+          expect(note.bottom).toBeLessThanOrEqual((probe.countTop ?? 0) + 0.5);
+        }
+
+        // The accessibility tree: one `note`, named by `shop.note.label`, reading N1.
+        const notes = page.locator("main").getByRole("note");
+        await expect(notes).toHaveCount(1);
+        await expect(notes).toHaveAccessibleName(label);
+        // From `md` up the hero's note keeps its drawn "P.S." mark over N1 (unchanged); below `md`
+        // the note is N1 alone.
+        await expect(notes).toHaveText(
+          size.band === "phone"
+            ? text
+            : new RegExp(
+                `^${escapeRegExp(mark)}\\s*${escapeRegExp(text)}$`,
+                "u",
+              ),
+        );
+      });
+    }
+  }
+});

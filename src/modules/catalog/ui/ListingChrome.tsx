@@ -573,11 +573,17 @@ export function CountryListingHead({
       data-fo-listing-hero
     >
       <div>
-        {/* Spec 004 §14 A-founder-2026-10-18b: the shop root's and the country category's H1
-            take `--text-title-fluid` at every width (44 px at 390, 53.8 px at 1280 × 800, 58 px
-            from 1440), the PR 236 artboards' size, so the toolbar above the grid still leaves
-            the first row's prices on the first screen (rebound AC-34). */}
-        <Display as="h1" size="title">
+        {/* Spec 004 §14 A-founder-2026-10-18b and -18c: the shop root's and the country
+            category's H1 take `--text-3xl-fluid` below `md` (its 32 px minimum, the phone
+            artboards' size) and `--text-title-fluid` from `md` up (44 px at 768, 53.8 px at
+            1280 × 800, 58 px from 1440), so the toolbar above the grid still leaves the first
+            row's prices on the first screen (rebound AC-34). Only the size changes below `md`:
+            the line height and tracking stay the title step's. */}
+        <Display
+          as="h1"
+          size="title"
+          className="max-md:text-(length:--text-3xl-fluid)"
+        >
           {emphasise(heading, emphasis)}
         </Display>
         {stateLine}
@@ -606,6 +612,39 @@ export function CountryListingHead({
           </Text>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * The country occasion's N1 below `md` (spec 004 §14 A-founder-2026-10-18c clause 3, AC-57;
+ * `country-occasion-mobile`'s `p.pl-note`): one muted line directly after the grid's last card and
+ * before the pager. It is `display: none` from `md` up, where the hero's note is the one displayed
+ * (and the hero's is `display: none` below `md`), so each band has exactly one note in the
+ * accessibility tree, in DOM order equal to visual order. Never `aria-hidden`.
+ */
+export function ListingPhoneNote({
+  note,
+  label,
+}: {
+  readonly note: string;
+  readonly label: string;
+}): ReactElement {
+  return (
+    <div
+      aria-label={label}
+      className="mt-[24px] md:hidden"
+      data-fo-listing-note="after-grid"
+      role="note"
+    >
+      <Text
+        as="p"
+        size="xs"
+        tone="subtle"
+        className="max-w-[52ch] leading-[1.45]"
+      >
+        {note}
+      </Text>
     </div>
   );
 }
@@ -762,6 +801,11 @@ export interface CountryListingResultsProps {
   /** The once-per-grid "Example arrangement" label shown below `md` (spec 008 §14 A16 (a)). */
   readonly gridLabel?: ReactNode;
   readonly grid: ReactNode;
+  /**
+   * Directly after the grid's last card, before the fx line and the pager: the country occasion's
+   * `ListingPhoneNote` (spec 004 §14 A-founder-2026-10-18c clause 3).
+   */
+  readonly afterGrid?: ReactNode;
   readonly fx?: ReactNode;
   readonly pager?: ReactNode;
 }
@@ -799,6 +843,7 @@ export function CountryListingResults({
   toolbar,
   gridLabel,
   grid,
+  afterGrid,
   fx,
   pager,
 }: CountryListingResultsProps): ReactElement {
@@ -858,6 +903,7 @@ export function CountryListingResults({
       <div className="mt-[12px] md:mt-[16px]" data-fo-listing-grid-slot>
         {grid}
       </div>
+      {afterGrid}
       {fx === undefined ? null : <div className="mt-[28px]">{fx}</div>}
       {pager === undefined ? null : (
         <div className="mt-[28px] md:mt-[32px]">{pager}</div>
