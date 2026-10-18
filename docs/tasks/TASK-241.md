@@ -226,6 +226,22 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   `pageCount: 2`; red with the note moved after the pager). Question for the spec writer: drop
   the third URL until a paged country occasion exists, or name one. Not blocking: the behaviour
   is specified and built; only its paged e2e case has no page to run on.
+- **E-6 (2026-10-18, finisher): with A-founder-2026-10-18c built, CI still puts the shop root's
+  first row past 844 at 390 × 844.** CI run 39148840272 on head 86784f23 (e2e job 117740714063),
+  T-49 "/en-gb/poland/flowers at 390 × 844": `FO-GS-001` (Amber Hour + Chocolates) price bottom
+  **847.9** (bound 844.5 with the test's 0.5 px), same on the retry. Every other T-49 case passes
+  in CI, the country category and the country occasion at 390 × 844 included, and all T-43 and
+  T-62 cases pass. Locally (macOS, load 7 to 9) the same page measures 830.4; Linux text runs
+  wider. Where the 3.9 px come from (Linux baseline `country-shop-mobile.png`, run 39147969350):
+  the H1 is one 32 px line, as drawn; the toolbar matches the artboard; the excess is the first
+  row's **second card**, whose name "Amber Hour + Chocolates" wraps to two lines on Linux, so its
+  price sits one name line (about 22 px) under the first card's (Amber Hour's price ends near
+  826). The spec says: "If CI's build still puts a first-row price past 844 after this change, the
+  task escalates with CI's numbers. No bound is relaxed and no other element moves without a
+  ruling." Not tuned. Levers, for the founder or the spec writer: (a) a first-row card name held
+  to one line on the phone (ellipsis or a smaller name step); (b) a few pixels out of the shop
+  root's phone toolbar (for example the chip row's or the sort form's gap); (c) T-49 reads the
+  first row's prices at 848 on the shop root. Until it is ruled, CI cannot be green on this PR.
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
@@ -298,6 +314,14 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   1990); both notes displayed (two N1 elements); the phone copy `aria-hidden` (no `note`).
   E-4 answered, E-5 recorded. **Next:** rebase after PR 264 merges, Linux baselines
   (`visual:baselines`), re-fire `ci:full`, CI's T-49 numbers.
+- 2026-10-18 22:05 to 23:10 PKT (finisher, round 3): rebased on origin/main (8befcd62, then
+  072d9181 with PR 264). Linux baselines from run 39147969350 (three images changed and looked at:
+  shop, category and occasion mobile; `language-popup-desktop`'s byte-level re-render not taken).
+  `gates:cheap` PASS on 86784f23. CI run 39148840272 on 86784f23: every job green except e2e
+  (3 failed of 2061): T-49 shop root at 390 (847.9, E-6) and `country-occasion.spec.ts` "prints
+  the destination's own date" in both projects (`getByText(N1)` met the two renders; fixed to
+  read the one `note`, 91bd73aa). **Next:** the E-6 ruling; then re-fire `ci:full`, row to
+  `in_review`.
 
 ## Result
 
