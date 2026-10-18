@@ -162,11 +162,12 @@ test.describe("the GA4 loader is dark until configured (AC-21)", () => {
         0,
       );
 
-      // And no third-party origin at all (AC-18), with two exact-origin exceptions: the media
-      // bucket, which is our own storage serving the page's photographs since TASK-138 — no
-      // cookie, no identifier, named in `img-src` — and, on a non-local target, `vercel.live`,
-      // the platform's preview-feedback script. Anything else, and in particular anything that
-      // could profile a visitor, still fails.
+      // And no third-party origin at all (AC-18), with exact-origin exceptions: the media bucket,
+      // which is our own storage serving the page's photographs since TASK-138 (no cookie, no
+      // identifier, named in `img-src`). `vercel.live` stays tolerated on a non-local target only
+      // for the cold Vercel fallback (ADR-0018); the CI target is the Railway PR environment
+      // (spec 040 §14 A2), whose policy names no `vercel.live` (AC-6), so in CI nothing loads it.
+      // Anything else, and in particular anything that could profile a visitor, still fails.
       const base = new URL(baseURL ?? "http://localhost:3000");
       const allowed = new Set([
         MEDIA_ORIGIN,
@@ -206,9 +207,9 @@ test.describe("no cookie outside the register (AC-22)", () => {
     const cookies = await context.cookies();
     const unregistered = cookies
       .map((cookie) => cookie.name)
-      // Vercel Deployment Protection sets `_vercel_jwt` on a protected preview; it is the
-      // platform's, recorded in `ropa.md` row 2, and out of the application register's scope
-      // (`cookie-register.md`). Everything else must be declared.
+      // `_vercel*` is set only by Vercel Deployment Protection on the cold fallback (ADR-0018); the
+      // CI target is the Railway PR environment behind Basic auth (spec 040 §14 A2), which sets no
+      // cookie. The filter stays for the fallback; everything else must be declared.
       .filter((name) => !name.startsWith("_vercel"))
       .filter((name) => !isRegisteredCookie(name));
 
