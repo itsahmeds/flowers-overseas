@@ -23,9 +23,19 @@
  *
  * Next constructs one handler **per request** (`server/next-server.js`), so the manifest read is
  * memoised per `serverDistDir` (`readStaticPolicy`).
+ *
+ * **Case-exact files (TASK-247).** A response entry is only read or written through the key that
+ * spells its file: on a case-insensitive volume `/EN` would otherwise read, and then overwrite
+ * with a 404, the files of `/en` (QA-2 N-01). `src/lib/cache-key-case.ts` holds the rule and the
+ * reasoning; on a case-sensitive volume (Linux, production) the check is skipped.
  */
 import FileSystemCacheModule from "next/dist/server/lib/incremental-cache/file-system-cache.js";
 
+import {
+  type CaseProbe,
+  defaultCaseProbe,
+  keyCollidesWithOtherCase,
+} from "./cache-key-case.ts";
 import { cspEnforced, stampCspHeaders } from "./csp-response.ts";
 import {
   noteCspFailedOpen,
@@ -63,10 +73,15 @@ const FileSystemCache: CacheHandlerClass =
 export default class CspCacheHandler extends FileSystemCache {
   private readonly cspDistDir: string | undefined;
   private readonly cspEnforce: boolean;
+  private readonly caseProbe: CaseProbe;
 
   constructor(ctx: CacheHandlerContext) {
     super(ctx);
     this.cspDistDir = ctx.serverDistDir;
+    // Next never passes `caseProbe`; the unit tests do, to stand in for a case-insensitive volume
+    // on the case-sensitive Linux of CI (`tests/unit/cache-key-case.test.ts`).
+    this.caseProbe =
+      (ctx["caseProbe"] as CaseProbe | undefined) ?? defaultCaseProbe;
     this.cspEnforce = cspEnforced(process.env);
     noteCspHandler(ctx.serverDistDir);
   }
@@ -79,13 +94,34 @@ export default class CspCacheHandler extends FileSystemCache {
     if (outcome === "failed-open") noteCspFailedOpen();
   }
 
+  /**
+   * Whether `key` would read or write a file stored under another spelling (`cache-key-case.ts`).
+   * `kind` is the request's `IncrementalCacheKind` on a read and the entry's `CachedRouteKind` on
+   * a write; the response kinds share their names across the two.
+   */
+  private foreignFile(key: string, kind: unknown): boolean {
+    const dist = this.cspDistDir;
+    if (dist === undefined || typeof kind !== "string") return false;
+    if (!this.caseProbe.caseInsensitive(dist)) return false;
+    return keyCollidesWithOtherCase(
+      dist,
+      key,
+      kind,
+      this.caseProbe.trueCasePath,
+    );
+  }
+
   override async get(key: string, ctx: object): Promise<CacheEntry | null> {
+    if (this.foreignFile(key, (ctx as { kind?: unknown }).kind)) return null;
     const data = await super.get(key, ctx);
     if (data) this.stamp(data.value);
     return data;
   }
 
   override async set(key: string, data: unknown, ctx: object): Promise<void> {
+    if (this.foreignFile(key, (data as { kind?: unknown } | null)?.kind)) {
+      return;
+    }
     this.stamp(data);
     return super.set(key, data, ctx);
   }
