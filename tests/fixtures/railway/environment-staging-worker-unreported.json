@@ -1,0 +1,52 @@
+{
+  "_fixture": "Derived from environment-staging.json: the `worker` seat answered without its `domains` field (spec 040 AC-10; TASK-103): an answer that does not report domains cannot prove there are none, so `railway:check` fails closed.",
+  "data": {
+    "environment": {
+      "name": "staging",
+      "serviceInstances": {
+        "edges": [
+          {
+            "node": {
+              "serviceName": "web",
+              "region": "europe-west4",
+              "numReplicas": 1,
+              "healthcheckPath": "/api/health",
+              "healthcheckTimeout": 300,
+              "restartPolicyType": "ON_FAILURE",
+              "restartPolicyMaxRetries": 10,
+              "startCommand": "node server.js",
+              "domains": {
+                "serviceDomains": [
+                  {
+                    "domain": "web-staging.up.railway.app"
+                  }
+                ],
+                "customDomains": [
+                  {
+                    "domain": "staging.flowersoverseas.com"
+                  }
+                ]
+              },
+              "latestDeployment": {
+                "status": "SUCCESS"
+              }
+            }
+          },
+          {
+            "node": {
+              "serviceName": "worker",
+              "region": "europe-west4",
+              "numReplicas": 1,
+              "healthcheckPath": null,
+              "healthcheckTimeout": null,
+              "restartPolicyType": "ON_FAILURE",
+              "restartPolicyMaxRetries": 10,
+              "startCommand": null,
+              "latestDeployment": null
+            }
+          }
+        ]
+      }
+    }
+  }
+}
