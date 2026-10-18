@@ -52,6 +52,29 @@ the service's branch on a variable change or a redeploy. Treat it as true until 
 As in (a) above: the previous deployment's **Rollback** action on production `web`. The release
 note's `Previous deployment id` (written by `/launch` gate 8) says which deployment it is.
 
+What spec 040 AC-13 holds this step to: it is a **redeploy of the previous image**, from the
+dashboard (or `railway redeploy` against that deployment from the CLI), it **requires no
+rebuild** (the deployment's log shows no build phase: Railway reuses the image), and it is done,
+`/api/health` answering 200 with the previous `commit`, **in under five minutes** from the click.
+If a rollback ever starts a build, stop and use the Vercel cold fallback (Immediate actions,
+item 1) while it runs.
+
+### Rehearsal (spec 040 AC-13, T-13; T-43 extends it with step 2)
+
+Once, before the cutover (TASK-104), and again whenever Railway changes its deployment screens:
+
+1. On **staging** (never production for the first rehearsal), note `/api/health`'s `commit`
+   (`curl -s -u "$CRED" https://staging.flowersoverseas.com/api/health`).
+2. Do step 1 against staging's previous deployment, and start a stopwatch at the click.
+3. Poll `/api/health` every 10 s until `commit` is the previous one; stop the stopwatch.
+4. In the deployment's log, confirm there is no build phase.
+5. Record in `TASKS.md` (the TASK-103 row's brief, `docs/tasks/TASK-103.md` `## Result`): the
+   date, the two SHAs, the deployment id, the measured time, and "no build". Then roll staging
+   forward again (Rollback on the newest deployment) and fill **Last tested** above.
+
+A rehearsal over five minutes, or one that rebuilt, fails AC-13: record it as such and tell the
+orchestrator.
+
 ### Step 2 — move `release` back
 
 From your checkout of this repository (`cd ~/dev/flowers-overseas`), on any branch, with no
