@@ -113,6 +113,18 @@ export const CompanySchema = z
     vatId: z.string().min(1).optional(),
     address: RegisteredAddressSchema.optional(),
     contact: CompanyContactSchema,
+    /**
+     * The person who runs the site (spec 041 §5.1, §13 Q1): the founder before registration, the
+     * OÜ's management-board member after it. Rendered with the phone number and never with an
+     * address. Required, so the about page and the consent notice always have a name to print.
+     */
+    representative: z.object({ name: z.string().min(1) }).strict(),
+    /**
+     * The support mailbox (spec 041 §5.1, §13 Q2): optional while `registered` is false (no
+     * mailbox exists until Google Workspace does), **required** once it is true, because an
+     * imprint without an email address is incomplete (DDG §5(1) no. 2; CRD Art. 6(1)(c)).
+     */
+    supportEmail: z.email().optional(),
     /** The relay sentence the colophon opens with. */
     descriptionKey: MessageKeySchema,
     /** `Operated by {legalName}, {address}, {registrationNumber}.` — rendered only when registered. */
@@ -136,6 +148,14 @@ export const CompanySchema = z
             message: `\`registered: true\` requires \`${field}\`: a company identity line missing its registry, VAT or address is either incomplete disclosure or an invented fact (spec 004 AC-9, plan/07 §6)`,
           });
         }
+      }
+      if (company.supportEmail === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["supportEmail"],
+          message:
+            "`registered: true` requires `supportEmail`: the imprint and the trader identity need an email address (spec 041 §5.1, DDG §5(1) no. 2)",
+        });
       }
       return;
     }
@@ -170,6 +190,8 @@ const company = {
     labelKey: "company.support.label",
     hoursKey: "company.support.hours",
   },
+  // Spec 041 §13 Q1 (founder, 2026-10-04): "my name is Sheikh Ahmad Hameed".
+  representative: { name: "Sheikh Ahmad Hameed" },
   descriptionKey: "company.description",
   operatedByKey: "company.operatedBy",
 } as const;

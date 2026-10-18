@@ -163,7 +163,6 @@
     "link": {
       "destinations": "Destinations",
       "occasions": "Occasions",
-      "deliveryTimes": "Delivery times and cutoffs",
       "guarantee": "The guarantee",
       "howItWorks": "How it works",
       "helpAndContact": "Help and contact",
@@ -171,7 +170,8 @@
       "terms": "Terms",
       "privacy": "Privacy",
       "cookies": "Cookies",
-      "withdrawal": "Withdrawal and refunds"
+      "withdrawal": "Withdrawal and refunds",
+      "deliveryAndPayment": "Delivery and payment"
     },
     "payment": {
       "heading": "Payment",
@@ -1001,6 +1001,22 @@
       "date": "Date",
       "card": "Card",
       "nothingCharged": "Nothing was charged."
+    }
+  },
+  "infoPages": {
+    "status": {
+      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+    },
+    "company": {
+      "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
+    },
+    "contact": {
+      "heading": "Talk to us",
+      "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
+      "privacy": "Questions about your personal data come to the same number."
+    },
+    "delivery": {
+      "status": "Status"
     }
   }
 }

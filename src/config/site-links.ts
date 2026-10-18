@@ -505,7 +505,7 @@ const siteLinks = [
   },
   {
     id: "delivery-times",
-    labelKey: "footer.link.deliveryTimes",
+    labelKey: "footer.link.deliveryAndPayment",
     target: { kind: "pending" },
     published: false,
     requiresDeliveryDates: true,

@@ -132,6 +132,12 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     });
     expect(localeConfig("de").pathSegments).toEqual({
       destinations: "blumen-verschicken",
@@ -141,6 +147,12 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       blog: "blog",
       forFlorists: "fuer-floristen",
       legal: "rechtliches",
+      howItWorks: "so-funktioniert-es",
+      guarantee: "garantie",
+      help: "hilfe",
+      about: "ueber-uns",
+      delivery: "lieferung-und-zahlung",
+      imprint: "impressum",
     });
     expect(localeConfig("pl").pathSegments).toEqual({
       destinations: "wyslij-kwiaty",
@@ -150,6 +162,12 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       blog: "blog",
       forFlorists: "dla-kwiaciarni",
       legal: "regulamin",
+      howItWorks: "jak-to-dziala",
+      guarantee: "gwarancja",
+      help: "pomoc",
+      about: "o-nas",
+      delivery: "dostawa-i-platnosc",
+      imprint: "dane-firmy",
     });
     // `en-gb` is the English column of plan/02 §4.1, identical to `en`.
     expect(localeConfig("en-gb").pathSegments).toEqual(

@@ -49,6 +49,14 @@ export const PATH_SEGMENT_KEYS = [
   "blog",
   "forFlorists",
   "legal",
+  // Spec 041 §2 "Top-level segments" (TASK-182): the five trust pages and the imprint, authored
+  // for every locale at once. The four legal documents are leaves under `legal`, not segments.
+  "howItWorks",
+  "guarantee",
+  "help",
+  "about",
+  "delivery",
+  "imprint",
 ] as const;
 export type PathSegmentKey = (typeof PATH_SEGMENT_KEYS)[number];
 
@@ -122,6 +130,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
   {
@@ -146,6 +160,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
   {
@@ -171,6 +191,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "fuer-floristen",
       legal: "rechtliches",
+      howItWorks: "so-funktioniert-es",
+      guarantee: "garantie",
+      help: "hilfe",
+      about: "ueber-uns",
+      delivery: "lieferung-und-zahlung",
+      imprint: "impressum",
     },
   },
   {
@@ -196,6 +222,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "dla-kwiaciarni",
       legal: "regulamin",
+      howItWorks: "jak-to-dziala",
+      guarantee: "gwarancja",
+      help: "pomoc",
+      about: "o-nas",
+      delivery: "dostawa-i-platnosc",
+      imprint: "dane-firmy",
     },
   },
 ] as const satisfies readonly LocaleData[];
@@ -241,6 +273,12 @@ export const PSEUDO_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
   {
@@ -267,6 +305,12 @@ export const PSEUDO_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
 ] as const satisfies readonly LocaleData[];

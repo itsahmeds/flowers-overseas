@@ -2681,13 +2681,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "141395eb35564fe50baa1839eb43315ec1880ae19f53b926611a483029a5a603"
   },
-  "footer.link.deliveryTimes": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "dd7d9806fe3ab4786a271bcbf2bf3071066a8a7b111c0cec12c57c61d14caff5"
-  },
   "footer.link.destinations": {
     "source": "human",
     "reviewed": true,
@@ -4421,5 +4414,40 @@
     "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
     "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "fcb2b92fcbc41b400242a461b156398dba9b146e8e9b97d8b6307e50392f5577"
+  },
+  "infoPages.status.notYetOpen": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "76c90f3766e84a946be2f0dbffdefe0fa6a19163fb29ef86fe6c9ec41c8b6a09"
+  },
+  "infoPages.company.notRegistered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b960ecb3fc048d36b54c703732a7bf7bf120cc8a11e50dc8e05fcf57b5e7377a"
+  },
+  "infoPages.contact.heading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d1d94fb539774e520cb772c3859fc00c9f63d48f4637e61f44ce54fc8a8fd44"
+  },
+  "infoPages.contact.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8382f721141b299037f002dab96f94fa875e4e82d808f928e0ddff0d2d02acf0"
+  },
+  "infoPages.contact.privacy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "22efc54d1751de706f62229f578f95d10912d942d00ce8e1d6f9d7fb00a2c425"
+  },
+  "infoPages.delivery.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "footer.link.deliveryAndPayment": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8f4a8807691e7bbe54e42482e5114d0da3e9bc65a98ab25ecd751603b2701df7"
   }
 }

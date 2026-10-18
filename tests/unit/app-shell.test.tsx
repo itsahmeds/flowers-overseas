@@ -145,6 +145,12 @@ const FAKE_FIFTH: LocaleConfig = {
     blog: "blog",
     forFlorists: "for-florists",
     legal: "legal",
+    howItWorks: "how-it-works",
+    guarantee: "guarantee",
+    help: "help",
+    about: "about",
+    delivery: "delivery",
+    imprint: "imprint",
   },
 };
 
