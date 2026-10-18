@@ -162,7 +162,9 @@ describe("T-10 — one sign-in core, one Mailer, no stray env names (AC-8)", () 
     const importers = codeFiles.filter(
       (f) =>
         /\.(?:[cm]?[jt]sx?)$/u.test(f) &&
-        /from\s+["'](?:next-auth|@auth\/)[^"']*["']/u.test(read(f)),
+        /(?:from|import|require\()\s*["'](?:next-auth|@auth\/)[^"']*["']/u.test(
+          read(f),
+        ),
     );
     expect(importers.length).toBeGreaterThan(0);
     expect(importers.filter((f) => !f.startsWith("src/lib/auth/"))).toEqual([]);
@@ -179,7 +181,7 @@ describe("T-10 — one sign-in core, one Mailer, no stray env names (AC-8)", () 
     );
     expect(mailerFactories).toEqual(["src/modules/notifications/mailer.ts"]);
     const sdks = codeFiles.filter((f) =>
-      /from\s+["'](?:resend|nodemailer|@sendgrid\/[^"']+|postmark)["']/u.test(
+      /(?:from|import|require\()\s*["'](?:resend|nodemailer|@sendgrid\/[^"']+|postmark)["']/u.test(
         read(f),
       ),
     );
