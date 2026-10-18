@@ -370,13 +370,23 @@ describe("the head sweep reads what a person reads", () => {
     expect(normaliseHeadText("same\u00AD-day")).toBe("same-day");
   });
 
-  it("composes decomposed Polish diacritics, so jeszcze dzi\u015b is read", () => {
-    const decomposed = "dostawa jeszcze dzis\u0301".normalize("NFD");
-    expect(decomposed).not.toBe(decomposed.normalize("NFC"));
-    expect(headOffences({ ...CLEAN, title: decomposed })).toEqual([
-      "title: delivery-timing claim",
-    ]);
-  });
+  it.each([
+    [
+      "Polish",
+      "Najcz\u0119\u015bciej kupowane r\u00f3\u017ce",
+      "ranking claim",
+    ],
+    ["German", "Empfohlen f\u00fcr dich", "ranking claim"],
+  ])(
+    "composes decomposed %s diacritics, which the patterns spell composed",
+    (_language, composed, name) => {
+      const decomposed = composed.normalize("NFD");
+      expect(decomposed).not.toBe(composed);
+      expect(headOffences({ ...CLEAN, title: decomposed })).toEqual([
+        `title: ${name}`,
+      ]);
+    },
+  );
 });
 
 describe("the head sweep's read list is pinned", () => {
