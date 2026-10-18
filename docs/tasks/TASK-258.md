@@ -10,7 +10,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **Founder's "2 B" (spec 013 §14 A-founder-2026-10-14b; spec 002 §14 A10):** row 16 at 06:00 destination-local on the delivery date (`PRODUCTION_START_LOCAL_TIME`; zone `city.iana_zone` else `country.iana_zone`, DST dates 25 Oct 2026 and 28 Mar 2027); `cancelOrder` legal from set P (E plus `accepted`, `paid`) for `buyer` and `admin` with reason `buyer_cancel` from the last two; `system:*` from those two is `ORDER_ACTOR_NOT_ALLOWED`; `partner:{id}` is refused; from `in_production` on, `ORDER_TRANSITION_ILLEGAL` with no provider call.
 - **Refund on cancel:** captured money refunded once, in full, to the original method, with the cancellation's reason; zero `provider.cancel` calls for a captured payment; success writes `order.refunded_full` (row 32) with the status left `cancelled`. The general refund service and its invariants are TASK-261's; this handler must not duplicate them (agree the seam in `refunds.ts`).
 - **Concurrency (AC-45):** 50 runs of `cancelOrder(buyer)` against a `production_start` tick: exactly one applies, `seq` contiguous, never a refund when the start wins.
-- `startProduction(orderId, 'system:payments.production_start')` is the seam spec 011's `markOutForDelivery` calls on the delivery date (spec 013 §12, requirement on spec 011; carried to TASK-215).
+- `startProduction(orderId, 'system:payments.production_start')` is exported here; TASK-259 wires spec 011's `markOutForDelivery` to it (spec 013 §12, requirement on spec 011).
 - Rollback note (§12): a revert of the delivery-morning start first writes row 16 for every `paid` order waiting, or keeps the job running until none waits.
 - **The founder's rulings in spec 013 §14 bind every line:** charge at once (`capture_method: 'automatic'`, no override, no hold for any method; A6 rows 1 and 15 are never written; no lapse job); no buyer surface says or implies partners, florists accepting, offers, re-routing or a held card (`RELAY_PATTERNS`/`RELAY_EXEMPT`/`relayMatches` already exist in `src/config/honesty.ts`: use them, keep no list of your own); no refund, failure or "if we cannot deliver" wording on a paid confirmation state; no edits after placement.
 - **No Stripe account exists yet** (the founder opens it after flowersoverseas.com is live; spec 013 §12 founder actions 1 to 8). Build and test against `FakePaymentProvider` and MSW-served recordings (`onUnhandledRequest: "error"`); no key, no network call to Stripe, in any test this task owns.
@@ -29,7 +29,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/plan-tasks` (2026-10-19):** TASK-215 (spec 011 florist actions) must call `startProduction` from `markOutForDelivery` before row 19 on the delivery date (spec 013 §12); the orchestrator carries that clause into TASK-215's brief.
+_None yet._
 
 ## Escalations
 

@@ -8,6 +8,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 - Owns **AC-1 (staging half), AC-5 (the Stripe test-card decline and retry e2e), AC-33, AC-34 (keyboard-only 4242 run)**; tests T-01, T-05, T-33, T-34 for those halves.
 - Flip `available: true, processor: 'stripe'` for card, Apple Pay and Google Pay only in `src/config/payment-methods.ts` (§12 "Feature flags"); BLIK stays `false` (§12 task 9, not planned).
+- **AC-36 re-check:** this is the last AC-bearing PR of the spec, so re-check AC-36's docs (runbooks, cookie register, `.env.example`, codebase map) against the flip and update them here.
 - Until spec 016's `routing` handler is registered on staging, AC-33 stops at `paid_unrouted` with AC-12's stub (AC-33's own words).
 - **The founder's rulings in spec 013 §14 bind every line:** charge at once (`capture_method: 'automatic'`, no override, no hold for any method; A6 rows 1 and 15 are never written; no lapse job); no buyer surface says or implies partners, florists accepting, offers, re-routing or a held card (`RELAY_PATTERNS`/`RELAY_EXEMPT`/`relayMatches` already exist in `src/config/honesty.ts`: use them, keep no list of your own); no refund, failure or "if we cannot deliver" wording on a paid confirmation state; no edits after placement.
 - **Every order write goes through spec 010's engine** (`orderService.transition`/`appendEvent`, TASK-202); never `UPDATE orders SET status` (ADR-0009). Money is integer minor units plus a currency; no exported function takes a charge amount (AC-9).
