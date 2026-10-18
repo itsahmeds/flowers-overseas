@@ -320,6 +320,7 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
+    "infoPages.contact.phone",
     "infoPages.contact.privacy",
     "infoPages.delivery.status",
     "infoPages.status.notYetOpen",

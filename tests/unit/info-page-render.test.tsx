@@ -76,9 +76,8 @@ describe("T-15 / AC-15: help, with JavaScript off", () => {
   });
 
   it("the 01–12 numbers are aria-hidden decoration", () => {
-    expect(html).toContain(
-      '<span aria-hidden="true" class="text-ink-subtle font-display text-sm">01</span>',
-    );
+    expect(html).toMatch(/<span aria-hidden="true"[^>]*>01<\/span>/u);
+    expect(html).toMatch(/<span aria-hidden="true"[^>]*>12<\/span>/u);
   });
 
   it("the WhatsApp link is wa.me with no query, and no email or mailto while there is none", () => {

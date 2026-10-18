@@ -1013,7 +1013,8 @@
     "contact": {
       "heading": "Talk to us",
       "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
-      "privacy": "Questions about your personal data come to the same number."
+      "privacy": "Questions about your personal data come to the same number.",
+      "phone": "Phone"
     },
     "delivery": {
       "status": "Status"

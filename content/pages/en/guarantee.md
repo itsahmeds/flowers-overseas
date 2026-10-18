@@ -6,7 +6,7 @@ intro: "If the flowers are not right, we fix it. Here is exactly what that means
 sections:
   - id: promise
     heading: "Fresh-flower promise"
-    body: "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full. How long cut flowers last after that depends on the room, the water and the care they get, so we do not promise a number of days."
+    body: "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.\n\nHow long cut flowers last after that depends on the room, the water and the care they get, so we do not promise a number of days."
   - id: missed-day
     heading: "Delivered on the day you chose"
     body: "If our florist cannot deliver on the day you chose, for a reason that is ours and not the recipient's, we refund you in full."
