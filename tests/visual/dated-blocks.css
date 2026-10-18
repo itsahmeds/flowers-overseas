@@ -17,12 +17,16 @@
  * fails the shot (`/break` round 1 hole 3 on PR 169). What leaves is the part whose content is a
  * date: a date table's `<tbody>` (with no body rows the column widths come from the fixed header
  * text alone), the home band's list of dates, and the one sentence on the country occasion page
- * that prints the date — the note under it stays.
+ * that prints the date — the note under it stays. On a date card (the occasion hub's first-screen
+ * dates and the occasions index's "next six", TASK-188) only the date face leaves: the card, its
+ * country or occasion name and its call to action stay.
  *
  * The rows themselves are pinned elsewhere, not by a picture:
  *  - the country occasion's dated sentence: `tests/e2e/country-occasion.spec.ts` and
  *    `tests/unit/catalog-occasion-page.test.tsx` (its text, its ISO date, its place above the grid);
  *  - the occasion hub's date rows: `tests/e2e/hubs.spec.ts` and `tests/unit/catalog-hub-pages.test.tsx`;
+ *  - the date cards (R3, R5): `tests/unit/hub-first-screens.test.tsx` and
+ *    `tests/e2e/hub-first-screens.spec.ts`;
  *  - the shop root's occasion rows: `tests/unit/catalog-shop-page.test.tsx`;
  *  - the home band's dates, drawn on `/dev/components` above the listing primitives:
  *    `tests/e2e/home.spec.ts` and its own `home-dates-*` shots.
@@ -30,6 +34,7 @@
 [data-fo-country-occasion] div[data-fo-occasion-date] > :first-child,
 [data-fo-hub-dates] tbody,
 [data-fo-shop-occasions] tbody,
-[data-fo-occasion-dates] > ul {
+[data-fo-occasion-dates] > ul,
+[data-fo-card-date] > :first-child {
   display: none !important;
 }
