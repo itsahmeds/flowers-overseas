@@ -334,6 +334,26 @@ export interface CorridorLiveSlots {
    * `corridorShopEntry()` in `src/modules/catalog`, which is where the catalogue may be read.
    */
   readonly shopEntryHref?: string | undefined;
+  /**
+   * The state-B chip row beside the shop-root link: the country categories (up to six) and the
+   * country occasions that exist, each already gated by its own published link id and its own
+   * existence predicate (spec 007 §2, §14 A10; TASK-147). Answered by `corridorShopEntry()` in
+   * `src/modules/catalog`. **Live state only**, applied in `corridorView()` below: the guide
+   * state's shop entry is the reviewed shop-root link alone (§14 A9).
+   */
+  readonly shopChips?: readonly CorridorShopChip[] | undefined;
+}
+
+/**
+ * One chip of the state-B shop entry: a link into a country category or a country occasion. The
+ * `name` is the catalogue's authored name for it in this locale (content, as the shop's own chip
+ * rows print it), the `href` is `listingPath()`'s.
+ */
+export interface CorridorShopChip {
+  readonly family: "category" | "occasion";
+  readonly key: string;
+  readonly name: string;
+  readonly href: string;
 }
 
 /** Everything the corridor page renders, and nothing it does not. */
@@ -512,6 +532,14 @@ export function corridorView(
       ...(options.liveSlots?.shopEntryHref === undefined
         ? {}
         : { shopEntryHref: options.liveSlots.shopEntryHref }),
+      // The chips follow the state, not the link: a guide page carries the shop-root link alone
+      // (§14 A9), and a chip row without that link has no section to sit in.
+      ...(state === "live" &&
+      options.liveSlots?.shopEntryHref !== undefined &&
+      options.liveSlots.shopChips !== undefined &&
+      options.liveSlots.shopChips.length > 0
+        ? { shopChips: options.liveSlots.shopChips }
+        : {}),
     },
   };
 }

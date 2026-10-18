@@ -26,7 +26,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Button, Chip, PAGE_FRAME, Photo } from "../../ui/index.ts";
+import { Chip, PAGE_FRAME, Photo } from "../../ui/index.ts";
 import type { CorridorView } from "../corridor.ts";
 
 import { CorridorBreadcrumb } from "./CorridorBreadcrumb.tsx";
@@ -36,6 +36,7 @@ import { CorridorFaq } from "./CorridorFaq.tsx";
 import { CorridorGuideBody } from "./CorridorGuideBody.tsx";
 import { CorridorRelated } from "./CorridorRelated.tsx";
 import { CorridorSection } from "./CorridorSection.tsx";
+import { CorridorShopEntry } from "./CorridorShopEntry.tsx";
 import { countryName, registryLabel } from "./labels.ts";
 
 /**
@@ -66,35 +67,21 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
   const country = countryName(t, view.nameKey);
   const live = view.state === "live";
 
-  // The shop entry. Rendered only when spec 008 has published a target for this country: an
-  // unpublished link id renders no heading, no disabled button and no "coming soon" box, which is
-  // what keeps "zero links to a non-200 URL" true by construction. **In the guide state it is the
-  // link and nothing else** (`/review 98`, TASK-113): the heading ("See what can arrive in…") and
-  // the body ("Bouquets our florists in… can make, … with delivery…") are state-B copy, and each
-  // is a florist, delivery or availability claim the guide state may not make beside "Not yet. We
-  // are choosing florists in {country} now". v2 draws it as the poppy pill under the related
-  // chips (TASK-179).
+  // The shop entry (`CorridorShopEntry`). Rendered only when spec 008 has published a target for
+  // this country: an unpublished link id renders no heading, no disabled button and no "coming
+  // soon" box, which is what keeps "zero links to a non-200 URL" true by construction. **In the
+  // guide state it is the link and nothing else** (`/review 98`, TASK-113); the live state adds
+  // the heading, the body and the chip row (spec 007 §14 A10, TASK-147). v2 draws it as the poppy
+  // pill under the related chips (TASK-179).
   const shop =
     view.liveSlots.shopEntryHref === undefined ? null : (
-      <section
-        aria-label={c("shop.cta", { country })}
-        className={`gap-sm flex flex-col ${view.related === undefined ? "pt-[48px] md:pt-(--section-fluid)" : "mt-[40px]"}`}
-        data-fo-corridor-shop
-      >
-        {live ? (
-          <>
-            <h3 className="display text-md m-0">
-              {c("shop.heading", { country })}
-            </h3>
-            <p className="text-ink-muted m-0 max-w-prose">
-              {c("shop.body", { country })}
-            </p>
-          </>
-        ) : null}
-        <Button className="self-start" href={view.liveSlots.shopEntryHref}>
-          {c("shop.cta", { country })}
-        </Button>
-      </section>
+      <CorridorShopEntry
+        afterRelated={view.related !== undefined}
+        chips={view.liveSlots.shopChips}
+        country={country}
+        href={view.liveSlots.shopEntryHref}
+        live={live}
+      />
     );
 
   return (
