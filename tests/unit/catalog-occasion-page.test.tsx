@@ -157,6 +157,23 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text.split(notice)).toHaveLength(3);
   });
 
+  it("puts the phone's N1 after the grid and before the pager when one renders (AC-57; E-5: no paged country occasion is built today)", () => {
+    const paged: ListingView = { ...en, pageCount: 2 };
+    const out = render(<CountryOccasionPage view={paged} />, "en");
+    const grid = out.indexOf("data-fo-listing-grid=");
+    const phone = out.indexOf('data-fo-listing-note="after-grid"');
+    const pager = out.indexOf("data-fo-pagination=");
+    expect(pager).toBeGreaterThan(-1);
+    expect(phone).toBeGreaterThan(grid);
+    expect(phone).toBeLessThan(pager);
+    // Page 2 renders no hero and no note (spec 008 §14 A15 (a)).
+    const second = render(
+      <CountryOccasionPage view={{ ...paged, page: 2 }} />,
+      "en",
+    );
+    expect(second).not.toContain('role="note"');
+  });
+
   it("prints the destination's own date, formatted and never typed", () => {
     // 26 May is Poland's fixed rule; the window starts in September 2026, so the next one is 2027.
     expect(en.occasionDates?.[0]?.date).toBe("2027-05-26");

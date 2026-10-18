@@ -970,9 +970,16 @@ test.describe('T-39: the category\'s chips in a "Categories" disclosure (A-found
 const NOTE_PAGES = [
   { url: OCCASION, locale: "en-gb", pager: false },
   { url: "/de/polen/anlaesse/muttertag", locale: "de", pager: false },
-  // More than 12 products, so a pager renders (spec 008 §14 A15 (a): 27 today).
-  { url: "/en-gb/poland/occasions/birthday", locale: "en-gb", pager: true },
-] as const;
+  // AC-57's third URL, "a country occasion with more than 12 products, so that a pager renders
+  // (today `/en-gb/poland/occasions/birthday`)", answers 404: Mother's Day is the only country
+  // occasion the catalogue builds, in seven destinations, none with a pager (E-5 in the brief).
+  // The note-before-the-pager order is the unit case in `catalog-occasion-page.test.tsx` until a
+  // paged country occasion exists.
+] as const satisfies readonly {
+  url: string;
+  locale: string;
+  pager: boolean;
+}[];
 
 const NOTE_SIZES = [
   { width: 390, height: 844, band: "phone" },

@@ -56,7 +56,7 @@ for (const path of AUDITED) {
 const NOTE_AUDITED = [
   "/en-gb/poland/occasions/mothers-day",
   "/de/polen/anlaesse/muttertag",
-  "/en-gb/poland/occasions/birthday",
+  // AC-57's paged URL (`/en-gb/poland/occasions/birthday`) answers 404 today (E-5 in the brief).
 ] as const;
 
 for (const path of NOTE_AUDITED) {
