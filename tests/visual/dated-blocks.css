@@ -18,7 +18,8 @@
  * date: a date table's `<tbody>` (with no body rows the column widths come from the fixed header
  * text alone), the home band's list of dates, and the one sentence on the country occasion page
  * that prints the date — the note under it stays. On a date card (the occasion hub's first-screen
- * dates and the occasions index's "next six", TASK-188) only the date face leaves: the card, its
+ * dates and the occasions index's "next six", TASK-188) only the date face leaves
+ * (`data-fo-date-face`: the day, the month and weekday, or the unknown-date line); the card, its
  * country or occasion name and its call to action stay.
  *
  * The rows themselves are pinned elsewhere, not by a picture:
@@ -35,6 +36,6 @@
 [data-fo-hub-dates] tbody,
 [data-fo-shop-occasions] tbody,
 [data-fo-occasion-dates] > ul,
-[data-fo-card-date] > :first-child {
+[data-fo-date-face] {
   display: none !important;
 }

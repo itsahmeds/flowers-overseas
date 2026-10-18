@@ -341,10 +341,16 @@ function DateFace({
 }): ReactElement {
   return (
     <>
-      <span className="display text-ink text-[34px] leading-none md:text-[44px]">
+      <span
+        className="display text-ink text-[34px] leading-none md:text-[44px]"
+        data-fo-date-face
+      >
         {parts.day}
       </span>
-      <span className="text-ink-subtle text-xs font-bold tracking-[0.08em] uppercase">
+      <span
+        className="text-ink-subtle text-xs font-bold tracking-[0.08em] uppercase"
+        data-fo-date-face
+      >
         {parts.month}
         <span className="max-md:hidden">
           {" · "}
@@ -400,7 +406,9 @@ export function HubDateCards({
     const body = (
       <>
         {entry.date === null ? (
-          <span className="text-ink-muted text-sm">{unknownDate}</span>
+          <span className="text-ink-muted text-sm" data-fo-date-face>
+            {unknownDate}
+          </span>
         ) : (
           <DateFace
             parts={formatDateParts(instantOf(entry.date), locale, "UTC")}
