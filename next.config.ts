@@ -103,7 +103,7 @@ const headerRules = [
   // this source does not match. After `noindexHeaderRules()`, so its value is the one served on a
   // direct hit (`src/lib/listing-rewrites.ts`; TASK-170, `/review 143`).
   ...parameterRouteHeaderRules(),
-  // The same header on a **direct** request to the internal product route (`/{locale}/_product/…`);
+  // The same header on a **direct** request to the internal product route (`/{locale}/-product/…`);
   // a product address rewritten there keeps the address it was asked for, which this source does
   // not match (`src/lib/product-rewrites.ts`; spec 009 AC-37, TASK-228).
   ...productRouteHeaderRules(),

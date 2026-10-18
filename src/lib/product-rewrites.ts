@@ -13,7 +13,7 @@
  * it. A server component's dynamic import does not split a client module out (Next's lazy-loading
  * guide), and a client-side `next/dynamic` loader would be a dynamic import and a second island,
  * both of which spec 009 AC-14 forbids. So the product page gets its own file:
- * `src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx`, reached by a
+ * `src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx`, reached by a
  * `beforeFiles` rewrite that runs after `src/proxy.ts` and before the filesystem routes. No URL
  * changes (`plan/02` §4): the browser's address, the canonical, the hreflang set and every link stay
  * the bare product URL, and nothing redirects.
@@ -33,15 +33,18 @@
  * Every locale is listed, not only the ones products are built in: a rewrite to a route that has
  * no page for that locale is the same 404 the shared route gave it.
  */
-import { LOCALES } from "../config/locales";
+import { LOCALES } from "../config/locales.ts";
 
 import { type HeaderRule, NOINDEX_HEADER_NAME } from "./robots-headers.ts";
 
 /**
- * The product route's first segment. The folder is `src/app/[locale]/%5Fproduct`, which Next serves
- * as `_product`: no slug begins with an underscore, so it can never shadow a real page.
+ * The product route's first segment, `src/app/[locale]/-product`. Every slug matches
+ * `^[a-z0-9]+(?:-[a-z0-9]+)*$` (`src/config/catalogue/schemas.ts`), so none begins with a hyphen
+ * and this segment can never shadow a real page. Not `_product`: a `%5F` folder builds, but Next
+ * 16.3.8 prerendered none of its `generateStaticParams` pages (only the fallback shell), which the
+ * PDP's ISR prebuild (spec 009 §14 A6) cannot lose.
  */
-export const PRODUCT_ROUTE_SEGMENT = "_product";
+export const PRODUCT_ROUTE_SEGMENT = "-product";
 
 /** One `beforeFiles` rewrite with no condition: every request at the address, any query. */
 export interface ProductRewriteRule {
@@ -68,7 +71,7 @@ export function productRewriteRules(): ProductRewriteRule[] {
  * The internal path a product address is served from, or `null` when the address is not a product
  * page's shape. The same match the rules make (exact here, which is the case every link uses), for
  * tooling that reads the build output by path: `scripts/client-js-budget.ts` finds the prerendered
- * document of `/en/poland/product/amber-hour` at `en/_product/poland/product/amber-hour.html`.
+ * document of `/en/poland/product/amber-hour` at `en/-product/poland/product/amber-hour.html`.
  */
 export function productRoutePathFor(url: string): string | null {
   const parts = url.replace(/\/+$/u, "").split("/").filter(Boolean);
@@ -87,7 +90,7 @@ export function productRoutePathFor(url: string): string | null {
 }
 
 /**
- * The robots header on a **direct** request to the product route (`/en/_product/poland/product/…`).
+ * The robots header on a **direct** request to the product route (`/en/-product/poland/product/…`).
  * Nobody links there, but a request typed at it would render the product page with a 200 under a
  * second address. Header sources match the address the visitor asked for, before rewrites, so a
  * request rewritten here from the real product address never matches this rule. The same value

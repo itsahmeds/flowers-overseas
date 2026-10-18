@@ -181,7 +181,7 @@ export const DEFAULT_URLS = [
   "/en-gb/poland/occasions/mothers-day",
   // The product page, one per English locale (spec 009 AC-14, T-14 as amended; spec 004 AC-56).
   // Served by its own route file through the product rewrite, so its prerendered document is
-  // `en/_product/poland/product/amber-hour.html`; measured against `PRODUCT_CLIENT_JS_BUDGET_BYTES`.
+  // `en/-product/poland/product/amber-hour.html`; measured against `PRODUCT_CLIENT_JS_BUDGET_BYTES`.
   "/en/poland/product/amber-hour",
   "/en-gb/poland/product/amber-hour",
 ] as const;

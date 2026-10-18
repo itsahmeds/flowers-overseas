@@ -24,7 +24,7 @@ import {
 import { ProductPage } from "@/modules/ui/product/ProductPage";
 
 /**
- * `/{locale}/_product/{segment}/{child}/{grandchild}` — **the product page's own route file**
+ * `/{locale}/-product/{segment}/{child}/{grandchild}` — **the product page's own route file**
  * (spec 009 §2, §5.4; §14 A-founder-2026-10-18a, AC-37; TASK-127, TASK-228).
  *
  * Nobody links here and no address shows it. `next.config.ts` rewrites every product address,

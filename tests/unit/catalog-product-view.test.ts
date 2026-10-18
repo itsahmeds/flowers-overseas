@@ -728,7 +728,7 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     // Joined, not a `URL`: a URL would decode the folder's `%5F` to `_`.
     const route = join(
       fileURLToPath(new URL("../../src/app/", import.meta.url)),
-      "[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx",
+      "[locale]/-product/[segment]/[child]/[grandchild]/page.tsx",
     );
     const seo = join(modules, "seo");
     const walk = (dir: string): string[] =>
@@ -790,7 +790,7 @@ describe("the PDP descriptor resolves through spec 007's `indexability()` (§6, 
     expect(files).toContain(
       join(
         src,
-        "app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx",
+        "app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx",
       ),
     );
     for (const path of files) {

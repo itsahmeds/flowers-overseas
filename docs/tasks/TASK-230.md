@@ -68,6 +68,7 @@ _None recorded._
 - 2026-10-15 06:35Z: disabled chips muted; unit test.
 - 2026-10-15 06:50Z: e2e (look and the 390 row end), mutations watched red.
 - 2026-10-18 11:15Z (finisher 2): QA 2026-10-18 Q1-09: the date-row end case now runs at 390, 1024, 1280 and 1440. N-05 (chips that look live) is this PR's muted, dashed disabled chip; add-ons stay static rows (spec 010, TASK-252). Judged by CI `e2e` on the head; not watched red against `c8d3b334` in this run.
+- 2026-10-18 12:05Z (finisher 2): **found, open:** on this PR's build the new 1440 case is red: the date row cuts its sixth chip ("Fri 23 Oct") at 1440 (66 px chips in a ~421 px column), Q1-09's desktop half. 390, 1024 and 1280 pass. A first try, seven chips per view from `md` (`calc((100%-6*8px)/7)`, the picker's own comment says "the week's seven columns"), turned four phone and 1440 `scrollWidth` cases red, so it was reverted. Next agent: fix the chip width from `md`, rerun `product-size-card-dates.spec.ts`.
 
 ## Result
 

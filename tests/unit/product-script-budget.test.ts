@@ -183,7 +183,7 @@ function rewrite(path: string): string | undefined {
 }
 
 describe("AC-37: every product address is served by the product route", () => {
-  it("rewrites each locale's product address to `_product`, keeping the visitor's spelling", () => {
+  it("rewrites each locale's product address to `-product`, keeping the visitor's spelling", () => {
     for (const locale of LOCALES) {
       const path = `/${locale.code}/poland/${locale.pathSegments.product}/amber-hour`;
       const internal = `/${locale.code}/${PRODUCT_ROUTE_SEGMENT}/poland/${locale.pathSegments.product}/amber-hour`;
@@ -191,7 +191,7 @@ describe("AC-37: every product address is served by the product route", () => {
       expect(productRoutePathFor(path), path).toBe(internal);
     }
     expect(rewrite("/EN/poland/PRODUCT/amber-hour")).toBe(
-      "/EN/_product/poland/PRODUCT/amber-hour",
+      "/EN/-product/poland/PRODUCT/amber-hour",
     );
   });
 
@@ -228,11 +228,11 @@ describe("AC-37: every product address is served by the product route", () => {
     expect(config).toContain("...productRouteHeaderRules(),");
     expect(productRouteHeaderRules()).toEqual([
       {
-        source: "/:locale/_product/:path*",
+        source: "/:locale/-product/:path*",
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       },
     ]);
-    expect(PRODUCT_ROUTE_HEADER_SOURCE).toBe("/:locale/_product/:path*");
+    expect(PRODUCT_ROUTE_HEADER_SOURCE).toBe("/:locale/-product/:path*");
     expect(PRODUCT_ROUTE_ROBOTS).toBe("noindex, nofollow");
     // A product address never reaches a listing parameter rule either.
     for (const rule of listingRewriteRules()) {
@@ -261,7 +261,7 @@ describe("AC-37: every product address is served by the product route", () => {
     ).toEqual([]);
     expect(shared).not.toContain(`${productUi}CardMessageField.tsx`);
     const product = reach(
-      "src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx",
+      "src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx",
     );
     expect(product).toContain(`${productUi}CardMessageField.tsx`);
   });

@@ -75,12 +75,12 @@ task actually touches.
 | `(dev)/dev/components/page.tsx` | `/dev/components` — the component gallery (spec 004 §2 "Component gallery —… | spec 004 |
 | `(dev)/dev/components/product.ts` | The gallery's fixtures for spec 009's six product-page primitives (TASK-126),… | spec 009 |
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today only `/dev/components`… | spec 004 |
-| `[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_product/{segment}/{child}/{grandchild}` — **the product page's own… | spec 009 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the **depth-4 parameter… | spec 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the **parameter route**: the one route… | spec 008 |
+| `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` — **the product page's own… | spec 009 |
 | `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page except the home (spec 004… | spec 004 |
 | `[locale]/@notice/page.tsx` | The locale home's `@notice` slot: **no** price claim (founder, 2026-10-04:… | — |
-| `[locale]/@switcher/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | spec 003 |
+| `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | spec 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | spec 003 |
 | `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | spec 003 |
 | `[locale]/@switcher/[segment]/page.tsx` | Depth-2 language links | spec 003 |

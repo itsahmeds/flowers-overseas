@@ -1,9 +1,9 @@
 /**
  * The product page's language links: this product in each locale (TASK-233; `PageLocaleSwitcher`).
- * The product page is served from `_product` since spec 009 AC-37 (TASK-228;
+ * The product page is served from `-product` since spec 009 AC-37 (TASK-228;
  * `src/lib/product-rewrites.ts`), so its slot mirrors that path; without this file the slot would
  * fall back to `default.tsx` and every language link would go to a locale home. The segments are
- * the visitor's address without `_product`, exactly what the depth-4 slot passes.
+ * the visitor's address without `-product`, exactly what the depth-4 slot passes.
  *
  * @purpose Product page language links
  * @spec 003

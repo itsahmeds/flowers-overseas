@@ -74,7 +74,7 @@ import {
  * **The product page is not served here** (spec 009 §14 A-founder-2026-10-18a, AC-37; TASK-228).
  * Its address, `/{locale}/{countrySlug}/{product}/{productSlug}`, has the same depth, but
  * `next.config.ts` rewrites it to its own route file,
- * `src/app/[locale]/%5Fproduct/[segment]/[child]/[grandchild]/page.tsx`
+ * `src/app/[locale]/-product/[segment]/[child]/[grandchild]/page.tsx`
  * (`src/lib/product-rewrites.ts`). Turbopack puts every client module a route file reaches into
  * that route's script set, so while this file mounted `ProductPage` the country category and
  * occasion fetched the product island's chunk. This file must never import `ProductPage` or
