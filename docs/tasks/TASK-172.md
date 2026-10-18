@@ -124,6 +124,29 @@ named):
   any guarantee sentence with "14 days" within three words of "promise", for TASK-182's
   `pages:check`).
 
+## Round 2 fixes (breaker HOLES 8 to 12 and one false positive on `08c39016`)
+
+The reviewer accepted holes 5 and 7. Each new hole and its closing test (`tests/unit/freshness-claim.test.ts`):
+
+- **Hole 8, a day word before its number:** a reverse day count (`days|Tag|Tage|Tagen|dzień|dni`, then punctuation and at most one
+  word, then a digit run, an ICU argument or `#`). "fails every round-2 dodge" ("Fresh days: 5", "Frische (Tage): 5", "Świeżość
+  (dni): 5"…) and the per-key restorations ("Garantie in Tagen: 5"). A spelled-out number after a label ("days: five") is not
+  read.
+- **Hole 9, HTML entities:** every named and numeric entity is decoded with `entities` 8.1.0 (`decodeHTML`, the HTML5 table).
+  This adds a **new runtime dependency** (BSD-2-Clause, no dependencies of its own). Fixtures: `&ndash;`, `&#8209;`, `&shy;`,
+  `&#53;`, `&auml;`, `&#347;`/`&#380;`.
+- **Hole 10, markdown emphasis:** underscores are removed (`*` already went in `stripMarkup`). Fixtures `_x_`, `__x__`, `*x*`,
+  `**x**`, and the seeded `guarantee.md` now hides the claim in `__7__` and `_frisch_`.
+- **Hole 11, two words between number and day word:** "5 or more days", "seven or more days", "5 oder mehr Tage frisch". A
+  scan of every message value in four locales flags only `checkout.privacy.demoNotice`, the same as before the widening, and
+  that key is outside A11's guarantee scope.
+- **Hole 12, keycaps and look-alikes:** variation selectors and U+20E3 are removed ("5️⃣"), and Cyrillic and Greek letters that
+  look Latin are folded (no launch locale writes either script). Fixtures "d\u0430ys", "fr\u0435sh".
+- **False positive, "N days a week":** "N days a/per week", "N Tage die/pro/in der Woche" and "N dni w tygodniu" are removed
+  before the scan. "exempts N days a week in all four locales, and only that" covers both sides.
+- Watched red: removing the entity decoder, the look-alike map, the keycap strip, the underscore strip, the days-a-week
+  exemption or the reverse branch, or cutting the gap to one word, turns 1 to 7 cases red each.
+
 ## Result
 
 PR [#265](https://github.com/itsahmeds/flowers-overseas/pull/265).

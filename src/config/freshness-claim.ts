@@ -21,18 +21,18 @@
  * no freshness word within that window, so it never matches; "Fresh flowers are an exception to
  * the usual 14-day right to cancel" keeps seven words between the two and passes.
  *
- * **Text is normalised before it is read** (`normaliseForScan`): NFKC (full-width digits become
- * ASCII, NFD "świeże" is composed), `&nbsp;`-style entities become spaces, every format character
- * (`\p{Cf}`: soft hyphen, zero-width space, word joiner) is removed, and the text is lower-cased
- * with `ß` folded to `ss`, so "DREISSIG", "dreißig" and "DREIẞIG" read alike. A digit is any
- * decimal digit (`\p{Nd}`: ٧ and ७ count). The join between a number and its day word is nothing,
- * whitespace, or any dash (`\p{Pd}`, U+2212) with optional spaces around it.
+ * **Text is normalised before it is read** (`normaliseForScan`, which lists every step): HTML
+ * entities decoded, NFKC, look-alike letters folded, format characters, variation selectors and
+ * keycaps removed, markdown underscores removed, case folded with `ß` → `ss`, and "N days a week"
+ * removed. A digit is any decimal digit (`\p{Nd}`: ٧ and ७ count). The join between a number and
+ * its day word is nothing, any dash (`\p{Pd}`, U+2212) with optional spaces, or whitespace.
  *
- * **Two widenings past A11's letter, both stricter, never looser** (reviewer to rule, TASK-172
- * brief): one word may sit between the number and the day word ("7 full days", "7 volle Tage"),
- * and a number may carry a `+` ("7+ days"). An ICU argument of any name (`{count}`,
- * `{n, number}`) or a plural's `#` counts as a number, and a claim inside an ICU argument spans
- * the whole argument, so A9's plural cannot come back under another name.
+ * **Widenings past A11's letter, all stricter, never looser** (the reviewer accepted round 1's;
+ * TASK-172 brief): up to two words may sit between the number and the day word ("7 full days",
+ * "5 or more days"), a number may carry a `+` ("7+ days"), and a label's day word may come
+ * before its number ("Fresh days: 5", "Frische (Tage): 5"). An ICU argument of any name
+ * (`{count}`, `{n, number}`) or a plural's `#` counts as a number, and a claim inside an ICU
+ * argument spans the whole argument, so A9's plural cannot come back under another name.
  *
  * `guaranteeTextViolations` is the whole rule for one guarantee value: the freshness scan, a
  * day count beside a guarantee word ("7-Tage-Garantie", "gwarancja 7 dni"), the retired "7-day"
