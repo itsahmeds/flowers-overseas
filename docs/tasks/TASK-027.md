@@ -53,6 +53,20 @@ Branch `task/TASK-027-db-check-ci-gates`. Every `db:check` failure mode gets a t
 
 _None recorded._
 
+## Progress
+
+- 2026-10-18 (paused at the usage-window reset, resume from here): committed and pushed. Done: `scripts/db-check-live.ts` (connected half: column drift vs the mirror, RLS coverage, money pair and float money, `bytea`, recipient email, catalogue snapshot `scripts/db-check.snapshot.json` pinning CHECK expressions, index defs incl. `NULLS NOT DISTINCT` and predicates, triggers, functions with `SECURITY DEFINER`/`search_path`, policies, views with `security_barrier`, defaults), wired into `scripts/db-check.ts` when `DATABASE_URL_UNPOOLED` is set, `--write-snapshot`; `tests/integration/db-check-live.test.ts` (T-26, 22 cases); `tests/integration/rls-leak.test.ts` (PR 210 pg_temp leaky-function attack + control); `tests/unit/no-float-money-enabled.test.ts` (T-07; the rule was already on since spec 005); the three legacy suites that read `.env.local` and never ran now use scratch databases; `tests/integration/db.test.ts` deleted, probe throws in CI instead of skipping, `tests/unit/test-harness.test.ts` asserts no `.skip`; CI `test-integration` asserts 0 skipped and seeds twice (second run must report 0/0), `db-check` job has a PG16 service and migrates first (and `set -o pipefail`, which the old step lacked). Full local integration run: 21 files, 209 tests green (PG 16.14).
+- Next: mutation runs for T-26/T-07 (not yet done), `pnpm gates:cheap`, `
+- 2026-10-18, breaker round 1 on PR 245: holes 6-8 closed. Non-local URLs (Neon hosts included) refused, unit-tested; money cases for a non-bigint `*_minor`, `fee`, `total`, `real`, `double precision`, `money`; the CI `db-check` step fails without an `RLS coverage:` line, pinned in `tests/unit/ci-workflow.test.ts`. Each named mutation red.
+
+## Result`, rebase, ready, `ci:full`, rows to `in_review`. Not done from the carry-forwards: the Drizzle `meta/` snapshots stop at `0007` while migrations reach `0012`, so no mirror-vs-meta check was added (would be red today; `db/` is outside the fence).
+- Found: `src/lib/db.ts`'s `withDbContext` calls `drizzle(tx)` on a postgres.js transaction, which has no `options`, so it throws `Cannot read properties of undefined (reading 'parsers')` against a real database (TASK-202's suite works around it the same way). Needs its own task row.
+
 ## Result
 
-_Pending._
+PR #245. AC-6 (regression), AC-26, AC-28.
+
+- `scripts/db-check-live.ts` + `scripts/db-check.snapshot.json`, run by `pnpm db:check` when `DATABASE_URL_UNPOOLED` is set; `--write-snapshot`. Covers the carry-forwards: CHECK expressions, `NULLS NOT DISTINCT`, index predicates, trigger functions, `SECURITY DEFINER`/`search_path`, `security_barrier`, policies.
+- CI: `test-integration` fails on any skipped test and seeds twice (second run must be 0/0); `db-check` migrates a PG16 service first and runs with `pipefail`.
+- Tests: `tests/integration/db-check-live.test.ts` (22; mutants L1-L10 all red: no-policy, RLS off, bytea, minor without currency, float money, drift both ways, snapshot compare, index query, recipient email), `tests/integration/rls-leak.test.ts` (attack + control), `tests/unit/no-float-money-enabled.test.ts` (removing `scripts/**` from the rule's files turns 2 cases red), `tests/unit/test-harness.test.ts` (no `.skip`; probe throws in CI). Three suites that read `.env.local` now use scratch databases.
+- Not done: Drizzle `meta/` snapshots stop at `0007`, so no mirror-vs-meta check (would be red; `db/` outside the fence).

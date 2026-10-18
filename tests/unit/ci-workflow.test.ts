@@ -227,6 +227,28 @@ describe("the jobs TASK-011 adds", () => {
     expect(scripts.join("\n")).toContain("pnpm db:check");
   });
 
+  it("runs db:check's connected half against a migrated service and fails if it did not run (spec 002 AC-26; PR 245 hole 8)", () => {
+    const job = ci.jobs["db-check"] as
+      | (NonNullable<(typeof ci.jobs)[string]> & {
+          services?: Record<string, { image?: string }>;
+          env?: Record<string, string>;
+        })
+      | undefined;
+    expect(job?.services?.["postgres"]?.image).toBe("postgres:16");
+    expect(job?.env?.["DATABASE_URL_UNPOOLED"]).toMatch(
+      /^postgres:\/\/[^@]+@localhost:5432\//,
+    );
+    const steps = (job?.steps ?? []).map((step) => step.run ?? "");
+    const migrate = steps.findIndex((run) => run.includes("pnpm db:migrate"));
+    const check = steps.findIndex((run) => run.includes("pnpm db:check"));
+    expect(migrate).toBeGreaterThanOrEqual(0);
+    expect(check).toBeGreaterThan(migrate);
+    const checkStep = steps[check] ?? "";
+    expect(checkStep).toContain("set -o pipefail");
+    expect(checkStep).toMatch(/grep -q '\^RLS coverage: ' db-check\.log/);
+    expect(checkStep).toMatch(/exit 1/);
+  });
+
   it("runs both halves of the audit and installs the pinned gitleaks first", () => {
     const audit = ci.jobs["audit"];
     expect((audit?.steps ?? []).map((step) => step.uses)).toContain(

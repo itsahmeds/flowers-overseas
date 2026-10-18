@@ -301,9 +301,12 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  # AC-16 / T-17 (TASK-008): the integration job — and its Postgres service container — exist from
-  # 001 so spec 002 only has to delete a `.skip`. The suite is reported as skipped; the job still
-  # proves the database the suite will use is up.
+  # AC-16 / T-17 (TASK-008): the integration job and its Postgres service container. Spec 002 AC-28 /
+  # T-28 (TASK-027): the real suite runs against the service — each file migrates its own scratch
+  # database through the real runner — and **nothing may be skipped** (in CI a suite with no
+  # database throws instead of skipping, `tests/integration/support/scratch-db.ts`). After the
+  # suite, the service's own database is migrated and `pnpm db:seed` runs twice: the second run
+  # must report 0 inserted and 0 updated (AC-29's idempotency, proven on every run).
   test-integration:
     name: test-integration
     runs-on: ubuntu-latest
@@ -341,27 +344,49 @@ jobs:
             echo ""
             echo "- postgres service: healthy, server_version $server_version"
           } >> "$GITHUB_STEP_SUMMARY"
-      - name: Run the integration suite (skipped until spec 002)
+      - name: Run the integration suite (spec 002 AC-28)
         run: >
           pnpm test:integration
           --reporter=default
           --reporter=json
           --outputFile=vitest-integration.json
-      - name: Assert the suite is reported as skipped, not absent
+      - name: Assert the suite ran, with nothing skipped and nothing failed
+        if: always()
         run: |
           set -euo pipefail
           files=$(jq '.numTotalTestSuites' vitest-integration.json)
+          passed=$(jq '.numPassedTests' vitest-integration.json)
           skipped=$(jq '.numPendingTests + .numTodoTests' vitest-integration.json)
           failed=$(jq '.numFailedTests' vitest-integration.json)
           {
-            echo "- integration suite: $files file(s), $skipped skipped, $failed failed (spec 002 TODO)"
+            echo "- integration suite: $files suite(s), $passed passed, $skipped skipped, $failed failed (spec 002 AC-28)"
           } >> "$GITHUB_STEP_SUMMARY"
           if [ "$failed" != "0" ]; then
             echo "::error::the integration suite reported failures"
             exit 1
           fi
-          if [ "$skipped" = "0" ]; then
-            echo "::error::the integration suite reported no skipped test; AC-16 requires the spec-002 placeholder to be reported as skipped"
+          if [ "$skipped" != "0" ]; then
+            echo "::error::the integration suite skipped $skipped test(s); spec 002 AC-28 allows none"
+            exit 1
+          fi
+          if [ "$passed" = "0" ]; then
+            echo "::error::the integration suite passed no test"
+            exit 1
+          fi
+      - name: Migrate the service database and seed it twice (AC-28, AC-29)
+        env:
+          DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/flowers_overseas_test
+        run: |
+          set -euo pipefail
+          pnpm db:migrate | tail -n 1
+          pnpm db:seed | tee db-seed-1.log
+          pnpm db:seed | tee db-seed-2.log
+          {
+            echo "- \`pnpm db:seed\` run 1: $(tail -n 1 db-seed-1.log)"
+            echo "- \`pnpm db:seed\` run 2: $(tail -n 1 db-seed-2.log)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if ! tail -n 1 db-seed-2.log | grep -q '^db:seed: 0 inserted, 0 updated,'; then
+            echo "::error::the second db:seed run changed rows; the seed is not idempotent (spec 002 AC-28, AC-29)"
             exit 1
           fi
 
@@ -412,22 +437,51 @@ jobs:
             exit 1
           fi
 
-  # The offline migration gate (spec 001 §5.1, extended by spec 002 §2 / TASK-014): rollback
-  # pairing, version sequence, the `SET LOCAL ROLE app_owner` preamble and table-level drift
-  # between `db/schema/` and `db/migrations/`. No database and no credentials, by design — the
-  # connected half of AC-26 arrives with TASK-027.
+  # The migration gate (spec 001 §5.1; spec 002 §2, AC-26 / T-26). The offline half (TASK-014):
+  # rollback pairing, version sequence, the `SET LOCAL ROLE app_owner` preamble and table-level
+  # drift between `db/schema/` and `db/migrations/`. The connected half (TASK-027): against a
+  # Postgres 16 service migrated by the real runner — column drift against the mirror, RLS
+  # enabled and a policy on every table, the money pair, no `bytea`, no recipient email, and the
+  # catalogue snapshot (`scripts/db-check.snapshot.json`). Only the service's throwaway URL is
+  # used; no credential.
   db-check:
     name: db-check
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: typecheck
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: flowers_overseas_check
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/flowers_overseas_check
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
+      - name: Migrate the service database
+        run: pnpm db:migrate | tail -n 1
       - name: Check the migration set
         id: db
-        run: pnpm db:check 2>&1 | tee db-check.log
+        run: |
+          set -o pipefail
+          pnpm db:check 2>&1 | tee db-check.log
+          # The connected half runs only when DATABASE_URL_UNPOOLED is set; without it the CLI
+          # exits 0 on the offline half alone. Fail unless the live half reported (PR 245 hole 8).
+          if ! grep -q '^RLS coverage: ' db-check.log; then
+            echo "::error::db:check did not run its connected half (no 'RLS coverage:' line); is DATABASE_URL_UNPOOLED set?"
+            exit 1
+          fi
       - name: Summarise the migration set
         if: always()
         run: |
@@ -435,7 +489,7 @@ jobs:
           migrations=$(find db/migrations -maxdepth 1 -type f -name '*.sql' ! -name '*.down.sql' | wc -l | tr -d ' ')
           rollbacks=$(find db/migrations -maxdepth 1 -type f -name '*.down.sql' | wc -l | tr -d ' ')
           {
-            echo "### db-check (spec 001 §5.1)"
+            echo "### db-check (spec 001 §5.1, spec 002 AC-26)"
             echo ""
             echo "- \`pnpm db:check\`: ${{ steps.db.outcome }} — $( [ -f db-check.log ] && tr '\n' ' ' < db-check.log || echo 'did not run' )"
             echo "- forward migrations: $migrations; rollback files: $rollbacks"

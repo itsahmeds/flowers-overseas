@@ -1581,19 +1581,73 @@ export const MIGRATIONS_DIR = "db/migrations";
 /** The Drizzle table definitions the drift rule reads. Empty until TASK-015 writes `0002`. */
 export const SCHEMA_DIR = "db/schema";
 
+/**
+ * The connected half (AC-26, TASK-027; `./db-check-live.ts`) runs when `DATABASE_URL_UNPOOLED`
+ * names a database, after the offline half: CI's `db-check` job migrates its Postgres 16 service
+ * first. Without the variable the offline half is the whole gate, as on a laptop with no database.
+ * `--write-snapshot` regenerates `scripts/db-check.snapshot.json` from the connected database and
+ * changes nothing else.
+ */
+async function connected(
+  repoRoot: string,
+  url: string,
+  writeSnapshotOnly: boolean,
+): Promise<{ ok: boolean; output: string[] }> {
+  const { default: postgres } = await import("postgres");
+  const live = await import("./db-check-live.ts");
+  const sql = postgres(url, { max: 1, onnotice: () => undefined });
+  try {
+    const snapshotPath = resolve(repoRoot, live.SNAPSHOT_FILE);
+    if (writeSnapshotOnly) {
+      live.writeSnapshot(snapshotPath, await live.readCatalogue(sql));
+      return { ok: true, output: [`wrote ${live.SNAPSHOT_FILE}`] };
+    }
+    let snapshot: Awaited<ReturnType<typeof live.readSnapshot>> | undefined;
+    try {
+      snapshot = live.readSnapshot(snapshotPath);
+    } catch {
+      snapshot = undefined;
+    }
+    const result = await live.liveCheck(
+      sql,
+      committedMirror,
+      snapshot,
+      recipientEmailViolations,
+    );
+    return {
+      ok: result.ok,
+      output: result.ok ? [...result.summary] : [...result.problems],
+    };
+  } finally {
+    await sql.end({ timeout: 5 });
+  }
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
-  const { ok, output } = await runDbCheckWithMirror(
-    resolve(repoRoot, MIGRATIONS_DIR),
-    resolve(repoRoot, SCHEMA_DIR),
-  );
+  const writeSnapshotOnly = process.argv.includes("--write-snapshot");
+  const url = process.env["DATABASE_URL_UNPOOLED"] ?? "";
+  const offline = writeSnapshotOnly
+    ? { ok: true, output: [] }
+    : await runDbCheckWithMirror(
+        resolve(repoRoot, MIGRATIONS_DIR),
+        resolve(repoRoot, SCHEMA_DIR),
+      );
+  let ok = offline.ok;
+  let output = [...offline.output];
+  if (writeSnapshotOnly && url === "") {
+    ok = false;
+    output = [
+      "--write-snapshot needs DATABASE_URL_UNPOOLED (a migrated database)",
+    ];
+  } else if (url !== "" && offline.ok) {
+    const live = await connected(repoRoot, url, writeSnapshotOnly);
+    ok = live.ok;
+    output = live.ok ? [...offline.output, ...live.output] : live.output;
+  }
   for (const line of output) {
     if (ok) console.log(line);
     else console.error(`db:check: ${line}`);
   }
-  // TODO(spec 002 AC-26, TASK-027): the connected half — column-level drift, RLS enabled and a
-  // policy present per table, the `*_minor`/currency pairing, the `bytea` ban and AC-27's
-  // recipient-email ban over the live catalogue (`recipientEmailViolations`) — over
-  // `DATABASE_URL_UNPOOLED` (§13 Q6).
   process.exit(ok ? 0 : 1);
 }
