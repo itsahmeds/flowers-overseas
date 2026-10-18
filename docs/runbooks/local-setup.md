@@ -186,10 +186,16 @@ remove its three entries from `.claude/settings.json`.
 
 Only a case-insensitive volume (macOS APFS) can show it; CI and Railway run case-sensitive Linux.
 `tests/e2e/case-variant-cache.spec.ts` goes red on the old code only against a build whose
-prerenders are past their revalidate window, so make one by hand, inside the build slot:
+prerenders are past their revalidate window, so make one by hand, inside the build slot, in a
+scratch worktree (`git worktree add --detach ../fo-repro-247 origin/main`), never the main
+checkout. The main checkout's `.env.local` holds the founder's real environment, including the
+production database URL, so it must never be overwritten or built against: the copy below only
+runs where no `.env.local` exists.
 
 ```sh
-cp .env.example .env.local && pnpm build
+cd ../fo-repro-247 && pnpm install
+[ -e .env.local ] || cp .env.example .env.local
+pnpm build
 # stand in for a server that has been up for over an hour: age every prerender by two hours
 find .next/server/app -type f \( -name '*.html' -o -name '*.meta' -o -name '*.rsc' \) -exec touch -A -020000 {} +
 rm -rf .next/server/route-cache            # runtime entries from an earlier run
