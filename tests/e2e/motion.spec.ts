@@ -846,7 +846,10 @@ async function hoveredCard(page: Page, path = SHOP) {
   const ended = card.evaluate(
     (link) =>
       new Promise<void>((done) => {
-        link.addEventListener("transitionend", () => done(), { once: true });
+        // The link's own `transitionend`: the line's (320 ms) and the photograph's bubble up to it.
+        link.addEventListener("transitionend", (event) => {
+          if (event.target === link) done();
+        });
         setTimeout(done, 700);
       }),
   );

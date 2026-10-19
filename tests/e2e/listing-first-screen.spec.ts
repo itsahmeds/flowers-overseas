@@ -420,6 +420,8 @@ test.describe("AC-45 (T-50): calm, not bland", () => {
             "main a[data-fo-card-motion] [data-fo-card-shadow]",
           );
           if (shadow === null) throw new Error("no shadow layer");
+          // At once: through its 500 ms fade the computed opacity would read mid-transition.
+          shadow.style.transition = "none";
           shadow.style.opacity = "1";
           const planted = document.createElement("span");
           planted.setAttribute("aria-hidden", "true");
