@@ -543,6 +543,47 @@ Tests:
 
 T-12 reads with AC-12 as amended.
 
+**A-founder-2026-10-19d (pointer): while no cookie needs consent, "Change cookie settings" opens the
+settings panel, and the controller sentence lives in the panel (spec 004 §14 A-founder-2026-10-19d
+clauses 2 and 4; §2 L80 "Cookies"; §5 L187; §8 L214; AC-13, AC-29, T-13, T-31 amended; no new AC
+or T id).**
+
+Status: approved in substance by the founder's ruling of 2026-10-19 ("yes yes" to the orchestrator's
+item 2: no cookie banner while the site sets only essential cookies; the cookie policy page and the
+footer's "Cookie settings" inform visitors). The founder confirms this text when they approve the
+docs PR that carries it. The ruling, its evidence and its SEO, i18n and compliance notes are spec
+004's; this spec owns the cookie notice.
+
+- **§2 L80.** "which the existing consent island already binds through its delegated handler" reads
+  "which the consent loader binds through its delegated handler; while no non-essential category is
+  active (spec 004 §14 A-founder-2026-10-19d clause 1) the first activation imports the island and
+  opens the settings panel".
+- **§5 L187.** "The cookie page's button reuses the consent island already on every document" reads
+  "The cookie page's button reuses the consent island, imported on its first activation while no
+  category is active". "The banner's extra sentence" reads "The controller sentence".
+- **§8 L214.** "The cookie page re-opens the existing banner" reads "The cookie page opens the
+  settings panel while no category is active, and re-opens the banner after a decision when one is".
+- **The controller sentence.** `company.controller` (or `consent.privacyLink` once the privacy
+  notice exists) renders in the settings panel and on the cookie notice. In spec 004's compact form
+  the first layer's one line links to the cookie notice instead (spec 004 clause 4, a *Reading* the
+  founder can overrule). The founder's lawyer confirms the layering after go-live, as a
+  carry-forward in TASK-NNN's brief, not a gate.
+- **AC-13 amended.** Its e2e clause reads: "on the committed build (no category active), with no
+  `fo_consent`, clicking the page's 'Change cookie settings' button opens the consent settings panel,
+  and saving 'analytics on' sets `fo_consent` with `a: true`; in spec 004's `consent-active` build,
+  after 'Reject all', the same click opens the panel and the same save sets it." The table half
+  (one row per register entry, in order, with the policy version) is unchanged and still lists
+  every essential cookie.
+- **T-13 amended.** Both e2e paths of AC-13. Red when the button's activation opens nothing (the
+  delegated listener dropped), and red when a register row is missing from the table.
+- **AC-29 amended.** "the consent banner in every locale renders `company.controller`" reads "the
+  consent settings panel, opened from the footer, in every locale renders `company.controller`";
+  "the banner renders `consent.privacyLink`" reads "the settings panel renders `consent.privacyLink`".
+  The cookie notice clauses and `budget:client-js` are unchanged.
+- **T-31 amended.** Its e2e reads: "the settings panel opened from the footer in four locales shows
+  the sentence". The unit half (`consentView()`) is unchanged. Red when the sentence is rendered
+  only in the banner's first layer.
+
 ## Appendix A — Draft English copy, batch 1 (for the founder's approval)
 
 Everything below is the exact text the implementer copies, `en` unless marked. `{…}` is data, never copy. Sentences marked **[allow: rule]** trip a claim pattern on purpose and go into the file's `honestyAllow` list with the reason given. Nothing here uses the nine banned words, a scale number or a price. Sentences about a florist's work are in the present tense (spec 004 §14 A22 clause 1). Lines marked **proposed** were rewritten on 2026-10-14 under the founder's ruling (§14 A-founder-2026-10-14); they are the founder's to approve with the legal set, and the lawyer reads the legal lines. A file that carries a proposed line ships `reviewed: false` until the founder approves it.
