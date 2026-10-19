@@ -51,7 +51,7 @@ task actually touches.
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything data-gated is config",… | spec 004 |
 | `currencies.ts` | Currency configuration (spec 003 §2, §5.1/§5.2; TASK-033) | spec 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | spec 012 |
-| `freshness-claim.ts` | Freshness-claim scan (spec 009 §14 A11; spec 041 AC-16, T-16; TASK-172) | spec 009 |
+| `freshness-claim.ts` | Freshness scan (spec 009 §14 A11) | spec 009 |
 | `honesty.ts` | Relay-language check (spec 041 §14) | spec 041 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free half of the locale registry… | spec 004 |
 | `locales.ts` | Locale registry (spec 003 §2 "the no-database seam", §5.2, §5.3, §6; TASK-033) | spec 003 |

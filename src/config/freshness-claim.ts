@@ -1,5 +1,7 @@
 /**
- * Freshness-claim scan (spec 009 §14 A11; spec 041 AC-16, T-16; TASK-172).
+ * Freshness scan (spec 009 §14 A11).
+ *
+ * TASK-172. Spec 041 AC-16 and T-16 read the same scan.
  *
  * The founder's ruling, 2026-10-04: the flowers arrive fresh, and we never promise how long they
  * stay fresh, because that depends on the room, the water and the care. Every guarantee text, in
