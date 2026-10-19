@@ -196,6 +196,7 @@ export function CategoryHubPage({ view }: CategoryHubPageProps): ReactElement {
               : { "aria-labelledby": "hub-about-heading" })}
             className="gap-lg md:gap-2xl grid grid-cols-1 items-start pt-[48px] md:grid-cols-[4fr_7fr] md:pt-(--section-fluid)"
             data-fo-hub-about
+            data-fo-reveal=""
           >
             <div>
               {view.hubAbout?.eyebrowKey === undefined ? null : (

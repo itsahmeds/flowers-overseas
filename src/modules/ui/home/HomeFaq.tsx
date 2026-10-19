@@ -88,6 +88,7 @@ export function HomeFaq({
       className={`bg-surface-raised items-start ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-faq
+      data-fo-reveal=""
     >
       <Stack gap="sm">
         <Eyebrow>{t("eyebrow")}</Eyebrow>

@@ -88,6 +88,7 @@ export function HowItWorks({
       className={`bg-surface-raised ${HOME_SECTION} ${HOME_BLEED}`}
       aria-labelledby={HEADING_ID}
       data-fo-how-it-works
+      data-fo-reveal=""
       id="how"
     >
       <div className="md:gap-2xl grid grid-cols-1 items-start gap-[40px] md:grid-cols-[4fr_7fr]">

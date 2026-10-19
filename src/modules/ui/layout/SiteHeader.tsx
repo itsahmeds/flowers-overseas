@@ -27,7 +27,7 @@
  * lifts A20 clause 2's omission of it).
  *
  * **A reserved box, the same before and after hydration** (AC-7). One Server Component and no
- * `<button>`; the Menu is a native disclosure, and its one island (`MenuEscape`, `Esc` with
+ * `<button>`; the Menu is a native disclosure, and its one island (`MotionIsland`, which adds `Esc` with
  * JavaScript on) renders nothing: the box the first paint shows is the final box, so the header's
  * CLS is 0. The notice
  * bar is a sibling that scrolls away and `<header role="banner" data-fo-header>` is the sticky part
@@ -38,6 +38,12 @@
  * identical for every visitor; it reads and writes no cookie.
  *
  * **Logical CSS only**, so `/ar-XB` mirrors with no override; every colour is a token utility.
+ *
+ * **The loading bloom** (spec 004 §14 A24 clause 9, motion 1; TASK-194). The header mounts the
+ * motion module (`MotionIsland`, which renders nothing) and carries the 2 px poppy bar at its foot,
+ * `data-fo-nav-bar`: absolutely placed, transparent and unscaled at rest, so it takes no space and
+ * the server's HTML shows no loader. Only `<html data-fo-nav="pending">`, which the module sets
+ * when a navigation has not painted after 150 ms, plays the bar and the logo's bloom.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
@@ -49,6 +55,7 @@ import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
 import { Icon } from "../icons/Icon.tsx";
 import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
+import { MotionIsland } from "../motion/MotionIsland.tsx";
 import { Button } from "../primitives/Button.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
@@ -302,6 +309,12 @@ export function SiteHeader({
         data-fo-header
         role="banner"
       >
+        <span
+          aria-hidden="true"
+          className="bg-accent pointer-events-none absolute start-0 end-0 top-full h-[2px] opacity-0"
+          data-fo-nav-bar
+        />
+        <MotionIsland />
         <div
           className={`grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-rows-[82px] xl:gap-x-(--space-lg2) ${CHROME_WRAP}`}
           data-fo-header-band="masthead"

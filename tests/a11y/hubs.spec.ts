@@ -17,6 +17,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+import { atRest } from "../support/at-rest.ts";
+
 const BLOCKING = new Set(["serious", "critical"]);
 
 const AUDITED = [
@@ -36,6 +38,8 @@ const AUDITED = [
 async function audit(
   page: import("@playwright/test").Page,
 ): Promise<{ id: string; impact: string | null | undefined }[]> {
+  // axe reads the page a reader has scrolled, with the entrances played (TASK-194).
+  await atRest(page);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();

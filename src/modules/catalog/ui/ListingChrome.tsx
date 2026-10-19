@@ -194,6 +194,9 @@ export function ListingSubsection({
     <section
       aria-labelledby={id}
       className="pt-[48px] md:pt-(--section-fluid)"
+      // Motion 12 (TASK-194): every listing subsection sits under the grid; the motion module
+      // fades it up once it scrolls in, and never holds one that starts in the first viewport.
+      data-fo-reveal=""
       {...dataHook}
     >
       {split ? (

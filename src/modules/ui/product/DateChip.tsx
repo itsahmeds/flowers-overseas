@@ -146,6 +146,8 @@ export function DateChip({
       data-fo-date={date.date}
       data-fo-date-state={state}
       data-fo-date-muted={muted ? "" : undefined}
+      // Motion 7 (TASK-194): the selection ring settles when a live date is chosen.
+      data-fo-ring="selected"
       {...(date.reasonKey === undefined
         ? {}
         : { "data-fo-date-reason": date.reasonKey })}
