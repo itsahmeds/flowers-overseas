@@ -6,8 +6,9 @@
  * TASK-200 ships the database-free core: the one decision of what a checkout may do
  * (`checkoutMode`, `legalReadiness`, `checkoutEntryFor`), the boundary schemas of the start route
  * and the three steps, the recipient form model, phone parsing and the checkout's one currency.
- * Drafts, pricing over the quote, placement, the payment-step seam and the server actions arrive
- * with TASK-203 onwards, behind this same barrel.
+ * TASK-203 adds drafts (`draft.ts`), the `fo_checkout` cookie, pricing over the quote
+ * (`pricing.ts`), the start route's contract (`start.ts`) and the step actions (`steps.ts`,
+ * `actions.ts`); placement and the payment-step seam arrive with TASK-205, behind this same barrel.
  *
  * `CHECKOUT_FLAG_KEYS` and `stripeKeyKind()` are deliberately **not** exported (spec 010 AC-1,
  * `/break 201` hole 1): they are the inputs of the mode decision, and a file that could import
@@ -68,3 +69,79 @@ export {
   type PhoneResult,
 } from "./phone";
 export { checkoutCurrency } from "./currency";
+
+// TASK-203: drafts, the start route, the step actions, quote issue and verification.
+export {
+  type CheckoutFlagReader,
+  type CheckoutModeRequest,
+  currentCheckoutMode,
+} from "./mode";
+export {
+  CHECKOUT_COOKIE_ATTRIBUTES,
+  CHECKOUT_COOKIE_MAX_AGE_SECONDS,
+  CHECKOUT_COOKIE_NAME,
+  checkoutCookieHeader,
+  draftTokenFromCookieHeader,
+  draftTokenHash,
+  isDraftToken,
+} from "./cookie";
+export {
+  CreateDraftInputSchema,
+  DraftBuyerSchema,
+  DraftCardSchema,
+  DraftPatchSchema,
+  DraftRecipientSchema,
+  createDraft,
+  draftExpiryAt,
+  draftModes,
+  expireDrafts,
+  loadDraft,
+  saveStep,
+  type CreateDraftInput,
+  type Draft,
+  type DraftBuyer,
+  type DraftCard,
+  type DraftConnection,
+  type DraftLookup,
+  type DraftMode,
+  type DraftPatch,
+  type DraftRecipient,
+  type StepsCompleted,
+} from "./draft";
+export {
+  ADDON_TIER_PREFIX,
+  deriveQuote,
+  draftTotals,
+  priceChange,
+  selectionOf,
+  verifyDraftQuote,
+  type DraftLine,
+  type DraftTotals,
+  type NoticeAmount,
+  type QuoteCheck,
+  type QuoteSelection,
+} from "./pricing";
+export {
+  isSameOrigin,
+  methodNotAllowed as checkoutMethodNotAllowed,
+  startCheckout,
+  type StartDependencies,
+} from "./start";
+export {
+  SelectionUpdateSchema,
+  formValues,
+  runCardAndBuyerStep,
+  runRecipientStep,
+  runUpdateSelection,
+  stepPath,
+  type FieldIssue,
+  type SelectionUpdate,
+  type StepContext,
+  type StepOutcome,
+  type StepState,
+} from "./steps";
+export {
+  saveCardAndBuyerStep,
+  saveRecipientStep,
+  updateSelection,
+} from "./actions";

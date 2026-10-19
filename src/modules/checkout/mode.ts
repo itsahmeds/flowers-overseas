@@ -8,7 +8,9 @@
  * `checkout.demo_guard` flag and the kind of Stripe key in the environment are read to decide a
  * mode here and nowhere else; `tests/unit/checkout-mode.test.ts` greps the repository for them
  * and fails on a reader outside this file and its allow-list (decisions log 2026-10-05, ruling R5).
- * The database read of the two flags is wired into this file by TASK-203 through `isEnabled`.
+ * The database read of the two flags is wired into this file by TASK-203 through `isEnabled`
+ * (`currentCheckoutMode()` below), so every caller asks this file for the mode and none reads a
+ * flag.
  *
  *  - **`checkoutMode(inputs)`** — §5.2's table, row for row, plus AC-8's precondition that a
  *    destination with only the generic address format is `closed`. Every input is data handed in
@@ -38,13 +40,17 @@
 import { z } from "zod";
 
 import { isCompanyRegistered } from "@/config/company";
+import { isCountryIso2 } from "@/config/countries";
 import { DEMO_ENTRY_ENVIRONMENTS } from "@/config/checkout";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import {
   type DeploymentEnvironment,
+  appEnvironment,
   deploymentEnvironments,
 } from "@/lib/env.schema";
-import { type PickerState, pickerStates } from "@/modules/geo";
+import { type PickerState, pickerState, pickerStates } from "@/modules/geo";
+
+import { addressFormModel } from "./address";
 
 /* -------------------------------------------------------------------------- */
 /* The vocabulary                                                              */
@@ -314,4 +320,72 @@ export function checkoutEntryFor(
     return "demo";
   }
   return "none";
+}
+
+/* -------------------------------------------------------------------------- */
+/* currentCheckoutMode(): the inputs read, then the decision (TASK-203)        */
+/* -------------------------------------------------------------------------- */
+
+/** Where `currentCheckoutMode()` reads a flag: TASK-219's `isEnabled`, or a test's fake. */
+export type CheckoutFlagReader = (
+  key: (typeof CHECKOUT_FLAG_KEYS)["open" | "demoGuard"],
+  scope?: { readonly kind: "country"; readonly ref: string },
+) => Promise<boolean>;
+
+/** The production reader: `isEnabled` of `src/lib/flags.ts`, loaded on first use. */
+const databaseFlags: CheckoutFlagReader = async (key, scope) => {
+  const { isEnabled } = await import("@/lib/flags");
+  return scope === undefined ? isEnabled(key) : isEnabled(key, scope);
+};
+
+/** What a request knows when it asks for the mode. */
+export interface CheckoutModeRequest {
+  readonly countryIso: string;
+  readonly locale: LocaleCode;
+  /** The buyer's country of residence once step 2 has it; the destination before that. */
+  readonly buyerCountry?: string;
+  /** Injected by tests; the database (60 s cache) otherwise. */
+  readonly flags?: CheckoutFlagReader;
+}
+
+/**
+ * The checkout's mode for this request (spec 010 §5.2, AC-1; ruling R5): the start route and
+ * every step action call this and nothing else. It reads the country's `checkout.open` and the
+ * global `checkout.demo_guard` through `isEnabled`, spec 009's `pickerState()`, the destination's
+ * address format and the deployment's `APP_ENV`, and hands them to `checkoutMode()`.
+ *
+ * Spec 013's inputs are absent in Phase 0 and are passed as such: no payment step is registered,
+ * `payments.stripe` is not a registered flag yet, and no Stripe key is declared in the env schema,
+ * so the key kind is `absent`. Spec 013 replaces these three lines, here and nowhere else.
+ *
+ * An unknown destination is `closed` without a read.
+ */
+export async function currentCheckoutMode(
+  request: CheckoutModeRequest,
+): Promise<CheckoutMode> {
+  if (!isCountryIso2(request.countryIso)) return "closed";
+  const flags = request.flags ?? databaseFlags;
+  const [countryCheckoutOpen, demoGuard] = await Promise.all([
+    flags(CHECKOUT_FLAG_KEYS.open, {
+      kind: "country",
+      ref: request.countryIso,
+    }),
+    flags(CHECKOUT_FLAG_KEYS.demoGuard),
+  ]);
+  const model = addressFormModel(request.countryIso);
+  return checkoutMode({
+    countryCheckoutOpen,
+    addressFormat: model.status === "closed" ? "generic" : "authored",
+    pickerState: pickerState(request.countryIso),
+    demoGuard,
+    testStepRegistered: false,
+    stripeFlag: false,
+    stripeKeyKind: stripeKeyKind(undefined),
+    appEnv: appEnvironment(process.env),
+    legalReady: legalReadiness(
+      request.locale,
+      request.buyerCountry ?? request.countryIso,
+    ),
+    liveStepRegistered: false,
+  });
 }

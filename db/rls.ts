@@ -176,6 +176,14 @@ export const STAFF_ONLY_TABLES = [
 ] as const;
 
 /**
+ * The system role only (`app.role = 'system'`): one policy, `<table>_system`, and no staff policy
+ * either, so not even an admin session reads them. Spec 010 §5.1 B (migration
+ * `0015_checkout_draft`, TASK-203): an unfinished checkout holds a stranger's typed details for at
+ * most 24 hours and only the checkout's own system transactions read it.
+ */
+export const SYSTEM_ONLY_TABLES = ["checkout_draft"] as const;
+
+/**
  * Tables without RLS, and why. `schema_migrations` is the runner's bookkeeping: created and owned
  * by the connecting login, granted to nobody, absent from `db/schema/` (`db/migrations/README.md`).
  */
