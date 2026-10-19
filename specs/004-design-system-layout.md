@@ -2941,3 +2941,362 @@ the `max-height` rule removed.
 
 Open for the founder: the wording of the new consent and Menu labels goes to the founder with
 TASK-251's copy batch (clauses 2 and 3).
+
+**A-founder-2026-10-19d: No cookie banner while the site sets only essential cookies; the footer's
+"Cookie settings" opens the settings panel; the banner returns in a compact form when analytics or
+ads are switched on (founder ruling 2026-10-19, item 2; §2 L92 "Banner"; A-founder-2026-10-19c
+clauses 1 and 4 and its AC-17, T-19 gains; AC-6, AC-9, AC-13, AC-17, AC-19, AC-20, AC-21, AC-22,
+AC-27, AC-39, AC-48, AC-55 and T-08, T-11, T-15, T-19, T-21, T-22, T-23, T-24, T-29, T-41, T-53,
+T-60 amended; spec 003 §14 A-founder-2026-10-19d owns the language popup; spec 041 §14
+A-founder-2026-10-19d is the cookie notice's pointer; no new AC or T id).**
+Status: approved in substance by the founder's ruling of 2026-10-19 (below). The founder confirms
+this text when they approve the docs PR that carries it. The spec writer's readings are marked
+*Reading* and can be overruled in one word.
+
+**Ruling, verbatim.** The founder, 2026-10-19, in chat: "the cookie banner is way too big on the
+site. also the popup that appears.. on the site of.. language.. that also annoying and big so what
+should we do? what do u suggest?" The orchestrator proposed two things. Item 2, in the
+orchestrator's words: "Cookie banner: not shown at launch while the site sets only essential
+cookies (GA4 id blank, nothing in analytics or marketing active). Visitors are informed by the
+cookie policy page and the footer "Cookie settings" link, which still opens the settings panel.
+When analytics or ads are switched on, the banner returns in the compact all-A form, with the phone
+strip capped at about 140 CSS px (one short line plus the three answers in one row) instead of
+260 px; its one short line of copy ships only with founder-approved text." The founder answered,
+verbatim: "yes yes" (yes to item 1, the language popup, which spec 003 §14 A-founder-2026-10-19d
+records, and yes to item 2). The reply reached the spec writer through the orchestrator's work
+order.
+
+**Trigger and evidence.**
+- The founder's message above, after the site went live `noindex` (decisions of 2026-10-18).
+- QA-2 N-03 (`.claude/state/qa-2026-10-18/`), as A-founder-2026-10-19c records it: at 390 × 844
+  the banner took about 45 % of the screen; at 1330 × 860 it covered the home sentence.
+- What the site stores today, from the code: `src/config/cookies.ts` has ten rows; every one is
+  `essential` except `_ga` and `_ga_*` (`analytics`, `status: "declared"`); no row is `marketing`.
+  `NEXT_PUBLIC_GA4_MEASUREMENT_ID` is blank in `.env.example` and unset in CI and on previews (A15;
+  decisions log 2026-09-16: "Until then `NEXT_PUBLIC_GA4_MEASUREMENT_ID` stays unset"). No ad tag is
+  wired anywhere. So on today's data the banner asks a question about storage the site never does.
+
+**Original.**
+- §2 L92 "Banner" and AC-17: with no `fo_consent`, the banner appears after hydration on every
+  localised page. AC-9: the footer's "Cookie settings" re-opens the banner after a decision.
+- A-founder-2026-10-19c clause 1: the phone banner is a top sheet of at most 260 CSS px, holding the
+  headline, A14's two body paragraphs and the three answers. Clause 4: with the popup and the
+  banner both pending, one `Esc` closes the popup only, a second closes the banner.
+- AC-6, AC-19, AC-20, AC-22, AC-27 and AC-48, and their tests, drive the banner as shown on first
+  visit; AC-39, AC-55 and T-41, T-60 drive the language popup as opened on first visit.
+
+**Corrected.**
+1. **One reader decides whether anything needs consent.** `consentSources(env)` is exported from
+   the `src/modules/analytics` barrel (specs 004 and 023). It returns two things:
+   `ga4MeasurementId` (the value of `ga4MeasurementId(env)`: a well-formed `G-…` id, or `undefined`
+   when the variable is blank or malformed, exactly as today) and `active`, the non-essential
+   categories that have an **active source**, in register order:
+   - **`analytics` is active** when the reader's `ga4MeasurementId` is defined, or when any
+     `src/config/cookies.ts` row in the `analytics` category has `status: "set"`.
+   - **`marketing` is active** when any register row in the `marketing` category has
+     `status: "set"`. No marketing source exists today: the register has no marketing row and no ad
+     tag is wired. A spec that adds an ad tag adds its env reader to this function in the PR that
+     adds the tag's loader.
+   - **Read in one place.** The locale layout calls `consentSources(process.env)` once per document
+     render and takes both the `measurementId` it hands to `AnalyticsScripts` and the banner's
+     `prompt` (true when `active` is non-empty) from that one result. No other file under `src/`
+     decides whether the banner mounts, and no file under `src/` other than `src/lib/env.schema.ts`
+     (which defines it) and this reader contains a call to `ga4MeasurementId(` outside a comment
+     (the mentions in comments in `src/app/robots.ts` and `src/modules/seo/environment.ts` are not
+     calls). `next.config.ts` keeps its own call for the CSP.
+   - **Today's value:** `active` is `[]` and `ga4MeasurementId` is `undefined`: the id is blank and
+     both GA4 rows are `declared`. If the founder sets the id in production, `active` is
+     `["analytics"]` and the banner shows there, which is the correct answer for that deploy.
+2. **While `active` is empty, no banner.**
+   - No consent sheet mounts on any page, whatever `fo_consent` holds, and the consent island's
+     chunk is not requested on page load.
+   - The consent loader keeps one delegated listener for `data-fo-consent-reopen` (the footer's
+     "Cookie settings" and the cookie notice's "Change cookie settings", spec 041). The first
+     activation imports the island and opens the **settings panel** directly: A-founder-2026-10-19c
+     clause 2's panel (Essential locked, Analytics, Marketing, each register entry inside its
+     group's closed disclosure, Save pinned), in clause 2's place (at the corner card's position from
+     `md` up, as the top sheet below `md`). Focus moves into the panel, because the visitor asked for
+     it. `Esc` closes it, records nothing and returns focus to the control. With JavaScript off the
+     control does nothing, as today (spec 041 §5 table).
+   - The Consent Mode v2 default-denied bootstrap stays inline on every document, unchanged (AC-18).
+     No third-party request is made (AC-18, AC-21).
+   - **`fo_consent`** stays `essential` in the register. It is neither read nor written on page
+     load. Save in the panel writes it with AC-19's lifetimes (12 months when any category is on,
+     6 when none) and sends the `POST /api/consent` record. A forged or stale value is deleted when
+     the island loads on activation (AC-19's rewrite rule, at that moment rather than on load).
+   - The language popup gate: spec 003 §14 A-founder-2026-10-19d serves `<html>` without
+     `data-fo-locale-gate` wherever no language can be offered, so a banner never waits for a popup
+     that cannot open.
+3. **When `active` is non-empty, the banner returns, by data.**
+   - The island mounts after hydration and asks as AC-17 says, in clause 4's compact form once that
+     form is built. The footer control re-opens it after a decision, and Choose opens the panel
+     (AC-9, unchanged in that state).
+   - The flip is data: setting `NEXT_PUBLIC_GA4_MEASUREMENT_ID` and rebuilding (runbook
+     `docs/runbooks/analytics-consent.md` §2), or a register row turning `set` in the PR that ships
+     its writer. No file under `src/app/` or `src/modules/` changes at the flip.
+   - **Before the first category is switched on** (procedural; TASK-NNN writes these into the
+     runbook's §1; none is a code gate): (a) clause 4's compact form is on `main`; (b)
+     `CONSENT_POLICY_VERSION` is bumped in the PR that updates the cookie notice for that category,
+     so a decision saved while nothing was active is asked again (the runbook's existing lever,
+     §4a); (c) RoPA row 4, the DPA, the privacy notice and the cookie notice, as the runbook already
+     lists; (d) A15's budget decision; (e) **the founder's lawyer has ruled, in writing filed under
+     `docs/compliance/`, on two points:** whether the GA4 tag may load before a decision under
+     Consent Mode v2 default-denied and send cookieless pings ("advanced" mode, as §2 L94, AC-21 and
+     `plan/04` §11 specify today), or must wait for a grant ("basic" mode); and whether clause 4's
+     layering (the controller sentence in the panel, a link to the cookie notice in the first
+     layer) is enough. If the ruling is "basic", the change to AC-18, AC-21 and §2 L94 is a new
+     amendment before the id is set. This amendment changes neither behaviour now.
+4. **The compact form (replaces clause 1 of A-founder-2026-10-19c for the banner; its clause 2
+   panel stands).**
+   - **Content.** One short line of text and the three answers, Accept all, Reject all and Choose,
+     in one row with equal prominence (AC-20, A-founder-2026-10-14i). A14's headline and two body
+     paragraphs leave the first layer. Which existing `consent.*` keys the panel keeps and which
+     are deleted is the copy batch's call; `i18n:check`'s unused-key rule holds.
+   - **The line is founder-approved copy.** No key for it ships before the founder approves its
+     text (spec 003 A17; `en-gb` has no headroom). It joins TASK-251's consent batch. *Reading:*
+     the line carries a link to the cookie notice (spec 041), where the controller sentence and
+     every cookie are, and spec 041 AC-29's controller sentence moves from the first layer into the
+     settings panel (spec 041 §14 A-founder-2026-10-19d). The founder can overrule this in one word;
+     the lawyer rules on it before any category is switched on (clause 3 (e)).
+   - **Below `md`:** top edge at y 0 (the language popup's slot, the "all-A" placement), height at
+     most **140 CSS px** at 390 × 844 and 360 × 640 in `en` and `en-gb`, the three answers in one
+     row, each at least 44 px tall. The page under it still scrolls.
+   - **From `md` up:** clause 1's corner card stands (inline-end bottom corner, 420 px wide, 32 px
+     insets) with the same one line and one row.
+   - **Choose** opens clause 2's panel, unchanged (≤ 780 CSS px at 390 × 844).
+   - **Who builds it.** A-founder-2026-10-19c's build row, which takes this clause in place of
+     clause 1's 260 px sheet and already waits for TASK-251's copy approval. If that row does not
+     exist, the orchestrator makes one. It merges before any category is switched on (clause 3 (a)).
+5. **One `Esc`, one layer (A-founder-2026-10-19c clause 4, restated).** The stack rule binds only
+   when a language offer (spec 003 §14 A-founder-2026-10-19d clause 1) and the consent banner are
+   both pending. On today's data neither ever is. With both pending, the first `Esc` closes the
+   language overlay (`fo_locale` is set to the page's locale), the banner then shows, and a second
+   `Esc` closes it with no `fo_consent` set. When the language overlay becomes spec 003's slim bar,
+   the bar task restates this clause for it; its default is that on a phone the bar and the compact
+   banner are never on screen together and the banner waits for the bar's close.
+6. **Unchanged.** AC-18; equal prominence (AC-20); nothing pre-enabled; `Esc` records nothing;
+   no cookie wall; withdrawal from the footer on every page; the register and its lifetimes;
+   `POST /api/consent`, `ConsentDecisionSchema`, `logConsentSink`; §2 L94's GA4 loading rule
+   (pending clause 3 (e)); clauses 2, 3, 5 and 6 of A-founder-2026-10-19c; A-founder-2026-10-15b
+   (the consent banner stays outside the deferred set); A-founder-2026-10-19a.
+7. **Design.** `/design` on this amendment draws, before `/plan-tasks`: the first-visit chrome with
+   neither overlay at 390 × 844 and 1440 × 900; the settings panel opened from the footer with no
+   banner behind it, at both sizes; and the compact banner (clause 4) at 390 × 844, 360 × 640 and
+   1440 × 900, replacing 1A's 260 px sheet in `chrome-mobile`, `chrome-desktop` and
+   `system/components.dc.html`'s consent sheet.
+8. **The consent-active build (test fixture).** CI builds the site a second time with
+   `NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-FIXTURE00` and runs a Playwright project, `consent-active`,
+   against it on `ci:full`. Every request to `www.googletagmanager.com` and
+   `*.google-analytics.com` is aborted by route interception, and the project asserts each was
+   aborted, never answered. No Lighthouse run and no script budget on that build (A15: the tag
+   breaks the budget by design). The project first asserts the GA4 tag element is in the served
+   HTML, so it cannot run silently against the committed configuration. This is where the
+   banner-shown halves of the amended ACs below run.
+9. **Chunk checks carry their own positive control.** Every assertion below that a chunk was *not*
+   requested names the chunk by the file the build output records for it (the
+   `react-loadable-manifest.json` entry that `budget:client-js` counts), and first asserts that file
+   exists and is non-empty, so a wrong name cannot pass. Where the same run can then load the chunk
+   (the consent island, after activation), it asserts the same matcher now finds it.
+10. **Owner.** **TASK-NNN** (the orchestrator assigns the id): the reader (clause 1), the layout
+   wiring, the banner-off path and the footer activation (clause 2), the restated tests below, the
+   `consent-active` project (clause 8), the runbook steps (clause 3), with spec 003's popup gate and
+   spec 041's two test restatements in the same feature PR. It keeps the breaker: consent and
+   compliance, a CI workflow and i18n behaviour every visitor meets (DoD §4). The compact form is
+   clause 4's row.
+
+**SEO.** No interstitial on a first visit: neither the consent banner nor the language popup
+covers content, which removes the risk Google's intrusive-interstitials guidance describes. Less
+client JavaScript on a first view: the consent island (2,363 B Brotli, runbook §4a) and its panel
+chunk (967 B) are fetched only on activation, and the popup's island (up to 3 KB, spec 003 A14) not
+at all on today's data. The consent sheet was once the page's LCP element (A14); it can no longer
+compete. The server HTML stays one cache entry per URL with no `Vary` and no `Set-Cookie`; the only
+document change is the absent `data-fo-locale-gate` attribute, identical for every visitor.
+Nothing indexable moves: URLs (`plan/02` §4), canonicals, robots, hreflang, sitemaps and schema are
+unchanged; rendering stays as `plan/01` §3 sets it. AC-24, AC-55's rule and the first-paint visual
+baselines hold.
+
+**i18n.** No new key in this amendment. The compact line's key ships only with the founder's
+approved text in TASK-251's batch (spec 003 A17). The panel's strings are unchanged. Logical
+properties only, so `/ar-XB` mirrors the corner card. **For the next copy batch (no text change
+here):** `consent.essentialLocked` carries two U+2014 characters in `en`, one on each side of "your
+language, your basket and the security of your order", and the `de` and `pl` echoes carry the same.
+It is consent copy the panel now shows first when a visitor opens "Cookie settings", so the batch
+replaces both with commas or a colon (the founder's no-em-dash condition).
+
+**Compliance.**
+- **ePrivacy, today.** Art. 5(3) of Directive 2002/58/EC requires consent for storing or reading
+  information on a visitor's device, except where it is strictly necessary to provide the service
+  the visitor asked for. The UK equivalent is PECR reg. 6(4)(b); Germany's is TDDDG §25(2) no. 2.
+  On today's data the site stores only `fo_locale` and `fo_consent` (a language choice and the
+  record of a consent choice, both first-party, both written only on the visitor's act) and the
+  declared essential rows, and it loads no third-party tag, so no consent is required and no banner
+  is owed.
+- **ePrivacy, once the GA4 id is set.** Under the design §2 L94, AC-21 and `plan/04` §11 chose, the
+  GA4 tag then loads on every page **before** any decision and, under Consent Mode v2
+  default-denied, sends cookieless pings; no analytics cookie is set until a grant. EDPB Guidelines
+  2/2023 on Art. 5(3) treat that kind of access to the visitor's device as within Art. 5(3), so it
+  is not covered by the exemption above. This amendment does not change that design and does not
+  claim it is exempt: the banner returns by data the moment a source is active (clauses 1 and 3),
+  and clause 3 (e) makes the lawyer's ruling on advanced versus basic mode a step before the id is
+  set.
+- **Transparency.** The cookie notice (spec 041, TASK-183) still lists every register entry,
+  essential ones included, with purpose and lifetime (spec 041 AC-13 unchanged in that half), and
+  the footer's "Cookie settings" opens the same list on every page.
+- **Consent quality when the banner returns.** Equal prominence, no pre-ticked category, `Esc`
+  records nothing, and a decision taken while nothing was active is asked again (clause 3 (b)).
+- **Records.** RoPA unchanged: no new flow; consent records (row 3) only become rarer. GA4 (row 4)
+  stays "declared but inactive". The cookie register is unchanged.
+- **Geo-blocking and redirects.** Regulation (EU) 2018/302 and ADR-0006 are unaffected: nothing
+  redirects or blocks.
+- **Accessibility (WCAG 2.2 AA).** No overlay obscures content or focus on a first visit (2.4.11);
+  the panel opened on request takes focus and `Esc` always leaves it (2.1.2).
+- **Carry-forwards, not gates.** (1) The founder's lawyer reviews the "no banner while only
+  essential cookies" position and the cookie notice after go-live; the result goes into TASK-NNN's
+  brief and `docs/compliance/`. The same review checks the production site's real cookies against
+  the register (an edge cookie set by Cloudflare would be essential but is not in the register
+  today). (2) The ruling of clause 3 (e) comes before any GA4 id is set; it is a runbook step, not a
+  code gate.
+
+**AC-6 amended.** Its e2e reads: "with `prefers-reduced-motion: reduce`, opening the settings panel
+from the footer (committed build) and the banner's appearance (`consent-active` build, clause 8)
+produce no animated property change." The language overlay's half moves to spec 003's bar task.
+
+**AC-9 amended.** Its control clause reads: "With `consentSources().active` empty, activating
+'Cookie settings' opens the settings panel, with or without a recorded decision, with focus inside
+it, and `Esc` closes it, returns focus to the control and writes no cookie. With a category active,
+it re-opens the consent banner after a decision has been recorded, and the banner's Choose opens the
+panel." The company-block clauses are unchanged.
+
+**AC-13 amended.** It reads: "The consent layer token is above the language popup's layer token in
+the built CSS, and spec 003 AC-28 as amended by spec 003 §14 A-founder-2026-10-19d passes."
+
+**AC-17 amended (replaces A-founder-2026-10-19c's gain).** AC-17 now reads:
+- (a) With `consentSources().active` empty (the committed configuration), on `/en`, `/en-gb`, `/de`
+  and `/pl` at 1440 × 900 and 390 × 844, with no `fo_consent`: after hydration, network idle and a
+  further 5 s (past the popup gate's 4 s fail-open timer), no consent sheet or panel element is in
+  the DOM, no request has been made for the consent island's chunk (named per clause 9), no
+  `fo_consent` exists, and an `Esc` press writes no cookie. The same run then activates "Cookie
+  settings", and the same matcher finds the consent island's chunk requested.
+- (b) In the `consent-active` build, on the same pages and sizes, with no `fo_consent`: `<html>`
+  carries no `data-fo-locale-gate`; the banner appears after hydration, reserves no layout space
+  (CLS delta 0), does not steal focus, is reachable and operable by keyboard, closes on `Esc`
+  without recording a decision and returns on the next page view; its box intersects neither the
+  H1's, the sentence letter's nor the AC-48 bar's.
+- (c) Once clause 4's form is built, in the `consent-active` build: below `md` its top edge is at
+  y 0 and its height is ≤ 140 CSS px at 390 × 844 and 360 × 640 in `en` and `en-gb`, and the three
+  answers' top edges lie within 1 px of each other; from `md` up its inline-end and block-end edges
+  are 32 ± 1 px from the viewport's and its width is 420 ± 1 px.
+- (d) With the language overlay and the banner both pending (clause 5), one `Esc` closes the
+  language overlay only and a second closes the banner with no `fo_consent` set.
+
+**AC-19 amended.** It reads: "(a) Committed build, from the footer's panel: analytics on and
+marketing off, then Save, sets `fo_consent` with `a: true`, `m: false` and `Max-Age` ≈ 12 months;
+both off, then Save, sets it with ≈ 6 months and issues no grant; each sends a `POST /api/consent`
+body that parses under `ConsentDecisionSchema`; a forged `fo_consent` is deleted when the island
+loads on activation and rewritten by the Save. (b) `consent-active` build: 'Accept all' sets
+`fo_consent` with ≈ 12 months and issues a `gtag('consent','update',…)` granting analytics; 'Reject
+all' sets it with ≈ 6 months and issues no grant; Choose, analytics on, marketing off saves exactly
+that; each body parses under `ConsentDecisionSchema`."
+
+**AC-20 amended.** It reads: "In the `consent-active` build, Accept all, Reject all and Choose have
+equal computed prominence (same rendered width class, font size and weight, both text and
+background pairs at 4.5:1 or better). On the committed build, the panel opened from the footer
+pre-enables no non-essential category and lists every register entry as A-founder-2026-10-19c's
+amended last clause says (closed disclosures; ≤ 780 CSS px and Save inside the viewport at
+390 × 844; at most the viewport height minus 64 px from `md` up)."
+
+**AC-21 amended.** It gains: "`consentSources()` returns `active: []` and no id for the committed
+register with the id blank; `active: ["analytics"]` and the id with `G-FIXTURE00`; `active: []` and
+no id with `GTM-ABC123` and with whitespace; `active: ["analytics"]` and no id for a fixture register
+whose `_ga` row is `status: "set"` with the id blank; and `active: ["marketing"]` for a fixture
+register with one marketing row `set`. The locale layout hands `AnalyticsScripts` the reader's id
+and the consent banner `prompt: true` exactly when `active` is non-empty. No file under `src/` other
+than `src/lib/env.schema.ts` and the reader contains a call to `ga4MeasurementId(` outside a
+comment."
+
+**AC-22 amended.** "including after accept" reads: "including after a Save with every category on
+from the footer's panel (committed build) and after 'Accept all' (`consent-active` build)".
+
+**AC-27 amended.** "the consent banner shown" is taken in the `consent-active` build (clause 4's row
+re-takes it in the compact form); "the settings panel open" is taken on the committed build, opened
+from the footer, at mobile and desktop; spec 003 A16's "language popup open" baselines are deleted,
+and spec 003's bar task adds the bar's.
+
+**AC-39 amended.** It reads: "On the committed build, on `/en` at 1440 × 900 and 390 × 844 with
+`navigator.languages = ["de-DE","de"]` and no `fo_locale`, no language popup opens (spec 003 AC-28
+(a)). `PopupBody` rendered in a unit test with the committed candidates renders L1 and L3 to L6 and
+one `<a lang hreflang>` per shown locale. The overlay's look is restated for the slim bar by the
+task that shows `de` or `pl` (spec 003 §14 A-founder-2026-10-19d clause 4)."
+
+**AC-48 amended.** Its overlay bullet reads: "with the settings panel opened from the footer
+(committed build) or the consent banner shown (`consent-active` build), neither box intersects the
+bar's action". The language overlay's half moves to spec 003's bar task. A-founder-2026-10-19c's
+short-screen gain stands.
+
+**AC-55 amended.** Its first bullet ends (A-founder-2026-10-19a's clause kept, this amendment's
+added): "and the set includes the language popup, the Menu enhancements and the motions; once
+TASK-194's motion module is on `main`, the motions entry imports that module, and a reserved entry
+with no module does not pass; on the committed registry the language popup's deferred chunk exists
+in the build output (clause 9), its module is in no route's initial chunk set, and it has no
+resource-timing entry on any audited URL; the task that shows a second language re-asserts its
+timing against the LCP".
+
+**T-08 amended.** As AC-6: the panel from the footer on the committed build, the banner in
+`consent-active`. Red with a transition left on the panel under reduced motion.
+
+**T-11 amended.** Committed build: activating "Cookie settings" with and without a recorded decision
+opens the panel, focus inside; `Esc` returns focus and writes no cookie. `consent-active`: it re-opens
+the banner after a decision, and Choose opens the panel. Red when activation opens the banner instead
+of the panel on the committed build, and red when the delegated listener is dropped (nothing opens).
+
+**T-15 amended.** Unit: the consent layer token is above the popup's in the built CSS. The spec 003
+T-28 matrix as amended runs green.
+
+**T-19 amended (replaces A-founder-2026-10-19c's gain).** E2e on the committed build: AC-17 (a) at
+both sizes on the four pages, with clause 9's chunk check and its positive control after
+activation. E2e in `consent-active`: AC-17 (b), and (c) once clause 4's row lands. Unit
+(`tests/unit/locale-gate.test.ts`, jsdom): AC-17 (d), the gate held, one `Esc` closing the popup
+only, the sheet showing, a second `Esc` closing it with no `fo_consent`. Red when the banner mounts
+unconditionally (the committed case shows a sheet), red when the reader returns a constant empty
+`active` (the `consent-active` case shows none), red when the chunk matcher names a file the build
+does not contain (the existence check and the post-activation match fail), and red with one `Esc`
+closing both overlays.
+
+**T-21 amended.** As AC-19 (a) on the committed build and (b) in `consent-active`. Red when an
+all-off Save writes the 12-month lifetime, and red when the forged value survives activation.
+
+**T-22 amended.** Computed styles of the three answers in `consent-active`; the panel's closed
+disclosures, heights, Save position and full register list on the committed build, opened from the
+footer. Red with one answer given a heavier weight, and red with the disclosures open on load.
+
+**T-23 amended.** It gains AC-21's reader table (unit), an integration render of the locale layout's
+analytics and consent parts under a blank and a `G-FIXTURE00` environment (the tag's `src` carries
+the reader's id; `prompt` as AC-21), and a source scan for calls to `ga4MeasurementId(` that skips
+comments. Red when the reader ignores register `set` rows, and red when the layout calls
+`ga4MeasurementId(` itself.
+
+**T-24 amended.** As AC-22's restated accept step.
+
+**T-29 amended.** As AC-27: the panel baselines on the committed build, the banner baseline in
+`consent-active`, the popup baselines deleted.
+
+**T-41 amended.** E2e on the committed build: AC-39's no-popup case at both sizes. Unit: `PopupBody`
+strings and links. Red when the popup's server half renders on the committed registry.
+
+**T-53 amended (A-founder-2026-10-19c's short-screen gain kept).** Its overlay case reads: "at
+390 × 844 on a page that renders the bar, on the committed build with the settings panel opened from
+the footer, and in `consent-active` with the banner shown, the overlay's box does not intersect the
+bar's action". Red when the panel is anchored to the bottom of the viewport over the bar's action.
+
+**T-60 amended.** The unit case keeps A-founder-2026-10-19a's motions check. The e2e gains: on the
+committed registry, no resource entry for the language popup's chunk on any audited URL, with
+clause 9's existence check on that chunk. Its red case "the language popup's module is imported
+eagerly again" is replaced by a build-output check: the popup island's module is in no route's
+initial chunk set (the client reference and build manifests the budget script reads); red when
+`LanguagePopupLoader` imports the island statically. A second red case: the popup's loader rendered
+unconditionally (the resource scan finds the chunk).
+
+Open for the founder: none blocking. The compact line's text goes to the founder with TASK-251's
+consent batch. The *Reading* in clause 4 (the line links to the cookie notice; the controller
+sentence moves into the panel) can be overruled in one word; the lawyer's ruling of clause 3 (e)
+comes before any GA4 id is set.
