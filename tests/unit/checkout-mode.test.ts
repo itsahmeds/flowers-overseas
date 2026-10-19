@@ -275,6 +275,9 @@ const DECISION_FILE = "src/modules/checkout/mode.ts";
  */
 const ALLOW_LIST: readonly RegExp[] = [
   /^src\/config\/feature-flags\.ts$/u,
+  // The wordmark build script loads `subset-font`'s CommonJS entry through `createRequire`, the
+  // blanket side door below (TASK-203); it builds a font at authoring time and decides nothing.
+  /^scripts\/fonts\/build-wordmark\.ts$/u,
   /^src\/app\/.*\/admin\/flags\//u,
   /^db\/migrations\/[^/]+\.sql$/u,
 ];
@@ -327,6 +330,17 @@ function readersOutsideTheDecision(): string[] {
 /* The import half (`/break 201` hole 1): a literal grep cannot see a file that imports the keys
  * or the key-kind reader and decides from them, so every source file is also parsed and its
  * syntax tree searched for the two names and for any whole-module route to `mode.ts`. */
+
+/** The globals that build code from a string. */
+const CODE_FROM_STRING: ReadonlySet<string> = new Set(["eval", "Function"]);
+
+/** The objects the global scope is reachable through (`globalThis.eval`). */
+const GLOBAL_OBJECTS: ReadonlySet<string> = new Set([
+  "globalThis",
+  "window",
+  "global",
+  "self",
+]);
 
 /** The two names that carry the decision's inputs out of `mode.ts`. */
 const DECISION_NAMES: ReadonlySet<string> = new Set([
@@ -392,6 +406,51 @@ function decisionImportsIn(fileName: string, text: string): string[] {
     if (ts.isImportSpecifier(node) || ts.isExportSpecifier(node)) {
       const imported = (node.propertyName ?? node.name).text;
       if (DECISION_NAMES.has(imported)) at(node, `imports ${imported}`);
+      if (imported === "createRequire") at(node, "imports createRequire");
+    } else if (
+      ts.isIdentifier(node) &&
+      node.text === "createRequire" &&
+      !isKeyPosition(node)
+    ) {
+      // Blanket rule (`/break 201` round 3): `createRequire` builds a `require` the scan cannot see.
+      at(node, "uses createRequire");
+    } else if (
+      ts.isIdentifier(node) &&
+      CODE_FROM_STRING.has(node.text) &&
+      !isKeyPosition(node) &&
+      !ts.isTypeReferenceNode(node.parent) &&
+      !ts.isExpressionWithTypeArguments(node.parent) &&
+      !(
+        ts.isPropertyAccessExpression(node.parent) &&
+        node.parent.name === node &&
+        !(
+          ts.isIdentifier(node.parent.expression) &&
+          GLOBAL_OBJECTS.has(node.parent.expression.text)
+        )
+      )
+    ) {
+      // Blanket rule: code built from a string is invisible to any syntax tree. Any reference to
+      // the global `eval` or `Function` counts, not only a direct call (`/break 201` round 3:
+      // `(0, eval)(…)`, `globalThis.eval(…)`, `const e = eval`).
+      at(node, `references ${node.text}`);
+    } else if (
+      ts.isElementAccessExpression(node) &&
+      (ts.isStringLiteral(node.argumentExpression) ||
+        ts.isNoSubstitutionTemplateLiteral(node.argumentExpression)) &&
+      (CODE_FROM_STRING.has(node.argumentExpression.text) ||
+        node.argumentExpression.text === "constructor")
+    ) {
+      at(node, `indexes ${node.argumentExpression.text}`);
+    } else if (
+      ts.isPropertyAccessExpression(node) &&
+      node.name.text === "constructor" &&
+      ((ts.isCallExpression(node.parent) && node.parent.expression === node) ||
+        ts.isNewExpression(node.parent) ||
+        (ts.isPropertyAccessExpression(node.expression) &&
+          node.expression.name.text === "constructor"))
+    ) {
+      // `(() => {}).constructor.constructor("…")` is `Function` by another name.
+      at(node, "reaches Function through constructor");
     } else if (ts.isIdentifier(node) && DECISION_NAMES.has(node.text)) {
       if (!isKeyPosition(node) && !ts.isImportSpecifier(node.parent)) {
         at(node, `uses ${node.text}`);
@@ -425,15 +484,6 @@ function decisionImportsIn(fileName: string, text: string): string[] {
     ) {
       // Blanket rule: the codebase is ES modules; a `require` is a side door around the scan.
       at(node, "calls require");
-    } else if (
-      ts.isIdentifier(node) &&
-      (node.text === "eval" || node.text === "Function") &&
-      !isKeyPosition(node) &&
-      !ts.isPropertyAccessExpression(node.parent) &&
-      (ts.isCallExpression(node.parent) || ts.isNewExpression(node.parent))
-    ) {
-      // Blanket rule: code built from a string is invisible to any syntax tree.
-      at(node, `calls ${node.text}`);
     } else if (ts.isImportEqualsDeclaration(node)) {
       if (ts.isExternalModuleReference(node.moduleReference)) {
         at(node, "import = require");
@@ -532,6 +582,27 @@ describe("only mode.ts reads the decision's inputs (AC-1, T-01, ruling R5)", () 
     ],
     ["eval", 'export const k = eval("1");'],
     ["new Function", 'export const f = new Function("return 1");'],
+    ["globalThis.eval", 'export const k = globalThis.eval("1");'],
+    ['globalThis["eval"]', 'export const k = globalThis["eval"]("1");'],
+    ["an indirect (0, eval)", 'export const k = (0, eval)("1");'],
+    ["eval by another name", 'const e = eval;\nexport const k = e("1");'],
+    [
+      "constructor.constructor",
+      'export const f = (() => 1).constructor.constructor("return 1");',
+    ],
+    [
+      "a constructor call",
+      'const g = () => 1;\nexport const f = g.constructor("return 1");',
+    ],
+    ["a constructor index", 'export const f = (() => 1)["constructor"];'],
+    [
+      "createRequire",
+      'import { createRequire } from "node:module";\nconst r = createRequire(import.meta.url);\nexport const m = r("./mode");',
+    ],
+    [
+      "createRequire through a namespace",
+      'import * as nm from "node:module";\nexport const r = nm.createRequire(import.meta.url);',
+    ],
     [
       "a branch on the built inputs",
       'declare const inputs: { stripeKeyKind: string };\nexport const live = inputs.stripeKeyKind === "live";',

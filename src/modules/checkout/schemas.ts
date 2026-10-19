@@ -100,6 +100,22 @@ const CONTROL_CHARACTER_EXCEPT_LINE_BREAK = new RegExp(
   "u",
 );
 
+/**
+ * Invisible format characters refused in text that has something visible in it (`/break 201`
+ * round 3, closed by TASK-203): the word joiner and the invisible operators U+2060–U+2064, the
+ * unassigned U+2065, the deprecated format controls U+206A–U+206F, the byte-order mark U+FEFF and
+ * the Unicode tag characters U+E0000–U+E007F, which can carry text no reader sees. A value made
+ * only of them is blank, not refused (a card of only U+FEFF is no card). The tags inside an emoji
+ * flag sequence (U+1F3F4, tags, U+E007F: the flags of England, Scotland and Wales) are kept.
+ */
+const HIDDEN_FORMAT = /[\u2060-\u206F\uFEFF\u{E0000}-\u{E007F}]/u;
+const EMOJI_TAG_SEQUENCE = /\u{1F3F4}[\u{E0020}-\u{E007E}]+\u{E007F}/gu;
+
+/** Does `value` hide a format character outside an emoji flag sequence? */
+function hidesFormatCharacter(value: string): boolean {
+  return HIDDEN_FORMAT.test(value.replace(EMOJI_TAG_SEQUENCE, ""));
+}
+
 /** U+2028 and U+2029, which a multi-line field reads as an ordinary line break. */
 const LINE_SEPARATORS = /[\u2028\u2029]/gu;
 
@@ -195,6 +211,13 @@ function textField(options: {
         return z.NEVER;
       }
       return "";
+    }
+    if (hidesFormatCharacter(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+      });
+      return z.NEVER;
     }
     if (countGraphemes(value, options.locale) > options.max) {
       ctx.addIssue({ code: "custom", ...tooLong });

@@ -74,7 +74,18 @@ export const REDACTED_KEYS: readonly string[] = [
   // `REDACTED_CREDENTIAL_KEYS` below and, inside any string, by `TOKEN_IN_URL_PATTERN`.
   "identifier",
   "displayname",
+  // Spec 010 §8 (TASK-203): the card's signature and the recipient's delivery note are typed by a
+  // buyer and may name anyone. `email` and `token` are already covered (the latter as a
+  // credential, below), and `*_snapshot` is the suffix rule in `isRedactedKey`.
+  "signas",
+  "deliverynote",
 ];
+
+/**
+ * Spec 010 §8 (TASK-203): an order's `buyer_snapshot` and `recipient_snapshot` (and any later
+ * `*_snapshot`) hold what a buyer typed, so the whole value is redacted, at any depth.
+ */
+export const REDACTED_KEY_SUFFIXES: readonly string[] = ["snapshot"];
 
 export const REDACTED_KEY_PREFIXES: readonly string[] = ["address", "card"];
 
@@ -133,6 +144,8 @@ export function isRedactedKey(key: string): boolean {
   const normalised = normaliseKey(key);
   if (REDACTED_KEYS.includes(normalised)) return true;
   if (REDACTED_KEY_PREFIXES.some((prefix) => normalised.startsWith(prefix)))
+    return true;
+  if (REDACTED_KEY_SUFFIXES.some((suffix) => normalised.endsWith(suffix)))
     return true;
   return isNameKey(key);
 }
