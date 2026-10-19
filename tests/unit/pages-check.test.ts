@@ -506,7 +506,7 @@ describe("the shared claim patterns, one case per label (AC-5, AC-8)", () => {
     }
     const stripped = withFile("pages/en/guarantee.md", (s) =>
       s.replace(
-        / {2}- sentence: "When the flowers[\s\S]*?\(spec 041 §13 Q4, Appendix A\.3\)\."\n/u,
+        / {2}- sentence: "When the flowers[\s\S]*?\(spec 041 §13 Q4, Appendix A\.3\)\.['"]\n/u,
         "",
       ),
     );
