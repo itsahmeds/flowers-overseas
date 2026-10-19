@@ -386,13 +386,16 @@ export type DraftPatch = z.input<typeof DraftPatchSchema>;
 
 /**
  * Saves a step's changes and moves the 24-hour window (AC-13). Returns `false`, writing nothing,
- * when the draft is gone or already placed (AC-52).
+ * when the draft is gone or already placed (AC-52), or — given `ifUnchanged`, the draft as the
+ * caller loaded it — when another request has changed its selection, quote or last-seen total
+ * since.
  */
 export async function saveStep(
   draftId: string,
   patch: DraftPatch,
   now: Date,
   connection?: DraftConnection,
+  ifUnchanged?: Draft,
 ): Promise<boolean> {
   const id = z.uuid().parse(draftId);
   const value = DraftPatchSchema.parse(patch);
@@ -427,10 +430,25 @@ export async function saveStep(
   return withConnection(connection, async (executor) => {
     const rows = await executor.execute(sql`
       UPDATE checkout_draft SET ${sql.join(sets, sql`, `)}
-       WHERE id = ${id} AND order_id IS NULL
+       WHERE id = ${id} AND order_id IS NULL${ifUnchanged === undefined ? sql`` : unchangedSince(ifUnchanged)}
       RETURNING id`);
     return rows.length === 1;
   });
+}
+
+/**
+ * The compare half of a compare-and-set (`/review 275` change 1, `/break 275` hole 1): the row
+ * still has the selection, the quote and the last-seen total the runner priced from. A runner
+ * that loaded the draft before another request changed any of them writes nothing, so a quote
+ * priced for one size or add-on set can never be saved over another's.
+ */
+function unchangedSince(loaded: Draft): SQL {
+  return sql` AND tier_key = ${loaded.tierKey}
+    AND delivery_date IS NOT DISTINCT FROM ${loaded.deliveryDate}::date
+    AND addon_keys = ${textArray(loaded.addonKeys)}
+    AND (quote ->> 'digest') IS NOT DISTINCT FROM ${loaded.quote?.digest ?? null}::text
+    AND confirmed_total_minor IS NOT DISTINCT FROM ${loaded.confirmed?.amountMinor ?? null}::bigint
+    AND confirmed_currency_code IS NOT DISTINCT FROM ${loaded.confirmed?.currency ?? null}::text`;
 }
 
 /* -------------------------------------------------------------------------- */

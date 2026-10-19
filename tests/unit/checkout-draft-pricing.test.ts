@@ -36,7 +36,8 @@ const minutes = (n: number): Date => new Date(T0.getTime() + n * 60_000);
 const [product] = await listProducts({ countryIso: "PL" });
 if (product === undefined) throw new Error("the dataset prices nothing for PL");
 const SKU = product.sku;
-const [TIER] = await listTiers(SKU);
+const TIERS_ALL = await listTiers(SKU);
+const [TIER] = TIERS_ALL;
 if (TIER === undefined) throw new Error(`${SKU} has no tier`);
 const ADDONS = await listAddons("PL");
 const [ADDON] = ADDONS;
@@ -265,5 +266,145 @@ describe("the quote carries every amount, add-ons included (AC-11 arithmetic)", 
       signed.totalMinor,
     );
     expect(await draftTotals(draftWith(null), T0)).toBeNull();
+  });
+});
+
+describe("the quote must price exactly the draft's selection (/review 275 change 1, /break 275 holes 1, 10)", () => {
+  const OTHER = TIERS_ALL[1];
+
+  it("answers `changed` for a quote signed for another size, and the notice opens", async () => {
+    if (OTHER === undefined) throw new Error(`${SKU} needs two tiers`);
+    const forOther = await deriveQuote(
+      { ...selection(), tierKey: OTHER.tierKey },
+      T0,
+    );
+    const draft = draftWith(forOther);
+    const check = await verifyDraftQuote(draft, minutes(1));
+    expect(check.verdict).toBe("changed");
+    expect(check.quote.lines.map((line) => line.tierKey)).toEqual([
+      TIER.tierKey,
+    ]);
+    expect(
+      priceChange({ quote: check.quote, confirmed: draft.confirmed }),
+    ).not.toBeNull();
+  });
+
+  it("answers `changed` for a quote missing a paid add-on, and gives no totals for it", async () => {
+    const bare = await deriveQuote(selection(), T0);
+    const draft = draftWith(bare, [ADDON.key]);
+    const check = await verifyDraftQuote(draft, minutes(1));
+    expect(check.verdict).toBe("changed");
+    expect(check.quote.totalMinor).toBeGreaterThan(bare.totalMinor);
+    expect(
+      priceChange({ quote: check.quote, confirmed: draft.confirmed }),
+    ).not.toBeNull();
+    expect(await draftTotals(draft, minutes(1))).toBeNull();
+  });
+
+  it("answers `changed` for a quote pricing an add-on the draft does not have", async () => {
+    const withAddon = await deriveQuote(selection([ADDON.key]), T0);
+    const draft = draftWith(withAddon, []);
+    expect((await verifyDraftQuote(draft, minutes(1))).verdict).toBe("changed");
+    expect(await draftTotals(draft, minutes(1))).toBeNull();
+  });
+
+  it("answers `changed` for the same total in another currency", async () => {
+    const projection = await priceProjection("pl", {
+      productId: SKU,
+      tierKey: TIER.tierKey,
+      countryIso: "PL",
+      now: T0,
+    });
+    const inEuro = quote(
+      [
+        {
+          productId: SKU,
+          tierKey: TIER.tierKey,
+          projection: {
+            ...projection,
+            displayPrice: { ...projection.displayPrice, currency: "EUR" },
+          },
+        },
+      ],
+      T0,
+    );
+    const check = await verifyDraftQuote(draftWith(inEuro), minutes(5));
+    expect(check.verdict).toBe("changed");
+    expect(check.quote.currency).toBe("PLN");
+    expect(check.quote.totalMinor).toBe(inEuro.totalMinor);
+  });
+
+  it("answers `changed` for the same total split differently between the lines", async () => {
+    const at = T0;
+    const bouquet = await priceProjection("pl", {
+      productId: SKU,
+      tierKey: TIER.tierKey,
+      countryIso: "PL",
+      now: at,
+    });
+    const addon = await addonPriceProjection(ADDON.key, "PL", "pl", {
+      now: at,
+    });
+    const shifted = quote(
+      [
+        {
+          productId: SKU,
+          tierKey: TIER.tierKey,
+          projection: {
+            ...bouquet,
+            displayPrice: {
+              ...bouquet.displayPrice,
+              amountMinor: toMinor(bouquet.displayPrice.amountMinor + 100),
+            },
+          },
+        },
+        {
+          productId: SKU,
+          tierKey: `${ADDON_TIER_PREFIX}${ADDON.key}`,
+          projection: {
+            ...bouquet,
+            displayPrice: {
+              ...addon.displayPrice,
+              amountMinor: toMinor(addon.displayPrice.amountMinor - 100),
+            },
+            priceVersion: addon.priceVersion,
+          },
+        },
+      ],
+      at,
+    );
+    const fresh = await deriveQuote(selection([ADDON.key]), at);
+    expect(shifted.totalMinor).toBe(fresh.totalMinor);
+    const check = await verifyDraftQuote(
+      draftWith(shifted, [ADDON.key]),
+      minutes(5),
+    );
+    expect(check.verdict).toBe("changed");
+  });
+});
+
+describe("the VAT split by rate, by value (/break 275 hole 3)", () => {
+  it("splits a PL bouquet at 8 % and a paid add-on at 23 %", async () => {
+    const signed = await deriveQuote(selection([ADDON.key]), T0);
+    const totals = await draftTotals(draftWith(signed, [ADDON.key]), T0);
+    const [bouquetLine, addonLine] = signed.lines;
+    const bouquetGross = bouquetLine?.amountMinor ?? -1;
+    const addonGross = addonLine?.amountMinor ?? -1;
+    const vatOf = (gross: number, rateBp: number): number =>
+      Math.round((gross * rateBp) / (10_000 + rateBp));
+    expect(totals?.vat).toEqual([
+      {
+        rateBp: 800,
+        grossMinor: bouquetGross,
+        vatMinor: vatOf(bouquetGross, 800),
+        netMinor: bouquetGross - vatOf(bouquetGross, 800),
+      },
+      {
+        rateBp: 2300,
+        grossMinor: addonGross,
+        vatMinor: vatOf(addonGross, 2300),
+        netMinor: addonGross - vatOf(addonGross, 2300),
+      },
+    ]);
   });
 });

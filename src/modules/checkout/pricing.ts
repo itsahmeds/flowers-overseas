@@ -14,7 +14,8 @@
  * the bouquet's product with the tier key `addon:{key}` (`ADDON_TIER_PREFIX`), so the signed
  * payload covers every amount the buyer is charged. Spec 005's `verifyQuote()` re-resolves a
  * line's price version and knows only bouquet versions, so it answers `expired` for any quote with
- * an add-on line; `verifyDraftQuote()` therefore re-derives on every `expired` and keeps the
+ * an add-on line; `verifyDraftQuote()` therefore re-derives on every check, refuses a quote
+ * whose lines are not exactly the draft's selection (`changed`), and keeps the
  * stored quote unchanged while it is inside its 30 minutes and every re-derived line amount is
  * identical. The observable rule is spec 010's: inside 30 minutes the price holds unless it moved;
  * after 30 minutes it is reissued, silently when the total is the same.
@@ -83,6 +84,8 @@ interface Derived {
   /** The bouquet's VAT rate, and each add-on's, keyed by add-on. */
   readonly productVatRateBp: number;
   readonly addonVatRateBp: ReadonlyMap<string, number>;
+  /** The draft's add-ons whose current price is 0 (`card`): summary lines, never signed lines. */
+  readonly freeAddons: ReadonlySet<string>;
 }
 
 /**
@@ -128,6 +131,7 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
     },
   ];
   const addonVatRateBp = new Map<string, number>();
+  const freeAddons = new Set<string>();
   for (const addonKey of selection.addonKeys) {
     const addon = await addonPriceProjection(
       addonKey,
@@ -138,7 +142,10 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
     addonVatRateBp.set(addonKey, addon.vatRateBp);
     // A free add-on (`card`, priced 0) adds nothing to the total and a signed line must be
     // positive (spec 005 `QuoteLineSchema`): it is a line of the summary, not of the quote.
-    if (addon.displayPrice.amountMinor === 0) continue;
+    if (addon.displayPrice.amountMinor === 0) {
+      freeAddons.add(addonKey);
+      continue;
+    }
     lines.push({
       productId: selection.sku,
       tierKey: `${ADDON_TIER_PREFIX}${addonKey}`,
@@ -149,6 +156,7 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
     quote: quote(lines, now),
     productVatRateBp: bouquet.vatRateBp,
     addonVatRateBp,
+    freeAddons,
   };
 }
 
@@ -158,6 +166,21 @@ export async function deriveQuote(
   now: Date,
 ): Promise<Quote> {
   return (await derive(selection, now)).quote;
+}
+
+/** The same priced lines (product and size, then each paid add-on), in the same order. */
+function sameLines(left: Quote, right: Quote): boolean {
+  return (
+    left.lines.length === right.lines.length &&
+    left.lines.every((line, index) => {
+      const other = right.lines[index];
+      return (
+        other !== undefined &&
+        other.productId === line.productId &&
+        other.tierKey === line.tierKey
+      );
+    })
+  );
 }
 
 /** Same currency, same lines, same amounts, in the same order. */
@@ -224,8 +247,15 @@ export async function verifyDraftQuote(
   if (verdict === "tampered") {
     return { verdict: "tampered", quote: await fresh() };
   }
-  if (verdict === "ok") return { verdict: "ok", quote: stored };
   const current = await fresh();
+  // The quote must price exactly the draft's selection: the product and size, then each paid
+  // add-on, nothing else (`/review 275` change 1, `/break 275` hole 1). A quote signed for another
+  // size, or missing a paid add-on (two tabs posting at once), is a different price: re-derived,
+  // and the notice opens with the buyer's last-seen total beside the right one.
+  if (!sameLines(stored, current)) {
+    return { verdict: "changed", quote: current };
+  }
+  if (verdict === "ok") return { verdict: "ok", quote: stored };
   if (!sameAmounts(stored, current)) {
     return { verdict: "changed", quote: current };
   }
@@ -292,15 +322,25 @@ export async function draftTotals(
     },
   ];
   for (const addonKey of draft.addonKeys) {
+    const signedLine = amountOf(`${ADDON_TIER_PREFIX}${addonKey}`);
+    // Only a free add-on (`card`) is a summary line without a signed line. A paid add-on the
+    // quote does not price means the quote is not this selection's: no totals at all.
+    if (signedLine === null && !rates.freeAddons.has(addonKey)) return null;
+    const vatRateBp = rates.addonVatRateBp.get(addonKey);
+    if (vatRateBp === undefined) return null;
     lines.push({
       kind: "addon",
       addonKey,
       amount:
-        amountOf(`${ADDON_TIER_PREFIX}${addonKey}`) ??
+        signedLine ??
         IntegerMoneySchema.parse({ amountMinor: 0, currency: signed.currency }),
-      vatRateBp: rates.addonVatRateBp.get(addonKey) ?? 0,
+      vatRateBp,
     });
   }
+  const signedCount = lines.filter(
+    (line) => line.amount.amountMinor > 0,
+  ).length;
+  if (signedCount !== signed.lines.length) return null;
   return {
     lines,
     total: { amountMinor: signed.totalMinor, currency: signed.currency },

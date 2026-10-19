@@ -258,8 +258,11 @@ async function saveAndGo(
     },
     now,
     context.connection,
+    draft,
   );
-  if (!saved) return render({ status: "expired" });
+  // Gone, placed, or changed by another request since it was loaded: write nothing and reload
+  // the step, which shows the draft as it now is.
+  if (!saved) return redirect(stepPath(locale, step));
   logger.info(
     { draft_id: draft.id, step, mode: draft.mode, locale },
     "checkout.step_saved",

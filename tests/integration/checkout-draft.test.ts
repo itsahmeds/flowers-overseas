@@ -26,6 +26,8 @@ import {
 import {
   type CheckoutFlagReader,
   type DraftConnection,
+  draftTotals,
+  verifyDraftQuote,
   type StepOutcome,
   draftTokenFromCookieHeader,
   expireDrafts,
@@ -48,7 +50,7 @@ import {
   type ScratchDatabase,
   type Tx,
 } from "./support/scratch-db.ts";
-import { runnerOf } from "./support/sql-runner.ts";
+import { runnerOf, sqlText } from "./support/sql-runner.ts";
 
 const server = await probeLocalServer();
 
@@ -137,6 +139,30 @@ async function validStart(): Promise<Record<string, string>> {
     tierKey: TIER?.tierKey ?? "",
     expectedTotalMinor: String(await shownTotal()),
     expectedCurrency: "PLN",
+  };
+}
+
+/**
+ * A connection that runs `before` (another tab's request) just ahead of this request's first
+ * write: the interleaving of two posts on one draft (`/review 275`, `/break 275` hole 1).
+ */
+function interleaved(
+  base: DraftConnection,
+  before: () => Promise<unknown>,
+): DraftConnection {
+  let fired = false;
+  const executor = base.executor;
+  if (executor === undefined) throw new Error("needs an executor");
+  return {
+    executor: {
+      async execute(query) {
+        if (!fired && /^\s*UPDATE checkout_draft/u.test(sqlText(query))) {
+          fired = true;
+          await before();
+        }
+        return executor.execute(query);
+      },
+    },
   };
 }
 
@@ -675,6 +701,278 @@ describe.skipIf(server.url === undefined)(
             await shownTotal(OTHER_TIER.tierKey),
           );
           expect(priceChange(draft)).toBeNull();
+        });
+      });
+    });
+
+    describe("two requests on one draft (/review 275 change 1, /break 275 holes 1-14)", () => {
+      it("a step-2 post that loaded before another tab removed an add-on writes nothing (no free add-on)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          await runRecipientStep(ctx(connection, token), recipientForm());
+          await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "addAddon",
+              addonKey: PAID_ADDON,
+              returnStep: "card",
+            }),
+          );
+          const racing = interleaved(connection, () =>
+            runUpdateSelection(
+              ctx(connection, token, 2),
+              form({
+                intent: "removeAddon",
+                addonKey: PAID_ADDON,
+                returnStep: "card",
+              }),
+            ),
+          );
+          const stale = await runCardAndBuyerStep(
+            { ...ctx(connection, token, 3), connection: racing },
+            cardForm({ addonKeys: [PAID_ADDON] }),
+          );
+          expect(location(stale)).toBe("/pl/checkout?step=card");
+          const draft = await active(connection, token, 4);
+          expect(draft.addonKeys).toEqual([]);
+          expect(draft.card).toBeNull();
+          const check = await verifyDraftQuote(draft, at(4));
+          expect(check.verdict).toBe("ok");
+          const totals = await draftTotals(draft, at(4));
+          expect(totals?.total.amountMinor).toBe(draft.quote?.totalMinor);
+          expect(totals?.lines.map((line) => line.kind)).toEqual(["product"]);
+        });
+      });
+
+      it("a step-1 post that loaded before a size change writes nothing (no size at another size's price)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          const racing = interleaved(connection, () =>
+            runUpdateSelection(
+              ctx(connection, token, 2),
+              form({
+                intent: "tier",
+                tierKey: OTHER_TIER.tierKey,
+                returnStep: "recipient",
+              }),
+            ),
+          );
+          const stale = await runRecipientStep(
+            { ...ctx(connection, token, 3), connection: racing },
+            recipientForm(),
+          );
+          expect(location(stale)).toBe("/pl/checkout");
+          const draft = await active(connection, token, 4);
+          expect(draft.tierKey).toBe(OTHER_TIER.tierKey);
+          expect(draft.quote?.lines.map((line) => line.tierKey)).toEqual([
+            OTHER_TIER.tierKey,
+          ]);
+          expect(draft.quote?.totalMinor).toBe(
+            await shownTotal(OTHER_TIER.tierKey),
+          );
+          expect(draft.recipient).toBeNull();
+          expect((await verifyDraftQuote(draft, at(4))).verdict).toBe("ok");
+        });
+      });
+
+      it("a stored quote for another size is not `ok`: the notice opens on the next step", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          await tx`UPDATE checkout_draft SET tier_key = ${OTHER_TIER.tierKey}`;
+          const draft = await active(connection, token);
+          const check = await verifyDraftQuote(draft, at(2));
+          expect(check.verdict).toBe("changed");
+          await runRecipientStep(ctx(connection, token, 3), recipientForm());
+          expect(
+            priceChange(await active(connection, token, 4)),
+          ).not.toBeNull();
+        });
+      });
+
+      it("refuses wine through the summary panel too (PL, hole 2)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          const before = (await active(connection, token)).quote?.totalMinor;
+          const outcome = await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "addAddon",
+              addonKey: "wine",
+              returnStep: "recipient",
+            }),
+          );
+          expect(
+            outcome.kind === "render" && outcome.state.status === "invalid"
+              ? outcome.state.errors["addonKeys"]
+              : undefined,
+          ).toEqual([{ key: "checkout.error.addonUnavailable" }]);
+          const draft = await active(connection, token);
+          expect(draft.addonKeys).toEqual([]);
+          expect(draft.quote?.totalMinor).toBe(before);
+        });
+      });
+
+      it("re-renders an unknown size instead of failing (hole 11)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          const outcome = await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "tier",
+              tierKey: "stems_999",
+              returnStep: "recipient",
+            }),
+          );
+          expect(outcome.kind).toBe("render");
+          expect((await active(connection, token)).tierKey).toBe(TIER.tierKey);
+        });
+      });
+
+      it("never sends the buyer past an incomplete step (hole 12)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          const outcome = await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "tier",
+              tierKey: OTHER_TIER.tierKey,
+              returnStep: "review",
+            }),
+          );
+          expect(location(outcome)).toBe("/pl/checkout");
+          await runRecipientStep(ctx(connection, token), recipientForm());
+          const second = await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "tier",
+              tierKey: TIER.tierKey,
+              returnStep: "review",
+            }),
+          );
+          expect(location(second)).toBe("/pl/checkout?step=card");
+        });
+      });
+
+      it("a confirmation after a tampered quote restarts at step 1 (hole 8)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection);
+          await runRecipientStep(ctx(connection, token), recipientForm());
+          const total =
+            (await active(connection, token)).quote?.totalMinor ?? -1;
+          await tx`UPDATE checkout_draft
+                      SET quote = jsonb_set(quote, '{digest}', to_jsonb(${"0".repeat(64)}::text))`;
+          const outcome = await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "confirmPrice",
+              seenTotalMinor: String(total),
+              seenCurrency: "PLN",
+              returnStep: "card",
+            }),
+          );
+          expect(location(outcome)).toBe("/pl/checkout");
+          const draft = await active(connection, token);
+          expect(draft.stepsCompleted).toBe(0);
+          expect(draft.quote?.digest).not.toBe("0".repeat(64));
+        });
+      });
+
+      it("a confirmation in another currency leaves the notice open (hole 9)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const shown = await shownTotal();
+          const token = await started(connection, {
+            ...(await validStart()),
+            expectedTotalMinor: String(shown - 700),
+          });
+          const outcome = await runUpdateSelection(
+            ctx(connection, token),
+            form({
+              intent: "confirmPrice",
+              seenTotalMinor: String(shown),
+              seenCurrency: "EUR",
+              returnStep: "recipient",
+            }),
+          );
+          expect(location(outcome)).toBe("/pl/checkout");
+          expect(priceChange(await active(connection, token))).not.toBeNull();
+        });
+      });
+
+      it("expireDrafts deletes a draft at exactly its expiry (hole 13)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          await started(connection);
+          expect(await expireDrafts(at(24 * HOUR - 1), connection)).toBe(0);
+          expect(await expireDrafts(at(24 * HOUR), connection)).toBe(1);
+        });
+      });
+
+      it("a demo start ignores a posted date (hole 14)", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const token = await started(connection, {
+            ...(await validStart()),
+            date: DELIVERY_DATE,
+          });
+          expect((await active(connection, token)).deliveryDate).toBeNull();
+        });
+      });
+    });
+
+    describe("Origin variants (AC-6, holes 5-7)", () => {
+      it("refuses another port and a host that only ends with ours", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          for (const origin of [
+            "http://flowersoverseas.test:8443",
+            "http://evilflowersoverseas.test",
+            "http://flowersoverseas.test.evil.example",
+          ]) {
+            const response = await startCheckout(
+              startRequest(await validStart(), { origin }),
+              {
+                now: () => T0,
+                connection,
+                flags: OPEN,
+              },
+            );
+            expect(response.status, origin).toBe(403);
+          }
+          expect(await draftCount(tx)).toBe(0);
+        });
+      });
+
+      it("reads the public host from x-forwarded-host behind the proxy, before Host", async () => {
+        await run(async (tx) => {
+          const connection = await seeded(tx);
+          const proxied = await startCheckout(
+            startRequest(await validStart(), {
+              host: "app.internal:8080",
+              "x-forwarded-host": "flowersoverseas.test",
+              origin: "http://flowersoverseas.test",
+            }),
+            { now: () => T0, connection, flags: OPEN },
+          );
+          expect(proxied.status).toBe(303);
+          expect(proxied.headers.get("location")).toBe("/pl/checkout");
+          const internal = await startCheckout(
+            startRequest(await validStart(), {
+              host: "app.internal:8080",
+              "x-forwarded-host": "flowersoverseas.test",
+              origin: "http://app.internal:8080",
+            }),
+            { now: () => T0, connection, flags: OPEN },
+          );
+          expect(internal.status).toBe(403);
+          expect(await draftCount(tx)).toBe(1);
         });
       });
     });
