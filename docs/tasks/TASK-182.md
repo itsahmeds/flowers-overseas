@@ -149,6 +149,19 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - **2026-10-19, E4 (support line; TASK-238 blocked).** Per the work order the help page renders no
   hours sentence and no "24/7"; AC-12's support-line half is TASK-238's. The footer still prints
   main's `company.support.hours` ("24/7 —"), which is TASK-238's value to change.
+- **2026-10-19, E5 (script bytes over budget; to the orchestrator; open).** CI run 39211395643
+  (head `ec5fa312`): Lighthouse `resource-summary.script.size` is 131 207 B on all 16 URLs against
+  the 131 072 B budget; main `6d4c40b7` measures 130 739 B, so this PR adds 468 B Brotli and
+  main had 333 B of headroom. Cause: the six segment keys (AC-4) sit in the rows of
+  `src/config/locales.data.ts`, and those rows reach client chunks through
+  `src/modules/i18n/error-document.ts` (`global-error.tsx`, `[locale]/error.tsx`) and
+  `src/modules/i18n/hints.ts` (the language popup island); an esbuild bundle of those two modules
+  grows 712 B raw, 173 B gzip, once per chunk. Both fixes are outside this task's fence: (a) give
+  the two client paths a row-free constant module (x-default `code`/`bcp47`/`dir` and the launch
+  codes, pinned to the rows by the parity tests), which takes every locale row out of client JS
+  and reverses TASK-085's "read the row" choice; or (b) move the six info-page segments out of
+  `LocaleData.pathSegments` into a server-only map, which changes spec 003's registry shape. Not
+  done: needs the orchestrator's call.
 
 ## Progress
 
@@ -163,11 +176,13 @@ here.
 - 22:12Z: round-2 band layout; local build in the slot (load 2.0) to judge the new routes and the layout: all five pages 200 in en/en-gb, `/de/hilfe`, `/en/imprint`, `/en/legal/terms`, `/en/contact` 404, `/en/help/` 308. Screenshots checked against the artboards.
 - 22:25Z: stopped before `gh pr ready` on the coordinator's copy-share heads-up (E1). Next: the founder attests the keys (or the order is changed), then rebase on `origin/main` (TASK-172/PR 265 adds `trust.guarantee.name` to the AC-16 case), ready, `ci:full`.
 - 2026-10-19 06:10Z: rebased on `origin/main` (`dbb3ec64`, copy batch 5); the pinned queue in `i18n-messages-schema.test.ts` is main's set plus this PR's 8 keys. `trust.guarantee.name` joined the AC-16 case (mutation to a German "7-Tage" name went red). Copy share `en-gb` 0.36 % on main, 1.79 % with this PR. Cheap gates and `pages:check` green; ready, `ci:full`.
+- 07:55Z: second rebase (motions PR 221; HomeFaq keeps both `data-fo-reveal` and the help link). CI 39211395643: e2e footer/links/home FAQ suites still expected the unpublished pages (updated), 31 Linux baselines refreshed from run 39215901991 (each looked at), Lighthouse script bytes 468 B over (E5, open).
 
 ## Result
 
 PR https://github.com/itsahmeds/flowers-overseas/pull/270 (ready, `ci:full`; E1 resolved by copy
-batch 5: `en-gb` unreviewed share 0.36 % on main, 1.79 % with this PR). Ships
+batch 5: `en-gb` unreviewed share 0.36 % on main, 1.79 % with this PR; Lighthouse script bytes
+468 B over budget, E5 open). Ships
 `src/modules/content` (schemas, parser, provider over `corpus.generated.ts`, `infoPageExists`,
 `listInfoPages`, `infoPageView`, `InfoPage`), `src/config/info-pages.ts`, the claim/scale/price
 patterns moved into `src/config/honesty.ts` (plus the T-16 freshness scan), `pnpm pages:check`
