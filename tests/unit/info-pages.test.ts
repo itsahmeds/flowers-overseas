@@ -517,18 +517,19 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
   });
 
   it("the home and strip guarantee names carry no day count in any locale", () => {
-    // `trust.guarantee.name` is TASK-172's change (PR 265, open when this task shipped); its
-    // case joins this list when that PR lands (docs/tasks/TASK-182.md, carry-forward).
+    // `trust.guarantee.name` is TASK-172's change (PR 265, on main since 2026-10-19).
     for (const locale of ["en", "de", "pl"]) {
       const catalogue = JSON.parse(
         readFileSync(resolve(ROOT, `messages/${locale}.json`), "utf8"),
       ) as {
         nav: { utility: { guarantee: string } };
         home: { proof: { guarantee: { title: string } } };
+        trust: { guarantee: { name: string } };
       };
       for (const value of [
         catalogue.nav.utility.guarantee,
         catalogue.home.proof.guarantee.title,
+        catalogue.trust.guarantee.name,
       ]) {
         expect(value, `${locale}: ${value}`).not.toMatch(SEVEN_DAY_PATTERN);
         expect(
