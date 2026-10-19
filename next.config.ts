@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
+import { adminHeaderRules } from "./src/lib/admin-headers";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -111,6 +112,9 @@ const headerRules = [
   // no parameter and are served their prebuilt document, so the header supplies AC-15's
   // `noindex` half that document cannot (`src/lib/listing-rewrites.ts`; TASK-146).
   ...parameterisedHubHeaderRules(),
+  // Every `/admin` response: `noindex, nofollow` and `no-store, private` (spec 012 §2.2, AC-5;
+  // TASK-217). After the environment-wide `noindex` rule above, so its value wins on `/admin`.
+  ...adminHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,
@@ -140,6 +144,10 @@ const nextConfig: NextConfig = {
   // build-output shape, recorded as spec 040 §14 A2. Pinned by `tests/unit/container.test.ts`.
   ...(platform === "vercel" ? {} : { output: "standalone" as const }),
   headers: () => Promise.resolve(headerRules),
+  // `unauthorized()` and `forbidden()` (spec 012 AC-1, AC-4; TASK-217): the admin guard answers a
+  // server action or route handler without a session with a 401, and one without the permission
+  // with a 403, rendered by `src/app/admin/unauthorized.tsx` and `forbidden.tsx`.
+  experimental: { authInterrupts: true },
   // The enforced Content-Security-Policy of every cached HTML document (spec 004 §14 A2,
   // ADR-0016; TASK-058). Next's own file-system cache, extended to stamp each `APP_PAGE` entry
   // with the static policy above plus the `'sha256-…'` of that document's flight blocks — the

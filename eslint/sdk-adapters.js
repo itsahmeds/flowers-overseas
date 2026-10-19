@@ -82,12 +82,15 @@ export const SDK_ADAPTERS = [
     // `scripts/db-migrate.ts`, `scripts/db-check.ts` and `seed/index.ts`: a `node *.ts` run
     // cannot resolve `@/lib/db`, and all three connect as `app_owner` over the direct URL
     // (spec 002 §13 Q6), which `src/lib/db.ts`'s runtime pool never does (TASK-026, TASK-027).
+    // `scripts/admin-grant.ts` is spec 012 §2.2's `pnpm admin:grant`, over the direct URL too
+    // (TASK-217).
     files: [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
       "scripts/db-check.ts",
       "scripts/db-check-live.ts",
       "seed/index.ts",
+      "scripts/admin-grant.ts",
     ],
     use: "src/lib/db.ts",
   },

@@ -169,6 +169,9 @@ describe.skipIf(server.url === undefined)(
           ([, , parent]) => parent === "users",
         ).map(([fk, , , , rule]) => ({ fk, rule: RULE[rule] ?? rule })),
         { fk: "audit_log_actor_user_id_users_id_fk", rule: "n" },
+        // `0014_admin_identity` (spec 012, TASK-217): an admin with a history is deactivated,
+        // never deleted.
+        { fk: "admin_profile_user_id_users_id_fk", rule: "r" },
       ].sort((a, b) => (a.fk < b.fk ? -1 : 1));
       const rows = await scratch.sql<{ fk: string; rule: string }[]>`
         SELECT conname AS fk, confdeltype::text AS rule FROM pg_constraint

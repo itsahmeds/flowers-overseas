@@ -64,9 +64,21 @@ export function canonicalSqlType(type: string): string {
     int2: "smallint",
     bool: "boolean",
   };
+  // A length-bearing alias keeps its length: Drizzle's `char(64)` is Postgres's `character(64)`
+  // (`auth_email_send.identifier_hash`, spec 012 §5.1; TASK-217), `varchar(n)` its
+  // `character varying(n)`.
+  const lengthAliases: Readonly<Record<string, string>> = {
+    char: "character",
+    varchar: "character varying",
+  };
   const array = type.endsWith("[]");
   const base = array ? type.slice(0, -2) : type;
-  const canonical = aliases[base] ?? base;
+  const sized = /^([a-z]+)(\(\d+\))$/.exec(base);
+  const sizedAlias = sized ? lengthAliases[sized[1] ?? ""] : undefined;
+  const canonical =
+    sized && sizedAlias !== undefined
+      ? `${sizedAlias}${sized[2] ?? ""}`
+      : (aliases[base] ?? base);
   return array ? `${canonical}[]` : canonical;
 }
 
