@@ -37,6 +37,12 @@ const CORRIDOR_URLS = ["en", "en-gb"].flatMap((locale) =>
  * so `/en-gb` canonicalising to `/en` fails the self-reference check, not just the count.
  */
 const HOME_URLS = ["/en", "/en-gb", "/de", "/pl"] as const;
+/** Spec 041 AC-18 (TASK-182): the ten English trust URLs, each its own canonical. */
+const INFO_URLS = ["en", "en-gb"].flatMap((locale) =>
+  ["how-it-works", "guarantee", "help", "about", "delivery"].map(
+    (segment) => `/${locale}/${segment}`,
+  ),
+);
 
 const canonicals = (html: string): string[] =>
   [
@@ -46,7 +52,7 @@ const canonicals = (html: string): string[] =>
   ].map((match) => match[1] ?? "");
 
 test.describe("canonical, observed (AC-10, T-11)", () => {
-  for (const url of [...HOME_URLS, ...CORRIDOR_URLS]) {
+  for (const url of [...HOME_URLS, ...CORRIDOR_URLS, ...INFO_URLS]) {
     test(`${url} emits exactly one self-referencing canonical`, async ({
       request,
       baseURL,

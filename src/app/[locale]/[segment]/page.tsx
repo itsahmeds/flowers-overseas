@@ -10,8 +10,6 @@ import {
   localeSegmentParams,
   resolveLocalePath,
 } from "@/modules/catalog";
-import { COMPANY } from "@/config/company";
-import type { InfoPageId } from "@/config/info-pages";
 import {
   InfoPage,
   infoPageAlternatePaths,
@@ -30,8 +28,8 @@ import {
   breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
-  faqPage,
-  organization,
+  infoPageJsonLd,
+  infoPageMetadata,
   pageIndexability,
   pageMetadata,
   schemaOptions,
@@ -127,35 +125,6 @@ async function occasionsIndexMetadata(locale: LocaleCode): Promise<Metadata> {
   });
 }
 
-/**
- * An info page's `<head>` (spec 041 §6, AC-17, AC-18; TASK-182): the content file's own title and
- * description, a self-canonical, hreflang among the locales where the page exists (and that the
- * engine admits), and the engine's directive: `index,follow` only when the page exists, its content
- * is reviewed, its locale is indexable and this is the indexing environment.
- */
-function infoPageMetadata(locale: LocaleCode, pageId: InfoPageId): Metadata {
-  const view = infoPageView(pageId, locale);
-  if (view === undefined) notFound();
-  const deployment = deploymentDescriptor(process.env);
-  const verdict = pageIndexability(
-    { pageType: pageId, locale, exists: true, reviewed: view.reviewed },
-    deployment,
-  );
-  const cluster = deployment.siteUrl.startsWith("https:")
-    ? alternatesFor(
-        { pathByLocale: infoPageAlternatePaths(pageId) },
-        { baseUrl: deployment.siteUrl },
-      ).find((page) => page.url.endsWith(view.path))?.alternates
-    : undefined;
-  return pageMetadata({
-    title: view.seoTitle,
-    description: view.seoDescription,
-    directive: verdict.directive,
-    canonical: canonicalFor(locale, view.path, { baseUrl: deployment.siteUrl }),
-    ...(cluster === undefined ? {} : { alternates: cluster }),
-  });
-}
-
 export async function generateStaticParams(): Promise<
   { locale: string; segment: string }[]
 > {
@@ -175,7 +144,13 @@ export async function generateMetadata({
     return occasionsIndexMetadata(match.locale);
   }
   if (match.kind === "infoPage") {
-    return infoPageMetadata(match.locale, match.pageId);
+    return (
+      infoPageMetadata(
+        match.pageId,
+        match.locale,
+        deploymentDescriptor(process.env),
+      ) ?? notFound()
+    );
   }
   if (match.kind !== "destinationsHub") notFound();
 
@@ -259,23 +234,14 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
     setRequestLocale(match.locale);
     const view = infoPageView(match.pageId, match.locale);
     if (view === undefined) notFound();
-    const infoOptions = schemaOptions(
-      deploymentDescriptor(process.env).siteUrl,
+    // JSON-LD from the same view model the page renders (spec 041 AC-19), built in
+    // `modules/seo` so the unit suite reads what this route serves.
+    const nodes = infoPageJsonLd(
+      match.pageId,
+      match.locale,
+      deploymentDescriptor(process.env),
+      await registryLabels(match.locale),
     );
-    const infoLabel = await registryLabels(match.locale);
-    // JSON-LD from the same view model the page renders (spec 041 AC-19): the trail, the help
-    // page's questions character for character, and on about an `Organization` with only the
-    // fields we have. Nothing else is ever emitted.
-    const nodes =
-      infoOptions === undefined
-        ? []
-        : [
-            breadcrumbList(view.breadcrumb, infoLabel, infoOptions),
-            match.pageId === "help" ? faqPage(view.faq) : undefined,
-            match.pageId === "about"
-              ? organization(COMPANY, infoOptions)
-              : undefined,
-          ].filter((node) => node !== undefined);
     return (
       <>
         <InfoPage pageId={match.pageId} locale={match.locale} />

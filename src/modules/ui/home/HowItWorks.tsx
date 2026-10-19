@@ -1,7 +1,8 @@
 /**
  * **v2** (spec 004 §14 A21; TASK-177; `home-*.dc.html` `#how`): the paper-2 band, the intro
  * beside a numbered route — cornflower rings joined by a dashed rule. No photograph and no
- * guarantee control: the artboard draws neither, and the guarantee has no page yet (A20). The
+ * guarantee control: the v2 artboard draws neither. The guarantee page exists in English since
+ * spec 041 (TASK-182) and is linked from the footer; this band has no surface for it. The
  * artboard's margin note is new copy and waits for the founder's batch.
  *
  * `HowItWorks` — the artboards' explainer band (spec 004 §2 "Locale-home skeleton", §13's
@@ -22,11 +23,9 @@
  * customs form and nothing to pay on arrival" — is the strongest fact we have and is stated as
  * ours, not as a limitation of somebody else's service.
  *
- * **"Read the guarantee in full" is text, not a link.** `/{locale}/guarantee` is a `site-links.ts`
- * row owned by spec 007 with `published: false`, and it is lawyer-gated (`plan/13` B4). The
- * artboard draws an underlined control; a control that goes nowhere is worse than a sentence, so
- * the label renders as text with the line that says where the terms are today — the same
- * treatment the header's search band and the footer's unpublished columns get (§14 A4).
+ * **No "Read the guarantee in full" control.** The v1 band rendered it as text while the page did
+ * not exist; v2's artboard draws no guarantee control at all, so spec 041 AC-21's guarantee half
+ * has no surface on this band (declared in PR 270). The page is reached from the footer.
  *
  * **The band's photograph is a placeholder with no `<img>`** (`plan/10` §3). Its caption is
  * `media.placeholder.delivery`, whose wording this task had to resolve before rendering it

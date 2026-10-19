@@ -597,7 +597,7 @@ export const CLAIM_PATTERNS: readonly ClaimPattern[] = [
   {
     label: "delivery date",
     pattern:
-      /\b(?:delivery dates?|deliver(?:ed|y|s)? (?:today|tomorrow)|by tomorrow|on the day you choose)\b/iu,
+      /\b(?:delivery dates?|deliver(?:ed|y|s)? (?:today|tomorrow)|by tomorrow|on the (?:day|date) (?:you|they) (?:choose|chose|chosen|pick|picked|select|selected))\b/iu,
   },
   {
     label: "florist count",
@@ -609,7 +609,7 @@ export const CLAIM_PATTERNS: readonly ClaimPattern[] = [
   {
     label: "delivery photo",
     pattern:
-      /\b(?:delivery photos?|photos? of the delivery|photographed at the door|proof of delivery)\b/iu,
+      /\b(?:delivery photos?|photos? of the delivery|photo(?:graph)?(?:s|ed|ing)?\s+(?:(?:it|them|the\s+(?:flowers|bouquet))\s+)?(?:at|on)\s+the\s+(?:door|doorstep)|proof of delivery)\b/iu,
   },
 ];
 
@@ -628,122 +628,3 @@ export const SCALE_CLAIM_PATTERN =
  */
 export const PRICE_LITERAL_PATTERN =
   /(?:[£€$]\s?\d|\b\d[\d,.]*\s?(?:zł|złotych|pln|eur|gbp|euros?|pounds?|lei|ron)(?![\p{L}\p{N}]))/iu;
-
-/* -------------------------------------------------------------------------- */
-/* The freshness-claim scan (spec 041 AC-16, T-16; TASK-182).                 */
-/* -------------------------------------------------------------------------- */
-
-const SPELLED_NUMBERS = new Set([
-  // en
-  ...[
-    "one",
-    "two",
-    "three",
-    "four",
-    "five",
-    "six",
-    "seven",
-    "eight",
-    "nine",
-    "ten",
-    "eleven",
-    "twelve",
-    "thirteen",
-    "fourteen",
-    "fifteen",
-    "sixteen",
-    "seventeen",
-    "eighteen",
-    "nineteen",
-    "twenty",
-    "thirty",
-  ],
-  // de
-  ...[
-    "ein",
-    "eine",
-    "einen",
-    "einem",
-    "zwei",
-    "drei",
-    "vier",
-    "fünf",
-    "sechs",
-    "sieben",
-    "acht",
-    "neun",
-    "zehn",
-    "elf",
-    "zwölf",
-    "vierzehn",
-    "zwanzig",
-    "dreißig",
-  ],
-  // pl
-  ...[
-    "jeden",
-    "jedna",
-    "jedno",
-    "dwa",
-    "dwie",
-    "trzy",
-    "cztery",
-    "pięć",
-    "sześć",
-    "siedem",
-    "osiem",
-    "dziewięć",
-    "dziesięć",
-    "czternaście",
-    "dwadzieścia",
-    "trzydzieści",
-  ],
-]);
-
-const DAY_WORD =
-  /^(?:day|days|tag|tage|tagen|tägig\p{L}*|dzień|dni|dniow\p{L}*)$/u;
-const WEEK_WORD = /^(?:week|weeks|woche|wochen|tydzień|tygodnie|tygodni)$/u;
-const FRESHNESS_WORD =
-  /^(?:fresh\p{L}*|last|lasts|lasting|frisch\p{L}*|hält|halten|haltbar\p{L}*|haltbarkeit|śwież\p{L}*|trwał\p{L}*|wytrzym\p{L}*)$/u;
-/** An ICU argument whose name contains `day` (`{days}`, `{freshnessDays}`). */
-const DAY_ARGUMENT = /^\{[^}]*day[^}]*\}$/iu;
-
-/** At most this many words between a day count and a freshness word, in either order. */
-const FRESHNESS_WINDOW = 3;
-
-/**
- * Every sentence of `text` that states a number of days (or weeks) of freshness: a day count
- * (a digit run or a spelled-out number directly followed by a day or week word), a week word on
- * its own, or an ICU argument naming days, within three words of a freshness word, in either
- * order (spec 041 T-16). "14-day right to cancel" and "we do not promise a number of days" pass;
- * "fresh for 7 days", "7-day freshness" and "lasts a week" fail.
- */
-export function freshnessClaimsIn(text: string): readonly string[] {
-  return sentencesOf(text).filter((sentence) => {
-    const tokens = [
-      ...sentence.toLowerCase().matchAll(/\{[^}]*\}|[\p{L}\p{N}]+/gu),
-    ].map((match) => match[0]);
-    const units: number[] = [];
-    tokens.forEach((token, index) => {
-      const next = tokens[index + 1] ?? "";
-      if (DAY_ARGUMENT.test(token)) units.push(index);
-      else if (WEEK_WORD.test(token)) units.push(index);
-      else if (
-        (/^\d+$/u.test(token) || SPELLED_NUMBERS.has(token)) &&
-        (DAY_WORD.test(next) || WEEK_WORD.test(next))
-      ) {
-        units.push(index, index + 1);
-      }
-    });
-    if (units.length === 0) return false;
-    return tokens.some(
-      (token, index) =>
-        FRESHNESS_WORD.test(token) &&
-        units.some((unit) => Math.abs(unit - index) - 1 <= FRESHNESS_WINDOW),
-    );
-  });
-}
-
-/** "7-day" in any spelling: the retired guarantee name (spec 041 AC-16). */
-export const SEVEN_DAY_PATTERN =
-  /(?<![\p{L}\p{N}])7[\s-]*(?:day|tag|dni|dzie)/iu;

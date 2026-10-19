@@ -14,10 +14,11 @@ import { describe, expect, it } from "vitest";
 
 import { CompanySchema, COMPANY } from "../../src/config/company.ts";
 import {
-  freshnessClaimsIn,
-  relayMatches,
-  SEVEN_DAY_PATTERN,
-} from "../../src/config/honesty.ts";
+  SEVEN_DAY,
+  guaranteeTextViolations,
+  normaliseForScan,
+} from "../../src/config/freshness-claim.ts";
+import { relayMatches } from "../../src/config/honesty.ts";
 import {
   INFO_PAGE_IDS,
   InfoPageRegistrySchema,
@@ -217,6 +218,27 @@ describe("T-02 / AC-2: infoPageExists is the one existence predicate", () => {
         infoPageExists(pageId, "en", { provider, registered: false }),
       );
     }
+  });
+});
+
+describe("T-02 / AC-2: a content file in a locale that is not routable does not exist", () => {
+  // `/break 270` hole 9. A file under a code the router does not serve (`fr`, not a launch or
+  // pseudo locale) never makes the page exist, so neither the footer, an in-body link nor the
+  // sitemap can point at a URL that answers 404. `de` and `pl`, launch locales hidden from the
+  // menus, keep their routes (ADR-0006; spec 003 §14 A-founder-2026-10-14c), so a file there
+  // would make the page exist, served `noindex` while the locale is hidden.
+  const help = staticInfoContentProvider
+    .files()
+    .find((file) => file.path === "pages/en/help.md");
+  const provider = fixtureInfoContentProvider([
+    ...staticInfoContentProvider.files(),
+    { path: "pages/fr/help.md", source: help?.source ?? "" },
+  ]);
+
+  it("refuses fr even with a parsed fr/help.md in the corpus, and still finds en", () => {
+    expect(help).toBeDefined();
+    expect(infoPageExists("help", "fr", { provider })).toBe(false);
+    expect(infoPageExists("help", "en", { provider })).toBe(true);
   });
 });
 
@@ -483,7 +505,7 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
       "we do not promise a number of days",
       "Fresh flowers are an exception to the usual 14-day right to cancel",
     ]) {
-      expect(freshnessClaimsIn(ok), ok).toEqual([]);
+      expect(guaranteeTextViolations(ok), ok).toEqual([]);
     }
     for (const bad of [
       "fresh for 7 days",
@@ -493,7 +515,7 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
       "lasts a week",
       "fresh for {days} days",
     ]) {
-      expect(freshnessClaimsIn(bad), bad).not.toEqual([]);
+      expect(guaranteeTextViolations(bad), bad).not.toEqual([]);
     }
   });
 
@@ -508,11 +530,11 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
         "This promise comes on top of your legal rights, not instead of them.",
       );
       expect(
-        freshnessClaimsIn(
+        guaranteeTextViolations(
           view?.sections.flatMap((s) => s.paragraphs).join("\n\n") ?? "",
         ),
       ).toEqual([]);
-      expect(text).not.toMatch(SEVEN_DAY_PATTERN);
+      expect(normaliseForScan(text)).not.toMatch(SEVEN_DAY);
     }
   });
 
@@ -531,15 +553,17 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
         catalogue.home.proof.guarantee.title,
         catalogue.trust.guarantee.name,
       ]) {
-        expect(value, `${locale}: ${value}`).not.toMatch(SEVEN_DAY_PATTERN);
+        expect(normaliseForScan(value), `${locale}: ${value}`).not.toMatch(
+          SEVEN_DAY,
+        );
         expect(
-          freshnessClaimsIn(`fresh ${value}`),
+          guaranteeTextViolations(`fresh ${value}`),
           `${locale}: ${value}`,
         ).toEqual([]);
       }
     }
     // The scan the case relies on is not vacuous: the retired name fails it.
-    expect("7-day freshness guarantee").toMatch(SEVEN_DAY_PATTERN);
+    expect(normaliseForScan("7-day freshness guarantee")).toMatch(SEVEN_DAY);
   });
 
   it("restoring a day count to the guarantee turns the scan red (mutation)", () => {
@@ -547,8 +571,10 @@ describe("T-16 / AC-16: the fresh-flower promise, never a number of days", () =>
       "so we do not promise a number of days.",
       "so we keep them fresh for 7 days.",
     );
-    expect(freshnessClaimsIn(mutated)).not.toEqual([]);
-    expect(freshnessClaimsIn(source("pages/en/guarantee.md"))).toEqual([]);
+    expect(guaranteeTextViolations(mutated)).not.toEqual([]);
+    expect(guaranteeTextViolations(source("pages/en/guarantee.md"))).toEqual(
+      [],
+    );
   });
 });
 
@@ -577,11 +603,8 @@ describe("T-17 / AC-17: the ten page types are byRule", () => {
         NOINDEX_FOLLOW,
       );
     }
-    // A legal page passes `reviewed && lawyerReviewed`: an unreviewed lawyer term is noindex.
-    const lawyerReviewed = false;
-    expect(indexability({ ...all, reviewed: true && lawyerReviewed })).toBe(
-      NOINDEX_FOLLOW,
-    );
+    // AC-17's legal half ("a legal page additionally needs `lawyerReviewed`") is TASK-183's: no
+    // legal view exists yet, so no case here can exercise it (carry-forward in TASK-183's brief).
   });
 
   it("every trust page is noindex in Phase 0 by data: its copy is not reviewed yet", () => {

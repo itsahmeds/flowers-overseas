@@ -41,11 +41,10 @@ import {
   CLAIM_PATTERNS,
   PRICE_LITERAL_PATTERN,
   SCALE_CLAIM_PATTERN,
-  SEVEN_DAY_PATTERN,
-  freshnessClaimsIn,
   relayMatches,
   sentencesOf,
 } from "../src/config/honesty.ts";
+import { guaranteeTextViolations } from "../src/config/freshness-claim.ts";
 import { bannedVoiceWordsIn } from "../src/config/voice.ts";
 import { readInfoContent } from "../src/modules/content/corpus-files.ts";
 import {
@@ -204,19 +203,14 @@ function checkFile(file: ParsedInfoFile, path: string): PagesCheckProblem[] {
         `a price literal (\`${price[0].trim()}\`); prices are data, formatted by formatMoney`,
       );
     }
-    for (const sentence of freshnessClaimsIn(text)) {
+    // The one freshness matcher (`src/config/freshness-claim.ts`, spec 009 §14 A11), never a
+    // second copy: the retired "7-day" in any spelling, an ICU argument naming days, a number of
+    // days beside a freshness word, and a day count beside a guarantee word.
+    for (const violation of guaranteeTextViolations(text)) {
       push(
         field,
         "freshness-days",
-        `states a number of days of freshness: "${sentence}" (spec 041 AC-16)`,
-      );
-    }
-    const seven = SEVEN_DAY_PATTERN.exec(text);
-    if (seven !== null) {
-      push(
-        field,
-        "freshness-days",
-        `says \`${seven[0]}\`; the guarantee names no number of days (spec 041 AC-16)`,
+        `states a number of days of freshness (${violation.check}: ${violation.detail}); spec 041 AC-16, spec 009 §14 A11`,
       );
     }
     if (file.kind !== "trust") continue;

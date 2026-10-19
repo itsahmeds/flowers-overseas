@@ -46,6 +46,15 @@ honestyAllow:
   - sentence: "If the flowers did not arrive fresh and in good condition, send the photo within 72 hours of delivery."
     rule: "delivery timing"
     reason: "The same claim window as the promise above (spec 041 §13 Q4)."
+  - sentence: "Delivered on the day you chose"
+    rule: "delivery date"
+    reason: "The heading of the missed-day refund AC-31 requires: a remedy for a missed day, not a promise of a date; the not-open line sits above it."
+  - sentence: "If our florist cannot deliver on the day you chose, for a reason that is ours and not the recipient's, we refund you in full."
+    rule: "delivery date"
+    reason: "The missed-day refund AC-16 and AC-31 require: a remedy, not a delivery-date promise."
+  - sentence: "When the flowers are handed over, our florist photographs them at the door and we email you the picture."
+    rule: "delivery photo"
+    reason: 'The same promise the home page makes ("We photograph it at the door"); no money-back remedy is attached until the photo workflow exists (spec 041 §13 Q4, Appendix A.3).'
 source: human
 reviewed: false
 updatedAt: "2026-10-19"

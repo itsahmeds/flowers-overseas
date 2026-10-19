@@ -59,7 +59,13 @@ const HUBS = LOCALES.map(
 const CORRIDORS = ["en", "en-gb"].flatMap((locale) =>
   SLUGS.map((slug) => `/${locale}/${DESTINATIONS[locale] ?? ""}/${slug}`),
 );
-const EVERY_PAGE = [...HOMES, ...HUBS, ...CORRIDORS];
+/** Spec 041's trust pages (TASK-182): English only until TASK-184's drafts. */
+const INFO_PAGES = ["en", "en-gb"].flatMap((locale) =>
+  ["how-it-works", "guarantee", "help", "about", "delivery"].map(
+    (segment) => `/${locale}/${segment}`,
+  ),
+);
+const EVERY_PAGE = [...HOMES, ...HUBS, ...CORRIDORS, ...INFO_PAGES];
 
 /**
  * The types and the two *properties* `plan/02` §9 forbids by name. The properties are matched on
@@ -146,7 +152,7 @@ test.describe("AC-16: no page emits a forbidden type (T-17)", () => {
 });
 
 test.describe("AC-15: the served BreadcrumbList is the visible trail (T-17)", () => {
-  for (const path of [...CORRIDORS, ...HUBS]) {
+  for (const path of [...CORRIDORS, ...HUBS, ...INFO_PAGES]) {
     test(`${path} announces the trail its <nav> shows`, async ({ page }) => {
       await page.goto(path);
 
@@ -173,6 +179,60 @@ test.describe("AC-15: the served BreadcrumbList is the visible trail (T-17)", ()
       });
     });
   }
+});
+
+test.describe("spec 041 AC-19: the help page's FAQPage is the visible Q&A (T-19)", () => {
+  for (const path of ["/en/help", "/en-gb/help"]) {
+    test(`${path} marks up exactly the questions and answers it shows`, async ({
+      page,
+    }) => {
+      await page.goto(path);
+      const visible = await page
+        .locator("[data-fo-faq-item]")
+        .evaluateAll((items) =>
+          items.map((item) => [
+            item.querySelector("h2")?.textContent ?? "",
+            item.querySelector("p")?.textContent ?? "",
+          ]),
+        );
+      const nodes = await nodesOf(page);
+      const faq = nodes.find((node) => node.types.includes("FAQPage"));
+      expect(faq, `${path} has a FAQPage`).toBeDefined();
+      const entries = (faq?.node["mainEntity"] ?? []) as readonly Record<
+        string,
+        unknown
+      >[];
+      expect(visible.length).toBeGreaterThanOrEqual(10);
+      expect(
+        entries.map((entry) => [
+          entry["name"],
+          (entry["acceptedAnswer"] as Record<string, unknown> | undefined)?.[
+            "text"
+          ],
+        ]),
+      ).toEqual(visible);
+      // Organization only on about; nothing beyond the trail and the questions here.
+      expect(nodes.flatMap((node) => node.types).sort()).toEqual(
+        expect.arrayContaining(["BreadcrumbList", "FAQPage"]),
+      );
+      expect(nodes.flatMap((node) => node.types)).not.toContain("Organization");
+    });
+  }
+
+  test("/en/about carries an Organization with exactly name, url and logo", async ({
+    page,
+  }) => {
+    await page.goto("/en/about");
+    const org = (await nodesOf(page)).find((node) =>
+      node.types.includes("Organization"),
+    );
+    expect(Object.keys(org?.node ?? {}).sort()).toEqual([
+      "@type",
+      "logo",
+      "name",
+      "url",
+    ]);
+  });
 });
 
 test.describe("AC-15: the corridor's FAQPage is the visible Q&A (T-17)", () => {

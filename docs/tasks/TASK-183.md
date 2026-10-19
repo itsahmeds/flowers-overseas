@@ -87,6 +87,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   Recipients cell names row 2's platform log, so it follows row 2's transfer in Phase 0.
 - **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
   - Q1-11 (P1), still on `c8d3b334`: the footer has no legal links (terms, privacy, cookies, withdrawal and refunds, imprint). Publishing them as footer items is this task: add a footer-crawl case in en and en-gb that each published legal page is linked from the footer. The help number +1 (213) 592-5150 QA-1 flags is the founder's WhatsApp number (TASK-238, D4), not a defect.
+- **From TASK-182 (PR 270, `/break 270` hole 8):** AC-17's legal half ("a legal page additionally
+  needs `lawyerReviewed`") has no test: TASK-182 removed a tautological case that combined a local
+  `lawyerReviewed` constant no code read. Wire `lawyerReviewed` into the legal view's indexability
+  here and assert a reviewed but not lawyer-reviewed legal page is `noindex,follow`, with a mutation
+  that drops the `lawyerReviewed` term watched red.
 
 ## Escalations
 

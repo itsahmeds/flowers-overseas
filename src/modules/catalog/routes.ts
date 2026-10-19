@@ -69,12 +69,15 @@ import type { InfoPageId } from "@/config/info-pages";
 import {
   infoPageExists,
   infoPageForSegment,
+  infoPagePath,
   listInfoPages,
 } from "@/modules/content";
 import { localePath, routableLocale } from "@/modules/i18n";
 
 import { listingExists, listingLocales, listingPages } from "./listing";
-import { infoPagePath } from "@/modules/content";
+import { productPageExists, productPrebuildPages } from "./product";
+import { ProductParamsSchema } from "./schemas";
+import { resolveSlug } from "./slugs";
 
 /** The path segments below `/{locale}` of an info page (`["help"]`, `["legal", "terms"]`). */
 function infoPageSegments(
@@ -83,9 +86,6 @@ function infoPageSegments(
 ): readonly string[] {
   return infoPagePath(pageId, locale).split("/").slice(2);
 }
-import { productPageExists, productPrebuildPages } from "./product";
-import { ProductParamsSchema } from "./schemas";
-import { resolveSlug } from "./slugs";
 
 /**
  * The page a `/{locale}/…` path names, or `notFound`.

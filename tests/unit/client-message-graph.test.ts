@@ -188,6 +188,15 @@ describe("no client graph reaches a catalogue, a translator or a provider", () =
 });
 
 describe("the walk would notice any of it coming back", () => {
+  it("follows a dynamic import(): a lazy chunk is still a client chunk (AC-52 (b); /break 270 hole 7)", () => {
+    const closure = importClosure(
+      resolve(repoRoot, "tests/fixtures/client-graph/dynamic-rows.ts"),
+    );
+    expect([...closure.files].map(show)).toContain(
+      "src/config/locales.data.ts",
+    );
+  });
+
   it("finds the catalogue JSON from `messages.ts`, and next-intl from a Server Component", () => {
     const messages = importClosure(
       resolve(repoRoot, "src/modules/i18n/messages.ts"),
