@@ -230,6 +230,7 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
             aria-labelledby="hub-dates-heading"
             className="gap-lg md:gap-2xl grid grid-cols-1 items-start pt-[48px] md:grid-cols-[4fr_7fr] md:pt-(--section-fluid)"
             data-fo-hub-dates={dates.length}
+            data-fo-reveal=""
           >
             <div>
               <Eyebrow className="mb-[14px]">{hub("datesEyebrow")}</Eyebrow>
@@ -260,6 +261,7 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
             aria-labelledby="hub-about-heading"
             className="gap-lg md:gap-2xl grid grid-cols-1 items-start pt-[48px] md:grid-cols-[4fr_7fr] md:pt-(--section-fluid)"
             data-fo-hub-about
+            data-fo-reveal=""
           >
             <div>
               {view.hubAbout?.eyebrowKey === undefined ? null : (

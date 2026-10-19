@@ -233,12 +233,15 @@ export function SentencePicker({
         >
           {t("finder.submit")}
           {/* "Continue →" (TASK-231; QA-3 D-19): the drawn arrow, `arrow-end`, decorative and
-              mirrored under `dir="rtl"` by the icon set (`mirror-in-rtl`); no new string. */}
-          <Icon
-            name="arrow-end"
-            size={16}
-            className="ms-[8px] inline-block align-[-2px]"
-          />
+              mirrored under `dir="rtl"` by the icon set (`mirror-in-rtl`); no new string. While
+              the next page loads, motion 3's bloom takes the arrow's slot (TASK-194). */}
+          <span data-fo-pending-arrow="">
+            <Icon
+              name="arrow-end"
+              size={16}
+              className="ms-[8px] inline-block align-[-2px]"
+            />
+          </span>
         </Button>
       </div>
     </form>

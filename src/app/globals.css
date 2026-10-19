@@ -871,6 +871,13 @@
   transform-origin: 100% 50%;
 }
 
+/* 3. Where the label ends in the drawn arrow (16 px), the 22 px bloom sits centred on its slot, so
+   the button's width never changes. Placement only: it shows under no-preference alone. */
+[data-fo-pending]:has([data-fo-pending-arrow]) [data-fo-pending-bloom] {
+  inset-inline: auto -3px;
+  margin-inline-start: 0;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   /* 1. The header's logo blooms and the bar runs while a navigation waits. */
   html[data-fo-nav="pending"] [data-fo-nav-bar] {
@@ -923,9 +930,14 @@
     animation-delay: 240ms;
   }
 
-  /* 3. The pending button: the 22 px bloom shows in the label's inline-end padding. */
+  /* 3. The pending button: the label stays and the 22 px bloom opens in the drawn arrow's slot
+     (the arrow goes at once), or in the label's inline-end padding where there is no arrow. */
   [data-fo-pending][aria-busy="true"] [data-fo-pending-bloom] {
     opacity: 1;
+  }
+
+  [data-fo-pending][aria-busy="true"] [data-fo-pending-arrow] {
+    opacity: 0;
   }
 
   /* 4. The sentence's choices: one shimmer under each, 400 ms apart, once. */

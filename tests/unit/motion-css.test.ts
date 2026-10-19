@@ -214,7 +214,7 @@ describe("A24 clause 9 (g): motion 11 and 12 hide nothing without the module", (
 describe("AC-6 as A24 clause 9 (c): reduced motion", () => {
   const rules = walk(shipped);
   const MOTION_SELECTOR =
-    /data-fo-(nav|bloom|pending|shimmer|pick|ring|language-popup|menu|consent-sheet|fade|reveal)/;
+    /data-fo-(nav|bloom|pending|shimmer|pick|ring|card-motion|language-popup|menu|consent-sheet|fade|reveal)/;
 
   it("plays every motion of this task only under `no-preference`", () => {
     const moving = rules.filter(
