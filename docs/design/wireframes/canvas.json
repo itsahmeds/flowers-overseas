@@ -698,7 +698,7 @@
     },
     {
       "file": "qa-judgments-2026-10-18-desktop.dc.html",
-      "title": "QA judgments 2026-10-18 · desktop 1440 · TASK-252, awaiting founder",
+      "title": "QA judgments 2026-10-18 · desktop 1440 · TASK-252, answered all A 2026-10-19",
       "x": 0,
       "y": 397628,
       "w": 1440,
@@ -706,11 +706,43 @@
     },
     {
       "file": "qa-judgments-2026-10-18-mobile.dc.html",
-      "title": "QA judgments 2026-10-18 · mobile 390 · TASK-252, awaiting founder",
+      "title": "QA judgments 2026-10-18 · mobile 390 · TASK-252, answered all A 2026-10-19",
       "x": 1520,
       "y": 397628,
       "w": 390,
       "h": 23300
+    },
+    {
+      "file": "consent-compact-desktop.dc.html",
+      "title": "Consent, compact banner and settings from the footer · desktop 1440 · spec 004 A-founder-2026-10-19d",
+      "x": 0,
+      "y": 421528,
+      "w": 1440,
+      "h": 6000
+    },
+    {
+      "file": "consent-compact-mobile.dc.html",
+      "title": "Consent, compact strip and settings from the footer · mobile 390 · spec 004 A-founder-2026-10-19d",
+      "x": 1520,
+      "y": 421528,
+      "w": 390,
+      "h": 7600
+    },
+    {
+      "file": "language-bar-desktop.dc.html",
+      "title": "Language bar, the future slim form · desktop 1440 · spec 003 A-founder-2026-10-19d",
+      "x": 0,
+      "y": 429728,
+      "w": 1440,
+      "h": 5200
+    },
+    {
+      "file": "language-bar-mobile.dc.html",
+      "title": "Language bar, the future slim form · mobile 390 · spec 003 A-founder-2026-10-19d",
+      "x": 1520,
+      "y": 429728,
+      "w": 390,
+      "h": 5200
     }
   ],
   "annotations": [
@@ -1028,6 +1060,13 @@
       "y": 397582,
       "w": 1400,
       "text": "TASK-252 · QA judgments of 2026-10-18, awaiting founder: cookie card placement, cookie settings length, the phone Menu, Esc, the phone Popular choices row, short screens, the listing card, static add-on rows. Answer each with one word (1A, 2B...)."
+    },
+    {
+      "id": "wf-1019d",
+      "x": 0,
+      "y": 421408,
+      "w": 1200,
+      "text": "Founder ruling 2026-10-19 (A-founder-2026-10-19d): no cookie banner while only essential cookies are set, the compact banner when analytics is on, the settings panel from the footer; the language popup's future slim one-line bar."
     }
   ],
   "launch": {
