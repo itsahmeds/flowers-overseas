@@ -100,6 +100,31 @@ const CONTROL_CHARACTER_EXCEPT_LINE_BREAK = new RegExp(
   "u",
 );
 
+/**
+ * Invisible characters refused in text that has something visible in it (`/break 201` round 3,
+ * closed by TASK-203; `/break 275` hole 4): the zero-width space U+200B, the combining grapheme
+ * joiner U+034F, the Hangul fillers U+115F, U+1160 and U+3164, the Mongolian vowel separator
+ * U+180E, the word joiner and the invisible operators U+2060–U+2064, the
+ * unassigned U+2065, the deprecated format controls U+206A–U+206F, the byte-order mark U+FEFF and
+ * the Unicode tag characters U+E0000–U+E007F, which can carry text no reader sees. A value made
+ * only of them is blank, not refused (a card of only U+FEFF is no card). The tags inside the three
+ * subdivision flags (England, Scotland, Wales) are kept.
+ */
+const HIDDEN_FORMAT =
+  /[\u200B\u034F\u115F\u1160\u180E\u3164\u2060-\u206F\uFEFF\u{E0000}-\u{E007F}]/u;
+/**
+ * The three emoji flags Unicode recommends that use tag characters: England (`gbeng`), Scotland
+ * (`gbsct`) and Wales (`gbwls`). Any other tag run after U+1F3F4 is text no reader sees
+ * (`/break 275` hole 4), so it stays refused.
+ */
+const EMOJI_TAG_SEQUENCE =
+  /\u{1F3F4}\u{E0067}\u{E0062}(?:\u{E0065}\u{E006E}\u{E0067}|\u{E0073}\u{E0063}\u{E0074}|\u{E0077}\u{E006C}\u{E0073})\u{E007F}/gu;
+
+/** Does `value` hide a format character outside an emoji flag sequence? */
+function hidesFormatCharacter(value: string): boolean {
+  return HIDDEN_FORMAT.test(value.replace(EMOJI_TAG_SEQUENCE, ""));
+}
+
 /** U+2028 and U+2029, which a multi-line field reads as an ordinary line break. */
 const LINE_SEPARATORS = /[\u2028\u2029]/gu;
 
@@ -195,6 +220,13 @@ function textField(options: {
         return z.NEVER;
       }
       return "";
+    }
+    if (hidesFormatCharacter(value)) {
+      ctx.addIssue({
+        code: "custom",
+        message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+      });
+      return z.NEVER;
     }
     if (countGraphemes(value, options.locale) > options.max) {
       ctx.addIssue({ code: "custom", ...tooLong });

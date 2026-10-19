@@ -68,6 +68,21 @@ const PARSERS: readonly Entry[] = [
     reason:
       "calls the same-file parseSearch(), which runs ListingSearchParamsSchema.parse",
   },
+  // Spec 010 (TASK-203): the step actions hand the posted FormData to their runner, which builds
+  // the destination's strict step schema and parses the form with it before anything reads it.
+  {
+    entry: "src/modules/checkout/steps.ts#runRecipientStep",
+    reason: "RecipientStepSchema(country, locale).safeParse(formValues(form))",
+  },
+  {
+    entry: "src/modules/checkout/steps.ts#runCardAndBuyerStep",
+    reason:
+      "CardAndBuyerStepSchema({ locale, offeredAddonKeys }).safeParse(formValues(form))",
+  },
+  {
+    entry: "src/modules/checkout/steps.ts#runUpdateSelection",
+    reason: "SelectionUpdateSchema.safeParse(formValues(form))",
+  },
 ];
 
 const BODY_METHODS = new Set([
@@ -923,12 +938,15 @@ describe("T-57: the real tree", () => {
     expect(problems(result)).toEqual([]);
   });
 
-  it("the lists are today's: one reader, one parser (adding one changes this file)", () => {
+  it("the lists are today's: one reader, four parsers (adding one changes this file)", () => {
     expect(READERS.map((e) => e.entry)).toEqual([
       "src/lib/consent.ts#readBoundedBody",
     ]);
     expect(PARSERS.map((e) => e.entry)).toEqual([
       "src/modules/catalog/params.ts#listingRequest",
+      "src/modules/checkout/steps.ts#runRecipientStep",
+      "src/modules/checkout/steps.ts#runCardAndBuyerStep",
+      "src/modules/checkout/steps.ts#runUpdateSelection",
     ]);
   });
 

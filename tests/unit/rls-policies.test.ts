@@ -23,6 +23,7 @@ import {
   RLS_EXEMPT_TABLES,
   SELF_SCOPED_TABLES,
   STAFF_ONLY_TABLES,
+  SYSTEM_ONLY_TABLES,
 } from "../../db/rls.ts";
 import {
   MIGRATIONS_DIR,
@@ -116,7 +117,8 @@ describe("migration 0011 — coverage", () => {
   });
 
   it("gives every table its staff policy: admin and system, everything", () => {
-    for (const table of MIRROR) {
+    const systemOnly: readonly string[] = SYSTEM_ONLY_TABLES;
+    for (const table of MIRROR.filter((name) => !systemOnly.includes(name))) {
       expect(policiesOf(table), table).toContainEqual({
         name: `${table}_staff`,
         table,
@@ -135,12 +137,28 @@ describe("migration 0011 — coverage", () => {
       ...Object.keys(CUSTOMER_SCOPED_TABLES),
       ...SELF_SCOPED_TABLES,
       ...STAFF_ONLY_TABLES,
+      ...SYSTEM_ONLY_TABLES,
     ]);
     expect([...classified].sort()).toEqual(MIRROR);
   });
 });
 
 describe("migration 0011 — each class gets exactly its policies", () => {
+  it("system-only tables have exactly one policy, for app.role = 'system' (spec 010 §5.1 B)", () => {
+    expect(SYSTEM_ONLY_TABLES.length).toBeGreaterThan(0);
+    for (const table of SYSTEM_ONLY_TABLES) {
+      expect(policiesOf(table), table).toEqual([
+        {
+          name: `${table}_system`,
+          table,
+          command: "ALL",
+          using: "public.app_current_role() = 'system'",
+          check: "public.app_current_role() = 'system'",
+        },
+      ]);
+    }
+  });
+
   it("staff-only tables have no other policy (deny by default)", () => {
     for (const table of STAFF_ONLY_TABLES) {
       expect(

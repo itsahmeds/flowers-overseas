@@ -82,6 +82,13 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "Auth.js's email callback's landing page (`/admin`), in the same in-process URL",
   },
+  // Spec 010 §2 (TASK-203): the checkout's one query, `?step=recipient|card|review`, on a
+  // `noindex`, `no-store` page. Not a listing key, so `QUERY_KEYS` does not learn it.
+  {
+    entry: "src/modules/checkout/steps.ts#step",
+    reason:
+      "the checkout's step selector (spec 010 §2: `?step=` is the only query; no personal data)",
+  },
   {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
@@ -492,6 +499,7 @@ describe("the real tree (T-59)", () => {
       "src/lib/auth/surface.ts#state",
       "src/lib/auth/surface.ts#token",
       "src/lib/auth/surface.ts#callbackUrl",
+      "src/modules/checkout/steps.ts#step",
       "src/app/admin/(signed-in)/users/actions.ts#result",
     ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);

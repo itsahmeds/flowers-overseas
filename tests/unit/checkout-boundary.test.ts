@@ -426,6 +426,87 @@ describe("control characters are refused (hole 4)", () => {
     );
   });
 
+  it.each([
+    ["word joiner U+2060", "\u2060"],
+    ["unassigned U+2065", "\u2065"],
+    ["byte-order mark U+FEFF", "\ufeff"],
+    ["tag letter U+E0041", "\u{E0041}"],
+    ["cancel tag U+E007F", "\u{E007F}"],
+  ])(
+    "refuses a hidden format character among visible text: %s (/break 201 round 3)",
+    (_label, c) => {
+      for (const field of ["cardMessage", "signAs", "buyerName"] as const) {
+        expect(
+          firstIssue(buyer().safeParse({ ...BUYER, [field]: `Lo${c}ve` })),
+          field,
+        ).toEqual({
+          path: [field],
+          message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+        });
+      }
+      expect(
+        firstIssue(recipient().safeParse({ ...DE_STEP, fullName: `Ann${c}a` })),
+      ).toEqual({
+        path: ["fullName"],
+        message: CHECKOUT_ERROR_KEYS.invalidCharacters,
+      });
+    },
+  );
+
+  it.each([
+    ["zero-width space U+200B", "\u200b"],
+    ["combining grapheme joiner U+034F", "\u034f"],
+    ["Hangul filler U+3164", "\u3164"],
+    ["Mongolian vowel separator U+180E", "\u180e"],
+  ])(
+    "refuses an invisible %s among visible text (/break 275 hole 4)",
+    (_label, c) => {
+      expect(
+        firstIssue(buyer().safeParse({ ...BUYER, cardMessage: `Lo${c}ve` }))
+          ?.message,
+      ).toBe(CHECKOUT_ERROR_KEYS.invalidCharacters);
+    },
+  );
+
+  it("refuses text hidden in tag characters after a black flag that is not one of the three (/break 275 hole 4)", () => {
+    const hidden = [..."call me on 07700900123"]
+      .map((ch) => String.fromCodePoint(0xe0000 + (ch.codePointAt(0) ?? 0)))
+      .join("");
+    expect(
+      firstIssue(
+        buyer().safeParse({
+          ...BUYER,
+          cardMessage: `Hi \u{1F3F4}${hidden}\u{E007F}`,
+        }),
+      )?.message,
+    ).toBe(CHECKOUT_ERROR_KEYS.invalidCharacters);
+    const scotland =
+      "\u{1F3F4}\u{E0067}\u{E0062}\u{E0073}\u{E0063}\u{E0074}\u{E007F}";
+    const wales =
+      "\u{1F3F4}\u{E0067}\u{E0062}\u{E0077}\u{E006C}\u{E0073}\u{E007F}";
+    expect(
+      buyer().parse({ ...BUYER, cardMessage: `Hi ${scotland}${wales}` })
+        .cardMessage,
+    ).toBe(`Hi ${scotland}${wales}`);
+  });
+
+  it("keeps an emoji flag's tag sequence (England, Scotland, Wales)", () => {
+    const england =
+      "\u{1F3F4}\u{E0067}\u{E0062}\u{E0065}\u{E006E}\u{E0067}\u{E007F}";
+    expect(
+      buyer().parse({ ...BUYER, cardMessage: `Go team ${england}` })
+        .cardMessage,
+    ).toBe(`Go team ${england}`);
+    expect(
+      firstIssue(
+        buyer().safeParse({
+          ...BUYER,
+          cardMessage: `Go \u{E0067}\u{E0062} team ${england}`,
+        }),
+      )?.message,
+    ).toBe(CHECKOUT_ERROR_KEYS.invalidCharacters);
+  });
+
   it("treats a card of only invisible characters as no card", () => {
     for (const card of ["​", "​‍⁠", "﻿  ", "‎"]) {
       expect(

@@ -14,8 +14,8 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-users.test.ts`, `unit/admin-permissions.test.ts` +1 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +79 |
-| `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +5 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +80 |
+| `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +33 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +89 |
@@ -113,6 +113,7 @@ task actually touches.
 | `admin/sign-in/confirm/page.tsx` | GET: one Continue button, uses nothing (AC-9) | 012 |
 | `admin/sign-in/page.tsx` | GET /admin/sign-in: form and its states | 012 |
 | `admin/unauthorized.tsx` | Admin 401, noindex (AC-1) | 012 |
+| `api/checkout/start/route.ts` | `POST /api/checkout/start`: the product page's entry… | 010 |
 | `api/consent/route.ts` | `POST /api/consent` | 004 |
 | `api/csp-report/route.ts` | `POST /api/csp-report` | 004 |
 | `api/health/route.ts` | `GET /api/health` | 001 |
@@ -188,8 +189,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 321 |
-| `tests/integration/` | 34 |
+| `tests/unit/` | 323 |
+| `tests/integration/` | 35 |
 | `tests/contract/` | 14 |
 | `tests/e2e/` | 65 |
 | `tests/a11y/` | 15 |

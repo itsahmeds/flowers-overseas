@@ -160,7 +160,7 @@ describe("the committed migration set", () => {
   // what it reads from the directory, so the committed set is worth pinning (TASK-015 added 0002,
   // TASK-016 added 0003,
   // TASK-017 added 0004, TASK-018 added 0005 and 0006, the TASK-019…023 feature 0007–0011,
-  // TASK-024 0012, TASK-245 0013, TASK-217 0014).
+  // TASK-024 0012, TASK-245 0013, TASK-217 0014, TASK-203 0015).
   it("reads each committed migration and its rollback from db/migrations", () => {
     expect(readMigrations(migrationsDir).map((m) => m.file)).toEqual([
       "0001_roles_grants_updated_at.sql",
@@ -177,6 +177,7 @@ describe("the committed migration set", () => {
       "0012_pgboss.sql",
       "0013_order_engine_columns.sql",
       "0014_admin_identity.sql",
+      "0015_checkout_draft.sql",
     ]);
   });
 });

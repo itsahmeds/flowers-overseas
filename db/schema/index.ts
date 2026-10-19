@@ -16,11 +16,13 @@
  *
  * Filled: `i18n` and `geo` (migration `0002`), `catalog` (`0003`), media (`0004`), `partners`
  * (`0005`), `customers` (`0006`), `orders` and `payments` (`0007`), notifications and ops
- * (`0009`), `auth` (`0010`) and the admin identity (`0013`, spec 012).
+ * (`0009`), `auth` (`0010`), the admin identity (`0014`, spec 012) and the checkout draft
+ * (`0015`, spec 010).
  */
 export * from "./admin.ts";
 export * from "./auth.ts";
 export * from "./catalog.ts";
+export * from "./checkout.ts";
 export * from "./customers.ts";
 export * from "./geo.ts";
 export * from "./i18n.ts";
