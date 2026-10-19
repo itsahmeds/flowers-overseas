@@ -28,6 +28,7 @@ import type { CountryIso2 } from "@/config/countries";
 import type { LocaleCode } from "@/config/locales";
 import {
   type IntegerMoney,
+  IntegerMoneySchema,
   type PriceProjection,
   type Quote,
   type QuoteLineInput,
@@ -79,7 +80,9 @@ export interface DraftTotals {
 
 interface Derived {
   readonly quote: Quote;
-  readonly vatRates: readonly number[];
+  /** The bouquet's VAT rate, and each add-on's, keyed by add-on. */
+  readonly productVatRateBp: number;
+  readonly addonVatRateBp: ReadonlyMap<string, number>;
 }
 
 /**
@@ -124,7 +127,7 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
       projection: bouquet,
     },
   ];
-  const vatRates: number[] = [bouquet.vatRateBp];
+  const addonVatRateBp = new Map<string, number>();
   for (const addonKey of selection.addonKeys) {
     const addon = await addonPriceProjection(
       addonKey,
@@ -132,14 +135,21 @@ async function derive(selection: QuoteSelection, now: Date): Promise<Derived> {
       selection.locale,
       { now },
     );
+    addonVatRateBp.set(addonKey, addon.vatRateBp);
+    // A free add-on (`card`, priced 0) adds nothing to the total and a signed line must be
+    // positive (spec 005 `QuoteLineSchema`): it is a line of the summary, not of the quote.
+    if (addon.displayPrice.amountMinor === 0) continue;
     lines.push({
       productId: selection.sku,
       tierKey: `${ADDON_TIER_PREFIX}${addonKey}`,
       projection: addonQuotable(bouquet, addon),
     });
-    vatRates.push(addon.vatRateBp);
   }
-  return { quote: quote(lines, now), vatRates };
+  return {
+    quote: quote(lines, now),
+    productVatRateBp: bouquet.vatRateBp,
+    addonVatRateBp,
+  };
 }
 
 /** Signs the selection's current price (the start route; a buyer's change of tier, date or add-on). */
@@ -260,28 +270,37 @@ export async function draftTotals(
 ): Promise<DraftTotals | null> {
   const signed = draft.quote;
   if (signed === null) return null;
-  const { vatRates } = await derive(selectionOf(draft, draft.locale), now);
-  const lines: DraftLine[] = signed.lines.map((line, index) => {
-    const amount: IntegerMoney = {
-      amountMinor: line.amountMinor,
-      currency: signed.currency,
-    };
-    const vatRateBp = vatRates[index] ?? 0;
-    return line.tierKey.startsWith(ADDON_TIER_PREFIX)
-      ? {
-          kind: "addon",
-          addonKey: line.tierKey.slice(ADDON_TIER_PREFIX.length),
-          amount,
-          vatRateBp,
-        }
-      : {
-          kind: "product",
-          sku: line.productId,
-          tierKey: line.tierKey,
-          amount,
-          vatRateBp,
-        };
-  });
+  const rates = await derive(selectionOf(draft, draft.locale), now);
+  const amountOf = (tierKey: string): IntegerMoney | null => {
+    const line = signed.lines.find(
+      (candidate) =>
+        candidate.productId === draft.sku && candidate.tierKey === tierKey,
+    );
+    return line === undefined
+      ? null
+      : { amountMinor: line.amountMinor, currency: signed.currency };
+  };
+  const product = amountOf(draft.tierKey);
+  if (product === null) return null;
+  const lines: DraftLine[] = [
+    {
+      kind: "product",
+      sku: draft.sku,
+      tierKey: draft.tierKey,
+      amount: product,
+      vatRateBp: rates.productVatRateBp,
+    },
+  ];
+  for (const addonKey of draft.addonKeys) {
+    lines.push({
+      kind: "addon",
+      addonKey,
+      amount:
+        amountOf(`${ADDON_TIER_PREFIX}${addonKey}`) ??
+        IntegerMoneySchema.parse({ amountMinor: 0, currency: signed.currency }),
+      vatRateBp: rates.addonVatRateBp.get(addonKey) ?? 0,
+    });
+  }
   return {
     lines,
     total: { amountMinor: signed.totalMinor, currency: signed.currency },

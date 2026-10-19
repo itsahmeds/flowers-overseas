@@ -225,6 +225,28 @@ describe("the quote carries every amount, add-ons included (AC-11 arithmetic)", 
     ]);
   });
 
+  it("keeps a free add-on (card, 0) as a summary line and out of the signed quote", async () => {
+    const free = ADDONS.find((addon) => addon.key === "card");
+    expect(free).toBeDefined();
+    const bare = await deriveQuote(selection(), T0);
+    const signed = await deriveQuote(selection(["card", ADDON.key]), T0);
+    expect(signed.lines.map((line) => line.tierKey)).toEqual([
+      TIER.tierKey,
+      `${ADDON_TIER_PREFIX}${ADDON.key}`,
+    ]);
+    const totals = await draftTotals(
+      draftWith(signed, ["card", ADDON.key]),
+      T0,
+    );
+    expect(
+      totals?.lines.map((line) => [line.kind, line.amount.amountMinor]),
+    ).toEqual([
+      ["product", bare.totalMinor],
+      ["addon", 0],
+      ["addon", signed.totalMinor - bare.totalMinor],
+    ]);
+  });
+
   it("draftTotals reads lines and total from the quote, and the VAT split sums to it", async () => {
     const signed = await deriveQuote(selection([ADDON.key]), T0);
     const totals = await draftTotals(draftWith(signed, [ADDON.key]), T0);

@@ -15,7 +15,8 @@
  *     signature silently; `changed` stores the new price and leaves the buyer's last-seen total,
  *     so the notice opens; `tampered` discards it, stores the fresh one and restarts at step 1. A
  *     change the buyer asked for (a date, a tier, an add-on) is priced afresh and becomes the
- *     total the buyer has seen;
+ *     total the buyer has seen, unless a price notice is open: that stays open, naming the new
+ *     total, until the buyer confirms it (`updateSelection`, intent `confirmPrice`);
  *  5. **saves** (`saveStep`, which also moves the 24-hour window and sets the draft's locale to
  *     the request's, §14 A3.1) and answers 303 to the next step — or to step 1 while a price
  *     notice is open, because that is where the buyer confirms it.
@@ -199,10 +200,18 @@ async function pricedPatch(
   }
   let signed: Quote = check.quote;
   let confirmed = draft.confirmed ?? undefined;
+  // A notice already open (or opening now) stays open through the buyer's own change: the buyer
+  // confirms the price explicitly, and the notice then names the new total (§2 "Money").
+  const noticeOpen =
+    check.verdict === "changed" ||
+    priceChange({ quote: draft.quote, confirmed: draft.confirmed }) !== null;
   if (selectionChanged) {
     signed = await deriveQuote(selectionOf(next, next.locale), now);
-    confirmed = { amountMinor: signed.totalMinor, currency: signed.currency };
-  } else if (check.verdict === "changed" && draft.confirmed !== null) {
+    if (!noticeOpen) {
+      confirmed = { amountMinor: signed.totalMinor, currency: signed.currency };
+    }
+  }
+  if (check.verdict === "changed" && draft.confirmed !== null) {
     logger.info(
       {
         draft_id: draft.id,
