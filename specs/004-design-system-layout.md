@@ -2753,7 +2753,7 @@ example label.
    spec 006 AC-17 unchanged).**
    - **All-example grid.** Where every card in a grid that shows a photograph shows an `ai`
      asset, and at least one does, the label (`media.provenance.aiExample`) is displayed once for
-     the grid, at every width, and no card displays its own.
+     the grid, at every width, and no grid card displays its own (the country occasion's lead figure from `md` up is the exception below).
    - **Mixed grid.** Where the grid also holds a non-`ai` photograph, from `md` up each card that
      shows an `ai` asset displays its label (A2), so the buyer can tell which picture is an
      example; below `md` A16 (a)'s once per grid stands.
