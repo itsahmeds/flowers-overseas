@@ -2619,3 +2619,82 @@ fold checks this amendment answers.
 | T-62 | e2e (built site, CI) + a11y | AC-57's three URLs at 390 × 844, 360 × 640, 1280 × 800 and 1440 × 900: count of displayed N1 elements, their boxes against the grid's last card, the pager and the count line, DOM order against the pager, and the accessibility snapshot's `note` count and name; axe clean. Red with the note put back in the hero below `md` (its box above the grid), red with a second copy displayed below `md` (two notes), and red with the displayed phone copy `aria-hidden` (no `note` in the tree) | AC-57 |
 
 Open for the founder: none. The mechanism of clause 3 is the implementer's, inside its bullets.
+
+**A-founder-2026-10-19a: TASK-194's motion module may merge before it waits for the LCP paint;
+TASK-244 brings it under the rule (A-founder-2026-10-15b clauses 1, 2 and 4; AC-55, T-60
+amended; §9 AC-24, T-26 unchanged and binding).**
+Status: approved (founder, 2026-10-19). The founder's reply, 2026-10-19 morning, in chat,
+verbatim: "A ship, approve batch 5, C A, all A". Its "A ship" answers the orchestrator's question,
+in the orchestrator's words: "Animations load timing. The spec says the animation code loads only
+after the main image shows; that piece waits for the speed-test setup. Pages load in 1.8 s today
+(limit 2.0 s). My pick: ship now, the delay comes with the speed fix." Its "all A" is
+A-founder-2026-10-19b's and A-founder-2026-10-19c's. "approve batch 5" and "C A" answer other
+questions and are not recorded here. The reply reached the spec writer through the orchestrator's
+work order.
+
+**Evidence.**
+- PR 221 (TASK-194, head `93ed3dd0`), description, round 1: "Review item 1 (AC-55: defer the
+  module until after the LCP paint, spec 004 §14 A-founder-2026-10-15b clause 4)", left open for
+  the founder with two options, "defer the module behind PR 253's `AfterPaint`, or amend clause 4
+  for this PR". Commit "docs: escalate AC-55 for the motion module to TASK-244 (TASK-194)".
+- `docs/tasks/TASK-194.md`, the orchestrator's carry-forward of 2026-10-18, and
+  `docs/tasks/TASK-244.md`, "Re-sequenced by the orchestrator, 2026-10-18": PR 253 declares the
+  deferred set with a reserved entry for the motions.
+- "1.8 s" is the orchestrator's figure. It is not a measurement this amendment records.
+
+**Original.** Clause 4: "TASK-194 (motions, PR 221) and the language popup's task build to this
+rule before they merge, and every later island does too." Clause 2 puts the motions in the
+deferred set; AC-55's first bullet requires the set to include them; T-60's unit case lists them.
+
+**Corrected.**
+1. **The deviation.** PR 221 may merge with its motion module (the one client module of
+   TASK-194's brief, "JavaScript budget") loading as it does on head `93ed3dd0`, before the LCP
+   element has painted. That is the only exception to clause 1 this amendment makes.
+2. **Its bounds.**
+   - **Only that module.** The language popup, the Menu enhancements and every later island
+     follow clause 1 as written. A second TASK-194 module is not covered.
+   - **AC-24 still binds every PR, PR 221 included.** The `lighthouse` job asserts LCP
+     < 2,000 ms on every audited URL, on A12's Brotli origin and A18's warm runs. The assertion,
+     the URL set, `numberOfRuns`, the throttling and the aggregation do not change (clause 3).
+     This amendment waives clause 4's timing for one module, never the LCP budget. PR 221 does
+     not merge on a red LCP.
+   - **While the deviation is open,** a PR whose LCP is red does not merge. If that run shows the
+     motion chunk starting before the LCP render time, the motion module's deferral is the next
+     merge: TASK-244, or a new task row if TASK-244 cannot land first.
+   - **Everything else holds:** A1's 131,072 B and A-founder-2026-10-18a's 133,120 B script
+     budgets (PR 221 reports 126,915 B and 127,949 B), CLS < 0.05, no animation on the LCP
+     element or its ancestors (T-48), no loader in front of server HTML, the JavaScript-off
+     behaviour, and clause 3 in full.
+3. **Who closes it: TASK-244 (PR 253).** When PR 253 lands after PR 221, it replaces the reserved
+   motions entry in its declared set (clause 2) with TASK-194's motion module, behind the same
+   mechanism as the other entries, and its AC-55 evidence covers the module. If PR 253 merges
+   first, the deviation never opens: PR 221 rebases onto it and adds its module to the set before
+   it merges, as the 2026-10-18 carry-forward says.
+4. **Clause 4 now reads:** "The language popup's task builds to this rule before it merges, and
+   every later island does too. TASK-194 (motions, PR 221) may merge before its module follows
+   the rule (A-founder-2026-10-19a); TASK-244 brings that module under it. A merged island that
+   breaks it is a new task row, not a reopened one."
+5. **Bookkeeping (the orchestrator's).** TASK-194's 2026-10-18 carry-forward moves to TASK-244's
+   brief as a binding clause. TASK-194's brief and PR 221 cite this amendment against review
+   item 1.
+
+**SEO.** LCP is a ranking input. Until TASK-244 lands, the motion chunk can join the race
+A-founder-2026-10-15b measured (LCP 2,474 to 2,920 ms in six of nine runs once async chunks
+finished before the paint), so the margin rests on AC-24 alone, and no PR merges red. Nothing is
+indexed before TASK-096's flip. URLs, canonicals,
+robots, hreflang, sitemaps and schema are unchanged; no content moves client-side. **i18n.** No
+key changes. **Compliance.** No data flow, consent or price-display change. The consent banner
+stays outside the deferred set (clause 2). Reduced motion (AC-6 as A24 reads it) is unchanged.
+The RoPA is unchanged.
+
+**AC-55 amended.** Its first bullet ends: "and the set includes the language popup, the Menu
+enhancements and the motions; once TASK-194's motion module is on `main`, the motions entry
+imports that module, and a reserved entry with no module does not pass".
+
+**T-60 amended.** The unit case asserts that the motions entry resolves to TASK-194's module once
+that module is on `main`; red with the entry left reserved. The e2e case gains "red with the
+motion module imported eagerly (its chunk starts before the LCP)".
+
+**AC-24 and T-26:** text unchanged. They are the guard this amendment names.
+
+Open for the founder: none.
