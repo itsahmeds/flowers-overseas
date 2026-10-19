@@ -25,7 +25,10 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
-_None yet._
+- **From `/review 273` r1 on `b6ab6db6` (2026-10-19), relayed by the coordinator:** (1) stripping
+  `**` corrupted code spans (`src/app/**` became `src/app/`): strip it only outside backtick
+  code spans and test a code span with `**`; (2) the space-before-punctuation rule was untested
+  and rewrote other text (`a : b` → `a: b`): delete it unless the size needs it. Both done.
 
 ## Escalations
 
@@ -49,6 +52,9 @@ _None yet._
   main checkout, delete the `stays at or under 16 KB` case, regenerate, run the gates, toggle `ci:full`.
 - 2026-10-19: rebased on `main` (PR 274's row and brief); 16 KB case deleted; map regenerated at
   15 893 B; cheap gates rerun; `ci:full` toggled.
+- 2026-10-19: review r1 fixes: `**` kept inside code spans; space-before-punctuation rule
+  deleted (map size unchanged at 15 893 B; the citation regex already takes the leading space);
+  two tests added, each red under its mutation.
 
 ## Result
 
@@ -60,4 +66,6 @@ entry kept, hand table byte-identical, hard cap 20 KB unchanged and still the on
 16 KB pin, by the coordinator's ruling). Unit: `tests/unit/codebase-map.test.ts` 17 → 25 cases
 (limits pinned at 56 and 2, `truncate`, `testCell`, `specCell`, four `concisePurpose` cases).
 Mutations: limit back to 80 → the limit-pin and `truncate` cases red; the old generator → the
-new cases red. No expensive gate run locally.
+new cases red. Review r1: `**` survives inside code spans (test red when stripped everywhere);
+spacing before punctuation is left alone (test red when the old rule is put back); 27 cases. No
+expensive gate run locally.

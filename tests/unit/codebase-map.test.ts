@@ -257,6 +257,21 @@ describe("the compact index the generator writes (TASK-275)", () => {
     ).toBe("The gallery, its fixtures, and more");
   });
 
+  it("keeps `**` inside a code span: a glob is not bold markup", () => {
+    expect(
+      concisePurpose("Every `src/app/**` route file, **one** line each"),
+    ).toBe("Every `src/app/**` route file, one line each");
+    expect(concisePurpose("`a/**/b` and `**/*.ts`")).toBe(
+      "`a/**/b` and `**/*.ts`",
+    );
+  });
+
+  it("leaves spacing before punctuation as the file wrote it", () => {
+    expect(concisePurpose("Ratio a : b ; then c , d")).toBe(
+      "Ratio a : b ; then c , d",
+    );
+  });
+
   it("keeps a parenthetical that says what the file is for", () => {
     expect(
       concisePurpose("Public barrel for `admin` (admin queries and actions)"),

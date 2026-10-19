@@ -164,16 +164,15 @@ function withoutOwner(purpose: string): string {
 /**
  * The purpose as the map prints it (TASK-275): the spec has its own column and the task trail lives
  * in the file, so a parenthetical that cites a spec or a task (`(spec 007 §5.2; TASK-087)`) is
- * dropped, and so is bold markup, before the line is cut to `PURPOSE_LIMIT`. Every other
- * parenthetical stays: `(admin queries and actions)` is what the module is for. A purpose that
- * is nothing but a citation is kept whole.
+ * dropped, and so is bold markup outside code spans (`src/app/**` is a glob, not bold), before
+ * the line is cut to `PURPOSE_LIMIT`. Every other parenthetical stays: `(admin queries and
+ * actions)` is what the module is for. A purpose that is nothing but a citation is kept whole.
  */
 export function concisePurpose(purpose: string): string {
   const whole = withoutOwner(purpose);
   const concise = whole
-    .replace(/\*\*/g, "")
+    .replace(/(`[^`]*`)|\*\*/g, (_match, code?: string) => code ?? "")
     .replace(/\s*\([^()]*\b(?:spec \d{3}|TASK-\d+)[^()]*\)/g, "")
-    .replace(/\s+([,;:])/g, "$1")
     .replace(/\s+/g, " ")
     .trim()
     .replace(/[.,;:\s—-]+$/, "");
