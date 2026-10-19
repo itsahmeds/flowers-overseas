@@ -36,7 +36,16 @@ _None recorded._
 - 2026-10-19: generator compacted and tests added (`PURPOSE_LIMIT` 56, `TESTS_LISTED` 2, bare
   spec numbers, `concisePurpose`); map regenerated at 15 845 B (was 20 402 B); mutations run.
   Next: cheap gates, PR ready, `ci:full`.
+- 2026-10-19: `pnpm gates:cheap` PASS (7/7 exit 0), `tasks:check` ok; row `in_review`; PR 273
+  ready with `ci:full`.
 
 ## Result
 
-_Pending._
+PR [#273](https://github.com/itsahmeds/flowers-overseas/pull/273). `scripts/codebase-map.ts`:
+`PURPOSE_LIMIT` 56, `TESTS_LISTED` 2, the Spec column as the bare number (`specCell`), and
+`concisePurpose` dropping spec/task citation parentheticals and `**` before the cut (a
+citation-only purpose is kept whole). Map 20 402 B → 15 845 B, same 164 entries, hand table
+byte-identical, hard cap 20 KB unchanged. Unit: `tests/unit/codebase-map.test.ts` 17 → 26 cases
+(≤ 16 KB size pin, limits, `truncate`, `testCell`, `specCell`, four `concisePurpose` cases).
+Mutations: limit back to 80 → 17 790 B and the size case red; `concisePurpose` bypassed →
+17 041 B and red; the old generator → 9 red. No expensive gate run locally.
