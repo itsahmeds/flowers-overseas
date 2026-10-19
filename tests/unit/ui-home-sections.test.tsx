@@ -417,7 +417,9 @@ describe("the trust strip (AC-10, AC-15)", () => {
       expect(html, claim.id).toContain(`data-fo-trust-claim="${claim.id}"`);
     }
     for (const fragment of [
-      "7-day freshness guarantee",
+      // Spec 009 §14 A11 (TASK-172): the guarantee's name is the fresh-flower promise, never a
+      // number of days.
+      "Fresh-flower promise",
       "We redeliver or refund, your choice.",
       "Hand-made in the recipient's own town",
       "The price includes delivery and VAT",
@@ -430,17 +432,17 @@ describe("the trust strip (AC-10, AC-15)", () => {
     const messages = loadMessages("en", ["trust"]) as {
       trust: { guarantee: { name: string } };
     };
-    expect(messages.trust.guarantee.name).toBe("7-day freshness guarantee");
+    expect(messages.trust.guarantee.name).toBe("Fresh-flower promise");
     expect(text(trust("en"))).toContain(messages.trust.guarantee.name);
   });
 
-  it("renders no icon, no badge, no photo and no number but the guarantee's term", () => {
+  it("renders no icon, no badge, no photo and no number at all (spec 009 §14 A11)", () => {
     const html = trust("en");
 
     expect(html).not.toContain("<img");
     expect(html).not.toContain("<svg");
     expect(html).not.toContain("data-fo-media-slot");
-    expect(text(html).replaceAll("7-day", "")).not.toMatch(/\d/);
+    expect(text(html)).not.toMatch(/\d/u);
   });
 
   it("names its region for a screen reader without drawing a heading", () => {

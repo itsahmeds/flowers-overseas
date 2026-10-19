@@ -423,6 +423,10 @@ describe("the shipped catalogues and manifests", () => {
     // "Change the order" and the phone pager's page line ("Next" reuses the reviewed key, so
     // `en-gb` stays under spec 003's 5 %). A9 and A10 are approved English text;
     // each still ships `reviewed: false` until the founder's own script attests the exact value.
+    // TASK-172 (spec 009 §14 A11): the trust strip's guarantee name retired as "Fresh-flower
+    // promise". The words are in the founder's 2026-10-04 batch (decisions log, item 2) for the
+    // header and the home; this key's value waits for his own attestation all the same.
+    "trust.guarantee.name",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
@@ -577,7 +581,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-231: the reviewed words, with the one italic phrase marked (the founder's "italic ok").
     expect(heroHeading).toBe("Flowers for someone <em>far away.</em>");
     expect(finderSubmit).toBe("Continue");
-    expect(guaranteeName).toBe("7-day freshness guarantee");
+    expect(guaranteeName).toBe("Fresh-flower promise");
     expect(occasionSubtitle).toContain("Imieniny");
     expect(faqQuestion).toBe("Will the bouquet look like the photo?");
     expect(headline).toBe("Choose your preferred language");

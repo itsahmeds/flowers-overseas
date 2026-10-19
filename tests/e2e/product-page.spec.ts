@@ -382,3 +382,35 @@ test.describe('v3: the one total stays in "The price"; the phone\'s sticky eleme
     await expect(page.locator("[data-fo-action-bar]")).toHaveCount(1);
   });
 });
+
+test.describe("the fresh-flower promise names no number of days (spec 009 §14 A11, TASK-172)", () => {
+  // The served guarantee node, in four locales, for a 5-day and a 7-day product (their
+  // `freshnessDays` in `src/config/catalogue/products.data.ts`): no number token equals the
+  // product's `freshnessDays`. The 72-hour photo window passes; "5" or "7" fails.
+  const PRODUCTS = [
+    { slug: "farewell-wreath", freshnessDays: 5 },
+    { slug: "amber-hour", freshnessDays: 7 },
+  ] as const;
+  const PREFIXES = [
+    "/en/poland/product",
+    "/en-gb/poland/product",
+    "/de/polen/produkt",
+    "/pl/polska/produkt",
+  ] as const;
+
+  for (const prefix of PREFIXES) {
+    for (const { slug, freshnessDays } of PRODUCTS) {
+      test(`${prefix}/${slug}: the guarantee node carries "72" and never ${String(freshnessDays)}`, async ({
+        page,
+      }) => {
+        await page.goto(`${prefix}/${slug}`);
+        const nodes = page.locator("[data-fo-pdp-trust]");
+        expect(await nodes.count()).toBeGreaterThan(0);
+        const text = (await nodes.allTextContents()).join(" ");
+        const numbers = text.match(/\d+/gu) ?? [];
+        expect(numbers).toContain("72");
+        expect(numbers).not.toContain(String(freshnessDays));
+      });
+    }
+  }
+});

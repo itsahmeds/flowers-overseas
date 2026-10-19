@@ -39,6 +39,7 @@ import {
   productView,
 } from "../../src/modules/catalog";
 import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
+import { getProduct } from "../../src/modules/catalog/read.ts";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
@@ -1163,6 +1164,51 @@ describe("no N-day freshness promise on the product page (founder, 2026-10-04)",
           N_DAY_FRESHNESS.exec(body)?.[0],
           `${locale} ${view.delivery.state}`,
         ).toBe(undefined);
+      }
+    }
+  });
+});
+
+describe("spec 009 §14 A11: the guarantee node is the same for every freshnessDays (TASK-172)", () => {
+  // A11 withdrew A9's `{days}` plural: the promise is the condition on arrival, never a number of
+  // days, so the product's own `freshnessDays` changes nothing on the page. The dataset requires
+  // `freshnessDays` (spec 005), so "none" is the view itself: it carries no `freshnessDays` for a
+  // page to read.
+  const FIVE_DAY = "FO-FN-001"; // Farewell Wreath, freshnessDays 5
+  const SEVEN_DAY = AMBER; // freshnessDays 7
+  const THIRTY_DAY = ANTHURIUM; // a plant, freshnessDays 30
+
+  it("renders the same trust text for a 5-day, a 7-day and a 30-day product, in every locale", async () => {
+    const days = await Promise.all(
+      [FIVE_DAY, SEVEN_DAY, THIRTY_DAY].map(
+        async (sku) => (await getProduct(sku))?.freshnessDays,
+      ),
+    );
+    expect(days).toEqual([5, 7, 30]);
+    for (const locale of LOCALES) {
+      const texts = await Promise.all(
+        [FIVE_DAY, SEVEN_DAY, THIRTY_DAY].map(async (sku) => {
+          const view = await viewOf(locale, "PL", sku, { now: IN_WINDOW });
+          expect(view.trust, `${locale} ${sku}`).toContain(
+            "freshnessGuarantee",
+          );
+          expect(JSON.stringify(view), `${locale} ${sku}`).not.toContain(
+            "freshnessDays",
+          );
+          return readable(block(render(view), "data-fo-pdp-trust"));
+        }),
+      );
+      const [five, seven, thirty] = texts;
+      expect(five, locale).not.toBe("");
+      expect(seven, locale).toBe(five);
+      expect(thirty, locale).toBe(five);
+      // No number token on the node equals any of the products' freshnessDays; "72" is allowed.
+      const numbers = five?.match(/\d+/gu) ?? [];
+      expect(numbers, locale).toContain("72");
+      for (const value of days) {
+        expect(numbers, `${locale} ${String(value)}`).not.toContain(
+          String(value),
+        );
       }
     }
   });

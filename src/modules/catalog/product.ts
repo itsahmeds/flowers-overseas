@@ -490,8 +490,9 @@ const PRODUCT_CRUMB_KEY = "breadcrumb.entity" as const;
  * sentence is the page's copy (TASK-127), the *decision* to make the claim is this model's.
  *
  *  - `substitution` — like-for-like substitution; every product carries a `substitutionClass`.
- *  - `freshnessGuarantee` — the 7-day freshness guarantee, beside substitution (design round Q5:
- *    "two claims, both true").
+ *  - `freshnessGuarantee` — the fresh-flower promise (fresh and in good condition on arrival, a
+ *    photo within 72 hours), beside substitution (design round Q5: "two claims, both true"); never
+ *    a number of days, and `freshnessDays` is not in the view (§14 A11).
  *  - `localFlorist` — "made by our florist in the recipient's town": **gated on an active
  *    partner** (§2), so it appears only in the `live` picker state.
  *

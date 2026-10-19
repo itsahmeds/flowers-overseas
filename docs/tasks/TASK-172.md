@@ -60,12 +60,141 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Escalations
 
-_None recorded._
+- **E-1 (2026-10-18, implementer): A11's AC and T rows are not written into spec 009.** The brief
+  asks for them "in place of A9's three cases (`pnpm specs:index`)", but spec text is the spec
+  writer's, with the founder's approval (work order wo-172, rule of the road "no role edits a
+  spec"). The tests A11 lists are built as A11 words them. For the spec writer: one AC ("no
+  guarantee text, in any locale, states a number of days of freshness; `trust.guarantee.name`,
+  `home.proof.guarantee.title` and `nav.utility.guarantee` read the fresh-flower promise") and
+  T rows for the four A11 tests (scan fixture case, message and content scan, PDP unit case,
+  e2e case), replacing A9's 5 / 7 / absent cases; then `pnpm specs:index`. The reviewer's
+  round-1 ruling (PR 265): E-1 does not block the merge; the orchestrator opens a separate
+  spec-writer row. That item also carries the words outside A11's closed lists that the reviewer
+  listed: "fortnight" ("stays fresh for a fortnight"), "keeps" ("keeps for 7 days"), "vase life"
+  ("7 days of vase life"), and "blooms for 7 days".
 
 ## Progress
 
-_Not started._
+- 2026-10-18: `trust.guarantee.name` retired in `en`/`de`/`pl`; `src/config/freshness-claim.ts`
+  and `tests/unit/freshness-claim.test.ts` (fixture case, branch-deletion mutants, four-locale
+  message and content scan) pushed; PR 265 opened as draft.
+- 2026-10-18: PDP unit case (`tests/unit/product-page.test.tsx`), e2e case
+  (`tests/e2e/product-page.spec.ts`), the `freshnessGuarantee` comment, the review queue entry in
+  `tests/unit/i18n-messages-schema.test.ts`, the map. Next: rebase, ready, `ci:full`.
+- 2026-10-18/19: round 1 (holes 1 to 6) and round 2 (holes 8 to 12, and the "N days a week" false positive) fixed and
+  pushed; head `b135bf13` with `ci:full` toggled, CI run 39155587167 still running when the work paused (usage limit).
+  Next: read that run on the head; if lighthouse is red only on LCP within 2200 ms, report it as the known flake.
+
+## Round 1 fixes (review FAIL and breaker HOLES on `e6a4fa76`)
+
+Each hole, and the test that now closes it (all in `tests/unit/freshness-claim.test.ts` unless
+named):
+
+- **Hole 1 / required change 3, "7-day" untested and ASCII-only:** `SEVEN_DAY` takes any dash or
+  space, and a new check flags a day count within three words of a guarantee word (`guarant*`,
+  `garantie*`, `gwarancj*`, `promis*`, `versprech*`, `obietnic*`). Closed by "each check fires on
+  the value only it reads" ("Your 7-day plan." → `sevenDay` only), "catches a day count beside
+  every guarantee word" ("7 day guarantee", "7‑day guarantee", "7-Tage-Garantie", "7-dniowa
+  gwarancja"…), "goes red when any single guarantee word is deleted", and the per-key
+  restorations in four locales.
+- **Hole 2, `DAY_ARGUMENT` unguarded:** "Delivered within {days}." → `dayArgument` only, and the
+  same value restored in every named key.
+- **Hole 3 / required change 1, ICU of any name:** an ICU argument of any name and a plural's `#`
+  count as a number, and a claim inside an ICU argument spans the whole argument. "Fresh for
+  {count} days.", "{n, number}", "{n, plural, one {# day} other {# days}}", "{n, plural, other
+  {fresh for # days}}", `{tage}`, `{dni}` in "fails every round-1 dodge"; the branch-deletion
+  sweep covers both new count branches.
+- **Hole 4 / required change 2, Unicode:** `normaliseForScan` (NFKC, `&nbsp;`/`&#160;` decoded,
+  `\p{Cf}` stripped, lower-case, `ß`→`ss`), `\p{Nd}` digits, `\p{Pd}` and U+2212 joins with
+  optional spaces. Fixtures: ٧, ७, ７; ZWSP, word joiner, soft hyphen, `&nbsp;`; U+2011, U+2012,
+  U+2014, spaced U+2013, U+2015, U+2212; NFD "świeże" and "Siebentägige"; "DREISSIG",
+  "dreissig", "DREIẞIG". Removing NFKC, the `Cf` strip or the `ss` fold each turns cases red.
+- **Hole 5, a word between number and day word:** caught, as a widening past A11's "directly
+  followed" (stricter, never looser; the reviewer decides): at most one word, or a `+`. "7 full
+  days", "7 volle Tage", "7+ days", "seven long days", "7 business days", "7½ days". Two words
+  ("seven or more days") still pass, which is A11's letter. Removing the one-word gap turns six
+  cases red.
+- **Hole 6, vacuous readers:** "selects every infoPages.* value and every key with a guarantee,
+  fresh or promise segment" (a built catalogue, exact key list; dropping the `infoPages.` clause
+  or `promise` turns it red) and "reads content/pages/<locale>/guarantee.md" (a temp root with a
+  seeded claim; pointing the reader elsewhere turns it red).
+- **Hole 7, copy outside the guarantee keys** (`faq.photo.answer` + "They stay fresh for 7
+  days."): A11's scope is guarantee text, so it is not read; the reader test asserts the FAQ key
+  stays out. For the reviewer to accept or route to the spec writer with E-1.
+- **Nit 1:** the `de`/`pl` `trust.guarantee.name` literals are pinned. **Nits 2, 4, 5** stay
+  carry-forwards (stale comments in `Icon.tsx`/`TrustStrip.tsx`; content root empty until
+  TASK-182; "fresh, and you have 14 days to cancel" is a conservative false positive, and so is
+  any guarantee sentence with "14 days" within three words of "promise", for TASK-182's
+  `pages:check`).
+
+## Round 2 fixes (breaker HOLES 8 to 12 and one false positive on `08c39016`)
+
+The reviewer accepted holes 5 and 7. Each new hole and its closing test (`tests/unit/freshness-claim.test.ts`):
+
+- **Hole 8, a day word before its number:** a reverse day count (`days|Tag|Tage|Tagen|dzień|dni`, then punctuation and at most one
+  word, then a digit run, an ICU argument or `#`). "fails every round-2 dodge" ("Fresh days: 5", "Frische (Tage): 5", "Świeżość
+  (dni): 5"…) and the per-key restorations ("Garantie in Tagen: 5"). A spelled-out number after a label ("days: five") is not
+  read.
+- **Hole 9, HTML entities:** every named and numeric entity is decoded with `entities` 8.1.0 (`decodeHTML`, the HTML5 table).
+  This adds a **new runtime dependency** (BSD-2-Clause, no dependencies of its own). Fixtures: `&ndash;`, `&#8209;`, `&shy;`,
+  `&#53;`, `&auml;`, `&#347;`/`&#380;`.
+- **Hole 10, markdown emphasis:** underscores are removed (`*` already went in `stripMarkup`). Fixtures `_x_`, `__x__`, `*x*`,
+  `**x**`, and the seeded `guarantee.md` now hides the claim in `__7__` and `_frisch_`.
+- **Hole 11, two words between number and day word:** "5 or more days", "seven or more days", "5 oder mehr Tage frisch". A
+  scan of every message value in four locales flags only `checkout.privacy.demoNotice`, the same as before the widening, and
+  that key is outside A11's guarantee scope.
+- **Hole 12, keycaps and look-alikes:** variation selectors and U+20E3 are removed ("5️⃣"), and Cyrillic and Greek letters that
+  look Latin are folded (no launch locale writes either script). Fixtures "d\u0430ys", "fr\u0435sh".
+- **False positive, "N days a week":** "N days a/per week", "N Tage die/pro/in der Woche" and "N dni w tygodniu" are removed
+  before the scan. "exempts N days a week in all four locales, and only that" covers both sides.
+- Watched red: removing the entity decoder, the look-alike map, the keycap strip, the underscore strip, the days-a-week
+  exemption or the reverse branch, or cutting the gap to one word, turns 1 to 7 cases red each.
+
+## Scoped review on `0b15b9a3`
+
+- **"N days a week" could hide a claim** ("Fresh for 7 days a week", "Stays fresh 7 days a week", "Lasts 7 days a week", "7
+  days a week fresh"). The phrase is now exempt only when no freshness or guarantee word, in any locale, is among the three
+  words either side of it in the same sentence. The `de` and `pl` forms get the same rule. "exempts N days a week in all four
+  locales, only with no freshness or guarantee word near it" covers both sides ("We answer 7 days a week" passes, "Always
+  fresh. We answer 7 days a week." passes, and fifteen en/de/pl abuses fail). With the old unconditional exemption, the case
+  goes red at "Fresh for 7 days a week". Every message value in four locales still flags only `checkout.privacy.demoNotice`.
+- **`entities` moved to devDependencies.** Its one importer is `src/config/freshness-claim.ts`, which only the unit test
+  imports (TASK-182's `pages:check` script will be the second). No page, route or server module imports it.
+- **HOLE 13 carried** (not fixed here): backticks or `~~` around the number ("fresh for `7` days", "fresh for ~~7~~ days")
+  are not stripped before the scan. For TASK-182's `pages:check`, which reads markdown content.
 
 ## Result
 
-_Pending._
+PR [#265](https://github.com/itsahmeds/flowers-overseas/pull/265).
+
+- **Retired:** `trust.guarantee.name` "7-day freshness guarantee" → `en` "Fresh-flower promise",
+  `de` "Frische-Versprechen", `pl` "Obietnica świeżych kwiatów" (the drafted translations
+  `nav.utility.guarantee` already carries, TASK-176); `en-gb` inherits `en`. All three
+  `reviewed: false`, `source: human`, `sourceHash` of the new `en` value. `home.proof.guarantee.title`
+  already read "Fresh-flower promise" in every locale (TASK-177): unchanged.
+- **Scan:** `src/config/freshness-claim.ts` (`freshnessClaims`, `FRESHNESS_TERMS`,
+  `FRESHNESS_WINDOW`, `DAY_ARGUMENT`), reusing `sentencesOf` from `honesty.ts`; TASK-182's
+  `pages:check` can call it. Beyond A11's lists it also reads the Polish combining forms
+  (`siedmio-`, `dwu-`…) and the compound week stems (`-wöchig`, `tygodniow-`), and measures the
+  window from the end of a whole ICU plural.
+- **Tests:** `tests/unit/freshness-claim.test.ts` (17 at `e6a4fa76`, 24 after round 1): A11's pass and fail sentences, every
+  spelled-out number to thirty in three languages, every term, the window both ways, every
+  single-branch deletion of both patterns caught, the four-locale scan over every guarantee key
+  (`infoPages.*`, any key segment naming a guarantee, freshness or promise, the five named keys
+  asserted present) and `content/pages/*/guarantee.md`, and "7-day" / `{days}` /
+  `{freshnessDays}` restored in each named key in each locale reported.
+  `tests/unit/product-page.test.tsx` +1 (same trust text for `freshnessDays` 5, 7, 30 in four
+  locales; the view carries no `freshnessDays`; "72" present, 5/7/30 absent).
+  `tests/e2e/product-page.spec.ts` +8 (four locales × a 5-day and a 7-day product).
+- **Watched red:** "7-day freshness guarantee" restored in `de` → 2 red; `{days}` in the `en`
+  PDP body → `en` and `en-gb` red; `FRESHNESS_WINDOW` 4 → red; the PDP title with a
+  product-dependent number → the unit case red; "7-day freshness guarantee" as the PDP title →
+  "expected [7, 72] not to include 7". The e2e case was not run locally (load average 40+);
+  CI runs it.
+- **Copy share (`en-gb`, spec 003 A17):** 0.6 % (3/541) on `main` → 0.7 % (4/541). With PR 262's
+  keys about 3.3 % → 3.5 %.
+- **New lines for the founder's next copy batch:** `trust.guarantee.name` `en` "Fresh-flower
+  promise" (the batch's own words, re-used on a new key), `de` "Frische-Versprechen", `pl`
+  "Obietnica świeżych kwiatów".
+- **Not changed (outside the fence), still say "7-day":** code comments in
+  `src/modules/ui/icons/Icon.tsx` L46 and `src/modules/ui/trust/TrustStrip.tsx` L7.

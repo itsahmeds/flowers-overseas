@@ -3040,9 +3040,9 @@
     "sourceHash": "454c7930fd562e567d7efe0c177f9b0dcb4268ac76b0875e1174923e65acbd76"
   },
   "trust.guarantee.name": {
-    "source": "machine",
+    "source": "human",
     "reviewed": false,
-    "sourceHash": "3ea34d78889432f220b6f0fdd3df749ff3e0add9b46a8b0faffc509362e77f27"
+    "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "trust.heading": {
     "source": "machine",
