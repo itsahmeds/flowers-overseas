@@ -108,6 +108,12 @@ export interface Draft {
   readonly orderId: string | null;
   readonly lastActivityAt: Date;
   readonly expiresAt: Date;
+  /**
+   * The quote's `digest` exactly as stored, read straight from the row, so the save's
+   * compare-and-set matches a stored quote even when it no longer parses (`quote` is then `null`
+   * and the draft restarts at step 1, AC-17; `/break 275` round 2 hole 16).
+   */
+  readonly quoteStamp: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -180,6 +186,7 @@ const DraftRowSchema = z.object({
   order_id: z.uuid().nullable(),
   last_activity_ms: EpochMsColumn,
   expires_ms: EpochMsColumn,
+  quote_stamp: z.string().nullable(),
 });
 
 function money(
@@ -218,6 +225,7 @@ function toDraft(raw: RawRow): Draft {
     orderId: row.order_id,
     lastActivityAt: row.last_activity_ms,
     expiresAt: row.expires_ms,
+    quoteStamp: row.quote_stamp,
   };
 }
 
@@ -229,7 +237,8 @@ const DRAFT_COLUMNS = sql`
   d.confirmed_total_minor::text AS confirmed_total_minor, d.confirmed_currency_code,
   d.mode, d.steps_completed, d.order_id,
   (extract(epoch FROM d.last_activity_at) * 1000)::bigint::text AS last_activity_ms,
-  (extract(epoch FROM d.expires_at) * 1000)::bigint::text AS expires_ms`;
+  (extract(epoch FROM d.expires_at) * 1000)::bigint::text AS expires_ms,
+  d.quote ->> 'digest' AS quote_stamp`;
 
 /** `ARRAY[$1, …]::text[]`: Drizzle expands a bare array parameter into a list. */
 function textArray(values: readonly string[]): SQL {
@@ -446,7 +455,7 @@ function unchangedSince(loaded: Draft): SQL {
   return sql` AND tier_key = ${loaded.tierKey}
     AND delivery_date IS NOT DISTINCT FROM ${loaded.deliveryDate}::date
     AND addon_keys = ${textArray(loaded.addonKeys)}
-    AND (quote ->> 'digest') IS NOT DISTINCT FROM ${loaded.quote?.digest ?? null}::text
+    AND (quote ->> 'digest') IS NOT DISTINCT FROM ${loaded.quoteStamp}::text
     AND confirmed_total_minor IS NOT DISTINCT FROM ${loaded.confirmed?.amountMinor ?? null}::bigint
     AND confirmed_currency_code IS NOT DISTINCT FROM ${loaded.confirmed?.currency ?? null}::text`;
 }

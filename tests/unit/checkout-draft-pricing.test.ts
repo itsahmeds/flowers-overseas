@@ -69,6 +69,7 @@ function draftWith(
     orderId: null,
     lastActivityAt: T0,
     expiresAt: minutes(24 * 60),
+    quoteStamp: signed?.digest ?? null,
   };
 }
 

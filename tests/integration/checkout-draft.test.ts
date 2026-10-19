@@ -1077,6 +1077,63 @@ describe.skipIf(server.url === undefined)(
         });
       });
 
+      it("restarts at step 1 when the stored quote no longer parses, instead of reloading the step (hole 16)", async () => {
+        for (const breakQuote of [
+          (tx: Tx) =>
+            tx`UPDATE checkout_draft SET quote = jsonb_set(quote, '{totalMinor}', to_jsonb('x'::text))`,
+          (tx: Tx) => tx`UPDATE checkout_draft SET quote = quote - 'lines'`,
+        ]) {
+          await run(async (tx) => {
+            const connection = await seeded(tx);
+            const token = await started(connection);
+            await runRecipientStep(ctx(connection, token), recipientForm());
+            await breakQuote(tx);
+            const outcomes: string[] = [];
+            for (const minutes of [2, 3, 4]) {
+              outcomes.push(
+                location(
+                  await runCardAndBuyerStep(
+                    ctx(connection, token, minutes),
+                    cardForm(),
+                  ),
+                ),
+              );
+            }
+            // The first post restarts the draft at step 1 with a fresh quote; the next two are
+            // sent to step 1 by the step gate, because step 1 is now incomplete.
+            expect(outcomes).toEqual([
+              "/pl/checkout",
+              "/pl/checkout",
+              "/pl/checkout",
+            ]);
+            const restarted = await active(connection, token, 5);
+            expect(restarted.stepsCompleted).toBe(0);
+            expect(restarted.quote).not.toBeNull();
+            expect(restarted.card).not.toBeNull();
+            expect((await verifyDraftQuote(restarted, at(5))).verdict).toBe(
+              "ok",
+            );
+            // And the buyer gets out: step 1, then step 2, move on again.
+            expect(
+              location(
+                await runRecipientStep(
+                  ctx(connection, token, 6),
+                  recipientForm(),
+                ),
+              ),
+            ).toBe("/pl/checkout?step=card");
+            expect(
+              location(
+                await runCardAndBuyerStep(
+                  ctx(connection, token, 7),
+                  cardForm(),
+                ),
+              ),
+            ).toBe("/pl/checkout?step=review");
+          });
+        }
+      });
+
       it("reissues an expired, unchanged quote silently and keeps going", async () => {
         await run(async (tx) => {
           const connection = await seeded(tx);
