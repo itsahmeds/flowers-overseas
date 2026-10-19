@@ -380,7 +380,8 @@ part `/review 26` had to add:
    zod behind `messages.ts` → `schemas.ts` and `registry.ts` → `src/config/locales.ts`, which was
    the open item of spec 003 §14 A12.
 2. TASK-046 took that zod out of the *initial* script set. `src/modules/i18n/error-document.ts`
-   imports the x-default locale row from `src/config/locales.data.ts` (plain constants, no imports)
+   imports the x-default locale row from `src/config/locales.data.ts` (plain constants, no imports;
+   since step 5 the import-free mirror `src/config/locales-client.data.ts`)
    and the four strings from `messages/en.json` (superseded by step 4, which measured what that
    JSON import really cost), and nothing else, so the failure document reaches
    no schema, no provider and no message source — which is also the right shape for a document
@@ -439,6 +440,16 @@ part `/review 26` had to add:
    and asserts the sets are equal, so the model is checked rather than trusted, and
    `tests/unit/client-message-graph.test.ts` walks the imports of every `"use client"` module and
    fails on `next-intl`, on `messages.ts`, on the i18n barrel or on a `messages/*.json` import.
+5. TASK-182 took the **locale rows** out (spec 003 §14 A-founder-2026-10-19f, AC-52). Steps 2 and 3
+   had both client paths import `src/config/locales.data.ts`, and a bundler keeps the whole row
+   array when one field of one row is read, so every locale's names, currencies, aliases and path
+   segments rode in the root error chunk and the popup island's chunk. Spec 041's six trust-page
+   segments made that 468 B Brotli over the budget on every audited URL (131 207 B, CI run
+   39211395643). `error-document.ts` and `hints.ts` now read `src/config/locales-client.data.ts`,
+   an import-free mirror of the x-default row's `code`, `bcp47` and `dir` and the launch codes,
+   pinned to `locales.data.ts` by `tests/unit/locales-data.test.ts`;
+   `tests/unit/client-message-graph.test.ts` forbids `locales.data.ts` in every client graph, and
+   `pnpm budget:client-js` fails when a German or Polish path segment appears in a fetched chunk.
 
 The boundary rule that matters is preserved (`app/` → `modules/` is the permitted direction, and no
 module reaches into another module's internals), and the barrel stays the import path for every

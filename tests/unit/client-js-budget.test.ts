@@ -82,6 +82,8 @@ import {
   MESSAGES_PAYLOAD_BUDGET_BYTES,
   catalogueLeaks,
   catalogueProbes,
+  segmentLeaks,
+  segmentProbes,
   forbiddenModuleHits,
   loadableAssetsFor,
   measurePages,
@@ -821,6 +823,83 @@ describe("catalogueLeaks — no client chunk carries server-only copy (§14 A1 a
     expect(out.join("")).toContain(
       "no fetched chunk contains home.*, catalog.*, media.* catalogue copy",
     );
+  });
+});
+
+describe("segmentLeaks: no client chunk carries the locale rows (spec 003 AC-52 (c), T-52)", () => {
+  let dist = "";
+  const probes = segmentProbes();
+
+  beforeAll(() => {
+    dist = mkdtempSync(join(tmpdir(), "fo-segments-"));
+    mkdirSync(join(dist, "static/chunks"), { recursive: true });
+    mkdirSync(join(dist, "server/app"), { recursive: true });
+    writeFileSync(
+      join(dist, "app-path-routes-manifest.json"),
+      JSON.stringify({ "/(chooser)/page": "/", "/[locale]/page": "/[locale]" }),
+    );
+    // A chunk with one German row segment in it, minified the way a bundled row array ships.
+    writeFileSync(
+      join(dist, "static/chunks/rows.js"),
+      'const r={howItWorks:"so-funktioniert-es"};',
+    );
+    // The same word unquoted (in a comment or a longer string) is not a row value.
+    writeFileSync(
+      join(dist, "static/chunks/clean.js"),
+      "/* so-funktioniert-es */export const a=1;",
+    );
+    writeFileSync(
+      join(dist, "server/app/index.html"),
+      '<script src="/_next/static/chunks/clean.js"></script>',
+    );
+    writeFileSync(
+      join(dist, "server/app/en.html"),
+      '<script src="/_next/static/chunks/rows.js"></script>',
+    );
+  });
+
+  afterAll(() => {
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it("reads its probes from locales.data.ts: German and Polish segments English does not share", () => {
+    expect(probes).toHaveLength(16);
+    expect(probes).toContainEqual({
+      locale: "de",
+      key: "howItWorks",
+      value: "so-funktioniert-es",
+    });
+    expect(probes).toContainEqual({
+      locale: "pl",
+      key: "delivery",
+      value: "dostawa-i-platnosc",
+    });
+    for (const probe of probes) {
+      expect(probe.value.length, probe.key).toBeGreaterThanOrEqual(8);
+    }
+  });
+
+  it("finds a planted row segment and names the URL, chunk and segment", () => {
+    expect(segmentLeaks(dist, measurePages(dist, ["/", "/en"]))).toEqual([
+      {
+        url: "/en",
+        asset: "static/chunks/rows.js",
+        locale: "de",
+        key: "howItWorks",
+        value: "so-funktioniert-es",
+      },
+    ]);
+  });
+
+  it("finds nothing on a page whose chunks carry no quoted segment", () => {
+    expect(segmentLeaks(dist, measurePages(dist, ["/"]))).toEqual([]);
+  });
+
+  it("refuses to run with an empty probe set", () => {
+    expect(() => segmentLeaks(dist, measurePages(dist, ["/en"]), [])).toThrow(
+      /no locale path-segment probe/u,
+    );
+    expect(segmentProbes([])).toEqual([]);
   });
 });
 

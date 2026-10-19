@@ -72,6 +72,9 @@ const FORBIDDEN_FILES = [
   ["src/modules/i18n/pseudo.ts", "derives a catalogue from `en`"],
   ["src/modules/i18n/schemas.ts", "zod"],
   ["src/config/locales.ts", "zod, and the whole locale registry"],
+  // Spec 003 §14 A-founder-2026-10-19f, AC-52 (b): every locale row, path segments included,
+  // would ship with the chunk; the client paths read `locales-client.data.ts` instead.
+  ["src/config/locales.data.ts", "every locale row and its path segments"],
 ] as const;
 
 /** Packages a client graph may not reach: the translator, the formatter, the provider, phone metadata. */
@@ -125,13 +128,21 @@ describe("the client entry list this file walks", () => {
 
   it("walks a closure the test itself can vouch for", () => {
     // A resolver that silently returns nothing would make every assertion pass. The language
-    // popup island's own graph is the control: it reaches `hints.ts`, which reaches `locales.data.ts`.
+    // popup island's own graph is the control: it reaches `hints.ts`, which reaches the client
+    // mirror `locales-client.data.ts` (AC-52 (b)); the 500 document reaches it through
+    // `error-document.ts`.
     const closure = importClosure(
       resolve(repoRoot, "src/modules/i18n/ui/LanguagePopupIsland.tsx"),
     );
     expect([...closure.files].map(show)).toContain("src/modules/i18n/hints.ts");
     expect([...closure.files].map(show)).toContain(
-      "src/config/locales.data.ts",
+      "src/config/locales-client.data.ts",
+    );
+    const errorBoundary = importClosure(
+      resolve(repoRoot, "src/app/global-error.tsx"),
+    );
+    expect([...errorBoundary.files].map(show)).toContain(
+      "src/config/locales-client.data.ts",
     );
   });
 });

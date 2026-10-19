@@ -38,8 +38,9 @@
 // `/` included. Through the `@/modules/i18n` barrel that was the whole module; through
 // `messages.ts` + `registry.ts` it was still `schemas.ts` and `src/config/locales.ts`, and
 // therefore zod — ~70 KB Brotli of validator on a page that validates nothing (spec 003 §14 A12,
-// spec 004 §13 Q13). `error-document.ts` reads the x-default row from `src/config/locales.data.ts`
-// and the four strings from `error-copy.data.ts`, and imports nothing else, so the growth vector
+// spec 004 §13 Q13). `error-document.ts` reads the x-default locale from the import-free mirror
+// `src/config/locales-client.data.ts` (never the rows of `locales.data.ts`, spec 003 §14
+// A-founder-2026-10-19f) and the four strings from `error-copy.data.ts`, and imports nothing else, so the growth vector
 // stays closed: a function added to `format.ts` or a schema added to `schemas.ts` tomorrow cannot
 // land in `/`'s bundle by being exported. The strings were `messages/en.json` until TASK-085
 // measured what a static JSON import costs once it crosses Turbopack's tree-shaking threshold:

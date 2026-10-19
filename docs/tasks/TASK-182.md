@@ -160,8 +160,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   the two client paths a row-free constant module (x-default `code`/`bcp47`/`dir` and the launch
   codes, pinned to the rows by the parity tests), which takes every locale row out of client JS
   and reverses TASK-085's "read the row" choice; or (b) move the six info-page segments out of
-  `LocaleData.pathSegments` into a server-only map, which changes spec 003's registry shape. Not
-  done: needs the orchestrator's call.
+  `LocaleData.pathSegments` into a server-only map, which changes spec 003's registry shape.
+  **Resolved 2026-10-19:** the founder chose (a) ("go with the premium proposed version and fix
+  c"), recorded as spec 003 §14 A-founder-2026-10-19f (PR 283; AC-52, T-52), which widens this
+  task's fence. Built in PR 270: `src/config/locales-client.data.ts` (import-free mirror),
+  `error-document.ts` and `hints.ts` read it, `client-message-graph.test.ts` forbids
+  `locales.data.ts` in every client graph, `locales-data.test.ts` pins the mirror, and
+  `budget:client-js` scans fetched chunks for 16 `de`/`pl` segment probes.
 
 ## Progress
 
@@ -177,7 +182,7 @@ here.
 - 22:25Z: stopped before `gh pr ready` on the coordinator's copy-share heads-up (E1). Next: the founder attests the keys (or the order is changed), then rebase on `origin/main` (TASK-172/PR 265 adds `trust.guarantee.name` to the AC-16 case), ready, `ci:full`.
 - 2026-10-19 06:10Z: rebased on `origin/main` (`dbb3ec64`, copy batch 5); the pinned queue in `i18n-messages-schema.test.ts` is main's set plus this PR's 8 keys. `trust.guarantee.name` joined the AC-16 case (mutation to a German "7-Tage" name went red). Copy share `en-gb` 0.36 % on main, 1.79 % with this PR. Cheap gates and `pages:check` green; ready, `ci:full`.
 - 07:55Z: second rebase (motions PR 221; HomeFaq keeps both `data-fo-reveal` and the help link). CI 39211395643: e2e footer/links/home FAQ suites still expected the unpublished pages (updated), 31 Linux baselines refreshed from run 39215901991 (each looked at), Lighthouse script bytes 468 B over (E5, open).
-
+- 2026-10-19 09:45Z: AC-52 built (E5 resolved). Mutations watched red: error-document or hints importing `locales.data.ts` again (3 red each), mirror `dir` rtl, `bcp47` one character, `pl` dropped, an import line in the mirror, a launch row added to `locales.data.ts` alone, the empty-probe guard removed, the quoted-literal scan disabled.
 ## Result
 
 PR https://github.com/itsahmeds/flowers-overseas/pull/270 (ready, `ci:full`; E1 resolved by copy
