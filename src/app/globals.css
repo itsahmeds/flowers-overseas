@@ -871,9 +871,10 @@
   transform-origin: 100% 50%;
 }
 
-/* 3. Where the label ends in the drawn arrow (16 px), the 22 px bloom sits centred on its slot, so
-   the button's width never changes. Placement only: it shows under no-preference alone. */
-[data-fo-pending]:has([data-fo-pending-arrow]) [data-fo-pending-bloom] {
+/* 3. Where the label ends in the drawn arrow (16 px; an icon is the label's own `svg`, the bloom's
+   sits inside `[data-fo-pending-bloom]`), the 22 px bloom sits centred on the arrow's slot, so the
+   button's width never changes. Placement only: it shows under no-preference alone. */
+[data-fo-pending]:has(> span > svg) [data-fo-pending-bloom] {
   inset-inline: auto -3px;
   margin-inline-start: 0;
 }
@@ -936,7 +937,7 @@
     opacity: 1;
   }
 
-  [data-fo-pending][aria-busy="true"] [data-fo-pending-arrow] {
+  [data-fo-pending][aria-busy="true"] > span > svg {
     opacity: 0;
   }
 

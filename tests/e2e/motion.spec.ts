@@ -568,7 +568,7 @@ test.describe("5. motion 3: the pending button", () => {
           element.querySelector('[data-fo-bloom="stem"]') ?? element,
         ).animationName,
         arrow: getComputedStyle(
-          element.querySelector("[data-fo-pending-arrow]") ?? element,
+          element.querySelector(":scope > span > svg") ?? element,
         ).opacity,
         // The bloom takes the arrow's slot: their centres within a pixel.
         inArrowSlot: (() => {
@@ -580,8 +580,7 @@ test.describe("5. motion 3: the pending button", () => {
           };
           return (
             Math.abs(
-              centre("[data-fo-pending-bloom]") -
-                centre("[data-fo-pending-arrow] svg"),
+              centre("[data-fo-pending-bloom]") - centre(":scope > span > svg"),
             ) <= 1
           );
         })(),
@@ -631,7 +630,7 @@ test.describe("5. motion 3: the pending button", () => {
       return {
         busy: element.getAttribute("aria-busy"),
         arrow: getComputedStyle(
-          element.querySelector("[data-fo-pending-arrow]") ?? element,
+          element.querySelector(":scope > span > svg") ?? element,
         ).opacity,
         bloom: getComputedStyle(
           element.querySelector("[data-fo-pending-bloom]") ?? element,
