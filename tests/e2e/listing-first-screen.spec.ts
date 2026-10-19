@@ -305,6 +305,85 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
   }
 });
 
+/**
+ * AC-45's probe over the viewport band under the header: the widest empty band, and every
+ * ornament (a rotation, or an `aria-hidden` box 48 px or more both ways). Runs in the page.
+ */
+function calmProbe(): { widest: number; ornaments: string[] } {
+  const header = document.querySelector("header");
+  const top = header?.getBoundingClientRect().bottom ?? 0;
+  const bottom = window.innerHeight;
+  const main = document.querySelector("main");
+  if (main === null) throw new Error("no main");
+  // Every text node, image and form control in `<main>` inside the span.
+  const spans: [number, number][] = [];
+  const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+    if ((node.textContent ?? "").trim() === "") continue;
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    for (const rect of Array.from(range.getClientRects())) {
+      if (rect.width === 0 || rect.height === 0) continue;
+      spans.push([rect.top, rect.bottom]);
+    }
+  }
+  for (const element of Array.from(
+    main.querySelectorAll("img, input, select, textarea, button"),
+  )) {
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) continue;
+    spans.push([rect.top, rect.bottom]);
+  }
+  const covered = spans
+    .map(
+      ([a, b]) => [Math.max(a, top), Math.min(b, bottom)] as [number, number],
+    )
+    .filter(([a, b]) => b > a)
+    .sort((x, y) => x[0] - y[0]);
+  let cursor = top;
+  let widest = 0;
+  for (const [a, b] of covered) {
+    widest = Math.max(widest, a - cursor);
+    cursor = Math.max(cursor, b);
+  }
+  widest = Math.max(widest, bottom - cursor);
+
+  // Ornaments: a rotation, or an `aria-hidden` element 48 px or more both ways.
+  const ornaments: string[] = [];
+  for (const element of Array.from(main.querySelectorAll("*"))) {
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) continue;
+    if (rect.bottom <= top || rect.top >= bottom) continue;
+    const style = getComputedStyle(element);
+    const transform = style.transform;
+    if (transform !== "none") {
+      const matrix = new DOMMatrixReadOnly(transform);
+      if (Math.abs(matrix.b) > 1e-6 || Math.abs(matrix.c) > 1e-6) {
+        ornaments.push(`rotated ${element.tagName}`);
+      }
+    }
+    if (style.rotate !== "none" && style.rotate !== "0deg") {
+      ornaments.push(`rotate ${element.tagName}`);
+    }
+    // Motion 6's shadow layer (spec 004 §14 A-founder-2026-10-19e clause 1 (c)) is an
+    // `aria-hidden` box the photograph's size that paints nothing at rest: exempt while it
+    // sits at opacity 0 inside a moving card, and an ornament the moment it shows.
+    const restingShadow =
+      element.hasAttribute("data-fo-card-shadow") &&
+      element.closest("a[data-fo-card-motion]") !== null &&
+      style.opacity === "0";
+    if (
+      !restingShadow &&
+      element.getAttribute("aria-hidden") === "true" &&
+      rect.width >= 48 &&
+      rect.height >= 48
+    ) {
+      ornaments.push(`aria-hidden ${element.tagName} ${String(rect.width)}`);
+    }
+  }
+  return { widest, ornaments };
+}
+
 test.describe("AC-45 (T-50): calm, not bland", () => {
   for (const url of PAGES) {
     for (const size of SIZES) {
@@ -312,81 +391,45 @@ test.describe("AC-45 (T-50): calm, not bland", () => {
         page,
       }) => {
         await open(page, url, size);
-        const probe = await page.evaluate(() => {
-          const header = document.querySelector("header");
-          const top = header?.getBoundingClientRect().bottom ?? 0;
-          const bottom = window.innerHeight;
-          const main = document.querySelector("main");
-          if (main === null) throw new Error("no main");
-          // Every text node, image and form control in `<main>` inside the span.
-          const spans: [number, number][] = [];
-          const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
-          for (
-            let node = walker.nextNode();
-            node !== null;
-            node = walker.nextNode()
-          ) {
-            if ((node.textContent ?? "").trim() === "") continue;
-            const range = document.createRange();
-            range.selectNodeContents(node);
-            for (const rect of Array.from(range.getClientRects())) {
-              if (rect.width === 0 || rect.height === 0) continue;
-              spans.push([rect.top, rect.bottom]);
-            }
-          }
-          for (const element of Array.from(
-            main.querySelectorAll("img, input, select, textarea, button"),
-          )) {
-            const rect = element.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) continue;
-            spans.push([rect.top, rect.bottom]);
-          }
-          const covered = spans
-            .map(
-              ([a, b]) =>
-                [Math.max(a, top), Math.min(b, bottom)] as [number, number],
-            )
-            .filter(([a, b]) => b > a)
-            .sort((x, y) => x[0] - y[0]);
-          let cursor = top;
-          let widest = 0;
-          for (const [a, b] of covered) {
-            widest = Math.max(widest, a - cursor);
-            cursor = Math.max(cursor, b);
-          }
-          widest = Math.max(widest, bottom - cursor);
-
-          // Ornaments: a rotation, or an `aria-hidden` element 48 px or more both ways.
-          const ornaments: string[] = [];
-          for (const element of Array.from(main.querySelectorAll("*"))) {
-            const rect = element.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) continue;
-            if (rect.bottom <= top || rect.top >= bottom) continue;
-            const style = getComputedStyle(element);
-            const transform = style.transform;
-            if (transform !== "none") {
-              const matrix = new DOMMatrixReadOnly(transform);
-              if (Math.abs(matrix.b) > 1e-6 || Math.abs(matrix.c) > 1e-6) {
-                ornaments.push(`rotated ${element.tagName}`);
-              }
-            }
-            if (style.rotate !== "none" && style.rotate !== "0deg") {
-              ornaments.push(`rotate ${element.tagName}`);
-            }
-            if (
-              element.getAttribute("aria-hidden") === "true" &&
-              rect.width >= 48 &&
-              rect.height >= 48
-            ) {
-              ornaments.push(
-                `aria-hidden ${element.tagName} ${String(rect.width)}`,
-              );
-            }
-          }
-          return { widest, ornaments };
-        });
+        const probe = await page.evaluate(calmProbe);
         expect(probe.widest, "the widest empty band").toBeLessThanOrEqual(120);
         expect(probe.ornaments).toStrictEqual([]);
+        // Not vacuous, and the exemption is the resting shadow layer alone: the same layer
+        // shown, and any other `aria-hidden` box inside a moving card, are ornaments.
+        const expected = await page.evaluate(() => {
+          const link = document.querySelector("main a[data-fo-card-motion]");
+          const shadow = link?.querySelector<HTMLElement>(
+            "[data-fo-card-shadow]",
+          );
+          if (
+            link === null ||
+            link === undefined ||
+            shadow === null ||
+            shadow === undefined
+          ) {
+            throw new Error("no moving card");
+          }
+          link.scrollIntoView({ block: "center" });
+          return `aria-hidden SPAN ${String(shadow.getBoundingClientRect().width)}`;
+        });
+        expect((await page.evaluate(calmProbe)).ornaments).not.toContain(
+          expected,
+        );
+        await page.evaluate(() => {
+          const shadow = document.querySelector<HTMLElement>(
+            "main a[data-fo-card-motion] [data-fo-card-shadow]",
+          );
+          if (shadow === null) throw new Error("no shadow layer");
+          shadow.style.opacity = "1";
+          const planted = document.createElement("span");
+          planted.setAttribute("aria-hidden", "true");
+          planted.style.cssText =
+            "display:block;inline-size:60px;block-size:60px";
+          shadow.after(planted);
+        });
+        expect((await page.evaluate(calmProbe)).ornaments).toEqual(
+          expect.arrayContaining([expected, "aria-hidden SPAN 60"]),
+        );
       });
     }
   }

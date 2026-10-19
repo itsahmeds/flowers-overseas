@@ -29,6 +29,7 @@ async function transitionOfFirstButton(page: import("@playwright/test").Page) {
 
 test("without the preference, the design system's transitions are real", async ({
   page,
+  isMobile,
 }) => {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   const response = await page.goto(GALLERY);
@@ -37,8 +38,23 @@ test("without the preference, the design system's transitions are real", async (
     `${GALLERY} must be served; is ENABLE_DEV_UI=true on the target?`,
   ).toBe(200);
 
+  // Motion 6's pill, as spec 004 §14 A-founder-2026-10-19e clause 1 (f) times it: at rest the
+  // pill carries the release, `--duration-base` (200 ms); held pressed, the press goes in over
+  // `--duration-fast` (120 ms).
   const style = await transitionOfFirstButton(page);
-  expect(style?.transitionDuration).toBe("0.12s");
+  expect(style?.transitionDuration).toBe("0.2s");
+  // The held press is read with a mouse; the phone project's touch emulation has none.
+  if (isMobile) return;
+  const button = page.locator("button").first();
+  await button.scrollIntoViewIfNeeded();
+  await button.hover();
+  await page.mouse.down();
+  const pressed = await button.evaluate(
+    (element) => getComputedStyle(element).transitionDuration,
+  );
+  await page.mouse.move(0, 0);
+  await page.mouse.up();
+  expect(pressed).toBe("0.12s");
 });
 
 test("with `reduce`, no transition or animation runs (AC-6)", async ({

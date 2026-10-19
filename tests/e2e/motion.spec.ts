@@ -869,8 +869,32 @@ async function hoveredCard(page: Page, path = SHOP) {
   return { rest, hovered: await cardState(page), firstFrame };
 }
 
-const SHADOW_LETTER =
-  /^rgba\(.+\) 0px 1px 1px 0px, rgba\(.+\) 0px 22px 44px -12px$/;
+/**
+ * `--shadow-letter` as Chromium computes it: two layers, `0 1px 1px` and `0 22px 44px -12px`, each
+ * in `--color-shade` (ink at 12 %). The colour function Chromium prints for an oklch token varies
+ * (`lab(…)`, `oklch(…)`, `rgba(…)`), so the geometry is read as written and the alpha as a number.
+ */
+function shadowLetter(computed: string): {
+  geometry: string[];
+  alphas: number[];
+} {
+  const layers = computed.split(/,(?![^(]*\))/u).map((layer) => layer.trim());
+  return {
+    geometry: layers.map((layer) => layer.replace(/^[a-z]+\([^)]*\)\s*/u, "")),
+    alphas: layers.map((layer) => {
+      const colour = /^([a-z]+)\(([^)]*)\)/u.exec(layer);
+      const args = colour?.[2] ?? "";
+      const slash = /\/\s*([\d.]+)(%?)/u.exec(args);
+      if (slash !== null) {
+        const value = Number(slash[1]);
+        return slash[2] === "%" ? value / 100 : value;
+      }
+      // `rgba(r, g, b, a)`
+      const parts = args.split(",");
+      return parts.length === 4 ? Number(parts[3]) : 1;
+    }),
+  };
+}
 
 test.describe("6b. motion 6, premium (A-founder-2026-10-19e; AC-44, T-48)", () => {
   test("without the preference a card lifts 4 px, zooms 6 %, casts its shadow and draws its line", async ({
@@ -883,7 +907,10 @@ test.describe("6b. motion 6, premium (A-founder-2026-10-19e; AC-44, T-48)", () =
     expect(rest.card).toBe("none");
     expect(rest.photo).toBe("none");
     expect(rest.shadow).toBe("0");
-    expect(rest.shadowPaint).toMatch(SHADOW_LETTER);
+    expect(shadowLetter(rest.shadowPaint)).toEqual({
+      geometry: ["0px 1px 1px 0px", "0px 22px 44px -12px"],
+      alphas: [0.12, 0.12],
+    });
     expect(rest.line).toBe("matrix(0, 0, 0, 1, 0, 0)");
     expect(hovered.card).toBe("matrix(1, 0, 0, 1, 0, -4)");
     expect(hovered.photo).toBe("matrix(1.06, 0, 0, 1.06, 0, 0)");
