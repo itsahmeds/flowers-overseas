@@ -2698,3 +2698,246 @@ motion module imported eagerly (its chunk starts before the LCP)".
 **AC-24 and T-26:** text unchanged. They are the guard this amendment names.
 
 Open for the founder: none.
+
+**A-founder-2026-10-19b: The listing card says its price once, with "Includes VAT and delivery";
+the example label once per grid; the other currencies on the product page only (TASK-252 item 7,
+option A; A21 clause 6 (c) and its "Spec 008 T-06 and spec 009 T-21" tests; A23 clause 5's
+country-page bullet; A24 clauses 2 (a) and 3; A24 clause 10 P5; spec 008 AC-6, A2, A15 (c),
+A16 (a), T-06, T-07 via spec 008 §14 A-founder-2026-10-19b; no new AC or T id).**
+Status: approved (founder, 2026-10-19). The founder's reply, 2026-10-19 morning, in chat,
+verbatim: "A ship, approve batch 5, C A, all A". Its "all A" answers TASK-252's eight judgments.
+Item 7's row in `docs/design/README.md` ("Awaiting founder", PR 267) says option A "**Reverses
+the founder's ruling of 2026-10-03** (cards show the other currencies)", so this reply is the
+founder's word on that reversal, which the row asked for. "A ship" is A-founder-2026-10-19a's;
+items 1 to 4 and 6 are A-founder-2026-10-19c's; "approve batch 5" and "C A" answer other
+questions and are not recorded here. The reply reached the spec writer through the orchestrator's
+work order.
+
+**Evidence.** `docs/design/README.md`, "Awaiting founder", row 7; `wireframes/qa-judgments-2026-10-18-desktop.dc.html`
+and `-mobile.dc.html`, item 7 (note and option A drawing); QA-1 N10 and N11 and QA-2 Q18-07 and
+Q1-19 (`.claude/state/qa-2026-10-18/`): every card showed "all in", a three-currency line and the
+example label.
+
+**Original.**
+- A21 clause 6 (founder, 2026-10-03: "also do this too.. like showing prices this way too in usd
+  eur and gpt at the bottom too") puts the equivalents line under every destination-specific
+  price; (c) names "product cards on country-scoped listing pages (and any other placement of the
+  same card), the product page's price and its summary". A23 clause 5 and spec 008 A15 (c) give
+  the country lead's price tag `catalog.price.allIn` and the equivalents line.
+- Spec 008 AC-6 asks for `catalog.price.inclusive` beside the card's price. The build renders
+  `catalog.price.allIn` ("all in" in `en`; `src/modules/ui/shop/ProductCard.tsx`). A24 clauses
+  2 (a) and 3 call `catalog.price.inclusive` "all in", which is `allIn`'s value; `inclusive` is
+  "Includes VAT and delivery".
+- Spec 008 A2 puts the example label on every card that shows an `ai` asset; A16 (a) keeps that
+  from `md` up and shows it once per grid below `md`.
+- On the destination-less hubs each card prints `shop.card.noPrice`, while `shop.hub.noMoney`
+  already says why once (spec 008 AC-7's one sentence).
+
+**Corrected.**
+1. **One price line.** Every country-scoped listing card, and the country occasion's lead tag
+   (spec 008 A15 (c), A16 (b)), shows the all-in price through `formatMoney` with
+   `catalog.price.inclusive` beside it: "Includes VAT and delivery" in `en`, the authored formula
+   in `de` and `pl`. No card or tag renders `catalog.price.allIn`. A23 clause 5's
+   "`catalog.price.allIn`, and the equivalents line where A21 clause 6 (c) shows one" reads
+   "`catalog.price.inclusive`". A24 clause 2 (a)'s and clause 3's `("all in")` read
+   `("Includes VAT and delivery")`; clause 3's reason for dropping the strip's notice on the
+   phone holds, more plainly.
+2. **No equivalents on a card.** A21 clause 6 (c) reads: "Only on the product page: its price
+   and its summary, in 'The price' section (spec 009 §14 A12 move 2)." Listing cards, the country
+   lead tag and every other placement of the card render no equivalents line, and the card's
+   view model carries no equivalents, so there is nothing to render one from. Clause 6 (a), (b),
+   (d) and (e) bind the product page unchanged; the spec 008 §13 Q9 repaint island repaints the
+   product page's line only. The checkout still shows none (spec 010 AC-18). This reverses the
+   founder's 2026-10-03 ruling for cards only.
+3. **The example label once per grid (replaces spec 008 A2 and A16 (a)'s first two bullets;
+   spec 006 AC-17 unchanged).**
+   - **All-example grid.** Where every card in a grid that shows a photograph shows an `ai`
+     asset, and at least one does, the label (`media.provenance.aiExample`) is displayed once for
+     the grid, at every width, and no card displays its own.
+   - **Mixed grid.** Where the grid also holds a non-`ai` photograph, from `md` up each card that
+     shows an `ai` asset displays its label (A2), so the buyer can tell which picture is an
+     example; below `md` A16 (a)'s once per grid stands.
+   - **Place.** Directly above the grid and inside the first viewport: from `md` up on the count
+     line's row, as item 7A draws it; below `md` where A16 (a) puts it, between the count line and
+     the first row.
+   - **Mechanism (A16 (a)'s, at every width).** Every card that shows an `ai` asset keeps its
+     label in the server HTML. Where the grid label is displayed, the per-card labels are hidden
+     by CSS (`display: none`). The grid label is one element per grid. So spec 006 AC-17's
+     pre-hydration assertion and its no-suppression-prop rule hold unchanged.
+   - **The country occasion's lead from `md` up** sits outside the grid's box, so it keeps its own
+     label when its asset is `ai`.
+   - **Scope.** Every listing grid, the destination-less hubs included. The home's Popular
+     choices row is not a listing grid; A-founder-2026-10-14g stands for it.
+4. **The hubs' per-card line goes.** A destination-less hub card is the photograph, the name and
+   the label rule of clause 3; it prints no `shop.card.noPrice`. `shop.hub.noMoney` stays, once
+   per page (spec 008 AC-7 unchanged). A24 clause 10's P5 row is withdrawn.
+5. **Design.** The designer redraws the card in `system/components.dc.html` and the listing
+   artboards (`country-shop-*`, `country-category-*`, `country-occasion-*`, `category-hub-*`,
+   `occasion-hub-*`) to item 7A, and marks README row 7 answered. `/plan-tasks` makes one
+   implementer row. It is a money display: the row keeps the breaker (A21 clause 6 (e)).
+6. **Unchanged.** Spec 009 AC-21 and A12 (the product page's price element, its inclusive text and
+   its one equivalents line); spec 008 AC-7; rebound AC-34 and T-49 (a shorter card only helps the
+   first row fit); AC-53.
+
+**SEO.** Schema price = visible price is unchanged: `ItemList` and every `Offer` read the card's
+one price, and the equivalents never reached JSON-LD. URLs (`plan/02` §4), canonicals, robots,
+hreflang and sitemaps are unchanged; rendering stays ISR (`plan/01` §3). The per-card labels stay
+in the HTML, hidden, as A16 (a) already ships below `md`; every Phase 0 listing is
+`noindex,follow`. Shorter cards, no layout after load: CLS and LCP unchanged or better.
+**i18n.** No new key. `catalog.price.allIn` and `shop.card.noPrice` lose their last use and are
+deleted from every catalogue and `messages/*.meta.json`, so `i18n:check`'s unused-key rule stays
+green; the unreviewed share can only fall. `catalog.price.inclusive` is spec 003's price-display
+legal text, authored per locale, never machine-only. The equivalents key stays for the product
+page. Logical properties only; `/ar-XB` mirrors the count line's row. **Compliance.** Price shown
+= price charged, VAT and delivery included, and the legal formula now sits beside every card
+price (`plan/07` §4), where "all in" did not state it. The equivalents were an approximate extra,
+not required information; the product page keeps them. The example label stays visible on the
+first screen of every grid (spec 006 AC-17), per card from `md` up wherever a grid mixes example
+and real photographs. The ranking disclosure is unchanged (spec 008 §8). No data flow changes;
+the RoPA is unchanged.
+
+**A21's test bullet "Spec 008 T-06 and spec 009 T-21: equivalents" amended.** Its first case
+reads: "A fixture PDP renders exactly the three non-charged currencies of the set, each equal to
+the mid-rate conversion at the charged price's `fxAsOf`, and a fixture listing card renders no
+equivalents line. Red if the buffer is applied, if the charged currency appears in the line, or
+if a card renders the line." Its other cases bind the product page unchanged.
+
+**Spec 008 AC-6, T-06 and T-07** are amended in spec 008 §14 A-founder-2026-10-19b.
+
+Open for the founder: none.
+
+**A-founder-2026-10-19c: The cookie banner clears the page, its settings fold, the phone Menu
+closes on Send flowers, one `Esc` closes one layer, and short screens drop the fixed bars
+(TASK-252 items 1 to 4 and 6, option A; §13 Q16 resolved; AC-17, AC-20, AC-47, AC-48 and T-19,
+T-22, T-52, T-53 amended; spec 003 §14 A16 clause 2, AC-28 (f) and T-28 via spec 003 §14
+A-founder-2026-10-19c; no new AC or T id).**
+Status: approved (founder, 2026-10-19). The founder's reply, 2026-10-19 morning, in chat,
+verbatim: "A ship, approve batch 5, C A, all A". Its "all A" picks option A, the designer's pick,
+for each of TASK-252's eight judgments. Item 7 is A-founder-2026-10-19b's. Items 5 and 8 need no
+spec text: item 5 redraws `home-mobile` only, and AC-49 already binds a scroller wherever one
+renders; item 8 redraws `product-*` only, and spec 009 AC-23 as rebound by A-founder-2026-10-14c
+already binds the static price list ("no spec change", README row 8). The reply reached the spec
+writer through the orchestrator's work order.
+
+**Evidence.** `docs/design/README.md`, "Awaiting founder", rows 1 to 4 and 6; the qa-judgments
+artboards (desktop and mobile), items 1 to 4 and 6; QA-2 N-03, N-09, N-04, re-test 21 and N-12
+(`.claude/state/qa-2026-10-18/`).
+
+**Original.**
+- AC-17 says the banner "blocks no content" and measures nothing. At 1330 × 860 it covered the
+  home sentence's "Poland / her birthday / Continue"; at 390 × 844 it took about 45 % of the
+  screen above the AC-48 bar.
+- AC-20's settings panel lists every register entry inline: four phone screens before Save.
+- §13 Q16 is open. AC-47 asks only for `Esc` and focus return; on the home, Menu › Send flowers
+  scrolls to the sentence and leaves the menu open over it.
+- AC-17 and spec 003 A16 each close on `Esc`; one press closed the popup and the banner together.
+- The header is sticky and the AC-48 bar fixed at every height. At 200 % zoom on a 1280 screen
+  (640 × 400) they keep 35 % of the viewport, and the home shows a photograph with no H1.
+
+**Corrected.**
+1. **Where the banner sits (item 1A).** From `md` up it is a card at the inline-end bottom
+   corner, 420 px wide, 32 px from the inline-end and block-end edges. Below `md` it is a top
+   sheet in the language popup's slot (spec 003 A16 clause 2): top edge at y 0, at most 260 CSS px
+   tall, its three answers in one row of 44 px buttons. It shows only after the popup has closed
+   (spec 003 AC-28 (f)). While it shows below `md` it covers the header's Menu, as the popup does,
+   and the page under it still scrolls. AC-17's other clauses and AC-20's equal prominence are
+   unchanged.
+2. **The settings fold (item 2A).** "Choose" opens three group rows (Essential with a locked
+   switch, Analytics, Marketing), each with its name, purpose and switch. Under each row a native
+   disclosure, closed when the panel opens, lists that group's `src/config/cookies.ts` entries
+   with purpose and lifetime. Save is pinned at the panel's foot. From `md` up the panel grows
+   from the corner card, 420 px wide and at most the viewport height minus 64 px. Below `md` it
+   is the top sheet, at most 780 CSS px tall at 390 × 844. Either way it scrolls inside itself.
+   The disclosure label and the locked switch's word are TASK-251's consent batch: they ship only
+   with founder-approved text, because `en-gb`'s unreviewed share has no headroom (spec 003 A17),
+   so the build row waits for that approval.
+3. **The open phone Menu (item 3A; answers §13 Q16).** With JavaScript on, below `md`:
+   - while the Menu is open a scrim dims the page below the header, and a tap on it closes the
+     Menu;
+   - focus stays inside the open Menu and its summary; `Esc` closes it and returns focus to the
+     summary (unchanged);
+   - activating Send flowers closes the Menu;
+   - while open, the summary shows a close mark and its accessible name is a close label: a
+     reviewed "Close" key reused, as A-founder-2026-10-18a reused `nav.categories.label`, or a new
+     `nav.menu.close` only with founder-approved text.
+
+   **Send flowers on the home, at every width:** it scrolls the sentence letter into view below
+   the header and moves focus to the letter's first choice ("my mum"). Elsewhere it stays a link
+   to the home's `#send`. With JavaScript off the `<details>` Menu and the `#send` link work as
+   today.
+4. **One `Esc`, one layer (item 4A).** Overlays form a stack, and one `Esc` press acts on the top
+   layer only. The banner mounts only after the language popup's close and ignores the key press
+   that closed it. With both pending, the first `Esc` closes the popup (spec 003 A16: `fo_locale`
+   is set), the banner then shows, and a second `Esc` closes the banner without recording a
+   decision (AC-17).
+5. **Short screens (item 6A).** When the viewport is under 500 CSS px tall
+   (`(max-height: 500px)`, at any width), the header is not sticky, the AC-48 bar is not drawn,
+   and the home cover is capped at the viewport height minus the header, so the H1 is on the
+   first screen. At 500 px tall and above, nothing changes (390 × 844 included). AC-48's twin
+   rule is why the bar can go: every action in it has a twin in the flow. The rule is CSS only,
+   and the header's box stays identical before and after hydration (AC-7).
+6. **Design.** The designer draws 1A, 2A, 3A and 6A into `chrome-desktop`, `chrome-mobile` and
+   `system/components.dc.html`'s consent sheet, and marks README rows 1 to 6 and 8 answered.
+   AC-27's consent baselines (banner shown, settings open) are re-taken by the build task.
+
+**SEO.** Chrome only. No URL, link, canonical, robots, hreflang, sitemap or schema change; the
+Menu's links stay in the server HTML, so AC-14's crawl is unchanged. The banner no longer covers
+the home's H1 or letter. The focus and scrim behaviour lives in the Menu's existing island, which
+is in A-founder-2026-10-15b's deferred set; a tap before it loads is honoured by the native
+`<details>`. The consent banner stays outside that set. The 500 px rule does not fire on
+Lighthouse's viewports, and nothing lays out after load, so CLS and LCP are unchanged.
+**i18n.** No unreviewed key ships in `en-gb`: the new words (clauses 2 and 3) wait for the
+founder's copy batch. Corners and insets are logical (`inline-end`, `block-end`), so `/ar-XB`
+mirrors the corner card. German labels wrap inside the 420 px card; nothing truncates.
+**Compliance.** Consent: Accept, Reject and Choose keep equal prominence (AC-20); nothing is
+pre-enabled; `Esc` still records nothing (§8); the banner stops blocking content (AC-17); every
+cookie's purpose and lifetime stays one tap away inside the choice (AC-20). Accessibility (WCAG
+2.2 AA): focus is kept inside the open Menu and `Esc` always leaves it, so there is no keyboard
+trap (2.1.2); one `Esc` per layer keeps both overlays dismissible (1.4.13); the short-screen rule
+serves reflow at 200 % (1.4.4, 1.4.10). No data flow changes; `fo_consent`'s lifetimes are
+unchanged; the RoPA is unchanged.
+
+**§13 Q16:** resolved by clause 3.
+
+**AC-17 amended.** It gains: "On `/en` with no `fo_consent` and a valid `fo_locale`, at 1440 ×
+900, 1330 × 860, 1280 × 800 and 390 × 844, the banner's box intersects neither the H1's, the
+sentence letter's nor the AC-48 bar's. From `md` up its inline-end and block-end edges are 32 ± 1
+px from the viewport's and its width is 420 ± 1 px; below `md` its top edge is at y 0 and its
+height is ≤ 260 CSS px. With the language popup and the banner both pending, one `Esc` closes the
+popup only; the banner then shows, and a second `Esc` closes it with no `fo_consent` set."
+
+**AC-20 amended.** Its last clause reads: "the settings panel lists every register entry in each
+category with its purpose and lifetime, inside that category's disclosure, closed when the panel
+opens; at 390 × 844 the open panel is ≤ 780 CSS px tall and its Save control lies inside the
+viewport without scrolling; from `md` up the panel is at most the viewport height minus 64 px and
+its Save control lies inside it."
+
+**AC-47 amended.** It gains, with JavaScript enabled at 390 × 844 and 360 × 640: "while the Menu
+is open a scrim covers the page below the header, and a tap on it closes the Menu; Tab and
+Shift+Tab keep focus inside the Menu and its summary; activating Send flowers closes the Menu, and
+on the home the sentence letter's top lies below the header and focus is on its first choice;
+elsewhere Send flowers' `href` is the home's `#send`; the open summary's accessible name is the
+close label." And: "at 640 × 400 and 844 × 390 the header's computed `position` is neither
+`sticky` nor `fixed`, and on `/en` the H1's box lies inside the first viewport; at 390 × 844 and
+1440 × 900 the header is sticky as before."
+
+**AC-48 amended.** It gains: "at 640 × 400 and 844 × 390, no bar is displayed on a page that
+displays one at 390 × 844."
+
+**T-19 amended.** It gains the banner's boxes at AC-17's four sizes and the two-`Esc` sequence.
+Red with the banner placed over the sentence letter at 1330 × 860, and red with one `Esc` closing
+both overlays.
+
+**T-22 amended.** It gains the closed disclosures, the panel heights and Save inside the viewport,
+and still finds every register entry in the DOM. Red with the disclosures open on load (the phone
+panel over 780 px).
+
+**T-52 amended.** It gains the scrim tap, focus containment, Send flowers closing the Menu and its
+focus target on the home, the close label, and the short-screen header. Red with the Menu left
+open after Send flowers, and red with the header sticky at 640 × 400.
+
+**T-53 amended.** It gains no bar at 640 × 400 and 844 × 390, and the bar at 390 × 844. Red with
+the `max-height` rule removed.
+
+Open for the founder: the wording of the new consent and Menu labels goes to the founder with
+TASK-251's copy batch (clauses 2 and 3).
