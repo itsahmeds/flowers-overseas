@@ -107,6 +107,26 @@ describe("motion 6 (A-founder-2026-10-19e (e), (f)): every pill is a `fo-pill`",
     expect(secondary).toContain("[--fo-pill-inset:1.5px]");
   });
 
+  // The hover colour per variant, each one the colour it snapped to before (clause 1 (e)).
+  const HOVER_COLOUR = {
+    primary: "[--fo-pill-hover:var(--color-accent-strong)]",
+    accent: "[--fo-pill-hover:var(--color-accent-strong)]",
+    secondary: "[--fo-pill-hover:var(--color-surface-raised)]",
+    danger: "[--fo-pill-hover:var(--color-danger-strong)]",
+  } as const;
+  for (const [variant, colour] of Object.entries(HOVER_COLOUR)) {
+    it(`${variant}: its layer fades to ${colour}`, () => {
+      const classes = (
+        /class="([^"]*)"/.exec(
+          renderToStaticMarkup(
+            <Button variant={variant as keyof typeof HOVER_COLOUR}>x</Button>,
+          ),
+        )?.[1] ?? ""
+      ).split(" ");
+      expect(classes).toContain(colour);
+    });
+  }
+
   it("gives `quiet` and a disabled pill no layer", () => {
     expect(
       renderToStaticMarkup(<Button variant="quiet">x</Button>),
@@ -180,6 +200,10 @@ describe("motion 6's card layers (A-founder-2026-10-19e (c), (d); T-48 unit)", (
       /<bdi>Amber Hour<\/bdi><span aria-hidden="true" data-fo-card-line=""><\/span><\/h2>/,
     );
     expect(html).not.toContain("group-hover:underline");
+    // The heading is the positioned, name-wide box the line sits under (clause 1 (d)).
+    expect(html).toMatch(
+      /<h2 class="[^"]*\brelative w-fit\b[^"]*"><bdi>Amber Hour<\/bdi>/,
+    );
     // The shadow layer is the sibling just before the photograph's clipped box.
     expect(html).toMatch(
       /<div class="relative"><span aria-hidden="true" data-fo-card-shadow=""><\/span><div class="photo overflow-hidden/,
@@ -220,6 +244,10 @@ describe("motion 6's card layers (A-founder-2026-10-19e (c), (d); T-48 unit)", (
       anyShadow: true,
       anyLine: true,
     });
+    const linkedHtml = render(<TrendingRow locale="en" productPages={pages} />);
+    expect(
+      linkedHtml.match(/<h3 class="[^"]*\brelative w-fit\b[^"]*">/g),
+    ).toHaveLength(5);
     expect(cardParts(render(<TrendingRow locale="en" />))).toEqual({
       motion: 0,
       shadows: 0,

@@ -619,6 +619,78 @@ function motion6Violations(
     "1",
     [REDUCE, FINE],
   );
+
+  // The layers' paint and place, at rest and outside any media query (PR 285 round 1, HOLES 2
+  // and 4): the pill's layer under its label in the variant's colours, and the shadow layer on
+  // the photograph's box with the photograph's own radii (`rounded-photo-s md:rounded-photo`).
+  const atRest = (selector: string, property: string): string | undefined =>
+    rules
+      .filter(
+        (rule) =>
+          rule.selector === selector &&
+          !rule.context.some((at) => at.startsWith("@media")) &&
+          rule.declarations.has(property),
+      )
+      .at(-1)
+      ?.declarations.get(property);
+  const PAINT: readonly [string, string, string, string][] = [
+    ["pill isolation", ".fo-pill", "isolation", "isolate"],
+    ["pill layer under label", ".fo-pill::before", "z-index", "-1"],
+    [
+      "pill layer inset",
+      ".fo-pill::before",
+      "inset",
+      "var(--fo-pill-inset, 0)",
+    ],
+    [
+      "pill layer colour",
+      ".fo-pill::before",
+      "background-color",
+      "var(--fo-pill-hover)",
+    ],
+    [
+      "pill pressed colour",
+      ".fo-pill:active::before",
+      "background-color",
+      "var(--fo-pill-active, var(--fo-pill-hover))",
+    ],
+    ["shadow inset", "[data-fo-card-shadow]", "inset", "0"],
+    [
+      "shadow radius",
+      "[data-fo-card-shadow]",
+      "border-radius",
+      "var(--radius-photo-s)",
+    ],
+  ];
+  for (const [name, selector, property, expected] of PAINT) {
+    if (atRest(selector, property) !== expected) found.push(name);
+  }
+  expectValue(
+    "shadow radius md",
+    "[data-fo-card-shadow]",
+    "border-radius",
+    "var(--radius-photo)",
+    [(at) => at.includes("min-width: 48rem")],
+  );
+
+  // (f) The press applies on every pointer, touch included: under `no-preference`, never behind
+  // a hover or fine-pointer query.
+  const presses = rules.filter(
+    (rule) =>
+      rule.selector === ".fo-pill:active" && rule.declarations.has("transform"),
+  );
+  if (
+    presses.length === 0 ||
+    presses.some(
+      (rule) =>
+        !rule.context.some(MOVES) ||
+        rule.context.some(
+          (at) => at.includes("(hover: hover)") || at.includes("pointer: fine"),
+        ),
+    )
+  ) {
+    found.push("press on every pointer");
+  }
   return found;
 }
 
@@ -771,6 +843,71 @@ describe("A-founder-2026-10-19e: motion 6, premium, value for value (T-48)", () 
       ],
       "reduce line rest",
     ],
+    ...(
+      [
+        [
+          "`.fo-pill` without `isolation`",
+          /(\.fo-pill \{\s*position: relative;\s*)isolation: isolate;/,
+          "$1",
+          "pill isolation",
+        ],
+        [
+          "the layer over the label",
+          /(\.fo-pill::before \{[^}]*?z-index: )-1;/,
+          "$11;",
+          "pill layer under label",
+        ],
+        [
+          "the layer's inset at 0 for every variant",
+          /inset: var\(--fo-pill-inset, 0\);/,
+          "inset: 0;",
+          "pill layer inset",
+        ],
+        [
+          "the layer in a fixed colour",
+          /(\.fo-pill::before \{[^}]*?background-color: )var\(--fo-pill-hover\);/,
+          "$1var(--color-accent-strong);",
+          "pill layer colour",
+        ],
+        [
+          "the pressed layer in the hover colour only",
+          /background-color: var\(--fo-pill-active, var\(--fo-pill-hover\)\);/,
+          "background-color: var(--fo-pill-hover);",
+          "pill pressed colour",
+        ],
+        [
+          "the shadow layer's inset at -40px",
+          /(\[data-fo-card-shadow\] \{\s*position: absolute;\s*inset: )0;/,
+          "$1-40px;",
+          "shadow inset",
+        ],
+        [
+          "the shadow layer's radius at 0",
+          /(\[data-fo-card-shadow\] \{[^}]*?border-radius: )var\(--radius-photo-s\);/,
+          "$10;",
+          "shadow radius",
+        ],
+        [
+          "the shadow layer's md radius at 0",
+          /(@media \(min-width: 48rem\) \{\s*\[data-fo-card-shadow\] \{\s*border-radius: )var\(--radius-photo\);/,
+          "$10;",
+          "shadow radius md",
+        ],
+        [
+          "the press wrapped in the fine-pointer query",
+          /(\.fo-pill:active \{\s*transform: scale\(0\.98\);[^}]*\})/,
+          "@media (hover: hover) and (pointer: fine) { $1 }",
+          "press on every pointer",
+        ],
+      ] as const
+    ).map(
+      ([what, from, to, red]) =>
+        [what, () => [swap(from, to), tokenFiles], red] as [
+          string,
+          () => [string, readonly string[]],
+          string,
+        ],
+    ),
   ];
 
   for (const [what, mutate, red] of MUTATIONS) {

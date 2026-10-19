@@ -18,6 +18,10 @@ Spec 004 §14 A23 clause 11, A24 clause 9; AC-44, AC-6 (T-48, T-06). Design: `do
 ## Carry-forwards
 
 - From PR 221: HOLE 5b CARRIED (the `defaultPrevented` guard's Playwright mutation) belongs to TASK-244, not here.
+- From PR 285 round 1 (reviewer, HOLE 1 part ACCEPTABLE): an e2e rect check of the name's line against the `<bdi>` (clause 1 (d)'s "5 px under the baseline"; the line sits at the heading's `inset-block-end: 0`, so its place depends on `--line-height-title` and is measured nowhere).
+- From PR 285 round 1 (reviewer, HOLE 2 part ACCEPTABLE): an `elementFromPoint` or pixel check of the pill's layer paint; the unit pins the paint values instead.
+- From PR 285 round 1 (reviewer, HOLE 4 part ACCEPTABLE): an e2e check that the shadow layer's rect equals the photograph's box; the unit pins `inset: 0` and the photo box's two radius tokens instead.
+- From PR 285 round 1 (reviewer, nit 3): `tests/e2e/hub-first-screens.spec.ts`'s AC-45 probe lacks the resting-shadow exemption `listing-first-screen.spec.ts` gained; green today only because no hub first screen holds a moving card. Share `calmProbe` or carry the exemption there.
 
 ## Escalations
 
@@ -29,4 +33,4 @@ Spec 004 §14 A23 clause 11, A24 clause 9; AC-44, AC-6 (T-48, T-06). Design: `do
 
 ## Result
 
-PR [#285](https://github.com/itsahmeds/flowers-overseas/pull/285). AC-44 (as A-founder-2026-10-19e amends it) and AC-6: the token in both files, the clause-1 CSS, the two card layers on `ProductCard` (not priority) and every linked trending card, the `fo-pill` layer and press on `Button` and the notice actions. T-48: unit value-for-value cases with each 19e mutation red (13 CSS, plus the priority-guard and pill markup mutations); e2e 6b covers every AC-44 bullet and is judged in CI (no local browser run; no build slot taken). `pnpm gates:cheap`: PASS (7 of 7). Visual baselines: none expected to change (layers rest invisible; hover is not captured).
+PR [#285](https://github.com/itsahmeds/flowers-overseas/pull/285). AC-44 (as A-founder-2026-10-19e amends it) and AC-6: the token in both files, the clause-1 CSS, the two card layers on `ProductCard` (not priority) and every linked trending card, the `fo-pill` layer and press on `Button` and the notice actions. T-48: unit value-for-value cases with each 19e mutation red (13 CSS, plus the priority-guard and pill markup mutations); e2e 6b covers every AC-44 bullet and is judged in CI (no local browser run; no build slot taken). `pnpm gates:cheap`: PASS (7 of 7). CI: head ca43812f green, run 39278891551 (all 26 checks). Round-1 fixes (unit pins for the heading box, the pill layer's paint, the per-variant hover colours, the shadow layer's place and the press on every pointer) follow on the next head; its run is recorded on the PR. Visual baselines: none expected to change (layers rest invisible; hover is not captured).
