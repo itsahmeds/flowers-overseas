@@ -813,8 +813,8 @@ export interface CountryListingResultsProps {
 /**
  * `rowGap` is the phone's gap between the toolbar's rows. On the shop root and the country
  * category (`band`) it is `--spacing-sm` (8 px), 2 px under the artboards' 10, so the first row's
- * prices end inside the 390 × 844 viewport in CI's Linux text (the founder's E-6 ruling, option A,
- * 2026-10-19: "shave about 6 px off the spacing around the filter bar on phones"; rebound AC-34,
+ * prices end inside the 390 × 844 viewport in CI's Linux text (the founder's E-6 ruling, option A:
+ * "shave about 6 px off the spacing around the filter bar on phones"; rebound AC-34,
  * T-49). The occasion keeps the drawn 10 px. From `md` up both use `md:gap-y-[6px]`.
  */
 const TOOLBAR_PLACEMENT = {
