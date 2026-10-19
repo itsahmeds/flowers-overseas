@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-19 03:35Z: worktree `../fo-wt-203` on `task/TASK-203-checkout-draft`; row `in_progress`; PG16 for integration on `127.0.0.1:55203` (embedded-postgres, data in the agent's scratch `impl-203/`). Next: the migration `0015_checkout_draft`.
 
 ## Result
 
