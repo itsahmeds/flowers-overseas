@@ -18,7 +18,8 @@
  *    are full, and the stamp with no page (Andrzejki) is no link and has no lift. Watched red with
  *    the five-column row back at `md`.
  *  - **"Occasions →" (item 3)** beside the heading at 1440 and under it at 390, answering 200.
- *  - **The FAQ (item 4)**: no "All help topics", the first question open.
+ *  - **The FAQ (item 4)**: "All help topics" links to the help page where it exists (spec 041
+ *    AC-21, TASK-182), the first question open.
  *  - **Popular choices on the phone (item 5)**: two columns of five, each card exactly the width its
  *    `sizes` states. Watched red with the scroller back.
  *  - **The destination chips on the phone (item 6)**: one row that scrolls (AC-49).
@@ -410,14 +411,19 @@ test.describe('"Occasions →" links the occasions index (TASK-232 item 3; AC-14
   });
 });
 
-test.describe("the FAQ (TASK-232 item 4; A20)", () => {
-  test('no "All help topics", and the first question open', async ({
+test.describe("the FAQ (TASK-232 item 4; A20; spec 041 AC-21)", () => {
+  test('"All help topics" links to the help page, and the first question open', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await open(page, "/en-gb");
     const faq = page.locator("[data-fo-faq]");
-    await expect(faq).not.toContainText("All help topics");
+    // The help page exists in `en-gb` (TASK-182), so the label is a link to it and the pending
+    // sentence is gone; where the page does not exist the label is not drawn (A20).
+    await expect(
+      faq.getByRole("link", { name: "All help topics" }),
+    ).toHaveAttribute("href", "/en-gb/help");
+    await expect(faq).not.toContainText("Our help pages are being written");
     const open_ = await faq
       .locator("details")
       .evaluateAll((items) =>
