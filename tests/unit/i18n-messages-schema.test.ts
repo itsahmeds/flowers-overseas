@@ -262,7 +262,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-242/243 (spec 003 §14 A-founder-2026-10-15a): head copy without a dash. The approved
     // targets ("specs ok", 2026-10-15; the home title and description by the founder's own words,
     // 2026-10-18) ship `reviewed: false` until the founder's record run attests the exact values.
-    "catalog.descriptor.name",
     // TASK-120's honest-chrome sweep (spec 004 §14 A19, `/review 70`) added eight of these: the
     // gated fallbacks, the FAQ answer's split and the three home sentences it reworded. They are
     // the implementer's wording, proposed to the founder in the task brief's `## Escalations`,
@@ -300,67 +299,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-188 (spec 004 §14 A23 clause 6, Appendix A A1-A5 and A8; A24 clause 10 P4 and P5): the
     // approved hub copy and the two proposed lines, each `reviewed: false` until the founder's own
     // script attests the exact value. The A3 exception keeps the shipped wording under a new key.
-    "categoryHub.about.roses.eyebrow",
-    "categoryHub.about.roses.heading",
-    "categoryHub.deck.bouquet",
-    "categoryHub.deck.plant",
-    "categoryHub.deck.roses",
-    "categoryHub.h1",
-    "checkout.action.toCard",
-    "checkout.action.toReview",
-    "checkout.buyer.country",
-    "checkout.buyer.email",
-    "checkout.buyer.fullName",
-    "checkout.buyer.phone",
-    "checkout.card.blank",
-    "checkout.card.counter",
-    "checkout.card.label",
-    "checkout.card.preview",
-    "checkout.card.previewLabel",
-    "checkout.card.signAs",
-    "checkout.card.signAsHint",
-    "checkout.demo.bannerBody",
-    "checkout.demo.bannerTitle",
-    "checkout.demo.place",
-    "checkout.demo.placing",
-    "checkout.demo.useSample",
-    "checkout.error.addonUnavailable",
-    "checkout.error.countryInvalid",
-    "checkout.error.dateInvalid",
-    "checkout.error.emailInvalid",
-    "checkout.error.invalidCharacters",
-    "checkout.error.phoneInvalid",
-    "checkout.error.placeKindInvalid",
-    "checkout.error.postcodeFormat",
-    "checkout.error.required",
-    "checkout.error.summaryItem",
-    "checkout.error.summaryTitle",
-    "checkout.error.tooLong",
-    "checkout.field.optional",
-    "checkout.placeKind.cemetery",
-    "checkout.placeKind.church",
-    "checkout.placeKind.funeralHome",
-    "checkout.placeKind.home",
-    "checkout.placeKind.hospital",
-    "checkout.placeKind.hotel",
-    "checkout.placeKind.legend",
-    "checkout.placeKind.work",
-    "checkout.price.changed",
-    "checkout.price.confirm",
-    "checkout.progress.card",
-    "checkout.progress.compact",
-    "checkout.progress.label",
-    "checkout.progress.recipient",
-    "checkout.progress.review",
-    "checkout.recipient.phoneNonLocal",
-    "checkout.recipient.phoneReason",
-    "checkout.summary.delivery",
-    "checkout.summary.included",
-    "checkout.summary.mini",
-    "checkout.summary.title",
-    "checkout.summary.total",
-    "checkout.summary.vat",
-    "checkout.summary.vatOf",
     // TASK-176's chrome strings (`company.description`, `company.support.hours`, `nav.send`,
     // `nav.utility.guarantee`, `nav.notice.lead`, `footer.signoff`) were attested by the founder
     // in the 2026-10-04 copy batch ("ok from my end") and are not in this queue.
@@ -375,13 +313,7 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-119's seven `languagePopup.*` strings left this queue on the founder's own
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
-    "destinationsHub.phoneIntro",
-    "meta.error.title",
-    "meta.home.description",
-    "meta.home.title",
-    "meta.notFound.title",
-    "occasionHub.about.birthday.eyebrow",
-    "occasionHub.aboutHeading",
+    // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
@@ -410,15 +342,6 @@ describe("the shipped catalogues and manifests", () => {
     // Poland-specific sentence, the honest blank for an occasion with no computable rule
     // (§14 design round Q6), the lede, the two `<head>` strings and the third column's link
     // label — so they wait here until he ticks them. No `reviewedBy`, by the rule above.
-    "occasionHub.deck.birthday",
-    "occasionHub.productsHeading",
-    "occasionHub.productsHeadingPlain",
-    "occasionsIndex.eyebrow",
-    "occasionsIndex.undatedEyebrow",
-    "shop.card.noPrice",
-    "shop.category.seoTitle",
-    "shop.occasion.seoTitle",
-    "shop.root.seoTitle",
     // TASK-187 (spec 004 §14 A23 clause 6, Appendix A A9 and A10; A24 clause 10 P3): the tile noun,
     // "Change the order" and the phone pager's page line ("Next" reuses the reviewed key, so
     // `en-gb` stays under spec 003's 5 %). A9 and A10 are approved English text;
@@ -426,7 +349,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-172 (spec 009 §14 A11): the trust strip's guarantee name retired as "Fresh-flower
     // promise". The words are in the founder's 2026-10-04 batch (decisions log, item 2) for the
     // header and the home; this key's value waits for his own attestation all the same.
-    "trust.guarantee.name",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {

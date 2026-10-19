@@ -361,9 +361,11 @@
   },
   "catalog.descriptor.name": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "2e0c5344e46934879e95fa4fd15d25ec14de492f9a15e03aa7f2551c907769df",
-    "retained": true
+    "retained": true,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
+    "sourceHash": "2e0c5344e46934879e95fa4fd15d25ec14de492f9a15e03aa7f2551c907769df"
   },
   "catalog.facet.colour.blue": {
     "source": "human",
@@ -1054,7 +1056,9 @@
   },
   "categoryHub.h1": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "0b3c59d0436c6c910a8fc7635b5c027d697aa7432286a5a1423ed15251ac7a85"
   },
   "categoryHub.productsEyebrow": {
@@ -1073,12 +1077,16 @@
   },
   "checkout.action.toCard": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "e7e72c7189411be950a29d5f357b662c01e8f1ae5be41308cb132278d7827949"
   },
   "checkout.action.toReview": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "57bd393cda25c690215eef29e66a6e45b1767903f55cf54ec0ff653293cd4c9e"
   },
   "checkout.address.city": {
@@ -1118,197 +1126,275 @@
   },
   "checkout.buyer.country": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "153538414fe20c15942affaf84b5757db4f006270932a1bb373a4bed6aa77a03"
   },
   "checkout.buyer.email": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
   },
   "checkout.buyer.fullName": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "2c6b2e253c01fb2ed7209c15766745ccee92a35ac8209f544789bdf9500e0944"
   },
   "checkout.buyer.phone": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "807163670bbc384df37a2de03c8850b5e9632b6c3344e72699877edf63144bb6"
   },
   "checkout.card.blank": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "27ef90665972666a4fbaa7eb3ff0f0cf1bf43fb3564aa539869ef0a32ad143e7"
   },
   "checkout.card.counter": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "9fbe29bedb7b98ed5ce51e39de6f8d70f56ce719146500388e58348f98a47bb5"
   },
   "checkout.card.label": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "c0d6c80a4413b3c2e3ebd6ece9ea56d85d3898afacfbff5f9e152b5bc3ab9f14"
   },
   "checkout.card.preview": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "20fb0ab7db7322eb34e36499a9d3c329ace23a20f095ecf2ad8a063f72281b0a"
   },
   "checkout.card.previewLabel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "df5121d7a97e12a8e961d87eebaa46d3d0122433128c1d0947f8956cbafc81d0"
   },
   "checkout.card.signAs": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "db5076a1698055a3d5fde4731fece04176fc56b84203b162cb65e354cc7cb486"
   },
   "checkout.card.signAsHint": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "e9ea567ac3c8ac2a35770d4ec49fd3adf39a334e16dc00568d4f90adb112ad07"
   },
   "checkout.demo.bannerBody": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "88fc72090c529ad4192e5f9592ab776290223708539dd03a0b12243cf433c0e7"
   },
   "checkout.demo.bannerTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "355c9cce443572d57ab8f2363c16f83a860088a00387a1cc0abef77c9b3aee3f"
   },
   "checkout.demo.place": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "e2e95d52cde7d7cb3586ac54e5cff092604c14d734ffdb0fe8092ae03f99762f"
   },
   "checkout.demo.placing": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "0d741551de22b66e26c7a59e93aa11df022023b3b0ed6114855b245b192ec95b"
   },
   "checkout.demo.useSample": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "794fd8c70430b90368310c1bb07ec40fbbedf5a6fd2e419439818e7fe8ec572b"
   },
   "checkout.error.addonUnavailable": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "7aa4c527d2117f4202ed5221acdadb59335d061940281efef95b6a025f76214e"
   },
   "checkout.error.countryInvalid": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "42e90f098f79ee02efdddb4f675c701bd64f082f05aefec4c5024bdd53daf715"
   },
   "checkout.error.dateInvalid": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "c877dfc89c9eb28c1427b49b2203afc21f50c19c7d99d1ec5ede9e87033d4755"
   },
   "checkout.error.emailInvalid": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "929c0095918df137f770326e69892bc8cc4ee165d2de46f083955ecd85cb213d"
   },
   "checkout.error.invalidCharacters": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "6a0ed996abef04708c289f06cc164ee28d4adfed5ae5c9025fba5c71f26d3ac7"
   },
   "checkout.error.phoneInvalid": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "7bae8d5ab5e2c47ceb30838fa70701a8af13002d61b6fb275ac7788b2e06babd"
   },
   "checkout.error.placeKindInvalid": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "14521eb95bf1a8c0d8428e7e9cba7d978c3f0d4167eb00bf57a679c9391bf54b"
   },
   "checkout.error.postcodeFormat": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "c99c6b9448810ca3ee26ede8af1ef2d1d64841c027962ba99d647daef3ad3089"
   },
   "checkout.error.required": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "b5a9ec0ef2e2280a970c20cded12334d50b96a440e71f874d83b8551e454c486"
   },
   "checkout.error.summaryItem": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "5bd7a7102d35039c0ab1f73eb8ed96210cb4dd24e26e4a70db26d8ac91fa8a0b"
   },
   "checkout.error.summaryTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "2f3ceb92553dbf4a92b7e8410e3b169c98080de03d36ca3cb1ead94778873088"
   },
   "checkout.error.tooLong": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "f8decd11fef31cfa3055aa57443d858bbb68d7e8eb58def35dd585532b8d40b2"
   },
   "checkout.field.optional": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "ec91fdd9256cb75ae611249b50cb7eb16533f0fa91b86239ec1d439a1ea033b8"
   },
   "checkout.placeKind.cemetery": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "438303f4099ea5e6befd8682605a1b55152df9068385109d0c7f74613d452cfb"
   },
   "checkout.placeKind.church": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "277d2e5f09a519530427c7550fc1a9ed11fab7ce46872e4016c86d76e2ea0349"
   },
   "checkout.placeKind.funeralHome": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "2651c13148ef6ff387fe0fc40774c823be510acb6eca5ed9d97ecba3a47f1f78"
   },
   "checkout.placeKind.home": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "e05fbfee8656f948da1bcbb4a92edc02fc5471bb18c9e4445e8e32d94a02501c"
   },
   "checkout.placeKind.hospital": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "90b78169db1e8a6f00d28d3bb969d36df0f7a325d3cb3aefe1fc54d280b79af2"
   },
   "checkout.placeKind.hotel": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "0255179fb1234947fdc986e1a765a8f925f575a3c4a656656b260352263174ec"
   },
   "checkout.placeKind.legend": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "365721ac54a77a59b6f13773a12ddfaf6730121a9ec9c5aa9990163762c9bb69"
   },
   "checkout.placeKind.work": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "aaa3bff89055c4268cb7a188d09565d3df6a69da62c3426c2d4b8bb9c7440375"
   },
   "checkout.price.changed": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "ddc26961b94cf9957d95f081d9c302f0c8edeb39fcf89f8a36049239e5eab08a"
   },
   "checkout.price.confirm": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "36df41d8b949d39f12982889732e84ddfd87c4395d601ad01824432d8d63396e"
   },
   "checkout.price.currencyLine": {
@@ -1327,72 +1413,100 @@
   },
   "checkout.progress.card": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "a77512bc628f553885d7db4e3564ae76ebdd024bcd55b20c269bf652fca1bc40"
   },
   "checkout.progress.compact": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "1a7cf78015bc62af0298519254b988c7bbe19f566df614d6fe56864c7a39ea36"
   },
   "checkout.progress.label": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "556239c480cdc2170fc54db6ff2d8c8cb3de009a9093235544d0977b61c942a8"
   },
   "checkout.progress.recipient": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
   },
   "checkout.progress.review": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "9d60841e0a7891df0fd55b24d5c883a5d92ae544808675c2ec84537c12589c49"
   },
   "checkout.recipient.phoneNonLocal": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "c6537a6572bc6cf2ad896785afe5a75ef06909d32fed80aa23bb09c66b67e3f3"
   },
   "checkout.recipient.phoneReason": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "bf4bbcf2dadee5e06833f8521be8c5cc1a0bc5c23f27c0b596c70b855e7939f8"
   },
   "checkout.summary.delivery": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "52bfe584a5fc450539e2aa651b990fa2415060492a243816ab2994292089c6fd"
   },
   "checkout.summary.included": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "7f0f70e643bcb02dfc5f7e678cc06d692e53875ee9ead594e50bae7d3354b305"
   },
   "checkout.summary.mini": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "4c477529c80287f9ee0b15674a1bafca37bdc84f2e28c443b53dbfed6996e489"
   },
   "checkout.summary.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "f159e18f1328d9a0c8e0b461b00da7b511abc472acc4e8b9549ec975fb36cb4b"
   },
   "checkout.summary.total": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "16c6e032c6d9e64e841b58a0298260d9f548fcbe3a8ad8dc475bd977b602898f"
   },
   "checkout.summary.vat": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "7d1e11c5aab8c80b7e6169b91dcb26aa7cc5930e44260f85665c3553029c81d1"
   },
   "checkout.summary.vatOf": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "1a0030dc73d55722861d5d62b9f8dc5c5b4033f09d620c15f2300f5ad50b4bb8"
   },
   "common.beta": {
@@ -3091,17 +3205,23 @@
   },
   "meta.error.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "52eb43219d0299cf643676c618ea5f069bb9d0154e13b3be4e93a5a276e2a57c"
   },
   "meta.home.description": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "78d401815a99feb28962a4344548c7324094ed23aba3f3d028b983de6c670670"
   },
   "meta.home.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "2a7bac0ff89453ea30f76d425523f415c33b0279e9bb044eff1dfad43c59f138"
   },
   "meta.notFound.description": {
@@ -3113,7 +3233,9 @@
   },
   "meta.notFound.title": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "238130dcfec391f52524b2d1be86048cecd2111b77646e0453feb534c82c3efb"
   },
   "nav.account.orders": {
@@ -3370,7 +3492,9 @@
   },
   "occasionHub.productsHeading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "109c0e507b16cb8f827d55146ffe3c8404a6c973ffe44a44ee1070a0c5859e17"
   },
   "occasions.anniversary.name": {
@@ -3753,7 +3877,9 @@
   },
   "shop.card.noPrice": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "df56d1d22013b14a2f19d85f4580b6094f307bc150377c0c4a9363969ae83fa9"
   },
   "shop.cardNote.heading": {
@@ -3780,7 +3906,9 @@
   },
   "shop.category.seoTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "9de410ae3b9bfc254288cd00fea41580e2e7d9de568a27ec2a22b76ad58d0e6a"
   },
   "shop.category.siblingsHeading": {
@@ -3911,7 +4039,9 @@
   },
   "shop.occasion.seoTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "9bc1b17799b0b181b5dba56231b528fbb46be44647ffa81336b4ed62ffaf4f4a"
   },
   "shop.occasion.shopRootLink": {
@@ -4070,7 +4200,9 @@
   },
   "shop.root.seoTitle": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "44d2ff98c5c8a80e809f59968b20708e21de8ec29cefd6ada1d74c3c22d587e7"
   },
   "shop.root.tileCount": {
@@ -4166,7 +4298,9 @@
   },
   "trust.guarantee.name": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "829f4dad5b0879d5ea569ec0bc92579518c8ac53fbe8fffadac2a4d20b982b2a"
   },
   "trust.heading": {
@@ -4206,62 +4340,86 @@
   },
   "occasionHub.deck.birthday": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "9e053580e0d594dabe44d673f78c085d4ecac95724ef9deee4763efc2f8b3a10"
   },
   "occasionHub.productsHeadingPlain": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "8b65d7668eccbf4c6e6123dfc000c5b4dcc66b33cdbd9ec253a1f7a5b117f989"
   },
   "occasionHub.aboutHeading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "a96ae05cf685ff3dce3b894b9eec75c4a69f8c9c6614918fe04e8841a27728d4"
   },
   "occasionHub.about.birthday.eyebrow": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "616e15c52f23e6ba8ab1756c1fa4e262e51cfb86a49f6ebc867d1da06f5c7aa5"
   },
   "categoryHub.deck.roses": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "9ebdc631909fcc688e3e8baee4040eb2ca5645b5b51f5c86bfedc41c71ef4e9f"
   },
   "categoryHub.deck.bouquet": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "d82205c3c16eaee9162a7a79d7c5a1cf29d25bc6e49a31337dceaba142c1035b"
   },
   "categoryHub.deck.plant": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "6154330eb8cb1877888941ab7a2c00d11e833eed26e47bb8593cff71fbcf87a3"
   },
   "categoryHub.about.roses.eyebrow": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "a879d03c3ea91d5ed67613bb4fbb5489842b803423296faeb87e3a2ba97f4e3e"
   },
   "categoryHub.about.roses.heading": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "2f08daa42d3465a978e62cecd605544f6c98cd86d5eff6659490af4864ffbff8"
   },
   "occasionsIndex.eyebrow": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "d96eedd00853777f74a67113274699a8cac52fd9d7df93de2ed9852f04344b66"
   },
   "occasionsIndex.undatedEyebrow": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "661dc70eb68b41708ad5af6916a7317319e7684f5a3165e9ea88f397f6fc8f39"
   },
   "destinationsHub.phoneIntro": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
+    "reviewedAt": "2026-10-19T04:22:38Z",
     "sourceHash": "fcb2b92fcbc41b400242a461b156398dba9b146e8e9b97d8b6307e50392f5577"
   }
 }

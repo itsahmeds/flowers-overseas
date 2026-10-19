@@ -106,7 +106,10 @@ const EN_META = JSON.parse(
     resolve(import.meta.dirname, "../../messages/en.meta.json"),
     "utf8",
   ),
-) as Record<string, { reviewed: boolean; sourceHash: string }>;
+) as Record<
+  string,
+  { reviewed: boolean; reviewedBy?: string; sourceHash: string }
+>;
 
 function valueOf(key: string): unknown {
   return key
@@ -164,7 +167,12 @@ describe("T-40: the approved hub strings, byte for byte (AC-38: A1–A5, A8; A24
     it(`${key} is the approved text, ships unreviewed, and has no em dash`, () => {
       expect(valueOf(key)).toBe(text);
       // The founder attests with his own script; no agent sets `reviewed: true` (A23 clause 6).
-      expect(EN_META[key]?.reviewed, key).toBe(false);
+      // Unreviewed, unless the founder's own `record-approval-batch5.py` run recorded it.
+      const recorded =
+        /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-batch5\.py /u.test(
+          EN_META[key]?.reviewedBy ?? "",
+        );
+      expect(EN_META[key]?.reviewed, key).toBe(recorded);
       expect(EN_META[key]?.sourceHash, key).toBe(
         createHash("sha256").update(text).digest("hex"),
       );
