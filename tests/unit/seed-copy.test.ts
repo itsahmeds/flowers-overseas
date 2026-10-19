@@ -891,8 +891,14 @@ describe("spec 006 §7: the `media.*` and catalogue message keys exist and are f
     expect(catalogue[key]).toBeDefined();
     expect(meta[key]?.retained).toBe(true);
     // `catalog.descriptor.name` became "{name}: {descriptor}" (TASK-243) and waits for the
-    // founder's record run; every other key here stays reviewed.
-    expect(meta[key]?.reviewed).toBe(key !== "catalog.descriptor.name");
+    // founder's own `record-approval-batch5.py` run; every other key here stays reviewed.
+    const recorded =
+      /^founder, \d{4}-\d{2}-\d{2}: ran record-approval-batch5\.py /u.test(
+        meta[key]?.reviewedBy ?? "",
+      );
+    expect(meta[key]?.reviewed).toBe(
+      key !== "catalog.descriptor.name" || recorded,
+    );
   });
 
   it("speaks in the first person and never says `relay`, `partner` or `network`", () => {
