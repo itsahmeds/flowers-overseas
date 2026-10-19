@@ -57,6 +57,26 @@ function totals(report: SeedReport) {
   );
 }
 
+/**
+ * The products the hand-edit cases change, by SKU. The `source = 'real'` case never flips one of
+ * them: a flipped row is left alone by design, so an edit on it reports `updated` 0 (TASK-268).
+ */
+const EDITED_SKU = { putBack: "FO-BQ-001", dryRun: "FO-BQ-002" } as const;
+
+/**
+ * The one row per table the `source = 'real'` case flips: a fixed pick by natural key where the
+ * table has one, never a row another case reads or edits. Never `ORDER BY id` alone: ids are
+ * `gen_random_uuid()`, so an id-ordered pick lands on a different row every run (PR 245's CI, on
+ * Poland; TASK-268's, on the dry-run case's SKU, one run in 84).
+ */
+const REAL_PICK: Record<(typeof SOURCE_TABLES)[number], string> = {
+  country: "iso2 <> 'PL' ORDER BY iso2",
+  product: `sku NOT IN ('${EDITED_SKU.putBack}', '${EDITED_SKU.dryRun}') ORDER BY sku`,
+  country_price: "true ORDER BY id",
+  fulfillment_partner: "true ORDER BY id",
+  partner_catalog_mapping: "true ORDER BY id",
+};
+
 /** Row count and an `updated_at` fingerprint per seeded table. */
 async function fingerprint(
   sql: Sql,
@@ -105,7 +125,7 @@ describe.skipIf(server.url === undefined)(
     }, 120_000);
 
     it("AC-29: a seeded value edited by hand is put back, and updated_at moves only on that row", async () => {
-      await scratch.sql`UPDATE product SET stem_count = stem_count + 1 WHERE sku = 'FO-BQ-001'`;
+      await scratch.sql`UPDATE product SET stem_count = stem_count + 1 WHERE sku = ${EDITED_SKU.putBack}`;
       const report = await runSeed(scratch.sql, plan);
       const product = report.tables.find((t) => t.table === "product");
       expect(product?.updated).toBe(1);
@@ -115,8 +135,8 @@ describe.skipIf(server.url === undefined)(
     it.each(SOURCE_TABLES)(
       "AC-29: a %s row flipped to source = 'real' is left exactly as it is",
       async (table) => {
-        // Never Poland's row: the AC-32 case below reads its seeded VAT rate and cutoff, and an
-        // id-ordered pick lands on it on some runs (PR 245's CI).
+        // Never Poland's row (the AC-32 case below reads its seeded VAT rate and cutoff) and never
+        // a product a later case edits (`REAL_PICK`).
         const edit: Record<(typeof SOURCE_TABLES)[number], string> = {
           country: "vat_rate_bp = 1234",
           product: "stem_count = 99",
@@ -126,7 +146,7 @@ describe.skipIf(server.url === undefined)(
         };
         const [target] = await scratch.sql.unsafe<{ id: string }[]>(
           `UPDATE public."${table}" SET source = 'real', ${edit[table]}
-           WHERE id = (SELECT id FROM public."${table}" WHERE source = 'seed' ${table === "country" ? "AND iso2 <> 'PL'" : ""} ORDER BY id LIMIT 1)
+           WHERE id = (SELECT id FROM public."${table}" WHERE source = 'seed' AND ${REAL_PICK[table]} LIMIT 1)
            RETURNING id`,
         );
         const before = await scratch.sql.unsafe<{ row: unknown }[]>(
@@ -283,7 +303,12 @@ describe.skipIf(server.url === undefined)(
     it("--dry-run writes nothing and reports what a real run would; --only runs the named groups", async () => {
       // One scratch database per file: a second one would queue behind the round-trip suite's
       // exclusive roles lock (`support/scratch-db.ts`).
-      await scratch.sql`UPDATE product SET stem_count = stem_count + 1 WHERE sku = 'FO-BQ-002'`;
+      // The edited row must still be a seeded one, or the seed rightly leaves it alone and the
+      // `updated` 1 below cannot hold (TASK-268).
+      const edited = await scratch.sql<{ source: string }[]>`
+        UPDATE product SET stem_count = stem_count + 1 WHERE sku = ${EDITED_SKU.dryRun}
+        RETURNING source`;
+      expect(edited).toEqual([{ source: "seed" }]);
       const before = await fingerprint(scratch.sql, plan);
       const dry = await runSeed(scratch.sql, plan, { dryRun: true });
       expect(await fingerprint(scratch.sql, plan)).toEqual(before);

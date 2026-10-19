@@ -34,7 +34,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-19: cause found and reproduced on a throwaway PG16: the `source = 'real'` case flips the product with the lowest `gen_random_uuid()` id; one run in 84 that is FO-BQ-002, which the seed then rightly skips, so the dry-run case reads `updated` 0 (forcing the flip onto FO-BQ-002 gives the CI error at `seed.test.ts:295:71` exactly). Fix: fixed pick by natural key that excludes the edited SKUs, plus a precondition assertion. 10/10 green locally; next: 10 more, the mutation, CI.
 
 ## Result
 
