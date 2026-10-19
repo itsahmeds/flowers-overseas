@@ -16,12 +16,18 @@ import { describe, expect, it } from "vitest";
 import {
   checkMap,
   collect,
+  concisePurpose,
   HAND_MAINTAINED_HEADING,
   MAP_PATH,
   MISSING_PURPOSE,
+  PURPOSE_LIMIT,
   purposeOf,
   renderMap,
+  specCell,
   specOf,
+  TESTS_LISTED,
+  testCell,
+  truncate,
 } from "../../scripts/codebase-map.ts";
 
 const repoRoot = resolve(__dirname, "../..");
@@ -190,6 +196,97 @@ describe("purpose and spec extraction", () => {
     );
     expect(specOf("/** Built for spec 003 §5. */")).toBe("spec 003");
     expect(specOf("/** nothing here */")).toBe("—");
+  });
+});
+
+describe("the compact index the generator writes (TASK-275)", () => {
+  it("cuts purposes at 56 characters and names two test files per entry", () => {
+    expect(PURPOSE_LIMIT).toBe(56);
+    expect(TESTS_LISTED).toBe(2);
+  });
+
+  it("cuts a long purpose at a word inside the limit and marks the cut", () => {
+    const long = `${"word ".repeat(20)}end`;
+    const cut = truncate(long);
+    expect(cut).toBe(`${"word ".repeat(11).trimEnd()}…`);
+    expect(cut.length).toBeLessThanOrEqual(PURPOSE_LIMIT + 1);
+    expect(truncate("short enough")).toBe("short enough");
+  });
+
+  it("names two test files without the `tests/` prefix, then counts the rest", () => {
+    expect(
+      testCell([
+        "tests/unit/a.test.ts",
+        "tests/unit/b.test.ts",
+        "tests/unit/c.test.ts",
+        "tests/e2e/d.spec.ts",
+      ]),
+    ).toBe("`unit/a.test.ts`, `unit/b.test.ts` +2");
+    expect(testCell(["tests/unit/a.test.ts", "tests/unit/b.test.ts"])).toBe(
+      "`unit/a.test.ts`, `unit/b.test.ts`",
+    );
+    expect(testCell([])).toBe("—");
+  });
+
+  it("prints the spec column as the number alone", () => {
+    expect(specCell("spec 005")).toBe("005");
+    expect(specCell("spec 015, 016")).toBe("015, 016");
+    expect(specCell("—")).toBe("—");
+  });
+
+  it("drops a parenthetical that cites a spec or a task, and bold markup", () => {
+    expect(
+      concisePurpose(
+        "The only import path into the geo module (spec 007 §5.2; TASK-087)",
+      ),
+    ).toBe("The only import path into the geo module");
+    expect(
+      concisePurpose(
+        "The gallery's live error state (TASK-201; spec 010 AC-14, T-14 component half)",
+      ),
+    ).toBe("The gallery's live error state");
+    expect(
+      concisePurpose(
+        "`/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14)",
+      ),
+    ).toBe("`/{locale}/{segment}` — one route file for one URL depth");
+    expect(
+      concisePurpose(
+        "The gallery (spec 004), its fixtures (TASK-045), and more",
+      ),
+    ).toBe("The gallery, its fixtures, and more");
+  });
+
+  it("keeps `**` inside a code span: a glob is not bold markup", () => {
+    expect(
+      concisePurpose("Every `src/app/**` route file, **one** line each"),
+    ).toBe("Every `src/app/**` route file, one line each");
+    expect(concisePurpose("`a/**/b` and `**/*.ts`")).toBe(
+      "`a/**/b` and `**/*.ts`",
+    );
+  });
+
+  it("leaves spacing before punctuation as the file wrote it", () => {
+    expect(concisePurpose("Ratio a : b ; then c , d")).toBe(
+      "Ratio a : b ; then c , d",
+    );
+  });
+
+  it("keeps a parenthetical that says what the file is for", () => {
+    expect(
+      concisePurpose("Public barrel for `admin` (admin queries and actions)"),
+    ).toBe("Public barrel for `admin` (admin queries and actions)");
+    expect(concisePurpose("Formats (see spec)")).toBe("Formats (see spec)");
+  });
+
+  it("keeps a purpose that is nothing but a citation, so it never renders as TODO", () => {
+    expect(concisePurpose("(spec 001; TASK-001)")).toBe("(spec 001; TASK-001)");
+  });
+
+  it("still strips the barrel's `Owned by:` sentence", () => {
+    expect(concisePurpose("Public barrel for `demo`. Owned by: spec 001")).toBe(
+      "Public barrel for `demo`",
+    );
   });
 });
 

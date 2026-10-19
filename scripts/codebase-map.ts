@@ -36,10 +36,17 @@ export const MISSING_PURPOSE = "TODO purpose";
  * measurement), so the honest lever is a tighter index rather than a wider budget: at 80 the map
  * is 12 086 B, every row still names what the file is for, and the sentence that was cut was
  * never the documentation — the file's own doc comment is.
+ *
+ * 56 since TASK-275: the map had grown to 20 402 B against the 20 480 B hard cap (spec 001 §14
+ * A21), so every PR that added a file tripped it and agents were trimming `@purpose` lines by hand.
+ * The same reasoning holds at 56: the row names what the file is for, the doc comment says the rest.
  */
-export const PURPOSE_LIMIT = 80;
-/** At most this many test files are named per entry, then `+N more`. */
-export const TESTS_LISTED = 3;
+export const PURPOSE_LIMIT = 56;
+/**
+ * At most this many test files are named per entry, then `+N` for the rest. 3 until TASK-275; the
+ * reader opens the barrel's tests from the first two names and finds the rest by the same prefix.
+ */
+export const TESTS_LISTED = 2;
 /** The test layers enumerated at the end of the generated half. */
 export const TEST_LAYERS = [
   "unit",
@@ -154,7 +161,26 @@ function withoutOwner(purpose: string): string {
   return purpose.replace(/\s*Owned by:.*$/, "").replace(/[.\s]+$/, "");
 }
 
-function truncate(text: string, limit = PURPOSE_LIMIT): string {
+/**
+ * The purpose as the map prints it (TASK-275): the spec has its own column and the task trail lives
+ * in the file, so a parenthetical that cites a spec or a task (`(spec 007 §5.2; TASK-087)`) is
+ * dropped, and so is bold markup outside code spans (`src/app/**` is a glob, not bold), before
+ * the line is cut to `PURPOSE_LIMIT`. Every other parenthetical stays: `(admin queries and
+ * actions)` is what the module is for. A purpose that is nothing but a citation is kept whole.
+ */
+export function concisePurpose(purpose: string): string {
+  const whole = withoutOwner(purpose);
+  const concise = whole
+    .replace(/(`[^`]*`)|\*\*/g, (_match, code?: string) => code ?? "")
+    .replace(/\s*\([^()]*\b(?:spec \d{3}|TASK-\d+)[^()]*\)/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[.,;:\s—-]+$/, "");
+  // A purpose that was nothing but a citation keeps it rather than rendering as `TODO purpose`.
+  return concise === "" ? whole : concise;
+}
+
+export function truncate(text: string, limit = PURPOSE_LIMIT): string {
   if (text.length <= limit) return text;
   const cut = text.slice(0, limit);
   const space = cut.lastIndexOf(" ");
@@ -233,7 +259,7 @@ function entryFor(
   scripts?: Map<string, string[]>,
 ): MapEntry {
   const source = readFileSync(join(root, path), "utf8");
-  const purpose = withoutOwner(purposeOf(source));
+  const purpose = concisePurpose(purposeOf(source));
   const script = scripts?.get(path)?.[0];
   return {
     path,
@@ -308,7 +334,13 @@ function testIndex1(
   return new Map([[barrel, [...files].sort()]]);
 }
 
-function testCell(tests: string[]): string {
+/** The spec column: the number alone (`005`, `015, 016`); the header already says "Spec". */
+export function specCell(spec: string): string {
+  return spec.replace(/^spec /, "");
+}
+
+/** The tests column: the first `TESTS_LISTED` files without the `tests/` prefix, then `+N`. */
+export function testCell(tests: string[]): string {
   if (tests.length === 0) return "—";
   const shown = tests
     .slice(0, TESTS_LISTED)
@@ -349,7 +381,7 @@ export function renderGenerated(map: CodebaseMap): string {
       map.modules.map((entry) => [
         `\`${entry.label}\``,
         entry.purpose,
-        entry.spec,
+        specCell(entry.spec),
         testCell(entry.tests),
       ]),
     ),
@@ -361,7 +393,7 @@ export function renderGenerated(map: CodebaseMap): string {
       map.config.map((entry) => [
         `\`${entry.label}\``,
         entry.purpose,
-        entry.spec,
+        specCell(entry.spec),
       ]),
     ),
     "",
@@ -372,7 +404,7 @@ export function renderGenerated(map: CodebaseMap): string {
       map.routes.map((entry) => [
         `\`${entry.label}\``,
         entry.purpose,
-        entry.spec,
+        specCell(entry.spec),
       ]),
     ),
     "",
