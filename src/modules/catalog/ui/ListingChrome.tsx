@@ -810,10 +810,18 @@ export interface CountryListingResultsProps {
   readonly pager?: ReactNode;
 }
 
+/**
+ * `rowGap` is the phone's gap between the toolbar's rows. On the shop root and the country
+ * category (`band`) it is `--spacing-sm` (8 px), 2 px under the artboards' 10, so the first row's
+ * prices end inside the 390 × 844 viewport in CI's Linux text (the founder's E-6 ruling, option A,
+ * 2026-10-19: "shave about 6 px off the spacing around the filter bar on phones"; rebound AC-34,
+ * T-49). The occasion keeps the drawn 10 px. From `md` up both use `md:gap-y-[6px]`.
+ */
 const TOOLBAR_PLACEMENT = {
-  band: { chips: "md:hidden" },
+  band: { chips: "md:hidden", rowGap: "gap-y-sm" },
   column: {
     chips: "md:col-span-full md:row-start-3 md:pt-[4px] lg:row-start-2",
+    rowGap: "gap-y-[10px]",
   },
 } as const;
 
@@ -852,7 +860,7 @@ export function CountryListingResults({
   return (
     <div data-fo-listing-results={toolbar}>
       <div
-        className={`md:border-rule grid gap-y-[10px] md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
+        className={`md:border-rule grid ${place.rowGap} md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
         data-fo-listing-toolbar-band
       >
         <p

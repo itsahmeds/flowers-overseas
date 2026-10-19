@@ -242,6 +242,14 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   to one line on the phone (ellipsis or a smaller name step); (b) a few pixels out of the shop
   root's phone toolbar (for example the chip row's or the sort form's gap); (c) T-49 reads the
   first row's prices at 848 on the shop root. Until it is ruled, CI cannot be green on this PR.
+- **E-6 answered (founder, 2026-10-19, verbatim "C A"; option A as put to him by the
+  orchestrator: "shave about 6 px off the spacing around the filter bar on phones; you won't
+  notice it, and every price fits").** Built: below `md`, on the shop root and the country
+  category only (`CountryListingResults` `toolbar="band"`), the gap between the toolbar's rows
+  goes from 10 px to the `--spacing-sm` token (8 px). The shop root's phone toolbar has three such
+  gaps, so **6 px** come off (local 830.4 → 824.4; CI was 847.9, so about 841.9 expected); the
+  category has two (4 px; 774.4 → 770.4). The country occasion keeps 10 px; from `md` up nothing
+  changes.
 - **Reading taken (not blocking):** on the country occasion the sort form keeps its "Sort by" form,
   as it always had and as PR 236 draws it; "keeps its label 'Change the order'" is read as applying
   to the shop root and the category, whose forms carried it. The shop root shows its chip row below
@@ -321,6 +329,16 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   (3 failed of 2061): T-49 shop root at 390 (847.9, E-6) and `country-occasion.spec.ts` "prints
   the destination's own date" in both projects (`getByText(N1)` met the two renders; fixed to
   read the one `note`, 91bd73aa). **Next:** the E-6 ruling; then re-fire `ci:full`, row to
+  `in_review`.
+
+- 2026-10-19 08:40 to 09:20 PKT (finisher, round 4): rebased on origin/main e970a8ac. TASK-188
+  (PR 262) rewrote the hubs: `OccasionHubPage.tsx` taken from main (its pills sit in the band
+  above the grid already), the hub visual baselines and manifest from main. A dated hub (Mother's
+  Day) now draws its dates table instead of a chip row, so T-37's hub cases move to the Birthday
+  hub in four locales (its `HubPills`, the displayed one of the two renders) and the unit hub case
+  renders Birthday. E-6 built (6 px, above). Local build in the slot (load 5): frame-laptop-band,
+  listing-first-screen and country-occasion 245 passed; a11y country-occasion and
+  country-category 14 passed. **Next:** Linux baselines, `ci:full`, CI's T-49 numbers, row to
   `in_review`.
 
 ## Result

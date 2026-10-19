@@ -450,7 +450,7 @@ test.describe("AC-45 (T-50): calm, not bland", () => {
 const C3_PAGES = [
   {
     locale: "en-gb",
-    pages: [SHOP, CATEGORY, OCCASION, "/en-gb/occasions/mothers-day"],
+    pages: [SHOP, CATEGORY, OCCASION, "/en-gb/occasions/birthday"],
   },
   {
     locale: "en",
@@ -458,7 +458,7 @@ const C3_PAGES = [
       "/en/poland/flowers",
       "/en/poland/flowers/roses",
       "/en/poland/occasions/mothers-day",
-      "/en/occasions/mothers-day",
+      "/en/occasions/birthday",
     ],
   },
   {
@@ -467,7 +467,7 @@ const C3_PAGES = [
       "/de/polen/blumen",
       "/de/polen/blumen/rosen",
       "/de/polen/anlaesse/muttertag",
-      "/de/anlaesse/muttertag",
+      "/de/anlaesse/geburtstag",
     ],
   },
   {
@@ -476,7 +476,7 @@ const C3_PAGES = [
       "/pl/polska/kwiaty",
       "/pl/polska/kwiaty/roze",
       "/pl/polska/okazje/dzien-matki",
-      "/pl/okazje/dzien-matki",
+      "/pl/okazje/urodziny",
     ],
   },
 ] as const;
@@ -517,7 +517,7 @@ async function c3Layout(page: Page): Promise<C3Layout> {
       // (A-founder-2026-10-15c, AC-33 amended).
       [
         "chips",
-        "main [data-fo-listing-chips], main [data-fo-hub-destinations], main [data-fo-listing-categories] > summary",
+        "main [data-fo-listing-chips], main [data-fo-hub-destinations], main [data-fo-hub-pills], main [data-fo-phone-chips], main [data-fo-listing-categories] > summary",
       ],
       ["sort", "main [data-fo-listing-sort-form]"],
       ["grid", "main [data-fo-listing-grid]"],
@@ -526,7 +526,13 @@ async function c3Layout(page: Page): Promise<C3Layout> {
     const found: { name: string; element: Element }[] = [];
     const bottoms: Record<string, { bottom: number; height: number }> = {};
     for (const [name, query] of parts) {
-      const all = Array.from(document.querySelectorAll(query));
+      let all = Array.from(document.querySelectorAll(query));
+      // A hub draws its pills twice, a wrapping row from `md` up and a scroller below it, each
+      // `display: none` at the other width (TASK-188's `HubPills`): the displayed one is the row.
+      if (all.length > 1)
+        all = all.filter(
+          (element) => element.getBoundingClientRect().height > 0,
+        );
       if (all.length === 0) continue;
       if (all.length > 1)
         throw new Error(`${name}: ${String(all.length)} elements`);
