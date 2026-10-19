@@ -340,6 +340,13 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   listing-first-screen and country-occasion 245 passed; a11y country-occasion and
   country-category 14 passed. **Next:** Linux baselines, `ci:full`, CI's T-49 numbers, row to
   `in_review`.
+- 2026-10-19 09:10 to 10:00 PKT (finisher, round 4): Linux baselines from run 39196944580 (full
+  set with its manifest; shop and category mobile looked at, the grid 6 and 4 px higher; the
+  dev-components page carries main's TASK-172/TASK-242 copy; the language popups move by byte
+  noise only). `gates:cheap` PASS on 0548d81f. CI run 39198339615 on 0548d81f: **every job
+  green**, T-49 included. CI fold at 390 × 844: the shop root's first-row price at about 841.9
+  (847.9 before, minus the 6 px shift measured between the two CI-rendered baselines); the
+  category 4 px higher than its passing number; the occasion unchanged. Row `in_review`.
 
 ## Result
 
