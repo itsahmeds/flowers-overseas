@@ -167,6 +167,13 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   `error-document.ts` and `hints.ts` read it, `client-message-graph.test.ts` forbids
   `locales.data.ts` in every client graph, `locales-data.test.ts` pins the mirror, and
   `budget:client-js` scans fetched chunks for 16 `de`/`pl` segment probes.
+- **2026-10-19, E6 (the round-2 docks; to the orchestrator; open).** The binding round-2 dock
+  clause (`/review 270` required change 4) asks for a WhatsApp dock on help, guarantee and
+  delivery, and a Send flowers dock on how it works. Neither is built. The WhatsApp dock needs the
+  support line and WhatsApp link TASK-238 owns (blocked on the founder; PR 229). The Send flowers
+  dock would link to a shop page, but spec 004 AC-48's sticky action bar, the only dock component,
+  takes an in-page `#` anchor only, so it is not a reuse. The orchestrator decides: a primitive
+  change under spec 004, or both docks after TASK-238.
 
 ## Progress
 
@@ -182,29 +189,34 @@ here.
 - 22:25Z: stopped before `gh pr ready` on the coordinator's copy-share heads-up (E1). Next: the founder attests the keys (or the order is changed), then rebase on `origin/main` (TASK-172/PR 265 adds `trust.guarantee.name` to the AC-16 case), ready, `ci:full`.
 - 2026-10-19 06:10Z: rebased on `origin/main` (`dbb3ec64`, copy batch 5); the pinned queue in `i18n-messages-schema.test.ts` is main's set plus this PR's 8 keys. `trust.guarantee.name` joined the AC-16 case (mutation to a German "7-Tage" name went red). Copy share `en-gb` 0.36 % on main, 1.79 % with this PR. Cheap gates and `pages:check` green; ready, `ci:full`.
 - 07:55Z: second rebase (motions PR 221; HomeFaq keeps both `data-fo-reveal` and the help link). CI 39211395643: e2e footer/links/home FAQ suites still expected the unpublished pages (updated), 31 Linux baselines refreshed from run 39215901991 (each looked at), Lighthouse script bytes 468 B over (E5, open).
-- 2026-10-19 09:45Z: AC-52 built (E5 resolved). Mutations watched red: error-document or hints importing `locales.data.ts` again (3 red each), mirror `dir` rtl, `bcp47` one character, `pl` dropped, an import line in the mirror, a launch row added to `locales.data.ts` alone, the empty-probe guard removed, the quoted-literal scan disabled.
+- 2026-10-19 09:45Z: AC-52 built (E5 resolved). Mutations watched red: error-document or hints importing `locales.data.ts` again (3 red each), mirror `dir` rtl, `bcp47` one character, `pl` dropped, an import line in the mirror, a launch row added to `locales.data.ts` alone, the empty-probe guard removed, the quoted-literal scan disabled.- 2026-10-19 round-1 fixes (`/review 270` FAIL, `/break 270` HOLES 1-9): sitemap positive case, head and JSON-LD moved to `modules/seo/info-page-head.ts` with unit and e2e cases, claim patterns widened (photo, "chose") with the A.3 and missed-day allow entries, one case per claim pattern, gate field coverage, `pages:check` on `freshness-claim.ts`, dynamic `import()` in the walk, unroutable-locale case, tautology removed, E6.
 ## Result
 
-PR https://github.com/itsahmeds/flowers-overseas/pull/270 (ready, `ci:full`; E1 resolved by copy
-batch 5: `en-gb` unreviewed share 0.36 % on main, 1.79 % with this PR; Lighthouse script bytes
-468 B over budget, E5 open). Ships
-`src/modules/content` (schemas, parser, provider over `corpus.generated.ts`, `infoPageExists`,
-`listInfoPages`, `infoPageView`, `InfoPage`), `src/config/info-pages.ts`, the claim/scale/price
-patterns moved into `src/config/honesty.ts` (plus the T-16 freshness scan), `pnpm pages:check`
-(13 rules, §11 table) with the `pages-check` CI job, `pnpm pages:index`, the six segment keys, the
-five trust pages in `en`/`en-gb` at depth 2, ten `byRule` page types, BreadcrumbList/FAQPage/
-Organization, `static.xml` rows (indexable pages only; none today, all content `reviewed: false`),
-the `infoPage` link kind with how-it-works, guarantee, help and delivery published, the home FAQ's
-"All help topics" link. Tests: unit `info-pages.test.ts` (44), `pages-check.test.ts` (19),
-`info-page-render.test.tsx` (14), plus 12 updated suites; e2e `info-pages.spec.ts` (CI). `trust.guarantee.name` is
-in AC-16's case since the rebase onto PR 265. Not done here: the PDP guarantee link (E3), AC-12's
-support line (E4), the docks (spec 004 AC-48 primitive takes `#` anchors only), the legal set
-(TASK-183), de/pl, axe, Lighthouse, baselines (TASK-184). Field labels for the founder: "Phone",
-"Status" (new), "Country" and "WhatsApp" (reused reviewed keys).
+PR https://github.com/itsahmeds/flowers-overseas/pull/270. E1 resolved by copy batch 5 (`en-gb`
+unreviewed share 0.36 % on main, 1.79 % with this PR). E5 resolved by spec 003 AC-52 (fix (a)):
+Lighthouse `script.size` on every audited URL is 130,739 B on main `6d4c40b7`, 131,207 B on this
+PR without the fix (run 39211395643) and 129,232 B with it (run 39232236589), budget 131,072 B.
+The two chunks AC-52 (d) names, identified by content in run 39232236589's `preview-build`
+artifact and compressed at Brotli quality 11: the root error chunk (`1x7_8zbkt3n4v.js`, the one
+chunk that renders `<html>` and holds the error copy) is 4,282 B raw, 1,379 B Brotli; the popup
+island's chunk (`2cpdy4k7pb871.js`, the only chunk holding `fo_locale`) is 6,952 B raw, 2,646 B
+Brotli; neither holds a locale path segment. Main's two chunks were not measured (carry-forward
+if wanted).
+
+Ships `src/modules/content` (schemas, parser, provider over `corpus.generated.ts`,
+`infoPageExists`, `listInfoPages`, `infoPageView`, `InfoPage`), `src/config/info-pages.ts`, the
+claim/scale/price patterns in `src/config/honesty.ts` (shared with `corridor:check`),
+`pnpm pages:check` (13 rules, §11 table, freshness via `src/config/freshness-claim.ts`) with the
+`pages-check` CI job, `pnpm pages:index`, the six segment keys, the five trust pages in
+`en`/`en-gb`, ten `byRule` page types, the `<head>` and JSON-LD in `src/modules/seo/info-page-head.ts`,
+`static.xml` rows (indexable pages only; none today), the `infoPage` link kind with the footer
+and home links, and AC-52's client mirror `src/config/locales-client.data.ts`. Not done here: E3
+(PDP guarantee link, new task row), E4 (TASK-238), E6 (docks), the legal set (TASK-183), de/pl,
+axe, Lighthouse on these pages (TASK-184).
 
 Keys for the founder's next copy batch (all `reviewed: false`, en and en-gb):
 `infoPages.status.notYetOpen`, `infoPages.company.notRegistered`, `infoPages.contact.heading`,
 `infoPages.contact.body`, `infoPages.contact.privacy`, `infoPages.contact.phone` ("Phone"),
 `infoPages.delivery.status` ("Status"), `footer.link.deliveryAndPayment`; plus the ten content
-files under `content/pages/` (E2's two rewordings among them). No local build or browser run for
-this rebase: the cheap gates and `pages:check` judge it, CI runs the browser jobs.
+files under `content/pages/` (E2's two rewordings, and the guarantee's three `honestyAllow`
+entries added in round 1, among them).
