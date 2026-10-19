@@ -879,3 +879,12 @@ Test cases (§10 numbering continues; each one is watched red with its subject r
   1. A spaced hyphen or a spaced en dash is banned too ("dashes yes"), so clause 2's third bullet is binding.
   2. "specs ok" approves the wordings in this amendment and the five that cite it as the targets. Each changed text still ships `reviewed: false` until the founder's record run.
 
+### A-founder-2026-10-19c (pointer): one `Esc` closes the popup only; the consent banner follows it (spec 004 §14 A-founder-2026-10-19c clause 4; A16 clause 2; AC-28 (f) and T-28 amended; no new AC or T id)
+
+Status: approved (founder, 2026-10-19). The founder's reply, 2026-10-19 morning, in chat, verbatim: "A ship, approve batch 5, C A, all A"; its "all A" answers TASK-252 item 4 with option A. The reply reached the spec writer through the orchestrator's work order. The rule and its SEO, i18n and compliance notes are spec 004's; this spec owns the popup.
+
+- **A16 clause 2.** "It shows before the consent sheet and never stacks on it" gains: "One `Esc` press closes the popup only. The consent banner mounts after the popup's close and ignores the key press that closed it." The popup's own `Esc`, close button and tap-outside behaviour, and the `fo_locale` it sets, are unchanged.
+- **AC-28 (f) amended.** It gains: "with the popup open on `/en`, one `Esc` closes the popup and sets `fo_locale=en`; the consent banner then shows and is still shown, and no `fo_consent` is set."
+- **T-28 amended.** Its (f) case gains the one-`Esc` step. Red with one `Esc` closing both the popup and the banner.
+- **SEO, i18n, compliance:** spec 004 §14 A-founder-2026-10-19c's notes. No URL, key or data flow change.
+
