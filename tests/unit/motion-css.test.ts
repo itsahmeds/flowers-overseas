@@ -318,3 +318,465 @@ describe("clause 11: no animation library, no Lottie, no canvas, no video", () =
     expect(existsSync(resolve(repoRoot, "src/app"))).toBe(true);
   });
 });
+
+/*
+ * T-48 as spec 004 §14 A-founder-2026-10-19e amends it (TASK-277): motion 6, premium, read rule by
+ * rule from the shipped stylesheet. `motion6Violations` names each clause-1 value it cannot find
+ * where clause 5 puts it; the shipped CSS gives none, and each mutation the amendment lists gives
+ * the one it breaks.
+ */
+const FINE = (at: string): boolean =>
+  at.includes("(hover: hover) and (pointer: fine)");
+const MOVES = (at: string): boolean =>
+  at.includes("prefers-reduced-motion: no-preference");
+const REDUCE = (at: string): boolean =>
+  at.includes("prefers-reduced-motion: reduce");
+
+function motion6Violations(
+  css: string,
+  tokenFiles: readonly string[],
+): string[] {
+  const rules = walk(css).map((rule) => ({
+    ...rule,
+    selector: rule.selector.replaceAll(/\s+/g, " "),
+  }));
+  const found: string[] = [];
+  /** The declaration of `property` on `selector`, in the last rule whose at-rules all `where` allows. */
+  const value = (
+    selector: string,
+    property: string,
+    where: readonly ((at: string) => boolean)[],
+  ): string | undefined =>
+    rules
+      .filter(
+        (rule) =>
+          rule.selector === selector &&
+          where.every((test) => rule.context.some(test)) &&
+          (where.length > 0 || !rule.context.some(REDUCE)) &&
+          rule.declarations.has(property),
+      )
+      .at(-1)
+      ?.declarations.get(property);
+  const expectValue = (
+    name: string,
+    selector: string,
+    property: string,
+    expected: string,
+    where: readonly ((at: string) => boolean)[],
+  ): void => {
+    if (value(selector, property, where) !== expected) found.push(name);
+  };
+
+  // Clause 3: the token, in both files, value for value.
+  if (!tokenFiles.every((text) => /--duration-hover:\s*500ms;/.test(text))) {
+    found.push("token");
+  }
+  // Clause 4: `--duration-hover` only under `[data-fo-card-motion]`.
+  if (
+    rules.some(
+      (rule) =>
+        [...rule.declarations.values()].some((v) =>
+          v.includes("var(--duration-hover)"),
+        ) && !rule.selector.includes("[data-fo-card-motion]"),
+    )
+  ) {
+    found.push("token scope");
+  }
+
+  const CARD = "a[data-fo-card-motion], a[data-fo-card-motion] img";
+  const SHADOW = "a[data-fo-card-motion] [data-fo-card-shadow]";
+  const LINE = "a[data-fo-card-motion] [data-fo-card-line]";
+  const MOVING = [MOVES, FINE];
+  // (a), (b): the link and the photograph.
+  expectValue(
+    "card property",
+    CARD,
+    "transition-property",
+    "transform",
+    MOVING,
+  );
+  expectValue(
+    "card duration",
+    CARD,
+    "transition-duration",
+    "var(--duration-hover)",
+    MOVING,
+  );
+  expectValue(
+    "card curve",
+    CARD,
+    "transition-timing-function",
+    "var(--ease-photo)",
+    MOVING,
+  );
+  expectValue(
+    "lift",
+    "a[data-fo-card-motion]:hover",
+    "transform",
+    "translateY(-4px)",
+    MOVING,
+  );
+  expectValue(
+    "zoom",
+    "a[data-fo-card-motion]:hover img",
+    "transform",
+    "scale(1.06)",
+    MOVING,
+  );
+  // (c): the shadow layer paints its shadow at all times; only its opacity moves.
+  expectValue(
+    "shadow property",
+    SHADOW,
+    "transition-property",
+    "opacity",
+    MOVING,
+  );
+  expectValue(
+    "shadow duration",
+    SHADOW,
+    "transition-duration",
+    "var(--duration-hover)",
+    MOVING,
+  );
+  expectValue(
+    "shadow curve",
+    SHADOW,
+    "transition-timing-function",
+    "var(--ease-photo)",
+    MOVING,
+  );
+  expectValue(
+    "shadow hover",
+    "a[data-fo-card-motion]:hover [data-fo-card-shadow]",
+    "opacity",
+    "1",
+    MOVING,
+  );
+  expectValue("shadow rest", "[data-fo-card-shadow]", "opacity", "0", []);
+  expectValue(
+    "shadow paint",
+    "[data-fo-card-shadow]",
+    "box-shadow",
+    "var(--shadow-letter)",
+    [],
+  );
+  // (d): the name's line, from the inline-start.
+  expectValue(
+    "line property",
+    LINE,
+    "transition-property",
+    "transform",
+    MOVING,
+  );
+  expectValue(
+    "line duration",
+    LINE,
+    "transition-duration",
+    "var(--duration-slow)",
+    MOVING,
+  );
+  expectValue(
+    "line curve",
+    LINE,
+    "transition-timing-function",
+    "var(--ease-emphasised)",
+    MOVING,
+  );
+  expectValue(
+    "line hover",
+    "a[data-fo-card-motion]:hover [data-fo-card-line]",
+    "transform",
+    "scaleX(1)",
+    MOVING,
+  );
+  expectValue("line rest", "[data-fo-card-line]", "transform", "scaleX(0)", []);
+  expectValue(
+    "line origin",
+    "[data-fo-card-line]",
+    "transform-origin",
+    "0 50%",
+    [],
+  );
+  expectValue(
+    "line origin rtl",
+    '[dir="rtl"] [data-fo-card-line]',
+    "transform-origin",
+    "100% 50%",
+    [],
+  );
+  // (e), (f): the pill's layer and its press.
+  expectValue("pill hover", ".fo-pill:hover::before", "opacity", "1", [FINE]);
+  expectValue(
+    "pill layer property",
+    ".fo-pill::before",
+    "transition-property",
+    "opacity",
+    [MOVES],
+  );
+  expectValue(
+    "pill layer duration",
+    ".fo-pill::before",
+    "transition-duration",
+    "var(--duration-base)",
+    [MOVES],
+  );
+  expectValue(
+    "pill layer curve",
+    ".fo-pill::before",
+    "transition-timing-function",
+    "var(--ease-standard)",
+    [MOVES],
+  );
+  expectValue(
+    "pill pressed layer",
+    ".fo-pill:active::before",
+    "transition-duration",
+    "0s",
+    [MOVES],
+  );
+  expectValue("press", ".fo-pill:active", "transform", "scale(0.98)", [MOVES]);
+  expectValue(
+    "press in",
+    ".fo-pill:active",
+    "transition-duration",
+    "var(--duration-fast)",
+    [MOVES],
+  );
+  expectValue(
+    "press in curve",
+    ".fo-pill:active",
+    "transition-timing-function",
+    "var(--ease-standard)",
+    [MOVES],
+  );
+  expectValue(
+    "press release",
+    ".fo-pill",
+    "transition-duration",
+    "var(--duration-base)",
+    [MOVES],
+  );
+  expectValue(
+    "press release curve",
+    ".fo-pill",
+    "transition-timing-function",
+    "var(--ease-emphasised)",
+    [MOVES],
+  );
+  // A pill's colour moves only through its layer: no hover background on the pill itself.
+  if (
+    rules.some(
+      (rule) =>
+        /^\.fo-pill:(hover|active)$/.test(rule.selector) &&
+        rule.declarations.has("background-color"),
+    )
+  ) {
+    found.push("pill background");
+  }
+
+  // Clause 5: fine pointer only, and reduced motion off.
+  for (const rule of rules) {
+    const card = rule.selector.includes("[data-fo-card-motion]");
+    const hover = rule.selector.includes(":hover");
+    const moving =
+      rule.declarations.has("transform") ||
+      rule.declarations.has("transition-property");
+    if (
+      (card || (hover && rule.selector.includes(".fo-pill"))) &&
+      !rule.context.some(FINE)
+    ) {
+      found.push(`fine pointer: ${rule.selector}`);
+    }
+    if (
+      (card || rule.selector.startsWith(".fo-pill")) &&
+      moving &&
+      !rule.context.some(MOVES) &&
+      !(rule.context.some(REDUCE) && rule.selector === "[data-fo-card-line]")
+    ) {
+      found.push(`reduced motion: ${rule.selector}`);
+    }
+    if (
+      rule.declarations.has("will-change") &&
+      !/:(hover|active)/.test(rule.selector)
+    ) {
+      found.push(`will-change at rest: ${rule.selector}`);
+    }
+  }
+  expectValue(
+    "reduce line rest",
+    "[data-fo-card-line]",
+    "transform",
+    "scaleX(1)",
+    [REDUCE],
+  );
+  expectValue("reduce line hidden", "[data-fo-card-line]", "opacity", "0", [
+    REDUCE,
+  ]);
+  expectValue(
+    "reduce line hover",
+    "a[data-fo-card-motion]:hover [data-fo-card-line]",
+    "opacity",
+    "1",
+    [REDUCE, FINE],
+  );
+  return found;
+}
+
+describe("A-founder-2026-10-19e: motion 6, premium, value for value (T-48)", () => {
+  const tokenFiles = [
+    "src/app/globals.css",
+    "docs/design/system/tokens.css",
+  ].map((file) => readFileSync(resolve(repoRoot, file), "utf8"));
+  const swap = (from: string | RegExp, to: string): string => {
+    const mutated = shipped.replace(from, to);
+    expect(mutated, `mutation ${String(from)}`).not.toBe(shipped);
+    return mutated;
+  };
+
+  it("finds every value of clause 1 where clause 5 puts it", () => {
+    expect(motion6Violations(shipped, tokenFiles)).toEqual([]);
+  });
+
+  it("declares `--duration-hover` as exactly 500ms in both files", () => {
+    for (const text of tokenFiles)
+      expect(text).toMatch(/--duration-hover:\s*500ms;/);
+  });
+
+  const MUTATIONS: readonly [
+    string,
+    () => [string, readonly string[]],
+    string,
+  ][] = [
+    [
+      "the lift back to -2px",
+      () => [swap("translateY(-4px)", "translateY(-2px)"), tokenFiles],
+      "lift",
+    ],
+    [
+      "the zoom back to 1.03",
+      () => [
+        swap(
+          /(a\[data-fo-card-motion\]:hover img \{\s*transform: )scale\(1\.06\)/,
+          "$1scale(1.03)",
+        ),
+        tokenFiles,
+      ],
+      "zoom",
+    ],
+    [
+      "`--duration-hover` at 400ms",
+      () => [
+        shipped,
+        tokenFiles.map((t) =>
+          t.replace("--duration-hover: 500ms", "--duration-hover: 400ms"),
+        ),
+      ],
+      "token",
+    ],
+    [
+      "`--duration-hover` in one file only",
+      () => [shipped, [tokenFiles[0] ?? "", ""]],
+      "token",
+    ],
+    [
+      "the card's curve set to `--ease-standard`",
+      () => [
+        swap(
+          /(a\[data-fo-card-motion\] img \{[^}]*?)var\(--ease-photo\)/,
+          "$1var(--ease-standard)",
+        ),
+        tokenFiles,
+      ],
+      "card curve",
+    ],
+    [
+      "a `box-shadow` transition in place of the layer's opacity",
+      () => [
+        swap(
+          /(a\[data-fo-card-motion\] \[data-fo-card-shadow\] \{\s*transition-property: )opacity/,
+          "$1box-shadow",
+        ),
+        tokenFiles,
+      ],
+      "shadow property",
+    ],
+    [
+      'the line\'s origin at 100% 50% without `dir="rtl"`',
+      () => [
+        swap(
+          /(\[data-fo-card-line\] \{[^}]*?transform-origin: )0 50%;/,
+          "$1100% 50%;",
+        ),
+        tokenFiles,
+      ],
+      "line origin",
+    ],
+    [
+      "the line at `--duration-base`",
+      () => [
+        swap(
+          /(a\[data-fo-card-motion\] \[data-fo-card-line\] \{[^}]*?)var\(--duration-slow\)/,
+          "$1var(--duration-base)",
+        ),
+        tokenFiles,
+      ],
+      "line duration",
+    ],
+    [
+      "the press release at `--duration-fast`",
+      () => [
+        swap(
+          /(\.fo-pill \{\s*transition-property: transform;\s*transition-duration: )var\(--duration-base\)/,
+          "$1var(--duration-fast)",
+        ),
+        tokenFiles,
+      ],
+      "press release",
+    ],
+    [
+      "the pill's hover back to a `background-color` change",
+      () => [
+        `${shipped}\n.fo-pill:hover { background-color: var(--color-accent-strong); }`,
+        tokenFiles,
+      ],
+      "pill background",
+    ],
+    [
+      '`--duration-hover` used on `[data-fo-consent-sheet="fixed"]`',
+      () => [
+        `${shipped}\n[data-fo-consent-sheet="fixed"] { transition-duration: var(--duration-hover); }`,
+        tokenFiles,
+      ],
+      "token scope",
+    ],
+    [
+      "the card rules moved out of `(hover: hover) and (pointer: fine)`",
+      () => [
+        swap(
+          "@media (hover: hover) and (pointer: fine) {\n    a[data-fo-card-motion],",
+          "@media (hover: hover) {\n    a[data-fo-card-motion],",
+        ),
+        tokenFiles,
+      ],
+      "lift",
+    ],
+    [
+      "the line's resting `scaleX(1)` dropped under reduce",
+      () => [
+        swap(
+          /(@media \(prefers-reduced-motion: reduce\) \{\s*\[data-fo-card-line\] \{\s*)transform: scaleX\(1\);/,
+          "$1",
+        ),
+        tokenFiles,
+      ],
+      "reduce line rest",
+    ],
+  ];
+
+  for (const [what, mutate, red] of MUTATIONS) {
+    it(`goes red on ${red} with ${what}`, () => {
+      const [css, tokens] = mutate();
+      expect(motion6Violations(css, tokens)).toContain(red);
+    });
+  }
+});

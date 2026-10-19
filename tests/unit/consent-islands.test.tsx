@@ -217,9 +217,22 @@ describe("the sheet's control skin matches the design system's `Button`", () => 
     "rounded-full",
     "font-bold",
     "leading-[1.1]",
-    "hover:bg-surface-raised",
-    "active:bg-surface-muted",
   ];
+
+  // Spec 004 §14 A-founder-2026-10-19e clause 2: `Button`'s pills fade a layer in the same two
+  // colours (motion 6, premium); the consent banner's answer pills keep today's hover and press
+  // until the founder asks for them to match (open item (i)).
+  it("keeps the sheet's own hover and press, in the colours `Button`'s layer fades to", () => {
+    for (const markup of [control, small]) {
+      expect(markup).toContain("hover:bg-surface-raised");
+      expect(markup).toContain("active:bg-surface-muted");
+      expect(markup).not.toContain("fo-pill");
+    }
+    for (const markup of [secondary, secondarySmall]) {
+      expect(markup).toContain("[--fo-pill-hover:var(--color-surface-raised)]");
+      expect(markup).toContain("[--fo-pill-active:var(--color-surface-muted)]");
+    }
+  });
 
   it("shares every skin utility with `Button` at the default size", () => {
     for (const utility of [

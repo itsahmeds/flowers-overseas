@@ -71,9 +71,9 @@ export const NOTICE_ACTIONS = "gap-md flex flex-wrap items-center";
  * class list, so a change to the design system reaches the failure pages too.
  */
 export const NOTICE_ACTION_BASE =
-  "inline-flex min-h-(--control-md) cursor-pointer items-center justify-center gap-[10px] rounded-full px-[28px] text-body-s font-bold leading-[1.1] whitespace-nowrap transition-transform motion-fast ease-standard select-none";
-export const NOTICE_ACTION_PRIMARY = `${NOTICE_ACTION_BASE} bg-accent text-on-accent hover:bg-accent-strong active:bg-accent-strong motion-safe:active:scale-[0.98]`;
-export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] hover:bg-surface-raised active:bg-surface-muted motion-safe:active:scale-[0.98]`;
+  "inline-flex min-h-(--control-md) cursor-pointer items-center justify-center gap-[10px] rounded-full px-[28px] text-body-s font-bold leading-[1.1] whitespace-nowrap select-none";
+export const NOTICE_ACTION_PRIMARY = `${NOTICE_ACTION_BASE} bg-accent text-on-accent fo-pill [--fo-pill-hover:var(--color-accent-strong)]`;
+export const NOTICE_ACTION_SECONDARY = `${NOTICE_ACTION_BASE} bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] fo-pill [--fo-pill-hover:var(--color-surface-raised)] [--fo-pill-active:var(--color-surface-muted)] [--fo-pill-inset:1.5px]`;
 
 /*
  * The v2 error letter (`docs/design/wireframes/errors-{desktop,mobile}.dc.html`; TASK-179): the

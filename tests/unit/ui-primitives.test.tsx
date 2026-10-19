@@ -234,8 +234,12 @@ describe("Button", () => {
   it("renders the pointer states statically for the gallery, with the same classes", () => {
     const hover = renderToStaticMarkup(<Button forceState="hover">x</Button>);
     const plain = renderToStaticMarkup(<Button>x</Button>);
-    // The forced class is the hover class without the `hover:` variant.
-    expect(plain).toContain("hover:bg-accent-strong");
+    // The live hover is motion 6's layer in the hover colour (spec 004 §14 A-founder-2026-10-19e
+    // (e)); the forced class paints that colour statically.
+    expect(plain).toContain(
+      "fo-pill [--fo-pill-hover:var(--color-accent-strong)]",
+    );
+    expect(plain).not.toContain("hover:bg-");
     expect(plain).not.toMatch(/class="[^"]*(?<!:)\bbg-accent-strong\b/);
     expect(hover).toMatch(/class="[^"]*(?<![:\w-])bg-accent-strong\b/);
   });

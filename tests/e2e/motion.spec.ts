@@ -20,6 +20,9 @@
  *     slot, re-enabled on `pageshow`; under reduced motion the arrow stays;
  *  6. reduced motion: nothing moves; the one change over time is motion 10's opacity, 120 ms or
  *     less (red with that fade at 300 ms); a card neither lifts nor zooms;
+ *  6b. motion 6, premium (spec 004 §14 A-founder-2026-10-19e; TASK-277): every AC-44 bullet it
+ *     adds, read after the link's `transitionend` (or 700 ms), on a fine and a coarse pointer, under
+ *     both preferences, in `en` and `/ar-XB`, the priority card and the header's primary pill;
  *  7. motion 4 plays once, unless the form was touched first;
  *  8. the 2 px bar grows from the inline start, in both directions.
  *
@@ -429,8 +432,11 @@ test.describe("3. CLS 0 across the motions", () => {
         const card = page.locator("a[data-fo-card-motion]").first();
         if ((await card.count()) > 0) {
           await card.scrollIntoViewIfNeeded();
+          // In and out, each past motion 6's 500 ms (A-founder-2026-10-19e).
           await card.hover();
-          await page.waitForTimeout(400);
+          await page.waitForTimeout(700);
+          await page.mouse.move(4, 4);
+          await page.waitForTimeout(700);
         }
       } else {
         await page.evaluate(() => window.scrollTo(0, 0));
@@ -799,41 +805,237 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
   });
 });
 
-/** A card that may move (never the priority card), hovered, after its transition has had time. */
-async function hoveredCard(page: Page) {
-  await page.goto(SHOP);
+/** What motion 6 (premium; spec 004 §14 A-founder-2026-10-19e) moves on a card, read at once. */
+async function cardState(page: Page) {
+  const card = page.locator("a[data-fo-card-motion]").first();
+  return card.evaluate((link) => {
+    const style = (el: Element | null) =>
+      getComputedStyle(el ?? document.documentElement);
+    const img = link.querySelector("img");
+    const shadow = link.querySelector("[data-fo-card-shadow]");
+    const line = link.querySelector("[data-fo-card-line]");
+    const heading = line?.parentElement ?? null;
+    return {
+      card: style(link).transform,
+      photo: style(img).transform,
+      shadow: style(shadow).opacity,
+      shadowPaint: style(shadow).boxShadow,
+      line: style(line).transform,
+      lineOpacity: style(line).opacity,
+      lineOriginX: style(line).transformOrigin.split(" ")[0],
+      lineWidth: `${line?.getBoundingClientRect().width ?? -1}px`,
+      decoration: style(heading).textDecorationLine,
+      timing: [link, img, shadow, line].map((el) => {
+        const s = style(el);
+        return `${s.transitionProperty} ${s.transitionDuration} ${s.transitionTimingFunction}`;
+      }),
+    };
+  });
+}
+
+/**
+ * A card that may move (never the priority card), hovered. The values are read after the link's
+ * `transitionend`, or after 700 ms at most: a fixed wait under 500 ms reads a mid-transition value.
+ */
+async function hoveredCard(page: Page, path = SHOP) {
+  await page.goto(path);
   await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
   const card = page.locator("a[data-fo-card-motion]").first();
   await card.scrollIntoViewIfNeeded();
+  const rest = await cardState(page);
+  const ended = card.evaluate(
+    (link) =>
+      new Promise<void>((done) => {
+        link.addEventListener("transitionend", () => done(), { once: true });
+        setTimeout(done, 700);
+      }),
+  );
   // Near the photograph's top corner: the consent sheet, which lands after load, sits over the
   // foot of the screen and would take the pointer from the card's centre.
   await card.hover({ position: { x: 24, y: 24 } });
-  await page.waitForTimeout(400);
-  return card.evaluate((link) => ({
-    card: getComputedStyle(link).transform,
-    photo: getComputedStyle(link.querySelector("img") ?? link).transform,
-  }));
+  const firstFrame = await card.evaluate(
+    (link) =>
+      new Promise<string>((done) =>
+        requestAnimationFrame(() =>
+          done(
+            getComputedStyle(link.querySelector("[data-fo-card-line]") ?? link)
+              .opacity,
+          ),
+        ),
+      ),
+  );
+  await ended;
+  await page.waitForTimeout(100);
+  return { rest, hovered: await cardState(page), firstFrame };
 }
 
-test.describe("6b. motion 6 under reduced motion: no lift and no zoom", () => {
-  test("a hovered card stays put and its photograph keeps its size", async ({
-    page,
-    isMobile,
-  }) => {
-    test.skip(isMobile, "motion 6 is for a fine pointer's hover only");
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    expect(await hoveredCard(page)).toEqual({ card: "none", photo: "none" });
-  });
+const SHADOW_LETTER =
+  /^rgba\(.+\) 0px 1px 1px 0px, rgba\(.+\) 0px 22px 44px -12px$/;
 
-  test("without the preference the same hover lifts and zooms (not vacuous)", async ({
+test.describe("6b. motion 6, premium (A-founder-2026-10-19e; AC-44, T-48)", () => {
+  test("without the preference a card lifts 4 px, zooms 6 %, casts its shadow and draws its line", async ({
     page,
     isMobile,
   }) => {
     test.skip(isMobile, "motion 6 is for a fine pointer's hover only");
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    const moved = await hoveredCard(page);
-    expect(moved.card).toBe("matrix(1, 0, 0, 1, 0, -2)");
-    expect(moved.photo).toBe("matrix(1.03, 0, 0, 1.03, 0, 0)");
+    const { rest, hovered } = await hoveredCard(page);
+    expect(rest.card).toBe("none");
+    expect(rest.photo).toBe("none");
+    expect(rest.shadow).toBe("0");
+    expect(rest.shadowPaint).toMatch(SHADOW_LETTER);
+    expect(rest.line).toBe("matrix(0, 0, 0, 1, 0, 0)");
+    expect(hovered.card).toBe("matrix(1, 0, 0, 1, 0, -4)");
+    expect(hovered.photo).toBe("matrix(1.06, 0, 0, 1.06, 0, 0)");
+    expect(hovered.shadow).toBe("1");
+    expect(hovered.line).toBe("matrix(1, 0, 0, 1, 0, 0)");
+    expect(hovered.decoration).toBe("none");
+    const PHOTO = "0.5s cubic-bezier(0.2, 0.7, 0.2, 1)";
+    expect(hovered.timing).toEqual([
+      `transform ${PHOTO}`,
+      `transform ${PHOTO}`,
+      `opacity ${PHOTO}`,
+      "transform 0.32s cubic-bezier(0.3, 0, 0, 1)",
+    ]);
+    expect(hovered.lineOriginX).toBe("0px");
+  });
+
+  test("under /ar-XB the line draws from the inline-start, the right", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "motion 6 is for a fine pointer's hover only");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    const { hovered } = await hoveredCard(page, "/ar-XB/poland/flowers");
+    const origin = Number.parseFloat(hovered.lineOriginX ?? "");
+    expect(origin).toBeGreaterThan(0);
+    expect(
+      Math.abs(origin - Number.parseFloat(hovered.lineWidth)),
+    ).toBeLessThan(0.5);
+  });
+
+  test("under reduced motion nothing moves; the line shows at once", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "motion 6 is for a fine pointer's hover only");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const { rest, hovered, firstFrame } = await hoveredCard(page);
+    expect([hovered.card, hovered.photo, hovered.shadow]).toEqual([
+      "none",
+      "none",
+      "0",
+    ]);
+    expect(rest.line).toBe("matrix(1, 0, 0, 1, 0, 0)");
+    expect(rest.lineOpacity).toBe("0");
+    expect(hovered.line).toBe("matrix(1, 0, 0, 1, 0, 0)");
+    expect(firstFrame).toBe("1");
+  });
+
+  test("a tapped card on a coarse pointer neither lifts nor casts a shadow", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the phone project is the coarse pointer");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
+    const card = page.locator("a[data-fo-card-motion]").first();
+    await card.scrollIntoViewIfNeeded();
+    // Stop the navigation, so the tapped card's own styles are read.
+    await card.evaluate((link) =>
+      link.addEventListener("click", (event) => event.preventDefault()),
+    );
+    await card.tap({ position: { x: 24, y: 24 } });
+    await page.waitForTimeout(700);
+    const state = await cardState(page);
+    expect([state.card, state.shadow]).toEqual(["none", "0"]);
+  });
+
+  test("the priority card has no motion, no layers, and underlines its name", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "hover is a fine pointer's");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    const priority = page.locator("[data-fo-product-card] a").first();
+    expect(await priority.getAttribute("data-fo-card-motion")).toBeNull();
+    await expect(
+      priority.locator("[data-fo-card-shadow], [data-fo-card-line]"),
+    ).toHaveCount(0);
+    await priority.hover({ position: { x: 24, y: 24 } });
+    await page.waitForTimeout(100);
+    expect(
+      await priority
+        .locator("h2, h3")
+        .first()
+        .evaluate((h) => getComputedStyle(h).textDecorationLine),
+    ).toBe("underline");
+  });
+
+  test("the header's primary pill fades its layer, presses in 120 ms and settles in 200 ms", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "the header's pill shows from `md` up");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    const pill = page.locator("header a.fo-pill").first();
+    // The page and the variant, named: the header's Send flowers is `Button` `primary`.
+    expect(await pill.getAttribute("class")).toContain(
+      "bg-accent text-on-accent",
+    );
+    const read = () =>
+      pill.evaluate((el) => {
+        const s = getComputedStyle(el);
+        const layer = getComputedStyle(el, "::before");
+        return {
+          transform: s.transform,
+          timing: `${s.transitionDuration} ${s.transitionTimingFunction}`,
+          background: s.backgroundColor,
+          layer: layer.opacity,
+          layerTiming: `${layer.transitionDuration} ${layer.transitionTimingFunction}`,
+        };
+      });
+    const rest = await read();
+    await pill.hover();
+    await page.waitForTimeout(400);
+    const hovered = await read();
+    expect(hovered.layer).toBe("1");
+    expect(hovered.layerTiming).toBe("0.2s cubic-bezier(0.2, 0, 0.13, 1)");
+    expect(hovered.background).toBe(rest.background);
+    await page.mouse.down();
+    await page.waitForTimeout(300);
+    const held = await read();
+    expect(held.transform).toBe("matrix(0.98, 0, 0, 0.98, 0, 0)");
+    expect(held.timing).toBe("0.12s cubic-bezier(0.2, 0, 0.13, 1)");
+    // Released away from the pill, so no navigation starts and its own style is read.
+    await page.mouse.move(4, 400);
+    await page.mouse.up();
+    const released = await read();
+    expect(released.timing).toBe("0.2s cubic-bezier(0.3, 0, 0, 1)");
+    await page.waitForTimeout(400);
+    expect((await read()).transform).toBe("none");
+  });
+
+  test("under reduced motion a held press leaves the pill where it is", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, "the header's pill shows from `md` up");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(SHOP);
+    const pill = page.locator("header a.fo-pill").first();
+    await pill.hover();
+    await page.mouse.down();
+    await page.waitForTimeout(200);
+    const transform = await pill.evaluate(
+      (el) => getComputedStyle(el).transform,
+    );
+    await page.mouse.move(4, 400);
+    await page.mouse.up();
+    expect(transform).toBe("none");
   });
 });
 

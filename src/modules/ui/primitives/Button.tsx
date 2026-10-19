@@ -64,7 +64,7 @@ export type ButtonState = (typeof BUTTON_STATES)[number];
 export type ForcedButtonState = "hover" | "active" | "focus-visible";
 
 const BASE =
-  "inline-flex items-center justify-center gap-[10px] rounded-full font-bold leading-[1.1] whitespace-nowrap transition-transform motion-fast ease-standard select-none";
+  "inline-flex items-center justify-center gap-[10px] rounded-full font-bold leading-[1.1] whitespace-nowrap select-none";
 
 /** Block size and type per size. Every size clears the 44 px target (§5.3). */
 const SIZE_CLASS: Readonly<Record<ButtonSize, string>> = {
@@ -92,25 +92,35 @@ interface VariantSkin {
   readonly active: string;
 }
 
+/**
+ * Motion 6's pill (spec 004 §14 A-founder-2026-10-19e clause 1 (e), (f); TASK-277): `fo-pill` is the
+ * hover layer that fades in the variant's hover colour and the press, `scale(0.98)`, timed in
+ * `globals.css`; the variant's own `background-color` never changes under the pointer. The
+ * secondary layer sits inside the 1.5 px ink ring, which it would otherwise paint over.
+ */
+export const PILL_ACCENT =
+  "fo-pill [--fo-pill-hover:var(--color-accent-strong)]";
+export const PILL_SECONDARY =
+  "fo-pill [--fo-pill-hover:var(--color-surface-raised)] [--fo-pill-active:var(--color-surface-muted)] [--fo-pill-inset:1.5px]";
+export const PILL_DANGER =
+  "fo-pill [--fo-pill-hover:var(--color-danger-strong)]";
+
 const VARIANT_SKIN: Readonly<Record<ButtonVariant, VariantSkin>> = {
   primary: {
     base: "bg-accent text-on-accent",
-    pointer:
-      "hover:bg-accent-strong active:bg-accent-strong motion-safe:active:scale-[0.98]",
+    pointer: PILL_ACCENT,
     hover: "bg-accent-strong",
     active: "bg-accent-strong scale-[0.98]",
   },
   accent: {
     base: "bg-accent text-on-accent",
-    pointer:
-      "hover:bg-accent-strong active:bg-accent-strong motion-safe:active:scale-[0.98]",
+    pointer: PILL_ACCENT,
     hover: "bg-accent-strong",
     active: "bg-accent-strong scale-[0.98]",
   },
   secondary: {
     base: "bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)]",
-    pointer:
-      "hover:bg-surface-raised active:bg-surface-muted motion-safe:active:scale-[0.98]",
+    pointer: PILL_SECONDARY,
     hover: "bg-surface-raised",
     active: "bg-surface-muted scale-[0.98]",
   },
@@ -122,8 +132,7 @@ const VARIANT_SKIN: Readonly<Record<ButtonVariant, VariantSkin>> = {
   },
   danger: {
     base: "bg-danger text-on-danger",
-    pointer:
-      "hover:bg-danger-strong active:bg-danger-strong motion-safe:active:scale-[0.98]",
+    pointer: PILL_DANGER,
     hover: "bg-danger-strong",
     active: "bg-danger-strong scale-[0.98]",
   },
