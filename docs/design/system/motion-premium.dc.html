@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+.fo.M { font-size: var(--text-body-s); }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { margin: 0; font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+.fo h1 em, .fo h2 em { font-style: italic; font-weight: var(--font-weight-display-em); color: var(--color-accent); }
+:where(.fo) :where(button, select, input, textarea) { font: inherit; color: inherit; }
+.vh { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.wrap { padding-inline: var(--gutter); }
+.M .wrap { padding-inline: var(--gutter-s); }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .stub code, .slot code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; }
+.note ul { display: grid; gap: 2px; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+
+/* the band that separates the page from its drawn states */
+.state-band { margin-block-start: var(--space-xl); padding: var(--space-xl) var(--gutter) var(--space-2xl); background: var(--color-paper-3); border-block-start: 1px dashed var(--color-ink-3); }
+.M .state-band { padding: var(--space-lg) var(--gutter-s) var(--space-xl); }
+.state-band > .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.states { display: grid; gap: var(--space-lg); }
+.D .states.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.D .states.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.state { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+.M .state { padding: var(--space-md); }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.stub b { color: var(--color-ink); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); }
+
+/* ================= premium hover, compared (founder ruling 2026-10-19, "premium A") =================
+   Transform and opacity only (spec 004 AC-44). The shadow is a pre-painted layer whose opacity
+   changes; box-shadow itself never animates. The photograph scales inside its clipped box, so CLS
+   stays 0. On the canvas the pointer is simulated: it rests on card 1, then 2, then 3, two seconds
+   each, in both columns at once. In the build each motion plays once per hover. */
+.sheet { padding: var(--space-xl) var(--gutter) var(--space-2xl); display: grid; gap: 64px; }
+.sec-h { display: grid; gap: 6px; margin-block-end: 24px; }
+.sec-h h2 { font-size: var(--text-lg); line-height: var(--line-height-title); }
+.sec-h p { font-size: var(--text-sm); color: var(--color-ink-2); max-inline-size: 90ch; }
+.cmp { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 56px; }
+.col { display: grid; gap: 20px; align-content: start; }
+.col-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-block-end: 12px; border-block-end: var(--rule); }
+.col-h h3 { font-size: var(--text-md); }
+.tag { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; border-radius: var(--radius-full); padding: 3px 10px; white-space: nowrap; }
+.t-now { background: var(--color-paper-3); color: var(--color-ink-2); }
+.t-pre { background: var(--color-butter); color: var(--color-ink); }
+.stage { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: 32px 24px 24px; }
+.stage.c { display: flex; align-items: center; justify-content: space-around; gap: 24px; min-block-size: 150px; padding-block: 24px; }
+.cap { font-size: var(--text-xs); color: var(--color-ink-3); line-height: 1.4; }
+.cap b { color: var(--color-ink-2); }
+
+/* the card, exactly the round-2 listing card at the grid6 width */
+.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+.card { display: grid; align-content: start; }
+.card > a { display: block; text-decoration: none; color: inherit; }
+.frame { position: relative; }
+.shd { position: absolute; inset: 0; border-radius: var(--radius-photo); box-shadow: var(--shadow-letter); opacity: 0; }
+.clip { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-photo); overflow: hidden; }
+.clip .img { inline-size: 100%; block-size: 100%; }
+.card h3 { font-size: 19px; line-height: var(--line-height-title); margin-block-start: 14px; }
+.nm { position: relative; display: inline-block; }
+.ul { position: absolute; inset-inline: 0; inset-block-end: 0; block-size: 1px; background: var(--color-ink); opacity: 0; }
+.pre .ul { opacity: 1; transform: scaleX(0); transform-origin: 0 50%; }
+[dir="rtl"] .pre .ul { transform-origin: 100% 50%; }
+.price { margin-block-start: 6px; font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; }
+.price small { font-weight: var(--font-weight-body); font-size: var(--text-fine); color: var(--color-ink-3); margin-inline-start: 6px; }
+.prov { margin-block-start: 6px; font-size: var(--text-xs); line-height: 1.35; color: var(--color-ink-3); }
+.namedemo { font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); font-size: var(--text-h3); line-height: var(--line-height-title); }
+
+/* the pill: the shipped primary button; its hover colour is a layer so only opacity changes */
+.pill { position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; min-block-size: var(--control-md); padding-inline: 28px; border: 0; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-family: var(--font-body); font-weight: var(--font-weight-bold); font-size: var(--text-body-s); line-height: 1.1; white-space: nowrap; cursor: pointer; }
+.pill::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--color-accent-strong); opacity: 0; }
+
+/* the static frames: rest and held, so a screenshot shows both ends */
+.frames { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; max-inline-size: 396px; }
+.frames .card h3 { font-size: 19px; }
+.now .held > a { transform: translateY(-2px); }
+.now .held .img { transform: scale(1.03); }
+.now .held .ul { opacity: 1; }
+.pre .held > a { transform: translateY(-4px); }
+.pre .held .img { transform: scale(1.06); }
+.pre .held .shd { opacity: 1; }
+.pre .held .ul { transform: scaleX(1); }
+
+/* ---------- 1. the loop: the pointer passes card 1, 2, 3 (6,000 ms cycle, 2,000 ms each) ---------- */
+/* Now: in over 200 ms (3.333 %), held to the pointer leaving at 1,600 ms (26.667 %), out over 200 ms */
+.loop.now .card > a { animation: now-lift 6000ms infinite; }
+.loop.now .img { animation: now-zoom 6000ms infinite; }
+.loop.now .ul { animation: now-ul 6000ms infinite; }
+@keyframes now-lift { 0% { transform: translateY(0); animation-timing-function: var(--ease-standard); } 3.333%, 26.667% { transform: translateY(-2px); animation-timing-function: var(--ease-standard); } 30%, 100% { transform: translateY(0); } }
+@keyframes now-zoom { 0% { transform: scale(1); animation-timing-function: var(--ease-standard); } 3.333%, 26.667% { transform: scale(1.03); animation-timing-function: var(--ease-standard); } 30%, 100% { transform: scale(1); } }
+@keyframes now-ul { 0%, 26.6% { opacity: 1; } 26.7%, 100% { opacity: 0; } }
+/* Premium: in over 500 ms (8.333 %), held, out over 500 ms (to 35 %); the line draws in 320 ms */
+.loop.pre .card > a { animation: pre-lift 6000ms infinite; }
+.loop.pre .img { animation: pre-zoom 6000ms infinite; }
+.loop.pre .shd { animation: pre-shd 6000ms infinite; }
+.loop.pre .ul { animation: pre-ul 6000ms infinite; }
+@keyframes pre-lift { 0% { transform: translateY(0); animation-timing-function: var(--ease-photo); } 8.333%, 26.667% { transform: translateY(-4px); animation-timing-function: var(--ease-photo); } 35%, 100% { transform: translateY(0); } }
+@keyframes pre-zoom { 0% { transform: scale(1); animation-timing-function: var(--ease-photo); } 8.333%, 26.667% { transform: scale(1.06); animation-timing-function: var(--ease-photo); } 35%, 100% { transform: scale(1); } }
+@keyframes pre-shd { 0% { opacity: 0; animation-timing-function: var(--ease-photo); } 8.333%, 26.667% { opacity: 1; animation-timing-function: var(--ease-photo); } 35%, 100% { opacity: 0; } }
+@keyframes pre-ul { 0% { transform: scaleX(0); animation-timing-function: var(--ease-emphasised); } 5.333%, 26.667% { transform: scaleX(1); animation-timing-function: var(--ease-emphasised); } 32%, 100% { transform: scaleX(0); } }
+
+/* the pointer reaches card 2 at 2,000 ms and card 3 at 4,000 ms (after the shorthands above, which reset the delay) */
+.loop .card.c1 > a, .loop .card.c1 .img, .loop .card.c1 .shd, .loop .card.c1 .ul { animation-delay: 2000ms; }
+.loop .card.c2 > a, .loop .card.c2 .img, .loop .card.c2 .shd, .loop .card.c2 .ul { animation-delay: 4000ms; }
+
+/* ---------- 2. the name and the pill (3,200 ms cycle): pointer in at 400 ms, press 1,200 to 1,500 ms, out at 2,400 ms ---------- */
+.duo.now .namedemo .ul { animation: now-ul2 3200ms infinite; }
+.duo.pre .namedemo .ul { animation: pre-ul2 3200ms infinite; }
+@keyframes now-ul2 { 0%, 12.4% { opacity: 0; } 12.5%, 74.9% { opacity: 1; } 75%, 100% { opacity: 0; } }
+@keyframes pre-ul2 { 0%, 12.5% { transform: scaleX(0); animation-timing-function: var(--ease-emphasised); } 22.5%, 75% { transform: scaleX(1); animation-timing-function: var(--ease-emphasised); } 85%, 100% { transform: scaleX(0); } }
+.duo.now .pill { animation: now-press 3200ms infinite; }
+.duo.now .pill::before { animation: now-col 3200ms infinite; }
+.duo.pre .pill { animation: pre-press 3200ms infinite; }
+.duo.pre .pill::before { animation: pre-col 3200ms infinite; }
+@keyframes now-col { 0%, 12.4% { opacity: 0; } 12.5%, 74.9% { opacity: 1; } 75%, 100% { opacity: 0; } }
+@keyframes now-press { 0%, 37.5% { transform: scale(1); animation-timing-function: var(--ease-standard); } 41.25%, 46.875% { transform: scale(0.98); animation-timing-function: var(--ease-standard); } 50.625%, 100% { transform: scale(1); } }
+@keyframes pre-col { 0%, 12.5% { opacity: 0; animation-timing-function: var(--ease-standard); } 18.75%, 75% { opacity: 1; animation-timing-function: var(--ease-standard); } 81.25%, 100% { opacity: 0; } }
+@keyframes pre-press { 0%, 37.5% { transform: scale(1); animation-timing-function: var(--ease-standard); } 41.25%, 46.875% { transform: scale(0.98); animation-timing-function: var(--ease-emphasised); } 53.125%, 100% { transform: scale(1); } }
+
+/* ---------- 3. try it with a mouse: the real transitions, nothing simulated ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .live.now .card > a, .live.now .img { transition-property: transform; transition-duration: var(--duration-base); transition-timing-function: var(--ease-standard); }
+  .live.now .card > a:hover { transform: translateY(-2px); }
+  .live.now .card > a:hover .img { transform: scale(1.03); }
+  .live.now .card > a:hover .ul { opacity: 1; }
+  .live.now .pill:hover::before { opacity: 1; }
+  .live.pre .card > a, .live.pre .img { transition-property: transform; transition-duration: 500ms; transition-timing-function: var(--ease-photo); }
+  .live.pre .shd { transition-property: opacity; transition-duration: 500ms; transition-timing-function: var(--ease-photo); }
+  .live.pre .ul { transition-property: transform; transition-duration: var(--duration-slow); transition-timing-function: var(--ease-emphasised); }
+  .live.pre .card > a:hover { transform: translateY(-4px); }
+  .live.pre .card > a:hover .img { transform: scale(1.06); }
+  .live.pre .card > a:hover .shd { opacity: 1; }
+  .live.pre .card > a:hover .ul { transform: scaleX(1); }
+  .live.pre .pill::before { transition-property: opacity; transition-duration: var(--duration-base); transition-timing-function: var(--ease-standard); }
+  .live.pre .pill:hover::before { opacity: 1; }
+}
+.live .pill:active::before { opacity: 1; }
+.live.now .pill { transition-property: transform; transition-duration: var(--duration-fast); transition-timing-function: var(--ease-standard); }
+.live.pre .pill { transition-property: transform; transition-duration: var(--duration-base); transition-timing-function: var(--ease-emphasised); }
+.live.pre .pill:active { transition-duration: var(--duration-fast); transition-timing-function: var(--ease-standard); }
+.live .pill:active { transform: scale(0.98); }
+
+/* ---------- 4. what does not move ---------- */
+.still { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; }
+.still .state { align-content: start; }
+.still .card { max-inline-size: 200px; }
+
+/* ---------- reduced motion: none of it ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .loop .card > a, .loop .img, .loop .shd, .loop .ul, .duo .ul, .duo .pill, .duo .pill::before { animation: none !important; }
+  .live .card > a, .live .img, .live .shd, .live .ul, .live .pill, .live .pill::before { transition: none !important; }
+  .live .card > a:hover, .live .card > a:hover .img, .live .pill:active { transform: none !important; }
+  .live .card > a:hover .shd { opacity: 0 !important; }
+}
+
+.note .vt { inline-size: 100%; border-collapse: collapse; font-size: var(--text-xs); background: var(--color-card); border-radius: var(--radius-md); }
+.note .vt th, .note .vt td { text-align: start; vertical-align: top; padding: 6px 10px; border-block-end: var(--rule); }
+.note .vt thead th { color: var(--color-ink-3); letter-spacing: 0.06em; text-transform: uppercase; font-size: var(--text-fine); }
+.note .vt tbody th { white-space: nowrap; color: var(--color-ink); }
+
+  </style>
+</helmet>
+<div class="fo D" style="inline-size: 1440px;">
+<section class="note"><span class="nl">Hover and press: now and premium, side by side · system · 2026-10-19 · [internal]</span><dl>
+<dt>Purpose</dt><dd>The founder (2026-10-19): “hover still doesn't have that animation yet bro.. the interaction with the site doesn't feel premium.” Ruling: <b>“premium A”</b>, the approved hover (motion 6 on <code>system/motion.dc.html</code>) and a more premium version drawn side by side, both moving, <b>before anything is built</b>. The left column is what ships today; the right column is a proposal and is <b>not approved</b>. Nothing here is built until the founder picks a column.</dd>
+<dt>Where it applies</dt><dd>Every product card link on every listing (country shop, country category, country occasion, the category hubs, the home rows): <code>ProductCard</code>'s <code>a[data-fo-card-motion]</code>. Every pill button: <code>Button</code> variants <code>primary</code>, <code>accent</code>, <code>secondary</code>, <code>danger</code> and the notice actions in <code>layout/noticeShell.ts</code>. No URL of its own; a system sheet, not a page; no index status.</dd>
+<dt>Data it reads</dt><dd>None. Three real catalogue cards exactly as <code>wireframes/country-shop-desktop.dc.html</code> draws them at en-gb, Poland: Amber Hour (<code>fo-bq-001</code>), Baltic Dawn (<code>fo-bq-003</code>), Blush Terrace (<code>fo-bq-021</code>), the R2 files the site serves. Real copy only: <code>catalog.price.allIn</code> “all in”, <code>media.provenance.aiExample</code>, <code>nav.send</code> “Send flowers”. No <code>[slot]</code> is left.</dd>
+<dt>States</dt><dd>Rest · hover in · hover held · hover out · press · release (all looped in §1 and §2, live in §3) · the priority card, a coarse pointer, reduced motion and keyboard focus (§4).</dd>
+<dt>Binding, both columns</dt><dd><b>Transform and opacity only</b> (spec 004 AC-44, T-48 scans every <code>@keyframes</code> and <code>transition-property</code>). The shadow is a <b>pre-painted layer</b> whose <code>opacity</code> changes; <code>box-shadow</code> never animates. The photograph scales <b>inside its clipped box</b>; the lift is a <code>transform</code>, so nothing reflows and <b>CLS stays 0</b>. <b>No motion on the priority card</b> (the page's LCP photograph) or its ancestors: it keeps carrying no <code>data-fo-card-motion</code>. Hover motion only on <code>(hover: hover) and (pointer: fine)</code>. <code>prefers-reduced-motion: reduce</code> turns all of it off.</dd>
+<dt>Proposed values</dt><dd><table class="vt"><thead><tr><th scope="col">Part</th><th scope="col">Now (approved, shipped)</th><th scope="col">Premium (proposed)</th></tr></thead><tbody>
+<tr><th scope="row">Card lift</th><td><code>translateY(-2px)</code></td><td><code>translateY(-4px)</code></td></tr>
+<tr><th scope="row">Photo zoom</th><td><code>scale(1.03)</code> in the clipped 4∶5 box</td><td><code>scale(1.06)</code> in the clipped 4∶5 box</td></tr>
+<tr><th scope="row">Lift, zoom, shadow duration</th><td>200 ms <code>--duration-base</code>, in and out</td><td><b>500 ms</b>, proposed token <code>--duration-hover</code>, in and out</td></tr>
+<tr><th scope="row">Lift, zoom, shadow easing</th><td><code>--ease-standard</code> <code>cubic-bezier(0.2, 0, 0.13, 1)</code></td><td><code>--ease-photo</code> <code>cubic-bezier(0.2, 0.7, 0.2, 1)</code>, an existing token: a soft ease-out</td></tr>
+<tr><th scope="row">Shadow</th><td>none</td><td>a layer behind the photo box, same radius (<code>--radius-photo</code>), painting <code>--shadow-letter</code> (<code>0 1px 1px</code>, <code>0 22px 44px -12px</code>, plum-navy ink <code>--color-shade</code> at 12 %); layer <code>opacity</code> 0 to 1</td></tr>
+<tr><th scope="row">Name underline</th><td><code>text-decoration</code> 1 px, 5 px under the baseline, snaps on</td><td>a 1 px <code>--color-ink</code> line 5 px under the baseline, <code>scaleX(0)</code> to <code>scaleX(1)</code> from the <b>inline-start</b> (<code>transform-origin: 0 50%</code>, <code>100% 50%</code> under <code>dir="rtl"</code>), <b>320 ms</b> <code>--duration-slow</code>, <code>--ease-emphasised</code>; retracts the same way on leave</td></tr>
+<tr><th scope="row">Pill hover colour</th><td><code>--color-accent</code> to <code>--color-accent-strong</code>, at once</td><td>a <code>--color-accent-strong</code> layer (<code>::before</code>, under the label) fades <code>opacity</code> 0 to 1 in <b>200 ms</b> <code>--duration-base</code>, <code>--ease-standard</code>; <code>secondary</code> fades a <code>--color-surface-raised</code> layer the same way</td></tr>
+<tr><th scope="row">Pill press</th><td><code>scale(0.98)</code>, 120 ms <code>--duration-fast</code> in and out</td><td><code>scale(0.98)</code> in 120 ms <code>--duration-fast</code> <code>--ease-standard</code>; released over <b>200 ms</b> <code>--duration-base</code> <code>--ease-emphasised</code></td></tr>
+</tbody></table></dd>
+<dt>Proposed token</dt><dd><code>--duration-hover: 500ms</code>, the only new one, written as a literal on this sheet until approved. <b>Needs the founder and a spec line:</b> motion.dc.html's Binding holds UI motion to 120 to 320 ms from the duration tokens, and 500 ms is outside it. Choosing the right column amends that line and spec 004 §14 A24 clause 9 (a spec amendment before <code>/plan-tasks</code>); the build adds the token to <code>docs/design/system/tokens.css</code> and <code>src/app/globals.css</code> in one PR.</dd>
+<dt>For the implementer</dt><dd><code>ProductCard</code> gains two <code>aria-hidden</code> elements: a shadow layer as a sibling of the photo's clipped ratio box, outside the clip, inside the link (so it lifts with it), and the name's line inside the heading after the <code>&lt;bdi&gt;</code>. Both are omitted on the priority card. The shipped CSS keeps <code>transition-property</code> to <code>transform</code> (link, image, line, pill) and <code>opacity</code> (shadow layer, pill layer). No <code>will-change</code> left on at rest. Hover-out uses the same duration and curve as hover-in.</dd>
+<dt>On the canvas</dt><dd>§1 simulates the pointer resting on card 1, then 2, then 3, 2 s each, both columns in step, so the two are seen at the same instant. §2 loops a hover, a press and a release every 3.2 s. §3 is the real CSS: move a mouse over it. The two small frames under each column are rest and held. No mobile artboard: a phone has no hover, and its press (§4) is unchanged apart from the release.</dd>
+<dt>Owning spec</dt><dd>004 §14 A24 clause 9 · AC-44 · T-48 · <code>system/motion.dc.html</code> motion 6. The card's contents are spec 008 AC-6 and do not change.</dd>
+</dl></section><div class="sheet"><section aria-labelledby="s1"><div class="sec-h"><h2 id="s1">1. The card, looping</h2><p>A row further down a listing, so none of these is the priority card. The pointer rests on each card for 1.6 s and moves on; both columns play in step.</p></div><div class="cmp"><div class="col"><div class="col-h"><h3>Now (approved)</h3><span class="tag t-now">Shipped · motion 6</span></div><div class="stage loop now"><ul class="row3"><li><article class="card c0"><a href="/en-gb/poland/product/amber-hour"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div></div></div><h3><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c1"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c2"><a href="/en-gb/poland/product/blush-terrace"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp);"></div></div></div><h3><span class="nm">Blush Terrace<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;449.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul></div><div class="frames now"><ul style="display:contents"><li><article class="card c9"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c9 held"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul></div><p class="cap"><b>Frames:</b> rest · held, 2 px and 3 %.</p></div><div class="col"><div class="col-h"><h3>Premium (proposed)</h3><span class="tag t-pre">For the founder to choose</span></div><div class="stage loop pre"><ul class="row3"><li><article class="card c0"><a href="/en-gb/poland/product/amber-hour"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div></div></div><h3><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c1"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c2"><a href="/en-gb/poland/product/blush-terrace"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp);"></div></div></div><h3><span class="nm">Blush Terrace<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;449.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul></div><div class="frames pre"><ul style="display:contents"><li><article class="card c9"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c9 held"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul></div><p class="cap"><b>Frames:</b> rest · held, 4 px, 6 % and the shadow.</p></div></div></section><section aria-labelledby="s2"><div class="sec-h"><h2 id="s2">2. The name and the pill</h2><p>Pointer in at 0.4 s, press at 1.2 s, release at 1.5 s, pointer out at 2.4 s, every 3.2 s. The name is drawn at its <code>--text-h3</code> size.</p></div><div class="cmp"><div class="col"><div class="col-h"><h3>Now (approved)</h3><span class="tag t-now">Shipped · motion 6</span></div><div class="stage c duo now"><p class="namedemo"><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></p><span class="pill">Send flowers</span></div><p class="cap"><b>Now:</b> the line and the darker poppy snap on with the pointer; the press scales to 0.98 and back in 120 ms.</p></div><div class="col"><div class="col-h"><h3>Premium (proposed)</h3><span class="tag t-pre">For the founder to choose</span></div><div class="stage c duo pre"><p class="namedemo"><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></p><span class="pill">Send flowers</span></div><p class="cap"><b>Premium:</b> the line draws from the inline-start in 320 ms; the darker poppy fades in over 200 ms; the press scales to 0.98 in 120 ms and settles back over 200 ms.</p></div></div></section><section aria-labelledby="s3"><div class="sec-h"><h2 id="s3">3. Try it with a mouse</h2><p>Nothing here moves on its own. Move the pointer over a card, then over the button, and press it. Both columns are the CSS an implementer would ship.</p></div><div class="cmp"><div class="col"><div class="col-h"><h3>Now (approved)</h3><span class="tag t-now">Shipped · motion 6</span></div><div class="stage live now"><ul class="row3"><li><article class="card c0"><a href="/en-gb/poland/product/amber-hour"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div></div></div><h3><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c1"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c2"><a href="/en-gb/poland/product/blush-terrace"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp);"></div></div></div><h3><span class="nm">Blush Terrace<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;449.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul><div style="display:flex;justify-content:center;padding-block-start:28px"><button type="button" class="pill">Send flowers</button></div></div></div><div class="col"><div class="col-h"><h3>Premium (proposed)</h3><span class="tag t-pre">For the founder to choose</span></div><div class="stage live pre"><ul class="row3"><li><article class="card c0"><a href="/en-gb/poland/product/amber-hour"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div></div></div><h3><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c1"><a href="/en-gb/poland/product/baltic-dawn"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp);"></div></div></div><h3><span class="nm">Baltic Dawn<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="card c2"><a href="/en-gb/poland/product/blush-terrace"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp);"></div></div></div><h3><span class="nm">Blush Terrace<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;449.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul><div style="display:flex;justify-content:center;padding-block-start:28px"><button type="button" class="pill">Send flowers</button></div></div></div></div></section><section aria-labelledby="s4" class="state-band" style="margin-inline:calc(-1 * var(--gutter));margin-block-end:calc(-1 * var(--space-2xl))"><span class="nl" id="s4">4. What does not move</span><div class="still"><div class="state"><span class="state-tag">Priority card · the LCP photograph</span><ul style="display:contents"><li><article class="card c9"><a href="/en-gb/poland/product/amber-hour"><div class="frame"><span class="shd" aria-hidden="true"></span><div class="clip"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div></div></div><h3><span class="nm">Amber Hour<span class="ul" aria-hidden="true"></span></span></h3><p class="price">PLN&nbsp;229.00<small>all in</small></p></a><p class="prov">Example arrangement · our florist hand-makes each one</p></article></li></ul><p class="stub">The first photograph on the page. <b>No motion in either column</b>: no lift, zoom, shadow layer or drawn line, and no <code>transition</code> on it or its ancestors (AC-44). The name still underlines on hover with <code>text-decoration</code>, as today.</p></div><div class="state"><span class="state-tag">Phone and touch · coarse pointer</span><div style="display:flex;justify-content:center;padding-block:12px"><span class="pill">Send flowers</span></div><p class="stub">No hover motion at all: the card does not lift, zoom or cast a shadow on a tap. The pill keeps its press, <code>scale(0.98)</code>; in the premium column it settles back over 200 ms instead of 120 ms.</p></div><div class="state"><span class="state-tag">Reduced motion</span><p class="stub"><code>prefers-reduced-motion: reduce</code>, in both columns: no lift, zoom, shadow or press. On hover the name's line is there at once (in the premium column, <code>scaleX(1)</code> with no transition) and the pill turns <code>--color-accent-strong</code> at once. No transform changes over time (AC-44, last bullet).</p></div><div class="state"><span class="state-tag">Keyboard focus</span><p class="stub">Unchanged in both columns: the shared focus ring (<code>--focus-ring</code>, <code>--focus-offset</code>) around the whole card link or the pill. Focus starts no motion.</p></div></div></section></div></div>
+</x-dc>
+</body>
+</html>
