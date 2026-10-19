@@ -1,4 +1,4 @@
-# TASK-275 — Codebase map well under its 20 KB hard cap: `PURPOSE_LIMIT` 80 → 56, `TESTS_LISTED` 3 → 2, the spec column as the bare number, spec/task citations dropped from purposes; every entry and the hand table kept, the committed map pinned at ≤ 16 KB
+# TASK-275 — Codebase map well under its 20 KB hard cap: `PURPOSE_LIMIT` 80 → 56, `TESTS_LISTED` 3 → 2, the spec column as the bare number, spec/task citations dropped from purposes; every entry and the hand table kept, the 20 KB hard cap the only size test
 
 Row: `TASKS.md` → TASK-275. This brief is the task's long form: the row keeps a link and one
 sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it with
@@ -33,8 +33,10 @@ _None yet._
   `tests/unit/codebase-map.test.ts`. The edit guard refuses the edit because it reads the **main
   checkout's** `TASKS.md`, and that file has no TASK-275 row (the row exists only on this branch).
   The first commit's edits to `scripts/` and `tests/` were shell writes the guard did not catch.
-  Open: the orchestrator adds the TASK-275 row to the main checkout's `TASKS.md` (or lands it on
-  `main`), and then the implementer removes the pin.
+  Answered: PR 274 put the row on `main`; the pin was then removed with the Edit tool.
+- 2026-10-19, coordinator ruling: no 16 KB size pin. It would trip again after four or five new
+  files and block every PR; the 20 KB hard cap stays the only size test, and the limits (56, 2)
+  are pinned directly.
 
 ## Progress
 
@@ -45,14 +47,17 @@ _None yet._
   ready with `ci:full`.
 - 2026-10-19: blocked on removing the 16 KB pin (see Escalations). Next: once the row is in the
   main checkout, delete the `stays at or under 16 KB` case, regenerate, run the gates, toggle `ci:full`.
+- 2026-10-19: rebased on `main` (PR 274's row and brief); 16 KB case deleted; map regenerated at
+  15 893 B; cheap gates rerun; `ci:full` toggled.
 
 ## Result
 
 PR [#273](https://github.com/itsahmeds/flowers-overseas/pull/273). `scripts/codebase-map.ts`:
 `PURPOSE_LIMIT` 56, `TESTS_LISTED` 2, the Spec column as the bare number (`specCell`), and
 `concisePurpose` dropping spec/task citation parentheticals and `**` before the cut (a
-citation-only purpose is kept whole). Map 20 402 B → 15 845 B, same 164 entries, hand table
-byte-identical, hard cap 20 KB unchanged. Unit: `tests/unit/codebase-map.test.ts` 17 → 26 cases
-(≤ 16 KB size pin, limits, `truncate`, `testCell`, `specCell`, four `concisePurpose` cases).
-Mutations: limit back to 80 → 17 790 B and the size case red; `concisePurpose` bypassed →
-17 041 B and red; the old generator → 9 red. No expensive gate run locally.
+citation-only purpose is kept whole). Map 20 402 B → 15 893 B after the rebase on `main`, every
+entry kept, hand table byte-identical, hard cap 20 KB unchanged and still the only size test (no
+16 KB pin, by the coordinator's ruling). Unit: `tests/unit/codebase-map.test.ts` 17 → 25 cases
+(limits pinned at 56 and 2, `truncate`, `testCell`, `specCell`, four `concisePurpose` cases).
+Mutations: limit back to 80 → the limit-pin and `truncate` cases red; the old generator → the
+new cases red. No expensive gate run locally.

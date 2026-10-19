@@ -108,17 +108,6 @@ describe("the committed docs/codebase-map.md (AC-33)", () => {
     expect(withinHardCap(committed)).toBe(true);
   });
 
-  /**
-   * TASK-275: the map stood at 20 402 B, 78 B under the hard cap, so every PR that added a file
-   * tripped it. The generator now writes an index well inside the cap: the committed file must stay
-   * at or under 16 KB, which leaves the 20 KB hard cap 4 KB of real headroom rather than a
-   * ceiling every PR scrapes against. Measured: 15 845 B at `PURPOSE_LIMIT` 56; back at 80 the same
-   * tree renders 17 790 B and this case goes red.
-   */
-  it("stays at or under 16 KB, well inside the hard cap (TASK-275)", () => {
-    expect(Buffer.byteLength(committed, "utf8")).toBeLessThanOrEqual(16 * 1024);
-  });
-
   it("holds the hard cap at exactly 20 480 bytes", () => {
     expect(MAP_HARD_CAP_BYTES).toBe(20480);
   });
