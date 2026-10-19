@@ -27,3 +27,5 @@ Spec 004 §14 A23 clause 11, A24 clause 9; AC-44, AC-6 (T-48, T-06). Design: `do
 - 2026-10-19: token `--duration-hover` in both files; motion 6 CSS at the 19e values; `cardMotion.tsx` (shadow layer, name line) on `ProductCard` (not priority) and every linked `TrendingRow` card; `fo-pill` layer on `Button` primary/accent/secondary/danger and the two notice actions; T-48 unit cases with 13 mutations red; e2e 6b rewritten to every 19e AC-44 bullet.
 
 ## Result
+
+PR [#285](https://github.com/itsahmeds/flowers-overseas/pull/285). AC-44 (as A-founder-2026-10-19e amends it) and AC-6: the token in both files, the clause-1 CSS, the two card layers on `ProductCard` (not priority) and every linked trending card, the `fo-pill` layer and press on `Button` and the notice actions. T-48: unit value-for-value cases with each 19e mutation red (13 CSS, plus the priority-guard and pill markup mutations); e2e 6b covers every AC-44 bullet and is judged in CI (no local browser run; no build slot taken). `pnpm gates:cheap`: PASS (7 of 7). Visual baselines: none expected to change (layers rest invisible; hover is not captured).
