@@ -20,7 +20,8 @@
  *     the server's, the draft records the posted one as the last total the buyer saw, so step 1
  *     opens with the notice naming both amounts (§2 "Money").
  *
- * Every response is `no-store` and `noindex`. Nothing personal is read or written: the body
+ * Every response is `no-store` and carries no body; `/api/` is disallowed to crawlers (spec 001),
+ * and robots directives are `modules/seo`'s alone. Nothing personal is read or written: the body
  * carries none, and the logs name the draft by id (§8).
  */
 import { z } from "zod";
@@ -47,10 +48,7 @@ export interface StartDependencies {
   readonly flags?: CheckoutFlagReader;
 }
 
-const BASE_HEADERS = {
-  "Cache-Control": "no-store",
-  "X-Robots-Tag": "noindex",
-} as const;
+const BASE_HEADERS = { "Cache-Control": "no-store" } as const;
 
 function respond(
   status: number,
@@ -89,29 +87,24 @@ export function isSameOrigin(request: Request): boolean {
   }
 }
 
-/** The posted form as strings, the way `CheckoutStartSchema` reads it. */
+/** The posted form: string fields only (a file part is refused), each key once. */
+const StartBodySchema = z.record(z.string().max(256), z.string().max(256));
+
+/**
+ * The posted form as strings, the way `CheckoutStartSchema` reads it, or `null` for a body that is
+ * not a form (`formData()` throws on any other content type) or carries a file.
+ */
 async function formFields(
   request: Request,
 ): Promise<Record<string, string> | null> {
-  const type = request.headers.get("content-type") ?? "";
-  if (
-    !type.startsWith("application/x-www-form-urlencoded") &&
-    !type.startsWith("multipart/form-data")
-  ) {
-    return null;
-  }
-  let form: FormData;
   try {
-    form = await request.formData();
+    const parsed = StartBodySchema.safeParse(
+      Object.fromEntries((await request.formData()).entries()),
+    );
+    return parsed.success ? parsed.data : null;
   } catch {
     return null;
   }
-  const fields: Record<string, string> = {};
-  for (const [key, value] of form.entries()) {
-    if (typeof value !== "string" || key in fields) return null;
-    fields[key] = value;
-  }
-  return fields;
 }
 
 /**

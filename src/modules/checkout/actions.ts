@@ -17,6 +17,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { z } from "zod";
+
+import { isLocaleCode } from "@/config/locales";
 
 import {
   CHECKOUT_COOKIE_ATTRIBUTES,
@@ -31,6 +34,9 @@ import {
   runRecipientStep,
   runUpdateSelection,
 } from "./steps";
+
+/** The bound locale, parsed like every other input (an unknown one renders the expired state). */
+const BoundLocaleSchema = z.string().refine(isLocaleCode);
 
 async function context(locale: string): Promise<StepContext> {
   const value = (await cookies()).get(CHECKOUT_COOKIE_NAME)?.value ?? null;
@@ -54,30 +60,36 @@ async function answer(
 
 /** Step 1, "Who are the flowers for?" */
 export async function saveRecipientStep(
-  locale: string,
+  locale: unknown,
   _previous: StepState,
   form: FormData,
 ): Promise<StepState> {
-  const ctx = await context(locale);
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
   return answer(await runRecipientStep(ctx, form), ctx.token);
 }
 
 /** Step 2, "Your card and your details". */
 export async function saveCardAndBuyerStep(
-  locale: string,
+  locale: unknown,
   _previous: StepState,
   form: FormData,
 ): Promise<StepState> {
-  const ctx = await context(locale);
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
   return answer(await runCardAndBuyerStep(ctx, form), ctx.token);
 }
 
 /** The summary panel's tier, add-on and date edits, and the price notice's confirmation. */
 export async function updateSelection(
-  locale: string,
+  locale: unknown,
   _previous: StepState,
   form: FormData,
 ): Promise<StepState> {
-  const ctx = await context(locale);
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
   return answer(await runUpdateSelection(ctx, form), ctx.token);
 }

@@ -84,6 +84,9 @@ const ScopeSchema = z.array(ScopeEntrySchema);
  */
 const CHECKOUT_PATHS = [
   "src/app/[locale]/(checkout)/**",
+  // The start route (TASK-203): a POST handler that answers 303 or an error status and renders
+  // nothing, so no checkout key can reach an indexable page through it.
+  "src/app/api/checkout/**",
   "src/app/(dev)/dev/components/**",
   "src/modules/checkout/**",
   "src/config/checkout.ts",

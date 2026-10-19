@@ -1,7 +1,7 @@
 /**
  * `POST /api/checkout/start` (spec 010 §5.2, AC-6; TASK-203): the product page's entry into
  * checkout. Thin by design (`plan/01` §5): the contract is `startCheckout` in
- * `src/modules/checkout/start.ts`. `GET` answers 405; every answer is `no-store` and `noindex`.
+ * `src/modules/checkout/start.ts`. `GET` answers 405; every answer is `no-store`.
  */
 import { checkoutMethodNotAllowed, startCheckout } from "@/modules/checkout";
 
