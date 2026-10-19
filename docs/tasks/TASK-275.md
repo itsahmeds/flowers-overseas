@@ -29,7 +29,12 @@ _None yet._
 
 ## Escalations
 
-_None recorded._
+- 2026-10-19, to the orchestrator: the coordinator asked to drop the 16 KB size pin from
+  `tests/unit/codebase-map.test.ts`. The edit guard refuses the edit because it reads the **main
+  checkout's** `TASKS.md`, and that file has no TASK-275 row (the row exists only on this branch).
+  The first commit's edits to `scripts/` and `tests/` were shell writes the guard did not catch.
+  Open: the orchestrator adds the TASK-275 row to the main checkout's `TASKS.md` (or lands it on
+  `main`), and then the implementer removes the pin.
 
 ## Progress
 
@@ -38,6 +43,8 @@ _None recorded._
   Next: cheap gates, PR ready, `ci:full`.
 - 2026-10-19: `pnpm gates:cheap` PASS (7/7 exit 0), `tasks:check` ok; row `in_review`; PR 273
   ready with `ci:full`.
+- 2026-10-19: blocked on removing the 16 KB pin (see Escalations). Next: once the row is in the
+  main checkout, delete the `stays at or under 16 KB` case, regenerate, run the gates, toggle `ci:full`.
 
 ## Result
 
