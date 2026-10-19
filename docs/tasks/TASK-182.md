@@ -134,6 +134,9 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
   coordinator reports main plus the open PRs at about 4.5 %; on that base the 8 keys give about
   5.9 % (only about 2 fit under 5 %). So the PR stays **draft** and is not taken ready until the
   founder attests these keys (or the queue drops). The keys are on the branch only; nothing merges.
+  **Resolved 2026-10-19:** the founder's copy batch 5 (PR 278, TASK-276) took `en-gb`'s share on
+  main to 0.36 % (2 of 553 counted keys). With this PR's 8 keys, still `reviewed: false`, it is
+  1.79 % (10 of 560), under the 5 % line, so the PR went ready. The 8 keys wait for the next batch.
 - **2026-10-19, E2 (two Appendix A lines reworded; founder, with E1).** Two proposed Appendix A
   sentences trip `RELAY_PATTERNS`, and spec 041 §14 says a buyer string that trips a pattern is
   reworded (no exemption): A.5 "we take the payment" (in-context `take` with "our florist" in the
@@ -159,10 +162,12 @@ here.
 - 22:05Z: unit tests (info-pages, pages-check, info-page-render), e2e `tests/e2e/info-pages.spec.ts`; suites the change touches updated; full unit suite green (296 files).
 - 22:12Z: round-2 band layout; local build in the slot (load 2.0) to judge the new routes and the layout: all five pages 200 in en/en-gb, `/de/hilfe`, `/en/imprint`, `/en/legal/terms`, `/en/contact` 404, `/en/help/` 308. Screenshots checked against the artboards.
 - 22:25Z: stopped before `gh pr ready` on the coordinator's copy-share heads-up (E1). Next: the founder attests the keys (or the order is changed), then rebase on `origin/main` (TASK-172/PR 265 adds `trust.guarantee.name` to the AC-16 case), ready, `ci:full`.
+- 2026-10-19 06:10Z: rebased on `origin/main` (`dbb3ec64`, copy batch 5); the pinned queue in `i18n-messages-schema.test.ts` is main's set plus this PR's 8 keys. `trust.guarantee.name` joined the AC-16 case (mutation to a German "7-Tage" name went red). Copy share `en-gb` 0.36 % on main, 1.79 % with this PR. Cheap gates and `pages:check` green; ready, `ci:full`.
 
 ## Result
 
-PR https://github.com/itsahmeds/flowers-overseas/pull/270 (draft, blocked on E1). Ships
+PR https://github.com/itsahmeds/flowers-overseas/pull/270 (ready, `ci:full`; E1 resolved by copy
+batch 5: `en-gb` unreviewed share 0.36 % on main, 1.79 % with this PR). Ships
 `src/modules/content` (schemas, parser, provider over `corpus.generated.ts`, `infoPageExists`,
 `listInfoPages`, `infoPageView`, `InfoPage`), `src/config/info-pages.ts`, the claim/scale/price
 patterns moved into `src/config/honesty.ts` (plus the T-16 freshness scan), `pnpm pages:check`
@@ -171,8 +176,15 @@ five trust pages in `en`/`en-gb` at depth 2, ten `byRule` page types, Breadcrumb
 Organization, `static.xml` rows (indexable pages only; none today, all content `reviewed: false`),
 the `infoPage` link kind with how-it-works, guarantee, help and delivery published, the home FAQ's
 "All help topics" link. Tests: unit `info-pages.test.ts` (44), `pages-check.test.ts` (19),
-`info-page-render.test.tsx` (14), plus 12 updated suites; e2e `info-pages.spec.ts` (CI). Not done
-here: the PDP guarantee link (E3), AC-12's support line (E4), `trust.guarantee.name` in AC-16's
-case (PR 265), the docks (spec 004 AC-48 primitive takes `#` anchors only), the legal set
+`info-page-render.test.tsx` (14), plus 12 updated suites; e2e `info-pages.spec.ts` (CI). `trust.guarantee.name` is
+in AC-16's case since the rebase onto PR 265. Not done here: the PDP guarantee link (E3), AC-12's
+support line (E4), the docks (spec 004 AC-48 primitive takes `#` anchors only), the legal set
 (TASK-183), de/pl, axe, Lighthouse, baselines (TASK-184). Field labels for the founder: "Phone",
 "Status" (new), "Country" and "WhatsApp" (reused reviewed keys).
+
+Keys for the founder's next copy batch (all `reviewed: false`, en and en-gb):
+`infoPages.status.notYetOpen`, `infoPages.company.notRegistered`, `infoPages.contact.heading`,
+`infoPages.contact.body`, `infoPages.contact.privacy`, `infoPages.contact.phone` ("Phone"),
+`infoPages.delivery.status` ("Status"), `footer.link.deliveryAndPayment`; plus the ten content
+files under `content/pages/` (E2's two rewordings among them). No local build or browser run for
+this rebase: the cheap gates and `pages:check` judge it, CI runs the browser jobs.
