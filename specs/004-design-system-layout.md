@@ -3300,3 +3300,245 @@ Open for the founder: none blocking. The compact line's text goes to the founder
 consent batch. The *Reading* in clause 4 (the line links to the cookie notice; the controller
 sentence moves into the panel) can be overruled in one word; the lawyer's ruling of clause 3 (e)
 comes before any GA4 id is set.
+
+**A-founder-2026-10-19e: Premium hover. A product card lifts 4 px, its photograph zooms 6 % and a
+shadow fades in, over 500 ms; the name's line draws from the inline-start; a pill's colour fades
+and its press settles (motion 6 of `system/motion.dc.html` and its Binding; A23 clause 11; A24
+clause 9; AC-44 and T-48 amended; AC-6 as A24 clause 9 (c) reads it, unchanged and binding; no new
+AC or T id).**
+Status: approved in substance by the founder's ruling of 2026-10-19 (below). The founder confirms
+this text when they approve the docs PR that carries it. The spec writer's readings are marked
+*Reading* and can be overruled in one word.
+
+**Ruling, verbatim.** The founder, 2026-10-19, in chat: "hover still doesn't have that animation
+yet bro.. the interaction with the site doesn't feel premium". The founder then ruled "premium A":
+the approved hover (motion 6) and a more premium version drawn side by side, both moving, before
+anything is built. The designer drew both on `docs/design/system/motion-premium.dc.html` (draft
+PR 282, branch `docs/design-premium-hover`). The founder's reply, 2026-10-19, in chat, verbatim:
+"go with the premium proposed version and fix c". Its "go with the premium proposed version" picks
+that sheet's right-hand column, "Premium (proposed)", with every value of its "Proposed values"
+table and its "Proposed token". Its "fix c" is A-founder-2026-10-19f's (spec 003 §14). The reply
+reached the spec writer through the orchestrator's work order.
+
+**Trigger and evidence.**
+- `docs/design/system/motion-premium.dc.html` on PR 282: the annotation's "Binding, both columns",
+  "Proposed values", "Proposed token" and "For the implementer" rows, and the drawn states §1 to §4
+  (the priority card, a coarse pointer, reduced motion and keyboard focus).
+- What ships on `main` today: `src/app/globals.css`, the motion 6 block inside
+  `prefers-reduced-motion: no-preference` and `(hover: hover) and (pointer: fine)`
+  (`a[data-fo-card-motion]` and its `img`: `transition-property: transform`, `--duration-base`,
+  `--ease-standard`, `translateY(-2px)`, `scale(1.03)`); `src/modules/ui/shop/ProductCard.tsx`, the
+  name's `decoration-1 underline-offset-[5px] group-hover:underline` and `data-fo-card-motion` on
+  every card but the priority one; `src/modules/ui/primitives/Button.tsx`, each variant's
+  `hover:bg-*-strong` (or `hover:bg-surface-raised`), which snaps, and
+  `motion-safe:active:scale-[0.98]` at `--duration-fast`; `src/modules/ui/layout/noticeShell.ts`,
+  the two notice actions, the same.
+- `tests/e2e/motion.spec.ts` section 6b asserts `matrix(1, 0, 0, 1, 0, -2)` and
+  `matrix(1.03, 0, 0, 1.03, 0, 0)` after a fixed 400 ms wait.
+
+**Original.**
+- `system/motion.dc.html`, motion 6 ("Card lift and photo zoom; button press", approved by the
+  founder 2026-10-05), its Tokens row: "Card `translateY(-2px)`, photo `scale(1.03)` inside its
+  clipped box, `--duration-base` 200 ms `--ease-standard`; press `scale(0.98)` for
+  `--duration-fast`." The sheet's Binding holds UI motion to 120 to 320 ms from the duration tokens,
+  with the bloom loop at 1,200 ms at most.
+- A23 clause 11: transform and opacity only, CLS 0, a reduced-motion version of every motion, no
+  animation delays the LCP element. A24 clause 9 approves the thirteen motions as drawn, adds
+  `--duration-draw` and `--duration-bloom` (a) and restates reduced motion (c). AC-44 and T-48, as
+  A24 clause 9 amends them, test that.
+
+**Corrected.**
+1. **Motion 6 now reads as the premium column.** Every value below is the sheet's, and binds:
+
+   | Part | Rest | Hover (or press) | Duration and curve, in and out |
+   |---|---|---|---|
+   | (a) Card link, `a[data-fo-card-motion]` | `transform: none` | `translateY(-4px)` | `--duration-hover` 500 ms, `--ease-photo` `cubic-bezier(0.2, 0.7, 0.2, 1)` |
+   | (b) Photograph, inside its clipped 4∶5 box | `transform: none` | `scale(1.06)` | the same as (a) |
+   | (c) Shadow layer | `opacity: 0` | `opacity: 1` | the same as (a) |
+   | (d) The name's line | `transform: scaleX(0)` | `scaleX(1)` | `--duration-slow` 320 ms, `--ease-emphasised` |
+   | (e) Pill hover layer | `opacity: 0` | `opacity: 1` | `--duration-base` 200 ms, `--ease-standard` |
+   | (f) Pill press | `transform: none` | `scale(0.98)` while pressed | in: `--duration-fast` 120 ms, `--ease-standard`; release: `--duration-base` 200 ms, `--ease-emphasised` |
+
+   - **(c) The shadow layer** is one `aria-hidden` element per moving card: a sibling of the
+     photograph's clipped ratio box, outside the clip and inside the link (so it lifts with the
+     link), with the photo box's size and radius. It paints `box-shadow: var(--shadow-letter)`
+     (`0 1px 1px` and `0 22px 44px -12px`, in `--color-shade`, ink at 12 %) at all times; only its
+     `opacity` changes. `box-shadow` itself never transitions.
+   - **(d) The name's line** is one `aria-hidden` element inside the card's heading, after the
+     `<bdi>`: 1 px tall, `--color-ink`, 5 px under the baseline, as wide as the name. Its
+     `transform-origin` is the inline-start: `0 50%`, and `100% 50%` under `[dir="rtl"]`. It
+     retracts the same way on leave. A card that draws the line renders no `text-decoration`
+     underline on its name: one line, never two. *Reading:* a name that wraps draws one line, under
+     its last line box, as wide as the name's box; the sheet draws one-line names only.
+   - **(e) The pill's layer** sits under the label (`::before` or an equivalent element) in the
+     variant's hover colour today: `--color-accent-strong` for `primary` and `accent`,
+     `--color-surface-raised` for `secondary`, `--color-danger-strong` for `danger`, and the same
+     for the two notice actions in `layout/noticeShell.ts`. The variant's `background-color` no
+     longer changes on hover. While pressed, the pill shows today's active colour
+     (`--color-surface-muted` for `secondary`; the hover colour for the others), at once.
+   - **(f) The press** applies on every pointer, touch included, as today.
+   - Hover-out uses the same duration and curve as hover-in. No `will-change` is left on at rest.
+     The build plays each motion once per hover; the sheet's loops are a canvas device.
+2. **Where it applies.** Every product card that is not the priority card, wherever `ProductCard`
+   renders it (TASK-277's widened row attaches motion 6 to every product card), and every pill:
+   `Button`'s `primary`, `accent`, `secondary` and `danger` variants and the notice actions in
+   `layout/noticeShell.ts`. **Not here:** the consent banner's answer pills
+   (`ConsentBannerView.tsx`) and the checkout's pills (`src/modules/ui/checkout/styles.ts`) keep
+   today's behaviour; matching them is a new row if the founder wants it (open item below).
+3. **The token.** `--duration-hover: 500ms` lands in `src/app/globals.css` and
+   `docs/design/system/tokens.css` together, in the same PR, exactly as A24 clause 9 (a) landed its
+   two tokens.
+4. **The 500 ms exception (amends the Binding of `system/motion.dc.html` and A23 clause 11).** UI
+   motion stays between 120 and 320 ms from the duration tokens, with one more exception beside A24
+   clause 9's `--duration-draw` and `--duration-bloom`: `--duration-hover`. It may be used only by
+   the hover-in and hover-out transitions of a moving card's link, its photograph and its shadow
+   layer, that is, only in rules whose selector contains `[data-fo-card-motion]`. It is never used
+   by the name's line, a pill, anything that plays without a pointer's hover (a load, a scroll, a
+   section reveal, a navigation, a dialog or sheet), anything that runs at first paint, or the LCP
+   element and its ancestors.
+5. **What holds, unchanged and binding.**
+   - **Transform and opacity only** (AC-44). Nothing on the card or the pill transitions
+     `box-shadow`, `background-color`, `text-decoration`, a size or a position.
+   - **CLS 0.** The lift and the zoom are transforms; the photograph scales inside its clipped box;
+     the shadow layer and the line are absolutely positioned inside boxes that exist at rest. Hover
+     changes no layout.
+   - **No motion on the priority card.** The priority card (the page's LCP photograph, including a
+     card rendered with `priorityAt`) carries no `data-fo-card-motion`, no shadow layer and no line
+     element, and it and its ancestors carry no transition (AC-44). Its name keeps today's
+     `text-decoration` underline on hover, which is not a motion.
+   - **Fine pointer only.** Every card and pill hover rule sits inside
+     `(hover: hover) and (pointer: fine)`. On a coarse pointer nothing lifts, zooms, casts a shadow
+     or draws a line; the pill keeps its press (f).
+   - **Reduced motion off.** Under `prefers-reduced-motion: reduce`: no lift, zoom or press, and the
+     shadow layer stays at `opacity: 0`. The name's line rests at `scaleX(1)` with `opacity: 0` and,
+     on hover, shows at `opacity: 1` at once, with no transition; the pill's layer shows at once. So
+     no transform changes under reduce, and A24 clause 9 (c) holds as written.
+   - **Keyboard focus** is unchanged: the shared focus ring around the card link or the pill; focus
+     starts no motion.
+   - CSS only: no JavaScript, no new dependency, no client byte (AC-25 unchanged).
+6. **Design (the designer's, docs only, before TASK-277 builds these values).** PR 282 marks the
+   premium column approved (founder, 2026-10-19) and the left column superseded; updates
+   `system/motion.dc.html`'s motion 6 cell (Tokens, Reduced motion and Where rows) to the values of
+   clause 1 and its Binding line to clause 4's exception; and marks its `docs/design/README.md` row
+   answered. `docs/design/` stays the source of truth (CLAUDE.md), so the build matches PR 282's
+   right column pixel for pixel.
+7. **Unchanged.** Spec 008 AC-6 (the card's contents, as spec 008 §14 A-founder-2026-10-19b amends
+   them); motions 1 to 5 and 7 to 13; A-founder-2026-10-19a; AC-24's LCP and script budgets.
+
+**SEO.** Ranking inputs are untouched. The priority card, which holds the listing's LCP
+photograph, gains nothing and keeps AC-44's guard, so LCP cannot move. Hover cannot happen before a
+pointer arrives, so nothing here runs at first paint, and the 500 ms is confined to hover by
+clause 4. CLS stays 0 (transforms and absolutely positioned layers). No client JavaScript is added;
+INP is unaffected because hover and press are CSS. The server HTML gains two empty `aria-hidden`
+elements per moving card and nothing a crawler reads: no text, link, URL, canonical, robots,
+hreflang, sitemap or schema change. Rendering stays as `plan/01` §3 sets it.
+
+**i18n.** No message key is added, changed or removed. The line draws from the inline-start and
+mirrors under `[dir="rtl"]`, as the header's 2 px bar already does in `globals.css`; positions use
+logical properties (`inset-inline`, `inset-block-end`), never `left` or `right`. A long German or
+Polish name wraps as today (clause 1 (d), *Reading*). `/ar-XB` is the check.
+
+**Compliance.** Accessibility (WCAG 2.2 AA): the motion is decorative and never needed to use the
+page; `prefers-reduced-motion` removes every movement (2.3.3, met beyond AA); nothing flashes
+(2.3.1); the focus ring is unchanged (2.4.7); the two new elements are `aria-hidden` and empty, so
+the card link's accessible name is unchanged. The pill's text keeps its contrast at both ends of
+the fade, because the layer's colour is today's hover colour and both pairs are already in
+`src/modules/ui/tokens/contrast.ts`. The card's price, its inclusive text and the example label are
+unchanged (price shown = price charged). No data flow changes; the RoPA is unchanged.
+
+**AC-44 amended.** It gains, on the listing T-48's `hoveredCard` opens (`SHOP` in
+`tests/e2e/motion.spec.ts`) at 1440 × 900 with a fine pointer, and on the same page under `/ar-XB`
+where named:
+- `--duration-hover` is declared as exactly `500ms` in `src/app/globals.css` and in
+  `docs/design/system/tokens.css`, and every rule in the shipped CSS that uses it has a selector
+  containing `[data-fo-card-motion]`;
+- **at rest**, the first moving card's link and photograph have computed `transform` `none`, its
+  shadow layer's `opacity` is `0` and its `box-shadow` is `--shadow-letter`'s computed value, and
+  its line's `transform` is `matrix(0, 0, 0, 1, 0, 0)`;
+- **hovered, once its transitions have ended:** the link's `transform` is
+  `matrix(1, 0, 0, 1, 0, -4)`, the photograph's is `matrix(1.06, 0, 0, 1.06, 0, 0)`, the shadow
+  layer's `opacity` is `1`, the line's `transform` is `matrix(1, 0, 0, 1, 0, 0)`, and the heading's
+  `text-decoration-line` is `none`;
+- the link, the photograph and the shadow layer report `transition-duration` `0.5s` and
+  `transition-timing-function` `cubic-bezier(0.2, 0.7, 0.2, 1)`; the line reports `0.32s` and
+  `cubic-bezier(0.3, 0, 0, 1)`; the shadow layer's `transition-property` is `opacity` and the
+  others' is `transform`;
+- the line's `transform-origin` x component is `0px` on the `en-gb` page and equals the line's
+  width on `/ar-XB`;
+- **the priority card** has no `data-fo-card-motion`, no shadow layer and no line element, and its
+  heading's `text-decoration-line` is `underline` while hovered;
+- **a `primary` `Button`** (the first one on a built page that renders one; the test names the
+  page and asserts the element is that variant), hovered: its layer's `opacity` is `1`, with
+  `transition-duration` `0.2s` and `cubic-bezier(0.2, 0, 0.13, 1)`, and its `background-color`
+  equals its rest value; held pressed: its `transform` is `matrix(0.98, 0, 0, 0.98, 0, 0)` with
+  `transition-duration` `0.12s` and `cubic-bezier(0.2, 0, 0.13, 1)`; released: its
+  `transition-duration` is `0.2s` with `cubic-bezier(0.3, 0, 0, 1)`, and its `transform` returns to
+  `none`;
+- **coarse pointer** (the mobile project): a tapped moving card's link `transform` stays `none` and
+  its shadow layer's `opacity` stays `0`;
+- **reduced motion emulated:** a hovered moving card's link and photograph `transform` stay
+  `none`, its shadow layer's `opacity` stays `0`, its line's `transform` is
+  `matrix(1, 0, 0, 1, 0, 0)` at rest and while hovered and its `opacity` is `1` in the first frame
+  after the hover; a held press leaves the pill's `transform` `none`;
+- CLS is 0 across a card's hover-in and hover-out.
+
+**T-48 amended.** It gains:
+- **Unit** (`tests/unit/motion-css.test.ts`, over the shipped stylesheet): the `--duration-hover`
+  declaration in both files, value for value; each rule of clause 1, read by selector, property and
+  value (the two transforms, the two opacities, the durations, the curves, the line's two
+  `transform-origin` values, the press's two durations), each inside
+  `(hover: hover) and (pointer: fine)` and `prefers-reduced-motion: no-preference` where clause 5
+  puts it; `--duration-hover` used only under `[data-fo-card-motion]`; no `will-change` in a rule
+  that applies at rest. Unit (`tests/unit/motion-markup.test.tsx`): a moving card renders exactly
+  one shadow layer and one line element, both `aria-hidden`; a priority card renders neither and no
+  `data-fo-card-motion`.
+- **E2e** (`tests/e2e/motion.spec.ts`): every AC-44 bullet above. A hovered value is read after the
+  link's `transitionend`, or after at least 600 ms; a fixed wait under 500 ms reads a
+  mid-transition value and is not allowed.
+- **Red cases, each a mutation of the shipped CSS or markup that must turn a named case red:** the
+  lift back to `-2px`; the zoom back to `1.03`; `--duration-hover` at `400ms`, or declared in one
+  file only; the card's curve set to `--ease-standard`; a `box-shadow` transition in place of the
+  layer's opacity; the line's origin at `100% 50%` without `dir="rtl"`; the line at `--duration-base`;
+  the press release at `--duration-fast`; the pill's hover back to a `background-color` change;
+  `--duration-hover` used on `[data-fo-consent-sheet="fixed"]`; the shadow layer rendered on the
+  priority card; the card rules moved out of `(hover: hover) and (pointer: fine)` (the mobile case
+  lifts); the line's resting `scaleX(1)` dropped under reduce (its transform changes on hover). The
+  existing reds (a fade-in on the hero image, a `height` keyframe, a 200 ms transition on the
+  priority card) stay.
+
+**AC-6 and T-06** (as A24 clause 9 (c) reads them): text unchanged; clause 5's reduced-motion
+bullet is how this amendment meets them.
+
+**Owner.** TASK-277 (its row and brief are on PR 281; the row is already widened to attach motion 6
+to every product card and to the pill press) builds these values in the same PR: the token in both
+files, the two card elements, the CSS of clause 1 and the T-48 gains. It starts after PR 282 merges
+(clause 6). *Reading on the class:* the diff is styles, component markup and their tests, but it
+edits the guard on the LCP card (AC-44), so the PR keeps the breaker; the orchestrator names the
+class in the work order.
+
+Open for the founder: none blocking. (i) The consent banner's and the checkout's pills keep today's
+hover and press; default: unchanged until the founder asks for them to match (a new row). (ii) The
+*Reading* of clause 1 (d), one line under a wrapped name, can be overruled in one word.
+
+**A-founder-2026-10-19f (pointer): The 500 document and the language hints read a small client
+module, so the locale rows stay out of browser JavaScript (§13 Q13 option (a); §14 A1; AC-24 and
+AC-25; spec 003 §14 A-founder-2026-10-19f owns the rule, its new AC-52 and T-52; no new AC or T id
+here).**
+Status: approved in substance by the founder's ruling of 2026-10-19, verbatim: "go with the premium
+proposed version and fix c". Its "fix c" is recorded in spec 003 §14 A-founder-2026-10-19f; its
+"go with the premium proposed version" is A-founder-2026-10-19e's. The founder confirms this text
+when they approve the docs PR that carries it.
+
+- **Q13 option (a), restated.** The two zod-free client paths (`src/modules/i18n/error-document.ts`
+  for `global-error.tsx` and `[locale]/error.tsx`, and `src/modules/i18n/hints.ts` for the language
+  popup island) stay zod-free and now read an import-free client module that mirrors the x-default
+  locale's `code`, `bcp47` and `dir` and the launch codes. They no longer import
+  `src/config/locales.data.ts`, whose rows (path segments included) stay server-side.
+- **A1's budget is not raised.** PR 270 (TASK-182) measured 131 207 B against 131 072 B
+  (`resource-summary.script.size`, CI run 39211395643); this fix, inside PR 270, brings it back
+  under, measured in CI as spec 003 AC-52 (c) and (d) say.
+- **AC-25 gains:** "no client chunk a browser fetches for an audited document carries a locale
+  row's path segments (spec 003 AC-52 (c))". **T-27 gains** spec 003 T-52's build-output case.
+- **SEO, i18n, compliance:** spec 003 §14 A-founder-2026-10-19f's notes. No URL, key or data flow
+  change.
+- **Owner.** TASK-182, in PR 270 (spec 003 §14 A-founder-2026-10-19f, Owner).
