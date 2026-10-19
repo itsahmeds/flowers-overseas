@@ -200,7 +200,9 @@ export async function generateMetadata({
  */
 async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
   const t = await getTranslations({ locale });
-  return (key: string): string => (t as unknown as BreadcrumbLabel)(key);
+  // The values pass through: an info page's current crumb is `{name}` filled with its h1 (spec 041
+  // AC-19), and dropping them served the raw "{name}" in the BreadcrumbList.
+  return (key, values) => (t as unknown as BreadcrumbLabel)(key, values);
 }
 
 export default async function LocaleSegmentRoute({ params }: SegmentParams) {
