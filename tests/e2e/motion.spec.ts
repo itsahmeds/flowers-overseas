@@ -251,8 +251,11 @@ test.describe("1b. a jump inside the page is not a navigation", () => {
  * The **final** LCP element's motion: after the load and the network have settled, the last
  * buffered `largest-contentful-paint` entry, never a provisional one (on a listing the H1 paints
  * first and the priority photograph wins later). Beside it, the priority photograph
- * (`fetchpriority="high"`) checked directly, so a page whose LCP is its H1 still has its lead
- * photograph held still.
+ * (`fetchpriority="high"`), the lead or first-card photograph the brief names, checked directly
+ * and strictly: no transition may even be declared on it or an ancestor. The final LCP element,
+ * where it is another element, may not be moving at all (opacity, transform, an animation, a
+ * delay, or a transition running); on a listing a later card of the same size can win the LCP
+ * race, and its motion 6 hover transition is declared but idle at its paint.
  */
 async function lcpMotion(page: Page) {
   await page.waitForLoadState("load");
@@ -263,7 +266,7 @@ async function lcpMotion(page: Page) {
         (resolve) => {
           // What makes an element move at its paint: its own opacity and transform, and any
           // animation, transition or delay on it or an ancestor.
-          const check = (element: Element): string[] => {
+          const check = (element: Element, declared: boolean): string[] => {
             const problems: string[] = [];
             const self = getComputedStyle(element);
             if (self.opacity !== "1") problems.push(`opacity ${self.opacity}`);
@@ -279,9 +282,13 @@ async function lcpMotion(page: Page) {
               if (style.animationName !== "none")
                 problems.push(`${name} animation ${style.animationName}`);
               if (
-                style.transitionDuration
-                  .split(",")
-                  .some((value) => Number.parseFloat(value) > 0)
+                declared
+                  ? style.transitionDuration
+                      .split(",")
+                      .some((value) => Number.parseFloat(value) > 0)
+                  : node
+                      .getAnimations()
+                      .some((animation) => animation instanceof CSSTransition)
               ) {
                 problems.push(`${name} transition ${style.transitionProperty}`);
               }
@@ -305,8 +312,9 @@ async function lcpMotion(page: Page) {
             const lead = document.querySelector('img[fetchpriority="high"]');
             resolve({
               tag: element.tagName,
-              problems: check(element),
-              priority: lead === null ? ["no priority image"] : check(lead),
+              problems: check(element, element === lead),
+              priority:
+                lead === null ? ["no priority image"] : check(lead, true),
             });
           }).observe({ type: "largest-contentful-paint", buffered: true });
         },
@@ -344,8 +352,8 @@ test.describe("2. the LCP element paints at once (AC-44)", () => {
       });
     });
     await page.goto(HOME);
-    const { problems } = await lcpMotion(page);
-    expect(problems.join(" ")).toMatch(/section transition opacity/u);
+    const { priority } = await lcpMotion(page);
+    expect(priority.join(" ")).toMatch(/section transition opacity/u);
   });
 
   test("goes red with a 200 ms transition on the priority card (the guard on motion 6 removed)", async ({
@@ -360,8 +368,7 @@ test.describe("2. the LCP element paints at once (AC-44)", () => {
       });
     });
     await page.goto(SHOP);
-    const { problems, priority } = await lcpMotion(page);
-    expect(problems.join(" ")).toMatch(/^img transition transform/u);
+    const { priority } = await lcpMotion(page);
     expect(priority.join(" ")).toMatch(/^img transition transform/u);
   });
 });
@@ -777,7 +784,9 @@ async function hoveredCard(page: Page) {
   await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
   const card = page.locator("a[data-fo-card-motion]").first();
   await card.scrollIntoViewIfNeeded();
-  await card.hover();
+  // Near the photograph's top corner: the consent sheet, which lands after load, sits over the
+  // foot of the screen and would take the pointer from the card's centre.
+  await card.hover({ position: { x: 24, y: 24 } });
   await page.waitForTimeout(400);
   return card.evaluate((link) => ({
     card: getComputedStyle(link).transform,

@@ -25,9 +25,10 @@
  * A press scales the pill to 0.98 in `--duration-fast` (`transition-transform`: transform is the
  * only property a button animates, AC-44; colours change at once). `pending` marks a form's
  * primary submit: the client motion module (`../motion/MotionIsland.tsx`) sets `aria-busy="true"`
- * and `disabled` on submit, and `globals.css` opens the 22 px bloom in the label's inline-end
- * padding, absolutely placed, so the button keeps its width. With reduced motion only
- * `aria-busy` changes; with JavaScript off nothing does.
+ * and `disabled` on submit, and `globals.css` opens the 22 px bloom, absolutely placed so the
+ * button keeps its width: over the drawn arrow's slot where the label ends in one
+ * (`data-fo-pending-arrow`, which goes while busy), in the label's inline-end padding otherwise.
+ * With reduced motion only `aria-busy` changes; with JavaScript off nothing does.
  */
 import type { ReactElement, ReactNode } from "react";
 
