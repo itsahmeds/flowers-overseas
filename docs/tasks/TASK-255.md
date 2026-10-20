@@ -30,7 +30,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-20 (`/review 291`, PASS; `/break` holes 1-7 closed by tests, holes 8 header-name case and 9 v1 regex length ACCEPTABLE): carry-forward nits for TASK-257 or TASK-262: `toProviderIntent` defaults a missing `client_secret` to `""` (refuse or type it absent instead); add a trailing-whitespace and inner-whitespace case to the `validateEnv` live-key scan test (`payments-env.test.ts` covers a leading-space value only).
 
 ## Escalations
 
@@ -48,6 +48,7 @@ here.
 - 2026-10-20: `src/modules/payments/` (provider + contract cases, fake, Stripe adapter over `fetch`, methods, decline map, barrel), `payments.*` keys (en; de/pl drafted), review scope, live-key refusal in `validateEnv`; tests in unit and contract; 29 runtime and 2 type mutations watched red.
 - 2026-10-20: repo gates updated for the new namespace, scope entries, Stripe query keys and the `validateEnv` reader; rebased on df4a48f9 (TASK-182's `infoPages` merged beside `payments`); row `in_review`.
 - 2026-10-20: CI run 39444383199 red on `audit`/`test-unit`: gitleaks read Stripe's published example `client_secret` in the fixture as a key (now `placeholder-…`), and the barrel lost its `Owned by:` line (restored; `docs/architecture.md` row updated). Rebased on 193233df.
+- 2026-10-20: `/break 291` holes 1-7 get tests (`payments-stripe-webhook.test.ts`, path encoding in `stripe-adapter.test.ts`, `fromStripeCurrency` in `payments-amount.test.ts`); each mutated red, then restored.
 
 ## Result
 

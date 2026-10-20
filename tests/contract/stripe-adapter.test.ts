@@ -244,6 +244,34 @@ describe("retrieveIntent: what the adapter reads from a paid or declined intent"
   });
 });
 
+describe("the intent reference is a path segment, encoded (hole 6)", () => {
+  it.each([
+    ["retrieveIntent", "GET", ""],
+    ["capture", "POST", "/capture"],
+    ["cancel", "POST", "/cancel"],
+  ] as const)("%s encodes the reference", async (method, verb, action) => {
+    const seen: string[] = [];
+    server.use(
+      http.all(`${STRIPE_API_BASE}/*`, ({ request }) => {
+        seen.push(`${request.method} ${new URL(request.url).pathname}`);
+        return HttpResponse.json(
+          {
+            error: { type: "invalid_request_error", code: "resource_missing" },
+          },
+          { status: 404 },
+        );
+      }),
+    );
+    const stripe = provider();
+    const ref = "pi_x/../refunds?y=1#z";
+    if (method === "retrieveIntent") await stripe.retrieveIntent(ref);
+    else await stripe[method](ref, "key");
+    expect(seen).toEqual([
+      `${verb} /v1/payment_intents/pi_x%2F..%2Frefunds%3Fy%3D1%23z${action}`,
+    ]);
+  });
+});
+
 describe("failures are typed results that carry a code and never a message", () => {
   function failWith(status: number, body: unknown) {
     server.use(

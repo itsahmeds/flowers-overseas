@@ -15,6 +15,7 @@ import {
 } from "../../src/modules/payments/provider.ts";
 import {
   STRIPE_CHARGE_CURRENCIES,
+  fromStripeCurrency,
   toStripeAmount,
 } from "../../src/modules/payments/stripe/amount.ts";
 
@@ -79,4 +80,21 @@ describe("toStripeAmount (spec 013 AC-9, T-09)", () => {
       InvalidMinorUnits,
     );
   });
+});
+
+describe("fromStripeCurrency (hole 7)", () => {
+  it.each([
+    ["gbp", "GBP"],
+    ["eur", "EUR"],
+    ["pln", "PLN"],
+  ])("%s reads as %s", (code, ours) => {
+    expect(fromStripeCurrency(code)).toBe(ours);
+  });
+
+  it.each(["huf", "usd", "sek", "xyz"])(
+    "%s throws UnsupportedCurrency",
+    (code) => {
+      expect(() => fromStripeCurrency(code)).toThrow(UnsupportedCurrency);
+    },
+  );
 });
