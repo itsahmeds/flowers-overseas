@@ -23,7 +23,7 @@ task actually touches.
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
-| `payments` | Public barrel for `payments` | 013 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +6 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +26 |
 | `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts` +48 |
 

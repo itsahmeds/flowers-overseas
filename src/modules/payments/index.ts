@@ -1,6 +1,7 @@
 /**
- * Public barrel for `payments` (spec 013 §5.2; spec 014 adds Mollie behind the same interface).
- * Created and owned by TASK-255; TASK-254 adds only `events.ts`'s registrations.
+ * Public barrel for `payments` (PaymentProvider interface; stripe/, mollie/ adapters; webhooks).
+ * Owned by: spec 013 (+ spec 014 Mollie). Written by TASK-255 (spec 013 §5.2); TASK-254 adds only
+ * `events.ts`'s registrations.
  *
  * Provider types never leave the module (§5.2): the `PaymentProvider` interface, its contract
  * suite, `FakePaymentProvider` and the Stripe adapter are imported by path inside the module and

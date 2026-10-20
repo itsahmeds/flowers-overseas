@@ -13,7 +13,7 @@
   "canceled_at": 1234567890,
   "cancellation_reason": null,
   "capture_method": "automatic",
-  "client_secret": "pi_1PgafyB7WZ01zgkWSjxsAJo3_secret_Dm43xiq1k0ywrRRjDoi8y1gkM",
+  "client_secret": "placeholder-stripe-client-secret",
   "confirmation_method": "automatic",
   "created": 1234567890,
   "currency": "usd",
