@@ -78,14 +78,12 @@
       "locale": "en",
       "name": "Birthday flowers",
       "slug": "birthday-flowers",
-      "descriptionMd": "Bouquets, arrangements and plants people actually send for a birthday: bright tulips and gerberas, pink and orange roses, a mixed bunch chosen on the day, or an orchid for someone who keeps plants. Three sizes on most, and a printed card can be added. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Bouquets, arrangements and plants people actually send for a birthday: bright tulips and gerberas, pink and orange roses, a mixed bunch chosen on the day, or an orchid for someone who keeps plants. Three sizes on most, and a printed card can be added. Choose where it is going and the day you want, and we take care of the rest. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Birthday flowers delivered across Europe",
       "seoDescription": "Bright tulips, gerberas, roses, mixed bunches and orchids for a birthday, in three sizes. Pick the date; a printed card can be added.",
       "translationStatus": "human",
-      "reviewed": true,
-      "reviewedBy": "backend-implementer (spec 006 §2.2 copy rules, `plan/10` §2.2; TASK-073)",
-      "reviewedAt": "2026-09-09T00:00:00Z",
-      "sourceHash": "d0dfe7ebc1d4361215cc8624a7b8847af9c74b11fdfb22a1ff874a19a54daaab"
+      "reviewed": false,
+      "sourceHash": "35e033d58e8855e28ae2742ad4e3353159ef163a388af0b11beef9c020480eb6"
     },
     {
       "entity": "category",
@@ -196,12 +194,12 @@
       "locale": "en",
       "name": "Sorry flowers",
       "slug": "sorry-flowers",
-      "descriptionMd": "Pale roses, white tulips, freesias and a small box of pastel flowers — quiet rather than grand, which is usually the right register when you are apologizing. A printed card is free and worth using here. Order by the cutoff shown for the destination and it arrives on the date you pick. Every order is made by hand and delivered in person by our florist in the recipient's city.",
+      "descriptionMd": "Pale roses, white tulips, freesias and a small box of pastel flowers — quiet rather than grand, which is usually the right register when you are apologizing. A printed card is free and worth using here. Choose where it is going and the day you want, and we take care of the rest. Every order is made by hand and delivered in person by our florist in the recipient's city.",
       "seoTitle": "Sorry flowers: apology flowers delivered across Europe",
       "seoDescription": "Pale roses, white tulips, freesias and small pastel boxes: quiet rather than grand. A free printed card, and it arrives on the date you pick.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f110c4c15353e1ec86b620e4db5d069b167b9c2d660463d081d1416c9c5bac37"
+      "sourceHash": "4e2d130f7874fe37437c6aaf2e98969eadfbcecee72ac9cb2410a91c68e5d751"
     },
     {
       "entity": "category",

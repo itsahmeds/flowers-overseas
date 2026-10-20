@@ -149,23 +149,8 @@ function indexedText(html: string): string {
     .replaceAll(/\s+/gu, " ");
 }
 
-/**
- * **Escalated, not accepted** (TASK-239 brief, Escalations 3): two sentences of the authored hub
- * copy in `seed/data/copy/en/` (the `birthday-flowers` and `sorry-flowers` category hubs, the
- * `easter` and `i-am-sorry` occasion hubs, `en` and `en-gb`) promise an order-by cutoff while no
- * country is open. Catalogue copy is spec 006's and the founder's; this crawl names the two exact
- * sentences so it stays a gate for everything else, and the brief carries the copy decision.
- */
-const ESCALATED_HUB_COPY: readonly string[] = [
-  "Order by the cutoff shown for the destination and it arrives on the date you pick.",
-  "The destination page shows this year's date and the cutoff to order by.",
-];
-
-const EXCUSED: readonly string[] = ESCALATED_HUB_COPY;
-
 function offences(path: string, html: string): string[] {
-  let text = indexedText(html);
-  for (const excused of EXCUSED) text = text.replaceAll(excused, " ");
+  const text = indexedText(html);
   return PATTERNS.flatMap(({ name, pattern }) => {
     const match = pattern.exec(text);
     return match === null ? [] : [`${path}: ${name}: "${match[0]}"`];
@@ -315,9 +300,8 @@ test.describe("AC-34 (T-35): no cutoff or order-by text in any built document wh
       ).not.toEqual([]);
     }
     expect(offences("planted", "<p>Order by noon</p>")).not.toEqual([]);
-    // The guide's honest-blank row is hidden while closed (founder, 2026-10-20), so it is no
-    // longer excused: printed, it fails like any other "Order by".
-    expect(ESCALATED_HUB_COPY).toHaveLength(2);
+    // Nothing is excused (founder, 2026-10-20): the guide's honest-blank row is hidden while
+    // closed and the hub copy was rewritten, so a printed "Order by" fails wherever it is.
     expect(
       offences("planted", "<dl><dt>Order by</dt><dd>None yet.</dd></dl>"),
     ).not.toEqual([]);

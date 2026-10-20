@@ -1415,10 +1415,11 @@ describe("§11: a locale or a country cannot look ready in CI while it is gated 
     // `en` is not ready while TASK-243's rows wait for the founder: every product `seoTitle` took
     // "{name}: {descriptor}" and 10 category and 8 occasion rows lost their em dash (spec 006
     // §14 A-founder-2026-10-15a), and each changed row ships `reviewed: false` until the
-    // founder's own record run, which turns this back to ready (84 + 10 + 8 = 102 rows).
+    // founder's own record run, which turns this back to ready (84 + 10 + 8 = 102 rows). TASK-239
+    // adds three hub rows whose cutoff sentence was replaced (founder, 2026-10-20): 105.
     const en = byLocale.get("en");
     expect(en?.ready).toBe(false);
-    expect((en?.rows ?? 0) - (en?.reviewed ?? 0)).toBe(102);
+    expect((en?.rows ?? 0) - (en?.reviewed ?? 0)).toBe(102 + 3);
     for (const locale of launchLocales) {
       expect(byLocale.has(locale), locale).toBe(true);
     }

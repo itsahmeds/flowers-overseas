@@ -115,12 +115,12 @@
       "locale": "de",
       "name": "Entschuldigung",
       "slug": "entschuldigung",
-      "descriptionMd": "Bei einer Entschuldigung ist leise besser als groß und früh besser als spät. Zarte Rosen, weiße Tulpen und Freesien treffen den richtigen Ton, und die Karte zählt mehr als die Blumen: Schreiben Sie sie selbst, und wir drucken sie auf unsere Karte. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommen die Blumen an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Bei einer Entschuldigung ist leise besser als groß und früh besser als spät. Zarte Rosen, weiße Tulpen und Freesien treffen den richtigen Ton, und die Karte zählt mehr als die Blumen: Schreiben Sie sie selbst, und wir drucken sie auf unsere Karte. Wählen Sie, wohin die Blumen gehen und an welchem Tag, um den Rest kümmern wir uns. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Entschuldigung: Blumen europaweit verschicken",
       "seoDescription": "Zarte Rosen, weiße Tulpen und Freesien mit Ihren eigenen Worten auf einer gedruckten Karte. Leise statt groß, geliefert am Tag Ihrer Wahl.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f3fd54ab230cdb93ff2c70c68bdd79a09d42f3962bd497714786e504b635dbc4"
+      "sourceHash": "434baf64b8517b1702ddb3092911116d5e34a734f35dddfe7ced45734f6d7deb"
     },
     {
       "entity": "occasion",
@@ -258,12 +258,12 @@
       "locale": "de",
       "name": "Ostern",
       "slug": "ostern",
-      "descriptionMd": "Ostern wandert jedes Jahr und nimmt die ganze Woche mit: Der Bestellschluss verschiebt sich, Großmärkte schließen an Karfreitag und Ostermontag, und der Samstag ist zuerst voll. Frühlingsblumen sind der Punkt, bunte und gelbe Tulpen, Narzissen, eine Gartenkiste. Die Seite des Ziellandes zeigt das diesjährige Datum und den Bestellschluss. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Ostern wandert jedes Jahr und nimmt die ganze Woche mit: Der Bestellschluss verschiebt sich, Großmärkte schließen an Karfreitag und Ostermontag, und der Samstag ist zuerst voll. Frühlingsblumen sind der Punkt, bunte und gelbe Tulpen, Narzissen, eine Gartenkiste. Die Seite des Ziellandes zeigt das diesjährige Datum in diesem Land. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Ostern: Blumen europaweit verschicken",
       "seoDescription": "Bunte und gelbe Tulpen, Narzissen und Gartenkisten zu Ostern. Das Datum wandert; die Seite des Ziellandes zeigt Datum und Bestellschluss.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "362884002463d20ae2ac61481fed9f662c0b13bed13b4e6aadc71e483dfc6d14"
+      "sourceHash": "72afb2b604bd34db461330a52f61fa6a63d55952ed704d94d46b0529e3e76b49"
     },
     {
       "entity": "occasion",
