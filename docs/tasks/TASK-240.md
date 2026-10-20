@@ -63,11 +63,23 @@ follows it.
 ## Escalations
 
 - **2026-10-14, spec 005 §13 Q12 (to the founder, through the orchestrator):** which odd set, and
-  do prices move? Default 11 / 15 / 21 with prices kept by position. `open`.
+  do prices move? Default 11 / 15 / 21 with prices kept by position. `resolved` by spec 005 §14
+  A-founder-2026-10-15a (11 / 15 / 21, no 13; FO-BQ-004 at 5 / 7 / 9; six PL cells of FO-BQ-001,
+  -003 and -007 move under a per-SKU override).
+- **2026-10-21, implementer (to the orchestrator): the override task has no row.** A-founder-2026-10-15a
+  says AC-37 to AC-39 (T-38 to T-40: the per-SKU PL ladder override, the A1 band change in
+  `catalogue:check`, the `docs/runbooks/pricing.md` entry) go to "one new task", same agent, same
+  feature PR. `TASKS.md` has no row owning them, so PR 305 does not touch `prices.data.ts` and the
+  six PL cells still read 22 900 / 25 900 by position. T-37 leaves those six cells out (they are
+  T-38's), so the override lands on top of this PR without editing T-37. `open`.
 
 ## Progress
 
-_Not started._
+- 2026-10-21: worktree on origin/main 501c12f8; pinned base dumped (`tests/fixtures/catalog/tier-price-base.json`);
+  dataset remapped, `stemCount` mirrors the new default, seed projection and snapshot regenerated
+  (only `tierKey` lines move in the price files); `stem-tier` mode in `catalogue:check` and
+  `seed:check`; T-37 written and watched red; pinned keys moved in 22 test files and 7 seed
+  fixtures; draft PR 305, ready with `ci:full` and `visual:baselines`.
 
 ## Result
 
