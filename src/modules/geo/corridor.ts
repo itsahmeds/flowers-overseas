@@ -146,7 +146,10 @@ export interface CorridorPageParams {
  * without a fixture registry, and a caller cannot gather three of the four and forget the fourth.
  */
 export interface CorridorStateTerms {
-  /** `countries.ts` says `status: "live"` — a design label, not an operational fact (§13 Q3). */
+  /**
+   * `countries.ts` says `status: "live"`: since §14 A-founder-2026-10-14c clause 5 (TASK-239) it
+   * agrees with `deliveryDatesOpen()` and is no longer the design label of §13 Q3.
+   */
   readonly registryLive: boolean;
   /** A florist is taking our orders there (`hasActivePartners`). */
   readonly activePartners: boolean;

@@ -73,7 +73,8 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-20: Poland `demo` with no `citiesKey`; `statusDisagreements()` (AC-35); the four `en` values changed (`reviewed: false`), `de`/`pl` redrafted; finder options all selectable with "(soon)"; the FAQ cutoff gated on Poland's own predicate. Ripples of the flip kept at today's output (see `## Result`). Commit `bbb01b8b`, draft PR 293.
+- 2026-10-20: `tests/unit/ordering-state.test.tsx` (T-34/T-35/T-36 unit halves), `tests/e2e/ordering-state.spec.ts` (the AC-34 crawl and AC-33 surfaces), `tests/fixtures/poland-registry.ts` for the suites whose subject is the live path; four mutations watched red. Rebased on `df4a48f9`.
 
 ## Result
 
