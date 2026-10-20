@@ -1310,7 +1310,7 @@ describe("spec 006 §11 / AC-30: the catalogue-health report", () => {
     expect(rows.some((row) => row.meetsThreshold)).toBe(true);
     expect(rows.some((row) => !row.meetsThreshold)).toBe(true);
     expect(report).toContain("six-product rule");
-    expect(report).toContain("| PL | live | category |");
+    expect(report).toContain("| PL | demo | category |");
     expect(report).toContain("| DE | demo | occasion |");
     expect(report).toContain("Below the threshold in PL");
   });
@@ -1326,7 +1326,10 @@ describe("spec 006 §11 / AC-30: the catalogue-health report", () => {
       expect(row.products, row.key).toBeGreaterThanOrEqual(
         SIX_PRODUCT_THRESHOLD,
       );
-      expect(row.pageExists, row.key).toBe(true);
+      // `pageExists` is §11's "gated in code" column and follows `status`: Poland is `demo` since
+      // spec 007 §14 A-founder-2026-10-14c clause 5 (TASK-239), so its column reads no page until
+      // ordering opens there, like every other demo destination's.
+      expect(row.pageExists, row.key).toBe(false);
     }
     // And the other side is real, not hypothetical: three flower hubs and the thin seasonal
     // occasions are below it, which is what spec 008's negative case needs.

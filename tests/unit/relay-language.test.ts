@@ -479,8 +479,10 @@ const APPROVED = {
     "Made by our florist, a few streets from their door.",
   "home.destinations.body":
     "We open one country at a time, and only when we can promise the same flowers and the same care.",
+  // TASK-239: spec 007 AC-33 forbids "not delivering yet" on the hub, so the last sentence's
+  // clause reads "Where ordering has not opened yet"; unreviewed until the founder's record run.
   "destinationsHub.intro":
-    "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where we are not delivering yet, this page says so in the same words on every row.",
+    "Seven countries in Europe, and we have written a guide to every one of them: what is given, what is never given, how an address is written, and which dates matter in a year there. We write the guide first and open delivery after it. Where ordering has not opened yet, this page says so in the same words on every row.",
   "corridor.steps.guide.twoBody":
     "Our florist sees the recipient's address and your card message, and nothing else about you.",
   "corridor.steps.live.twoBody":

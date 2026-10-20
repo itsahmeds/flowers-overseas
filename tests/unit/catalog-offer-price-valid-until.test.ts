@@ -30,6 +30,14 @@ import type { OfferProjection } from "../../src/modules/catalog/types.ts";
 import { formatMoney, moneyDecimalString } from "../../src/modules/i18n";
 import { runSeoCli } from "./support/seo-cli.ts";
 
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
+
 const RESOLVE_MODULE = "../../src/modules/catalog/pricing/resolve.ts";
 const PROJECT_MODULE = "../../src/modules/catalog/pricing/project.ts";
 const LIVE = "PL" as const;
