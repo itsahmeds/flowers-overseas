@@ -14,24 +14,38 @@
  *  - Nobody can remove their own admin role or deactivate themselves (the "own last admin role"
  *    rule: there is one `admin` role per person, so removing your own is removing your last).
  *
- * Every write runs in one admin-context transaction (`withAdminContext`). TASK-218 adds the
- * required audit `action` to that context; the action names are already the dotted ones here.
+ * Every write runs in one admin-context transaction (`withAdminContext`) carrying its audit
+ * action (`USER_ACTIONS`, TASK-218), which the database's audit trigger writes on every row the
+ * write changes in `users`' audited neighbours `admin_profile` and `user_role`.
  */
 import { and, asc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { adminProfile } from "../../../db/schema/admin";
 import { adminRoles, sessions, userRole, users } from "../../../db/schema/auth";
-import { type DbActor, type DbTransaction, withAdminContext } from "@/lib/db";
+import {
+  type AdminContextInput,
+  type DbActor,
+  type DbTransaction,
+  withAdminContext,
+} from "@/lib/db";
 
-/** Runs one admin write or read, as `actor`, in one transaction. */
+/** Runs one admin write or read, as the actor with its audit action, in one transaction. */
 export type AdminRunner = <T>(
-  actor: DbActor,
+  context: AdminContextInput,
   fn: (db: DbTransaction) => Promise<T>,
 ) => Promise<T>;
 
-export const adminRunner: AdminRunner = (actor, fn) =>
-  withAdminContext(actor, fn);
+export const adminRunner: AdminRunner = (context, fn) =>
+  withAdminContext(context, fn);
+
+/** The audit actions of the users commands (spec 012 §2.3; `pnpm admin:grant` uses `grant`). */
+export const USER_ACTIONS = Object.freeze({
+  list: "users.list",
+  grant: "users.grant",
+  revoke: "users.revoke",
+  deactivate: "users.deactivate",
+} as const);
 
 const DisplayNameSchema = z.string().trim().min(2).max(80);
 
@@ -80,7 +94,7 @@ export async function listAdminUsers(
   actor: DbActor,
   run: AdminRunner = adminRunner,
 ): Promise<AdminUserRow[]> {
-  return run(actor, async (db) => {
+  return run({ ...actor, action: USER_ACTIONS.list }, async (db) => {
     const rows = await db
       .select({
         userId: adminProfile.userId,
@@ -116,7 +130,7 @@ export async function grantRole(
   const parsed = AdminGrantSchema.safeParse(input);
   if (!parsed.success) return { ok: false, reason: "invalid" };
   const { email, displayName, role } = parsed.data;
-  await run(actor, async (db) => {
+  await run({ ...actor, action: USER_ACTIONS.grant }, async (db) => {
     const [user] = await db
       .insert(users)
       .values({ email })
@@ -167,7 +181,7 @@ export async function revokeRole(
   if (userId === actor.userId && role === "admin") {
     return { ok: false, reason: "own_admin" };
   }
-  return run(actor, async (db) => {
+  return run({ ...actor, action: USER_ACTIONS.revoke }, async (db) => {
     const refused = await checkVersion(db, userId, updatedAt);
     if (refused !== undefined) return refused;
     await db
@@ -192,7 +206,7 @@ export async function deactivateUser(
   if (!parsed.success) return { ok: false, reason: "invalid" };
   const { userId, updatedAt } = parsed.data;
   if (userId === actor.userId) return { ok: false, reason: "own_admin" };
-  return run(actor, async (db) => {
+  return run({ ...actor, action: USER_ACTIONS.deactivate }, async (db) => {
     const refused = await checkVersion(db, userId, updatedAt);
     if (refused !== undefined) return refused;
     await db

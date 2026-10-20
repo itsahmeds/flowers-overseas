@@ -55,6 +55,13 @@ const FUNCTIONS = [
   "app_partner_owns_payout",
   "app_partner_sees_order",
   "audit_log_append_only",
+  // 0016 (TASK-218): the audit trail and the status-flip guard (spec 012 §5.1).
+  "audit_mark_real",
+  "audit_mask",
+  "audit_mask_columns",
+  "audit_record_view",
+  "audit_row_change",
+  "audit_write",
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
@@ -71,6 +78,7 @@ const FUNCTIONS = [
   "partner_coverage_country_check",
   "payout_currency_check",
   "set_updated_at",
+  "status_flip_guard",
 ];
 
 /**

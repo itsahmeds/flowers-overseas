@@ -94,6 +94,9 @@ export const featureFlagScope = pgTable(
   ],
 );
 
+/** The channels an audit row may come through (`0016`, spec 012 §5.1). */
+export const auditChannels = ["admin", "cli", "import", "system"] as const;
+
 export const auditLog = pgTable(
   "audit_log",
   {
@@ -109,6 +112,12 @@ export const auditLog = pgTable(
     after: jsonb("after"),
     requestId: text("request_id").notNull(),
     at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+    // `0016` (spec 012 §5.1 `NNNN_audit_trail`; TASK-218): the optional `app.audit_reason` and
+    // the channel the write came through.
+    reason: text("reason"),
+    channel: text("channel", { enum: auditChannels })
+      .notNull()
+      .default("admin"),
   },
   (table) => [
     check("audit_log_actor_label_check", sql`btrim(${table.actorLabel}) <> ''`),
@@ -120,15 +129,33 @@ export const auditLog = pgTable(
       "audit_log_entity_table_check",
       sql.raw(`entity_table ~ '^[a-z][a-z_]*$'`),
     ),
+    // A view of personal data (`order.viewed`, `application.viewed`) carries no values (`0016`).
     check(
       "audit_log_change_check",
-      sql`${table.before} is not null or ${table.after} is not null`,
+      sql.raw(
+        `before is not null or after is not null or action ~ '[.]viewed$'`,
+      ),
+    ),
+    check(
+      "audit_log_view_check",
+      sql.raw(`action !~ '[.]viewed$' or (before is null and after is null)`),
+    ),
+    check(
+      "audit_log_channel_check",
+      sql.raw(`channel in ('admin', 'cli', 'import', 'system')`),
+    ),
+    check(
+      "audit_log_reason_check",
+      sql.raw(`reason is null or btrim(reason) <> ''`),
     ),
     index("audit_log_entity_idx").on(
       table.entityTable,
       table.entityId,
       table.at,
     ),
+    index("audit_log_at_idx").on(table.at.desc()),
+    index("audit_log_actor_idx").on(table.actorUserId, table.at.desc()),
+    index("audit_log_action_idx").on(table.action, table.at.desc()),
   ],
 );
 

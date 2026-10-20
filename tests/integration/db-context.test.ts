@@ -112,6 +112,7 @@ describe.skipIf(!server.url)(
       expect(await count("system")).toBe(2);
       expect(
         await db.withAdminContext(
+          { action: "partners.list" },
           async (tx) => (await tx.select().from(fulfillmentPartner)).length,
         ),
       ).toBe(2);

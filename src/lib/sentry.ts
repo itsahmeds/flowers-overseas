@@ -93,6 +93,23 @@ export function captureWarning(
   });
 }
 
+/**
+ * Report one of the two database guards of spec 012 §2.3 (`AUDIT_ACTION_MISSING`,
+ * `STATUS_FLIP_OUTSIDE_ADMIN`) at level `error` (§11: either means a bug or a bypass attempt).
+ * The same shape as `captureWarning`: `signal` is a constant from `src/lib/db.ts`, carried as the
+ * tag that survives `beforeSend`; `fields` hold the request id and the role, never a value.
+ */
+export function captureGuardError(
+  signal: string,
+  fields: Readonly<Record<string, unknown>> = {},
+): void {
+  captureMessage(signal, {
+    level: "error",
+    tags: { signal },
+    extra: { ...fields },
+  });
+}
+
 /** The subset of a Sentry event this module touches. Structural, so no SDK types are needed. */
 export interface ScrubbableEvent {
   request?: {

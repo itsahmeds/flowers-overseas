@@ -21,11 +21,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /** Statements the fake transaction saw, in order, across every helper call in a test. */
 const statements: string[] = [];
+/** The bind parameters of each statement, by index into `statements` (absent: none). */
+const parametersOf = new Map<number, readonly unknown[]>();
 /** Whether a callback ran inside the transaction (it must, and after the preamble). */
 let insideTransaction = 0;
 
 const fakeTransaction = {
-  unsafe: (query: string): Promise<unknown> => {
+  unsafe: (
+    query: string,
+    parameters?: readonly unknown[],
+  ): Promise<unknown> => {
+    if (parameters !== undefined)
+      parametersOf.set(statements.length, parameters);
     statements.push(query);
     return Promise.resolve(undefined);
   },
@@ -54,6 +61,7 @@ const PARTNER_B = "44444444-4444-4444-8444-444444444444";
 
 beforeEach(() => {
   statements.length = 0;
+  parametersOf.clear();
   insideTransaction = 0;
 });
 
@@ -158,29 +166,84 @@ describe("withDbContext (AC-3 / T-05)", () => {
 });
 
 describe("withAdminContext and withSystemContext (AC-3)", () => {
-  it("runs an admin transaction as app.role = 'admin' with the actor's id", async () => {
+  it("runs an admin transaction as app.role = 'admin' with the actor's id and its audit action (spec 012 §2.3)", async () => {
     const { withAdminContext } = await import("../../src/lib/db");
-    await withAdminContext({ userId: USER_ID, requestId: REQUEST_ID }, () =>
-      Promise.resolve(undefined),
+    await withAdminContext(
+      {
+        userId: USER_ID,
+        requestId: REQUEST_ID,
+        action: "partner.status.active",
+      },
+      () => {
+        insideTransaction = statements.length;
+        return Promise.resolve(undefined);
+      },
     );
     expect(statements).toEqual([
       "SET LOCAL app.role = 'admin'",
       `SET LOCAL app.user_id = '${USER_ID}'`,
       "SET LOCAL app.partner_ids = ''",
       `SET LOCAL app.request_id = '${REQUEST_ID}'`,
+      "SET LOCAL app.audit_action = 'partner.status.active'",
+      "SELECT set_config('app.audit_reason', $1, true)",
       "SET LOCAL ROLE app_web",
     ]);
+    // No reason: the setting is emptied for this transaction, never left to a previous one.
+    expect(parametersOf.get(5)).toEqual([""]);
+    expect(insideTransaction).toBe(7);
   });
 
-  it("accepts the bare `withAdminContext(fn)` form and still issues all four statements", async () => {
+  it("binds the reason as a parameter, never into the SQL text (spec 012 §5.2)", async () => {
     const { withAdminContext } = await import("../../src/lib/db");
-    await withAdminContext(() => Promise.resolve(undefined));
-    expect(statements).toHaveLength(5);
+    const reason = "Demo call at 11:00'; DROP TABLE audit_log; --";
+    await withAdminContext(
+      { requestId: REQUEST_ID, action: "flag.checkout_open.on", reason },
+      () => Promise.resolve(undefined),
+    );
+    expect(statements[5]).toBe(
+      "SELECT set_config('app.audit_reason', $1, true)",
+    );
+    expect(parametersOf.get(5)).toEqual([reason]);
+    expect(statements.join("\n")).not.toContain("DROP TABLE");
+  });
+
+  it("requires an action: none, an empty one or one that is not lowercase and dotted is refused before any statement", async () => {
+    const { withAdminContext } = await import("../../src/lib/db");
+    for (const action of [
+      undefined,
+      "",
+      "partner",
+      "Partner.status",
+      "partner.status.",
+      "partner status.active",
+      "partner.status'; --",
+    ]) {
+      await expect(
+        withAdminContext({ requestId: REQUEST_ID, action } as never, () =>
+          Promise.resolve(undefined),
+        ),
+        String(action),
+      ).rejects.toThrow();
+    }
+    await expect(
+      withAdminContext({ action: "users.list", reason: "  " }, () =>
+        Promise.resolve(undefined),
+      ),
+    ).rejects.toThrow();
+    expect(statements).toEqual([]);
+  });
+
+  it("gives an actor-less admin transaction a fresh request id", async () => {
+    const { withAdminContext } = await import("../../src/lib/db");
+    await withAdminContext({ action: "users.list" }, () =>
+      Promise.resolve(undefined),
+    );
+    expect(statements).toHaveLength(7);
     expect(statements[0]).toBe("SET LOCAL app.role = 'admin'");
     expect(statements[3]).toMatch(
       /^SET LOCAL app\.request_id = '[0-9a-f-]{36}'$/,
     );
-    expect(statements[4]).toBe("SET LOCAL ROLE app_web");
+    expect(statements[6]).toBe("SET LOCAL ROLE app_web");
   });
 
   it("labels a job `system:{job}` per plan/11 §1", async () => {
