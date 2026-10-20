@@ -116,11 +116,16 @@ function lineName(line: AdminOrderLine): string {
       });
 }
 
-function change(event: AdminOrderEvent): string {
+/**
+ * What an event did to the status: entered, moved, or kept it. `order.placed` stores no pair (an
+ * insert has no `from_status`, spec 010 A1.3) and is the order entering `placed`; any other event
+ * without a pair says nothing here.
+ */
+function change(event: AdminOrderEvent): string | undefined {
   if (event.fromStatus === null || event.toStatus === null) {
-    return event.toStatus === null
-      ? ""
-      : adminT("admin.orders.detail.entered", { to: event.toStatus });
+    return event.type === "order.placed"
+      ? adminT("admin.orders.detail.entered", { to: "placed" })
+      : undefined;
   }
   return event.fromStatus === event.toStatus
     ? adminT("admin.orders.detail.unchanged", { status: event.fromStatus })
@@ -413,7 +418,8 @@ export default async function AdminOrderPage({
             when: viewer(event.occurredAt, "dayMonthTimeSeconds"),
             meta: (
               <>
-                {change(event)} · <code>{event.actor}</code>
+                {change(event) === undefined ? null : <>{change(event)} · </>}
+                <code>{event.actor}</code>
               </>
             ),
             payload: JSON.stringify(event.payload, null, 2),
