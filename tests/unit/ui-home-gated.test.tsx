@@ -280,7 +280,7 @@ describe("the trending row is gated on real orders", () => {
           html.indexOf(`data-fo-trending-pick="${pick.id}"`),
         );
         expect(card.slice(0, card.indexOf("</li>")), pick.id).toMatch(
-          /<a class="block no-underline[^"]*" href="[^"]+">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
+          /<a class="block no-underline[^"]*" href="[^"]+" data-fo-card-motion="">[\s\S]*data-fo-media-slot[\s\S]*<\/a>/u,
         );
       }
     }

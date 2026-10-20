@@ -40,8 +40,10 @@
  * taken is decided by the **shape**, through `hasCardPrice()`: a country-scoped card cannot reach
  * the priceless branch, because its schema has no way to be missing a price.
  *
- * Server Component. No state, no client bytes (§5.4). Its hover motion (motion 6: a 2 px lift and a
- * 3 % photo zoom, transform only) is CSS on `data-fo-card-motion`, and the priority card has none.
+ * Server Component. No state, no client bytes (§5.4). Its hover motion (motion 6, premium: a 4 px
+ * lift, a 6 % photo zoom, a shadow layer fading in and the name's line drawing; spec 004 §14
+ * A-founder-2026-10-19e) is CSS on `data-fo-card-motion` and the two `cardMotion.tsx` layers, and
+ * the priority card has none of them.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
@@ -52,6 +54,12 @@ import { formatMoney } from "@/modules/i18n";
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import type { MediaManifest } from "../media/manifest.ts";
 import { MediaProvenanceNote } from "../media/MediaProvenanceNote.tsx";
+import {
+  CARD_MOTION_ATTRIBUTE,
+  CARD_MOTION_HEADING,
+  CardMotionFrame,
+  CardMotionLine,
+} from "../primitives/cardMotion.tsx";
 import { Photo } from "../primitives/Photo.tsx";
 import { Price } from "../primitives/Price.tsx";
 import { Stack } from "../primitives/layout.tsx";
@@ -114,8 +122,11 @@ export function ProductCard({
   const catalog = useTranslations("catalog");
   const media = useTranslations("media");
   const shop = useTranslations("shop");
+  // Motion 6 moves a card that links to its page and is not the priority card (AC-44): the LCP
+  // photograph and its ancestors carry no transition, no shadow layer and no line.
+  const moving = card.href !== undefined && !priority;
 
-  const photo =
+  const photoBox =
     card.photo.kind === "asset" && priority && priorityAt === "below-md" ? (
       <>
         <MediaAsset
@@ -164,6 +175,12 @@ export function ProductCard({
       />
     );
 
+  const photo = moving ? (
+    <CardMotionFrame>{photoBox}</CardMotionFrame>
+  ) : (
+    photoBox
+  );
+
   const provenanceNote =
     card.photo.kind === "asset" ? (
       <MediaProvenanceNote
@@ -187,13 +204,19 @@ export function ProductCard({
     <>
       {/* The card name: Fraunces at the `h3` step (21/18), 14 px under the photograph (10 on a
           phone), and a real heading, because §5.3 requires the card's name to *be* its heading
-          and the price to be adjacent text. Underlined on the card link's hover. */}
+          and the price to be adjacent text. On a moving card the line draws under it on hover
+          (one line, never a `text-decoration` too); the priority card's name underlines. */}
       <Display
         as={headingLevel}
         size="lg"
-        className="mt-[10px] decoration-1 underline-offset-[5px] group-hover:underline md:mt-[14px]"
+        className={
+          moving
+            ? `mt-[10px] md:mt-[14px] ${CARD_MOTION_HEADING}`
+            : "mt-[10px] decoration-1 underline-offset-[5px] group-hover:underline md:mt-[14px]"
+        }
       >
         <bdi>{card.name}</bdi>
+        {moving ? <CardMotionLine /> : null}
       </Display>
       {hasCardPrice(card) ? (
         <Price
@@ -262,10 +285,9 @@ export function ProductCard({
         <a
           className="group flex flex-col"
           href={card.href}
-          // Motion 6 (spec 004 §14 A24 clause 9; TASK-194): the card lifts 2 px and its photograph
-          // zooms 3 % inside its clipped box on a fine pointer's hover (`globals.css`). Never on
-          // the priority card: the LCP photograph and its ancestors carry no transition (AC-44).
-          {...(priority ? {} : { "data-fo-card-motion": "" })}
+          // Motion 6 (spec 004 §14 A-founder-2026-10-19e; TASK-277): the card lifts 4 px and its
+          // photograph zooms 6 % inside its clipped box on a fine pointer's hover (`globals.css`).
+          {...(moving ? CARD_MOTION_ATTRIBUTE : {})}
         >
           {body}
         </a>

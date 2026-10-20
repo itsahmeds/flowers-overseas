@@ -38,6 +38,12 @@ import {
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import {
+  CARD_MOTION_ATTRIBUTE,
+  CARD_MOTION_HEADING,
+  CardMotionFrame,
+  CardMotionLine,
+} from "../primitives/cardMotion.tsx";
+import {
   Display,
   Eyebrow,
   HEADING_EM,
@@ -102,7 +108,10 @@ export function trendingPickHref(
 
 /**
  * The card's content inside its `<li>`: an `<a>` laid out exactly as the `<li>`'s own column was
- * (the same `flex-col` and gap), so linking a card moves no pixel; or the content itself.
+ * (the same `flex-col` and gap), so linking a card moves no pixel; or the content itself. A linked
+ * card is a moving card: motion 6 (spec 004 §14 A-founder-2026-10-19e; TASK-277) lifts it, zooms
+ * its photograph inside the clipped box and draws its name's line on a fine pointer's hover. No
+ * card of this row is a page's priority (LCP) photograph.
  */
 function CardLink({
   href,
@@ -113,10 +122,7 @@ function CardLink({
 }): ReactNode {
   if (href === undefined) return children;
   return (
-    <a
-      className="block no-underline hover:[&_h3]:underline hover:[&_h4]:underline"
-      href={href}
-    >
+    <a className="block no-underline" href={href} {...CARD_MOTION_ATTRIBUTE}>
       {children}
     </a>
   );
@@ -181,29 +187,39 @@ export function TrendingRow({
       {/* The phone draws the five as a two-column grid (`.M .grid5`, 32 px by 14 px; TASK-232,
           QA-3 D-07), not a scroller: the `trending` slot's `sizes` states that card's width. */}
       <ul className="m-0 grid list-none grid-cols-2 gap-x-[14px] gap-y-[32px] p-0 md:grid-cols-5 md:gap-x-[24px] md:gap-y-[40px]">
-        {picks.map((pick) => (
-          <li key={pick.id} data-fo-trending-pick={pick.id}>
-            <CardLink href={trendingPickHref(pick.sku, productPages)}>
-              {/*
+        {picks.map((pick) => {
+          const href = trendingPickHref(pick.sku, productPages);
+          const moving = href !== undefined;
+          const photo = (
+            <MediaAsset
+              assetId={pick.assetId}
+              locale={locale}
+              slot="trending"
+              ratio="card"
+              productName={pick.name}
+            />
+          );
+          return (
+            <li key={pick.id} data-fo-trending-pick={pick.id}>
+              <CardLink href={href}>
+                {/*
               The pick's photograph, or the captioned placeholder — whichever the dataset earns
               (spec 006 AC-18). The box is the `trending` slot, whose `sizes` states this row's
               own card width (`../media/slots.ts`). The pick's name is the heading the screen
               reader already announces, so it is handed to `MediaAsset`: an alt that merely
               repeats it is refused and degrades to the box.
             */}
-              <MediaAsset
-                assetId={pick.assetId}
-                locale={locale}
-                slot="trending"
-                ratio="card"
-                productName={pick.name}
-              />
-              <CardHeading className="display text-h3-s md:text-h3 mt-[10px] leading-(--line-height-title) md:mt-[14px]">
-                {pick.name}
-              </CardHeading>
-            </CardLink>
-          </li>
-        ))}
+                {moving ? <CardMotionFrame>{photo}</CardMotionFrame> : photo}
+                <CardHeading
+                  className={`display text-h3-s md:text-h3 mt-[10px] leading-(--line-height-title) md:mt-[14px]${moving ? ` ${CARD_MOTION_HEADING}` : ""}`}
+                >
+                  {pick.name}
+                  {moving ? <CardMotionLine /> : null}
+                </CardHeading>
+              </CardLink>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

@@ -19,7 +19,7 @@ task actually touches.
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/info-page-head.test.tsx` +5 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +33 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +93 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +94 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |

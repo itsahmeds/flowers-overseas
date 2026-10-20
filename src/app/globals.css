@@ -338,6 +338,9 @@
   /* Motion (spec 004 §14 A24 clause 9 (a); TASK-194): the stroke draws and the loading bloom. */
   --duration-draw: 600ms;
   --duration-bloom: 1200ms;
+  /* Motion 6's card hover only (spec 004 §14 A-founder-2026-10-19e clause 4): rules under
+     `[data-fo-card-motion]`, never a pill, a load, a reveal or the LCP element. */
+  --duration-hover: 500ms;
   --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
   --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
   --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -1090,23 +1093,71 @@
     }
   }
 
-  /* 6. A product card lifts 2 px and its photograph zooms 3 % inside its clipped box, on a fine
-     pointer's hover only. The priority card (the LCP photograph) carries no `data-fo-card-motion`. */
+  /* 6. Motion 6, premium (spec 004 §14 A-founder-2026-10-19e clause 1): a product card lifts 4 px,
+     its photograph zooms 6 % inside its clipped box and its shadow layer fades in, over
+     `--duration-hover` on `--ease-photo`, in and out; the name's line draws from the inline-start
+     over `--duration-slow`. A fine pointer's hover only. The priority card (the LCP photograph)
+     carries no `data-fo-card-motion`, no shadow layer and no line (AC-44). */
   @media (hover: hover) and (pointer: fine) {
     a[data-fo-card-motion],
     a[data-fo-card-motion] img {
       transition-property: transform;
-      transition-duration: var(--duration-base);
-      transition-timing-function: var(--ease-standard);
+      transition-duration: var(--duration-hover);
+      transition-timing-function: var(--ease-photo);
+    }
+
+    a[data-fo-card-motion] [data-fo-card-shadow] {
+      transition-property: opacity;
+      transition-duration: var(--duration-hover);
+      transition-timing-function: var(--ease-photo);
+    }
+
+    a[data-fo-card-motion] [data-fo-card-line] {
+      transition-property: transform;
+      transition-duration: var(--duration-slow);
+      transition-timing-function: var(--ease-emphasised);
     }
 
     a[data-fo-card-motion]:hover {
-      transform: translateY(-2px);
+      transform: translateY(-4px);
     }
 
     a[data-fo-card-motion]:hover img {
-      transform: scale(1.03);
+      transform: scale(1.06);
     }
+
+    a[data-fo-card-motion]:hover [data-fo-card-shadow] {
+      opacity: 1;
+    }
+
+    a[data-fo-card-motion]:hover [data-fo-card-line] {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Motion 6's pill (clause 1 (e), (f)): the hover layer fades over `--duration-base`; the press
+     goes in over `--duration-fast` on `--ease-standard` and settles back over `--duration-base` on
+     `--ease-emphasised`; while pressed the layer shows at once. On every pointer, as today. */
+  .fo-pill {
+    transition-property: transform;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-emphasised);
+  }
+
+  .fo-pill:active {
+    transform: scale(0.98);
+    transition-duration: var(--duration-fast);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .fo-pill::before {
+    transition-property: opacity;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  .fo-pill:active::before {
+    transition-duration: 0s;
   }
 
   /* 11. A below-the-fold image fades in over its paper box once it has loaded. */
@@ -1167,6 +1218,91 @@
       details[data-fo-menu][open] [data-fo-menu-panel],
       [data-fo-consent-sheet="fixed"] {
         opacity: 0;
+      }
+    }
+  }
+}
+
+/*
+ * Motion 6's two card layers and the pill's hover layer, at rest (spec 004 §14
+ * A-founder-2026-10-19e clause 1 (c), (d), (e) and clause 5). They are boxes that exist at rest and
+ * are absolutely positioned, so hover changes no layout (CLS 0); only their `opacity` or `transform`
+ * ever changes. `@layer components`, so a utility a call site adds still wins.
+ */
+@layer components {
+  /* (c) The shadow layer: a sibling of the photograph's clipped box, outside the clip and inside
+     the link, painting `--shadow-letter` at all times; `box-shadow` itself never transitions. */
+  [data-fo-card-shadow] {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-photo-s);
+    box-shadow: var(--shadow-letter);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (min-width: 48rem) {
+    [data-fo-card-shadow] {
+      border-radius: var(--radius-photo);
+    }
+  }
+
+  /* (d) The name's line: 1 px of ink under the name, drawn from the inline-start. */
+  [data-fo-card-line] {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: 1px;
+    background-color: var(--color-ink);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    pointer-events: none;
+  }
+
+  [dir="rtl"] [data-fo-card-line] {
+    transform-origin: 100% 50%;
+  }
+
+  /* (e) The pill's hover layer, in the variant's hover colour (`--fo-pill-hover`, set by the
+     variant); while pressed, the variant's active colour, at once. */
+  .fo-pill {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .fo-pill::before {
+    content: "";
+    position: absolute;
+    inset: var(--fo-pill-inset, 0);
+    z-index: -1;
+    border-radius: inherit;
+    background-color: var(--fo-pill-hover);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fo-pill:hover::before {
+      opacity: 1;
+    }
+  }
+
+  .fo-pill:active::before {
+    background-color: var(--fo-pill-active, var(--fo-pill-hover));
+    opacity: 1;
+  }
+
+  /* Reduced motion (clause 5): nothing lifts, zooms, presses or casts a shadow; the name's line
+     rests drawn and invisible and shows at once on a fine pointer's hover, so no transform changes. */
+  @media (prefers-reduced-motion: reduce) {
+    [data-fo-card-line] {
+      transform: scaleX(1);
+      opacity: 0;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      a[data-fo-card-motion]:hover [data-fo-card-line] {
+        opacity: 1;
       }
     }
   }
