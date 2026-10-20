@@ -154,12 +154,14 @@ BEGIN
     -- No signed-in person: a CLI run (`cli:admin-grant`) or a scheduled admin task.
     v_label := v_request;
   END IF;
+  -- `at` is the statement's own instant, not the transaction's start (`now()`, the column's
+  -- default): the rows of one transaction then read in the order they were written.
   INSERT INTO public.audit_log (
     actor_user_id, actor_label, action, entity_table, entity_id, before, after, request_id,
-    reason, channel
+    reason, channel, at
   ) VALUES (
     v_user_id, v_label, v_action, p_entity_table, p_entity_id, p_before, p_after, v_request,
-    v_reason, v_channel
+    v_reason, v_channel, clock_timestamp()
   );
 END;
 $fn$;

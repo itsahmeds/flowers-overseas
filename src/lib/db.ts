@@ -229,12 +229,23 @@ const GUARD_SIGNALS = [
   "STATUS_FLIP_OUTSIDE_ADMIN",
 ] as const;
 
-/** The guard `error` raised, if it is one of the two; read from the message prefix only. */
+/**
+ * The guard `error` raised, if it is one of the two; read from the message prefix only, of the
+ * error or of any error in its `cause` chain (Drizzle wraps the driver's error in its own).
+ */
 function guardSignalOf(
   error: unknown,
 ): (typeof GUARD_SIGNALS)[number] | undefined {
-  const message = error instanceof Error ? error.message : "";
-  return GUARD_SIGNALS.find((signal) => message.startsWith(`${signal}:`));
+  for (
+    let current: unknown = error, depth = 0;
+    current instanceof Error && depth < 5;
+    current = current.cause, depth += 1
+  ) {
+    const message = current.message;
+    const signal = GUARD_SIGNALS.find((name) => message.startsWith(`${name}:`));
+    if (signal !== undefined) return signal;
+  }
+  return undefined;
 }
 
 async function reportGuard(

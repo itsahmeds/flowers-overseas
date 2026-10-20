@@ -596,6 +596,11 @@ describe.skipIf(sql === undefined)(
                 VALUES ('zz-nostatus', 'X', 'Zed', ${countryA}, 'a@b.test', 'ZZZ', 1)
               `,
             );
+            // A partner's status changes only in admin context, with an audit action (spec 012
+            // §2.3, `0016`'s `status_flip_guard()`; TASK-218), so the status column's own check
+            // is exercised there.
+            await tx`SELECT set_config('app.role', 'admin', true),
+                            set_config('app.audit_action', 'partner.status.active', true)`;
             await refuse(
               "fulfillment_partner status live",
               (sp) =>
@@ -606,6 +611,8 @@ describe.skipIf(sql === undefined)(
               () =>
                 tx`UPDATE fulfillment_partner SET status = 'active' WHERE id = ${partner}`,
             );
+            await tx`SELECT set_config('app.role', '', true),
+                            set_config('app.audit_action', '', true)`;
             await refuse(
               "fulfillment_partner duplicate code",
               (sp) =>

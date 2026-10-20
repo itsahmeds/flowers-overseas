@@ -43,11 +43,13 @@ describe.skipIf(server.url === undefined)(
 
     beforeAll(async () => {
       scratch = await scratchDatabase(server.url as string, "adminusers");
-      run = (actor, fn) =>
+      run = (context, fn) =>
         scratch.sql.begin(async (tx) => {
+          // The audit action `withAdminContext` issues (TASK-218): the trigger records it.
+          await tx`SELECT set_config('app.audit_action', ${context.action}, true)`;
           await asApp(tx, {
             role: "admin",
-            ...(actor.userId === undefined ? {} : { userId: actor.userId }),
+            ...(context.userId === undefined ? {} : { userId: context.userId }),
           });
           return fn(drizzleOver(tx, scratch.sql));
         }) as never;
