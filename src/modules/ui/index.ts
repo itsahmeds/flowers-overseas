@@ -214,6 +214,13 @@ export type {
   FooterViewOptions,
 } from "./layout/footerView";
 
+// The deferral of non-critical islands until the LCP paint (spec 004 §14 A-founder-2026-10-15b,
+// AC-55; TASK-244): the layout wraps the language popup in it. The set itself
+// (`./deferred/deferredSet.ts`) is not exported: tests read it by path, and no client module may
+// import its values.
+export { AfterPaint } from "./deferred/AfterPaint.tsx";
+export type { AfterPaintProps } from "./deferred/AfterPaint.tsx";
+
 // The consent sheet (AC-17, AC-19, AC-20; TASK-051). `ConsentBanner` is a synchronous Server
 // Component; the island and the settings panel are two `next/dynamic({ ssr: false })` chunks
 // behind it, and every string they render is resolved here and passed as props, so no message

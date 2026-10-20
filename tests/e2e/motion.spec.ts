@@ -572,6 +572,8 @@ test.describe("5. motion 3: the pending button", () => {
   }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto(HOME);
+    // The module loads after the LCP paint (TASK-244): submit once it has run.
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
     const button = page.locator("button[data-fo-pending]");
     await button.scrollIntoViewIfNeeded();
     const before = await button.boundingBox();
@@ -740,6 +742,7 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
     await recordMotions(page);
     await page.goto(HOME);
     await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
     if (isMobile) await page.locator("[data-fo-menu-summary]").click();
     await page.mouse.wheel(0, 3000);
     await page.waitForTimeout(1200);
@@ -777,6 +780,7 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
     await recordMotions(page);
     await page.goto(HOME);
     await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
     await page.waitForTimeout(1500);
     const motions = await recorded(page);
     expect(reducedViolations(motions).length).toBeGreaterThan(0);
