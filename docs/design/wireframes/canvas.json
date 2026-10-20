@@ -846,7 +846,7 @@
       "x": 0,
       "y": 477204,
       "w": 1440,
-      "h": 6366
+      "h": 6925
     },
     {
       "file": "admin-country-detail-mobile.dc.html",
@@ -854,13 +854,13 @@
       "x": 1520,
       "y": 477204,
       "w": 390,
-      "h": 6494
+      "h": 7650
     },
     {
       "file": "admin-publish-desktop.dc.html",
       "title": "admin publish · desktop · spec 012b",
       "x": 0,
-      "y": 483938,
+      "y": 485094,
       "w": 1440,
       "h": 5875
     },
@@ -868,7 +868,7 @@
       "file": "admin-publish-mobile.dc.html",
       "title": "admin publish · mobile · spec 012b",
       "x": 1520,
-      "y": 483938,
+      "y": 485094,
       "w": 390,
       "h": 9536
     }
@@ -1255,7 +1255,7 @@
     {
       "id": "s012b-admin-publish",
       "x": 0,
-      "y": 483892,
+      "y": 485048,
       "w": 1400,
       "text": "Spec 012b · Admin · Publish: pages added and removed per language, one Publish button, building, live and checked, failed, timed out, daily limit, indexable removals refused, Railway only."
     }

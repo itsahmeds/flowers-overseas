@@ -934,7 +934,7 @@
       "x": 0,
       "y": 519708,
       "w": 1440,
-      "h": 6366
+      "h": 6925
     },
     {
       "file": "wireframes/admin-country-detail-mobile.dc.html",
@@ -942,13 +942,13 @@
       "x": 1520,
       "y": 519708,
       "w": 390,
-      "h": 6494
+      "h": 7650
     },
     {
       "file": "wireframes/admin-publish-desktop.dc.html",
       "title": "admin publish · desktop · spec 012b",
       "x": 0,
-      "y": 526442,
+      "y": 527598,
       "w": 1440,
       "h": 5875
     },
@@ -956,7 +956,7 @@
       "file": "wireframes/admin-publish-mobile.dc.html",
       "title": "admin publish · mobile · spec 012b",
       "x": 1520,
-      "y": 526442,
+      "y": 527598,
       "w": 390,
       "h": 9536
     },
@@ -964,7 +964,7 @@
       "file": "flows/admin-florist-bouquets.dc.html",
       "title": "Flow · florist bouquets on sale · email → bouquet → photos → price → approve → publish → Polish shop (spec 012b)",
       "x": 0,
-      "y": 536218,
+      "y": 537374,
       "w": 1440,
       "h": 2537
     },
@@ -972,7 +972,7 @@
       "file": "flows/admin-go-live.dc.html",
       "title": "Flow · a country goes live · check → fix → type the code → publish → live → back to demo (spec 012b)",
       "x": 1520,
-      "y": 536218,
+      "y": 537374,
       "w": 1440,
       "h": 2021
     }
@@ -1387,14 +1387,14 @@
     {
       "id": "s012b-admin-publish",
       "x": 0,
-      "y": 526396,
+      "y": 527552,
       "w": 1400,
       "text": "Spec 012b · Admin · Publish: pages added and removed per language, one Publish button, building, live and checked, failed, timed out, daily limit, indexable removals refused, Railway only."
     },
     {
       "id": "s012b-flows",
       "x": 0,
-      "y": 536172,
+      "y": 537328,
       "w": 1400,
       "text": "Spec 012b · Flows: florist bouquets on sale, and a country goes live."
     }
