@@ -81,4 +81,23 @@ Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the f
 
 ## Result
 
-_Pending._
+PR 293. AC-33 (every surface but the checkout's), AC-34, AC-35 (T-34 to T-36) are covered by `tests/unit/ordering-state.test.tsx` (25 cases) and `tests/e2e/ordering-state.spec.ts` (the crawl and the AC-33 surfaces, run by CI's `e2e`). Mutations watched red: Poland back to `live`, the grid reading `country.status`, the FAQ cutoff unconditional, the finder's "(soon)" dropped.
+
+- **Keys (values changed, `reviewed: false`):** `destinations.state.guideNotDelivering`, `product.demo.heading`, `home.sentence.notYet`, `destinationsHub.intro` (see Escalations 1). `destinations.pl.cities` is `retained`. `en-gb` unreviewed share 2.5 %.
+- **Ripples kept at today's output:** `featured` and the sentence's routing key on `DEMO_DESTINATION_ISO2` (Continue unchanged); the occasions index keeps Poland's calendar; Poland's Sunday surcharge rows stay unpriced (`prices.data.ts`: an `operations` block decides first). Intended consequences now true: Poland's `availability()` is `country.demo`, `offerProjection()` is `null` for it (the PDP `Offer` gate was shut anyway).
+- **Carry-forwards:** the PDP's live action is spec 010's Send, so under the Poland-open fixture the PDP status still reads "Ordering opens soon" (TASK-204 / spec 010); the hub and guide need a `live`-state guide file before they can show Poland live (`corridorState()`).
+- **Expensive gate run locally:** none. Linux visual baselines came from the `visual:baselines` workflow (run 39443233521), 10 images inspected.
+- `gates:cheap` below: the only red is `url-pii.test.ts` timing out at 5 s under load (load average 11 to 20); alone it passes 15/15. The same run also caught `tests/contract/pdp-schema.test.ts`, fixed in `d514bc7f`.
+
+```
+gates:cheap · d514bc7f3a5150009c289e68ec2d27a069033ef1 · tree clean · base origin/main · 2026-10-20T15:08:11.399Z
+typecheck             exit 0 · 3.0 s
+lint                  exit 0 · 27.6 s
+format:check          exit 0 · 14.5 s
+i18n:check            exit 0 · 0.9 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.3 s
+tests                 exit 1 · 108.9 s · changed 187 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: FAIL (1 of 7 red: tests)
+```
