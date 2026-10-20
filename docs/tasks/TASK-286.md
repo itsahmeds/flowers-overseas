@@ -46,10 +46,24 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-20 (frontend-implementer): `AddonPriceList` restyled to 8A (one rule over the list, one under each row, no fill/radius/shadow/pointer; the VAT sentence once, above the rows, as `nav.utility.pricesInclude`, the key the artboard names); unit + e2e tests red first, then green; next: visual baselines from CI (`visual:baselines`).
+- 2026-10-20: Linux baselines from run 39463322979 committed (5 images looked at); rebased on origin/main; ready with `ci:full`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR #301](https://github.com/itsahmeds/flowers-overseas/pull/301). `AddonPriceList` is now a plain ruled price list (8A): one rule over the list and one under each row; no fill, radius, shadow, hover or pointer; name and description on the left, the all-in amount (unchanged, from `addonPriceProjection()`) at the end; the card row reads "Included"; one VAT sentence, `nav.utility.pricesInclude`, under the heading and above the rows. It used to be `catalog.price.inclusive` under the rows, so **the PR keeps the breaker** (see Escalations). No new message key. Tests: unit, `tests/unit/product-page.test.tsx`: a new 8A case ×4 locales, and the AC-34 case now pins the new key (56/56). Six mutations each turned a case red: pointer, card fill, list rule, row rule, key swapped back, sentence moved below. e2e, `tests/e2e/product-page.spec.ts`: computed style per row under hover, and the sentence before the list, ×4 locales; runs in CI. Visual: `product-{desktop,mobile}-addons` and `dev-components-desktop` re-baselined; `product-{desktop,mobile}-summary` moved by anti-aliasing only. No local build, e2e or browser run. Handed on: the allergen line (Escalations) and the boxed "Add-on price row" still drawn in `docs/design/system/components.dc.html` (for the designer).
+
+```
+gates:cheap · adfc9bd328603e73808df826a03743e46ad975ac · tree clean · base origin/main · 2026-10-20T17:20:24.016Z
+typecheck             exit 0 · 8.7 s
+lint                  exit 0 · 21.9 s
+format:check          exit 0 · 12.1 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 38.5 s · changed 102 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```
