@@ -32,6 +32,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-19):** spec 002 §14 A8 is a separate migration (spec 016/018's); do not fold it in.
+- **From `/review` + `/break` of PR 287 (2026-10-20, reviewer's ruling on fabeb9f9):** HOLE 1 (parent `outbox.status` untested) REQUIRED and closed by the "hole 1" case in `tests/integration/outbox-dispatcher.test.ts` (red under `pending === 0` → `pending <= 1`). HOLE 2 (`SKIP LOCKED` removable without double delivery) ACCEPTABLE. HOLE 3 ACCEPTABLE, carried: no case pins the 500-character `last_error` cap or the 3 600 s retry cap; add both when the dispatcher is next touched. HOLE 4 (the registry-key filter only matters for a custom registry) ACCEPTABLE. HOLE 5 ACCEPTABLE, carried: tighten the four schema cases in `tests/unit/payments-events.test.ts` (attempts ≥ 1, an integer `attempt`, a 3-letter currency, the decline-code length bound) when TASK-215 or TASK-257 next touch the file.
+- **Reviewer notes for TASK-257/259 (2026-10-20):** (a) outbox rows written before the A7 migration get no `outbox_delivery` (no backfill); none exist pre-launch, but confirm none before the first paid order. (b) Handlers run inside the delivery's database transaction, holding its row lock and a connection across any provider call: keep handler calls short, or move the Stripe call out of the transaction.
 
 ## Escalations
 
@@ -48,6 +50,7 @@ here.
 - 2026-10-20: migration `0016_payments_a7` + guarded down, Drizzle mirror, `db/rls.ts`, `db:check` snapshot; catalogue gains `order.payment_attempt_failed` (9 status-preserving, 37 names).
 - 2026-10-20: `src/modules/payments/events.ts` (10 schemas), `OrderAuthorisedV1` optional fields, `src/modules/orders/outbox/{routes,dispatcher}.ts`, `outbox.dispatch` job + per-tick enqueue, `captureAlert`.
 - 2026-10-20: unit (T-19, T-20 type, T-37 static) and PG16 integration (T-19, T-20, T-37, spec 002 T-14/T-17/T-38…T-44) green; every AC-carrying assertion watched red under a mutation (list in `## Result`).
+- 2026-10-20: breaker HOLE 1 closed (parent `outbox.status` case, watched red); carry-forwards recorded; next: rebase after PR 289 and renumber to `0017_payments_a7`.
 
 ## Result
 

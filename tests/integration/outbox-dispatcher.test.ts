@@ -334,6 +334,72 @@ describe.skipIf(server.url === undefined)(
       expect(result.outbox?.status).toBe("sent");
     });
 
+    it("hole 1: the parent outbox.status reads pending while any target waits, dead after the 8th failure, sent only once both are sent", async () => {
+      const result = await rolledBack(scratch.sql, async (tx) => {
+        const status = async (
+          outboxId: string,
+        ): Promise<string | undefined> => {
+          const [row] = await tx<{ status: string }[]>`
+            SELECT status FROM outbox WHERE id = ${outboxId}`;
+          return row?.status;
+        };
+        // `payments` is claimed first, `routing` second: the order the case reads statuses in.
+        const ordered = async (): Promise<string> => {
+          const orderId = await insertPlacedOrder(tx, {
+            ...(await orderParents(tx)),
+            mode: "live",
+          });
+          const outboxId = await twoTargetRow(tx, orderId);
+          await tx`UPDATE outbox_delivery SET created_at = created_at + interval '1 second'
+                   WHERE outbox_id = ${outboxId} AND target = 'routing'`;
+          return outboxId;
+        };
+        const run = (handlers: HandlerRegistry) =>
+          dispatchOutbox({
+            handlers,
+            transaction: savepoints(tx),
+            retryBaseSeconds: 0,
+            batchSize: 1,
+            alert: alerts(),
+            log: silentLogger(),
+          });
+
+        // Row A: payments sent, routing fails 8 times.
+        const a = await ordered();
+        const failing: HandlerRegistry = {
+          payments: recording(),
+          routing: throwing(),
+        };
+        const dying: (string | undefined)[] = [];
+        for (let attempt = 0; attempt <= MAX_ATTEMPTS; attempt += 1) {
+          await run(failing);
+          dying.push(await status(a));
+        }
+
+        // Row B: payments sent, routing fails once, then succeeds.
+        const b = await ordered();
+        const recovering: (string | undefined)[] = [];
+        await run({ payments: recording(), routing: throwing() });
+        recovering.push(await status(b));
+        await run({ payments: recording(), routing: throwing() });
+        recovering.push(await status(b));
+        await run({ payments: recording(), routing: recording() });
+        recovering.push(await status(b));
+        return { dying, recovering, deliveries: await deliveries(tx, b) };
+      });
+      // Run 1 sends payments; runs 2 to 8 fail routing (attempts 1 to 7); run 9 is the 8th failure.
+      expect(result.dying).toEqual([
+        "pending",
+        ...Array.from({ length: MAX_ATTEMPTS - 1 }, () => "pending"),
+        "dead",
+      ]);
+      expect(result.recovering).toEqual(["pending", "pending", "sent"]);
+      expect(result.deliveries.map((d) => [d.target, d.status])).toEqual([
+        ["payments", "sent"],
+        ["routing", "sent"],
+      ]);
+    });
+
     it("runs the handler in the delivery's transaction: its writes commit with sent and are undone with a throw", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         const orderId = await insertPlacedOrder(tx, {
