@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 0 |
 | Plan refs | plan/01 §3 §4.4 §5 · plan/02 §4.1 §4.2 §7 §11 §14 · plan/03 §1 §2 · plan/07 §2.1 (price display, Omnibus ranking line) §3 (geo-blocking) · plan/10 §3 (honesty) |
 | ADRs | ADR-0001 (locale subfolders) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages in Phase 0) · proposes no new ADR |
