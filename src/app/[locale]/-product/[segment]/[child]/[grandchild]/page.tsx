@@ -14,6 +14,7 @@ import {
   resolveLocalePath,
   writeProductExistenceSummary,
 } from "@/modules/catalog";
+import { infoPageExists, infoPagePath } from "@/modules/content";
 import { LanguageAlternates } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
@@ -188,6 +189,14 @@ export default async function LocaleProductRoute(props: ProductParams) {
           // The product page keeps its trail on the phone and shows no back link (spec 004
           // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.
           <ListingBreadcrumb crumbs={product.breadcrumb} phone="trail" />
+        }
+        // The fresh-flower promise links to the guarantee page where this locale has one (spec
+        // 009 §14 A11 bullet 1, spec 041 §6; TASK-287): `infoPageExists()`'s answer, asked here
+        // because `modules/ui` may not read the content module.
+        guaranteeHref={
+          infoPageExists("guarantee", match.locale)
+            ? infoPagePath("guarantee", match.locale)
+            : undefined
         }
         view={product}
       />

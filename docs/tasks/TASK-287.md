@@ -43,7 +43,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-20 (frontend-implementer): `ProductPage` takes `guaranteeHref`; the product route hands `infoPagePath("guarantee")` where `infoPageExists("guarantee", locale)` holds (en, en-gb today), and the promise title becomes the link; unit equality (PDP `product.trust.freshness.*` = the guarantee page's `promise` section heading and first paragraph) and render cases, e2e for en/en-gb href and de/pl no link; mutations watched red; next: PR after TASK-286's PR is ready.
 
 ## Result
 
