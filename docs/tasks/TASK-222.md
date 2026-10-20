@@ -38,11 +38,28 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-21: queries (`orderQueueHead`, `countOrdersForAdmin`, `orderQueueFilterOptions`, `orderDetail`), `/admin/orders`, `/admin/orders/[id]`, `GET /admin/api/orders/head`, the poll island, `admin.orders.*` copy; draft [PR 307](https://github.com/itsahmeds/flowers-overseas/pull/307).
-- 2026-10-21: unit (poll, pages, head, scan, detail query) and integration (PG16, real `place()`) tests green; 21 mutations each watched red. Next: gates, ready, CI.
+- 2026-10-21: unit (poll, pages, head, scan, detail query) and integration (PG16, real `place()`) tests green; 21 mutations each watched red; gates:cheap PASS. Next: ready, CI.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 307](https://github.com/itsahmeds/flowers-overseas/pull/307). `src/modules/orders/queries.ts` gains, beside TASK-202's projections and with no second list schema, `orderQueueHead()` (`OrderQueueHeadSchema`), `countOrdersForAdmin()`, `orderQueueFilterOptions()` and `orderDetail(id, { includeRecipient })` (`AdminOrderDetailSchema`; the recipient snapshot is selected only when asked, the `public_token` and buyer snapshot never), plus range filters on `OrderQueueFilterSchema` (`deliveryFrom/To`, `createdFrom/To` in a `timeZone`; additive). `/admin/orders` renders `listOrdersForAdmin` (head read first, then the list), filters as a GET form, the demo marker from `order.mode`, the 390 cards; `OrderQueuePoll` polls `GET /admin/api/orders/head` every 3 s while visible, re-renders the server list with `since` (rows after it say "New", the polite region counts them) and pauses after 15 idle minutes with a Resume link. `/admin/orders/[id]` shows lines, VAT, totals, recipient for `orders.view_pii` only, the timeline with raw payloads, assignments, payments, no action control, and calls `logAdminRead` on every open. Admin nav's Orders entry is built. `admin.orders.*`: 120 keys, all `reviewed: false` (admin catalogue, outside every public share). Three admin-only `DateStyle`s in `format.ts`. Primitives: `AdminRecord.tsx` (new), `AdminData.tsx` (chip tones, end cells, table foot, filter label/action/clear), `OrderQueuePoll.tsx` + `queue-poll.ts`; `components.dc.html` names them.
+
+Tests: unit `admin-orders` 57 (query string, pages, head endpoint, detail query's recipient gate, T-22 source scan), `admin-order-poll` 13 (3 s, hidden, 15-minute pause, no overlap, live region), `admin-permission-binding` +12 (orders.view on list, detail, head), `i18n-format` +1, `url-pii` and `admin-scans` updated; integration `admin-orders` 5 on a throwaway PG16 with real `place()` (T-21 service half, filters, detail, T-22 over real rows, AC-13 rows). 21 mutations, each watched red (list in the PR).
+
+Decisions, none a deviation from a binding clause: (1) the artboard's range filters are additive keys on TASK-202's filter schema; (2) the florist shows as its partner code (the table has no display name; `legal_name` is masked personal data); (3) the buyer projection shows the data's value (`confirmed` for `no_partner_available`), not the drawn "we're finding a florist" (decision 9, founder copy pending, spec 015); (4) money and dates are `Intl`'s ("199.00 PLN", "Thu, 8 Oct") through `formatMoney`/`formatDate`; (5) the tier shows as its key (`stems_18`); (6) a VAT split reads "of which VAT 8%" (`vat_breakdown` carries no category). **Owed, as TASK-217 and TASK-218:** T-21's browser run, T-24 (axe) and T-25 (visual) for the signed-in order pages wait for the CI-database task; no build slot taken and no browser run locally.
+
+`pnpm gates:cheap` at 5e2bbdfa (load average 3.85):
+
+```
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 21.7 s
+format:check          exit 0 · 12.9 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 72.4 s · changed 160 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
