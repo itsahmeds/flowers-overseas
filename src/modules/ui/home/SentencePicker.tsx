@@ -116,7 +116,8 @@ export function SentencePicker({
   const shops = new Set(shopCountries);
   const destinations = sentenceDestinations(locale, (key) => t(key), shops);
   const occasions = sentenceOccasions();
-  const firstOpen = destinations.find((destination) => destination.open);
+  // Preselected: the first destination Continue takes to a shop (Poland), as before TASK-239.
+  const firstShop = destinations.find((destination) => destination.shop);
   const defaultWho = SENTENCE_WHO[0];
   const occasionLabel = (occasion: string, pronoun: string): string =>
     t("home.sentence.occasion", { occasion, pronoun });
@@ -176,14 +177,15 @@ export function SentencePicker({
                 id={SENTENCE_IDS.country}
                 name={SENTENCE_FIELDS.country}
                 className={SELECT}
-                defaultValue={firstOpen?.iso2}
+                defaultValue={firstShop?.iso2}
                 data-fo-sentence-country
               >
+                {/* Every country is selectable; one where ordering is not open says "soon"
+                    beside its name, in words (spec 007 §14 A-founder-2026-10-14c clause 3). */}
                 {destinations.map((destination) => (
                   <option
                     key={destination.iso2}
                     value={destination.iso2}
-                    disabled={!destination.open}
                     data-fo-sentence-destination={destination.iso2}
                   >
                     {destination.open

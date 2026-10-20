@@ -462,15 +462,19 @@ function retailRows(): CountryPriceData[] {
  * window rather than remove a claim. The amounts stay authored in `DESTINATION_PRICING` either
  * way — `catalogue:check --mode surcharge-amount` still transcribes them — and PL's rows return
  * with no edit here the day a florist's operations land.
+ *
+ * **An authored `operations` block decides first, whatever the status** (TASK-239). Poland became
+ * `demo` (spec 007 §14 A-founder-2026-10-14c clause 5) while keeping the block that says "no Sunday
+ * delivery"; reading `status` first would have priced a Sunday for it again. A destination's
+ * agreed Sunday rule is a fact about it in either status, so the rows stay exactly as they were.
  */
 function emitsSundaySurcharge(iso2: string): boolean {
   if (!isCountryIso2(iso2)) return true;
   const country = countryConfig(iso2);
-  if (country.status !== "live") return true;
-  return (
-    country.operations !== undefined &&
-    country.operations.sundayDelivery !== "none"
-  );
+  if (country.operations !== undefined) {
+    return country.operations.sundayDelivery !== "none";
+  }
+  return country.status !== "live";
 }
 
 function surchargeRows(): CountryPriceData[] {
