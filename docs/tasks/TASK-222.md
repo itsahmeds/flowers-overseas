@@ -37,7 +37,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21: queries (`orderQueueHead`, `countOrdersForAdmin`, `orderQueueFilterOptions`, `orderDetail`), `/admin/orders`, `/admin/orders/[id]`, `GET /admin/api/orders/head`, the poll island, `admin.orders.*` copy; draft [PR 307](https://github.com/itsahmeds/flowers-overseas/pull/307).
+- 2026-10-21: unit (poll, pages, head, scan, detail query) and integration (PG16, real `place()`) tests green; 21 mutations each watched red. Next: gates, ready, CI.
 
 ## Result
 
