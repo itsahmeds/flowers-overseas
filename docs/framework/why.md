@@ -221,6 +221,10 @@ legal or compliance text, security, privacy or ranking, and then a scoped review
 brief. Round-1 holes are still closed or accepted, whatever their subject (W-13). The same day the founder asked to put the buying path (checkout, payments, legal
 pages, launch) ahead of polish.
 
+## W-24 · Light checks: one review, a breaker only where a mistake costs money or the law
+
+On 2026-10-20 the founder said they had no time to spend on reviews, checks and gates, and chose "Light": one checker, one round, on the cheap model, with the breaker kept only on payments, orders, prices, dates, logins, data changes and legal text. Two full review rounds and two breaker rounds on every PR (W-22, W-23) had made the review cycle the slowest part of each PR. The breaker stays where a defect reaches a buyer's money, the law or an attacker; ranking work, presentation and tooling go review-only, and CI's SEO validators and Lighthouse remain the gate on ranking. W-22's two rounds and W-23's two breaker rounds are retired by this entry.
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the

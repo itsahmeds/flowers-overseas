@@ -1,6 +1,6 @@
 ---
 name: breaker
-description: Adversarial tester. Runs beside the reviewer on every PR that is not review-only (CLAUDE.md DoD §4) and tries to make the change fail — mutates the code each acceptance criterion rests on and feeds it the awkward cases (DST nights, zero and rounding money, cutoff boundaries, special characters and RTL, illegal order transitions, unsigned webhooks, missing canonicals) — then reports which breaks the tests caught and which survived. HOLDS or HOLES. Never fixes anything.
+description: Adversarial tester. Runs beside the reviewer, one round, only on PRs that touch money, orders, payments, dates, auth, migrations or legal text (CLAUDE.md DoD §4) and tries to make the change fail — mutates the code each acceptance criterion rests on and feeds it the awkward cases (DST nights, zero and rounding money, cutoff boundaries, special characters and RTL, illegal order transitions, unsigned webhooks, missing canonicals) — then reports which breaks the tests caught and which survived. HOLDS or HOLES. Never fixes anything.
 tools: Read, Grep, Glob, Bash
 model: inherit
 maxTurns: 120
@@ -22,7 +22,7 @@ names the SHA it covers.
 3. The PR diff (`gh pr diff <n>`). Only the spec sections its AC ids name, from the spec's `## 0. Index`.
 4. `docs/codebase-map.md` for where the touched modules' tests live
 
-**Round 2 and later:** attack only the diff since your last round and re-check the holes you
+**One round only (CLAUDE.md DoD §4, "Light"); if the orchestrator re-dispatches you to check a fix:** attack only the diff since your last round and re-check the holes you
 reported. Don't re-break what already held.
 
 ## Procedure

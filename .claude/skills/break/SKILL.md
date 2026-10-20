@@ -1,13 +1,13 @@
 ---
 name: break
-description: Adversarial test of a PR — the breaker agent mutates the code each acceptance criterion rests on and throws the awkward cases at it, then reports which breaks the tests caught. Runs beside /review on every PR that is not review-only (CLAUDE.md DoD §4); a surviving break (HOLES) blocks merge until a test catches it or the reviewer records why it is acceptable. Never edits code.
+description: Adversarial test of a PR — the breaker agent mutates the code each acceptance criterion rests on and throws the awkward cases at it, then reports which breaks the tests caught. Runs beside /review on PRs in the breaker areas of CLAUDE.md DoD §4 (money, orders, payments, dates, auth, migrations, legal), one round, (CLAUDE.md DoD §4); a surviving break (HOLES) blocks merge until a test catches it or the reviewer records why it is acceptable. Never edits code.
 argument-hint: "<PR number or TASK-NNN>"
 disable-model-invocation: true
 ---
 
 # /break <pr-or-task-id>
 
-**When:** every PR that is not review-only (`CLAUDE.md` DoD §4), dispatched with `/review` (they run in parallel, in separate worktrees).
+**When:** only PRs that touch money/pricing, orders, payments/webhooks, dates/cutoffs, auth/security, migrations/data flows or compliance/legal text (`CLAUDE.md` DoD §4, "Light"; one round only), dispatched with `/review` (they run in parallel, in separate worktrees).
 **Inputs:** PR number (or task ID → resolve the PR from `TASKS.md`).
 **Agent:** `breaker`.
 **Outputs:** `BREAKER: HOLDS | HOLES on <head-sha>`, a table of breaks tried (`CAUGHT` / `SURVIVED`), posted on the PR.

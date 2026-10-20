@@ -35,7 +35,7 @@ not sent:
 **Task:** TASK-NNN — <title> (or the spec / PR / decision for a role with no task) · **Role:**
 implementer | breaker (round N) | reviewer (round N) | finisher | spec writer | advisor | designer |
 SEO auditor | launch ·
-**Size:** S | M | L · **Class:** full (breaker + reviewer) | review-only (`CLAUDE.md` DoD §4; when in doubt, full)
+**Size:** S | M | L · **Class:** full (breaker + reviewer: money, orders, payments, dates, auth, migrations, legal) | review-only (everything else; `CLAUDE.md` DoD §4 "Light")
 **Brief:** `docs/tasks/TASK-NNN.md` (on branch `task/TASK-NNN-<slug>`)
 **Spec:** `specs/NNN-<slug>.md` — read `## 0. Index`, then only: <§ anchors for the AC ids owned>
 **Map:** `docs/codebase-map.md`

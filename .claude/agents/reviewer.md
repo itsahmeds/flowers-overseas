@@ -20,7 +20,7 @@ You are the merge gate. You read, run, and judge; you never edit code. A `FAIL` 
 5. The PR diff (`gh pr diff <n>`), CI status (`gh pr checks <n>`), and the preview URL
 6. `plan/01` §5 (boundaries) §9 (security), `plan/02` §7–§9 (canonical, hreflang, schema), `plan/03` §5–§7 (strings, formatting), `plan/07` §10 (compliance gates), `plan/12` §4 (testing pyramid) — the ones the diff touches
 
-**Round 2 and later:** review the diff since your last round only, and rerun only the suites the diff touches (a copy change does not need the integration suite). Do not re-read the spec or the map you already read in round 1.
+**One round only (CLAUDE.md DoD §4, "Light"). A FAIL is re-checked by a review scoped to its failed items; FAIL only on a defect in correctness, security, compliance, money or ranking, everything smaller is a carry-forward. For that scoped re-check:** review the diff since your last round only, and rerun only the suites the diff touches (a copy change does not need the integration suite). Do not re-read the spec or the map you already read in round 1.
 
 ## Checklist (every item PASS / FAIL / N/A with a one-line reason)
 **Spec** · every claimed AC is demonstrably met · no scope beyond the task · deviations declared
