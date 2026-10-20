@@ -3542,3 +3542,14 @@ when they approve the docs PR that carries it.
 - **SEO, i18n, compliance:** spec 003 §14 A-founder-2026-10-19f's notes. No URL, key or data flow
   change.
 - **Owner.** TASK-182, in PR 270 (spec 003 §14 A-founder-2026-10-19f, Owner).
+
+
+**A-founder-2026-10-20a (pointer): the header follows the destination in the URL; no eyebrow repeats the trail; the home says "Ordering opens soon" in its first screen; motions 11 and 12 never hide content in print (spec 043 §5.3 A, D, F, H; spec 043 AC-1 to AC-4, AC-6, AC-8, AC-15, AC-18; no new AC or T id here).**
+Status: draft, carried by spec 043's docs PR. Binding when the founder approves spec 043 (its §13 Q1 picks the header model; default A, as below). The founder's words that started it, 2026-10-20, in chat, verbatim: "the website seems a bit confusing, so a few pages and everything. So fix that up."
+
+- **The category row (§14 A20; spec 008 §14 A14 (a) to (c)).** On a page whose URL names a destination with a shop root in that locale (shop root, country category, country occasion, product page, that destination's guide), the row's Our selection, Bouquets, Roses, Plants, Birthday and Sympathy, on the desktop row and in the phone Menu (AC-47), link to that destination's pages as spec 043 §5.2 `destinationShopLinks()` says. Elsewhere the row is unchanged. The row is resolved per route with no request header, cookie or client path read (the `@notice` / `@switcher` slot precedent); the document stays one cache entry (AC-14's zero non-200 links, no `Vary`, no `Set-Cookie` unchanged). Spec 043 AC-1 to AC-4 and AC-6, T-01 to T-04 and T-06.
+- **Eyebrows.** No eyebrow on a listing or hub page type equals a label of that page's breadcrumb (spec 043 AC-18, T-18). The occasion hub's "Occasions" eyebrow goes; the country listings' state eyebrow goes by spec 008 §14 A-founder-2026-10-20a.
+- **The home's first screen (A21 clause 4).** While `anyDeliveryDatesOpen()` is false, the not-open state text (spec 007 §14 A-founder-2026-10-14c's words) is one line in the sentence section, inside the first viewport at 1440 × 900 and 390 × 844 (spec 043 AC-8, T-08). The home's product row heading reads "Our *selection*" and the basis line `home.trending.basis` is deleted (spec 043 AC-10; this supersedes the design README's "'Popular choices' with an honest basis line" for the home row once the founder approves the copy).
+- **Motions 11 and 12 (A23 clause 11, A24 clause 9).** Their `opacity: 0` start states apply on screen only; under `@media print` every element they hold is at full opacity (spec 043 AC-15, T-15). Values, timings and reduced-motion rules are unchanged (spec 042 owns any change to motion 11's look).
+- **SEO, i18n, compliance:** spec 043 §6, §7, §8. No URL, canonical, sitemap, hreflang or schema change; no new key.
+- **Owner:** spec 043 §12 tasks 1, 3 and 4.
