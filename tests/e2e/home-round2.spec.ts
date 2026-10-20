@@ -494,11 +494,18 @@ test.describe("Popular choices on the phone (TASK-284 item 5A; AC-49)", () => {
       await row.evaluate((node) => {
         node.scrollIntoView({ block: "center" });
       });
-      const rowBox = await row.boundingBox();
-      await page.mouse.move(
-        (rowBox?.x ?? 0) + (rowBox?.width ?? 0) / 2,
-        (rowBox?.y ?? 0) + (rowBox?.height ?? 0) / 2,
-      );
+      // Pan where the row itself is hit, not a fixed bar or the consent notice laid over it.
+      const point = await row.evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        for (let y = box.top + 12; y < box.bottom; y += 12) {
+          const x = box.left + box.width / 2;
+          const hit = document.elementFromPoint(x, y);
+          if (hit !== null && node.contains(hit)) return { x, y };
+        }
+        return null;
+      });
+      expect(point, "a point where the row is hit").not.toBeNull();
+      await page.mouse.move(point?.x ?? 0, point?.y ?? 0);
       await page.mouse.wheel(2000, 0);
       await expect
         .poll(async () => {

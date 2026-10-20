@@ -43,6 +43,7 @@ here.
 
 - 2026-10-20: tests first (unit layout + tab-stop + 19 px name, `sizes` 44vw − 17.6px, e2e 360/390 geometry with swipe and Tab, a11y axe at 390), then `TrendingRow` as the drawn `.scroll5` row and the `trending` slot's `sizes`. Next: cheap gates, PR, CI, Linux baselines.
 - 2026-10-20: PR 300; cheap gates green; Linux baselines from run 39465832283 (21 images looked at, each explained by the shorter row), committed with the manifest. Next: ready, `ci:full`, CI on head.
+- 2026-10-20: CI e2e red at 360 only: the consent banner lay over the row's centre, so the wheel scrolled the banner (CI failure screenshot). The swipe now pans at a point `elementFromPoint` says is the row. The cases ran green locally inside the build slot (load 2.4). Next: CI on the new head.
 
 ## Result
 
@@ -57,7 +58,7 @@ Tests:
 - a11y: `home` at 390. axe on the section finds no violation, and `scrollable-region-focusable` is among the passes.
 - visual: 21 Linux baselines from run 39465832283.
 
-No expensive gate was run locally; CI judges them.
+One expensive gate ran locally: the three new e2e cases, inside the build slot at load 2.4, to check the 360 swipe fix before another CI round. Everything else is CI's.
 
 ```
 gates:cheap · e9c36b5e48215eedd5bbcd0b69efdd0cb55befc3 · tree clean · base origin/main · 2026-10-20T17:07:31.955Z
