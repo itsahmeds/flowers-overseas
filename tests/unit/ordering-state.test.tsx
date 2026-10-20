@@ -19,7 +19,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   COUNTRIES,
@@ -313,4 +313,39 @@ describe("AC-34 (T-35): cutoff text renders only for a country where ordering is
       expect(html).toContain(value(locale, "faq.whoDelivers.answerCutoff"));
     },
   );
+
+  it("keeps Poland's FAQ cutoff off while another country is the open one (`/break 293` hole 1)", async () => {
+    // Germany open, Poland closed: `anyDeliveryDatesOpen()` is true, `deliveryDatesOpen("PL")` is
+    // not. The FAQ's sentence names Warsaw, so only Poland's own predicate may print it.
+    vi.resetModules();
+    vi.doMock(
+      "../../src/modules/geo/delivery/state.ts",
+      async (importOriginal) => {
+        const actual =
+          await importOriginal<
+            typeof import("../../src/modules/geo/delivery/state.ts")
+          >();
+        return {
+          ...actual,
+          pickerState: (iso2: Parameters<typeof actual.pickerState>[0]) =>
+            iso2 === "DE" ? ("live" as const) : actual.pickerState(iso2),
+        };
+      },
+    );
+    try {
+      const countries = await import("../../src/config/countries.ts");
+      expect(countries.anyDeliveryDatesOpen()).toBe(true);
+      expect(countries.deliveryDatesOpen("DE")).toBe(true);
+      expect(countries.deliveryDatesOpen("PL")).toBe(false);
+      const { HomeFaq: Faq } =
+        await import("../../src/modules/ui/home/HomeFaq.tsx");
+      const html = text(render(<Faq />, "en"));
+      expect(html).toContain(value("en", "faq.whoDelivers.answer"));
+      expect(html).not.toContain(value("en", "faq.whoDelivers.answerCutoff"));
+      expect(html).not.toContain("Order by 14:00 in Warsaw");
+    } finally {
+      vi.doUnmock("../../src/modules/geo/delivery/state.ts");
+      vi.resetModules();
+    }
+  });
 });

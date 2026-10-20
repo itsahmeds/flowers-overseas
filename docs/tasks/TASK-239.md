@@ -67,6 +67,8 @@ Founder ruling D2 A, 2026-10-14 ("R ok, D1–D5, …"; `docs/decisions-log.md`).
 - **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
   - N-06 (P1, QA-2): the destinations hub reads Poland as "Guide · not delivering yet" while the home says Poland is where to shop. When this task sets Poland's state line to "Ordering opens soon", the hub's line for Poland must agree (TASK-188 R6 prints the hub's state line).
 
+- **From `/break 293` (reviewer ruling):** hole 1 closed in this PR (FAQ cutoff stays off while a non-Poland country is open; red under the `anyDeliveryDatesOpen()` gate). Holes 2 to 4 ruled acceptable. Carried: (a) when the first `live`-state guide lands, assert spec 007 clause 1's "`corridorState(iso2) === "live"` implies `deliveryDatesOpen(iso2)`" in a unit test; (b) `home.dates.orderBy` joined the crawl's `CUTOFF_KEYS` here.
+
 ## Escalations
 
 Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the founder (not blocking the PR):

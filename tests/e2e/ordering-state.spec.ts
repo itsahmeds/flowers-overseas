@@ -62,6 +62,7 @@ const CUTOFF_KEYS = [
   "nav.utility.cutoffShort",
   "faq.whoDelivers.answerCutoff",
   "delivery.picker.live",
+  "home.dates.orderBy",
 ] as const;
 
 function catalogue(locale: string): Record<string, unknown> {
