@@ -47,6 +47,7 @@ here.
 - 2026-10-20: worktree `task/TASK-255-payments-provider` from main a0e29433; row `in_progress`; draft PR 291 opened.
 - 2026-10-20: `src/modules/payments/` (provider + contract cases, fake, Stripe adapter over `fetch`, methods, decline map, barrel), `payments.*` keys (en; de/pl drafted), review scope, live-key refusal in `validateEnv`; tests in unit and contract; 29 runtime and 2 type mutations watched red.
 - 2026-10-20: repo gates updated for the new namespace, scope entries, Stripe query keys and the `validateEnv` reader; rebased on df4a48f9 (TASK-182's `infoPages` merged beside `payments`); row `in_review`.
+- 2026-10-20: CI run 39444383199 red on `audit`/`test-unit`: gitleaks read Stripe's published example `client_secret` in the fixture as a key (now `placeholder-…`), and the barrel lost its `Owned by:` line (restored; `docs/architecture.md` row updated). Rebased on 193233df.
 
 ## Result
 
@@ -77,18 +78,17 @@ no mode). No build-slot gate was run. Handed on: TASK-266 adds a `google-pay` ro
 TASK-257/262 declare the Stripe env keys and inject them into `createStripeProvider`; TASK-254
 owns `src/modules/orders/outbox` for AC-9's lint half there.
 
-`pnpm gates:cheap` (load average 17; `url-pii` "is green with EXTERNAL_QUERY_KEYS" timed out at
-the local 5 s budget and passes 15/15 under CI's 30 s budget, `CI=1`):
+`pnpm gates:cheap` on 271d1075 (load average 18.6), all green:
 
 ```
-gates:cheap · 327e2d396fb9bffda1bef4e22140b726e3c7c805 · tree clean · base origin/main · 2026-10-20T14:55:27.577Z
-typecheck             exit 0 · 3.3 s
-lint                  exit 0 · 24.3 s
-format:check          exit 0 · 14.5 s
-i18n:check            exit 0 · 1.1 s
+gates:cheap · 271d1075e729beea646366a87b04a317f66e819f · tree clean · base origin/main · 2026-10-20T15:33:40.661Z
+typecheck             exit 0 · 2.6 s
+lint                  exit 0 · 22.0 s
+format:check          exit 0 · 12.6 s
+i18n:check            exit 0 · 0.9 s
 check:no-db           exit 0 · 0.2 s
-codebase:map --check  exit 0 · 0.3 s
-tests                 exit 1 · 113.2 s · changed 222 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 87.2 s · changed 222 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
 format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
-RESULT: FAIL (1 of 7 red: tests)
+RESULT: PASS
 ```
