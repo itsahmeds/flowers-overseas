@@ -40,6 +40,7 @@ here.
 - 2026-10-21: queries (`orderQueueHead`, `countOrdersForAdmin`, `orderQueueFilterOptions`, `orderDetail`), `/admin/orders`, `/admin/orders/[id]`, `GET /admin/api/orders/head`, the poll island, `admin.orders.*` copy; draft [PR 307](https://github.com/itsahmeds/flowers-overseas/pull/307).
 - 2026-10-21: unit (poll, pages, head, scan, detail query) and integration (PG16, real `place()`) tests green; 21 mutations each watched red; gates:cheap PASS. Next: ready, CI.
 - 2026-10-21: CI's `client-message-graph` refused zod in the island; the poll now compares the head endpoint's `ETag` and reads no body (24 mutations red). CI's other red, `design-docs` "leaves room between artboards", is main's (fix PR 304).
+- 2026-10-21: rebased on main after PR 304 merged (head 93b6d611). The `ci:full` run 39490026324 ended `failure` with **only `lighthouse` red**; every other job was green. I could not read the assertion before the 180-minute limit stopped me. The diff touches no public page and adds no public JavaScript (`client-message-graph` and the admin-only island), so this is probably the known LCP flake on `/en`/`/en-gb` (TASK-244/235). That is unconfirmed. **A finisher reads the lighthouse log on 93b6d611**: if it is LCP within 2200 ms, it is not this PR's; any other assertion (bytes, CLS) is.
 
 ## Result
 
