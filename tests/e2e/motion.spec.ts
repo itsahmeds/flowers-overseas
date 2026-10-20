@@ -1125,3 +1125,472 @@ test.describe("8. the 2 px bar grows from the inline start", () => {
     });
   }
 });
+
+/*
+ * TASK-283: the four motions TASK-194 left (spec 004 §14 A24 clause 9 (e); AC-44, AC-6; T-48,
+ * T-06). Each limit is read in the browser under both preferences, and each section has a case
+ * that goes red with its motion taken away.
+ *
+ *  9. motion 3 on every primary action: a primary link (the header's Send from `md`, the Menu's
+ *     below it) takes `aria-busy` and `aria-disabled` at its own width, plays the bloom instead of
+ *     motion 1's header bloom, and `pageshow` releases it; under reduced motion only `aria-busy`;
+ * 10. motion 5: the home H1's underline draws once, 600 ms after a 500 ms delay, and the H1's box
+ *     never moves; under reduced motion it is drawn from the start;
+ * 11. motion 13: the 404's route cover, in the document's own paper, unrolls once over 1,200 ms;
+ *     under reduced motion the route is drawn from the start;
+ * 12. motion 10's close half: the Menu and the consent sheet run their open transition back
+ *     (opacity and transform, or opacity alone at 120 ms under reduced motion) and leave only
+ *     when it ends.
+ */
+const NOT_FOUND = "/en/does-not-exist";
+
+/** Holds every document request to `pathname` for eight seconds, so the old page stays. */
+async function holdDocument(page: Page, pathname: string): Promise<void> {
+  await page.route(
+    (url) => url.pathname === pathname,
+    async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 8000));
+      await route.continue();
+    },
+  );
+}
+
+/** The phone's Menu, opened and landed (motion 10's opening has finished). */
+async function openMenu(page: Page): Promise<void> {
+  await page.locator("[data-fo-menu-summary]").click();
+  const panel = page.locator("[data-fo-menu-panel]");
+  await expect(panel).toHaveCSS("opacity", "1");
+  await expect(panel).toHaveCSS("transform", "none");
+}
+
+/** Clicks the first primary link a reader can see, from inside the page, and reads it twice. */
+async function pressPrimaryLink(page: Page, isMobile: boolean) {
+  await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
+  if (isMobile) await openMenu(page);
+  const link = page.locator("a[data-fo-pending]:visible").first();
+  const before = await link.boundingBox();
+  const href = (await link.getAttribute("href")) ?? "";
+  await holdDocument(page, new URL(href, page.url()).pathname);
+  const states = await link.evaluate(async (element) => {
+    const read = () => ({
+      busy: element.getAttribute("aria-busy"),
+      disabled: element.getAttribute("aria-disabled"),
+      width: element.getBoundingClientRect().width,
+      bloom: getComputedStyle(
+        element.querySelector("[data-fo-pending-bloom]") ?? element,
+      ).opacity,
+      stem: getComputedStyle(
+        element.querySelector('[data-fo-bloom="stem"]') ?? element,
+      ).animationName,
+      nav: document.documentElement.getAttribute("data-fo-nav"),
+    });
+    (element as HTMLAnchorElement).click();
+    // Past motion 1's 150 ms grace: its header bloom would be playing by now.
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    const during = read();
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
+    return { during, after: read() };
+  });
+  return { before, ...states };
+}
+
+test.describe("9. motion 3 on every primary action (TASK-283)", () => {
+  test("a primary link: aria-busy and aria-disabled at the same width, its bloom and not motion 1's, released on pageshow", async ({
+    page,
+    isMobile,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    const { before, during, after } = await pressPrimaryLink(page, isMobile);
+    expect(during).toEqual({
+      busy: "true",
+      disabled: "true",
+      width: before?.width,
+      bloom: "1",
+      stem: "fo-bloom-stem",
+      nav: null,
+    });
+    expect(after).toMatchObject({ busy: null, disabled: null, bloom: "0" });
+  });
+
+  test("under reduced motion only aria-busy changes: no bloom shows", async ({
+    page,
+    isMobile,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(SHOP);
+    const { during } = await pressPrimaryLink(page, isMobile);
+    expect(during).toMatchObject({ busy: "true", bloom: "0", stem: "none" });
+  });
+
+  test("a link that is not a primary action keeps motion 1 (the case above is not vacuous)", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    await holdPageTwo(page);
+    const state = await page.evaluate(async () => {
+      const link = document.querySelector<HTMLElement>('a[href$="?page=2"]');
+      const marked = link?.hasAttribute("data-fo-pending") ?? null;
+      link?.click();
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      return {
+        marked,
+        nav: document.documentElement.getAttribute("data-fo-nav"),
+      };
+    });
+    expect(state).toEqual({ marked: false, nav: "pending" });
+  });
+});
+
+/**
+ * What motion 5's path is told to do (its computed animation, which a finished run leaves in
+ * place), whether its SVG is out of the H1's flow, and where its dash rests once the draw is over.
+ */
+async function underlineState(page: Page) {
+  return page.evaluate(async () => {
+    const heading = document.querySelector("#hero-heading");
+    const svg = heading?.querySelector("[data-fo-em] > svg");
+    const path = svg?.querySelector("path");
+    if (heading === null || svg === undefined || svg === null || !path) {
+      return null;
+    }
+    const style = getComputedStyle(path);
+    const state = {
+      name: style.animationName,
+      delay: style.animationDelay,
+      duration: style.animationDuration,
+      iterations: style.animationIterationCount,
+      dasharray: style.strokeDasharray,
+      outOfFlow: getComputedStyle(svg).position === "absolute",
+      headingAnimations: heading.getAnimations().length,
+    };
+    // 500 ms of delay and 600 ms of draw, from the first style, are over by now.
+    await new Promise((resolve) => setTimeout(resolve, 1300));
+    return {
+      ...state,
+      dashoffsetAtEnd: getComputedStyle(path).strokeDashoffset,
+    };
+  });
+}
+
+test.describe("10. motion 5: the home H1's underline draws once (TASK-283)", () => {
+  test("without the preference: 500 ms, then 600 ms, once, out of the H1's flow", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(HOME);
+    expect(await underlineState(page)).toEqual({
+      name: "fo-underline-draw",
+      delay: "0.5s",
+      duration: "0.6s",
+      iterations: "1",
+      dasharray: "300px",
+      outOfFlow: true,
+      headingAnimations: 0,
+      dashoffsetAtEnd: "0px",
+    });
+  });
+
+  test("under reduced motion the underline is drawn from the start", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(HOME);
+    expect(await underlineState(page)).toMatchObject({
+      name: "none",
+      dasharray: "none",
+      outOfFlow: true,
+      dashoffsetAtEnd: "0px",
+    });
+  });
+
+  test("goes red with the draw taken away", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.addInitScript(() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent =
+          "#hero-heading [data-fo-em] path { animation: none !important; }";
+        document.head.append(style);
+      });
+    });
+    await page.goto(HOME);
+    expect(await underlineState(page)).toMatchObject({ name: "none" });
+  });
+});
+
+/** What motion 13's cover is told to do, whether it is the document's own paper, and where it rests. */
+async function routeState(page: Page) {
+  return page.evaluate(async () => {
+    const cover = document.querySelector("[data-fo-notice-route-cover]");
+    const route = document.querySelector("[data-fo-notice-route] path");
+    const ground = document.querySelector("[data-fo-notice-404]");
+    if (cover === null || route === null || ground === null) return null;
+    const style = getComputedStyle(cover);
+    const state = {
+      name: style.animationName,
+      delay: style.animationDelay,
+      duration: style.animationDuration,
+      iterations: style.animationIterationCount,
+      routeAnimation: getComputedStyle(route).animationName,
+      paper: style.stroke === getComputedStyle(ground).backgroundColor,
+      dasharray: style.strokeDasharray,
+    };
+    await new Promise((resolve) => setTimeout(resolve, 1400));
+    return {
+      ...state,
+      dashoffsetAtEnd: getComputedStyle(cover).strokeDashoffset,
+    };
+  });
+}
+
+test.describe("11. motion 13: the 404's route draws once (TASK-283)", () => {
+  test("without the preference: 1,200 ms, once, a cover in the document's paper rolling away", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    const response = await page.goto(NOT_FOUND);
+    expect(response?.status()).toBe(404);
+    expect(await routeState(page)).toEqual({
+      name: "fo-route-unroll",
+      delay: "0s",
+      duration: "1.2s",
+      iterations: "1",
+      routeAnimation: "none",
+      paper: true,
+      dasharray: "1px, 1px",
+      dashoffsetAtEnd: "-1px",
+    });
+  });
+
+  test("under reduced motion the route is drawn from the start", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(NOT_FOUND);
+    expect(await routeState(page)).toMatchObject({
+      name: "none",
+      paper: true,
+      dashoffsetAtEnd: "-1px",
+    });
+  });
+
+  test("goes red with the unrolling taken away", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.addInitScript(() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent =
+          "[data-fo-notice-route-cover] { animation: none !important; }";
+        document.head.append(style);
+      });
+    });
+    await page.goto(NOT_FOUND);
+    expect(await routeState(page)).toMatchObject({ name: "none" });
+  });
+});
+
+/**
+ * Closes something from inside the page and reads it at once and after its transitions end:
+ * whether it was held, which properties ran and for how long, and whether it then left.
+ */
+async function closeAndRead(page: Page, what: "menu" | "consent") {
+  return page.evaluate(async (kind) => {
+    const box =
+      kind === "menu"
+        ? document.querySelector("details[data-fo-menu] [data-fo-menu-panel]")
+        : document.querySelector('[data-fo-consent-sheet="fixed"]');
+    const menu = document.querySelector<HTMLDetailsElement>(
+      "details[data-fo-menu]",
+    );
+    if (box === null || (kind === "menu" && menu === null)) return null;
+    const holder = kind === "menu" ? menu : box;
+    if (kind === "menu") {
+      menu?.querySelector("summary")?.click();
+    } else {
+      document.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    }
+    const running = box.getAnimations();
+    const marked = holder?.hasAttribute("data-fo-closing") ?? false;
+    const transitions = running
+      .map(
+        (animation) =>
+          `${(animation as CSSTransition).transitionProperty} ${String(animation.effect?.getComputedTiming().duration)}`,
+      )
+      .sort();
+    const transforms = new Set<string>();
+    const sample = (): void => {
+      transforms.add(getComputedStyle(box).transform);
+    };
+    sample();
+    const timer = setInterval(sample, 16);
+    // Halfway through the longest transition (or 50 ms when none runs) it is still there: a
+    // close that did not wait would have taken it away by now.
+    const longest = Math.max(
+      0,
+      ...running.map((animation) =>
+        Number(animation.effect?.getComputedTiming().duration ?? 0),
+      ),
+    );
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.max(50, longest / 2)),
+    );
+    const held =
+      marked && (kind === "menu" ? menu?.open === true : box.isConnected);
+    await Promise.allSettled(running.map((animation) => animation.finished));
+    clearInterval(timer);
+    // The close itself lands after the transition's promise; give it a few frames.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return {
+      held,
+      transitions,
+      moved: [...transforms].some((transform) => transform !== "none"),
+      gone:
+        kind === "menu"
+          ? menu?.open === false && !menu.hasAttribute("data-fo-closing")
+          : !box.isConnected,
+    };
+  }, what);
+}
+
+test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-283)", () => {
+  test("the Menu rises out over 320 ms, held open until it ends", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the Menu is drawn below md");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
+    await openMenu(page);
+    expect(await closeAndRead(page, "menu")).toEqual({
+      held: true,
+      transitions: ["opacity 320", "transform 320"],
+      moved: true,
+      gone: true,
+    });
+    // It opens again from its start state: the mark is gone.
+    await openMenu(page);
+  });
+
+  test("under reduced motion the Menu only fades, in 120 ms", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the Menu is drawn below md");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(SHOP);
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
+    await page.locator("[data-fo-menu-summary]").click();
+    await expect(page.locator("[data-fo-menu-panel]")).toHaveCSS(
+      "opacity",
+      "1",
+    );
+    expect(await closeAndRead(page, "menu")).toEqual({
+      held: true,
+      transitions: ["opacity 120"],
+      moved: false,
+      gone: true,
+    });
+  });
+
+  test("Esc closes the Menu the same way and puts focus back on its summary", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the Menu is drawn below md");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
+    await openMenu(page);
+    await page.locator("[data-fo-menu-item]").first().focus();
+    await page.keyboard.press("Escape");
+    await expect(
+      page.locator("details[data-fo-menu][data-fo-closing]"),
+    ).toHaveCount(1);
+    await expect(page.locator("details[data-fo-menu][open]")).toHaveCount(0);
+    await expect(page.locator("[data-fo-menu-summary]")).toBeFocused();
+  });
+
+  test("the consent sheet leaves the way it came: from its edge on the phone, 8 px from `sm`", async ({
+    page,
+    isMobile,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(SHOP);
+    const sheet = page.locator('[data-fo-consent-sheet="fixed"]');
+    await expect(sheet).toHaveCSS("opacity", "1");
+    await expect(sheet).toHaveCSS("transform", "none");
+    const duration = isMobile ? 320 : 200;
+    expect(await closeAndRead(page, "consent")).toEqual({
+      held: true,
+      transitions: [`opacity ${duration}`, `transform ${duration}`],
+      moved: true,
+      gone: true,
+    });
+    await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
+  });
+
+  test("standing on the phone's action bar, the consent sheet only fades", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, "the action bar is drawn below md");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.goto(HOME);
+    await expect(page.locator("[data-fo-action-bar]")).toHaveCount(1);
+    const sheet = page.locator('[data-fo-consent-sheet="fixed"]');
+    await expect(sheet).toHaveCSS("opacity", "1");
+    expect(await closeAndRead(page, "consent")).toEqual({
+      held: true,
+      transitions: ["opacity 320"],
+      moved: false,
+      gone: true,
+    });
+  });
+
+  test("under reduced motion the consent sheet only fades, in 120 ms", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(SHOP);
+    await expect(page.locator('[data-fo-consent-sheet="fixed"]')).toHaveCSS(
+      "opacity",
+      "1",
+    );
+    expect(await closeAndRead(page, "consent")).toEqual({
+      held: true,
+      transitions: ["opacity 120"],
+      moved: false,
+      gone: true,
+    });
+  });
+
+  test("goes red with the close transition taken away (nothing held, nothing runs)", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.addInitScript(() => {
+      document.addEventListener("DOMContentLoaded", () => {
+        const style = document.createElement("style");
+        style.textContent =
+          "[data-fo-consent-sheet][data-fo-closing] { transition: none !important; }";
+        document.head.append(style);
+      });
+    });
+    await page.goto(SHOP);
+    await expect(page.locator('[data-fo-consent-sheet="fixed"]')).toHaveCSS(
+      "opacity",
+      "1",
+    );
+    expect(await closeAndRead(page, "consent")).toMatchObject({
+      held: false,
+      transitions: [],
+    });
+  });
+});

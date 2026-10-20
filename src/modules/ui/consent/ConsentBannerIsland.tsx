@@ -121,6 +121,9 @@ function secure(): boolean {
   return window.location.protocol === "https:";
 }
 
+/** Motion 10's close mark on the sheet, read by `globals.css`. */
+const CLOSING = "data-fo-closing";
+
 export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   const { config, strings, categories } = view;
   const headlineId = useId();
@@ -164,9 +167,30 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
     }
   }, []);
 
+  /**
+   * Motion 10's close half (spec 004 §14 A24 clause 9; TASK-283): the sheet takes
+   * `data-fo-closing`, `globals.css` runs its open transition back to the start state (fade, and
+   * the edge or the 8 px under no-preference; a 120 ms fade under reduced motion), and the sheet
+   * unmounts when that ends. `display` never transitions (AC-44), so the open state is held until
+   * then; with nothing running (the inline gallery sheet) it unmounts at once. A reopen in
+   * between takes the mark off, and a sheet replaced in between is no longer this one.
+   */
   const close = useCallback(() => {
     restoreFocus();
-    setPhase("hidden");
+    const node = sheet.current;
+    node?.setAttribute(CLOSING, "");
+    const running = node?.getAnimations?.() ?? [];
+    if (node === null || running.length === 0) {
+      setPhase("hidden");
+      return;
+    }
+    void Promise.allSettled(running.map((motion) => motion.finished)).then(
+      () => {
+        if (node.isConnected && node.hasAttribute(CLOSING)) {
+          setPhase("hidden");
+        }
+      },
+    );
   }, [restoreFocus]);
 
   // A value we could not parse is deleted rather than left to rot in the browser (AC-19). One
@@ -204,6 +228,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
       const control = target.closest(`[${config.reopenAttribute}]`);
       if (control === null) return;
       trigger.current = control instanceof HTMLElement ? control : null;
+      sheet.current?.removeAttribute(CLOSING);
       setPhase("shown");
     };
     document.addEventListener("click", onClick);

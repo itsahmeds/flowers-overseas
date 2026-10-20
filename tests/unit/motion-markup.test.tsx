@@ -6,7 +6,9 @@
  *  - motion 3's `pending` button ships with no busy state and its bloom transparent, so the
  *    server's HTML shows no loader; the bloom sits outside the label's box, so the width holds;
  *  - motion 12 on the listing pages: every listing subsection (under the grid) is a section the
- *    module may fade up, and the page's own data hook still lands beside it.
+ *    module may fade up, and the page's own data hook still lands beside it;
+ *  - TASK-283: motion 3 on every primary action (a `primary` or `accent` link or submit), motion
+ *    5's underline in the home H1's phrase, motion 13's cover over the 404 route.
  */
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -17,7 +19,10 @@ import en from "../../messages/en.json";
 import { listProductPages } from "../../src/modules/catalog";
 import { ListingSubsection } from "../../src/modules/catalog/ui/ListingChrome.tsx";
 import { type MessageNamespace, loadMessages } from "../../src/modules/i18n";
-import { Button } from "../../src/modules/ui";
+import { Button, StickyActionBar } from "../../src/modules/ui";
+import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
+import { MenuSheet } from "../../src/modules/ui/layout/MenuSheet.tsx";
+import { NoticeDocument } from "../../src/modules/ui/layout/NoticeDocument.tsx";
 import { TrendingRow } from "../../src/modules/ui/home/TrendingRow.tsx";
 import { ProductCard } from "../../src/modules/ui/shop/ProductCard.tsx";
 import type { ProductCardView } from "../../src/modules/ui/shop/viewModel.ts";
@@ -50,17 +55,209 @@ describe("motion 3: the pending button's server markup", () => {
     expect(html.match(/data-fo-bloom="petal"/g)).toHaveLength(5);
   });
 
-  it("renders no bloom slot without `pending`, or on a link", () => {
+  it('renders no bloom slot on a `type="button"` pill or with `pending={false}`', () => {
     expect(renderToStaticMarkup(<Button>Go</Button>)).not.toContain(
       "data-fo-pending",
     );
     expect(
       renderToStaticMarkup(
-        <Button href="/en" pending>
+        <Button href="/en" pending={false}>
           Go
         </Button>,
       ),
     ).not.toContain("data-fo-pending");
+  });
+});
+
+/** Is the rendered pill marked for motion 3: the root's mark and the label's bloom slot. */
+function pendingParts(html: string) {
+  return {
+    marked: /^<(a|button)\b[^>]*\sdata-fo-pending=""/.test(html),
+    bloom: html.includes("data-fo-pending-bloom"),
+  };
+}
+
+describe('motion 3 on every primary action (TASK-283; A24 clause 9, sheet cell 3 "Where")', () => {
+  const ON = { marked: true, bloom: true };
+  const OFF = { marked: false, bloom: false };
+
+  for (const variant of ["primary", "accent"] as const) {
+    it(`${variant}: a link and a submit carry it by default`, () => {
+      expect(
+        pendingParts(
+          renderToStaticMarkup(
+            <Button href="/en/poland/flowers" variant={variant}>
+              Send flowers
+            </Button>,
+          ),
+        ),
+      ).toEqual(ON);
+      expect(
+        pendingParts(
+          renderToStaticMarkup(
+            <Button type="submit" variant={variant}>
+              Continue
+            </Button>,
+          ),
+        ),
+      ).toEqual(ON);
+    });
+  }
+
+  for (const variant of ["secondary", "quiet", "danger"] as const) {
+    it(`${variant}: not a primary action, so no bloom`, () => {
+      expect(
+        pendingParts(
+          renderToStaticMarkup(
+            <Button href="/en" variant={variant}>
+              Go
+            </Button>,
+          ),
+        ),
+      ).toEqual(OFF);
+      expect(
+        pendingParts(
+          renderToStaticMarkup(
+            <Button type="submit" variant={variant}>
+              Go
+            </Button>,
+          ),
+        ),
+      ).toEqual(OFF);
+    });
+  }
+
+  it("a disabled or busy primary pill never carries it (`pageshow` would re-enable it)", () => {
+    expect(
+      pendingParts(
+        renderToStaticMarkup(
+          <Button type="submit" disabled>
+            Go
+          </Button>,
+        ),
+      ),
+    ).toEqual(OFF);
+    expect(
+      pendingParts(
+        renderToStaticMarkup(
+          <Button type="submit" busy>
+            Go
+          </Button>,
+        ),
+      ),
+    ).toEqual(OFF);
+  });
+
+  it("keeps the link a link: no `disabled`, no busy state in the server's HTML", () => {
+    const html = renderToStaticMarkup(<Button href="/en">Send</Button>);
+    expect(html).toMatch(/^<a /);
+    expect(html).not.toContain("aria-busy");
+    expect(html).not.toContain("aria-disabled");
+    expect(html).not.toMatch(/\sdisabled(=|\s|>)/);
+  });
+
+  it("puts the bloom 4 px clear in 28 px of padding, and on the label's end in the `sm` pill's 20", () => {
+    const bloomClasses = (html: string): string[] =>
+      (
+        /<span aria-hidden="true" class="([^"]+)" data-fo-pending-bloom/.exec(
+          html,
+        )?.[1] ?? ""
+      ).split(" ");
+    expect(
+      bloomClasses(renderToStaticMarkup(<Button href="/en">Send</Button>)),
+    ).toContain("ms-[4px]");
+    expect(
+      bloomClasses(
+        renderToStaticMarkup(
+          <Button href="/en" size="send">
+            Send
+          </Button>,
+        ),
+      ),
+    ).toContain("ms-[4px]");
+    const small = bloomClasses(
+      renderToStaticMarkup(
+        <Button href="/en" size="sm">
+          Send
+        </Button>,
+      ),
+    );
+    expect(small).toContain("ms-0");
+    expect(small).not.toContain("ms-[4px]");
+  });
+
+  it("reaches the Menu's Send, and not the action bar's in-page jump", () => {
+    const menu = renderToStaticMarkup(
+      <MenuSheet
+        currency={{ code: "EUR", label: "Currency" }}
+        help={{ href: "https://wa.me/1", label: "Help" }}
+        label="Menu"
+        links={[]}
+        navLabel="Categories"
+        send={{ href: "/en#send", label: "Send flowers" }}
+        switcher={null}
+      />,
+    );
+    expect(menu).toMatch(/<a [^>]*href="\/en#send"[^>]*data-fo-pending=""/);
+    const bar = renderToStaticMarkup(
+      <StickyActionBar action={{ href: "#send", label: "Send flowers" }} />,
+    );
+    expect(bar).toContain('href="#send"');
+    expect(bar).not.toContain("data-fo-pending");
+  });
+});
+
+describe("motion 5's markup: the underline in the home H1 (TASK-283)", () => {
+  const html = renderToStaticMarkup(
+    <NextIntlClientProvider
+      locale="en"
+      messages={loadMessages("en", NAMESPACES)}
+      timeZone="UTC"
+    >
+      <HomeHero locale="en" shopCountries={["PL"]} />
+    </NextIntlClientProvider>,
+  );
+  const heading = /<h1[^>]*id="hero-heading"[^>]*>([\s\S]*?)<\/h1>/.exec(
+    html,
+  )?.[1];
+
+  it("puts one aria-hidden SVG path inside the phrase's `<em>`, after its words", () => {
+    expect(heading).toMatch(
+      /^Flowers for someone <em data-fo-em="">far away\.<svg aria-hidden="true" focusable="false" preserveAspectRatio="none" viewBox="0 0 300 10"><path d="M2 6 C 80 2, 200 9, 298 4"><\/path><\/svg><\/em>$/,
+    );
+  });
+
+  it("keeps the phrase as wide as its words on its own line below 390 px", () => {
+    const classes = (/<h1[^>]*class="([^"]*)"/.exec(html)?.[1] ?? "")
+      .replaceAll("&amp;", "&")
+      .split(" ");
+    expect(classes).toContain("max-[390px]:[&_em]:block");
+    expect(classes).toContain("max-[390px]:[&_em]:w-fit");
+  });
+});
+
+describe("motion 13's markup: the 404 route's cover (TASK-283)", () => {
+  const html = renderToStaticMarkup(
+    <NoticeDocument body="Body" heading="Heading" letter wordmark="Flowers" />,
+  );
+  const route =
+    /<svg[^>]*\sdata-fo-notice-route="true"[^>]*>([\s\S]*?)<\/svg>/.exec(
+      html,
+    )?.[1];
+
+  it("draws the same path twice: the dashed route, then its cover over pathLength 1", () => {
+    const paths = [...(route ?? "").matchAll(/<path ([^>]*)>/g)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(paths).toHaveLength(2);
+    const d = (attributes: string): string =>
+      /\sd="([^"]+)"/.exec(` ${attributes}`)?.[1] ?? "";
+    expect(d(paths[0] ?? "")).not.toBe("");
+    expect(d(paths[1] ?? "")).toBe(d(paths[0] ?? ""));
+    expect(paths[0]).toContain('stroke-dasharray="8 9"');
+    expect(paths[1]).toContain("data-fo-notice-route-cover");
+    expect(paths[1]).toContain('pathLength="1"');
+    expect(paths[1]).toContain('stroke-width="32"');
   });
 });
 

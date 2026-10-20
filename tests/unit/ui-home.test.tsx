@@ -128,9 +128,10 @@ describe("the hero band (AC-10)", () => {
     const html = hero("en");
 
     expect([...html.matchAll(/<h1/g)]).toHaveLength(1);
-    // The reviewed words, with the one italic phrase in `<em>` (TASK-231; spec 004 §14 A21).
+    // The reviewed words, with the one italic phrase in `<em>` (TASK-231; spec 004 §14 A21), and
+    // after its words motion 5's decorative underline (TASK-283), which adds no text.
     expect(html).toMatch(
-      /<h1[^>]*>Flowers for someone <em data-fo-em="">far away\.<\/em><\/h1>/,
+      /<h1[^>]*>Flowers for someone <em data-fo-em="">far away\.<svg aria-hidden="true"[^>]*><path [^>]*><\/path><\/svg><\/em><\/h1>/,
     );
   });
 

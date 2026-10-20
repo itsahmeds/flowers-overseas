@@ -780,8 +780,9 @@
  * Where rows). CSS and inline SVG only; the one client module (`MotionIsland`) toggles the
  * attributes these rules read and nothing else.
  *
- *  - Only `transform` and `opacity` change over time, plus `stroke-dashoffset` on the bloom's
- *    inline SVG stem (fixed `stroke-dasharray`). No layout property moves, so CLS stays 0
+ *  - Only `transform` and `opacity` change over time, plus `stroke-dashoffset` on three inline
+ *    SVG paths with a fixed `stroke-dasharray`: the bloom's stem, the home H1's underline (motion
+ *    5) and the 404 route's cover (motion 13). No layout property moves, so CLS stays 0
  *    (`tests/unit/motion-css.test.ts` scans the shipped stylesheet).
  *  - Everything that moves sits inside `prefers-reduced-motion: no-preference`; the one reduced
  *    form that changes over time is motion 10's fade of `--duration-fast`, in `@layer base` below.
@@ -880,6 +881,61 @@
 [data-fo-pending]:has(> span > svg) [data-fo-pending-bloom] {
   inset-inline: auto -3px;
   margin-inline-start: 0;
+}
+
+/* 5. The sunflower underline under the home H1's phrase draws in, once. */
+@keyframes fo-underline-draw {
+  from {
+    stroke-dashoffset: 300;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 13. The 404's route draws: the paper cover over it rolls back from the route's start. */
+@keyframes fo-route-unroll {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+
+/* 5. Placement and paint only, under either preference (TASK-283): the inline SVG in the H1's
+   `<em>` is out of flow, so the heading's text and box are the same with or without it, and at
+   rest (no `stroke-dasharray`) the line is drawn whole. */
+#hero-heading [data-fo-em] {
+  position: relative;
+}
+
+#hero-heading [data-fo-em] > svg {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: -0.12em;
+  inline-size: 100%;
+  block-size: 0.22em;
+  overflow: visible;
+  pointer-events: none;
+}
+
+#hero-heading [data-fo-em] path {
+  fill: none;
+  stroke: var(--color-sun);
+  stroke-width: 6;
+  stroke-linecap: round;
+}
+
+/* 13 at rest (TASK-283): the cover is rolled away (offset -1 of a 1 + 1 pattern over
+   `pathLength` 1), so with reduced motion or no CSS animation the route is drawn from the start. */
+[data-fo-notice-route-cover] {
+  fill: none;
+  stroke: var(--color-surface-raised);
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: -1;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -1080,6 +1136,45 @@
     }
   }
 
+  /* 10, the close half (TASK-283): `data-fo-closing` (the motion module sets it on the Menu, the
+     consent island on its sheet) runs each open transition back to its start state, and the open
+     state is held until that transition ends: the Menu rises 8 px back into the header's foot, the
+     consent sheet slides back to its edge on the phone and drops 8 px from `sm`, and on a sticky
+     action bar it only fades. The fade itself is outside this query, so reduced motion keeps it. */
+  details[data-fo-menu][data-fo-closing] [data-fo-menu-panel] {
+    transform: translateY(-8px);
+  }
+
+  [data-fo-consent-sheet="fixed"][data-fo-closing] {
+    transform: translateY(100%);
+  }
+
+  @media (width >= 40rem) {
+    [data-fo-consent-sheet="fixed"][data-fo-closing] {
+      transform: translateY(8px);
+    }
+  }
+
+  @media (width < 48rem) {
+    body:has([data-fo-action-bar])
+      [data-fo-consent-sheet="fixed"][data-fo-closing] {
+      transform: none;
+    }
+  }
+
+  /* 5. The home H1's underline draws once, 500 ms after load (the H1 itself never moves). */
+  #hero-heading [data-fo-em] path {
+    stroke-dasharray: 300;
+    animation: fo-underline-draw var(--duration-draw) var(--ease-emphasised)
+      500ms 1 backwards;
+  }
+
+  /* 13. The 404's route draws once: its cover unrolls when the page paints. */
+  [data-fo-notice-route-cover] {
+    animation: fo-route-unroll var(--duration-bloom) var(--ease-standard) 1
+      backwards;
+  }
+
   @media (width < 48rem) {
     dialog[data-fo-language-popup][open] {
       transition-duration: var(--duration-slow);
@@ -1194,6 +1289,13 @@
   html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(n + 4) {
     transition-delay: 180ms;
   }
+}
+
+/* 10, the close half's fade, under either preference: with reduced motion it is the 120 ms
+   opacity transition below, and nothing else changes. */
+details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
+[data-fo-consent-sheet="fixed"][data-fo-closing] {
+  opacity: 0;
 }
 
 /*
