@@ -831,6 +831,150 @@
       "y": 483274,
       "w": 390,
       "h": 5200
+    },
+    {
+      "file": "wireframes/admin-products-desktop.dc.html",
+      "title": "admin catalogue products · desktop · spec 012b",
+      "x": 0,
+      "y": 477952,
+      "w": 1440,
+      "h": 2720
+    },
+    {
+      "file": "wireframes/admin-products-mobile.dc.html",
+      "title": "admin catalogue products · mobile · spec 012b",
+      "x": 1520,
+      "y": 477952,
+      "w": 390,
+      "h": 5309
+    },
+    {
+      "file": "wireframes/admin-product-edit-desktop.dc.html",
+      "title": "admin product edit · desktop · spec 012b",
+      "x": 0,
+      "y": 483501,
+      "w": 1440,
+      "h": 7964
+    },
+    {
+      "file": "wireframes/admin-product-edit-mobile.dc.html",
+      "title": "admin product edit · mobile · spec 012b",
+      "x": 1520,
+      "y": 483501,
+      "w": 390,
+      "h": 9612
+    },
+    {
+      "file": "wireframes/admin-price-change-desktop.dc.html",
+      "title": "admin price change · desktop · spec 012b",
+      "x": 0,
+      "y": 493353,
+      "w": 1440,
+      "h": 7428
+    },
+    {
+      "file": "wireframes/admin-price-change-mobile.dc.html",
+      "title": "admin price change · mobile · spec 012b",
+      "x": 1520,
+      "y": 493353,
+      "w": 390,
+      "h": 11053
+    },
+    {
+      "file": "wireframes/admin-media-desktop.dc.html",
+      "title": "admin photos · desktop · spec 012b",
+      "x": 0,
+      "y": 504646,
+      "w": 1440,
+      "h": 4148
+    },
+    {
+      "file": "wireframes/admin-media-mobile.dc.html",
+      "title": "admin photos · mobile · spec 012b",
+      "x": 1520,
+      "y": 504646,
+      "w": 390,
+      "h": 6577
+    },
+    {
+      "file": "wireframes/admin-media-review-desktop.dc.html",
+      "title": "admin photo review · desktop · spec 012b",
+      "x": 0,
+      "y": 511463,
+      "w": 1440,
+      "h": 2834
+    },
+    {
+      "file": "wireframes/admin-media-review-mobile.dc.html",
+      "title": "admin photo review · mobile · spec 012b",
+      "x": 1520,
+      "y": 511463,
+      "w": 390,
+      "h": 5029
+    },
+    {
+      "file": "wireframes/admin-countries-desktop.dc.html",
+      "title": "admin countries · desktop · spec 012b",
+      "x": 0,
+      "y": 516732,
+      "w": 1440,
+      "h": 1925
+    },
+    {
+      "file": "wireframes/admin-countries-mobile.dc.html",
+      "title": "admin countries · mobile · spec 012b",
+      "x": 1520,
+      "y": 516732,
+      "w": 390,
+      "h": 2736
+    },
+    {
+      "file": "wireframes/admin-country-detail-desktop.dc.html",
+      "title": "admin country detail · desktop · spec 012b",
+      "x": 0,
+      "y": 519708,
+      "w": 1440,
+      "h": 6925
+    },
+    {
+      "file": "wireframes/admin-country-detail-mobile.dc.html",
+      "title": "admin country detail · mobile · spec 012b",
+      "x": 1520,
+      "y": 519708,
+      "w": 390,
+      "h": 7650
+    },
+    {
+      "file": "wireframes/admin-publish-desktop.dc.html",
+      "title": "admin publish · desktop · spec 012b",
+      "x": 0,
+      "y": 527598,
+      "w": 1440,
+      "h": 5875
+    },
+    {
+      "file": "wireframes/admin-publish-mobile.dc.html",
+      "title": "admin publish · mobile · spec 012b",
+      "x": 1520,
+      "y": 527598,
+      "w": 390,
+      "h": 9536
+    },
+    {
+      "file": "flows/admin-florist-bouquets.dc.html",
+      "title": "Flow · florist bouquets on sale · email → bouquet → photos → price → approve → publish → Polish shop (spec 012b)",
+      "x": 0,
+      "y": 537374,
+      "w": 1440,
+      "h": 2537
+    },
+    {
+      "file": "flows/admin-go-live.dc.html",
+      "title": "Flow · a country goes live · check → fix → type the code → publish → live → back to demo (spec 012b)",
+      "x": 1520,
+      "y": 537374,
+      "w": 1440,
+      "h": 2021
     }
   ],
   "annotations": [
@@ -1183,6 +1327,76 @@
       "y": 474954,
       "w": 1200,
       "text": "Founder ruling 2026-10-19 (A-founder-2026-10-19d): no cookie banner while only essential cookies are set, the compact banner when analytics is on, the settings panel from the footer; the language popup's future slim one-line bar."
+    },
+    {
+      "id": "s012b-head",
+      "x": 0,
+      "y": 477786,
+      "w": 1400,
+      "text": "Spec 012b · Admin catalogue CMS, slice A (2026-10-20). Products, one product, price change, photos, photo review, countries, one country, publish; and the two flows. Every new string is a [slot] (dotted underline)."
+    },
+    {
+      "id": "s012b-admin-products",
+      "x": 0,
+      "y": 477906,
+      "w": 1400,
+      "text": "Spec 012b · Admin · Catalogue: every product with its text review per language, photos, Polish price, placeholder and waiting-to-publish chips; empty, filtered empty, backup warning. Dotted underline = [slot] copy."
+    },
+    {
+      "id": "s012b-admin-product-edit",
+      "x": 0,
+      "y": 483455,
+      "w": 1400,
+      "text": "Spec 012b · Admin · One product: details with the florist who makes it, sizes with the florist’s price, text per language with Approve, photos with alt text, prices, margin with the suggested price; every rule state."
+    },
+    {
+      "id": "s012b-admin-price-change",
+      "x": 0,
+      "y": 493307,
+      "w": 1400,
+      "text": "Spec 012b · Admin · Price change: type the all-in price, then see it in en, en-gb, de, pl, the per cent change, the 30-day lowest; the ±30 % warning, same-day refusal, florist’s share above 65 %, below the florist’s price."
+    },
+    {
+      "id": "s012b-admin-media",
+      "x": 0,
+      "y": 504600,
+      "w": 1400,
+      "text": "Spec 012b · Admin · Photos: the grid, upload with provenance by source (florist, AI, stock), progress, making sizes, every refusal."
+    },
+    {
+      "id": "s012b-admin-media-review",
+      "x": 0,
+      "y": 511417,
+      "w": 1400,
+      "text": "Spec 012b · Admin · One photo: the four checks, Approve or Reject through the ledger; approved, rejected, florist without terms, imported not re-read."
+    },
+    {
+      "id": "s012b-admin-countries",
+      "x": 0,
+      "y": 516686,
+      "w": 1400,
+      "text": "Spec 012b · Admin · Countries: status, first live, real florists, priced and buyable products, what the go-live check still needs. Operations editing is later (§13 Q16)."
+    },
+    {
+      "id": "s012b-admin-country-detail",
+      "x": 0,
+      "y": 519662,
+      "w": 1400,
+      "text": "Spec 012b · Admin · One country: the go-live check with named reasons, Go live with the typed code, live with what no longer holds, back to demo."
+    },
+    {
+      "id": "s012b-admin-publish",
+      "x": 0,
+      "y": 527552,
+      "w": 1400,
+      "text": "Spec 012b · Admin · Publish: pages added and removed per language, one Publish button, building, live and checked, failed, timed out, daily limit, indexable removals refused, Railway only."
+    },
+    {
+      "id": "s012b-flows",
+      "x": 0,
+      "y": 537328,
+      "w": 1400,
+      "text": "Spec 012b · Flows: florist bouquets on sale, and a country goes live."
     }
   ],
   "launch": {
