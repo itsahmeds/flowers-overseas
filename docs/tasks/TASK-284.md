@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-20: tests first (unit layout + tab-stop + 19 px name, `sizes` 44vw − 17.6px, e2e 360/390 geometry with swipe and Tab, a11y axe at 390), then `TrendingRow` as the drawn `.scroll5` row and the `trending` slot's `sizes`. Next: cheap gates, PR, CI, Linux baselines.
 
 ## Result
 

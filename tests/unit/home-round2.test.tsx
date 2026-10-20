@@ -15,7 +15,8 @@
  *  - **The date stamps (TASK-232 item 2).** The second name is its own italic line; no arrow; a
  *    stamp with no page has no lift and is no link, a linked one keeps both; two across from `md`.
  *  - **"Occasions →" (item 3).** Drawn with the page's `indexHref` and only then (A20, AC-14).
- *  - **Popular choices (item 5)** is a two-column grid on the phone, not a scroller.
+ *  - **Popular choices (item 5A, TASK-284)** is one sideways row on the phone (AC-49), five
+ *    across from `md`; the row is the tab stop only when no card is a link.
  *  - **The destination chips (item 6)** are one scrolling row below `md` (AC-49).
  */
 import { readFileSync } from "node:fs";
@@ -27,6 +28,7 @@ import { describe, expect, it } from "vitest";
 import { NextIntlClientProvider } from "next-intl";
 
 import en from "../../messages/en.json";
+import { listProductPages } from "../../src/modules/catalog";
 import { type MessageNamespace, loadMessages } from "../../src/modules/i18n";
 import { HomeHero } from "../../src/modules/ui/home/HomeHero.tsx";
 import { DestinationsGrid } from "../../src/modules/ui/home/DestinationsGrid.tsx";
@@ -328,21 +330,63 @@ describe('"Occasions →" (TASK-232 item 3; A20, AC-14)', () => {
 });
 
 describe("the phone rows (TASK-232 items 5 and 6)", () => {
-  it("lays Popular choices out as a two-column grid, never a scroller", () => {
-    const list =
-      /<ul class="([^"]*)"/u.exec(
-        render(<TrendingRow locale="en" />, "en"),
-      )?.[1] ?? "";
-    const classes = list.split(" ");
+  /**
+   * Item 5A (TASK-284; TASK-252 "all A", founder 2026-10-19; AC-49): below `md` Popular choices
+   * is one row that scrolls sideways, each card 44 % of the row with a 14 px gap, bled to the
+   * screen's edges by the gutter; from `md` one row of five, unchanged. The geometry is the e2e's.
+   */
+  it("lays Popular choices out as one sideways row below `md` and five across from `md`", async () => {
+    const pages = await listProductPages("en");
+    const html = render(<TrendingRow locale="en" productPages={pages} />, "en");
+    const list = /<ul([^>]*)>/u.exec(html)?.[1] ?? "";
+    const classes = (/class="([^"]*)"/u.exec(list)?.[1] ?? "").split(" ");
     expect(classes).toEqual(
       expect.arrayContaining([
         "grid",
-        "grid-cols-2",
-        "gap-x-[14px]",
+        "max-md:grid-flow-col",
+        "max-md:auto-cols-[44%]",
+        "max-md:gap-x-[14px]",
+        "max-md:overflow-x-auto",
+        "max-md:snap-x",
+        "max-md:snap-mandatory",
+        "max-md:-mx-(--gutter-s)",
+        "max-md:px-(--gutter-s)",
+        "max-md:scroll-px-(--gutter-s)",
         "md:grid-cols-5",
+        "md:gap-x-[24px]",
       ]),
     );
-    expect(list).not.toMatch(/overflow-x|grid-flow-col|auto-cols/u);
+    // No two-column grid left behind on the phone (the blank half row of five in two columns).
+    expect(classes).not.toContain("grid-cols-2");
+    // Named by the section's own heading; every card is a link, so the row takes no tab stop.
+    expect(list).toContain('aria-labelledby="trending-heading"');
+    expect(list).not.toContain("tabindex");
+    // Nothing is called a carousel (AC-36).
+    expect(html).not.toContain("aria-roledescription");
+    const items = [...html.matchAll(/<li class="([^"]*)"/gu)].map(
+      (match) => match[1] ?? "",
+    );
+    expect(items).toHaveLength(5);
+    for (const item of items)
+      expect(item.split(" ")).toContain("max-md:snap-start");
+    // The drawn name size in the scroller (`.M .grid5.scroll5 .card h3`, 19 px), `h3` from `md`.
+    const names = [...html.matchAll(/<h3 class="([^"]*)"/gu)].map((match) =>
+      (match[1] ?? "").split(" "),
+    );
+    expect(names).toHaveLength(5);
+    for (const name of names) {
+      expect(name).toEqual(
+        expect.arrayContaining(["text-[19px]", "md:text-h3"]),
+      );
+      expect(name).not.toContain("text-h3-s");
+    }
+  });
+
+  it("makes the row itself the keyboard's stop when no card is a link (AC-49)", () => {
+    const list =
+      /<ul([^>]*)>/u.exec(render(<TrendingRow locale="en" />, "en"))?.[1] ?? "";
+    expect(list).toContain('tabindex="0"');
+    expect(list).toContain('aria-labelledby="trending-heading"');
   });
 
   it("scrolls the destination chips in one row below `md`, named by the heading", () => {

@@ -20,8 +20,9 @@
  *  - **"Occasions →" (item 3)** beside the heading at 1440 and under it at 390, answering 200.
  *  - **The FAQ (item 4)**: "All help topics" links to the help page where it exists (spec 041
  *    AC-21, TASK-182), the first question open.
- *  - **Popular choices on the phone (item 5)**: two columns of five, each card exactly the width its
- *    `sizes` states. Watched red with the scroller back.
+ *  - **Popular choices on the phone (item 5A, TASK-284; AC-49)**: one sideways row of five, each
+ *    card exactly the width its `sizes` states, the last reachable by swipe and by Tab, no page
+ *    overflow. Watched red with the two-column grid back.
  *  - **The destination chips on the phone (item 6)**: one row that scrolls (AC-49).
  *  - **No price on Popular choices (AC-53, T-58)** in four locales at 1440 and 390.
  */
@@ -433,39 +434,117 @@ test.describe("the FAQ (TASK-232 item 4; A20; spec 041 AC-21)", () => {
   });
 });
 
-test.describe("Popular choices on the phone (TASK-232 item 5)", () => {
+/**
+ * Item 5A (TASK-284; AC-49 on the home): below `md` Popular choices is one row that scrolls
+ * sideways, so no half row is left blank. The row is one card tall, each card 44 % of the screen
+ * less its gutters (what the `trending` slot's `sizes` states), the row really scrolls, its last
+ * card comes into view by a sideways swipe (the wheel's horizontal delta, the same scroll a touch
+ * pan makes) and by Tab, and the page itself never scrolls sideways. From `md`, five across with
+ * nothing to scroll. Watched red with the two-column grid back.
+ */
+test.describe("Popular choices on the phone (TASK-284 item 5A; AC-49)", () => {
   for (const width of [360, 390] as const) {
-    test(`a two-column grid of five at ${String(width)}, each card its stated width`, async ({
+    test(`one sideways row of five at ${String(width)}, each card its stated width`, async ({
       page,
     }) => {
       await page.setViewportSize({ width, height: 844 });
       await open(page, "/en-gb");
+      const row = page.locator("[data-fo-trending] ul");
       const cards = page.locator("[data-fo-trending-pick]");
       await expect(cards).toHaveCount(5);
-      const boxes = await cards.evaluateAll((items) =>
-        items.map((item) => {
-          const box = item.getBoundingClientRect();
-          return { left: Math.round(box.left), width: box.width };
-        }),
+      const geometry = await row.evaluate((node) => ({
+        overflowX: getComputedStyle(node).overflowX,
+        scrolls: node.scrollWidth > node.clientWidth,
+        tops: new Set(
+          [...node.children].map((child) =>
+            Math.round(child.getBoundingClientRect().top),
+          ),
+        ).size,
+      }));
+      expect(geometry).toEqual({ overflowX: "auto", scrolls: true, tops: 1 });
+      // `sizes` below `md`: calc(44vw - 17.6px), i.e. 0.44 · (width − 2 · 20).
+      const widths = await cards.evaluateAll((items) =>
+        items.map((item) => item.getBoundingClientRect().width),
       );
-      expect(new Set(boxes.map((box) => box.left)).size, "columns").toBe(2);
-      // `sizes` below `md`: calc(50vw - 27px).
-      for (const box of boxes) {
+      for (const cardWidth of widths) {
         expect(
-          Math.abs(box.width - (width / 2 - 27)),
+          Math.abs(cardWidth - 0.44 * (width - 40)),
           "card vs sizes",
         ).toBeLessThanOrEqual(1);
       }
-      const sizes = await page
-        .locator("[data-fo-trending-pick] img")
-        .first()
-        .getAttribute("sizes");
-      expect(sizes).toContain("calc(50vw - 27px)");
+      expect(
+        await page
+          .locator("[data-fo-trending-pick] img")
+          .first()
+          .getAttribute("sizes"),
+      ).toContain("calc(44vw - 17.6px)");
+      // The first card starts on the page's 20 px frame.
+      expect(
+        Math.round((await cards.first().boundingBox())?.x ?? -1),
+        "first card on the gutter",
+      ).toBe(20);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBe(width);
+
+      // Touch: a sideways pan over the row brings the last card fully into view.
+      const last = cards.last();
+      const before = await last.boundingBox();
+      expect((before?.x ?? 0) + (before?.width ?? 0)).toBeGreaterThan(width);
+      await row.evaluate((node) => {
+        node.scrollIntoView({ block: "center" });
+      });
+      const rowBox = await row.boundingBox();
+      await page.mouse.move(
+        (rowBox?.x ?? 0) + (rowBox?.width ?? 0) / 2,
+        (rowBox?.y ?? 0) + (rowBox?.height ?? 0) / 2,
+      );
+      await page.mouse.wheel(2000, 0);
+      await expect
+        .poll(async () => {
+          const box = await last.boundingBox();
+          return (box?.x ?? 0) + (box?.width ?? 0) <= width;
+        })
+        .toBe(true);
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth),
+      ).toBe(width);
+
+      // Keyboard: back to the start, then Tab from the first card to the last scrolls it in.
+      await row.evaluate((node) => {
+        node.scrollLeft = 0;
+      });
+      const links = page.locator("[data-fo-trending-pick] a[href]");
+      await expect(links).toHaveCount(5);
+      await links.first().focus();
+      for (let step = 0; step < 4; step += 1) await page.keyboard.press("Tab");
+      await expect(links.last()).toBeFocused();
+      await expect
+        .poll(async () => {
+          const box = await last.boundingBox();
+          return (
+            (box?.x ?? -1) >= 0 && (box?.x ?? 0) + (box?.width ?? 0) <= width
+          );
+        })
+        .toBe(true);
     });
   }
+
+  test("five across at 1440, nothing to scroll", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await open(page, "/en-gb");
+    const row = page.locator("[data-fo-trending] ul");
+    expect(
+      await row.evaluate((node) => ({
+        scrolls: node.scrollWidth > node.clientWidth,
+        tops: new Set(
+          [...node.children].map((child) =>
+            Math.round(child.getBoundingClientRect().top),
+          ),
+        ).size,
+      })),
+    ).toEqual({ scrolls: false, tops: 1 });
+  });
 });
 
 test.describe("the destination chips on the phone (TASK-232 item 6; AC-49)", () => {
