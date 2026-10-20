@@ -150,20 +150,6 @@ function indexedText(html: string): string {
 }
 
 /**
- * **The one excused "Order by"**: the guide's delivery-facts row in its honest-blank form, the
- * label with "None yet." (spec 007 §5.3: the facts-unknown form keeps every label and prints the
- * blank in words). It states that there is no cutoff, which is the opposite of an order-by
- * promise; whether AC-34's "no 'Order by' text" also removes this label is escalated in
- * `docs/tasks/TASK-239.md`. Cut out by its exact words, so any other "Order by" still fails.
- */
-const EXCUSED_GUIDE_ROW: readonly string[] = (() => {
-  const en = catalogue("en");
-  const label = leaf(en, "corridor.facts.orderBy.label");
-  const none = leaf(en, "corridor.facts.orderBy.none");
-  return label === undefined || none === undefined ? [] : [`${label} ${none}`];
-})();
-
-/**
  * **Escalated, not accepted** (TASK-239 brief, Escalations 3): two sentences of the authored hub
  * copy in `seed/data/copy/en/` (the `birthday-flowers` and `sorry-flowers` category hubs, the
  * `easter` and `i-am-sorry` occasion hubs, `en` and `en-gb`) promise an order-by cutoff while no
@@ -175,10 +161,7 @@ const ESCALATED_HUB_COPY: readonly string[] = [
   "The destination page shows this year's date and the cutoff to order by.",
 ];
 
-const EXCUSED: readonly string[] = [
-  ...EXCUSED_GUIDE_ROW,
-  ...ESCALATED_HUB_COPY,
-];
+const EXCUSED: readonly string[] = ESCALATED_HUB_COPY;
 
 function offences(path: string, html: string): string[] {
   let text = indexedText(html);
@@ -332,12 +315,12 @@ test.describe("AC-34 (T-35): no cutoff or order-by text in any built document wh
       ).not.toEqual([]);
     }
     expect(offences("planted", "<p>Order by noon</p>")).not.toEqual([]);
-    // The excused guide row passes by its exact words, and nothing else does.
-    expect(EXCUSED_GUIDE_ROW).toEqual(["Order by None yet."]);
+    // The guide's honest-blank row is hidden while closed (founder, 2026-10-20), so it is no
+    // longer excused: printed, it fails like any other "Order by".
     expect(ESCALATED_HUB_COPY).toHaveLength(2);
     expect(
       offences("planted", "<dl><dt>Order by</dt><dd>None yet.</dd></dl>"),
-    ).toEqual([]);
+    ).not.toEqual([]);
     expect(
       offences("planted", "<dl><dt>Order by</dt><dd>14:00 in Warsaw</dd></dl>"),
     ).not.toEqual([]);

@@ -71,6 +71,13 @@ Founder ruling D2 A, 2026-10-14 ("R ok, D1–D5, …"; `docs/decisions-log.md`).
 
 ## Escalations
 
+**Founder's answers, 2026-10-20 (verbatim: "1 yes, 2 hide, 3 delete, 4 yes"):**
+1. Approved: the hub intro clause "Where ordering has not opened yet, this page says so in the same words on every row." It stays `reviewed: false` until his record run, and is listed in `.claude/state/copy-batch-1020.md` under TASK-239.
+2. Hide: the guide's "Order by" row is hidden while the country is not open (`deliveryDatesOpen` false) and shows again once it opens (`DeliveryFacts`' `ordersOpen`). The crawl no longer excuses "Order by: None yet."
+3. Delete: **held, back to the founder.** Deleting the two sentences leaves three hub descriptions under `plan/10` §2.2's 60-word minimum (`pnpm seed:check` copy/wordCount): `category:apology` 52, `occasion:apology` 57, `occasion:easter` 55. `category:birthday` stays at 66. The deletion patch for en, en-gb, de and pl is ready; it needs 3 to 8 replacement words per row, or a ruling on the minimum. Until then the crawl keeps naming the two sentences.
+4. Approved: the 280 px three-line phone sentence.
+
+
 Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the founder (not blocking the PR):
 
 1. **The hub intro (copy).** AC-33 forbids "not delivering yet" on the destinations hub, but `destinationsHub.intro` (founder-approved 2026-10-14, spec 041 batch) ends "Where we are not delivering yet, this page says so in the same words on every row." Clause 2 keeps *site-wide* sentences out of scope; this one is the hub's own. Changed only that clause to "Where ordering has not opened yet, …" (`reviewed: false`, in the founder's next record run). Founder: confirm, or give other words.

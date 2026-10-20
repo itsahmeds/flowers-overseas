@@ -35,8 +35,12 @@ import {
 } from "../../src/modules/catalog";
 import { availability } from "../../src/modules/catalog/availability.ts";
 import { catalogAvailabilityKeys } from "../../src/modules/catalog/types.ts";
-import { corridorStateKey } from "../../src/modules/geo/corridor.ts";
+import {
+  corridorStateKey,
+  corridorView,
+} from "../../src/modules/geo/corridor.ts";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
+import { CorridorFacts } from "../../src/modules/geo/ui/CorridorFacts.tsx";
 import { DestinationsHubPage } from "../../src/modules/geo/ui/DestinationsHubPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
 import { MESSAGE_NAMESPACES } from "../../src/modules/i18n/messages.ts";
@@ -313,6 +317,23 @@ describe("AC-34 (T-35): cutoff text renders only for a country where ordering is
       expect(html).toContain(value(locale, "faq.whoDelivers.answerCutoff"));
     },
   );
+
+  it('hides the guide\'s "Order by" row while Poland is not open, and shows it once it is (founder, 2026-10-20)', async () => {
+    const view = corridorView("PL", "en", { from: "2026-10-20" });
+    expect(view?.facts.known).toBe(false);
+    if (view === undefined) throw new Error("Poland's guide must exist");
+    const closed = text(render(<CorridorFacts view={view} />, "en"));
+    expect(closed).not.toMatch(/\border by\b/iu);
+    expect(closed).not.toContain(value("en", "corridor.facts.orderBy.none"));
+    // Every other honest blank stays.
+    expect(closed).toContain(value("en", "corridor.facts.deliveryDays.label"));
+    const open = await withActivePartnersProvider(POLAND_PARTNERS, () =>
+      text(render(<CorridorFacts view={view} />, "en")),
+    );
+    expect(open).toContain(
+      `${value("en", "corridor.facts.orderBy.label")} ${value("en", "corridor.facts.orderBy.none")}`,
+    );
+  });
 
   it("keeps Poland's FAQ cutoff off while another country is the open one (`/break 293` hole 1)", async () => {
     // Germany open, Poland closed: `anyDeliveryDatesOpen()` is true, `deliveryDatesOpen("PL")` is
