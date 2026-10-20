@@ -58,7 +58,7 @@ Tests:
 - unit: updates to `cache`, `cache-cloudflare`, `admin-scans`, `url-pii` (three query keys) and `checkout-mode` (the R5 allow-list named a path that never existed; it now names the page folder and `src/modules/admin/flags.ts`)
 - integration `admin-flags` (7, T-16 integration half, on a throwaway PG16), plus updates to `cache-cloudflare-purge`
 
-23 mutations, each watched red; the list is in the PR. I took no build slot and ran no browser locally. **Owed, as for TASK-217 and TASK-218:** T-24 a11y and T-25 visual for `/admin/flags` signed in, which wait for the CI-database task.
+23 mutations, each watched red; the list is in the PR. I ran no browser locally. I took the build slot once, for one `pnpm build` with `.env.example` as `.env.local`, as CI does (load average 1.9 before, 13.9 after). CI's `build` was skipped because `test-unit` was red, and the only red test there was main's known `design-docs` canvas overlap, which PR 304 fixes. The build passed, with `/admin/flags` dynamic (`ƒ`). **Owed, as for TASK-217 and TASK-218:** T-24 a11y and T-25 visual for `/admin/flags` signed in, which wait for the CI-database task.
 
 `pnpm gates:cheap` at 97951453 (load average 4.8):
 
