@@ -8,7 +8,8 @@
  *  - **registered** — a queue exists for it (`ensureQueues` in `./runtime.ts`), a job may be
  *    enqueued, and the minute tick consumes it once a handler is supplied:
  *    `media.derive_variants` (payload from spec 006 §5.2, worker in spec 006), `retention.sweep`
- *    (TASK-025), `neon.usage_probe` (TASK-029), `db.backup_verify` (TASK-028);
+ *    (TASK-025), `neon.usage_probe` (TASK-029), `db.backup_verify` (TASK-028), `outbox.dispatch`
+ *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick);
  *  - **declared only** — the name is reserved for the spec that implements it (`order.route`,
  *    `assignment.timeout`, `notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -48,6 +49,15 @@ export const BackupVerifyPayload = z
   .object({ objectKey: z.string().min(1) })
   .strict();
 
+/**
+ * `outbox.dispatch` (spec 013 §5.2, AC-20): one run of the outbox dispatcher. With `orderId`, only
+ * that order's due deliveries (spec 013's `afterAccept` asks for its order at once); without, the
+ * oldest due deliveries of every order (the minute tick's run).
+ */
+export const OutboxDispatchPayload = z
+  .object({ orderId: z.uuid().optional() })
+  .strict();
+
 /** One registered job: its payload schema and that schema's version. */
 export interface RegisteredJob<Schema extends z.ZodType = z.ZodType> {
   readonly version: number;
@@ -60,6 +70,7 @@ export const REGISTERED_JOBS = {
   "retention.sweep": { version: 1, payload: RetentionSweepPayload },
   "neon.usage_probe": { version: 1, payload: NeonUsageProbePayload },
   "db.backup_verify": { version: 1, payload: BackupVerifyPayload },
+  "outbox.dispatch": { version: 1, payload: OutboxDispatchPayload },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */

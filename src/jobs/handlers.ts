@@ -14,11 +14,20 @@
  */
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
+import { dispatchOutbox } from "../modules/orders";
 
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
 
 export const JOB_HANDLERS: JobHandlers = {
+  // Spec 013 §5.2 (TASK-254): each due outbox delivery in its own `system` transaction. Idempotent
+  // by construction: a delivery is claimed `FOR UPDATE SKIP LOCKED` and settled once; a re-run
+  // finds it `sent` or waiting out its backoff.
+  "outbox.dispatch": async (payload) => {
+    await dispatchOutbox(
+      payload.orderId === undefined ? {} : { orderId: payload.orderId },
+    );
+  },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.
   "retention.sweep": async (payload) => {
