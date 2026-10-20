@@ -65,6 +65,7 @@ import {
   type CountryIso2,
   COUNTRY_CODES,
   countryConfig,
+  deliveryDatesOpen,
   isCountryIso2,
   isGuidePublished,
 } from "@/config/countries";
@@ -75,6 +76,7 @@ import {
 } from "@/config/catalogue/listing-presentation";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
 import {
+  DEMO_DESTINATION_ISO2,
   type ListingLinkPageType,
   isPublished,
   listingLinkId,
@@ -1900,11 +1902,19 @@ async function tilesFor(
  *
  * One rule in one place: the dates in `occasions[].nextDate` and the country the caption names
  * come from this function, so the page cannot print Poland's calendar under another country's
- * name. `undefined` while no destination is live, which leaves every entry undated.
+ * name. The first published destination where ordering is open, else the demo destination the
+ * chrome sends a buyer into (Poland); `undefined` when neither is published, which leaves every
+ * entry undated.
+ *
+ * It read `status === "live"` until Poland became `demo` (spec 007 §14 A-founder-2026-10-14c
+ * clause 5; TASK-239). An occasion's date is a calendar fact about a country, not a promise of
+ * delivery, so the index keeps quoting Poland's calendar, as it did before.
  */
 function occasionsIndexDateCountry(): CountryIso2 | undefined {
-  return publishedCountries().find(
-    (iso2) => countryConfig(iso2).status === "live",
+  const published = publishedCountries();
+  return (
+    published.find((iso2) => deliveryDatesOpen(iso2)) ??
+    published.find((iso2) => iso2 === DEMO_DESTINATION_ISO2)
   );
 }
 
