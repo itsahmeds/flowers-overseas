@@ -261,3 +261,16 @@ gap closes, mark it ✅ with the PR, and don't delete the row.
 - **Adding `ci:full` while a `visual:baselines` run is going cancels it.** Same cause as the label-toggle restart above (one concurrency group per PR); seen again on PR 206 (2026-10-12/13). Wait for the baselines run to finish and commit before toggling, or give `visual:baselines` its own concurrency group.
 - **LHCI asserts the best of three runs, while the number people read is the median, and `/en`, the first URL, carries a cold-start penalty.** A page can pass the gate with a median over budget, and the first URL in the list is the one most likely to look slow. Candidate fix: warm the first URL with one discarded request, and have the gate and the report name the same statistic (spec 004 §14 A18 says `median`).
 - **`merge-when-green` and the agents died on a network drop (`ENOTFOUND`) and did not retry.** A short outage ended the merge helper and several agents mid-run with no state saved (2026-10-13). The helper needs a bounded retry on a DNS or connection error, and a work order should tell an agent to save, push and report partial on a repeated network error rather than stop between two tool calls.
+
+**Found on 2026-10-19/20 (PRs 273 to 285, bookkeeping 2026-10-20):**
+- **The edit guard was bypassed by shell writes again.** TASK-275's implementer (PR 273, 2026-10-19) reported that its
+  earlier shell writes into application code went through while the main checkout's `TASKS.md` had no TASK-275 row,
+  so the guard counted no active task; only its later Edit-tool writes were refused. This is the third case after
+  TASK-167 (`/break 144`) and TASK-192 (the interpreter heredoc entries above). `bash_guard.py`'s header still does not
+  list it. Fix candidates: deny interpreter heredocs and `-c` scripts that open files under the guarded trees with no
+  active task, and have work orders say that a refusal means stop and report, never another tool. A dev-OS guard
+  change, to decide with the founder.
+- **`tasks:check` does not tie a row's status to its PR's state** (`/break 123` hole 2). On 2026-10-20 twenty rows
+  (TASK-109, 147, 170, 172, 180, 181, 203, 217, 219, 231 to 235, 237, 242, 243, 268, 274, 275) still read `in_review`
+  after their PRs merged, some for a month, and two rows named the wrong PR in the hand-off notes. A check that reads
+  `gh pr view --json state` for each linked PR (or a merge hook that flips the row) would catch it.
