@@ -69,7 +69,10 @@ Founder ruling D2 A, 2026-10-14 ("R ok, D1–D5, …"; `docs/decisions-log.md`).
 
 ## Escalations
 
-_None recorded._
+Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the founder (not blocking the PR):
+
+1. **The hub intro (copy).** AC-33 forbids "not delivering yet" on the destinations hub, but `destinationsHub.intro` (founder-approved 2026-10-14, spec 041 batch) ends "Where we are not delivering yet, this page says so in the same words on every row." Clause 2 keeps *site-wide* sentences out of scope; this one is the hub's own. Changed only that clause to "Where ordering has not opened yet, …" (`reviewed: false`, in the founder's next record run). Founder: confirm, or give other words.
+2. **"Order by" on the guide (AC-34 vs spec 007 §5.3).** Every guide's delivery-facts block prints the label "Order by" with the honest blank "None yet." (§5.3: the facts-unknown form keeps every label). AC-34's crawl forbids "Order by" text. The row states there is *no* cutoff, so the crawl excuses that exact pair by its words and fails on any other "Order by". Decide: keep the excuse, or drop or relabel the row while a country is not open (TASK-189 owns the guide's first screen).
 
 ## Progress
 
