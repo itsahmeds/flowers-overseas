@@ -90,6 +90,9 @@ const A7_DOWN = readFileSync(
   "utf8",
 );
 
+/** Each case below runs the real runner (a child process) once or more: far past the 5 s default. */
+const RUNNER_TIMEOUT_MS = 180_000;
+
 const ORDER_ID_OTHER = "0d6c5b4a-3928-4716-a5f4-e3d2c1b0a998";
 
 /** The introspection snapshot: `db:check`'s catalogue facts plus every column's type and nullability. */
@@ -881,100 +884,116 @@ describe.skipIf(server.url === undefined)(
       );
     });
 
-    it("AC-37 / AC-43 (002): with one live payment the down file raises A7_ROLLBACK_LIVE_PAYMENTS and changes nothing", async () => {
-      const { orderId } = await (async () => {
-        const id = await first.sql.begin(async (tx) => {
-          const made = await orderWithPayment(tx, {
-            status: "captured",
-            livemode: true,
-          });
-          await tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason,
+    it(
+      "AC-37 / AC-43 (002): with one live payment the down file raises A7_ROLLBACK_LIVE_PAYMENTS and changes nothing",
+      async () => {
+        const { orderId } = await (async () => {
+          const id = await first.sql.begin(async (tx) => {
+            const made = await orderWithPayment(tx, {
+              status: "captured",
+              livemode: true,
+            });
+            await tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason,
                                        status, requested_by)
                    VALUES (${made.paymentId}, 're_live', 500, 'PLN', 'quality', 'requested',
                            'system:payments')`;
-          return made;
-        });
-        return id;
-      })();
-      const snapshot = await introspect(first.sql);
-      const counts = await rowCounts(first.sql);
-      let raised = "";
-      try {
-        await first.sql.begin(async (tx) => {
-          await tx.unsafe(A7_DOWN);
-        });
-      } catch (error) {
-        raised = error instanceof Error ? error.message : String(error);
-      }
-      // And through the runner, the way `pnpm db:rollback` would meet it.
-      let runnerRaised = "";
-      try {
-        await locked(() => runner(first.url, ["--down", "--to", BEFORE_A7]));
-      } catch (error) {
-        runnerRaised = error instanceof Error ? error.message : String(error);
-      }
-      const [live] = await first.sql<{ n: number }[]>`
+            return made;
+          });
+          return id;
+        })();
+        const snapshot = await introspect(first.sql);
+        const counts = await rowCounts(first.sql);
+        let raised = "";
+        try {
+          await first.sql.begin(async (tx) => {
+            await tx.unsafe(A7_DOWN);
+          });
+        } catch (error) {
+          raised = error instanceof Error ? error.message : String(error);
+        }
+        // And through the runner, the way `pnpm db:rollback` would meet it.
+        let runnerRaised = "";
+        try {
+          await locked(() => runner(first.url, ["--down", "--to", BEFORE_A7]));
+        } catch (error) {
+          runnerRaised = error instanceof Error ? error.message : String(error);
+        }
+        const [live] = await first.sql<{ n: number }[]>`
         SELECT count(*)::int AS n FROM payment WHERE order_id = ${orderId} AND livemode`;
-      expect(raised).toMatch(/^A7_ROLLBACK_LIVE_PAYMENTS/);
-      expect(runnerRaised).toContain("A7_ROLLBACK_LIVE_PAYMENTS");
-      expect(await introspect(first.sql)).toEqual(snapshot);
-      expect(snapshot).toEqual(afterA7);
-      expect(await rowCounts(first.sql)).toEqual(counts);
-      expect(live?.n).toBe(1);
-    });
+        expect(raised).toMatch(/^A7_ROLLBACK_LIVE_PAYMENTS/);
+        expect(runnerRaised).toContain("A7_ROLLBACK_LIVE_PAYMENTS");
+        expect(await introspect(first.sql)).toEqual(snapshot);
+        expect(snapshot).toEqual(afterA7);
+        expect(await rowCounts(first.sql)).toEqual(counts);
+        expect(live?.n).toBe(1);
+      },
+      RUNNER_TIMEOUT_MS,
+    );
 
-    it("AC-43 (002): with only test-mode rows (a processing payment, a requested refund) the rollback succeeds and the catalogue equals the one before A7; migrate again restores A7", async () => {
-      await second.sql.begin(async (tx) => {
-        const processing = await orderWithPayment(tx, { status: "processing" });
-        await orderWithPayment(tx, {
-          status: "pending",
-          providerRef: null,
-          method: null,
-        });
-        await tx`INSERT INTO refund (payment_id, amount_minor, currency_code, reason, status, requested_by)
+    it(
+      "AC-43 (002): with only test-mode rows (a processing payment, a requested refund) the rollback succeeds and the catalogue equals the one before A7; migrate again restores A7",
+      async () => {
+        await second.sql.begin(async (tx) => {
+          const processing = await orderWithPayment(tx, {
+            status: "processing",
+          });
+          await orderWithPayment(tx, {
+            status: "pending",
+            providerRef: null,
+            method: null,
+          });
+          await tx`INSERT INTO refund (payment_id, amount_minor, currency_code, reason, status, requested_by)
                  VALUES (${processing.paymentId}, 500, 'PLN', 'quality', 'requested', 'system:payments')`;
-        await tx`INSERT INTO payment_dispute (payment_id, currency_code, provider_ref, amount_minor,
+          await tx`INSERT INTO payment_dispute (payment_id, currency_code, provider_ref, amount_minor,
                                               reason, status, opened_at)
                  VALUES (${processing.paymentId}, 'PLN', 'dp_test', 18900, 'fraudulent', 'open', now())`;
-      });
-      expect(await introspect(second.sql)).toEqual(afterA7);
+        });
+        expect(await introspect(second.sql)).toEqual(afterA7);
 
-      await locked(() => runner(second.url, ["--down", "--to", BEFORE_A7]));
-      const rolled = await introspect(second.sql);
-      const [left] = await second.sql<{ payments: number; refunds: number }[]>`
+        await locked(() => runner(second.url, ["--down", "--to", BEFORE_A7]));
+        const rolled = await introspect(second.sql);
+        const [left] = await second.sql<
+          { payments: number; refunds: number }[]
+        >`
         SELECT (SELECT count(*) FROM payment)::int AS payments,
                (SELECT count(*) FROM refund)::int AS refunds`;
 
-      await locked(() => runner(second.url));
-      const again = await introspect(second.sql);
+        await locked(() => runner(second.url));
+        const again = await introspect(second.sql);
 
-      expect(rolled).toEqual(beforeA7);
-      expect(left).toEqual({ payments: 0, refunds: 0 });
-      expect(again).toEqual(afterA7);
-    });
+        expect(rolled).toEqual(beforeA7);
+        expect(left).toEqual({ payments: 0, refunds: 0 });
+        expect(again).toEqual(afterA7);
+      },
+      RUNNER_TIMEOUT_MS,
+    );
 
-    it("A7.3: the forward migration refuses a payment table that already holds rows, and leaves the schema as it was", async () => {
-      await locked(() => runner(second.url, ["--down", "--to", BEFORE_A7]));
-      // A row in 0007's shape (no livemode column yet), as an earlier test payment would be.
-      await second.sql.begin(async (tx) => {
-        const orderId = await insertPlacedOrder(tx, {
-          ...(await orderParents(tx)),
-          mode: "test",
-        });
-        await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
+    it(
+      "A7.3: the forward migration refuses a payment table that already holds rows, and leaves the schema as it was",
+      async () => {
+        await locked(() => runner(second.url, ["--down", "--to", BEFORE_A7]));
+        // A row in 0007's shape (no livemode column yet), as an earlier test payment would be.
+        await second.sql.begin(async (tx) => {
+          const orderId = await insertPlacedOrder(tx, {
+            ...(await orderParents(tx)),
+            mode: "test",
+          });
+          await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
                                       currency_code)
                  VALUES (${orderId}, 'stripe', 'pi_old', 'requires_action', 'card', 18900, 'PLN')`;
-      });
-      let refused = "";
-      try {
-        await locked(() => runner(second.url));
-      } catch (error) {
-        refused = error instanceof Error ? error.message : String(error);
-      }
-      expect(refused).toContain(
-        'column "livemode" of relation "payment" contains null values',
-      );
-      expect(await introspect(second.sql)).toEqual(beforeA7);
-    });
+        });
+        let refused = "";
+        try {
+          await locked(() => runner(second.url));
+        } catch (error) {
+          refused = error instanceof Error ? error.message : String(error);
+        }
+        expect(refused).toContain(
+          'column "livemode" of relation "payment" contains null values',
+        );
+        expect(await introspect(second.sql)).toEqual(beforeA7);
+      },
+      RUNNER_TIMEOUT_MS,
+    );
   },
 );
