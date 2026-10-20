@@ -5,7 +5,8 @@
  * A description list, one `<dt>`/`<dd>` per fact, and the whole honesty rule of this page in one
  * component:
  *
- *  - **facts-unknown (guide)** keeps every label and prints the blank *in words* — "no cutoff,
+ *  - **facts-unknown (guide)** keeps every label but "Order by" (hidden while ordering is not open,
+ *    founder 2026-10-20; TASK-239) and prints the blank *in words* — "no cutoff,
  *    because no florist has agreed to one". It is not an empty block and it is not a "coming
  *    soon" box: a buyer who arrived from a search for flower delivery gets a straight answer in
  *    the first screen, and no cutoff, date, city, price or count is claimed (AC-19).
@@ -22,6 +23,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { deliveryDatesOpen } from "../../../config/countries.ts";
 import { formatList } from "../../i18n/index.ts";
 import { Fact, FactsList } from "../../ui/index.ts";
 import type { CorridorView } from "../corridor.ts";
@@ -61,6 +63,7 @@ export function CorridorFacts({ view }: CorridorFactsProps): ReactElement {
       facts={view.facts}
       locale={view.locale}
       nameKey={view.nameKey}
+      ordersOpen={deliveryDatesOpen(view.iso2)}
       prices={
         view.liveSlots.fromPrice === undefined
           ? {}
@@ -91,6 +94,12 @@ export interface DeliveryFactsProps {
   readonly nameKey: string;
   readonly locale: string;
   readonly prices: { readonly fromPrice?: string } | "omit";
+  /**
+   * Ordering is open in this destination (`deliveryDatesOpen()`). While it is not, the facts-unknown
+   * form drops its "Order by" row instead of printing "None yet." (founder, 2026-10-20, "2 hide";
+   * spec 007 AC-34: no "Order by" text while a country is not open; TASK-239). Absent means closed.
+   */
+  readonly ordersOpen?: boolean;
 }
 
 export function DeliveryFacts({
@@ -98,6 +107,7 @@ export function DeliveryFacts({
   nameKey,
   locale,
   prices,
+  ordersOpen = false,
 }: DeliveryFactsProps): ReactElement {
   const t = useTranslations();
   const c = useTranslations("corridor");
@@ -148,9 +158,11 @@ export function DeliveryFacts({
           <Fact label={c("facts.delivering.label")}>
             {c("facts.delivering.none", { country })}
           </Fact>
-          <Fact label={c("facts.orderBy.label")} none>
-            {c("facts.orderBy.none")}
-          </Fact>
+          {ordersOpen ? (
+            <Fact label={c("facts.orderBy.label")} none>
+              {c("facts.orderBy.none")}
+            </Fact>
+          ) : null}
           <Fact label={c("facts.deliveryDays.label")} none>
             {c("facts.deliveryDays.none")}
           </Fact>
