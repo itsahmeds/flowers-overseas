@@ -76,9 +76,9 @@ const LOCALES = ["en", "en-gb", "pl"] as const satisfies readonly LocaleCode[];
  * steps of one product, which would exercise one code path five times.
  */
 const TIERS = [
-  { productId: "FO-BQ-001", tierKey: "stems_12" },
-  { productId: "FO-BQ-001", tierKey: "stems_18" },
-  { productId: "FO-BQ-001", tierKey: "stems_24" },
+  { productId: "FO-BQ-001", tierKey: "stems_11" },
+  { productId: "FO-BQ-001", tierKey: "stems_15" },
+  { productId: "FO-BQ-001", tierKey: "stems_21" },
   { productId: "FO-AR-001", tierKey: "size_m" },
   { productId: "FO-PT-001", tierKey: "single" },
 ] as const;

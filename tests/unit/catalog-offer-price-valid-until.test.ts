@@ -34,7 +34,7 @@ const RESOLVE_MODULE = "../../src/modules/catalog/pricing/resolve.ts";
 const PROJECT_MODULE = "../../src/modules/catalog/pricing/project.ts";
 const LIVE = "PL" as const;
 const SKU = "FO-BQ-001" as const;
-const TIER = "stems_18" as const;
+const TIER = "stems_15" as const;
 /** Inside the committed snapshot's window: every conversion is available. */
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
 /** Past the committed snapshot's bound (stale after Thu 2026-09-10 00:00Z): fails closed. */

@@ -74,7 +74,7 @@ describe("rendering a price-bearing page makes zero outbound requests (AC-31, T-
 
     const projection = await catalog.priceProjection("en-gb", {
       productId: "FO-BQ-001",
-      tierKey: "stems_18",
+      tierKey: "stems_15",
       countryIso: "PL",
       now,
     });

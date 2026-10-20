@@ -29,8 +29,8 @@ import type { Quote } from "../../src/modules/catalog/types.ts";
 const STATIC_MODULE = "../../src/modules/catalog/static/index.ts";
 const LIVE = "PL" as const;
 const SKU = "FO-BQ-001" as const;
-const TIER = "stems_12" as const;
-const SECOND_TIER = "stems_18" as const;
+const TIER = "stems_11" as const;
+const SECOND_TIER = "stems_15" as const;
 
 /** Inside the FX snapshot's 48-hour window, so a converted quote is possible. */
 const ISSUED_AT = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
@@ -247,7 +247,7 @@ describe("verifyQuote refuses what it must (AC-17, T-15)", () => {
       { currency: "EUR" },
       { quoteId: "0".repeat(32) },
       { digest: `${"0".repeat(63)}1` },
-      { priceVersion: "cp:FO-BQ-001:PL:stems_12:2000-01-01" },
+      { priceVersion: "cp:FO-BQ-001:PL:stems_11:2000-01-01" },
     ];
 
     for (const mutation of mutations) {

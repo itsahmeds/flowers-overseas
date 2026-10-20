@@ -118,23 +118,23 @@ describe("listTiers (spec 005 §2, §13 Q4)", () => {
   it("returns the authored ladder in sort order, as keys and counts only", async () => {
     await expect(listTiers("FO-BQ-001")).resolves.toEqual([
       {
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         labelKey: "catalog.tier.stems",
-        stems: 12,
+        stems: 11,
         sort: 0,
         isDefault: false,
       },
       {
-        tierKey: "stems_18",
+        tierKey: "stems_15",
         labelKey: "catalog.tier.stems",
-        stems: 18,
+        stems: 15,
         sort: 1,
         isDefault: true,
       },
       {
-        tierKey: "stems_24",
+        tierKey: "stems_21",
         labelKey: "catalog.tier.stems",
-        stems: 24,
+        stems: 21,
         sort: 2,
         isDefault: false,
       },
@@ -231,9 +231,9 @@ describe("listTiers (spec 005 §2, §13 Q4)", () => {
     // …and refuses a tier that smuggles an amount or drops the preselection.
     expect(
       ProductTierSchema.safeParse({
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         labelKey: "catalog.tier.stems",
-        stems: 12,
+        stems: 11,
         sort: 0,
         isDefault: false,
         retailMinor: 14_900,
@@ -241,9 +241,9 @@ describe("listTiers (spec 005 §2, §13 Q4)", () => {
     ).toBe(false);
     expect(
       ProductTierSchema.safeParse({
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         labelKey: "catalog.tier.stems",
-        stems: 12,
+        stems: 11,
         sort: 0,
       }).success,
     ).toBe(false);
@@ -253,8 +253,8 @@ describe("listTiers (spec 005 §2, §13 Q4)", () => {
 describe("defaultTier (spec 002 §14 A1 (b), spec 005 §13 Q6)", () => {
   it("is the authored `isDefault` row, so the A/B test is a data change", async () => {
     await expect(defaultTier("FO-BQ-001")).resolves.toMatchObject({
-      tierKey: "stems_18",
-      stems: 18,
+      tierKey: "stems_15",
+      stems: 15,
       isDefault: true,
     });
   });

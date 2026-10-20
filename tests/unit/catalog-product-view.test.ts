@@ -81,9 +81,9 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
   it("prints each tier's own all-in price, projected into the locale's currency (en-gb → GBP)", async () => {
     const view = await amber("en-gb", "PL");
     expect(view.tiers.map((tier) => [tier.tierKey, tier.price])).toEqual([
-      ["stems_12", { amountMinor: 4090, currency: "GBP" }],
-      ["stems_18", { amountMinor: 4690, currency: "GBP" }],
-      ["stems_24", { amountMinor: 5290, currency: "GBP" }],
+      ["stems_11", { amountMinor: 4090, currency: "GBP" }],
+      ["stems_15", { amountMinor: 4690, currency: "GBP" }],
+      ["stems_21", { amountMinor: 5290, currency: "GBP" }],
     ]);
     expect(view.fx).toEqual({ state: "converted" });
   });
@@ -101,9 +101,9 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
   it("prints the x-default locale's own figures (en → EUR), each tier projected on its own", async () => {
     const view = await amber("en", "PL");
     expect(view.tiers.map((tier) => [tier.tierKey, tier.price])).toEqual([
-      ["stems_12", { amountMinor: 4790, currency: "EUR" }],
-      ["stems_18", { amountMinor: 5490, currency: "EUR" }],
-      ["stems_24", { amountMinor: 6190, currency: "EUR" }],
+      ["stems_11", { amountMinor: 4790, currency: "EUR" }],
+      ["stems_15", { amountMinor: 5490, currency: "EUR" }],
+      ["stems_21", { amountMinor: 6190, currency: "EUR" }],
     ]);
     expect(view.price.displayPrice).toEqual({
       amountMinor: 5490,
@@ -130,7 +130,7 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
 
   it("preselects the default tier, and its price is the one price the page quotes", async () => {
     const view = await amber("en-gb", "PL");
-    expect(view.selectedTierKey).toBe("stems_18");
+    expect(view.selectedTierKey).toBe("stems_15");
     expect(view.price.displayPrice).toEqual({
       amountMinor: 4690,
       currency: "GBP",
@@ -142,18 +142,26 @@ describe("one price, VAT and delivery included (§8, AC-21 model half)", () => {
 
   it("honours a valid `?tier=` and falls back to the default on an unknown one — never an error", async () => {
     const chosen = await amber("en-gb", "PL", {
-      selection: { tierKey: "stems_24" },
+      selection: { tierKey: "stems_21" },
     });
-    expect(chosen.selectedTierKey).toBe("stems_24");
+    expect(chosen.selectedTierKey).toBe("stems_21");
     expect(chosen.price.displayPrice.amountMinor).toBe(5290);
 
     const unknown = await amber("en-gb", "PL", {
       selection: { tierKey: "stems_99", date: "2026-09-10" },
     });
-    expect(unknown.selectedTierKey).toBe("stems_18");
+    expect(unknown.selectedTierKey).toBe("stems_15");
     expect(unknown.price.displayPrice.amountMinor).toBe(4690);
     // No date can be chosen where the picker is `unavailable`, so the parameter is ignored.
     expect(unknown.selectedDate).toBeUndefined();
+
+    // A key retired by the odd-stem remap (spec 005 §14 A-founder-2026-10-14c point 4): an old
+    // `?tier=stems_18` link falls back to the default, with no redirect (TASK-240).
+    const retired = await amber("en-gb", "PL", {
+      selection: { tierKey: "stems_18" },
+    });
+    expect(retired.selectedTierKey).toBe("stems_15");
+    expect(retired.price.displayPrice.amountMinor).toBe(4690);
   });
 
   it("falls back to the destination's currency on stale FX, says so, and moves every figure with it", async () => {
@@ -272,7 +280,7 @@ describe("the delivery block in Phase 0 (§2, AC-8's model half)", () => {
     expect(view.delivery.state).toBe("unavailable");
     expect(view.delivery.dates).toEqual([]);
     expect(view.selectedDate).toBeUndefined();
-    expect(view.totals).toEqual({ stems_12: {}, stems_18: {}, stems_24: {} });
+    expect(view.totals).toEqual({ stems_11: {}, stems_15: {}, stems_21: {} });
     expect(view.trust).toEqual(["substitution", "freshnessGuarantee"]);
     // The calendar's own honesty refinements accept what the view carries.
     expect(DeliveryWindowSchema.safeParse(view.delivery).success).toBe(true);

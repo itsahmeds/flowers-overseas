@@ -50,7 +50,7 @@ const { lowestPriceInLast30Days } =
 
 const LIVE = "PL" as const;
 const SKU = "FO-BQ-001" as const;
-const TIER = "stems_12" as const;
+const TIER = "stems_11" as const;
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
 /** Well past `MAX_FX_AGE_HOURS`: the snapshot has stopped converting (§11's first signal). */
 const STALE = new Date("2026-10-01T10:00:00Z");
