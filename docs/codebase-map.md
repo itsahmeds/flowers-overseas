@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-users.test.ts`, `unit/admin-permissions.test.ts` +1 |
+| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-users.test.ts`, `integration/audit-trail.test.ts` +3 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +80 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
@@ -100,6 +100,7 @@ task actually touches.
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4;… | 003 |
+| `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -194,8 +195,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 328 |
-| `tests/integration/` | 35 |
+| `tests/unit/` | 329 |
+| `tests/integration/` | 36 |
 | `tests/contract/` | 14 |
 | `tests/e2e/` | 66 |
 | `tests/a11y/` | 15 |

@@ -67,20 +67,56 @@ export const AUDIT_PAGE_SIZE = 100;
 
 const IsoDateSchema = z.iso.date();
 
+/** A first value of a query-string parameter, as the page receives it; empty is absent. */
+function firstValue(value: unknown): unknown {
+  const one = Array.isArray(value) ? (value as unknown[])[0] : value;
+  return one === "" ? undefined : one;
+}
+
+const AUDIT_FILTER_KEYS = [
+  "entity",
+  "actor",
+  "action",
+  "from",
+  "to",
+  "open",
+] as const;
+
 /**
- * `/admin/audit`'s query string (spec 012 §5.2 `AuditFilterSchema`). Every field optional; a
- * value that does not parse is dropped rather than refused, so a hand-edited URL shows the
- * unfiltered log instead of an error. `open` is the one row whose before/after is expanded.
+ * `/admin/audit`'s query string (spec 012 §5.2 `AuditFilterSchema`), parsed straight from the
+ * page's `searchParams`. Every field optional; a value that does not parse is dropped rather than
+ * refused, so a hand-edited URL shows the unfiltered log instead of an error. `open` is the one
+ * row whose before/after is expanded. Unknown keys are ignored.
  */
-export const AuditFilterSchema = z.object({
-  entity: z.enum(AUDIT_ENTITIES).optional().catch(undefined),
-  actor: z.uuid().optional().catch(undefined),
-  action: AuditActionSchema.optional().catch(undefined),
-  from: IsoDateSchema.optional().catch(undefined),
-  to: IsoDateSchema.optional().catch(undefined),
-  open: z.uuid().optional().catch(undefined),
-});
-export type AuditFilter = z.infer<typeof AuditFilterSchema>;
+export const AuditFilterSchema = z.preprocess(
+  (input) => {
+    const record =
+      typeof input === "object" && input !== null
+        ? (input as Record<string, unknown>)
+        : {};
+    return Object.fromEntries(
+      AUDIT_FILTER_KEYS.map((key) => [key, firstValue(record[key])]),
+    );
+  },
+  z.object({
+    entity: z.enum(AUDIT_ENTITIES).optional().catch(undefined),
+    actor: z.uuid().optional().catch(undefined),
+    action: AuditActionSchema.optional().catch(undefined),
+    from: IsoDateSchema.optional().catch(undefined),
+    to: IsoDateSchema.optional().catch(undefined),
+    open: z.uuid().optional().catch(undefined),
+  }),
+);
+export type AuditFilter = z.output<typeof AuditFilterSchema>;
+
+/** Parses `/admin/audit`'s search parameters; never throws. */
+export function parseAuditFilter(params: unknown): AuditFilter {
+  const parsed = AuditFilterSchema.parse(params);
+  // Drop the keys whose value was absent or dropped, so a filter compares by what it holds.
+  return Object.fromEntries(
+    Object.entries(parsed).filter(([, value]) => value !== undefined),
+  ) as AuditFilter;
+}
 
 /** One row of the log as the page reads it. */
 export const AuditEntrySchema = z
@@ -99,24 +135,6 @@ export const AuditEntrySchema = z
   })
   .strict();
 export type AuditEntry = z.infer<typeof AuditEntrySchema>;
-
-/** A first value of a query-string parameter, as the page receives it. */
-function first(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-/** Parses `/admin/audit`'s search parameters; never throws. */
-export function parseAuditFilter(
-  params: Readonly<Record<string, string | string[] | undefined>>,
-): AuditFilter {
-  const raw = Object.fromEntries(
-    ["entity", "actor", "action", "from", "to", "open"].map((key) => [
-      key,
-      first(params[key]) || undefined,
-    ]),
-  );
-  return AuditFilterSchema.parse(raw);
-}
 
 /**
  * Records that the actor opened an order or an application (AC-13): one `audit_log` row with the

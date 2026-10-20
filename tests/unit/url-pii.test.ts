@@ -93,6 +93,34 @@ const EXTERNAL_QUERY_KEYS: readonly {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
       "/admin/users's outcome line after a grant, revoke or deactivate (`saved`, `conflict`, …)",
+  }, // Spec 012 §2.3 (TASK-218): /admin/audit's GET filters and its expanded row, on a `noindex`,
+  // `no-store`, admin-only page. Ids and codes only; not listing keys.
+  {
+    entry: "src/app/admin/(signed-in)/audit/page.tsx#entity",
+    reason:
+      "/admin/audit's entity filter: a table name (spec 012 §2.3, `AuditFilterSchema`)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/audit/page.tsx#actor",
+    reason:
+      "/admin/audit's actor filter: an admin's user id, never a name (artboard: ids, never names, in URLs)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/audit/page.tsx#action",
+    reason:
+      "/admin/audit's action filter: a dotted audit action (`partner.update`)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/audit/page.tsx#from",
+    reason: "/admin/audit's date filter, first day (an ISO date)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/audit/page.tsx#to",
+    reason: "/admin/audit's date filter, last day (an ISO date)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/audit/page.tsx#open",
+    reason: "/admin/audit's expanded row: an audit_log row id",
   },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
@@ -501,6 +529,12 @@ describe("the real tree (T-59)", () => {
       "src/lib/auth/surface.ts#callbackUrl",
       "src/modules/checkout/steps.ts#step",
       "src/app/admin/(signed-in)/users/actions.ts#result",
+      "src/app/admin/(signed-in)/audit/page.tsx#entity",
+      "src/app/admin/(signed-in)/audit/page.tsx#actor",
+      "src/app/admin/(signed-in)/audit/page.tsx#action",
+      "src/app/admin/(signed-in)/audit/page.tsx#from",
+      "src/app/admin/(signed-in)/audit/page.tsx#to",
+      "src/app/admin/(signed-in)/audit/page.tsx#open",
     ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);
   });

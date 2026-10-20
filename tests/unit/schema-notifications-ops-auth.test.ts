@@ -49,6 +49,34 @@ const AUTH_TABLES = [
   "user_role",
 ] as const;
 
+/** What `0016_audit_trail` adds to `audit_log` (spec 012 §5.1; TASK-218). */
+const AUDIT_TRAIL = {
+  columns: ["reason", "channel"],
+  checks: [
+    "audit_log_channel_check",
+    "audit_log_reason_check",
+    "audit_log_view_check",
+  ],
+  indexes: ["audit_log_at_idx", "audit_log_actor_idx", "audit_log_action_idx"],
+} as const;
+
+/** `audit_log`'s mirror as `0009` and `0010` alone shape it. */
+function withoutAuditTrail(
+  shape: ReturnType<typeof mirrorShape>,
+): ReturnType<typeof mirrorShape> {
+  const drop = (list: readonly string[], names: readonly string[]) =>
+    list.filter((name) => !names.includes(name));
+  return {
+    ...shape,
+    columns: shape.columns.filter(
+      (column) =>
+        !(AUDIT_TRAIL.columns as readonly string[]).includes(column.name),
+    ),
+    checks: drop(shape.checks, AUDIT_TRAIL.checks),
+    indexes: drop(shape.indexes, AUDIT_TRAIL.indexes),
+  };
+}
+
 /** The rows of `INSERT INTO public.<table> (…) VALUES (…), (…);`, each as its literal values. */
 function seeded(sql: string, table: string): string[][] {
   const start = sql.indexOf(`INSERT INTO public.${table} (`);
@@ -114,9 +142,37 @@ describe("migrations 0009 and 0010 — shape", () => {
 
   for (const table of OPS_TABLES) {
     it(`${table} equals its mirror (keys added by 0010 included)`, () => {
-      expect(mirrorShape(table)).toEqual(sqlShape(ops, table, auth));
+      const mirror = mirrorShape(table);
+      expect(
+        table === "audit_log" ? withoutAuditTrail(mirror) : mirror,
+      ).toEqual(sqlShape(ops, table, auth));
     });
   }
+
+  it("audit_log's mirror holds exactly what 0016_audit_trail adds (spec 012 §5.1; TASK-218)", () => {
+    const trail = readMigration("0016_audit_trail.sql");
+    for (const column of AUDIT_TRAIL.columns) {
+      expect(trail).toMatch(new RegExp(`ADD COLUMN ${column} text`, "u"));
+    }
+    for (const check of AUDIT_TRAIL.checks) {
+      expect(trail).toMatch(new RegExp(`ADD CONSTRAINT ${check} CHECK`, "u"));
+    }
+    for (const index of AUDIT_TRAIL.indexes) {
+      expect(trail).toMatch(
+        new RegExp(`CREATE INDEX ${index} ON public\\.audit_log `, "u"),
+      );
+    }
+    const mirror = mirrorShape("audit_log");
+    expect(mirror.columns.map((c) => c.name)).toEqual(
+      expect.arrayContaining([...AUDIT_TRAIL.columns]),
+    );
+    expect(mirror.checks).toEqual(
+      expect.arrayContaining([...AUDIT_TRAIL.checks]),
+    );
+    expect(mirror.indexes).toEqual(
+      expect.arrayContaining([...AUDIT_TRAIL.indexes]),
+    );
+  });
   for (const table of AUTH_TABLES) {
     it(`${table} equals its mirror`, () => {
       expect(mirrorShape(table)).toEqual(sqlShape(auth, table));

@@ -556,7 +556,8 @@ describe("read projections run under the right context (AC-25; R3, R4)", () => {
     ).toEqual([]);
     expect(contexts).toEqual([
       { role: "partner", partnerIds: [partnerId], requestId: "req-1" },
-      { admin: { requestId: "req-2" } },
+      // A read: its audit action names it, no trigger records it (spec 012 §2.3; TASK-218).
+      { admin: { requestId: "req-2", action: "orders.list" } },
     ]);
     const partnerSql = dialect.sqlToQuery(queries[0] as SQL).sql;
     expect(partnerSql).toMatch(/FROM partner_order o/);

@@ -15,6 +15,7 @@ import {
   AUDIT_ENTITIES,
   AUDIT_PAGE_SIZE,
   type AuditEntry,
+  AuditFilterSchema,
   type AuditFilter,
   adminRequestId,
   adminT,
@@ -161,7 +162,7 @@ export default async function AdminAuditPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const session = await requireAdminPage("audit.read");
-  const filter = parseAuditFilter(await searchParams);
+  const filter = parseAuditFilter(AuditFilterSchema.parse(await searchParams));
   const actor = { userId: session.userId, requestId: await adminRequestId() };
   const [entries, options] = await Promise.all([
     listAuditEntries(actor, filter, session.timeZone),
