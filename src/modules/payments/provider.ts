@@ -512,13 +512,18 @@ export const PAYMENT_PROVIDER_CONTRACT: readonly PaymentProviderContractCase[] =
         );
         same(reread.lastDecline, first.lastDecline, "one decline read twice");
 
-        await harness.simulateDecline(created.ref, "expired_card");
+        // The same code again is a second decline, told apart by its reference alone.
+        await harness.simulateDecline(created.ref, "insufficient_funds");
         const second = intentOf(
           await harness.provider.retrieveIntent(created.ref),
           "retrieve second decline",
         );
         check(second.lastDecline !== undefined, "second decline is set");
-        same(second.lastDecline.code, "expired_card", "second decline: code");
+        same(
+          second.lastDecline.code,
+          "insufficient_funds",
+          "second decline: code",
+        );
         check(
           second.lastDecline.ref !== first.lastDecline.ref,
           "a second decline has a reference of its own",

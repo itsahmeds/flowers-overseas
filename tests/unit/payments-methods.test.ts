@@ -116,6 +116,20 @@ describe("paymentMethodTypesFor (spec 013 AC-7, T-07)", () => {
     ).toEqual({ methods: [], providerTypes: [] });
   });
 
+  it("a method configured for Stripe but not available is not offered, whatever its flag", () => {
+    const registry: PaymentMethod[] = LAUNCH.map((method) =>
+      method.id === "visa" || method.id === "mastercard"
+        ? { ...method, available: false, processor: "stripe" }
+        : method,
+    );
+    expect(
+      paymentMethodTypesFor(
+        { buyerCountryDeclared: "GB", currency: "GBP" },
+        { registry, enabledFlags: new Set([methodFlagKey("card")]) },
+      ),
+    ).toEqual({ methods: [], providerTypes: [] });
+  });
+
   it("a method available through another processor is not offered through Stripe", () => {
     expect(
       paymentMethodTypesFor(
