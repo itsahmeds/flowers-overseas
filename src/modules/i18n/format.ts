@@ -356,9 +356,22 @@ export function formatPercentFromBasisPoints(
  * `dayMonthTime` is the fifth, added by TASK-218 for spec 012's audit log (artboard
  * `admin-audit-desktop.dc.html`): the day, the short month and a 24-hour time ("5 Oct, 12:02"),
  * in the viewer's zone, which the column header names. Admin-only; no buyer page prints it.
+ *
+ * Three more, added by TASK-222 for spec 012's order detail (artboard
+ * `admin-order-detail-desktop.dc.html`), each in the viewer's zone and admin-only:
+ * `dayMonthYearTime` is the placed instant in the page head ("5 Oct 2026, 11:05"),
+ * `dayMonthTimeSeconds` a timeline event ("5 Oct, 11:05:02", where events a second apart must
+ * read apart), and `time` an assignment's offer and answer ("11:05").
  */
 export type DateStyle =
-  "short" | "deliveryDate" | "calendarDate" | "dayMonth" | "dayMonthTime";
+  | "short"
+  | "deliveryDate"
+  | "calendarDate"
+  | "dayMonth"
+  | "dayMonthTime"
+  | "dayMonthYearTime"
+  | "dayMonthTimeSeconds"
+  | "time";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
@@ -377,6 +390,23 @@ const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
     month: "long",
     year: "numeric",
   },
+  dayMonthYearTime: {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  },
+  dayMonthTimeSeconds: {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  },
+  time: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
 };
 
 /**

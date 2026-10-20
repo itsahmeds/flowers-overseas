@@ -446,6 +446,19 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
         "Europe/Tallinn",
       ),
     ).toBe("5 Oct, 12:02");
+    // TASK-222: the order detail's placed instant, timeline and assignment times (spec 012
+    // artboard `admin-order-detail-desktop.dc.html`), in the viewer's zone.
+    const placed = new Date("2026-10-05T08:05:02Z");
+    expect(formatDate(placed, "en", "dayMonthYearTime", "Europe/Tallinn")).toBe(
+      "5 Oct 2026, 11:05",
+    );
+    expect(
+      formatDate(placed, "en", "dayMonthTimeSeconds", "Europe/Tallinn"),
+    ).toBe("5 Oct, 11:05:02");
+    expect(formatDate(placed, "en", "time", "Europe/Tallinn")).toBe("11:05");
+    expect(
+      formatDate(new Date("2026-10-05T22:00:00Z"), "en", "time", "UTC"),
+    ).toBe("22:00");
   });
 
   it("splits one `calendarDate` value into its parts, each part that value's (TASK-187)", () => {
