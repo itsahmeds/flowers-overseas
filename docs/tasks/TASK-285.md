@@ -39,6 +39,7 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** after TASK-278, TASK-277 (PR 285 edits `ProductCard`) and TASK-241 (PR 235 moves the count line, where the
   grid label sits). Never beside either.
+- **From `/plan-tasks` (orchestrator, 2026-10-20, spec 043 §12 item 2):** this PR is now a feature PR that also closes TASK-290 (spec 043 AC-13 to AC-15: photographed products first, the wordless `aria-hidden` placeholder, card images visible after scroll and in print). One agent, branch and title keep TASK-285, the description names both IDs. Read `docs/tasks/TASK-290.md` and the PR 295 artboards; the breaker runs on the PR.
 
 ## Escalations
 

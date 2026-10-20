@@ -57,6 +57,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 - **From `/plan-tasks` (2026-10-04):** §11's scheduled `seo-auditor` check ("no legal page is
   indexable while its `lawyerReviewed` is false") is not code: the orchestrator adds it to the
   auditor's work order. Not in this PR.
+- **From `/break 270` (HOLE 10 CARRIED, ruled by the reviewer; copied 2026-10-20):** `CLAIM_PATTERNS` branches (`reviews?`, `stars?`, `trustpilot`, `proof of delivery`, `delivery photos?`, `doorstep` and the others) each lack a hit row. In the honesty sweep, add one hit row per alternation branch in `pages-check.test.ts`, with the corridor-check and seed-check files, mutating each branch.
+- **From `/break 270` (HOLE 11 CARRIED; copied 2026-10-20):** add overlay rows for faq `q` and item `title` in `pages-check.test.ts`, with a mutation dropping each field's push watched red (the legal `changeLog` half is TASK-183's).
+- **From `/break 270` (HOLE 12 CARRIED; copied 2026-10-20):** add an `http:` siteUrl case to `info-page-head.test.tsx` asserting `alternates.languages` is undefined (local or preview builds only; production is `https`).
 
 ## Escalations
 

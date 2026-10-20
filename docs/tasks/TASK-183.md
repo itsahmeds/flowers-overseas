@@ -97,6 +97,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
   `lawyerReviewed` constant no code read. Wire `lawyerReviewed` into the legal view's indexability
   here and assert a reviewed but not lawyer-reviewed legal page is `noindex,follow`, with a mutation
   that drops the `lawyerReviewed` term watched red.
+- **From `/break 270` (HOLE 11 CARRIED, ruled by the reviewer; copied 2026-10-20):** the legal `changeLog` half: add an overlay row for legal `changeLog` in `pages-check.test.ts`, with a mutation dropping that field's push watched red, when the legal view lands here. The faq `q` and item `title` rows are TASK-184's.
 
 ## Escalations
 
