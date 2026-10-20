@@ -122,6 +122,14 @@ const EXTERNAL_QUERY_KEYS: readonly {
     entry: "src/app/admin/(signed-in)/audit/page.tsx#open",
     reason: "/admin/audit's expanded row: an audit_log row id",
   },
+  // Spec 013 §5.2 (TASK-255): Stripe's REST API, which the adapter alone calls. None of these
+  // keys carries personal data: an expansion name, a Unix time, a page size and an event id.
+  // (`types[]` is appended from a list the scan cannot read as a key; it carries event type names.)
+  ...["expand[]", "created[gte]", "limit", "starting_after"].map((key) => ({
+    entry: `src/modules/payments/stripe/adapter.ts#${key}`,
+    reason:
+      "Stripe's `GET /v1/payment_intents/:id` and `GET /v1/events` query (spec 013 §5.2)",
+  })),
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
 
@@ -535,6 +543,10 @@ describe("the real tree (T-59)", () => {
       "src/app/admin/(signed-in)/audit/page.tsx#from",
       "src/app/admin/(signed-in)/audit/page.tsx#to",
       "src/app/admin/(signed-in)/audit/page.tsx#open",
+      "src/modules/payments/stripe/adapter.ts#expand[]",
+      "src/modules/payments/stripe/adapter.ts#created[gte]",
+      "src/modules/payments/stripe/adapter.ts#limit",
+      "src/modules/payments/stripe/adapter.ts#starting_after",
     ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);
   });

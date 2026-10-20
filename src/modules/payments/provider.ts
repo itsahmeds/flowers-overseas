@@ -66,7 +66,7 @@ export interface CreateIntentInput {
   /** `paymentMethodTypesFor()` (`methods.ts`); never empty. */
   readonly methodTypes: readonly [ProviderMethodType, ...ProviderMethodType[]];
   readonly metadata: IntentMetadataInput;
-  /** The order reference, `FO-XXXX-XXXX`. */
+  /** The order reference, `orderReference(orderId)` (spec 010 §14 A2.1). */
   readonly description: string;
   /** `pi:create:{paymentId}` (spec 013 §5.2, step 3). */
   readonly idempotencyKey: string;
@@ -364,7 +364,8 @@ function contractInput(
       isFirstOrder: true,
       orderMode: "test",
     },
-    description: "FO-7K2M-9QXA",
+    // Any text: a provider never reads it. The lifecycle sends `orderReference(orderId)`.
+    description: "contract order",
     idempotencyKey: `pi:create:${CONTRACT_PAYMENT_ID}`,
     ...overrides,
   };

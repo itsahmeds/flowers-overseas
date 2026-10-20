@@ -359,6 +359,29 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-172 (spec 009 §14 A11): the trust strip's guarantee name retired as "Fresh-flower
     // promise". The words are in the founder's 2026-10-04 batch (decisions log, item 2) for the
     // header and the home; this key's value waits for his own attestation all the same.
+    // TASK-255, spec 013 §7 and Appendix A: the pay step's errors and labels and the confirmation
+    // states' payment lines, 20 strings waiting for the founder's copy batch. Not counted in the
+    // unreviewed share (`review-scope.ts`, A17), but not exempt from his tick (A17 clause 5).
+    "payments.confirmation.arrival",
+    "payments.confirmation.cancelled",
+    "payments.confirmation.cancelledByYouRefunded",
+    "payments.confirmation.cancelledByYouRefunding",
+    "payments.confirmation.notCompleted",
+    "payments.confirmation.notDeliveredRefunded",
+    "payments.confirmation.notDeliveredRefunding",
+    "payments.confirmation.paid",
+    "payments.error.authenticationFailed",
+    "payments.error.cardDeclined",
+    "payments.error.expiredCard",
+    "payments.error.generic",
+    "payments.error.incorrectCvc",
+    "payments.error.insufficientFunds",
+    "payments.error.processingError",
+    "payments.error.tryAnotherMethod",
+    "payments.error.unavailable",
+    "payments.step.noScript",
+    "payments.step.submitting",
+    "payments.step.testLabel",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
@@ -481,6 +504,9 @@ describe("the shipped catalogues and manifests", () => {
       // Spec 041 §7's namespace (TASK-182): the trust pages' status, contact and company lines.
       // Server Components only, so no client provider.
       "infoPages",
+      // Spec 013 §7's namespace (TASK-255): the pay step's decline messages and labels and the
+      // confirmation states' payment lines.
+      "payments",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

@@ -5,7 +5,7 @@
  * enters the bundle and MSW can serve recorded responses to it in the contract suite. Every
  * request carries:
  *
- *  - the secret (in production the restricted `rk_live_` key, spec 013 §5.2 "Keys and
+ *  - the secret (in production the live restricted key, spec 013 §5.2 "Keys and
  *    environments") as a bearer token;
  *  - `Stripe-Version: STRIPE_API_VERSION`, so the account's default version never changes a
  *    response;
@@ -19,9 +19,12 @@
  * The secret and the webhook secret are injected by the caller (the lifecycle, TASK-257), never
  * read from `process.env` here.
  */
+import type { z } from "zod";
+
 import type { Money } from "@/modules/i18n";
 
 import {
+  isProviderFailure,
   providerFailure,
   type CreateIntentInput,
   type PaymentProvider,
@@ -49,7 +52,7 @@ import { STRIPE_API_BASE, STRIPE_API_VERSION } from "./version.ts";
 import { toProviderEvent, verifyStripeWebhook } from "./webhook.ts";
 
 export interface StripeAdapterConfig {
-  /** `sk_test_…` / `rk_test_…` outside production, `rk_live_…` in production. */
+  /** A test key outside production; the live restricted key in production (spec 013 §5.2). */
   readonly secretKey: string;
   /** The endpoint's signing secret, `whsec_…`. */
   readonly webhookSecret: string;
@@ -72,10 +75,6 @@ export class StripeResponseInvalid extends Error {
 
 /** The page size `listEventsSince` asks for, Stripe's maximum. */
 export const STRIPE_EVENTS_PAGE_SIZE = 100;
-
-type Outcome =
-  | { readonly ok: true; readonly body: unknown }
-  | { readonly ok: false; readonly failure: ProviderFailure };
 
 function chargeOf(intent: StripePaymentIntent): StripeCharge | undefined {
   const charge = intent.latest_charge;
@@ -139,11 +138,7 @@ function toProviderRefund(
 }
 
 /** Stripe's HTTP status and error code → our failure kind. */
-function failureFor(status: number, body: unknown): ProviderFailure {
-  const parsed = StripeErrorSchema.safeParse(body);
-  const code = parsed.success
-    ? (parsed.data.error.code ?? parsed.data.error.type)
-    : undefined;
+function failureFor(status: number, code: string | undefined): ProviderFailure {
   if (status === 404) return providerFailure("not_found", code);
   if (status === 429 || status >= 500 || status === 401 || status === 403) {
     return providerFailure("unavailable", code);
@@ -161,12 +156,17 @@ export function createStripeProvider(
   const fetchImpl = deps.fetch ?? fetch;
   const now = deps.now ?? (() => new Date());
 
-  async function request(
+  /**
+   * One call to Stripe. The body is read and parsed here, with `schema` on success and
+   * `StripeErrorSchema` on failure, so no unparsed byte leaves this function.
+   */
+  async function request<T>(
     method: "GET" | "POST",
     path: string,
     form: URLSearchParams,
+    schema: z.ZodType<T>,
     idempotencyKey?: string,
-  ): Promise<Outcome> {
+  ): Promise<T | ProviderFailure> {
     const headers: Record<string, string> = {
       authorization: `Bearer ${config.secretKey}`,
       "stripe-version": STRIPE_API_VERSION,
@@ -187,28 +187,40 @@ export function createStripeProvider(
     try {
       response = await fetchImpl(url, init);
     } catch {
-      return { ok: false, failure: providerFailure("unavailable") };
+      return providerFailure("unavailable");
     }
-    let body: unknown;
-    try {
-      body = await response.json();
-    } catch {
-      body = undefined;
-    }
+
     if (!response.ok) {
-      return { ok: false, failure: failureFor(response.status, body) };
+      let code: string | undefined;
+      try {
+        const error = StripeErrorSchema.safeParse(
+          JSON.parse(await response.text()),
+        );
+        code = error.success
+          ? (error.data.error.code ?? error.data.error.type)
+          : undefined;
+      } catch {
+        code = undefined;
+      }
+      return failureFor(response.status, code);
     }
-    return { ok: true, body };
+
+    let parsed: z.ZodSafeParseResult<T>;
+    try {
+      parsed = schema.safeParse(JSON.parse(await response.text()));
+    } catch (error) {
+      // Not JSON is a shape we do not know; a body cut off in transit is the network's.
+      if (error instanceof SyntaxError) throw new StripeResponseInvalid(path);
+      return providerFailure("unavailable");
+    }
+    if (!parsed.success) throw new StripeResponseInvalid(path);
+    return parsed.data;
   }
 
   function intentFrom(
-    outcome: Outcome,
-    path: string,
+    result: StripePaymentIntent | ProviderFailure,
   ): ProviderIntent | ProviderFailure {
-    if (!outcome.ok) return outcome.failure;
-    const parsed = StripePaymentIntentSchema.safeParse(outcome.body);
-    if (!parsed.success) throw new StripeResponseInvalid(path);
-    return toProviderIntent(parsed.data);
+    return isProviderFailure(result) ? result : toProviderIntent(result);
   }
 
   const expandCharge = (): URLSearchParams =>
@@ -227,29 +239,46 @@ export function createStripeProvider(
       );
       const path = "/payment_intents";
       return intentFrom(
-        await request("POST", path, form, input.idempotencyKey),
-        path,
+        await request(
+          "POST",
+          path,
+          form,
+          StripePaymentIntentSchema,
+          input.idempotencyKey,
+        ),
       );
     },
 
     async retrieveIntent(ref: string) {
       const path = intentPath(ref);
-      return intentFrom(await request("GET", path, expandCharge()), path);
+      return intentFrom(
+        await request("GET", path, expandCharge(), StripePaymentIntentSchema),
+      );
     },
 
     async capture(ref: string, idempotencyKey: string) {
       const path = intentPath(ref, "/capture");
       return intentFrom(
-        await request("POST", path, expandCharge(), idempotencyKey),
-        path,
+        await request(
+          "POST",
+          path,
+          expandCharge(),
+          StripePaymentIntentSchema,
+          idempotencyKey,
+        ),
       );
     },
 
     async cancel(ref: string, idempotencyKey: string) {
       const path = intentPath(ref, "/cancel");
       return intentFrom(
-        await request("POST", path, expandCharge(), idempotencyKey),
-        path,
+        await request(
+          "POST",
+          path,
+          expandCharge(),
+          StripePaymentIntentSchema,
+          idempotencyKey,
+        ),
       );
     },
 
@@ -269,16 +298,20 @@ export function createStripeProvider(
         },
       });
       const path = "/refunds";
-      const outcome = await request("POST", path, form, idempotencyKey);
-      if (!outcome.ok) {
+      const result = await request(
+        "POST",
+        path,
+        form,
+        StripeRefundSchema,
+        idempotencyKey,
+      );
+      if (isProviderFailure(result)) {
         // A refund has no state to wait for: a refusal of any kind is `rejected`, with its code.
-        return outcome.failure.failure === "state_conflict"
-          ? providerFailure("rejected", outcome.failure.code)
-          : outcome.failure;
+        return result.failure === "state_conflict"
+          ? providerFailure("rejected", result.code)
+          : result;
       }
-      const parsed = StripeRefundSchema.safeParse(outcome.body);
-      if (!parsed.success) throw new StripeResponseInvalid(path);
-      return toProviderRefund(parsed.data, ref);
+      return toProviderRefund(result, ref);
     },
 
     verifyAndParseWebhook(
@@ -305,13 +338,11 @@ export function createStripeProvider(
         if (startingAfter !== undefined)
           form.set("starting_after", startingAfter);
         const path = "/events";
-        const outcome = await request("GET", path, form);
-        if (!outcome.ok) return outcome.failure;
-        const parsed = StripeEventListSchema.safeParse(outcome.body);
-        if (!parsed.success) throw new StripeResponseInvalid(path);
-        collected.push(...parsed.data.data.map(toProviderEvent));
-        const last = parsed.data.data.at(-1);
-        if (!parsed.data.has_more || last === undefined) break;
+        const page = await request("GET", path, form, StripeEventListSchema);
+        if (isProviderFailure(page)) return page;
+        collected.push(...page.data.map(toProviderEvent));
+        const last = page.data.at(-1);
+        if (!page.has_more || last === undefined) break;
         startingAfter = last.id;
       }
       // Stripe lists newest first, page after page; the contract is oldest first.
