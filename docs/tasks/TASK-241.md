@@ -347,6 +347,10 @@ parameter rules must stay green; `CLAUDE.md` DoD §4).
   green**, T-49 included. CI fold at 390 × 844: the shop root's first-row price at about 841.9
   (847.9 before, minus the 6 px shift measured between the two CI-rendered baselines); the
   category 4 px higher than its passing number; the occasion unchanged. Row `in_review`.
+- 2026-10-20 (finisher): rebased onto `origin/main` 501c12f8 (old head 95a80e36); conflicts only
+  in `TASKS.md` (main's rows kept), the visual manifest and `dev-components-desktop.png` (main's
+  baseline kept: this task does not change that page). No open review or breaker comment on the
+  PR. Touched unit files 74 green; `pnpm gates:cheap` all seven green on 2d6fb145.
 
 ## Result
 
