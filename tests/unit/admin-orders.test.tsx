@@ -638,6 +638,8 @@ describe("GET /admin/api/orders/head", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("no-store, private");
     expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    // The poll reads only this tag; equal heads give equal tags.
+    expect(response.headers.get("etag")).toBe('"3.2026-10-05T11:32:00.000Z"');
     expect(await response.json()).toEqual({
       latestCreatedAt: "2026-10-05T11:32:00.000Z",
       count: 3,

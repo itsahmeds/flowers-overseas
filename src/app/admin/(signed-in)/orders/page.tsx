@@ -46,6 +46,7 @@ import {
   orderQueueFilterOptions,
   type OrderQueueFilterOptions,
   orderQueueHead,
+  orderQueueHeadTag,
 } from "@/modules/orders";
 import { AdminPageTitle } from "@/modules/ui/admin/AdminChrome";
 import {
@@ -238,7 +239,7 @@ export default async function AdminOrdersPage({
           <p className="mt-[6px]">
             <OrderQueuePoll
               headUrl="/admin/api/orders/head"
-              initialHead={head}
+              initialTag={orderQueueHeadTag(head)}
               arrivalHref={orderQueueHref(query, {
                 since: query.since ?? head.latestCreatedAt ?? QUEUE_EPOCH,
               })}
