@@ -431,6 +431,20 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       // TASK-220's `admin.flags.*`.
       flag: "checkout.open",
       country: "Poland",
+      // TASK-222's `admin.orders.*`.
+      projection: "confirmed",
+      from: "1",
+      to: "3",
+      total: "3",
+      size: 50,
+      city: "Warszawa",
+      florist: "pl-waw-demo-1",
+      tier: "stems_18",
+      qty: 2,
+      rate: "8%",
+      status: "routed",
+      window: "09:00–12:00",
+      code: (chunks: string) => chunks,
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);
