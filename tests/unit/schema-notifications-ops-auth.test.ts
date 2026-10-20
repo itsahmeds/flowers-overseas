@@ -31,6 +31,8 @@ const ops = readMigration("0009_notifications_ops.sql");
 const opsDown = readMigration("0009_notifications_ops.down.sql");
 const auth = readMigration("0010_auth.sql");
 const authDown = readMigration("0010_auth.down.sql");
+/** `0016` (spec 002 §14 A7.7, TASK-254) adds `outbox_attempt.target`. */
+const a7 = readMigration("0016_payments_a7.sql");
 
 const OPS_TABLES = [
   "outbox",
@@ -141,11 +143,11 @@ describe("migrations 0009 and 0010 — shape", () => {
   });
 
   for (const table of OPS_TABLES) {
-    it(`${table} equals its mirror (keys added by 0010 included)`, () => {
+    it(`${table} equals its mirror (keys added by 0010, columns by 0017 included)`, () => {
       const mirror = mirrorShape(table);
       expect(
         table === "audit_log" ? withoutAuditTrail(mirror) : mirror,
-      ).toEqual(sqlShape(ops, table, auth));
+      ).toEqual(sqlShape(ops, table, `${auth}\n${a7}`));
     });
   }
 

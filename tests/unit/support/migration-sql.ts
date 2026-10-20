@@ -112,7 +112,10 @@ function fkKey(
  * after the one that creates it: a key it adds with `ALTER TABLE … ADD CONSTRAINT … FOREIGN KEY`
  * (a key that waited for its parent table), a column it adds with `ALTER TABLE … ADD COLUMN`
  * (appended, as Postgres appends it) and an index it creates on the table belong to the table's
- * shape too.
+ * shape too. So do, since spec 002 §14 A7 (`0016_payments_a7`, TASK-254), a later
+ * `ALTER TABLE … ALTER COLUMN … DROP NOT NULL` / `SET NOT NULL`, and a later
+ * `ALTER TABLE … DROP CONSTRAINT <name>` / `ADD CONSTRAINT <name> CHECK`, read in file order (one
+ * clause per statement).
  */
 export function sqlShape(sql: string, table: string, later = ""): Shape {
   const body = tableBody(sql, table);
@@ -160,7 +163,7 @@ export function sqlShape(sql: string, table: string, later = ""): Shape {
   const added = [
     ...later.matchAll(
       new RegExp(
-        `ALTER TABLE ${quoted(table)} ADD COLUMN (\\w+) ([a-z[\\]0-9]+)([^;]*);`,
+        `ALTER TABLE ${quoted(table)} ADD COLUMN (\\w+) ([a-z[\\]0-9]+(?:\\(\\d+\\))?)([^;]*);`,
         "gi",
       ),
     ),
@@ -169,9 +172,32 @@ export function sqlShape(sql: string, table: string, later = ""): Shape {
     type: SQL_TYPE[m[2] ?? ""] ?? m[2] ?? "",
     notNull: /\bNOT NULL\b/.test(m[3] ?? ""),
   }));
+  const nullability = new Map<string, boolean>();
+  for (const m of later.matchAll(
+    new RegExp(
+      `ALTER TABLE ${quoted(table)} ALTER COLUMN (\\w+) (DROP|SET) NOT NULL;`,
+      "g",
+    ),
+  )) {
+    nullability.set(m[1] ?? "", m[2] === "SET");
+  }
+  const checks = new Set(named("CHECK"));
+  for (const m of later.matchAll(
+    new RegExp(
+      `ALTER TABLE ${quoted(table)} (DROP CONSTRAINT|ADD CONSTRAINT) (\\w+)( CHECK)?`,
+      "g",
+    ),
+  )) {
+    if (m[1] === "DROP CONSTRAINT") checks.delete(m[2] ?? "");
+    else if (m[3] !== undefined) checks.add(m[2] ?? "");
+  }
   return {
-    columns: [...columnsOf(sql, table), ...added],
-    checks: named("CHECK"),
+    columns: [...columnsOf(sql, table), ...added].map((column) =>
+      nullability.has(column.name)
+        ? { ...column, notNull: nullability.get(column.name) === true }
+        : column,
+    ),
+    checks: [...checks].sort(),
     uniques: named("UNIQUE"),
     primaryKeys: named("PRIMARY KEY"),
     foreignKeys,

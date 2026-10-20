@@ -38,42 +38,40 @@ SET LOCAL ROLE app_owner;
  * 1. payment (A7.3)
  * ------------------------------------------------------------------------ */
 
-ALTER TABLE public.payment
-  ALTER COLUMN provider_ref DROP NOT NULL,
-  ALTER COLUMN method DROP NOT NULL,
-  ADD COLUMN livemode              boolean     NOT NULL,
-  ADD COLUMN capture_method        text        NULL,
-  ADD COLUMN amount_captured_minor bigint      NOT NULL DEFAULT 0,
-  ADD COLUMN amount_refunded_minor bigint      NOT NULL DEFAULT 0,
-  ADD COLUMN authorised_at         timestamptz NULL,
-  ADD COLUMN auth_expires_at       timestamptz NULL,
-  ADD COLUMN failed_at             timestamptz NULL,
-  ADD COLUMN attempts              integer     NOT NULL DEFAULT 0,
-  ADD COLUMN last_decline_code     text        NULL,
-  ADD COLUMN last_decline_ref      text        NULL,
-  ADD COLUMN card_brand            text        NULL,
-  ADD COLUMN card_last4            char(4)     NULL;
+ALTER TABLE public.payment ALTER COLUMN provider_ref DROP NOT NULL;
+ALTER TABLE public.payment ALTER COLUMN method DROP NOT NULL;
+ALTER TABLE public.payment ADD COLUMN livemode boolean NOT NULL;
+ALTER TABLE public.payment ADD COLUMN capture_method text NULL;
+ALTER TABLE public.payment ADD COLUMN amount_captured_minor bigint NOT NULL DEFAULT 0;
+ALTER TABLE public.payment ADD COLUMN amount_refunded_minor bigint NOT NULL DEFAULT 0;
+ALTER TABLE public.payment ADD COLUMN authorised_at timestamptz NULL;
+ALTER TABLE public.payment ADD COLUMN auth_expires_at timestamptz NULL;
+ALTER TABLE public.payment ADD COLUMN failed_at timestamptz NULL;
+ALTER TABLE public.payment ADD COLUMN attempts integer NOT NULL DEFAULT 0;
+ALTER TABLE public.payment ADD COLUMN last_decline_code text NULL;
+ALTER TABLE public.payment ADD COLUMN last_decline_ref text NULL;
+ALTER TABLE public.payment ADD COLUMN card_brand text NULL;
+ALTER TABLE public.payment ADD COLUMN card_last4 char(4) NULL;
 
 ALTER TABLE public.payment DROP CONSTRAINT payment_status_check;
 
-ALTER TABLE public.payment
-  ADD CONSTRAINT payment_status_check CHECK (status IN (
-    'pending', 'requires_action', 'processing', 'authorised', 'captured', 'failed', 'cancelled'
-  )),
-  ADD CONSTRAINT payment_provider_ref_required_check CHECK (
-    provider_ref IS NOT NULL OR status IN ('pending', 'failed')
-  ),
-  ADD CONSTRAINT payment_method_required_check CHECK (
-    method IS NOT NULL OR status IN ('pending', 'failed')
-  ),
-  ADD CONSTRAINT payment_capture_method_check CHECK (capture_method IN ('manual', 'automatic')),
-  ADD CONSTRAINT payment_amount_captured_minor_check CHECK (
-    amount_captured_minor BETWEEN 0 AND amount_minor
-  ),
-  ADD CONSTRAINT payment_amount_refunded_minor_check CHECK (
-    amount_refunded_minor BETWEEN 0 AND amount_captured_minor
-  ),
-  ADD CONSTRAINT payment_attempts_check CHECK (attempts >= 0);
+ALTER TABLE public.payment ADD CONSTRAINT payment_status_check CHECK (status IN (
+  'pending', 'requires_action', 'processing', 'authorised', 'captured', 'failed', 'cancelled'
+));
+ALTER TABLE public.payment ADD CONSTRAINT payment_provider_ref_required_check CHECK (
+  provider_ref IS NOT NULL OR status IN ('pending', 'failed')
+);
+ALTER TABLE public.payment ADD CONSTRAINT payment_method_required_check CHECK (
+  method IS NOT NULL OR status IN ('pending', 'failed')
+);
+ALTER TABLE public.payment ADD CONSTRAINT payment_capture_method_check CHECK (capture_method IN ('manual', 'automatic'));
+ALTER TABLE public.payment ADD CONSTRAINT payment_amount_captured_minor_check CHECK (
+  amount_captured_minor BETWEEN 0 AND amount_minor
+);
+ALTER TABLE public.payment ADD CONSTRAINT payment_amount_refunded_minor_check CHECK (
+  amount_refunded_minor BETWEEN 0 AND amount_captured_minor
+);
+ALTER TABLE public.payment ADD CONSTRAINT payment_attempts_check CHECK (attempts >= 0);
 
 CREATE UNIQUE INDEX payment_one_live_per_order_idx
   ON public.payment USING btree (order_id) WHERE status NOT IN ('cancelled', 'failed');
@@ -82,28 +80,26 @@ CREATE UNIQUE INDEX payment_one_live_per_order_idx
  * 2. refund (A7.4)
  * ------------------------------------------------------------------------ */
 
-ALTER TABLE public.refund
-  ALTER COLUMN provider_ref DROP NOT NULL,
-  ADD COLUMN requested_by text        NOT NULL,
-  ADD COLUMN succeeded_at timestamptz NULL,
-  ADD COLUMN failure_code text        NULL;
+ALTER TABLE public.refund ALTER COLUMN provider_ref DROP NOT NULL;
+ALTER TABLE public.refund ADD COLUMN requested_by text NOT NULL;
+ALTER TABLE public.refund ADD COLUMN succeeded_at timestamptz NULL;
+ALTER TABLE public.refund ADD COLUMN failure_code text NULL;
 
 ALTER TABLE public.refund DROP CONSTRAINT refund_status_check;
 
-ALTER TABLE public.refund
-  ADD CONSTRAINT refund_status_check CHECK (status IN (
-    'requested', 'pending', 'succeeded', 'failed', 'cancelled'
-  )),
-  ADD CONSTRAINT refund_provider_ref_required_check CHECK (
-    provider_ref IS NOT NULL OR status IN ('requested', 'failed')
-  ),
-  ADD CONSTRAINT refund_reason_check CHECK (reason IN (
-    'buyer_cancel', 'no_partner', 'authorisation_lapsing', 'redelivery_failed', 'addon_missing',
-    'late_delivery', 'substitution_complaint', 'quality', 'goodwill', 'duplicate', 'other'
-  )),
-  ADD CONSTRAINT refund_succeeded_at_check CHECK (
-    (status = 'succeeded') = (succeeded_at IS NOT NULL)
-  );
+ALTER TABLE public.refund ADD CONSTRAINT refund_status_check CHECK (status IN (
+  'requested', 'pending', 'succeeded', 'failed', 'cancelled'
+));
+ALTER TABLE public.refund ADD CONSTRAINT refund_provider_ref_required_check CHECK (
+  provider_ref IS NOT NULL OR status IN ('requested', 'failed')
+);
+ALTER TABLE public.refund ADD CONSTRAINT refund_reason_check CHECK (reason IN (
+  'buyer_cancel', 'no_partner', 'authorisation_lapsing', 'redelivery_failed', 'addon_missing',
+  'late_delivery', 'substitution_complaint', 'quality', 'goodwill', 'duplicate', 'other'
+));
+ALTER TABLE public.refund ADD CONSTRAINT refund_succeeded_at_check CHECK (
+  (status = 'succeeded') = (succeeded_at IS NOT NULL)
+);
 
 /* ---------------------------------------------------------------------------
  * 3. payment_dispute (A7.5)
@@ -146,19 +142,18 @@ CREATE POLICY payment_dispute_staff ON public.payment_dispute FOR ALL TO app_web
  * 4. webhook_inbox (A7.6)
  * ------------------------------------------------------------------------ */
 
-ALTER TABLE public.webhook_inbox
-  ADD COLUMN livemode      boolean NULL,
-  ADD COLUMN event_type    text    NULL,
-  ADD COLUMN object_ref    text    NULL,
-  ADD COLUMN status        text    NOT NULL DEFAULT 'received',
-  ADD COLUMN ignore_reason text    NULL,
-  ADD COLUMN last_error    text    NULL,
-  ADD CONSTRAINT webhook_inbox_status_check CHECK (status IN (
-    'received', 'processed', 'ignored', 'failed', 'dead'
-  )),
-  ADD CONSTRAINT webhook_inbox_stripe_fields_check CHECK (
-    provider <> 'stripe' OR (livemode IS NOT NULL AND event_type IS NOT NULL)
-  );
+ALTER TABLE public.webhook_inbox ADD COLUMN livemode boolean NULL;
+ALTER TABLE public.webhook_inbox ADD COLUMN event_type text NULL;
+ALTER TABLE public.webhook_inbox ADD COLUMN object_ref text NULL;
+ALTER TABLE public.webhook_inbox ADD COLUMN status text NOT NULL DEFAULT 'received';
+ALTER TABLE public.webhook_inbox ADD COLUMN ignore_reason text NULL;
+ALTER TABLE public.webhook_inbox ADD COLUMN last_error text NULL;
+ALTER TABLE public.webhook_inbox ADD CONSTRAINT webhook_inbox_status_check CHECK (status IN (
+  'received', 'processed', 'ignored', 'failed', 'dead'
+));
+ALTER TABLE public.webhook_inbox ADD CONSTRAINT webhook_inbox_stripe_fields_check CHECK (
+  provider <> 'stripe' OR (livemode IS NOT NULL AND event_type IS NOT NULL)
+);
 
 /* ---------------------------------------------------------------------------
  * 5. outbox_delivery, outbox_attempt.target (A7.7)

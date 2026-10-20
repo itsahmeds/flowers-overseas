@@ -99,7 +99,7 @@ describe("the A7 migration pair (spec 002 A7.8)", () => {
 
   it("adds livemode with no default, so a non-empty payment table fails loudly (A7.3)", () => {
     expect(statements(a7[0] ?? "")).toMatch(
-      /ADD COLUMN livemode\s+boolean\s+NOT NULL,/,
+      /ALTER TABLE public\.payment ADD COLUMN livemode boolean NOT NULL;/,
     );
   });
 });
