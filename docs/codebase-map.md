@@ -115,6 +115,9 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles, orphans | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
+| `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only, every… | 012 |
+| `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue (AC-18,… | 012 |
+| `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips, money,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3, AC-4) | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
@@ -122,6 +125,7 @@ task actually touches.
 | `admin/api/auth/confirm/route.ts` | POST: confirm sign-in, use the token (AC-9) | 012 |
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | 012 |
+| `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll (AC-18) | 012 |
 | `admin/environment.ts` | The admin environment chip | 012 |
 | `admin/forbidden.tsx` | Admin 403, noindex | 012 |
 | `admin/layout.tsx` | Admin document: English, noindex | 012 |
