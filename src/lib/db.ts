@@ -84,12 +84,41 @@ export interface DbActor {
 }
 
 /**
+ * The audit action an admin transaction carries (spec 012 §2.3, §5.2; TASK-218): lowercase and
+ * dotted, at least two segments (`partner.status.active`, `order.viewed`), the shape
+ * `audit_log_action_check` (`0009`) accepts. The database's `audit_row_change()` writes it on every
+ * audit row and raises `AUDIT_ACTION_MISSING` on an admin-context write without one.
+ */
+export const AuditActionSchema = z
+  .string()
+  .max(100)
+  .regex(
+    /^[a-z][a-z_]*(\.[a-z_]+)+$/,
+    "an audit action is lowercase and dotted, e.g. users.grant",
+  );
+export type AuditAction = z.infer<typeof AuditActionSchema>;
+
+/**
+ * What `withAdminContext` takes: the actor, the required `action` and an optional `reason` (the
+ * text a person typed for a high-risk change; stored in `audit_log.reason`, never logged).
+ */
+export const adminContextSchema = z
+  .object({
+    userId: z.uuid().optional(),
+    requestId: dbContextSchema.shape.requestId.optional(),
+    action: AuditActionSchema,
+    reason: z.string().trim().min(1).max(500).optional(),
+  })
+  .strict();
+export type AdminContextInput = z.input<typeof adminContextSchema>;
+
+/**
  * The minimal shape this module needs from `postgres`: a transaction opener whose handle can run
  * a statement and be handed to Drizzle. Declared structurally so the unit test can pass a fake
  * and so no driver type leaks into the public surface.
  */
 interface SqlTransaction {
-  unsafe(query: string): Promise<unknown>;
+  unsafe(query: string, parameters?: readonly unknown[]): Promise<unknown>;
   savepoint<T>(fn: (tx: SqlTransaction) => Promise<T>): Promise<T>;
 }
 
@@ -185,16 +214,79 @@ export async function withDbContext<T>(
   input: DbContextInput,
   fn: (db: DbTransaction) => Promise<T>,
 ): Promise<T> {
-  const context = dbContextSchema.parse(input);
+  return runInContext(dbContextSchema.parse(input), [], fn);
+}
+
+/** A statement of the preamble, with its bind parameters when it takes any. */
+type Statement = readonly [query: string, parameters?: readonly unknown[]];
+
+/**
+ * The two database guards of spec 012 §2.3 (`0016`). Either one raised means a bug or a bypass
+ * attempt, so it is an `error` log line and a Sentry event (§11), never a silent failure.
+ */
+const GUARD_SIGNALS = [
+  "AUDIT_ACTION_MISSING",
+  "STATUS_FLIP_OUTSIDE_ADMIN",
+] as const;
+
+/**
+ * The guard `error` raised, if it is one of the two; read from the message prefix only, of the
+ * error or of any error in its `cause` chain (Drizzle wraps the driver's error in its own).
+ */
+function guardSignalOf(
+  error: unknown,
+): (typeof GUARD_SIGNALS)[number] | undefined {
+  for (
+    let current: unknown = error, depth = 0;
+    current instanceof Error && depth < 5;
+    current = current.cause, depth += 1
+  ) {
+    const message = current.message;
+    const signal = GUARD_SIGNALS.find((name) => message.startsWith(`${name}:`));
+    if (signal !== undefined) return signal;
+  }
+  return undefined;
+}
+
+async function reportGuard(
+  signal: (typeof GUARD_SIGNALS)[number],
+  context: DbContext,
+): Promise<void> {
+  const fields = { request_id: context.requestId, role: context.role, signal };
+  logger.error(fields, "db.guard");
+  try {
+    const { captureGuardError } = await import("./sentry");
+    captureGuardError(signal, fields);
+  } catch {
+    // Reporting must never mask the database error the caller is about to receive.
+  }
+}
+
+async function runInContext<T>(
+  context: DbContext,
+  extra: readonly Statement[],
+  fn: (db: DbTransaction) => Promise<T>,
+): Promise<T> {
   const sql = await getClient();
   const startedAt = Date.now();
   try {
     return await sql.begin(async (tx) => {
-      for (const statement of preamble(context)) {
-        await tx.unsafe(statement);
+      const statements = preamble(context);
+      // The audit settings go after the identity and before the role switch.
+      const roleSwitch = statements.pop();
+      for (const statement of statements) await tx.unsafe(statement);
+      for (const [query, parameters] of extra) {
+        await (parameters === undefined
+          ? tx.unsafe(query)
+          : tx.unsafe(query, parameters));
       }
+      if (roleSwitch !== undefined) await tx.unsafe(roleSwitch);
       return fn(bindToTransaction(sql, tx));
     });
+  } catch (error) {
+    const signal = guardSignalOf(error);
+    if (signal !== undefined) await reportGuard(signal, context);
+    throw error;
   } finally {
     logger.info(
       {
@@ -208,32 +300,40 @@ export async function withDbContext<T>(
 }
 
 /**
- * Administrator access: the session variable, never a second connection string (§13 Q4). The
- * actor is optional because a scheduled admin task has no signed-in user; when there is one, its
- * id and request id travel with the transaction so the audit log can name it.
+ * Administrator access: the session variable, never a second connection string (§13 Q4).
+ *
+ * `action` is required (spec 012 §2.3, §5.2; TASK-218): it is issued as `SET LOCAL
+ * app.audit_action`, and the optional `reason` as `app.audit_reason` (through `set_config` with a
+ * bind parameter, because it is text a person typed). The database's audit trigger writes both on
+ * every audit row of the transaction. A read passes an action too (`users.list`), which no
+ * trigger records. The actor is optional because a scheduled admin task has no signed-in user;
+ * when there is one, its id and request id travel with the transaction so the audit log can name
+ * it.
+ *
+ * ```ts
+ * await withAdminContext(
+ *   { userId, requestId, action: "partner.status.active" },
+ *   (db) => db.update(fulfillmentPartner).set({ status: "active" }).where(…),
+ * );
+ * ```
  */
 export async function withAdminContext<T>(
+  input: AdminContextInput,
   fn: (db: DbTransaction) => Promise<T>,
-): Promise<T>;
-export async function withAdminContext<T>(
-  actor: DbActor,
-  fn: (db: DbTransaction) => Promise<T>,
-): Promise<T>;
-export async function withAdminContext<T>(
-  actorOrFn: DbActor | ((db: DbTransaction) => Promise<T>),
-  maybeFn?: (db: DbTransaction) => Promise<T>,
 ): Promise<T> {
-  const actor = typeof actorOrFn === "function" ? {} : actorOrFn;
-  const fn = typeof actorOrFn === "function" ? actorOrFn : maybeFn;
-  if (fn === undefined)
-    throw new TypeError("withAdminContext requires a callback");
-  return withDbContext(
-    {
-      role: "admin",
-      ...(actor.userId === undefined ? {} : { userId: actor.userId }),
-      partnerIds: [],
-      requestId: actor.requestId ?? crypto.randomUUID(),
-    },
+  const admin = adminContextSchema.parse(input);
+  const context = dbContextSchema.parse({
+    role: "admin",
+    ...(admin.userId === undefined ? {} : { userId: admin.userId }),
+    partnerIds: [],
+    requestId: admin.requestId ?? crypto.randomUUID(),
+  });
+  return runInContext(
+    context,
+    [
+      [`SET LOCAL app.audit_action = ${quoteLiteral(admin.action)}`],
+      ["SELECT set_config('app.audit_reason', $1, true)", [admin.reason ?? ""]],
+    ],
     fn,
   );
 }

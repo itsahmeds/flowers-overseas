@@ -278,6 +278,8 @@ export async function listOrdersForAdmin(
     {
       ...(options.userId === undefined ? {} : { userId: options.userId }),
       requestId: options.requestId ?? randomUUID(),
+      // A read: the audit action names it, and no trigger records it (spec 012 §2.3).
+      action: "orders.list",
     },
     (db) => selectAdminOrders(drizzleExecutor(db), filter, options.locale),
   );

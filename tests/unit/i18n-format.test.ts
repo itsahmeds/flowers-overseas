@@ -437,6 +437,15 @@ describe("formatDate, formatRange and formatList (AC-16 / T-16)", () => {
     expect(formatDate(asOf, "en-gb", "dayMonth", "UTC")).toBe("8 September");
     expect(formatDate(asOf, "de", "dayMonth", "UTC")).toBe("8. September");
     expect(formatDate(asOf, "pl", "dayMonth", "UTC")).toBe("8 września");
+    // TASK-218: the audit log's time column, in the viewer's zone (spec 012 artboard).
+    expect(
+      formatDate(
+        new Date("2026-10-05T09:02:00Z"),
+        "en",
+        "dayMonthTime",
+        "Europe/Tallinn",
+      ),
+    ).toBe("5 Oct, 12:02");
   });
 
   it("splits one `calendarDate` value into its parts, each part that value's (TASK-187)", () => {

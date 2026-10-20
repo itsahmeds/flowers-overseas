@@ -142,8 +142,35 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
       });
     })("src/app/admin/(signed-in)");
     expect(pages.sort()).toEqual([
+      "src/app/admin/(signed-in)/audit/page.tsx",
       "src/app/admin/(signed-in)/page.tsx",
       "src/app/admin/(signed-in)/users/page.tsx",
     ]);
+  });
+});
+
+describe("/admin/audit is bound to audit.read (AC-4; TASK-218)", () => {
+  it.each(["ops", "finance", "content"] as const)(
+    "the page answers 403 to %s",
+    async (role) => {
+      session.current = as(role);
+      const page =
+        await import("../../src/app/admin/(signed-in)/audit/page.tsx");
+      expect(
+        await digestOf(() =>
+          page.default({ searchParams: Promise.resolve({}) }),
+        ),
+      ).toBe(FORBIDDEN);
+    },
+  );
+
+  it("lets admin past the page's guard", async () => {
+    session.current = as("admin");
+    const page = await import("../../src/app/admin/(signed-in)/audit/page.tsx");
+    const digest = await digestOf(() =>
+      page.default({ searchParams: Promise.resolve({}) }),
+    );
+    expect(digest).not.toBe(FORBIDDEN);
+    expect(digest).not.toMatch(/;401$/u);
   });
 });

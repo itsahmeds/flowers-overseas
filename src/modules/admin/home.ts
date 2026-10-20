@@ -42,7 +42,7 @@ export async function adminHomeCounts(
   timeZone: string,
   run: AdminRunner = adminRunner,
 ): Promise<AdminHomeCounts> {
-  return run(actor, async (db) => {
+  return run({ ...actor, action: "home.counts" }, async (db) => {
     const startOfToday = sql`(date_trunc('day', now() AT TIME ZONE ${timeZone}) AT TIME ZONE ${timeZone})`;
     const [orders] = await db
       .select({

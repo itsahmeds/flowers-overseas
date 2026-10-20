@@ -118,5 +118,46 @@ describe.skipIf(server.url === undefined)(
       );
       expect(stdout).not.toContain("@");
     });
+
+    it("is audited on the cli channel (spec 012 §2.2, §2.3; TASK-218)", async () => {
+      const id = await adminGrant(scratch.sql, {
+        email: "third@example.test",
+        name: "Third Test",
+        role: "finance",
+      });
+      const rows = await scratch.sql<
+        {
+          entity_table: string;
+          entity_id: string;
+          action: string;
+          channel: string;
+          actor_user_id: string | null;
+          actor_label: string;
+          request_id: string;
+        }[]
+      >`
+        SELECT entity_table, entity_id, action, channel, actor_user_id, actor_label, request_id
+        FROM audit_log WHERE entity_id IN (${id}, ${`${id}:finance`}) ORDER BY at, id`;
+      expect(rows).toEqual([
+        {
+          entity_table: "admin_profile",
+          entity_id: id,
+          action: "users.grant",
+          channel: "cli",
+          actor_user_id: null,
+          actor_label: "cli:admin-grant",
+          request_id: "cli:admin-grant",
+        },
+        {
+          entity_table: "user_role",
+          entity_id: `${id}:finance`,
+          action: "users.grant",
+          channel: "cli",
+          actor_user_id: null,
+          actor_label: "cli:admin-grant",
+          request_id: "cli:admin-grant",
+        },
+      ]);
+    });
   },
 );

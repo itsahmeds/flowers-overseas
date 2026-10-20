@@ -352,13 +352,25 @@ export function formatPercentFromBasisPoints(
  * the day and the full month name only ("8 September", "8. September", "8 września"), the date
  * of the exchange rate the artboards print. No weekday and no year: a rate is shown only while it
  * is under 48 hours old, so the year can never be ambiguous on the page.
+ *
+ * `dayMonthTime` is the fifth, added by TASK-218 for spec 012's audit log (artboard
+ * `admin-audit-desktop.dc.html`): the day, the short month and a 24-hour time ("5 Oct, 12:02"),
+ * in the viewer's zone, which the column header names. Admin-only; no buyer page prints it.
  */
-export type DateStyle = "short" | "deliveryDate" | "calendarDate" | "dayMonth";
+export type DateStyle =
+  "short" | "deliveryDate" | "calendarDate" | "dayMonth" | "dayMonthTime";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
   deliveryDate: { weekday: "short", day: "numeric", month: "short" },
   dayMonth: { day: "numeric", month: "long" },
+  dayMonthTime: {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  },
   calendarDate: {
     weekday: "long",
     day: "numeric",

@@ -1,4 +1,189 @@
 {
+  "admin.audit.action": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6"
+  },
+  "admin.audit.actionAny": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "88b146dfcd82be6efbfff0199023ed4b891191f49388becc736fae41ba31c499"
+  },
+  "admin.audit.actor": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "449995c4fe8fab389053dac72d77798c094dd4a3b7b3cfe69c4d78d119308dce"
+  },
+  "admin.audit.actorAny": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8d486bb2d3f85d1bc3526ca2c0c5d7aa8f7a0e45806ed049ee4aed16539c73fa"
+  },
+  "admin.audit.apply": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31e392d1c0378beca611de66c0f4c71cba29159905cc54242d9bddee5b23d851"
+  },
+  "admin.audit.channel.admin": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+  },
+  "admin.audit.channel.cli": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99bb88401742848e032fd6f51709415fb6be169a72d2e5d7fc44289255160d3c"
+  },
+  "admin.audit.channel.import": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d942f64886578d8747312e368ed92d9f6b2a8d45556f0f924e2444fe911d15af"
+  },
+  "admin.audit.channel.system": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bbc5e661e106c6dcd8dc6dd186454c2fcba3c710fb4d8e71a60c93eaf077f073"
+  },
+  "admin.audit.columnAction": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6"
+  },
+  "admin.audit.columnChanges": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bbd4b6a86bc65b6ac8e79e97afc61499158edb40f7bb404c70637b46d80a7ad2"
+  },
+  "admin.audit.columnChannel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ce4683e7013a18cdf3d224bfcb4e9594ea8f559e946a837c633defe7d3c32172"
+  },
+  "admin.audit.columnEntity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2ed3bb60c9af04774f0ea421f81bd64e65083c969a43360c5887b6e17d050794"
+  },
+  "admin.audit.columnReason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.audit.columnTime": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "21c5e9660026ea681d1057ad332012d2eab779a0bcff54f4bed47a04bd0be255"
+  },
+  "admin.audit.columnWho": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c17b94b8c9394d40151ba4078f384f0bfe77936d258bc2029bd8b857685cd3f1"
+  },
+  "admin.audit.date": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "admin.audit.diffAfter": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7b68fe5510851da3d89100c569d3265e044d8656d95750c376b7a0972dea7330"
+  },
+  "admin.audit.diffBefore": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9bb725005055412c75a8e8d1fb5a0780595174ac8bbe5a24f768647bd4e4debe"
+  },
+  "admin.audit.diffColumn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3fdc9a587693f9e63574b30ec55c2b947a7fb4ba5fd11f0cf213072f53d91bdd"
+  },
+  "admin.audit.empty": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cd972ed16900b8f7308435180cb1e3ad2a1cd165bb28f80e43350f837b51d984"
+  },
+  "admin.audit.entity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2ed3bb60c9af04774f0ea421f81bd64e65083c969a43360c5887b6e17d050794"
+  },
+  "admin.audit.entityAny": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d176d45403374d427964e94e69c6a031075f784c6659871e860db2c7010b0f79"
+  },
+  "admin.audit.filters": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "admin.audit.filtersCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "da897ba789733741a1b583e76b01219dc8028db2c461eebfddf61b5e6a02cf87"
+  },
+  "admin.audit.from": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "admin.audit.hideChanges": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c960be381a6c37ab4438efc7daf5bcae86efdd5f58be57feb9d638da63e60871"
+  },
+  "admin.audit.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "585be35e1575967ea52d8714160165324d46d4e5ec24ddacd54c7946319088ae"
+  },
+  "admin.audit.masked": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d67e2e944994496c8d8ec76eed0cf9f09679448d584b532bebf941852a37f5ed"
+  },
+  "admin.audit.newest": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9af16caea0c5f27e181ee8a06b3bc980c7bd0e1aaec53bb05db2c6c882f93962"
+  },
+  "admin.audit.noValues": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "09f5817431f73fdfff21c2cb4264885d4c5c9dd94950bbb961333e417464e770"
+  },
+  "admin.audit.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.audit.showChanges": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b12a6ef8938fef4ae00e371558024e787f433af84a881883335c980d9960c814"
+  },
+  "admin.audit.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e4d36f9a4e22d3a26e8128c1cc3926515194a835a446ff348ddbe8beab52f749"
+  },
+  "admin.audit.to": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4b06ef6d3c81436f60a318c81c42f8f7e2d774d45a22f3b9b5f3b6980d28146"
+  },
+  "admin.audit.when": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4a04acec933d5a3ac9b79c8195621f3e4a475c8d408eb9060885ffc267772c5d"
+  },
+  "admin.audit.whenWithReason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "92542b982132ceaa9c9ab17f39b5ac792e50c4fe53f23d9d548a1ee7fc5e71fa"
+  },
   "admin.email.body": {
     "source": "human",
     "reviewed": false,
