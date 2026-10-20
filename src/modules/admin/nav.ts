@@ -49,7 +49,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "flags",
     href: "/admin/flags",
     permissions: ["flags.toggle"],
-    built: false,
+    built: true,
   },
   {
     key: "audit",

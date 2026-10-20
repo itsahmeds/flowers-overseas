@@ -22,7 +22,9 @@
  *    forbids, and the token is a secret;
  *  - `invalidate()` never rejects. A purge is a latency optimisation (stale-while-revalidate
  *    bounds the damage at `s-maxage`, ADR-0018), so a failed purge must not fail the admin edit
- *    or the job that asked for it.
+ *    or the job that asked for it. It **resolves to `{ ok }`** instead (spec 012 §11, TASK-220):
+ *    `false` when a chunk still failed after its retries, the resolver threw, or the pair is
+ *    misconfigured, so the caller can raise the warning a flag toggle owes.
  *
  * **Absent means off** (§12 "Feature flags"). `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ZONE_ID`
  * are environment-scoped switches like `STAGING_BASIC_AUTH`, not members of the 29-key contract
@@ -36,7 +38,7 @@
  */
 import { z } from "zod";
 
-import type { CacheAdapter } from "./cache.ts";
+import type { CacheAdapter, CachePurgeResult } from "./cache.ts";
 import { type Logger, logger as processLogger } from "./logger.ts";
 
 /** The token variable: an API token scoped to the single zone (spec 040 §5.4). */
@@ -121,8 +123,13 @@ type Fetch = (input: string, init: RequestInit) => Promise<Response>;
 export interface CloudflareCacheAdapterOptions {
   readonly token: string;
   readonly zoneId: string;
-  /** Tag → absolute URLs (`urlsForTag()` in production). Pure; never fetches. */
-  readonly resolve: (tag: string) => readonly string[];
+  /**
+   * Tag → absolute URLs (`urlsForTag()` in production). Never fetches; may be asynchronous, because
+   * the `catalog:{iso2}` documents come from the catalogue's existence sets (spec 012 §2.4).
+   */
+  readonly resolve: (
+    tag: string,
+  ) => readonly string[] | Promise<readonly string[]>;
   readonly logger?: Logger;
   /** Injected in tests; defaults to the global `fetch` at call time (MSW patches it). */
   readonly fetch?: Fetch;
@@ -205,13 +212,13 @@ export function createCloudflareCacheAdapter(
   }
 
   const adapter: CacheAdapter = {
-    async invalidate(tags: string[]): Promise<void> {
+    async invalidate(tags: string[]): Promise<CachePurgeResult> {
       const names = [...new Set(tags)];
       const unresolved: string[] = [];
       const urls = new Set<string>();
       try {
         for (const tag of names) {
-          const resolved = options.resolve(tag);
+          const resolved = await options.resolve(tag);
           if (resolved.length === 0) unresolved.push(tag);
           for (const url of resolved) urls.add(url);
         }
@@ -221,7 +228,7 @@ export function createCloudflareCacheAdapter(
           { event: "cache.purge", tags: names, url_count: 0, api_calls: 0 },
           "cache purge could not resolve its tags",
         );
-        return;
+        return { ok: false };
       }
 
       const outcomes = await mapBounded(
@@ -239,11 +246,14 @@ export function createCloudflareCacheAdapter(
       const failed = outcomes.filter((outcome) => !outcome.ok).length;
       if (failed > 0) {
         log.error({ ...fields, failed_calls: failed }, "cache purge failed");
-      } else if (unresolved.length > 0) {
+        return { ok: false };
+      }
+      if (unresolved.length > 0) {
         log.warn(fields, "cache purge left tags unresolved");
       } else {
         log.info(fields, "cache purge");
       }
+      return { ok: true };
     },
   };
   ADAPTERS.add(adapter);
@@ -260,12 +270,12 @@ export function misconfiguredCloudflareCache(
   log: Logger = processLogger,
 ): CacheAdapter {
   return {
-    invalidate(tags: string[]): Promise<void> {
+    invalidate(tags: string[]): Promise<CachePurgeResult> {
       log.warn(
         { event: "cache.purge", tags: [...new Set(tags)], invalid_keys: keys },
         "cache purge is misconfigured; nothing was purged",
       );
-      return Promise.resolve();
+      return Promise.resolve({ ok: false });
     },
   };
 }

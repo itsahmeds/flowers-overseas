@@ -145,6 +145,76 @@
         "import": "import",
         "system": "system"
       }
+    },
+    "flags": {
+      "title": "Flags",
+      "lead": "Only the flags in the registry. A change reaches the site within 60 seconds.",
+      "columnFlag": "Flag",
+      "columnScope": "Scope",
+      "columnRisk": "Risk",
+      "columnValue": "Value",
+      "scope": {
+        "global": "Global",
+        "country": "Country",
+        "locale": "Locale",
+        "payment_method": "Payment method",
+        "partner": "Florist"
+      },
+      "risk": {
+        "standard": "Normal",
+        "high": "High risk",
+        "orphaned": "Orphaned"
+      },
+      "on": "On",
+      "off": "Off",
+      "description": {
+        "checkout": {
+          "open": "Lets the product page's demo button lead to the checkout, per country.",
+          "demo_guard": "Keeps every checkout in demo mode: nothing is charged."
+        }
+      },
+      "orphanLine": "Not in the registry. It cannot be changed here.",
+      "orphanOn": "On in the database",
+      "orphanOff": "Off in the database",
+      "notSeeded": "Not in the database yet. It cannot be changed here.",
+      "countries": {
+        "PL": "Poland",
+        "DE": "Germany",
+        "FR": "France",
+        "ES": "Spain",
+        "IT": "Italy",
+        "RO": "Romania",
+        "NL": "Netherlands"
+      },
+      "confirmTitleOff": "Turn off {flag}?",
+      "confirmTitleOn": "Turn on {flag}?",
+      "confirmBody": {
+        "checkout": {
+          "demo_guard": {
+            "off": "Checkouts will stop being demonstrations wherever checkout is open. Type the flag's name to confirm.",
+            "on": "Every checkout will be a demonstration again: nothing is charged. Type the flag's name to confirm."
+          }
+        }
+      },
+      "confirmField": "Flag name",
+      "cancel": "Cancel",
+      "turnOff": "Turn off",
+      "turnOn": "Turn on",
+      "saved": {
+        "openOn": "Checkout opened for {country}.",
+        "openOff": "Checkout closed for {country}.",
+        "flagOn": "{flag} is on.",
+        "flagOff": "{flag} is off.",
+        "unchanged": "Nothing changed: {flag} already had that value."
+      },
+      "refused": {
+        "invalid": "That change could not be read. Nothing changed.",
+        "unregistered": "That flag is not in the registry. Nothing changed.",
+        "forbidden": "Only an admin can change a high-risk flag. Nothing changed.",
+        "mismatch": "The name you typed does not match the flag. Nothing changed.",
+        "conflict": "This flag changed since the page opened. Nothing changed; the current value is shown.",
+        "not_seeded": "This flag is not in the database. Nothing changed."
+      }
     }
   }
 }
