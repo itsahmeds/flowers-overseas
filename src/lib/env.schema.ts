@@ -792,6 +792,8 @@ export function validateRuntimeEnv(source: EnvSource): {
     });
   }
 
+  issues.push(...liveStripeKeyIssues(source, environment));
+
   if (DEPLOYED_ENVIRONMENTS.includes(environment)) {
     // Spec 002 AC-2: there is no escape hatch any more. The opt-out spec 001 carried existed only
     // because no database existed to point at; with Neon and R2 provisioned, a deployed
@@ -812,6 +814,44 @@ export function validateRuntimeEnv(source: EnvSource): {
     issues,
     server: serverResult.success ? serverResult.data : undefined,
   };
+}
+
+/**
+ * The prefixes of Stripe's **live** credentials (spec 010 AC-2, spec 013 AC-10; TASK-255): the
+ * secret key, the restricted key production holds (spec 013 §5.2, "Keys and environments") and
+ * the publishable key. A live key moves real money, so only `production` may carry one.
+ */
+export const LIVE_STRIPE_KEY_PREFIXES = [
+  "sk_live_",
+  "rk_live_",
+  "pk_live_",
+] as const;
+
+/**
+ * A live Stripe key anywhere in the environment outside `production` is refused (spec 013 AC-10,
+ * T-10; spec 010 AC-2). Every value is scanned, not a named key: a live key pasted into the wrong
+ * variable, or into a variable the contract does not declare yet, is refused all the same. The
+ * issue names the key and the prefix, never the value.
+ */
+function liveStripeKeyIssues(
+  source: EnvSource,
+  environment: DeploymentEnvironment,
+): EnvIssue[] {
+  if (environment === "production") return [];
+  const issues: EnvIssue[] = [];
+  for (const [key, value] of Object.entries(source)) {
+    if (typeof value !== "string") continue;
+    const trimmed = value.trim();
+    const prefix = LIVE_STRIPE_KEY_PREFIXES.find((live) =>
+      trimmed.startsWith(live),
+    );
+    if (prefix === undefined) continue;
+    issues.push({
+      key,
+      message: `must not hold a live Stripe key (\`${prefix}…\`) in ${environment}: live keys belong to production only (spec 013 AC-10). Use a test key here.`,
+    });
+  }
+  return issues;
 }
 
 /**

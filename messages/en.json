@@ -1019,5 +1019,33 @@
     "delivery": {
       "status": "Status"
     }
+  },
+  "payments": {
+    "error": {
+      "cardDeclined": "Your bank declined this card. Try another card or payment method.",
+      "insufficientFunds": "Your bank says there is not enough money on this card. Try another card or method.",
+      "authenticationFailed": "We could not confirm the payment with your bank. Please try again.",
+      "expiredCard": "This card has expired. Try another card.",
+      "incorrectCvc": "The security code does not match. Check the 3 digits on the back of the card.",
+      "processingError": "Something went wrong while processing the payment. Nothing was charged. Please try again.",
+      "tryAnotherMethod": "This payment did not go through. Try another payment method.",
+      "generic": "The payment did not go through. Nothing was charged. Please try again or use another method.",
+      "unavailable": "Payments are not available right now. Nothing was charged. Please try again in a few minutes."
+    },
+    "step": {
+      "testLabel": "Test mode. Use a test card. No real money moves.",
+      "noScript": "Paying needs JavaScript. Turn it on, or call or message us and we will help you order.",
+      "submitting": "Processing your payment…"
+    },
+    "confirmation": {
+      "paid": "Thank you. We have your order.",
+      "arrival": "Your flowers arrive in {city} on {date}.",
+      "notCompleted": "Your payment was not completed. Nothing was charged. You can try again.",
+      "cancelled": "This order was cancelled and nothing was charged.",
+      "cancelledByYouRefunding": "You cancelled this order. We are refunding {amount} to your original payment method.",
+      "cancelledByYouRefunded": "You cancelled this order. We have refunded {amount}.",
+      "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
+      "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}."
+    }
   }
 }
