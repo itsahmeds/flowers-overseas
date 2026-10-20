@@ -155,12 +155,29 @@ function indexedText(html: string): string {
  * promise; whether AC-34's "no 'Order by' text" also removes this label is escalated in
  * `docs/tasks/TASK-239.md`. Cut out by its exact words, so any other "Order by" still fails.
  */
-const EXCUSED: readonly string[] = (() => {
+const EXCUSED_GUIDE_ROW: readonly string[] = (() => {
   const en = catalogue("en");
   const label = leaf(en, "corridor.facts.orderBy.label");
   const none = leaf(en, "corridor.facts.orderBy.none");
   return label === undefined || none === undefined ? [] : [`${label} ${none}`];
 })();
+
+/**
+ * **Escalated, not accepted** (TASK-239 brief, Escalations 3): two sentences of the authored hub
+ * copy in `seed/data/copy/en/` (the `birthday-flowers` and `sorry-flowers` category hubs, the
+ * `easter` and `i-am-sorry` occasion hubs, `en` and `en-gb`) promise an order-by cutoff while no
+ * country is open. Catalogue copy is spec 006's and the founder's; this crawl names the two exact
+ * sentences so it stays a gate for everything else, and the brief carries the copy decision.
+ */
+const ESCALATED_HUB_COPY: readonly string[] = [
+  "Order by the cutoff shown for the destination and it arrives on the date you pick.",
+  "The destination page shows this year's date and the cutoff to order by.",
+];
+
+const EXCUSED: readonly string[] = [
+  ...EXCUSED_GUIDE_ROW,
+  ...ESCALATED_HUB_COPY,
+];
 
 function offences(path: string, html: string): string[] {
   let text = indexedText(html);
@@ -315,7 +332,8 @@ test.describe("AC-34 (T-35): no cutoff or order-by text in any built document wh
     }
     expect(offences("planted", "<p>Order by noon</p>")).not.toEqual([]);
     // The excused guide row passes by its exact words, and nothing else does.
-    expect(EXCUSED).toEqual(["Order by None yet."]);
+    expect(EXCUSED_GUIDE_ROW).toEqual(["Order by None yet."]);
+    expect(ESCALATED_HUB_COPY).toHaveLength(2);
     expect(
       offences("planted", "<dl><dt>Order by</dt><dd>None yet.</dd></dl>"),
     ).toEqual([]);
@@ -376,7 +394,11 @@ test.describe('AC-33 (T-34): every not-open state line reads "Ordering opens soo
         await page.setViewportSize(viewport);
         for (const path of [`/${locale}`, hubPath(locale)]) {
           const text = await visibleText(page, path);
-          expect(text, path).toContain(SOON);
+          // The `de`/`pl` hubs print no state line at all: no guide is written in those
+          // languages, so each row says that instead (spec 007 §13 Q1). The homes do.
+          if (path === `/${locale}` || locale === "en" || locale === "en-gb") {
+            expect(text, path).toContain(SOON);
+          }
           for (const phrase of OLD)
             expect(text, `${path}: ${phrase}`).not.toContain(phrase);
         }
