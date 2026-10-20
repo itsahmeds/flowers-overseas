@@ -2,11 +2,11 @@
  * The order queue's arrival poll (spec 012 §2.6 "Arrival within 5 s", §11 "Cost signals", AC-18
  * poll half, T-21 without a browser, T-24's "the new-order live region announces"; TASK-222).
  *
- *  - every 3 s while the page is visible it reads the head, and a changed head calls `onArrival`
- *    once with the count of orders added: an order placed at any moment is on screen within one
+ *  - every 3 s while the page is visible it reads the head's tag (the endpoint's `ETag`), and a
+ *    changed tag calls `onArrival` once: an order placed at any moment is on screen within one
  *    interval plus one read, under AC-18's 5 s;
- *  - a hidden page reads nothing; an unchanged head, a failed read and a malformed body change
- *    nothing; reads never overlap;
+ *  - a hidden page reads nothing; an unchanged tag, a failed read and a missing tag change
+ *    nothing; reads never overlap; the tag is `orderQueueHeadTag`, equal exactly for equal heads;
  *  - after 15 minutes without an interaction it stops for good and says so once; an interaction
  *    restarts the 15 minutes; `stop()` (unmount) clears the timer;
  *  - the island renders its polite live region with the checking line and the server's
@@ -20,14 +20,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 
+import { orderQueueHeadTag } from "../../src/modules/orders/queries.ts";
 import {
   createQueuePoller,
   IDLE_PAUSE_MS,
-  isQueueHead,
   POLL_INTERVAL_MS,
-  type QueueHead,
   type QueuePollerDeps,
-  sameHead,
 } from "../../src/modules/ui/admin/queue-poll.ts";
 
 vi.mock("next/navigation", () => ({
@@ -37,20 +35,20 @@ vi.mock("next/navigation", () => ({
 const { OrderQueuePoll } =
   await import("../../src/modules/ui/admin/OrderQueuePoll.tsx");
 
-const FIRST: QueueHead = {
+const FIRST = orderQueueHeadTag({
   latestCreatedAt: "2026-10-05T11:32:00.000Z",
   count: 4,
-};
-const SECOND: QueueHead = {
+});
+const SECOND = orderQueueHeadTag({
   latestCreatedAt: "2026-10-05T11:32:04.000Z",
   count: 5,
-};
+});
 
 interface Harness {
   readonly deps: QueuePollerDeps;
-  readonly heads: (QueueHead | null | Error)[];
+  readonly heads: (string | null | Error)[];
   readonly reads: { at: number }[];
-  readonly arrivals: { head: QueueHead; added: number }[];
+  readonly arrivals: string[];
   readonly pauses: number[];
   visible: boolean;
 }
@@ -65,7 +63,7 @@ function harness(): Harness {
     deps: undefined as unknown as QueuePollerDeps,
   };
   (state as { deps: QueuePollerDeps }).deps = {
-    readHead: () => {
+    readTag: () => {
       state.reads.push({ at: Date.now() });
       const next = state.heads.length > 0 ? state.heads.shift() : FIRST;
       if (next instanceof Error) return Promise.reject(next);
@@ -77,8 +75,8 @@ function harness(): Harness {
     clearTimer: (handle) => {
       clearTimeout(handle as ReturnType<typeof setTimeout>);
     },
-    onArrival: (head, added) => {
-      state.arrivals.push({ head, added });
+    onArrival: (tag) => {
+      state.arrivals.push(tag);
     },
     onPause: () => {
       state.pauses.push(Date.now());
@@ -114,7 +112,7 @@ describe("the queue's head poll (AC-18)", () => {
     poller.stop();
   });
 
-  it("calls onArrival once when the head changes, with the orders added, within 5 s of the placement", async () => {
+  it("calls onArrival once when the head changes, within 5 s of the placement", async () => {
     const h = harness();
     const poller = createQueuePoller(FIRST, h.deps);
     poller.start();
@@ -123,24 +121,28 @@ describe("the queue's head poll (AC-18)", () => {
     const placedAt = Date.now() + 1;
     h.heads.push(SECOND, SECOND, SECOND);
     await vi.advanceTimersByTimeAsync(3_000);
-    expect(h.arrivals).toEqual([{ head: SECOND, added: 1 }]);
+    expect(h.arrivals).toEqual([SECOND]);
     expect(Date.now() - placedAt).toBeLessThan(5_000);
     await vi.advanceTimersByTimeAsync(6_000);
     expect(h.arrivals).toHaveLength(1);
     poller.stop();
   });
 
-  it("counts several orders added between two reads, and a later head again", async () => {
+  it("calls onArrival again for each later head, and not for a repeat", async () => {
     const h = harness();
     const poller = createQueuePoller(FIRST, h.deps);
     poller.start();
-    const third = { latestCreatedAt: "2026-10-05T11:33:00.000Z", count: 8 };
-    h.heads.push(third, third, { ...third, count: 9 });
+    const third = orderQueueHeadTag({
+      latestCreatedAt: "2026-10-05T11:33:00.000Z",
+      count: 8,
+    });
+    const fourth = orderQueueHeadTag({
+      latestCreatedAt: "2026-10-05T11:33:00.000Z",
+      count: 9,
+    });
+    h.heads.push(third, third, fourth);
     await vi.advanceTimersByTimeAsync(9_000);
-    expect(h.arrivals).toEqual([
-      { head: third, added: 4 },
-      { head: { ...third, count: 9 }, added: 1 },
-    ]);
+    expect(h.arrivals).toEqual([third, fourth]);
     poller.stop();
   });
 
@@ -155,28 +157,28 @@ describe("the queue's head poll (AC-18)", () => {
     h.heads.push(SECOND);
     await vi.advanceTimersByTimeAsync(3_000);
     expect(h.reads).toHaveLength(1);
-    expect(h.arrivals).toEqual([{ head: SECOND, added: 1 }]);
+    expect(h.arrivals).toEqual([SECOND]);
     poller.stop();
   });
 
-  it("treats a failed read and a missing head as no change, and keeps polling", async () => {
+  it("treats a failed read, a missing tag and an empty tag as no change, and keeps polling", async () => {
     const h = harness();
     const poller = createQueuePoller(FIRST, h.deps);
     poller.start();
-    h.heads.push(new Error("network"), null, SECOND);
-    await vi.advanceTimersByTimeAsync(9_000);
-    expect(h.reads).toHaveLength(3);
-    expect(h.arrivals).toEqual([{ head: SECOND, added: 1 }]);
+    h.heads.push(new Error("network"), null, "", SECOND);
+    await vi.advanceTimersByTimeAsync(12_000);
+    expect(h.reads).toHaveLength(4);
+    expect(h.arrivals).toEqual([SECOND]);
     poller.stop();
   });
 
   it("never overlaps two reads: the next interval starts when a slow read settles", async () => {
     const h = harness();
-    let release: (head: QueueHead) => void = () => undefined;
+    let release: (tag: string) => void = () => undefined;
     let calls = 0;
     const slow: QueuePollerDeps = {
       ...h.deps,
-      readHead: () => {
+      readTag: () => {
         calls += 1;
         return new Promise((resolve) => {
           release = resolve;
@@ -254,29 +256,30 @@ describe("the queue's head poll (AC-18)", () => {
     expect(h.reads).toHaveLength(1);
   });
 
-  it("accepts only a head-shaped body", () => {
-    expect(isQueueHead(FIRST)).toBe(true);
-    expect(isQueueHead({ latestCreatedAt: null, count: 0 })).toBe(true);
-    for (const bad of [
-      null,
-      "x",
-      { latestCreatedAt: null },
-      { latestCreatedAt: 1, count: 0 },
-      { latestCreatedAt: null, count: -1 },
-      { latestCreatedAt: null, count: 1.5 },
-    ]) {
-      expect(isQueueHead(bad), JSON.stringify(bad)).toBe(false);
-    }
-    expect(sameHead(FIRST, { ...FIRST })).toBe(true);
-    expect(sameHead(FIRST, { ...FIRST, count: 5 })).toBe(false);
-    expect(sameHead(FIRST, { ...FIRST, latestCreatedAt: null })).toBe(false);
+  it("tags equal heads equally and any other head differently", () => {
+    const head = { latestCreatedAt: "2026-10-05T11:32:00.000Z", count: 4 };
+    expect(orderQueueHeadTag({ ...head })).toBe(FIRST);
+    expect(FIRST).toBe('"4.2026-10-05T11:32:00.000Z"');
+    expect(orderQueueHeadTag({ ...head, count: 5 })).not.toBe(FIRST);
+    expect(
+      orderQueueHeadTag({
+        ...head,
+        latestCreatedAt: "2026-10-05T11:32:00.001Z",
+      }),
+    ).not.toBe(FIRST);
+    expect(orderQueueHeadTag({ latestCreatedAt: null, count: 0 })).toBe(
+      '"0.none"',
+    );
+    expect(() =>
+      orderQueueHeadTag({ latestCreatedAt: null, count: -1 }),
+    ).toThrow();
   });
 });
 
 describe("the island's live region (T-24's announcement, spec 012 §8)", () => {
   const props = {
     headUrl: "/admin/api/orders/head",
-    initialHead: FIRST,
+    initialTag: FIRST,
     arrivalHref: "/admin/orders?since=2026-10-05T11%3A32%3A00.000Z",
     resumeHref: "/admin/orders",
     checkingLabel: "Checking for new orders every 3 seconds",

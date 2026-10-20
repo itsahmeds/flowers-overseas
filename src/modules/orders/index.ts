@@ -53,6 +53,7 @@ export {
   OrderQueueFilterSchema,
   orderQueueHead,
   OrderQueueHeadSchema,
+  orderQueueHeadTag,
   selectAdminOrderCount,
   selectAdminOrders,
   selectOrderDetail,

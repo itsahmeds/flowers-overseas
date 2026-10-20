@@ -19,8 +19,8 @@
  * Beside the queue, spec 012's other reads (§2.6, §5.2; TASK-222), each under `app.role = 'admin'`
  * and none a write:
  *
- *  - `orderQueueHead()` → `OrderQueueHeadSchema` (`{ latestCreatedAt, count }`), what the queue's
- *    3-second poll compares;
+ *  - `orderQueueHead()` → `OrderQueueHeadSchema` (`{ latestCreatedAt, count }`), and its
+ *    `orderQueueHeadTag()`, what the queue's 3-second poll compares;
  *  - `countOrdersForAdmin(filter)` and `orderQueueFilterOptions()`, the queue's pager and its
  *    status and destination choices;
  *  - `orderDetail(id, { includeRecipient })` → `AdminOrderDetailSchema`: lines, totals and the VAT
@@ -359,6 +359,15 @@ export const OrderQueueHeadSchema = z
   })
   .strict();
 export type OrderQueueHead = z.infer<typeof OrderQueueHeadSchema>;
+
+/**
+ * The head as an opaque strong `ETag` (`"count.latest"`): the queue's island compares it between
+ * polls and never parses it, so the browser ships no schema. Equal heads, equal tags.
+ */
+export function orderQueueHeadTag(head: OrderQueueHead): string {
+  const parsed = OrderQueueHeadSchema.parse(head);
+  return `"${String(parsed.count)}.${parsed.latestCreatedAt ?? "none"}"`;
+}
 
 const HeadRow = z.object({
   latest: IsoDateTime.nullable(),

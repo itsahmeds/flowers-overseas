@@ -5,7 +5,8 @@
  * §2.6 "Arrival within 5 s", §8 "the poll island announces new orders through a polite live
  * region", AC-18; artboard `admin-orders-desktop.dc.html` `.ad-live`; TASK-222).
  *
- * The logic is `queue-poll.ts`; this file wires it to the page: `fetch` of the head endpoint, the
+ * The logic is `queue-poll.ts`; this file wires it to the page: `fetch` of the head endpoint (its
+ * `ETag` only: the island compares the head's tag and reads no body, so no schema ships), the
  * document's visibility, the interactions that keep it awake, and Next's router. When the head
  * changes it re-renders the **server** list in place (`router.replace` to the same view with
  * `since`, the head the tab started from, so the server marks the rows that arrived since as
@@ -21,17 +22,13 @@ import {
   useState,
 } from "react";
 
-import {
-  createQueuePoller,
-  type QueueHead,
-  QueueHeadSchema,
-} from "./queue-poll";
+import { createQueuePoller } from "./queue-poll";
 
 export interface OrderQueuePollProps {
-  /** `GET` endpoint answering the head (`/admin/api/orders/head`). */
+  /** `GET` endpoint answering the head (`/admin/api/orders/head`), its tag in `ETag`. */
   readonly headUrl: string;
-  /** The head the server rendered this view from. */
-  readonly initialHead: QueueHead;
+  /** The tag of the head the server rendered this view from (`orderQueueHeadTag`). */
+  readonly initialTag: string;
   /** This view with `since` set: where an arrival re-renders to. */
   readonly arrivalHref: string;
   /** This view as it is: the "Resume" link reloads it and the poll starts again. */
@@ -51,20 +48,19 @@ const ACTIVITY_EVENTS = [
   "focusin",
 ] as const;
 
-async function readHead(url: string): Promise<QueueHead | null> {
+/** The head's tag, compared and never parsed; the body is left unread. */
+async function readTag(url: string): Promise<string | null> {
   const response = await fetch(url, {
     cache: "no-store",
     credentials: "same-origin",
     headers: { accept: "application/json" },
   });
-  if (!response.ok) return null;
-  const parsed = QueueHeadSchema.safeParse(await response.json());
-  return parsed.success ? parsed.data : null;
+  return response.ok ? response.headers.get("etag") : null;
 }
 
 export function OrderQueuePoll({
   headUrl,
-  initialHead,
+  initialTag,
   arrivalHref,
   resumeHref,
   checkingLabel,
@@ -75,15 +71,15 @@ export function OrderQueuePoll({
   const router = useRouter();
   const [paused, setPaused] = useState(false);
   // The props of the first render start the poll; a re-render after an arrival keeps it.
-  const start = useRef({ headUrl, initialHead });
+  const start = useRef({ headUrl, initialTag });
   const target = useRef(arrivalHref);
   useEffect(() => {
     target.current = arrivalHref;
   }, [arrivalHref]);
 
   useEffect(() => {
-    const poller = createQueuePoller(start.current.initialHead, {
-      readHead: () => readHead(start.current.headUrl),
+    const poller = createQueuePoller(start.current.initialTag, {
+      readTag: () => readTag(start.current.headUrl),
       isVisible: () => document.visibilityState === "visible",
       now: () => Date.now(),
       setTimer: (run, ms) => window.setTimeout(run, ms),
