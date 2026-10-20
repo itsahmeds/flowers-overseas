@@ -3553,3 +3553,106 @@ Status: draft, carried by spec 043's docs PR. Binding when the founder approves 
 - **Motions 11 and 12 (A23 clause 11, A24 clause 9).** Their `opacity: 0` start states apply on screen only; under `@media print` every element they hold is at full opacity (spec 043 AC-15, T-15). Values, timings and reduced-motion rules are unchanged (spec 042 owns any change to motion 11's look).
 - **SEO, i18n, compliance:** spec 043 §6, §7, §8. No URL, canonical, sitemap, hreflang or schema change; no new key.
 - **Owner:** spec 043 §12 tasks 1, 3 and 4.
+**A-founder-2026-10-20a: The photo-to-page morph is the one exception to A23 clause 11's LCP
+rule, on a card click from `lg` up only, transform-only (spec 042 §5.3.1 and §13 Q1; A23 clause 11;
+AC-44 and T-48 amended; no new AC or T id).**
+Status: approved by the founder's answer of 2026-10-20 to spec 042 §13, verbatim: "all defaults,
+keep going" (relayed by the orchestrator). Q1's default is (a) with transform-only keyframes; spec
+042 applies the advisor's fix F2 (`docs/advice/2026-10-20-spec-042.md`), which confines it to `lg`
+and up.
+
+**Original.** A23 clause 11: "The LCP element is painted at its final position and opacity in the
+first frame it renders; no entrance animation, fade-in or delay applies to it." AC-44's second
+bullet asserts it on the AC-41 page set and the product page.
+
+**Corrected.**
+1. **The exception.** On the product page, the hero photograph (its LCP element) may carry the
+   product's `view-transition-name` and be shown through the view transition's group for at most
+   `--duration-slow` 320 ms, `--ease-emphasised`, once, **only** when all of these hold: the
+   navigation is a same-origin document navigation started by activating a product card's link;
+   the viewport is `lg` or wider; `prefers-reduced-motion` is `no-preference`; the browser supports
+   cross-document view transitions. Both documents opt in with `@view-transition` inside both media
+   conditions.
+2. **Transform-only.** The group's animation is custom keyframes that change only `transform`
+   (and `opacity` where needed), replacing the UA's default group keyframes, which animate `width`
+   and `height`. AC-44's keyframes bullet therefore holds with no exception.
+3. **Never on a first paint.** A first load, a reload, a JavaScript-off load, an entry from another
+   site, any navigation not started from a card, and every viewport below `lg` keep clause 11
+   exactly as written: no view transition and the hero at its final position and opacity in its
+   first frame.
+4. **The one script.** The name is set on the activated card's photograph only, in a `pageswap`
+   handler of at most 400 B Brotli in the deferred motion module (A-founder-2026-10-15b), never as a
+   static per-card name, because one product can render twice on a page (the home rails) and two
+   elements with one name abort the transition. This is within clause 11's "toggling a class on a
+   client transition" allowance; a click before the module loads navigates as today.
+5. **Measured.** Spec 042 AC-7, AC-8 and AC-9, with their tests there, carry the proof,
+   including the LCP medians with the morph on and off within 50 ms. Phones get the morph only by a
+   later amendment, after spec 023's RUM shows its mobile LCP cost.
+
+**AC-44 amended.** Its LCP bullet is asserted on a first load, a reload, a JavaScript-off load, a
+non-card navigation and a card navigation below `lg`, exactly as written. On a card navigation at
+`lg` and up, spec 042 AC-7 and AC-9 govern the hero for the transition's duration; after it ends
+the hero's computed `opacity` is 1 and its `transform` is `none`. **T-48 amended.** Its LCP case
+gains the card navigation at 390 x 844 (no transition, the bullet holds); red with the `lg`
+condition removed from the `@view-transition` rule.
+
+**SEO.** Lab LCP cannot see the morph (Lighthouse loads cold); field LCP on desktop product pages
+reached from a card is the one exposure, about 5 ms in the third-party RUM test the advisor cites,
+and spec 042 AC-9 bounds it at 50 ms in CI. Phones are not exposed. No
+URL, HTML text, link, canonical, robots, hreflang, sitemap or schema changes; rendering stays as
+`plan/01` §3 sets it. **i18n.** No key; a mirrored layout morphs mirrored. **Compliance.** WCAG
+2.3.3 is met by the reduced-motion condition; no data flow; RoPA unchanged.
+
+**Owner.** Spec 042's task 042-1, after TASK-244 merges. It keeps the breaker (the LCP guard).
+
+**A-founder-2026-10-20b: `--duration-hover` may also time spec 042's second-photo hover layer
+(spec 042 §5.3.3 and §13 Q5; amends A-founder-2026-10-19e clause 4; no new AC or T id).**
+Status: approved by the founder's answer of 2026-10-20 to spec 042 §13, verbatim: "all defaults,
+keep going" (relayed by the orchestrator). Q5's default is to amend clause 4.
+
+**Original.** A-founder-2026-10-19e clause 4 (merged to `main` by PR 283) lets `--duration-hover`
+time only the hover-in and hover-out of a moving card's link, its photograph and its shadow layer.
+
+**Corrected.** Clause 4's list gains a fourth element: spec 042's `aria-hidden` second-photo hover
+layer inside a moving card's clipped photograph box. Its `opacity` fades over `--duration-hover`
+500 ms with `--ease-photo`, so it moves with the zoom. Its rule's selector contains
+`[data-fo-card-motion]`, so A-founder-2026-10-19e's AC-44 gain ("every rule that uses it has a
+selector containing `[data-fo-card-motion]`") holds unchanged. Everything else in clause 4 stands:
+never the name's line, a pill, anything without a pointer's hover, anything at first paint, or the
+LCP element and its ancestors. The priority card renders no layer.
+
+**Tests.** Spec 042 AC-12 and its test there carry the layer's values. T-48's unit scan of
+`--duration-hover` uses (A-founder-2026-10-19e) passes over the layer's rule without change.
+**SEO, i18n, compliance.** As A-founder-2026-10-19e's notes: hover only, CSS only, no key, no data
+flow. **Owner.** Spec 042's task 042-3.
+
+**A-founder-2026-10-20c: Caveat also renders the card preview at checkout step 2 (spec 042 §5.3.2
+and §13 Q4 (a); amends A21 clause 3; T-05 amended; no new AC or T id).**
+Status: approved by the founder's answer of 2026-10-20 to spec 042 §13, verbatim: "all defaults,
+keep going" (relayed by the orchestrator). Q4's default is (a). The advisor proposed (b), the
+display face on both; the founder chose the default on 2026-10-20.
+
+**Original.** A21 clause 3: Caveat is "the buyer's own words in the printed-card preview only;
+never a price, a button, a label or a heading, and never on another page", and "Caveat loads only
+on the product page", with "≤30 KB for Caveat on a product page".
+
+**Corrected.**
+1. **Reach.** Caveat sets the buyer's own words in the printed-card preview on two pages: the
+   product page and checkout step 2 (spec 010), where spec 042's one shared preview component
+   renders. Never a price, a button, a label, a heading or any other page.
+2. **Loading and budget.** Caveat loads on those two pages only and is never preloaded. The
+   ≤30 KB allowance for Caveat applies on checkout step 2 as on the product page; every other
+   ceiling of clause 3 is unchanged and is not raised.
+3. **The word.** The preview is "the card preview", never "handwritten"; its caption stays each
+   page's existing printed label (A21 clause 5).
+
+**T-05 amended.** "On non-PDP pages no Caveat request" reads "on pages other than the product
+page and checkout step 2, no Caveat request"; red with Caveat requested on checkout step 3.
+
+**SEO.** Checkout is `noindex` and server-rendered `no-store` (spec 010 §5.4); no indexable page
+gains a font byte, and the product page is unchanged. **i18n.** No key; a script Caveat lacks falls
+back to the body face (spec 042 §7). **Compliance.** The preview must show what is printed: the
+florist's print instructions (spec 011) name the face, which spec 011 records in its own amendment;
+contrast stays in `tokens/contrast.ts` (WCAG 1.4.3). No data flow; RoPA unchanged.
+
+**Owner.** Spec 042's task 042-2. It keeps the breaker (checkout, font budget).

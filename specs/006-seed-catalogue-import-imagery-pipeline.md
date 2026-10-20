@@ -531,3 +531,35 @@ The rule, the rulings (founder, 2026-10-05: "approve the wording just no em dash
 
 Resolved by the founder (2026-10-15, chat, verbatim "specs ok (237 and 240), dashes yes, prices: your picks"): the wordings of this amendment are the targets, and every changed row still ships `reviewed: false` until the founder's record run (spec 003 §14 A-founder-2026-10-15a, resolution 2). A category or occasion value the task rewords beyond the separator (clause 3) is still listed in its PR.
 
+**A-founder-2026-10-20a: Soft-loading placeholders: `pnpm media:lqip` writes `seed/data/media-lqip.json` (spec 042 §5.1, §5.2, §5.3.4 and §13 Q9; §2.4 pipeline; §5.2 seed schemas; spec 042 owns the AC and tests; no new AC or T id here).**
+Status: approved by the founder's answer of 2026-10-20 to spec 042 §13, verbatim: "all defaults, keep going" (relayed by the orchestrator). Q9's default is to approve, with this section recording it. Spec 042 applies the advisor's fix F5 (`docs/advice/2026-10-20-spec-042.md`) to the generator's input.
+
+**Original.** §2.4's pipeline has one generator, `pnpm media:variants`, and one committed manifest of variants, `seed/data/media-variants.json`. No placeholder data exists.
+
+**Corrected.**
+1. **The file.** `seed/data/media-lqip.json` (new, committed): one row per `approved` asset in `seed/data/media.json`, with `assetId`, `placeholder` (a `data:image/webp;base64,...` URI of at most 300 decoded bytes, at most 16 x 20 px for a 4∶5 asset) and `fill` (the asset's mean colour as an sRGB triplet). Generated, never edited by hand.
+2. **The generator.** `pnpm media:lqip` (`scripts/media-lqip.ts`) reads each approved asset's **published variants**, the files `seed/data/media-variants.json` lists, and never the `.local/` originals, which exist only in the main checkout. `sharp` runs in the script only, never on the render path. *Reading:* where a variant is not committed under `public/media/`, the script fetches it from the committed R2 origin (A8), so it is a by-hand generator like `media:variants`, not a CI gate; can be overruled in one word.
+3. **The schema and the check.** `MediaLqipFileSchema` (zod) sits beside the seed schemas and is never imported at render. `pnpm seed:check` validates the committed file with no network and no database (AC-1 holds): it fails on a missing row for an approved asset, a row for an unknown asset, or a placeholder over 300 decoded bytes.
+4. **The reader.** The render path reads the file at build time through the manifest (§5.4's zero-query rule); no table, column or migration (spec 042 §5.1 and §3).
+5. **Unchanged.** AC-12 to AC-14 (`media:variants` and its `--check`), AC-15's transfer budget (the placeholders are inline HTML, capped by spec 042), the 6 MB committed cap.
+
+**Tests.** Spec 042 AC-15 to AC-17 and their tests there (the generator on fixture variants with no `.local/` present; the three `seed:check` failures).
+**SEO.** No URL, alt text, schema or image request changes; the priority image gets a colour, never a placeholder, so the LCP element stays the real photograph (spec 042 §5.3.4). **i18n.** No key. **Compliance.** The placeholders are derived from approved, metadata-stripped variants (AC-12), so no personal data or EXIF enters the file; they are example arrangements under the existing honesty label; RoPA unchanged.
+**Owner.** Spec 042's task 042-4. It keeps the breaker (a data flow into the seed, LCP).
+
+**A-founder-2026-10-20b: Detail photographs take the `productHero` ladder (spec 042 §5.1 and task 042-V; advisor fix F1; §14 A7 clause 3, A11; spec 042 owns the AC and tests; no new AC or T id here).**
+Status: approved with spec 042 by the founder's answer of 2026-10-20, verbatim: "all defaults, keep going" (relayed by the orchestrator). The ladder change is advisor fix F1 (`docs/advice/2026-10-20-spec-042.md`), applied in spec 042 before that approval; it was not a §13 question.
+
+**Original.** A7 clause 3 (L411): "`productDetail` ships only 384". `productHero` is 384 / 480 / 640 / 828 (A11 clause 1). So the 84 approved `productDetail` photographs, which spec 042 uses as the second photo on hover (idea 3) and the phone gallery's second slide (idea 5), look soft at full width on a phone.
+
+**Corrected.**
+1. **The ladder.** `productDetail` takes the `productHero` ladder, 384 / 480 / 640 / 828, in AVIF and WebP at A11 clause 2's qualities. A11 clause 1's "every other slot's ladder is unchanged" no longer covers `productDetail`.
+2. **Approved assets only; R2.** `pnpm media:variants` derives the new rungs and `pnpm media:upload` uploads them for `approved` assets only (A10 clause 3); they are served from R2 (A8), so committed bytes do not change. The run needs the originals, so it runs where `.local/imagery/originals/` exists (the main checkout), as every `media:variants` run does.
+3. **Enlargement.** The 19 Grok details at 912 px and the ChatGPT originals at 1122 px are wider than 828, so they are not enlarged. The 12 Grok details cropped to 784×980 (A7 clause 3's list) are enlarged at the 828 rung by about 6 %, accepted on A6 (3)'s terms exactly as A7 clause 3 accepts it for the Grok heroes; the 8 % margin is judged at founder review. The intake comment on rule 2 in `seed/schema/variants.ts` names this exception too.
+4. **The check.** `pnpm seed:check` fails when an approved `productDetail` asset lacks a rung of the `productHero` ladder (spec 042 AC-20).
+5. **Unchanged.** AC-13, AC-14 and AC-25 hold over the larger manifest; AC-15's 204,800 B home budget holds, because detail photographs are not requested on a first load (gallery slides after the hero are lazy; the hover layer loads only on hover, spec 042 AC-13). TASK-250's three products are untouched here; spec 042 excludes them from the hover layer until TASK-250 is `done`.
+
+**Tests.** Spec 042 AC-20 and its test there (the ladder scan, the `seed:check` fixture, the phone slide's `currentSrc` width).
+**SEO.** No URL, alt or schema change; image transfer on first load is unchanged. **i18n.** No key. **Compliance.** Same approved assets, metadata stripped (AC-12); RoPA unchanged.
+**Owner.** Spec 042's task 042-V (backend-implementer, keeps the breaker: seed data). Tasks 042-3 and 042-5 wait for it.
+
