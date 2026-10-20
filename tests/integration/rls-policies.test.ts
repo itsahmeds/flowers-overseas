@@ -552,10 +552,12 @@ describe.skipIf(server.url === undefined)(
           await tx`INSERT INTO substitution_note (order_id, proposed_by, proposal_md)
                    VALUES (${orderId}, 'partner:test', 'Tulips')`;
           const [payment] = await tx<{ id: string }[]>`
-            INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
-            VALUES (${orderId}, 'stripe', ${unique("pi_")}, 'authorised', 'card', 18900, 'PLN') RETURNING id`;
-          await tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status)
-                   VALUES (${payment?.id ?? ""}, ${unique("re_")}, 500, 'PLN', 'addon_missing', 'succeeded')`;
+            INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+            VALUES (${orderId}, 'stripe', ${unique("pi_")}, 'authorised', 'card', 18900, 'PLN', false) RETURNING id`;
+          await tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status,
+                                       requested_by, succeeded_at)
+                   VALUES (${payment?.id ?? ""}, ${unique("re_")}, 500, 'PLN', 'addon_missing', 'succeeded',
+                           'system:payments', now())`;
           worlds.push({ customerId, recipientId, orderId });
         }
         const [mine, theirs] = worlds as [
@@ -737,10 +739,10 @@ describe.skipIf(server.url === undefined)(
           recipientId: await recipient(tx, customerId),
           countryId,
         });
-        await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
-                 VALUES (${orderId}, 'stripe', 'pi_unset', 'authorised', 'card', 18900, 'PLN')`;
-        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw)
-                 VALUES ('stripe', 'evt_unset', true, '{}')`;
+        await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+                 VALUES (${orderId}, 'stripe', 'pi_unset', 'authorised', 'card', 18900, 'PLN', false)`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, livemode, event_type)
+                 VALUES ('stripe', 'evt_unset', true, '{}', false, 'payment_intent.succeeded')`;
         const p = await partner(tx, countryId);
         await tx`INSERT INTO partner_member (user_id, partner_id, role) VALUES (${userId}, ${p}, 'owner')`;
         const owner: Record<string, number> = {};
@@ -834,14 +836,14 @@ describe.skipIf(server.url === undefined)(
         await tx`INSERT INTO verification_tokens (identifier, token, expires)
                  VALUES ('someone@example.test', 'hashed', now() + interval '1 hour')`;
         const world = await partnerWorld(tx, countryId, productId);
-        await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
-                 VALUES (${world.orderId}, 'stripe', 'pi_t17', 'authorised', 'card', 18900, 'PLN')`;
+        await tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+                 VALUES (${world.orderId}, 'stripe', 'pi_t17', 'authorised', 'card', 18900, 'PLN', false)`;
         await tx`INSERT INTO outbox (event_id, order_id, targets, payload, payload_version)
                  VALUES (gen_random_uuid(), ${world.orderId}, '{crm}', '{}', 1)`;
         await tx`INSERT INTO audit_log (actor_label, action, entity_table, entity_id, after, request_id)
                  VALUES ('founder', 'country.status_changed', 'country', 'PL', '{"status": "demo"}', 'req-t17')`;
-        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw)
-                 VALUES ('stripe', 'evt_t17', true, '{}')`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, livemode, event_type)
+                 VALUES ('stripe', 'evt_t17', true, '{}', false, 'payment_intent.succeeded')`;
         await tx`INSERT INTO consent_log (subject_kind, subject_ref, choices, policy_version, occurred_at)
                  VALUES ('customer', gen_random_uuid(), '{"analytics": false}', 1, now())`;
         await tx`INSERT INTO partner_application (business_name, city, language_code)

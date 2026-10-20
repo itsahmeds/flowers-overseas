@@ -74,6 +74,9 @@ const FUNCTIONS = [
   // 0013 (TASK-245): the reference function `order_reference_idx` reads (spec 010 §14 A2.2).
   "order_reference",
   "order_status_guard",
+  // 0016 (TASK-254): the `AFTER INSERT ON outbox` fan-out to one delivery per target (spec 002
+  // §14 A7.7).
+  "outbox_delivery_fanout",
   "partner_application_media_check",
   "partner_coverage_country_check",
   "payout_currency_check",

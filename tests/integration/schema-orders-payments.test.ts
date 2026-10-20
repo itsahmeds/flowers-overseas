@@ -190,32 +190,33 @@ describe.skipIf(server.url === undefined)(
              VALUES (${orderId}, 2, 'order.placed', 'florist:x', 1)`,
         );
         const [payment] = await tx<{ id: string }[]>`
-          INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
-          VALUES (${orderId}, 'stripe', 'pi_test_1', 'authorised', 'card', 18900, 'PLN') RETURNING id`;
+          INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+          VALUES (${orderId}, 'stripe', 'pi_test_1', 'authorised', 'card', 18900, 'PLN', false) RETURNING id`;
+        // `failed`, so A7's one-live-payment-per-order index (0016) cannot be what refuses it.
         await by(
           "payment in another currency",
           () =>
-            tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code)
-             VALUES (${orderId}, 'stripe', 'pi_test_2', 'authorised', 'card', 100, 'EUR')`,
+            tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+             VALUES (${orderId}, 'stripe', 'pi_test_2', 'failed', 'card', 100, 'EUR', false)`,
         );
         await by(
           "refund in another currency",
           () =>
-            tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status)
-             VALUES (${payment?.id ?? ""}, 're_test_1', 100, 'EUR', 'addon_missing', 'pending')`,
+            tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status, requested_by)
+             VALUES (${payment?.id ?? ""}, 're_test_1', 100, 'EUR', 'addon_missing', 'pending', 'system:payments')`,
         );
         await by(
           "captured without captured_at",
           () =>
             tx`UPDATE payment SET status = 'captured' WHERE id = ${payment?.id ?? ""}`,
         );
-        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw)
-                 VALUES ('stripe', 'evt_1', true, '{}')`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, livemode, event_type)
+                 VALUES ('stripe', 'evt_1', true, '{}', false, 'payment_intent.succeeded')`;
         await by(
           "webhook retry",
           () =>
-            tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw)
-             VALUES ('stripe', 'evt_1', true, '{}')`,
+            tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, livemode, event_type)
+             VALUES ('stripe', 'evt_1', true, '{}', false, 'payment_intent.succeeded')`,
         );
         await by(
           "review rating 6",
