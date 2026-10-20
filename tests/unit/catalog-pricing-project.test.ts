@@ -29,7 +29,7 @@
 import { readFileSync } from "node:fs";
 import { resolve as resolvePath } from "node:path";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { FX_SNAPSHOT_AS_OF } from "../../src/config/catalogue/fx.data.ts";
 import type { CountryIso2 } from "../../src/config/countries.ts";
@@ -54,6 +54,14 @@ import {
 } from "../../src/modules/catalog/schemas.ts";
 import { PHASE_0_DISPLAY_CURRENCIES } from "../../src/modules/catalog/static/index.ts";
 import { formatMoney } from "../../src/modules/i18n/format.ts";
+
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
 
 /** A day inside the committed snapshot's 48-hour window: every conversion is available. */
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);

@@ -22,6 +22,14 @@ import { join, relative } from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
+
 /** Added to one retail row by the fake provider; 0 is the committed dataset. */
 let bumpMinor = 0;
 

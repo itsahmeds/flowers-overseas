@@ -33,9 +33,11 @@ import { describe, expect, it } from "vitest";
 import {
   COUNTRY_CODES,
   countryConfig,
+  deliveryDatesOpen,
   isCountryIso2,
 } from "../../src/config/countries.ts";
 import type { LocaleCode } from "../../src/config/locales.ts";
+import { DEMO_DESTINATION_ISO2 } from "../../src/config/site-links.ts";
 import {
   type ListingView,
   listingLocales,
@@ -176,18 +178,21 @@ describe("the dated table quotes one country, and says which (§14 Q4)", () => {
    */
   it("names the date source the registry gives, computed here and not read off the view", () => {
     // The rule, restated from the registry and not from `listingView()`: the first **published**
-    // destination whose status is `live`.
-    const source = COUNTRY_CODES.filter(isCountryIso2).find(
-      (iso2) =>
-        isPublishedCountry(iso2) && countryConfig(iso2).status === "live",
+    // destination where ordering is open, else the published demo destination (TASK-239: Poland
+    // is `demo`, and an occasion's date is a calendar fact, not a delivery promise).
+    const published = COUNTRY_CODES.filter(isCountryIso2).filter((iso2) =>
+      isPublishedCountry(iso2),
     );
-    expect(source, "a published, live destination exists").toBeDefined();
+    const source =
+      published.find((iso2) => deliveryDatesOpen(iso2)) ??
+      published.find((iso2) => iso2 === DEMO_DESTINATION_ISO2);
+    expect(source, "a published date destination exists").toBeDefined();
     expect(en.occasionsDateCountryKey).toBe(
       source === undefined ? undefined : countryConfig(source).nameKey,
     );
     // **Pinned to today's data**, as `tests/e2e/shop-reachability.spec.ts` pins its counts: seven
-    // destinations published, one of them live. The day either number moves — a country is
-    // unpublished, or a second one goes live — this goes red, and whoever moved it re-reads the
+    // destinations published, none open, Poland the demo destination. The day either moves — a
+    // country is unpublished, or one opens — this goes red, and whoever moved it re-reads the
     // caption against the new data before re-pinning it.
     expect(publishedCountries()).toHaveLength(7);
     expect(source).toBe("PL");

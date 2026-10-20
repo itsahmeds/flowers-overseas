@@ -22,7 +22,7 @@
  *  6. **No geography but the destination.** Every signature takes a destination ISO or nothing;
  *     AC-18's whole-module gate is TASK-069's, and this file pins the read API's half of it.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { CATEGORIES } from "../../src/config/catalogue/categories.data.ts";
 import { OCCASIONS } from "../../src/config/catalogue/occasions.data.ts";
@@ -43,6 +43,14 @@ import {
   resolveFacets,
   topProductsForPrebuild,
 } from "../../src/modules/catalog/read.ts";
+
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
 
 const LIVE = "PL" as const;
 const DEMO = "DE" as const;

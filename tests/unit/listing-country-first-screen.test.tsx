@@ -213,7 +213,7 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
           <CountryShopRootPage view={v} />
         );
       const guide = readable(render(page(subject), "en-gb"));
-      expect(guide, subject.path).toContain("Guide · not delivering yet");
+      expect(guide, subject.path).toContain("Ordering opens soon");
       expect(guide, subject.path).not.toContain("Delivering now");
       const live: ListingView = {
         ...subject,
@@ -222,8 +222,15 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
       const html = render(page(live), "en-gb");
       expect(html, subject.path).toContain('data-fo-listing-state-line="live"');
       expect(readable(html), subject.path).toContain("Delivering now");
-      expect(readable(html), subject.path).not.toContain(
-        "Guide · not delivering yet",
+      // The state line itself: the shop's demo notice opens with the same three words
+      // (`shop.root.demoNotice`, a site-wide sentence spec 007 A-founder-2026-10-14c leaves alone).
+      const stateLine =
+        /data-fo-listing-state-line="live"[^>]*>([\s\S]*?)<\/p>/u.exec(
+          html,
+        )?.[1] ?? "";
+      expect(readable(stateLine), subject.path).toContain("Delivering now");
+      expect(readable(stateLine), subject.path).not.toContain(
+        "Ordering opens soon",
       );
     }
   });

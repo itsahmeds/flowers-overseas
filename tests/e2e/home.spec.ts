@@ -374,7 +374,7 @@ test.describe("the locale home, above the fold", () => {
 });
 
 test.describe("the sentence picker (A21 clause 4, T-12, T-13)", () => {
-  test("names only `country` and `occasion`, and lists seven destinations, six not yet", async ({
+  test('names only `country` and `occasion`, and lists seven selectable destinations, each "soon"', async ({
     page,
   }) => {
     await page.goto("/en");
@@ -386,12 +386,18 @@ test.describe("the sentence picker (A21 clause 4, T-12, T-13)", () => {
     await expect(
       page.locator(`${SENTENCE} select[name="country"] option`),
     ).toHaveCount(7);
+    // Spec 007 §14 A-founder-2026-10-14c clause 3 (TASK-239): every country stays selectable,
+    // and with no country open each carries "soon" beside its name; Poland stays preselected.
     await expect(
       page.locator(`${SENTENCE} select[name="country"] option[disabled]`),
-    ).toHaveCount(6);
+    ).toHaveCount(0);
+    const labels = await page
+      .locator(`${SENTENCE} select[name="country"] option`)
+      .allTextContents();
+    expect(labels.filter((label) => !label.endsWith(" (soon)"))).toEqual([]);
     await expect(
-      page.locator(`${SENTENCE} option[value="PL"]:not([disabled])`),
-    ).toHaveCount(1);
+      page.locator(`${SENTENCE} select[name="country"]`),
+    ).toHaveValue("PL");
   });
 
   test("its route answers 303, no-store and noindex, and sends an unknown country to the hub", async ({
