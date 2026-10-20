@@ -324,9 +324,16 @@ describe("the shipped catalogues and manifests", () => {
     "corridor.calendar.ruleEaster",
     "corridor.calendar.ruleFixed",
     "corridor.calendar.ruleWeekday",
+    // TASK-239 (spec 007 §14 A-founder-2026-10-14c, D2 A): the not-open state "Ordering opens
+    // soon" on the destinations grid, hub and guide and on the product page's status, the
+    // finder's "{country} (soon)", and the hub intro's clause that said "not delivering yet".
+    // All but the hub intro's clause are the founder's approved words; each waits for his record run.
+    "destinations.state.guideNotDelivering",
+    "destinationsHub.intro",
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
     "footer.link.deliveryAndPayment",
+    "home.sentence.notYet",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
@@ -347,6 +354,7 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.legal.version",
     "infoPages.status.notYetOpen",
     "occasionHub.dateUnknown",
+    "product.demo.heading",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
     // these two are the implementer's generalisation of the artboard's name-day-specific prose
