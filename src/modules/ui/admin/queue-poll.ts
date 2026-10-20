@@ -13,8 +13,10 @@
  *    that fails (network, 401 after the session ended) is skipped, not retried at once.
  *
  * No DOM, no React and no `fetch` here: the island (`OrderQueuePoll.tsx`) passes them in, so the
- * unit project drives this with fake timers (`tests/unit/admin-order-poll.test.ts`).
+ * unit project drives this with fake timers (`tests/unit/admin-order-poll.test.ts`). The body the
+ * endpoint answers is parsed with `QueueHeadSchema` (zod's mini build, the island's only schema).
  */
+import { z } from "zod/mini";
 
 /** Spec 012 §2.6: every 3 s while visible. */
 export const POLL_INTERVAL_MS = 3_000;
@@ -22,7 +24,12 @@ export const POLL_INTERVAL_MS = 3_000;
 /** Spec 012 §2.6: pause after 15 minutes without interaction. */
 export const IDLE_PAUSE_MS = 15 * 60 * 1_000;
 
-/** The head the endpoint answers (`OrderQueueHeadSchema`'s shape). */
+/** The head the endpoint answers (`OrderQueueHeadSchema`'s shape, read in the browser). */
+export const QueueHeadSchema = z.object({
+  latestCreatedAt: z.nullable(z.string()),
+  count: z.int().check(z.nonnegative()),
+});
+
 export interface QueueHead {
   readonly latestCreatedAt: string | null;
   readonly count: number;
@@ -30,16 +37,7 @@ export interface QueueHead {
 
 /** Whether `value` is a head as the endpoint sends it. */
 export function isQueueHead(value: unknown): value is QueueHead {
-  if (typeof value !== "object" || value === null) return false;
-  const record = value as Record<string, unknown>;
-  const latest = record["latestCreatedAt"];
-  const count = record["count"];
-  return (
-    (latest === null || typeof latest === "string") &&
-    typeof count === "number" &&
-    Number.isInteger(count) &&
-    count >= 0
-  );
+  return QueueHeadSchema.safeParse(value).success;
 }
 
 /** Whether two heads name the same queue. */
