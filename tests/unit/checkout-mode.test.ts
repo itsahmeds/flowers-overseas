@@ -278,7 +278,10 @@ const ALLOW_LIST: readonly RegExp[] = [
   // The wordmark build script loads `subset-font`'s CommonJS entry through `createRequire`, the
   // blanket side door below (TASK-203); it builds a font at authoring time and decides nothing.
   /^scripts\/fonts\/build-wordmark\.ts$/u,
-  /^src\/app\/.*\/admin\/flags\//u,
+  // The flags page as built (TASK-220): its route folder and its module of commands. The earlier
+  // `src/app/*/admin/flags/` guess matched no real path (the page lives in the `(signed-in)` group).
+  /^src\/app\/admin\/\(signed-in\)\/flags\/[^/]+\.tsx?$/u,
+  /^src\/modules\/admin\/flags\.ts$/u,
   // `validateEnv` refuses a live Stripe key outside production (spec 010 AC-2, spec 013 AC-10;
   // TASK-255): it names the live prefixes to refuse them at boot and decides no mode.
   /^src\/lib\/env\.schema\.ts$/u,
