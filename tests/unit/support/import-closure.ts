@@ -102,6 +102,12 @@ export function resolveImport(
 const SPECIFIER =
   /(?:^|\n)\s*(?:import|export)\s(?:[^;'"]*?from\s*)?["']([^"']+)["']/g;
 
+/**
+ * A dynamic `import("x")` or a `require("x")`: a lazy chunk is still a client chunk a browser may
+ * fetch, so the walk follows it too (spec 003 AC-52 (b); `/break 270` hole 7).
+ */
+const DYNAMIC_SPECIFIER = /\b(?:import|require)\s*\(\s*["']([^"']+)["']\s*\)/g;
+
 export interface ImportClosure {
   /** Every repository file reachable from the entry, the entry included. */
   readonly files: ReadonlySet<string>;
@@ -122,7 +128,10 @@ export function importClosure(entry: string): ImportClosure {
     if (file === undefined || files.has(file)) continue;
     files.add(file);
     const source = readFileSync(file, "utf8");
-    for (const match of source.matchAll(SPECIFIER)) {
+    for (const match of [
+      ...source.matchAll(SPECIFIER),
+      ...source.matchAll(DYNAMIC_SPECIFIER),
+    ]) {
       const specifier = match[1];
       if (specifier === undefined) continue;
       const resolved = resolveImport(file, specifier);

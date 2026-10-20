@@ -25,7 +25,13 @@
       "product": "product",
       "blog": "blog",
       "forFlorists": "for-florists",
-      "legal": "legal/"
+      "legal": "legal/",
+      "howItWorks": "how-it-works",
+      "guarantee": "guarantee",
+      "help": "help",
+      "about": "about",
+      "delivery": "delivery",
+      "imprint": "imprint"
     }
   },
   {
@@ -49,7 +55,13 @@
       "product": "product",
       "blog": "blog",
       "forFlorists": "for-florists",
-      "legal": "legal"
+      "legal": "legal",
+      "howItWorks": "how-it-works",
+      "guarantee": "guarantee",
+      "help": "help",
+      "about": "about",
+      "delivery": "delivery",
+      "imprint": "imprint"
     },
     "formattingTag": "en-GB"
   },
@@ -76,7 +88,13 @@
       "product": "produkt",
       "blog": "blog",
       "forFlorists": "fuer-floristen",
-      "legal": "rechtliches"
+      "legal": "rechtliches",
+      "howItWorks": "so-funktioniert-es",
+      "guarantee": "garantie",
+      "help": "hilfe",
+      "about": "ueber-uns",
+      "delivery": "lieferung-und-zahlung",
+      "imprint": "impressum"
     },
     "formattingTag": "de"
   },
@@ -102,7 +120,13 @@
       "product": "produkt",
       "blog": "blog",
       "forFlorists": "dla-kwiaciarni",
-      "legal": "regulamin"
+      "legal": "regulamin",
+      "howItWorks": "jak-to-dziala",
+      "guarantee": "gwarancja",
+      "help": "pomoc",
+      "about": "o-nas",
+      "delivery": "dostawa-i-platnosc",
+      "imprint": "dane-firmy"
     },
     "formattingTag": "pl"
   }

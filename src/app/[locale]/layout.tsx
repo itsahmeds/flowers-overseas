@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { ga4MeasurementId } from "@/lib/env.schema";
 import { setLocaleTag } from "@/lib/sentry";
 import { AnalyticsScripts } from "@/modules/analytics";
+import { missingInfoPageLinkIds } from "@/modules/content";
 import {
   LanguagePopup,
   localeGateDocumentAttributes,
@@ -218,10 +219,14 @@ export default async function LocaleLayout({
           locale={locale.code}
           switcher={switcher}
           view={footerView(locale.code, {
-            unavailable:
-              (await occasionsIndexHref(locale.code)) === undefined
+            unavailable: [
+              ...((await occasionsIndexHref(locale.code)) === undefined
                 ? ["occasions"]
-                : [],
+                : []),
+              // Spec 041's info pages that do not exist here (TASK-182): no content file in this
+              // locale, or the company is not registered yet (imprint, terms, privacy).
+              ...missingInfoPageLinkIds(locale.code),
+            ],
           })}
         />
         {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). A

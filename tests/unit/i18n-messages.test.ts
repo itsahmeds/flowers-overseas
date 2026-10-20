@@ -85,6 +85,9 @@ describe("the shell catalogue", () => {
       "finder",
       "footer",
       "home",
+      // `infoPages` is spec 041 §7's namespace (TASK-182): the trust pages' not-open line, the
+      // help page's contact block and the about page's company line. Server Components only.
+      "infoPages",
       // `languagePopup` is the language popup's seven strings (spec 003 §14 A16, TASK-119), which
       // replaced the suggestion strip's `banner`: resolved on the server by `languagePopupCopy()`
       // and handed to the island as props, so it is in no `ROUTE_NAMESPACES` entry.

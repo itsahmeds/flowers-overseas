@@ -96,6 +96,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
 
+import { LAUNCH_LOCALE_DATA } from "../src/config/locales.data.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { productRoutePathFor } from "../src/lib/product-rewrites.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
@@ -806,6 +807,89 @@ export function catalogueLeaks(
 }
 
 /**
+ * The locale rows' path segments no client chunk may carry (spec 003 §14 A-founder-2026-10-19f,
+ * clause 5, AC-52 (c); TASK-182). The two client paths that need a locale read the import-free
+ * mirror `src/config/locales-client.data.ts`; if either imports `src/config/locales.data.ts` again,
+ * the whole row array, path segments included, rides in the root error chunk and the popup
+ * island's chunk on every document. The probes are the `de` and `pl` `pathSegments` values of 8
+ * or more characters that are not also an `en` value, read from `locales.data.ts` at run time, so
+ * a renamed segment cannot make the check quietly vacuous; `segmentLeaks()` throws on an empty set.
+ */
+const SEGMENT_PROBE_LOCALES = ["de", "pl"] as const;
+const SEGMENT_PROBE_MIN_LENGTH = 8;
+
+export interface SegmentProbe {
+  readonly locale: string;
+  readonly key: string;
+  readonly value: string;
+}
+
+export function segmentProbes(
+  rows: readonly {
+    readonly code: string;
+    readonly pathSegments: Readonly<Record<string, string>>;
+  }[] = LAUNCH_LOCALE_DATA,
+): SegmentProbe[] {
+  const english = new Set(
+    rows
+      .filter((row) => row.code === "en")
+      .flatMap((row) => Object.values(row.pathSegments)),
+  );
+  const probes: SegmentProbe[] = [];
+  for (const row of rows) {
+    if (!(SEGMENT_PROBE_LOCALES as readonly string[]).includes(row.code))
+      continue;
+    for (const [key, value] of Object.entries(row.pathSegments)) {
+      if (value.length >= SEGMENT_PROBE_MIN_LENGTH && !english.has(value)) {
+        probes.push({ locale: row.code, key, value });
+      }
+    }
+  }
+  return probes;
+}
+
+export interface SegmentLeak {
+  readonly url: string;
+  readonly asset: string;
+  readonly locale: string;
+  readonly key: string;
+  readonly value: string;
+}
+
+/**
+ * Every locale-row path segment found, as a quoted string literal, in a script one of these URLs
+ * fetches. Throws when the probe set is empty: a check with nothing to look for passes everything.
+ */
+export function segmentLeaks(
+  dist: string,
+  pages: readonly PageMeasurement[],
+  probes: readonly SegmentProbe[] = segmentProbes(),
+): SegmentLeak[] {
+  if (probes.length === 0) {
+    throw new Error(
+      "no locale path-segment probe: `de` and `pl` have no segment of 8 or more characters unlike `en`'s, so the AC-52 chunk scan would pass anything",
+    );
+  }
+  const leaks: SegmentLeak[] = [];
+  for (const page of pages) {
+    for (const asset of page.assets) {
+      if (asset.noModule) continue;
+      const source = readFileSync(join(dist, asset.asset), "utf8");
+      for (const probe of probes) {
+        if (
+          source.includes(`"${probe.value}"`) ||
+          source.includes(`'${probe.value}'`) ||
+          source.includes(`\`${probe.value}\``)
+        ) {
+          leaks.push({ url: page.url, asset: asset.asset, ...probe });
+        }
+      }
+    }
+  }
+  return leaks;
+}
+
+/**
  * Strings only the product island's chunk holds (spec 009 §14 A-founder-2026-10-18a, AC-37, T-41;
  * TASK-228): the selectors `CardMessageField` queries, which a minifier keeps as written.
  * `tests/unit/product-script-budget.test.ts` pins them equal to the island's exported constants,
@@ -1209,6 +1293,7 @@ export function main(
     const messages = messagesPayloadSizes();
     const forbidden = forbiddenModuleHits(dist, pages);
     const leaks = catalogueLeaks(dist, pages);
+    const segments = segmentLeaks(dist, pages);
     const islandHits = productIslandHits(dist, pages);
     const fonts = fontTransfer(root);
 
@@ -1244,6 +1329,10 @@ export function main(
         (leak) =>
           `${leak.url} ships the \`${leak.namespace}.*\` catalogue in a fetched chunk (${leak.asset}, e.g. \`${leak.key}\`) — no client may read a message catalogue since spec 004 §14 A1's addendum`,
       ),
+      ...segments.map(
+        (leak) =>
+          `${leak.url} ships the locale rows in a fetched chunk (${leak.asset} holds the ${leak.locale} \`${leak.key}\` segment \`${leak.value}\`): the client paths read \`src/config/locales-client.data.ts\`, never \`locales.data.ts\` (spec 003 §14 A-founder-2026-10-19f, AC-52)`,
+      ),
       ...islandHits.map((hit) =>
         hit.product
           ? `${hit.url} fetches no chunk with the product island's \`${hit.marker}\`: the product page must still load its island (spec 009 AC-37), or the marker in PRODUCT_ISLAND_MARKERS no longer matches the island`
@@ -1275,6 +1364,9 @@ export function main(
           : "",
         leaks.length === 0
           ? `client-js-budget: no fetched chunk contains ${CLIENT_FORBIDDEN_NAMESPACES.map((namespace) => `${namespace}.*`).join(", ")} catalogue copy`
+          : "",
+        segments.length === 0
+          ? `client-js-budget: no fetched chunk contains a de or pl locale path segment (${String(segmentProbes().length)} probes, AC-52)`
           : "",
         "",
         breaches.length === 0

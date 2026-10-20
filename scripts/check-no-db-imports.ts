@@ -119,6 +119,10 @@ export const SCANNED_PATHS = [
   "src/app/sitemaps",
   "scripts/corridor-check.ts",
   "scripts/corridor-check-cases.ts",
+  // spec 041 §5.1 (TASK-182): the info-page content module and its two scripts.
+  "src/modules/content",
+  "scripts/pages-check.ts",
+  "scripts/pages-index.ts",
   // spec 010 §12 task 1 (TASK-200): the checkout's database-free core. Named file by file, for the
   // `src/app/api/` reason above: `draft.ts`, `place.ts` and the server actions join the same
   // directory with TASK-203 and *will* read the database, so a blanket `src/modules/checkout`

@@ -28,6 +28,7 @@ import {
   whatsappHref,
 } from "@/config/company";
 import { anyDeliveryDatesOpen } from "@/config/countries";
+import { infoPageLocation } from "@/config/info-pages";
 import {
   availablePaymentMethods,
   type PaymentMethod,
@@ -114,6 +115,15 @@ function hrefFor(
   unavailable: ReadonlySet<string>,
 ): string | undefined {
   if (!isPublished(link.id)) return undefined;
+  // Spec 041's info pages (TASK-182): published means "may be linked"; whether the page exists in
+  // this locale is `infoPageExists()`'s answer, which the layout hands in as `unavailable`.
+  if (link.target.kind === "infoPage") {
+    if (unavailable.has(link.id)) return undefined;
+    const location = infoPageLocation(link.target.page, locale);
+    return location.leaf === undefined
+      ? localePath(locale, location.segmentKey)
+      : localePath(locale, "legal", location.leaf);
+  }
   if (link.target.kind !== "route") return undefined;
   // **Permission is not existence** (spec 004 AC-14; TASK-113). `isPublished()` says the site may
   // link at this page type; whether the page is *there in this locale* is a fact only the owning

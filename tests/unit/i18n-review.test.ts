@@ -143,6 +143,12 @@ function testLocale(code: string, bcp47: string): LocaleConfig {
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   };
 }

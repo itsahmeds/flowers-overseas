@@ -187,7 +187,12 @@ describe("nothing reachable from global-error.tsx imports zod or a catalogue", (
     expect([...files]).toContain(
       resolve(repoRoot, "src/modules/i18n/error-document.ts"),
     );
+    // Since spec 003 §14 A-founder-2026-10-19f (AC-52 (b)) the x-default locale comes from the
+    // import-free mirror, and the rows of `locales.data.ts` stay out of this chunk.
     expect([...files]).toContain(
+      resolve(repoRoot, "src/config/locales-client.data.ts"),
+    );
+    expect([...files]).not.toContain(
       resolve(repoRoot, "src/config/locales.data.ts"),
     );
   });

@@ -39,15 +39,16 @@ for (const locale of LOCALES) {
       for (const text of REQUIRED_TEXT[locale]) {
         await expect(footer).toContainText(text);
       }
-      // The one link column with a page behind it (`Sending`) and the language list are named
-      // navigation landmarks; `Company` and the legal row have no entry with a page, so they are
-      // not drawn at all (spec 004 §14 A20; TASK-173).
+      // The link columns with a page behind them and the language list are named navigation
+      // landmarks. `Company` has entries with a page only where spec 041's trust pages exist
+      // (How it works, Help and contact: English only, TASK-182); the legal row has none (TASK-183
+      // builds it), so a group with no page is not drawn at all (spec 004 §14 A20; TASK-173).
       await expect(
         footer.locator('nav[aria-labelledby$="-group-sending"]'),
       ).toHaveCount(1);
       await expect(
         footer.locator('nav[aria-labelledby$="-group-company"]'),
-      ).toHaveCount(0);
+      ).toHaveCount(locale === "en" || locale === "en-gb" ? 1 : 0);
     });
 
     test("draws no unpublished target and links to no non-200 URL (AC-14, §14 A20)", async ({

@@ -1,5 +1,6 @@
 /**
- * Relay-language check (spec 041 §14).
+ * Relay-language check (spec 041 §14), and the claim, scale and price-literal patterns the
+ * corridor and info-page gates share (spec 041 §2; TASK-182).
  *
  * The canonical definition is spec 041 §14 A-founder-2026-10-14; spec 010 §14 A4.3 AC-51, spec 013
  * AC-41, spec 016 AC-38 and spec 018 §7 AC-38 to AC-43 cite it (TASK-226).
@@ -25,6 +26,8 @@
  * takes any letters after it. The `de` and `pl` term lists are spec 018 §7's drafts and stay
  * **proposed** until the native reviewer queue signs them off; `en-gb` reads `en`.
  */
+
+import { DELIVERY_TIMING_PATTERN } from "../../seed/copy.ts";
 
 /** The locales that own a pattern list; `en-gb` reads `en`. */
 export type RelayLocale = "en" | "de" | "pl";
@@ -571,3 +574,57 @@ export function decidedRenderedStrings(
       : [],
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* The claim, scale and price-literal patterns (spec 041 §2; spec 007 §8).    */
+/* -------------------------------------------------------------------------- */
+
+/** One named claim pattern: a failure reports the label, so it is actionable. */
+export interface ClaimPattern {
+  readonly label: string;
+  readonly pattern: RegExp;
+}
+
+/**
+ * The claims a corridor `guide` file (spec 007 §8, AC-19) and a trust page (spec 041 §2, outside
+ * a sentence the file lists in `honestyAllow`) may not make. Moved here from
+ * `scripts/corridor-check.ts` (spec 041 §2 "One list, two readers"; TASK-182): `corridor:check`
+ * and `pages:check` both import it, so the two gates cannot drift apart.
+ */
+export const CLAIM_PATTERNS: readonly ClaimPattern[] = [
+  { label: "delivery timing", pattern: DELIVERY_TIMING_PATTERN },
+  { label: "cutoff", pattern: /\bcut[- ]?offs?\b/iu },
+  {
+    label: "delivery date",
+    pattern:
+      /\b(?:delivery dates?|deliver(?:ed|y|s)? (?:today|tomorrow)|by tomorrow|on the (?:day|date) (?:you|they) (?:choose|chose|chosen|pick|picked|select|selected))\b/iu,
+  },
+  {
+    label: "florist count",
+    pattern:
+      /\b(?:\d[\d,.]*\+?|dozens|hundreds|thousands|a network of)\s+(?:of\s+)?florists?\b/iu,
+  },
+  { label: "rating", pattern: /\b(?:ratings?|stars?|star[- ]rated)\b/iu },
+  { label: "review", pattern: /\b(?:reviews?|testimonials?|trustpilot)\b/iu },
+  {
+    label: "delivery photo",
+    pattern:
+      /\b(?:delivery photos?|photos? of the delivery|photo(?:graph)?(?:s|ed|ing)?\s+(?:(?:it|them|the\s+(?:flowers|bouquet))\s+)?(?:at|on)\s+the\s+(?:door|doorstep)|proof of delivery)\b/iu,
+  },
+];
+
+/** A digit-bearing claim of scale ("200+ florists", "1,200 cities"). */
+export const SCALE_CLAIM_PATTERN =
+  /\b\d[\d,.]*\s*\+?\s*(?:florists?|shops?|partners?|cities|towns|countries|deliveries|customers|orders|bouquets)\b|\b\d[\d,.]*\+/iu;
+
+/**
+ * A price literal in copy. Prices are data (`formatMoney`), never a sentence.
+ *
+ * The currency alternation closes on the Unicode-aware `(?![\p{L}\p{N}])` lookahead this file
+ * uses in `containsTerm()` / `containsSlugAsUrl()`, **not** on `\b`: JS `\b` is ASCII-only, so
+ * after a branch ending in `ł` there is no word boundary and every `129 zł` form escaped the rule
+ * (`/review 63`). `złotych` survived only because it ends in an ASCII `h`. Any currency word added
+ * here that ends in a non-ASCII letter falls into the same trap, which the lookahead closes.
+ */
+export const PRICE_LITERAL_PATTERN =
+  /(?:[£€$]\s?\d|\b\d[\d,.]*\s?(?:zł|złotych|pln|eur|gbp|euros?|pounds?|lei|ron)(?![\p{L}\p{N}]))/iu;

@@ -106,6 +106,9 @@ export {
   staticSitemapEntries,
 } from "./sitemap/statics.ts";
 
+/** An info page's `<head>` and JSON-LD (spec 041 AC-18, AC-19; TASK-182). */
+export { infoPageJsonLd, infoPageMetadata } from "./info-page-head.ts";
+
 export {
   SEO_DESCRIPTION_MAX_LENGTH,
   SEO_TITLE_MAX_LENGTH,

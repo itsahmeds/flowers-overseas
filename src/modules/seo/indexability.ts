@@ -40,6 +40,8 @@
  * terms (locale gate, environment gate, page-type policy) and then asks the same rule, so no
  * caller can gather three of them and forget the fourth.
  */
+import type { InfoPageId } from "@/config/info-pages";
+
 import { isLocaleIndexable } from "../i18n/index.ts";
 
 import {
@@ -75,7 +77,12 @@ export type SeoPageType =
   // Spec 009 §6's product detail page, registered here rather than branching there (spec 009
   // AC-16, "no new `noindex` branch in this spec"; TASK-125). `catalog/product.ts` gathers its
   // terms — every one of them **stated**, none omitted — and calls `pageIndexability()`.
-  | "product";
+  | "product"
+  // Spec 041 §2's ten info pages, by page id (§11: GA4's `page_type` is the page id), registered
+  // here rather than branching there (AC-17; TASK-182). A trust page is indexable iff it exists,
+  // its content is reviewed, the locale is indexable and this is the indexing environment; a
+  // legal page passes `reviewed && lawyerReviewed` as its `reviewed` term.
+  | InfoPageId;
 
 /**
  * Whether a page type may ever be indexed (`plan/02` §7; spec 004 AC-28; spec 007 §6).
@@ -103,6 +110,18 @@ export const PAGE_TYPE_POLICY: Readonly<
   // **and** the product is indexable there **and** the locale is **and** this is the indexing
   // environment. Every PDP answers `noindex,follow` in Phase 0 by data, not by policy.
   product: "byRule",
+  // Spec 041 §6: all ten are `byRule`. Every Phase 0 legal page is `noindex,follow` by data
+  // (`lawyerReviewed: false`), every `de`/`pl` draft by data (`reviewed: false`), not by policy.
+  "how-it-works": "byRule",
+  guarantee: "byRule",
+  help: "byRule",
+  about: "byRule",
+  delivery: "byRule",
+  imprint: "byRule",
+  terms: "byRule",
+  privacy: "byRule",
+  cookies: "byRule",
+  cancellation: "byRule",
 };
 
 /**

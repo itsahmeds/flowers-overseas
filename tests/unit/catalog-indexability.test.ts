@@ -206,10 +206,16 @@ describe("the sitemap query and the robots decision call one function (AC-21, T-
         path.endsWith(join("modules", "seo", "sitemap", "corridors.ts")) ||
         path.endsWith(join("modules", "seo", "sitemap", "statics.ts"))
       ) {
+        // One read per builder: `statics.ts` holds two since spec 041's info-page rows joined
+        // the hub's (TASK-182).
         expect(
           [...code.matchAll(/[\w$.]*\.indexable\b/gu)].map((match) => match[0]),
           path,
-        ).toEqual(["verdict.indexable"]);
+        ).toEqual(
+          path.endsWith("statics.ts")
+            ? ["verdict.indexable", "verdict.indexable"]
+            : ["verdict.indexable"],
+        );
         continue;
       }
       // TASK-125: spec 009's `productView()` carries spec 007's verdict for the PDP onto its view

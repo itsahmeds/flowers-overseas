@@ -12,11 +12,11 @@
  * this site, and a rich result pointing at a `noindex` page would be nonsense anyway. When 007
  * lifts the `noindex` it can add the schema from these same keys.
  *
- * **No "All help topics" line** (spec 004 §14 A20: a control with no page is not rendered at all;
- * TASK-232, QA-3 D-10). `/{locale}/help` is spec 041's page (TASK-182 publishes it); until then the
- * label is not drawn, as text or otherwise, and only the line saying what holds today stays
- * (`faq.allTopicsPending`, copy for the founder's batch). `faq.allTopics` is `retained` for that
- * page. **The first question renders open**, as both artboards draw it.
+ * **"All help topics" is a link only where the help page exists** (spec 004 §14 A20; spec 041
+ * AC-21; TASK-182). `/{locale}/help` is spec 041's page: where it exists the label links to it
+ * and the pending line is not drawn; where it does not, the label is not drawn at all and only
+ * the line saying what holds today stays (`faq.allTopicsPending`). **The first question renders
+ * open**, as both artboards draw it.
  *
  * The five answers are the artboards' own, in the first person (§14 A5). Two of them state
  * delivery timing — the redelivery window and the Warsaw cutoff — which the home page already
@@ -72,10 +72,18 @@ const HEADING_ID = "faq-heading";
 export interface HomeFaqProps {
   /** `h2` on the locale home; `h3` in `/dev/components`, where the section is nested. */
   readonly headingLevel?: "h2" | "h3";
+  /**
+   * The help page's path where it exists in this locale (spec 041 AC-21; TASK-182), or absent.
+   * The home route asks `infoPageExists("help", locale)` and hands it in, because this module may
+   * not read `src/modules/content` (`plan/01` §5). Present: "All help topics" is a link and the
+   * pending sentence is not drawn. Absent: the pending sentence stays, as before.
+   */
+  readonly allTopicsHref?: string | undefined;
 }
 
 export function HomeFaq({
   headingLevel = "h2",
+  allTopicsHref,
 }: HomeFaqProps = {}): ReactElement {
   const t = useTranslations("faq");
   const datesOpen = anyDeliveryDatesOpen();
@@ -95,9 +103,15 @@ export function HomeFaq({
         <Display as={headingLevel} id={HEADING_ID} size="display-s">
           {t.rich("heading", HEADING_EM)}
         </Display>
-        <Text size="sm" tone="subtle" measure>
-          {t("allTopicsPending")}
-        </Text>
+        {allTopicsHref === undefined ? (
+          <Text size="sm" tone="subtle" measure>
+            {t("allTopicsPending")}
+          </Text>
+        ) : (
+          <a className="link" href={allTopicsHref} data-fo-faq-all-topics>
+            {t("allTopics")}
+          </a>
+        )}
       </Stack>
       {/* The artboard's 360 px + rest split is approximated by the primitive's 1-3 grid, whose
           desktop first column is 442 px in the 1328 px container. `Grid` owns the column sets

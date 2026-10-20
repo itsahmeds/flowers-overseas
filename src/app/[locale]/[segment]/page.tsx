@@ -10,6 +10,11 @@ import {
   localeSegmentParams,
   resolveLocalePath,
 } from "@/modules/catalog";
+import {
+  InfoPage,
+  infoPageAlternatePaths,
+  infoPageView,
+} from "@/modules/content";
 import { DestinationsHubPage, hubView } from "@/modules/geo";
 import {
   LanguageAlternates,
@@ -23,6 +28,8 @@ import {
   breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
+  infoPageJsonLd,
+  infoPageMetadata,
   pageIndexability,
   pageMetadata,
   schemaOptions,
@@ -136,6 +143,15 @@ export async function generateMetadata({
   if (match.kind === "occasionsIndex") {
     return occasionsIndexMetadata(match.locale);
   }
+  if (match.kind === "infoPage") {
+    return (
+      infoPageMetadata(
+        match.pageId,
+        match.locale,
+        deploymentDescriptor(process.env),
+      ) ?? notFound()
+    );
+  }
   if (match.kind !== "destinationsHub") notFound();
 
   const t = await getTranslations({
@@ -184,7 +200,9 @@ export async function generateMetadata({
  */
 async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
   const t = await getTranslations({ locale });
-  return (key: string): string => (t as unknown as BreadcrumbLabel)(key);
+  // The values pass through: an info page's current crumb is `{name}` filled with its h1 (spec 041
+  // AC-19), and dropping them served the raw "{name}" in the BreadcrumbList.
+  return (key, values) => (t as unknown as BreadcrumbLabel)(key, values);
 }
 
 export default async function LocaleSegmentRoute({ params }: SegmentParams) {
@@ -210,6 +228,27 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
             locale: match.locale,
           })}
         />
+      </>
+    );
+  }
+
+  if (match.kind === "infoPage") {
+    setRequestLocale(match.locale);
+    const view = infoPageView(match.pageId, match.locale);
+    if (view === undefined) notFound();
+    // JSON-LD from the same view model the page renders (spec 041 AC-19), built in
+    // `modules/seo` so the unit suite reads what this route serves.
+    const nodes = infoPageJsonLd(
+      match.pageId,
+      match.locale,
+      deploymentDescriptor(process.env),
+      await registryLabels(match.locale),
+    );
+    return (
+      <>
+        <InfoPage pageId={match.pageId} locale={match.locale} />
+        <LanguageAlternates paths={infoPageAlternatePaths(match.pageId)} />
+        <JsonLd nodes={nodes} />
       </>
     );
   }

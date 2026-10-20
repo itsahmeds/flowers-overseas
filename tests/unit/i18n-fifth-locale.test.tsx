@@ -108,6 +108,12 @@ const FRENCH: LocaleConfig = {
     blog: "blog",
     forFlorists: "pour-fleuristes",
     legal: "mentions-legales",
+    howItWorks: "comment-ca-marche",
+    guarantee: "garantie",
+    help: "aide",
+    about: "a-propos",
+    delivery: "livraison-et-paiement",
+    imprint: "mentions",
   },
 };
 

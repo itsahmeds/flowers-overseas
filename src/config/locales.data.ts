@@ -12,9 +12,13 @@
  *    canonical `bcp47`/`formattingTag`) still run before a single page renders — `pnpm build`
  *    loads `locales.ts` through the i18n module, `pnpm i18n:check` loads it directly, and the
  *    unit suite re-parses it (AC-1 of spec 003 is unchanged);
- *  - **the one client path that needs a locale** — `src/app/global-error.tsx`, the last-resort 500
- *    document, through `src/modules/i18n/error-document.ts` — imports *this* file and therefore
- *    reaches no zod at all.
+ *  - **the browser reads neither door.** The two client paths that need a locale (the 500
+ *    documents through `src/modules/i18n/error-document.ts`, the language popup through
+ *    `src/modules/i18n/hints.ts`) import `src/config/locales-client.data.ts`, an import-free
+ *    mirror of the x-default row's `code`, `bcp47` and `dir` and of the launch codes. Importing
+ *    this file instead would ship every row, path segments included, to every document (spec 003
+ *    §14 A-founder-2026-10-19f, AC-52); `tests/unit/locales-data.test.ts` pins the mirror to these
+ *    rows and `tests/unit/client-message-graph.test.ts` keeps this file out of every client graph.
  *
  * Why that split exists, stated plainly because it is a deviation worth arguing with: zod is
  * ~85 KB gzipped / ~70 KB Brotli, and Next attaches the root error boundary's client chunk to
@@ -23,11 +27,12 @@
  * The failure document is also the one document that must not depend on the machinery that just
  * failed, which is the second reason it reads constants rather than a parsed registry. What is
  * given up: a malformed edit to this file is caught by the build, by `pnpm i18n:check` and by the
- * unit suite rather than by the browser — never by a request, because the browser only ever reads
- * the `x-default` row's `bcp47` and `dir`.
+ * unit suite rather than by the browser — never by a request, because the browser reads only the
+ * client mirror's handful of values.
  *
- * Adding or changing a locale is still one edit: change the rows here, and `locales.ts` validates
- * them. Nothing in this file may import anything (that is what keeps it zod-free), which is why
+ * Adding or changing a locale is one edit here, and `locales.ts` validates it; adding a launch
+ * locale or moving the x-default row is a second edit in `locales-client.data.ts`, and the parity
+ * test stays red until the two agree. Nothing in this file may import anything (that is what keeps it zod-free), which is why
  * the schema, the currency check and the `ENABLE_PSEUDO_LOCALES` gate all live in `locales.ts`.
  */
 
@@ -49,6 +54,14 @@ export const PATH_SEGMENT_KEYS = [
   "blog",
   "forFlorists",
   "legal",
+  // Spec 041 §2 "Top-level segments" (TASK-182): the five trust pages and the imprint, authored
+  // for every locale at once. The four legal documents are leaves under `legal`, not segments.
+  "howItWorks",
+  "guarantee",
+  "help",
+  "about",
+  "delivery",
+  "imprint",
 ] as const;
 export type PathSegmentKey = (typeof PATH_SEGMENT_KEYS)[number];
 
@@ -122,6 +135,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
   {
@@ -146,6 +165,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
   {
@@ -171,6 +196,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "fuer-floristen",
       legal: "rechtliches",
+      howItWorks: "so-funktioniert-es",
+      guarantee: "garantie",
+      help: "hilfe",
+      about: "ueber-uns",
+      delivery: "lieferung-und-zahlung",
+      imprint: "impressum",
     },
   },
   {
@@ -196,6 +227,12 @@ export const LAUNCH_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "dla-kwiaciarni",
       legal: "regulamin",
+      howItWorks: "jak-to-dziala",
+      guarantee: "gwarancja",
+      help: "pomoc",
+      about: "o-nas",
+      delivery: "dostawa-i-platnosc",
+      imprint: "dane-firmy",
     },
   },
 ] as const satisfies readonly LocaleData[];
@@ -241,6 +278,12 @@ export const PSEUDO_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
   {
@@ -267,6 +310,12 @@ export const PSEUDO_LOCALE_DATA = [
       blog: "blog",
       forFlorists: "for-florists",
       legal: "legal",
+      howItWorks: "how-it-works",
+      guarantee: "guarantee",
+      help: "help",
+      about: "about",
+      delivery: "delivery",
+      imprint: "imprint",
     },
   },
 ] as const satisfies readonly LocaleData[];
@@ -298,12 +347,11 @@ export const X_DEFAULT_LOCALE: LocaleData = LAUNCH_LOCALE_DATA[0];
  * `src/config/locales.ts` (`LOCALES.filter(isLaunch)`, and no pseudo-locale is ever a launch
  * locale, TASK-042).
  *
- * It exists for the second client path that may reach no zod: the suggestion-banner island's
- * decision, via `src/modules/i18n/hints.ts`, whose `fo_locale` reader used to validate against
- * `LocaleCookieSchema` and therefore pulled ~70 KB Brotli of zod into the lazily fetched island
- * chunk of every locale document (spec 004 §13 Q13, `/review 26`). `LocaleCookieSchema` still
- * exists and is still the server-side boundary schema; `tests/unit/locales-data.test.ts` asserts
- * that its option set and this list are the same set, so the two doors cannot drift.
+ * Server-side and in checks only: the language popup's `fo_locale` reader (`hints.ts`) reads the
+ * client mirror `LAUNCH_LOCALE_CODES_CLIENT` in `locales-client.data.ts` instead, so this file's
+ * rows stay out of the island's chunk (spec 003 §14 A-founder-2026-10-19f).
+ * `LocaleCookieSchema` is still the server-side boundary schema; `tests/unit/locales-data.test.ts`
+ * asserts that its option set, this list and the mirror are the same, so the doors cannot drift.
  */
 export const LAUNCH_LOCALE_CODES: readonly string[] = LAUNCH_LOCALE_DATA.filter(
   (locale) => locale.isLaunch,

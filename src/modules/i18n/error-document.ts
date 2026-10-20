@@ -13,8 +13,10 @@
  *
  * So this module reads two data modules and nothing else:
  *
- *  - the **x-default locale row** from `src/config/locales.data.ts` (plain typed constants, no
- *    imports at all), for `lang` and `dir`;
+ *  - the **x-default locale's** `code`, `bcp47` and `dir` from `src/config/locales-client.data.ts`
+ *    (no imports at all), for `lang`, `dir` and the home path. Not `locales.data.ts`: its rows,
+ *    path segments included, would ship with this chunk to every document (spec 003 §14
+ *    A-founder-2026-10-19f, AC-52);
  *  - the four strings from `error-copy.data.ts` (the same: plain constants, no imports).
  *
  * TASK-085 replaced the second half. It used to be a static `messages/en.json` import for four
@@ -30,8 +32,8 @@
  * The second reason for the shape, independent of bytes: the 500 document is reached because
  * something else already threw, so it must not depend on the machinery that just failed — no
  * provider, no registry indirection, no schema parse, no message-source seam. A locale change
- * still needs no edit here (the row is read from the data module), and a change that moves the
- * x-default locale fails the parity test instead of silently mislabelling the failure page.
+ * needs no edit here; the client module mirrors `locales.data.ts`, and a change that moves the
+ * x-default locale fails the parity test (T-52) instead of silently mislabelling the failure page.
  *
  * Not exported from `src/modules/i18n/index.ts`: the barrel's export list is pinned by AC-3 of
  * spec 003, and a Client Component that imported the barrel would pull the whole module — the
@@ -39,10 +41,10 @@
  * which is the growth vector TASK-035 closed and this module keeps closed.
  */
 import {
-  LAUNCH_LOCALE_CODES,
-  X_DEFAULT_LOCALE,
-  type TextDirection,
-} from "../../config/locales.data.ts";
+  type ClientTextDirection,
+  LAUNCH_LOCALE_CODES_CLIENT,
+  X_DEFAULT_CLIENT_LOCALE,
+} from "../../config/locales-client.data.ts";
 
 import { type ErrorCopy, errorCopyFor } from "./error-copy.data.ts";
 
@@ -51,7 +53,7 @@ export interface ErrorDocument extends ErrorCopy {
   /** `<html lang>`: the x-default locale's document language. */
   readonly lang: string;
   /** `<html dir>`: from the locale registry, never inferred from the strings. */
-  readonly dir: TextDirection;
+  readonly dir: ClientTextDirection;
 }
 
 /**
@@ -60,9 +62,9 @@ export interface ErrorDocument extends ErrorCopy {
  */
 export function errorDocument(): ErrorDocument {
   return {
-    lang: X_DEFAULT_LOCALE.bcp47,
-    dir: X_DEFAULT_LOCALE.dir,
-    ...errorCopyFor(X_DEFAULT_LOCALE.code),
+    lang: X_DEFAULT_CLIENT_LOCALE.bcp47,
+    dir: X_DEFAULT_CLIENT_LOCALE.dir,
+    ...errorCopyFor(X_DEFAULT_CLIENT_LOCALE.code),
   };
 }
 
@@ -92,8 +94,8 @@ export { TRADING_NAME } from "../../config/company.data.ts";
  */
 export function errorHomePath(locale?: string): string {
   const code =
-    locale !== undefined && LAUNCH_LOCALE_CODES.includes(locale)
+    locale !== undefined && LAUNCH_LOCALE_CODES_CLIENT.includes(locale)
       ? locale
-      : X_DEFAULT_LOCALE.code;
+      : X_DEFAULT_CLIENT_LOCALE.code;
   return `/${code}`;
 }

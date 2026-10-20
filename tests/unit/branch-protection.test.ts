@@ -124,6 +124,8 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       // the property the script's header claims.
       "lighthouse",
       "lint",
+      // Spec 041 AC-5 (TASK-182): derived from `ci.yml` like the rest.
+      "pages-check",
       "pr-policy",
       "preview",
       "seed-check",

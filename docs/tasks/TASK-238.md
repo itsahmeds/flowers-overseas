@@ -49,6 +49,10 @@ it edits the same header strip, phone Menu and footer; that PR keeps the breaker
   "24/7, we reply within a few hours", and the footer reads "24/7 — we reply".
 - **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
   - QA 2026-10-18 re-test: the footer line "Message us any time, 24/7 — we reply within a few hours" is still on `c8d3b334` (PR 229's WhatsApp help links were not in that build, so they are untested). Re-test the help link and `company.support.hours` once PR 229 and this task merge.
+- **From TASK-182 (PR 270, E4; orchestrator 2026-10-19):** the help page renders no hours sentence
+  and no "24/7" while this task is blocked (spec 041 AC-12's support-line half). When
+  `company.support.hours` changes here, re-verify that `/en/help` and `/en-gb/help` still render
+  no "24/7" and that the footer's line is the new value.
 
 ## Escalations
 

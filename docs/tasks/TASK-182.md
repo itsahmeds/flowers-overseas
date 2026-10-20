@@ -124,7 +124,56 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-19, E1 (copy share; to the orchestrator for the founder's morning copy batch; open).** The
+  trust pages need 8 new counted `messages/` keys (all `reviewed: false`, an agent never attests):
+  `infoPages.status.notYetOpen`, `infoPages.company.notRegistered`, `infoPages.contact.heading`,
+  `infoPages.contact.body`, `infoPages.contact.privacy`, `infoPages.contact.phone` ("Phone", the A.1
+  field label the round-2 help artboard draws), `infoPages.delivery.status` ("Status", A.1 field
+  label) and `footer.link.deliveryAndPayment`; `footer.link.deliveryTimes` (reviewed) is removed.
+  Measured on this branch (base `e6958197`): `en-gb` 3.25 % to 4.64 %, `en` 3.07 % to 4.46 %. The
+  coordinator reports main plus the open PRs at about 4.5 %; on that base the 8 keys give about
+  5.9 % (only about 2 fit under 5 %). So the PR stays **draft** and is not taken ready until the
+  founder attests these keys (or the queue drops). The keys are on the branch only; nothing merges.
+  **Resolved 2026-10-19:** the founder's copy batch 5 (PR 278, TASK-276) took `en-gb`'s share on
+  main to 0.36 % (2 of 553 counted keys). With this PR's 8 keys, still `reviewed: false`, it is
+  1.79 % (10 of 560), under the 5 % line, so the PR went ready. The 8 keys wait for the next batch.
+- **2026-10-19, E2 (two Appendix A lines reworded; founder, with E1).** Two proposed Appendix A
+  sentences trip `RELAY_PATTERNS`, and spec 041 §14 says a buyer string that trips a pattern is
+  reworded (no exemption): A.5 "we take the payment" (in-context `take` with "our florist" in the
+  same sentence) became "we handle the payment"; A.4 Q12 "exactly what we hold" (context-free
+  `hold`) became "exactly what we keep". Both files ship `reviewed: false`.
+- **2026-10-19, E3 (the PDP guarantee link; to the orchestrator; open).** The brief asks this task
+  to wire spec 009 §14 A11's product-page link to the guarantee and pin the two texts equal, but the
+  work order's fence says "do not touch product". Not done; it needs a product-page task or a
+  fence change.
+- **2026-10-19, E4 (support line; TASK-238 blocked).** Per the work order the help page renders no
+  hours sentence and no "24/7"; AC-12's support-line half is TASK-238's. The footer still prints
+  main's `company.support.hours` ("24/7 —"), which is TASK-238's value to change.
+- **2026-10-19, E5 (script bytes over budget; to the orchestrator; open).** CI run 39211395643
+  (head `ec5fa312`): Lighthouse `resource-summary.script.size` is 131 207 B on all 16 URLs against
+  the 131 072 B budget; main `6d4c40b7` measures 130 739 B, so this PR adds 468 B Brotli and
+  main had 333 B of headroom. Cause: the six segment keys (AC-4) sit in the rows of
+  `src/config/locales.data.ts`, and those rows reach client chunks through
+  `src/modules/i18n/error-document.ts` (`global-error.tsx`, `[locale]/error.tsx`) and
+  `src/modules/i18n/hints.ts` (the language popup island); an esbuild bundle of those two modules
+  grows 712 B raw, 173 B gzip, once per chunk. Both fixes are outside this task's fence: (a) give
+  the two client paths a row-free constant module (x-default `code`/`bcp47`/`dir` and the launch
+  codes, pinned to the rows by the parity tests), which takes every locale row out of client JS
+  and reverses TASK-085's "read the row" choice; or (b) move the six info-page segments out of
+  `LocaleData.pathSegments` into a server-only map, which changes spec 003's registry shape.
+  **Resolved 2026-10-19:** the founder chose (a) ("go with the premium proposed version and fix
+  c"), recorded as spec 003 §14 A-founder-2026-10-19f (PR 283; AC-52, T-52), which widens this
+  task's fence. Built in PR 270: `src/config/locales-client.data.ts` (import-free mirror),
+  `error-document.ts` and `hints.ts` read it, `client-message-graph.test.ts` forbids
+  `locales.data.ts` in every client graph, `locales-data.test.ts` pins the mirror, and
+  `budget:client-js` scans fetched chunks for 16 `de`/`pl` segment probes.
+- **2026-10-19, E6 (the round-2 docks; to the orchestrator; open).** The binding round-2 dock
+  clause (`/review 270` required change 4) asks for a WhatsApp dock on help, guarantee and
+  delivery, and a Send flowers dock on how it works. Neither is built. The WhatsApp dock needs the
+  support line and WhatsApp link TASK-238 owns (blocked on the founder; PR 229). The Send flowers
+  dock would link to a shop page, but spec 004 AC-48's sticky action bar, the only dock component,
+  takes an in-page `#` anchor only, so it is not a reuse. The orchestrator decides: a primitive
+  change under spec 004, or both docks after TASK-238.
 
 ## Progress
 
@@ -132,11 +181,42 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
-
+- 2026-10-19 21:40Z: patterns moved to `src/config/honesty.ts` (corridor:check unchanged).
+- 21:50Z: content module, registry, six segment keys, `company.ts` representative/supportEmail, en/en-gb content, keys.
+- 21:58Z: routes (depth 2 via `resolveLocalePath`), metadata, JSON-LD, `static.xml` rows, `infoPage` link kind and flips, home FAQ link, `pages:check` + CI job, `pages:index`.
+- 22:05Z: unit tests (info-pages, pages-check, info-page-render), e2e `tests/e2e/info-pages.spec.ts`; suites the change touches updated; full unit suite green (296 files).
+- 22:12Z: round-2 band layout; local build in the slot (load 2.0) to judge the new routes and the layout: all five pages 200 in en/en-gb, `/de/hilfe`, `/en/imprint`, `/en/legal/terms`, `/en/contact` 404, `/en/help/` 308. Screenshots checked against the artboards.
+- 22:25Z: stopped before `gh pr ready` on the coordinator's copy-share heads-up (E1). Next: the founder attests the keys (or the order is changed), then rebase on `origin/main` (TASK-172/PR 265 adds `trust.guarantee.name` to the AC-16 case), ready, `ci:full`.
+- 2026-10-19 06:10Z: rebased on `origin/main` (`dbb3ec64`, copy batch 5); the pinned queue in `i18n-messages-schema.test.ts` is main's set plus this PR's 8 keys. `trust.guarantee.name` joined the AC-16 case (mutation to a German "7-Tage" name went red). Copy share `en-gb` 0.36 % on main, 1.79 % with this PR. Cheap gates and `pages:check` green; ready, `ci:full`.
+- 07:55Z: second rebase (motions PR 221; HomeFaq keeps both `data-fo-reveal` and the help link). CI 39211395643: e2e footer/links/home FAQ suites still expected the unpublished pages (updated), 31 Linux baselines refreshed from run 39215901991 (each looked at), Lighthouse script bytes 468 B over (E5, open).
+- 2026-10-19 09:45Z: AC-52 built (E5 resolved). Mutations watched red: error-document or hints importing `locales.data.ts` again (3 red each), mirror `dir` rtl, `bcp47` one character, `pl` dropped, an import line in the mirror, a launch row added to `locales.data.ts` alone, the empty-probe guard removed, the quoted-literal scan disabled.- 2026-10-19 round-1 fixes (`/review 270` FAIL, `/break 270` HOLES 1-9): sitemap positive case, head and JSON-LD moved to `modules/seo/info-page-head.ts` with unit and e2e cases, claim patterns widened (photo, "chose") with the A.3 and missed-day allow entries, one case per claim pattern, gate field coverage, `pages:check` on `freshness-claim.ts`, dynamic `import()` in the walk, unroutable-locale case, tautology removed, E6.
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR https://github.com/itsahmeds/flowers-overseas/pull/270. E1 resolved by copy batch 5 (`en-gb`
+unreviewed share 0.36 % on main, 1.79 % with this PR). E5 resolved by spec 003 AC-52 (fix (a)):
+Lighthouse `script.size` on every audited URL is 130,739 B on main `6d4c40b7`, 131,207 B on this
+PR without the fix (run 39211395643) and 129,232 B with it (run 39232236589), budget 131,072 B.
+The two chunks AC-52 (d) names, identified by content in run 39232236589's `preview-build`
+artifact and compressed at Brotli quality 11: the root error chunk (`1x7_8zbkt3n4v.js`, the one
+chunk that renders `<html>` and holds the error copy) is 4,282 B raw, 1,379 B Brotli; the popup
+island's chunk (`2cpdy4k7pb871.js`, the only chunk holding `fo_locale`) is 6,952 B raw, 2,646 B
+Brotli; neither holds a locale path segment. Main's two chunks were not measured (carry-forward
+if wanted).
 
-_Pending._
+Ships `src/modules/content` (schemas, parser, provider over `corpus.generated.ts`,
+`infoPageExists`, `listInfoPages`, `infoPageView`, `InfoPage`), `src/config/info-pages.ts`, the
+claim/scale/price patterns in `src/config/honesty.ts` (shared with `corridor:check`),
+`pnpm pages:check` (13 rules, §11 table, freshness via `src/config/freshness-claim.ts`) with the
+`pages-check` CI job, `pnpm pages:index`, the six segment keys, the five trust pages in
+`en`/`en-gb`, ten `byRule` page types, the `<head>` and JSON-LD in `src/modules/seo/info-page-head.ts`,
+`static.xml` rows (indexable pages only; none today), the `infoPage` link kind with the footer
+and home links, and AC-52's client mirror `src/config/locales-client.data.ts`. Not done here: E3
+(PDP guarantee link, new task row), E4 (TASK-238), E6 (docks), the legal set (TASK-183), de/pl,
+axe, Lighthouse on these pages (TASK-184).
+
+Keys for the founder's next copy batch (all `reviewed: false`, en and en-gb):
+`infoPages.status.notYetOpen`, `infoPages.company.notRegistered`, `infoPages.contact.heading`,
+`infoPages.contact.body`, `infoPages.contact.privacy`, `infoPages.contact.phone` ("Phone"),
+`infoPages.delivery.status` ("Status"), `footer.link.deliveryAndPayment`; plus the ten content
+files under `content/pages/` (E2's two rewordings, and the guarantee's three `honestyAllow`
+entries added in round 1, among them).

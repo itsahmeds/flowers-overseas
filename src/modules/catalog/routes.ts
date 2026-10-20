@@ -65,12 +65,27 @@ import {
   corridorPageExists,
   listCorridorPages,
 } from "@/modules/geo";
+import type { InfoPageId } from "@/config/info-pages";
+import {
+  infoPageExists,
+  infoPageForSegment,
+  infoPagePath,
+  listInfoPages,
+} from "@/modules/content";
 import { localePath, routableLocale } from "@/modules/i18n";
 
 import { listingExists, listingLocales, listingPages } from "./listing";
 import { productPageExists, productPrebuildPages } from "./product";
 import { ProductParamsSchema } from "./schemas";
 import { resolveSlug } from "./slugs";
+
+/** The path segments below `/{locale}` of an info page (`["help"]`, `["legal", "terms"]`). */
+function infoPageSegments(
+  pageId: InfoPageId,
+  locale: string,
+): readonly string[] {
+  return infoPagePath(pageId, locale).split("/").slice(2);
+}
 
 /**
  * The page a `/{locale}/…` path names, or `notFound`.
@@ -154,7 +169,18 @@ export type LocalePathResolution =
    * destinations hub's shape, one segment over. It exists iff at least one occasion hub exists in
    * that locale, which is `listingExists()`'s answer and not a rule restated here.
    */
-  | { readonly kind: "occasionsIndex"; readonly locale: LocaleCode };
+  | { readonly kind: "occasionsIndex"; readonly locale: LocaleCode }
+  /**
+   * Spec 041's top-level info pages, `/{locale}/{howItWorks|guarantee|help|about|delivery|imprint}`
+   * (§2; TASK-182). One more page type at depth 2, disjoint from the hub and the occasions index
+   * by segment. Its existence answer is `infoPageExists()`, asked once, so the router, the sitemap
+   * and every link agree (spec 041 AC-2).
+   */
+  | {
+      readonly kind: "infoPage";
+      readonly locale: LocaleCode;
+      readonly pageId: InfoPageId;
+    };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
 
@@ -203,6 +229,13 @@ export async function resolveLocalePath(
         locale: code,
       });
       return exists ? { kind: "occasionsIndex", locale: code } : NOT_FOUND;
+    }
+    // `/{locale}/{howItWorks|guarantee|help|about|delivery|imprint}` — spec 041's top-level info
+    // pages (TASK-182). A page whose content file is missing in this locale, or that waits for the
+    // company (imprint), is a hard 404 here: `infoPageExists()`'s rule, asked once.
+    const pageId = infoPageForSegment(code, segment);
+    if (pageId !== undefined && infoPageExists(pageId, code)) {
+      return { kind: "infoPage", locale: code, pageId };
     }
     // `/{locale}/{shopCategory}` is a 404 by §13 Q4: no country-less categories index ships.
     return NOT_FOUND;
@@ -418,6 +451,15 @@ export async function localeSegmentParams(): Promise<
         segment: localePath(locale, "occasions").split("/")[2] ?? "",
       });
     }
+  }
+  // Spec 041's top-level info pages (TASK-182): exactly `listInfoPages()`'s set, so a page whose
+  // file is missing, or that waits for the company, has no URL (spec 041 AC-2).
+  const listed = new Set(listingLocales() as readonly string[]);
+  for (const page of listInfoPages()) {
+    if (!listed.has(page.locale)) continue;
+    const segments = infoPageSegments(page.pageId, page.locale);
+    if (segments.length !== 1) continue;
+    params.push({ locale: page.locale, segment: segments[0] ?? "" });
   }
   return params;
 }

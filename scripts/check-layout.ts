@@ -33,6 +33,10 @@ export const MODULES = [
   // demo, a test or live (`checkoutMode()`); registered here and in `docs/architecture.md` §3 in
   // the same PR, as the rule above requires.
   "checkout",
+  // spec 041 §13 Q7 (TASK-182): the trust and legal pages' content, its existence predicate and
+  // its view model. A recorded `plan/01` §5 deviation: no listed module owns company and legal
+  // content; registered here and in `docs/architecture.md` §3 in the same PR.
+  "content",
 ] as const;
 
 export const REQUIRED_DIRS = [

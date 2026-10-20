@@ -3,10 +3,10 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (23): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
+# Jobs (24): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
 # db-check · env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check ·
-# corridor-check · seed-check · dev-os-check · cloudflare-check · audit · preview · e2e · visual ·
-# a11y · lighthouse.
+# corridor-check · pages-check · seed-check · dev-os-check · cloudflare-check · audit · preview ·
+# e2e · visual · a11y · lighthouse.
 # The lint job also runs the three orientation gates of §14 A15: `codebase:map --check`,
 # `specs:index --check`, `tasks:check`.
 #
@@ -1257,6 +1257,49 @@ jobs:
               echo ""
               echo '```'
               grep -A 200 'corridor:check failed' corridor-check.log
+              echo '```'
+              echo ""
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # spec 041 §2 "The honesty gate", §11, AC-5 (TASK-182): the info-page content gate. Thirteen
+  # rules over `content/pages/**` and `content/legal/**` — does it parse, do the SEO fields fit,
+  # is a reviewed file attributed, is an English file human-written, is the help FAQ 10–14
+  # questions, does it use a banned word or relay language, does it invent a number or a price,
+  # does a trust page make a claim outside its `honestyAllow`, does an allow entry still match, and
+  # does it state a number of days of freshness — each one line naming the file, field and rule.
+  # `needs: typecheck` beside `corridor-check` (spec 001 §14 A9's placement rule): it reads
+  # committed markdown only. `--summary` writes §11's page × locale × reviewed table.
+  pages-check:
+    name: pages-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: typecheck
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'ci:full') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: pages:check — the info-page rules and the page × locale table (AC-5)
+        id: pages
+        run: pnpm pages:check --summary 2>&1 | tee pages-check.log
+      - name: Summarise the verdict
+        if: always()
+        run: |
+          set -uo pipefail
+          {
+            echo ""
+            echo "#### verdict"
+            echo ""
+            echo "| check | command | result |"
+            echo "|---|---|---|"
+            echo "| info-page content gate (AC-5) | \`pnpm pages:check --summary\` | ${{ steps.pages.outcome }} |"
+            echo ""
+            if [ -f pages-check.log ] && grep -q 'pages:check failed' pages-check.log; then
+              echo "<details><summary>problems</summary>"
+              echo ""
+              echo '```'
+              grep -A 200 'pages:check failed' pages-check.log
               echo '```'
               echo ""
               echo "</details>"

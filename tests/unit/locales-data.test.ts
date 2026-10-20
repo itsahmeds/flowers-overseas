@@ -20,6 +20,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  LAUNCH_LOCALE_CODES_CLIENT,
+  X_DEFAULT_CLIENT_LOCALE,
+  isLaunchLocaleCodeClient,
+} from "../../src/config/locales-client.data.ts";
+import {
+  LAUNCH_LOCALE_CODES,
   LAUNCH_LOCALE_DATA,
   PATH_SEGMENT_KEYS as DATA_PATH_SEGMENT_KEYS,
   PSEUDO_LOCALE_DATA,
@@ -39,6 +45,7 @@ import {
   textDirections,
   xDefaultLocale,
 } from "../../src/config/locales.ts";
+import { LocaleCookieSchema } from "../../src/modules/i18n/schemas.ts";
 
 describe("the constants and the zod-validated registry are the same rows", () => {
   it("survives LocaleRegistrySchema unchanged: no default, no transform, no rewrite", () => {
@@ -123,5 +130,61 @@ describe("the data module imports nothing (that is what keeps it zod-free)", () 
     );
     expect(source).not.toMatch(/^\s*import\s/m);
     expect(source).not.toMatch(/\brequire\(/);
+  });
+});
+
+/**
+ * T-52, AC-52 (a): the client mirror (spec 003 §14 A-founder-2026-10-19f). The two client paths
+ * read `locales-client.data.ts` so the rows stay out of browser JavaScript; this pins every value
+ * it mirrors to the authored rows, field by field and in order, so a launch locale added to
+ * `locales.data.ts` alone, or an x-default row that moves, turns this red.
+ */
+describe("the client mirror equals the rows it mirrors (AC-52 (a), T-52)", () => {
+  it("holds the x-default locale's code, bcp47 and dir, each equal to the row's", () => {
+    expect(X_DEFAULT_CLIENT_LOCALE.code, "code").toBe(X_DEFAULT_LOCALE.code);
+    expect(X_DEFAULT_CLIENT_LOCALE.bcp47, "bcp47").toBe(X_DEFAULT_LOCALE.bcp47);
+    expect(X_DEFAULT_CLIENT_LOCALE.dir, "dir").toBe(X_DEFAULT_LOCALE.dir);
+    expect(X_DEFAULT_CLIENT_LOCALE.code, "xDefaultLocale").toBe(xDefaultLocale);
+    expect(Object.keys(X_DEFAULT_CLIENT_LOCALE).sort()).toEqual([
+      "bcp47",
+      "code",
+      "dir",
+    ]);
+  });
+
+  it("holds the launch codes in registry order, equal to the rows, the registry and the cookie schema", () => {
+    expect([...LAUNCH_LOCALE_CODES_CLIENT]).toEqual([...LAUNCH_LOCALE_CODES]);
+    expect([...LAUNCH_LOCALE_CODES_CLIENT]).toEqual(
+      LAUNCH_LOCALE_DATA.filter((row) => row.isLaunch).map((row) => row.code),
+    );
+    expect([...LAUNCH_LOCALE_CODES_CLIENT]).toEqual([...launchLocales]);
+    expect([...LAUNCH_LOCALE_CODES_CLIENT].sort()).toEqual(
+      [...LocaleCookieSchema.options].sort(),
+    );
+  });
+
+  it("answers the launch-code predicate exactly as the rows do", () => {
+    for (const value of ["en", "en-gb", "de", "pl", "EN", "en-XA", "fr", ""]) {
+      expect(isLaunchLocaleCodeClient(value), value).toBe(
+        LAUNCH_LOCALE_CODES.includes(value),
+      );
+    }
+  });
+
+  it("imports nothing, re-exports nothing and requires nothing", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { resolve } = await import("node:path");
+    const source = readFileSync(
+      resolve(__dirname, "../../src/config/locales-client.data.ts"),
+      "utf8",
+    );
+    expect(source).not.toMatch(/^\s*import[\s{*"']/m);
+    expect(source).not.toMatch(/^\s*export\s[^;]*\sfrom\s/m);
+    expect(source).not.toMatch(/\brequire\(/);
+    // No row field beyond the three it mirrors (comments stripped: the header explains them).
+    const code = source
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(code).not.toMatch(/pathSegments|currencyDefault|shown|nativeName/);
   });
 });

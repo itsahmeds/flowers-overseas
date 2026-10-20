@@ -263,7 +263,11 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       );
       expect(row.at(-1)?.href).toBe(localePath(locale, "destinations"));
 
-      // The footer's link column is the two entries with a page, and nothing else.
+      // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
+      // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and
+      // the guarantee under Sending, and How it works and Help and contact under Company; `de`
+      // and `pl` have no content file, so those entries and the Company heading are not drawn.
+      const hasTrustPages = locale === "en" || locale === "en-gb";
       const sending = await page
         .locator('footer nav[aria-labelledby$="-group-sending"] a')
         .evaluateAll((nodes) =>
@@ -272,7 +276,20 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       expect(sending).toEqual([
         localePath(locale, "destinations"),
         localePath(locale, "occasions"),
+        ...(hasTrustPages
+          ? [localePath(locale, "delivery"), localePath(locale, "guarantee")]
+          : []),
       ]);
+      const company = await page
+        .locator('footer nav[aria-labelledby$="-group-company"] a')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(company).toEqual(
+        hasTrustPages
+          ? [localePath(locale, "howItWorks"), localePath(locale, "help")]
+          : [],
+      );
 
       // The trending row: five cards, five product pages.
       await expect(page.locator("[data-fo-trending] li a[href]")).toHaveCount(
@@ -298,11 +315,12 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         }
       }
       // Exactly: the header's eight (the footer's two are among them), five products, the
-      // lockup's home and the switcher's sibling shown homes (one on a shown locale, both English
-      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c). A ninth control is a diff here.
+      // lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
+      // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
+      // four trust pages. A further control is a diff here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
       expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(8 + 5 + 1 + siblings);
+      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + (hasTrustPages ? 4 : 0));
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }
@@ -315,9 +333,6 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           "Basket",
           "For florists",
           "Add-ons",
-          "How it works",
-          "Help and contact",
-          "The guarantee",
           "Imprint",
           "Withdrawal and refunds",
           "Search flowers, occasions, a city or a country",

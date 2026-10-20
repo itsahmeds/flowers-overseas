@@ -34,8 +34,10 @@
  * alphanumeric subtags separated by hyphens" and "the cookie value is a launch locale code" —
  * are now a regular expression and a list membership, both derived from the same data the
  * schemas are: `LANGUAGE_RANGE_PATTERN` below *is* what `AcceptLanguageSchema` is built from, and
- * `isLaunchLocaleCode` reads `src/config/locales.data.ts`, the zod-free constants
- * `LocaleCookieSchema`'s enum is also built from. Nothing server-side lost its zod parse:
+ * `isLaunchLocaleCode` reads `src/config/locales-client.data.ts`, the import-free mirror of the
+ * launch codes (spec 003 §14 A-founder-2026-10-19f: not `locales.data.ts`, whose rows would ship
+ * with this island), pinned by a parity test to the zod-free constants `LocaleCookieSchema`'s
+ * enum is built from. Nothing server-side lost its zod parse:
  * `AcceptLanguageSchema` and `LocaleCookieSchema` are unchanged and still exported —
  * `AcceptLanguageSchema` now as a test-only oracle, since nothing in production parses with it
  * (`/review 26` nit, TASK-058) — and `tests/unit/i18n-hints-zod-free.test.ts` proves that they and the
@@ -47,7 +49,7 @@
  * decides from. Reading and serialising it are pure string functions; the two lines that touch
  * `document.cookie` live in the island.
  */
-import { isLaunchLocaleCode } from "../../config/locales.data.ts";
+import { isLaunchLocaleCodeClient as isLaunchLocaleCode } from "../../config/locales-client.data.ts";
 
 /** The cookie name, first-party and fixed (§2, `plan/07` §6 lists it among the essential ones). */
 export const FO_LOCALE_COOKIE = "fo_locale";
