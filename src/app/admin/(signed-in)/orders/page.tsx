@@ -30,6 +30,7 @@ import {
   orderQueueFilter,
   orderQueueHref,
   type OrderQueueQuery,
+  OrderQueueQuerySchema,
   orderStatusTone,
   parseOrderQueueQuery,
   QUEUE_EPOCH,
@@ -171,7 +172,9 @@ export default async function AdminOrdersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<ReactElement> {
   const session = await requireAdminPage("orders.view");
-  const query = parseOrderQueueQuery(await searchParams);
+  const query = parseOrderQueueQuery(
+    OrderQueueQuerySchema.parse(await searchParams),
+  );
   const actor = { userId: session.userId, requestId: await adminRequestId() };
   const filter = orderQueueFilter(query, session.timeZone);
   // The head first, then the list (see the header).

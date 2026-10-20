@@ -21,7 +21,11 @@ import {
   useState,
 } from "react";
 
-import { createQueuePoller, isQueueHead, type QueueHead } from "./queue-poll";
+import {
+  createQueuePoller,
+  type QueueHead,
+  QueueHeadSchema,
+} from "./queue-poll";
 
 export interface OrderQueuePollProps {
   /** `GET` endpoint answering the head (`/admin/api/orders/head`). */
@@ -54,8 +58,8 @@ async function readHead(url: string): Promise<QueueHead | null> {
     headers: { accept: "application/json" },
   });
   if (!response.ok) return null;
-  const body: unknown = await response.json();
-  return isQueueHead(body) ? body : null;
+  const parsed = QueueHeadSchema.safeParse(await response.json());
+  return parsed.success ? parsed.data : null;
 }
 
 export function OrderQueuePoll({
