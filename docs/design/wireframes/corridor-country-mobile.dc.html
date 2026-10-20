@@ -274,9 +274,9 @@ body { margin: 0; background: var(--color-paper-3); }
 .x42 .sl-box .lqip { position: absolute; inset: -24px; background-size: cover; background-position: center; filter: blur(14px); }
 .x42 .sl-box.fill { background: var(--color-photo-stop-3); }
 .x42 .sl-box .img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; }
-.x42 .gal3 { display: grid; grid-template-columns: 1fr 6fr; gap: 12px; align-items: start; }
-.x42 .gal3 .th { display: grid; gap: 8px; }
-.x42 .gal3 .th .sl-box { border-radius: 8px; }
+.x42 .gal3 { display: grid; grid-template-columns: 1fr 6fr; gap: 12px; align-items: start; max-inline-size: 400px; }
+.x42 .gal3 .x-th { display: grid; gap: 8px; }
+.x42 .gal3 .x-th .sl-box { border-radius: 8px; }
 /* the phone gallery */
 .x42 .phone { background: var(--color-paper); border-radius: 16px; box-shadow: 0 0 0 1px var(--color-rule); overflow: hidden; }
 .x42 .gal { position: relative; block-size: 214px; overflow: hidden; }
@@ -310,9 +310,8 @@ body { margin: 0; background: var(--color-paper-3); }
 .x42 .rt.f0 .mask { stroke-dashoffset: 0; }
 .x42 .rt.f0 .to { opacity: 0; }
 .x42 .x-hero { position: relative; background: var(--color-paper); border-block: 1px solid var(--color-rule); }
-.x42 .x-hero .hx-grid { position: relative; }
 .x42 .x-route { position: absolute; z-index: 1; inset-block-start: 74px; inset-inline-start: 663px; inline-size: 180px; block-size: 120px; pointer-events: none; }
-[dir="rtl"] .x42 .mirror-in-rtl { transform: scaleX(-1); }
+[dir="rtl"] .x42 .mirror-in-rtl, .x42 [dir="rtl"] .mirror-in-rtl { transform: scaleX(-1); }
 .x42 .x-box-h1 { outline: 1px dashed var(--color-sky); outline-offset: 2px; }
 .x42 .x-box-rt { outline: 1px dashed var(--color-accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {

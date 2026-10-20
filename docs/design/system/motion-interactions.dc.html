@@ -417,17 +417,17 @@ body { margin: 0; background: var(--color-paper-3); }
 .rt.f0 .mask { stroke-dashoffset: 0; }
 .rt.f0 .to, .rt.f1 .to { opacity: 0; }
 .rt.f1 .mask { stroke-dashoffset: -150; }
-.rhero { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; inline-size: 100%; padding: 24px 0 8px; }
-.rhero .copy { grid-column: 1 / span 6; display: grid; gap: 12px; align-content: start; }
+.rhero { display: grid; grid-template-columns: minmax(0, 1fr) 180px 208px; column-gap: 20px; align-items: start; inline-size: 100%; padding: 24px 0 8px; }
+.rhero .copy { display: grid; gap: 12px; align-content: start; }
 .rhero .eyebrow { margin: 0; }
-.rhero h3 { font-size: 64px; line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); font-variation-settings: var(--font-variation-display-hero); }
+.rhero h3 { font-size: 56px; line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); font-variation-settings: var(--font-variation-display-hero); }
 .rhero h3 em { font-style: italic; font-weight: var(--font-weight-display-em); color: var(--color-accent); }
-.rhero .side { grid-column: 9 / span 4; display: grid; gap: 10px; justify-items: end; align-content: start; }
+.rhero .side { display: grid; gap: 10px; justify-items: end; align-content: start; }
 .rhero .side .eyebrow { margin: 0; }
-.rhero .dts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; inline-size: 100%; }
-.rhero .dts span { display: grid; gap: 2px; padding: 10px; border-radius: var(--radius-chip); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-xs); color: var(--color-ink-2); }
-.rhero .dts b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 30px; line-height: 1; color: var(--color-ink); }
-.rhero .route { position: absolute; inset-inline-start: calc(50% + 16px); inset-block-start: 40px; inline-size: 180px; block-size: 120px; }
+.rhero .dts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; inline-size: 100%; }
+.rhero .dts span { display: grid; gap: 2px; padding: 8px; border-radius: var(--radius-chip); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 11px; line-height: 1.25; color: var(--color-ink-2); }
+.rhero .dts b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 26px; line-height: 1; color: var(--color-ink); }
+.rhero .route { inline-size: 180px; block-size: 120px; margin-block-start: 40px; }
 .box-h1 { outline: 1px dashed var(--color-sky); outline-offset: 2px; }
 .box-rt { outline: 1px dashed var(--color-accent); outline-offset: 2px; }
 [dir="rtl"] .mirror { transform: scaleX(-1); }
@@ -584,10 +584,10 @@ body { margin: 0; background: var(--color-paper-3); }
 </div>
 </section>
 
-<section aria-labelledby="m18"><div class="sec-h"><span class="kick">Motion 18 · idea 6 · task 042-6 · the country guide page, from md up</span><h2 id="m18">A line draws itself from you to the place you are sending to</h2><p>Once, half a second after load, a dashed arc draws from an unlabelled dot at the inline-start (you, wherever you are: we never guess it) to a dot beside the country's dates. It sits in the margin beside the H1, never over its words, and says nothing in words. It is decorative: <code>aria-hidden</code>, no text, no link.</p></div>
+<section aria-labelledby="m18"><div class="sec-h"><span class="kick">Motion 18 · idea 6 · task 042-6 · the country guide page, from md up</span><h2 id="m18">A line draws itself from you to the place you are sending to</h2><p>Once, half a second after load, a dashed arc draws from an unlabelled dot at the inline-start (you, wherever you are: we never guess it) to a dot beside the country's dates. It sits in the margin beside the H1, never over its words, and says nothing in words. It is decorative: <code>aria-hidden</code>, no text, no link. The stage is a schematic of the first screen; its exact place at 1440 is drawn on <code>wireframes/corridor-country-desktop.dc.html</code>.</p></div>
 <div class="duo"><div class="stage" style="padding:24px 32px;place-items:stretch"><div class="rhero"><div class="copy"><p class="eyebrow">A guide, written by us</p><h3 class="box-h1">Sending flowers to <em>Poland</em></h3></div><svg class="route rt loop box-rt on-2" viewBox="0 0 180 120" aria-hidden="true" focusable="false"><path class="dash" d="M10 104 C 46 34, 112 8, 168 22"/><path class="mask" d="M10 104 C 46 34, 112 8, 168 22"/><circle class="you" cx="10" cy="104" r="5"/><circle class="to" cx="168" cy="22" r="5"/></svg><div class="side"><p class="eyebrow">The year in Poland</p><div class="dts"><span><b>14</b>Teachers' Day</span><span><b>1</b>All Saints' Day</span><span><b>25</b>Christmas</span></div></div></div></div>
 <div><table class="vt"><tbody>
-<tr><th scope="row">Where</th><td>The country guide page's first screen only (spec 042 §13 Q8 (a), default), at <code>md</code> and up, in the gutter between the H1's column (1 to 6) and the dates (9 to 12), its top 40 px under the eyebrow. Its box never meets the H1's box (AC-19). Hidden below <code>md</code> (<code>display: none</code>).</td></tr>
+<tr><th scope="row">Where</th><td>The country guide page's first screen only (spec 042 §13 Q8 (a), default), at <code>md</code> and up, in the gap between the end of the H1's columns (1 to 6) and the start of the dates, 74 px from the hero grid's top. Its box never meets the H1's box (AC-19). Hidden below <code>md</code> (<code>display: none</code>).</td></tr>
 <tr><th scope="row">What</th><td>One inline SVG, viewBox 180 × 120, at most 1,024 B: a 2 px <code>--color-accent</code> dashed arc (dash 6, gap 7, round caps); the origin, an unfilled 5 px dot with a 1.5 px <code>--color-ink-2</code> ring, never labelled; the destination, a filled 5 px <code>--color-accent</code> dot. No <code>&lt;text&gt;</code>, no <code>&lt;image&gt;</code>, no <code>&lt;a&gt;</code>. The H1 already names the country (Q8 (b), default: no origin country).</td></tr>
 <tr><th scope="row">The draw</th><td>Motion 5's mechanism: a mask path in the page colour (<code>--color-paper</code>) covers the dashed route and unrolls by <code>stroke-dashoffset</code>, 500 ms after load, <code>--duration-draw</code> 600 ms, <code>--ease-emphasised</code>, once, ending drawn. Then the destination dot's <code>opacity</code> 0 to 1, <code>--duration-base</code> 200 ms. CSS only: it runs with JavaScript off too.</td></tr>
 <tr><th scope="row">RTL</th><td><code>mirror-in-rtl</code>: on <code>/ar-XB</code> the origin is at the inline-start, the right, and the arc rises to the left (AC-5).</td></tr>
