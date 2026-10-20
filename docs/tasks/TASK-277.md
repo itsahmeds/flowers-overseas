@@ -1,15 +1,25 @@
 # TASK-277 — Card motion on every product card, and the button press
 
-Spec 004 §14 A23 clause 11, A24 clause 9; AC-44, AC-6 (T-48, T-06). Design: `docs/design/system/motion.dc.html` motion 6. Regression on TASK-194 (PR 221).
+Spec 004 §14 A23 clause 11, A24 clause 9, A-founder-2026-10-19e; AC-44, AC-6 (T-48, T-06). Design: `docs/design/system/motion.dc.html` motion 6. Regression on TASK-194 (PR 221).
 
 ## Binding
 
 - Motion 6 ("Card lift and photo zoom; button press") binds on **every product card**: "Where: Every product card; every pill button" (`motion.dc.html` motion 6). PR 221 attached it only to `src/modules/ui/shop/ProductCard.tsx`. The home trending row (`src/modules/ui/home/TrendingRow.tsx`, `CardLink`) shows only the name underline on hover (founder screenshot, 2026-10-19).
-- Attach the same `data-fo-card-motion` hook (CSS in `src/app/globals.css`, unchanged rules) to every card that links to a product page: the home trending row and any other product-card variant the map lists. Keep the image inside a clipped box so the 3 % zoom never overflows (CLS 0, transform only).
-- **Button press, the other half of motion 6:** every pill button (primary and secondary) presses to `scale(0.98)` on `:active` over `--duration-fast` (`motion.dc.html` motion 6 Tokens). PR 221 shipped no press rule (no `:active` or `0.98` in `src/app/globals.css`; reviewer nit on PR 281). Transform only; reduced motion: no press.
+- Attach the same `data-fo-card-motion` hook (CSS in `src/app/globals.css`, at the 19e values below) to every card that links to a product page: the home trending row and any other product-card variant the map lists. Keep the image inside a clipped box so the zoom never overflows (CLS 0, transform only).
+- **Button press, the other half of motion 6:** every pill (`Button` primary, accent, secondary, danger, and the
+  notice actions) presses to `scale(0.98)` in `--duration-fast` 120 ms `--ease-standard` and releases over
+  `--duration-base` 200 ms `--ease-emphasised`, with the hover-colour layer fading in 200 ms (spec 004 §14
+  A-founder-2026-10-19e). **Correction (orchestrator, 2026-10-20):** an earlier version of this brief said "PR 221
+  shipped no press rule". That was wrong: a press existed (`motion-safe:active:scale-[0.98]` in `Button.tsx` and
+  `noticeShell.ts`, from TASK-194). This task replaces it with the 19e press, it does not add a second one. Not the
+  consent banner's answers or the checkout's pills.
 - The priority (LCP) card keeps no motion, as spec 004 AC-44 and the design note bind ("the home photograph and each lead photograph never fade, zoom or wait"); do not change that here.
 - Reduced motion: no lift, no zoom (AC-6). Fine pointer hover only.
-- Values come from the existing tokens; the founder's "premium A" comparison (designer, 2026-10-19) may later change the tokens, not this attachment.
+- **Values (correction, orchestrator, 2026-10-20):** the founder chose the premium column on 2026-10-19 ("go with the
+  premium proposed version"; spec 004 §14 A-founder-2026-10-19e; `docs/design/system/motion-premium.dc.html`, right
+  column). The card lifts 4 px and its photograph zooms 6 % over `--duration-hover` 500 ms `--ease-photo`, with an
+  `aria-hidden` shadow layer fading in; the name's line draws over 320 ms. These replace motion 6's original 2 px and
+  3 %, which earlier lines of this brief and the first version of the row quoted.
 
 ## Read
 

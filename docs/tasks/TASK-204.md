@@ -34,6 +34,13 @@ One dated bullet per `/review`, newest last.
   where ordering is not open (`deliveryDatesOpen(iso2)` false) reads "Ordering opens soon" in `en`
   and `en-gb` (the approved words; `reviewed: false` until the founder's `record-approval` run),
   and renders no cutoff or order-by text (AC-34). TASK-239 owns every other surface of AC-33.
+- **From PR 275 (TASK-203, merged 2026-10-19), copied by the orchestrator 2026-10-20:**
+  - **HOLE 18 CARRIED** (`/break 275` round 2, ruled by the reviewer): U+FFA0, U+2800 and U+00AD are still accepted
+    among visible text in the card message. Add the three to `HIDDEN_FORMAT`, with a case each (this task owns the card
+    preview and its validators).
+  - **AC-3 carried** (`/review 275` round 1): a closed start answers 303 to the product page today, which is not
+    spec-faithful. Choose the closed-state URL (a `closed` draft mode, or a path segment), change `start.ts` step 4 to
+    answer 303 there, and make T-03 assert "start route goes to the closed state, row counts unchanged".
 
 ## Escalations
 

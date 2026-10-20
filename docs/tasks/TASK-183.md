@@ -51,6 +51,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
     island. The back link is AC-50's.
 - **Class:** not review-only (compliance and legal text, consent, SEO). `/review` and `/break` both
   run.
+- **Spec 004 / spec 041 §14 A-founder-2026-10-19d (orchestrator, 2026-10-20):** AC-13 and AC-29 as amended are this
+  task's. The cookie page's "Change cookie settings" opens the settings panel while no category is active (TASK-279
+  builds the shared `data-fo-consent-reopen` behaviour; the AC-13/T-13 e2e restatement lands here with the page), and
+  the controller sentence renders in the settings panel opened from the footer, not the banner (AC-29/T-31 as amended;
+  the panel's slot is TASK-281's, `company.controller` waits for founder copy).
 
 ## Read
 

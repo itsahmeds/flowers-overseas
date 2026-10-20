@@ -27,6 +27,14 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** the production database is seeded insert-only from the committed dataset (TASK-026's seed) before the first production demo order (§12). Name that step in the PR so TASK-207's runbook carries it.
 - **From `/plan-tasks` (2026-10-05):** same backend agent as TASK-200, TASK-203 and TASK-207.
+- **From PR 275 (TASK-203, merged 2026-10-19), copied by the orchestrator 2026-10-20:**
+  - **HOLE 15 ACCEPTABLE, binding here** (`/review 275`): AC-52 ("a placed draft is read-only") is this task's. Write a
+    test that places a draft, then posts each step action, and asserts nothing is written and the response is a 303 to
+    `/checkout/done`. Removing `AND order_id IS NULL` from `saveStep` must turn it red.
+  - **HOLE 17 CARRIED** (`/break 275` round 2, ruled by the reviewer): each compare-and-set clause of the draft write is
+    pinned only together with the others. Add one race case per clause (only the date, only the tier, only the add-ons,
+    only the digest, only the confirmed pair; for example a `confirmPrice` landing between another step's load and its
+    write), each watched red with its clause removed.
 
 ## Escalations
 
