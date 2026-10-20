@@ -44,7 +44,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-20: worktree `task/TASK-255-payments-provider` from main a0e29433; row `in_progress`; draft PR opened. Next: tests first for env, `toStripeAmount`, methods, decline map and the contract suite.
 
 ## Result
 
