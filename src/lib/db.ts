@@ -94,7 +94,7 @@ export const AuditActionSchema = z
   .max(100)
   .regex(
     /^[a-z][a-z_]*(\.[a-z_]+)+$/,
-    "an audit action is lowercase and dotted, e.g. partner.status.active",
+    "an audit action is lowercase and dotted, e.g. users.grant",
   );
 export type AuditAction = z.infer<typeof AuditActionSchema>;
 
