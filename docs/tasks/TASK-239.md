@@ -79,6 +79,7 @@ Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the f
 ## Progress
 
 - 2026-10-20: Poland `demo` with no `citiesKey`; `statusDisagreements()` (AC-35); the four `en` values changed (`reviewed: false`), `de`/`pl` redrafted; finder options all selectable with "(soon)"; the FAQ cutoff gated on Poland's own predicate. Ripples of the flip kept at today's output (see `## Result`). Commit `bbb01b8b`, draft PR 293.
+- 2026-10-20: first `ci:full` run: the hub-copy cutoff sentences (Escalation 3) and the phone sentence's swap CLS (Escalation 4) fixed; the crawl's `de`/`pl` hub check corrected.
 - 2026-10-20: `tests/unit/ordering-state.test.tsx` (T-34/T-35/T-36 unit halves), `tests/e2e/ordering-state.spec.ts` (the AC-34 crawl and AC-33 surfaces), `tests/fixtures/poland-registry.ts` for the suites whose subject is the live path; four mutations watched red. Rebased on `df4a48f9`.
 
 ## Result
@@ -88,7 +89,7 @@ PR 293. AC-33 (every surface but the checkout's), AC-34, AC-35 (T-34 to T-36) ar
 - **Keys (values changed, `reviewed: false`):** `destinations.state.guideNotDelivering`, `product.demo.heading`, `home.sentence.notYet`, `destinationsHub.intro` (see Escalations 1). `destinations.pl.cities` is `retained`. `en-gb` unreviewed share 2.5 %.
 - **Ripples kept at today's output:** `featured` and the sentence's routing key on `DEMO_DESTINATION_ISO2` (Continue unchanged); the occasions index keeps Poland's calendar; Poland's Sunday surcharge rows stay unpriced (`prices.data.ts`: an `operations` block decides first). Intended consequences now true: Poland's `availability()` is `country.demo`, `offerProjection()` is `null` for it (the PDP `Offer` gate was shut anyway).
 - **Carry-forwards:** the PDP's live action is spec 010's Send, so under the Poland-open fixture the PDP status still reads "Ordering opens soon" (TASK-204 / spec 010); the hub and guide need a `live`-state guide file before they can show Poland live (`corridorState()`).
-- **Expensive gate run locally:** none. Linux visual baselines came from the `visual:baselines` workflow (run 39443233521), 10 images inspected.
+- **Expensive gates run locally, in the build slot:** `next build` + `next start` + Playwright (e2e-desktop and e2e-mobile, 707 cases across `ordering-state`, `home`, `home-round2`, `language-popup`, `hub-first-screens`, `phone-*`, `frame-laptop-band`, `motion`, `action-bar`, `consent-banner`, `header`; all green). They ran because CI's first `ci:full` run (39446323132) failed on the 390 px font-swap CLS, which only a served page shows (load average 7 to 12). Linux visual baselines came from `visual:baselines` runs 39443233521 and 39458056234: 13 images inspected.
 - `gates:cheap` below: the only red is `url-pii.test.ts` timing out at 5 s under load (load average 11 to 20); alone it passes 15/15. The same run also caught `tests/contract/pdp-schema.test.ts`, fixed in `d514bc7f`.
 
 ```
