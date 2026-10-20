@@ -29,6 +29,11 @@ import type {
   AdminOrderListItem,
   OrderQueueFilter,
 } from "../../src/modules/orders/queries.ts";
+import type { SQL } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
+
+import type { OrderExecutor } from "../../src/modules/orders/service/executor.ts";
+import { selectOrderDetail } from "../../src/modules/orders/queries.ts";
 import {
   activeOrderFilters,
   isNewSince,
@@ -647,6 +652,72 @@ describe("GET /admin/api/orders/head", () => {
       "NEXT_HTTP_ERROR_FALLBACK;403",
     );
     expect(data.calls).toEqual([]);
+  });
+});
+
+/* -------------------------------------------------------------- the detail query (AC-19) */
+
+describe("selectOrderDetail: the recipient snapshot is selected only when asked (AC-19)", () => {
+  const dialect = new PgDialect();
+  const SNAPSHOT = detail().recipient;
+
+  /** A fake executor answering each of the detail's five statements, recording their text. */
+  function executor(statements: string[]): OrderExecutor {
+    return {
+      execute(query: SQL) {
+        const text = dialect.sqlToQuery(query).sql;
+        statements.push(text);
+        if (text.includes('FROM "order" o')) {
+          return Promise.resolve([
+            {
+              id: DEMO_ID,
+              mode: "demo",
+              status: "routed",
+              buyer_status: "confirmed",
+              placed_at: "2026-10-05T08:05:02.000Z",
+              delivery_date: "2026-10-07",
+              delivery_window: null,
+              iso2: "PL",
+              country_name: "Poland",
+              iana_zone: "Europe/Warsaw",
+              city_name: "Warszawa",
+              total_minor: "26400",
+              currency: "PLN",
+              vat_breakdown: detail().vatBreakdown,
+              // What a database would answer if the column were selected regardless.
+              recipient_snapshot: SNAPSHOT,
+            },
+          ]);
+        }
+        return Promise.resolve([]);
+      },
+    };
+  }
+
+  it("leaves recipient_snapshot out of the SQL, and the result, without orders.view_pii", async () => {
+    const statements: string[] = [];
+    const result = await selectOrderDetail(executor(statements), DEMO_ID, {
+      includeRecipient: false,
+    });
+    expect(statements).toHaveLength(5);
+    expect(statements[0]).toContain("NULL::jsonb AS recipient_snapshot");
+    expect(statements[0]).not.toMatch(/o\.recipient_snapshot/u);
+    // Even a row that carried the snapshot yields none.
+    expect(result?.recipient).toBeNull();
+  });
+
+  it("selects it with orders.view_pii, and never the public token or the buyer snapshot", async () => {
+    const statements: string[] = [];
+    const result = await selectOrderDetail(executor(statements), DEMO_ID, {
+      includeRecipient: true,
+    });
+    expect(statements[0]).toMatch(
+      /o\.recipient_snapshot AS recipient_snapshot/u,
+    );
+    expect(result?.recipient).toEqual(SNAPSHOT);
+    const all = statements.join("\n");
+    expect(all).not.toContain("public_token");
+    expect(all).not.toContain("buyer_snapshot");
   });
 });
 
