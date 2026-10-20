@@ -104,6 +104,47 @@
       "unauthorizedTitle": "Signed out",
       "unauthorizedBody": "Sign in to admin to continue.",
       "backHome": "Back to admin home"
+    },
+    "audit": {
+      "title": "Audit log",
+      "lead": "Every admin change and every view of personal data. Nothing here can be edited, by anyone.",
+      "filters": "Filters",
+      "filtersCount": "Filters ({count})",
+      "entity": "Entity",
+      "entityAny": "Any table",
+      "actor": "Actor",
+      "actorAny": "Anyone",
+      "action": "Action",
+      "actionAny": "Any action",
+      "date": "Date",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply",
+      "columnTime": "Time ({zone})",
+      "columnWho": "Who",
+      "columnChannel": "Channel",
+      "columnAction": "Action",
+      "columnEntity": "Entity",
+      "columnReason": "Reason",
+      "columnChanges": "Changes",
+      "none": "None",
+      "showChanges": "Show changes",
+      "hideChanges": "Hide changes",
+      "noValues": "No values",
+      "diffColumn": "Column",
+      "diffBefore": "Before",
+      "diffAfter": "After",
+      "masked": "changed",
+      "empty": "No entries match these filters",
+      "newest": "The newest {count} entries. Narrow the filters to see older ones.",
+      "when": "{time} ({zone})",
+      "whenWithReason": "{time} ({zone}) · {reason}",
+      "channel": {
+        "admin": "admin",
+        "cli": "cli",
+        "import": "import",
+        "system": "system"
+      }
     }
   }
 }

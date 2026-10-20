@@ -279,3 +279,20 @@ export function auditDiff(
     after: cell(after, column),
   }));
 }
+
+const UUID_PATTERN =
+  /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/giu;
+
+/**
+ * A row id as the log's entity column prints it: each uuid in it shortened to its first four
+ * characters and an ellipsis (`3f2a…`, the artboard's form); the full id stays in the cell's
+ * title. Other ids (a flag key, a role) print as they are.
+ */
+export function shortEntityId(id: string): string {
+  return id.replace(UUID_PATTERN, (uuid) => `${uuid.slice(0, 4)}…`);
+}
+
+/** The city of an IANA zone, as the time column's header names it (`Europe/Tallinn` → `Tallinn`). */
+export function zoneCity(timeZone: string): string {
+  return (timeZone.split("/").at(-1) ?? timeZone).replaceAll("_", " ");
+}

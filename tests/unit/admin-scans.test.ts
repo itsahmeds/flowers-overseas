@@ -423,6 +423,11 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       date: "Sunday 18 October 2026",
       role: "ops",
       name: "Test",
+      // TASK-218's `admin.audit.*`.
+      count: 3,
+      zone: "Tallinn",
+      time: "5 Oct, 12:02",
+      reason: "Demo call",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

@@ -16,6 +16,7 @@ export {
   type AdminUserRow,
   type UserCommandResult,
   adminRunner,
+  USER_ACTIONS,
   deactivateUser,
   grantRole,
   listAdminUsers,
@@ -29,3 +30,26 @@ export {
 export { ADMIN_LOCALE, adminMessages, adminT } from "./messages";
 export { ADMIN_NAV, type AdminNavItem, adminNavFor } from "./nav";
 export { adminRequestId } from "./request";
+export {
+  AUDIT_ENTITIES,
+  AUDIT_MASK,
+  AUDIT_PAGE_SIZE,
+  AUDIT_READ_ACTION,
+  AUDITED_TABLES,
+  type AuditDiffCell,
+  type AuditDiffRow,
+  type AuditEntry,
+  AuditEntrySchema,
+  type AuditFilter,
+  type AuditFilterOptions,
+  AuditFilterSchema,
+  VIEW_ACTIONS,
+  type ViewedEntity,
+  auditDiff,
+  auditFilterOptions,
+  listAuditEntries,
+  logAdminRead,
+  parseAuditFilter,
+  shortEntityId,
+  zoneCity,
+} from "./audit";

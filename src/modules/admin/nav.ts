@@ -55,7 +55,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = Object.freeze([
     key: "audit",
     href: "/admin/audit",
     permissions: ["audit.read"],
-    built: false,
+    built: true,
   },
   {
     key: "users",

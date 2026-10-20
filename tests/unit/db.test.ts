@@ -50,6 +50,12 @@ const fakeClient = {
 };
 
 vi.mock("postgres", () => ({ default: () => fakeClient }));
+const guardReports = vi.hoisted(() => [] as string[]);
+vi.mock("../../src/lib/sentry", () => ({
+  captureGuardError: (signal: string) => {
+    guardReports.push(signal);
+  },
+}));
 vi.mock("@/lib/env", () => ({
   env: { DATABASE_URL: "postgres://user:pass@localhost:5432/fo" },
 }));
@@ -244,6 +250,33 @@ describe("withAdminContext and withSystemContext (AC-3)", () => {
       /^SET LOCAL app\.request_id = '[0-9a-f-]{36}'$/,
     );
     expect(statements[6]).toBe("SET LOCAL ROLE app_web");
+  });
+
+  it("reports the two database guards to Sentry, through Drizzle's cause chain, and nothing else (spec 012 §11)", async () => {
+    const { withDbContext } = await import("../../src/lib/db");
+    guardReports.length = 0;
+    const failWith = (message: string) =>
+      withDbContext({ role: "admin", requestId: REQUEST_ID }, () =>
+        Promise.reject(
+          new Error("Failed query: update …", { cause: new Error(message) }),
+        ),
+      );
+    await expect(
+      failWith("AUDIT_ACTION_MISSING: an admin-context write to x"),
+    ).rejects.toThrow("Failed query");
+    await expect(
+      failWith(
+        "STATUS_FLIP_OUTSIDE_ADMIN: country.status changes only in admin",
+      ),
+    ).rejects.toThrow("Failed query");
+    await expect(failWith("duplicate key value")).rejects.toThrow();
+    await expect(
+      failWith("a message naming AUDIT_ACTION_MISSING: later"),
+    ).rejects.toThrow();
+    expect(guardReports).toEqual([
+      "AUDIT_ACTION_MISSING",
+      "STATUS_FLIP_OUTSIDE_ADMIN",
+    ]);
   });
 
   it("labels a job `system:{job}` per plan/11 §1", async () => {
