@@ -36,7 +36,8 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-20 (frontend-implementer → orchestrator): **review class.** The 8A artboards name `nav.utility.pricesInclude` ("Prices include delivery and VAT") as the section's VAT sentence, above the rows; the page printed `catalog.price.inclusive` ("Includes VAT and delivery") under them. Built to the artboard, so the VAT sentence's text changes and, per this brief, the PR keeps the breaker. No amount, no projection and no key changes. Answer: open.
+- 2026-10-20 (frontend-implementer → orchestrator): **the allergen line is not on the page.** The 8A artboards draw `catalog.addon.allergen` under the list, but `AddonLine` (the catalog view model) carries no `allergenNoteRequired`, so the line cannot be shown only where a food add-on is listed without a catalog-module change outside this task. Not built here; proposed as its own row (spec 005 §7, plan/10 §1.1). Answer: open.
 
 ## Progress
 
@@ -44,7 +45,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-20 (frontend-implementer): `AddonPriceList` restyled to 8A (one rule over the list, one under each row, no fill/radius/shadow/pointer; the VAT sentence once, above the rows, as `nav.utility.pricesInclude`, the key the artboard names); unit + e2e tests red first, then green; next: visual baselines from CI (`visual:baselines`).
 
 ## Result
 

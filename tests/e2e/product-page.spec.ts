@@ -297,6 +297,47 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       }
       // The section says once that its prices include VAT.
       await expect(page.locator("[data-fo-addon-vat]")).toHaveCount(1);
+
+      // Item 8A (TASK-286): a plain ruled price list. The sentence sits above the rows, one rule
+      // opens the list and one closes each row, and no row is filled, rounded, shadowed or pointed
+      // at like a control, before or under the pointer.
+      const vatAbove = await page
+        .locator("[data-fo-addon-vat]")
+        .evaluate((note) => {
+          const target = document.querySelector("[data-fo-addon-list]");
+          return (
+            target !== null &&
+            (note.compareDocumentPosition(target) &
+              Node.DOCUMENT_POSITION_FOLLOWING) !==
+              0
+          );
+        });
+      expect(vatAbove).toBe(true);
+      expect(
+        await list.evaluate((node) => getComputedStyle(node).borderTopWidth),
+      ).toBe("1px");
+      for (const row of await rows.all()) {
+        await row.hover();
+        const look = await row.evaluate((node) => {
+          const style = getComputedStyle(node);
+          return {
+            background: style.backgroundColor,
+            radius: style.borderTopLeftRadius,
+            shadow: style.boxShadow,
+            cursor: style.cursor,
+            rule: style.borderBottomWidth,
+            top: style.borderTopWidth,
+          };
+        });
+        expect(look).toEqual({
+          background: "rgba(0, 0, 0, 0)",
+          radius: "0px",
+          shadow: "none",
+          cursor: "auto",
+          rule: "1px",
+          top: "0px",
+        });
+      }
     });
   }
 });
