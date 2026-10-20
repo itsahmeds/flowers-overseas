@@ -21,7 +21,7 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +33 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +97 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
-| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-orders.test.tsx` |
+| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +27 |
