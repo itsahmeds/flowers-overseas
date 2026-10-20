@@ -52,15 +52,15 @@ Tests: unit `admin-orders` 57 (query string, pages, head endpoint, detail query'
 
 Decisions, none a deviation from a binding clause: (1) the artboard's range filters are additive keys on TASK-202's filter schema; (2) the florist shows as its partner code (the table has no display name; `legal_name` is masked personal data); (3) the buyer projection shows the data's value (`confirmed` for `no_partner_available`), not the drawn "we're finding a florist" (decision 9, founder copy pending, spec 015); (4) money and dates are `Intl`'s ("199.00 PLN", "Thu, 8 Oct") through `formatMoney`/`formatDate`; (5) the tier shows as its key (`stems_18`); (6) a VAT split reads "of which VAT 8%" (`vat_breakdown` carries no category). **Owed, as TASK-217 and TASK-218:** T-21's browser run, T-24 (axe) and T-25 (visual) for the signed-in order pages wait for the CI-database task; no build slot taken and no browser run locally.
 
-`pnpm gates:cheap` at 5e2bbdfa (load average 3.85):
+`pnpm gates:cheap` at e1665dd4 (the tree before this note):
 
 ```
-typecheck             exit 0 · 2.4 s
-lint                  exit 0 · 21.7 s
-format:check          exit 0 · 12.9 s
+typecheck             exit 0 · 2.5 s
+lint                  exit 0 · 22.8 s
+format:check          exit 0 · 12.8 s
 i18n:check            exit 0 · 0.8 s
 check:no-db           exit 0 · 0.2 s
 codebase:map --check  exit 0 · 0.2 s
-tests                 exit 0 · 72.4 s · changed 160 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+tests                 exit 0 · 64.5 s · changed 160 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
 RESULT: PASS
 ```
