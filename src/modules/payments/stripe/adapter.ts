@@ -270,7 +270,12 @@ export function createStripeProvider(
       });
       const path = "/refunds";
       const outcome = await request("POST", path, form, idempotencyKey);
-      if (!outcome.ok) return outcome.failure;
+      if (!outcome.ok) {
+        // A refund has no state to wait for: a refusal of any kind is `rejected`, with its code.
+        return outcome.failure.failure === "state_conflict"
+          ? providerFailure("rejected", outcome.failure.code)
+          : outcome.failure;
+      }
       const parsed = StripeRefundSchema.safeParse(outcome.body);
       if (!parsed.success) throw new StripeResponseInvalid(path);
       return toProviderRefund(parsed.data, ref);

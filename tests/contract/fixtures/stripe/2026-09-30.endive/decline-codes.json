@@ -1,0 +1,61 @@
+{
+  "source": "https://docs.stripe.com/testing (Declined payments; 3D Secure) and https://docs.stripe.com/error-codes, read 2026-10-20",
+  "declines": [
+    {
+      "card": "4000000000000002",
+      "code": "card_declined",
+      "decline_code": "generic_decline"
+    },
+    {
+      "card": "4000000000009995",
+      "code": "card_declined",
+      "decline_code": "insufficient_funds"
+    },
+    {
+      "card": "4000000000009987",
+      "code": "card_declined",
+      "decline_code": "lost_card"
+    },
+    {
+      "card": "4000000000009979",
+      "code": "card_declined",
+      "decline_code": "stolen_card"
+    },
+    {
+      "card": "4000000000000069",
+      "code": "expired_card",
+      "decline_code": null
+    },
+    {
+      "card": "4000000000000127",
+      "code": "incorrect_cvc",
+      "decline_code": null
+    },
+    {
+      "card": "4000000000000119",
+      "code": "processing_error",
+      "decline_code": null
+    },
+    {
+      "card": "4242424242424241",
+      "code": "incorrect_number",
+      "decline_code": null
+    },
+    {
+      "card": "4000000000006975",
+      "code": "card_declined",
+      "decline_code": "card_velocity_exceeded"
+    },
+    {
+      "card": "4000008400001629",
+      "code": "card_declined",
+      "decline_code": null
+    },
+    {
+      "card": "4000000000003220",
+      "code": "payment_intent_authentication_failure",
+      "decline_code": null,
+      "note": "3DS required card; the challenge is failed in the test modal"
+    }
+  ]
+}
