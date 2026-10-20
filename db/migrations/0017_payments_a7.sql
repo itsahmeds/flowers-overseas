@@ -1,4 +1,4 @@
--- 0016_payments_a7 — payments as spec 013 needs them (spec 002 §14 A7, approved by the founder
+-- 0017_payments_a7 — payments as spec 013 needs them (spec 002 §14 A7, approved by the founder
 -- 2026-10-14; spec 013 §5.1 items 1 to 6, §12 "Migration order"; AC-37; TASK-254).
 --
 -- Spec 002 §14 A7 governs every line below; spec 013 §5.1 is the request. Migrations `0007` to
@@ -29,7 +29,7 @@
 -- `0008`'s are: an admin's transition writes its outbox row under `app.role = 'admin'`, and the
 -- deliveries it fans out to are a `system`-only table.
 --
--- Rollback: `0016_payments_a7.down.sql`, which refuses with `A7_ROLLBACK_LIVE_PAYMENTS` and
+-- Rollback: `0017_payments_a7.down.sql`, which refuses with `A7_ROLLBACK_LIVE_PAYMENTS` and
 -- changes nothing while any `payment.livemode = true` row exists (A7.8).
 
 SET LOCAL ROLE app_owner;

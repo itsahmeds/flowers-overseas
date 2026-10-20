@@ -1,11 +1,11 @@
 /**
  * Drizzle definitions for the `notifications` tables — `outbox`, `outbox_attempt` and
  * `outbox_delivery` (spec 002 §5.1 "`notifications`", §14 A7.7; `plan/11` §2; migrations
- * `0009_notifications_ops.sql` (TASK-021) and `0016_payments_a7.sql` (TASK-254)).
+ * `0009_notifications_ops.sql` (TASK-021) and `0017_payments_a7.sql` (TASK-254)).
  *
  * The outbox is the order machine's only integration point: spec 010's engine writes one row per
  * event, in the transition's transaction, when the event has targets (`event_id` is unique, so a
- * retried write is a duplicate key). An `AFTER INSERT` trigger (`0016`) fans each row out to one
+ * retried write is a duplicate key). An `AFTER INSERT` trigger (`0017`) fans each row out to one
  * `outboxDelivery` per target; spec 013's dispatcher delivers each and records every try in
  * `outboxAttempt` with its `target`.
  */

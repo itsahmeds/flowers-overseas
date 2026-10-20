@@ -31,8 +31,8 @@ const ops = readMigration("0009_notifications_ops.sql");
 const opsDown = readMigration("0009_notifications_ops.down.sql");
 const auth = readMigration("0010_auth.sql");
 const authDown = readMigration("0010_auth.down.sql");
-/** `0016` (spec 002 §14 A7.7, TASK-254) adds `outbox_attempt.target`. */
-const a7 = readMigration("0016_payments_a7.sql");
+/** `0017` (spec 002 §14 A7.7, TASK-254) adds `outbox_attempt.target`. */
+const a7 = readMigration("0017_payments_a7.sql");
 
 const OPS_TABLES = [
   "outbox",

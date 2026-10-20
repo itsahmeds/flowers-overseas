@@ -1,7 +1,7 @@
 /**
  * Drizzle definitions for the `payments` tables — `payment`, `refund`, `payment_dispute` and
  * `webhook_inbox` (spec 002 §5.1 "`payments`", §8, §14 A7; `plan/01` §9; migrations
- * `0007_orders_payments.sql` (TASK-019) and `0016_payments_a7.sql` (spec 013, TASK-254)).
+ * `0007_orders_payments.sql` (TASK-019) and `0017_payments_a7.sql` (spec 013, TASK-254)).
  *
  * The typed mirror of the migration. What to read off this file:
  *

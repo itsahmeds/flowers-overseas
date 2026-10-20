@@ -112,7 +112,7 @@ function fkKey(
  * after the one that creates it: a key it adds with `ALTER TABLE … ADD CONSTRAINT … FOREIGN KEY`
  * (a key that waited for its parent table), a column it adds with `ALTER TABLE … ADD COLUMN`
  * (appended, as Postgres appends it) and an index it creates on the table belong to the table's
- * shape too. So do, since spec 002 §14 A7 (`0016_payments_a7`, TASK-254), a later
+ * shape too. So do, since spec 002 §14 A7 (`0017_payments_a7`, TASK-254), a later
  * `ALTER TABLE … ALTER COLUMN … DROP NOT NULL` / `SET NOT NULL`, and a later
  * `ALTER TABLE … DROP CONSTRAINT <name>` / `ADD CONSTRAINT <name> CHECK`, read in file order (one
  * clause per statement).

@@ -169,7 +169,7 @@ export const STAFF_ONLY_TABLES = [
   "outbox",
   "outbox_attempt",
   "partner_application",
-  // spec 013 / spec 002 §14 A7.5 (migration `0016_payments_a7`, TASK-254): a chargeback on a
+  // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
   "retention_policy",
@@ -186,7 +186,7 @@ export const STAFF_ONLY_TABLES = [
  */
 export const SYSTEM_ONLY_TABLES = [
   "checkout_draft",
-  // spec 002 §14 A7.7 (migration `0016_payments_a7`, TASK-254): one row per outbox target, read
+  // spec 002 §14 A7.7 (migration `0017_payments_a7`, TASK-254): one row per outbox target, read
   // and written only by the dispatcher's system transactions.
   "outbox_delivery",
 ] as const;

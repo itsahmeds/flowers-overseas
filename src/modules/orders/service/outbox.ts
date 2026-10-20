@@ -74,7 +74,7 @@ export function resolveOutboxTargets(
 
 /**
  * `outboxTargets(event, mode)` of §5.2: this spec's (empty) routes plus spec 013's rows
- * (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0016`
+ * (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0017`
  * makes one delivery per element, and refuses a name twice), people filtered for `demo`/`test`.
  */
 export function outboxTargets(

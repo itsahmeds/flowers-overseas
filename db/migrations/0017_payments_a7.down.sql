@@ -1,4 +1,4 @@
--- Rollback of 0016_payments_a7 (spec 002 §14 A7.8; spec 013 §5.1 "Rollback", AC-37; TASK-254).
+-- Rollback of 0017_payments_a7 (spec 002 §14 A7.8; spec 013 §5.1 "Rollback", AC-37; TASK-254).
 --
 -- Guard first: a real payment, its refunds and its disputes are part of the accounting record
 -- (spec 013 §8) and a rollback never deletes them. While any `payment` row has `livemode = true`
@@ -18,7 +18,7 @@ SET LOCAL ROLE app_owner;
 DO $guard$
 BEGIN
   IF EXISTS (SELECT 1 FROM public.payment WHERE livemode) THEN
-    RAISE EXCEPTION 'A7_ROLLBACK_LIVE_PAYMENTS: a live payment exists; 0016_payments_a7 is not rolled back (spec 013 §12: flags first)'
+    RAISE EXCEPTION 'A7_ROLLBACK_LIVE_PAYMENTS: a live payment exists; 0017_payments_a7 is not rolled back (spec 013 §12: flags first)'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END

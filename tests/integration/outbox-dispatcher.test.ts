@@ -4,7 +4,7 @@
  *
  * On a migrated PG16 scratch database (`support/scratch-db.ts`; never the shared database):
  *
- *  - an `outbox` row with two targets gets two `outbox_delivery` rows from the `0016` trigger;
+ *  - an `outbox` row with two targets gets two `outbox_delivery` rows from the `0017` trigger;
  *  - the dispatcher delivers each once and marks it `sent`; a throwing handler is retried with
  *    every attempt in `outbox_attempt` carrying its `target`; the 8th failure marks that delivery
  *    `dead` and raises `outbox.dead`, while the other target of the same row is delivered once

@@ -192,7 +192,7 @@ describe.skipIf(server.url === undefined)(
         const [payment] = await tx<{ id: string }[]>`
           INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
           VALUES (${orderId}, 'stripe', 'pi_test_1', 'authorised', 'card', 18900, 'PLN', false) RETURNING id`;
-        // `failed`, so A7's one-live-payment-per-order index (0016) cannot be what refuses it.
+        // `failed`, so A7's one-live-payment-per-order index (0017) cannot be what refuses it.
         await by(
           "payment in another currency",
           () =>

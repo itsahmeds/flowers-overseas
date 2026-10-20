@@ -2,7 +2,7 @@
  * The outbox dispatcher: the `outbox.dispatch` job and its typed handler registry (spec 013 §5.2
  * "The dispatcher", §11 `outbox.dead`, AC-20; spec 002 §14 A7.7; `plan/11` §2; TASK-254).
  *
- * Spec 010's writer puts one `outbox` row per event, in the event's transaction; `0016`'s
+ * Spec 010's writer puts one `outbox` row per event, in the event's transaction; `0017`'s
  * `AFTER INSERT ON outbox` trigger fans it out to one `outbox_delivery` per target. This module
  * delivers each of those **on its own**, so a target that fails never holds up, or re-runs, a
  * target that succeeded:
