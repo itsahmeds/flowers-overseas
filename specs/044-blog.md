@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | draft |
+| Status | approved |
 | Phase | 1. Slice A ("an English post from admin") once spec 012b's ledger and publishing merge (TASK-293, TASK-295, TASK-296); slice B ("links and languages") when the first native Polish reviewer is engaged; slice C (topic pages, pagination) in Phase 2 |
 | Plan refs | plan/01 §3 §4.1 §5 §9 · plan/02 §4.1 §7 §8 §9 §10 §11 §12 · plan/03 §5 §6 §7 · plan/05 #35 #36 #37 #38 #39 · plan/07 §1.2 §4 §7 §8 §9 · plan/09 Phase 0 AC 1 and AC 3 · plan/12 §4 |
 | ADRs | ADR-0007 · ADR-0014 · ADR-0015 · ADR-0016 · ADR-0018 · ADR-0020 · proposed ADR-0021 and ADR-0022 (spec 012b, Appendix A and B). **Proposes ADR-0023** (editorial posts live in the database and publish through spec 012b's machinery), Appendix B |
 | Source | Founder, 2026-10-21: "also did we build a blog section and added that in the CMS too?" |
 | Author / date | spec-writer via /spec · 2026-10-21 |
-| Approved by / date | (not approved; advisor fixes 1 to 5 of `docs/advice/2026-10-21-044-blog.md` applied, awaiting the founder's approval to be recorded) |
+| Approved by / date | founder, 2026-10-21: "044 defaults" (every §13 default) and "blog ok" (Appendix A's ten labels); advisor fixes 1 to 5 of `docs/advice/2026-10-21-044-blog.md` applied |
 
 ## 0. Index
 
