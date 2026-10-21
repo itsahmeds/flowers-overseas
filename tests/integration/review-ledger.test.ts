@@ -393,7 +393,6 @@ describe.skipIf(server.url === undefined)(
         expect(mirror?.reviewed).toBe(true);
         expect(mirror?.reviewed_by).toBe("Native Reviewer");
         expect(mirror?.reviewed_at.getTime()).toBe(row?.attested_at.getTime());
-        expect(outcome.tags).toEqual(["product:" + f.sku, "sitemap"]);
       });
 
       it("attest() approves a photo for a media.review holder, and its English copy carries no source hash", async () => {

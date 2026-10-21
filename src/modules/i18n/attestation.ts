@@ -352,8 +352,6 @@ export type AttestOutcome =
       readonly attestedAt: string;
       /** False only for an import entry that was already in the ledger. */
       readonly created: boolean;
-      /** The §5.4 tags of a review decision ("the same as a copy change"). */
-      readonly tags: readonly string[];
     }
   | {
       readonly ok: false;
