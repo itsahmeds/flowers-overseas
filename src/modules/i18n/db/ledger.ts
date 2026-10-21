@@ -147,33 +147,6 @@ function currentHashQuery(subject: Subject, locale: string | null): SQL {
   return sql`SELECT public.review_subject_hash(${subject.kind}, ${subject.ref}, ${locale}::text) AS hash`;
 }
 
-/** The §5.4 tags of a review decision: the product's, its priced countries', and the sitemap. */
-async function tagsFor(
-  db: LedgerExecutor,
-  subject: Subject,
-): Promise<string[]> {
-  const products =
-    subject.kind === "product_translation"
-      ? sql`SELECT p.id, p.sku FROM public.product p WHERE p.sku = ${subject.ref}`
-      : sql`SELECT DISTINCT p.id, p.sku FROM public.product p
-            JOIN public.product_media pm ON pm.product_id = p.id
-            JOIN public.media_asset a ON a.id = pm.media_asset_id
-            WHERE a.checksum_sha256 = ${subject.ref}`;
-  const found = await rows<{ sku: string; iso2: string | null }>(
-    db,
-    sql`SELECT p.sku, upper(c.iso2) AS iso2
-        FROM (${products}) p
-        LEFT JOIN public.country_price cp ON cp.product_id = p.id
-        LEFT JOIN public.country c ON c.id = cp.country_id`,
-  );
-  const tags = new Set<string>(["sitemap"]);
-  for (const row of found) {
-    tags.add(`product:${row.sku}`);
-    if (row.iso2 !== null) tags.add(`catalog:${row.iso2}`);
-  }
-  return [...tags].sort();
-}
-
 /**
  * Records one review decision (see the header). The only writer of the ledger and of the review
  * columns.
@@ -256,7 +229,6 @@ export async function attest(
         id: existing.id,
         attestedAt: existing.attested_at,
         created: false,
-        tags: [],
       };
     }
     const [row] = await rows<{ id: string }>(
@@ -286,7 +258,6 @@ export async function attest(
       id: row.id,
       attestedAt: entry.attestedAt,
       created: true,
-      tags: await tagsFor(db, subject),
     };
   }
 
@@ -389,7 +360,6 @@ export async function attest(
         id: row.id,
         attestedAt: row.attested_at,
         created: true,
-        tags: await tagsFor(db, subject),
       };
     },
   );
