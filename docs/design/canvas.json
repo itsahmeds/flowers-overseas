@@ -105,6 +105,22 @@
       "h": 8443
     },
     {
+      "file": "wireframes/home-sentence-listbox-desktop.dc.html",
+      "title": "Home · the sentence listbox on a mouse · desktop 1440 (spec 004 A-founder-2026-10-21d)",
+      "x": 1990,
+      "y": 39900,
+      "w": 1440,
+      "h": 8844
+    },
+    {
+      "file": "wireframes/home-sentence-listbox-mobile.dc.html",
+      "title": "Home · the sentence on a phone stays native · mobile 390 (spec 004 A-founder-2026-10-21d)",
+      "x": 3510,
+      "y": 39900,
+      "w": 390,
+      "h": 3215
+    },
+    {
       "file": "wireframes/chrome-desktop.dc.html",
       "title": "Chrome · header and footer · v2 · desktop 1440",
       "x": 0,
