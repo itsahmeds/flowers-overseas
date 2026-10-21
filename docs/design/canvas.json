@@ -998,13 +998,13 @@
       "x": 3510,
       "y": 554463,
       "w": 390,
-      "h": 7610
+      "h": 7632
     },
     {
       "file": "wireframes/admin-blog-edit-desktop.dc.html",
       "title": "admin blog post editor · desktop · spec 044",
       "x": 0,
-      "y": 562239,
+      "y": 562261,
       "w": 1440,
       "h": 11618
     },
@@ -1012,9 +1012,49 @@
       "file": "wireframes/admin-blog-edit-mobile.dc.html",
       "title": "admin blog post editor · mobile · spec 044",
       "x": 1520,
-      "y": 562239,
+      "y": 562261,
       "w": 390,
-      "h": 17325
+      "h": 17306
+    },
+    {
+      "file": "wireframes/admin-blog-list-desktop.dc.html",
+      "title": "admin blog list · desktop · spec 044",
+      "x": 0,
+      "y": 579733,
+      "w": 1440,
+      "h": 3613
+    },
+    {
+      "file": "wireframes/admin-blog-list-mobile.dc.html",
+      "title": "admin blog list · mobile · spec 044",
+      "x": 1520,
+      "y": 579733,
+      "w": 390,
+      "h": 4202
+    },
+    {
+      "file": "wireframes/admin-blog-authors-desktop.dc.html",
+      "title": "admin blog authors · desktop · spec 044",
+      "x": 0,
+      "y": 584101,
+      "w": 1440,
+      "h": 5601
+    },
+    {
+      "file": "wireframes/admin-blog-authors-mobile.dc.html",
+      "title": "admin blog authors · mobile · spec 044",
+      "x": 1520,
+      "y": 584101,
+      "w": 390,
+      "h": 6510
+    },
+    {
+      "file": "flows/admin-blog-publish.dc.html",
+      "title": "Flow · a blog post · write → link → preview → approve → publish → rebuild (and a failed run) → live → edit → publish changes → unpublish (spec 044)",
+      "x": 0,
+      "y": 590777,
+      "w": 1440,
+      "h": 2777
     }
   ],
   "annotations": [
@@ -1441,9 +1481,30 @@
     {
       "id": "s044-admin-blog",
       "x": 0,
-      "y": 562193,
+      "y": 562215,
       "w": 1400,
-      "text": "Spec 044 · Admin · One blog post: write with the checks card, insert a link to our pages, preview, approve the exact text, Publish post (a rebuild), live and checked, edit by revision and Publish changes (no rebuild), unpublish. Not drawn yet: the post list, the authors page, the publish flow."
+      "text": "Spec 044 · Admin · One blog post: write with the checks card, insert a link to our pages, preview, approve the exact text, Publish post (a rebuild), live and checked, edit by revision and Publish changes (no rebuild), unpublish. The preview is a state of this page."
+    },
+    {
+      "id": "s044-admin-blog-list",
+      "x": 0,
+      "y": 579687,
+      "w": 1400,
+      "text": "Spec 044 · Admin · Blog posts: every post with its status chip (draft, awaiting approval, published, changes waiting, unpublished), filtered by status and country, empty."
+    },
+    {
+      "id": "s044-admin-blog-authors",
+      "x": 0,
+      "y": 584055,
+      "w": 1400,
+      "text": "Spec 044 · Admin · Blog authors: real people who agreed to be named, their own-name confirmation (theirs alone), a name change clearing it, withdrawal unpublishing their posts; public author pages by number from slice B."
+    },
+    {
+      "id": "s044-flow",
+      "x": 0,
+      "y": 590731,
+      "w": 1400,
+      "text": "Spec 044 · Flow: a blog post from the first word to the site and back down."
     }
   ],
   "launch": {
