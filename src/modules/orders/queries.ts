@@ -505,7 +505,8 @@ export const AdminOrderPaymentSchema = z
   .object({
     paymentId: z.uuid(),
     provider: z.string().min(1),
-    method: z.string().min(1),
+    /** Null until the provider reports how the buyer paid. */
+    method: z.string().min(1).nullable(),
     status: z.string().min(1),
     amountMinor: z.number().int().positive(),
     currency: z.string().regex(/^[A-Z]{3}$/),
@@ -611,7 +612,7 @@ const AssignmentRow = z.object({
 const PaymentRow = z.object({
   id: z.uuid(),
   provider: z.string(),
-  method: z.string(),
+  method: z.string().nullable(),
   status: z.string(),
   amount_minor: Minor,
   currency_code: z.string(),

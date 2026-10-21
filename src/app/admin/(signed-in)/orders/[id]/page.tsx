@@ -556,7 +556,11 @@ export default async function AdminOrderPage({
                 <AdminCode>{payment.provider}</AdminCode>
               </AdminCell>
               <AdminCell>
-                <AdminCode>{payment.method}</AdminCode>
+                {payment.method === null ? (
+                  <AdminNote>{adminT("admin.orders.detail.none")}</AdminNote>
+                ) : (
+                  <AdminCode>{payment.method}</AdminCode>
+                )}
               </AdminCell>
               <AdminCell>
                 <AdminCode>{payment.status}</AdminCode>

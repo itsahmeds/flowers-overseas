@@ -23,7 +23,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- 2026-10-21, `/review` of PR 307 (breaker holes accepted, [ruling](https://github.com/itsahmeds/flowers-overseas/pull/307#issuecomment-6316971581)). Each item below is a test to add; the code is already correct at 3921a3c1:
+  - hole 3: a `createdTo` case at the upper local-midnight edge in a non-UTC zone;
+  - hole 4: an order placed exactly at local 00:00:00.000 for `createdFrom`;
+  - hole 5: extend "drops the rest" with the To keys, `page=2.5` and `page=10001`;
+  - hole 6: `stop()` while a read is pending, then no `onArrival` and no new timer;
+  - hole 7: the empty state and the filter count for a `deliveryTo`-only view.
+  Holes 1 (payments filtered by order id) and 2 (the page fails closed when `logAdminRead` rejects) are closed by tests in this PR, each watched red under its mutation.
 
 ## Escalations
 
