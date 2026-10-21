@@ -123,6 +123,57 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text).toContain("Mother's Day flowers for Poland");
   });
 
+  it("renders N1 twice, one per band: in the hero from `md` up, after the grid below (spec 004 §14 A-founder-2026-10-18c, AC-57)", () => {
+    const notice = "Ordering opens soon.";
+    const notes = [...html.matchAll(/<div[^>]*role="note"[^>]*>/gu)].map(
+      (match) => ({ tag: match[0], at: match.index }),
+    );
+    expect(notes).toHaveLength(2);
+    const [hero, phone] = notes;
+    const grid = html.indexOf("data-fo-listing-grid=");
+    const lede = html.indexOf("data-fo-shop-lede");
+    // The hero's copy precedes the grid; its row is `display: none` below `md`.
+    expect(hero!.at).toBeLessThan(grid);
+    const heroRow = html.lastIndexOf(
+      "<div",
+      html.indexOf("data-fo-hero-note-row"),
+    );
+    expect(heroRow).toBeLessThan(hero!.at);
+    expect(html.slice(heroRow, html.indexOf(">", heroRow))).toMatch(
+      /class="[^"]*(?<![\w:-])max-md:hidden\b/u,
+    );
+    // The phone's copy follows the grid, before the lede, and is `display: none` from `md` up.
+    expect(phone!.at).toBeGreaterThan(grid);
+    expect(phone!.at).toBeLessThan(lede);
+    expect(phone!.tag).toMatch(/class="[^"]*(?<![\w:-])md:hidden\b/u);
+    for (const { tag, at } of notes) {
+      expect(tag).toContain('aria-label="A note before you choose"');
+      expect(tag).not.toContain("aria-hidden");
+      expect(readable(html.slice(at, html.indexOf("</div>", at)))).toContain(
+        notice,
+      );
+    }
+    // Nowhere else: N1's sentence appears exactly twice in the document.
+    expect(text.split(notice)).toHaveLength(3);
+  });
+
+  it("puts the phone's N1 after the grid and before the pager when one renders (AC-57; E-5: no paged country occasion is built today)", () => {
+    const paged: ListingView = { ...en, pageCount: 2 };
+    const out = render(<CountryOccasionPage view={paged} />, "en");
+    const grid = out.indexOf("data-fo-listing-grid=");
+    const phone = out.indexOf('data-fo-listing-note="after-grid"');
+    const pager = out.indexOf("data-fo-pagination=");
+    expect(pager).toBeGreaterThan(-1);
+    expect(phone).toBeGreaterThan(grid);
+    expect(phone).toBeLessThan(pager);
+    // Page 2 renders no hero and no note (spec 008 §14 A15 (a)).
+    const second = render(
+      <CountryOccasionPage view={{ ...paged, page: 2 }} />,
+      "en",
+    );
+    expect(second).not.toContain('role="note"');
+  });
+
   it("prints the destination's own date, formatted and never typed", () => {
     // 26 May is Poland's fixed rule; the window starts in September 2026, so the next one is 2027.
     expect(en.occasionDates?.[0]?.date).toBe("2027-05-26");
@@ -131,13 +182,22 @@ describe("the country occasion page (§5.3 row 2)", () => {
     expect(text).toContain("That is the date Poland keeps for it");
   });
 
-  it("opens with the dated line and the grid, before the links out", () => {
+  it("opens with the dated line, then the links out and the sort form, then the grid", () => {
+    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): "Also in Poland" and the sort form
+    // sit above the grid at every width, and nothing that narrows or sorts follows it.
     const dated = html.indexOf("data-fo-occasion-date");
-    const grid = html.indexOf("data-fo-listing-grid");
-    const links = html.indexOf("occasion-siblings");
+    const links = html.indexOf("data-fo-listing-chips");
+    const form = html.indexOf("<form");
+    const grid = html.indexOf("data-fo-listing-grid=");
     expect(dated).toBeGreaterThan(-1);
-    expect(dated).toBeLessThan(grid);
-    expect(grid).toBeLessThan(links);
+    expect(dated).toBeLessThan(links);
+    expect(links).toBeLessThan(form);
+    expect(form).toBeLessThan(grid);
+    // Named by its drawn label from `md` up (the C3 artboard).
+    expect(html).toMatch(
+      /<nav aria-labelledby="listing-chips-label" data-fo-listing-chips/u,
+    );
+    expect(html).toMatch(/id="listing-chips-label">Also in Poland</u);
   });
 
   it("carries the demo sentence and no purchase affordance (§13 Q8)", () => {

@@ -26,6 +26,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { VisuallyHidden } from "../primitives/a11y.tsx";
 import { Text } from "../primitives/typography.tsx";
 
 import { LISTING_SORTS, type ListingSort } from "./viewModel.ts";
@@ -142,24 +143,33 @@ export interface ListingSortFormProps {
   /** The `<select>`'s id. */
   readonly id?: string;
   /**
-   * `reorder` (default): the form under the grid with its "Change the order" label (A10).
-   * `bare`: the form alone, for a page whose toolbar keeps it beside the count (the country
-   * occasion, A15 (d)).
+   * `reorder` (default; the shop root and the country category): one row whose visible label is
+   * "Change the order" (A10), bound to the `<select>`. `bare`: the toolbar's form as the country
+   * occasion has always drawn it, "Sort by" over the `<select>` (the C3 artboards, PR 236).
    */
   readonly variant?: "reorder" | "bare";
+  /**
+   * Below `md` the `reorder` form draws its own rule above and below (default). `false` where the
+   * row it sits on draws the rule across it and a neighbour (the country category's "Categories"
+   * button, spec 008 §14 A-founder-2026-10-15c).
+   */
+  readonly framed?: boolean;
 }
 
 /**
- * The sort form **under the grid** (spec 008 §14 A15 (d), **R8**, AC-32; spec 004 §14 A23 Appendix
- * A **A10**; TASK-187): the same `<form method="get">` as the toolbar's, labelled "Change the order"
- * (`shop.toolbar.reorderLabel`), which names the form for a screen reader too. The count and the
- * ranking disclosure stay above the grid, so this is the form alone, between one rule above and
- * one below, the label on the start side and the control on the end side from `md` up.
+ * The listing's sort form **above the grid** (spec 008 §14 A-founder-2026-10-14c, the founder's
+ * C3 ruling, AC-33; spec 004 §14 A23 Appendix A **A10**; TASK-241): the same `<form method="get">`
+ * as the toolbar's. In the `reorder` variant its visible label is "Change the order"
+ * (`shop.toolbar.reorderLabel`), which also names the section; the `<label>` keeps "Sort by" for
+ * assistive technology, so the control's accessible name contains what a sighted reader sees
+ * (WCAG 2.5.3). On a phone the label sits over the control, from `md` up beside it. Still no
+ * client script: the submit button does the work with JavaScript off (AC-9).
  */
 export function ListingSortForm({
   sort,
   id = "listing-sort",
   variant = "reorder",
+  framed = true,
 }: ListingSortFormProps): ReactElement {
   const t = useTranslations("shop");
   if (variant === "bare") {
@@ -173,13 +183,45 @@ export function ListingSortForm({
   return (
     <section
       aria-labelledby={headingId}
-      className="border-rule gap-y-md grid grid-cols-1 items-end border-y py-[18px] md:grid-cols-[minmax(0,1fr)_auto]"
+      className={
+        framed
+          ? "max-md:border-rule max-md:border-y max-md:py-[10px]"
+          : "max-md:py-[10px]"
+      }
       data-fo-listing-sort-form={sort}
     >
-      <p className="label text-ink-subtle" id={headingId}>
-        {t("toolbar.reorderLabel")}
-      </p>
-      <SortForm id={id} sort={sort} />
+      <form
+        className="flex flex-wrap items-center gap-x-[10px] gap-y-[6px] md:flex-nowrap md:gap-x-[12px]"
+        method="get"
+      >
+        {/* The visible words are "Change the order" (A10); the `<label>` also carries "Sort by"
+            for assistive technology, so the control's name holds what a sighted reader sees. */}
+        <label
+          className="label text-ink-subtle basis-full md:basis-auto"
+          htmlFor={id}
+        >
+          <span id={headingId}>{t("toolbar.reorderLabel")}</span>{" "}
+          <VisuallyHidden>{t("toolbar.sortLabel")}</VisuallyHidden>
+        </label>
+        <select
+          className="border-field-edge bg-card text-ui rounded-field min-h-(--field-height) w-full min-w-0 flex-1 border-[1.5px] px-[14px] md:w-[180px] md:flex-none"
+          defaultValue={sort}
+          id={id}
+          name="sort"
+        >
+          {LISTING_SORTS.map((option) => (
+            <option key={option} value={option}>
+              {t(SORT_LABEL_KEYS[option])}
+            </option>
+          ))}
+        </select>
+        <button
+          className="text-ink text-ui hover:bg-surface-raised min-h-(--control-sm) flex-none rounded-full px-[20px] font-bold shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+          type="submit"
+        >
+          {t("toolbar.submit")}
+        </button>
+      </form>
     </section>
   );
 }

@@ -12,6 +12,9 @@
  * that the delivery-facts panel the artboard draws is absent (§14 **A9**), and that the page
  * claims nothing in any locale it exists in.
  */
+import { readFileSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -41,6 +44,8 @@ const NAMESPACES = [
   "media",
   "occasions",
   "destinations",
+  // The "Categories" button's reviewed label (spec 008 §14 A-founder-2026-10-18a).
+  "nav",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -83,15 +88,20 @@ describe("the populated country category (§5.3 row 2)", () => {
 
   // v2 (spec 004 §14 A21; `country-category-desktop.dc.html`): the grid comes straight after the
   // hero, and "Also for Poland" moves under it.
-  it("follows the v2 artboard's block order: crumbs, hero, grid, siblings, intro", () => {
+  it("follows the block order of the founder's C3: crumbs, hero, siblings, grid, intro", () => {
+    // Spec 008 §14 A-founder-2026-10-14c (AC-33; TASK-241): the siblings are above the grid at
+    // every width, and none follows it; A-founder-2026-10-15c folds them into the one
+    // "Categories" disclosure, and no chip line renders beside it.
     const crumbs = html.indexOf("data-fo-breadcrumb");
-    const siblings = html.indexOf("sibling-categories");
-    const grid = html.indexOf("data-fo-listing-grid");
+    const siblings = html.indexOf("data-fo-listing-categories");
+    const grid = html.indexOf("data-fo-listing-grid=");
     const intro = html.indexOf("data-fo-shop-intro");
     expect(crumbs).toBeGreaterThan(-1);
-    expect(crumbs).toBeLessThan(grid);
-    expect(grid).toBeLessThan(siblings);
-    expect(siblings).toBeLessThan(intro);
+    expect(crumbs).toBeLessThan(siblings);
+    expect(siblings).toBeLessThan(grid);
+    expect(grid).toBeLessThan(intro);
+    expect(html.match(/data-fo-listing-categories/gu) ?? []).toHaveLength(1);
+    expect(html).not.toContain("data-fo-listing-chips");
   });
 
   it("carries the counted lede and the demo sentence", () => {
@@ -121,7 +131,8 @@ describe("the populated country category (§5.3 row 2)", () => {
 
   it("renders the sibling row from `links.chips` and nothing else", () => {
     expect(roses.links.chips.length).toBeGreaterThan(1);
-    expect(text).toContain("Also for Poland");
+    // The row's name, on the disclosure panel's `<nav>` (the heading is not drawn).
+    expect(html).toMatch(/<nav aria-label="Also for Poland"/u);
     for (const chip of roses.links.chips) {
       expect(text, chip.key).toContain(chip.name);
     }
@@ -133,6 +144,64 @@ describe("the populated country category (§5.3 row 2)", () => {
     );
     expect(html).not.toContain('href="/en/poland/flowers/roses"><');
     expect(html).toContain('aria-current="page"');
+  });
+
+  it("labels the disclosure with the reviewed `nav.categories.label`, and no catalogue holds a key of its own (A-founder-2026-10-18a; T-39)", () => {
+    const messagesDir = resolve(import.meta.dirname, "../../messages");
+    const files = readdirSync(messagesDir).filter((file) =>
+      file.endsWith(".json"),
+    );
+    expect(files.length).toBeGreaterThan(4);
+    for (const file of files) {
+      expect(
+        readFileSync(resolve(messagesDir, file), "utf8"),
+        file,
+      ).not.toContain("chipsToggle");
+    }
+    const en = JSON.parse(
+      readFileSync(resolve(messagesDir, "en.json"), "utf8"),
+    ) as { nav: { categories: { label: string } } };
+    const start = html.indexOf("data-fo-listing-categories");
+    const summary = html.slice(
+      html.indexOf("<summary", start),
+      html.indexOf("</summary>", start),
+    );
+    expect(
+      summary
+        .replace(/<span aria-hidden="true"[^>]*>[^<]*<\/span>/gu, "")
+        .replace(/<[^>]+>/gu, "")
+        .trim(),
+    ).toBe(en.nav.categories.label);
+  });
+
+  it('folds the siblings into a native "Categories" disclosure on the toolbar row, every link in the HTML (A-founder-2026-10-15c; TASK-241)', () => {
+    // One `<details>`, before the sort form and the grid, its `<summary>` the button's words; every
+    // sibling that is not this page is a real link inside it, closed, with no script.
+    expect(html.match(/<details/gu) ?? []).toHaveLength(1);
+    const start = html.indexOf("data-fo-listing-categories");
+    const end = html.indexOf("</details>", start);
+    expect(start).toBeGreaterThan(-1);
+    expect(start).toBeLessThan(html.indexOf("<form"));
+    expect(html.indexOf("<form")).toBeLessThan(
+      html.indexOf("data-fo-listing-grid="),
+    );
+    expect(html.slice(start, end)).not.toContain(" open");
+    const panel = html.slice(start, end);
+    // Every sibling link is inside the `<details>`; none renders outside it (no phone chip line).
+    const outside = html.slice(0, start) + html.slice(end);
+    for (const chip of roses.links.chips) {
+      if (chip.current !== true) {
+        expect(outside, chip.key).not.toContain(`href="${chip.href}"`);
+      }
+    }
+    expect(panel).toMatch(/<summary[^>]*>Categories</u);
+    for (const chip of roses.links.chips) {
+      if (chip.current === true) {
+        expect(panel, chip.key).toContain('aria-current="page"');
+      } else {
+        expect(panel, chip.key).toContain(`href="${chip.href}"`);
+      }
+    }
   });
 
   it("is a breadcrumb of five crumbs, the leaf marked and not a link", () => {
@@ -148,13 +217,16 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(trail).toContain("Roses");
   });
 
-  it("renders the sort form under the grid and a real pager (spec 008 §14 A15 (a), (d); TASK-187)", () => {
-    // R8: one `<form method="get">`, after the grid, labelled "Change the order" (A10).
+  it("renders the sort form above the grid and a real pager after it (spec 008 §14 A-founder-2026-10-14c; TASK-241)", () => {
+    // C3 (AC-33): one `<form method="get">`, before the grid, labelled "Change the order" (A10);
+    // the pager after the grid.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
     const grid = html.indexOf("data-fo-listing-grid=");
     const form = html.indexOf("<form");
     expect(grid).toBeGreaterThan(-1);
-    expect(form).toBeGreaterThan(grid);
+    expect(form).toBeGreaterThan(-1);
+    expect(form).toBeLessThan(grid);
+    expect(html.indexOf("data-fo-pagination")).toBeGreaterThan(grid);
     expect(text).toContain("Change the order");
     // The pager links only `?page=N`; no sorted URL is ever a crawlable link (AC-15).
     expect(html).not.toMatch(/href="[^"]*[?&]sort=/iu);

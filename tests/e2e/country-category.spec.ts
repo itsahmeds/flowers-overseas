@@ -148,12 +148,12 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
     // The sibling row is the whole browsing affordance (§13 Q6): links to pages that exist, the
     // current category marked and not a link to itself.
-    // From `md` up the row sits under the grid; below `md` it is the phone's one chip scroller
-    // above the grid (spec 008 §14 A16 (e)). Exactly one of the two is displayed.
-    const siblings = page.locator(
-      "#sibling-categories:visible, main [data-fo-phone-chips]:visible",
-    );
+    // Above the grid, at every width, in the one "Categories" disclosure whose `<summary>` is
+    // displayed (A-founder-2026-10-15c; TASK-241); no chip line beside it.
+    const siblings = page.locator("main details[data-fo-listing-categories]");
     await expect(siblings).toHaveCount(1);
+    await expect(siblings.locator("> summary")).toBeVisible();
+    await expect(page.locator("main [data-fo-listing-chips]")).toHaveCount(0);
     await expect(siblings.locator("a")).not.toHaveCount(0);
     await expect(siblings.locator('[aria-current="page"]')).toHaveCount(1);
     // The demo sentence, the whole of the Phase 0 state.
@@ -163,7 +163,8 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
       ),
     ).toBeVisible();
     // Since spec 008 §14 A15 (TASK-187) the sort form and the pager are here: one `GET` form
-    // under the grid whose submit can act with no JavaScript, and a pager of real links. Counted
+    // above the grid (C3, TASK-241) whose submit can act with no JavaScript, and a pager of real
+    // links. Counted
     // exactly, so a basket or a second form fails here.
     await expect(page.locator('main form[method="get"]')).toHaveCount(1);
     await expect(page.locator("main button")).toHaveCount(1);
@@ -257,15 +258,14 @@ test.describe("what the page renders (AC-6, §14 A8 (c))", () => {
     const page = await context.newPage();
     await page.goto("/en/poland/flowers/roses");
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
-    // The sibling categories: the chip row from `md` up, the phone's one chip scroller below it
-    // (spec 004 §14 A24 clause 4; TASK-195's primitive). Real links either way.
+    // The sibling categories: the "Categories" disclosure, whose links are in the HTML closed
+    // (A-founder-2026-10-15c; TASK-241). Real links.
     await expect(
-      page
-        .locator(
-          "#sibling-categories a:visible, [data-fo-phone-chips] a:visible",
-        )
-        .first(),
+      page.locator("main [data-fo-listing-categories] > summary"),
     ).toBeVisible();
+    await expect(
+      page.locator("main [data-fo-listing-categories] a[href]"),
+    ).not.toHaveCount(0);
     await context.close();
   });
 });
