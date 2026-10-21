@@ -61,6 +61,7 @@ const data = vi.hoisted(() => ({
   detail: null as AdminOrderDetail | null,
   detailCalls: [] as { id: string; includeRecipient: boolean }[],
   views: [] as { entity: string; id: string }[],
+  viewLogFails: false,
 }));
 
 vi.mock("next/headers", () => ({
@@ -96,6 +97,9 @@ vi.mock("@/modules/admin", async (importOriginal) => {
     ) => actual.requirePermission(permission, { session }),
     adminRequestId: () => Promise.resolve("request-1"),
     logAdminRead: (_actor: unknown, entity: string, id: string) => {
+      if (data.viewLogFails) {
+        return Promise.reject(new Error("audit_log write failed"));
+      }
       data.views.push({ entity, id });
       return Promise.resolve();
     },
@@ -331,6 +335,7 @@ beforeEach(() => {
   data.detail = detail();
   data.detailCalls.length = 0;
   data.views.length = 0;
+  data.viewLogFails = false;
 });
 
 describe("the queue's query string", () => {
@@ -607,6 +612,19 @@ describe("/admin/orders/[id] (AC-13, AC-19)", () => {
     expect(html).toContain("Changes to orders are not available in admin yet.");
     expect(actionControls(html)).toEqual([]);
     expect(html.slice(html.indexOf("<main"))).not.toContain("<form");
+  });
+
+  it("fails closed when the view cannot be logged: the page rejects and nothing renders (AC-13, hole 2)", async () => {
+    data.roles = ["ops"];
+    data.viewLogFails = true;
+    let html: string | undefined;
+    const error = await thrown(async () => {
+      html = await renderDetail(DEMO_ID);
+    });
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("audit_log write failed");
+    expect(html).toBeUndefined();
+    expect(data.detailCalls).toEqual([{ id: DEMO_ID, includeRecipient: true }]);
   });
 
   it("is a 404 with nothing read or logged for a malformed id, and with nothing logged for an unknown one", async () => {

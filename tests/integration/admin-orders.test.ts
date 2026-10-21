@@ -434,6 +434,44 @@ describe.skipIf(server.url === undefined)(
       ).toBeNull();
     });
 
+    it("orderDetail's payments are that order's own: a second order's payment never shows (hole 1)", async () => {
+      const other = await placeOrder(scratch, w, "live", {
+        deliveryDate: "2027-02-12",
+      });
+      const mine = randomUUID();
+      const theirs = randomUUID();
+      await scratch.sql`
+        INSERT INTO payment (id, order_id, provider, provider_ref, status, method,
+                             amount_minor, currency_code, livemode)
+        VALUES (${mine}, ${live.orderId}, 'stripe', ${unique("pi_mine_")}, 'pending', 'card',
+                22400, 'PLN', false),
+               (${theirs}, ${other.orderId}, 'mollie', ${unique("tr_theirs_")}, 'pending',
+                NULL, 11100, 'PLN', false)`;
+      const detail = await orders.orderDetail(live.orderId, {
+        includeRecipient: false,
+      });
+      expect(detail?.payments.map((payment) => payment.paymentId)).toEqual([
+        mine,
+      ]);
+      expect(detail?.payments[0]).toMatchObject({
+        provider: "stripe",
+        method: "card",
+        amountMinor: 22_400,
+        currency: "PLN",
+        capturedAt: null,
+      });
+      const json = JSON.stringify(detail);
+      expect(json).not.toContain(theirs);
+      expect(json).not.toContain("11100");
+      expect(json).not.toContain("mollie");
+      const otherDetail = await orders.orderDetail(other.orderId, {
+        includeRecipient: false,
+      });
+      expect(otherDetail?.payments.map((payment) => payment.paymentId)).toEqual(
+        [theirs],
+      );
+    });
+
     it("T-22: the list page shows no recipient field and no public token, and marks demo and test only", async () => {
       viewer.roles = ["admin"];
       const html = await renderList({ country: w.iso2 });
