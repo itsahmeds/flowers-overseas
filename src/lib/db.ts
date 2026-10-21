@@ -33,6 +33,15 @@
  * text, no parameter, no row: `CLAUDE.md`'s "no PII in logs" is kept by never having the
  * material in the first place.
  *
+ * **The build reads through its own login** (spec 012b §2.0 item 2, §5.2 "`src/lib/db.ts`", AC-4;
+ * TASK-292). While `next build` prerenders (`NEXT_PHASE` is Next's `phase-production-build`), the
+ * pool connects with `DATABASE_BUILD_URL`, a login of the read-only `app_build` role (migration
+ * `0018`), and every transaction enters `app_build` instead of `app_web`. There is **no
+ * fallback**: with the key absent or malformed the first query throws naming it, and with the
+ * database unreachable it fails, so the build fails and Railway keeps serving the previous
+ * deployment. A build never reads `DATABASE_URL`, and no other code path reads
+ * `DATABASE_BUILD_URL` (`tests/unit/db.test.ts` scans for it).
+ *
  * The driver and `@/lib/env` are reached through dynamic `import()` so that this module can be
  * imported — and its contract asserted — without a database, a connection string or Next's
  * `server-only` boundary (T-05).
@@ -53,6 +62,45 @@ export const APP_ROLES = [
 
 /** The runtime database role every context enters (migration `0001`). */
 export const RUNTIME_ROLE = "app_web";
+
+/** The role a context enters while `next build` runs (migration `0018`, spec 012b AC-4). */
+export const BUILD_ROLE = "app_build";
+
+/** Next's `PHASE_PRODUCTION_BUILD` (`next/constants`), the value of `NEXT_PHASE` during a build. */
+export const BUILD_PHASE = "phase-production-build";
+
+/** The one key the build's connection string is read from. */
+export const BUILD_DATABASE_URL_KEY = "DATABASE_BUILD_URL";
+
+/** True while `next build` runs: the build-phase client applies (spec 012b §5.2). */
+function isBuildPhase(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): boolean {
+  return environment["NEXT_PHASE"] === BUILD_PHASE;
+}
+
+const buildDatabaseUrlSchema = z
+  .string()
+  .regex(/^postgres(?:ql)?:\/\/[^\s]+$/u);
+
+/**
+ * The build's connection string, or a throw that names the key and never echoes a value (spec 001
+ * AC-10). No fallback to `DATABASE_URL`: a build that read the runtime database as `app_web`, or
+ * read nothing and prerendered from files, is the "shown ≠ charged" failure §2.0 item 2 forbids.
+ */
+function buildDatabaseUrl(
+  environment: Readonly<Record<string, string | undefined>> = process.env,
+): string {
+  const parsed = buildDatabaseUrlSchema.safeParse(
+    environment[BUILD_DATABASE_URL_KEY],
+  );
+  if (!parsed.success) {
+    throw new Error(
+      `${BUILD_DATABASE_URL_KEY} is missing or is not a postgres:// connection string: next build reads the database only through the app_build login, with no fallback (spec 012b AC-4)`,
+    );
+  }
+  return parsed.data;
+}
 
 /**
  * The per-request context, validated at the boundary like every other input (`CLAUDE.md`: "Zod at
@@ -175,7 +223,7 @@ function preamble(context: DbContext): string[] {
     `SET LOCAL app.user_id = ${quoteLiteral(context.userId ?? "")}`,
     `SET LOCAL app.partner_ids = ${quoteLiteral(context.partnerIds.join(","))}`,
     `SET LOCAL app.request_id = ${quoteLiteral(context.requestId)}`,
-    `SET LOCAL ROLE ${RUNTIME_ROLE}`,
+    `SET LOCAL ROLE ${isBuildPhase() ? BUILD_ROLE : RUNTIME_ROLE}`,
   ];
 }
 
@@ -184,6 +232,17 @@ let client: Promise<SqlClient> | undefined;
 /** The one pool, created on first use so that importing this module connects to nothing. */
 async function getClient(): Promise<SqlClient> {
   client ??= (async (): Promise<SqlClient> => {
+    if (isBuildPhase()) {
+      // The build's own login, read before the driver loads: a missing key fails here.
+      const url = buildDatabaseUrl();
+      const { default: postgres } = await import("postgres");
+      return postgres(url, {
+        // Next prerenders in several workers, each with its own pool: two connections each.
+        max: 2,
+        prepare: false,
+        onnotice: () => undefined,
+      }) as unknown as SqlClient;
+    }
     const [{ env }, { default: postgres }] = await Promise.all([
       import("./env"),
       import("postgres"),

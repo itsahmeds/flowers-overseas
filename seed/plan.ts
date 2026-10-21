@@ -16,8 +16,14 @@
  *    country, `status = demo`, capacity 15/day, covering the capital, with a payout mapping for
  *    every tier of all 84 products at `plan/10` §2.3's payout share of the active retail price.
  *
- * Every seeded country is `status = demo` (`plan/10` §4: "seed state"; AC-32): going live is the
- * admin's data flip, and the seed never touches a row flipped to `source = 'real'`.
+ * **A country's status is `src/config/countries.ts`'s** (spec 012b §5.1 "Seed", AC-2; TASK-292):
+ * the seed's country projection agrees with the registry the static providers read, so the
+ * database and the static country registry give the same page for every URL (`pnpm
+ * catalogue:parity`). Spec 002's "every seeded country is `demo`" (AC-32) held while the registry
+ * said so; it is the registry's value now, whatever Poland's is at the cutover. `status` is
+ * written **on insert only** (`insertOnlyColumns`): on an existing row it is the admin's data flip
+ * (spec 012's `status_flip_guard()` refuses any other path), so a seed never moves it, and a row
+ * that disagrees with the registry is what `catalogue:parity` reports.
  *
  * §6's thin-content rule: `de` and `pl` product translations are **absent** — the dataset's
  * machine drafts for those locales are never written to the database — and the seed writes no
@@ -72,6 +78,11 @@ export interface SeedTablePlan {
   readonly key: readonly string[];
   /** True when the table has `source`: a `real` row is never updated. */
   readonly sourceGuarded: boolean;
+  /**
+   * Columns written when the row is inserted and never updated afterwards (spec 012b §5.1
+   * "Seed"): `country.status`, which only admin changes once the row exists.
+   */
+  readonly insertOnlyColumns?: readonly string[];
   readonly rows: readonly SeedDbRow[];
 }
 
@@ -155,7 +166,7 @@ function countryRow(country: CountryConfig): SeedDbRow {
   const projected = toCountryRow(country);
   return {
     iso2: projected.iso2,
-    status: "demo",
+    status: projected.status,
     currency_code: pricing.currency,
     vat_rate_bp: pricing.flowersVatRateBp,
     iana_zone: ianaZone,
@@ -236,6 +247,7 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
       table: "country",
       key: ["iso2"],
       sourceGuarded: true,
+      insertOnlyColumns: ["status"],
       rows: countries.map(countryRow),
     },
     {

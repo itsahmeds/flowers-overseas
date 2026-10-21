@@ -352,7 +352,63 @@ describe("the jobs TASK-011 adds", () => {
     expect(containerJob).toContain(
       "a server credential is present in the build environment",
     );
-    expect(containerJob).not.toMatch(/--build-arg/u);
+    // The one build argument is spec 012b's database login, and CI hands it a sentinel that the
+    // next step searches the shipped image for (AC-4 / T-04; TASK-292), never a credential.
+    const buildArgs = [
+      ...containerJob.matchAll(/--build-arg\s+"?([^\s"]+)/gu),
+    ].map((m) => m[1]);
+    expect(buildArgs.length).toBeGreaterThan(0);
+    // …and the positive-control probe image, which is handed the same sentinel's token.
+    expect(buildArgs).toContain("DATABASE_BUILD_URL=$BUILD_URL_SENTINEL");
+    for (const arg of buildArgs) {
+      expect([
+        "DATABASE_BUILD_URL=$BUILD_URL_SENTINEL",
+        "PROBE=$token",
+      ]).toContain(arg);
+    }
+    expect(ci.jobs["container"]?.env?.["BUILD_URL_SENTINEL"]).toMatch(
+      /^postgres:\/\/app_build:fo-ci-sentinel-\$\{\{ github\.run_id \}\}@db\.invalid:5432\/fo$/u,
+    );
+    expect(containerJob).toContain(
+      "the image carries the DATABASE_BUILD_URL sentinel in",
+    );
+    // The positive control fails unless the probe was found in the config/labels **and** in a
+    // layer (breaker hole 3c on PR 309): a search blind to either cannot pass vacuously.
+    const control =
+      /case "\$seen" in ([^)]*)\) ;; \*\)\s+echo "::error::the search did not find the value in the probe image[^\n]*\n\s+exit 1 ;;/u.exec(
+        containerJob,
+      );
+    expect(control?.[1]).toBe("*config/labels*layer*");
+    expect(containerJob).toMatch(/LABEL probe=\$PROBE/u);
+    expect(containerJob).toMatch(/RUN echo "\$PROBE" > \/probe\.txt/u);
+  });
+
+  it("builds against the seeded database as app_build and runs parity against that login (spec 012b AC-2, AC-4; PR 309 hole 3)", () => {
+    const build = ci.jobs["build"];
+    const runs = (build?.steps ?? []).map((step) => step.run ?? "").join("\n");
+    // (a) parity reads the build login's URL, and nothing else.
+    expect(runs).toContain(
+      'pnpm catalogue:parity --target="$DATABASE_BUILD_URL"',
+    );
+    expect(
+      runs
+        .match(/^\s*pnpm catalogue:parity[^\n]*/gmu)
+        ?.map((line) => line.trim()),
+    ).toEqual([
+      'pnpm catalogue:parity --target="$DATABASE_BUILD_URL" 2>&1 | tee parity.log',
+    ]);
+    // (b) the job exports DATABASE_BUILD_URL from the app_build login, and never DATABASE_URL.
+    expect(runs).toMatch(
+      /echo "DATABASE_BUILD_URL=postgres:\/\/app_build:\$password@localhost:5432\/flowers_overseas_build" >> "\$GITHUB_ENV"/u,
+    );
+    expect(runs).not.toMatch(/DATABASE_URL=[^\n]*GITHUB_ENV/u);
+    expect(runs).toContain("ALTER ROLE app_build LOGIN PASSWORD");
+    expect(build?.env?.["DATABASE_URL"]).toBeUndefined();
+    for (const step of build?.steps ?? []) {
+      expect(
+        (step as { env?: Record<string, string> }).env?.["DATABASE_URL"],
+      ).toBeUndefined();
+    }
   });
 
   it("keeps env:check in the lint job, as the header comment documents", () => {

@@ -180,6 +180,7 @@ describe("the committed migration set", () => {
       "0015_checkout_draft.sql",
       "0016_audit_trail.sql",
       "0017_payments_a7.sql",
+      "0018_catalogue_build_role.sql",
     ]);
   });
 });

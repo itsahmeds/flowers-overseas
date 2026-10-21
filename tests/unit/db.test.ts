@@ -17,7 +17,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /** Statements the fake transaction saw, in order, across every helper call in a test. */
 const statements: string[] = [];
@@ -49,7 +49,14 @@ const fakeClient = {
   ): Promise<T> => fn(fakeTransaction),
 };
 
-vi.mock("postgres", () => ({ default: () => fakeClient }));
+/** The connection string each pool was created with (spec 012b AC-4's build-phase client). */
+const poolUrls = vi.hoisted(() => [] as string[]);
+vi.mock("postgres", () => ({
+  default: (url: string) => {
+    poolUrls.push(url);
+    return fakeClient;
+  },
+}));
 const guardReports = vi.hoisted(() => [] as string[]);
 vi.mock("../../src/lib/sentry", () => ({
   captureGuardError: (signal: string) => {
@@ -66,6 +73,7 @@ const PARTNER_A = "33333333-3333-4333-8333-333333333333";
 const PARTNER_B = "44444444-4444-4444-8444-444444444444";
 
 beforeEach(() => {
+  poolUrls.length = 0;
   statements.length = 0;
   parametersOf.clear();
   insideTransaction = 0;
@@ -355,5 +363,101 @@ describe("role discipline (spec 002 §13 Q4; /review 71)", () => {
     expect(header).toContain("connects as");
     expect(header).toMatch(/session_user/);
     expect(header).toMatch(/AC-18/);
+  });
+});
+
+/**
+ * Spec 012b §5.2 "`src/lib/db.ts`", AC-4 (TASK-292): while `next build` runs, the pool connects
+ * with `DATABASE_BUILD_URL` and every transaction enters `app_build`; no fallback to
+ * `DATABASE_URL`, and no other module under `src/` reads the key.
+ */
+describe("the build-phase client (spec 012b AC-4)", () => {
+  const BUILD_URL = "postgres://app_build:build-secret@db.example.test:5432/fo";
+
+  /** The runtime URL a fallback would reach for: present in every case, so a fallback shows. */
+  const RUNTIME_URL =
+    "postgres://runtime:runtime-secret@runtime.example.test:5432/fo";
+
+  async function freshDb(environment: Record<string, string | undefined>) {
+    vi.resetModules();
+    vi.stubEnv("DATABASE_URL", RUNTIME_URL);
+    vi.stubEnv("DATABASE_URL_UNPOOLED", RUNTIME_URL);
+    for (const [key, value] of Object.entries(environment)) {
+      vi.stubEnv(key, value);
+    }
+    return import("../../src/lib/db");
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("connects with DATABASE_BUILD_URL during the build and enters app_build", async () => {
+    const { withDbContext } = await freshDb({
+      NEXT_PHASE: "phase-production-build",
+      DATABASE_BUILD_URL: BUILD_URL,
+    });
+    await withDbContext({ role: "public", requestId: REQUEST_ID }, () =>
+      Promise.resolve(undefined),
+    );
+    expect(poolUrls).toEqual([BUILD_URL]);
+    expect(statements.at(-1)).toBe("SET LOCAL ROLE app_build");
+  });
+
+  it("outside the build, connects with DATABASE_URL and enters app_web, whatever DATABASE_BUILD_URL holds", async () => {
+    const { withDbContext } = await freshDb({
+      NEXT_PHASE: "phase-production-server",
+      DATABASE_BUILD_URL: BUILD_URL,
+    });
+    await withDbContext({ role: "public", requestId: REQUEST_ID }, () =>
+      Promise.resolve(undefined),
+    );
+    expect(poolUrls).toEqual(["postgres://user:pass@localhost:5432/fo"]);
+    expect(statements.at(-1)).toBe("SET LOCAL ROLE app_web");
+  });
+
+  it.each([
+    ["absent", undefined],
+    ["not a postgres URL", "https://db.example.test"],
+  ])(
+    "refuses a build whose DATABASE_BUILD_URL is %s, naming the key, with no fallback and no statement",
+    async (_case, value) => {
+      const { withDbContext } = await freshDb({
+        NEXT_PHASE: "phase-production-build",
+        DATABASE_BUILD_URL: value,
+      });
+      const attempt = withDbContext(
+        { role: "public", requestId: REQUEST_ID },
+        () => Promise.resolve(undefined),
+      );
+      await expect(attempt).rejects.toThrow(/^DATABASE_BUILD_URL is missing/u);
+      // No fallback: neither the runtime variable nor the env module's URL was connected to.
+      expect(process.env["DATABASE_URL"]).toBe(RUNTIME_URL);
+      await expect(attempt).rejects.not.toThrow(/https:/u);
+      expect(poolUrls).toEqual([]);
+      expect(statements).toEqual([]);
+    },
+  );
+
+  it("leaves db.ts the only module under src/ that reads DATABASE_BUILD_URL (railway.ts only allows the name)", () => {
+    const srcDir = resolve(__dirname, "../../src");
+    const files = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) return files(path);
+        return /\.(ts|tsx|mts|cts|js|mjs)$/.test(entry.name) ? [path] : [];
+      });
+    const readers = files(srcDir)
+      .filter((path) =>
+        readFileSync(path, "utf8").includes("DATABASE_BUILD_URL"),
+      )
+      .map((path) => relative(srcDir, path));
+    expect(readers).toEqual([join("lib", "db.ts"), join("lib", "railway.ts")]);
+    // railway.ts names the key once, as an optional Railway variable, and reads no environment.
+    const railway = readFileSync(join(srcDir, "lib", "railway.ts"), "utf8");
+    expect(railway.match(/"DATABASE_BUILD_URL"/gu)).toHaveLength(1);
+    expect(railway).not.toMatch(/env[^\n]*DATABASE_BUILD_URL/u);
+    expect(railway).toContain('DATABASE_BUILD_URL_KEY = "DATABASE_BUILD_URL"');
   });
 });

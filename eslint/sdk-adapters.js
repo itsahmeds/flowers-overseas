@@ -83,7 +83,8 @@ export const SDK_ADAPTERS = [
     // cannot resolve `@/lib/db`, and all three connect as `app_owner` over the direct URL
     // (spec 002 §13 Q6), which `src/lib/db.ts`'s runtime pool never does (TASK-026, TASK-027).
     // `scripts/admin-grant.ts` is spec 012 §2.2's `pnpm admin:grant`, over the direct URL too
-    // (TASK-217).
+    // (TASK-217). `scripts/catalogue-parity.ts` is spec 012b's read-only `pnpm catalogue:parity`,
+    // one `READ ONLY` transaction against the `--target` it is given (TASK-292).
     files: [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
@@ -91,6 +92,7 @@ export const SDK_ADAPTERS = [
       "scripts/db-check-live.ts",
       "seed/index.ts",
       "scripts/admin-grant.ts",
+      "scripts/catalogue-parity.ts",
     ],
     use: "src/lib/db.ts",
   },

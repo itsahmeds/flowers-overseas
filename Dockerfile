@@ -56,6 +56,14 @@ ENV APP_ENV=$APP_ENV \
     NEXT_PUBLIC_VERCEL_ENV=$NEXT_PUBLIC_VERCEL_ENV \
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA \
     NEXT_TELEMETRY_DISABLED=1
+# The build's database login (spec 012b §2.0 item 2, AC-4; TASK-292): `next build` reads the
+# catalogue through the read-only `app_build` role (migration `0018`), and Railway passes a service
+# variable to the build only when an `ARG` declares it. It is the **one** credential this stage
+# sees, and it never leaves it: an `ARG`, never an `ENV`, declared in this stage only, so the
+# runtime stage below (the image that ships) carries it in no layer, history entry or label — the
+# CI `container` job builds with a sentinel value and greps the image for it. Empty by default:
+# until the cutover (TASK-294) no prerender reads the database, so a credential-free build works.
+ARG DATABASE_BUILD_URL=""
 # The FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31; TASK-181). `pnpm build` fetches the
 # day's ECB rates, and at one commit `COPY . .` above is byte-identical, so without this line a
 # same-commit rebuild would reuse the cached layer below and fetch nothing. The weekday rebuild job

@@ -401,13 +401,22 @@ CREATE FUNCTION f() RETURNS SETOF int LANGUAGE plpgsql AS $f$ BEGIN RETURN QUERY
     ]);
   });
 
-  it("allows dynamic SQL only in 0001's role bootstrap and 0012's pg-boss plan, which need it, and the list is pinned", () => {
+  it("allows dynamic SQL only in 0001's role bootstrap, 0012's pg-boss plan and 0018's build role, which need it, and the list is pinned", () => {
     expect([...DYNAMIC_SQL_ALLOWED.keys()]).toEqual([
       "0001_roles_grants_updated_at.sql",
       "0001_roles_grants_updated_at.down.sql",
       "0012_pgboss.sql",
+      // Spec 012b §5.1 item 1 (TASK-292): the guarded CREATE ROLE and its guarded DROP ROLE.
+      "0018_catalogue_build_role.sql",
+      "0018_catalogue_build_role.down.sql",
+    ]);
+    // 0018's two files need the allowance for DDL inside a DO block, not for EXECUTE.
+    const ddlInDoOnly = new Set([
+      "0018_catalogue_build_role.sql",
+      "0018_catalogue_build_role.down.sql",
     ]);
     for (const file of DYNAMIC_SQL_ALLOWED.keys()) {
+      if (ddlInDoOnly.has(file)) continue;
       expect(
         dynamicSqlCount(committedMigrations.get(file) ?? ""),
         file,

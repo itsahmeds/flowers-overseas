@@ -14,6 +14,8 @@ import { describe, expect, it } from "vitest";
 
 import * as schema from "../../db/schema/index.ts";
 import {
+  BUILD_ROLE_FILTERED_TABLES,
+  BUILD_ROLE_READ_TABLES,
   CUSTOMER_SCOPED_TABLES,
   CUSTOMER_VIEWS,
   PARTNER_SCOPED_TABLES,
@@ -86,6 +88,19 @@ const POLICIES: Policy[] = [
   check: (m[6] ?? "").replace(/\s+/g, " "),
 }));
 
+/** `0018`'s `TO app_build` read policies (spec 012b §5.1 item 1; TASK-292). */
+const BUILD_POLICIES: Policy[] = [
+  ...up.matchAll(
+    /CREATE POLICY (\w+) ON public\.(\w+) FOR (\w+) TO app_build\s+USING \(([\s\S]*?)\);/g,
+  ),
+].map((m) => ({
+  name: m[1] ?? "",
+  table: m[2] ?? "",
+  command: m[3] ?? "",
+  using: (m[4] ?? "").replace(/\s+/g, " "),
+  check: "",
+}));
+
 const policiesOf = (table: string): Policy[] =>
   POLICIES.filter((p) => p.table === table);
 
@@ -99,7 +114,10 @@ describe("migration 0011 — coverage", () => {
   });
 
   it("every policy the file creates was parsed (none hides behind an odd layout)", () => {
-    expect(POLICIES).toHaveLength([...up.matchAll(/CREATE POLICY/g)].length);
+    // The build role's policies (`0018`, spec 012b) are read by their own block below.
+    expect(POLICIES.length + BUILD_POLICIES.length).toBe(
+      [...up.matchAll(/CREATE POLICY/g)].length,
+    );
   });
 
   it("enables RLS on every table of the mirror, and on nothing else", () => {
@@ -342,5 +360,59 @@ describe("rollback 0011", () => {
         new RegExp(`DROP FUNCTION IF EXISTS public\\.${helper ?? ""}\\(`),
       );
     }
+  });
+});
+
+describe("migration 0018 — the build role reads the public set (spec 012b AC-4; TASK-292)", () => {
+  const up0018 = readMigration("0018_catalogue_build_role.sql");
+  const down0018 = readMigration("0018_catalogue_build_role.down.sql");
+
+  it("gives app_build one SELECT policy per table of its set, with the public render's condition", () => {
+    const tables = [
+      ...BUILD_ROLE_READ_TABLES,
+      ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+    ].sort();
+    expect(BUILD_POLICIES.map((p) => p.table).sort()).toEqual(tables);
+    for (const policy of BUILD_POLICIES) {
+      expect(policy.name).toBe(`${policy.table}_build_read`);
+      expect(policy.command).toBe("SELECT");
+      const publicRead = policiesOf(policy.table).find(
+        (p) => p.name === `${policy.table}_read`,
+      );
+      // The flag tables have no public read for app_web: the build's is unconditional.
+      expect(policy.using, policy.table).toBe(publicRead?.using ?? "true");
+    }
+  });
+
+  it("grants SELECT on exactly that set, and no other privilege on any table", () => {
+    const grant = /GRANT SELECT ON([\s\S]*?)TO app_build;/u.exec(up0018);
+    const granted = (grant?.[1] ?? "")
+      .split(",")
+      .map((name) => name.trim().replace(/^public\./u, ""))
+      .filter((name) => name !== "")
+      .sort();
+    expect(granted).toEqual(
+      [
+        ...BUILD_ROLE_READ_TABLES,
+        ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+      ].sort(),
+    );
+    expect(up0018).not.toMatch(/GRANT (?:INSERT|UPDATE|DELETE|TRUNCATE|ALL)/u);
+    expect(up0018).toMatch(/NOLOGIN[^;]*NOBYPASSRLS/u);
+    // No role default for `app.role`: unset already reads as `public`, and a non-superuser
+    // migration login cannot set a placeholder default (see the migration's header).
+    expect(up0018).not.toMatch(/^\s*ALTER ROLE app_build SET/mu);
+  });
+
+  it("rolls back every policy it creates, revokes the grants and drops the role", () => {
+    for (const policy of BUILD_POLICIES) {
+      expect(down0018).toContain(
+        `DROP POLICY IF EXISTS ${policy.name} ON public.${policy.table};`,
+      );
+    }
+    const revoke = /REVOKE ALL ON([\s\S]*?)FROM app_build;/u.exec(down0018);
+    const grant = /GRANT SELECT ON([\s\S]*?)TO app_build;/u.exec(up0018);
+    expect(revoke?.[1]?.trim()).toBe(grant?.[1]?.trim());
+    expect(down0018).toContain("DROP ROLE app_build;");
   });
 });

@@ -18,7 +18,7 @@ task actually touches.
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/info-page-head.test.tsx` +5 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +34 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +37 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +98 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
@@ -152,6 +152,7 @@ task actually touches.
 | `branch-protection.ts` | `branch-protection` | `pnpm branch-protection` — AC-21 / T-22 (spec 001 §2… |
 | `build.ts` | `build` | `pnpm build`: the ECB snapshot step, then `next build`… |
 | `catalogue-check.ts` | `catalogue:check` | `pnpm catalogue:check` (spec 005 §2 "Docs, fixtures,… |
+| `catalogue-parity.ts` | `catalogue:parity` | Static vs database registry parity, read-only (AC-2) |
 | `check-layout.ts` | `check-layout` | Layout manifest for `plan/01-architecture.md` §5 |
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20,… |
@@ -205,8 +206,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 345 |
-| `tests/integration/` | 39 |
+| `tests/unit/` | 348 |
+| `tests/integration/` | 41 |
 | `tests/contract/` | 24 |
 | `tests/e2e/` | 67 |
 | `tests/a11y/` | 15 |
