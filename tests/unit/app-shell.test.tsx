@@ -20,7 +20,7 @@ import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { renderToStaticMarkup } from "react-dom/server";
-import type { ReactElement } from "react";
+import { type ReactElement, cloneElement } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { NextIntlClientProvider } from "next-intl";
@@ -100,6 +100,8 @@ const {
 } = await import("../../src/app/[locale]/layout");
 const { default: LocaleHomePage, generateMetadata: localeHomeMetadata } =
   await import("../../src/app/[locale]/page");
+const { default: HomeHeader } =
+  await import("../../src/app/[locale]/@header/page");
 const { default: LocaleError } = await import("../../src/app/[locale]/error");
 const { default: GlobalErrorDocument } =
   await import("../../src/app/global-error");
@@ -173,12 +175,36 @@ const fiveLocaleRegistry = localeRegistryOf([
  * that no client module reads a message in production is asserted by
  * `tests/unit/client-message-graph.test.ts`.
  */
+type AsyncComponent = (props: unknown) => Promise<unknown>;
+
+/**
+ * The home's `@header` slot as Next would hand it to the layout (spec 043 §5.3 A; TASK-288): the
+ * header is the route's since TASK-288, not the layout's. `renderToStaticMarkup` cannot await a
+ * Server Component, so the two async ones on the way (`RouteHeader` and its `PageLocaleSwitcher`)
+ * are resolved here, which is what the RSC renderer does in the application.
+ */
+async function homeHeader(locale: string): Promise<ReactElement> {
+  const route = (await HomeHeader({
+    params: Promise.resolve({ locale }),
+  })) as ReactElement;
+  const header = (await (route.type as AsyncComponent)(
+    route.props,
+  )) as ReactElement<{ switcher: ReactElement }>;
+  const { switcher } = header.props;
+  return cloneElement(header, {
+    switcher: (await (switcher.type as AsyncComponent)(
+      switcher.props,
+    )) as ReactElement,
+  });
+}
+
 async function renderLocaleDocument(locale: string): Promise<string> {
   const page = (await LocaleHomePage({
     params: Promise.resolve({ locale }),
   })) as ReactElement;
   const document = (await LocaleLayout({
     children: page,
+    header: await homeHeader(locale),
     params: Promise.resolve({ locale }),
   })) as ReactElement;
   return renderToStaticMarkup(

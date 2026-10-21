@@ -1989,6 +1989,84 @@ async function breadcrumbFor(
   return crumbs;
 }
 
+/**
+ * The page one destination's row links in a hub's destination picker, or `undefined` when the row
+ * is text (spec 008 §2 "Links", §5.3; spec 043 §5.2).
+ *
+ * The country page of the same entity where it exists and its family is published. An occasion
+ * hub whose country occasion page does not exist (every evergreen occasion: §14 A1) links that
+ * country's **category of the same key** where one exists — "Birthday flowers for France" goes to
+ * `/france/flowers/birthday-flowers`, as `occasion-hub-desktop` draws it ("The links go to each
+ * country's sympathy-flowers category"). Without it an evergreen hub is a dead end (QA 2026-10-18
+ * Q1-12) and AC-35's destination link cannot exist.
+ *
+ * One rule, two readers: the hub's own picker (`linksFor()`) and the header in context
+ * (`hubDestinationHref()`), so the header can never send a buyer somewhere the hub would not.
+ */
+async function destinationRowHref(
+  locale: LocaleCode,
+  kind: "category" | "occasion",
+  entityKey: string,
+  country: CountryIso2,
+  memo: CountMemo,
+): Promise<string | undefined> {
+  const slug = slugFor(kind, entityKey, locale);
+  const linkable = familyPublished(
+    kind === "category" ? "countryCategory" : "countryOccasion",
+  );
+  const exists =
+    linkable &&
+    slug !== undefined &&
+    (kind === "category"
+      ? await countryCategoryExists(entityKey, country, locale, memo)
+      : await countryOccasionExists(entityKey, country, locale, memo));
+  if (exists) {
+    return pathOf(
+      locale,
+      kind === "category" ? "countryCategory" : "countryOccasion",
+      corridorSlug(country, locale),
+      slug,
+    );
+  }
+  if (kind !== "occasion") return undefined;
+  const categorySlug = slugFor("category", entityKey, locale);
+  if (categorySlug === undefined || !familyPublished("countryCategory")) {
+    return undefined;
+  }
+  return (await countryCategoryExists(entityKey, country, locale, memo))
+    ? pathOf(
+        locale,
+        "countryCategory",
+        corridorSlug(country, locale),
+        categorySlug,
+      )
+    : undefined;
+}
+
+/**
+ * The href a hub's own destination list gives one destination (spec 043 §5.2), or `undefined`
+ * when the hub does not exist in this locale or its row for that destination is text.
+ *
+ * Read by `destinationShopLinks()`: on a page in a destination's context the header's Bouquets,
+ * Roses, Plants, Birthday and Sympathy link where the matching hub's picker links that
+ * destination, never to a slug guessed from the entity's key.
+ */
+export async function hubDestinationHref(
+  locale: string,
+  hub: { readonly kind: "category" | "occasion"; readonly entityKey: string },
+  iso2: string,
+): Promise<string | undefined> {
+  if (!isLocaleCode(locale) || !isCountryIso2(iso2)) return undefined;
+  if (!publishedCountries().includes(iso2)) return undefined;
+  const memo = newMemo();
+  const hubExists =
+    hub.kind === "category"
+      ? await categoryHubExists(hub.entityKey, locale, memo)
+      : await occasionHubExists(hub.entityKey, locale, memo);
+  if (!hubExists) return undefined;
+  return destinationRowHref(locale, hub.kind, hub.entityKey, iso2, memo);
+}
+
 /** Every link §2 asks the page to render, and only to pages that exist. */
 async function linksFor(
   locale: LocaleCode,
@@ -2038,39 +2116,16 @@ async function linksFor(
     // destination is named**, and the ones whose page exists are the ones that carry an `href`.
     // Collating the names is the renderer's job — the label is a message key and only the page can
     // resolve it — so the order here is the registry's and the order on screen is `collator()`'s.
-    const slug = slugFor(kind, entityKey, locale);
-    const linkable = familyPublished(
-      kind === "category" ? "countryCategory" : "countryOccasion",
-    );
-    // An occasion hub whose country occasion page does not exist (every evergreen occasion: §14
-    // A1) links that country's **category of the same key** where one exists — "Birthday flowers
-    // for France" goes to `/france/flowers/birthday-flowers`, as `occasion-hub-desktop` draws it
-    // ("The links go to each country's sympathy-flowers category"). Without it an evergreen hub
-    // is a dead end (QA 2026-10-18 Q1-12) and AC-35's destination link cannot exist.
-    const categorySlug =
-      kind === "occasion" ? slugFor("category", entityKey, locale) : undefined;
-    const categoryLinkable =
-      kind === "occasion" &&
-      categorySlug !== undefined &&
-      familyPublished("countryCategory");
+    // Which page a row links is `destinationRowHref()`'s, the one rule the header in context reads
+    // too (spec 043 §5.2; `hubDestinationHref()`).
     for (const country of publishedCountries()) {
-      const exists =
-        linkable &&
-        slug !== undefined &&
-        (kind === "category"
-          ? await countryCategoryExists(entityKey, country, locale, memo)
-          : await countryOccasionExists(entityKey, country, locale, memo));
-      const categoryHref =
-        !exists &&
-        categoryLinkable &&
-        (await countryCategoryExists(entityKey, country, locale, memo))
-          ? pathOf(
-              locale,
-              "countryCategory",
-              corridorSlug(country, locale),
-              categorySlug,
-            )
-          : undefined;
+      const href = await destinationRowHref(
+        locale,
+        kind,
+        entityKey,
+        country,
+        memo,
+      );
       destinations.push(
         ListingDestinationLinkSchema.parse({
           iso2: country,
@@ -2079,18 +2134,7 @@ async function linksFor(
             kind === "category"
               ? await countIn(memo, entityKey, country)
               : await countFor(memo, entityKey, country),
-          ...(exists && slug !== undefined
-            ? {
-                href: pathOf(
-                  locale,
-                  kind === "category" ? "countryCategory" : "countryOccasion",
-                  corridorSlug(country, locale),
-                  slug,
-                ),
-              }
-            : categoryHref === undefined
-              ? {}
-              : { href: categoryHref }),
+          ...(href === undefined ? {} : { href }),
         }),
       );
     }

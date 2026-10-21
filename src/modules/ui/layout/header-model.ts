@@ -124,6 +124,34 @@ export function headerCurrencyCode(locale: string): string {
  */
 export type HeaderListingHrefs = Readonly<Partial<Record<string, string>>>;
 
+/**
+ * The header's shop items in one destination, by `src/config/categories.ts` row id (spec 043
+ * §5.2: the catalogue's `destinationShopLinks()`), as the `@header` slot hands them in. The same
+ * shape as `HeaderListingHrefs`, keyed by category instead of link id, so this module needs no
+ * catalogue type.
+ */
+export type HeaderShopLinks = Readonly<Partial<Record<string, string>>>;
+
+/**
+ * The listing hrefs of a page **in a destination's context** (spec 043 §5.3 A, AC-1): the
+ * out-of-context hrefs, with each shop item's entry replaced by its href in that destination. An
+ * item the destination's links do not name (Occasions, Destinations) keeps its own. Labels, order
+ * and drawing are untouched: only the hrefs move, and an unpublished entry stays undrawn, because
+ * `siteLinkHref()` still asks `isPublished()` first.
+ */
+export function inContextListingHrefs(
+  listingHrefs: HeaderListingHrefs,
+  shopLinks: HeaderShopLinks,
+): HeaderListingHrefs {
+  const moved = CATEGORIES.flatMap((category) => {
+    const href = shopLinks[category.id];
+    return href === undefined
+      ? []
+      : [[categoryRowLinkId(category.id), href] as const];
+  });
+  return { ...listingHrefs, ...Object.fromEntries(moved) };
+}
+
 /** One listing page the header may link to, as the catalogue's existence rule names it. */
 export interface HeaderListingTarget {
   readonly id: SiteLinkId;

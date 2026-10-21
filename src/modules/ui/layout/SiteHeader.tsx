@@ -159,9 +159,9 @@ export interface SiteHeaderProps {
   readonly listingHrefs?: HeaderListingHrefs;
   /**
    * The notice bar's "Prices include delivery and VAT" claim, decided **by the route** (founder,
-   * 2026-10-04: "Every price includes VAT and delivery. dont write this on home"). The document
-   * layout passes its `@notice` parallel-route slot: `<NoticePriceClaim />` on every page
-   * (`@notice/default.tsx`), nothing on the locale home (`@notice/page.tsx`). Price-indication
+   * 2026-10-04: "Every price includes VAT and delivery. dont write this on home"). The `@header`
+   * parallel-route slot that renders this header passes `<NoticePriceClaim />` on every page and
+   * nothing on the locale home (`src/app/[locale]/route-header.tsx`; TASK-288). Price-indication
    * law (e.g. Germany's PAngV) wants the statement beside prices, so it stays on the shop,
    * listing and product pages. Defaults to the claim, so a header with no route behind it (the
    * gallery, a unit render) shows the full notice.
@@ -169,8 +169,9 @@ export interface SiteHeaderProps {
   readonly priceClaim?: ReactNode;
   /**
    * The language links, decided **by the route** like `priceClaim` (spec 003 §2 L79, §5.3; spec
-   * 004 §14 A24 AC-47; TASK-233). The document layout passes its `@switcher` slot: `LocaleSwitcher`
-   * with this page's own path in each locale that has it, and the locale home elsewhere. The same
+   * 004 §14 A24 AC-47; TASK-233). The `@header` slot passes the same links the `@switcher` slot
+   * draws in the footer: this page's own path in each locale that has it, and the locale home
+   * elsewhere. The same
    * node is drawn in the utility strip and in the phone menu. Defaults to the switcher's locale
    * homes, for a header with no route behind it (the gallery, a unit render).
    */
@@ -179,7 +180,7 @@ export interface SiteHeaderProps {
 
 /**
  * The price claim as the notice bar prints it: `·` and "Prices include delivery and VAT". The
- * `@notice` slot renders it; the home renders nothing in its place.
+ * `@header` slot passes it on every page; the home renders nothing in its place.
  */
 export function NoticePriceClaim(): ReactElement {
   const t = useTranslations("nav");

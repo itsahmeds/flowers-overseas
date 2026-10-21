@@ -1,0 +1,50 @@
+{
+  "_comment": "Spec 043 AC-3 / T-03: the header row's and the phone Menu's hrefs out of context, captured from main at 3efcdc39 (SiteHeader with the layout's headerListingHrefs) before TASK-288. Ids are data-fo-header-item / data-fo-menu-item; send is the Send flowers target. Never regenerate from the branch.",
+  "capturedFrom": "3efcdc39",
+  "en": {
+    "row": {
+      "our-selection": "/en/poland/flowers",
+      "birthday": "/en/occasions/birthday",
+      "sympathy": "/en/occasions/sympathy",
+      "occasions": "/en/occasions",
+      "bouquets": "/en/flowers/hand-tied-bouquets",
+      "roses": "/en/flowers/roses",
+      "plants": "/en/flowers/plants",
+      "destinations": "/en/send-flowers-to"
+    },
+    "menu": {
+      "our-selection": "/en/poland/flowers",
+      "birthday": "/en/occasions/birthday",
+      "sympathy": "/en/occasions/sympathy",
+      "occasions": "/en/occasions",
+      "bouquets": "/en/flowers/hand-tied-bouquets",
+      "roses": "/en/flowers/roses",
+      "plants": "/en/flowers/plants",
+      "destinations": "/en/send-flowers-to"
+    },
+    "send": "/en#send"
+  },
+  "en-gb": {
+    "row": {
+      "our-selection": "/en-gb/poland/flowers",
+      "birthday": "/en-gb/occasions/birthday",
+      "sympathy": "/en-gb/occasions/sympathy",
+      "occasions": "/en-gb/occasions",
+      "bouquets": "/en-gb/flowers/hand-tied-bouquets",
+      "roses": "/en-gb/flowers/roses",
+      "plants": "/en-gb/flowers/plants",
+      "destinations": "/en-gb/send-flowers-to"
+    },
+    "menu": {
+      "our-selection": "/en-gb/poland/flowers",
+      "birthday": "/en-gb/occasions/birthday",
+      "sympathy": "/en-gb/occasions/sympathy",
+      "occasions": "/en-gb/occasions",
+      "bouquets": "/en-gb/flowers/hand-tied-bouquets",
+      "roses": "/en-gb/flowers/roses",
+      "plants": "/en-gb/flowers/plants",
+      "destinations": "/en-gb/send-flowers-to"
+    },
+    "send": "/en-gb#send"
+  }
+}
