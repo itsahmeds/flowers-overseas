@@ -474,7 +474,7 @@ Q1 to Q16 are all answered by their recommended defaults: the founder replied "a
 - **Q15. Order of work.** **Recommended: slice A now** (florist bouquets on sale), **slice B after the first real order** (approvals for all other text, the translations queue, the language and link switches, holidays and occasion rules).
 - **Q16. Cuts that would ship slice A sooner (the advisor's options; you decide).** C1: move the country editor and go-live (task 8) after the first sale. C2: drop the Vercel fallback for Publish, since Vercel builds nothing today. C3: move the approval ledger to slice B and use a simpler Approve button meanwhile, which saves the most time but proves less well that no agent approved text. **Recommended: C2 yes. C1 only in part:** TASK-239 puts Poland back to `demo` until ordering opens, so the go-live check and switch are how ordering opens after the cutover and stay in slice A; only the editor for country operations and corridor flags moves after the first sale. **C3 no:** the ledger is what keeps text approval your own act.
 
-### 13.1 Bulk upload ("bulk defaults"), open
+### 13.1 Bulk upload ("bulk defaults"), answered 2026-10-21
 
 Raised by §14 A-founder-2026-10-21b. Answered 2026-10-21: the founder's "bulk defaults" accepts every recommendation below; AC-40 to AC-48 are written for them.
 
@@ -494,7 +494,7 @@ Raised by §14 A-founder-2026-10-21b. Answered 2026-10-21: the founder's "bulk d
 ## 14. Amendments
 
 **A-founder-2026-10-21b: bulk upload of a florist's bouquets and prices (slice A.2).**
-**Status: draft.** The request is the founder's own (2026-10-21, verbatim): "also add option to bulk upload the product data in the cms too". The design choices are §13 Q17 to Q28, each with a recommended default; they bind when the founder answers ("bulk defaults" accepts every default), and the founder marks this amendment approved. Until then nothing approved in §2 to §12 changes and `/plan-tasks` does not plan tasks 14a and 14b. Context: florists set their own bouquets and prices (founder, 2026-10-19), so a florist's whole price list must load at once; slice A's editor (§2.5) takes one product at a time, and §3 deferred "bulk price updates" to `plan/11` §7 (Phase 4). This amendment brings forward only the file upload of bouquets, sizes, copy and prices; rule-based bulk price changes stay in Phase 4 (§3). No `CLAUDE.md` rule is bent, so no ADR is needed.
+**Status: approved 2026-10-21 ("bulk defaults"; advisor F1 to F5 applied).** The request is the founder's own (2026-10-21, verbatim): "also add option to bulk upload the product data in the cms too". The design choices are §13 Q17 to Q28, each with a recommended default; they bind when the founder answers ("bulk defaults" accepts every default), and the founder marks this amendment approved. Until then nothing approved in §2 to §12 changes and `/plan-tasks` does not plan tasks 14a and 14b. Context: florists set their own bouquets and prices (founder, 2026-10-19), so a florist's whole price list must load at once; slice A's editor (§2.5) takes one product at a time, and §3 deferred "bulk price updates" to `plan/11` §7 (Phase 4). This amendment brings forward only the file upload of bouquets, sizes, copy and prices; rule-based bulk price changes stay in Phase 4 (§3). No `CLAUDE.md` rule is bent, so no ADR is needed.
 
 ### 14.1 Where it sits (§13 Q17)
 
