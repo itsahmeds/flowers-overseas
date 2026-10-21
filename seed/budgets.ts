@@ -46,6 +46,13 @@
  *    1200 px baseline file that never loads in a page at all. They are recorded as decisions in
  *    TASK-075's PR rather than derived silently, and the day a real measurement disagrees, this
  *    is the one file to edit.
+ *  - **productDetail 120 000 B since TASK-306** (it was 60 000 B, sized for a 384 px thumbnail
+ *    step). Spec 006 §14 A-founder-2026-10-20b gives the slot the `productHero` ladder (384 / 480 /
+ *    640 / 828) at the pinned qualities, and a close-up is busier than a whole bouquet: the
+ *    largest 828 WebP over the 84 detail originals is 117 920 B, above the hero's 90 000 B. The
+ *    measurement disagreed, so the number moved rather than the ladder; it is never a first-load
+ *    byte (a lazy gallery slide, or a hover layer that loads on hover, spec 042 AC-13), so the
+ *    page budgets above are untouched. Escalated for confirmation in `docs/tasks/TASK-306.md`.
  *
  * The caps are per **variant file**, at the widest width the slot ships: a cap per (slot, width)
  * would be a table nobody maintains, and the widest file is the one that can blow the budget.
@@ -87,7 +94,10 @@ export const DERIVED_MEDIA_DIR = ".local/media";
 export const SLOT_BYTE_CAPS: Readonly<Record<MediaSlot, number>> = {
   hero: 90_000,
   productHero: 90_000,
-  productDetail: 60_000,
+  // 120 000 since TASK-306: the detail photograph takes the product hero's ladder (spec 006 §14
+  // A-founder-2026-10-20b clause 1, spec 042 AC-20), and its busiest 828 WebP is 117 920 B. See
+  // the header's provenance note.
+  productDetail: 120_000,
   occasionTile: 18_000,
   productThumb: 8_000,
   context: 60_000,

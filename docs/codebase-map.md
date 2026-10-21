@@ -340,7 +340,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 490 |
+| `tests/unit/` | 491 |
 | `tests/integration/` | 99 |
 | `tests/contract/` | 40 |
 | `tests/e2e/` | 77 |
