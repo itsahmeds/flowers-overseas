@@ -224,6 +224,13 @@ describe.skipIf(server.url === undefined)(
           deps(),
         ),
       ).toEqual({ ok: false, reason: "mismatch" });
+      // "The key typed exactly" (`/break 306` hole 4): no trimming, no case folding.
+      for (const typed of [" checkout.demo_guard", "Checkout.Demo_Guard"]) {
+        expect(
+          await toggleFlag(admin(), { ...form, confirmKey: typed }, deps()),
+          typed,
+        ).toEqual({ ok: false, reason: "mismatch" });
+      }
       expect(await scopeRows()).toEqual(before);
 
       const saved = await toggleFlag(

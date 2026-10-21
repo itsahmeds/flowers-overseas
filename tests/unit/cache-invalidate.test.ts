@@ -11,11 +11,36 @@
  *  - either half failing is one `warn` line with the tags and both outcomes, and one Sentry warning
  *    with the tags; success is one `info` line and no report; it never rejects.
  */
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+
+// The production defaults of `invalidate()` (`/break 306` hole 2): Next's `revalidatePath` and
+// Sentry's `captureWarning` are mocked at their module boundary, and the `cache` edge adapter is
+// spied on, so a call with no overrides is observed end to end.
+const defaults = vi.hoisted(() => ({
+  revalidated: [] as string[],
+  warnings: [] as { signal: string; fields: unknown }[],
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: (path: string) => {
+    defaults.revalidated.push(path);
+  },
+}));
+
+vi.mock("../../src/lib/sentry", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/lib/sentry")>();
+  return {
+    ...actual,
+    captureWarning: (signal: string, fields: unknown) => {
+      defaults.warnings.push({ signal, fields });
+    },
+  };
+});
 
 import {
   CACHE_INVALIDATE_FAILED_SIGNAL,
   type CacheAdapter,
+  cache,
   homeCacheTag,
   invalidate,
   pathsForTag,
@@ -236,5 +261,35 @@ describe("invalidate() — origin, then edge (spec 012 §5.4)", () => {
       edge: "failed",
     });
     expect(run.reports).toHaveLength(1);
+  });
+});
+
+describe("invalidate() with its production defaults (spec 012 §11)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    defaults.revalidated = [];
+    defaults.warnings = [];
+  });
+
+  it("revalidates Poland's paths through revalidatePath and purges the edge through cache", async () => {
+    const edge = vi.spyOn(cache, "invalidate").mockResolvedValue({ ok: true });
+    await invalidate(["catalog:PL"]);
+
+    const paths = await pathsForTag("catalog:PL");
+    expect(paths.length).toBeGreaterThan(0);
+    for (const path of paths) expect(defaults.revalidated).toContain(path);
+    expect(edge.mock.calls).toEqual([[["catalog:PL"]]]);
+    expect(defaults.warnings).toEqual([]);
+  });
+
+  it("reports a failing edge to Sentry once, as cache.invalidate.failed with the tags", async () => {
+    vi.spyOn(cache, "invalidate").mockResolvedValue({ ok: false });
+    await invalidate(["catalog:PL"]);
+    expect(defaults.warnings).toEqual([
+      {
+        signal: "cache.invalidate.failed",
+        fields: { tags: ["catalog:PL"], origin: "ok", edge: "failed" },
+      },
+    ]);
   });
 });
