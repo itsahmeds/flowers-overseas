@@ -238,12 +238,12 @@ describe("the trending row is gated on real orders", () => {
   });
 
   it("tells the browser the card's rendered width, not the listing grid's (TASK-168, AC-15)", () => {
-    // `MEDIA_SLOT_SPECS.trending`, written out: the row is 2-up below `md` (14 px apart inside
-    // 20 px gutters, TASK-232's drawn grid: 168 px at 390) and 5-up from it, inside `HOME_BLEED`,
-    // so the browser picks the rung that fits the phone card rather than the 640 w one the listing
-    // grid's 50vw asked for.
+    // `MEDIA_SLOT_SPECS.trending`, written out: below `md` the row scrolls sideways, each card
+    // 44 % of the screen less its 20 px gutters (TASK-284, item 5A: 154 px at 390), and it is
+    // 5-up from `md`, inside `HOME_BLEED`, so the browser picks the rung that fits the phone card
+    // rather than the 640 w one the listing grid's 50vw asked for.
     const TRENDING_SIZES =
-      "(min-width: 768px) calc(20vw - 41.6px), calc(50vw - 27px)";
+      "(min-width: 768px) calc(20vw - 41.6px), calc(44vw - 17.6px)";
     const html = render(<TrendingRow locale="en" />, "en");
     const sizes = [...html.matchAll(/\bsizes="([^"]*)"/g)].map(
       (match) => match[1],

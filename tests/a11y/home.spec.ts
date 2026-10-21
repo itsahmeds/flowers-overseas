@@ -45,6 +45,30 @@ for (const path of AUDITED) {
   });
 }
 
+/**
+ * AC-49 on the home (TASK-284 item 5A): at the phone artboard's 390 × 844, Popular choices is a
+ * sideways scroller, and axe finds nothing in it at any impact — in particular no
+ * `scrollable-region-focusable`, which is what a scroller with no tab stop inside it would raise.
+ */
+test("Popular choices at 390 is a scroller axe finds nothing in (AC-49)", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect((await page.goto("/en-gb"))?.status()).toBe(200);
+  const row = page.locator("[data-fo-trending] ul");
+  expect(await row.evaluate((node) => getComputedStyle(node).overflowX)).toBe(
+    "auto",
+  );
+  const results = await new AxeBuilder({ page })
+    .include("[data-fo-trending]")
+    .analyze();
+  expect(results.violations.map((violation) => violation.id)).toEqual([]);
+  expect(
+    results.passes.map((pass) => pass.id),
+    "the scroller rule ran and passed",
+  ).toContain("scrollable-region-focusable");
+});
+
 test("every sentence-picker control clears the 44 px tap-target floor (§5.3)", async ({
   page,
 }) => {

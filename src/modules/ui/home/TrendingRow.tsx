@@ -184,9 +184,25 @@ export function TrendingRow({
           </TextLink>
         )}
       </div>
-      {/* The phone draws the five as a two-column grid (`.M .grid5`, 32 px by 14 px; TASK-232,
-          QA-3 D-07), not a scroller: the `trending` slot's `sizes` states that card's width. */}
-      <ul className="m-0 grid list-none grid-cols-2 gap-x-[14px] gap-y-[32px] p-0 md:grid-cols-5 md:gap-x-[24px] md:gap-y-[40px]">
+      {/* Item 5A (TASK-284; TASK-252 "all A"; spec 004 AC-49; `home-mobile.dc.html` `.scroll5`):
+          below `md` the five are one row that scrolls sideways, each card 44 % of the row with a
+          14 px gap, bled to the screen's edges by the gutter and padded by it, so the first card
+          starts on the page's frame, the third peeks at the edge and no half row is left blank;
+          the `trending` slot's `sizes` states that card's width. It really scrolls, with snap;
+          nothing auto-advances and nothing is called a carousel (AC-36). The 8 px block padding,
+          taken back by the same negative margin, is room inside the scroller's clip for a card's
+          4 px lift and its focus ring, so the layout does not move. Every card is a link on the
+          home, so the row takes no tab stop; with no link in it, the row is the stop, named by
+          the heading. From `md`, one row of five, unchanged. */}
+      <ul
+        aria-labelledby={HEADING_ID}
+        className="m-0 grid list-none p-0 max-md:-mx-(--gutter-s) max-md:-my-[8px] max-md:snap-x max-md:snap-mandatory max-md:scroll-px-(--gutter-s) max-md:[scrollbar-width:none] max-md:auto-cols-[44%] max-md:grid-flow-col max-md:gap-x-[14px] max-md:overflow-x-auto max-md:overscroll-x-contain max-md:px-(--gutter-s) max-md:py-[8px] md:grid-cols-5 md:gap-x-[24px] md:gap-y-[40px]"
+        {...(picks.some(
+          (pick) => trendingPickHref(pick.sku, productPages) !== undefined,
+        )
+          ? {}
+          : { tabIndex: 0 })}
+      >
         {picks.map((pick) => {
           const href = trendingPickHref(pick.sku, productPages);
           const moving = href !== undefined;
@@ -200,7 +216,11 @@ export function TrendingRow({
             />
           );
           return (
-            <li key={pick.id} data-fo-trending-pick={pick.id}>
+            <li
+              className="max-md:snap-start"
+              key={pick.id}
+              data-fo-trending-pick={pick.id}
+            >
               <CardLink href={href}>
                 {/*
               The pick's photograph, or the captioned placeholder — whichever the dataset earns
@@ -211,7 +231,7 @@ export function TrendingRow({
             */}
                 {moving ? <CardMotionFrame>{photo}</CardMotionFrame> : photo}
                 <CardHeading
-                  className={`display text-h3-s md:text-h3 mt-[10px] leading-(--line-height-title) md:mt-[14px]${moving ? ` ${CARD_MOTION_HEADING}` : ""}`}
+                  className={`display md:text-h3 mt-[10px] text-[19px] leading-(--line-height-title) md:mt-[14px]${moving ? ` ${CARD_MOTION_HEADING}` : ""}`}
                 >
                   {pick.name}
                   {moving ? <CardMotionLine /> : null}
