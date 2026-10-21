@@ -186,6 +186,7 @@ describe("the committed migration set", () => {
       "0020_checkout_draft_lines.sql",
       "0021_post_purchase.sql",
       "0022_florists_v0.sql",
+      "0023_review_attestation.sql",
     ]);
   });
 });
