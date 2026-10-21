@@ -279,6 +279,6 @@ Gates, head b42e8adc plus this change (load average 70+, so the wide suite was r
 ```
 deferred-set.test.tsx  41 passed
 lint 0 · format:check 0 · i18n:check 0 · check:no-db 0 · codebase:map --check 0
-typecheck 2: stale untracked .next/types/validator.ts names src/app/[locale]/@notice/page.js (not in this tree); src/ has no errors
+typecheck 2 on first run: stale ignored .next/types (removed); re-run clean, exit 0
 tests: 3 timeouts at 5000 ms under load (url-pii, zod-boundaries, lint-coverage); re-run alone with --testTimeout=60000: 77 passed
 ```
