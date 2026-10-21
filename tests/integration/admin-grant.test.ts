@@ -2,6 +2,9 @@
  * `pnpm admin:grant` (spec 012 §2.2 "Bootstrap and users"; TASK-217): arguments validated, the
  * user, profile and role created or updated on a scratch database, idempotently, and a
  * deactivated person re-activated; the real script run end to end prints no address.
+ *
+ * T-11's grant half (spec 012b AC-11; TASK-293): `--locale` adds a `reviewer_locale` row and
+ * `--revoke-locale` removes it, alone or with a grant, and neither ends a session.
  */
 import { execFile } from "node:child_process";
 import { resolve } from "node:path";
@@ -61,6 +64,50 @@ describe("admin:grant arguments", () => {
       expect(() => parseAdminGrantArgs(argv), argv.join(" ")).toThrow();
     }
   });
+
+  it("takes --locale and --revoke-locale, repeated, with a grant or alone (spec 012b AC-11)", () => {
+    expect(
+      parseAdminGrantArgs([
+        "--email",
+        "native@example.test",
+        "--locale",
+        "PL",
+        "--locale",
+        "en-gb",
+        "--revoke-locale",
+        "de",
+      ]),
+    ).toEqual({
+      email: "native@example.test",
+      locales: ["pl", "en-gb"],
+      revokeLocales: ["de"],
+    });
+    expect(
+      parseAdminGrantArgs([
+        "--email",
+        "native@example.test",
+        "--name",
+        "Native Test",
+        "--role",
+        "content",
+        "--locale",
+        "pl",
+      ]),
+    ).toEqual({
+      email: "native@example.test",
+      name: "Native Test",
+      role: "content",
+      locales: ["pl"],
+    });
+    for (const argv of [
+      ["--email", "a@example.test"],
+      ["--email", "a@example.test", "--locale", "polish"],
+      ["--email", "a@example.test", "--role", "content", "--locale", "pl"],
+      ["--email", "a@example.test", "--revoke-locale", ""],
+    ]) {
+      expect(() => parseAdminGrantArgs(argv), argv.join(" ")).toThrow();
+    }
+  });
 });
 
 describe.skipIf(server.url === undefined)(
@@ -94,6 +141,54 @@ describe.skipIf(server.url === undefined)(
       expect(rows).toEqual([
         { roles: ["admin", "ops"], deactivated: false, name: "Founder Test" },
       ]);
+    });
+
+    it("--locale grants and --revoke-locale removes a review locale, and no session ends (spec 012b AC-11)", async () => {
+      await scratch.sql`INSERT INTO locale (code, bcp47, name) VALUES
+                          ('pl', 'pl-PL', 'Polski'), ('de', 'de-DE', 'Deutsch')
+                        ON CONFLICT DO NOTHING`;
+      const id = await adminGrant(scratch.sql, {
+        email: "native@example.test",
+        name: "Native Test",
+        role: "content",
+        locales: ["pl"],
+      });
+      await scratch.sql`INSERT INTO sessions (session_token, user_id, expires)
+                        VALUES (${`s-${id}`}, ${id}, now() + interval '1 day')`;
+      const locales = async () =>
+        (
+          await scratch.sql<{ locale_code: string }[]>`
+            SELECT locale_code FROM reviewer_locale WHERE user_id = ${id} ORDER BY locale_code`
+        ).map((row) => row.locale_code);
+      const sessions = async () =>
+        (
+          await scratch.sql<{ n: number }[]>`
+            SELECT count(*)::int AS n FROM sessions WHERE user_id = ${id}`
+        )[0]?.n;
+      expect(await locales()).toEqual(["pl"]);
+
+      expect(
+        await adminGrant(scratch.sql, {
+          email: "native@example.test",
+          locales: ["de", "pl"],
+        }),
+      ).toBe(id);
+      expect(await locales()).toEqual(["de", "pl"]);
+      expect(await sessions()).toBe(1);
+
+      await adminGrant(scratch.sql, {
+        email: "native@example.test",
+        revokeLocales: ["pl"],
+      });
+      expect(await locales()).toEqual(["de"]);
+      expect(await sessions()).toBe(1);
+
+      await expect(
+        adminGrant(scratch.sql, {
+          email: "nobody@example.test",
+          locales: ["pl"],
+        }),
+      ).rejects.toThrow(/no such user/u);
     });
 
     it("runs as a script and prints no address", async () => {
