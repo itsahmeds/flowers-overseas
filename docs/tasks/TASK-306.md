@@ -35,7 +35,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21: started; worktree `../fo-wt-306`, branch `task/TASK-306-detail-ladder`. Next: measure the detail ladder's bytes, the red test, the ladder change, the re-derive.
 
 ## Result
 
