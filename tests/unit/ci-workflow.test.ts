@@ -358,8 +358,13 @@ describe("the jobs TASK-011 adds", () => {
       ...containerJob.matchAll(/--build-arg\s+"?([^\s"]+)/gu),
     ].map((m) => m[1]);
     expect(buildArgs.length).toBeGreaterThan(0);
+    // …and the positive-control probe image, which is handed the same sentinel's token.
+    expect(buildArgs).toContain("DATABASE_BUILD_URL=$BUILD_URL_SENTINEL");
     for (const arg of buildArgs) {
-      expect(arg).toBe("DATABASE_BUILD_URL=$BUILD_URL_SENTINEL");
+      expect([
+        "DATABASE_BUILD_URL=$BUILD_URL_SENTINEL",
+        "PROBE=$token",
+      ]).toContain(arg);
     }
     expect(ci.jobs["container"]?.env?.["BUILD_URL_SENTINEL"]).toMatch(
       /^postgres:\/\/app_build:fo-ci-sentinel-\$\{\{ github\.run_id \}\}@db\.invalid:5432\/fo$/u,
