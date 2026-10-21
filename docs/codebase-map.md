@@ -12,20 +12,20 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +6 |
+| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-users.test.ts`, `integration/audit-trail.test.ts` +3 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
 | `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +82 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/info-page-head.test.tsx` +5 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +33 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +97 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +34 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +95 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
-| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +27 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts` +48 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | — |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +26 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/home-v3.spec.ts` +49 |
 
 ## Config (`src/config/`)
 
@@ -83,8 +83,15 @@ task actually touches.
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the parameter… | 008 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
-| `[locale]/@notice/default.tsx` | The notice bar's price claim on every localised page… | 004 |
-| `[locale]/@notice/page.tsx` | The locale home's `@notice` slot: no price claim… | — |
+| `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
+| `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
+| `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
+| `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
+| `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
+| `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`: the… | 043 |
+| `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of context. A… | 043 |
+| `[locale]/@header/default.tsx` | The `@header` slot's fallback: the out-of-context… | 043 |
+| `[locale]/@header/page.tsx` | The locale home's header: out of context, and with no… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/page.tsx` | Depth-3 language links | 003 |
@@ -100,9 +107,8 @@ task actually touches.
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4;… | 003 |
+| `[locale]/route-header.tsx` | The commerce header as one route draws it (spec 043 §2… | 043 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
-| `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first (AC-14) | 012 |
-| `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles, orphans | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -197,14 +203,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 343 |
-| `tests/integration/` | 39 |
-| `tests/contract/` | 24 |
-| `tests/e2e/` | 66 |
+| `tests/unit/` | 334 |
+| `tests/integration/` | 38 |
+| `tests/contract/` | 14 |
+| `tests/e2e/` | 67 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 333 |
+| `tests/fixtures/` | 334 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

@@ -690,7 +690,7 @@ test.describe("the currency chip (AC-8)", () => {
 
 /**
  * Founder, 2026-10-04: "Every price includes VAT and delivery. dont write this on home". The
- * notice bar's price claim is decided by the route (`src/app/[locale]/@notice`): absent on the
+ * notice bar's price claim is decided by the route (the `@header` slot, `src/app/[locale]/route-header.tsx`): absent on the
  * locale home, present beside prices — here, a product page reached from the home's own trending
  * row, so the URL is the one the site links to. Desktop width, where the claims are printed.
  */
@@ -727,9 +727,9 @@ test.describe("the notice bar's price claim follows the route", () => {
 });
 
 /**
- * The claim on every page below the home (PR 172 breaker hole H2). The `@notice` slot renders it
- * from `default.tsx` at every depth the slot has no page for, so a page added under `@notice` for
- * one depth (say a `[segment]/page.tsx` that returns nothing) would silently drop it from every
+ * The claim on every page below the home (PR 172 breaker hole H2). The `@header` slot passes it
+ * at every depth but the home (TASK-288, formerly the `@notice` slot's `default.tsx`), so a slot
+ * page that dropped it for one depth (say a `[segment]/page.tsx` passing `home`) would silently drop it from every
  * document of that depth. So each depth is visited: one segment (the occasions index and the
  * destinations hub), two (a country shop root and a corridor guide), three (a country category
  * and a country occasion listing), plus the de and pl shop roots in their own words.
