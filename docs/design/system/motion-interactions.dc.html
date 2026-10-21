@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400,100;1,9..144,300,100&family=Alegreya+Sans:wght@400;700&family=Caveat:wght@500&family=Newsreader:opsz,wght@6..72,500&display=swap">
+  <style>
+:root{
+  --color-paper: oklch(99.8% 0.002 85);
+  --color-paper-2: oklch(98.9% 0.006 85);
+  --color-paper-3: oklch(96.6% 0.01 85);
+  --color-card: oklch(100% 0 0);
+  --color-ink: oklch(25% 0.06 285);
+  --color-ink-2: oklch(42% 0.05 285);
+  --color-ink-3: oklch(50% 0.04 285);
+  --color-rule: oklch(89% 0.02 285);
+  --color-accent: oklch(54% 0.2 30);
+  --color-accent-strong: oklch(47% 0.19 30);
+  --color-accent-ink: oklch(100% 0 0);
+  --color-sky: oklch(48% 0.16 262);
+  --color-sky-strong: oklch(40% 0.15 262);
+  --color-sun: oklch(87% 0.15 92);
+  --color-stem: oklch(44% 0.1 155);
+  --color-blush: oklch(93.5% 0.04 30);
+  --color-butter: oklch(96.5% 0.055 95);
+  --color-sage-wash: oklch(94% 0.03 250);
+  --color-leaf-wash: oklch(94.5% 0.04 155);
+  --color-logo-ink: oklch(19% 0.01 250);
+  --color-logo-accent: oklch(42% 0.1 155);
+  --color-shade: oklch(25% 0.06 285 / 0.12);
+  --color-scrim: oklch(25% 0.06 285 / 0.45);
+  --color-field-edge: oklch(62% 0.035 285);
+  --color-success: oklch(44% 0.1 155);
+  --color-warning: oklch(48% 0.11 75);
+  --color-danger: oklch(47% 0.19 30);
+  --color-danger-strong: oklch(40% 0.17 30);
+  --color-on-success: var(--color-accent-ink);
+  --color-on-warning: var(--color-accent-ink);
+  --color-on-danger: var(--color-accent-ink);
+  --color-photo-stop-1: oklch(97% 0.012 85);
+  --color-photo-stop-2: oklch(94.5% 0.02 60);
+  --color-photo-stop-3: oklch(91.5% 0.03 40);
+  --color-photo-ink: oklch(42% 0.05 285);
+  --color-photo: linear-gradient(160deg, var(--color-photo-stop-1) 0%, var(--color-photo-stop-2) 50%, var(--color-photo-stop-3) 100%);
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-paper-2);
+  --color-surface-muted: var(--color-paper-3);
+  --color-surface-card: var(--color-card);
+  --color-surface-inverse: var(--color-ink);
+  --color-ink-muted: var(--color-ink-2);
+  --color-ink-subtle: var(--color-ink-3);
+  --color-on-inverse: var(--color-paper);
+  --color-on-inverse-accent: var(--color-sun);
+  --color-brand: var(--color-accent);
+  --color-on-brand: var(--color-accent-ink);
+  --color-on-accent: var(--color-accent-ink);
+  --color-link: var(--color-sky);
+  --color-link-strong: var(--color-sky-strong);
+  --color-eyebrow: var(--color-sky);
+  --color-mark: var(--color-sky);
+  --color-selected: var(--color-sky);
+  --color-on-selected: var(--color-card);
+  --color-included: var(--color-stem);
+  --color-border: var(--color-rule);
+  --color-border-strong: var(--color-ink-3);
+  --color-border-emphasis: var(--color-ink);
+  --color-focus: var(--color-accent);
+  --airmail-edge: repeating-linear-gradient(135deg, var(--color-accent) 0 12px, var(--color-card) 12px 18px, var(--color-sky) 18px 30px, var(--color-card) 30px 36px);
+  --airmail-edge-size: 7px;
+  --airmail-edge-size-footer: 9px;
+  --letter-lines: repeating-linear-gradient(to bottom, transparent 0 47px, var(--color-rule) 47px 48px);
+  --card-lines: repeating-linear-gradient(to bottom, transparent 0 37px, var(--color-rule) 37px 38px);
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-body: "Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
+  --font-logo: "Newsreader", Georgia, serif;
+  --font-weight-display-hero: 400;
+  --font-weight-display: 400;
+  --font-weight-display-em: 300;
+  --font-weight-body: 400;
+  --font-weight-medium: 400;
+  --font-weight-bold: 700;
+  --font-weight-hand: 500;
+  --font-variation-display: "SOFT" 100;
+  --font-variation-display-hero: "SOFT" 100, "opsz" 144;
+  --text-hero: 90px;
+  --text-hero-s: 50px;
+  --text-display: 84px;
+  --text-display-s: 42px;
+  --text-title: 68px;
+  --text-title-s: 44px;
+  --text-3xl: 54px;
+  --text-3xl-s: 32px;
+  --text-2xl: 44px;
+  --text-2xl-s: 30px;
+  --text-stamp: 72px;
+  --text-xl: 34px;
+  --text-lg: 27px;
+  --text-lg-s: 23px;
+  --text-hand: 31px;
+  --text-md: 23px;
+  --text-h3: 21px;
+  --text-h3-s: 18px;
+  --text-body: 18px;
+  --text-body-s: 17px;
+  --text-ui: 16px;
+  --text-sm: 15px;
+  --text-fine: 14px;
+  --text-xs: 13px;
+  --line-height-hero: 0.96;
+  --line-height-display: 0.98;
+  --line-height-heading: 1.04;
+  --line-height-title: 1.2;
+  --line-height-body: 1.55;
+  --line-height-tight: 1.4;
+  --tracking-hero: -0.03em;
+  --tracking-display: -0.015em;
+  --tracking-label: 0.14em;
+  --tracking-wordmark: 0.04em;
+  --measure: 58ch;
+  --measure-lede: 46ch;
+  --text-hero-fluid: clamp(50px, min(5.2vw, 8.6vh), 76px); /* spec 004 §14 A23 clause 9 */
+  --text-display-fluid: clamp(42px, min(5vw, 8vh), 70px); /* spec 004 §14 A23 clause 9 */
+  --text-title-fluid: clamp(44px, min(4.2vw, 6.8vh), 58px); /* spec 004 §14 A23 clause 9 */
+  --text-3xl-fluid: clamp(32px, min(3.6vw, 5.8vh), 46px); /* spec 004 §14 A23 clause 9 */
+  --text-2xl-fluid: clamp(30px, 3vw, 38px); /* spec 004 §14 A23 clause 9 */
+  --text-lede-fluid: clamp(18px, 1.5vw, 21px);
+  --section-fluid: clamp(64px, min(7vw, 11vh), 104px); /* spec 004 §14 A23 clause 9 */
+  --gutter-fluid: clamp(20px, 4vw, 56px);
+  --space-2xs: 2px;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-sm2: 12px;
+  --space-md: 16px;
+  --space-md2: 20px;
+  --space-lg: 24px;
+  --space-lg2: 32px;
+  --space-xl: 40px;
+  --space-xl2: 56px;
+  --space-section-s: 64px;
+  --space-2xl: 72px;
+  --space-3xl: 128px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 72px;
+  --spacing-3xl: 128px;
+  --page-max: 1328px;
+  --gutter: 56px;
+  --gutter-s: 20px;
+  --target-min: 44px;
+  --control-md: 54px;
+  --control-sm: 44px;
+  --control-send: 60px;
+  --field-height: 46px;
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-letter: 6px;
+  --radius-field: 10px;
+  --radius-chip: 12px;
+  --radius-photo-s: 14px;
+  --radius-photo: 18px;
+  --radius-hero: 28px;
+  --radius-full: 9999px;
+  --radius-arch: 999px 999px 14px 14px;
+  --shadow-xs: 0 1px 2px var(--color-shade);
+  --shadow-sm: 0 1px 2px var(--color-shade), 0 2px 8px var(--color-shade);
+  --shadow-md: 0 2px 4px var(--color-shade), 0 8px 24px var(--color-shade);
+  --shadow-letter: 0 1px 1px var(--color-shade), 0 22px 44px -12px var(--color-shade);
+  --shadow-paper: 0 2px 2px var(--color-shade), 0 22px 40px -16px var(--color-shade);
+  --shadow-stamp: 0 8px 14px var(--color-shade);
+  --shadow-sticky: 0 -10px 24px -14px var(--color-shade);
+  --rule: 1px solid var(--color-rule);
+  --rule-field: 1.5px solid var(--color-field-edge);
+  --focus-ring: 2.5px solid var(--color-focus);
+  --focus-offset: 3px;
+  --tilt-letter: -0.8deg;
+  --tilt-letter-s: -0.6deg;
+  --tilt-ps: 0.8deg;
+  --tilt-card: -2.5deg;
+  --tilt-postmark: -9deg;
+  --tilt-signoff: -1.5deg;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-photo: 700ms;
+  --duration-draw: 600ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0.13, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-photo: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --layer-header: 100;
+  --layer-banner: 200;
+  --layer-overlay: 300;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--color-paper-3); }
+.fo { font-family: var(--font-body); font-size: var(--text-body); line-height: var(--line-height-body); color: var(--color-ink); background: var(--color-paper); -webkit-font-smoothing: antialiased; }
+.fo.M { font-size: var(--text-body-s); }
+:where(.fo) :where(p, ul, ol, dl, dd, figure, blockquote) { margin: 0; }
+:where(.fo) :where(ul, ol) { padding: 0; list-style: none; }
+:where(.fo) a { color: inherit; }
+.fo h1, .fo h2, .fo h3 { margin: 0; font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); text-wrap: balance; }
+.fo h1 em, .fo h2 em { font-style: italic; font-weight: var(--font-weight-display-em); color: var(--color-accent); }
+:where(.fo) :where(button, select, input, textarea) { font: inherit; color: inherit; }
+.vh { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.wrap { padding-inline: var(--gutter); }
+.M .wrap { padding-inline: var(--gutter-s); }
+.num { font-variant-numeric: lining-nums tabular-nums; }
+
+/* ---------- annotation: the specification block (not page) ---------- */
+.note { margin: var(--space-lg) var(--gutter) var(--space-lg); padding: var(--space-lg); background: var(--color-paper-3); border: 1px dashed var(--color-ink-3); border-radius: var(--radius-letter); font-family: var(--font-body); font-size: var(--text-fine); line-height: 1.5; color: var(--color-ink-2); }
+.M .note { margin-inline: var(--space-sm2); padding: var(--space-md); font-size: var(--text-xs); }
+.note .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink); margin-block-end: var(--space-sm2); }
+.note dl { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: var(--space-sm) var(--space-md); }
+.M .note dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.M .note dd { margin-block-end: var(--space-sm); }
+.note dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.note dd { margin: 0; }
+.note b { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.note code, .stub code, .slot code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-card); border-radius: var(--radius-md); padding-inline: 3px; }
+.note ul { display: grid; gap: 2px; }
+.note li::before { content: "· "; color: var(--color-ink-3); }
+
+/* the band that separates the page from its drawn states */
+.state-band { margin-block-start: var(--space-xl); padding: var(--space-xl) var(--gutter) var(--space-2xl); background: var(--color-paper-3); border-block-start: 1px dashed var(--color-ink-3); }
+.M .state-band { padding: var(--space-lg) var(--gutter-s) var(--space-xl); }
+.state-band > .nl { display: block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); margin-block-end: var(--space-lg); }
+.states { display: grid; gap: var(--space-lg); }
+.D .states.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.D .states.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.state { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: var(--space-lg); display: grid; gap: var(--space-md); align-content: start; }
+.M .state { padding: var(--space-md); }
+.state-tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-sage-wash); border-radius: var(--radius-full); padding: 3px 12px; }
+.stub { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.stub b { color: var(--color-ink); }
+.slot { display: inline; font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 -1.5px 0 var(--color-warning); padding-inline: 3px; border-radius: var(--radius-sm); }
+
+/* ================= spec 042: premium interactions (founder 2026-10-20, "all defaults, keep going") =================
+   Five of the six ideas, each with its frames and its reduced-motion form. Idea 3 (the second
+   photo on hover) is blocked on spec 042 §13 Q6 and is not drawn. On the canvas each motion loops
+   so it can be watched; in the build each plays once per trigger. The loops below are the
+   artboard's own demonstration; the values a build ships are in each cell's table. */
+.sheet { padding: var(--space-xl) var(--gutter) var(--space-2xl); display: grid; gap: 72px; }
+.sec-h { display: grid; gap: 6px; margin-block-end: 24px; }
+.sec-h .kick { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); }
+.sec-h h2 { font-size: var(--text-lg); line-height: var(--line-height-title); }
+.sec-h p { font-size: var(--text-sm); color: var(--color-ink-2); max-inline-size: 92ch; }
+.tag { justify-self: start; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; border-radius: var(--radius-full); padding: 3px 10px; white-space: nowrap; background: var(--color-butter); color: var(--color-ink); }
+.tag.off { background: var(--color-paper-3); color: var(--color-ink-2); }
+.duo { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px; align-items: start; }
+.stage { position: relative; background: var(--color-paper-2); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: 28px; display: grid; place-items: center; overflow: hidden; }
+.cap { font-size: var(--text-xs); color: var(--color-ink-3); line-height: 1.4; }
+.cap b { color: var(--color-ink-2); }
+.vt { inline-size: 100%; border-collapse: collapse; font-size: var(--text-xs); background: var(--color-card); border-radius: var(--radius-md); }
+.vt th, .vt td { text-align: start; vertical-align: top; padding: 7px 10px; border-block-end: var(--rule); line-height: 1.45; }
+.vt th { color: var(--color-ink); white-space: nowrap; font-weight: var(--font-weight-bold); }
+.vt td { color: var(--color-ink-2); }
+.vt code, .stub code, .cap code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; color: var(--color-ink); background: var(--color-paper-3); border-radius: var(--radius-md); padding-inline: 3px; }
+.frames4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-block-start: 20px; }
+.frames3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-block-start: 20px; }
+.fr { display: grid; gap: 8px; align-content: start; }
+.fr > .cap:first-child { font-weight: var(--font-weight-bold); color: var(--color-ink-2); letter-spacing: 0.06em; text-transform: uppercase; }
+.stills { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-block-start: 20px; }
+.still { background: var(--color-paper); border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); padding: 16px; display: grid; gap: 10px; align-content: start; }
+.still .state-tag { font-size: 11px; }
+.img { inline-size: 100%; block-size: 100%; background-size: cover; background-position: center; }
+
+/* ---------- motion 14 (idea 1): the morph, drawn in miniature (a 1440 × 900 viewport at 0.3, frames at 0.2) ---------- */
+.vp { position: relative; inline-size: 432px; block-size: 270px; background: var(--color-paper); border-radius: 8px; box-shadow: 0 0 0 1px var(--color-rule), var(--shadow-md); overflow: hidden; }
+.vp.s { inline-size: 288px; block-size: 180px; box-shadow: 0 0 0 1px var(--color-rule); }
+.vp .bar { position: absolute; inset-inline: 0; inset-block-start: 0; block-size: 12%; border-block-end: var(--rule); background: var(--color-paper); }
+.vp .bar::before { content: ""; position: absolute; inset-inline-start: 4%; inset-block-start: 38%; inline-size: 12%; block-size: 22%; border-radius: 2px; background: var(--color-ink); opacity: 0.7; }
+.vp .bar::after { content: ""; position: absolute; inset-inline-end: 4%; inset-block-start: 34%; inline-size: 8%; block-size: 30%; border-radius: 99px; background: var(--color-accent); }
+.vp .pg { position: absolute; inset: 0; }
+.vp .ln { position: absolute; block-size: 3px; border-radius: 2px; background: var(--color-rule); }
+.vp .ln.k { background: var(--color-ink-3); block-size: 6px; }
+.vp .bx { position: absolute; border-radius: 5px; overflow: hidden; }
+.vp.s .bx { border-radius: 3.6px; }
+.vp .bx.ph { background: var(--color-paper-3); }
+.vp .bx.hold { box-shadow: inset 0 0 0 1px var(--color-rule); background: var(--color-paper); }
+.vp .fly { position: absolute; border-radius: 5px; overflow: hidden; transform-origin: 0 0; z-index: 3; }
+.vp.s .fly { border-radius: 3.6px; }
+.vp .ptr { position: absolute; z-index: 4; inline-size: 12px; block-size: 12px; border-radius: 50%; box-shadow: 0 0 0 2px var(--color-card), 0 0 0 3.5px var(--color-ink); }
+.vp .lift { box-shadow: var(--shadow-letter); }
+/* loop: 4,000 ms. 0 to 35 % the listing with card 3 hovered; at 35 % the click; the new page swaps at once;
+   the photograph flies 320 ms (8 %) with --ease-emphasised; held to 90 %; then the loop resets. */
+.morph .old { animation: m-old 4000ms infinite; }
+.morph .new { animation: m-new 4000ms infinite; }
+.morph .fly { animation: m-fly 4000ms infinite; }
+.morph .ptr { animation: m-old 4000ms infinite; }
+@keyframes m-old { 0%, 34.9% { opacity: 1; } 35%, 99.9% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes m-new { 0%, 34.9% { opacity: 0; } 35%, 99.9% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes m-fly { 0%, 35% { transform: translate(170px, 81px) scale(0.4753); animation-timing-function: var(--ease-emphasised); } 43%, 100% { transform: none; } }
+.morph.rm .fly, .morph.rm .old, .morph.rm .new, .morph.rm .ptr { animation-name: m-none; }
+@keyframes m-none { from { opacity: 1; } to { opacity: 1; } }
+
+/* ---------- motion 15 (idea 2): the card preview, one component ---------- */
+.cp { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 24px; align-items: start; inline-size: 100%; max-inline-size: 640px; }
+.cp.ph { grid-template-columns: minmax(0, 1fr); gap: 14px; max-inline-size: 350px; }
+.cp-leg { font-weight: var(--font-weight-bold); font-size: var(--text-ui); margin-block-end: 10px; grid-column: 1 / -1; }
+.cp-field { display: grid; gap: 6px; }
+.cp-write { position: relative; display: grid; min-block-size: 150px; border-radius: var(--radius-letter); padding: 14px 18px; font-size: var(--text-ui); line-height: 1.5; color: var(--color-ink); background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-field-edge); align-content: start; }
+.cp-write.focus { box-shadow: inset 0 0 0 1.5px var(--color-field-edge), 0 0 0 2.5px var(--color-focus); }
+.cp-count { justify-self: end; font-size: var(--text-xs); color: var(--color-ink-3); font-variant-numeric: tabular-nums; display: grid; }
+.card42 { margin: 0; display: grid; gap: 12px; align-content: start; min-block-size: 190px; padding: 18px; background: var(--color-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm), inset 0 0 0 1px var(--color-rule); }
+.card42 svg { inline-size: 26px; block-size: 26px; }
+.card42 .lines { display: grid; }
+.card42 .msg, .card42 .sig { grid-area: 1 / 1; font-family: var(--font-hand); font-weight: var(--font-weight-hand); font-size: 22px; line-height: 1.25; color: var(--color-ink); overflow-wrap: anywhere; white-space: pre-line; }
+.card42 .msg.smp { color: var(--color-ink-3); }
+.card42 .sig { grid-area: auto; }
+.card42 figcaption { border-block-start: var(--rule); padding-block-start: 8px; font-size: var(--text-xs); color: var(--color-ink-3); margin-block-start: auto; }
+.stack { display: grid; }
+.stack > * { grid-area: 1 / 1; }
+/* loop: 6,000 ms. Empty to 15 %; "H" at 15 % (the first input: the sample fades out and the words fade in,
+   200 ms = 3.333 %); then each keystroke updates the line at once; cleared at 70 % (the sample fades back). */
+.type .smp { animation: t-smp 6000ms infinite; }
+.type .typ { animation: t-typ 6000ms infinite; }
+.type .k1 { animation: t-k1 6000ms infinite; }
+.type .k2 { animation: t-k2 6000ms infinite; }
+.type .k3 { animation: t-k3 6000ms infinite; }
+.type .k4 { animation: t-k4 6000ms infinite; }
+.type .n0 { animation: t-n0 6000ms infinite; }
+@keyframes t-smp { 0%, 15% { opacity: 1; animation-timing-function: var(--ease-standard); } 18.333%, 70% { opacity: 0; animation-timing-function: var(--ease-standard); } 73.333%, 100% { opacity: 1; } }
+@keyframes t-typ { 0%, 15% { opacity: 0; animation-timing-function: var(--ease-standard); } 18.333%, 70% { opacity: 1; animation-timing-function: var(--ease-standard); } 73.333%, 100% { opacity: 0; } }
+@keyframes t-k1 { 0%, 14.9% { opacity: 0; } 15%, 19.9% { opacity: 1; } 20%, 100% { opacity: 0; } }
+@keyframes t-k2 { 0%, 19.9% { opacity: 0; } 20%, 26.9% { opacity: 1; } 27%, 100% { opacity: 0; } }
+@keyframes t-k3 { 0%, 26.9% { opacity: 0; } 27%, 32.9% { opacity: 1; } 33%, 100% { opacity: 0; } }
+@keyframes t-k4 { 0%, 32.9% { opacity: 0; } 33%, 72.9% { opacity: 1; } 73%, 100% { opacity: 0; } }
+@keyframes t-n0 { 0%, 14.9% { opacity: 1; } 15%, 72.9% { opacity: 0; } 73%, 100% { opacity: 1; } }
+/* in the field the words appear and vanish at once: a field never fades */
+.type .cp-write .k4 { animation-name: t-k4f; }
+@keyframes t-k4f { 0%, 32.9% { opacity: 0; } 33%, 69.9% { opacity: 1; } 70%, 100% { opacity: 0; } }
+
+/* ---------- motion 16 (idea 4): soft loading ---------- */
+.sl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; inline-size: 100%; }
+.sl-card { display: grid; gap: 10px; align-content: start; }
+.sl-box { position: relative; aspect-ratio: 4 / 5; border-radius: var(--radius-photo); overflow: hidden; background: var(--color-paper-2); }
+.sl-box .lqip { position: absolute; inset: -24px; background-size: cover; background-position: center; filter: blur(14px); }
+.sl-box.fill { background: var(--color-photo-stop-3); }
+.sl-box .img { position: absolute; inset: 0; }
+.sl-box .g-prov, .gal .g-prov { position: absolute; inset-block-end: 12px; inset-inline-start: 12px; background: var(--color-card); color: var(--color-ink-2); font-size: var(--text-xs); padding: 4px 12px; border-radius: var(--radius-full); line-height: 1.3; max-inline-size: calc(100% - 24px); }
+.sl-card h3 { font-size: 19px; line-height: var(--line-height-title); }
+.sl-card .price { font-weight: var(--font-weight-bold); font-variant-numeric: lining-nums tabular-nums; }
+.sl-card .price small { font-weight: var(--font-weight-body); font-size: var(--text-fine); color: var(--color-ink-3); margin-inline-start: 6px; }
+/* loop: 3,600 ms. The photograph arrives at 30 %. Priority and above the fold: at once. Below the fold: motion 11's 320 ms fade. */
+.sl.loop .snap .img { animation: s-snap 3600ms infinite; }
+.sl.loop .fade .img { animation: s-fade 3600ms infinite; }
+@keyframes s-snap { 0%, 29.9% { opacity: 0; } 30%, 92% { opacity: 1; } 92.1%, 100% { opacity: 0; } }
+@keyframes s-fade { 0%, 30% { opacity: 0; animation-timing-function: var(--ease-standard); } 38.889%, 92% { opacity: 1; } 92.1%, 100% { opacity: 0; } }
+.sl.rm .fade .img { animation-name: s-snap; }
+.sl.ph { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; inline-size: 350px; }
+.sl.ph .sl-box { border-radius: var(--radius-photo-s); }
+.sl.ph h3 { font-size: 16px; }
+.frz .img { opacity: 0; }
+.frz.mid .img { opacity: 0.5; }
+.frz.end .img { opacity: 1; }
+
+/* ---------- motion 17 (idea 5): the phone gallery, at 390 ---------- */
+.phone { inline-size: 390px; background: var(--color-paper); border-radius: 22px; box-shadow: 0 0 0 1px var(--color-rule), var(--shadow-md); overflow: hidden; }
+.phone.s { inline-size: 280px; border-radius: 16px; }
+.gal { position: relative; block-size: 470px; overflow: hidden; }
+.phone.s .gal { block-size: 337px; }
+.gal .track { display: flex; block-size: 100%; }
+.gal .slide { flex: 0 0 100%; block-size: 100%; position: relative; }
+.gal .slide .img { position: absolute; inset: 0; }
+.gal .g-prov { inset-block-end: auto; inset-block-start: 12px; inset-inline-start: 20px; }
+.phone.s .gal .g-prov { inset-inline-start: 12px; font-size: 10px; padding: 3px 9px; }
+.gdots { position: absolute; z-index: 3; inset-block-end: 40px; inset-inline: 0; display: flex; justify-content: center; }
+.phone.s .gdots { inset-block-end: 28px; }
+.gdots .pill { display: flex; gap: 0; padding-inline: 4px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: var(--shadow-xs); }
+.gdots a { inline-size: 32px; block-size: 24px; display: grid; place-items: center; }
+.gdots a::before { content: ""; inline-size: 8px; block-size: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--color-ink-2); }
+.gdots a[aria-current="true"]::before { background: var(--color-ink); box-shadow: 0 0 0 2px var(--color-card), 0 0 0 4px var(--color-ink); }
+.gsheet { position: relative; z-index: 2; margin-block-start: -28px; padding: 20px 20px 22px; background: var(--color-paper); border-start-start-radius: 24px; border-start-end-radius: 24px; display: grid; gap: 6px; }
+.phone.s .gsheet { padding: 14px 14px 16px; margin-block-start: -20px; border-start-start-radius: 18px; border-start-end-radius: 18px; }
+.gsheet .grip { justify-self: center; inline-size: 40px; block-size: 4px; border-radius: 4px; background: var(--color-rule); }
+.gsheet .lbl2 { font-size: var(--text-xs); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-3); font-weight: var(--font-weight-bold); }
+.gsheet h3 { font-size: 30px; line-height: 1.1; }
+.phone.s .gsheet h3 { font-size: 22px; }
+.gsheet .pv-price { display: flex; gap: 10px; align-items: baseline; }
+.gsheet .pv-price span { font-size: var(--text-xs); color: var(--color-ink-3); }
+.fing { position: absolute; z-index: 4; inline-size: 34px; block-size: 34px; border-radius: 50%; background: var(--color-ink); opacity: 0; inset-block-start: 220px; }
+/* loop: 6,000 ms. Rest on photo 1; a swipe from 15 %; the snap settles at 25 %; dot 2 becomes current at
+   settle (not during the drag); at 60 % a tap on dot 1 scrolls back smoothly (about 400 ms, the browser's). */
+.swipe .track { animation: g-track 6000ms infinite; }
+.swipe .d1 { animation: g-d1 6000ms infinite; }
+.swipe .d2 { animation: g-d2 6000ms infinite; }
+.swipe .fing { animation: g-fing 6000ms infinite; }
+@keyframes g-track { 0%, 15% { transform: translateX(0); animation-timing-function: var(--ease-standard); } 21% { transform: translateX(-62%); animation-timing-function: var(--ease-emphasised); } 25%, 60% { transform: translateX(-100%); animation-timing-function: var(--ease-standard); } 66.667%, 100% { transform: translateX(0); } }
+@keyframes g-d1 { 0%, 24.9% { opacity: 1; } 25%, 59.9% { opacity: 0; } 60%, 100% { opacity: 1; } }
+@keyframes g-d2 { 0%, 24.9% { opacity: 0; } 25%, 59.9% { opacity: 1; } 60%, 100% { opacity: 0; } }
+@keyframes g-fing { 0%, 13% { opacity: 0; transform: translateX(260px); } 14% { opacity: 0.35; transform: translateX(260px); } 21% { opacity: 0.35; transform: translateX(60px); } 22%, 100% { opacity: 0; transform: translateX(60px); } }
+.dset { display: contents; }
+.swipe.rm .track { animation-name: g-track-rm; }
+@keyframes g-track-rm { 0%, 15% { transform: translateX(0); animation-timing-function: var(--ease-standard); } 21% { transform: translateX(-62%); animation-timing-function: var(--ease-emphasised); } 25%, 59.9% { transform: translateX(-100%); } 60%, 100% { transform: translateX(0); } }
+
+/* ---------- motion 18 (idea 6): the route line on the country guide page ---------- */
+.rt { overflow: visible; }
+.rt .dash { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 6 7; }
+.rt .mask { fill: none; stroke: var(--color-paper); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 300; stroke-dashoffset: -300; }
+.rt .you { fill: var(--color-paper); stroke: var(--color-ink-2); stroke-width: 1.5; }
+.rt .to { fill: var(--color-accent); }
+.rt.on-2 .mask { stroke: var(--color-paper-2); }
+/* loop: 3,000 ms. 500 ms after load (16.667 %) the mask unrolls in 600 ms (20 %); the destination dot then fades in 200 ms. */
+.rt.loop .mask { animation: r-mask 3000ms infinite; }
+.rt.loop .to { animation: r-to 3000ms infinite; }
+@keyframes r-mask { 0%, 16.667% { stroke-dashoffset: 0; animation-timing-function: var(--ease-emphasised); } 36.667%, 100% { stroke-dashoffset: -300; } }
+@keyframes r-to { 0%, 36.667% { opacity: 0; animation-timing-function: var(--ease-standard); } 43.333%, 100% { opacity: 1; } }
+.rt.f0 .mask { stroke-dashoffset: 0; }
+.rt.f0 .to, .rt.f1 .to { opacity: 0; }
+.rt.f1 .mask { stroke-dashoffset: -150; }
+.rhero { display: grid; grid-template-columns: minmax(0, 1fr) 180px 208px; column-gap: 20px; align-items: start; inline-size: 100%; padding: 24px 0 8px; }
+.rhero .copy { display: grid; gap: 12px; align-content: start; }
+.rhero .eyebrow { margin: 0; }
+.rhero h3 { font-size: 56px; line-height: var(--line-height-display); letter-spacing: var(--tracking-hero); font-variation-settings: var(--font-variation-display-hero); }
+.rhero h3 em { font-style: italic; font-weight: var(--font-weight-display-em); color: var(--color-accent); }
+.rhero .side { display: grid; gap: 10px; justify-items: end; align-content: start; }
+.rhero .side .eyebrow { margin: 0; }
+.rhero .dts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; inline-size: 100%; }
+.rhero .dts span { display: grid; gap: 2px; padding: 8px; border-radius: var(--radius-chip); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 11px; line-height: 1.25; color: var(--color-ink-2); }
+.rhero .dts b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 26px; line-height: 1; color: var(--color-ink); }
+.rhero .route { inline-size: 180px; block-size: 120px; margin-block-start: 40px; }
+.box-h1 { outline: 1px dashed var(--color-sky); outline-offset: 2px; }
+.box-rt { outline: 1px dashed var(--color-accent); outline-offset: 2px; }
+[dir="rtl"] .mirror { transform: scaleX(-1); }
+
+/* ---------- reduced motion: the canvas honours it too ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .morph .fly, .morph .old, .morph .new, .morph .ptr, .type *, .sl.loop .img, .swipe *, .rt.loop .mask, .rt.loop .to { animation: none !important; }
+  .morph .old, .morph .ptr { opacity: 0; }
+  .type .smp, .type .n0, .sl.loop .img { opacity: 1; }
+  .type .typ, .type .k1, .type .k2, .type .k3, .type .k4, .swipe .d2 { opacity: 0; }
+  .rt.loop .mask { stroke-dashoffset: -300; }
+}
+
+  </style>
+</helmet>
+<div class="fo D" style="inline-size: 1440px;">
+<section class="note"><span class="nl">Premium interactions: the morph, the card preview, soft loading, the phone gallery and the route line · system · spec 042 · 2026-10-20 · [internal]</span><dl>
+<dt>Purpose</dt><dd>The founder (2026-10-19): “anything else that we missed motion or design or animation wise?”, then “fix and do all this tooo.” and “we will only launch after that bro.” Spec 042 turns six ideas into limits and values; the founder approved it on 2026-10-20, verbatim: <b>“all defaults, keep going”</b>. This sheet fixes the look of the five that build now, each with its frames and its reduced-motion form, so 042-1, 042-2, 042-4, 042-5 and 042-6 can be planned. It continues <code>system/motion.dc.html</code>'s numbering: motions 14 to 18.</dd>
+<dt>Not drawn</dt><dd><b>Idea 3, the second photo on hover, is not drawn.</b> It waits on spec 042 §13 Q6 (are the 84 approved detail photographs good enough as the second photo?), which has no default and is the founder's call, and on 042-V (the detail photographs at the hero's width ladder). When Q6 is answered, its cell goes on <code>system/motion-premium.dc.html</code> beside motion 6, which it layers on.</dd>
+<dt>Where it applies</dt><dd>Motion 14: a product card on any listing, hub or home rail, to that product's page, from <code>lg</code> (64rem, 1,024 px) up. Motion 15: the product page's card section and checkout step 2. Motion 16: every photograph drawn through <code>MediaAsset</code>. Motion 17: the product page gallery below <code>lg</code>. Motion 18: the country guide page's first screen (<code>/{locale}/send-flowers-to/{country}</code>), from <code>md</code> (48rem, 768 px) up. A system sheet: no URL of its own, no index status. The page artboards that carry these in place: <code>wireframes/product-desktop.dc.html</code>, <code>wireframes/product-mobile.dc.html</code>, <code>wireframes/checkout-desktop.dc.html</code>, <code>wireframes/checkout-mobile.dc.html</code>, <code>wireframes/corridor-country-desktop.dc.html</code>, <code>wireframes/corridor-country-mobile.dc.html</code> (each gains a “Spec 042” band).</dd>
+<dt>Data it reads</dt><dd>Real catalogue photographs, the R2 files the site serves: Amber Hour <code>fo-bq-001-hero</code> and <code>fo-bq-001-detail</code>, Baltic Dawn <code>fo-bq-003-hero</code>, Blush Terrace <code>fo-bq-021-hero</code>, with their <code>seed/data/alt/en-gb.json</code> alt text. The placeholders and fill colours come from <code>seed/data/media-lqip.json</code>, which <code>pnpm media:lqip</code> has not generated yet: the placeholder is drawn as a blurred copy of the same file, and the fill as <code>--color-photo-stop-3</code>, a stand-in for each asset's own mean colour. The detail photograph is drawn from its 384 px file, the only one that exists until 042-V gives it the hero's ladder. Prices are the ones <code>system/motion-premium.dc.html</code> and <code>wireframes/country-shop-desktop.dc.html</code> draw for these three cards; the phone sheet repeats <code>wireframes/product-mobile.dc.html</code>.</dd>
+<dt>Copy</dt><dd>Reused verbatim, no new key (spec 042 L11): <code>product.card.legend</code> “What should the card say?”, <code>product.card.printed</code> and <code>checkout.card.preview</code> “Printed on our card · included”, <code>catalog.addon.card.description</code> (the sample sentence), <code>checkout.card.label</code> “Card message”, <code>checkout.card.previewLabel</code> “Preview of the printed card”, <code>checkout.card.signAs</code> “Sign as”, <code>checkout.card.counter</code>, <code>a11y.media.gallery</code> “Product images”, <code>a11y.media.imageOfCount</code> “Image {index} of {total}”, <code>media.provenance.aiExample</code>, <code>catalog.price.allIn</code> “all in”. The typed text “Happy birthday, Ola” is spec 042 AC-10's test string; “Happy birthday Mama!” and “Love, Anna” are the checkout artboard's sample. <b>No <code>[slot]</code> is left on this sheet.</b></dd>
+<dt>States</dt><dd>Each motion: rest, the frames of the motion, its end, and the stills: reduced motion, no JavaScript, an unsupported browser, a phone, a first load. Loading is motion 16 itself. No motion here has an error state: each one fails to the page as it is today.</dd>
+<dt>Binding, all five</dt><dd><table class="vt"><tbody>
+<tr><th scope="row">L1 Properties</th><td>Only <code>transform</code> and <code>opacity</code> animate; the route also animates <code>stroke-dashoffset</code> on its inline SVG. The morph replaces the UA group keyframes (which animate <code>width</code> and <code>height</code>) with transform-only keyframes (spec 004 §14 A-founder-2026-10-20a clause 2).</td></tr>
+<tr><th scope="row">L2 CLS</th><td>0. Every moving layer is absolutely positioned inside a box that exists at rest.</td></tr>
+<tr><th scope="row">L3 LCP</th><td>On a first load, a reload and a JavaScript-off load the LCP element paints at its final position and opacity in its first frame; nothing adds <code>blocking="render"</code>. The morph is the one exception, on a card click from <code>lg</code> up only (A-founder-2026-10-20a).</td></tr>
+<tr><th scope="row">L5 Bytes</th><td>Per idea, Brotli: morph 400 B JS (deferred, pages with cards only), 400 B CSS, 60 B HTML per card · card preview 160 B in the product island, 160 B in <code>CardCounter</code>, 300 B CSS · soft loading 200 B CSS, 4,096 B HTML per page · gallery 400 B in the product island or 0 B in CSS, 300 B CSS · route 300 B CSS, 1,024 B uncompressed SVG. All six: 2,048 B CSS. Route budgets unchanged (131,072 B; 133,120 B on product pages); one product island, at most 2,048 B.</td></tr>
+<tr><th scope="row">L7 Reduced motion</th><td>Under <code>prefers-reduced-motion: reduce</code>: no transform, position or stroke change over time, nothing iterates, at most an opacity change of 120 ms. Each cell draws its reduced form.</td></tr>
+<tr><th scope="row">L10 Tokens</th><td><code>--duration-fast</code> 120, <code>--duration-base</code> 200, <code>--duration-slow</code> 320, <code>--duration-draw</code> 600 ms; <code>--ease-standard</code>, <code>--ease-emphasised</code>, <code>--ease-photo</code>. No raw duration or colour.</td></tr>
+<tr><th scope="row">L9, L12, L13</th><td>No text, link, alt, canonical, robots, hreflang, sitemap or schema value changes or moves to the client. Every photograph and placeholder is an example arrangement under the existing label. The card is printed, never called handwritten. Nothing reads IP, <code>Accept-Language</code> or a geo header.</td></tr>
+</tbody></table></dd>
+<dt>On the canvas</dt><dd>Each stage loops so it can be watched; in the build each motion plays once per trigger. The small frames under each stage are the instants named in their captions. The canvas honours the viewer's own reduced-motion setting too. Pointer and finger marks are drawn for the reader and do not ship.</dd>
+<dt>Owning spec</dt><dd>042 §5.3.0 to §5.3.6 and §13 (Q1 (a) transform-only, Q4 (a), Q7 (a), Q8 every default, Q9, Q10 keep) · AC-1 to AC-11, AC-15 to AC-20 (AC-12 to AC-14 wait on Q6) · spec 004 §14 A-founder-2026-10-20a (the morph) and A-founder-2026-10-20c (Caveat at checkout step 2) · <code>system/motion.dc.html</code> motions 5, 11 and 13, which these extend.</dd>
+<dt>Overlaps</dt><dd>None on this file. The page bands touch <code>wireframes/product-*</code> (also edited by TASK-278, PR 294), <code>wireframes/checkout-*</code> and <code>wireframes/corridor-country-*</code>; spec 043's header and listing-head work does not reach these regions.</dd>
+</dl></section>
+
+<div class="sheet">
+
+<section aria-labelledby="m14"><div class="sec-h"><span class="kick">Motion 14 · idea 1 · task 042-1 · from lg up</span><h2 id="m14">The card's photograph carries the buyer into the product page</h2><p>Only the photograph moves. The rest of the old page goes at once and the new page is there at once: no root crossfade. The card's 4∶5 box and the hero's 4∶5 box share a ratio from <code>lg</code> up, so a uniform scale lands it exactly, with no stretch and no crop.</p></div>
+<div class="duo"><div class="stage" style="min-block-size:340px"><div class="vp morph" aria-label="A large-screen browser, drawn small: a listing with four cards; the third card is clicked and its photograph glides into the product page's hero">
+  <div class="pg old"><div class="bar"></div><span class="ln" style="inset-inline-start:3.9%;inset-block-start:16%;inline-size:22%"></span><span class="ln k" style="inset-inline-start:3.9%;inset-block-start:22%;inline-size:38%;block-size:12px"></span><span class="ln" style="inset-inline-start:3.9%;inset-block-start:32%;inline-size:30%"></span><span class="ln" style="inset-inline-start:3.9%;inset-block-start:36%;inline-size:26%"></span><span class="ln" style="inset-inline-start:3.9%;inset-block-start:44%;inline-size:9%;block-size:7px;background:var(--color-accent)"></span>
+    <div class="bx" style="inset-inline-start:3.89%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp)"></div></div>
+    <div class="bx" style="inset-inline-start:27.5%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div></div>
+    <div class="bx lift" style="inset-inline-start:51.11%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%;transform:translateY(-1.2px)"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);transform:scale(1.06)"></div></div>
+    <div class="bx" style="inset-inline-start:74.72%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-002-hero/384.webp)"></div></div>
+  </div>
+  <span class="ptr" style="inset-inline-start:60%;inset-block-start:72%"></span>
+  <div class="pg new"><div class="bar"></div><span class="ln" style="inset-inline-start:3.9%;inset-block-start:16%;inline-size:30%"></span>
+    <div class="bx" style="inset-inline-start:3.89%;inset-block-start:21.78%;inline-size:5.65%;block-size:11.3%;box-shadow:0 0 0 1px var(--color-ink)"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp)"></div></div>
+    <div class="bx" style="inset-inline-start:3.89%;inset-block-start:34.4%;inline-size:5.65%;block-size:11.3%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp)"></div></div>
+    <span class="ln" style="inset-inline-start:66.85%;inset-block-start:23%;inline-size:16%"></span><span class="ln k" style="inset-inline-start:66.85%;inset-block-start:27%;inline-size:20%;block-size:14px"></span><span class="ln" style="inset-inline-start:66.85%;inset-block-start:36%;inline-size:9%;block-size:7px;background:var(--color-ink)"></span>
+    <span class="bx hold" style="inset-inline-start:66.85%;inset-block-start:44%;inline-size:9%;block-size:8%"></span><span class="bx hold" style="inset-inline-start:76.9%;inset-block-start:44%;inline-size:9%;block-size:8%;box-shadow:inset 0 0 0 1.5px var(--color-ink)"></span><span class="bx hold" style="inset-inline-start:86.95%;inset-block-start:44%;inline-size:9%;block-size:8%"></span>
+    <span class="ln" style="inset-inline-start:66.85%;inset-block-start:58%;inline-size:29%"></span><span class="ln" style="inset-inline-start:66.85%;inset-block-start:62%;inline-size:22%"></span>
+    <span class="ln" style="inset-inline-start:66.85%;inset-block-start:72%;inline-size:29.26%;block-size:16px;border-radius:99px;background:var(--color-accent)"></span>
+  </div>
+  <div class="fly" style="inset-inline-start:11.76%;inset-block-start:21.78%;inline-size:45%;block-size:90%"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div>
+</div></div>
+<div><table class="vt"><tbody>
+<tr><th scope="row">Trigger</th><td>Activating a product card's link (click or Enter) that starts a same-origin document navigation, at a viewport of <code>lg</code> or wider, under <code>prefers-reduced-motion: no-preference</code>, in a browser with cross-document view transitions.</td></tr>
+<tr><th scope="row">Opt-in</th><td>Both documents: <code>@view-transition { navigation: auto; }</code> inside <code>(prefers-reduced-motion: no-preference)</code> and <code>(min-width: 64rem)</code>. The root carries <code>view-transition-name: none</code> on both, so nothing but the photograph is captured.</td></tr>
+<tr><th scope="row">The name</th><td>The product hero carries the product's name. On the old page a <code>pageswap</code> handler (≤ 400 B, the deferred motion module) puts the same name on <b>the activated card's photograph box only</b>, never a static name per card: a product can sit in two home rails, and two boxes with one name abort the transition. A click before the handler loads navigates as today.</td></tr>
+<tr><th scope="row">The flight</th><td>Custom group keyframes, transform only: from the card's box, <code>translate()</code> plus one uniform <code>scale()</code> about <code>transform-origin: 0 0</code> (<code>100% 0</code> under <code>dir="rtl"</code>), to <code>none</code> on the hero's box. <code>--duration-slow</code> 320 ms, <code>--ease-emphasised</code>, once. Its end box equals the hero's box within 1 px (AC-7).</td></tr>
+<tr><th scope="row">The images</th><td>Both snapshots fill the group with <code>object-fit: cover</code>. The old one (the card's photograph) stays under; the new one (the hero) fades in over it, <code>opacity</code> 0 to 1 in <code>--duration-base</code> 200 ms <code>--ease-standard</code>. If the hero has not decoded at reveal, the card's photograph carries the flight and the hero's fill colour (motion 16) sits under both.</td></tr>
+<tr><th scope="row">Corners</th><td>Both ends are <code>--radius-photo</code> 18 px. In flight the radius scales with the snapshot (about 9 px at the start); accepted, because the keyframes are transform only.</td></tr>
+<tr><th scope="row">Everything else</th><td>The old page's other cards are not captured and are not seen during the flight. The thumbnails, the name, the price and the form on the new page are at rest from the first frame. Focus lands as on any navigation.</td></tr>
+</tbody></table></div></div>
+<div class="frames4" aria-hidden="true">
+<div class="fr"><span class="cap">Click · old page</span><div class="vp s"><div class="pg"><div class="bar"></div><span class="ln k" style="inset-inline-start:3.9%;inset-block-start:22%;inline-size:38%;block-size:8px"></span><span class="ln" style="inset-inline-start:3.9%;inset-block-start:32%;inline-size:30%"></span><div class="bx" style="inset-inline-start:3.89%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp)"></div></div><div class="bx" style="inset-inline-start:27.5%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div></div><div class="bx lift" style="inset-inline-start:51.11%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);transform:scale(1.06)"></div></div><div class="bx" style="inset-inline-start:74.72%;inset-block-start:51.85%;inline-size:21.39%;block-size:42.8%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-002-hero/384.webp)"></div></div></div><span class="ptr" style="inset-inline-start:60%;inset-block-start:72%"></span></div><span class="cap">Card 3 under the pointer, in motion 6's held state. <code>pageswap</code> names its photograph box.</span></div>
+<div class="fr"><span class="cap">0 ms · new page</span><div class="vp s"><div class="pg"><div class="bar"></div><span class="bx" style="inset-inline-start:11.76%;inset-block-start:21.78%;inline-size:45%;block-size:90%;outline:1px dashed var(--color-ink-3);outline-offset:-1px"></span><div class="bx" style="inset-inline-start:3.89%;inset-block-start:21.78%;inline-size:5.65%;block-size:11.3%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp)"></div></div><span class="ln k" style="inset-inline-start:66.85%;inset-block-start:27%;inline-size:20%;block-size:9px"></span><span class="ln" style="inset-inline-start:66.85%;inset-block-start:72%;inline-size:29.26%;block-size:11px;border-radius:99px;background:var(--color-accent)"></span></div><div class="fly" style="inset-inline-start:11.76%;inset-block-start:21.78%;inline-size:45%;block-size:90%;transform:translate(87.45%, 33.42%) scale(0.4753)"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div></div><span class="cap">The new page is painted. The photograph starts at the card's box; the hero's box (dashed, drawn for the reader) is empty under it.</span></div>
+<div class="fr"><span class="cap">About 160 ms</span><div class="vp s"><div class="pg"><div class="bar"></div><div class="bx" style="inset-inline-start:3.89%;inset-block-start:21.78%;inline-size:5.65%;block-size:11.3%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp)"></div></div><span class="ln k" style="inset-inline-start:66.85%;inset-block-start:27%;inline-size:20%;block-size:9px"></span><span class="ln" style="inset-inline-start:66.85%;inset-block-start:72%;inline-size:29.26%;block-size:11px;border-radius:99px;background:var(--color-accent)"></span></div><div class="fly" style="inset-inline-start:11.76%;inset-block-start:21.78%;inline-size:45%;block-size:90%;transform:translate(13.12%, 5.01%) scale(0.9213)"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div></div><span class="cap">Half the time, most of the way: the emphasised curve front-loads, so the photograph is near the hero by 160 ms and settles softly.</span></div>
+<div class="fr"><span class="cap">320 ms · rest</span><div class="vp s"><div class="pg"><div class="bar"></div><div class="bx" style="inset-inline-start:11.76%;inset-block-start:21.78%;inline-size:45%;block-size:90%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div><div class="bx" style="inset-inline-start:3.89%;inset-block-start:21.78%;inline-size:5.65%;block-size:11.3%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp)"></div></div><span class="ln k" style="inset-inline-start:66.85%;inset-block-start:27%;inline-size:20%;block-size:9px"></span><span class="ln" style="inset-inline-start:66.85%;inset-block-start:72%;inline-size:29.26%;block-size:11px;border-radius:99px;background:var(--color-accent)"></span></div></div><span class="cap">The group ends on the hero's box and the hero itself shows: <code>opacity</code> 1, <code>transform</code> <code>none</code> (AC-44 as amended).</span></div>
+</div>
+<div class="stills">
+<div class="still"><span class="state-tag">Reduced motion</span><div class="vp s morph rm"><div class="pg"><div class="bar"></div><div class="bx" style="inset-inline-start:11.76%;inset-block-start:21.78%;inline-size:45%;block-size:90%"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div><span class="ln k" style="inset-inline-start:66.85%;inset-block-start:27%;inline-size:20%;block-size:9px"></span></div></div><p class="stub">No view transition at all: the opt-in sits inside <code>no-preference</code>. The product page loads as today, hero at rest in its first frame.</p></div>
+<div class="still"><span class="state-tag">Phone and tablet, below lg</span><p class="stub">No morph (advisor fix F2): the opt-in sits inside <code>min-width: 64rem</code>. A card tap navigates as today and the hero paints at rest. Phones get it only by a later amendment, after spec 023's field data shows its mobile LCP cost.</p></div>
+<div class="still"><span class="state-tag">Not from a card</span><p class="stub">A first load, a reload, an entry from another site, a typed URL, the header, the breadcrumb, pagination, Back and Forward: no name is set on the old page, so nothing flies, and the hero keeps A23 clause 11 exactly as written.</p></div>
+<div class="still"><span class="state-tag">Unsupported browser</span><p class="stub">Firefox, and Safari before 18.2: the <code>@view-transition</code> rule is ignored and the card link navigates exactly as today. Without JavaScript the same: <code>pageswap</code> never runs, so no name exists.</p></div>
+</div>
+</section>
+
+<section aria-labelledby="m15"><div class="sec-h"><span class="kick">Motion 15 · idea 2 · task 042-2 · product page and checkout step 2</span><h2 id="m15">The card preview fills in as the buyer writes</h2><p>One component on both pages: the upright white card, our mark, the buyer's words in Caveat (spec 004 §14 A-founder-2026-10-20c), at checkout the signature line, and the page's printed label as its caption. The only motion is the hand-over: on the first character the sample sentence fades out and the buyer's words fade in. After that each keystroke updates the line at once. The card itself never moves.</p></div>
+<div class="duo"><div class="stage" style="min-block-size:320px"><div class="cp type"><p class="cp-leg">What should the card say?</p><div class="cp-field"><div class="cp-write focus"><span class="stack"><span class="n0" style="color:var(--color-ink-3)">&nbsp;</span><span class="k1">H</span><span class="k2">Happy</span><span class="k3">Happy birthday,</span><span class="k4">Happy birthday, Ola</span></span></div><span class="cp-count stack num"><span class="n0">0 / 200</span><span class="k1">1 / 200</span><span class="k2">5 / 200</span><span class="k3">15 / 200</span><span class="k4">19 / 200</span></span></div><figure class="card42" data-fo-card-preview><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><div class="lines"><p class="msg smp">Your message, printed on our card and tucked into the bouquet.</p><p class="msg typ"><span class="stack"><span class="k1">H</span><span class="k2">Happy</span><span class="k3">Happy birthday,</span><span class="k4">Happy birthday, Ola</span></span></p></div><figcaption>Printed on our card · included</figcaption></figure></div></div>
+<div><table class="vt"><tbody>
+<tr><th scope="row">Trigger</th><td>The first input that makes the field non-empty; clearing the field. Nothing else animates.</td></tr>
+<tr><th scope="row">The hand-over</th><td>The sample line (<code>--color-ink-3</code>) and the words line (<code>--color-ink</code>) share one grid cell inside the card, so the card's height is the taller of the two and nothing shifts. <code>opacity</code> crossfade, <code>--duration-base</code> 200 ms, <code>--ease-standard</code>; clearing reverses it. Each keystroke after that: the text changes at once, no per-letter effect (it would split graphemes and break screen readers and the count).</td></tr>
+<tr><th scope="row">The card</th><td><code>--color-card</code>, <code>--radius-md</code>, <code>--shadow-sm</code> with a 1 px inset <code>--color-rule</code> ring (checkout's today), padding 18, at least 190 px tall and growing with the words (it shows the whole message, never cut). Mark 26 px. Words: Caveat 500, 22 px, line height 1.25, <code>overflow-wrap: anywhere</code>, <code>white-space: pre-line</code>, in <code>&lt;bdi dir="auto"&gt;</code>; a script Caveat lacks falls back to the body face. Caption: a <code>--rule</code> line, then the label in <code>--text-xs</code> <code>--color-ink-3</code>.</td></tr>
+<tr><th scope="row">One component</th><td>The product page and checkout render the same root (<code>data-fo-card-preview</code>) with the same face on the words (AC-11). The product page's label “Printed on our card · included” moves from under the field into the card's caption (same key, <code>product.card.printed</code>); checkout's caption is <code>checkout.card.preview</code>, the same words. Checkout adds the signature line, also Caveat (the buyer's own words), under the message.</td></tr>
+<tr><th scope="row">Desktop</th><td>Field and card side by side: field <code>1fr</code>, card 200 px, gap 24 (as today's product page).</td></tr>
+<tr><th scope="row">Phone</th><td>The card sits <b>above</b> the field, full width, so the keyboard never hides it while typing. No sticky element is added.</td></tr>
+<tr><th scope="row">Unchanged</th><td>The product page's <code>&lt;textarea&gt;</code> has no <code>name</code>, stores nothing and sends nothing; the 200-grapheme limit and its counter; checkout's own validation and kept values.</td></tr>
+</tbody></table></div></div>
+<div class="frames4" aria-hidden="true">
+<div class="fr"><span class="cap">Empty, or no JavaScript</span><figure class="card42"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><div class="lines"><p class="msg smp">Your message, printed on our card and tucked into the bouquet.</p></div><figcaption>Printed on our card · included</figcaption></figure><span class="cap">The labelled sample, the server's text. Without JavaScript it stays.</span></div>
+<div class="fr"><span class="cap">First character · 100 ms</span><figure class="card42"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><div class="lines"><p class="msg smp" style="opacity:0.5">Your message, printed on our card and tucked into the bouquet.</p><p class="msg" style="opacity:0.5">H</p></div><figcaption>Printed on our card · included</figcaption></figure><span class="cap">Halfway through the 200 ms crossfade. The card's height holds: both lines share one cell.</span></div>
+<div class="fr"><span class="cap">Typing</span><figure class="card42"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><div class="lines"><p class="msg">Happy birthday, Ola</p></div><figcaption>Printed on our card · included</figcaption></figure><span class="cap">Each keystroke lands at once, in ink. Reads exactly the typed string (AC-10).</span></div>
+<div class="fr"><span class="cap">Checkout step 2</span><figure class="card42" aria-label="Preview of the printed card"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><div class="lines"><p class="msg">Happy birthday Mama!</p></div><p class="sig">Love, Anna</p><figcaption>Printed on our card · included</figcaption></figure><span class="cap">The same component with the signature line. Without JavaScript it shows the server's kept values.</span></div>
+</div>
+<div class="stills">
+<div class="still"><span class="state-tag">Reduced motion</span><p class="stub">The swap is instant: the sample is replaced by the first character with no transition (L7 allows 120 ms; this uses none). Clearing puts the sample back at once.</p></div>
+<div class="still"><span class="state-tag">A long word</span><p class="stub">A link or an unbroken string wraps anywhere inside the card; the page never scrolls sideways (spec 004 AC-49). The card grows; nothing is cut.</p></div>
+<div class="still"><span class="state-tag">Right to left</span><p class="stub">The words sit in <code>&lt;bdi dir="auto"&gt;</code>, so an Arabic message runs from the inline-start of the card; the mark stays at the inline-start. Checked on <code>/ar-XB</code>.</p></div>
+<div class="still"><span class="state-tag">At the limit</span><p class="stub">Unchanged: a character typed at 200 is refused, a paste keeps what fits, the counter says so. The preview shows exactly what is kept.</p></div>
+</div>
+</section>
+
+<section aria-labelledby="m16"><div class="sec-h"><span class="kick">Motion 16 · idea 4 · task 042-4 · every photograph</span><h2 id="m16">A soft copy of each photograph is there before the photograph</h2><p>Instead of an empty paper box, each box paints a tiny blurred copy of its own photograph, rendered by the server from the seed. The page's one priority photograph (its LCP image) gets only its colour, never an image, so the measured LCP stays the real photograph. Three cards, one row of a listing, each in its own case, looping the moment the photograph arrives.</p></div>
+<div class="duo"><div class="stage" style="padding:32px"><div class="sl loop">
+<div class="sl-card snap"><div class="sl-box fill"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp)"></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span></div><h3>Amber Hour</h3><p class="price num">PLN&nbsp;229.00<small>all in</small></p><span class="cap"><b>Priority card.</b> Colour fill, then the photograph at once.</span></div>
+<div class="sl-card snap"><div class="sl-box"><div class="lqip" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp)"></div><div class="img" role="img" aria-label="A hand-tied bouquet of pale pink roses among eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp)"></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span></div><h3>Baltic Dawn</h3><p class="price num">PLN&nbsp;229.00<small>all in</small></p><span class="cap"><b>Above the fold.</b> Placeholder, then the photograph at once.</span></div>
+<div class="sl-card fade"><div class="sl-box"><div class="lqip" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div><div class="img" role="img" aria-label="A hand-tied bouquet of soft pink peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span></div><h3>Blush Terrace</h3><p class="price num">PLN&nbsp;449.00<small>all in</small></p><span class="cap"><b>Below the fold.</b> Placeholder, then motion 11's fade over it.</span></div>
+</div></div>
+<div><table class="vt"><tbody>
+<tr><th scope="row">Placeholder</th><td>Each approved asset's <code>placeholder</code> in <code>seed/data/media-lqip.json</code>: a <code>data:image/webp</code> URI, at most 300 decoded bytes, at most 16 × 20 px for a 4∶5 asset. Painted by the server as the box's <code>background-image</code>, <code>background-size: cover</code>, under the <code>&lt;img&gt;</code>. Its softness is the upscale; the look to match is the drawn one. The mechanism is the implementer's within L1, L2 and the 200 B CSS cap.</td></tr>
+<tr><th scope="row">Priority photograph</th><td>Only <code>background-color</code>: the asset's <code>fill</code>, its mean colour (spec 042 §13 Q10, kept). No image placeholder: a blurred box that size could itself be counted as the LCP candidate. The photograph paints over it at once, no fade (A23 clause 11).</td></tr>
+<tr><th scope="row">Above the fold</th><td>A non-priority photograph paints over its placeholder at once, no fade.</td></tr>
+<tr><th scope="row">Below the fold</th><td>Motion 11 unchanged, now over the placeholder instead of over <code>--color-paper-2</code>: <code>opacity</code> 0 to 1, <code>--duration-slow</code> 320 ms, <code>--ease-standard</code>.</td></tr>
+<tr><th scope="row">Where</th><td>Every <code>MediaAsset</code>: listing and rail cards, the product gallery and its thumbnails, hub lead figures, the home hero (priority: fill only). The honesty label sits above the placeholder as above the photograph.</td></tr>
+<tr><th scope="row">Bytes</th><td>At most 4,096 B Brotli of HTML growth on the home and on the seed's largest listing (AC-15). No JavaScript, no <code>next/image</code> blur runtime.</td></tr>
+</tbody></table></div></div>
+<div class="frames3" aria-hidden="true">
+<div class="fr"><span class="cap">Below the fold · before the photograph</span><div class="sl-box frz" style="max-inline-size:220px"><div class="lqip" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div></div><span class="cap">The placeholder holds the box: soft, the right colours, no shift.</span></div>
+<div class="fr"><span class="cap">160 ms into the fade</span><div class="sl-box frz mid" style="max-inline-size:220px"><div class="lqip" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div></div><span class="cap">The sharp photograph comes up over its own soft copy.</span></div>
+<div class="fr"><span class="cap">Priority · before the photograph</span><div class="sl-box fill frz" style="max-inline-size:220px"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp)"></div></div><span class="cap">Colour only (drawn with <code>--color-photo-stop-3</code> standing in for the asset's own <code>fill</code>).</span></div>
+</div>
+<div class="stills">
+<div class="still"><span class="state-tag">Reduced motion</span><p class="stub">Motion 11's reduced form: the sharp photograph appears over its placeholder when it has loaded, no fade.</p></div>
+<div class="still"><span class="state-tag">Phone, 390</span><div class="sl ph" style="inline-size:100%"><div class="sl-card"><div class="sl-box"><div class="lqip" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-003-hero/384.webp)"></div></div><h3>Baltic Dawn</h3></div><div class="sl-card"><div class="sl-box"><div class="lqip" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-021-hero/384.webp)"></div></div><h3>Blush Terrace</h3></div></div><p class="stub">The same, two up. The phone's priority card (first row) gets its fill only.</p></div>
+<div class="still"><span class="state-tag">An asset with no row</span><p class="stub">Cannot ship: <code>pnpm seed:check</code> fails on a missing row (AC-17). If the file is ever unread (the idea switched off), the box falls back to today's <code>--color-paper-2</code>.</p></div>
+<div class="still"><span class="state-tag">No JavaScript</span><p class="stub">Identical: the placeholder is server HTML and the fade is motion 11's, which already shows the image without JavaScript.</p></div>
+</div>
+</section>
+
+<section aria-labelledby="m17"><div class="sec-h"><span class="kick">Motion 17 · idea 5 · task 042-5 · product page below lg</span><h2 id="m17">The phone gallery: one photograph per swipe, and the dots follow</h2><p>Today's scroller with mandatory snap, plus two things: a flick moves exactly one photograph, and once a swipe settles exactly one dot is current. Nothing advances on its own and nothing is called a carousel. Drawn at 390, the phone's own width.</p></div>
+<div class="duo"><div class="stage" style="padding:32px"><div class="phone swipe"><div class="gal" role="region" aria-label="Product images"><div class="track"><div class="slide" id="g-1"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div><div class="slide" id="g-2"><div class="img" role="img" aria-label="Close view of three open orange rose heads with eucalyptus leaves beside them" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp)"></div></div></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span><span class="fing" aria-hidden="true"></span><div class="gdots"><span class="pill"><span class="stack"><span class="d1" style="display:flex"><a href="#g-1" aria-label="Image 1 of 2" aria-current="true"></a><a href="#g-2" aria-label="Image 2 of 2"></a></span><span class="d2" style="display:flex"><a href="#g-1" aria-label="Image 1 of 2"></a><a href="#g-2" aria-label="Image 2 of 2" aria-current="true"></a></span></span></span></div></div><div class="gsheet"><span class="grip" aria-hidden="true"></span><p class="lbl2">Rose bouquet · Poland</p><h3>Amber Hour</h3><p class="pv-price"><strong class="num">£45.90</strong><span>Includes VAT and delivery</span></p></div></div></div>
+<div><table class="vt"><tbody>
+<tr><th scope="row">Snap</th><td><code>scroll-snap-type: x mandatory</code> (unchanged) and <code>scroll-snap-stop: always</code> on each slide, so a fast flick moves one photograph. The track moves with the finger; nothing is drawn on top of the platform's own scroll.</td></tr>
+<tr><th scope="row">Dots</th><td>In-page links (<code>href="#…"</code>), one per photograph, labelled “Image 1 of 2” (<code>a11y.media.imageOfCount</code>), centred 40 px above the sheet, on a small <code>--color-card</code> capsule (<code>--radius-full</code>, <code>--shadow-xs</code>) so they read on any photograph. Each target 32 × 24 px (WCAG 2.5.8). Rest: an 8 px circle, a 1.5 px <code>--color-ink-2</code> outline, no fill. <b>Current</b>: filled <code>--color-ink</code> with a 2 px ring (2 px of card, then 2 px of ink) and <code>aria-current="true"</code>. Shape and fill change, not colour alone (WCAG 1.4.1).</td></tr>
+<tr><th scope="row">When the dot changes</th><td>When the swipe <b>settles</b> (<code>scrollend</code>, or the scroll-marker state), not during the drag; the change is instant. Mechanism: CSS scroll markers where the browser has them, else a scroll listener inside the product page's one island (≤ 400 B). If bytes are short, CSS markers only (spec 042 §13 Q7 (a)).</td></tr>
+<tr><th scope="row">Dot tap</th><td>Scrolls to that photograph: <code>scroll-behavior: smooth</code> under <code>no-preference</code> (the browser's own easing), <code>auto</code> under <code>reduce</code>. The link works without JavaScript.</td></tr>
+<tr><th scope="row">Slides</th><td>The hero is the one priority image; every other slide is lazy and uses the <b>hero's width ladder</b> (up to 828 px), never the 384 px card variant (AC-20, after 042-V). Drawn here from the detail photograph's 384 px file, the only one that exists today.</td></tr>
+<tr><th scope="row">Keyboard</th><td>The row stays focusable; the arrow keys scroll it (unchanged). Focus rings unchanged.</td></tr>
+</tbody></table></div></div>
+<div class="frames3" aria-hidden="true">
+<div class="fr"><span class="cap">Rest · photograph 1</span><div class="phone s"><div class="gal"><div class="track"><div class="slide"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span><div class="gdots"><span class="pill"><a aria-current="true"></a><a></a></span></div></div><div class="gsheet"><span class="grip"></span><h3>Amber Hour</h3></div></div><span class="cap">Dot 1 current.</span></div>
+<div class="fr"><span class="cap">Mid-swipe</span><div class="phone s"><div class="gal"><div class="track" style="transform:translateX(-55%)"><div class="slide"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div><div class="slide"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp)"></div></div></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span><div class="gdots"><span class="pill"><a aria-current="true"></a><a></a></span></div></div><div class="gsheet"><span class="grip"></span><h3>Amber Hour</h3></div></div><span class="cap">The finger is still down: dot 1 stays current until the snap settles.</span></div>
+<div class="fr"><span class="cap">Settled · photograph 2</span><div class="phone s"><div class="gal"><div class="track" style="transform:translateX(-100%)"><div class="slide"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/828.webp)"></div></div><div class="slide"><div class="img" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-detail/384.webp)"></div></div></div><span class="g-prov">Example arrangement · our florist hand-makes each one</span><div class="gdots"><span class="pill"><a></a><a aria-current="true"></a></span></div></div><div class="gsheet"><span class="grip"></span><h3>Amber Hour</h3></div></div><span class="cap">Exactly one dot current, the second (AC-18).</span></div>
+</div>
+<div class="stills">
+<div class="still"><span class="state-tag">Reduced motion</span><p class="stub">A swipe is the finger's own scroll and stays; a dot tap jumps to the photograph with no smooth scroll (<code>scroll-behavior: auto</code>). The dot still changes when the scroll ends.</p></div>
+<div class="still"><span class="state-tag">One photograph</span><p class="stub">No dots at all, as today: nothing to page through.</p></div>
+<div class="still"><span class="state-tag">No JavaScript, no scroll markers</span><div class="gdots" style="position:static"><span class="pill"><a></a><a></a></span></div><p class="stub">Every dot is an outline: none claims to be current, because nothing follows the scroll. The links still scroll to their photograph.</p></div>
+<div class="still"><span class="state-tag">Right to left</span><p class="stub">The row runs from the inline-start: on <code>/ar-XB</code> photograph 1 is at the right and a swipe to the right shows photograph 2. The dots follow the same order. No sideways page scroll (AC-5).</p></div>
+</div>
+</section>
+
+<section aria-labelledby="m18"><div class="sec-h"><span class="kick">Motion 18 · idea 6 · task 042-6 · the country guide page, from md up</span><h2 id="m18">A line draws itself from you to the place you are sending to</h2><p>Once, half a second after load, a dashed arc draws from an unlabelled dot at the inline-start (you, wherever you are: we never guess it) to a dot beside the country's dates. It sits in the margin beside the H1, never over its words, and says nothing in words. It is decorative: <code>aria-hidden</code>, no text, no link. The stage is a schematic of the first screen; its exact place at 1440 is drawn on <code>wireframes/corridor-country-desktop.dc.html</code>.</p></div>
+<div class="duo"><div class="stage" style="padding:24px 32px;place-items:stretch"><div class="rhero"><div class="copy"><p class="eyebrow">A guide, written by us</p><h3 class="box-h1">Sending flowers to <em>Poland</em></h3></div><svg class="route rt loop box-rt on-2" viewBox="0 0 180 120" aria-hidden="true" focusable="false"><path class="dash" d="M10 104 C 46 34, 112 8, 168 22"/><path class="mask" d="M10 104 C 46 34, 112 8, 168 22"/><circle class="you" cx="10" cy="104" r="5"/><circle class="to" cx="168" cy="22" r="5"/></svg><div class="side"><p class="eyebrow">The year in Poland</p><div class="dts"><span><b>14</b>Teachers' Day</span><span><b>1</b>All Saints' Day</span><span><b>25</b>Christmas</span></div></div></div></div>
+<div><table class="vt"><tbody>
+<tr><th scope="row">Where</th><td>The country guide page's first screen only (spec 042 §13 Q8 (a), default), at <code>md</code> and up, in the gap between the end of the H1's columns (1 to 6) and the start of the dates, 74 px from the hero grid's top. Its box never meets the H1's box (AC-19). Hidden below <code>md</code> (<code>display: none</code>).</td></tr>
+<tr><th scope="row">What</th><td>One inline SVG, viewBox 180 × 120, at most 1,024 B: a 2 px <code>--color-accent</code> dashed arc (dash 6, gap 7, round caps); the origin, an unfilled 5 px dot with a 1.5 px <code>--color-ink-2</code> ring, never labelled; the destination, a filled 5 px <code>--color-accent</code> dot. No <code>&lt;text&gt;</code>, no <code>&lt;image&gt;</code>, no <code>&lt;a&gt;</code>. The H1 already names the country (Q8 (b), default: no origin country).</td></tr>
+<tr><th scope="row">The draw</th><td>Motion 5's mechanism: a mask path in the page colour (<code>--color-paper</code>) covers the dashed route and unrolls by <code>stroke-dashoffset</code>, 500 ms after load, <code>--duration-draw</code> 600 ms, <code>--ease-emphasised</code>, once, ending drawn. Then the destination dot's <code>opacity</code> 0 to 1, <code>--duration-base</code> 200 ms. CSS only: it runs with JavaScript off too.</td></tr>
+<tr><th scope="row">RTL</th><td><code>mirror-in-rtl</code>: on <code>/ar-XB</code> the origin is at the inline-start, the right, and the arc rises to the left (AC-5).</td></tr>
+<tr><th scope="row">Not the LCP</th><td>An SVG path is never an LCP candidate, and the H1's text never moves.</td></tr>
+<tr><th scope="row">The same for everyone</th><td>The document is byte-identical whatever the visitor's country or language headers (AC-19, ADR-0006).</td></tr>
+</tbody></table></div></div>
+<div class="frames4" aria-hidden="true">
+<div class="fr"><span class="cap">0 to 500 ms</span><div class="stage" style="padding:16px"><svg class="rt f0 on-2" viewBox="0 0 180 120" style="inline-size:180px;block-size:120px"><path class="dash" d="M10 104 C 46 34, 112 8, 168 22"/><path class="mask" d="M10 104 C 46 34, 112 8, 168 22"/><circle class="you" cx="10" cy="104" r="5"/><circle class="to" cx="168" cy="22" r="5"/></svg></div><span class="cap">Only the “you” dot. The route is under its mask.</span></div>
+<div class="fr"><span class="cap">About 800 ms</span><div class="stage" style="padding:16px"><svg class="rt f1 on-2" viewBox="0 0 180 120" style="inline-size:180px;block-size:120px"><path class="dash" d="M10 104 C 46 34, 112 8, 168 22"/><path class="mask" d="M10 104 C 46 34, 112 8, 168 22"/><circle class="you" cx="10" cy="104" r="5"/><circle class="to" cx="168" cy="22" r="5"/></svg></div><span class="cap">The line unrolls from the inline-start.</span></div>
+<div class="fr"><span class="cap">1,300 ms · end</span><div class="stage" style="padding:16px"><svg class="rt on-2" viewBox="0 0 180 120" style="inline-size:180px;block-size:120px"><path class="dash" d="M10 104 C 46 34, 112 8, 168 22"/><path class="mask" d="M10 104 C 46 34, 112 8, 168 22"/><circle class="you" cx="10" cy="104" r="5"/><circle class="to" cx="168" cy="22" r="5"/></svg></div><span class="cap">Drawn, and the destination dot is in. It stays.</span></div>
+<div class="fr"><span class="cap">Right to left · end</span><div class="stage" style="padding:16px" dir="rtl"><svg class="rt on-2 mirror" viewBox="0 0 180 120" style="inline-size:180px;block-size:120px"><path class="dash" d="M10 104 C 46 34, 112 8, 168 22"/><path class="mask" d="M10 104 C 46 34, 112 8, 168 22"/><circle class="you" cx="10" cy="104" r="5"/><circle class="to" cx="168" cy="22" r="5"/></svg></div><span class="cap">Mirrored: “you” at the inline-start, the right.</span></div>
+</div>
+<div class="stills">
+<div class="still"><span class="state-tag">Reduced motion</span><p class="stub">The route and both dots are drawn from the first frame. Nothing moves.</p></div>
+<div class="still"><span class="state-tag">Phone, below md</span><p class="stub">Not displayed: the phone's first screen is the H1, the state and the cover, as today (Q8 (d), default).</p></div>
+<div class="still"><span class="state-tag">No JavaScript</span><p class="stub">Identical: the draw is CSS.</p></div>
+<div class="still"><span class="state-tag">Other pages</span><p class="stub">The country shop root and every listing draw no route (Q8 (a)). The home keeps its own decorative route and the 404 keeps motion 13.</p></div>
+</div>
+</section>
+
+</div>
+</div>
+</x-dc>
+</body>
+</html>
