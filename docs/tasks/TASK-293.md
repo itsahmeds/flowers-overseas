@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21: migration `0019_review_attestation` + rollback, `attest()` (`src/modules/i18n/db/ledger.ts`), the pure half (`attestation.ts`), `fo/no-direct-review-write`, `admin:grant --locale/--revoke-locale`, `pnpm attestations:import`, `seed/data/attestations.json` (171 photo approvals, 0 copy) and the seed replay, the retention handler; tests T-10–T-14, T-28 written. Draft PR 320. Next: run the touched suites (machine load permitting), mutation checks, gates, ready.
 
 ## Result
 

@@ -146,6 +146,7 @@ const SDK_TABLE: readonly {
       "seed/index.ts",
       "scripts/admin-grant.ts",
       "scripts/catalogue-parity.ts",
+      "scripts/attestations-import.ts",
     ],
   },
   {

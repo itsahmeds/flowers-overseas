@@ -55,7 +55,7 @@ describe.skipIf(server.url === undefined)(
       ]);
     });
 
-    it("§8: retention_policy carries the twelve rows, each with a basis and a legal note (spec 010 §14 A-founder-2026-10-22 item 2 C: 30 days and checkout_draft_personal; spec 011 §8's three in 0022)", async () => {
+    it("§8: retention_policy carries the thirteen rows, each with a basis and a legal note (spec 010 §14 A-founder-2026-10-22 item 2 C: 30 days and checkout_draft_personal; spec 011 §8's three in 0022; spec 012b's review_attestation in 0023)", async () => {
       const rows = await scratch.sql<
         { key: string; retention_days: number | null; action: string }[]
       >`SELECT key, retention_days, action FROM retention_policy ORDER BY key`;
@@ -74,6 +74,8 @@ describe.skipIf(server.url === undefined)(
         "invoice_archive:3650:keep",
         "partner_application:365:delete",
         "recipient_contact:90:pseudonymise",
+        // spec 012b §8, AC-28 (TASK-293; migration `0023`).
+        "review_attestation:1095:pseudonymise",
       ]);
     });
 

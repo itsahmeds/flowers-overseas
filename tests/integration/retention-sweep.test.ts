@@ -900,6 +900,8 @@ describe.skipIf(server.url === undefined)(
             ["invoice_archive", "kept"],
             ["partner_application", "applied"],
             ["recipient_contact", "applied"],
+            // spec 012b AC-28 (TASK-293): the review ledger's attester names.
+            ["review_attestation", "applied"],
           ],
         );
       });
