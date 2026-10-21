@@ -433,7 +433,7 @@ describe("the build-phase client (spec 012b AC-4)", () => {
     },
   );
 
-  it("leaves db.ts the only module under src/ that reads DATABASE_BUILD_URL", () => {
+  it("leaves db.ts the only module under src/ that reads DATABASE_BUILD_URL (railway.ts only allows the name)", () => {
     const srcDir = resolve(__dirname, "../../src");
     const files = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -446,6 +446,11 @@ describe("the build-phase client (spec 012b AC-4)", () => {
         readFileSync(path, "utf8").includes("DATABASE_BUILD_URL"),
       )
       .map((path) => relative(srcDir, path));
-    expect(readers).toEqual([join("lib", "db.ts")]);
+    expect(readers).toEqual([join("lib", "db.ts"), join("lib", "railway.ts")]);
+    // railway.ts names the key once, as an optional Railway variable, and reads no environment.
+    const railway = readFileSync(join(srcDir, "lib", "railway.ts"), "utf8");
+    expect(railway.match(/"DATABASE_BUILD_URL"/gu)).toHaveLength(1);
+    expect(railway).not.toMatch(/env[^\n]*DATABASE_BUILD_URL/u);
+    expect(railway).toContain('DATABASE_BUILD_URL_KEY = "DATABASE_BUILD_URL"');
   });
 });

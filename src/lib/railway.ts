@@ -195,6 +195,15 @@ export const REQUIRED_VARIABLE_KEYS: readonly string[] =
 export const FX_REFRESH_AT_KEY = "FX_REFRESH_AT";
 
 /**
+ * The build's database login (spec 012b §2.0 item 2, §12 founder action 4, AC-4; TASK-292): a
+ * **build** variable of `web` in `staging` and `production`, read by `src/lib/db.ts` while `next
+ * build` runs and by nothing at runtime. Optional here until spec 012b's records task moves it
+ * into the env contract (AC-29), so the founder can set it before then without this check
+ * reporting it as unexpected. No PR environment builds from the database.
+ */
+export const DATABASE_BUILD_URL_KEY = "DATABASE_BUILD_URL";
+
+/**
  * Keys an environment **may** carry beyond the contract. `STAGING_BASIC_AUTH` is spec 040 §12's
  * absent-means-off access switch: it is deliberately not one of the 29 (it is not read by the env
  * schemas and `pnpm env:check` therefore never asks for it), and it is expected on `staging` and
@@ -204,8 +213,8 @@ export const FX_REFRESH_AT_KEY = "FX_REFRESH_AT";
 export const OPTIONAL_VARIABLE_KEYS: Readonly<
   Record<"production" | "staging" | "preview", readonly string[]>
 > = Object.freeze({
-  production: [FX_REFRESH_AT_KEY],
-  staging: [STAGING_BASIC_AUTH_KEY, FX_REFRESH_AT_KEY],
+  production: [FX_REFRESH_AT_KEY, DATABASE_BUILD_URL_KEY],
+  staging: [STAGING_BASIC_AUTH_KEY, FX_REFRESH_AT_KEY, DATABASE_BUILD_URL_KEY],
   preview: [STAGING_BASIC_AUTH_KEY],
 });
 

@@ -68,6 +68,11 @@ export interface SeedTableReport {
   readonly unchanged: number;
   /** Rows left alone because a human flipped them to `source = 'real'`. */
   readonly real: number;
+  /**
+   * Rows left alone (neither updated nor inserted) because their parent product, country or
+   * florist is `real`, and which are not `real` themselves (spec 012b AC-1).
+   */
+  readonly underReal: number;
 }
 
 export interface SeedReport {
@@ -262,6 +267,7 @@ async function upsertTable(
     updated: 0,
     unchanged: 0,
     real: 0,
+    underReal: 0,
   };
   const first = rows[0];
   if (first === undefined) return empty;
@@ -318,8 +324,8 @@ async function upsertTable(
   const parentRealExpr =
     parentReal.length === 0 ? "false" : parentReal.join(" OR ");
   const selfReal = plan.sourceGuarded
-    ? ` OR EXISTS (SELECT 1 FROM ${table} t WHERE ${keyMatch} AND t.source = 'real')`
-    : "";
+    ? `EXISTS (SELECT 1 FROM ${table} t WHERE ${keyMatch} AND t.source = 'real')`
+    : "false";
   const update =
     insertOnly || valueColumns.length === 0
       ? `upd AS (SELECT 1 WHERE false)`
@@ -335,20 +341,23 @@ async function upsertTable(
       RETURNING 1)
     SELECT (SELECT count(*) FROM ins)::int AS inserted,
            (SELECT count(*) FROM upd)::int AS updated,
-           (SELECT count(*) FROM i WHERE i.fo_parent_real${selfReal})::int AS real`;
+           (SELECT count(*) FROM i WHERE ${selfReal})::int AS real,
+           (SELECT count(*) FROM i WHERE i.fo_parent_real AND NOT ${selfReal})::int AS under_real`;
   const [counts] = await tx.unsafe<
-    { inserted: number; updated: number; real: number }[]
+    { inserted: number; updated: number; real: number; under_real: number }[]
   >(statement, [JSON.stringify(rows)]);
   const inserted = counts?.inserted ?? 0;
   const updated = counts?.updated ?? 0;
   const real = counts?.real ?? 0;
+  const underReal = counts?.under_real ?? 0;
   return {
     table: plan.table,
     rows: rows.length,
     inserted,
     updated,
     real,
-    unchanged: rows.length - inserted - updated - real,
+    underReal,
+    unchanged: rows.length - inserted - updated - real - underReal,
   };
 }
 
@@ -365,7 +374,7 @@ async function upsertCities(
 ): Promise<SeedTableReport> {
   let inserted = 0;
   let updated = 0;
-  let real = 0;
+  let underReal = 0;
   for (const row of rows) {
     const countryId = String(row["country_id"]);
     const slug = String(row["slug"]);
@@ -373,7 +382,7 @@ async function upsertCities(
     const [country] = await tx<{ source: string }[]>`
       SELECT source FROM public.country WHERE id = ${countryId}`;
     if (country?.source === "real") {
-      real += 1;
+      underReal += 1;
       continue;
     }
     const [existing] = await tx<{ city_id: string; name: string }[]>`
@@ -398,8 +407,9 @@ async function upsertCities(
     rows: rows.length,
     inserted,
     updated,
-    unchanged: rows.length - inserted - updated - real,
-    real,
+    unchanged: rows.length - inserted - updated - underReal,
+    real: 0,
+    underReal,
   };
 }
 
@@ -440,12 +450,12 @@ export async function runSeed(
 export function formatSeedReport(report: SeedReport): string {
   const lines = report.tables.map(
     (t) =>
-      `${t.table.padEnd(26)} rows ${String(t.rows).padStart(5)}  inserted ${String(t.inserted).padStart(5)}  updated ${String(t.updated).padStart(5)}  unchanged ${String(t.unchanged).padStart(5)}  real ${String(t.real).padStart(3)}`,
+      `${t.table.padEnd(26)} rows ${String(t.rows).padStart(5)}  inserted ${String(t.inserted).padStart(5)}  updated ${String(t.updated).padStart(5)}  unchanged ${String(t.unchanged).padStart(5)}  real ${String(t.real).padStart(3)}  under real ${String(t.underReal).padStart(4)}`,
   );
-  const sum = (field: "inserted" | "updated" | "real") =>
+  const sum = (field: "inserted" | "updated" | "real" | "underReal") =>
     report.tables.reduce((total, t) => total + t[field], 0);
   lines.push(
-    `${CLI_NAME}${report.insertOnly ? " (insert only, no row updated)" : ""}${report.dryRun ? " (dry run, nothing written)" : ""}: ${String(sum("inserted"))} inserted, ${String(sum("updated"))} updated, ${String(sum("real"))} real rows left untouched`,
+    `${CLI_NAME}${report.insertOnly ? " (insert only, no row updated)" : ""}${report.dryRun ? " (dry run, nothing written)" : ""}: ${String(sum("inserted"))} inserted, ${String(sum("updated"))} updated, ${String(sum("real"))} real rows left untouched, ${String(sum("underReal"))} rows under a real parent left untouched`,
   );
   return lines.join("\n");
 }

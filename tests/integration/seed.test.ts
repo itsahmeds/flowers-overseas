@@ -165,7 +165,7 @@ describe.skipIf(server.url === undefined)(
       120_000,
     );
 
-    it("AC-32: four locales, every country demo with its currency, VAT rate and zone, Poland's cutoff", async () => {
+    it("AC-32: four locales, every country with countries.ts's status (spec 012b §5.1), its currency, VAT rate and zone, Poland's cutoff", async () => {
       const locales = await scratch.sql<{ code: string }[]>`
         SELECT code FROM locale ORDER BY code`;
       expect(locales.map((row) => row.code)).toEqual([
@@ -189,9 +189,16 @@ describe.skipIf(server.url === undefined)(
       expect(countries.map((row) => row.iso2)).toEqual(
         COUNTRIES.map((country) => country.iso2).sort(),
       );
-      const statuses = new Set(countries.map((row) => row.status));
-      // One row is `real` from the previous case; every seeded row is demo.
-      expect([...statuses].every((s) => s === "demo")).toBe(true);
+      // Spec 012b §5.1 "Seed" (TASK-292): the status is the registry's, so the database and the
+      // static country registry agree (AC-2). One row is `real` from the previous case, and its
+      // status was never touched by that case either.
+      expect(
+        Object.fromEntries(countries.map((row) => [row.iso2, row.status])),
+      ).toEqual(
+        Object.fromEntries(
+          COUNTRIES.map((country) => [country.iso2, country.status]),
+        ),
+      );
       const pl = countries.find((row) => row.iso2 === "PL");
       expect(pl).toMatchObject({
         currency_code: "PLN",

@@ -177,6 +177,8 @@ describe("Dockerfile (AC-8)", () => {
  * rates. The weekday rebuild job sets it before every rebuild (`scripts/fx-refresh.ts`).
  */
 const FX_CACHE_BREAKER = "FX_REFRESH_AT";
+/** The build stage's database login (spec 012b AC-4; `src/lib/db.ts`'s `BUILD_DATABASE_URL_KEY`). */
+const BUILD_DATABASE_KEY = "DATABASE_BUILD_URL";
 
 /** The build stage's instructions, comments and blank lines dropped, continuations joined. */
 const buildInstructions = buildStage
@@ -226,9 +228,14 @@ describe("the FX cache-breaker (spec 005 §14 A7 Corrected 2 (i), AC-31, T-30)",
 
 describe("build-time env contract (AC-8; spec 001 §14 A17, TASK-135)", () => {
   it("declares a build argument for exactly the keys the build consumes", () => {
-    // Plus the FX cache-breaker above, which the build consumes as a layer-cache key only.
+    // Plus the FX cache-breaker above, which the build consumes as a layer-cache key only, and
+    // the build's database login below (spec 012b AC-4).
     expect(
-      declaredArgs.filter((name) => name !== FX_CACHE_BREAKER).sort(),
+      declaredArgs
+        .filter(
+          (name) => name !== FX_CACHE_BREAKER && name !== BUILD_DATABASE_KEY,
+        )
+        .sort(),
     ).toEqual([...BUILD_ENV_KEYS].sort());
   });
 
@@ -413,5 +420,34 @@ describe("the standalone output is not emitted on Vercel (TASK-135)", () => {
       "railway",
     );
     expect(hostPlatform({ VERCEL: "1" })).toBe("vercel");
+  });
+});
+
+/**
+ * Spec 012b §2.0 item 2, AC-4 (TASK-292): `next build` reads the database through the
+ * `app_build` login in `DATABASE_BUILD_URL`. It is the one credential the build stage may see, so
+ * its confinement is pinned here and proven on the built image by the CI `container` job (a
+ * sentinel value, then `docker history`, `docker inspect` and every layer grepped for it).
+ */
+describe("the build's database login (spec 012b AC-4)", () => {
+  it("is declared once, as an ARG of the build stage, never as an ENV and never in the runtime stage", () => {
+    expect(declaredArgs.filter((name) => name === BUILD_DATABASE_KEY)).toEqual([
+      BUILD_DATABASE_KEY,
+    ]);
+    expect(argNamesOf(buildStage)).toContain(BUILD_DATABASE_KEY);
+    expect(dockerfile).not.toMatch(
+      new RegExp(`^ENV[^\n]*\b${BUILD_DATABASE_KEY}\b`, "mu"),
+    );
+    const runtimeStage = dockerfile.slice(dockerfile.indexOf("AS runtime"));
+    expect(runtimeStage).not.toContain(BUILD_DATABASE_KEY);
+  });
+
+  it("defaults to empty, so a credential-free docker build still works", () => {
+    expect(buildInstructions).toContain(`ARG ${BUILD_DATABASE_KEY}=""`);
+  });
+
+  it("is not a runtime key: the server never reads it", () => {
+    expect(RUNTIME_ENV_KEYS).not.toContain(BUILD_DATABASE_KEY);
+    expect(ENV_KEYS).not.toContain(BUILD_DATABASE_KEY);
   });
 });

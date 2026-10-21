@@ -901,6 +901,9 @@ describe.skipIf(server.url === undefined)(
           });
           return id;
         })();
+        // The migrations after A7 (0018 on) roll back first, as `pnpm db:rollback --to` would meet
+        // them, so the A7 down file is the newest and the one that must change nothing.
+        await locked(() => runner(first.url, ["--down", "--to", A7_VERSION]));
         const snapshot = await introspect(first.sql);
         const counts = await rowCounts(first.sql);
         let raised = "";
@@ -923,9 +926,11 @@ describe.skipIf(server.url === undefined)(
         expect(raised).toMatch(/^A7_ROLLBACK_LIVE_PAYMENTS/);
         expect(runnerRaised).toContain("A7_ROLLBACK_LIVE_PAYMENTS");
         expect(await introspect(first.sql)).toEqual(snapshot);
-        expect(snapshot).toEqual(afterA7);
         expect(await rowCounts(first.sql)).toEqual(counts);
         expect(live?.n).toBe(1);
+        // Forward again: the later migrations return and the catalogue is A7's and theirs.
+        await locked(() => runner(first.url));
+        expect(await introspect(first.sql)).toEqual(afterA7);
       },
       RUNNER_TIMEOUT_MS,
     );

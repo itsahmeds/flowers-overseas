@@ -158,7 +158,8 @@ describe.skipIf(server.url === undefined)(
         SELECT t.typname AS name FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace
         WHERE n.nspname = 'public' ORDER BY 1`;
       const roles = await sql<{ name: string }[]>`
-        SELECT rolname AS name FROM pg_roles WHERE rolname IN ('app_owner', 'app_web') ORDER BY 1`;
+        SELECT rolname AS name FROM pg_roles
+        WHERE rolname IN ('app_owner', 'app_web', 'app_build') ORDER BY 1`;
       const schemas = await sql<{ name: string }[]>`
         SELECT nspname AS name FROM pg_namespace
         WHERE nspname NOT LIKE 'pg\\_%' AND nspname NOT IN ('information_schema', 'public')
@@ -234,7 +235,8 @@ describe.skipIf(server.url === undefined)(
           [...MIRROR_TABLES, ...VIEWS, "schema_migrations"].sort(),
         );
         expect(up.functions).toEqual(FUNCTIONS);
-        expect(up.roles).toEqual(["app_owner", "app_web"]);
+        // 0018 (TASK-292): the build's read-only role (spec 012b §5.1 item 1).
+        expect(up.roles).toEqual(["app_build", "app_owner", "app_web"]);
         expect(up.triggers).toBeGreaterThan(0);
         // 0012 (TASK-024): schema pgboss, all of it app_owner's.
         expect(up.schemas).toEqual(["pgboss"]);

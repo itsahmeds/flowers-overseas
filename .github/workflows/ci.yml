@@ -555,6 +555,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: test-unit
+    # Spec 012b §12 "Environments" (TASK-292): the build reads a migrated and seeded Postgres 16 as
+    # production will, through the read-only `app_build` login (`DATABASE_BUILD_URL`, AC-4).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: flowers_overseas_build
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
@@ -562,6 +578,25 @@ jobs:
       - uses: ./.github/actions/setup
       # A clean clone builds from the committed placeholders (spec 001 §13 Q10, AC-1).
       - run: cp .env.example .env.local
+      # Spec 012b §12 (TASK-292): migrate and seed the service database, give `app_build` a login
+      # for this run only (the founder does the same in Neon, §12 founder action 4), and prove the
+      # seed agrees with the static country registry as that login (AC-2's country half, AC-4).
+      - name: Migrate, seed and open the app_build login (spec 012b AC-2, AC-4)
+        id: database
+        env:
+          DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/flowers_overseas_build
+        run: |
+          set -euo pipefail
+          pnpm db:migrate | tail -n 1
+          pnpm db:seed | tail -n 1 | tee db-seed.log
+          password=$(openssl rand -hex 16)
+          echo "::add-mask::$password"
+          PGPASSWORD=postgres psql -h localhost -U postgres -d flowers_overseas_build -v ON_ERROR_STOP=1 \
+            -c "ALTER ROLE app_build LOGIN PASSWORD '$password'" >/dev/null
+          echo "DATABASE_BUILD_URL=postgres://app_build:$password@localhost:5432/flowers_overseas_build" >> "$GITHUB_ENV"
+      - name: catalogue:parity as app_build (spec 012b AC-2, T-02 country half)
+        id: parity
+        run: pnpm catalogue:parity --target="$DATABASE_BUILD_URL" 2>&1 | tee parity.log
       - name: next build
         id: next
         run: pnpm build 2>&1 | tee build.log
@@ -631,12 +666,14 @@ jobs:
       - name: Assert the working tree is clean after the build (AC-32 / T-33)
         run: |
           set -uo pipefail
-          rm -f .env.local build.log
+          rm -f .env.local build.log db-seed.log parity.log
           porcelain=$(git status --porcelain)
           {
             echo "### build (AC-1, AC-32 / T-01, T-33)"
             echo ""
             echo "- \`pnpm build\` from \`.env.example\` placeholders: ${{ steps.next.outcome }}"
+            echo "- service database migrated and seeded (spec 012b §12): ${{ steps.database.outcome }} — $(cat db-seed.log 2>/dev/null || echo 'no seed log')"
+            echo "- \`pnpm catalogue:parity\` as \`app_build\` (spec 012b AC-2, AC-4): ${{ steps.parity.outcome }} — $(tail -n 1 parity.log 2>/dev/null || echo 'no parity log')"
             if [ -z "$porcelain" ]; then
               echo "- \`git status --porcelain\` after install + build: empty"
             else
@@ -676,6 +713,8 @@ jobs:
     needs: test-unit
     env:
       IMAGE: fo-web:ci
+      # Not a credential: a value that exists only to be searched for (spec 012b AC-4, TASK-292).
+      BUILD_URL_SENTINEL: postgres://app_build:fo-ci-sentinel-${{ github.run_id }}@db.invalid:5432/fo
       # The runtime variable set, in the shape Railway supplies it: `.env.example` placeholders,
       # which are valid in `development` (spec 001 §13 Q10). No real credential is used, and none
       # is passed to `docker build` — that is the whole point of the job.
@@ -734,7 +773,47 @@ jobs:
             exit 1
           fi
           set -o pipefail
-          docker build --progress=plain --tag "$IMAGE" . 2>&1 | tail -40
+          # Spec 012b AC-4 / T-04 (TASK-292): the build's database login is the one build argument
+          # that is a credential. A sentinel stands in for it; the next step proves the shipped
+          # image carries it nowhere.
+          docker build --progress=plain --build-arg "DATABASE_BUILD_URL=$BUILD_URL_SENTINEL" \
+            --tag "$IMAGE" . 2>&1 | tail -40
+
+      - name: Assert the image carries no DATABASE_BUILD_URL value (spec 012b AC-4 / T-04)
+        id: buildurl
+        if: steps.scope.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          token="${BUILD_URL_SENTINEL#*:fo-ci-sentinel-}"
+          token="fo-ci-sentinel-${token%%@*}"
+          # Positive control: the build stage (from the same cache, so seconds) does see the value,
+          # in its own history, so the search below can find it where it is.
+          docker build --quiet --target build --build-arg "DATABASE_BUILD_URL=$BUILD_URL_SENTINEL" \
+            --tag fo-web:ci-build-stage . >/dev/null
+          if ! docker history --no-trunc fo-web:ci-build-stage | grep -qF "$token"; then
+            echo "::error::the build stage does not show the sentinel: the search below would prove nothing"
+            exit 1
+          fi
+          docker rmi fo-web:ci-build-stage >/dev/null
+          found=""
+          if docker history --no-trunc "$IMAGE" | grep -qF "$token"; then found="$found history"; fi
+          if docker inspect "$IMAGE" | grep -qF "$token"; then found="$found config/labels"; fi
+          mkdir -p image-save && docker save "$IMAGE" -o image-save/image.tar
+          tar -xf image-save/image.tar -C image-save
+          layers=0
+          while IFS= read -r -d '' blob; do
+            layers=$((layers + 1))
+            if grep -aqF "$token" "$blob" || { tar -xOf "$blob" 2>/dev/null | grep -aqF "$token"; }; then
+              found="$found layer:$(basename "$blob")"
+            fi
+          done < <(find image-save -type f \( -name 'layer.tar' -o -path '*/blobs/sha256/*' \) -print0)
+          rm -rf image-save
+          echo "layers=$layers" >> "$GITHUB_OUTPUT"
+          if [ -n "$found" ]; then
+            echo "::error::the image carries the DATABASE_BUILD_URL sentinel in:$found (spec 012b AC-4)"
+            exit 1
+          fi
+          echo "no layer ($layers read), history entry or label carries the sentinel"
 
       - name: Run it and probe /api/health (T-08)
         id: probe
@@ -830,6 +909,8 @@ jobs:
         env:
           CHANGED: ${{ steps.scope.outputs.changed }}
           IMAGE_OUTCOME: ${{ steps.image.outcome }}
+          BUILDURL_OUTCOME: ${{ steps.buildurl.outcome }}
+          BUILDURL_LAYERS: ${{ steps.buildurl.outputs.layers }}
           HEALTH_CODE: ${{ steps.probe.outputs.health_code }}
           RUN_USER: ${{ steps.probe.outputs.user }}
           ENV_FILES: ${{ steps.probe.outputs.envfiles }}
@@ -846,6 +927,7 @@ jobs:
               echo "| fact | value |"
               echo "|---|---|"
               echo "| \`docker build\` with no credential in the environment | ${IMAGE_OUTCOME:-skipped} |"
+              echo "| \`DATABASE_BUILD_URL\` sentinel in no layer, history entry or label (spec 012b AC-4) | ${BUILDURL_OUTCOME:-skipped} (${BUILDURL_LAYERS:-0} layers read) |"
               echo "| \`GET /api/health\` from the running image | ${HEALTH_CODE:-n/a} |"
               echo "| runtime user | ${RUN_USER:-n/a} |"
               echo "| \`.env*\` files inside the image | ${ENV_FILES:-n/a} |"

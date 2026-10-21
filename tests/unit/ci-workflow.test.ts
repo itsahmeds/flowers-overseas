@@ -352,7 +352,21 @@ describe("the jobs TASK-011 adds", () => {
     expect(containerJob).toContain(
       "a server credential is present in the build environment",
     );
-    expect(containerJob).not.toMatch(/--build-arg/u);
+    // The one build argument is spec 012b's database login, and CI hands it a sentinel that the
+    // next step searches the shipped image for (AC-4 / T-04; TASK-292), never a credential.
+    const buildArgs = [
+      ...containerJob.matchAll(/--build-arg\s+"?([^\s"]+)/gu),
+    ].map((m) => m[1]);
+    expect(buildArgs.length).toBeGreaterThan(0);
+    for (const arg of buildArgs) {
+      expect(arg).toBe("DATABASE_BUILD_URL=$BUILD_URL_SENTINEL");
+    }
+    expect(ci.jobs["container"]?.env?.["BUILD_URL_SENTINEL"]).toMatch(
+      /^postgres:\/\/app_build:fo-ci-sentinel-\$\{\{ github\.run_id \}\}@db\.invalid:5432\/fo$/u,
+    );
+    expect(containerJob).toContain(
+      "the image carries the DATABASE_BUILD_URL sentinel in",
+    );
   });
 
   it("keeps env:check in the lint job, as the header comment documents", () => {

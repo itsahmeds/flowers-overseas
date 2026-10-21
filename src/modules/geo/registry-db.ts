@@ -5,7 +5,7 @@
  * One public-context transaction runs `COUNTRY_REGISTRY_QUERY` and the rows are overlaid on the
  * file registry by `countryRegistryFromRows` (`registry.ts`, which says what each side owns). At
  * request time that is `app_web` over `DATABASE_URL`; during `next build` it is `app_build` over
- * `DATABASE_BUILD_URL` (`src/lib/db.ts`), with no fallback to the file when the database cannot
+ * the build's own login (`src/lib/db.ts`), with no fallback to the file when the database cannot
  * be read (§2.0 item 2).
  *
  * Not selected by anything yet: the composition root that picks it in `production`, `staging` and
