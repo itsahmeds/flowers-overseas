@@ -433,22 +433,6 @@
       "h": 9164
     },
     {
-      "file": "wireframes/blog-desktop.dc.html",
-      "title": "Blog index and post · desktop",
-      "x": 0,
-      "y": 297261,
-      "w": 1440,
-      "h": 4644
-    },
-    {
-      "file": "wireframes/blog-mobile.dc.html",
-      "title": "Blog index and post · mobile",
-      "x": 1520,
-      "y": 297261,
-      "w": 390,
-      "h": 5824
-    },
-    {
       "file": "wireframes/legal-template-desktop.dc.html",
       "title": "Legal document template · Withdrawal and refunds · desktop · v2",
       "x": 0,
@@ -983,6 +967,54 @@
       "y": 551760,
       "w": 1440,
       "h": 2021
+    },
+    {
+      "file": "wireframes/blog-index-desktop.dc.html",
+      "title": "Blog index · desktop · spec 044",
+      "x": 0,
+      "y": 297261,
+      "w": 1440,
+      "h": 3400
+    },
+    {
+      "file": "wireframes/blog-index-mobile.dc.html",
+      "title": "Blog index · mobile · spec 044",
+      "x": 1520,
+      "y": 297261,
+      "w": 390,
+      "h": 4800
+    },
+    {
+      "file": "wireframes/blog-post-desktop.dc.html",
+      "title": "Blog post · desktop · spec 044",
+      "x": 1990,
+      "y": 297261,
+      "w": 1440,
+      "h": 4800
+    },
+    {
+      "file": "wireframes/blog-post-mobile.dc.html",
+      "title": "Blog post · mobile · spec 044",
+      "x": 3510,
+      "y": 297261,
+      "w": 390,
+      "h": 5800
+    },
+    {
+      "file": "wireframes/admin-blog-edit-desktop.dc.html",
+      "title": "admin blog post editor · desktop · spec 044",
+      "x": 0,
+      "y": 554463,
+      "w": 1440,
+      "h": 11000
+    },
+    {
+      "file": "wireframes/admin-blog-edit-mobile.dc.html",
+      "title": "admin blog post editor · mobile · spec 044",
+      "x": 1520,
+      "y": 554463,
+      "w": 390,
+      "h": 17000
     }
   ],
   "annotations": [
@@ -1159,7 +1191,7 @@
       "x": 0,
       "y": 297215,
       "w": 1200,
-      "text": "Blog index and post — desktop 1440 and mobile 390. Reworked in round 2 against docs/design/benchmarks/ (see benchmarks/README.md for what this page type took and dropped)."
+      "text": "Spec 044 · Blog index and blog post, desktop 1440 and mobile 390 (2026-10-21): posts written and approved in admin. Index: a ruled list newest first, no lead story. Post: byline, Published and Updated, the not-open line, cover and AI note, excerpt, the body subset, one end link to the guide of the first country tag. Replaces the round 2 shared pair."
     },
     {
       "id": "wf-legal-template",
@@ -1405,6 +1437,13 @@
       "y": 551714,
       "w": 1400,
       "text": "Spec 012b · Flows: florist bouquets on sale, and a country goes live."
+    },
+    {
+      "id": "s044-admin-blog",
+      "x": 0,
+      "y": 554417,
+      "w": 1400,
+      "text": "Spec 044 · Admin · One blog post: write with the checks card, insert a link to our pages, preview, approve the exact text, Publish post (a rebuild), live and checked, edit by revision and Publish changes (no rebuild), unpublish. Not drawn yet: the post list, the authors page, the publish flow."
     }
   ],
   "launch": {
