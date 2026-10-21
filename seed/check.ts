@@ -184,6 +184,7 @@ import type {
 } from "./schema/media.ts";
 import { mediaSlots, promptHash } from "./schema/index.ts";
 import { ImageryPromptFileSchema } from "./schema/prompts.ts";
+import { widthsForSlot } from "./schema/variants.ts";
 
 export const CLI_NAME = "seed:check";
 
@@ -2114,6 +2115,47 @@ function checkMedia(tree: SeedTree, parsed: Parsed): SeedProblem[] {
           "avif-only",
           "ships AVIF with no WebP step: the resolver falls through to the AVIF file, so a browser without AVIF is served a format it cannot decode and draws the alt text instead of the photograph (spec 006 §2.5, AC-18)",
         );
+      }
+    }
+
+    // **A detail photograph ships the product hero's ladder** (spec 042 AC-20; spec 006 §14
+    // A-founder-2026-10-20b clause 4; TASK-306). The detail asset is the phone gallery's second
+    // slide and the card's second photo on hover, both shown as wide as the hero on the same page,
+    // so an approved `productDetail` asset that renders at all (it has a variant row: an asset with
+    // none resolves to the placeholder and is never shown) must carry every rung of the hero's
+    // ladder in each format the ladder ships, and no rung the hero lacks. Read from
+    // `widthsForSlot("productHero")`, never restated, so the two ladders cannot drift apart.
+    const heroLadder = widthsForSlot("productHero");
+    const ladderFormats = ["avif", "webp"] as const;
+    for (const asset of parsed.media) {
+      if (asset.slot !== "productDetail" || asset.reviewState !== "approved")
+        continue;
+      const rows = variants.filter((variant) => variant.assetId === asset.id);
+      if (rows.length === 0) continue;
+      for (const format of ladderFormats) {
+        const widths = new Set(
+          rows
+            .filter((variant) => variant.format === format)
+            .map((variant) => variant.width),
+        );
+        for (const width of heroLadder) {
+          if (widths.has(width)) continue;
+          at(
+            VARIANTS_FILE,
+            `${asset.id}/${String(width)}.${format}`,
+            "detail-ladder",
+            `is missing: an approved \`productDetail\` asset ships the product hero's ladder (${heroLadder.join(" / ")} px) in ${ladderFormats.join(" and ")}, because the phone gallery's second slide and the hover layer show it as wide as the hero (spec 042 AC-20)`,
+          );
+        }
+        for (const width of [...widths].sort((a, b) => a - b)) {
+          if (heroLadder.includes(width)) continue;
+          at(
+            VARIANTS_FILE,
+            `${asset.id}/${String(width)}.${format}`,
+            "detail-ladder",
+            `is a rung the product hero's ladder (${heroLadder.join(" / ")} px) does not have: a detail photograph ships the same set of widths as the hero (spec 042 AC-20)`,
+          );
+        }
       }
     }
   }
