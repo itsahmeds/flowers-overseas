@@ -12,7 +12,7 @@
  * This file is pure and database-free: the row shape the query returns (`CountryRegistryRowSchema`,
  * parsed at the boundary), the overlay (`countryRegistryFromRows`), and the comparison
  * `pnpm catalogue:parity` runs (`countryRegistryParity`). The reader that runs the query in the
- * application is `registry-db.ts` (`dbCountryRegistry`); the composition root that picks one by
+ * application is `db/registry.ts` (`dbCountryRegistry`); the composition root that picks one by
  * environment is TASK-294's (AC-3).
  *
  * **`corridorPagePublished` has no column** (`country` in `0002` carries `guide_published` only),

@@ -135,6 +135,15 @@ export const SCANNED_PATHS = [
   "src/modules/checkout/currency.ts",
 ] as const;
 
+/**
+ * A scanned module's database adapter directory, left out of the walk (spec 012b §5.2, §12:
+ * "`check:no-db` keeps covering `src/modules/catalog` outside `db/`"; TASK-292). The database
+ * implementation of a provider seam lives there and nowhere else in the module, so everything else
+ * in the module stays provably database-free. `src/modules/geo/db` holds `dbCountryRegistry`;
+ * TASK-070 adds `src/modules/catalog/db` for the catalogue providers.
+ */
+export const DATABASE_ADAPTER_DIRS = ["src/modules/geo/db"] as const;
+
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
 
 /**
@@ -204,7 +213,10 @@ function scannedFiles(
   root: string,
   paths: readonly string[] = SCANNED_PATHS,
 ): string[] {
-  return paths.flatMap((path) => walk(join(root, path)));
+  const adapters = DATABASE_ADAPTER_DIRS.map((dir) => `${join(root, dir)}/`);
+  return paths
+    .flatMap((path) => walk(join(root, path)))
+    .filter((file) => !adapters.some((dir) => file.startsWith(dir)));
 }
 
 /** Strip a trailing `.ts`/`.js` extension so `./currencies.ts` and `./currencies` compare alike. */

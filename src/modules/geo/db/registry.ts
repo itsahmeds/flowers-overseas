@@ -3,8 +3,10 @@
  * §5.2 `src/modules/geo`; TASK-292).
  *
  * One public-context transaction runs `COUNTRY_REGISTRY_QUERY` and the rows are overlaid on the
- * file registry by `countryRegistryFromRows` (`registry.ts`, which says what each side owns). At
- * request time that is `app_web` over `DATABASE_URL`; during `next build` it is `app_build` over
+ * file registry by `countryRegistryFromRows` (`../registry.ts`, which says what each side owns).
+ * It lives in `db/`, the module's database adapter directory, which `pnpm check:no-db` leaves out
+ * of its scan of `src/modules/geo` (spec 012b §12: the rest of the module stays database-free). At
+ * request time that is `app_web` over the runtime pool; during `next build` it is `app_build` over
  * the build's own login (`src/lib/db.ts`), with no fallback to the file when the database cannot
  * be read (§2.0 item 2).
  *
@@ -22,7 +24,7 @@ import {
   COUNTRY_REGISTRY_QUERY,
   type CountryRegistryProvider,
   countryRegistryFromRows,
-} from "./registry";
+} from "../registry";
 
 export const dbCountryRegistry: CountryRegistryProvider = {
   countries: () =>

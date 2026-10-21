@@ -16,6 +16,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   BANNED_MODULE_PATTERNS,
+  DATABASE_ADAPTER_DIRS,
   SCANNED_PATHS,
   findDatabaseImports,
   findDatabaseUrlReads,
@@ -224,6 +225,27 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
     expect(findDatabaseImports(root).map((hit) => hit.file)).toEqual([
       "src/modules/i18n/registry.ts",
     ]);
+  });
+
+  it("leaves a module's db/ adapter directory out, and only that directory (spec 012b §12; TASK-292)", () => {
+    expect([...DATABASE_ADAPTER_DIRS]).toEqual(["src/modules/geo/db"]);
+    const adapter = tempTree(
+      'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',
+      "src/modules/geo/db/registry.ts",
+    );
+    expect(findDatabaseImports(adapter)).toEqual([]);
+    // A sibling of the adapter directory, and a directory whose name merely starts with `db`,
+    // are scanned as before.
+    for (const file of [
+      "src/modules/geo/registry.ts",
+      "src/modules/geo/dbx/registry.ts",
+    ]) {
+      const root = tempTree(
+        'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',
+        file,
+      );
+      expect(findDatabaseImports(root).map((hit) => hit.file)).toEqual([file]);
+    }
   });
 
   it("allows imports that merely look like one", () => {

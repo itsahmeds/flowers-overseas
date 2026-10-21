@@ -166,6 +166,17 @@ describe.skipIf(server.url === undefined)(
     });
 
     it("AC-4: INSERT, UPDATE, DELETE and TRUNCATE fail on every table of the set", async () => {
+      // The grant itself, not only its effect: RLS would refuse a write that a stray grant let
+      // through (also 42501), so the privilege catalogue is asserted first.
+      const privileges = await scratch.sql<{ t: string; granted: string[] }[]>`
+        SELECT t, array_agg(p ORDER BY p) FILTER (WHERE has_table_privilege('app_build', 'public.' || quote_ident(t), p)) AS granted
+        FROM unnest(${BUILD_SET}::text[]) AS t
+        CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) AS p
+        GROUP BY t ORDER BY t`;
+      for (const { t, granted } of privileges) {
+        expect(granted, t).toEqual(["SELECT"]);
+      }
+      expect(privileges.map((row) => row.t)).toEqual(BUILD_SET);
       await build.begin(async (tx) => {
         for (const table of BUILD_SET) {
           const [column] = await tx<{ name: string }[]>`
@@ -225,7 +236,7 @@ describe.skipIf(server.url === undefined)(
       vi.resetModules();
       const { withDbContext } = await import("../../src/lib/db.ts");
       const { dbCountryRegistry } =
-        await import("../../src/modules/geo/registry-db.ts");
+        await import("../../src/modules/geo/db/registry.ts");
       const who = await withDbContext(
         { role: "public", requestId: "build-role-test" },
         async (db) =>
@@ -261,7 +272,7 @@ describe.skipIf(server.url === undefined)(
       vi.stubEnv("DATABASE_URL", scratch.url);
       vi.resetModules();
       const { dbCountryRegistry } =
-        await import("../../src/modules/geo/registry-db.ts");
+        await import("../../src/modules/geo/db/registry.ts");
       await expect(dbCountryRegistry.countries()).rejects.toThrow(
         /ECONNREFUSED|connect/u,
       );

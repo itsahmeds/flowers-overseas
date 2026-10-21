@@ -121,6 +121,29 @@ correct answer, not a gap.
 `seed/index.ts` (`pnpm db:seed`, TASK-083) and `seed/upload.ts` (TASK-082) join the directory in
 the tasks named.
 
+## The database seed: `pnpm db:seed`
+
+```
+pnpm db:seed                    # upsert by natural key; puts a hand-edited seeded value back
+pnpm db:seed --dry-run          # the same run in a rolled-back transaction: counts only
+pnpm db:seed --only=geo,catalog # the named groups, in dependency order
+pnpm db:seed --insert-only      # adds missing rows, updates none (spec 012b AC-1)
+```
+
+- **Production takes `--insert-only` only** (spec 012b §2.0 item 5; TASK-292): with
+  `APP_ENV=production` a plain run exits 1 before connecting, because "putting back" a seeded value
+  there would overwrite the live catalogue. `--insert-only` adds what is missing and issues no
+  `UPDATE`, so every existing row keeps its exact bytes; it is how the founder fills production
+  before the catalogue cutover (§12 founder action 6).
+- **Nothing under a `real` row moves, in any mode.** A row whose own `source` is `real` is counted
+  `real`; a row whose parent product, country or florist is `real` (`product_id`, `country_id`,
+  `partner_id`) is counted `under real` and is neither updated nor inserted, so an admin's product
+  keeps its copy, sizes, prices and mappings exactly as admin left them.
+- **A country's status is the registry's** (`src/config/countries.ts`), written when the row is
+  inserted and never updated: once the row exists the status is admin's go-live flip. `pnpm
+  catalogue:parity --target=<postgres url>` (read-only) reports any country whose database row
+  disagrees with the registry, naming every URL and field (spec 012b AC-2's country half).
+
 ## The diff: `pnpm seed:diff`
 
 ```
@@ -184,8 +207,9 @@ has landed).
   `pnpm check:no-db`; the projector reads only the authored modules, which is what makes its
   output byte-identical on every machine. `seed/index.ts` and `seed/upload.ts` are the exceptions
   by design and arrive with spec 002's provisioning (spec 006 §2.6).
-- **Every row is `source: "seed"`.** The importer never touches a row whose `source` is `real`
-  (`plan/10` §4): seed → real is a data change, not a deploy.
+- **Every row is `source: "seed"`.** The importer never touches a row whose `source` is `real`,
+  nor a row whose parent product, country or florist is `real` (`plan/10` §4, spec 012b AC-1):
+  seed → real is a data change, not a deploy.
 - **Money is integer minor units plus a currency**, VAT and delivery included, one open-ended row
   per (product, country, tier, surcharge) — the file-level mirror of spec 002's partial unique
   index, and what preserves the Omnibus 30-day-lowest history by superseding rather than updating.
