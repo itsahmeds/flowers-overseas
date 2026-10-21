@@ -5,6 +5,8 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Binding
 
+- **Q6 answered (founder, 2026-10-21, "A, use the existing close-ups"):** the second photograph is the approved `productDetail` close-up, enlarged to the hero ladder by TASK-306. This task no longer waits on Q6; it waits on TASK-306 and keeps TASK-250's three products excluded until that task closes.
+
 Spec 042 §5.3.3, §13 Q5 (answered: clause 4 lists the hover layer, 500 ms on `--ease-photo`) and §13 Q6 (open).
 - **ACs owned:** AC-12, AC-13, AC-14; tests T-12 to T-14.
 - **Blocked on the founder's §13 Q6:** are the detail photographs good enough as the second photo on hover, and if not, where do better ones come from and who approves them. Not a launch blocker (§13 Q2).
