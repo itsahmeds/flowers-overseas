@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: `OccasionRuleSchema` `fixed` gains `also` (1 or 2 real, distinct pairs; named issues); `occasionDates()` in `evaluate.ts`, `nextOccurrenceDates()` in `calendar.ts` (also days in the primary's year), both on the geo barrel; PL `grandparents_day` `also` 1/22 in `occasion-country.json`, the `notes` sentence replaced; `seed/snapshot/occasion_country.json` re-snapshotted (`seed:diff`: 1 update). `ListingOccasionDate.alsoDates` on the hub rows and the country occasion row only; the table cell, the first-screen card and the dated line join every day with `formatList`. Tests: `occasion-also-dates.test.ts` (T-74, T-75, the 126-row golden), `occasion-two-dates-render.test.tsx` (T-76), five `schema/bad-also-*` seed cases, e2e in `hubs.spec.ts` and `country-occasion.spec.ts`. In feature PR 323 with TASK-316.
 
 ## Result
 

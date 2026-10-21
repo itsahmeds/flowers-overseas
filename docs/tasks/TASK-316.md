@@ -30,7 +30,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-22 (implementer, E-1, to the orchestrator in PR 323): AC-72 and T-72 ask that `ItemList` on each Appendix hub "has the same number of entries as the cards rendered". No listing emits an `ItemList` today: the builder is TASK-115 (spec 008 AC-17, `todo`), and the served `/en/occasions/mothers-day` carries no JSON-LD at all (checked on the live site 2026-10-22). That clause is not observable, so it is not asserted (a conditional "if one exists" would pass with its subject removed, DoD §4). Proposed answer: TASK-115's AC-17 ("every listing ... emits an `ItemList` whose count ... equals the rendered cards exactly") carries it for these hubs too, with no new test here. The card-count half of AC-72 is asserted in unit and e2e. `open`.
 
 ## Progress
 
@@ -38,7 +38,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: Appendix A transcribed to `tests/fixtures/catalog/occasion-hub-tags.json` (74 new tags, 46 products, `*` marks checked against the data); tags applied in `products.data.ts`, `pnpm seed:project`, `listing-urls.json` regenerated (206 to 258 per locale). Draft PR 323.
+- 2026-10-22: `tests/unit/occasion-hubs-complete.test.ts` (T-70, T-71, T-72 unit, T-73 unit); count pins moved (country occasion pages 7 to 59: `catalog-listing`, `catalog-country-occasion`, `catalog-shop-page`, `catalog-occasion-page`, `catalog-routes-depth4`, `catalog-read`, `corridor-shop-chips`, `shop-crawl-targets`, `api-send-route`, e2e `country-occasion`, `country-category`); e2e T-72 in `hubs.spec.ts`; visual cases for T-78 in `tests/visual/hubs.spec.ts`. Every AC mutation watched red. Next: rebase, ready, `ci:full`, Linux baselines via `visual:baselines`.
 
 ## Result
 
