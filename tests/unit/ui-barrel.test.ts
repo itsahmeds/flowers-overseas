@@ -34,11 +34,13 @@ describe("src/modules/ui barrel", () => {
         "MIRRORED_IN_RTL",
         "Mark",
         "Wordmark",
-        // chrome (TASK-048), and the header's listing targets the layout resolves (TASK-173);
-        // the notice bar's price claim, which the layout's `@notice` slot renders (TASK-176)
+        // chrome (TASK-048), and the header's listing targets the `@header` slot resolves
+        // (TASK-173, TASK-288); the notice bar's price claim, which that slot passes everywhere
+        // but the locale home (TASK-176); the in-context hrefs of spec 043 §5.3 A (TASK-288)
         "NoticePriceClaim",
         "SiteHeader",
         "headerListingTargets",
+        "inContextListingHrefs",
         // layout primitives
         "CONTAINER_WIDTHS",
         "Cluster",

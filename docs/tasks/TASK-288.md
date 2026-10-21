@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21 (frontend-implementer): `destinationShopLinks()` / `pageDestination()` in `src/modules/catalog/shop-nav.ts` over the hubs' own row rule (`hubDestinationHref()`, extracted from `linksFor()` in `listing.ts`, behaviour unchanged); the whole header moved into a new `@header` slot with a page for every route under `[locale]` (`route-header.tsx`), `@notice` deleted (its home/claim rule now lives in the slot). Unit: `catalog-destination-shop-links`, `header-slot`; main's out-of-context hrefs pinned in `tests/fixtures/header/out-of-context-hrefs.json` (captured at 3efcdc39). Next: e2e `header-in-context.spec.ts`, codebase map, gates, PR. Carry-forward on the spec 004/007/008 §14 status lines and `specs/README.md`: not done, the permission classifier refused the edit (it records an approval); left for the orchestrator.
 
 ## Result
 

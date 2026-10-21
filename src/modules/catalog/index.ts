@@ -412,6 +412,12 @@ export {
 // "may the site link into this destination's shop, and is there a shop root there to link at".
 export { corridorShopEntry } from "./shop-entry";
 
+// The header in a destination's context (spec 043 §5.2, AC-1, AC-2; TASK-288). `src/modules/ui`
+// may not read the catalogue, so the `@header` slot asks here which destination a route is in and
+// where each shop item links there, and hands the answer to `SiteHeader` as data.
+export type { ShopNavLinks } from "./shop-nav";
+export { destinationShopLinks, pageDestination } from "./shop-nav";
+
 // The shared per-depth route resolver (spec 008 §14 **A5**, spec 007 §14 **A8**; TASK-109).
 //
 // Next.js allows one dynamic slug name per (depth, position) across `app/`, so spec 007's corridor

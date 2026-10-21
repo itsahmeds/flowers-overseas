@@ -13,16 +13,12 @@ import {
   routableLocale,
   routableLocaleCodes,
 } from "@/modules/i18n";
-import { isLocaleCode } from "@/config/locales";
-import { listingAlternatePaths, occasionsIndexHref } from "@/modules/catalog";
+import { occasionsIndexHref } from "@/modules/catalog";
 import {
   ConsentBanner,
   fontVariables,
   footerView,
-  type HeaderListingHrefs,
-  headerListingTargets,
   SiteFooter,
-  SiteHeader,
   SkipLink,
 } from "@/modules/ui";
 
@@ -104,36 +100,14 @@ export async function generateMetadata({
   };
 }
 
-/**
- * The header's listing-page links that **exist** in this locale (spec 008 §14 A14, spec 004 §14
- * A20; TASK-173): each identity the header names, asked of the catalogue's one existence rule
- * through `listingAlternatePaths()`, and kept only where it answers with a path here. The footer's
- * `occasionsIndexHref()` seam, applied to the header's category row — composed here because this
- * file is the one place both modules are in scope. A pseudo-locale has no listing page, so it gets
- * none.
- */
-async function headerListingHrefs(locale: string): Promise<HeaderListingHrefs> {
-  if (!isLocaleCode(locale)) return {};
-  const resolved = await Promise.all(
-    headerListingTargets().map(
-      async ({ id, identity }) =>
-        [
-          id,
-          (await listingAlternatePaths({ ...identity, locale }))[locale],
-        ] as const,
-    ),
-  );
-  return Object.fromEntries(resolved.filter(([, path]) => path !== undefined));
-}
-
 export default async function LocaleLayout({
   children,
-  notice,
+  header,
   switcher,
   params,
 }: LocaleParams & {
   children: ReactNode;
-  notice?: ReactNode;
+  header?: ReactNode;
   switcher?: ReactNode;
 }) {
   const { locale: requested } = await params;
@@ -186,23 +160,18 @@ export default async function LocaleLayout({
             asks for through the `SkipLink` primitive — off-screen until focused, then a paper
             card with the focus ring above every other layer. Same target, same message key. */}
         <SkipLink>{t("skipToContent")}</SkipLink>
-        {/* The commerce header of spec 004 §13's resolution note (TASK-048): one Server
-            Component, no client JavaScript, a reserved height per breakpoint, and no element at
-            all for a target with no page (AC-7, AC-8, AC-14; spec 004 §14 A20). Which category
-            hubs, occasion hubs and shop root exist here is the catalogue's answer, resolved
-            above and handed in (TASK-173). */}
-        {/* `notice` is the `@notice` parallel-route slot: the notice bar's "Prices include
-            delivery and VAT" on every page, nothing on the locale home (founder, 2026-10-04;
-            TASK-176). The route decides, so the document stays static and no path is read. */}
+        {/* `header` is the `@header` parallel-route slot: the commerce header of spec 004 §13's
+            resolution note (TASK-048), one Server Component with no client JavaScript, **as the
+            route draws it** (spec 043 §5.3 A; TASK-288). On a page in a destination's context its
+            shop items link to that destination's own pages; everywhere else they link where they
+            always have. The route decides, so the document stays static and no path is read; the
+            slot also decides the notice bar's price claim (absent on the locale home, founder
+            2026-10-04; TASK-176) and the header's language links (TASK-233), which the `@notice`
+            slot and this layout used to hand in. See `./route-header.tsx`. */}
         {/* `switcher` is the `@switcher` slot: the language links to this page in each locale
-            that has it, and to the locale home elsewhere (spec 003 §2 L79; TASK-233). One node,
-            drawn in the utility strip, the phone menu and the footer language row. */}
-        <SiteHeader
-          locale={locale.code}
-          listingHrefs={await headerListingHrefs(locale.code)}
-          priceClaim={notice}
-          switcher={switcher}
-        />
+            that has it, and to the locale home elsewhere (spec 003 §2 L79; TASK-233). The footer
+            language row draws it; the header's slot draws its own copy of the same links. */}
+        {header}
         {children}
         {/* The colophon of spec 004 §5.3, on every localised document (AC-9): a Server
             Component with zero client JavaScript, whose links, company identity and payment
