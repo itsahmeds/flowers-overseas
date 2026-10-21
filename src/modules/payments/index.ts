@@ -10,7 +10,13 @@
  *
  * The lifecycle, refund, dispute and webhook exports of §5.2 join this list in their own tasks
  * (TASK-257 onwards).
+ *
+ * `./events` is imported for its side effect: it registers spec 013's event schemas in spec 010's
+ * registry (TASK-254's hand-off), so any process that loads `payments` can write a payment event
+ * (`tests/unit/payments-barrel.test.ts`).
  */
+import "./events";
+
 export {
   declineMessageKey,
   PAYMENT_ERROR_KEYS,
