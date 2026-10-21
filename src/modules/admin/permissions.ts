@@ -26,6 +26,9 @@ export const adminPermissions = [
   "orders.cancel",
   "orders.refund",
   "orders.resend",
+  // spec 012b §5.2 (TASK-293): the two rows the review ledger reads.
+  "translation.attest",
+  "media.review",
 ] as const;
 export type AdminPermission = (typeof adminPermissions)[number];
 
@@ -46,6 +49,10 @@ export const ADMIN_PERMISSIONS: Readonly<
   "orders.cancel": ["admin"],
   "orders.refund": ["admin"],
   "orders.resend": ["admin", "ops"],
+  // spec 012b §5.2: any admin may attest copy, but only in a locale `reviewer_locale` grants them
+  // (`attest()` checks the grant); photos need `media.review`.
+  "translation.attest": ["admin", "ops", "finance", "content"],
+  "media.review": ["admin", "content"],
 });
 
 /** Whether any of `roles` holds `permission`. An unknown permission is refused. */

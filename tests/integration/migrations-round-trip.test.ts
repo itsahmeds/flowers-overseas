@@ -87,6 +87,12 @@ const FUNCTIONS = [
   // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
   // A-founder-2026-10-22 item 2 A).
   "purchase_total_check",
+  // 0023 (TASK-293): the review ledger (spec 012b §5.1 item 2).
+  "review_attestation_append_only",
+  "review_hash_part",
+  "review_product_copy_hash",
+  "review_subject_hash",
+  "review_write_guard",
   "set_updated_at",
   "status_flip_guard",
 ];
