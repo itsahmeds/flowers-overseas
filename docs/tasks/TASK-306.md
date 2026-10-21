@@ -59,4 +59,36 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 314](https://github.com/itsahmeds/flowers-overseas/pull/314). `productDetail` ships the product
+hero's ladder by reference (`PRODUCT_HERO_WIDTHS`, 384 / 480 / 640 / 828, `seed/schema/variants.ts`);
+`pnpm seed:check` has a `media` rule `detail-ladder` that fails an approved detail asset with
+variant rows that lacks a rung (or carries one the hero lacks), per format. A full
+`pnpm media:variants` from the 175 originals added **504 rows** (84 detail assets x 480/640/828 x
+AVIF/WebP) and changed or removed **none** (every existing checksum reproduced); `media:variants
+--check`: 1366 rows, 1366 files, every checksum matched; `public/media/` unchanged;
+`seed/snapshot/media_variant.json` regenerated. Largest detail file 117 920 B (828 WebP); cap
+raised to 120 000 B (escalated above). Unit: `tests/unit/media-variants-ladder.test.ts`, 7 cases
+(data scan, header, clean tree, missing 828, 384-only, extra rung, rejected / no-row skip), each
+watched red under a mutation (data cut to 384: 5 red; rule silenced: 3; slot table `[384]`: 1;
+review-state filter dropped: 1; extra-rung half removed: 1); `media-budgets.test.tsx` widest detail
+384 -> 828. Handed on: **upload the new rungs before merge** (escalation 2); TASK-309 owns the
+gallery half (second slide `currentSrc`, `sizes`).
+
+`pnpm gates:cheap` (head ebab631a, load average 63 at the time):
+
+```
+typecheck             exit 0 · 9.1 s
+lint                  exit 0 · 74.8 s
+format:check          exit 0 · 36.0 s
+i18n:check            exit 0 · 1.6 s
+check:no-db           exit 0 · 0.3 s
+codebase:map --check  exit 0 · 0.3 s
+tests                 exit 1 · 189.1 s · changed 134 + map 0 + always 3
+RESULT: FAIL (1 of 7 red: tests)
+```
+
+The red was 3 of 137 files: `seed-diff.test.ts` (the snapshot needed `pnpm seed:diff --write`,
+fixed in 555d53dc) and timeouts at load 63 in `url-pii.test.ts` and `product-route.test.tsx`.
+Re-run alone at load 13 with `--maxWorkers=2` (the orchestrator's MACHINE HEAT rule, so no second
+wide run): `seed-diff`, `url-pii`, `product-route`, `media-variants-ladder`: 4 files, 51 tests,
+all green. No build slot taken: nothing here needs a build.
