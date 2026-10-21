@@ -144,6 +144,7 @@ const EXTERNAL_QUERY_KEYS: readonly {
   {
     entry: "src/app/admin/(signed-in)/flags/actions.ts#ref",
     reason: "/admin/flags's toggled scope: an ISO 3166 destination code or `*`",
+  },
   // Spec 012 §2.6 (TASK-222): /admin/orders's GET filters and the poll's `since`, built by
   // `orderQueueHref` on a `noindex`, `no-store`, admin-only page. Codes and dates only; not
   // listing keys (`page` is already one).
