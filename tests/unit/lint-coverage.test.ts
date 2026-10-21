@@ -77,6 +77,8 @@ interface LockRow {
 const FO_RULES = Object.keys(fo.rules ?? {}).map((name) => `fo/${name}`);
 const FLOAT_MONEY = "fo/no-float-money";
 const ORDER_STATUS = "fo/no-direct-order-status-write";
+/** spec 012b AC-14 (TASK-293): the review columns are written only by `attest()`. */
+const REVIEW_WRITE = "fo/no-direct-review-write";
 
 /** AC-56: the only files in `src/` where the side doors are open. */
 const SIDE_DOOR_FILES = ["src/lib/logger.ts", "src/lib/step-summary.ts"];
@@ -462,9 +464,10 @@ const ENTRY_CHECKS: readonly EntryCheck[] = [
 
 const TABLE: readonly LockRow[] = [
   {
-    lock: "every fo/* rule except the two below",
+    lock: "every fo/* rule except the three below",
     rules: FO_RULES.filter(
-      (rule) => rule !== FLOAT_MONEY && rule !== ORDER_STATUS,
+      (rule) =>
+        rule !== FLOAT_MONEY && rule !== ORDER_STATUS && rule !== REVIEW_WRITE,
     ),
     errorOn: ["src/"],
     allowedOff: [],
@@ -479,6 +482,13 @@ const TABLE: readonly LockRow[] = [
     lock: ORDER_STATUS,
     rules: [ORDER_STATUS],
     // TASK-162 (AC-60): every root that can reach the database.
+    errorOn: ["src/", "scripts/", "seed/", "db/"],
+    allowedOff: [],
+  },
+  {
+    lock: REVIEW_WRITE,
+    rules: [REVIEW_WRITE],
+    // TASK-293 (spec 012b AC-14): the same roots as the order-status lock.
     errorOn: ["src/", "scripts/", "seed/", "db/"],
     allowedOff: [],
   },
@@ -819,8 +829,8 @@ const addBlock = (block: string) => ({
 });
 
 describe("the lock table (AC-52) over the real config", () => {
-  it("names all seven fo/* rules, so a rule added later joins the first row", () => {
-    expect(FO_RULES).toHaveLength(7);
+  it("names all eight fo/* rules, so a rule added later joins the first row", () => {
+    expect(FO_RULES).toHaveLength(8);
     for (const rule of FO_RULES) {
       expect(
         TABLE.some((row) => row.rules.includes(rule)),
@@ -975,7 +985,7 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
       ),
     );
     expect(violations).toContain(
-      "fo/no-literal-strings: off on src/app/layout.tsx; must be error on src/ (every fo/* rule except the two below)",
+      "fo/no-literal-strings: off on src/app/layout.tsx; must be error on src/ (every fo/* rule except the three below)",
     );
     expect(violations).toContain(
       'fo/exception: fo/exception/src/app/layout.tsx must have `files` exactly ["src/app/layout.tsx"] and turn off one rule that is not ours (AC-50)',
@@ -1019,6 +1029,31 @@ describe("a one-line edit to eslint.config.mjs goes red and names the lock (T-56
       "fo/no-direct-order-status-write: off on scripts/db-migrate.ts; must be error on scripts/ (fo/no-direct-order-status-write)",
     );
   });
+
+  // TASK-293 (spec 012b AC-14): the review-write lock's roots, each dropped in turn.
+  it.each([
+    ["db/", '      "db/**/*.ts",\n      "scripts/**/*.ts",'],
+    [
+      "scripts/",
+      '      "scripts/**/*.ts",\n      "seed/**/*.ts",\n      "src/**/*.ts",',
+    ],
+    ["seed/", '      "seed/**/*.ts",\n      "src/**/*.ts",'],
+  ])(
+    "the review-write block's files narrowed to drop %s",
+    async (root, from) => {
+      const violations = await redFor({
+        from,
+        to: from.replace(`      "${root}**/*.ts",\n`, ""),
+      });
+      expect(
+        violations.some(
+          (v) =>
+            v.startsWith(`${REVIEW_WRITE}: not configured on ${root}`) &&
+            v.endsWith(`must be error on ${root} (${REVIEW_WRITE})`),
+        ),
+      ).toBe(true);
+    },
+  );
 
   it.each([
     [
