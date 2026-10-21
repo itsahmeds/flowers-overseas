@@ -194,16 +194,15 @@ export function nextOccurrenceDates(
   months = 12,
   calendar: readonly OccasionCalendarRow[] = committedOccasionCalendar,
 ): readonly IsoDate[] {
-  const found = upcomingOccasions(countryIso2, from, months, calendar).find(
-    (occasion) => occasion.occasionKey === occasionKey,
-  );
-  if (found === undefined) return [];
   const row = calendar.find(
     (candidate) =>
       candidate.occasionKey === occasionKey &&
       candidate.countryIso2 === countryIso2,
   );
   if (row === undefined) return [];
+  // The same window read every date-ordered list makes, over this one row.
+  const [found] = upcomingOccasions(countryIso2, from, months, [row]);
+  if (found === undefined) return [];
   return occasionDates(row.rule, Number(found.date.slice(0, 4)));
 }
 

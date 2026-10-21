@@ -112,6 +112,22 @@ describe("AC-74: the evaluator (T-74)", () => {
       [],
     );
     expect(nextOccurrenceDates("name_day", "PL", "2026-10-21")).toEqual([]);
+    // An evergreen occasion has no calendar row at all.
+    expect(nextOccurrenceDates("birthday", "PL", "2026-10-21")).toEqual([]);
+    // The window and the calendar are the caller's: one month from 2026-10-21 holds no
+    // 21 January, and a calendar without Poland's row knows no Polish Grandparents' Day.
+    expect(
+      nextOccurrenceDates("grandparents_day", "PL", "2026-10-21", 1),
+    ).toEqual([]);
+    expect(
+      nextOccurrenceDates(
+        "grandparents_day",
+        "PL",
+        "2026-10-21",
+        12,
+        committedOccasionCalendar.filter((row) => row.countryIso2 !== "PL"),
+      ),
+    ).toEqual([]);
   });
 
   it("lists the occasion once, by its primary, in every date-ordered list", () => {
