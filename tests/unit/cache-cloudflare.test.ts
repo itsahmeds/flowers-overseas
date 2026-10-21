@@ -61,23 +61,25 @@ const ZONE_ID = "0123456789abcdef0123456789abcdef";
 describe("urlsForTag — home:{locale} (T-22)", () => {
   const locales = routableLocaleCodes();
 
-  it("has locales to check (the registry is not empty)", () => {
+  it("has locales to check (the registry is not empty)", async () => {
     expect(locales.length).toBeGreaterThan(0);
   });
 
   it.each(locales)(
     "home:%s resolves to exactly that locale's home document",
-    (locale) => {
-      expect(urlsForTag(homeCacheTag(locale), options)).toEqual([
+    async (locale) => {
+      expect(await urlsForTag(homeCacheTag(locale), options)).toEqual([
         absoluteUrl(localePath(locale, "home"), options),
       ]);
     },
   );
 
-  it("covers every routable locale once, and no two locales share a URL", () => {
-    const all = locales.flatMap((locale) =>
-      urlsForTag(homeCacheTag(locale), options),
-    );
+  it("covers every routable locale once, and no two locales share a URL", async () => {
+    const all = (
+      await Promise.all(
+        locales.map((locale) => urlsForTag(homeCacheTag(locale), options)),
+      )
+    ).flat();
     expect(all).toHaveLength(locales.length);
     expect(new Set(all).size).toBe(locales.length);
   });
@@ -97,20 +99,20 @@ describe("urlsForTag — a corridor tag (T-22)", () => {
       .filter((loc) => paths.has(new URL(loc).pathname));
   }
 
-  it("names the destination-wide tag, not a per-locale one", () => {
+  it("names the destination-wide tag, not a per-locale one", async () => {
     expect(corridorTag).toBe(`corridor:${iso2}`);
   });
 
-  it("is listed by the corridor sitemap in at least two locales (so the case can fail)", () => {
+  it("is listed by the corridor sitemap in at least two locales (so the case can fail)", async () => {
     expect(sitemapCorridorUrls().length).toBeGreaterThan(1);
   });
 
-  it("contains every URL the corridor sitemaps list for the destination", () => {
-    const urls = urlsForTag(corridorTag ?? "", options);
+  it("contains every URL the corridor sitemaps list for the destination", async () => {
+    const urls = await urlsForTag(corridorTag ?? "", options);
     for (const loc of sitemapCorridorUrls()) expect(urls).toContain(loc);
   });
 
-  it("is exactly the destination's corridor pages from the registry, in every routable locale", () => {
+  it("is exactly the destination's corridor pages from the registry, in every routable locale", async () => {
     const expected = listCorridorPages()
       .filter((page) => page.iso2 === iso2)
       .map((page) =>
@@ -119,25 +121,29 @@ describe("urlsForTag — a corridor tag (T-22)", () => {
           options,
         ),
       );
-    expect(urlsForTag(corridorTag ?? "", options)).toEqual(expected);
+    expect(await urlsForTag(corridorTag ?? "", options)).toEqual(expected);
   });
 
-  it("resolves the per-locale tag to that locale's corridor page alone", () => {
+  it("resolves the per-locale tag to that locale's corridor page alone", async () => {
     const perLocale = corridorCacheTags(iso2, "en-gb")[1] ?? "";
-    expect(urlsForTag(perLocale, options)).toEqual([
+    expect(await urlsForTag(perLocale, options)).toEqual([
       absoluteUrl(corridorAlternatePaths(iso2)["en-gb"] ?? "", options),
     ]);
   });
 
-  it("covers every corridor URL any sitemap lists, destination by destination", () => {
+  it("covers every corridor URL any sitemap lists, destination by destination", async () => {
     const listed = routableLocaleCodes().flatMap((locale) =>
       corridorSitemapEntries(locale, indexing).map((entry) => entry.loc),
     );
     const purged = new Set(
-      [...new Set(listCorridorPages().map((page) => page.iso2))].flatMap(
-        (country) =>
-          urlsForTag(corridorCacheTags(country, "en")[0] ?? "", options),
-      ),
+      (
+        await Promise.all(
+          [...new Set(listCorridorPages().map((page) => page.iso2))].map(
+            (country) =>
+              urlsForTag(corridorCacheTags(country, "en")[0] ?? "", options),
+          ),
+        )
+      ).flat(),
     );
     expect(listed.length).toBeGreaterThan(0);
     expect(listed.filter((loc) => !purged.has(loc))).toEqual([]);
@@ -147,9 +153,9 @@ describe("urlsForTag — a corridor tag (T-22)", () => {
 describe("urlsForTag — hub:{locale} and the rest of the vocabulary", () => {
   it.each(routableLocaleCodes())(
     "hub:%s resolves to exactly that locale's hub, which the static sitemap lists where indexable",
-    (locale) => {
+    async (locale) => {
       const hubTag = hubCacheTags(locale)[0] ?? "";
-      const urls = urlsForTag(hubTag, options);
+      const urls = await urlsForTag(hubTag, options);
       expect(urls).toEqual([
         absoluteUrl(localePath(locale, "destinations"), options),
       ]);
@@ -159,16 +165,17 @@ describe("urlsForTag — hub:{locale} and the rest of the vocabulary", () => {
     },
   );
 
-  it("leaves `sitemap` unresolved until the escalation in the brief is answered", () => {
-    expect(urlsForTag(SITEMAP_CACHE_TAG, options)).toEqual([]);
+  it("leaves `sitemap` unresolved until the escalation in the brief is answered", async () => {
+    expect(await urlsForTag(SITEMAP_CACHE_TAG, options)).toEqual([]);
   });
 
-  it("resolves a tag nobody declares to nothing (never a guess)", () => {
-    expect(urlsForTag("catalog:PL", options)).toEqual([]);
-    expect(urlsForTag("corridor:ZZ", options)).toEqual([]);
+  it("resolves a tag nobody declares to nothing (never a guess)", async () => {
+    expect(await urlsForTag("catalog:pl", options)).toEqual([]);
+    expect(await urlsForTag("catalog:ZZ", options)).toEqual([]);
+    expect(await urlsForTag("corridor:ZZ", options)).toEqual([]);
   });
 
-  it("returns no duplicate URL for any declared tag", () => {
+  it("returns no duplicate URL for any declared tag", async () => {
     const tags = routableLocaleCodes().flatMap((locale) => [
       homeCacheTag(locale),
       ...hubCacheTags(locale),
@@ -177,22 +184,22 @@ describe("urlsForTag — hub:{locale} and the rest of the vocabulary", () => {
       ),
     ]);
     for (const tag of tags) {
-      const urls = urlsForTag(tag, options);
+      const urls = await urlsForTag(tag, options);
       expect(new Set(urls).size).toBe(urls.length);
     }
   });
 
-  it("does not double the slash when the site URL ends in one", () => {
+  it("does not double the slash when the site URL ends in one", async () => {
     expect(
-      urlsForTag(homeCacheTag("en"), {
+      await urlsForTag(homeCacheTag("en"), {
         baseUrl: "https://flowersoverseas.com/",
       }),
     ).toEqual(["https://flowersoverseas.com/en"]);
   });
 
-  it("builds absolute URLs on the deployment's own origin", () => {
+  it("builds absolute URLs on the deployment's own origin", async () => {
     expect(
-      urlsForTag(homeCacheTag("de"), {
+      await urlsForTag(homeCacheTag("de"), {
         baseUrl: "https://staging.example.test",
       }),
     ).toEqual(["https://staging.example.test/de"]);
@@ -262,12 +269,12 @@ describe("the no-op without a token or a zone id (T-22)", () => {
     expect(cache).toBe(noopCache);
   });
 
-  it("resolves to undefined and touches no network (MSW refuses unhandled requests)", async () => {
+  it("resolves ok and touches no network (MSW refuses unhandled requests)", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     try {
       await expect(
         selectCacheAdapter({}).invalidate([homeCacheTag("en")]),
-      ).resolves.toBeUndefined();
+      ).resolves.toEqual({ ok: true });
       expect(fetchSpy).not.toHaveBeenCalled();
     } finally {
       fetchSpy.mockRestore();
@@ -334,7 +341,9 @@ describe("parseCloudflarePurgeConfig — absent means off, present must be well-
         },
         createLogger({ level: "info", write: (line) => lines.push(line) }),
       );
-      await expect(adapter.invalidate(["home:en"])).resolves.toBeUndefined();
+      await expect(adapter.invalidate(["home:en"])).resolves.toEqual({
+        ok: false,
+      });
       expect(fetchSpy).not.toHaveBeenCalled();
     } finally {
       fetchSpy.mockRestore();

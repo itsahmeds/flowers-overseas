@@ -36,11 +36,41 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21: `/admin/flags` (page, action), `src/modules/admin/flags.ts` (`listFlags`, `toggleFlag`, `FlagToggleFormSchema`), `invalidate()` and `pathsForTag()` in `src/lib/cache.ts` (origin then edge, warn + Sentry on failure), `urlsForTag` learns `catalog:{iso2}` (now async; the Cloudflare adapter's resolver may be async and its `invalidate` resolves to `{ ok }`), admin primitives `AdminControls.tsx` and `AdminConfirmSwitch.tsx`, 48 `admin.flags.*` keys (unreviewed), nav entry built. Unit and integration tests green on a throwaway PG16; 23 mutations each watched red. Next: CI on the head SHA.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 306](https://github.com/itsahmeds/flowers-overseas/pull/306). What shipped:
+
+1. `/admin/flags`, admin only (`flags.toggle`). It lists the registry keys by scope: one switch per configured destination for `checkout.open`, one global switch for `checkout.demo_guard`. Every other key the database holds is shown as orphaned, with no control (migration `0009` seeds fourteen: `corridor.*`, `locale.*`, `payments.*`).
+2. `toggleFlag` refuses an unknown or orphaned key, a high-risk key without the `admin` role or without the key typed exactly, a stale form (the scope row's `updated_at`), and a destination the configuration does not name. It upserts the scope row inside `withAdminContext` with the action `flags.toggle`, so the audit trigger records it. After the commit it calls `invalidate()` once with `dirtiedTags()`: exactly `["catalog:PL"]` for `checkout.open` on PL, nothing for the demo guard, nothing for a toggle that changes nothing.
+3. `invalidate(tags)` in `src/lib/cache.ts` revalidates every document carrying the tags at the origin first (a product page also by its internal `-product` route), then purges the edge. It never rejects. It logs one `cache.invalidate` line; on either failure that line is a `warn` and Sentry gets `cache.invalidate.failed` with the tags.
+4. `urlsForTag("catalog:{iso2}")` resolves to the destination's listings and product pages in every locale, read from `listingPages()` and `listProductPages()`. It is now async. The Cloudflare adapter accepts an async resolver, and its `invalidate` resolves to `{ ok }` so the caller can see a purge that did not land.
+5. The typed-key confirmation is a native modal `<dialog>` island. The button is always enabled and the server refuses a mismatch with a message.
+
+Tests:
+- unit `admin-flags` (18: page states, toast and refusals, action, nav)
+- unit `cache-invalidate` (11: catalog tag, order, failure paths)
+- unit `admin-permission-binding` (+7: the page and the action answer 403 to ops, finance and content)
+- unit: updates to `cache`, `cache-cloudflare`, `admin-scans`, `url-pii` (three query keys) and `checkout-mode` (the R5 allow-list named a path that never existed; it now names the page folder and `src/modules/admin/flags.ts`)
+- integration `admin-flags` (7, T-16 integration half, on a throwaway PG16), plus updates to `cache-cloudflare-purge`
+
+23 mutations, each watched red; the list is in the PR. I ran no browser locally. I took the build slot once, for one `pnpm build` with `.env.example` as `.env.local`, as CI does (load average 1.9 before, 13.9 after). CI's `build` was skipped because `test-unit` was red, and the only red test there was main's known `design-docs` canvas overlap, which PR 304 fixes. The build passed, with `/admin/flags` dynamic (`ƒ`). **Owed, as for TASK-217 and TASK-218:** T-24 a11y and T-25 visual for `/admin/flags` signed in, which wait for the CI-database task.
+
+`pnpm gates:cheap` at 97951453 (load average 4.8):
+
+```
+gates:cheap · 97951453f98f9d77e78f4435213aeaf7ef89823b · tree clean · base origin/main · 2026-10-20T19:08:05.319Z
+typecheck             exit 0 · 2.5 s
+lint                  exit 0 · 21.8 s
+format:check          exit 0 · 13.6 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 28.3 s · changed 29 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```

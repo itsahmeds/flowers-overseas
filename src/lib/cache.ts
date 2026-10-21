@@ -13,6 +13,19 @@
  * (`urlsForTag()`), in one place for one reason: the page that is cached, the code that purges
  * it and the resolver that turns the tag into URLs must not be able to spell a tag differently.
  */
+import { revalidatePath } from "next/cache";
+
+import {
+  COUNTRY_CODES,
+  type CountryIso2,
+  isCountryIso2,
+} from "@/config/countries";
+import {
+  CacheEntitySchema,
+  cacheTagsFor,
+  listProductPages,
+  listingPages,
+} from "@/modules/catalog";
 import { hubView, listCorridorPages } from "@/modules/geo";
 import { localePath, routableLocaleCodes } from "@/modules/i18n";
 import { absoluteUrl, deploymentDescriptor } from "@/modules/seo";
@@ -22,11 +35,18 @@ import {
   misconfiguredCloudflareCache,
   parseCloudflarePurgeConfig,
 } from "./cache-cloudflare.ts";
-import type { Logger } from "./logger.ts";
+import { type Logger, logger as processLogger } from "./logger.ts";
+import { productRoutePathFor } from "./product-rewrites.ts";
+import { captureWarning } from "./sentry.ts";
+
+/** What an edge purge says about itself. It never rejects; `ok: false` is a purge that did not land. */
+export interface CachePurgeResult {
+  readonly ok: boolean;
+}
 
 export interface CacheAdapter {
   /** Invalidate every cache entry carrying any of `tags`. Resolves when the purge is accepted. */
-  invalidate(tags: string[]): Promise<void>;
+  invalidate(tags: string[]): Promise<CachePurgeResult>;
 }
 
 /**
@@ -35,8 +55,8 @@ export interface CacheAdapter {
  * `eslint-disable` is needed for the unused binding.
  */
 export const noopCache: CacheAdapter = {
-  invalidate(): Promise<void> {
-    return Promise.resolve();
+  invalidate(): Promise<CachePurgeResult> {
+    return Promise.resolve({ ok: true });
   },
 };
 
@@ -123,23 +143,178 @@ export const SITEMAP_CACHE_TAG = "sitemap";
 const UNRESOLVED_TAGS: readonly string[] = [SITEMAP_CACHE_TAG];
 
 /**
+ * The destination whose `catalog` entity `tag` is, or `undefined`. Compared against spec 005's
+ * `cacheTagsFor()` — the one builder of `catalog:{iso2}` — for every configured destination, so
+ * this file never parses or spells a catalogue tag itself.
+ */
+function catalogDestinationOf(tag: string): CountryIso2 | undefined {
+  for (const iso2 of COUNTRY_CODES) {
+    if (!isCountryIso2(iso2)) continue;
+    const tags = cacheTagsFor(
+      CacheEntitySchema.parse({ kind: "catalog", countryIso: iso2 }),
+    );
+    if (tags.includes(tag)) return iso2;
+  }
+  return undefined;
+}
+
+/**
+ * The documents carrying `catalog:{iso2}` (spec 012 §2.4, §5.4; TASK-220): every country shop
+ * listing (spec 008 §5.4: the shop root, the country categories and occasions) and every product
+ * page (spec 009 §5.4) of that destination, in every locale — read from the catalogue's own
+ * existence sets, `listingPages()` and `listProductPages()`, which `generateStaticParams`, the
+ * sitemaps and the crawl read too. Only the `catalog:{iso2}` tag is declared on them here: their
+ * other tags (`product:{sku}`, `catalog:{iso2}:{locale}`) are spec 012b's to resolve (§15.10), and
+ * resolve to nothing until then, exactly as before.
+ *
+ * Asynchronous because the catalogue reads its dataset through a provider; only a catalogue tag
+ * pays for it, so the corridor, hub and home tags resolve as they always did.
+ */
+async function catalogDocuments(iso2: CountryIso2): Promise<TaggedDocument[]> {
+  const tags = cacheTagsFor(
+    CacheEntitySchema.parse({ kind: "catalog", countryIso: iso2 }),
+  );
+  const listings = (await listingPages()).filter(
+    (page) => page.countryIso === iso2,
+  );
+  const products = (await listProductPages()).filter(
+    (page) => page.countryIso === iso2,
+  );
+  return [...listings, ...products].map((page) => ({ path: page.path, tags }));
+}
+
+/**
+ * The site-relative paths of every document carrying `tag`, de-duplicated, in registry order.
+ * The origin half of `invalidate()` revalidates exactly these; `urlsForTag()` is the same set made
+ * absolute for the edge.
+ */
+export async function pathsForTag(tag: string): Promise<string[]> {
+  if (UNRESOLVED_TAGS.includes(tag)) return [];
+  const iso2 = catalogDestinationOf(tag);
+  const documents =
+    iso2 === undefined ? taggedDocuments() : await catalogDocuments(iso2);
+  const paths = new Set<string>();
+  for (const document of documents) {
+    if (document.tags.includes(tag)) paths.add(document.path);
+  }
+  return [...paths];
+}
+
+/**
  * The absolute URLs of every document carrying `tag`, de-duplicated, in registry order (spec 040
  * §5.4: "a pure `urlsForTag(tag)` built from the same registries the pages are generated from").
- * Purely computed, never fetched. A tag no document carries resolves to `[]`, which the adapter
- * reports by name; tags are compared exactly as the builders below spell them.
+ * Computed, never fetched. A tag no document carries resolves to `[]`, which the adapter reports
+ * by name; tags are compared exactly as the builders spell them. `catalog:{iso2}` is learned here
+ * (spec 012 §2.4, TASK-220), which is why this answers a promise.
  */
-export function urlsForTag(
+export async function urlsForTag(
   tag: string,
   { baseUrl }: { readonly baseUrl: string },
-): string[] {
-  if (UNRESOLVED_TAGS.includes(tag)) return [];
+): Promise<string[]> {
   const urls = new Set<string>();
-  for (const document of taggedDocuments()) {
-    if (document.tags.includes(tag)) {
-      urls.add(absoluteUrl(document.path, { baseUrl }));
-    }
+  for (const path of await pathsForTag(tag)) {
+    urls.add(absoluteUrl(path, { baseUrl }));
   }
   return [...urls];
+}
+
+/** The Sentry signal of a toggle whose change is saved but not yet visible (spec 012 §11). */
+export const CACHE_INVALIDATE_FAILED_SIGNAL = "cache.invalidate.failed";
+
+/** How each half of one `invalidate()` call went. */
+export interface InvalidationOutcome {
+  readonly origin: "ok" | "failed";
+  readonly edge: "ok" | "failed";
+  /** Public documents revalidated at the origin (product pages also by their internal route). */
+  readonly urlCount: number;
+}
+
+/** What `invalidate()` calls; tests replace each. */
+export interface InvalidateDeps {
+  /** Marks one path stale on this (single-replica) origin. Default: Next's `revalidatePath`. */
+  readonly revalidate: (path: string) => void;
+  /** The edge purge. Default: `cache`, chosen by the environment. */
+  readonly edge: CacheAdapter;
+  readonly log: Logger;
+  /** Reports a failure. Default: `captureWarning` (Sentry; a no-op without a DSN). */
+  readonly report: (signal: string, fields: Record<string, unknown>) => void;
+}
+
+function defaultInvalidateDeps(): InvalidateDeps {
+  return {
+    revalidate: (path) => {
+      revalidatePath(path);
+    },
+    edge: cache,
+    log: processLogger,
+    report: captureWarning,
+  };
+}
+
+/**
+ * **The one function application code calls to make a change visible** (spec 012 §5.4
+ * "Invalidation", §11; spec 040 §5.4): the Railway origin first — one `revalidatePath` per
+ * document carrying any of `tags`, which is enough on a single replica (spec 040), and a product
+ * page also by the internal route its address is rewritten to (`productRoutePathFor()`), which is
+ * the entry Next caches — then the Cloudflare edge, by URL, through `cache`.
+ *
+ * It never rejects: the change that asked for it is already saved. One log line per call,
+ * `cache.invalidate` with the tag names, the URL count and both outcomes, never a URL; when either
+ * half failed that line is a `warn` and Sentry gets the same tags (§11: "the change is saved but
+ * not yet visible").
+ */
+export async function invalidate(
+  tags: readonly string[],
+  overrides: Partial<InvalidateDeps> = {},
+): Promise<InvalidationOutcome> {
+  const deps = { ...defaultInvalidateDeps(), ...overrides };
+  const names = [...new Set(tags)];
+
+  let origin: InvalidationOutcome["origin"] = "ok";
+  const documents = new Set<string>();
+  try {
+    for (const tag of names) {
+      for (const path of await pathsForTag(tag)) documents.add(path);
+    }
+  } catch {
+    origin = "failed";
+  }
+  for (const path of documents) {
+    for (const entry of [path, productRoutePathFor(path)]) {
+      if (entry === null) continue;
+      try {
+        deps.revalidate(entry);
+      } catch {
+        origin = "failed";
+      }
+    }
+  }
+
+  let edge: InvalidationOutcome["edge"];
+  try {
+    edge = (await deps.edge.invalidate(names)).ok ? "ok" : "failed";
+  } catch {
+    edge = "failed";
+  }
+
+  const fields = {
+    event: "cache.invalidate",
+    tags: names,
+    url_count: documents.size,
+    origin,
+    edge,
+  };
+  if (origin === "failed" || edge === "failed") {
+    deps.log.warn(fields, "cache invalidation failed; the change is saved");
+    deps.report(CACHE_INVALIDATE_FAILED_SIGNAL, {
+      tags: names,
+      origin,
+      edge,
+    });
+  } else {
+    deps.log.info(fields, "cache invalidated");
+  }
+  return { origin, edge, urlCount: documents.size };
 }
 
 /**

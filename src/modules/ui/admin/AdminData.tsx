@@ -210,38 +210,50 @@ export function AdminTable({
   );
 }
 
-/** A table row; `highlight` is the expanded or new row (`tr.new`, sage wash). */
+/**
+ * A table row; `highlight` is the expanded or new row (`tr.new`, sage wash); `muted` is a row
+ * that cannot act, in the quiet ink (`tr.muted`: the flags page's orphaned key).
+ */
 export function AdminRow({
   highlight = false,
+  muted = false,
   children,
 }: {
   readonly highlight?: boolean;
+  readonly muted?: boolean;
   readonly children: ReactNode;
 }): ReactElement {
-  return (
-    <tr className={highlight ? "[&>td]:bg-sage-wash" : undefined}>
-      {children}
-    </tr>
-  );
+  const classes = [
+    highlight ? "[&>td]:bg-sage-wash" : "",
+    muted ? "[&>td]:text-ink-3" : "",
+  ]
+    .filter((name) => name !== "")
+    .join(" ");
+  return <tr className={classes === "" ? undefined : classes}>{children}</tr>;
 }
 
-/** A table cell (`.ad-t td`); `nowrap` for times, `colSpan` for a detail row. */
+/**
+ * A table cell (`.ad-t td`); `nowrap` for times, `colSpan` for a detail row, `top` for a table
+ * whose cells hold lists (`--va: top`, the flags page).
+ */
 export function AdminCell({
   children,
   nowrap = false,
   colSpan,
   plain = false,
+  top = false,
 }: {
   readonly children: ReactNode;
   readonly nowrap?: boolean;
   readonly colSpan?: number;
   /** The detail row's paper background instead of the row's. */
   readonly plain?: boolean;
+  readonly top?: boolean;
 }): ReactElement {
   return (
     <td
       {...(colSpan === undefined ? {} : { colSpan })}
-      className={`border-rule border-b px-[14px] py-[10px] align-middle ${nowrap ? "whitespace-nowrap tabular-nums" : ""} ${plain ? "!bg-paper" : ""}`}
+      className={`border-rule border-b px-[14px] py-[10px] ${top ? "align-top" : "align-middle"} ${nowrap ? "whitespace-nowrap tabular-nums" : ""} ${plain ? "!bg-paper" : ""}`}
     >
       {children}
     </td>
@@ -304,8 +316,18 @@ export function AdminTableLink({
   );
 }
 
-/** The chip tones of the sheet the audit log uses: plain and ink (`.ad-chip`, `.ad-chip.ink`). */
-export type AdminChipTone = "plain" | "ink";
+/**
+ * The chip tones of the sheet in use: plain and ink (the audit log), bad and warn (the flags page:
+ * a high-risk flag, an orphaned key) — `.ad-chip`, `.ad-chip.ink`, `.ad-chip.bad`, `.ad-chip.warn`.
+ */
+export type AdminChipTone = "plain" | "ink" | "bad" | "warn";
+
+const CHIP_TONES: Readonly<Record<AdminChipTone, string>> = {
+  plain: "bg-paper-3 text-ink-2",
+  ink: "bg-ink text-paper",
+  bad: "bg-blush text-accent-strong",
+  warn: "bg-butter text-ink shadow-[inset_0_0_0_1px_var(--color-warning)]",
+};
 
 export function AdminChip({
   tone = "plain",
@@ -316,9 +338,7 @@ export function AdminChip({
 }): ReactElement {
   return (
     <span
-      className={`inline-flex min-h-[22px] items-center gap-[5px] rounded-full px-[8px] align-middle text-[12px] font-bold whitespace-nowrap ${
-        tone === "ink" ? "bg-ink text-paper" : "bg-paper-3 text-ink-2"
-      }`}
+      className={`inline-flex min-h-[22px] items-center gap-[5px] rounded-full px-[8px] align-middle text-[12px] font-bold whitespace-nowrap ${CHIP_TONES[tone]}`}
     >
       {children}
     </span>

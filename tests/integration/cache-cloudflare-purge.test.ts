@@ -96,7 +96,7 @@ describe("invalidate() with 71 URLs (T-23)", () => {
 
     await expect(
       adapter.invalidate(["corridor:PL", "hub:en"]),
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual({ ok: true });
 
     expect(recorded).toHaveLength(3);
     expect(
@@ -192,7 +192,9 @@ describe("invalidate() when Cloudflare answers 500 (T-23)", () => {
     server.use(cloudflarePurgeHandler({ recorded, respond: () => 500 }));
     const { adapter, lines, delays } = harness();
 
-    await expect(adapter.invalidate(["home:en"])).resolves.toBeUndefined();
+    await expect(adapter.invalidate(["home:en"])).resolves.toEqual({
+      ok: false,
+    });
 
     expect(PURGE_RETRIES).toBe(2);
     expect(recorded).toHaveLength(3);
@@ -296,7 +298,9 @@ describe("invalidate() when Cloudflare answers 500 (T-23)", () => {
       },
     });
 
-    await expect(adapter.invalidate(["home:en"])).resolves.toBeUndefined();
+    await expect(adapter.invalidate(["home:en"])).resolves.toEqual({
+      ok: false,
+    });
 
     expect(attempts).toBe(3);
     expect(parsed(lines)).toEqual([
@@ -363,7 +367,7 @@ describe("selectCacheAdapter() as wired: the real resolver, on the deployment's 
 
     await adapter.invalidate([tag]);
 
-    const expected = urlsForTag(tag, { baseUrl: STAGING_ORIGIN });
+    const expected = await urlsForTag(tag, { baseUrl: STAGING_ORIGIN });
     expect(expected).toEqual([`${STAGING_ORIGIN}/en`]);
     expect(recorded.map((call) => call.zoneId)).toEqual([ZONE_ID]);
     expect(recorded.flatMap((call) => call.files)).toEqual(expected);
@@ -398,7 +402,9 @@ describe("the breaker's cases (review 127)", () => {
     server.use(cloudflarePurgeHandler({ recorded, respond: () => 403 }));
     const { adapter, lines } = harness();
 
-    await expect(adapter.invalidate(["home:en"])).resolves.toBeUndefined();
+    await expect(adapter.invalidate(["home:en"])).resolves.toEqual({
+      ok: false,
+    });
 
     expect(recorded).toHaveLength(3);
     expect(lines).toHaveLength(1);
@@ -437,9 +443,9 @@ describe("the breaker's cases (review 127)", () => {
       logger: createLogger({ write: (line) => lines.push(line) }),
     });
 
-    await expect(
-      adapter.invalidate(["home:en", "hub:en"]),
-    ).resolves.toBeUndefined();
+    await expect(adapter.invalidate(["home:en", "hub:en"])).resolves.toEqual({
+      ok: false,
+    });
 
     expect(recorded).toHaveLength(0);
     expect(lines).toHaveLength(1);

@@ -234,6 +234,246 @@
     "reviewed": false,
     "sourceHash": "80c6e7caffee367d7a8b9e6db3620dada71015d6f27f1fd07d1a4310075c1548"
   },
+  "admin.flags.cancel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "admin.flags.columnFlag": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "552127973f8424e17198e6078a0a52f1ad6804b2c2dc308a81b220e46a34f089"
+  },
+  "admin.flags.columnRisk": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0711a8d636e4c068ae59fa80c03ad68e7bd9fe473c1f9248fd2cf3716e3fb715"
+  },
+  "admin.flags.columnScope": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
+  },
+  "admin.flags.columnValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e37953d23daca5ff01b8282c33f4e0a2152f1d1885f94c06418617e3ee1d24e"
+  },
+  "admin.flags.confirmBody.checkout.demo_guard.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f7a07bce0b6ba599383fadb111c0ce6a83e84d9fab0bfc6ec60210fc823feff"
+  },
+  "admin.flags.confirmBody.checkout.demo_guard.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d820ecd2b46017afdb648120509d19c3fc0cb6910c682714ba3f1c9e08f0caea"
+  },
+  "admin.flags.confirmField": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fd3ef3044e49d6055582f75a5319790daf41d496076260e3cedfa8e296f646d1"
+  },
+  "admin.flags.confirmTitleOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "92b94463cfa5931e0424e02cc25648a3801ac06e791a95e76a3606ee261e9356"
+  },
+  "admin.flags.confirmTitleOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "57da6cf41bba5ed13207820a9230d100cd1af98d401f9b50d544ee79f857f4fa"
+  },
+  "admin.flags.countries.DE": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "80db4ccdca106d37b920206331fcfe3e9e50a9e763d89b54ce3ad5ac8cf30f03"
+  },
+  "admin.flags.countries.ES": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ef41e6f4b07432a0cb4eb7a8774e7a3878fd3e385f49aa09b406768467db228"
+  },
+  "admin.flags.countries.FR": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7a1ca4ef7515f7276bae7230545829c27810c9d9e98ab2c06066bee6270d5153"
+  },
+  "admin.flags.countries.IT": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a9cf672c8be6b5ab9546a2fb49b06dd81a4e364c86ed023898c49d9bb0605dc"
+  },
+  "admin.flags.countries.NL": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3a386c13d283dc2ebbe2aeffc1ab3930d086b28956930d913d8dc58f34c013b7"
+  },
+  "admin.flags.countries.PL": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f69649ad70496d441a62f0f196b1c3283572f2c64f7b1b9cbc3939dac388958"
+  },
+  "admin.flags.countries.RO": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ea23726dd0fd4e4dd85eb695843fcdd3b6928ab5561fa959f1523bd36bb613fe"
+  },
+  "admin.flags.description.checkout.demo_guard": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "11d03e8ff81562811bec81ddd451991e16c57592d9ca353d8e295f3e4477d472"
+  },
+  "admin.flags.description.checkout.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7782038d9c09c78393acb1caacd36bb49fe0455371c1d375f3b837595139590"
+  },
+  "admin.flags.lead": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "138a3f90d42ee44ffdd0ccdfa70b9f8a457300ded82e32d559fbb02597a78054"
+  },
+  "admin.flags.notSeeded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "879a64650292cc24a939715c1f16a890f5ae6a90b583aff410f9a3928d21099a"
+  },
+  "admin.flags.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
+  },
+  "admin.flags.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "130011756125313c72f2cab730db4347e2841526d236a89cb25f38789fa49229"
+  },
+  "admin.flags.orphanLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7fe2e9831ed3c3709684e9cbcfc2c633fd4b4ee877e383b259b3f6c446165fac"
+  },
+  "admin.flags.orphanOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "42ebccca038921fa75b4299809f5b7d337d3eff96bcc5a94709cbd3af134d16c"
+  },
+  "admin.flags.orphanOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1b3a2644aa69c5c608a633ec99993c99b3f095808f387280af8b75b141d64ee8"
+  },
+  "admin.flags.refused.conflict": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4d6ad73677455ff5fd7511fb4a24f9f7539b49f45583f85103b1f6f23e224a2c"
+  },
+  "admin.flags.refused.forbidden": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d5e5b8fc29e3ed3fc3135907824b7e3a07e81f5ac370f54290dac0ae93c74ef2"
+  },
+  "admin.flags.refused.invalid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6c6ea72f6557f4771ea6b2c9026cbea91a0ec31eecd96cf52a60d8b401ace74b"
+  },
+  "admin.flags.refused.mismatch": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6a75efcca11bfd02b5b42fb6989611f10800d203481c88ebbf3b01e542cffe1d"
+  },
+  "admin.flags.refused.not_seeded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc0c0909e2a11a1c2e2eb9e942e0b2193a4a0bfea1e08a40750cd8148b5d7917"
+  },
+  "admin.flags.refused.unregistered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5efdd0454ae235a58f0e61441c557119431c1bc8bc80c9b021c95906cc82c0e"
+  },
+  "admin.flags.risk.high": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4682a7f7972130ed2268250f8a5c7f96649601c51a61706e589abe3673a9b3db"
+  },
+  "admin.flags.risk.orphaned": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8d8278071d8e96451b600428f9b500a633ccd0e4bbd8fa651a6d8da358972c93"
+  },
+  "admin.flags.risk.standard": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a7248eeb45eb1ce247f81693283e22e8b39e8a50890cecd22d02e75025547d90"
+  },
+  "admin.flags.saved.flagOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ef5a5521f0109d426813bb6b7aa011c11c91974896c1f4f59f9886203aeb2a76"
+  },
+  "admin.flags.saved.flagOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "67e418c06be5abbd0eb936d2a26fb95e80e1ccb5d64812fc5312a179d3a78643"
+  },
+  "admin.flags.saved.openOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "33bfea7f94b2639f23ec26e180f9c4b8535bbde413ab29821c88d62ab7da092d"
+  },
+  "admin.flags.saved.openOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "77a5c4bd8b58549d987f0b7ccf39951aded1c622caee952bc17f3bcb6aa90d18"
+  },
+  "admin.flags.saved.unchanged": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b36e74772a93a4d315ac0c23ce32d2f145b7aac50c3f639a676b648d35b96615"
+  },
+  "admin.flags.scope.country": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "admin.flags.scope.global": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a258b30f88c30650e73073d5bdde5cfcc6987100ae62d37789e5c46a0d85b7c6"
+  },
+  "admin.flags.scope.locale": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ca3dc612f47e3913b79f68eac655d590812439eec5865189c38a0d7623efa0aa"
+  },
+  "admin.flags.scope.partner": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.flags.scope.payment_method": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b948ac04b854394f4b36b0422f2c06a6f5c737da3657d95593dca1140774790a"
+  },
+  "admin.flags.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f38d9950af4f9fa900a7d326505740a942352e173f1f9dc85cbf17b5aca95c55"
+  },
+  "admin.flags.turnOff": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "06f0e210b27d4d6215fba1ac31899dd4e95c6281888e2f107cfd19ed1dfda23f"
+  },
+  "admin.flags.turnOn": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5a1f096a0d8d767454ccb576f4fad61a5f204e942257554bdeb95b1ef7206409"
+  },
   "admin.home.applicationsNew": {
     "source": "human",
     "reviewed": false,

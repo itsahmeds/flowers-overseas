@@ -428,6 +428,9 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       zone: "Tallinn",
       time: "5 Oct, 12:02",
       reason: "Demo call",
+      // TASK-220's `admin.flags.*`.
+      flag: "checkout.open",
+      country: "Poland",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);

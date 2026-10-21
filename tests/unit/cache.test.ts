@@ -8,13 +8,13 @@ import { cache, homeCacheTag, noopCache } from "../../src/lib/cache";
 
 describe("cache seam", () => {
   it("resolves for an empty tag list", async () => {
-    await expect(noopCache.invalidate([])).resolves.toBeUndefined();
+    await expect(noopCache.invalidate([])).resolves.toEqual({ ok: true });
   });
 
   it("resolves for tags nobody serves yet", async () => {
     await expect(
       noopCache.invalidate(["catalog:pl", "occasion:birthday"]),
-    ).resolves.toBeUndefined();
+    ).resolves.toEqual({ ok: true });
   });
 
   it("exports the no-op as the default adapter in spec 001", () => {
@@ -35,8 +35,8 @@ describe("homeCacheTag (plan/01 §3, spec 003 §5.4, TASK-034)", () => {
   });
 
   it("is accepted by the invalidation seam unchanged", async () => {
-    await expect(
-      noopCache.invalidate([homeCacheTag("de")]),
-    ).resolves.toBeUndefined();
+    await expect(noopCache.invalidate([homeCacheTag("de")])).resolves.toEqual({
+      ok: true,
+    });
   });
 });

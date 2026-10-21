@@ -130,6 +130,21 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "Stripe's `GET /v1/payment_intents/:id` and `GET /v1/events` query (spec 013 §5.2)",
   })),
+  // Spec 012 §2.4 (TASK-220): /admin/flags's outcome after a toggle, on a `noindex`, `no-store`,
+  // admin-only page. A code, a registry key and a scope reference; no person, not listing keys.
+  {
+    entry: "src/app/admin/(signed-in)/flags/actions.ts#result",
+    reason:
+      "/admin/flags's outcome line after a toggle (`on`, `off`, `unchanged`, `mismatch`, …)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/flags/actions.ts#key",
+    reason: "/admin/flags's toggled flag: a registry key (`checkout.open`)",
+  },
+  {
+    entry: "src/app/admin/(signed-in)/flags/actions.ts#ref",
+    reason: "/admin/flags's toggled scope: an ISO 3166 destination code or `*`",
+  },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
 
@@ -547,6 +562,9 @@ describe("the real tree (T-59)", () => {
       "src/modules/payments/stripe/adapter.ts#created[gte]",
       "src/modules/payments/stripe/adapter.ts#limit",
       "src/modules/payments/stripe/adapter.ts#starting_after",
+      "src/app/admin/(signed-in)/flags/actions.ts#result",
+      "src/app/admin/(signed-in)/flags/actions.ts#key",
+      "src/app/admin/(signed-in)/flags/actions.ts#ref",
     ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);
   });
