@@ -34,9 +34,8 @@
  * It lives in `db/`, the module's database adapter directory, which `pnpm check:no-db` leaves out
  * of its scan of `src/modules/i18n`.
  */
-import { randomUUID } from "node:crypto";
-
 import { type SQL, sql } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 
 import {
   type AttestationProvider,
@@ -96,6 +95,23 @@ export type AttestCommand =
       /** Mirror an imported approval onto the subject's row (default true; off in `--insert-only`). */
       readonly mirror?: boolean;
     };
+
+/**
+ * A `LedgerExecutor` over any driver call that takes SQL text and bind parameters — a
+ * postgres.js transaction's `unsafe` in the Node scripts (`pnpm attestations:import`,
+ * `db:seed`'s replay), where Drizzle cannot wrap a postgres.js transaction.
+ */
+export function executorOf(
+  run: (text: string, parameters: unknown[]) => Promise<unknown>,
+): LedgerExecutor {
+  const dialect = new PgDialect();
+  return {
+    execute(query) {
+      const rendered = dialect.sqlToQuery(query);
+      return run(rendered.sql, rendered.params);
+    },
+  };
+}
 
 async function rows<T>(db: LedgerExecutor, query: SQL): Promise<T[]> {
   return Array.from((await db.execute(query)) as Iterable<T>);
@@ -500,9 +516,4 @@ export async function reviewState(
       source,
     );
   });
-}
-
-/** A request id for a CLI run that has none. */
-export function cliRequestId(name: string): string {
-  return `cli:${name}:${randomUUID()}`;
 }
