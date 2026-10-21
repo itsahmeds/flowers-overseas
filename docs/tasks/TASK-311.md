@@ -37,7 +37,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21 (implementer): worktree `../fo-wt-311` on `task/TASK-311-route-line` from `a1f72bef`; row `in_progress`; draft PR next, then tests (unit markup, shipped CSS, e2e T-19) and the SVG.
 
 ## Result
 
