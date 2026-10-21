@@ -53,6 +53,7 @@ it edits the same header strip, phone Menu and footer; that PR keeps the breaker
   and no "24/7" while this task is blocked (spec 041 AC-12's support-line half). When
   `company.support.hours` changes here, re-verify that `/en/help` and `/en-gb/help` still render
   no "24/7" and that the footer's line is the new value.
+- **From `/review 270` (orchestrator ruling E6, 2026-10-20):** both round-2 docks wait for this task. The WhatsApp dock on the help, guarantee and delivery pages needs this task's support line, and the Send flowers dock on how it works needs a link-taking variant of spec 004 AC-48's bar (it takes `#` anchors only today), which belongs here. Build both docks in this PR, or escalate if the variant needs a spec amendment.
 
 ## Escalations
 

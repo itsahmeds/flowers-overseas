@@ -41,6 +41,7 @@ One dated bullet per `/review`, newest last.
   - **AC-3 carried** (`/review 275` round 1): a closed start answers 303 to the product page today, which is not
     spec-faithful. Choose the closed-state URL (a `closed` draft mode, or a path segment), change `start.ts` step 4 to
     answer 303 there, and make T-03 assert "start route goes to the closed state, row counts unchanged".
+- **From `/plan-tasks` (orchestrator, 2026-10-20):** this task now also owns spec 042 AC-11's page half (T-11 e2e half): at `/{locale}/checkout` step 2 the card preview is TASK-308's shared `data-fo-card-preview` component (same message-line `font-family` as the product page's, Caveat per spec 042 §13 Q4), mirrors the message and the signature as typed, renders the server's kept values with JavaScript off and keeps `card.preview`'s caption. With both fields empty it shows the mark and the caption, no words (PR 297 escalation 1, drawn as today). Depends on TASK-308.
 
 ## Escalations
 

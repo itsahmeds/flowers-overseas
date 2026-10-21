@@ -31,6 +31,7 @@ Branch `task/TASK-070-db-catalogue-providers`. **Blocked on TASK-013** (spec 002
   source, and check spec 005's AC-2 graph rule against them. It rides here because TASK-070 is
   the next task to touch the catalog's data-source seam, and under "visible first" (2026-10-03) no
   hardening task opens before then.
+- **From `/plan-tasks` (orchestrator, 2026-10-20):** unblocked: TASK-069 and TASK-013 are done. Spec 012b's cutover (TASK-292, TASK-294) builds on these providers (spec 012b §12, requirement on spec 005), so this task now has its consumer.
 
 ## Escalations
 

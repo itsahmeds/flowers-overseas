@@ -58,6 +58,7 @@ follows it.
 - **From the site test (2026-10-14):** QA summary "Product page": most default sizes are even
   (12, 18, 24); our own Poland, Romania and Italy guides say an even number is for a grave
   (`content/corridors/en/pl-guide.md` L46, L74; `ro-guide.md` L46; `it-guide.md` L46).
+- **From `/plan-tasks` (orchestrator, 2026-10-20):** the spec 012b admin artboards (PR 296, escalation 2) draw placeholder sizes as 12 / 18 / 24 stems, which the odd-stem rule would refuse if a placeholder size were saved again in admin. This task's remap makes the seeded counts odd before spec 012b's product editor (TASK-297, which now depends on this task) ships; say in `## Result` which counts replace them so the designer can redraw.
 
 ## Escalations
 

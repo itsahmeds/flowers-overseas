@@ -32,6 +32,8 @@ Spec 004 §14 A23 clause 11, A24 clause 9, A-founder-2026-10-19e; AC-44, AC-6 (T
 - From PR 285 round 1 (reviewer, HOLE 2 part ACCEPTABLE): an `elementFromPoint` or pixel check of the pill's layer paint; the unit pins the paint values instead.
 - From PR 285 round 1 (reviewer, HOLE 4 part ACCEPTABLE): an e2e check that the shadow layer's rect equals the photograph's box; the unit pins `inset: 0` and the photo box's two radius tokens instead.
 - From PR 285 round 1 (reviewer, nit 3): `tests/e2e/hub-first-screens.spec.ts`'s AC-45 probe lacks the resting-shadow exemption `listing-first-screen.spec.ts` gained; green today only because no hub first screen holds a moving card. Share `calmProbe` or carry the exemption there.
+- From PR 285 (`/break 285`, HOLE 5 CARRIED; copied 2026-10-20): the name line's geometry (height, inline extent, position, colour) has no unit or e2e pin. Presentation only; the shipped CSS is correct. The next task that edits the card name line adds the pin (line rect against `<bdi>`).
+- From PR 285 (`/break 285`, HOLE 6 CARRIED; copied 2026-10-20): the pill layer's own box (rest `opacity: 0`, `position: absolute`, `content`, radius, `pointer-events`, `:active` stacking) is unpinned; visual baselines and e2e 6b cover rest opacity and timing. The next task that edits the pill press adds the pin.
 
 ## Escalations
 
