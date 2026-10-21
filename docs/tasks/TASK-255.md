@@ -30,7 +30,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-20 (`/review 291`, PASS; `/break` holes 1-7 closed by tests, holes 8 header-name case and 9 v1 regex length ACCEPTABLE): carry-forward nits for TASK-257 or TASK-262: `toProviderIntent` defaults a missing `client_secret` to `""` (refuse or type it absent instead); add a trailing-whitespace and inner-whitespace case to the `validateEnv` live-key scan test (`payments-env.test.ts` covers a leading-space value only).
 
 ## Escalations
 
@@ -44,11 +44,52 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-20: worktree `task/TASK-255-payments-provider` from main a0e29433; row `in_progress`; draft PR 291 opened.
+- 2026-10-20: `src/modules/payments/` (provider + contract cases, fake, Stripe adapter over `fetch`, methods, decline map, barrel), `payments.*` keys (en; de/pl drafted), review scope, live-key refusal in `validateEnv`; tests in unit and contract; 29 runtime and 2 type mutations watched red.
+- 2026-10-20: repo gates updated for the new namespace, scope entries, Stripe query keys and the `validateEnv` reader; rebased on df4a48f9 (TASK-182's `infoPages` merged beside `payments`); row `in_review`.
+- 2026-10-20: CI run 39444383199 red on `audit`/`test-unit`: gitleaks read Stripe's published example `client_secret` in the fixture as a key (now `placeholder-…`), and the barrel lost its `Owned by:` line (restored; `docs/architecture.md` row updated). Rebased on 193233df.
+- 2026-10-20: `/break 291` holes 1-7 get tests (`payments-stripe-webhook.test.ts`, path encoding in `stripe-adapter.test.ts`, `fromStripeCurrency` in `payments-amount.test.ts`); each mutated red, then restored.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/291. `src/modules/payments/`: `provider.ts`
+(the `PaymentProvider` interface, `CreateIntentInput.captureMethod` typed `'automatic'`, and
+`PAYMENT_PROVIDER_CONTRACT`, eleven runner-free cases spec 014 imports), `fake/` (in memory,
+deterministic), `stripe/` (adapter on `fetch`, no SDK and no new dependency; pinned
+`2026-09-30.endive`; `toStripeAmount` with a GBP/EUR/PLN table; create params with automatic
+capture, no per-method capture key, `request_three_d_secure: 'any'`, exactly six metadata keys, no
+`receipt_email` or `shipping`; webhook verify over the raw body with a 300 s tolerance;
+`events.list` paged over the subscribed types), `methods.ts` (capability table ∩ injected registry
+`available` with `processor: 'stripe'` ∩ injected flags), `decline.ts` (`declineMessageKey`), the
+barrel (`declineMessageKey`, `PAYMENT_ERROR_KEYS` only: no provider type leaves the module).
+`validateEnv` refuses `sk_live_`, `rk_live_` and `pk_live_` in any variable outside `production`.
+20 `payments.*` keys from Appendix A, `reviewed: false`, `de`/`pl` echo drafts, registered in
+`NON_INDEXABLE_SCOPE` (en-gb counted keys unchanged at 553). Tests: contract 48
+(`payment-provider` 23: the suite twice plus coverage; `stripe-adapter` 25), unit 125 over six
+`payments-*` files; recorded fixtures `tests/contract/fixtures/stripe/2026-09-30.endive/` from
+Stripe's OpenAPI tag v2587 plus the documented decline cards. Mutations: 29 runtime and 2 type
+mutations of AC subjects, every one red. Gates touched to admit the new names: the i18n
+namespace and awaiting-review lists, the review-scope pin, `url-pii`'s external Stripe query keys,
+and `checkout-mode`'s R5 allow-list (`env.schema.ts` names live prefixes to refuse them; it decides
+no mode). No build-slot gate was run. Handed on: TASK-266 adds a `google-pay` row to
+`payment-methods.ts` with the flip (the capability row reads it as not available until then);
+TASK-257/262 declare the Stripe env keys and inject them into `createStripeProvider`; TASK-254
+owns `src/modules/orders/outbox` for AC-9's lint half there.
+
+`pnpm gates:cheap` on 271d1075 (load average 18.6), all green:
+
+```
+gates:cheap · 271d1075e729beea646366a87b04a317f66e819f · tree clean · base origin/main · 2026-10-20T15:33:40.661Z
+typecheck             exit 0 · 2.6 s
+lint                  exit 0 · 22.0 s
+format:check          exit 0 · 12.6 s
+i18n:check            exit 0 · 0.9 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 87.2 s · changed 222 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```

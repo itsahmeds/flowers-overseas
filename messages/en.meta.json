@@ -4454,5 +4454,116 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "63dceb8800b2dd4af9567a1f54f03b7c3dbdc27fac4799091ebfcc4928899ee5"
+  },
+  "payments.error.cardDeclined": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8009b8da2f53b16060ae5a07fd5eeda498c6ce95f13c467438c51c591c2cbaf1"
+  },
+  "payments.error.insufficientFunds": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f3add222ae2e5d3655810d844dd6be7d12566e4aad19c076ed0cbdb68f8c095e"
+  },
+  "payments.error.authenticationFailed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d9ea9e2162a5cffe5176703ead048837802bff635530c7fe9b776e23797df561"
+  },
+  "payments.error.expiredCard": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a7c50240890e2d8fd19855c9f71db4b6ea64f3441bb7f4a99169a3e159ff3c9c"
+  },
+  "payments.error.incorrectCvc": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2708ff419aee0f5d27cf27e9e60b602a32d1950a8f621e1a3bc46329e3ff7b99"
+  },
+  "payments.error.processingError": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3e7af449305b796b69a993497f1448c35cd618baa79080845795e311aee373ea"
+  },
+  "payments.error.tryAnotherMethod": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d6960f4f135950704362e38345e7ebd9da56a73e7f3fd946bfea27fb9ce8ad4f"
+  },
+  "payments.error.generic": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "eb62d286ceaf40bf193ef80303996629fcda1a60646d5251992c6d22779cb2e7"
+  },
+  "payments.error.unavailable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2bb77efbe11ebb6abbf515fd9c7102a7fadb335faedda911e6d76276e5017a32"
+  },
+  "payments.step.testLabel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "174229ead7ac7aaba8dd7642a990455ad83a2cdb2922caefba501873b7668384",
+    "retained": true
+  },
+  "payments.step.noScript": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "91192a832946d7e5f3f60ea209023338eaba1434cf1a899a9bf6b623797696f9",
+    "retained": true
+  },
+  "payments.step.submitting": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "be83305e427ae6276d7a44b27eab36e9412f00df6084ab78786b1e411f0d4d6b",
+    "retained": true
+  },
+  "payments.confirmation.paid": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ceb35bd137bc3aad1628ec71bafb843afea6f890f48364268414d602dd93a83e",
+    "retained": true
+  },
+  "payments.confirmation.arrival": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "896e7c14ca5830fbdf66563050d0dfea6c5928704f77f332f05213823834f0fa",
+    "retained": true
+  },
+  "payments.confirmation.notCompleted": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "658a7e2501b5925cdba801920a6f7c817b739f009742948754cd11fde9f2e17f",
+    "retained": true
+  },
+  "payments.confirmation.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1487dec6c203997b4ca2a4cf55b6c2113cef9d6844799c2af14c976502060ec3",
+    "retained": true
+  },
+  "payments.confirmation.cancelledByYouRefunding": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4a25cc3ee0768b01c476e8ac3ef9d331f69f1bbc79eb2d0a7d08ace50c2ecf44",
+    "retained": true
+  },
+  "payments.confirmation.cancelledByYouRefunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "18581e5f646f25b4f61ccbeecb10734cdf77564220ce17665d334ef8dcc2b97b",
+    "retained": true
+  },
+  "payments.confirmation.notDeliveredRefunding": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4b11426eead94a669a9eb06145d8133fda7c5d66aebc3d4336c03483a75a9037",
+    "retained": true
+  },
+  "payments.confirmation.notDeliveredRefunded": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dda3c0fb27c6f55f8098ec094e024c21f6cfbea249c430653a8316cd5b0db90d",
+    "retained": true
   }
 }

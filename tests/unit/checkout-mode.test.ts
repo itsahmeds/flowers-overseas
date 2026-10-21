@@ -279,6 +279,9 @@ const ALLOW_LIST: readonly RegExp[] = [
   // blanket side door below (TASK-203); it builds a font at authoring time and decides nothing.
   /^scripts\/fonts\/build-wordmark\.ts$/u,
   /^src\/app\/.*\/admin\/flags\//u,
+  // `validateEnv` refuses a live Stripe key outside production (spec 010 AC-2, spec 013 AC-10;
+  // TASK-255): it names the live prefixes to refuse them at boot and decides no mode.
+  /^src\/lib\/env\.schema\.ts$/u,
   /^db\/migrations\/[^/]+\.sql$/u,
 ];
 

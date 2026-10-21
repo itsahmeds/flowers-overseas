@@ -258,6 +258,18 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         paths,
       })),
       { match: "confirmation", surface: "orderConfirmation", paths },
+      // Spec 013 §7 (TASK-255): the payments module names the decline keys.
+      ...(
+        [
+          ["payments.error.*", "checkout"],
+          ["payments.step.*", "checkout"],
+          ["payments.confirmation.*", "orderConfirmation"],
+        ] as const
+      ).map(([match, surface]) => ({
+        match,
+        surface,
+        paths: [...paths, "src/modules/payments/**"],
+      })),
     ]);
     // The address-format labels are read by a shared module (`src/modules/i18n/address.ts`), so
     // they count: no entry may reach them.

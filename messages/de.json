@@ -870,6 +870,34 @@
     "undatedHeading": "Kept on a date we cannot compute here",
     "undatedNote": "These fall on a date, but not one we can work out from {country}'s calendar — the day belongs to another country, or the rule names no day at all. Each page says so in full. We would rather print nothing than a date we guessed."
   },
+  "payments": {
+    "confirmation": {
+      "arrival": "Your flowers arrive in {city} on {date}.",
+      "cancelled": "This order was cancelled and nothing was charged.",
+      "cancelledByYouRefunded": "You cancelled this order. We have refunded {amount}.",
+      "cancelledByYouRefunding": "You cancelled this order. We are refunding {amount} to your original payment method.",
+      "notCompleted": "Your payment was not completed. Nothing was charged. You can try again.",
+      "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}.",
+      "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
+      "paid": "Thank you. We have your order."
+    },
+    "error": {
+      "authenticationFailed": "We could not confirm the payment with your bank. Please try again.",
+      "cardDeclined": "Your bank declined this card. Try another card or payment method.",
+      "expiredCard": "This card has expired. Try another card.",
+      "generic": "The payment did not go through. Nothing was charged. Please try again or use another method.",
+      "incorrectCvc": "The security code does not match. Check the 3 digits on the back of the card.",
+      "insufficientFunds": "Your bank says there is not enough money on this card. Try another card or method.",
+      "processingError": "Something went wrong while processing the payment. Nothing was charged. Please try again.",
+      "tryAnotherMethod": "This payment did not go through. Try another payment method.",
+      "unavailable": "Payments are not available right now. Nothing was charged. Please try again in a few minutes."
+    },
+    "step": {
+      "noScript": "Paying needs JavaScript. Turn it on, or call or message us and we will help you order.",
+      "submitting": "Processing your payment…",
+      "testLabel": "Test mode. Use a test card. No real money moves."
+    }
+  },
   "product": {
     "addons": {
       "label": "Add something"

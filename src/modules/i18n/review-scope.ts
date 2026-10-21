@@ -91,6 +91,11 @@ const CHECKOUT_PATHS = [
   "src/modules/checkout/**",
   "src/config/checkout.ts",
 ];
+/**
+ * Spec 013 payment copy (TASK-255): the checkout's own paths plus the payments module, which maps
+ * a decline code to its key. No indexable page imports `src/modules/payments/`.
+ */
+const PAYMENTS_PATHS = [...CHECKOUT_PATHS, "src/modules/payments/**"];
 const CHECKOUT_SUBTREES = [
   "action",
   "buyer",
@@ -119,6 +124,24 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
     match: "confirmation",
     surface: "orderConfirmation",
     paths: CHECKOUT_PATHS,
+  },
+  // Spec 013 §7 (TASK-255): the pay step's errors and labels render on step 3 only, and the
+  // payment lines of the confirmation states on the confirmation page only; both are `no-store`,
+  // `noindex` checkout routes. `src/modules/payments/**` names the keys (`declineMessageKey`).
+  {
+    match: "payments.error.*",
+    surface: "checkout",
+    paths: PAYMENTS_PATHS,
+  },
+  {
+    match: "payments.step.*",
+    surface: "checkout",
+    paths: PAYMENTS_PATHS,
+  },
+  {
+    match: "payments.confirmation.*",
+    surface: "orderConfirmation",
+    paths: PAYMENTS_PATHS,
   },
 ];
 
