@@ -370,6 +370,22 @@ describe("the two things the layout used to hand in are the route's", () => {
         child: "flowers",
       }),
     ).toEqual(["poland", "flowers"]);
+    // Depth 2 and the non-product depth 4 mirror `@switcher` too (breaker HOLE 1 on PR 308): an
+    // empty list here would send the header's language links to the locale homes.
+    expect(
+      await switcherOf("[segment]/page.tsx", {
+        locale: "en",
+        segment: "occasions",
+      }),
+    ).toEqual(["occasions"]);
+    expect(
+      await switcherOf("[segment]/[child]/[grandchild]/page.tsx", {
+        locale: "en",
+        segment: "poland",
+        child: "flowers",
+        grandchild: "roses",
+      }),
+    ).toEqual(["poland", "flowers", "roses"]);
     // `@switcher` mirrors neither the home nor the parameter routes: its default, the homes.
     expect(await switcherOf("page.tsx", { locale: "en" })).toEqual([]);
     expect(

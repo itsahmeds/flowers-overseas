@@ -26,6 +26,8 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** the spec 043 review (PR 292, nit 2) found the §14 pointers in specs 004, 007 and 008 still saying "Status: draft ... binding when the founder approves", and `specs/README.md` listing "043 site clarity (draft)". If PR 292 has not fixed them when this task starts, set all four to approved in this PR.
 
+- **From `/review` and `/break` of PR 308 (2026-10-21):** breaker HOLE 2 ruled ACCEPTABLE by the reviewer: no unit case covers a destination with **no shop root** in the locale through the slot (the header must then keep its out-of-context hrefs). Carried: add a `header-slot.test.tsx` case under a fixture where the destination's shop root does not exist, asserting the row equals `main`'s baseline. HOLE 1 (switcher segments at depth 2 and non-product depth 4) fixed in this PR.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
