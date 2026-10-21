@@ -34,8 +34,8 @@
 --                           `SET LOCAL app.allow_review_write = 'on'`, else `REVIEW_DIRECT_WRITE`;
 --                           and `reviewed = true` / `review_state = 'approved'` also needs an
 --                           `approved` ledger row for that subject, for its current hash, written
---                           **in the same transaction** (the row's `xmin` is the transaction's
---                           own id), else `REVIEW_WITHOUT_ATTESTATION`. `attest()` in
+--                           **in the same transaction** (the row's `xmin` is still in progress:
+--                           `review_row_is_own()`), else `REVIEW_WITHOUT_ATTESTATION`. `attest()` in
 --                           `src/modules/i18n/db/ledger.ts` is the only code that does both. An
 --                           edit of the hashed text of a reviewed translation, or of a reviewed
 --                           photo's checksum, un-reviews the row in the same statement (ADR-0022:
@@ -237,6 +237,33 @@ AS $fn$
 $fn$;
 
 /* ---------------------------------------------------------------------------
+ * "written in this transaction"
+ * ------------------------------------------------------------------------ */
+
+-- Whether a row the caller can see was inserted by the caller's own transaction (or one of its
+-- savepoints): its `xmin` is still in progress. A visible row whose inserter has not committed
+-- can only be one's own. `xmin` holds the low 32 bits of a 64-bit transaction id; the full id is
+-- the one with those bits nearest the transaction's own id (a savepoint's id is a little above
+-- it), so an epoch boundary between the two is handled.
+CREATE FUNCTION public.review_row_is_own(p_xmin xid) RETURNS boolean
+  LANGUAGE sql
+  VOLATILE
+  SET search_path = pg_catalog
+AS $fn$
+  WITH r AS (
+    SELECT pg_current_xact_id()::text::bigint AS own, p_xmin::text::bigint AS low
+  ), c AS (
+    SELECT ((own >> 32) << 32) + low AS guess, own FROM r
+  ), f AS (
+    SELECT CASE WHEN guess > own + 2147483648 THEN guess - 4294967296
+                WHEN guess < own - 2147483648 THEN guess + 4294967296
+                ELSE guess END AS full_id
+    FROM c
+  )
+  SELECT full_id >= 0 AND pg_xact_status(full_id::text::xid8) = 'in progress' FROM f
+$fn$;
+
+/* ---------------------------------------------------------------------------
  * review_write_guard() — one writer for the review columns (AC-10)
  * ------------------------------------------------------------------------ */
 
@@ -314,8 +341,8 @@ BEGIN
         AND a.locale_code IS NOT DISTINCT FROM v_locale
         AND a.decision = 'approved'
         AND a.value_hash = v_hash
-        -- written by this very transaction (attest() never writes in a savepoint)
-        AND a.xmin = pg_current_xact_id()::xid
+        -- written by this very transaction, in a savepoint or not
+        AND public.review_row_is_own(a.xmin)
     ) THEN
       RAISE EXCEPTION 'REVIEW_WITHOUT_ATTESTATION: % needs an approved review_attestation row for its current hash in this transaction',
         TG_TABLE_NAME
@@ -335,6 +362,7 @@ CREATE TRIGGER media_asset_review_write_guard
 
 REVOKE EXECUTE ON FUNCTION public.review_attestation_append_only() FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.review_write_guard() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.review_row_is_own(xid) FROM PUBLIC;
 
 /* ---------------------------------------------------------------------------
  * RLS: staff only
