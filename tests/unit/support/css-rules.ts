@@ -1,7 +1,10 @@
 /**
- * A small reader for the shipped stylesheet (spec 042 T-3; TASK-307): each style rule with the
- * at-rules around it, outermost first, and its declarations. A brace-matching walk, which is
- * enough for Tailwind's output (regular CSS); the same walk `tests/unit/motion-css.test.ts` uses.
+ * A small reader for the shipped stylesheet, shared by the spec 042 suites
+ * (`interactions-css.test.ts`, `interactions-budget.test.ts`; TASK-307 and TASK-311): each style
+ * rule with the at-rules around it, outermost first, and its declarations (`!important` stripped,
+ * whitespace in preludes collapsed). A brace-matching walk, which is enough for Tailwind's output
+ * (regular CSS); the same walk `tests/unit/motion-css.test.ts` uses. `walkCss` is the same walk
+ * under the name TASK-311's cases call it by.
  */
 
 /** One style rule with the at-rules around it, outermost first. */
@@ -22,6 +25,7 @@ export function cssRules(css: string): CssRule[] {
       const prelude = body
         .slice(index, open)
         .replace(/^[\s\S]*;/, "")
+        .replaceAll(/\s+/g, " ")
         .trim();
       let depth = 1;
       let cursor = open + 1;
@@ -55,6 +59,9 @@ export function cssRules(css: string): CssRule[] {
   visit(text, []);
   return rules;
 }
+
+/** The same walk, the name TASK-311's cases use. */
+export const walkCss = cssRules;
 
 function parse(block: string): Map<string, string> {
   const map = new Map<string, string>();

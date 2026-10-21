@@ -30,9 +30,15 @@ export interface Interactions {
    * its Caveat lines and its mirroring stay.
    */
   readonly cardPreviewMotion: boolean;
+  /**
+   * Idea 6 (§5.3.6, AC-19): the dashed route from an unlabelled "you" dot to the destination,
+   * drawn once beside the corridor page's H1 from `md` up (`CorridorRouteLine`).
+   */
+  readonly routeLine: boolean;
 }
 
 export const interactions: Interactions = {
   morph: true,
   cardPreviewMotion: true,
+  routeLine: true,
 };
