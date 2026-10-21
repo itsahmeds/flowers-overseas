@@ -30,7 +30,7 @@ _None recorded._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-21, to the orchestrator: AC-12's second half ("`isProductIndexable` is false in that locale, the page carries `noindex`, it leaves that locale's sitemap and the other locales' hreflang clusters; a new approval restores all three") cannot be observed in this task. `isProductIndexable()` still reads the static providers, whose `translationReviewed` term is the constant `PHASE_0_REVIEWED_COPY` (`src/modules/catalog/read.ts`); the database catalogue provider is TASK-070 (`todo`) and its selection is TASK-294's cutover. This PR delivers and proves the half the ledger owns: the hash changes for exactly the six parts (SQL and TypeScript agree), and `reviewState()` turns unreviewed (`edited`) on such a change and reviewed again on a new approval. Proposed: TASK-294 (whose AC-2 already says "with the ledger as the review source for product copy and photos") composes `reviewState()` into the `translationReviewed` term and carries T-12's noindex/sitemap/hreflang rows. **Open.**
 
 ## Progress
 
