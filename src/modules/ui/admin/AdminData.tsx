@@ -375,7 +375,8 @@ export function AdminTableLink({
  * and warn (the flags page: a high-risk flag, an orphaned key); sky for a moving order, ok for a
  * done one, bad for one that needs a person, and the dashed demo marker (the order queue).
  */
-export type AdminChipTone = "plain" | "ink" | "sky" | "ok" | "bad" | "warn" | "demo";
+export type AdminChipTone =
+  "plain" | "ink" | "sky" | "ok" | "bad" | "warn" | "demo";
 
 const CHIP_TONES: Readonly<Record<AdminChipTone, string>> = {
   plain: "bg-paper-3 text-ink-2",
