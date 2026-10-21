@@ -374,11 +374,16 @@ describe("role discipline (spec 002 §13 Q4; /review 71)", () => {
 describe("the build-phase client (spec 012b AC-4)", () => {
   const BUILD_URL = "postgres://app_build:build-secret@db.example.test:5432/fo";
 
+  /** The runtime URL a fallback would reach for: present in every case, so a fallback shows. */
+  const RUNTIME_URL =
+    "postgres://runtime:runtime-secret@runtime.example.test:5432/fo";
+
   async function freshDb(environment: Record<string, string | undefined>) {
     vi.resetModules();
+    vi.stubEnv("DATABASE_URL", RUNTIME_URL);
+    vi.stubEnv("DATABASE_URL_UNPOOLED", RUNTIME_URL);
     for (const [key, value] of Object.entries(environment)) {
-      if (value === undefined) vi.stubEnv(key, "");
-      else vi.stubEnv(key, value);
+      vi.stubEnv(key, value);
     }
     return import("../../src/lib/db");
   }
@@ -427,6 +432,8 @@ describe("the build-phase client (spec 012b AC-4)", () => {
         () => Promise.resolve(undefined),
       );
       await expect(attempt).rejects.toThrow(/^DATABASE_BUILD_URL is missing/u);
+      // No fallback: neither the runtime variable nor the env module's URL was connected to.
+      expect(process.env["DATABASE_URL"]).toBe(RUNTIME_URL);
       await expect(attempt).rejects.not.toThrow(/https:/u);
       expect(poolUrls).toEqual([]);
       expect(statements).toEqual([]);

@@ -23,7 +23,13 @@ Spec 012b §12 slice A task 1. Founder approval 2026-10-20, "all defaults, keep 
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- 2026-10-21 `/review` PR 309 round 1 at 346386b1: breaker HOLE 2 ACCEPTABLE (reviewer): emptying
+  `insertOnlyColumns` for `country` survives the tests, because a plain seed that tried to move an
+  existing country's status is refused by `status_flip_guard()` (`0016`) and fails loudly, a plain
+  seed is refused in production, and status is still projected on insert (`seed.test.ts`,
+  `build-role.test.ts`). Nit kept: a column-level grant assertion for `app_build`. HOLES 1, 3, 4
+  fixed in the round-1 fix commit (fallback stub in `db.test.ts`, `catalogue-parity-readonly.test.ts`,
+  the build-job and probe-control pins in `ci-workflow.test.ts`), each watched red under a mutation.
 
 ## Escalations
 
