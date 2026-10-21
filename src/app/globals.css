@@ -1488,3 +1488,92 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
     }
   }
 }
+
+/*
+ * Spec 042 idea 6, the route line (§5.3.6, AC-19, AC-3, AC-4; §13 Q8, every default; TASK-311;
+ * `docs/design/system/motion-interactions.dc.html` motion 18). `CorridorRouteLine` draws one
+ * `aria-hidden` SVG in the corridor hero; these rules place it, paint it and draw it.
+ *
+ *  - Place: out of flow in the hero grid (its containing block), so the hero's layout is the same
+ *    with it or without it (CLS 0). It is centred in the gap between the H1's track and the lead
+ *    slot, 74 px from the grid's top, as wide as that gap up to 180 px, at the viewBox's 3∶2. The
+ *    gap is the grid's own arithmetic, kept in step with `CorridorPage`'s
+ *    `md:grid-cols-[7fr_4fr] md:gap-[72px]` and `Photo`'s `card` lead cap; the e2e suite measures
+ *    the boxes at 768, 1,024 and 1,440. Not displayed below `md` (Q8 (d)).
+ *  - Paint: the widths, dashes and caps are the SVG's own presentation attributes (the artboard's
+ *    2 px accent dash of 6 and 7, the 7 px cover, the 1.5 px ring); here only the colours that are
+ *    tokens: the accent through `currentColor`, the cover and the "you" dot in the page colour.
+ *  - Draw: motion 5's mechanism. A second copy of the arc in the page colour, over `pathLength` 1,
+ *    covers the dashed route and unrolls from the "you" dot by `stroke-dashoffset`, 500 ms after
+ *    load, `--duration-draw`, `--ease-emphasised`, once; then the destination dot fades in over
+ *    `--duration-base`. At rest the cover is rolled away and the dot shown, so with reduced motion,
+ *    or with no CSS animation, the route is drawn from the first frame. CSS only: JavaScript off
+ *    draws it too.
+ */
+@keyframes fo-route-draw {
+  from {
+    stroke-dashoffset: 0;
+  }
+
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+
+@keyframes fo-route-dot {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+[data-fo-route-line] {
+  --fo-route-h1: calc((100% - 72px) * 7 / 11);
+  --fo-route-gap: calc(
+    100% - var(--fo-route-h1) -
+      min((100% - 72px) * 4 / 11, var(--hero-photo-max) * 4 / 5)
+  );
+  --fo-route-size: min(180px, var(--fo-route-gap));
+  --fo-route-delay: calc(var(--duration-base) * 2.5);
+
+  position: absolute;
+  inset-block-start: 74px;
+  inset-inline-start: calc(
+    var(--fo-route-h1) + (var(--fo-route-gap) - var(--fo-route-size)) / 2
+  );
+  display: none;
+  inline-size: var(--fo-route-size);
+  color: var(--color-accent);
+  pointer-events: none;
+}
+
+@media (min-width: 48rem) {
+  [data-fo-route-line] {
+    display: block;
+  }
+}
+
+[data-fo-route="mask"] {
+  stroke: var(--color-surface);
+  stroke-dashoffset: -1;
+}
+
+[data-fo-route="you"] {
+  fill: var(--color-surface);
+  stroke: var(--color-ink-2);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-fo-route="mask"] {
+    animation: fo-route-draw var(--duration-draw) var(--ease-emphasised)
+      var(--fo-route-delay) 1 backwards;
+  }
+
+  [data-fo-route="to"] {
+    animation: fo-route-dot var(--duration-base) var(--ease-standard)
+      calc(var(--fo-route-delay) + var(--duration-draw)) 1 backwards;
+  }
+}
