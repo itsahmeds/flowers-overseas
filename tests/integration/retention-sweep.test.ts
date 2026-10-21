@@ -161,8 +161,9 @@ async function deliveredOrder(
     VALUES (${orderId}, 'surcharge', 1, 18900, 'PLN', 800)`;
   const [payment] = await tx<{ id: string }[]>`
     INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
-                         currency_code, captured_at)
-    VALUES (${orderId}, 'stripe', ${make.unique("pi_")}, 'captured', 'card', 18900, 'PLN', now())
+                         currency_code, captured_at, livemode)
+    VALUES (${orderId}, 'stripe', ${make.unique("pi_")}, 'captured', 'card', 18900, 'PLN', now(),
+            false)
     RETURNING id`;
   if (options.exactDelivery === true) {
     await deliverAtWholeMillisecond(tx, orderId);
@@ -399,8 +400,10 @@ describe.skipIf(server.url === undefined)(
         const order = await deliveredOrder(tx);
         await deliveredOrder(tx, { status: "disputed" });
         const photo = await deliveryPhoto(tx, storage, order.orderId, 0);
-        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, received_at)
-                 VALUES ('stripe', ${make.unique("evt_")}, true, '{}'::jsonb, now())`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, received_at,
+                                            livemode, event_type)
+                 VALUES ('stripe', ${make.unique("evt_")}, true, '{}'::jsonb, now(), false,
+                         'payment_intent.succeeded')`;
         // A consent record withdrawn long enough before the clock to be due (hole 5).
         const subject = randomUUID();
         for (const daysAgo of [2000, 1000]) {
@@ -745,9 +748,12 @@ describe.skipIf(server.url === undefined)(
       await rolledBack(scratch.sql, async (tx) => {
         const old = make.unique("evt_");
         const young = make.unique("evt_");
-        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, received_at)
-                 VALUES ('stripe', ${old}, true, '{}'::jsonb, now() - interval '366 days'),
-                        ('stripe', ${young}, true, '{}'::jsonb, now() - interval '364 days')`;
+        await tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, received_at,
+                                            livemode, event_type)
+                 VALUES ('stripe', ${old}, true, '{}'::jsonb, now() - interval '366 days', false,
+                         'payment_intent.succeeded'),
+                        ('stripe', ${young}, true, '{}'::jsonb, now() - interval '364 days', false,
+                         'payment_intent.succeeded')`;
         const result = await sweep(tx, { now: new Date() });
         expect(policy(result, "fraud_signals").counts).toEqual({
           webhook_inbox: 1,

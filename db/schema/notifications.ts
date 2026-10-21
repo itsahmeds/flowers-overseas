@@ -1,10 +1,13 @@
 /**
- * Drizzle definitions for the `notifications` tables — `outbox` and `outbox_attempt` (spec 002
- * §5.1 "`notifications`"; `plan/11` §2; migration `0009_notifications_ops.sql`; TASK-021).
+ * Drizzle definitions for the `notifications` tables — `outbox`, `outbox_attempt` and
+ * `outbox_delivery` (spec 002 §5.1 "`notifications`", §14 A7.7; `plan/11` §2; migrations
+ * `0009_notifications_ops.sql` (TASK-021) and `0017_payments_a7.sql` (TASK-254)).
  *
  * The outbox is the order machine's only integration point: spec 010's engine writes one row per
  * event, in the transition's transaction, when the event has targets (`event_id` is unique, so a
- * retried write is a duplicate key); spec 017 drains it and records each try in `outboxAttempt`.
+ * retried write is a duplicate key). An `AFTER INSERT` trigger (`0017`) fans each row out to one
+ * `outboxDelivery` per target; spec 013's dispatcher delivers each and records every try in
+ * `outboxAttempt` with its `target`.
  */
 import { sql } from "drizzle-orm";
 import {
@@ -24,6 +27,7 @@ import { order } from "./orders.ts";
 
 export const outboxStatuses = ["pending", "sent", "failed", "dead"] as const;
 export const outboxAttemptStatuses = ["sent", "failed"] as const;
+export const outboxDeliveryStatuses = ["pending", "sent", "dead"] as const;
 
 function valueList(values: readonly string[]): string {
   return `(${values.map((value) => `'${value}'`).join(", ")})`;
@@ -83,6 +87,7 @@ export const outboxAttempt = pgTable(
     status: text("status").notNull(),
     error: text("error"),
     providerRef: text("provider_ref"),
+    target: text("target"),
   },
   (table) => [
     unique("outbox_attempt_outbox_id_attempt_key").on(
@@ -98,5 +103,35 @@ export const outboxAttempt = pgTable(
       "outbox_attempt_error_check",
       sql`${table.status} <> 'failed' or ${table.error} is not null`,
     ),
+  ],
+);
+
+export const outboxDelivery = pgTable(
+  "outbox_delivery",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    outboxId: uuid("outbox_id")
+      .notNull()
+      .references(() => outbox.id, { onDelete: "restrict" }),
+    target: text("target").notNull(),
+    status: text("status").notNull().default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    ...timestamps,
+  },
+  (table) => [
+    unique("outbox_delivery_outbox_id_target_key").on(
+      table.outboxId,
+      table.target,
+    ),
+    check(
+      "outbox_delivery_status_check",
+      sql.raw(`status in ${valueList(outboxDeliveryStatuses)}`),
+    ),
+    check("outbox_delivery_attempts_check", sql`${table.attempts} >= 0`),
+    index("outbox_delivery_pending_idx")
+      .on(table.createdAt)
+      .where(sql`status = 'pending'`),
   ],
 );

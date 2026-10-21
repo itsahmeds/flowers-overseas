@@ -7,13 +7,17 @@
  * event's transaction **only when `outboxTargets(event, mode)` returns at least one target**
  * (the table's `CHECK` refuses an empty `targets` array anyway).
  *
- * Phase 0: every list in `OUTBOX_ROUTES` is empty. Specs 015 and 017 fill it. Whatever they add,
+ * Phase 0: every list in `OUTBOX_ROUTES` is empty. Spec 013 (TASK-254) adds its `payments` and
+ * `routing` rows, per mode, in `../outbox/routes.ts`; `outboxTargets` reads both tables, one
+ * target name once. Specs 016 and 023 add theirs the same way. Whatever they add,
  * `resolveOutboxTargets` drops every target whose audience is a **buyer or a recipient** for a
  * `demo` or `test` order (AC-24): spec 017 must never email a stranger about a demo, and the rule
  * is here, in one function, rather than in each consumer.
  */
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+
+import { paymentOutboxTargets } from "../outbox/routes";
 
 import type { OrderEventType, OrderMode } from "./events";
 import { jsonb, textArray, type OrderExecutor } from "./executor";
@@ -68,12 +72,26 @@ export function resolveOutboxTargets(
   return withoutPeopleUnlessLive(routes[event] ?? [], mode);
 }
 
-/** `outboxTargets(event, mode)` of §5.2, over this spec's (empty) routes. */
+/**
+ * `outboxTargets(event, mode)` of §5.2: this spec's (empty) routes plus spec 013's rows
+ * (`../outbox/routes.ts`), each target name once (the `AFTER INSERT ON outbox` trigger of `0017`
+ * makes one delivery per element, and refuses a name twice), people filtered for `demo`/`test`.
+ */
 export function outboxTargets(
   event: OrderEventType,
   mode: OrderMode,
 ): readonly OutboxTarget[] {
-  return resolveOutboxTargets(OUTBOX_ROUTES, event, mode);
+  const seen = new Set<string>();
+  const targets: OutboxTarget[] = [];
+  for (const target of [
+    ...resolveOutboxTargets(OUTBOX_ROUTES, event, mode),
+    ...withoutPeopleUnlessLive(paymentOutboxTargets(event, mode), mode),
+  ]) {
+    if (seen.has(target.name)) continue;
+    seen.add(target.name);
+    targets.push(target);
+  }
+  return targets;
 }
 
 /** The resolver signature, injectable so T-22 can drive "one target → one row". */

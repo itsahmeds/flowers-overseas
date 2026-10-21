@@ -224,10 +224,11 @@ describe("robots (spec 001 §6, spec 002 §6 'Crawl efficiency')", () => {
   });
 });
 
-const { probe, tick, ensure } = vi.hoisted(() => ({
+const { probe, tick, ensure, enqueue } = vi.hoisted(() => ({
   probe: vi.fn(),
   tick: vi.fn(),
   ensure: vi.fn(),
+  enqueue: vi.fn(),
 }));
 
 vi.mock("server-only", () => ({}));
@@ -236,6 +237,7 @@ vi.mock("@/jobs/runtime", () => ({
     fn({ boss: true }),
   probeDbHealth: (...args: unknown[]) => probe(...args),
   ensureQueues: (...args: unknown[]) => ensure(...args),
+  enqueue: (...args: unknown[]) => enqueue(...args),
   runTick: (...args: unknown[]) => tick(...args),
 }));
 
@@ -253,6 +255,7 @@ describe("the route files, as Next loads them", () => {
       .mockReset()
       .mockResolvedValue({ fetched: 0, completed: 0, failed: 0, rejected: 0 });
     ensure.mockReset().mockResolvedValue(undefined);
+    enqueue.mockReset().mockResolvedValue("job-1");
   });
 
   it("db-health: GET only, force-dynamic, gated by INTERNAL_CRON_SECRET from the env contract", async () => {
@@ -290,6 +293,17 @@ describe("the route files, as Next loads them", () => {
     );
     expect(allowed.status).toBe(200);
     expect(ensure).toHaveBeenCalledTimes(1);
+    // Spec 013 §5.2 (TASK-254): every tick enqueues one outbox.dispatch, before it ticks, so the
+    // same tick consumes it.
+    expect(enqueue).toHaveBeenCalledTimes(1);
+    expect(enqueue.mock.calls[0]?.slice(1)).toEqual([
+      "outbox.dispatch",
+      {},
+      { requestId: "system:jobs.tick" },
+    ]);
+    expect(enqueue.mock.invocationCallOrder[0]).toBeLessThan(
+      tick.mock.invocationCallOrder[0] ?? 0,
+    );
     expect(tick).toHaveBeenCalledTimes(1);
     // Identity, not deep equality: `JOB_HANDLERS` is `{}` today, so `toHaveBeenCalledWith` would
     // also pass for a route that ticked with a fresh `{}` (breaker hole 7, U39).

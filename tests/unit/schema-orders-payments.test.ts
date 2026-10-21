@@ -39,8 +39,12 @@ import {
 
 const up = readMigration("0007_orders_payments.sql");
 const down = readMigration("0007_orders_payments.down.sql");
-/** `0013` (TASK-245) adds `"order".locale_code`, its key and `order_reference_idx`. */
-const later = readMigration("0013_order_engine_columns.sql");
+/**
+ * `0013` (TASK-245) adds `"order".locale_code`, its key and `order_reference_idx`; `0017` (spec 002
+ * §14 A7, TASK-254) the payment, refund and webhook-inbox columns, checks and index.
+ */
+const a7 = readMigration("0017_payments_a7.sql");
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}`;
 
 const TABLES = [
   "order_status",
@@ -121,7 +125,10 @@ describe("migration 0007 — the CHECK lists are the mirror's tuples (AC-7)", ()
   ];
   for (const [constraint, values] of LISTS) {
     it(constraint, () => {
-      expect(checkList(up, constraint)).toEqual([...values]);
+      // A7 (`0017`) drops and re-adds the two status lists; the latest definition is the one.
+      expect(checkList(a7, constraint) ?? checkList(up, constraint)).toEqual([
+        ...values,
+      ]);
     });
   }
 

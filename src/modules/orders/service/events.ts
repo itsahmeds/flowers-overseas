@@ -1,14 +1,15 @@
 /**
  * The event catalogue and the event-schema registry (spec 010 §2 "Event names", §5.2; §14 A1.1;
- * spec 002 §14 A6.6; `plan/11` §2; TASK-202).
+ * spec 002 §14 A6.6, A7.2; `plan/11` §2; TASK-202; spec 013 §5.2, TASK-254).
  *
  * Names are the `plan/11` §2 catalogue's as amended by spec 002 A6.6, never the diagram's arrow
  * labels (`accept`, `capture`, …). A6.6 splits them in two, and the engine enforces the split:
  *
  *  - the **28 transition events** have rows in `order_transition` and go through `transition`
  *    only (A1.4: `appendEvent` refuses them);
- *  - the **8 status-preserving events** have no row and are written by `place` (`order.placed`)
- *    or `appendEvent` (`assignment.offered`, …).
+ *  - the **9 status-preserving events** (A6.6's 8 plus A7.2's `order.payment_attempt_failed`)
+ *    have no row and are written by `place` (`order.placed`) or `appendEvent`
+ *    (`assignment.offered`, …).
  *
  * `tests/unit/order-engine.test.ts` compares both lists with `tests/fixtures/order-machine.ts`
  * in both directions, so a name cannot drift from the seeded machine.
@@ -57,7 +58,10 @@ export const TRANSITION_EVENTS = [
   "order.chargeback_lost",
 ] as const;
 
-/** A6.6: the 8 status-preserving events, which have no row. */
+/**
+ * A6.6: the status-preserving events, which have no row: A6.6's 8, plus A7.2's
+ * `order.payment_attempt_failed` (spec 013: a declined attempt never changes a status), 9 in all.
+ */
 export const STATUS_PRESERVING_EVENTS = [
   "order.placed",
   "assignment.offered",
@@ -67,6 +71,7 @@ export const STATUS_PRESERVING_EVENTS = [
   "review.created",
   "partner.status_changed",
   "country.status_changed",
+  "order.payment_attempt_failed",
 ] as const;
 
 export const ORDER_EVENT_TYPES = [
@@ -102,8 +107,18 @@ export const OrderPlacedV1 = z
   })
   .strict();
 
-/** `order.authorised` v1. In `demo` there is no payment (`system:demo_guard`, AC-20). */
-export const OrderAuthorisedV1 = z.object({ mode: OrderModeSchema }).strict();
+/**
+ * `order.authorised` v1. In `demo` there is no payment (`system:demo_guard`, AC-20). Spec 013
+ * §5.2 adds two **optional** fields (`plan/11` §2: adding a field is additive), for a hold that
+ * launch never takes: the payment row and its capture method.
+ */
+export const OrderAuthorisedV1 = z
+  .object({
+    mode: OrderModeSchema,
+    payment_id: z.uuid().optional(),
+    capture_method: z.enum(["manual", "automatic"]).optional(),
+  })
+  .strict();
 
 /** `order.routed` v1: the florist the order is offered to. */
 export const OrderRoutedV1 = z
@@ -144,6 +159,11 @@ export const STATUS_PRESERVING_ACTORS: Readonly<
   >
 > = {
   "assignment.offered": ["system", "admin"],
+  // Spec 013 §5.2: a decline is reported by the provider, through `system:payments` only.
+  "order.payment_attempt_failed": ["system"],
+  // Spec 013 §5.2 "Refunds": the refund service appends it with the actor who asked, an admin
+  // (`adminRefund`) or the system (the cancel handler, the reconcile anomaly).
+  "order.refund_requested": ["system", "admin"],
 };
 
 /** What the engine needs of a payload schema: it parses to an object that names its mode. */

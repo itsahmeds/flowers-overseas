@@ -181,6 +181,7 @@ describe("ensureQueues", () => {
       "db.backup_verify",
       "media.derive_variants",
       "neon.usage_probe",
+      "outbox.dispatch",
       "retention.sweep",
     ]);
   });
@@ -359,9 +360,12 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles retention.sweep (TASK-025) and nothing else yet", async () => {
+  it("the production map handles retention.sweep (TASK-025) and outbox.dispatch (TASK-254), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
-    expect(Object.keys(JOB_HANDLERS)).toEqual(["retention.sweep"]);
+    expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
+      "outbox.dispatch",
+      "retention.sweep",
+    ]);
   });
 
   it("does nothing but maintenance with no handlers", async () => {

@@ -54,8 +54,12 @@ import { REDACTED, isRedactedLogKey, redact, scrubText } from "./logger";
  * input. It has to be a tag rather than the event message because `beforeSend` replaces free text
  * wholesale with `"[REDACTED]"` — a deliberate rule (the gift message is free text too), so the
  * only way a signal stays groupable in Sentry is a key nobody can put a person's data into.
+ *
+ * `alert` and `order_id` are spec 013 §11's (TASK-254): the name of an alert raised at the point of
+ * failure (`captureAlert`, a constant at every call site, for the reason `signal` is a tag), and
+ * the order it concerns, a UUID that identifies an order, not a person.
  */
-export const NON_PII_TAGS = ["locale", "signal"] as const;
+export const NON_PII_TAGS = ["locale", "signal", "alert", "order_id"] as const;
 
 /**
  * Tag the current Sentry scope with the resolved locale so error volumes can be read per locale
@@ -106,6 +110,31 @@ export function captureGuardError(
   captureMessage(signal, {
     level: "error",
     tags: { signal },
+    extra: { ...fields },
+  });
+}
+
+/**
+ * Raise an **alert** at the point of failure (spec 013 §11): an error-level event whose `alert`
+ * tag is the alert's name, plus `order_id` where one exists; Sentry's alert rule forwards it to
+ * email and WhatsApp (`plan/08`). Both tags are on `NON_PII_TAGS`: the name is a constant at
+ * every call site (`outbox.dead`, `payment.amount_mismatch`, …), and an order id is a UUID, not
+ * personal data (spec 013 §11). `fields` go to `extra` and pass the same key-based scrubber as any
+ * other event data. A no-op when no client is initialised (no DSN); the caller logs the same
+ * fields through `src/lib/logger.ts` regardless.
+ */
+export function captureAlert(
+  alert: string,
+  fields: Readonly<Record<string, unknown>> & {
+    readonly order_id?: string;
+  } = {},
+): void {
+  captureMessage(alert, {
+    level: "error",
+    tags: {
+      alert,
+      ...(fields.order_id === undefined ? {} : { order_id: fields.order_id }),
+    },
     extra: { ...fields },
   });
 }

@@ -169,6 +169,9 @@ export const STAFF_ONLY_TABLES = [
   "outbox",
   "outbox_attempt",
   "partner_application",
+  // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a
+  // payment. Partners, customers and the public read nothing.
+  "payment_dispute",
   "retention_policy",
   "sessions",
   "verification_tokens",
@@ -181,7 +184,12 @@ export const STAFF_ONLY_TABLES = [
  * `0015_checkout_draft`, TASK-203): an unfinished checkout holds a stranger's typed details for at
  * most 24 hours and only the checkout's own system transactions read it.
  */
-export const SYSTEM_ONLY_TABLES = ["checkout_draft"] as const;
+export const SYSTEM_ONLY_TABLES = [
+  "checkout_draft",
+  // spec 002 §14 A7.7 (migration `0017_payments_a7`, TASK-254): one row per outbox target, read
+  // and written only by the dispatcher's system transactions.
+  "outbox_delivery",
+] as const;
 
 /**
  * Tables without RLS, and why. `schema_migrations` is the runner's bookkeeping: created and owned

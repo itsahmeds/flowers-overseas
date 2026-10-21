@@ -154,8 +154,9 @@ describe("events and actors (AC-22 unit half; A1.1)", () => {
       [...STATUS_PRESERVING_EVENTS].sort(),
     );
     expect(SRC_TRANSITION_EVENTS).toHaveLength(28);
-    expect(SRC_STATUS_PRESERVING).toHaveLength(8);
-    expect(ORDER_EVENT_TYPES).toHaveLength(36);
+    // Spec 002 §14 A7.2: 28 transition events and 9 status-preserving, 37 names.
+    expect(SRC_STATUS_PRESERVING).toHaveLength(9);
+    expect(ORDER_EVENT_TYPES).toHaveLength(37);
     for (const label of ["accept", "capture", "pay", "route", "deliver"]) {
       expect(ORDER_EVENT_TYPES).not.toContain(label);
     }

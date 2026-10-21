@@ -353,8 +353,26 @@ describe("Sentry release and the NEXT_PUBLIC mirror (TASK-007, TASK-043)", () =>
  * error volumes unreadable — and the redaction of everything else must be unaffected.
  */
 describe("the non-PII tags (spec 003 §11, spec 005 §11)", () => {
-  it("declares `locale` and `signal` as the allowed non-PII tags", () => {
-    expect([...NON_PII_TAGS]).toEqual(["locale", "signal"]);
+  it("declares `locale`, `signal`, and spec 013's `alert` and `order_id` as the allowed non-PII tags", () => {
+    expect([...NON_PII_TAGS]).toEqual([
+      "locale",
+      "signal",
+      "alert",
+      "order_id",
+    ]);
+  });
+
+  it("keeps an alert's `alert` and `order_id` tags through beforeSend (spec 013 §11)", () => {
+    const scrubbed = beforeSend({
+      tags: {
+        alert: "outbox.dead",
+        order_id: "6f1c2a40-3b7e-4c1d-9a55-0d2e4f6a8b10",
+      },
+    });
+    expect(scrubbed.tags).toEqual({
+      alert: "outbox.dead",
+      order_id: "6f1c2a40-3b7e-4c1d-9a55-0d2e4f6a8b10",
+    });
   });
 
   it("survives beforeSend verbatim for every launch locale", () => {

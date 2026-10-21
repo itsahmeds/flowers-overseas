@@ -286,7 +286,7 @@ export const TRANSITION_EVENTS = [
   "order.chargeback_lost",
 ] as const;
 
-/** A6.6: the 8 status-preserving events, which have no row. */
+/** A6.6 as amended by A7.2: the 9 status-preserving events, which have no row. */
 export const STATUS_PRESERVING_EVENTS = [
   "order.placed",
   "assignment.offered",
@@ -296,6 +296,8 @@ export const STATUS_PRESERVING_EVENTS = [
   "review.created",
   "partner.status_changed",
   "country.status_changed",
+  // Spec 002 §14 A7.2 (spec 013, TASK-254): a declined payment attempt never changes a status.
+  "order.payment_attempt_failed",
 ] as const;
 
 /** The one state an order is inserted in (spec 010 §5.1 A, `ORDER_INITIAL_STATUS`). */
