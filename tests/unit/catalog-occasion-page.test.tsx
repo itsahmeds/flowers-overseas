@@ -25,7 +25,11 @@ import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { type ListingView, listingView } from "../../src/modules/catalog";
+import {
+  type ListingView,
+  listingPages,
+  listingView,
+} from "../../src/modules/catalog";
 import { CountryOccasionPage } from "../../src/modules/catalog/ui/CountryOccasionPage.tsx";
 import { loadMessages } from "../../src/modules/i18n";
 import type { ProductCardPhotoView } from "../../src/modules/ui/shop/viewModel.ts";
@@ -244,18 +248,23 @@ describe("the country occasion page (§5.3 row 2)", () => {
     );
   });
 
-  it("links out to the shop root and to no page that does not exist", () => {
+  it("links out to the shop root and to no page that does not exist", async () => {
     expect(html).toContain('href="/en/poland/flowers"');
     expect(text).toContain("Flowers for Poland");
-    // The other Polish occasions are all below the floor, so none of them is a chip — the match
-    // set is **empty today**, and the count is pinned so the loop under it cannot be satisfied by
-    // having nothing to iterate. When a second Polish occasion clears the floor this line goes
-    // red, someone writes the new number, and the loop then does the work it was written for.
-    const occasionHrefs =
-      html.match(/href="\/en\/poland\/occasions\/[^"]+"/gu) ?? [];
-    expect(occasionHrefs).toHaveLength(0);
+    // Since spec 008 A-founder-2026-10-21c (TASK-316) every observed Polish occasion clears the
+    // floor, so the page links to each of the other ten Polish country occasion pages, and to no
+    // URL outside the existence set. The count is pinned so the loop cannot be satisfied by
+    // having nothing to iterate.
+    const exists = new Set((await listingPages("en")).map((page) => page.path));
+    const occasionHrefs = [
+      ...new Set(html.match(/href="\/en\/poland\/occasions\/[^"]+"/gu) ?? []),
+    ];
+    expect(occasionHrefs).toHaveLength(10);
+    expect(occasionHrefs).not.toContain(
+      'href="/en/poland/occasions/mothers-day"',
+    );
     for (const href of occasionHrefs) {
-      expect(href).toBe('href="/en/poland/occasions/mothers-day"');
+      expect(exists.has(href.slice('href="'.length, -1)), href).toBe(true);
     }
   });
 

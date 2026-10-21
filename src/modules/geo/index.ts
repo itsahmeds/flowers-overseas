@@ -69,8 +69,10 @@ export {
   committedOccasionCalendar,
   easterSunday,
   nextOccasions,
+  nextOccurrenceDates,
   observedUndatedOccasions,
   occasionDate,
+  occasionDates,
   orthodoxEasterSunday,
   upcomingOccasions,
 } from "./occasions/index.ts";

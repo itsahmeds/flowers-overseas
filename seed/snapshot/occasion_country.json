@@ -81,7 +81,13 @@
         "rule": {
           "kind": "fixed",
           "month": 1,
-          "day": 21
+          "day": 21,
+          "also": [
+            {
+              "month": 1,
+              "day": 22
+            }
+          ]
         },
         "observed": true,
         "indexable_override": null,

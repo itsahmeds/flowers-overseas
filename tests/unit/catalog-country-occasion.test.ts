@@ -96,37 +96,119 @@ const occasionPages = async (locale: string): Promise<ListingPageRecord[]> =>
 
 describe("the existence set (AC-1, T-01)", () => {
   it("is every observed occasion above the floor with an authored slug, and nothing else", async () => {
-    // Mother's Day clears six tagged products in all seven destinations; nothing else does. `de`
-    // and `pl` have no authored occasion slug yet (TASK-106), so they have no page at all — which
-    // is §2's "and an authored slug" and §13 Q10's "the pages appear as data".
-    expect((await occasionPages("en")).map((page) => page.path)).toEqual([
+    // Spec 008 A-founder-2026-10-21c (TASK-316): the Appendix A tags lift every seasonal occasion
+    // over the six-product floor, so a country occasion page exists for every (occasion,
+    // destination) pair the calendar marks `observed`. The table is written out by hand from
+    // `seed/data/occasion-country.json` (the `observed` rows), not read from it, so a page the
+    // existence rule invents or drops fails here. Poland's `name_day` is observed and undated
+    // (`plan/13` B15), so its page exists; the Netherlands keeps no All Saints' Day.
+    const OBSERVED: Readonly<Record<string, readonly string[]>> = {
+      PL: [
+        "valentines",
+        "womens_day",
+        "mothers_day",
+        "fathers_day",
+        "grandparents_day",
+        "easter",
+        "all_saints",
+        "christmas",
+        "new_year",
+        "name_day",
+        "teachers_day",
+      ],
+      DE: [
+        "valentines",
+        "mothers_day",
+        "fathers_day",
+        "easter",
+        "all_saints",
+        "christmas",
+        "new_year",
+      ],
+      FR: [
+        "valentines",
+        "mothers_day",
+        "fathers_day",
+        "easter",
+        "all_saints",
+        "christmas",
+        "new_year",
+        "fete_des_grands_meres",
+        "muguet",
+      ],
+      ES: [
+        "valentines",
+        "mothers_day",
+        "fathers_day",
+        "grandparents_day",
+        "easter",
+        "all_saints",
+        "christmas",
+        "new_year",
+        "sant_jordi",
+      ],
+      IT: [
+        "valentines",
+        "womens_day",
+        "mothers_day",
+        "fathers_day",
+        "grandparents_day",
+        "easter",
+        "all_saints",
+        "christmas",
+        "new_year",
+      ],
+      RO: [
+        "valentines",
+        "womens_day",
+        "mothers_day",
+        "fathers_day",
+        "easter",
+        "all_saints",
+        "christmas",
+        "new_year",
+      ],
+      NL: [
+        "valentines",
+        "mothers_day",
+        "fathers_day",
+        "easter",
+        "christmas",
+        "new_year",
+      ],
+    };
+    const expected = Object.entries(OBSERVED)
+      .flatMap(([iso2, keys]) => keys.map((key) => `${iso2}:${key}`))
+      .sort();
+    expect(expected).toHaveLength(59);
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      expect(
+        (await occasionPages(locale))
+          .map((page) => `${page.countryIso ?? ""}:${page.entityKey ?? ""}`)
+          .sort(),
+        locale,
+      ).toEqual(expected);
+    }
+    // Each locale under its own authored segment and slugs (TASK-106).
+    const polandPaths = async (locale: string): Promise<string[]> =>
+      (await occasionPages(locale))
+        .filter((page) => page.countryIso === "PL")
+        .map((page) => page.path);
+    expect(await polandPaths("en")).toEqual([
+      "/en/poland/occasions/valentines-day",
+      "/en/poland/occasions/womens-day",
       "/en/poland/occasions/mothers-day",
-      "/en/germany/occasions/mothers-day",
-      "/en/france/occasions/mothers-day",
-      "/en/spain/occasions/mothers-day",
-      "/en/italy/occasions/mothers-day",
-      "/en/romania/occasions/mothers-day",
-      "/en/netherlands/occasions/mothers-day",
+      "/en/poland/occasions/fathers-day",
+      "/en/poland/occasions/grandparents-day",
+      "/en/poland/occasions/easter",
+      "/en/poland/occasions/all-saints-day",
+      "/en/poland/occasions/christmas",
+      "/en/poland/occasions/new-year",
+      "/en/poland/occasions/name-day",
+      "/en/poland/occasions/teachers-day",
     ]);
-    // `de` and `pl` have the same seven pages under their own authored slugs (TASK-106).
-    expect((await occasionPages("de")).map((page) => page.path)).toEqual([
-      "/de/polen/anlaesse/muttertag",
-      "/de/deutschland/anlaesse/muttertag",
-      "/de/frankreich/anlaesse/muttertag",
-      "/de/spanien/anlaesse/muttertag",
-      "/de/italien/anlaesse/muttertag",
-      "/de/rumaenien/anlaesse/muttertag",
-      "/de/niederlande/anlaesse/muttertag",
-    ]);
-    expect((await occasionPages("pl")).map((page) => page.path)).toEqual([
-      "/pl/polska/okazje/dzien-matki",
-      "/pl/niemcy/okazje/dzien-matki",
-      "/pl/francja/okazje/dzien-matki",
-      "/pl/hiszpania/okazje/dzien-matki",
-      "/pl/wlochy/okazje/dzien-matki",
-      "/pl/rumunia/okazje/dzien-matki",
-      "/pl/holandia/okazje/dzien-matki",
-    ]);
+    expect(await polandPaths("de")).toContain("/de/polen/anlaesse/muttertag");
+    expect(await polandPaths("pl")).toContain("/pl/polska/okazje/dzien-matki");
   });
 
   it("is exactly the occasion half of what `generateStaticParams` emits (AC-3)", async () => {
@@ -216,12 +298,23 @@ describe("the shop root's third column (§14 A10)", () => {
     const linked = (view?.occasionDates ?? []).filter(
       (row) => row.href !== undefined,
     );
-    expect(linked.map((row) => row.href)).toEqual([
-      "/en/poland/occasions/mothers-day",
-    ]);
-    // Everything else is an empty cell, not a placeholder: All Saints' Day is the largest flower
-    // day of the Polish year and has five tagged products, so it prints its date and no link.
-    expect((view?.occasionDates ?? []).length).toBeGreaterThan(1);
+    // Since spec 008 A-founder-2026-10-21c (TASK-316) every dated Polish occasion clears the
+    // floor, so every row links; the table holds the ten dated rows (`name_day` is undated).
+    expect(linked.map((row) => row.href).sort()).toEqual(
+      [
+        "/en/poland/occasions/valentines-day",
+        "/en/poland/occasions/womens-day",
+        "/en/poland/occasions/mothers-day",
+        "/en/poland/occasions/fathers-day",
+        "/en/poland/occasions/grandparents-day",
+        "/en/poland/occasions/easter",
+        "/en/poland/occasions/all-saints-day",
+        "/en/poland/occasions/christmas",
+        "/en/poland/occasions/new-year",
+        "/en/poland/occasions/teachers-day",
+      ].sort(),
+    );
+    expect(view?.occasionDates ?? []).toHaveLength(10);
   });
 
   it("never links at a URL outside the existence set, in any locale", async () => {
@@ -245,17 +338,14 @@ describe("the shop root's third column (§14 A10)", () => {
       }
     }
     // The view the loop walked, pinned: four shop roots answer (one per locale, each under its
-    // own authored country segment — `polen` and `polska` are not `en` URLs), ten observed
-    // occasions each, and four of those forty rows carry a link today — one per locale, since
-    // TASK-106 gave `de` and `pl` their own occasion slugs. Without these the loop could be
-    // satisfied by iterating nothing at all.
+    // own authored country segment — `polen` and `polska` are not `en` URLs), ten dated observed
+    // occasions each, and since spec 008 A-founder-2026-10-21c (TASK-316) all forty rows carry a
+    // link, ten per locale. Without these the loop could be satisfied by iterating nothing at
+    // all.
     expect(rows).toBe(40);
-    expect(linked).toEqual([
-      "en /en/poland/occasions/mothers-day",
-      "en-gb /en-gb/poland/occasions/mothers-day",
-      "de /de/polen/anlaesse/muttertag",
-      "pl /pl/polska/okazje/dzien-matki",
-    ]);
+    expect(linked).toHaveLength(40);
+    expect(linked).toContain("de /de/polen/anlaesse/muttertag");
+    expect(linked).toContain("pl /pl/polska/okazje/dzien-matki");
   });
 });
 

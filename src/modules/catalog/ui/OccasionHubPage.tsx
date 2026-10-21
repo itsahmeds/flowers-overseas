@@ -144,6 +144,7 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
                     key: row.iso2,
                     name: registryLabel(t, row.nameKey),
                     date: row.date,
+                    alsoDates: row.alsoDates,
                     href: row.href,
                     hook: { "data-fo-hub-first-date": row.iso2 },
                   }))}
@@ -247,6 +248,7 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
                 name: registryLabel(t, row.nameKey),
                 nameKey: row.nameKey,
                 date: row.date,
+                alsoDates: row.alsoDates,
                 hook: { "data-fo-hub-date": row.iso2 },
               }))}
               unknownDate={hub("dateUnknown")}

@@ -18,6 +18,10 @@ import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts"
 
 const SERVED = [
   "/en/poland/occasions/mothers-day",
+  // spec 008 A-founder-2026-10-21c (TASK-316): over the floor since the Appendix A tags
+  "/en/poland/occasions/all-saints-day",
+  "/en/poland/occasions/grandparents-day",
+  "/en/spain/occasions/sant-jordi",
   "/en-gb/poland/occasions/mothers-day",
   "/en/germany/occasions/mothers-day",
   "/en-gb/france/occasions/mothers-day",
@@ -42,11 +46,13 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
     request,
   }) => {
     for (const url of [
-      // an occasion the destination observes that is below the six-product floor
-      "/en/poland/occasions/all-saints-day",
-      "/en/poland/occasions/womens-day",
-      // an occasion the destination does not observe
+      // an occasion the destination does not observe (since spec 008 A-founder-2026-10-21c no
+      // observed occasion sits below the six-product floor; that boundary is unit-tested in
+      // `tests/unit/catalog-listing.test.ts`)
       "/en/france/occasions/name-day",
+      "/en/netherlands/occasions/all-saints-day",
+      // an evergreen occasion, which no destination keeps as a dated day
+      "/en/poland/occasions/birthday",
       // an unknown slug, an unknown destination, a country we do not deliver to
       "/en/poland/occasions/arbor-day",
       "/en/atlantis/occasions/mothers-day",

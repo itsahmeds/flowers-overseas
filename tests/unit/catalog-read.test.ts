@@ -64,7 +64,7 @@ describe("getProduct (spec 005 §5.2)", () => {
       colours: ["orange"],
       style: "classic",
       priceTier: "classic",
-      occasions: ["birthday", "thank_you", "just_because"],
+      occasions: ["birthday", "thank_you", "just_because", "sant_jordi"],
       substitutionClass: "main_flower",
       vaseIncluded: false,
       stemCount: 15,

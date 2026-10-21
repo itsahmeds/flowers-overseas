@@ -39,7 +39,7 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { formatDate, formatDateParts, sortBy } from "@/modules/i18n";
+import { formatDateParts, sortBy } from "@/modules/i18n";
 import {
   type ChipLinkView,
   Container,
@@ -67,6 +67,7 @@ import {
   ListingSubsection,
   STATE_KEYS,
   emphasise,
+  formatOccasionDates,
 } from "./ListingChrome";
 import { localeCode, registryLabel } from "./labels";
 
@@ -141,12 +142,18 @@ export function CountryOccasionPage({
   const heading = shop("h1.countryOccasion", { occasion, country });
   const dateInstant = date === null ? undefined : instantOf(date);
   const datedLine =
-    dateInstant === undefined
+    date === null
       ? shop("occasion.undatedLine", { occasion, country })
       : shop("occasion.datedLine", {
           occasion,
           country,
-          date: formatDate(dateInstant, code, "calendarDate", "UTC"),
+          // Every day of the occurrence, joined by the locale's own list format (spec 008 §14
+          // A-founder-2026-10-21c, AC-76); a one-day occurrence is `formatDate`'s value alone.
+          date: formatOccasionDates(
+            [date, ...(dated?.alsoDates ?? [])],
+            code,
+            "calendarDate",
+          ),
         });
   const parts =
     dateInstant === undefined
@@ -198,7 +205,8 @@ export function CountryOccasionPage({
                     text={t(STATE_KEYS[view.country.state])}
                   />
                 )}
-                {/* The date: one `formatDate` value (AC-11), the reason this page exists. */}
+                {/* The date: `formatDate`'s value for each day of the occurrence (AC-11, AC-76),
+                    the reason this page exists. */}
                 <p
                   className="text-ink-muted md:display md:text-ink mt-[8px] max-w-[44ch] text-sm md:mt-[24px] md:text-[26px] md:leading-[1.2]"
                   data-fo-occasion-date={date ?? ""}

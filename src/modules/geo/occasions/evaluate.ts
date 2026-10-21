@@ -248,3 +248,31 @@ export function occasionDate(rule: OccasionRule, year: number): IsoDate | null {
       return assertUnsupportedRule(rule);
   }
 }
+
+/**
+ * **Every date** an occasion falls on in a given year: the primary date `occasionDate()` returns,
+ * then each `also` day of a `fixed` rule, in the order authored, all in **the same year** (spec 008
+ * §14 A-founder-2026-10-21c item 4, AC-74; TASK-317). Poland's Grandparents' Day is two days,
+ * Dzień Babci on 21 January and Dzień Dziadka on 22 January: `fixed` 1/21 with `also` 1/22.
+ *
+ * `[]` when the primary is `null` (a `none` rule, or a `fixed` 29 February in a common year), so
+ * an `also` day is never printed without the occasion it belongs to. An `also` day that does not
+ * exist in that year (29 February again) is left out rather than guessed.
+ *
+ * `occasionDate()` is unchanged and stays the only date a date-ordered list reads
+ * (`upcomingOccasions`, `nextOccasions`, promo windows), so an occasion is never listed twice.
+ *
+ * @throws RangeError when `year` is not an integer in `MIN_YEAR`…`MAX_YEAR`.
+ */
+export function occasionDates(
+  rule: OccasionRule,
+  year: number,
+): readonly IsoDate[] {
+  const primary = occasionDate(rule, year);
+  if (primary === null) return [];
+  if (rule.kind !== "fixed" || rule.also === undefined) return [primary];
+  const also = rule.also
+    .map((pair) => fixedDate(year, pair.month, pair.day))
+    .filter((date): date is IsoDate => date !== null);
+  return [primary, ...also];
+}

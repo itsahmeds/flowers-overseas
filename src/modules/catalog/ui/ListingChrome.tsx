@@ -26,7 +26,7 @@
 import type { ReactElement, ReactNode } from "react";
 
 import type { LocaleCode } from "@/config/locales";
-import { formatDate } from "@/modules/i18n";
+import { formatDate, formatList } from "@/modules/i18n";
 import {
   Chip,
   Display,
@@ -398,10 +398,29 @@ function instantOf(date: string): Date {
   return new Date(`${date}T12:00:00Z`);
 }
 
+/**
+ * Every date of one occurrence as one string: each `formatDate` value, joined by `formatList`'s
+ * `Intl.ListFormat` conjunction in the page's locale (spec 008 §14 A-founder-2026-10-21c item 4,
+ * AC-76: Poland's Grandparents' Day prints both of its days in one cell). No message key: the
+ * joining word is the locale's own, not copy.
+ */
+export function formatOccasionDates(
+  dates: readonly string[],
+  locale: LocaleCode,
+  style: "calendarDate" | "dayMonth",
+): string {
+  return formatList(
+    dates.map((date) => formatDate(instantOf(date), locale, style, "UTC")),
+    locale,
+  );
+}
+
 export interface OccasionDateRow {
   readonly key: string;
   readonly name: string;
   readonly date: string | null;
+  /** The occurrence's other days, after `date` (the occasion hub only; AC-76). */
+  readonly alsoDates?: readonly string[] | undefined;
   readonly href?: string | undefined;
   readonly nameKey: string;
   /** The page's own row hook (`data-fo-hub-date`), kept stable for its tests. */
@@ -478,11 +497,10 @@ export function OccasionDatesTable({
             <td className={`${cell} num text-ink-muted`}>
               {row.date === null
                 ? (unknownDate ?? null)
-                : formatDate(
-                    instantOf(row.date),
+                : formatOccasionDates(
+                    [row.date, ...(row.alsoDates ?? [])],
                     locale,
                     "calendarDate",
-                    "UTC",
                   )}
             </td>
             {withPage ? (

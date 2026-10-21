@@ -145,18 +145,21 @@ describe("every shape AC-1 requires to be a miss", () => {
     ["en", ["Poland", "flowers", "roses"], "an uppercase country slug"],
     ["fr", ["poland", "flowers", "roses"], "an unknown locale"],
     ["en", ["send-flowers-to", "poland", "roses"], "the corridor, one deeper"],
-    // The occasion half of the same list. An occasion below the floor, one the destination does
-    // not observe at all, and the casing and cross-locale shapes again — the sibling branch has
-    // its own `resolveSlug()` namespace and must miss for the same reasons.
+    // The occasion half of the same list. Occasions the destination does not observe, and the
+    // casing and cross-locale shapes again — the sibling branch has its own `resolveSlug()`
+    // namespace and must miss for the same reasons. Since spec 008 A-founder-2026-10-21c
+    // (TASK-316) no observed occasion in the committed data sits below the floor (Poland's All
+    // Saints' Day and Women's Day are pages now), so the occasion floor's miss is the mocked
+    // boundary in `catalog-listing.test.ts` (`counts.for = PRODUCT_COUNT_FLOOR - 1`).
     [
       "en",
-      ["poland", "occasions", "all-saints-day"],
-      "an observed occasion below the floor",
+      ["poland", "occasions", "birthday"],
+      "an evergreen occasion, which no destination keeps as a dated day",
     ],
     [
       "en",
-      ["poland", "occasions", "womens-day"],
-      "an observed occasion below the floor",
+      ["netherlands", "occasions", "all-saints-day"],
+      "an occasion that destination does not observe",
     ],
     [
       "en",

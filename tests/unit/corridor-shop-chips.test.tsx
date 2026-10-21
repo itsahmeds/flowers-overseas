@@ -136,7 +136,7 @@ describe("corridorShopEntry(…, { chips: true }) hands the chips the shop build
     expect(entry.shopChips).toBeUndefined();
   });
 
-  it("hands Poland six categories and the Mother's Day occasion, each a page that exists, in every listing locale", async () => {
+  it("hands Poland six categories and its eleven observed occasions, each a page that exists, in every listing locale", async () => {
     for (const locale of listingLocales()) {
       const roots = new Set(
         (await listingPages(locale)).map((page) => page.path),
@@ -151,10 +151,24 @@ describe("corridorShopEntry(…, { chips: true }) hands the chips the shop build
         (chip) => chip.family === "occasion",
       );
       expect(categories, `${locale} categories`).toHaveLength(6);
+      // Since spec 008 A-founder-2026-10-21c (TASK-316) every occasion Poland observes clears the
+      // six-product floor, so each has a page and a chip (§2 row 8 as written).
       expect(
-        occasions.map((chip) => chip.key),
+        occasions.map((chip) => chip.key).sort(),
         `${locale} occasions`,
-      ).toEqual(["mothers_day"]);
+      ).toEqual([
+        "all_saints",
+        "christmas",
+        "easter",
+        "fathers_day",
+        "grandparents_day",
+        "mothers_day",
+        "name_day",
+        "new_year",
+        "teachers_day",
+        "valentines",
+        "womens_day",
+      ]);
       for (const chip of shopChips ?? []) {
         expect(roots.has(chip.href), `${locale} ${chip.href}`).toBe(true);
         expect(
@@ -207,7 +221,17 @@ describe("corridorShopEntry(…, { chips: true }) hands the chips the shop build
         "bouquet", // Blumensträuße
         "birthday", // Geburtstagsblumen
         "mixed", // Gemischte Blumen
+        "all_saints", // Allerheiligen
+        "womens_day", // Frauentag
+        "grandparents_day", // Großelterntag
+        "teachers_day", // Lehrertag
         "mothers_day", // Muttertag
+        "name_day", // Namenstag
+        "new_year", // Neujahr
+        "easter", // Ostern
+        "valentines", // Valentinstag
+        "fathers_day", // Vatertag
+        "christmas", // Weihnachten
       ],
       pl: [
         "bouquet", // Bukiety
@@ -216,7 +240,17 @@ describe("corridorShopEntry(…, { chips: true }) hands the chips the shop build
         "get_well", // Kwiaty na powrót do zdrowia
         "birthday", // Kwiaty na urodziny
         "congratulations", // Kwiaty z gratulacjami
+        "christmas", // Boże Narodzenie
+        "grandparents_day", // Dzień Babci i Dziadka
+        "womens_day", // Dzień Kobiet
         "mothers_day", // Dzień Matki
+        "teachers_day", // Dzień Nauczyciela
+        "fathers_day", // Dzień Ojca
+        "name_day", // Imieniny
+        "new_year", // Nowy Rok
+        "valentines", // Walentynki
+        "easter", // Wielkanoc
+        "all_saints", // Wszystkich Świętych
       ],
     } as const;
     for (const locale of ["de", "pl"] as const) {
@@ -248,7 +282,7 @@ describe("every chip family is gated by its own link id (A10: one mutation case 
     expect(after.shopChips).toEqual(
       before?.filter((chip) => chip.family === "occasion"),
     );
-    expect(after.shopChips).toHaveLength(1);
+    expect(after.shopChips).toHaveLength(11);
   });
 
   it("`country-occasion` withdrawn removes the occasion chips, and only those", async () => {
@@ -289,7 +323,7 @@ describe("every chip family is gated by its own link id (A10: one mutation case 
 });
 
 describe("the state-B page draws the chip row (A10)", () => {
-  it("renders the shop-root link, then one named row of seven links", async () => {
+  it("renders the shop-root link, then one named row of seventeen links", async () => {
     const view = await withActivePartnersProvider(
       { hasActivePartners: (iso2: string) => iso2 === "PL" },
       () => stateB("en", "PL"),
@@ -302,8 +336,10 @@ describe("the state-B page draws the chip row (A10)", () => {
     expect(row).toMatch(/aria-labelledby="corridor-shop-chips-heading"/u);
     expect(row).toContain('id="corridor-shop-chips-heading"');
     expect(hrefs(row)).toEqual(view.liveSlots.shopChips?.map((c) => c.href));
-    expect(hrefs(row)).toHaveLength(7);
+    // Six categories and Poland's eleven observed occasions (spec 008 A-founder-2026-10-21c).
+    expect(hrefs(row)).toHaveLength(17);
     expect(hrefs(row)).toContain("/en/poland/occasions/mothers-day");
+    expect(hrefs(row)).toContain("/en/poland/occasions/grandparents-day");
     // The row sits inside the shop entry's section, after the shop-root link.
     const section =
       /<section[^>]*data-fo-corridor-shop[^>]*>.*?<\/section>/su.exec(
@@ -324,7 +360,7 @@ describe("the state-B page draws the chip row (A10)", () => {
       const { shopChips } = await corridorShopEntry(locale, "PL", {
         chips: true,
       });
-      expect(shopChips, `${locale} chips`).toHaveLength(7);
+      expect(shopChips, `${locale} chips`).toHaveLength(17);
       for (const chip of shopChips ?? []) {
         expect(chip.href.startsWith(`/${locale}/`), chip.href).toBe(true);
       }

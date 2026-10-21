@@ -1,0 +1,29 @@
+{
+  "family": "schema",
+  "rule": "schema",
+  "replaces": "occasion-country.json",
+  "expect": "is not a real calendar day",
+  "why": "AC-75: an `also` date must exist in some year. 30 February and 31 April never do, so the evaluator would drop the day every year and the cell would quietly lose it.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "occasionKey": "grandparents_day",
+        "countryIso2": "PL"
+      },
+      "set": {
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 21,
+          "also": [
+            {
+              "month": 2,
+              "day": 30
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

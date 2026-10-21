@@ -173,7 +173,9 @@ export const occasionRuleFixtures: readonly OccasionRuleFixture[] = [
     country: "PL",
     occasion: "grandparents_day",
     label: "Grandparents' Day",
-    rule: { kind: "fixed", month: 1, day: 21 },
+    // Dzień Babci, with Dzień Dziadka as the `also` day (spec 008 A-founder-2026-10-21c item 4).
+    // `dates` stays the primary: `occasionDate()` reads `month`/`day` alone.
+    rule: { kind: "fixed", month: 1, day: 21, also: [{ month: 1, day: 22 }] },
     dates: {
       2026: "2026-01-21",
       2027: "2027-01-21",
