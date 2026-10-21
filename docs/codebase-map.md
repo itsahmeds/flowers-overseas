@@ -12,19 +12,19 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-users.test.ts`, `integration/audit-trail.test.ts` +3 |
+| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +6 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +81 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +82 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/info-page-head.test.tsx` +5 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +33 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +96 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +97 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +26 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +27 |
 | `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +50 |
 
 ## Config (`src/config/`)
@@ -101,6 +101,8 @@ task actually touches.
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4;… | 003 |
 | `admin/(signed-in)/audit/page.tsx` | GET /admin/audit: the audit log, filtered | 012 |
+| `admin/(signed-in)/flags/actions.ts` | /admin/flags toggle action, guarded first (AC-14) | 012 |
+| `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles, orphans | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
@@ -195,8 +197,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 341 |
-| `tests/integration/` | 38 |
+| `tests/unit/` | 344 |
+| `tests/integration/` | 39 |
 | `tests/contract/` | 24 |
 | `tests/e2e/` | 67 |
 | `tests/a11y/` | 15 |
