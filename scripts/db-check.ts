@@ -1185,6 +1185,14 @@ export const DYNAMIC_SQL_ALLOWED: ReadonlyMap<string, string> = new Map([
     "0012_pgboss.sql",
     "pg-boss's construction plan, verbatim: its functions build per-queue tables and stats partitions as `pgboss.%I` with format(); every name it can create is inside schema pgboss, never a recipient table",
   ],
+  [
+    "0018_catalogue_build_role.sql",
+    "CREATE ROLE app_build guarded by a role-existence check (roles are cluster-wide, as in 0001); no table DDL",
+  ],
+  [
+    "0018_catalogue_build_role.down.sql",
+    "DROP ROLE app_build only when no other database of the cluster depends on it (pg_shdepend); no table DDL",
+  ],
 ]);
 
 /**

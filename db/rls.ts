@@ -52,6 +52,26 @@ export const PUBLIC_FILTERED_TABLES = {
 } as const;
 
 /**
+ * The build role (spec 012b §5.1 item 1, AC-4; migration `0018_catalogue_build_role`, TASK-292).
+ * `next build` connects as `app_build`, which may `SELECT` exactly these tables and write nothing:
+ * the public reference set above without the order machine's two reference tables (no order
+ * table of any kind, §5.1), plus the two flag tables the build reads to decide which flagged
+ * routes exist. Each has a `<table>_build_read` policy `TO app_build`.
+ */
+export const BUILD_ROLE = "app_build";
+
+export const BUILD_ROLE_READ_TABLES = [
+  ...PUBLIC_REFERENCE_TABLES.filter(
+    (table) => table !== "order_status" && table !== "order_transition",
+  ),
+  "feature_flag",
+  "feature_flag_scope",
+].sort();
+
+/** The build role's filtered reads: the same rows a public render sees (`PUBLIC_FILTERED_TABLES`). */
+export const BUILD_ROLE_FILTERED_TABLES = PUBLIC_FILTERED_TABLES;
+
+/**
  * Partner-scoped (`app.role = 'partner'`, the row's partner in `app.partner_ids`). `write` tables
  * are the partner's own availability (`FOR ALL`): coverage and blackouts, nothing with money in
  * it. Everything else is read-only, because order, assignment and money records change only

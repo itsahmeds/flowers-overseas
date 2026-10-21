@@ -3,7 +3,7 @@
  * `plan/10` §4; TASK-026).
  *
  * Usage:
- *   pnpm db:seed [--only=reference,geo,catalog,partners] [--dry-run]
+ *   pnpm db:seed [--only=reference,geo,catalog,partners] [--dry-run] [--insert-only]
  *
  * Contract:
  *  - **natural keys only.** Every table is upserted on the key `seed/plan.ts` names (`iso2`,
@@ -12,8 +12,17 @@
  *  - **a second run changes nothing.** A row is updated only when one of its seeded values differs
  *    (`IS DISTINCT FROM`), so `updated_at` does not move on a rerun and the report says
  *    `0 inserted, 0 updated` (AC-28, AC-29);
- *  - **never a `real` row.** On a table with `source`, a row whose `source = 'real'` is reported
- *    `real` and left exactly as it is (`plan/10` §4);
+ *  - **never a `real` row, nor a row under one.** On a table with `source`, a row whose
+ *    `source = 'real'` is reported `real` and left exactly as it is (`plan/10` §4). So is every
+ *    row whose parent product, country or florist is `real` (`product_id`, `country_id`,
+ *    `partner_id`): it is neither updated nor inserted, so a product, country or florist an admin
+ *    has written keeps its translations, tiers, prices, mappings and coverage exactly as admin left
+ *    them (spec 012b §2.2, AC-1; TASK-292);
+ *  - **`--insert-only` adds what is missing and changes nothing** (spec 012b §2.0 item 5, AC-1):
+ *    no `UPDATE` is issued at all, so every existing row keeps its exact contents. It is the only
+ *    mode allowed when `APP_ENV=production`: a plain seed there refuses to start
+ *    (`assertSeedModeAllowed`), because putting a hand-edited seeded value "back" in production
+ *    would overwrite the live catalogue;
  *  - **`--dry-run` writes nothing.** The run happens inside a transaction that is rolled back, so
  *    the counts it prints are the ones a real run would produce;
  *  - **`--only`** runs the named groups in dependency order; the parents a group reads must
@@ -30,6 +39,8 @@ import { fileURLToPath } from "node:url";
 
 import postgres from "postgres";
 import { z } from "zod";
+
+import { appEnvironment, type EnvSource } from "../src/lib/env.schema.ts";
 
 import { readSeedTree } from "./check.ts";
 import {
@@ -61,6 +72,7 @@ export interface SeedTableReport {
 
 export interface SeedReport {
   readonly dryRun: boolean;
+  readonly insertOnly: boolean;
   readonly groups: readonly SeedGroup[];
   readonly tables: readonly SeedTableReport[];
 }
@@ -68,19 +80,24 @@ export interface SeedReport {
 export interface SeedOptions {
   readonly only?: readonly SeedGroup[];
   readonly dryRun?: boolean;
+  /** Insert missing rows, update none (spec 012b AC-1). */
+  readonly insertOnly?: boolean;
 }
 
 const OptionsSchema = z.object({
   only: z.array(z.enum(SEED_GROUPS)).min(1).optional(),
   dryRun: z.boolean(),
+  insertOnly: z.boolean(),
 });
 
-/** `--only=a,b` and `--dry-run`; anything else is refused. */
+/** `--only=a,b`, `--dry-run` and `--insert-only`; anything else is refused. */
 export function parseSeedArgs(argv: readonly string[]): SeedOptions {
   let only: string[] | undefined;
   let dryRun = false;
+  let insertOnly = false;
   for (const arg of argv) {
     if (arg === "--dry-run") dryRun = true;
+    else if (arg === "--insert-only") insertOnly = true;
     else if (arg.startsWith("--only=")) {
       only = arg
         .slice("--only=".length)
@@ -93,13 +110,44 @@ export function parseSeedArgs(argv: readonly string[]): SeedOptions {
   }
   const parsed = OptionsSchema.parse({
     dryRun,
+    insertOnly,
     ...(only === undefined ? {} : { only }),
   });
   return {
     dryRun: parsed.dryRun,
+    insertOnly: parsed.insertOnly,
     ...(parsed.only === undefined ? {} : { only: parsed.only }),
   };
 }
+
+/** What a plain seed in production prints before it exits non-zero (spec 012b AC-1). */
+export const PRODUCTION_REFUSAL = `${CLI_NAME}: APP_ENV=production allows only --insert-only (a plain seed would overwrite rows the live catalogue owns)`;
+
+/**
+ * Refuses a plain seed in production (spec 012b §2.0 item 5, AC-1). The environment is
+ * `appEnvironment()`'s, the one every other gate reads (an unparseable `APP_ENV` throws there).
+ */
+export function assertSeedModeAllowed(
+  environment: EnvSource,
+  options: SeedOptions,
+): void {
+  if (
+    appEnvironment(environment) === "production" &&
+    options.insertOnly !== true
+  ) {
+    throw new Error(PRODUCTION_REFUSAL);
+  }
+}
+
+/**
+ * The parent columns whose row, when `source = 'real'`, puts the child out of the seed's reach
+ * (spec 012b §2.2, AC-1): the product, the country and the florist.
+ */
+export const REAL_PARENT_COLUMNS: Readonly<Record<string, string>> = {
+  product_id: "product",
+  country_id: "country",
+  partner_id: "fulfillment_partner",
+};
 
 function isRef(cell: SeedCell): cell is SeedRef {
   return (
@@ -205,6 +253,7 @@ async function upsertTable(
   tx: Tx,
   plan: SeedTablePlan,
   rows: readonly Record<string, unknown>[],
+  insertOnly: boolean,
 ): Promise<SeedTableReport> {
   const empty = {
     table: plan.table,
@@ -244,7 +293,11 @@ async function upsertTable(
       (column) => `t.${ident(column)} IS NOT DISTINCT FROM i.${ident(column)}`,
     )
     .join(" AND ");
-  const valueColumns = columns.filter((column) => !plan.key.includes(column));
+  const insertOnlyColumns = plan.insertOnlyColumns ?? [];
+  const valueColumns = columns.filter(
+    (column) =>
+      !plan.key.includes(column) && !insertOnlyColumns.includes(column),
+  );
   const differs =
     valueColumns.length === 0
       ? "false"
@@ -255,24 +308,34 @@ async function upsertTable(
     .map((column) => `${ident(column)} = i.${ident(column)}`)
     .join(", ");
   const guard = plan.sourceGuarded ? `AND t.source <> 'real'` : "";
-  const realCount = plan.sourceGuarded
-    ? `(SELECT count(*) FROM i JOIN ${table} t ON ${keyMatch} WHERE t.source = 'real')`
-    : "0";
+  // A row under a `real` product, country or florist is out of reach (see the header).
+  const parentReal = columns
+    .filter((column) => REAL_PARENT_COLUMNS[column] !== undefined)
+    .map(
+      (column) =>
+        `EXISTS (SELECT 1 FROM public.${ident(REAL_PARENT_COLUMNS[column] ?? "")} p WHERE p.id = r.${ident(column)} AND p.source = 'real')`,
+    );
+  const parentRealExpr =
+    parentReal.length === 0 ? "false" : parentReal.join(" OR ");
+  const selfReal = plan.sourceGuarded
+    ? ` OR EXISTS (SELECT 1 FROM ${table} t WHERE ${keyMatch} AND t.source = 'real')`
+    : "";
   const update =
-    valueColumns.length === 0
+    insertOnly || valueColumns.length === 0
       ? `upd AS (SELECT 1 WHERE false)`
-      : `upd AS (UPDATE ${table} t SET ${set} FROM i WHERE ${keyMatch} ${guard} AND ${differs} RETURNING 1)`;
+      : `upd AS (UPDATE ${table} t SET ${set} FROM i WHERE ${keyMatch} ${guard} AND NOT i.fo_parent_real AND ${differs} RETURNING 1)`;
   const statement = `
-    WITH i AS (SELECT * FROM jsonb_to_recordset($1::text::jsonb) AS x(${recordset})),
+    WITH r AS (SELECT * FROM jsonb_to_recordset($1::text::jsonb) AS x(${recordset})),
+    i AS (SELECT r.*, (${parentRealExpr}) AS fo_parent_real FROM r),
     ${update},
     ins AS (
       INSERT INTO ${table} (${columns.map(ident).join(", ")})
       SELECT ${columns.map((c) => `i.${ident(c)}`).join(", ")} FROM i
-      WHERE NOT EXISTS (SELECT 1 FROM ${table} t WHERE ${keyMatch})
+      WHERE NOT i.fo_parent_real AND NOT EXISTS (SELECT 1 FROM ${table} t WHERE ${keyMatch})
       RETURNING 1)
     SELECT (SELECT count(*) FROM ins)::int AS inserted,
            (SELECT count(*) FROM upd)::int AS updated,
-           ${realCount}::int AS real`;
+           (SELECT count(*) FROM i WHERE i.fo_parent_real${selfReal})::int AS real`;
   const [counts] = await tx.unsafe<
     { inserted: number; updated: number; real: number }[]
   >(statement, [JSON.stringify(rows)]);
@@ -298,13 +361,21 @@ async function upsertCities(
   tx: Tx,
   plan: SeedTablePlan,
   rows: readonly Record<string, unknown>[],
+  insertOnly: boolean,
 ): Promise<SeedTableReport> {
   let inserted = 0;
   let updated = 0;
+  let real = 0;
   for (const row of rows) {
     const countryId = String(row["country_id"]);
     const slug = String(row["slug"]);
     const name = String(row["name"]);
+    const [country] = await tx<{ source: string }[]>`
+      SELECT source FROM public.country WHERE id = ${countryId}`;
+    if (country?.source === "real") {
+      real += 1;
+      continue;
+    }
     const [existing] = await tx<{ city_id: string; name: string }[]>`
       SELECT city_id, name FROM public.city_translation
       WHERE locale_code = 'en' AND country_id = ${countryId} AND slug = ${slug}`;
@@ -315,7 +386,7 @@ async function upsertCities(
         INSERT INTO public.city_translation (city_id, country_id, locale_code, name, slug)
         VALUES (${city?.id ?? ""}, ${countryId}, 'en', ${name}, ${slug})`;
       inserted += 1;
-    } else if (existing.name !== name) {
+    } else if (!insertOnly && existing.name !== name) {
       await tx`
         UPDATE public.city_translation SET name = ${name}
         WHERE city_id = ${existing.city_id} AND locale_code = 'en'`;
@@ -327,8 +398,8 @@ async function upsertCities(
     rows: rows.length,
     inserted,
     updated,
-    unchanged: rows.length - inserted - updated,
-    real: 0,
+    unchanged: rows.length - inserted - updated - real,
+    real,
   };
 }
 
@@ -342,6 +413,7 @@ export async function runSeed(
 ): Promise<SeedReport> {
   const groups = options.only ?? SEED_GROUPS;
   const dryRun = options.dryRun ?? false;
+  const insertOnly = options.insertOnly ?? false;
   const reports: SeedTableReport[] = [];
   try {
     await sql.begin(async (tx) => {
@@ -352,8 +424,8 @@ export async function runSeed(
         const rows = resolveRows(table, table.rows, refs);
         reports.push(
           table.table === "city"
-            ? await upsertCities(tx, table, rows)
-            : await upsertTable(tx, table, rows),
+            ? await upsertCities(tx, table, rows, insertOnly)
+            : await upsertTable(tx, table, rows, insertOnly),
         );
       }
       if (dryRun) throw new DryRunRollback();
@@ -361,7 +433,7 @@ export async function runSeed(
   } catch (error) {
     if (!(error instanceof DryRunRollback)) throw error;
   }
-  return { dryRun, groups: [...groups], tables: reports };
+  return { dryRun, insertOnly, groups: [...groups], tables: reports };
 }
 
 /** The report as printed: one line per table, then the totals. */
@@ -373,7 +445,7 @@ export function formatSeedReport(report: SeedReport): string {
   const sum = (field: "inserted" | "updated" | "real") =>
     report.tables.reduce((total, t) => total + t[field], 0);
   lines.push(
-    `${CLI_NAME}${report.dryRun ? " (dry run, nothing written)" : ""}: ${String(sum("inserted"))} inserted, ${String(sum("updated"))} updated, ${String(sum("real"))} real rows left untouched`,
+    `${CLI_NAME}${report.insertOnly ? " (insert only, no row updated)" : ""}${report.dryRun ? " (dry run, nothing written)" : ""}: ${String(sum("inserted"))} inserted, ${String(sum("updated"))} updated, ${String(sum("real"))} real rows left untouched`,
   );
   return lines.join("\n");
 }
@@ -393,6 +465,7 @@ function connectionUrl(environment: NodeJS.ProcessEnv): string {
 async function main(): Promise<void> {
   const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
   const options = parseSeedArgs(process.argv.slice(2));
+  assertSeedModeAllowed(process.env, options);
   const plan = buildSeedPlan(await readSeedTree(repoRoot));
   const sql = postgres(connectionUrl(process.env), {
     max: 1,
