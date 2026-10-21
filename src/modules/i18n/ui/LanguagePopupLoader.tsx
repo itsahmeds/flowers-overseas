@@ -10,6 +10,12 @@
  * only popup code in the page's initial client bundle: a props pass-through, plus the fail-open
  * timer that gives the screen back to the consent sheet if the island never runs. The gate itself
  * is pending from the first byte: the layout renders it on `<html>` (`localeGate.ts`).
+ *
+ * **After the LCP paint** (spec 004 §14 A-founder-2026-10-15b, AC-55; TASK-244): the layout mounts
+ * `LanguagePopup` inside `<AfterPaint island="language-popup" on="paint">` (`src/modules/ui`), so this
+ * loader renders, and its `import()` runs, only after the LCP has painted, on idle or at the first
+ * interaction. The fail-open timer starts then too. Nothing may import the island statically
+ * (`tests/unit/deferred-set.test.tsx`).
  */
 import dynamic from "next/dynamic";
 import { useEffect } from "react";

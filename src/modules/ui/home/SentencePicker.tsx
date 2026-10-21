@@ -15,7 +15,9 @@
  *   (`home.sentence.occasion`). The server renders the default person's form (my mum → "her
  *   birthday"), so the form reads right with JavaScript off, and writes all three forms into
  *   `data-label-*` for `SentenceIsland`, which swaps them when the reader picks someone else.
- *   That island is the home's only one and carries no copy of its own.
+ *   That island is the home's only one and carries no copy of its own. Its chunk waits for the
+ *   first interaction with the form (`<AfterPaint island="home-sentence" on="interaction"
+ *   control="#send">`, spec 004 §14 A-founder-2026-10-15b; TASK-244).
  *
  * Round 2 (TASK-196): the form draws no surface of its own. `HomeHero` sets it in the desktop
  * card, or in the white card under the phone cover, and that card carries the airmail edge (A24
@@ -30,10 +32,11 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
+import { AfterPaint } from "../deferred/AfterPaint.tsx";
+import { SentenceLoader } from "../deferred/InteractionLoaders.tsx";
 import { Icon } from "../icons/Icon.tsx";
 import { Button } from "../primitives/Button.tsx";
 
-import { SentenceIsland } from "./SentenceIsland.tsx";
 import {
   SENTENCE_FIELDS,
   SENTENCE_IDS,
@@ -223,7 +226,9 @@ export function SentencePicker({
           ),
         })}
       </p>
-      <SentenceIsland formId={SENTENCE_IDS.form} />
+      <AfterPaint island="home-sentence" on="interaction" control="#send">
+        <SentenceLoader formId={SENTENCE_IDS.form} />
+      </AfterPaint>
       <div className="mt-[14px] flex flex-wrap items-center gap-x-[20px] gap-y-[12px]">
         <Button
           type="submit"

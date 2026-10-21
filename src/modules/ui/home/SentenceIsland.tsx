@@ -10,7 +10,11 @@
  * carries its `data-pronoun`. When the reader picks someone else, this swaps each option's text
  * for the matching form. It renders nothing, imports no catalogue, reads no storage and makes no
  * network request; it only reads the DOM the server wrote. It also runs once on mount, so a
- * back/forward restore that kept a different "who" relabels the occasions too.
+ * back/forward restore that kept a different "who" relabels the occasions too, and so does a
+ * "who" changed in the interaction that loaded it: its chunk waits for the first interaction
+ * (`SentenceLoader` inside `<AfterPaint island="home-sentence" on="interaction">`, spec 004 §14
+ * A-founder-2026-10-15b; TASK-244), and nothing may import this module statically but
+ * `../deferred/lazyIslands.ts` (`tests/unit/deferred-set.test.tsx`).
  */
 import { useEffect } from "react";
 
@@ -21,6 +25,13 @@ export interface SentenceIslandProps {
 
 export function SentenceIsland({ formId }: SentenceIslandProps): null {
   useEffect(() => {
+    try {
+      // This island's entry in the deferred set (`../deferred/deferredSet.ts`): the e2e finds
+      // this chunk by the literal, and reads the mark beside the LCP entry.
+      performance.mark("fo:deferred:home-sentence");
+    } catch {
+      // No User Timing is no reason to lose the possessive.
+    }
     const form = document.getElementById(formId);
     const who = form?.querySelector<HTMLSelectElement>(
       "[data-fo-sentence-who]",

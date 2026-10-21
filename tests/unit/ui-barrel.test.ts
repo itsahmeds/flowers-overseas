@@ -110,6 +110,10 @@ describe("src/modules/ui barrel", () => {
         "TrustMarks",
         "companyIdentity",
         "footerView",
+        // the deferral of non-critical islands until the LCP paint (spec 004 §14
+        // A-founder-2026-10-15b; TASK-244): a client component that renders nothing until the
+        // paint, which the layout wraps the language popup in. The set is not exported.
+        "AfterPaint",
         // consent: the sheet's Server Component, its register/catalogue projection, the zod-free
         // `fo_consent` reader and writer, and the gallery's inert states (TASK-051). The islands
         // themselves are **not** here: they are reached through `ConsentBanner` and two

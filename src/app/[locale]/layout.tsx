@@ -15,6 +15,7 @@ import {
 } from "@/modules/i18n";
 import { occasionsIndexHref } from "@/modules/catalog";
 import {
+  AfterPaint,
   ConsentBanner,
   fontVariables,
   footerView,
@@ -211,8 +212,12 @@ export default async function LocaleLayout({
             copy and hands both to a client loader, which imports the island after hydration
             (`ssr: false`), so this document's HTML is identical for every visitor, carries no
             `Vary` and sets no cookie (AC-9, AC-12). The island opens a modal `<dialog>` only
-            while the browser holds no valid `fo_locale`. */}
-        <LanguagePopup locale={locale.code} pageLang={locale.bcp47} />
+            while the browser holds no valid `fo_locale`. Its loader waits for the LCP paint (spec
+            004 §14 A-founder-2026-10-15b; TASK-244): `AfterPaint` renders it after the paint, on
+            idle or at the first interaction, and the consent sheet keeps waiting on the gate. */}
+        <AfterPaint island="language-popup" on="paint">
+          <LanguagePopup locale={locale.code} pageLang={locale.bcp47} />
+        </AfterPaint>
       </body>
     </html>
   );

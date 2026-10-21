@@ -52,10 +52,11 @@ import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY, whatsappHref } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
+import { AfterPaint } from "../deferred/AfterPaint.tsx";
+import { MotionLoader } from "../deferred/MotionLoader.tsx";
 import { Icon } from "../icons/Icon.tsx";
 import { Mark } from "../icons/Mark.tsx";
 import { Wordmark } from "../icons/Wordmark.tsx";
-import { MotionIsland } from "../motion/MotionIsland.tsx";
 import { Button } from "../primitives/Button.tsx";
 import { NoticeBar } from "../primitives/NoticeBar.tsx";
 import { PAGE_FRAME } from "../primitives/layout.tsx";
@@ -315,7 +316,11 @@ export function SiteHeader({
           className="bg-accent pointer-events-none absolute start-0 end-0 top-full h-[2px] opacity-0"
           data-fo-nav-bar
         />
-        <MotionIsland />
+        {/* The motions and the Menu's `Esc`, after the LCP paint (spec 004 §14
+            A-founder-2026-10-15b, `../deferred/deferredSet.ts`). */}
+        <AfterPaint island="motions" on="paint">
+          <MotionLoader />
+        </AfterPaint>
         <div
           className={`grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-rows-[82px] xl:gap-x-(--space-lg2) ${CHROME_WRAP}`}
           data-fo-header-band="masthead"
