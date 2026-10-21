@@ -213,6 +213,64 @@ test.describe("what the hubs render (AC-11, §13 Q4)", () => {
   });
 });
 
+/**
+ * Spec 008 §14 A-founder-2026-10-21c (TASK-316, TASK-317): the formerly empty hubs are filled, and
+ * Poland's Grandparents' Day prints both of its days. JavaScript off, so what is asserted is the
+ * server's HTML.
+ *
+ * AC-72's `ItemList` clause is not asserted here: no listing emits an `ItemList` yet (TASK-115's
+ * builder, spec 008 AC-17, is `todo`), and a conditional "if there is one" would pass with its
+ * subject removed. The escalation is in `docs/tasks/TASK-316.md`.
+ */
+test.describe("every live occasion hub is complete (AC-72, AC-76; T-72, T-76)", () => {
+  for (const url of [
+    "/en/occasions/grandparents-day",
+    "/en/occasions/fathers-day",
+    "/en/occasions/sant-jordi",
+  ]) {
+    test(`${url} renders at least six cards with JavaScript off`, async ({
+      browser,
+    }) => {
+      const context = await browser.newContext({ javaScriptEnabled: false });
+      const page = await context.newPage();
+      const response = await page.goto(url);
+      expect(response?.status(), url).toBe(200);
+      const cards = await page
+        .locator("[data-fo-hub-products] [data-fo-product-card]")
+        .count();
+      expect(cards, url).toBeGreaterThanOrEqual(6);
+      await context.close();
+    });
+  }
+
+  test("the Poland row and card hold both days; Spain and Italy one", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/en/occasions/grandparents-day");
+    // `calendarDate` in the table, joined by `Intl.ListFormat` ("… and …"), both in one year.
+    const poland = await page.locator('[data-fo-hub-date="PL"]').innerText();
+    expect(poland).toMatch(/\b21 January (\d{4}) and \w+ 22 January \1\b/u);
+    const card = await page
+      .locator('[data-fo-hub-first-date="PL"]')
+      .first()
+      .innerText();
+    expect(card).toMatch(/\b21 January and 22 January\b/u);
+    for (const [iso2, day] of [
+      ["ES", "26 July"],
+      ["IT", "2 October"],
+    ] as const) {
+      const row = await page
+        .locator(`[data-fo-hub-date="${iso2}"]`)
+        .innerText();
+      expect(row, iso2).toContain(day);
+      expect(row, iso2).not.toMatch(/ and /u);
+    }
+    await context.close();
+  });
+});
+
 test.describe("the cached response (AC-22)", () => {
   test("carries no Vary on cookie and no Set-Cookie, and is byte-identical with them", async ({
     request,

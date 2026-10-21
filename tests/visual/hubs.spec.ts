@@ -75,6 +75,20 @@ const CASES = [
     url: "/en/occasions/mothers-day",
     viewport: { width: 390, height: 844 },
   },
+  // Spec 008 §14 A-founder-2026-10-21c T-78 (TASK-316, TASK-317): the filled Grandparents' Day
+  // grid. The two-date Poland cell is in the picture as its row and card frame; its dated text
+  // leaves the layout with every other date (`./dated-blocks.css`), and is pinned by
+  // `tests/unit/occasion-two-dates-render.test.tsx` and `tests/e2e/hubs.spec.ts` instead.
+  {
+    name: "occasion-hub-grandparents-desktop",
+    url: "/en/occasions/grandparents-day",
+    viewport: { width: 1440, height: 900 },
+  },
+  {
+    name: "occasion-hub-grandparents-mobile",
+    url: "/en/occasions/grandparents-day",
+    viewport: { width: 390, height: 844 },
+  },
 ] as const;
 
 for (const { name, url, viewport } of CASES) {

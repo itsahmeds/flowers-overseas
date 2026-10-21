@@ -35,6 +35,20 @@ async function status(
   return response.status();
 }
 
+test.describe("Poland's Grandparents' Day prints both days (spec 008 AC-76, T-76)", () => {
+  test("the dated line holds 21 and 22 January of one year, with JavaScript off", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    const response = await page.goto("/en/poland/occasions/grandparents-day");
+    expect(response?.status()).toBe(200);
+    const line = await page.locator("p[data-fo-occasion-date]").innerText();
+    expect(line).toMatch(/\b21 January (\d{4}) and \w+ 22 January \1\b/u);
+    await context.close();
+  });
+});
+
 test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
   for (const url of SERVED) {
     test(`${url} is served`, async ({ request }) => {
