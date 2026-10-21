@@ -131,6 +131,13 @@ export const INVOICE_PROFILES: readonly SeedDbRow[] = [
 /** Locales whose product translations the seed writes; `de`/`pl` stay absent (§6). */
 export const SEEDED_TRANSLATION_LOCALES = ["en", "en-gb"] as const;
 
+/** `product_translation`'s review columns: written on insert only, and always unreviewed. */
+export const REVIEW_COLUMNS = [
+  "reviewed",
+  "reviewed_by",
+  "reviewed_at",
+] as const;
+
 /** The seeded partners per country (`plan/10` §2.4: 3–5). */
 export const DEMO_PARTNERS_PER_COUNTRY = 3;
 /** `plan/10` §2.4. */
@@ -376,11 +383,22 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
       table: "product_translation",
       key: ["product_id", "locale_code"],
       sourceGuarded: false,
+      // The review columns belong to the ledger (spec 012b §2.4; TASK-293): a translation goes in
+      // unreviewed and `attest()` — the replay of `seed/data/attestations.json` at the end of the
+      // run — is what may mark it reviewed. They are never updated here, so a rerun cannot
+      // un-review an attested row (`review_write_guard()` would refuse it anyway).
+      insertOnlyColumns: [...REVIEW_COLUMNS],
       rows: datasetTable(dataset, "product_translation", (row) =>
         (SEEDED_TRANSLATION_LOCALES as readonly string[]).includes(
           row.key["locale"] ?? "",
         )
-          ? { product_id: ref("product", row.key["sku"] ?? ""), ...values(row) }
+          ? {
+              product_id: ref("product", row.key["sku"] ?? ""),
+              ...values(row),
+              reviewed: false,
+              reviewed_by: null,
+              reviewed_at: null,
+            }
           : undefined,
       ),
     },
