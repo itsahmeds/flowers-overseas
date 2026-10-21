@@ -125,6 +125,15 @@ const PINNED_EXPORTS = [
   // or CEST at this instant". **No date is computed there**: every piece of arithmetic that
   // turns these integers into a delivery grid is in `src/modules/geo/delivery` (plan/03 §9/§10).
   "zonedClock",
+  // Added by TASK-293 (spec 012b §5.2): the review ledger's entry points — the one writer
+  // (`attest`, and `requestChange`, an attestation with a note), the review state of a subject
+  // and its hash. Functions over the ledger; the database and snapshot providers stay inside.
+  "attest",
+  "requestChange",
+  "reviewState",
+  "subjectHash",
+  "AttestInputSchema",
+  "RequestChangeInputSchema",
 ].sort();
 
 /**
@@ -141,6 +150,9 @@ const PINNED_SCHEMA_EXPORTS = [
   "MessageMetaSchema",
   "MessagesSchema",
   "MoneySchema",
+  // TASK-293: what an admin action parses a review decision with (spec 012b §5.2).
+  "AttestInputSchema",
+  "RequestChangeInputSchema",
 ];
 
 /** Names that must never appear in the barrel, with the reason each is a seam and not an API. */
@@ -166,6 +178,9 @@ const FORBIDDEN_EXPORTS = [
   "localeRegistryOf",
   "getMessageSource",
   "resolveCatalogue",
+  // TASK-293: the ledger's providers are seams, not an API.
+  "dbAttestationProvider",
+  "snapshotAttestationProvider",
 ];
 
 describe("the i18n barrel (AC-3)", () => {
