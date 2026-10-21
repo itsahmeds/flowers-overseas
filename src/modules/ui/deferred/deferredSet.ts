@@ -178,7 +178,7 @@ export const NOT_DEFERRED: Readonly<Record<string, string>> = {
   "src/modules/ui/checkout/PlaceOrderButton.tsx":
     "a checkout island: mounted on no public page yet (spec 010; only /dev); clause 4 applies when a checkout page mounts it",
   "src/modules/ui/admin/AdminConfirmSwitch.tsx":
-    "the /admin/flags typed-key confirm switch (TASK-220): an admin page, not a public page, no LCP budget",
+    "the flags page's typed-key confirm switch (TASK-220): admin only, not a public page, no LCP budget",
   "src/modules/ui/product/CardMessageField.tsx":
     "the product page's card field: on no audited URL, and its buy section belongs to PR 239 (TASK-228); clause 4's new row is the orchestrator's",
 };
