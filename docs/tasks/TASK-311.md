@@ -38,6 +38,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-21 (implementer): worktree `../fo-wt-311` on `task/TASK-311-route-line` from `a1f72bef`; row `in_progress`; draft PR next, then tests (unit markup, shipped CSS, e2e T-19) and the SVG.
+- 2026-10-21 (implementer): PR 316 draft. `CorridorRouteLine` + `src/config/interactions.ts` + the `globals.css` section shipped with unit suites `corridor-route-line.test.tsx`, `interactions-css.test.ts`, `interactions-budget.test.ts` (CSS +239 B Brotli, HTML +588 B), e2e `corridor-route-line.spec.ts`, a `first-screen` visual part. Unit mutations red. Next: one local build in the slot to read the geometry, then `visual:baselines`, ready, `ci:full`.
 
 ## Result
 
