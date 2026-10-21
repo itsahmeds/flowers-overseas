@@ -14,6 +14,7 @@ Spec 012b §12 slice A task 4 (first half). Founder approval 2026-10-20, "all de
 - **Review class: keeps the breaker** (CLAUDE.md DoD 4): an SEO gate (sitemaps, hreflang, existence) and a deploy token.
 - New admin strings go in `messages/admin/en.json` only (the `admin` surface does not count toward spec 003 A17's share) and ship `reviewed: false`; the 012b artboards' `[slot]`s are proposed wording the founder approves as one batch. No public catalogue or meta file changes (AC-27).
 - Migrations are numbered at implementation after the last one merged, each with a `.down.sql` the round-trip test runs (§12). Integration tests run on a throwaway local Postgres 16 only, never `.env.local`'s `DATABASE_URL` (Neon production).
+- **Spec 044 clause (advisor fix 4, `specs/044-blog.md` §12):** Spec 044 §2.6 and AC-16: the indexable-removal refusal of spec 012b §2.3 and AC-8 reads its removal list through one predicate, `isRemovalRefused(url, context)`, that a later caller can extend without editing the guard. Spec 044 adds one exemption: a URL whose `blog_post` row has `status = 'unpublished'` with a non-null `unpublish_reason` and an `audit_log` row for `unpublishPost`. Until spec 044's migration exists the exemption matches nothing, and a fixture test pins that every other indexable removal is still refused.
 
 ## Read
 
