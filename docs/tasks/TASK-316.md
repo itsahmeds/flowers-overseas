@@ -46,4 +46,17 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Feature PR [#323](https://github.com/itsahmeds/flowers-overseas/pull/323) with TASK-317. Appendix A's 74 new tags on 46 products are in `src/config/catalogue/products.data.ts` and the projected `seed/data/products.json`; the fifteen hubs end at 6 to 8 products and all 28 occasion hubs clear the floor in all four locales. The existence counts per launch locale move from 206 to 258 listing URLs (country occasion pages 7 to 59; 824 to 1032 over the four locales; below-floor category pairs still 21), and `tests/fixtures/shop/listing-urls.json` is regenerated. Tests: unit `occasion-hubs-complete.test.ts` (29: AC-70, AC-71, AC-72 card half, AC-73) plus ten re-pinned unit files; e2e `hubs.spec.ts` (+3 JS-off card counts), `country-occasion.spec.ts` and `country-category.spec.ts` (404 lists corrected); visual `tests/visual/hubs.spec.ts` +2 Grandparents' Day shots (T-78, Linux baselines from the `visual:baselines` run). Mutations watched red: floor 7, `fathers_day` tags removed, hub set emptied, FO-BQ-038 untagged, FO-FN-001 on `graduation`, FO-PT-004 on `fathers_day`, `muguet` at five, a country page below the floor, a stale URL fixture. Handed on: AC-72's `ItemList` clause (E-1) to TASK-115. Visible beyond the hubs, as spec item 3 says: Poland's corridor chip row grows to 17 links and every Coming up row links. No local build or browser run. Linux baselines came from `visual-baselines` run 39664028237 (7 images looked at: 2 new Grandparents' Day shots, 4 moved for the longer chip rows, the ar-XB language popup re-rendered with no visible change). The block below was taken on 726f78f3, clean; the commits after it are baselines and these notes.
+
+```
+gates:cheap · 726f78f37de959961c506494e597fb5f335bddf4 · tree clean · base origin/main · 2026-10-21T19:42:55.957Z
+typecheck             exit 0 · 2.7 s
+lint                  exit 0 · 23.2 s
+format:check          exit 0 · 13.3 s
+i18n:check            exit 0 · 1.0 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 186.7 s · changed 153 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```

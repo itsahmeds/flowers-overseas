@@ -45,4 +45,17 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Feature PR [#323](https://github.com/itsahmeds/flowers-overseas/pull/323) with TASK-316. `OccasionRuleSchema` `fixed` carries an optional `also` (one or two real, distinct month-day pairs, each rejection a named issue); `occasionDates()` and `nextOccurrenceDates()` are new and pure, `occasionDate()` is unchanged; PL `grandparents_day` is `fixed` 1/21 with `also` 1/22 in `seed/data/occasion-country.json` (not `holidays.json`), the `notes` sentence replaced, `seed:diff` 1 update. Only the hub's table and first-screen card and the country occasion page's dated line print both days, through `formatList` over `formatDate`; every date-ordered list keeps the primary. Tests: unit `occasion-also-dates.test.ts` (20: AC-74 with a 126-row golden table 2026 to 2030, AC-75 accept/reject), `occasion-two-dates-render.test.tsx` (18: AC-76 in four locales, clock 2026-10-21), five `schema/bad-also-*` seed cases (seed-check count 40 to 45); e2e `hubs.spec.ts` (+1) and `country-occasion.spec.ts` (+1). Mutations watched red: `also` ignored, `occasionDate` returning the last date, the second date in the wrong year, the occasion listed twice, `also` allowed on `nth_weekday`, the duplicate rule removed, the cell, the card and the dated line each showing only the primary, a second date in the Spain row. The country page's large date card keeps the primary (the spec names only its dated line). No migration; rollback is `git revert` then `pnpm db:seed`. No local build or browser run. Linux baselines came from `visual-baselines` run 39664028237 (7 images looked at: 2 new Grandparents' Day shots, 4 moved for the longer chip rows, the ar-XB language popup re-rendered with no visible change). The block below was taken on 726f78f3, clean; the commits after it are baselines and these notes.
+
+```
+gates:cheap · 726f78f37de959961c506494e597fb5f335bddf4 · tree clean · base origin/main · 2026-10-21T19:42:55.957Z
+typecheck             exit 0 · 2.7 s
+lint                  exit 0 · 23.2 s
+format:check          exit 0 · 13.3 s
+i18n:check            exit 0 · 1.0 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 186.7 s · changed 153 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```
