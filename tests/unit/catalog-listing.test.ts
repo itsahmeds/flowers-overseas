@@ -562,11 +562,13 @@ describe("the existence-set summary (§11, AC-3)", () => {
   /**
    * §11's own numbers, pinned (`/review 76`): the consistency check above passes on any dataset,
    * including one where the existence rules have silently stopped emitting pages. These are the
-   * counts of the committed corpus — 206 listing URLs in each English locale with 21 (category,
+   * counts of the committed corpus — 258 listing URLs in each English locale with 21 (category,
    * destination) pairs below the floor, and 7 in `de`/`pl`, which have shop roots and the
    * occasions index but no authored entity slugs until TASK-106 (and therefore no pair to
    * measure against the floor at all). A slug landing or a floor moving
-   * changes them, and that is the point: the number is reviewed rather than assumed.
+   * changes them, and that is the point: the number is reviewed rather than assumed. Spec 008
+   * A-founder-2026-10-21c (TASK-316) moved the total from 206 to 258: its Appendix A tags lift 52
+   * (occasion, destination) pairs over the floor, so 7 country occasion pages became 59.
    */
   it("pins §11's counts for the committed corpus", async () => {
     const counted = await existenceCounts();
@@ -574,13 +576,14 @@ describe("the existence-set summary (§11, AC-3)", () => {
       counted.find((row) => row.locale === locale);
 
     for (const locale of ["en", "en-gb"]) {
-      expect(of(locale)?.urlCount, locale).toBe(206);
+      expect(of(locale)?.urlCount, locale).toBe(258);
+      expect(of(locale)?.countryOccasion, locale).toBe(59);
       expect(of(locale)?.belowFloor, locale).toBe(21);
     }
     for (const locale of ["de", "pl"]) {
       // Every category and occasion has an authored slug and intro here since TASK-106, so the
       // set is `en`'s, measured under the same floor.
-      expect(of(locale)?.urlCount, locale).toBe(206);
+      expect(of(locale)?.urlCount, locale).toBe(258);
       expect(of(locale)?.belowFloor, locale).toBe(21);
       expect(of(locale)?.countryCategory, locale).toBe(
         of("en")?.countryCategory,
