@@ -85,6 +85,8 @@ export const SDK_ADAPTERS = [
     // `scripts/admin-grant.ts` is spec 012 §2.2's `pnpm admin:grant`, over the direct URL too
     // (TASK-217). `scripts/catalogue-parity.ts` is spec 012b's read-only `pnpm catalogue:parity`,
     // one `READ ONLY` transaction against the `--target` it is given (TASK-292).
+    // `scripts/attestations-import.ts` is spec 012b's `pnpm attestations:import`, which carries
+    // the recorded approvals into the review ledger over the direct URL (TASK-293).
     files: [
       "src/lib/db.ts",
       "scripts/db-migrate.ts",
@@ -93,6 +95,7 @@ export const SDK_ADAPTERS = [
       "seed/index.ts",
       "scripts/admin-grant.ts",
       "scripts/catalogue-parity.ts",
+      "scripts/attestations-import.ts",
     ],
     use: "src/lib/db.ts",
   },
