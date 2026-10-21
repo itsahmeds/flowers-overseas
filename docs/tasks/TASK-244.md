@@ -269,3 +269,16 @@ Runs 2 and 3 were fired after the 90-minute window; their numbers are not in thi
 AC-24's "LCP < 2,000 ms in three `ci:full` runs" is **not met** on run 1 for `/en`, and this
 change cannot be expected to meet it: that is a founder decision (the runtime, or TASK-103's
 measurement basis), not a tuning step.
+
+### Addendum: admin confirm switch (after PR 306)
+
+`src/modules/ui/admin/AdminConfirmSwitch.tsx` (TASK-220, /admin/flags) arrived on main after this PR was written. It is an admin-only client module: no public page, no LCP budget. Added to `NOT_DEFERRED` in `src/modules/ui/deferred/deferredSet.ts` with a reason; no path-prefix rule exists, so none was used. Not deferred.
+
+Gates, head b42e8adc plus this change (load average 70+, so the wide suite was run once and not repeated):
+
+```
+deferred-set.test.tsx  41 passed
+lint 0 · format:check 0 · i18n:check 0 · check:no-db 0 · codebase:map --check 0
+typecheck 2: stale untracked .next/types/validator.ts names src/app/[locale]/@notice/page.js (not in this tree); src/ has no errors
+tests: 3 timeouts at 5000 ms under load (url-pii, zod-boundaries, lint-coverage); re-run alone with --testTimeout=60000: 77 passed
+```
