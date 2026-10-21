@@ -30,7 +30,7 @@
     "visual/country-shop-desktop.png": "2cc9d93469ce9caa3b3182eaf3151f8ce6d8aab631ab0bc3f8d6a666c1f00061",
     "visual/country-shop-mobile.png": "9076c8f07f673bccd372ee8d745ad1519e94de6a04e60ec7cb5ae2755fa9bf84",
     "visual/de.png": "3cbedb8ae41c884a719345ab19df893063275c143cdc1e98c8f37b80dd5d91f7",
-    "visual/dev-components-desktop.png": "6e35bcee0c43d00b3a52cc6dd6b67c88929500a90aa3206ab4e467a700659100",
+    "visual/dev-components-desktop.png": "40f5bd5d6e1c476d7b8dc4d88af23a1c1b20d93b24602ee6ec820cfa4ae8e1f2",
     "visual/en.png": "616a4d12e117572a0b8bc3957a806b6f71aad87a680fa893120a97b2c171324a",
     "visual/error-global-desktop.png": "db264fac1c0e8e763fca2cc3017bc66674b6a7d8499056474954070e398d562e",
     "visual/error-global-mobile.png": "4dc91b33ec4ce311ad9f2f11f9118d301d97fa55edba47e86ee8773e41c9f059",
@@ -98,15 +98,15 @@
     "visual/not-found-mobile.png": "5ffe4e42b241f0b8c21efe332330c2805954634a3654cd45000e1bf0841346f2",
     "visual/occasion-hub-desktop.png": "2d8d372aa064d4965eecd08a665a727d9757e906d4c3c47bfe50977c22846b81",
     "visual/occasion-hub-mobile.png": "4c188222904b10cde992af01bc75d5cebaaf90ca0d2c76e442c1ea3c94dc503d",
-    "visual/product-desktop-addons.png": "bbf2e04b882e2e06ad66d82316a0f32e94991f4b995b0a304c060380761851c6",
+    "visual/product-desktop-addons.png": "eb32390129b85f15dbbf9c8ed41abd3df5749ae5d057530868f1e80add39240b",
     "visual/product-desktop-first.png": "a2a150e6bf9556d648f5662e3a1630cb4803356541d2dbab11c5d9a3c92bbc61",
     "visual/product-desktop-gallery-photos.png": "ec854164c3a24b1bcd70cb7d6e48bdc3fc5ac9a048f17eda77075ba8dadce5a8",
     "visual/product-desktop-gallery-placeholder.png": "3f9c4806399aaefbffe1490707ec23e099b561daca22c2c22fe2c52b38275de1",
     "visual/product-desktop-picker-live.png": "8818213c10f466b5e95c29bae6d49c010d5e58ca80ed38fdf3beac040e413526",
     "visual/product-desktop-picker-preview.png": "2cf19e360da42af1aa7f28aaf67612ad6b131d9fea7f51589e9d797dfcac52e4",
     "visual/product-desktop-picker-unavailable.png": "1677f815fe942696d8e00402432fd67dab43b9165c6d7c74b2e82ac29c89dd68",
-    "visual/product-desktop-summary.png": "71c69eb0e78d8e427ff1a392195672d0d1115122c3eaedf9b4ed871dd8ee7255",
-    "visual/product-mobile-addons.png": "a22ef1a1452f309761d343f868ba53756cc4768579479d64022137bc29d3f173",
+    "visual/product-desktop-summary.png": "d402954bc69ac13b8ee5d80bb3e04862897611c86b4123bb69b9d8f22e13d8a4",
+    "visual/product-mobile-addons.png": "c1858925b3a5f31e1b542eb7858a2abb8f909cf13996db322149d0d1edc14c32",
     "visual/product-mobile-bar.png": "58c12642347630fc7876aa940be8d35d737aae71e598edacd33c696ba1eef1c6",
     "visual/product-mobile-first.png": "3c0dadef7fa86c15db9e74b4134fd475c27e01a908b48c4341b975177e2d4674",
     "visual/product-mobile-gallery-photos.png": "506171220d9d8f541df6a5973189a864dc1fbc25db42a16ccec6199f8461a595",
@@ -114,6 +114,6 @@
     "visual/product-mobile-picker-live.png": "72e7b6acdc2f70b9e3e74887f44c6d2fc6a4bbdb74837a845399e9510b9ef1a8",
     "visual/product-mobile-picker-preview.png": "eac13b7a8dd99b25d9707d8f72a40821d8458c6e2692d76f3521f64c3a2b682c",
     "visual/product-mobile-picker-unavailable.png": "e7bee6245c03af2ad674c40bb5b5ead27f7482907ec4b77d92b3334a4542df1d",
-    "visual/product-mobile-summary.png": "ca1f5092c982270d4ef6e818bb68a37956b3318f99d2a3823d66a8e643176a10"
+    "visual/product-mobile-summary.png": "1ae6f1e84344be5d2e4e4cf898a4a24f9501cb96cb45e2eef6d751e96a0c2ee8"
   }
 }

@@ -6,9 +6,14 @@
  * Each row is the add-on's name (`catalog.addon.*`), its catalogue description and its all-in
  * price **in the page's currency** (`AddonLine.price`, from `addonPriceProjection()`: the bouquet's
  * FX rule, so a euro page shows euro add-ons and a stale rate moves both to the destination's
- * currency together). **No row carries a VAT rate**: the list says once, under the rows, that the
- * prices include VAT and delivery (`catalog.price.inclusive`, the approved inclusive key); the
- * split by rate is spec 010's step 3. The free printed card's row reads "Included", with no
+ * currency together). **No row carries a VAT rate**: the section says once, under its heading and
+ * above the rows, that the prices include delivery and VAT (`nav.utility.pricesInclude`, the
+ * approved key item 8A draws); the split by rate is spec 010's step 3.
+ *
+ * **A plain ruled price list** (item 8A, spec 004 §14 A-founder-2026-10-19c; `.ao-list`/`.ao-row`
+ * in `docs/design/wireframes/product-{desktop,mobile}.dc.html`; TASK-286): one rule over the list
+ * and one under each row, no fill, no radius, no shadow, no hover and no pointer, so no row reads
+ * as a card or a control. The free printed card's row reads "Included", with no
  * amount and no currency, set in leaf (`--color-included`) as v2 draws the included row: the
  * founder's approved `product.included` with its first letter set upright by CSS, so the row
  * adds no unreviewed string to the locale's review share (spec 003's 5 % gate).
@@ -37,51 +42,55 @@ export function AddonPriceList({
 }: AddonPriceListProps): ReactElement | null {
   const t = useTranslations();
   const product = useTranslations("product");
-  const catalog = useTranslations("catalog");
+  const nav = useTranslations("nav");
   const code = localeOf(locale);
   if (addons.length === 0) return null;
 
   return (
     <>
-      <ul className="m-0 grid list-none gap-[8px] p-0" data-fo-addon-list>
+      <p
+        className="text-ink-muted m-0 -mt-[4px] mb-[16px] text-sm"
+        data-fo-addon-vat
+      >
+        {nav("utility.pricesInclude")}
+      </p>
+      <ul
+        className="border-rule m-0 grid list-none border-t p-0"
+        data-fo-addon-list
+      >
         {addons.map((addon) => {
           const free = addon.price.amountMinor === 0;
           return (
             <li
               key={addon.key}
-              className="bg-card rounded-field grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-[14px] gap-y-[4px] px-[16px] py-[14px] shadow-[inset_0_0_0_1px_var(--color-rule)]"
+              className="border-rule grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-[20px] gap-y-[2px] border-b py-[12px]"
               data-fo-addon={addon.key}
             >
-              <span className="grid">
-                <span className="font-bold">
-                  {messageFor(t, addon.nameKey)}
-                </span>
-                <span className="text-ink-muted text-sm leading-[1.4]">
-                  {messageFor(t, descriptionKey(addon.nameKey))}
-                </span>
+              <span className="text-ui font-bold">
+                {messageFor(t, addon.nameKey)}
               </span>
               {free ? (
                 <span
-                  className="text-included inline-block text-end font-bold whitespace-nowrap first-letter:uppercase"
+                  className="text-included text-ui inline-block text-end font-bold whitespace-nowrap first-letter:uppercase"
                   data-fo-addon-price="included"
                 >
                   {product("included")}
                 </span>
               ) : (
                 <bdi
-                  className="text-end font-medium whitespace-nowrap tabular-nums"
+                  className="text-ink-muted text-ui text-end whitespace-nowrap tabular-nums"
                   data-fo-addon-price
                 >
                   {formatMoney(addon.price, code)}
                 </bdi>
               )}
+              <span className="text-ink-muted col-start-1 text-sm leading-[1.35]">
+                {messageFor(t, descriptionKey(addon.nameKey))}
+              </span>
             </li>
           );
         })}
       </ul>
-      <p className="text-ink-muted m-0 mt-[10px] text-sm" data-fo-addon-vat>
-        {catalog("price.inclusive")}
-      </p>
     </>
   );
 }

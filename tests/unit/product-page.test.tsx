@@ -74,6 +74,7 @@ const NAMESPACES = [
   "destinations",
   "occasions",
   "common",
+  "nav",
 ] as const;
 
 const partnered = { hasActivePartners: (iso2: string) => iso2 === "PL" };
@@ -1231,7 +1232,7 @@ describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s cur
       const list = block(html, "data-fo-addon-list");
       const say = createTranslator({
         locale,
-        messages: loadMessages(locale, ["product", "catalog"]),
+        messages: loadMessages(locale, ["product", "catalog", "nav"]),
       }) as unknown as (key: string) => string;
       // The approved `product.included`, its first letter set upright by CSS
       // (`first-letter:uppercase`), so the row reads "Included" with no new string.
@@ -1266,9 +1267,10 @@ describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s cur
           expect(ZLOTY.exec(row)?.[0], addon.key).toBe(undefined);
         }
       }
-      // The section says once that its prices include VAT, with the approved inclusive key.
+      // The section says once that its prices include VAT, with the approved key item 8A draws
+      // (`nav.utility.pricesInclude`, "Prices include delivery and VAT"; TASK-278, TASK-286).
       const note = readable(block(html, "data-fo-addon-vat"));
-      expect(note).toBe(say("catalog.price.inclusive"));
+      expect(note).toBe(say("nav.utility.pricesInclude"));
       expect(html.split("data-fo-addon-vat").length - 1).toBe(1);
     },
   );
@@ -1284,6 +1286,60 @@ describe('AC-23 as amended, AC-34 (T-38 render half): add-ons in the page\'s cur
       ).toContain(spaced(formatMoney(addon.price, "en-gb")));
     }
   });
+});
+
+describe("AC-23 as rebound, T-23 (TASK-286, item 8A): the add-ons are a plain ruled price list", () => {
+  /** A class that would make a row read as a box, a card or a control (8A: "no box, no hover, no pointer"). */
+  const CONTROL_LOOK =
+    /(?:^|\s)(?:bg-[a-z]|rounded|shadow|ring|cursor-pointer|hover:|focus:|active:|outline)/u;
+
+  /** Every class token on the element `marker` opens. */
+  function classesOf(html: string, marker: string): readonly string[] {
+    const open = block(html, marker).slice(
+      0,
+      block(html, marker).indexOf(">") + 1,
+    );
+    return (/class="([^"]*)"/u.exec(open)?.[1] ?? "").split(/\s+/u);
+  }
+
+  it.each(["en", "en-gb", "de", "pl"] as const)(
+    "%s: ruled rows under one rule, the VAT sentence once above them, no box and no control",
+    async (locale) => {
+      const view = await viewOf(locale, "PL", AMBER, { now: IN_WINDOW });
+      const html = render(view);
+      const section = block(html, "data-fo-pdp-addons");
+      const list = block(section, "data-fo-addon-list");
+      expect(view.addons.length).toBeGreaterThan(1);
+
+      // The list opens with one rule, and every row closes with its own (`.ao-list`, `.ao-row`).
+      expect(classesOf(section, "data-fo-addon-list")).toEqual(
+        expect.arrayContaining(["border-t", "border-rule"]),
+      );
+      for (const addon of view.addons) {
+        const marker = `data-fo-addon="${addon.key}"`;
+        const classes = classesOf(list, marker);
+        expect(classes, addon.key).toEqual(
+          expect.arrayContaining(["border-b", "border-rule"]),
+        );
+        expect(classes.join(" "), addon.key).not.toMatch(CONTROL_LOOK);
+        expect(block(list, marker), addon.key).not.toMatch(
+          /<(?:input|button|select|textarea|label|a)[\s>]/u,
+        );
+      }
+      expect(classesOf(section, "data-fo-addon-list").join(" ")).not.toMatch(
+        CONTROL_LOOK,
+      );
+
+      // One VAT sentence for the section, under the heading and above the rows.
+      expect(section.split("data-fo-addon-vat").length - 1).toBe(1);
+      expect(section.indexOf("data-fo-addon-vat")).toBeLessThan(
+        section.indexOf("data-fo-addon-list"),
+      );
+      expect(section.indexOf("pdp-addons-heading")).toBeLessThan(
+        section.indexOf("data-fo-addon-vat"),
+      );
+    },
+  );
 });
 
 describe("AC-25: one `priority` image with a matching preload, and none without a photograph", () => {
