@@ -91,6 +91,7 @@ const FUNCTIONS = [
   "review_attestation_append_only",
   "review_hash_part",
   "review_product_copy_hash",
+  "review_row_is_own",
   "review_subject_hash",
   "review_write_guard",
   "set_updated_at",

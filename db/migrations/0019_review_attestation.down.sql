@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS public.review_attestation;
 DROP TABLE IF EXISTS public.reviewer_locale;
 
 DROP FUNCTION IF EXISTS public.review_write_guard();
+DROP FUNCTION IF EXISTS public.review_row_is_own(xid);
 DROP FUNCTION IF EXISTS public.review_subject_hash(text, text, text);
 DROP FUNCTION IF EXISTS public.review_product_copy_hash(uuid, text, text, text, text, text, text);
 DROP FUNCTION IF EXISTS public.review_hash_part(text);

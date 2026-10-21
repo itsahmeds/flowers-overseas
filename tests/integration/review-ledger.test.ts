@@ -323,6 +323,14 @@ describe.skipIf(server.url === undefined)(
               )
             ).raised,
           ).toBe("REVIEW_WITHOUT_ATTESTATION");
+          // The right row, written in a savepoint of this transaction, is accepted (the guard
+          // reads "this transaction" through savepoints).
+          await tx.savepoint(async (sp) => {
+            await sp`INSERT INTO review_attestation (subject_kind, subject_ref, locale_code,
+                       value_hash, decision, attester_name, channel)
+                     VALUES ('product_translation', ${f.sku}, 'en', ${hash}, 'approved', 'x', 'import')`;
+          });
+          await approve(tx);
           // Un-reviewing needs the flag only.
           await tx`UPDATE product_translation SET reviewed = false, reviewed_by = 'x'
                    WHERE product_id = ${f.productId} AND locale_code = 'en'`;

@@ -158,7 +158,7 @@ describe.skipIf(server.url === undefined)(
       expect(outcome.left).toEqual([{ sessions: 0, accounts: 0 }]);
     });
 
-    it("the three keys into users exist with their delete rules", async () => {
+    it("the keys into users exist with their delete rules", async () => {
       const RULE: Record<string, string> = {
         RESTRICT: "r",
         CASCADE: "c",
@@ -172,6 +172,10 @@ describe.skipIf(server.url === undefined)(
         // `0014_admin_identity` (spec 012, TASK-217): an admin with a history is deactivated,
         // never deleted.
         { fk: "admin_profile_user_id_users_id_fk", rule: "r" },
+        // `0019_review_attestation` (spec 012b, TASK-293): a ledger row keeps its attester; a
+        // reviewer's locale grants go with the account.
+        { fk: "review_attestation_attester_user_id_users_id_fk", rule: "r" },
+        { fk: "reviewer_locale_user_id_users_id_fk", rule: "c" },
       ].sort((a, b) => (a.fk < b.fk ? -1 : 1));
       const rows = await scratch.sql<{ fk: string; rule: string }[]>`
         SELECT conname AS fk, confdeltype::text AS rule FROM pg_constraint

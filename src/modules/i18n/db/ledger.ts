@@ -25,7 +25,9 @@
  *    transaction. Idempotent: an identical import row already in the ledger is reported, not
  *    written again. The mirror is set only when the subject exists and serves the imported hash.
  *
- * Never in a savepoint: the guard recognises "this transaction" by the row's `xmin`.
+ * The guard recognises "this transaction" by the ledger row's `xmin` still being in progress,
+ * so a caller's savepoints are no obstacle; a row committed by an earlier transaction never
+ * counts.
  *
  * The file imports nothing through the `@/` alias at load time, so the Node scripts can import it
  * (`scripts/attestations-import.ts`, `seed/index.ts`); the admin defaults (`withAdminContext`,
