@@ -33,6 +33,7 @@ import {
 } from "../../db/rls.ts";
 import { insertPlacedOrder } from "../fixtures/order-state.ts";
 import {
+  application,
   country,
   customer,
   mediaAsset,
@@ -857,8 +858,7 @@ describe.skipIf(server.url === undefined)(
                  VALUES ('stripe', 'evt_t17', true, '{}', false, 'payment_intent.succeeded')`;
         await tx`INSERT INTO consent_log (subject_kind, subject_ref, choices, policy_version, occurred_at)
                  VALUES ('customer', gen_random_uuid(), '{"analytics": false}', 1, now())`;
-        await tx`INSERT INTO partner_application (business_name, city, language_code)
-                 VALUES ('Applicant Florist', 'Kraków', 'pl')`;
+        await application(tx, { countryId });
 
         const PRIVATE = [
           "customer",
