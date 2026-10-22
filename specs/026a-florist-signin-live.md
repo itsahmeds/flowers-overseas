@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-22, "specs ok", on every §13 default) |
 | Phase | 1 (a slice of roadmap item `026`, brought forward for the first signed florist; the rest of 026 and all of 027 stay in Phase 2) |
 | Plan refs | plan/01 §3 §5 §9 §10 · plan/02 §4.1 §7 §10 §11 · plan/03 §6 §7 §10 · plan/05 #58 · plan/06 §5.1 §5.3 · plan/07 §1.1 §1.2 §1.4 §5 §8 §11 · plan/09 Phase 1 (AC 1), Phase 2 (`026`) · plan/11 §1 §6 · plan/12 §4 |
 | ADRs | ADR-0019 (one florist email sign-in; this spec is the slice its consequences name) · ADR-0006 (no IP redirects) · ADR-0009 (status only through `orderService.transition`) · ADR-0015 (Neon, Auth.js) · ADR-0018 (Railway behind Cloudflare). Proposes no ADR |
