@@ -181,7 +181,7 @@
      serif) and the metric-matched one ride on the Latin variable (`next/font/local`). */
   --font-display: var(--font-fraunces-ext), var(--font-fraunces);
   --font-body: var(--font-alegreya-ext), var(--font-alegreya);
-  /* Caveat's variables exist only inside the product page's printed-card preview
+  /* Caveat's variables exist only inside the card preview, on the product page and checkout step 2
      (`src/modules/ui/fonts/hand.ts`); anywhere else the `var()` fallbacks name local faces. */
   --font-hand:
     var(--font-caveat-ext, "Caveat"), var(--font-caveat, "Bradley Hand"),
