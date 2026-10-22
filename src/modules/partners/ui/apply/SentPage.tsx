@@ -23,12 +23,13 @@ export async function SentPage({
   const t = await getTranslations({ locale });
   const phone = company.contact.phoneDisplay;
   const body = t.rich("forFlorists.sent.body", {
-    phoneDisplay: () => (
+    phoneDisplay: phone,
+    phone: (chunks) => (
       <a
         className="text-link font-bold underline underline-offset-4"
         href={`tel:${company.contact.phoneE164}`}
       >
-        {phone}
+        {chunks}
       </a>
     ),
   });

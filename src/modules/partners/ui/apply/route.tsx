@@ -34,6 +34,7 @@ import { LanguageAlternates, routableLocaleCodes } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
   JsonLd,
+  type JsonLdNode,
   breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
@@ -70,6 +71,21 @@ function applyCrumbs(locale: string) {
     },
     { labelKey: "forFlorists.apply.crumb", current: true },
   ] as const;
+}
+
+/**
+ * The apply page's JSON-LD (AC-6): its `BreadcrumbList`, the trail the page draws. The sent page
+ * carries none: it has no trail. `label` resolves the keys with the page's own translator.
+ */
+export function floristApplyJsonLd(
+  locale: string,
+  label: BreadcrumbLabel,
+  options: { readonly baseUrl: string } | undefined,
+): readonly JsonLdNode[] {
+  if (options === undefined) return [];
+  return [breadcrumbList(applyCrumbs(locale), label, options)].filter(
+    (node) => node !== undefined,
+  );
 }
 
 /**
@@ -123,10 +139,8 @@ export function floristFormRoute(
       const crumbLabel: BreadcrumbLabel = (key, values) =>
         label(t as never, key, values);
       const nodes =
-        page === "florist-apply" && options !== undefined
-          ? [breadcrumbList(applyCrumbs(locale), crumbLabel, options)].filter(
-              (node) => node !== undefined,
-            )
+        page === "florist-apply"
+          ? floristApplyJsonLd(locale, crumbLabel, options)
           : [];
       return (
         <>
