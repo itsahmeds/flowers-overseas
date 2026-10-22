@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-22, "specs ok", on every §13 default) |
 | Phase | 1 (launch; `plan/09` Phase 1 exit asks for a 4.5 average buyer rating) |
 | Plan refs | plan/01 §3 §4.1 §5 §7 §8 · plan/02 §4.1 §5.2 §7 §9 §10 · plan/03 §6 §7 · plan/04 §3 §13 (delivered row) · plan/05 #4 #9 #30 #53 #57 · plan/06 §5.2 §5.4 §6 · plan/07 §1.2 §1.4 §1.5 §2.1 §2.2 §7 §8 §9 · plan/09 Phase 1 (`022`, exit) · plan/11 §2 |
 | ADRs | ADR-0009 (status only through `orderService.transition`) · ADR-0006 (no IP redirects) · ADR-0007 (demo pages `noindex`) · ADR-0013 (Resend, EU region) · ADR-0018 (Railway worker, pg-boss) · ADR-0019 (one florist sign-in; this spec adds a buyer link, not a florist one). Proposes no ADR; asks for two plan edits (§13 Q11) |
