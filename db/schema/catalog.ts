@@ -201,10 +201,32 @@ export const product = pgTable(
     status: text("status").notNull().default("draft"),
     retiredAt: timestamp("retired_at", { withTimezone: true }),
     source: text("source").notNull().default("seed"),
+    /**
+     * The flower types and colours **after** the primary one, in authored order, and the allergen
+     * attribute (`plan/10` §1.1; migration `0020_product_facets`, TASK-070). The primary stays in
+     * its own column above, and a check refuses it here, so `[primary, ...others]` is the facet.
+     */
+    otherFlowers: text("other_flowers")
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    otherColours: text("other_colours")
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    allergenNote: boolean("allergen_note").notNull().default(false),
     ...timestamps,
   },
   (table) => [
     unique("product_sku_key").on(table.sku),
+    check(
+      "product_other_flowers_check",
+      sql`not (${table.primaryFlower} = any (${table.otherFlowers}))`,
+    ),
+    check(
+      "product_other_colours_check",
+      sql`not (${table.colourPrimary} = any (${table.otherColours}))`,
+    ),
     check(
       "product_product_type_check",
       sql.raw(`product_type in ${valueList(productTypes)}`),
@@ -347,6 +369,8 @@ export const productOccasion = pgTable(
     occasionId: uuid("occasion_id")
       .notNull()
       .references(() => occasion.id, { onDelete: "restrict" }),
+    /** The authored order of the product's occasions (`0020_product_facets`, TASK-070). */
+    sort: integer("sort").notNull().default(0),
     ...timestamps,
   },
   (table) => [
@@ -354,6 +378,7 @@ export const productOccasion = pgTable(
       name: "product_occasion_pkey",
       columns: [table.productId, table.occasionId],
     }),
+    check("product_occasion_sort_check", sql`${table.sort} >= 0`),
     index("product_occasion_occasion_idx").on(table.occasionId),
   ],
 );

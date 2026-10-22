@@ -140,9 +140,12 @@ export const SCANNED_PATHS = [
  * "`check:no-db` keeps covering `src/modules/catalog` outside `db/`"; TASK-292). The database
  * implementation of a provider seam lives there and nowhere else in the module, so everything else
  * in the module stays provably database-free. `src/modules/geo/db` holds `dbCountryRegistry`;
- * TASK-070 adds `src/modules/catalog/db` for the catalogue providers.
+ * `src/modules/catalog/db` holds the catalogue, price and FX providers (TASK-070).
  */
-export const DATABASE_ADAPTER_DIRS = ["src/modules/geo/db"] as const;
+export const DATABASE_ADAPTER_DIRS = [
+  "src/modules/geo/db",
+  "src/modules/catalog/db",
+] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
 

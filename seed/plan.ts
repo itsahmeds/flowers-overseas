@@ -45,7 +45,7 @@ import { toCountryHolidayRow } from "../src/modules/geo/delivery/projections.ts"
 
 import type { SeedTree } from "./check.ts";
 import { datasetRows } from "./diff.ts";
-import { HolidaysFileSchema } from "./schema/index.ts";
+import { HolidaysFileSchema, ProductsFileSchema } from "./schema/index.ts";
 import type { SeedRow } from "./target.ts";
 
 /** The groups `--only` selects, in dependency order. */
@@ -305,6 +305,16 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
     },
   ];
 
+  // The facets spec 002 §5.1's `product` row has no column for (TASK-070): the flower types and
+  // colours after the primary and the allergen attribute (`0020_product_facets`), and the occasion
+  // set, which is `product_occasion`. Read from the authored products file the projection reads.
+  const productsRaw = tree.raw.get("products.json");
+  const authoredProducts =
+    productsRaw === undefined ? [] : ProductsFileSchema.parse(productsRaw).rows;
+  const facetsBySku = new Map(
+    authoredProducts.map((product) => [product.sku, product]),
+  );
+
   const catalog: SeedTablePlan[] = [
     {
       group: "catalog",
@@ -318,7 +328,33 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
       table: "product",
       key: ["sku"],
       sourceGuarded: true,
-      rows: datasetTable(dataset, "product", values),
+      rows: datasetTable(dataset, "product", (row) => {
+        const product = facetsBySku.get(row.key["sku"] ?? "");
+        if (product === undefined) {
+          throw new Error(
+            `seed: product ${row.key["sku"] ?? ""} is projected but absent from products.json`,
+          );
+        }
+        return {
+          ...values(row),
+          other_flowers: product.flowerTypes.slice(1),
+          other_colours: product.colours.slice(1),
+          allergen_note: product.allergenNote,
+        };
+      }),
+    },
+    {
+      group: "catalog",
+      table: "product_occasion",
+      key: ["product_id", "occasion_id"],
+      sourceGuarded: false,
+      rows: authoredProducts.flatMap((product) =>
+        product.occasions.map((occasion, sort) => ({
+          product_id: ref("product", product.sku),
+          occasion_id: ref("occasion", occasion),
+          sort,
+        })),
+      ),
     },
     {
       group: "catalog",
