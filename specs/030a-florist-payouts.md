@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-22, "specs ok", on every §13 default) |
 | Phase | 1 |
 | Plan refs | plan/01 §3 (admin row) §4.3 §5 §8 (`payout.accrue`) §9 · plan/02 (no URL added; §6 below) · plan/03 §8 (formatting) · plan/06 §2.2 (float, Wise) §3 (money flow) §4 item 8 (self-billing) §5.4 (photo gate, payout ledger) §6 (payouts CSV) · plan/07 §1.1 §1.2 (florist data, 10 years) §1.3 (florist deletes order data after the statement) · plan/09 Phase 1 AC 1 ("payout line created") and Phase 2 `030` · plan/11 §1 (vendor owner role) §5 (T13) §7 (payout system row) · plan/13 B3, C2 |
 | ADRs | ADR-0004 (Estonian OÜ, Wise Business) · ADR-0009 (no order status write here) · ADR-0013 (Resend) · ADR-0015 (Neon, R2) · ADR-0018 (Railway worker runs pg-boss). Proposes no ADR |
