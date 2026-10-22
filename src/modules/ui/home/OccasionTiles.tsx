@@ -21,9 +21,8 @@
  * `MediaAsset` keyed on `tile.assetId` — `home-occasion-{id}` in `seed/data/media.json` — with its
  * alt text read per locale from `seed/data/alt/{locale}.json`. A tile whose asset is missing,
  * unapproved, has no derived bytes or has no alt text in *this* locale renders the
- * `--color-photo` gradient with `media.placeholder.occasion` and **no `<img>`** (`plan/10` §3,
- * spec 006 AC-18) — one key for all six, because the sentence is about the kind of photograph and
- * not about the occasion. Nothing in this file decides which of the two happens: the gate is
+ * `--color-photo` gradient with no words, `aria-hidden`, and **no `<img>`** (`plan/10` §3,
+ * spec 006 AC-18, spec 043 AC-14). Nothing in this file decides which of the two happens: the gate is
  * `media/resolve.ts`'s, so a seventh occasion, a withdrawn image or a missing Polish alt is a data
  * change with no edit here (AC-20).
  *

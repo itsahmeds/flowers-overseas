@@ -99,6 +99,12 @@ export interface PhotoProps {
    * `data-fo-lead-photo` for the laptop-band probe (T-43).
    */
   readonly lead?: boolean;
+  /**
+   * An empty box standing where a photograph will be (spec 043 §5.3 F, AC-14; TASK-290): no words
+   * and `aria-hidden="true"`, because there is nothing in it to announce; the card's name and
+   * price beside it stay its accessible text.
+   */
+  readonly decorative?: boolean;
 }
 
 export function Photo({
@@ -108,6 +114,7 @@ export function Photo({
   children,
   dataset,
   lead = false,
+  decorative = false,
 }: PhotoProps): ReactElement {
   return (
     <div
@@ -123,6 +130,7 @@ export function Photo({
         .join(" ")}
       {...dataset}
       {...(lead ? { "data-fo-lead-photo": "" } : {})}
+      {...(decorative ? { "aria-hidden": "true" as const } : {})}
     >
       {children}
       {caption === undefined ? null : (

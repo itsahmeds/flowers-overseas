@@ -412,12 +412,6 @@
     "provenance": {
       "aiExample": "Example arrangement · our florist hand-makes each one"
     },
-    "placeholder": {
-      "hero": "Photography to supply · our florist finishing a hand-tied bouquet in morning light",
-      "occasion": "Photography to supply · flowers sent for this occasion",
-      "product": "Photography to supply · this bouquet as our florist makes it",
-      "delivery": "Photography to supply · a bouquet handed over at the recipient's door"
-    },
     "watermark": {
       "demoSample": "Sample"
     }

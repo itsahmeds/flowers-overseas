@@ -27,11 +27,9 @@
  * not exist; v2's artboard draws no guarantee control at all, so spec 041 AC-21's guarantee half
  * has no surface on this band (declared in PR 270). The page is reached from the footer.
  *
- * **The band's photograph is a placeholder with no `<img>`** (`plan/10` §3). Its caption is
- * `media.placeholder.delivery`, whose wording this task had to resolve before rendering it
- * (`/review 41`): "the delivery photo we send you" asserted the consent-gated feature spec 027
- * owns, so the caption now describes **the photograph the slot will hold** — a bouquet handed
- * over at the recipient's door — and asserts no product feature at all. The promise itself is
+ * **The band's photograph is a placeholder with no `<img>`** (`plan/10` §3): the wordless,
+ * `aria-hidden` box (spec 043 AC-14; TASK-290 deleted `media.placeholder.*`), so it asserts no
+ * product feature at all. The promise itself is
  * step 03's, where the four-fact proof row already makes it in the same words.
  */
 import { useTranslations } from "next-intl";

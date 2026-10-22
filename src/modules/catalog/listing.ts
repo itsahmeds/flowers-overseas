@@ -119,6 +119,7 @@ import {
   altFor,
   assetsForProduct,
   isDisplayable,
+  photoFirst,
 } from "@/modules/ui";
 
 import { copyRow, copyRows } from "./copy";
@@ -195,7 +196,7 @@ const PRICE_LABEL_KEY = "catalog.price.inclusive" as const;
  * that reads it live in one file, and this module keeps importing `modules/ui` in the one
  * direction it already does.
  */
-export { HubCardViewSchema };
+export { HubCardViewSchema, photoFirst };
 export type { HubCardView };
 
 /** One crumb, in spec 007's `CorridorCrumb` shape: a message key, never a literal (§7). */
@@ -1005,8 +1006,12 @@ export function listingIndexability(
 /* Projections: the card, the tile, the chip.                                 */
 /* -------------------------------------------------------------------------- */
 
-/** What a card needs about the photograph it will show (spec 006 §2.5's manifest, never a guess). */
-function photoFor(
+/**
+ * What a card needs about the photograph it will show (spec 006 §2.5's manifest, never a guess).
+ * Exported to the module (not the barrel) so the product page's related row partitions by the
+ * same answer the card renders from (spec 043 AC-13; TASK-290).
+ */
+export function photoFor(
   sku: string,
   locale: LocaleCode,
 ): {
@@ -1456,6 +1461,18 @@ export async function listingView(
   const sort: ListingSort = hub ? "default" : (options.sort ?? "default");
   const products = await productsFor(pageType, entityKey, kind, iso2);
   const ordered = await inDefaultOrder(products, locale, iso2);
+  /*
+   * **Photographed products first** (spec 043 §5.3 F, AC-13; spec 008 AC-9 as amended; TASK-290):
+   * the default order, and every hub, is spec 005's order partitioned by `photoFirst()`, over the
+   * **whole** set before paging, so page 1 holds the photographs. The price sorts below read the
+   * unpartitioned `ordered`: a price order is the price order, ties included.
+   */
+  const photographedFirst = photoFirst(
+    ordered.map((product) => ({
+      product,
+      photo: photoFor(product.sku, locale).photo,
+    })),
+  ).map(({ product }) => product);
   const total = ordered.length;
   const pageCount = Math.ceil(total / LISTING_PAGE_SIZE);
   if (page > 1 && page > pageCount) return undefined;
@@ -1475,7 +1492,7 @@ export async function listingView(
   let hubItems: readonly HubCardView[] = [];
   if (iso2 === undefined) {
     hubItems = await Promise.all(
-      pageOf(ordered).map((product) => hubCardView(product, locale)),
+      pageOf(photographedFirst).map((product) => hubCardView(product, locale)),
     );
   } else {
     const productLinks = options.productLinks ?? false;
@@ -1489,7 +1506,7 @@ export async function listingView(
       );
     items =
       sort === "default"
-        ? await cards(pageOf(ordered))
+        ? await cards(pageOf(photographedFirst))
         : pageOf(byPrice(await cards(ordered), sort));
   }
 
