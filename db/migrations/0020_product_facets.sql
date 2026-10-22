@@ -100,3 +100,5 @@ WHERE p.sku = f.sku
   AND p.other_flowers = '{}'
   AND p.other_colours = '{}'
   AND NOT p.allergen_note;
+
+RESET ROLE;
