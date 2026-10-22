@@ -46,4 +46,28 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 339](https://github.com/itsahmeds/flowers-overseas/pull/339). `PrintedCardPreview` is the one card
+preview (`data-fo-card-preview`, Caveat on the words, the sample and the signature, the page's
+printed label as the caption); the product page and checkout's `TextAreaWithCounter` both render
+it, the card sits above the field on phones, and the sample-to-words crossfade (opacity, 200 ms,
+`--ease-standard`, `no-preference` only) sits behind `interactions.cardPreviewMotion`. Tests:
+unit `card-preview-mirror.test.ts` (4, new), `interactions-budget.test.ts` (4, new),
+`interactions-css.test.ts` (3, new), `product-card-preview.test.tsx` (5 changed or new),
+`checkout-ui-components.test.tsx` (5 changed or new); e2e `product-card-preview.spec.ts` (+3 for AC-10, AC-4,
+AC-5; the four-locale case updated) and `checkout-ui.spec.ts` (+1 for AC-11's face on the gallery).
+
+**AC-1 bytes for idea 2** (Brotli; §5.3.0 caps in brackets): product island 1,129 B against
+1,231 B before, growth **-102 B** [160 B]; `CardCounter` **0 B** [160 B], unchanged; stylesheet
+growth **67 B** by the test's upper-bound method, 40 B as the whole scanned sheet against main
+`e590959f` [300 B]; listing HTML **0 B** [0 B] (the preview is imported by the product page and
+checkout's primitive only). The product page document grows by 436 B uncompressed (no cap) and,
+with JavaScript off, keeps the same visible text and the same `href` set as main in all four
+locales (AC-6, checked once by rendering both trees). Route budgets are CI's
+`budget:client-js`; no local build was run.
+
+**Handed on.** TASK-204: AC-11's page half (step 2 at `/{locale}/checkout`, JavaScript off), and
+the font-budget line `scripts/client-js-budget.ts` still labels "Caveat (product page only)"
+(A-founder-2026-10-20c adds checkout step 2; the 30 KB figure is unchanged). TASK-309 was not
+built here: its dependency TASK-306 (PR 314) is not merged; the product island has 1,231 - 1,129
+= 102 B more headroom than before for the gallery dots. TASK-313: the shared T-1/T-3 files now
+exist with idea 2's rows.

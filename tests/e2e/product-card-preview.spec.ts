@@ -41,6 +41,8 @@ for (const url of POLAND_PDPS) {
     const sample = (await sampleLine.textContent()) ?? "";
     expect(sample.length).toBeGreaterThan(0);
     await expect(words).toHaveText("");
+    // Hydrated: the island's first effect marks the sample shown.
+    await expect(sampleLine).toHaveAttribute("aria-hidden", "false");
 
     const requests: { url: string; body: string; type: string }[] = [];
     page.on("request", (request) => {
@@ -133,6 +135,11 @@ test.describe("spec 042 AC-10: the card preview fills in as the buyer writes", (
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto(PDP);
     const field = page.locator("#pdp-card-message");
+    // Hydrated: the island's first effect marks the sample shown.
+    await expect(page.locator("[data-fo-card-sample]")).toHaveAttribute(
+      "aria-hidden",
+      "false",
+    );
     const rest = await lines(page);
     expect(rest.words).toMatchObject({ text: "", opacity: "0" });
     expect(rest.sample.opacity).toBe("1");
@@ -200,6 +207,10 @@ test.describe("spec 042 AC-10: the card preview fills in as the buyer writes", (
   test("under reduced motion the swap is instant (AC-4)", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(PDP);
+    await expect(page.locator("[data-fo-card-sample]")).toHaveAttribute(
+      "aria-hidden",
+      "false",
+    );
     await page.locator("#pdp-card-message").pressSequentially("H");
     await expect(page.locator("[data-fo-card-text]")).toHaveText("H");
     const running = await page.evaluate(
@@ -223,6 +234,10 @@ test.describe("spec 042 AC-10: the card preview fills in as the buyer writes", (
     const response = await page.goto("/ar-XB/poland/product/amber-hour");
     // Served wherever the suites run (the a11y suite audits the same URL).
     expect(response?.status()).toBe(200);
+    await expect(page.locator("[data-fo-card-sample]")).toHaveAttribute(
+      "aria-hidden",
+      "false",
+    );
     await page.locator("#pdp-card-message").fill("عيد ميلاد سعيد، Ola");
     await expect(page.locator("[data-fo-card-text]")).toHaveText(
       "عيد ميلاد سعيد، Ola",
