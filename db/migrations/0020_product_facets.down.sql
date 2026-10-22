@@ -14,3 +14,5 @@ ALTER TABLE public.product
 ALTER TABLE public.product_occasion
   DROP CONSTRAINT product_occasion_sort_check,
   DROP COLUMN sort;
+
+RESET ROLE;
