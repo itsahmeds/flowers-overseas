@@ -273,6 +273,22 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         surface,
         paths: [...paths, "src/modules/payments/**"],
       })),
+      // Spec 011 §7 (TASK-212): the florist surface under `FLORIST_BASE_PATH` and its email.
+      ...(
+        [
+          ["floristAuth", "florist"],
+          ["floristInbox", "florist"],
+          ["emails.floristSignIn.*", "email"],
+        ] as const
+      ).map(([match, surface]) => ({
+        match,
+        surface,
+        paths: [
+          "src/app/demo/vendor-inbox/**",
+          "src/modules/partners/**",
+          "src/lib/auth/florist.ts",
+        ],
+      })),
     ]);
     // The address-format labels are read by a shared module (`src/modules/i18n/address.ts`), so
     // they count: no entry may reach them.

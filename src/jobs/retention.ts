@@ -507,18 +507,21 @@ const consentRecords: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   };
 };
 
+/** The application status the 12-month rule never deletes: the applicant became a partner. */
+const CONVERTED = "converted";
+
 const partnerApplication: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   const due = await rows<{ count: number; converted: number }>(
     db,
-    sql`SELECT count(*) FILTER (WHERE status <> 'converted')::int AS count,
-               count(*) FILTER (WHERE status = 'converted')::int AS converted
+    sql`SELECT count(*) FILTER (WHERE status <> ${CONVERTED})::int AS count,
+               count(*) FILTER (WHERE status = ${CONVERTED})::int AS converted
         FROM public.partner_application
         WHERE updated_at <= ${ts(cutoff)}`,
   );
   if (!dryRun) {
     await db.execute(
       sql`DELETE FROM public.partner_application
-          WHERE updated_at <= ${ts(cutoff)} AND status <> 'converted'`,
+          WHERE updated_at <= ${ts(cutoff)} AND status <> ${CONVERTED}`,
     );
   }
   return {

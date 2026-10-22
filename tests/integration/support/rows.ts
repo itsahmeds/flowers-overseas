@@ -125,7 +125,7 @@ export interface ApplicationOptions {
   readonly changedDaysAgo?: number;
 }
 
-/** One valid florist application; returns its id. */
+/** One valid florist application; returns its id. `updated_at` is set at insert (no trigger). */
 export async function application(
   tx: Tx,
   options: ApplicationOptions,
@@ -133,22 +133,15 @@ export async function application(
   const [row] = await tx<{ id: string }[]>`
     INSERT INTO partner_application (business_name, city, country_id, language_code,
                                      contact_name, contact_email, contact_phone,
-                                     privacy_notice_version, status, converted_partner_id)
+                                     privacy_notice_version, status, converted_partner_id,
+                                     created_at, updated_at)
     VALUES (${options.businessName ?? unique("Kwiaty ")}, 'Warszawa', ${options.countryId},
             ${options.languageCode ?? "pl"}, ${APPLICATION_REQUIRED.contact_name},
             ${APPLICATION_REQUIRED.contact_email}, ${APPLICATION_REQUIRED.contact_phone},
             ${APPLICATION_REQUIRED.privacy_notice_version}, ${options.status ?? "new"},
-            ${options.convertedPartnerId ?? null})
+            ${options.convertedPartnerId ?? null},
+            now() - make_interval(days => ${options.changedDaysAgo ?? 0}),
+            now() - make_interval(days => ${options.changedDaysAgo ?? 0}))
     RETURNING id`;
-  const id = row?.id ?? "";
-  if (options.changedDaysAgo !== undefined) {
-    // `set_updated_at` stamps `now()` on UPDATE, so the age is set with the trigger off for
-    // this one statement (superuser only, rolled back with the test's transaction).
-    await tx`ALTER TABLE partner_application DISABLE TRIGGER USER`;
-    await tx`UPDATE partner_application
-             SET updated_at = now() - make_interval(days => ${options.changedDaysAgo})
-             WHERE id = ${id}`;
-    await tx`ALTER TABLE partner_application ENABLE TRIGGER USER`;
-  }
-  return id;
+  return row?.id ?? "";
 }
