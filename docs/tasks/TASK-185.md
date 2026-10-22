@@ -243,7 +243,7 @@ Each must be watched red with its subject removed, then green (CLAUDE.md DoD §4
 
 ## Progress
 
-_Not started._
+- 2026-10-22: started on `task/TASK-185-de-pl-drafts` from `origin/main` 0ccafb2b. TASK-172, TASK-179 and TASK-182 are merged (TASK-182 before this task, so its seven echoed `infoPages.*` keys are drafted here, as the brief allows); TASK-183 and TASK-184 are not. One agent drafts both locales (no sub-agent tool in this run).
 
 ## Result
 
