@@ -138,7 +138,9 @@ test.describe("checkout primitives on /dev/components", () => {
     await page.locator(`#${IDS.card}`).fill("Happy birthday Mama!");
     await page.locator(`#${IDS.signAs}`).fill("Love, Anna");
     await expect(words).toHaveText("Happy birthday Mama!");
-    const card = page.locator("[data-fo-card-preview]", { has: words });
+    const card = page.locator("[data-fo-card-preview]", {
+      has: page.locator(`[data-fo-mirror="${IDS.card}"]`),
+    });
     await expect(card.locator("[data-fo-card-signature]")).toHaveText(
       "Love, Anna",
     );
@@ -158,7 +160,8 @@ test.describe("checkout primitives on /dev/components", () => {
       page.locator("[data-fo-card-preview] [data-fo-card-text]"),
     );
     expect(checkoutFace).toBe(productFace);
-    // `next/font/local` names the family after the export (`handFont`, `handFontExt`).
-    expect(checkoutFace.toLowerCase()).toMatch(/caveat|handfont/u);
+    // The Caveat faces `next/font/local` names after the exports, not the `"Caveat"` fallback
+    // name a variable missing on the card leaves (spec 042 §13 Q4 (a)).
+    expect(checkoutFace).toMatch(/^"?handFontExt"?, "?handFont"?,/u);
   });
 });

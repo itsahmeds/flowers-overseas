@@ -1331,6 +1331,11 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
  * sample sentence first and the buyer's words after it in one grid cell; `CardMessageField` marks
  * the sample `aria-hidden="true"` while the field has words.
  *
+ *  - Face: `--font-hand` is the theme's stack, re-declared on the card. A custom property is
+ *    computed where it is declared, and at `:root` the Caveat variables `PrintedCardPreview` puts
+ *    on the card do not exist, so the root value falls through to the local fallbacks and the
+ *    card never drew Caveat (spec 042 §13 Q4 (a), AC-11). Here they exist, so the words resolve
+ *    to the two Caveat faces (`tests/unit/interactions-css.test.ts` pins the two stacks equal).
  *  - Rest: while the sample shows, the words line is transparent; once there are words, the sample
  *    is. Only `opacity` changes and both lines keep their box, so the card is always as tall as the
  *    taller of the two (CLS 0). Checkout draws no sample, so neither rule reaches its lines.
@@ -1339,6 +1344,12 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
  *    build switch marked (`data-fo-card-swap`, `interactions.cardPreviewMotion`) and only under
  *    `no-preference`: under `reduce` the swap is instant (L7 allows 120 ms; this uses none).
  */
+[data-fo-card-preview] {
+  --font-hand:
+    var(--font-caveat-ext, "Caveat"), var(--font-caveat, "Bradley Hand"),
+    "Segoe Print", cursive;
+}
+
 [data-fo-card-sample][aria-hidden="true"],
 [data-fo-card-sample]:not([aria-hidden="true"]) + [data-fo-card-text] {
   opacity: 0;

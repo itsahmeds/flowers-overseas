@@ -82,11 +82,20 @@ for (const url of POLAND_PDPS) {
       ).not.toContain(request.type);
     }
 
-    const family = await words.evaluate(
-      (node) => getComputedStyle(node).fontFamily,
-    );
-    // `next/font/local` names the family after the export (`handFont`, `handFontExt`).
-    expect(family.toLowerCase()).toMatch(/caveat|handfont/u);
+    // The words resolve to the Caveat faces `next/font/local` names after the exports
+    // (`handFontExt`, `handFont`), not to the `"Caveat"` fallback name a missing variable leaves,
+    // and the face this message needs is actually loaded (spec 042 §13 Q4 (a)).
+    const face = await words.evaluate(async (node) => {
+      await document.fonts.ready;
+      return {
+        family: getComputedStyle(node).fontFamily,
+        loaded: [...document.fonts]
+          .filter((font) => /^"?handFont/u.test(font.family))
+          .map((font) => font.status),
+      };
+    });
+    expect(face.family).toMatch(/^"?handFontExt"?, "?handFont"?,/u);
+    expect(face.loaded).toContain("loaded");
   });
 }
 
@@ -145,9 +154,18 @@ test.describe("spec 042 AC-10: the card preview fills in as the buyer writes", (
     expect(rest.sample.opacity).toBe("1");
     const sample = rest.sample.text;
 
+    // Typing may scroll a lazy image or the card's face into view; it never calls a script API
+    // and never carries the words.
     const requests: string[] = [];
     page.on("request", (request) => {
-      if (request.resourceType() !== "font") requests.push(request.url());
+      if (
+        ["fetch", "xhr", "websocket", "eventsource"].includes(
+          request.resourceType(),
+        ) ||
+        `${request.url()} ${request.postData() ?? ""}`.includes("birthday")
+      ) {
+        requests.push(request.url());
+      }
     });
 
     // The first character starts the crossfade: both lines move on `opacity` at 0.2 s.
@@ -213,13 +231,25 @@ test.describe("spec 042 AC-10: the card preview fills in as the buyer writes", (
     );
     await page.locator("#pdp-card-message").pressSequentially("H");
     await expect(page.locator("[data-fo-card-text]")).toHaveText("H");
-    const running = await page.evaluate(
-      () =>
+    // Nothing moves: the base layer's reduced-motion rule leaves at most a 0.01 ms transition,
+    // and L7 allows opacity alone at 120 ms or less.
+    const running = await page.evaluate(() =>
+      (
         document
           .querySelector("[data-fo-card-preview]")
-          ?.getAnimations({ subtree: true }).length,
+          ?.getAnimations({ subtree: true }) ?? []
+      ).map((animation) => ({
+        property:
+          animation instanceof CSSTransition
+            ? animation.transitionProperty
+            : "not a transition",
+        duration: Number(animation.effect?.getTiming().duration ?? 0),
+      })),
     );
-    expect(running).toBe(0);
+    for (const animation of running) {
+      expect(animation.property).toBe("opacity");
+      expect(animation.duration).toBeLessThanOrEqual(120);
+    }
     const typed = await lines(page);
     expect(typed.words).toMatchObject({ text: "H", opacity: "1" });
     expect(typed.sample.opacity).toBe("0");
