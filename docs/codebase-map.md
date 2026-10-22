@@ -207,7 +207,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 350 |
+| `tests/unit/` | 351 |
 | `tests/integration/` | 41 |
 | `tests/contract/` | 24 |
 | `tests/e2e/` | 68 |
