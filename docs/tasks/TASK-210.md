@@ -30,12 +30,16 @@ One dated bullet per `/review`, newest last.
 - **From `/plan-tasks` (2026-10-05):** dispatch after TASK-182 (the content module and `info-pages.ts`) merges. Appendix B items 2–7 merged in PR 197 (`docs/design/audits/2026-10-05-specs-011-012.md`). Two of that audit's escalations bind here: (1) the landing was not redrawn for spec 011, and the round-2 `for-florists-*` (PR 189) draws a docket, "Apply to join" and draft copy where Appendix A says "Apply to work with us", so the landing needs one redraw pass, or the founder approves the round-2 version and Appendix A follows it, before this task is dispatched; (2) the walkthrough is drawn with two short sections (declining folded into step 2, as Appendix A writes it), not §2's three. The phone frame's `zoom` is an implementation note on the artboard.
 - **From the orchestrator (2026-10-05):** a sticky bar appears only after the hero has scrolled out of view, never over the first screen (the same rule as TASK-197's product bar).
 
+- **From the implementer's self-review (2026-10-23):** (1) AC-35's `budget:client-js` half: the four pages are not yet rows of `DEFAULT_URLS`/`bundle-baseline.json` (baselining needs a build with the seeded database); add them with `--update-baseline` in CI or TASK-216. (2) Apply form fields are local to `partners/ui/apply` because the checkout field primitives are not barrel-exported; TASK-213 may move them onto shared primitives with `components.dc.html`. (3) TASK-214 adds the inbox-only stages' strings in files the walkthrough does not import, under a scoped namespace, or the en share passes 5 %. (4) Answer-by prints the zone name (`formatTimeInZone` always names it); the artboard omits it. (5) The talk-to-us block omits `company.support.hours` while that key is blocked on the founder (em dash, "24/7"). (6) Desktop order-page layout (`.fr-d` action column) is TASK-214's; the components carry the phone layout and the desktop list grid via container queries.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - **2026-10-05, the payout figure (§13 Q7):** the founder answered "all defaults", and Q7's default is to confirm the product and 149 zł only if they would really pay it. To the founder through the PR, with the product and the figure. The PR does not merge until they confirm, because a florist reads the figure as an offer. `open`.
 - **2026-10-05, the Appendix A copy batch:** spec 011 §12 founder prerequisite 1 (approve Appendix A and the artboards). `open`.
+- **2026-10-23, walkthrough length (AC-7 vs Appendix A):** Appendix A's walkthrough prose is about 190 words; §6 and AC-7 require 350. The implementer drafted extra sentences (a second paragraph per step) to reach 385 (en), all `reviewed: false`, listed in PR 344 for the founder. Founder approval of the added text: `open`.
+- **2026-10-23, apply/sent routes:** spec 011 §5.4 serves the four pages through the shared depth files; the apply and sent pages got route files of their own (one static folder per spelling of the segment) because spec 003 §14 A17 check 11 can keep `forFlorists.apply.*`/`sent.*` out of the 5 % share only if no indexable page imports them. To the orchestrator through PR 344: accept as recorded deviation, or amend §5.4. `open`.
 
 ## Progress
 
@@ -43,11 +47,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-23: registry, config, content (en/en-gb, de/pl drafts), pages:check rules; landing, walkthrough, apply/sent pages, inbox components, SEO, robots, site-link flip, tests; all cheap gates green; PR 344.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR #344. Spec 011 task 1: the florists family in the info-page registry (4 page ids), `src/config/florists.ts`, landing and walkthrough content (en, en-gb extends, de/pl machine drafts), `pages:check` rules `florist-faq-count`, `florist-landing-blocks`, `walkthrough-words` and the florists relay exemption; `FloristsLanding`, `FloristsWalkthrough` (real inbox components in inert phone frames), `ApplyPage` (form off; form markup for on), `SentPage`; inbox view schemas, `exampleFloristOrderView`, `InboxFrame`, `InboxList`, `OrderScreen`, `PhotoStep` and parts exported from the partners barrel for TASK-214; WebPage + FAQPage / BreadcrumbList; static.xml rows; `Disallow: /demo/`; `for-florists` published; Lighthouse `/en/for-florists`, `/pl/dla-kwiaciarni`. Tests: unit florists-config (19), florists-pages (38), florists-seo (51), pages-check (+9), contract florists-schema-fixtures (7); 15 existing test files re-pinned for the published link. A17 share after this PR: en 4.7 %, en-gb 4.8 % (18 new counted unreviewed keys). No local build was run (builds now need a seeded Postgres): CI is the gate of record.
