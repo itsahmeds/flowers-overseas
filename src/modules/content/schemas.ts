@@ -52,12 +52,32 @@ export const InfoLinkSchema = z
   .strict();
 export type InfoLink = z.infer<typeof InfoLinkSchema>;
 
-/** The data blocks a section may hold; the view model fills each one. */
+/**
+ * The data blocks a section may hold; the view model fills each one. The last four are spec 011's
+ * landing (TASK-210): the payout example, the questions (the `faq[]` list under the section's
+ * heading), the contact line (`company.ts`) and the country guides that exist (`corridorState()`).
+ */
 export const infoSectionBlocks = [
   "company",
   "destinations",
   "payment",
+  "payout",
+  "faq",
+  "contact",
+  "guides",
 ] as const;
+
+/**
+ * The inbox screen a walkthrough step shows (spec 011 §2 "The walkthrough"): the real component
+ * from `src/modules/partners/ui/inbox/`, fed by `exampleFloristOrderView(locale)`.
+ */
+export const infoSectionScreens = [
+  "list",
+  "offer",
+  "accepted",
+  "photo",
+] as const;
+export type InfoSectionScreen = (typeof infoSectionScreens)[number];
 export type InfoSectionBlock = (typeof infoSectionBlocks)[number];
 
 export const InfoSectionItemSchema = z
@@ -77,16 +97,65 @@ export const InfoSectionSchema = z
     items: z.array(InfoSectionItemSchema).min(1).optional(),
     /** The items are a sequence (an `<ol>`), not a set. */
     ordered: z.boolean().optional(),
+    /** A plain list of sentences (spec 011's "what we do", "what you do", "what we never ask"). */
+    bullets: z.array(z.string().min(1)).min(1).optional(),
     block: z.enum(infoSectionBlocks).optional(),
+    /** A walkthrough step's inbox screen and the `<figcaption>` that says what it shows. */
+    screen: z.enum(infoSectionScreens).optional(),
+    caption: z.string().min(1).optional(),
   })
   .strict()
   .refine(
     (section) =>
       section.body !== undefined ||
       section.items !== undefined ||
+      section.bullets !== undefined ||
       section.block !== undefined,
-    { message: "a section needs a `body`, `items` or a `block`" },
+    { message: "a section needs a `body`, `items`, `bullets` or a `block`" },
+  )
+  .refine(
+    (section) =>
+      (section.screen === undefined) === (section.caption === undefined),
+    {
+      message:
+        "a screen needs its caption, and a caption its screen (spec 011 AC-3)",
+      path: ["caption"],
+    },
   );
+
+/**
+ * The florists family's labels that are neither a section nor a question (spec 011 Appendix A and
+ * the landing artboard): the calls to action, the example docket beside the `<h1>` and the payout
+ * card. They are authored copy in the content file, reviewed with the page, so the landing adds
+ * no message key a crawler could read unreviewed.
+ */
+export const FloristLabelsSchema = z
+  .object({
+    apply: z.string().min(1),
+    walkthrough: z.string().min(1),
+    screenByScreen: z.string().min(1),
+    example: z.string().min(1),
+    docket: z
+      .object({
+        heading: z.string().min(1),
+        deliver: z.string().min(1),
+        card: z.string().min(1),
+        cardText: z.string().min(1),
+        payout: z.string().min(1),
+        payoutText: z.string().min(1),
+      })
+      .strict(),
+    payout: z
+      .object({
+        heading: z.string().min(1),
+        buyerPays: z.string().min(1),
+        youReceive: z.string().min(1),
+        note: z.string().min(1),
+      })
+      .strict(),
+  })
+  .strict();
+export type FloristLabels = z.infer<typeof FloristLabelsSchema>;
 export type InfoSection = z.infer<typeof InfoSectionSchema>;
 
 const ReviewFieldsSchema = z.object({
@@ -109,6 +178,8 @@ export const InfoPageContentSchema = ReviewFieldsSchema.extend({
     .optional(),
   links: z.array(InfoLinkSchema),
   honestyAllow: z.array(HonestyAllowSchema),
+  /** The florists family's landing labels (spec 011, TASK-210); absent on every other page. */
+  florists: FloristLabelsSchema.optional(),
 })
   .strict()
   .superRefine((page, ctx) => {
