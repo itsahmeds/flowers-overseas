@@ -59,6 +59,10 @@ for (const [path, size] of [
   ["/en-gb/poland/flowers/roses?page=2", { width: 1440, height: 900 }],
   ["/en-gb/poland/occasions/mothers-day", { width: 390, height: 844 }],
   ["/en-gb/poland/flowers", { width: 390, height: 844 }],
+  // Spec 043 T-14 (TASK-290): the plants page, whose last two cards are the wordless,
+  // `aria-hidden` placeholder boxes, at both widths.
+  ["/en/poland/flowers/plants", { width: 1440, height: 900 }],
+  ["/en/poland/flowers/plants", { width: 390, height: 844 }],
 ] as const) {
   test(`${path} at ${String(size.width)} has no serious or critical violations`, async ({
     page,

@@ -1451,7 +1451,11 @@ describe("AC-25: one `priority` image with a matching preload, and none without 
     const gallery = block(render(view), 'data-fo-gallery="placeholder"');
     expect(gallery).not.toContain("<img");
     expect(gallery).not.toContain("Example arrangement");
-    expect(gallery).toContain("Photography to supply");
+    // The wordless, `aria-hidden` box (spec 043 AC-14; TASK-290): no text at all.
+    expect(gallery).not.toContain("Photography to supply");
+    expect(gallery).toMatch(
+      /<div[^>]*data-fo-media-placeholder="no-asset"[^>]*aria-hidden="true"[^>]*><\/div>/u,
+    );
   });
 });
 

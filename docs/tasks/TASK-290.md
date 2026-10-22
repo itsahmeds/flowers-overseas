@@ -39,7 +39,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: its own PR on top of TASK-285's branch (orchestrator's work order of 2026-10-22: two PRs, in order; this overrides the "ships in TASK-285's feature PR" line above). Built: `photoFirst()` (stable partition; in `ui/shop`, re-exported from the catalog barrel, so the home row in `ui` can use it without a runtime cycle) applied to the country listings and hubs over the whole set before paging, to the related row before the six are picked, and to the home row (partitioned by the same `resolveMedia` gate `MediaAsset` uses); price sorts read the unpartitioned order. Placeholder box wordless and `aria-hidden` on every slot (`Photo decorative`), `media.placeholder.*` deleted in en/de/pl and meta. Motions 11 and 12 scoped to `@media screen`. Unit tests green; next: local e2e in the build slot, push and PR once PR 330 is ready.
 
 ## Result
 

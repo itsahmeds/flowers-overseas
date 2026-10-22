@@ -1331,39 +1331,44 @@ html[data-fo-motion] [data-fo-header]:has(details[data-fo-menu][open]) {
     transition-duration: 0s;
   }
 
-  /* 11. A below-the-fold image fades in over its paper box once it has loaded. */
-  html[data-fo-motion] img[data-fo-fade="pending"] {
-    opacity: 0;
-  }
+  /* Motions 11 and 12 hide below-the-fold images and sections on a **screen** only (spec 043
+     §5.3 F, AC-15; TASK-290): printed, or captured without scrolling, every element they hold is
+     at full opacity, because no rule here applies to `print`. */
+  @media screen {
+    /* 11. A below-the-fold image fades in over its paper box once it has loaded. */
+    html[data-fo-motion] img[data-fo-fade="pending"] {
+      opacity: 0;
+    }
 
-  html[data-fo-motion] img[data-fo-fade="in"] {
-    transition-property: opacity;
-    transition-duration: var(--duration-slow);
-    transition-timing-function: var(--ease-standard);
-  }
+    html[data-fo-motion] img[data-fo-fade="in"] {
+      transition-property: opacity;
+      transition-duration: var(--duration-slow);
+      transition-timing-function: var(--ease-standard);
+    }
 
-  /* 12. A section below the fold rises 12 px and fades in once, its children 60 ms apart. */
-  html[data-fo-motion] [data-fo-reveal="pending"] > * {
-    opacity: 0;
-    transform: translateY(12px);
-  }
+    /* 12. A section below the fold rises 12 px and fades in once, its children 60 ms apart. */
+    html[data-fo-motion] [data-fo-reveal="pending"] > * {
+      opacity: 0;
+      transform: translateY(12px);
+    }
 
-  html[data-fo-motion] [data-fo-reveal="in"] > * {
-    transition-property: opacity, transform;
-    transition-duration: var(--duration-base);
-    transition-timing-function: var(--ease-standard);
-  }
+    html[data-fo-motion] [data-fo-reveal="in"] > * {
+      transition-property: opacity, transform;
+      transition-duration: var(--duration-base);
+      transition-timing-function: var(--ease-standard);
+    }
 
-  html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(2) {
-    transition-delay: 60ms;
-  }
+    html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(2) {
+      transition-delay: 60ms;
+    }
 
-  html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(3) {
-    transition-delay: 120ms;
-  }
+    html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(3) {
+      transition-delay: 120ms;
+    }
 
-  html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(n + 4) {
-    transition-delay: 180ms;
+    html[data-fo-motion] [data-fo-reveal="in"] > :nth-child(n + 4) {
+      transition-delay: 180ms;
+    }
   }
 }
 

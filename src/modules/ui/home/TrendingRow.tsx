@@ -50,6 +50,9 @@ import {
   TextLink,
 } from "../primitives/typography.tsx";
 
+import { resolveMedia } from "../media/resolve.ts";
+import { photoFirst } from "../shop/photoFirst.ts";
+
 import { HOME_BLEED, HOME_SECTION } from "./HomeHero.tsx";
 import {
   type TrendingProvider,
@@ -143,7 +146,25 @@ export function TrendingRow({
   const t = useTranslations() as unknown as (key: string) => string;
   const home = useTranslations("home");
   const source = provider ?? getTrendingProvider();
-  const picks = source.list();
+  // Photographed picks first, each group in the provider's order (spec 043 §5.3 F, AC-13;
+  // TASK-290): a pick shows a photograph exactly when `MediaAsset` below resolves its asset to an
+  // image, so the partition asks the same gate with the same inputs.
+  const picks = photoFirst(
+    source.list().map((pick) => ({
+      pick,
+      photo: {
+        kind:
+          resolveMedia({
+            assetId: pick.assetId,
+            locale,
+            slot: "trending",
+            productName: pick.name,
+          }).kind === "image"
+            ? "asset"
+            : "placeholder",
+      },
+    })),
+  ).map(({ pick }) => pick);
 
   // Nothing to show is a section that is not there: no heading, no empty grid, no reserved hole
   // in the page (the `TrustMarks` rule of §5.3, applied to a row).
@@ -223,7 +244,7 @@ export function TrendingRow({
             >
               <CardLink href={href}>
                 {/*
-              The pick's photograph, or the captioned placeholder — whichever the dataset earns
+              The pick's photograph, or the wordless placeholder box, whichever the dataset earns
               (spec 006 AC-18). The box is the `trending` slot, whose `sizes` states this row's
               own card width (`../media/slots.ts`). The pick's name is the heading the screen
               reader already announces, so it is handed to `MediaAsset`: an alt that merely

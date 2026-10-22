@@ -10,7 +10,7 @@
  *    006's `MediaAsset` builds its `<link rel="preload">` from the same manifest lookup that
  *    produced its `srcset`, and every thumbnail is lazy. The honesty label renders beneath,
  *    through `MediaProvenanceNote`, which has no prop that could switch it off.
- *  - **placeholder** — `media.placeholder.product` verbatim in the hero box and nothing else (v2
+ *  - **placeholder** — the wordless, `aria-hidden` box (spec 043 AC-14) and nothing else (v2
  *    drops v1's four empty thumbnail boxes), **no `<img>`** and therefore **no honesty label**:
  *    there is no generated image to be honest about.
  *
@@ -58,7 +58,6 @@ export function Gallery({
   manifest,
 }: GalleryProps): ReactElement {
   const a11y = useTranslations("a11y");
-  const media = useTranslations("media");
   const code = localeOf(locale);
   const withManifest = manifest === undefined ? {} : { manifest };
 
@@ -68,7 +67,7 @@ export function Gallery({
     return (
       <div className="flex flex-col lg:col-[2/8]" data-fo-gallery="placeholder">
         <Photo
-          caption={media("placeholder.product")}
+          decorative
           className={`${PHONE_PHOTO} lg:rounded-photo`}
           ratio="card"
           dataset={{

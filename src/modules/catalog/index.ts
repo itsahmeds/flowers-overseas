@@ -398,6 +398,9 @@ export {
   listingPages,
   listingView,
   productCardView,
+  // Photographed products first, stable within each group (spec 043 §5.2, AC-13; TASK-290): the
+  // design system's partition, re-exported here as §5.2 names it.
+  photoFirst,
   publishedCountries,
   writeExistenceSummary,
   // The occasions index's URL in one locale, or `undefined` where it may not be linked or does
