@@ -206,14 +206,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 352 |
+| `tests/unit/` | 353 |
 | `tests/integration/` | 41 |
 | `tests/contract/` | 24 |
 | `tests/e2e/` | 68 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 341 |
+| `tests/fixtures/` | 342 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
