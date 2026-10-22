@@ -29,7 +29,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-22, the `demo_order` retention row (§5.1's fourth row), to the orchestrator / founder: `open`.** `0008` makes `order_event` refuse `DELETE` and `TRUNCATE`, and every child of `"order"` references it `ON DELETE RESTRICT`, so no sweep handler can delete a demo or test order that has events without disabling a trigger, which this brief forbids. `0020_florists_v0` therefore ships the other three rows and **no** `demo_order` row (a row with no working handler would put a promise into the generated retention table that nothing keeps). Options for the ruling: (a) a migration that lets `order_event_append_only()` allow a `DELETE` of rows whose order has `mode IN ('demo','test')` when `app.role = 'system'`, plus `ON DELETE CASCADE` from `"order"` for demo rows only (a change to `order_event`, which this spec says it does not make); (b) pseudonymise demo orders' personal data instead of deleting them (spec 010's `demo_order_personal` already clears it at 24 h / 7 d), and drop the 30-day row from spec 011; (c) leave demo orders on staging and reset staging from a dump when it grows. The demo photos are the one real-world risk (a florist may photograph a real door): until the ruling, `delivery_photo`'s 2-year rule is what deletes them.
 
 ## Progress
 
@@ -37,7 +37,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: migration `0020_florists_v0` + `.down.sql` (numbered after PR 320's `0019`), Drizzle mirror, `db/rls.ts` classes `PUBLIC_INSERT_ONLY_TABLES` and `PARTNER_FILTERED_TABLES`, three retention handlers, T-14 (`tests/integration/florists-schema.test.ts`, incl. rollback on a seeded database) and T-17 (`retention-sweep.test.ts`); existing suites updated for the new `NOT NULL` columns. `scripts/db-check.snapshot.json` is regenerated only after PR 320 lands (its `0019` is in the same snapshot). Next: TASK-212.
 
 ## Result
 
