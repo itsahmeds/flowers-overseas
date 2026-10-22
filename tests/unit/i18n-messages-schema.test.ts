@@ -326,6 +326,24 @@ describe("the shipped catalogues and manifests", () => {
     "corridor.calendar.ruleWeekday",
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
+    // TASK-212, spec 011 Appendix A: the florist sign-in, inbox chrome and sign-in email copy,
+    // shipped `reviewed: false` (founder copy pending on the artboards); not counted in the
+    // unreviewed share (`review-scope.ts`, A17).
+    "emails.floristSignIn.body",
+    "emails.floristSignIn.subject",
+    "floristAuth.confirmSubmit",
+    "floristAuth.email",
+    "floristAuth.expiredBody",
+    "floristAuth.sentBody",
+    "floristAuth.sentTitle",
+    "floristAuth.submit",
+    "floristAuth.title",
+    "floristInbox.demoNotice",
+    "floristInbox.homeLabel",
+    "floristInbox.language",
+    "floristInbox.menu",
+    "floristInbox.orders",
+    "floristInbox.signOut",
     "footer.link.deliveryAndPayment",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
     "infoPages.company.notRegistered",
@@ -529,6 +547,11 @@ describe("the shipped catalogues and manifests", () => {
       // Spec 013 §7's namespace (TASK-255): the pay step's decline messages and labels and the
       // confirmation states' payment lines.
       "payments",
+      // Spec 011 §7's namespaces (TASK-212): the florist sign-in pages and the inbox chrome, under
+      // `FLORIST_BASE_PATH` only, and the florist sign-in email (`emails.floristSignIn`).
+      "floristAuth",
+      "floristInbox",
+      "emails",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;
