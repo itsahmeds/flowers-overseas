@@ -33,6 +33,7 @@ import { findDatabaseImports } from "../../scripts/check-no-db-imports.ts";
 import * as catalog from "../../src/modules/catalog/index.ts";
 import {
   catalogProviders,
+  withCatalogProviders,
   type CatalogProviders,
 } from "../../src/modules/catalog/providers.ts";
 
@@ -387,7 +388,7 @@ describe("src/modules/catalog barrel (AC-1)", () => {
     );
   });
 
-  it("has the module's Phase 0 files and no `db/` implementation yet", () => {
+  it("has the module's files, the `db/` providers among them (TASK-070)", () => {
     expect(moduleFiles.sort()).toEqual([
       // This page in every launch locale, for the language links (TASK-233).
       `${moduleDir}/alternates.ts`,
@@ -398,7 +399,16 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/copy.ts`,
       // The one country order: `sortWeight`, then collation (item 13; TASK-381).
       `${moduleDir}/country-order.ts`,
+      // The database providers (spec 005 §5.2 `db/`, AC-27; TASK-070): the module's adapter
+      // directory, the one place in it that may import a database client.
+      `${moduleDir}/db/catalogue.ts`,
+      `${moduleDir}/db/fx.ts`,
+      `${moduleDir}/db/index.ts`,
+      `${moduleDir}/db/price.ts`,
+      `${moduleDir}/db/read.ts`,
       `${moduleDir}/flags.ts`,
+      // Deep-frozen provider values, shared by `static/` and `db/` (TASK-148, TASK-070).
+      `${moduleDir}/frozen.ts`,
       `${moduleDir}/index.ts`,
       `${moduleDir}/listing.ts`,
       // The listings' JSON-LD over their view (spec 008 AC-17, AC-18; TASK-115).
@@ -460,6 +470,9 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
       "dbPriceProvider",
       "dbFxRateProvider",
       "catalogProviders",
+      // The composition root's test hook (TASK-070): swapping providers is the seam's, not a caller's.
+      "withCatalogProviders",
+      "createDbCatalogProviders",
       "CatalogueDatasetPendingError",
       // The flag seam is internal too (spec 005 §12): callers ask for the add-ons they may
       // offer, never for the state of a flag, so spec 002's `feature_flag` table can take the
@@ -568,12 +581,16 @@ describe("the barrel exposes no provider, dataset or database symbol (AC-2, T-01
     }
   });
 
-  it("imports no database client, ORM or driver anywhere in the module", () => {
+  it("imports no database client, ORM or driver anywhere in the module outside `db/`", () => {
     expect(findDatabaseImports(repoRoot, [moduleDir])).toEqual([]);
   });
 
-  it("reads no `DATABASE_URL` and names no database package in any module file", () => {
-    for (const file of moduleFiles) {
+  it("reads no `DATABASE_URL` and names no database package in any module file outside `db/`", () => {
+    const outsideDb = moduleFiles.filter(
+      (file) => !file.startsWith(`${moduleDir}/db/`),
+    );
+    expect(outsideDb.length).toBeLessThan(moduleFiles.length);
+    for (const file of outsideDb) {
       const source = sourceOf(file);
       expect(source, file).not.toContain("DATABASE_URL");
       for (const specifier of specifiersOf(source)) {
@@ -642,6 +659,24 @@ describe("the provider seam and its Phase 0 stubs", () => {
 
   it("returns the same shape on every call, so nothing caches a connection", () => {
     expect(Object.keys(catalogProviders())).toEqual(Object.keys(providers));
+  });
+
+  it("swaps the composition root for the body of `withCatalogProviders()` only, one swap at a time (TASK-070)", async () => {
+    const other: CatalogProviders = { ...providers };
+    const seen = await withCatalogProviders(other, async () => {
+      await expect(
+        withCatalogProviders(providers, () => Promise.resolve(null)),
+      ).rejects.toThrow(/one swap at a time/u);
+      return catalogProviders();
+    });
+    expect(seen).toBe(other);
+    expect(catalogProviders()).not.toBe(other);
+    expect(catalogProviders()).toStrictEqual(providers);
+
+    await expect(
+      withCatalogProviders(other, () => Promise.reject(new Error("boom"))),
+    ).rejects.toThrow("boom");
+    expect(catalogProviders()).not.toBe(other);
   });
 
   /**
