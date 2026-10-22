@@ -40,6 +40,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-22, implementer: one `PrintedCardPreview` on both pages, the product island writes into its `<bdi>` and marks the sample, `globals.css` idea 2 section, `src/config/interactions.ts` (`cardPreviewMotion`), unit T-1/T-3/T-10/T-11 and e2e T-10 (+ the gallery's AC-11 face check); 14 mutations each seen red. TASK-309 is not in this PR: its dependency TASK-306 is still `todo` (PR 314). Next: gates, Self-review, ready, `ci:full`, Linux baselines for the product card section if `visual` moves.
+- 2026-10-23, implementer: Linux baselines showed the card's words in a serif; a local build proved Caveat never rendered (root-scoped `--font-hand`). Fixed in the idea 2 section, e2e face checks tightened, touched e2e specs green locally (26). Next: fresh `visual:baselines` run for `dev-components-desktop`, then ready and `ci:full`.
 
 ## Result
 
@@ -58,12 +59,25 @@ AC-5; the four-locale case updated) and `checkout-ui.spec.ts` (+1 for AC-11's fa
 
 **AC-1 bytes for idea 2** (Brotli; §5.3.0 caps in brackets): product island 1,129 B against
 1,231 B before, growth **-102 B** [160 B]; `CardCounter` **0 B** [160 B], unchanged; stylesheet
-growth **67 B** by the test's upper-bound method, 40 B as the whole scanned sheet against main
-`e590959f` [300 B]; listing HTML **0 B** [0 B] (the preview is imported by the product page and
+growth **84 B** by the test's upper-bound method [300 B]; listing HTML **0 B** [0 B] (the preview is imported by the product page and
 checkout's primitive only). The product page document grows by 436 B uncompressed (no cap) and,
 with JavaScript off, keeps the same visible text and the same `href` set as main in all four
 locales (AC-6, checked once by rendering both trees). Route budgets are CI's
-`budget:client-js`; no local build was run.
+`budget:client-js`.
+
+**Found and fixed: the card never drew Caveat.** `--font-hand` is computed at `:root`, where the
+Caveat variables (`handFontVariables`, on the card only) do not exist, so on main and in production
+the words fell through to the literal `"Caveat"`, then "Bradley Hand" (a Mac face, which is why it
+looked right on the founder's Mac), then `cursive`; no Caveat file was ever requested. The old e2e
+check matched the fallback name "Caveat" and passed vacuously. The idea 2 section now re-declares
+the theme's stack on `[data-fo-card-preview]` (pinned equal to the theme's by
+`interactions-css.test.ts`), and the e2e checks require `handFontExt, handFont` and a loaded face.
+Effect: the product page now really fetches Caveat Latin (20,048 B; Latin-Ext 4,712 B only for
+those glyphs), never preloaded, inside A21's 30 KB.
+
+**Local build** (build slot, load 2.3): taken because the Linux baseline showed the checkout card in
+a serif, which no unit test could judge; the face bug above was found in it, and the two touched
+e2e specs ran green on both projects (26 passed) against that build.
 
 **Handed on.** TASK-204: AC-11's page half (step 2 at `/{locale}/checkout`, JavaScript off), and
 the font-budget line `scripts/client-js-budget.ts` still labels "Caveat (product page only)"

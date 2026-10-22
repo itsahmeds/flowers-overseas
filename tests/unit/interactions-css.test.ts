@@ -10,6 +10,8 @@
  *
  *  - at rest, the sample and the words share one cell and only their `opacity` differs: the words
  *    line is transparent while the sample shows, and the sample once it is `aria-hidden="true"`;
+ *  - the card re-declares the theme's `--font-hand` stack, so its words resolve to the Caveat
+ *    faces whose variables sit on the card (at `:root` they fall through to local fallbacks);
  *  - the hand-over is a transition of `opacity` only, `--duration-base` on `--ease-standard`, on
  *    the children of a `data-fo-card-swap` cell only, and only under
  *    `prefers-reduced-motion: no-preference`; no keyframes, no raw time, nothing under `reduce`.
@@ -140,6 +142,31 @@ function cardPreviewViolations(css: string): string[] {
       found.push("hand-over sets more than its transition");
   }
   if (css.includes("@keyframes fo-card")) found.push("keyframes added");
+
+  // The face: the card re-declares the theme's `--font-hand`, so the stack resolves where the
+  // Caveat variables are (on the card), not at `:root`, where they are not.
+  const all = walk(css);
+  const theme = all.find(
+    (rule) =>
+      (rule.selector === ":root, :host" || rule.selector === ":root") &&
+      rule.declarations.has("--font-hand"),
+  );
+  const card = all.filter(
+    (rule) =>
+      rule.selector === "[data-fo-card-preview]" &&
+      rule.declarations.has("--font-hand"),
+  );
+  if (card.length !== 1) {
+    found.push("face not re-declared on the card");
+  } else if (
+    theme === undefined ||
+    card[0]?.declarations.get("--font-hand") !==
+      theme.declarations.get("--font-hand") ||
+    card[0]?.context.length !== 0 ||
+    card[0]?.declarations.size !== 1
+  ) {
+    found.push("card face differs from the theme's stack");
+  }
   return found;
 }
 
@@ -155,7 +182,7 @@ describe("idea 2, the card preview, in the shipped stylesheet (T-3, AC-3, AC-4)"
     );
   });
 
-  it("goes red with the swap at `--duration-slow`, a raw `450ms`, a size transition, the swap under `reduce`, and the sample left in place", () => {
+  it("goes red with the swap at `--duration-slow`, a raw `450ms`, a size transition, the swap under `reduce`, the sample left in place, and the face left at the root", () => {
     const mutate = (from: string, to: string): string => {
       expect(shipped).toContain(from);
       return shipped.replace(from, to);
@@ -202,5 +229,10 @@ describe("idea 2, the card preview, in the shipped stylesheet (T-3, AC-3, AC-4)"
         mutate('[data-fo-card-sample][aria-hidden="true"],', ""),
       ),
     ).toContain("rest rule missing");
+    expect(
+      cardPreviewViolations(
+        mutate("[data-fo-card-preview] {", "[data-fo-card-preview-off] {"),
+      ),
+    ).toContain("face not re-declared on the card");
   });
 });
