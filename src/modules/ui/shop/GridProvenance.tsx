@@ -45,11 +45,12 @@ export function GridProvenance({
   const assetIds = cards.flatMap((card) =>
     card.photo.kind === "asset" ? [card.photo.assetId] : [],
   );
+  const classes = [mode === "mixed" ? "md:hidden" : "", className ?? ""]
+    .filter(Boolean)
+    .join(" ");
   return (
     <div
-      className={[mode === "mixed" ? "md:hidden" : "", className ?? ""]
-        .filter(Boolean)
-        .join(" ")}
+      {...(classes === "" ? {} : { className: classes })}
       data-fo-grid-provenance={mode}
     >
       <MediaProvenanceNote

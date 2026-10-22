@@ -298,6 +298,18 @@ describe("a destination-less hub: no price on any card, and the reason said once
     expect(cards(html).length).toBeGreaterThan(0);
     expect(occurrences(html, LINE)).toBe(0);
     expect(html).not.toContain('data-fo-price="card"');
+    // Each hub card's text is its name and its (hidden) example label, and nothing else.
+    const media = loadMessages("en", ["media"])["media"] as {
+      provenance: { aiExample: string };
+    };
+    cards(html).forEach((part, index) => {
+      const card = part.slice(0, part.indexOf("</article>"));
+      expect(
+        decode(card.slice(card.indexOf(">") + 1).replace(/<[^>]+>/gu, ""))
+          .replace(media.provenance.aiExample, "")
+          .trim(),
+      ).toBe(v.hubItems[index]?.name);
+    });
     expect(decode(html)).not.toContain(
       "No price here. The price depends on the destination.",
     );

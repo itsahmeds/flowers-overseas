@@ -19,6 +19,7 @@ import { NextIntlClientProvider } from "next-intl";
 
 import type { LocaleCode } from "../../src/config/locales.ts";
 import { formatMoney, loadMessages } from "../../src/modules/i18n";
+import { GridProvenance } from "../../src/modules/ui/shop/GridProvenance.tsx";
 import { ListingGrid } from "../../src/modules/ui/shop/ListingGrid.tsx";
 import { ProductCard } from "../../src/modules/ui/shop/ProductCard.tsx";
 import { equivalentsMessageValues } from "../../src/modules/ui/shop/equivalents.ts";
@@ -55,7 +56,7 @@ function render(node: React.ReactElement, locale: LocaleCode): string {
 /** The resolved message at `path` in `locale`'s catalogue (the one the card renders from). */
 function message(
   locale: LocaleCode,
-  namespace: "catalog" | "shop",
+  namespace: "catalog" | "shop" | "media",
   path: string,
 ): string {
   let node: unknown = loadMessages(locale, [namespace])[namespace];
@@ -209,7 +210,12 @@ describe("a hub card: the photograph and the name only (clause 4; T-07 amended)"
     );
     expect(html).toContain('data-fo-product-card-money="none"');
     expect(html).not.toContain("data-fo-price");
-    expect(decode(html)).toContain("Amber Hour");
+    // The whole of the card's text is its name and its example label: nothing in the price slot.
+    expect(
+      decode(html.replace(/<[^>]+>/gu, ""))
+        .replace(message(locale, "media", "provenance.aiExample"), "")
+        .trim(),
+    ).toBe("Amber Hour");
     // The retired line, in the words it shipped with, and the key itself.
     expect(decode(html)).not.toContain(
       "No price here. The price depends on the destination.",
@@ -258,6 +264,36 @@ describe("gridProvenanceMode (clause 3)", () => {
     const englishAltOnly = mediaFixture({ altLocales: ["en"] });
     expect(gridProvenanceMode(MIXED, "en", englishAltOnly)).toBe("mixed");
     expect(gridProvenanceMode(MIXED, "pl", englishAltOnly)).toBe("none");
+  });
+});
+
+describe("GridProvenance: one element per grid, displayed as the mode says (clause 3)", () => {
+  function label(cards: readonly ProductCardView[]): string {
+    return render(
+      <GridProvenance cards={cards} locale="en" manifest={MANIFEST} />,
+      "en",
+    );
+  }
+
+  it("all-example: one label, displayed at every width (no width class)", () => {
+    const html = label(ALL_EXAMPLE);
+    expect(html.split("data-fo-grid-provenance=")).toHaveLength(2);
+    expect(html).toMatch(/^<div data-fo-grid-provenance="all">/u);
+    expect(decode(html)).toContain(
+      message("en", "media", "provenance.aiExample"),
+    );
+  });
+
+  it("mixed: one label, displayed below `md` only", () => {
+    const html = label(MIXED);
+    expect(html.split("data-fo-grid-provenance=")).toHaveLength(2);
+    expect(html).toMatch(
+      /^<div class="md:hidden" data-fo-grid-provenance="mixed">/u,
+    );
+  });
+
+  it("none: nothing at all", () => {
+    expect(label(NO_EXAMPLE)).toBe("");
   });
 });
 
