@@ -46,4 +46,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 335 (stacked on PR 330): `photoFirst()` on every default product list (listings and hubs before paging, related row, home row), price sorts unpartitioned; the placeholder box wordless and `aria-hidden` on every slot, `media.placeholder.*` deleted (en-gb share 1.792 % to 1.805 %); motions 11 and 12 on screen only. Tests: unit `catalog-photo-first` (12) plus adapted media/card/PDP/home/seed-copy tests; e2e `photographs-first` (T-13 to T-15); a11y plants page and Peace Lily at 1440 and 390. **For the designer (carry-forward from `/plan-tasks`):** the placeholder is now wordless, so `system/components.dc.html`'s Photo placeholder caption is stale and needs a follow-up.
