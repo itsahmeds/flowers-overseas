@@ -14,21 +14,21 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and… | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +12 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +111 |
+| `catalog` | The only import path into the catalogue and… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +113 |
 | `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +9 |
-| `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +14 |
+| `content` | The only import path into the content module:… | 041 | `e2e/info-pages.spec.ts`, `fixtures/blog.ts` +16 |
 | `customers` | Public barrel for `customers` (customers,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +43 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +117 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +121 |
 | `invoices` | Public barrel for `invoices` (invoice and… | 018 | — |
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` +2 |
-| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `unit/florist-surface.test.ts` |
+| `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `unit/florist-surface.test.ts` +3 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
-| `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +35 |
-| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +65 |
+| `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +37 |
+| `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +66 |
 
 ## Config (`src/config/`)
 
@@ -128,6 +128,12 @@ task actually touches.
 | `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`:… | 043 |
 | `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of… | 043 |
 | `[locale]/@header/default.tsx` | The `@header` slot's fallback: the… | 043 |
+| `[locale]/@header/dla-kwiaciarni/zglos-sie/page.tsx` | The header of `/{locale}/dla-kwiaciarni/zglos-si… | 043 |
+| `[locale]/@header/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | The header of `/{locale}/dla-kwiaciarni/zglos-si… | 043 |
+| `[locale]/@header/for-florists/apply/page.tsx` | The header of `/{locale}/for-florists/apply`:… | 043 |
+| `[locale]/@header/for-florists/apply/sent/page.tsx` | The header of `/{locale}/for-florists/apply/sent… | 043 |
+| `[locale]/@header/fuer-floristen/bewerben/gesendet/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben… | 043 |
+| `[locale]/@header/fuer-floristen/bewerben/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben… | 043 |
 | `[locale]/@header/page.tsx` | The locale home's header: out of context, and… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
@@ -141,7 +147,13 @@ task actually touches.
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised… | 004 |
 | `[locale]/country-listing.tsx` | The country category's and the country… | 008 |
 | `[locale]/country-shop-root.tsx` | The country shop root's head and body, once,… | 007 |
+| `[locale]/dla-kwiaciarni/zglos-sie/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie`: The… | 011 |
+| `[locale]/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie/wyslano`:… | 011 |
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
+| `[locale]/for-florists/apply/page.tsx` | `/{locale}/for-florists/apply`: The… | 011 |
+| `[locale]/for-florists/apply/sent/page.tsx` | `/{locale}/for-florists/apply/sent`: The… | 011 |
+| `[locale]/fuer-floristen/bewerben/gesendet/page.tsx` | `/{locale}/fuer-floristen/bewerben/gesendet`:… | 011 |
+| `[locale]/fuer-floristen/bewerben/page.tsx` | `/{locale}/fuer-floristen/bewerben`: The… | 011 |
 | `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once,… | 041 |
 | `[locale]/layout.tsx` | The document layout for every localised URL… | 003 |
 | `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per… | 008 |
@@ -270,14 +282,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 427 |
+| `tests/unit/` | 430 |
 | `tests/integration/` | 67 |
-| `tests/contract/` | 28 |
+| `tests/contract/` | 29 |
 | `tests/e2e/` | 77 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 22 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 370 |
+| `tests/fixtures/` | 373 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

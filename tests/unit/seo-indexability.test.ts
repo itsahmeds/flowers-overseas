@@ -222,6 +222,12 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       privacy: "byRule",
       cookies: "byRule",
       cancellation: "byRule",
+      // spec 011 §6 (TASK-210): the landing and the walkthrough by rule; the application and its
+      // sent page "always `noindex,follow`, rendered, linked and crawlable, never in a sitemap".
+      "for-florists": "byRule",
+      "how-orders-work": "byRule",
+      "florist-apply": "never",
+      "florist-apply-sent": "never",
     });
   });
 });

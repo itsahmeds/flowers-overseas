@@ -214,7 +214,11 @@ describe("the header's registry projections (AC-14, spec 004 §14 A20)", () => {
   it("projects no account item, no end-cluster item and no search while none has a page", () => {
     for (const locale of LOCALES) {
       expect(headerAccountItems(locale), locale).toEqual([]);
-      expect(headerEndClusterItems(locale), locale).toEqual([]);
+      // Spec 011 §12 (TASK-210): the for-florists landing exists in all four locales.
+      expect(
+        headerEndClusterItems(locale).map((item) => [item.id, item.href]),
+        locale,
+      ).toEqual([["for-florists", localePath(locale, "forFlorists")]]);
       expect(headerSearchHref(locale), locale).toBeUndefined();
     }
   });
@@ -239,17 +243,19 @@ describe("a published registry entry becomes a link with no template edit (AC-14
     const actual = await vi.importActual<
       typeof import("../../src/config/site-links.ts")
     >("../../src/config/site-links.ts");
+    // `for-florists` is published since spec 011 (TASK-210); unpublishing it in the registry alone
+    // takes the entry away, with no template edit, and the committed registry draws it.
     vi.doMock("../../src/config/site-links.ts", () => ({
       ...actual,
       isPublished: (id: SiteLinkId) =>
-        id === "for-florists" || actual.isPublished(id),
+        id !== "for-florists" && actual.isPublished(id),
     }));
     const model = await import("../../src/modules/ui/layout/header-model.ts");
 
-    expect(model.headerEndClusterItems("pl").map((item) => item.href)).toEqual([
+    expect(model.headerEndClusterItems("pl")).toEqual([]);
+    expect(headerEndClusterItems("pl").map((item) => item.href)).toEqual([
       localePath("pl", "forFlorists"),
     ]);
-    expect(headerEndClusterItems("pl")).toEqual([]);
   });
 });
 
@@ -319,13 +325,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
       nav: Record<string, unknown>;
     };
     expect(UNPUBLISHED_HEADER_IDS).toEqual(
-      expect.arrayContaining([
-        "search",
-        "sign-in",
-        "my-orders",
-        "for-florists",
-      ]),
+      expect.arrayContaining(["search", "sign-in", "my-orders"]),
     );
+    expect(UNPUBLISHED_HEADER_IDS).not.toContain("for-florists");
     for (const locale of LOCALES) {
       const html = render(locale);
       for (const id of UNPUBLISHED_HEADER_IDS) {

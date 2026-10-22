@@ -291,13 +291,20 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
       ["countryShopRoot", "categoryHub", "occasionHub"].includes(page.pageType),
     );
     // Spec 041's legal documents at this depth (TASK-183): the ones that exist, from the one
-    // existence predicate (the imprint is a depth-2 page).
+    // existence predicate (the imprint is a depth-2 page). Spec 011's walkthrough (TASK-210)
+    // shares this depth: one per locale its file exists in.
     const legal = listInfoPages().filter(
-      (page) => infoPagePath(page.pageId, page.locale).split("/").length === 4,
+      (page) =>
+        page.pageId !== "how-orders-work" &&
+        infoPagePath(page.pageId, page.locale).split("/").length === 4,
     );
     expect(legal.length).toBeGreaterThan(0);
+    const walkthroughs = listInfoPages().filter(
+      (page) => page.pageId === "how-orders-work",
+    );
+    expect(walkthroughs.length).toBeGreaterThan(0);
     expect(params).toHaveLength(
-      corridors.length + listings.length + legal.length,
+      corridors.length + listings.length + legal.length + walkthroughs.length,
     );
 
     const kinds = await Promise.all(
@@ -312,6 +319,7 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
         ...corridors.map(() => "corridor"),
         ...listings.map((page) => page.pageType),
         ...legal.map(() => "infoPage"),
+        ...walkthroughs.map(() => "infoPage"),
       ].sort(),
     );
   });
