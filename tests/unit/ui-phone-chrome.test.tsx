@@ -32,6 +32,7 @@ import { loadMessages, localePath } from "../../src/modules/i18n";
 import {
   type HeaderListingHrefs,
   headerCategoryItems,
+  headerEndClusterItems,
   headerListingTargets,
   headerSendHref,
 } from "../../src/modules/ui/layout/header-model.ts";
@@ -156,9 +157,11 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
       expect(
         items.map((match) => match[1]),
         locale,
-      ).toEqual(
-        headerCategoryItems(locale, HREFS[locale] ?? {}).map(({ id }) => id),
-      );
+      ).toEqual([
+        ...headerCategoryItems(locale, HREFS[locale] ?? {}).map(({ id }) => id),
+        // Spec 011 (TASK-210): the published end-cluster entry joins the Menu after the row.
+        ...headerEndClusterItems(locale).map(({ id }) => id),
+      ]);
       for (const match of items) {
         expect(match[0], `${locale} ${match[1] ?? ""}`).toContain(
           "min-h-[52px]",
@@ -221,8 +224,9 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
         /<(?:a\s[^>]*|[a-z]+\s[^>]*aria-current="[^"]*"[^>]*)>/gu,
       ),
     ].map((match) => ({ tag: match[0], at: match.index }));
-    // Eight links, Send, one sibling shown locale, the current locale, the help line.
-    expect(elements).toHaveLength(8 + 1 + 1 + 1 + 1);
+    // Eight links, For florists (spec 011), Send, one sibling shown locale, the current locale,
+    // the help line.
+    expect(elements).toHaveLength(8 + 1 + 1 + 1 + 1 + 1);
     expect(
       elements.filter(({ tag }) => tag.includes('href="https://wa.me/')),
     ).toHaveLength(1);

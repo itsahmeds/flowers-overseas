@@ -63,6 +63,7 @@ const OPEN_BODY = `User-Agent: *
 Allow: /
 Disallow: /api/
 Disallow: /admin/
+Disallow: /demo/
 Disallow: /vendor/
 Disallow: /account/
 Disallow: /checkout/

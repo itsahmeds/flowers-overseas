@@ -10,7 +10,8 @@
       "bouquets": "/en/flowers/hand-tied-bouquets",
       "roses": "/en/flowers/roses",
       "plants": "/en/flowers/plants",
-      "destinations": "/en/send-flowers-to"
+      "destinations": "/en/send-flowers-to",
+      "for-florists": "/en/for-florists"
     },
     "menu": {
       "our-selection": "/en/poland/flowers",
@@ -20,7 +21,8 @@
       "bouquets": "/en/flowers/hand-tied-bouquets",
       "roses": "/en/flowers/roses",
       "plants": "/en/flowers/plants",
-      "destinations": "/en/send-flowers-to"
+      "destinations": "/en/send-flowers-to",
+      "for-florists": "/en/for-florists"
     },
     "send": "/en#send"
   },
@@ -33,7 +35,8 @@
       "bouquets": "/en-gb/flowers/hand-tied-bouquets",
       "roses": "/en-gb/flowers/roses",
       "plants": "/en-gb/flowers/plants",
-      "destinations": "/en-gb/send-flowers-to"
+      "destinations": "/en-gb/send-flowers-to",
+      "for-florists": "/en-gb/for-florists"
     },
     "menu": {
       "our-selection": "/en-gb/poland/flowers",
@@ -43,8 +46,10 @@
       "bouquets": "/en-gb/flowers/hand-tied-bouquets",
       "roses": "/en-gb/flowers/roses",
       "plants": "/en-gb/flowers/plants",
-      "destinations": "/en-gb/send-flowers-to"
+      "destinations": "/en-gb/send-flowers-to",
+      "for-florists": "/en-gb/for-florists"
     },
     "send": "/en-gb#send"
-  }
+  },
+  "_amended": "TASK-210 (spec 011 §12): the site-link `for-florists` was published, so the row and the phone Menu gain one entry, `for-florists`, at their end, in every context. Added by hand to the main capture; every other href is the capture's."
 }

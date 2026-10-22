@@ -194,7 +194,10 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
     });
 
     it(`a phrase planted into one \`${locale}\` key is found, and only there`, () => {
-      const [key] = leaves(CATALOGUES[locale]).at(-1) ?? [""];
+      // The last buyer key: the florist namespaces (spec 011) are exempt by design.
+      const [key] = leaves(CATALOGUES[locale])
+        .filter(([candidate]) => !relayExemptKey(candidate))
+        .at(-1) ?? [""];
       expect(
         catalogueFindings(locale, withValue(CATALOGUES[locale], key, PLANTED)),
       ).toEqual([
@@ -254,9 +257,16 @@ describe("AC-51: no buyer message value relays, in en, en-gb, de or pl", () => {
     ).toHaveLength(1);
     for (const rule of RELAY_EXEMPT)
       expect(rule.reason.length).toBeGreaterThan(0);
-    // No buyer namespace of today's catalogues is exempt.
+    // No buyer namespace of today's catalogues is exempt: every exempt key is a florist-facing
+    // (spec 011: the for-florists pages and the inbox) or an admin one.
+    const exempt = leaves(CATALOGUES.en)
+      .map(([key]) => key)
+      .filter((key) => relayExemptKey(key));
     expect(
-      leaves(CATALOGUES.en).filter(([key]) => relayExemptKey(key)),
+      exempt.filter(
+        (key) =>
+          !/^(?:forFlorists|floristAuth|floristInbox|admin)\./u.test(key),
+      ),
     ).toEqual([]);
   });
 });
