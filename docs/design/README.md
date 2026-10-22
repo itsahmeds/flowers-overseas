@@ -486,6 +486,31 @@ Admin only, in the spec 012 admin system: a calm finance page of tables and one 
 | Amendment: founder emails `contract-review-due` and `contract-review-passed` (block on `email-founder-*`) | `wireframes/email-founder-desktop.dc.html` · `wireframes/email-founder-mobile.dc.html` | 030b task 4 |
 | Amendment flow: a supply flag to a florist’s contract | `flows/admin-supply.dc.html` | 030b |
 
+### Payouts (spec 030a)
+
+Florist payouts in the spec 012 admin system, Phase 1: payout lines fixed at acceptance, weekly, prepaid and per-order payouts, statements by email with a PDF, and a Wise batch CSV the founder uploads by hand. Every admin string is a `[slot]` drawn as proposed wording with a dotted underline, owned by spec 030a §7 (`admin.payouts.*`); the florist statement keys are `email.floristPayoutStatement.*`. Figures are synthetic and follow the spec's fixtures. New parts proposed for `system/components.dc.html` "Admin": the group jump bar, the row checkbox and selection bar, the refusal box (a reason as text where a control is absent), the steps list and the money total.
+
+| Page type | Wireframe artboards | Owning spec |
+|---|---|---|
+| Payouts: five groups, open adjustments, delivered without a photo, the Wise export selection | `wireframes/admin-payouts-desktop.dc.html` · `wireframes/admin-payouts-mobile.dc.html` | 030a task 3 |
+| One payout: lines, review flag, add a line, each refusal of Send statement, sent, exported, paid | `wireframes/admin-payout-detail-desktop.dc.html` · `wireframes/admin-payout-detail-mobile.dc.html` | 030a task 3 |
+| One Wise export: rows, totals per currency, download, mark paid, cancel | `wireframes/admin-payout-export-desktop.dc.html` · `wireframes/admin-payout-export-mobile.dc.html` | 030a task 3 |
+| One florist: the Payout terms block (redrawn) | `wireframes/admin-partner-detail-desktop.dc.html` · `wireframes/admin-partner-detail-mobile.dc.html` | 030a task 1 |
+| The florist payout statement (the A4 PDF, no URL; attached to the statement email) | `wireframes/florist-payout-statement-pdf.dc.html` | 030a task 2 |
+
+### Reviews (spec 022a)
+
+The verified-review flow after delivery: the B9 email (in the Emails table below), the review form, moderation, and the reviews shown on the reviews page and on the product and country pages. **No review exists yet**, so the public artboards draw every value as a placeholder bar or a `[slot]` and every star empty; the filled states of the four new parts (`RatingStars`, `RatingSummary`, `ReviewCard`, `StarRadioGroup`) are on `system/components.dc.html` "Reviews", where the sheet leads the code. Public strings not yet in `messages/en.json` are proposed with a dotted underline under `reviews.*`; admin strings under `admin.reviews.*`. The review policy uses the legal template (`wireframes/legal-template-*`) and needs no artboard of its own.
+
+| Page type | Wireframe artboards | Owning spec |
+|---|---|---|
+| Review form: every state, opt-out | `wireframes/review-form-desktop.dc.html` · `wireframes/review-form-mobile.dc.html` | 022a task 4 |
+| Reviews page (plan/05 #30) | `wireframes/reviews-page-desktop.dc.html` · `wireframes/reviews-page-mobile.dc.html` | 022a task 5 |
+| Review block on the product page and the country page | `wireframes/product-desktop.dc.html` · `wireframes/product-mobile.dc.html` · `wireframes/corridor-country-desktop.dc.html` · `wireframes/corridor-country-mobile.dc.html` (appended sections) | 022a task 5 |
+| Footer: "Reviews" and "Review policy" | `wireframes/chrome-desktop.dc.html` · `wireframes/chrome-mobile.dc.html` (appended section) | 022a task 5 |
+| Admin reviews: queue with the exit metric, one review with its four actions | `wireframes/admin-reviews-desktop.dc.html` · `wireframes/admin-reviews-mobile.dc.html` | 022a task 4 |
+| Flow: after delivery, photo to published review | `flows/buyer-journey.dc.html` (post-delivery branch R1 to R6) | 022a |
+
 ### Emails (spec 016)
 
 Not pages: nothing is indexed and nothing is in `plan/05`. One React Email layout under `emails/` with an `audience` prop, one template per key of spec 016 §5.2, each with a plain-text part. The 1440 sheet draws each email at 600 px beside its plain text, its build notes (trigger, what it carries, every string marked verbatim or proposed with its key) and its states; the 390 sheet draws it at 375 px, as a phone mail client shows it.
@@ -493,9 +518,9 @@ Not pages: nothing is indexed and nothing is in `plan/05`. One React Email layou
 | Audience | Templates | Artboards | Owning spec |
 |---|---|---|---|
 | All three | the layout and its parts: frames for buyer, florist and founder | `wireframes/email-layout-desktop.dc.html` · `wireframes/email-layout-mobile.dc.html` | 016 task 3 |
-| Buyer (`live` only) | B1 we have your order and your payment, the order confirmation with the terms PDF · B2 being made · B3 on its way · B4 delivered with the photo · B5 cancelled and refunded (“We could not deliver this order. We have refunded {amount}.”; by the buyer) · B6 refund, with “Refunded {amount} on {date}” · B8 invoice and credit note. B7 retired: the payment is taken at Pay (founder 2026-10-14) | `wireframes/email-buyer-desktop.dc.html` · `wireframes/email-buyer-mobile.dc.html` | 016 tasks 2, 3 |
-| Florist (`test` and `live`) | V1 offer · V2 reminder · V3 confirmed · V4 stop (withdrawn; timed out) · V5 photo reminder; the one-tap link on all but V4; no recipient data | `wireframes/email-florist-desktop.dc.html` · `wireframes/email-florist-mobile.dc.html` | 016 task 3 |
-| Founder | A1 no florist (due today, not due today, automatic routing off, no florist covers it) · W the WhatsApp copies of V1 and V4 to paste | `wireframes/email-founder-desktop.dc.html` · `wireframes/email-founder-mobile.dc.html` | 016 tasks 1b, 3 |
+| Buyer (`live` only) | B1 we have your order and your payment, the order confirmation with the terms PDF · B2 being made · B3 on its way · B4 delivered with the photo · B5 cancelled and refunded (“We could not deliver this order. We have refunded {amount}.”; by the buyer) · B6 refund, with “Refunded {amount} on {date}” · B8 invoice and credit note. B7 retired: the payment is taken at Pay (founder 2026-10-14) · B9 review invite, how did we do, five star links and the stop link, 24 hours after the photo (spec 022a) | `wireframes/email-buyer-desktop.dc.html` · `wireframes/email-buyer-mobile.dc.html` | 016 tasks 2, 3 |
+| Florist (`test` and `live`) | V1 offer · V2 reminder · V3 confirmed · V4 stop (withdrawn; timed out) · V5 photo reminder; the one-tap link on all but V4; no recipient data · the payout statement with its PDF attached (spec 030a) | `wireframes/email-florist-desktop.dc.html` · `wireframes/email-florist-mobile.dc.html` | 016 task 3 |
+| Founder | A1 no florist (due today, not due today, automatic routing off, no florist covers it) · W the WhatsApp copies of V1 and V4 to paste · F1 prepaid payout ready, F2 weekly payouts ready, F3 a photo with no payout line (spec 030a) | `wireframes/email-founder-desktop.dc.html` · `wireframes/email-founder-mobile.dc.html` | 016 tasks 1b, 3 |
 | Florist inbox | the withdrawn stage: in the list under In progress, and its order screen with no recipient, payout or action | `wireframes/florist-inbox-desktop.dc.html` · `wireframes/florist-inbox-mobile.dc.html` | 016 task 1c in spec 011's files |
 
 ### Deliberately not wireframed
@@ -503,7 +528,7 @@ Not pages: nothing is indexed and nothing is in `plan/05`. One React Email layou
 | plan/05 # | Page type | Why not |
 |---|---|---|
 | 5, 11, 12, 15, 17, 23, 24 | Corridor city, flower-type hub, colour landing, add-ons & gifts, faceted listing, recipient landing, gift card | Phase 1–4. Each is a variant of a template that **is** drawn here (city = corridor, flower-type = category hub, facets = shop root with a noindex header), and each is noted as such on the artboard it varies from. Drawing them now would be designing against specs that do not exist. |
-| 26, 27, 30, 31, 37–40 | Our florists, florist profile, reviews, deliveries gallery, blog topic, author, care guide, occasion calendar | Phase 1–2, and every one of them needs data we do not have: real partners, real reviews, real consented delivery photos, five posts. A wireframe of a reviews page in Phase 0 would have to invent the reviews. |
+| 26, 27, 31, 37–40 | Our florists, florist profile, deliveries gallery, blog topic, author, care guide, occasion calendar | Phase 1–2, and every one of them needs data we do not have: real partners, real reviews, real consented delivery photos, five posts. A wireframe of a reviews page in Phase 0 would have to invent the reviews. |
 | 58, 59 | The Phase 2 florist portal, per-order florist links | Phase 2. (Customer sign-in and the account, rows 55 and 56, are drawn since 2026-10-22: spec 018 moved them to launch.) The Phase 0 florist inbox and its sign-in are drawn (row 45, spec 011); per-order links are replaced by the one email sign-in (spec 011 §13 Q2). Admin (row 57) is drawn under “Admin (spec 012)” below. Spec 026 and 027 screens extend `wireframes/florist-inbox-*`. |
 | 60–67 | Sitemaps, robots, webhooks, cron, health, consent API, tracking JSON, `security.txt` | Not pages. Nothing renders. |
 
