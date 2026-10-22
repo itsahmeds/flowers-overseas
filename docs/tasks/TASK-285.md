@@ -45,7 +45,8 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-22, D-1 (to the orchestrator, design delegation): clause 3's label on the count line's row versus rebound AC-34 at 1280 × 800.** On `main` the disclosure shares the count's row from `lg` (TASK-241) and the first row's prices end at 785 px of 800 (measured locally, this branch with the label hidden). With the label on the count row, as item 7A draws it, the disclosure needs a row of its own and the prices end at 827 px (806 with the artboards' `max-inline-size: none`, one line). No placement of the label avoids that row. Built: from `lg` only, the band is 4 px inside its rules (6 drawn), the disclosure's leading is 1.25 and the grid sits 12 px under the band (16 drawn): 795.7 px, and every listing e2e passes locally. Alternatives if this is refused: relax AC-34's 1280 × 800 bound for the shop root and the country category, or take the pixels from the head (TASK-289's area). `open` until the orchestrator accepts or refuses it at merge.
+- **2026-10-22, D-2 (information): 390 × 844 headroom.** "Includes VAT and delivery" cannot sit beside the amount in a 168 px phone card (item 7A draws it on the next line), so the phone's first-row prices move down one line: the shop root's second card ends at 842.9 px of 844 locally (it was about 826). CI's Linux text decides; if T-49 goes red at 390 there, the same choice as D-1 applies.
 
 ## Progress
 
@@ -54,6 +55,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-22: dispatched as **two PRs in order** (orchestrator's work order of 2026-10-22 overrides the 2026-10-20 carry-forward above): this PR closes TASK-285 only; TASK-290 follows on its own branch. Built clauses 1 to 4: card qualifier `catalog.price.inclusive` (leaf, beside from `md`, under below `md`); `equivalents` gone from `ProductCardViewSchema` and from `productCardView()`; `gridProvenanceMode()` + `GridProvenance` (one element per grid; `all` at every width on the count line's row / the hubs' heading row, `mixed` below `md` only); `ListingGrid provenance="grid"` hides each card's own label (`hidden` in an all-example grid, `max-md:hidden` in a mixed one and on the lead); hub cards print nothing in the price slot; `catalog.price.allIn` and `shop.card.noPrice` deleted in en/de/pl and meta. The toolbar band's disclosure now sits on row 2 from `md` up at every width (it shared row 1 at `lg`), because the label joins the count line (the artboards' note). Mixed-grid fixture for T-06: `/dev/components` state `gridMixed` (A8 (b)'s choice). Unit tests green; next: push, CI, visual baselines.
+- 2026-10-22: local build in the slot (CI queue 54 runs deep): T-49 red at 1280 × 800 (827 px); D-1 above, built and measured 795.7 px; the five affected e2e specs (288 cases) green locally. Next: visual baselines on the new head, self-review, ready + `ci:full`.
 
 ## Result
 

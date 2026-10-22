@@ -859,11 +859,18 @@ const TOOLBAR_PLACEMENT = {
  * Below `md` each part is its own line, as the phone artboards draw them, and the grid's label is
  * the band's last line (CSS `order`), between the count line and the first row. From `md` up the
  * count and the label share the count line's row (item 7A), with the sort form on the end side;
- * the disclosure wraps to its own line under them at every width, and the occasion's chip line
+ * the disclosure takes its own line under them at every width (one line from `lg`, as the
+ * artboards' `max-inline-size: none` draws it), and the occasion's chip line
  * and the category's opened panel sit under that. The country category passes no chip line: at
  * every width its chips fold into a "Categories" button before the sort form, on the sort form's
  * row (A-founder-2026-10-15c). All of it ends above the grid. Nothing that sorts or narrows the
  * list follows it, and the ranking disclosure is visible above the grid at every width (§8 L240).
+ *
+ * **The laptop band (TASK-285, D-1 in the brief).** The label on the count line's row pushes the
+ * disclosure, which shared row 1 from `lg`, onto a row of its own: about 20 px of band. Rebound
+ * AC-34 holds the first row's prices inside 1280 × 800 and had 15 px of room, so from `lg` the
+ * band is 4 px inside its rules (6 drawn), the disclosure's leading is 1.25 and the grid sits
+ * 12 px under the band (16 drawn): 796 px against the 800 px bound, measured locally.
  */
 export function CountryListingResults({
   count,
@@ -883,7 +890,7 @@ export function CountryListingResults({
   return (
     <div data-fo-listing-results={toolbar}>
       <div
-        className={`md:border-rule grid ${place.rowGap} md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
+        className={`md:border-rule grid ${place.rowGap} md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 lg:py-[4px] ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
         data-fo-listing-toolbar-band
       >
         {/* The count line's row (item 7A): the count and, from `md` up, the grid's one label
@@ -910,10 +917,15 @@ export function CountryListingResults({
         </div>
         {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
         <div
-          className="col-span-full -mt-[6px] max-w-[70ch] md:row-start-2 md:mt-0"
+          className="col-span-full -mt-[6px] max-w-[70ch] md:row-start-2 md:mt-0 md:max-w-none"
           data-fo-listing-disclosure
         >
-          <Text as="p" size="xs" tone="subtle" className="md:text-sm">
+          <Text
+            as="p"
+            size="xs"
+            tone="subtle"
+            className="md:text-sm lg:leading-[1.25]"
+          >
             {disclosure}
           </Text>
         </div>
@@ -937,7 +949,10 @@ export function CountryListingResults({
           {sortForm}
         </div>
       </div>
-      <div className="mt-[12px] md:mt-[16px]" data-fo-listing-grid-slot>
+      <div
+        className="mt-[12px] md:mt-[16px] lg:mt-[12px]"
+        data-fo-listing-grid-slot
+      >
         {grid}
       </div>
       {afterGrid}
