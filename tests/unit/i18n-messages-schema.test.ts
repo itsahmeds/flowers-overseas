@@ -354,7 +354,6 @@ describe("the shipped catalogues and manifests", () => {
     "infoPages.legal.version",
     "infoPages.status.notYetOpen",
     "occasionHub.dateUnknown",
-    "product.demo.heading",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from
     // `wireframes/occasions-index-{desktop,mobile}.dc.html` and carry the founder's attestation;
     // these two are the implementer's generalisation of the artboard's name-day-specific prose
@@ -412,6 +411,7 @@ describe("the shipped catalogues and manifests", () => {
     "payments.step.noScript",
     "payments.step.submitting",
     "payments.step.testLabel",
+    "product.demo.heading",
   ];
 
   it("reviews the authored English and leaves the machine drafts unreviewed (§13 Q7, Q10)", () => {
