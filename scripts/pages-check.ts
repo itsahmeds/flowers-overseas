@@ -23,6 +23,14 @@
  * | `trust-claims` | a trust page claims delivery timing, a cutoff, a delivery date, a florist count, a rating, a review or a delivery photo outside a sentence its `honestyAllow` lists |
  * | `honesty-allow-unused` | an `honestyAllow` entry matches no sentence, or a sentence that trips no claim pattern |
  * | `freshness-days` | a sentence states a number of days of freshness, or "7-day" (AC-16) |
+ * | `florist-faq-count` | the florists' landing has questions outside 8–10 (spec 011 §2) |
+ * | `florist-landing-blocks` | the florists' landing's sections are not §2's blocks in §2's order (spec 011 AC-2) |
+ * | `walkthrough-words` | the walkthrough carries under 350 words of prose beyond its screens (spec 011 §6, AC-7) |
+ *
+ * Spec 011's florists family (TASK-210) keeps every rule above but `relay-language`: its pages
+ * address florists, whose own work is accepting and declining orders, and its routes are listed in
+ * `RELAY_EXEMPT` as non-buyer routes. The nine banned words, "partner" among them, still fail
+ * (spec 011 §13 Q11).
  *
  * The claim, scale and price-literal patterns are `src/config/honesty.ts`'s, the list
  * `corridor:check` reads too (spec 041 §2 "One list, two readers"). Legal documents are exempt
@@ -41,9 +49,15 @@ import {
   CLAIM_PATTERNS,
   PRICE_LITERAL_PATTERN,
   SCALE_CLAIM_PATTERN,
+  relayExemptRoute,
   relayMatches,
   sentencesOf,
 } from "../src/config/honesty.ts";
+import { infoPage } from "../src/config/info-pages.ts";
+import {
+  LAUNCH_LOCALE_DATA,
+  PSEUDO_LOCALE_DATA,
+} from "../src/config/locales.data.ts";
 import { guaranteeTextViolations } from "../src/config/freshness-claim.ts";
 import { bannedVoiceWordsIn } from "../src/config/voice.ts";
 import { readInfoContent } from "../src/modules/content/corpus-files.ts";
@@ -75,8 +89,48 @@ export const PAGES_CHECK_RULES = [
   "trust-claims",
   "honesty-allow-unused",
   "freshness-days",
+  "florist-faq-count",
+  "florist-landing-blocks",
+  "walkthrough-words",
 ] as const;
 export type PagesCheckRule = (typeof PAGES_CHECK_RULES)[number];
+
+/** The florists' landing's question band (spec 011 §2: 8–10 visible questions). */
+export const FLORIST_FAQ_MIN = 8;
+export const FLORIST_FAQ_MAX = 10;
+
+/** Spec 011 §6 "Thin-content risk": the walkthrough's prose beyond its screens. */
+export const WALKTHROUGH_MIN_WORDS = 350;
+
+/**
+ * The landing's sections, in §2's order (AC-2): what we do, what you do, what you receive (the
+ * payout example), when you are paid, what we never ask for, how an order reaches you, the
+ * questions, talk to us first, where we start. The heading, intro, calls to action and status line
+ * come before them and the closing call to action after; neither is a section.
+ */
+export const FLORIST_LANDING_SECTION_IDS = [
+  "what-we-do",
+  "what-you-do",
+  "receive",
+  "paid",
+  "never",
+  "steps",
+  "questions",
+  "talk",
+  "start",
+] as const;
+
+/** Words of prose: whitespace-separated tokens. */
+export function wordCount(text: string): number {
+  return text.split(/\s+/u).filter((word) => word !== "").length;
+}
+
+/** The `forFlorists` segment of a locale, the route `RELAY_EXEMPT` names. */
+function floristSegment(locale: string): string | undefined {
+  return [...LAUNCH_LOCALE_DATA, ...PSEUDO_LOCALE_DATA].find(
+    (entry) => entry.code === locale,
+  )?.pathSegments.forFlorists;
+}
 
 export interface PagesCheckProblem {
   readonly file: string;
@@ -133,7 +187,25 @@ function proseOf(file: ParsedInfoFile): readonly (readonly [string, string])[] {
         `${item.title} ${item.text}`,
       ]);
     });
+    (section.bullets ?? []).forEach((bullet, bulletIndex) => {
+      fields.push([`${at}.bullets.${String(bulletIndex)}`, bullet]);
+    });
+    if (section.caption !== undefined) {
+      fields.push([`${at}.caption`, section.caption]);
+    }
   });
+  const labels = trust.florists;
+  if (labels !== undefined) {
+    const flat = (prefix: string, value: unknown): void => {
+      if (typeof value === "string") fields.push([prefix, value]);
+      else if (typeof value === "object" && value !== null) {
+        for (const [key, inner] of Object.entries(value)) {
+          flat(`${prefix}.${key}`, inner);
+        }
+      }
+    };
+    flat("florists", labels);
+  }
   (trust.faq ?? []).forEach((item, index) => {
     fields.push([`faq.${String(index)}.q`, item.q]);
     fields.push([`faq.${String(index)}.a`, item.a]);
@@ -166,6 +238,40 @@ function checkFile(file: ParsedInfoFile, path: string): PagesCheckProblem[] {
       "an `en` or `en-gb` file is written by a person, never machine-drafted (plan/02 §12)",
     );
   }
+  if (file.kind === "trust" && file.pageId === "for-florists") {
+    const count = file.content.faq?.length ?? 0;
+    if (count < FLORIST_FAQ_MIN || count > FLORIST_FAQ_MAX) {
+      push(
+        "faq",
+        "florist-faq-count",
+        `the florists' landing has ${String(count)} questions; spec 011 §2 asks for ${String(FLORIST_FAQ_MIN)}–${String(FLORIST_FAQ_MAX)}`,
+      );
+    }
+    const ids = file.content.sections.map((section) => section.id);
+    if (ids.join(",") !== FLORIST_LANDING_SECTION_IDS.join(",")) {
+      push(
+        "sections",
+        "florist-landing-blocks",
+        `the landing's sections are [${ids.join(", ")}]; spec 011 §2 asks for [${FLORIST_LANDING_SECTION_IDS.join(", ")}] in that order (AC-2)`,
+      );
+    }
+  }
+  if (file.kind === "trust" && file.pageId === "how-orders-work") {
+    const content = file.content;
+    const words =
+      wordCount(content.intro ?? "") +
+      content.sections.reduce(
+        (sum, section) => sum + wordCount(section.body ?? ""),
+        0,
+      );
+    if (words < WALKTHROUGH_MIN_WORDS) {
+      push(
+        "sections",
+        "walkthrough-words",
+        `the walkthrough carries ${String(words)} words of prose beyond its screens; spec 011 §6 asks for at least ${String(WALKTHROUGH_MIN_WORDS)}, or the page is thin`,
+      );
+    }
+  }
   if (file.kind === "trust" && file.pageId === "help") {
     const count = file.content.faq?.length ?? 0;
     if (count < INFO_FAQ_MIN || count > INFO_FAQ_MAX) {
@@ -192,7 +298,10 @@ function checkFile(file: ParsedInfoFile, path: string): PagesCheckProblem[] {
         `uses the banned word \`${word}\` (spec 004 §14 A5, src/config/voice.ts)`,
       );
     }
-    for (const match of relayMatches(text, file.locale)) {
+    const floristRoute =
+      infoPage(file.pageId).family === "florists" &&
+      relayExemptRoute(floristSegment(file.locale) ?? "");
+    for (const match of floristRoute ? [] : relayMatches(text, file.locale)) {
       push(
         field,
         "relay-language",
