@@ -68,8 +68,10 @@ export type PayoutExample = z.infer<typeof PayoutExampleSchema>;
 /**
  * The sample values the walkthrough's example order prints that are neither catalogue data nor
  * copy: the buyer's own words on the card and in the delivery note (a buyer in London writes them,
- * so they stay in English in every locale), the delivery date and the answer-by instant. Plainly
- * fictional, like `checkout-samples.ts`; the recipient is that file's Polish row.
+ * so they stay in English in every locale), the delivery date, the answer-by instant and the
+ * recipient. Plainly fictional: the recipient is `checkout-samples.ts`'s Polish row, restated here
+ * because that file imports the checkout's types and the walkthrough may not reach them (spec 003
+ * §14 A17 check 11); `tests/unit/florists-config.test.ts` pins the two equal.
  */
 const ExampleOrderSchema = z
   .object({
@@ -81,6 +83,16 @@ const ExampleOrderSchema = z
     addonKey: z.string().min(1),
     cardMessage: z.string().min(1).max(250),
     deliveryNote: z.string().min(1).max(250),
+    recipient: z
+      .object({
+        fullName: z.string().min(1),
+        street: z.string().min(1),
+        postcode: z.string().min(1),
+        city: z.string().min(1),
+        /** As the sample types it; the view stores it as E.164. */
+        phone: z.string().min(1),
+      })
+      .strict(),
   })
   .strict();
 
@@ -161,6 +173,13 @@ export const FLORISTS: FloristsConfig = FloristsConfigSchema.parse({
     addonKey: "vase",
     cardMessage: "Happy birthday, Mama! All my love from London.",
     deliveryNote: "Please call when you are downstairs.",
+    recipient: {
+      fullName: "Anna Przykładowa",
+      street: "ul. Marszałkowska 10/5",
+      postcode: "00-001",
+      city: "Warszawa",
+      phone: "+48 22 000 00 00",
+    },
   },
   photo: {
     maxBytes: 15_728_640,

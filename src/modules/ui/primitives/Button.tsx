@@ -167,6 +167,9 @@ export interface ButtonProps {
   readonly pending?: boolean;
   readonly className?: string;
   readonly id?: string;
+  /** A submit button's `name` and `value` (spec 011's Accept: `response=accept`), no-JS form posts. */
+  readonly name?: string;
+  readonly value?: string;
   readonly "aria-describedby"?: string;
   readonly "aria-label"?: string;
 }
@@ -185,6 +188,8 @@ export function Button({
   pending,
   className,
   id,
+  name,
+  value,
   ...aria
 }: ButtonProps): ReactElement {
   const skin = VARIANT_SKIN[variant];
@@ -264,6 +269,8 @@ export function Button({
       id={id}
       className={classes}
       type={type}
+      name={name}
+      value={value}
       disabled={disabled}
       aria-disabled={disabled ? true : undefined}
       aria-busy={busy ? true : undefined}

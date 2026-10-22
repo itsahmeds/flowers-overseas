@@ -13,7 +13,7 @@
 import type { Metadata } from "next";
 
 import { COMPANY } from "@/config/company";
-import type { InfoPageId } from "@/config/info-pages";
+import { type InfoPageId, infoPage } from "@/config/info-pages";
 
 import {
   infoPageAlternatePaths,
@@ -32,6 +32,25 @@ import {
 import { faqPage } from "./schema/faqPage.ts";
 import { type JsonLdNode, schemaOptions } from "./schema/JsonLd.tsx";
 import { organization } from "./schema/organization.ts";
+import { webPage } from "./schema/webPage.ts";
+
+/**
+ * The locales an info page's hreflang cluster and sitemap alternates may name. Spec 011 §6: the
+ * florists' landing and walkthrough cluster only among locales whose file is **reviewed**, so a
+ * `de`/`pl` draft is outside every cluster and every sitemap until its native review. The trust
+ * and legal families keep spec 041's set (every locale where the page exists).
+ */
+export function infoPageHreflangPaths(
+  pageId: InfoPageId,
+): Readonly<Record<string, string>> {
+  const paths = infoPageAlternatePaths(pageId);
+  if (infoPage(pageId).family !== "florists") return paths;
+  return Object.fromEntries(
+    Object.entries(paths).filter(
+      ([code]) => infoPageView(pageId, code)?.reviewed === true,
+    ),
+  );
+}
 
 /**
  * The page's `Metadata`, or `undefined` where the page does not exist in this locale (the route
@@ -53,7 +72,7 @@ export function infoPageMetadata(
   );
   const cluster = deployment.siteUrl.startsWith("https:")
     ? alternatesFor(
-        { pathByLocale: infoPageAlternatePaths(pageId) },
+        { pathByLocale: infoPageHreflangPaths(pageId) },
         { baseUrl: deployment.siteUrl },
       ).find((page) => page.url.endsWith(view.path))?.alternates
     : undefined;
@@ -80,10 +99,26 @@ export function infoPageJsonLd(
   const head = infoPageHeadView(pageId, locale);
   const options = schemaOptions(deployment.siteUrl);
   if (head === undefined || options === undefined) return [];
+  const types = infoPage(pageId).schemaTypes;
+  // The trust and florists families' own view: the FAQ and the WebPage name come from the same
+  // view model the visible page renders, word for word (spec 041 AC-19, spec 011 AC-6).
   const view = infoPageView(pageId, locale);
   return [
     breadcrumbList(head.breadcrumb, label, options),
-    pageId === "help" && view !== undefined ? faqPage(view.faq) : undefined,
+    types.includes("WebPage") && view !== undefined
+      ? webPage(
+          {
+            name: view.seoTitle,
+            description: view.seoDescription,
+            path: view.path,
+            inLanguage: locale,
+          },
+          options,
+        )
+      : undefined,
+    types.includes("FAQPage") && view !== undefined
+      ? faqPage(view.faq)
+      : undefined,
     pageId === "about" ? organization(COMPANY, options) : undefined,
   ].filter((node) => node !== undefined);
 }
