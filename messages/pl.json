@@ -734,7 +734,7 @@
       "tooMany": "W tej chwili przychodzi zbyt wiele zgłoszeń naraz. Spróbuj ponownie za chwilę albo zadzwoń lub napisz do nas pod numer {phoneDisplay}."
     },
     "sent": {
-      "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli chcesz porozmawiać wcześniej, zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
+      "body": "Czytamy każde zgłoszenie i odpowiadamy, czy odpowiedź brzmi tak, czy nie. Jeśli chcesz porozmawiać wcześniej, zadzwoń albo napisz do nas pod numer <phone>{phoneDisplay}</phone>.",
       "h1": "Dziękujemy. Mamy Twoje zgłoszenie.",
       "title": "Dziękujemy | Dla kwiaciarni",
       "walkthrough": "Zobacz, jak przychodzi zamówienie"

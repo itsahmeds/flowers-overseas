@@ -1161,7 +1161,7 @@
     "sent": {
       "title": "Thank you | For florists",
       "h1": "Thank you. We have your application.",
-      "body": "We read every application and reply, whether the answer is yes or no. If you would like to talk sooner, call or message us on {phoneDisplay}.",
+      "body": "We read every application and reply, whether the answer is yes or no. If you would like to talk sooner, call or message us on <phone>{phoneDisplay}</phone>.",
       "walkthrough": "See how an order reaches you"
     }
   },
