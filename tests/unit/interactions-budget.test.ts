@@ -260,7 +260,11 @@ describe("idea 6, the route line, against §5.3.0's caps (AC-1)", () => {
       withoutRouteSection(source),
     );
     expect(withRoute).toContain("@keyframes fo-route-draw");
-    expect(without).not.toContain("fo-route");
+    // Not `"fo-route"` alone: since TASK-283 the motion 13 section carries its own
+    // `fo-route-unroll` keyframes, which are not this idea's bytes and stay in `without`.
+    expect(without).not.toContain("fo-route-draw");
+    expect(without).not.toContain("fo-route-dot");
+    expect(without).not.toContain("data-fo-route-line");
     const growth = brotli(minify(withRoute)) - brotli(minify(without));
     // The number the brief's `## Result` records.
     console.info(`idea 6 CSS growth: ${String(growth)} B Brotli`);
