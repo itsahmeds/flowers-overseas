@@ -41,6 +41,7 @@ here.
 
 - 2026-10-22, implementer: one `PrintedCardPreview` on both pages, the product island writes into its `<bdi>` and marks the sample, `globals.css` idea 2 section, `src/config/interactions.ts` (`cardPreviewMotion`), unit T-1/T-3/T-10/T-11 and e2e T-10 (+ the gallery's AC-11 face check); 14 mutations each seen red. TASK-309 is not in this PR: its dependency TASK-306 is still `todo` (PR 314). Next: gates, Self-review, ready, `ci:full`, Linux baselines for the product card section if `visual` moves.
 - 2026-10-23, implementer: Linux baselines showed the card's words in a serif; a local build proved Caveat never rendered (root-scoped `--font-hand`). Fixed in the idea 2 section, e2e face checks tightened, touched e2e specs green locally (26). Next: fresh `visual:baselines` run for `dev-components-desktop`, then ready and `ci:full`.
+- 2026-10-23, implementer: `dev-components-desktop` Linux baseline from run 39843386160 committed after looking at it (Caveat on both checkout cards); PR ready with `ci:full`. Next: CI on head.
 
 ## Result
 
