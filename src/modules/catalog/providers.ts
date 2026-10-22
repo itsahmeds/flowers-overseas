@@ -152,7 +152,9 @@ let swapped: CatalogProviders | undefined;
  * `tests/integration/catalog-db-providers.test.ts` exercises through `withCatalogProviders()`.
  */
 export function catalogProviders(): CatalogProviders {
-  return swapped ?? STATIC_PROVIDERS;
+  // A fresh object per call, as before the hook existed: a caller that assigned to the answer
+  // could otherwise change every later caller's providers.
+  return { ...(swapped ?? STATIC_PROVIDERS) };
 }
 
 /**
