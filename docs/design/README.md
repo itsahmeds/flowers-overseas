@@ -123,7 +123,7 @@ One answer for TASK-175's T-01: the name on the right, with the value on the rig
 | `homepage-v1/` | The founder-approved homepage, identity and token file from the 2026-09-08 review: **the v1 record**. Superseded as the direction by v2 (2026-10-03, `wireframes/home-*`); never edited again. | nobody |
 | `directions/` | The 2026-10-03 brand directions the founder compared, the colour research, and the chosen `warm-c/` pages v2 is drawn from. Under spec 004 §14 A21, **`warm-c/` is binding for the look** (palette, type, shapes); the v2 `system/` and `wireframes/` are binding for the build, and they win wherever they differ from `warm-c/` (see “What the warm-c direction draws that the specs forbid”). The other directions are a record only. | nobody |
 | `system/` | `tokens.css` (canonical, v2), `components.dc.html` (every shipped primitive at every state), `typography.dc.html` (ramp, measure, script coverage), `colour.dc.html` (palette, semantic aliases, contrast manifest). | whoever changes `src/modules/ui` |
-| `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html`, `admin-florist-bouquets.dc.html`, `admin-go-live.dc.html`: screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
+| `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html`, `admin-florist-bouquets.dc.html`, `admin-go-live.dc.html`, `admin-blog-publish.dc.html`: screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
 | `wireframes/` | One desktop (1440) and one mobile (390) artboard per Phase 0 page type. Structural, in the approved system: grey photo slots, real registry copy where it exists, `[slot]` markers where it does not, every state and empty state shown. | the spec that owns the page |
 | `benchmarks/` | The 2026-09-09 competitor study — nine files across eight page types and nine brands — plus a `README.md` mapping every page type's wireframe to its benchmark file with "what we took / what we dropped / why", the ten patterns and where each landed, and the fourteen questions only the founder can answer. Evidence, not instructions: where the study and `CLAUDE.md` disagree, `CLAUDE.md` wins. | the study that replaces it |
 | `audits/` | Dated design audits of the live site: what the first screen shows, alignment faults with their measurements, v1 leftovers, differences from the artboards, the rulings asked for and the copy for batch approval. | the designer |
@@ -392,13 +392,14 @@ Every row of `plan/05` §1 and §2 whose Phase column is 0. Rows outside §1–�
 | 32 | FAQ / help (as “Help and contact”) | `wireframes/help-and-contact-desktop.dc.html` · `wireframes/help-and-contact-mobile.dc.html` — contact first, twelve questions as visible headings; email, WhatsApp-off and privacy-link states | 041 |
 | 33 | About | `wireframes/about-desktop.dc.html` · `wireframes/about-mobile.dc.html` — the founder's name, the company block before and after registration | 041 |
 | 34 | Contact (the first block of Help and contact; `/en/contact` 404s) | `wireframes/help-and-contact-desktop.dc.html` · `wireframes/help-and-contact-mobile.dc.html` | 041 |
-| 35 | Blog index | `wireframes/blog-desktop.dc.html` · `wireframes/blog-mobile.dc.html` | 007 |
-| 36 | Blog post | `wireframes/blog-desktop.dc.html` · `wireframes/blog-mobile.dc.html` | 007 |
+| 35 | Blog index | `wireframes/blog-index-desktop.dc.html` · `wireframes/blog-index-mobile.dc.html` — the ruled list newest first, a row without a cover, one post, no post (404, no footer link), `de`/`pl` 404, not indexable, the footer link | 044 |
+| 36 | Blog post | `wireframes/blog-post-desktop.dc.html` · `wireframes/blog-post-mobile.dc.html` — byline, Published and Updated, the not-open line, cover and AI note, excerpt, the body subset, the end-of-post guide link; without cover, Updated absent, open, a vanished link as text, first-tag guide absent, literal text, long title at 390, 404 and 308 | 044 |
 
-Two pairs cover two page types each — our guarantee with delivery and payment, blog index with blog
-post — because in each case the two pages share one template and differ only in content. Both are drawn
-on the shared artboard, labelled, so an implementer sees the template and its variants together rather
-than inferring one from the other. Contact is not a page of its own (spec 041 §2): it is the first block
+One pair covers two page types — our guarantee with delivery and payment — because the two pages share
+one template and differ only in content. It is drawn on the shared artboard, labelled, so an implementer
+sees the template and its variants together rather than inferring one from the other. The blog index
+and the blog post had one shared pair until spec 044 (2026-10-21) gave each its own template, from posts
+written and published in admin. Contact is not a page of its own (spec 041 §2): it is the first block
 of help, so rows 32 and 34 name the same pair, and about has its own.
 
 ### Also wireframed, from outside §1–§2
@@ -432,6 +433,17 @@ Slice A of the catalogue CMS, in the spec 012 admin system: the same shell, 14 p
 | Countries · one country (go-live check and switch) | `wireframes/admin-countries-desktop.dc.html` · `wireframes/admin-countries-mobile.dc.html` · `wireframes/admin-country-detail-desktop.dc.html` · `wireframes/admin-country-detail-mobile.dc.html` | 012b task 8 |
 | Publish | `wireframes/admin-publish-desktop.dc.html` · `wireframes/admin-publish-mobile.dc.html` | 012b task 4 |
 | Flows: florist bouquets on sale · a country goes live | `flows/admin-florist-bouquets.dc.html` · `flows/admin-go-live.dc.html` | 012b |
+
+### Admin blog (spec 044)
+
+Slice A of the blog in the CMS, in the spec 012 admin system and spec 012b's review and publish parts. Every admin string not yet in `messages/admin/en.json` is a `[slot]` drawn as proposed wording with a dotted underline, owned by spec 044 §7 (`admin.blog`). The ten public labels are spec 044 Appendix A, approved 2026-10-21 (“blog ok”), and appear verbatim on the public pair above. New parts proposed for `system/components.dc.html` “Admin”: the markdown field with its toolbar, the link picker list and the own-name confirmation card. The preview is a state of the editor. The AI note under a blog cover is a copy slot: the label for a cover of a place is founder copy.
+
+| Page type | Wireframe artboards | Owning spec |
+|---|---|---|
+| One post: write, link, preview, approve, publish, publish changes, unpublish | `wireframes/admin-blog-edit-desktop.dc.html` · `wireframes/admin-blog-edit-mobile.dc.html` | 044 task 3 |
+| Posts: status chips, filters, empty | `wireframes/admin-blog-list-desktop.dc.html` · `wireframes/admin-blog-list-mobile.dc.html` | 044 task 3 |
+| Authors: add, own-name confirmation, name change, withdraw | `wireframes/admin-blog-authors-desktop.dc.html` · `wireframes/admin-blog-authors-mobile.dc.html` | 044 task 3 |
+| Flow: a blog post, write to unpublish, with a failed run | `flows/admin-blog-publish.dc.html` | 044 |
 
 ### Emails (spec 016)
 
