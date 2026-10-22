@@ -1414,6 +1414,32 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
 }
 
 /*
+ * Spec 042 idea 2, the card preview (§5.3.2, AC-10, AC-3, AC-4; §13 Q4 (a); TASK-308;
+ * `docs/design/system/motion-interactions.dc.html` motion 15). `PrintedCardPreview` draws the
+ * sample sentence first and the buyer's words after it in one grid cell; `CardMessageField` marks
+ * the sample `aria-hidden="true"` while the field has words.
+ *
+ *  - Rest: while the sample shows, the words line is transparent; once there are words, the sample
+ *    is. Only `opacity` changes and both lines keep their box, so the card is always as tall as the
+ *    taller of the two (CLS 0). Checkout draws no sample, so neither rule reaches its lines.
+ *  - Hand-over: an `opacity` crossfade, `--duration-base` (200 ms) on `--ease-standard`, on the
+ *    first words and on clearing; every later keystroke changes only text. Only on a cell the
+ *    build switch marked (`data-fo-card-swap`, `interactions.cardPreviewMotion`) and only under
+ *    `no-preference`: under `reduce` the swap is instant (L7 allows 120 ms; this uses none).
+ */
+[data-fo-card-sample][aria-hidden="true"],
+[data-fo-card-sample]:not([aria-hidden="true"]) + [data-fo-card-text] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-fo-card-swap] > * {
+    transition: opacity var(--duration-base) var(--ease-standard);
+  }
+}
+/* end of spec 042 idea 2 */
+
+/*
  * Motion 6's two card layers and the pill's hover layer, at rest (spec 004 §14
  * A-founder-2026-10-19e clause 1 (c), (d), (e) and clause 5). They are boxes that exist at rest and
  * are absolutely positioned, so hover changes no layout (CLS 0); only their `opacity` or `transform`

@@ -109,7 +109,11 @@ test.describe("checkout primitives on /dev/components", () => {
     page,
   }) => {
     const requests: string[] = [];
-    page.on("request", (request) => requests.push(request.url()));
+    // The card's face (Caveat) may be fetched when the first words paint in it: that is the
+    // browser's font loading, not a request the islands make (spec 042 AC-11; TASK-308).
+    page.on("request", (request) => {
+      if (request.resourceType() !== "font") requests.push(request.url());
+    });
 
     await page.locator(`#${IDS.card}`).fill("Hello Mama 👨‍👩‍👧");
     await expect(page.locator(`#${IDS.card}-count`)).toHaveText(
@@ -123,5 +127,38 @@ test.describe("checkout primitives on /dev/components", () => {
     );
 
     expect(requests, "the islands make no network request").toEqual([]);
+  });
+
+  test("the card preview is the product page's: same root, same face on the words, the signature mirrored (spec 042 AC-11)", async ({
+    page,
+  }) => {
+    const words = page.locator(
+      `[data-fo-card-preview] [data-fo-mirror="${IDS.card}"]`,
+    );
+    await page.locator(`#${IDS.card}`).fill("Happy birthday Mama!");
+    await page.locator(`#${IDS.signAs}`).fill("Love, Anna");
+    await expect(words).toHaveText("Happy birthday Mama!");
+    const card = page.locator("[data-fo-card-preview]", { has: words });
+    await expect(card.locator("[data-fo-card-signature]")).toHaveText(
+      "Love, Anna",
+    );
+    await expect(card.locator("figcaption")).toHaveText(
+      "Printed on our card · included",
+    );
+    const face = (locator: typeof words) =>
+      locator.evaluate(
+        (node) =>
+          getComputedStyle(node.closest("[data-fo-card-text]") ?? node)
+            .fontFamily,
+      );
+    const checkoutFace = await face(words);
+
+    await page.goto("/en-gb/poland/product/amber-hour");
+    const productFace = await face(
+      page.locator("[data-fo-card-preview] [data-fo-card-text]"),
+    );
+    expect(checkoutFace).toBe(productFace);
+    // `next/font/local` names the family after the export (`handFont`, `handFontExt`).
+    expect(checkoutFace.toLowerCase()).toMatch(/caveat|handfont/u);
   });
 });
