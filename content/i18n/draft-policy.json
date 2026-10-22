@@ -211,15 +211,7 @@
         "reason": "icu-only"
       },
       {
-        "key": "checkout.error.summaryItem",
-        "reason": "icu-only"
-      },
-      {
-        "key": "common.beta",
-        "reason": "same-word"
-      },
-      {
-        "key": "footer.link.cookies",
+        "key": "catalog.facet.colour.orange",
         "reason": "same-word"
       },
       {
@@ -231,7 +223,15 @@
         "reason": "same-word"
       },
       {
-        "key": "catalog.facet.colour.orange",
+        "key": "checkout.error.summaryItem",
+        "reason": "icu-only"
+      },
+      {
+        "key": "checkout.field.optional",
+        "reason": "same-word"
+      },
+      {
+        "key": "common.beta",
         "reason": "same-word"
       },
       {
@@ -239,13 +239,25 @@
         "reason": "name"
       },
       {
+        "key": "destinations.pl.cities",
+        "reason": "name",
+        "note": "Polish city names as the cities write them"
+      },
+      {
+        "key": "destinationsHub.regionLabel",
+        "reason": "same-word"
+      },
+      {
+        "key": "footer.link.cookies",
+        "reason": "same-word"
+      },
+      {
         "key": "home.reviews.trustpilotRegion",
         "reason": "name"
       },
       {
-        "key": "destinations.pl.cities",
-        "reason": "name",
-        "note": "Polish city names as the cities write them"
+        "key": "product.eyebrowPhone",
+        "reason": "icu-only"
       }
     ],
     "pl": [
@@ -258,6 +270,10 @@
         "reason": "icu-only"
       },
       {
+        "key": "catalog.facet.priceTier.premium",
+        "reason": "same-word"
+      },
+      {
         "key": "checkout.error.summaryItem",
         "reason": "icu-only"
       },
@@ -266,20 +282,28 @@
         "reason": "same-word"
       },
       {
-        "key": "catalog.facet.priceTier.premium",
-        "reason": "same-word"
-      },
-      {
         "key": "company.support.whatsapp",
         "reason": "name"
+      },
+      {
+        "key": "destinations.pl.cities",
+        "reason": "name"
+      },
+      {
+        "key": "destinationsHub.regionLabel",
+        "reason": "same-word"
       },
       {
         "key": "home.reviews.trustpilotRegion",
         "reason": "name"
       },
       {
-        "key": "destinations.pl.cities",
-        "reason": "name"
+        "key": "nav.menu.label",
+        "reason": "same-word"
+      },
+      {
+        "key": "product.eyebrowPhone",
+        "reason": "icu-only"
       }
     ]
   }
