@@ -35,11 +35,49 @@ Branch `task/TASK-070-db-catalogue-providers`. **Blocked on TASK-013** (spec 002
 
 ## Escalations
 
-_None recorded._
+Rulings made by the implementer on 2026-10-22 under the orchestrator's order ("follow the spec
+text and record the ruling, then continue"); none is about money, so none blocks.
+
+- **E1, schema gap (ruled: migration `0020_product_facets`).** Spec 005 AC-27 needs the database
+  provider to hand over the same `ProductData` as the static one, and spec 012b §2.2 makes the
+  database the only runtime source of "products, tiers, facets". Spec 002 §5.1's `product` row
+  holds only the *primary* flower and colour; the other flower types (30 products), the other
+  colours (14), the allergen attribute (4 gift sets) and the order of a product's occasions had no
+  column, and the seed never wrote `product_occasion` at all. Neither spec 005 nor spec 012b's
+  slice A migrations list the change. Ruling: `0020_product_facets` (number after PR 320's `0019`,
+  as the work order allows) adds `product.other_flowers text[]`, `product.other_colours text[]`,
+  `product.allergen_note boolean` (defaults `'{}'`, `'{}'`, `false`; a check refuses the primary
+  among the others) and `product_occasion.sort`; the seed writes them and the `product_occasion`
+  edges; a one-time backfill fills rows the seed already wrote (`source = 'seed'` and all three
+  still at their defaults only), because a production seed is `--insert-only` (spec 012b AC-1) and
+  could never fill them. Spec 002 §5.1 should gain the four columns by amendment (orchestrator).
+- **E2, definitions (ruled: repository).** `category`, `occasion` and `addon` carry keys only, not
+  the `sort`, label key, flag prefix or `partnerOnly` a definition is made of, and spec 012b §2.2
+  keeps "add-on and category and occasion definitions" in the repository. So
+  `dbCatalogueProvider.categories/occasions/addons` hand over the static provider's frozen rows.
+- **E3, AC-28 behind an unchanged interface (ruled: one statement per read, once per request).**
+  `PriceProvider.countryPrices()` takes no argument, so a query cannot be scoped to one (product,
+  country) without changing the interface the brief says is unchanged. Each read is one `SELECT`
+  over its table, kept in the request's read scope (React `cache()`), so pricing a product is one
+  `country_price` query whatever its tier count and a listing of every card is the same one query:
+  never one per tier. A cached ISR page renders nothing and so reads nothing; the providers issue
+  no query at import or construction. The end-to-end "warm page through `next start`, zero
+  queries" needs the composition root to select the database, which is TASK-294's (carry-forward).
+- **E4, the composition root (ruled: not switched here).** Spec 012b AC-3 gives the by-environment
+  selection to TASK-294. This task adds `withCatalogProviders()` (module-internal, not in the
+  barrel) so the suite prices through the module with the root swapped inside
+  `src/modules/catalog`; the PR's diff touches no file under `src/` outside `src/modules/catalog`.
+- **E5, the `/review 132` follow-up (checked).** `ui/home/trending-provider.ts` reads one product's
+  `name`; `geo/corridor.ts`, `ui/product/DateChip.tsx` and `ui/product/PriceSummary.tsx` read an
+  occasion's `labelKey`. None hands out a dataset row or array, so TASK-148's mutation defect
+  cannot arise through them. Occasion definitions stay in the repository under spec 012b §2.2, so
+  those three are correct for good; the product name becomes database-owned at the cutover, so the
+  trending row must read it through the barrel then (carry-forward to TASK-294).
 
 ## Progress
 
 - 2026-10-22: worktree on `task/TASK-070-db-catalogue-providers`; contract `emptyInPlace` now overwrites and reverses a nested array before truncating it (red under H4a sealed and H4b non-writable `length`, green before). Next: migration `0020_product_facets`, the `db/` providers, the Postgres contract run.
+- 2026-10-22: `src/modules/catalog/db/{read,catalogue,price,fx,index}.ts`, `frozen.ts`, migration `0020_product_facets` (+ down), seed writes the facets and `product_occasion`; `tests/integration/catalog-db-providers.test.ts` 65/65 green on a local PG16 (with PR 320's `0019` present), seven mutations each red. Next: rebase on PR 320, cheap gates, ready + `ci:full`.
 
 ## Result
 
