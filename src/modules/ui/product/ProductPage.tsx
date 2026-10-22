@@ -75,6 +75,13 @@ export interface ProductPageProps {
   readonly view: ProductView;
   /** Spec 008's breadcrumb over `view.breadcrumb`, mounted by the route. */
   readonly breadcrumb: ReactNode;
+  /**
+   * The guarantee page's path where it exists in this locale (spec 009 §14 A11 bullet 1, spec 041
+   * §6; TASK-287), or absent. The route asks `infoPageExists("guarantee", locale)` and hands it
+   * in, because this module may not read `src/modules/content` (`plan/01` §5). Present: the
+   * fresh-flower promise's title links to it. Absent: the title is plain text, as before.
+   */
+  readonly guaranteeHref?: string | undefined;
 }
 
 /** The related row's full length, which the approved heading names in words ("Six more"). */
@@ -99,6 +106,7 @@ export const BUY_ACTION_ID = "buy";
 export function ProductPage({
   view,
   breadcrumb,
+  guaranteeHref,
 }: ProductPageProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
@@ -364,6 +372,7 @@ export function ProductPage({
                 {freshness ? (
                   <Promise
                     body={product("trust.freshness.body")}
+                    href={guaranteeHref}
                     title={product("trust.freshness.title")}
                   />
                 ) : null}
@@ -481,20 +490,37 @@ export function ProductPage({
   );
 }
 
-/** One promise: a cornflower check, the claim in bold, its terms under it. */
+/**
+ * One promise: a cornflower check, the claim in bold, its terms under it. With `href` the claim is
+ * a link to the page that states it in full (the guarantee page, TASK-287); the words stay the same.
+ */
 function Promise({
   title,
   body,
+  href,
 }: {
   readonly title: string;
   readonly body: string;
+  readonly href?: string | undefined;
 }): ReactElement {
   return (
     <li className="grid grid-cols-[auto_1fr] gap-x-[14px] gap-y-[4px]">
       <span className="text-mark row-span-2 mt-[2px]">
         <Icon name="shield-check" size={24} />
       </span>
-      <h3 className="font-body m-0 text-[17px] font-bold">{title}</h3>
+      <h3 className="font-body m-0 text-[17px] font-bold">
+        {href === undefined ? (
+          title
+        ) : (
+          <a
+            className="text-link hover:text-link-strong inline-flex min-h-[24px] items-center underline underline-offset-4"
+            data-fo-pdp-guarantee-link
+            href={href}
+          >
+            {title}
+          </a>
+        )}
+      </h3>
       <p className="text-ui text-ink-muted m-0">{body}</p>
     </li>
   );

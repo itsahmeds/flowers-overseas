@@ -43,11 +43,31 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-20 (frontend-implementer): `ProductPage` takes `guaranteeHref`; the product route hands `infoPagePath("guarantee")` where `infoPageExists("guarantee", locale)` holds (en, en-gb today), and the promise title becomes the link; unit equality (PDP `product.trust.freshness.*` = the guarantee page's `promise` section heading and first paragraph) and render cases, e2e for en/en-gb href and de/pl no link; mutations watched red; next: PR after TASK-286's PR is ready.
+- 2026-10-20: rebased on origin/main; PR #303 opened after PR #301 went ready; ready with `ci:full`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR #303](https://github.com/itsahmeds/flowers-overseas/pull/303). The product route passes `guaranteeHref` when `infoPageExists("guarantee", locale)` is true (en and en-gb today), and the fresh-flower promise's `h3` title then links to the guarantee page. In de and pl the title stays plain text. No text and no key changed. Tests: 6 unit cases in `tests/unit/product-page.test.tsx`:
+- the PDP promise title and sentence equal the guarantee page's `promise` section, in en and en-gb;
+- de and pl have no guarantee page;
+- with a path, one link inside the promise heading;
+- without a path, no link.
+
+Four mutations each turned a case red: the link dropped, the PDP sentence edited, the PDP title edited, the page sentence edited in the corpus. 4 e2e cases in `tests/e2e/product-page.spec.ts`: the en and en-gb `href`s and their 200 responses, and no link on de or pl. They run in CI. No local build or browser run. One earlier `gates:cheap` run had the tests gate exit 1 under load average ~15. It passed on the immediate re-run, and on the rebased head below. The failing file was not captured.
+
+```
+gates:cheap · 80b1f802f33b5fac3c695030ef3ff8992e0d3bb2 · tree clean · base origin/main · 2026-10-20T17:23:13.517Z
+typecheck             exit 0 · 8.9 s
+lint                  exit 0 · 21.0 s
+format:check          exit 0 · 12.1 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 23.3 s · changed 9 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```

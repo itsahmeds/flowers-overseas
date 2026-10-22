@@ -40,6 +40,7 @@ import {
 } from "../../src/modules/catalog";
 import { dateSurcharges } from "../../src/modules/catalog/pricing/resolve.ts";
 import { getProduct } from "../../src/modules/catalog/read.ts";
+import { infoPageExists, infoPageView } from "../../src/modules/content";
 import { withActivePartnersProvider } from "../../src/modules/geo/partners.ts";
 import { formatDate, formatMoney, loadMessages } from "../../src/modules/i18n";
 import { ProductPage } from "../../src/modules/ui/product/ProductPage.tsx";
@@ -1061,6 +1062,92 @@ describe("AC-22: no claim without backing, in every locale and picker state", ()
       block(render({ ...view, trust: ["substitution"] }), "data-fo-pdp-trust"),
     );
     expect(without).not.toContain(en.product.trust.freshness.title);
+  });
+});
+
+describe("spec 009 §14 A11 bullet 1 (TASK-287): the promise is the guarantee page's sentence, and links to it", () => {
+  type Freshness = { title: string; body: string };
+
+  /** The PDP's promise as the page reads it: `product.trust.freshness.*` in the locale. */
+  function pdpPromise(locale: Locale): Freshness {
+    return (
+      loadMessages(locale, ["product"]) as {
+        product: { trust: { freshness: Freshness } };
+      }
+    ).product.trust.freshness;
+  }
+
+  /** The guarantee page's promise section (spec 041 Appendix A.3), as its page renders it. */
+  function guaranteePromise(locale: Locale): Freshness | undefined {
+    const section = infoPageView("guarantee", locale)?.sections.find(
+      (candidate) => candidate.id === "promise",
+    );
+    return section === undefined
+      ? undefined
+      : { title: section.heading, body: section.paragraphs[0] ?? "" };
+  }
+
+  /** The page as the route mounts it, with the guarantee path the route hands in (or none). */
+  function renderWith(view: ProductView, guaranteeHref?: string): string {
+    return renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale={view.locale}
+        messages={loadMessages(view.locale as Locale, [...NAMESPACES])}
+        timeZone="UTC"
+      >
+        <ProductPage
+          breadcrumb={<ListingBreadcrumb crumbs={view.breadcrumb} />}
+          guaranteeHref={guaranteeHref}
+          view={view}
+        />
+      </NextIntlClientProvider>,
+    );
+  }
+
+  it.each(["en", "en-gb"] as const)(
+    "%s has the guarantee page, and the PDP's promise title and sentence are its promise section's",
+    (locale) => {
+      expect(infoPageExists("guarantee", locale)).toBe(true);
+      const page = guaranteePromise(locale);
+      const pdp = pdpPromise(locale);
+      expect(pdp.title).toBe("Fresh-flower promise");
+      expect(page?.title).toBe(pdp.title);
+      expect(page?.body).toBe(pdp.body);
+    },
+  );
+
+  it.each(["de", "pl"] as const)(
+    "%s has no guarantee page, so its product page links nowhere",
+    (locale) => {
+      expect(infoPageExists("guarantee", locale)).toBe(false);
+    },
+  );
+
+  it("wraps the promise title, and only it, in a link to the path the route hands in", async () => {
+    const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
+    expect(view.trust).toContain("freshnessGuarantee");
+    const title = pdpPromise("en").title;
+    const trust = block(renderWith(view, "/en/guarantee"), "data-fo-pdp-trust");
+    const links = [...trust.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gu)];
+    expect(links).toHaveLength(1);
+    expect(/href="([^"]*)"/u.exec(links[0]?.[0] ?? "")?.[1]).toBe(
+      "/en/guarantee",
+    );
+    expect(readable(links[0]?.[1] ?? "")).toBe(title);
+    // The link is the promise's own heading, not a new line beside it.
+    const headings = trust.match(/<h3\b[^>]*>[\s\S]*?<\/h3>/gu) ?? [];
+    expect(
+      headings.filter((heading) => heading.includes(links[0]?.[0] ?? "\u0000")),
+    ).toHaveLength(1);
+    // The promise text itself is unchanged by the link.
+    expect(readable(trust)).toContain(pdpPromise("en").body);
+  });
+
+  it("renders no link in the trust block where the route hands no path", async () => {
+    const view = await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK });
+    const trust = block(renderWith(view), "data-fo-pdp-trust");
+    expect(readable(trust)).toContain(pdpPromise("en").title);
+    expect(trust).not.toMatch(/<a\b/u);
   });
 });
 
