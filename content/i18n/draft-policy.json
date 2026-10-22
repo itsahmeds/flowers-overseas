@@ -1,0 +1,286 @@
+{
+  "$comment": "Spec 003 §14 A15 clause 4 (TASK-185). `excluded`: keys never machine-drafted; a person writes them. `excludedSeedRows`: seed product rows never machine-drafted. `reviewBeforeOrders`: drafted values a native reviewer attests before the locale becomes indexable, takes an order or switches on a consent-gated tag (advisor fix 2, memo 2026-10-04; docs/runbooks/i18n-translations.md §10). `identical`: per locale, keys that stay byte-identical to `en`, each with a reason from the closed set name, same-word, icu-only, held. `pnpm i18n:check` check 10 reads this file.",
+  "excluded": [
+    {
+      "key": "consent.*",
+      "reason": "consent"
+    },
+    {
+      "key": "footer.reminders.consent",
+      "reason": "consent"
+    },
+    {
+      "key": "legal.*",
+      "reason": "legal"
+    },
+    {
+      "key": "infoPages.legal.*",
+      "reason": "legal",
+      "note": "spec 041's legal page keys, excluded by name before they exist"
+    },
+    {
+      "key": "company.operatedBy",
+      "reason": "legal",
+      "note": "the operator line"
+    },
+    {
+      "key": "nav.utility.pricesInclude",
+      "reason": "price-display"
+    },
+    {
+      "key": "catalog.price.inclusive",
+      "reason": "price-display"
+    },
+    {
+      "key": "catalog.price.allIn",
+      "reason": "price-display"
+    },
+    {
+      "key": "product.vat",
+      "reason": "price-display"
+    },
+    {
+      "key": "corridor.facts.prices.fromValue",
+      "reason": "price-display",
+      "note": "the corridor fromValue key"
+    },
+    {
+      "key": "trust.price.name",
+      "reason": "price-display",
+      "note": "states that the price includes delivery and VAT; added by TASK-185 beside A15's five"
+    },
+    {
+      "key": "checkout.summary.vat",
+      "reason": "price-display",
+      "note": "the checkout's VAT line, the twin of product.vat; added by TASK-185"
+    },
+    {
+      "key": "checkout.summary.vatOf",
+      "reason": "price-display",
+      "note": "the checkout's VAT line, the twin of product.vat; added by TASK-185"
+    },
+    {
+      "key": "nav.category.sympathy",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "catalog.facet.productType.funeral",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "catalog.facet.occasion.sympathy",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "catalog.facet.occasion.allSaints",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "catalog.descriptor.form.funeral",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "occasions.sympathy.*",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "occasions.date.allSaints.*",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "checkout.placeKind.funeralHome",
+      "reason": "sympathy-funeral-all-saints",
+      "note": "Trauer vocabulary (glossary.de §2); its path segment is funeralHome, so added by TASK-185 beside the segment rule"
+    }
+  ],
+  "excludedSeedRows": [
+    {
+      "key": "FO-AR-006",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-AR-012",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-AR-013",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-BQ-011",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-BQ-015",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-BQ-016",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-BQ-017",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-001",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-002",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-003",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-004",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-005",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-006",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-007",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-008",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-009",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-FN-010",
+      "reason": "sympathy-funeral-all-saints"
+    },
+    {
+      "key": "FO-PT-004",
+      "reason": "sympathy-funeral-all-saints"
+    }
+  ],
+  "reviewBeforeOrders": [
+    "trust.guarantee.*",
+    "home.proof.guarantee.*",
+    "product.trust.freshness.*",
+    "faq.nobodyHome.answer",
+    "product.trust.substitution.body",
+    "faq.photo.answer",
+    "home.howItWorks.make.body",
+    "home.proof.photo.body",
+    "home.howItWorks.deliver.body",
+    "corridor.steps.guide.threeBody",
+    "corridor.steps.live.threeBody",
+    "checkout.recipient.phoneReason",
+    "nav.utility.cutoff",
+    "nav.utility.cutoffShort",
+    "faq.whoDelivers.answerCutoff",
+    "delivery.picker.live",
+    "delivery.reason.pastCutoff",
+    "home.dates.orderBy",
+    "corridor.facts.orderBy.value",
+    "trust.price.claim",
+    "product.demo.body",
+    "product.excludes",
+    "shop.root.demoNotice",
+    "shop.root.lede",
+    "shop.category.lede",
+    "payments.confirmation.cancelled",
+    "payments.confirmation.cancelledByYouRefunding",
+    "payments.confirmation.cancelledByYouRefunded",
+    "payments.confirmation.notDeliveredRefunding",
+    "payments.confirmation.notDeliveredRefunded",
+    "seed:products"
+  ],
+  "identical": {
+    "de": [
+      {
+        "key": "breadcrumb.entity",
+        "reason": "icu-only"
+      },
+      {
+        "key": "catalog.descriptor.name",
+        "reason": "icu-only"
+      },
+      {
+        "key": "checkout.error.summaryItem",
+        "reason": "icu-only"
+      },
+      {
+        "key": "common.beta",
+        "reason": "same-word"
+      },
+      {
+        "key": "footer.link.cookies",
+        "reason": "same-word"
+      },
+      {
+        "key": "catalog.facet.priceTier.premium",
+        "reason": "same-word"
+      },
+      {
+        "key": "catalog.facet.style.modern",
+        "reason": "same-word"
+      },
+      {
+        "key": "catalog.facet.colour.orange",
+        "reason": "same-word"
+      },
+      {
+        "key": "company.support.whatsapp",
+        "reason": "name"
+      },
+      {
+        "key": "home.reviews.trustpilotRegion",
+        "reason": "name"
+      },
+      {
+        "key": "destinations.pl.cities",
+        "reason": "name",
+        "note": "Polish city names as the cities write them"
+      }
+    ],
+    "pl": [
+      {
+        "key": "breadcrumb.entity",
+        "reason": "icu-only"
+      },
+      {
+        "key": "catalog.descriptor.name",
+        "reason": "icu-only"
+      },
+      {
+        "key": "checkout.error.summaryItem",
+        "reason": "icu-only"
+      },
+      {
+        "key": "common.beta",
+        "reason": "same-word"
+      },
+      {
+        "key": "catalog.facet.priceTier.premium",
+        "reason": "same-word"
+      },
+      {
+        "key": "company.support.whatsapp",
+        "reason": "name"
+      },
+      {
+        "key": "home.reviews.trustpilotRegion",
+        "reason": "name"
+      },
+      {
+        "key": "destinations.pl.cities",
+        "reason": "name"
+      }
+    ]
+  }
+}
