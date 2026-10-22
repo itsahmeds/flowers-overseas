@@ -74,6 +74,13 @@ export const SCANNED_PATHS = [
   // that becomes checkable. `src/modules/ui/media` is no longer listed separately: this entry is
   // recursive and listing it twice would report every hit in it twice.
   "src/modules/ui",
+  // spec 011 task 1 (TASK-210): the florists' public pages and the inbox's presentational half
+  // ship with no database. `src/modules/partners` will gain the read models and commands that
+  // read Postgres (TASK-214, TASK-215), so the no-database files are named, not the module.
+  "src/modules/partners/index.ts",
+  "src/modules/partners/inbox",
+  "src/modules/partners/public",
+  "src/modules/partners/ui",
   // spec 004 AC-2 (TASK-056): the route tree the spec added or rewrote. Named file by file rather
   // than as `src/app`, for the reason the seed entries give: `src/app/api/` grows handlers that
   // *will* read the database the day spec 002 unparks (spec 013's checkout, spec 012's admin), and

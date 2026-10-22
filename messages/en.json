@@ -1003,7 +1003,8 @@
   },
   "infoPages": {
     "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open.",
+      "untranslated": "This translation has not been checked yet. If it differs from the English version, the English version applies."
     },
     "company": {
       "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
@@ -1061,6 +1062,129 @@
       "cancelledByYouRefunded": "You cancelled this order. We have refunded {amount}.",
       "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
       "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}."
+    }
+  },
+  "forFlorists": {
+    "status": {
+      "choosingFirst": "We are not taking orders yet. Poland opens first."
+    },
+    "apply": {
+      "title": "Apply to work with us | For florists",
+      "crumb": "Apply",
+      "h1": "Apply to work with us",
+      "intro": "Tell us about your shop. It takes a few minutes, and none of it is a bank account.",
+      "formOff": "Call or message us on {phoneDisplay} and we will talk it through with you. We would rather hear about your shop from you.",
+      "next": {
+        "heading": "What happens next",
+        "body": "We read every application and reply, whether the answer is yes or no. If it is yes, we call you, agree what you receive for each bouquet, and send you a test order before a real one. You start when we have both agreed, not because you sent this form."
+      },
+      "notice": {
+        "heading": "What we do with your details",
+        "controller": "This website is run by {representativeName}. For questions about your personal data, call or message us on {phoneDisplay}.",
+        "privacyLink": "Our privacy notice",
+        "body": "We use these details to consider your application and to contact you about working together. The legal basis is taking steps you asked for before a contract (GDPR Art. 6(1)(b)). We keep them for 12 months after our last contact and then delete them, unless we start working together. They are stored by our hosting, database and email providers, some of which are US companies working under EU data-transfer safeguards. We do not sell them or show them to buyers. To see, correct or delete them, call or message us on {phoneDisplay}."
+      },
+      "optional": "optional",
+      "submit": "Send the application",
+      "honeypot": "Leave this empty",
+      "errorSummary": "Please check these answers",
+      "field": {
+        "shopName": {
+          "label": "Name of your shop",
+          "help": "As it appears on your shopfront"
+        },
+        "contactName": {
+          "label": "Your name"
+        },
+        "email": {
+          "label": "Email"
+        },
+        "phone": {
+          "label": "Phone or WhatsApp",
+          "help": "The number we call and send orders to"
+        },
+        "country": {
+          "label": "Country",
+          "choose": "Choose a country"
+        },
+        "town": {
+          "label": "Town or city"
+        },
+        "area": {
+          "label": "Where you deliver",
+          "help": "Districts, postcodes or a distance from your shop"
+        },
+        "capacity": {
+          "label": "Orders a day you could take",
+          "help": "An honest number. We would rather send you fewer and have every one delivered."
+        },
+        "weekends": {
+          "label": "Do you deliver at weekends?",
+          "yes": "Yes",
+          "sometimes": "Sometimes",
+          "no": "No"
+        },
+        "registration": {
+          "label": "Registration number",
+          "help": "NIP, KRS, Handelsregister or your country's equivalent"
+        },
+        "website": {
+          "label": "Instagram or website"
+        },
+        "contactBy": {
+          "label": "How should we contact you?",
+          "email": "Email",
+          "whatsapp": "WhatsApp",
+          "phone": "Phone"
+        },
+        "language": {
+          "label": "Language",
+          "en": "English",
+          "pl": "Polski",
+          "de": "Deutsch"
+        }
+      },
+      "error": {
+        "shopName": "Please tell us the name of your shop.",
+        "contactName": "Please tell us your name.",
+        "email": "Please enter an email address like name@example.com.",
+        "phone": "Please enter a phone number we can call.",
+        "country": "Please choose a country.",
+        "town": "Please tell us your town or city.",
+        "area": "Please tell us where you deliver.",
+        "capacity": "Please enter a whole number from 1 to 500.",
+        "website": "Please enter a full web address, starting with https://."
+      },
+      "failed": "We could not send your application. Your answers are still here. Try again, or call or message us on {phoneDisplay}.",
+      "tooMany": "Too many applications are arriving at once. Please try again shortly, or call or message us on {phoneDisplay}."
+    },
+    "sent": {
+      "title": "Thank you | For florists",
+      "h1": "Thank you. We have your application.",
+      "body": "We read every application and reply, whether the answer is yes or no. If you would like to talk sooner, call or message us on {phoneDisplay}.",
+      "walkthrough": "See how an order reaches you"
+    }
+  },
+  "floristInbox": {
+    "orders": "Orders",
+    "stage": {
+      "waiting": "Waiting for your answer",
+      "inProgress": "In progress"
+    },
+    "answerBy": "Answer by {time}",
+    "forDate": "For {date}",
+    "youReceive": "You receive <strong>{payout}</strong>",
+    "deliveryDate": "Delivery date",
+    "address": "Address",
+    "recipient": "Recipient",
+    "deliveryNote": "Delivery note",
+    "cardMessage": "Card message, to print",
+    "accept": "Accept",
+    "decline": "Decline",
+    "outForDelivery": "Out for delivery",
+    "photo": {
+      "choose": "Take or choose a photo of the delivered bouquet",
+      "send": "Send the photo"
     }
   }
 }
