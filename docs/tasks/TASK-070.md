@@ -78,6 +78,26 @@ text and record the ruling, then continue"); none is about money, so none blocks
 
 - 2026-10-22: worktree on `task/TASK-070-db-catalogue-providers`; contract `emptyInPlace` now overwrites and reverses a nested array before truncating it (red under H4a sealed and H4b non-writable `length`, green before). Next: migration `0020_product_facets`, the `db/` providers, the Postgres contract run.
 - 2026-10-22: `src/modules/catalog/db/{read,catalogue,price,fx,index}.ts`, `frozen.ts`, migration `0020_product_facets` (+ down), seed writes the facets and `product_occasion`; `tests/integration/catalog-db-providers.test.ts` 65/65 green on a local PG16 (with PR 320's `0019` present), seven mutations each red. Next: rebase on PR 320, cheap gates, ready + `ci:full`.
+- 2026-10-22 (time limit, **partial**): branch pushed at `ace0d5d4`, draft PR #324 with the full
+  `## Self-review` in its body. Everything is built and tested; only the hand-off steps remain,
+  and they wait on **PR 320 (TASK-293, migration `0019`) merging**: until it does, `0020` leaves a
+  version gap, so `db:check` and three unit files (`db-migrate`, `db-check`,
+  `db-check-recipient-email`) fail on this branch alone. Proven green on a local merge with PR 320:
+  those unit files, `no-db-imports`, `url-pii`, `rls-policies`, and integration `catalog-db-providers`,
+  `seed`, `seed-insert-only`, `build-role`, `migrations-round-trip`, `schema-catalog-pricing`,
+  `db-check-live`. **A finisher's steps, in order:**
+  1. `git fetch origin && git rebase origin/main` once PR 320 is on `main`. Expected conflicts:
+     `scripts/check-no-db-imports.ts` (keep all three adapter dirs: `src/modules/geo/db`,
+     `src/modules/i18n/db`, `src/modules/catalog/db`); `tests/unit/no-db-imports.test.ts` (expect
+     those three; add `src/modules/i18n/db/attest.ts` to the adapter-file loop);
+     `tests/unit/db-migrate.test.ts` (list `0019_review_attestation.sql` then
+     `0020_product_facets.sql`); `docs/codebase-map.md` (regenerate: `node scripts/codebase-map.ts`).
+  2. Regenerate `scripts/db-check.snapshot.json` against a freshly migrated local database:
+     `DATABASE_URL_UNPOOLED=<local scratch db> node scripts/db-migrate.ts`, then
+     `… node scripts/db-check.ts --write-snapshot` (adds the 7 lines for `0020`'s three checks and
+     four defaults; `db-check-live` fails without it).
+  3. `pnpm gates:cheap`, push, `gh pr ready 324`, `gh pr edit 324 --add-label ci:full`; set the
+     TASKS.md row to `in_review` with the PR link.
 
 ## Result
 
