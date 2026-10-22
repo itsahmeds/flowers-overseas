@@ -208,8 +208,10 @@ describe.skipIf(server.url === undefined)(
     }, 600_000);
 
     afterAll(async () => {
-      await pool.end({ timeout: 5 });
-      await scratch.drop();
+      // Guarded: a failed `beforeAll` must still drop the scratch database, or its objects keep
+      // the cluster-wide roles alive and the round-trip suite cannot drop them.
+      await (pool as Sql | undefined)?.end({ timeout: 5 });
+      await (scratch as ScratchDatabase | undefined)?.drop();
     });
 
     // AC-27: the same suite, through `app_web` in the public context, one request per set.
