@@ -42,6 +42,7 @@ One dated bullet per `/review`, newest last.
     spec-faithful. Choose the closed-state URL (a `closed` draft mode, or a path segment), change `start.ts` step 4 to
     answer 303 there, and make T-03 assert "start route goes to the closed state, row counts unchanged".
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** this task now also owns spec 042 AC-11's page half (T-11 e2e half): at `/{locale}/checkout` step 2 the card preview is TASK-308's shared `data-fo-card-preview` component (same message-line `font-family` as the product page's, Caveat per spec 042 §13 Q4), mirrors the message and the signature as typed, renders the server's kept values with JavaScript off and keeps `card.preview`'s caption. With both fields empty it shows the mark and the caption, no words (PR 297 escalation 1, drawn as today). Depends on TASK-308.
+- **From `/plan-tasks` (2026-10-22):** spec 010 §14 A3 and A-founder-2026-10-14b left AC-48 and AC-53 with no owner; they are this task's. AC-48: in `test` and `live`, step 1's save calls the registered `canServe` (seam `registerCoverageCheck` in `src/modules/checkout/coverage.ts`, A3.2) and re-renders with the postcode or date error; never in `demo`; with no check registered `test` skips it and `checkoutMode()` returns `closed` for `live` (A3.3). AC-53: `checkout.legal.cancellation` is the exact sentence, `proposed`, and `legalReadiness()` is not-ready while it is unreviewed. Spec 016's `canServe` is TASK-327's; build against a fixture check.
 
 ## Escalations
 
