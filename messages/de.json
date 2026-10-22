@@ -758,7 +758,7 @@
       "tooMany": "Gerade kommen zu viele Bewerbungen auf einmal an. Bitte versuchen Sie es gleich noch einmal, oder rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}."
     },
     "sent": {
-      "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn Sie früher sprechen möchten, rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+      "body": "Wir lesen jede Bewerbung und antworten, ob die Antwort Ja oder Nein lautet. Wenn Sie früher sprechen möchten, rufen Sie uns an oder schreiben Sie uns unter <phone>{phoneDisplay}</phone>.",
       "h1": "Danke. Wir haben Ihre Bewerbung.",
       "title": "Danke | Für Floristen",
       "walkthrough": "So kommt ein Auftrag zu Ihnen"
