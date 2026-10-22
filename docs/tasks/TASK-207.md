@@ -21,6 +21,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** same backend agent as TASK-200, TASK-203 and TASK-205.
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 rewrites AC-35 (drafts kept 30 days, buyer, recipient and card cleared at 24 h, purchase kept on pseudonymisation) and adds AC-75 (RoPA row 1, `fo_checkout` 30 days and `fo_basket` in `src/config/cookies.ts` and the cookies page). The two retention rows are seeded by TASK-348's migration; this task owns the sweep handlers and records.
 
 ## Escalations
 

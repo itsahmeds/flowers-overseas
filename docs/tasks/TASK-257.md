@@ -29,12 +29,14 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-19):** spec 016 (approved, not yet planned) owns the real `routing` handler and `expectedFirstOfferAt`; nothing here writes a routing transition.
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §13 Q19 binds (decisions log 2026-10-22): the payment belongs to the purchase. Item 13 (a) and (c) land here: `startPayment(purchaseId)` creates one intent for `purchase.total_minor` with the item's metadata; `reconcile` compares with the purchase total and on `succeeded` writes row 2 for every order of the purchase in one transaction; a decline appends `order.payment_attempt_failed` to every order; the 2-hour sweep acts per purchase. TASK-350 ships the schema first; spec 013 needs a §14 pointer amendment before this starts.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 - 2026-10-19 (`/plan-tasks`, to the founder; `open`). AC-38 orders the 3DS staging proof (TASK-256, blocked on the Stripe account) before any lifecycle task starts. Recommended: waive the start order, build on the fake, and hold the merge until TASK-256 passes. Until answered this row stays `blocked`.
+- 2026-10-22 (`/plan-tasks` (b), to the orchestrator; `open`). The founder's build order of 2026-10-22 says payments run in `test` on the fake provider until Stripe keys arrive, which reads as the answer to the AC-38 start-order escalation above (waive the start order, hold only TASK-266 and TASK-267 for the keys). The orchestrator confirms with the founder and unblocks this row and TASK-258.
 
 ## Progress
 

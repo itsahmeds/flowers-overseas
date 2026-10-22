@@ -6,11 +6,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges after: TASK-344, TASK-337.
+Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges after: TASK-344, TASK-337, TASK-352, TASK-353 (amended 2026-10-22 (b): launch slice).
 - Spec 018 §12 task 5; §5.1 `privacy_request`; §5.2 privacy. AC-29 to AC-31.
 - `due_at = received_at + interval '1 month'`; `email_hash` is HMAC under `SIGNED_LINK_SECRET`; the table holds no address. Erasure keeps `order`, `payment`, `refund`, `invoice`, `consent_log`, `privacy_request` only, and waits on open orders.
 - Recent sign-in reads `sessions.created_at` (A8, TASK-337), never the rolling `expires`.
-- **ACs owned:** AC-29, AC-30, AC-31 (T-29, T-30, T-31).
+- **ACs owned:** AC-29 (amended), AC-30 (amended), AC-31, AC-59, AC-60 (T-29, T-30, T-31, T-59, T-60); spec 018 §14 A-founder-2026-10-22 C.9 and the advisor memo bind the amended scope.
 - **Class:** self-review (no checker agents; founder 2026-10-22). You are the reviewer and the breaker: put `## Self-review` in the PR (every AC with file:line and its test; the mutation and red run for each AC assertion; the awkward cases below with each result; carry-forwards) before `gh pr ready`.
 - **Awkward cases you run yourself (the breaker's list for this row):** received 10 March, 31 January 2027, 31 January 2028; sessions created 14 and 16 minutes ago, the second just refreshed; export link on day 6 and day 8; an erase with one order `in_production`, then walked to `closed`; SLA alert 5 days before `due_at` and not 6. Mutate each AC's subject and watch its case go red before you claim it.
 - **Founder rulings bind every line** (spec 016 and 018 §14): every payment is captured at placement; no buyer surface, email, PDF or copy key says or implies partners, a florist accepting, offers, re-routing or a held card (`RELAY_PATTERNS`, `RELAY_EXEMPT`, `relayMatches` in `src/config/honesty.ts`: use them, keep no list of your own); no refund or failure wording after payment except the cancellation and refund messages; no em dash in any copy.
@@ -27,7 +27,7 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** launch slice (spec 018 §14 A-founder-2026-10-22 C.9): adds AC-29 and AC-30 as amended, AC-59, AC-60; export and erasure cover details, saved recipients, reminders and the consent history; erasure deletes a customer with no order; the inactive-account sweep (730 days, reminder consent off). Its migration follows TASK-352's `buyer_account`.
 
 ## Escalations
 

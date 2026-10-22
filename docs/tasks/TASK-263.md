@@ -29,7 +29,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 item 13 (f): the `test` and `live` confirmation renders every delivery of the purchase with its own projection under one page, the heading "Thank you. We have your order." while every delivery is in the paid projection. Spec 020a request 3 (§13 Q1 approved): an admin cancel with reason `buyer_cancel` reads "You cancelled this order" (TASK-362 proves it).
 
 ## Escalations
 

@@ -36,6 +36,7 @@ One dated bullet per `/review`, newest last.
     only the digest, only the confirmed pair; for example a `confirmPrice` landing between another step's load and its
     write), each watched red with its clause removed.
 - **From `/plan-tasks` (2026-10-22):** spec 010 §14 A3.2 left AC-49 with no owner; it is this task's: `placeOrderAction` calls `canServe` again with the final lines in `test` and `live`; a refusal, a thrown error or coverage lost since step 1 returns to step 1 with the matching error and writes no order, line, event or outbox row.
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 adds AC-63 (placement half), AC-64, AC-65, AC-67: `placeOrderAction` places a purchase (item 4): lock the draft, return an existing `purchase_id`, re-check every line, the daily cap counted in orders, `placePurchase` (TASK-347), per-order `transition('order.authorised')` and `demoRoute` in `demo`, clear `buyer` and every line's `recipient` and `card`, delete `fo_basket`; one transaction, all or nothing. Same backend agent as TASK-347 and TASK-348.
 
 ## Escalations
 

@@ -30,13 +30,13 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 020a §12 request 2: the pipeline accepts a `notification_delivery` row created outside the outbox (`source_key = admin:{id}`, `resend_of` set) and renders it from its original's context. Spec 010 §13 Q25 (approved): B1 is sent once per purchase when row 2 is written for its orders; B2 to B6 stay per order; a florist message never names another order of the purchase.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-22 (`/plan-tasks` (b), to the orchestrator; `open`). Spec 010 item 13 asks spec 016 for B1 once per purchase; spec 016 has no §14 entry carrying it yet. Dispatch `/spec 016` for a pointer amendment (Q25 is approved) before this row starts.
 
 ## Progress
 

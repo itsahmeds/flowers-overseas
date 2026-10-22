@@ -30,7 +30,7 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §13 Q25: B1 lists every delivery of the purchase, one invoice per order attached (spec 016 needs a §14 pointer amendment; the `email-buyer-*` three-delivery state is spec 016's). Spec 018 §13 Q25 (approved): B1's foot block gains "You can see and manage this order in your account." linking `/{locale}/account/orders/{reference}`. Spec 020a request 3: B5 reads "You cancelled this order" for an admin cancel with `buyer_cancel`.
 
 ## Escalations
 

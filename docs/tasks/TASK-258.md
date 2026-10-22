@@ -29,7 +29,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 020a §12 request 1: `cancelOrder` accepts an optional transaction handle so an admin action row, its audit row and the status write commit together. Spec 010 item 13 (e): cancel and the no-partner expiry stay per order and refund that order's amount only against the shared charge.
 
 ## Escalations
 

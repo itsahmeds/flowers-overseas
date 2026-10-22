@@ -29,7 +29,7 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 020a request 3: the tracking page's cancelled state reads "You cancelled this order" when the actor is `buyer`, or `admin` with reason `buyer_cancel`; every other cancellation reads "We could not deliver this order".
 
 ## Escalations
 
