@@ -39,10 +39,8 @@ import {
 } from "../../geo/index.ts";
 import type { InfoPageId } from "@/config/info-pages";
 
-import {
-  infoPageAlternatePaths,
-  infoPageHeadView,
-} from "../../content/index.ts";
+import { infoPageHeadView } from "../../content/index.ts";
+import { infoPageHreflangPaths } from "../info-page-head.ts";
 import {
   alternatesFor,
   catalogueUpdatedAt,
@@ -138,7 +136,7 @@ function infoPageEntry(pageId: InfoPageId): StaticSitemapEntryBuilder {
     const loc = absoluteUrl(view.path, { baseUrl });
     const cluster =
       alternatesFor(
-        { pathByLocale: infoPageAlternatePaths(pageId) },
+        { pathByLocale: infoPageHreflangPaths(pageId) },
         { baseUrl },
       ).find((candidate) => candidate.url === loc)?.alternates ?? [];
     return {
@@ -168,6 +166,10 @@ const STATIC_SITEMAP_ENTRY_BUILDERS = {
   privacy: infoPageEntry("privacy"),
   cookies: infoPageEntry("cookies"),
   cancellation: infoPageEntry("cancellation"),
+  // Spec 011 §6 (TASK-210): the florists' landing and walkthrough, by the same rule. The apply and
+  // sent pages are `noindex,follow` by policy and so never produce a row.
+  "for-florists": infoPageEntry("for-florists"),
+  "how-orders-work": infoPageEntry("how-orders-work"),
 } as const satisfies Readonly<
   Partial<Record<SeoPageType, StaticSitemapEntryBuilder>>
 >;

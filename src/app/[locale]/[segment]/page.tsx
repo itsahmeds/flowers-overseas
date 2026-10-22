@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { infoPage } from "@/config/info-pages";
 import type { LocaleCode } from "@/config/locales";
 import {
   OccasionsIndexPage,
@@ -10,7 +11,9 @@ import {
   localeSegmentParams,
   resolveLocalePath,
 } from "@/modules/catalog";
+import { infoPageAlternatePaths } from "@/modules/content";
 import { DestinationsHubPage, hubView } from "@/modules/geo";
+import { FloristsLanding, floristsLandingView } from "@/modules/partners";
 import {
   LanguageAlternates,
   alternatesFor,
@@ -23,6 +26,7 @@ import {
   breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
+  infoPageJsonLd,
   pageIndexability,
   pageMetadata,
   schemaOptions,
@@ -223,6 +227,26 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
   }
 
   if (match.kind === "infoPage") {
+    // Spec 011's florists landing (TASK-210): the same resolver answer, its own page component.
+    if (infoPage(match.pageId).family === "florists") {
+      setRequestLocale(match.locale);
+      const landing = await floristsLandingView(match.locale);
+      if (landing === undefined) notFound();
+      return (
+        <>
+          <FloristsLanding view={landing} />
+          <LanguageAlternates paths={infoPageAlternatePaths(match.pageId)} />
+          <JsonLd
+            nodes={infoPageJsonLd(
+              match.pageId,
+              match.locale,
+              deploymentDescriptor(process.env),
+              await registryLabels(match.locale),
+            )}
+          />
+        </>
+      );
+    }
     return <InfoPageRoute pageId={match.pageId} locale={match.locale} />;
   }
 

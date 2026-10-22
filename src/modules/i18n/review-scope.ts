@@ -141,6 +141,17 @@ const CHECKOUT_SUBTREES = [
 ];
 
 /**
+ * Spec 011's application and sent pages (TASK-210): their own route files, one folder per spelling
+ * of the `forFlorists` segment, and the components only those files import.
+ */
+const FLORIST_FORM_PATHS = [
+  "src/app/[locale]/for-florists/apply/**",
+  "src/app/[locale]/fuer-floristen/bewerben/**",
+  "src/app/[locale]/dla-kwiaciarni/zglos-sie/**",
+  "src/modules/partners/ui/apply/**",
+];
+
+/**
  * Keys that no page an indexer reads can show. Add the entry in the PR that adds the keys.
  */
 /**
@@ -187,6 +198,16 @@ const RAW_NON_INDEXABLE_SCOPE: readonly unknown[] = [
   { match: "floristAuth", surface: "florist", paths: FLORIST_PATHS },
   { match: "floristInbox", surface: "florist", paths: FLORIST_PATHS },
   { match: "emails.floristSignIn.*", surface: "email", paths: FLORIST_PATHS },
+  // Spec 011 §14 pointer to A17 (TASK-210): the application and its sent page are `noindex,follow`
+  // in every combination and have route files of their own, so their keys reach no indexable page.
+  // The landing's `forFlorists.status.*` stays counted (indexable by rule, AC-5). The walkthrough
+  // also prints `floristInbox.*` labels, which TASK-212's entry above scopes to the florist surface;
+  // `tests/unit/florists-pages.test.tsx` holds every one the walkthrough renders `reviewed: true`.
+  ...["forFlorists.apply.*", "forFlorists.sent.*"].map((match) => ({
+    match,
+    surface: "florist",
+    paths: FLORIST_FORM_PATHS,
+  })),
 ];
 
 export const NON_INDEXABLE_SCOPE: readonly ScopeEntry[] = Object.freeze(

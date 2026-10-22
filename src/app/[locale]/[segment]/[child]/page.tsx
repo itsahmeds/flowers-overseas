@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { infoPage } from "@/config/info-pages";
 import {
   CategoryHubPage,
   OccasionHubPage,
@@ -13,12 +14,14 @@ import {
   resolveLocalePath,
   writeExistenceSummary,
 } from "@/modules/catalog";
+import { infoPageAlternatePaths } from "@/modules/content";
 import {
   CorridorPage,
   corridorAlternatePaths,
   corridorState,
   corridorView,
 } from "@/modules/geo";
+import { FloristsWalkthrough, walkthroughView } from "@/modules/partners";
 import { LanguageAlternates, alternatesFor } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,
@@ -27,6 +30,7 @@ import {
   canonicalFor,
   deploymentDescriptor,
   faqPage,
+  infoPageJsonLd,
   pageIndexability,
   pageMetadata,
   schemaOptions,
@@ -255,12 +259,39 @@ export async function generateMetadata({
  */
 async function registryLabels(locale: string): Promise<BreadcrumbLabel> {
   const t = await getTranslations({ locale });
-  return (key: string): string => (t as unknown as BreadcrumbLabel)(key);
+  // The values pass through: the walkthrough's current crumb is `{name}` filled with its h1
+  // (spec 041 AC-19's reading, which `[segment]/page.tsx` documents).
+  return (key, values) => (t as unknown as BreadcrumbLabel)(key, values);
 }
 
 export default async function LocaleChildRoute({ params }: ChildParams) {
   const { locale, segment, child } = await params;
   const match = await resolveLocalePath(locale, [segment, child]);
+
+  // Spec 011's walkthrough (TASK-210): the real inbox components in phone frames, no image. The
+  // legal documents at this depth are `InfoPageRoute`'s, below.
+  if (
+    match.kind === "infoPage" &&
+    infoPage(match.pageId).family === "florists"
+  ) {
+    const view = await walkthroughView(match.locale);
+    if (view === undefined) notFound();
+    setRequestLocale(match.locale);
+    return (
+      <>
+        <FloristsWalkthrough view={view} />
+        <LanguageAlternates paths={infoPageAlternatePaths(match.pageId)} />
+        <JsonLd
+          nodes={infoPageJsonLd(
+            match.pageId,
+            match.locale,
+            deploymentDescriptor(process.env),
+            await registryLabels(match.locale),
+          )}
+        />
+      </>
+    );
+  }
 
   if (match.kind === "corridor") {
     // The corridor's **shop entry** (spec 007 §2 "Internal links", spec 008 AC-20; TASK-113).

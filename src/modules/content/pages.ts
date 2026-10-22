@@ -251,13 +251,13 @@ export function infoPageForLeaf(
   segment: string,
   leaf: string,
 ): InfoPageId | undefined {
-  return INFO_PAGE_IDS.find((pageId) => {
-    const location = infoPageLocation(pageId, locale);
-    return (
-      location.leaf !== undefined &&
-      infoPagePath(pageId, locale) === `/${locale}/${segment}/${leaf}`
-    );
-  });
+  // A page nested under another page (spec 011's walkthrough) is `infoPageForPath()`'s question.
+  return INFO_PAGE_IDS.find(
+    (pageId) =>
+      infoPage(pageId).parent === undefined &&
+      infoPageSegments(pageId, locale).leaves.length === 1 &&
+      infoPagePath(pageId, locale) === `/${locale}/${segment}/${leaf}`,
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -343,6 +343,11 @@ export interface InfoPageView {
   readonly h1Marked: string;
   readonly intro: string | undefined;
   readonly reviewed: boolean;
+  /**
+   * A machine draft nobody has checked yet (`source: machine`, `reviewed: false`): the page says
+   * so under its `<h1>` with `infoPages.status.untranslated` (spec 041 §2, spec 011 AC-5).
+   */
+  readonly untranslated: boolean;
   readonly updatedAt: string;
   /** `infoPages.status.notYetOpen` renders under the `<h1>` while this is true (AC-6). */
   readonly notYetOpen: boolean;
@@ -509,6 +514,7 @@ export function infoPageView(
         ? undefined
         : interpolate(content.intro, company, registered),
     reviewed: content.reviewed,
+    untranslated: content.source === "machine" && !content.reviewed,
     updatedAt: content.updatedAt,
     notYetOpen: !(options.datesOpen ?? anyDeliveryDatesOpen()),
     sections: content.sections.flatMap(
@@ -561,11 +567,15 @@ export function infoPageView(
               current: false,
             },
           ]),
-      {
-        labelKey: "breadcrumb.entity",
-        labelValue: withoutEmphasis(content.h1),
-        current: true,
-      },
+      // The florists' landing names itself "For florists" in its trail, as the header link does
+      // and the artboard draws it; every other page's current crumb is its own heading.
+      pageId === "for-florists"
+        ? { labelKey: "nav.forFlorists", current: true }
+        : {
+            labelKey: "breadcrumb.entity",
+            labelValue: withoutEmphasis(content.h1),
+            current: true,
+          },
     ],
     honestyAllow: content.honestyAllow,
     florists: content.florists,

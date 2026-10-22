@@ -65,10 +65,11 @@ import {
   corridorPageExists,
   listCorridorPages,
 } from "@/modules/geo";
-import type { InfoPageId } from "@/config/info-pages";
+import { type InfoPageId, infoPageHasProse } from "@/config/info-pages";
 import {
   infoPageExists,
   infoPageForLeaf,
+  infoPageForPath,
   infoPageForSegment,
   infoPagePath,
   listInfoPages,
@@ -298,6 +299,21 @@ export async function resolveLocalePath(
     if (isOwnSegment(code, "occasions", segment)) {
       return hubResolution(code, "occasionHub", "occasion", child);
     }
+
+    // `/{locale}/{forFlorists}/{leaf}` — spec 011's walkthrough (TASK-210), disjoint from the
+    // shapes above by its first segment (the locale's own `forFlorists` segment, which no country,
+    // category or occasion slug may equal: spec 008 AC-4's collision matrix). Its existence is
+    // `infoPageExists()`'s, asked once. The application and its sent page are not answered here:
+    // they have route files of their own, so their keys never reach an indexable page's import
+    // graph (spec 003 §14 A17 check 11).
+    const nested = infoPageForPath(code, [segment, child]);
+    if (
+      nested !== undefined &&
+      infoPageHasProse(nested) &&
+      infoPageExists(nested, code)
+    ) {
+      return { kind: "infoPage", locale: code, pageId: nested };
+    }
   }
 
   if (segments.length === 3) {
@@ -518,11 +534,13 @@ export async function localeChildParams(): Promise<
     }
   }
 
-  // Spec 041's legal documents (TASK-183): exactly `listInfoPages()`'s set at this depth, so a
-  // document whose file is missing, or that waits for the company, has no URL (spec 041 AC-2).
+  // Spec 041's legal documents (TASK-183) and spec 011's walkthrough (TASK-210): exactly
+  // `listInfoPages()`'s two-segment pages with prose, so a document whose file is missing, or that
+  // waits for the company, has no URL (spec 041 AC-2). The florists' apply and sent pages have
+  // their own routes.
   const listed = new Set(listingLocales() as readonly string[]);
   for (const page of listInfoPages()) {
-    if (!listed.has(page.locale)) continue;
+    if (!listed.has(page.locale) || !infoPageHasProse(page.pageId)) continue;
     const [segment, child, ...rest] = infoPageSegments(
       page.pageId,
       page.locale,
