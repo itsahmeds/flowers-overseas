@@ -132,17 +132,51 @@ export interface CatalogProviders {
   readonly flags: FlagProvider;
 }
 
+/** The Phase 0 set: every read from the repository. */
+const STATIC_PROVIDERS: CatalogProviders = {
+  catalogue: staticCatalogueProvider,
+  price: staticPriceProvider,
+  fx: staticFxRateProvider,
+  flags: staticFlagProvider,
+};
+
+/** A set put in place by `withCatalogProviders()`, for the length of its body only. */
+let swapped: CatalogProviders | undefined;
+
 /**
  * The composition root: the single place that decides which implementation the module reads.
  *
- * TASK-070 changes this function body (static → database, chosen from configuration) and nothing
- * else, which is the seam AC-27's diff-scope check measures.
+ * The database implementations exist (`./db`, TASK-070) and nothing selects them yet: spec 012b's
+ * cutover (TASK-294, AC-3) changes this function body to choose them by environment, and that swap
+ * changes no file outside `src/modules/catalog` (AC-27), which is what
+ * `tests/integration/catalog-db-providers.test.ts` exercises through `withCatalogProviders()`.
  */
 export function catalogProviders(): CatalogProviders {
-  return {
-    catalogue: staticCatalogueProvider,
-    price: staticPriceProvider,
-    fx: staticFxRateProvider,
-    flags: staticFlagProvider,
-  };
+  return swapped ?? STATIC_PROVIDERS;
+}
+
+/**
+ * Run `body` with `providers` as the composition root's answer, then restore it (TASK-070).
+ *
+ * The seam's own test hook, in the precedent of `withTrendingProvider()`: it is how the
+ * integration suite prices through the module against the database providers before the cutover
+ * selects them. Never exported from the barrel (AC-2): a caller that could swap the providers at
+ * runtime would turn the seam into global mutable configuration. Not re-entrant: one swap at a
+ * time, which the suite's sequential cases are.
+ */
+export async function withCatalogProviders<T>(
+  providers: CatalogProviders,
+  body: () => Promise<T>,
+): Promise<T> {
+  if (swapped !== undefined) {
+    throw new Error(
+      "withCatalogProviders() is already swapping the composition root; one swap at a time",
+    );
+  }
+  swapped = providers;
+  try {
+    return await body();
+  } finally {
+    swapped = undefined;
+  }
 }
