@@ -43,6 +43,11 @@ export type PriceProps =
       readonly variant?: "card" | "page";
       /** The all-in wording beside (card) or under (page) the amount. */
       readonly qualifier?: ReactNode;
+      /**
+       * `card` only: keep the qualifier on its own line at every width, where the card is too narrow
+       * to hold amount and wording on one line (the product page's six-up related row at `lg`).
+       */
+      readonly qualifierBelow?: boolean;
       /** The finished equivalents line; omitted entirely when absent. */
       readonly equivalents?: string | undefined;
     })
@@ -62,6 +67,8 @@ export function Price(props: PriceProps): ReactElement {
   const variant = props.variant ?? "card";
   const qualifier = props.variant === "from" ? undefined : props.qualifier;
   const equivalents = props.variant === "from" ? undefined : props.equivalents;
+  const qualifierBelow =
+    props.variant === "from" ? false : (props.qualifierBelow ?? false);
 
   return (
     <span
@@ -81,7 +88,9 @@ export function Price(props: PriceProps): ReactElement {
             className={
               variant === "page"
                 ? "text-included text-ui font-bold"
-                : "text-included md:text-fine mt-px block text-xs md:ms-[6px] md:mt-0 md:inline md:whitespace-nowrap"
+                : qualifierBelow
+                  ? "text-included md:text-fine mt-px block text-xs"
+                  : "text-included md:text-fine mt-px block text-xs md:ms-[6px] md:mt-0 md:inline md:whitespace-nowrap"
             }
           >
             {qualifier}

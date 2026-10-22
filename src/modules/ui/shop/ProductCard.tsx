@@ -106,6 +106,12 @@ export interface ProductCardProps {
    * downloaded from `md` up) and a lazy copy from `md` up. One card, one link, one heading.
    */
   readonly priorityAt?: "below-md";
+  /**
+   * Keep "Includes VAT and delivery" on its own line under the amount at every width, for a grid
+   * whose cards are too narrow to hold both on one line from `md` (the product page's six-up
+   * related row at `lg`).
+   */
+  readonly qualifierBelow?: boolean;
 }
 
 /** Where a card's own example label is displayed (`ProductCardProps.provenance`). */
@@ -131,6 +137,7 @@ export function ProductCard({
   provenance = "card",
   lead = false,
   priorityAt,
+  qualifierBelow = false,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
   const media = useTranslations("media");
@@ -238,9 +245,10 @@ export function ProductCard({
           there is no price (spec 004 §14 A-founder-2026-10-19b clauses 1 and 4). */}
       {hasCardPrice(card) ? (
         <Price
-          className="mt-[6px]"
+          className="mt-[2px] md:mt-[6px]"
           amount={formatMoney(card.price, locale)}
           qualifier={catalog("price.inclusive")}
+          {...(qualifierBelow ? { qualifierBelow: true } : {})}
         />
       ) : null}
     </>

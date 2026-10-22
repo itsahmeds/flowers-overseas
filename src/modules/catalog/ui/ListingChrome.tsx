@@ -840,7 +840,7 @@ export interface CountryListingResultsProps {
  * T-49). The occasion keeps the drawn 10 px. From `md` up both use `md:gap-y-[6px]`.
  */
 const TOOLBAR_PLACEMENT = {
-  band: { chips: "md:hidden", rowGap: "gap-y-sm" },
+  band: { chips: "md:hidden", rowGap: "gap-y-[6px]" },
   column: {
     chips: "md:col-span-full md:row-start-3 md:pt-[4px]",
     rowGap: "gap-y-[10px]",
@@ -911,7 +911,7 @@ export function CountryListingResults({
           {gridProvenance === undefined ? null : (
             <GridProvenance
               {...gridProvenance}
-              className="order-last col-span-full max-md:mt-[6px]"
+              className="order-last col-span-full"
             />
           )}
         </div>
@@ -950,7 +950,7 @@ export function CountryListingResults({
         </div>
       </div>
       <div
-        className="mt-[12px] md:mt-[16px] lg:mt-[12px]"
+        className="mt-[8px] md:mt-[16px] lg:mt-[12px]"
         data-fo-listing-grid-slot
       >
         {grid}

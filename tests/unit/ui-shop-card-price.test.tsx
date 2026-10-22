@@ -167,6 +167,28 @@ describe("a priced card: one price, with the locale's VAT-and-delivery words bes
       ]),
     );
   });
+
+  it("keeps the words under the amount at every width where the grid says the card is too narrow (the product page's six-up row)", () => {
+    const html = render(
+      <ProductCard
+        card={EUR_CARD}
+        locale="en"
+        manifest={MANIFEST}
+        qualifierBelow
+      />,
+      "en",
+    );
+    const words = message("en", "catalog", "price.inclusive");
+    const span = new RegExp(`<span class="([^"]*)">${words}</span>`, "u").exec(
+      html,
+    );
+    const classes = span?.[1]?.split(" ") ?? [];
+    expect(classes).toEqual(
+      expect.arrayContaining(["text-included", "block", "text-xs"]),
+    );
+    expect(classes).not.toContain("md:inline");
+    expect(classes).not.toContain("md:whitespace-nowrap");
+  });
 });
 
 describe("no equivalents on a card (clause 2; A21's amended test bullet)", () => {
