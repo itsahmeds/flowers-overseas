@@ -1,0 +1,13 @@
+# Spec 010 basket amendment: spec writer's self-check (2026-10-22)
+
+Written by the spec writer beside `specs/010-checkout.md` §14 A-founder-2026-10-22. No advisor ran (work order 2026-10-22: no advisor or reviewer agents). The effect on the open tasks and the designer's artboard list are items 14 and 15 of the amendment itself, inside §14.
+
+## Self-check
+
+**Building.** Every new rule has an owner task, a binary AC and a mutation. The two risky joins are explicit: the draft's per-line columns move under a merged migration (`0015`), so the up file refuses a placed draft and the down file states what it deletes; and "one charge = sum of orders" is enforced by a deferred constraint trigger plus a composite FK, not by application code alone. `place`, `transition` and the event schemas keep their signatures; `placePurchase` wraps `place`. Spec 013's lifecycle tasks are not started, so moving the payment to the purchase is cheap now; the model choice is Q19. Watch: the money-pair gate on `last_seen_total_minor` (the task records how it passes), and TASK-203's compare-and-set must be extended per line (its hole 17 carries).
+
+**Google ranking.** No indexable page changes per visitor: the header link is static, the count is a post-LCP island with no request, the PDP stays ISR and byte-identical, `Offer` stays unemitted, listing cards are untouched. The basket is `noindex`, disallowed, `nofollow`-linked, sitemap-free and Cloudflare-bypassed. Residual risk: a robots-blocked URL linked sitewide can surface as "indexed, though blocked"; the nofollow link and the runbook check cover it, and Q27 offers the alternative.
+
+**Law and compliance.** Price shown = price charged per line and in total, no new fee, VAT per order by destination; add-ons per line, none preselected (CRD Art. 22); one pre-contract block lists every delivery above the Pay button (Art. 8(2)); cancellation stays per order. Recipient data stays server-side, cleared at 24 h; the cookies hold a hashed token and a count; RoPA row 1 and the cookie register change. No IP logic; residence never changes a price. Lawyer points to flag with the legal set: one contract or several per purchase, and the Pay button wording for several deliveries (⚖️).
+
+**The customer.** Several gifts in one go, one payment, one email; guest checkout unchanged; nothing dropped silently; price changes named; a forgotten basket line announced before payment; JS-off and keyboard paths tested; no florist or relay wording; nothing negative on the confirmation if one delivery later fails (that buyer hears it from spec 016's B5 for that delivery only, with a full refund of that delivery).
