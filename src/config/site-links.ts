@@ -504,7 +504,9 @@ const siteLinks = [
     id: "for-florists",
     labelKey: "nav.forFlorists",
     target: { kind: "route", pageType: "forFlorists" },
-    published: false,
+    // Spec 011 §12 (TASK-210): the landing exists in all four locales. Where its content file is
+    // missing, `missingInfoPageLinkIds()` hands the id to the chrome and the entry is not drawn.
+    published: true,
     owningSpec: "011",
     surfaces: ["header", "footer"],
   },

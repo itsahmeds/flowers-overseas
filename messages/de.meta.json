@@ -1954,6 +1954,86 @@
     "source": "machine",
     "sourceHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
   },
+  "floristInbox.accept": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "89713b9c9c1b8f659c9f49db25e4a47886dd673fee248c3f650391f09a759cef"
+  },
+  "floristInbox.address": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "56ef8f20955f256423d328f65b62106005252551db25d660031887e421cb4684"
+  },
+  "floristInbox.answerBy": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "619f16d4add5b88715376bafe5857db2ca14cf97f32df136dae3aa16e02c61a3"
+  },
+  "floristInbox.cardMessage": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "46fe4a838806eec42b7be274b52577536001bbb76099fa2d209abda06a383604"
+  },
+  "floristInbox.decline": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a2d285b352873457207a34a015267524bb4613c3e8c961c8998da4e08e0d5745"
+  },
+  "floristInbox.deliveryDate": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "floristInbox.deliveryNote": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "79cfb80448a908ff9d9cf3e4a150aab08acc28c44e774b15d88bb2fca988cce8"
+  },
+  "floristInbox.forDate": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "092393bb3dfc8862a500dada0f815e23c07f2ed4be432050e554379398c82d24"
+  },
+  "floristInbox.orders": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "floristInbox.outForDelivery": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1b8faad0f548636d4a3215c30dd32e9c39c212dbf751c27b9715064b405114aa"
+  },
+  "floristInbox.photo.choose": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a028d458846b9a9e8fe1215d38304a935b95fc795eda6d6a6883433af35d702f"
+  },
+  "floristInbox.photo.send": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "94282bd0e852ea6c15770321d9a79ab68a98932d7e88b66a09976b6d804b49e8"
+  },
+  "floristInbox.recipient": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
+  },
+  "floristInbox.stage.inProgress": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c1f88e9d6c4145cf0530ae020155384d5688d70ed82a07a35d783bbc4b32238c"
+  },
+  "floristInbox.stage.waiting": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8e4b72ca2511e0bcdbb24cfba59f203972522cc440bfee2e8d9b7b0f7bebfd84"
+  },
+  "floristInbox.youReceive": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9ff9a4bc697dd08450ef0fbb0fa88582648f42837545596d290bd8961a06a433"
+  },
   "footer.cookieSettings": {
     "source": "human",
     "reviewed": false,
@@ -2073,6 +2153,301 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "e35a0c19dda80d64b3e68e418dc86821740e92c4dc8eae616a99acede6f17f3f"
+  },
+  "forFlorists.apply.crumb": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "31e392d1c0378beca611de66c0f4c71cba29159905cc54242d9bddee5b23d851"
+  },
+  "forFlorists.apply.error.area": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8ceb167471e3322aefbe86b14fa5bb0ca8a5248aad30a2f309bd2e90b0249a19"
+  },
+  "forFlorists.apply.error.capacity": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1c685320fce10c5e64fa1fbab8e6b4699bb827d69c6508a676f729b67a1019ac"
+  },
+  "forFlorists.apply.error.contactName": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6aad7bb1f4f80cb3ec4224351fb505a2bc9820a89b0af5dc3b4b974fffe888bc"
+  },
+  "forFlorists.apply.error.country": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8e37805a141517dd5af3f8535d052a242fa1da1fa6fe304912df4e9f97310b68"
+  },
+  "forFlorists.apply.error.email": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "de106bd008c7264674f184ff976b1e0630a0f5841b8e6ef41d072c05670465b6"
+  },
+  "forFlorists.apply.error.phone": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6bf9ba3413bd4b61ed30ecd122ec1dca3113aa770db3575dce62170cce8bd526"
+  },
+  "forFlorists.apply.error.shopName": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a999d4418941c10a48da59b82fb6257f91eb07638ef8167a96b5929c6a4eb3e1"
+  },
+  "forFlorists.apply.error.town": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4cf82854f95d8e49158206f348b5de3d435d9c34e6b112b6c5e079659998db1d"
+  },
+  "forFlorists.apply.error.website": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9253c6a49ea8fce90caf60bbc2efce29f4743e630a856445e57479b170cb9031"
+  },
+  "forFlorists.apply.errorSummary": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b7e838d5115f6f624625356388e36c5af5527043df3a4a78779903a3eb1bdce1"
+  },
+  "forFlorists.apply.failed": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "06596796c210eba98ec5b3348926f4c962b5a91d6e8242aa41cd6bc6b98b18e7"
+  },
+  "forFlorists.apply.field.area.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "22eb375069ff00108633b8a59386b5efc89f01e85b46e7c9576b3e1de7eb4853"
+  },
+  "forFlorists.apply.field.area.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fa8037e60c2e8acf217f59239a70ffcfaa425c25eaa5ec94f88f7c2ddbbcaba4"
+  },
+  "forFlorists.apply.field.capacity.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d497556055436b48def5e9932a3ba1d6a31bf63e9ea9525b60caef2cc60cf536"
+  },
+  "forFlorists.apply.field.capacity.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "45016533f711963c9a559139d5b579353de02bdda2e6c513ee552e6e6fc3dce2"
+  },
+  "forFlorists.apply.field.contactBy.email": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "forFlorists.apply.field.contactBy.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "690fa468d602255631c5f0e60aabd3047a383b4bbdf216c17794d63a7125789d"
+  },
+  "forFlorists.apply.field.contactBy.phone": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "63dceb8800b2dd4af9567a1f54f03b7c3dbdc27fac4799091ebfcc4928899ee5"
+  },
+  "forFlorists.apply.field.contactBy.whatsapp": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6a40edf1fc87a29f243a7eefdbed57d19bfe16ab2e039d7ae1a44c097297e2f3"
+  },
+  "forFlorists.apply.field.contactName.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "2c6b2e253c01fb2ed7209c15766745ccee92a35ac8209f544789bdf9500e0944"
+  },
+  "forFlorists.apply.field.country.choose": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "19323e2d92e71dc6c99394bc714a9912d38af964218be630e3bac64f0ca99e3d"
+  },
+  "forFlorists.apply.field.country.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "701d021d08c54579f23343581e45b65ffb1150b2c99f94352fdac4b7036dbbd5"
+  },
+  "forFlorists.apply.field.email.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "forFlorists.apply.field.language.de": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "801cfe0fa1182664d16f4aaf7856cc73412f79ef508a866eebc2e5ccf125ff0a"
+  },
+  "forFlorists.apply.field.language.en": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ba118bf7fc9c1aedc1edb28a0aa86e0b43b681f222af6616e13c43be87815b06"
+  },
+  "forFlorists.apply.field.language.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  },
+  "forFlorists.apply.field.language.pl": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a5989ca14f3485cc842e6f10754944e5deb2f50b171d35e25cb62bae89032316"
+  },
+  "forFlorists.apply.field.phone.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a6f5c5a9ec7abdf8bd06f379363b0e82d257b3f3bc2c7a624fc389221beda411"
+  },
+  "forFlorists.apply.field.phone.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8e7bbe4f2b2ea768c329d2b3dcce4595af0d52cce93be5f49bf5d57e83358237"
+  },
+  "forFlorists.apply.field.registration.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "4e824e2dcd71a107f973b8e60858d1a3777135129c3a36b2686161a0659fb606"
+  },
+  "forFlorists.apply.field.registration.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5db87da7efd0b9ddbd9b6614b263702039929f76fa9e178f7d43ce0a1a296fad"
+  },
+  "forFlorists.apply.field.shopName.help": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f284c6984a0069450f4204787587a7669678bbfeb05dc4234a82222c05523ba9"
+  },
+  "forFlorists.apply.field.shopName.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "3258910eae3f6fb490ea343f31eee90a3bd5f0bccc48becf6605f1c782102e3d"
+  },
+  "forFlorists.apply.field.town.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9ce56586c7281fe1dedb6870e9fd85fb3bbbbaa3837d33417acb1110904fe549"
+  },
+  "forFlorists.apply.field.website.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6701bd9ea9f8b4a37fd542df88777ceaabe60443b9b74adff119366e63b6bbfe"
+  },
+  "forFlorists.apply.field.weekends.label": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "0853a304c6f0cb921eb08d5edb7f759e5bcdabb74285edff459e23d119492d8f"
+  },
+  "forFlorists.apply.field.weekends.no": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "forFlorists.apply.field.weekends.sometimes": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "5bca0e3da0627549815c3b0691247c3722893884bbcccde4af1f23878f6a93e5"
+  },
+  "forFlorists.apply.field.weekends.yes": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  },
+  "forFlorists.apply.formOff": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8cb1b59ec1a49c6c276d14416c292522dcbb8b03c13eff75a75be1401184a404"
+  },
+  "forFlorists.apply.h1": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f2154748959fed0220222fab9d6e8f09c8d686b4b12d39657c8159308334bc3b"
+  },
+  "forFlorists.apply.honeypot": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d076cfad7715f92e82773c1e757d147b5bfbdc28e70c77a9ec6a41a0c9aa2532"
+  },
+  "forFlorists.apply.intro": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "7ed27124dcea07709c60e668fce1421619f25b91b8778138537a573a7f5d0ac7"
+  },
+  "forFlorists.apply.next.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bbc9127bb2c04cbc745e355dc8ac43603db4598358df3c07c6fc2344b042ad74"
+  },
+  "forFlorists.apply.next.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "8f9b77e6e0b4eebac0a0786b761ecfaf5782fd7223b1fb34ae6c6bbe2fd63a9b"
+  },
+  "forFlorists.apply.notice.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f626f51f2bb11fba5a9499312bdd69ff5fb2db8312186f3f56043b14403a74aa"
+  },
+  "forFlorists.apply.notice.controller": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b7bb76c6566a89fc9cf8cab52b4e2c0304a08a0e6165283561e6cabfa4354f1b"
+  },
+  "forFlorists.apply.notice.heading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "350946ba040830c5bd2b908b6298840b5f0e858de49844e2ff0fb5da59af1bc3"
+  },
+  "forFlorists.apply.notice.privacyLink": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "84e608211fcd4a6286a055f26e288ad08862b422ab86c831b69f1ec81cc54c11"
+  },
+  "forFlorists.apply.optional": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ec91fdd9256cb75ae611249b50cb7eb16533f0fa91b86239ec1d439a1ea033b8"
+  },
+  "forFlorists.apply.submit": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c0404dce1eb3d90bec527c8cea14fa2149a1ab0e24b591c176bb295c014e0696"
+  },
+  "forFlorists.apply.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a4a89831190eee9b912426481bda806e831861bc50813f4a7dd0932c3083339c"
+  },
+  "forFlorists.apply.tooMany": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "420b3804fdff6c3c7e23554230281efb6e0228b25a3e4416b5774eb4870e10dd"
+  },
+  "forFlorists.sent.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "495d181aa9ed26e34e9d18bc80f36f9d18c8c87b6fc8df9e2adb53c75e166600"
+  },
+  "forFlorists.sent.h1": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e5019509aaa5d3a6c5c0ce79db64ff9a5d20d5d6bcc833de60beeb443c2f9a38"
+  },
+  "forFlorists.sent.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "04c1cdebb06e787d3c9c0c7d200b86aac47e1c17e0b31c0b7ac53b7a13924d6e"
+  },
+  "forFlorists.sent.walkthrough": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "693ce1b9510eeedd0ad8fd730cd595e96bd95c02c5a79bbc9f2fd0173d38e43f"
+  },
+  "forFlorists.status.choosingFirst": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "d0d0262296fb3cff14c1e2a886ecd1d4f1eb51267eb3068cb5be0687ac1defdc"
   },
   "home.dates.eyebrow": {
     "source": "machine",
@@ -2363,6 +2738,11 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "76c90f3766e84a946be2f0dbffdefe0fa6a19163fb29ef86fe6c9ec41c8b6a09"
+  },
+  "infoPages.status.untranslated": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "484e8a67ba8675df36c6f9bc1e846edfb71c095485ee6fec14066fb71031f107"
   },
   "languagePopup.browserMatch": {
     "source": "machine",

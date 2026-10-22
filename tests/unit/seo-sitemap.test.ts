@@ -387,6 +387,10 @@ describe("static.xml is the page-type list applied (AC-13, AC-14)", () => {
     privacy: (locale) => `${ORIGIN}/${locale}/legal/privacy`,
     cookies: (locale) => `${ORIGIN}/${locale}/legal/cookies`,
     cancellation: (locale) => `${ORIGIN}/${locale}/legal/cancellation`,
+    // Spec 011 §6 (TASK-210): the florists' landing and walkthrough, by the same rule.
+    "for-florists": (locale) => `${ORIGIN}/${locale}/for-florists`,
+    "how-orders-work": (locale) =>
+      `${ORIGIN}/${locale}/for-florists/how-orders-work`,
   };
 
   /**
