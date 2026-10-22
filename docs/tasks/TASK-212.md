@@ -27,6 +27,13 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** ready when TASK-217 has merged (the sign-in artboards merged in PR 197). The one-sign-in decision of spec 011 §13 Q2 is recorded in `docs/adr/ADR-0019-one-florist-email-sign-in.md`; its spec 017 condition (order emails sign the florist in with one tap) is a requirement this task's link design must keep possible.
 
+- **2026-10-22, from the implementer (self-review, PR 326), left for later tasks:**
+  - *Cookie register rows not added.* `src/config/cookies.ts`'s schema refuses `writer: "server"` with `status: "set"` (spec 004's "no `Set-Cookie` on a cached response" invariant) and every row needs a public `consent.cookies.<id>.purpose` key, which counts in the indexable share. The three `__Secure-fo-florist.*` cookies (and admin's three, also unregistered) need that invariant restated for `no-store`, path-scoped surfaces; TASK-216's close-out names the cookie register.
+  - *Cloudflare bypass for `/demo/*` not added to `config/cloudflare/edge.json`.* The zone caches documents on the production host only, where every florist route is a 404 in Phase 0; adding the path changes the live-probed e2e (`cloudflare-edge.spec.ts`), which would go red until the founder applies the rule. Add `/demo` to `bypass.paths` with the founder's apply step before production sign-in opens (spec 026).
+  - *The sign-in card's notice link* is an unfilled `[slot]` on the artboard (Appendix A has no words and the notice is TASK-213's); not drawn.
+  - *`signed-out` state* renders the plain form (the artboard draws no signed-out frame and Appendix A has no words for one).
+  - *The sign-in email is not a React Email template under `emails/`*: plain strings in `src/modules/partners/auth/sign-in-email.ts`, the admin precedent (no new code root, no dependency).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -39,7 +46,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: florist instance `src/lib/auth/florist.ts` on the core's factory; core changes: `renderEmail(link, email)` may be async (the member's language), rolling sessions extended in `sessionUserId()`, session tokens bound to their surface (`admin.…`/`florist.…`; existing admin sessions end once); `src/config/florists.ts` (`FLORIST_BASE_PATH`, `signInPolicy`); routes under `src/app/demo/vendor-inbox/` (layout, inbox shell, sign-in, confirm, `api/auth/*`, `api/language`); proxy: production 404, `?hl=`, rolling cookie; header rules; `/demo/` in robots; `floristAuth`/`floristInbox`/`emails.floristSignIn` in en (unreviewed) and pl/de machine drafts; tests: `tests/unit/florist-surface.test.ts`, `tests/integration/florist-auth.test.ts`, `tests/e2e/florist-surface.spec.ts`.
 
 ## Result
 
