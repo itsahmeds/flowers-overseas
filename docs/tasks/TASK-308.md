@@ -39,7 +39,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22, implementer: one `PrintedCardPreview` on both pages, the product island writes into its `<bdi>` and marks the sample, `globals.css` idea 2 section, `src/config/interactions.ts` (`cardPreviewMotion`), unit T-1/T-3/T-10/T-11 and e2e T-10 (+ the gallery's AC-11 face check); 14 mutations each seen red. TASK-309 is not in this PR: its dependency TASK-306 is still `todo` (PR 314). Next: gates, Self-review, ready, `ci:full`, Linux baselines for the product card section if `visual` moves.
 
 ## Result
 
