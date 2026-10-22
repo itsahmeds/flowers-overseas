@@ -103,3 +103,52 @@ export async function orderParents(
   const recipientId = await recipient(tx, customerId);
   return { countryId, customerId, recipientId };
 }
+
+/**
+ * The columns a `partner_application` row needs since `0020_florists_v0` (spec 011 §5.1;
+ * TASK-211), as a SQL fragment's values. Fictional applicant, reserved phone range.
+ */
+export const APPLICATION_REQUIRED = {
+  contact_name: "Test Applicant",
+  contact_email: "applicant@example.test",
+  contact_phone: "+48 500 000 000",
+  privacy_notice_version: "2026-10-04",
+} as const;
+
+export interface ApplicationOptions {
+  readonly countryId: string;
+  readonly languageCode?: string;
+  readonly businessName?: string;
+  readonly status?: "new" | "contacted" | "rejected" | "converted";
+  readonly convertedPartnerId?: string | null;
+  /** How long ago the row last changed, in days (sets `updated_at`). */
+  readonly changedDaysAgo?: number;
+}
+
+/** One valid florist application; returns its id. */
+export async function application(
+  tx: Tx,
+  options: ApplicationOptions,
+): Promise<string> {
+  const [row] = await tx<{ id: string }[]>`
+    INSERT INTO partner_application (business_name, city, country_id, language_code,
+                                     contact_name, contact_email, contact_phone,
+                                     privacy_notice_version, status, converted_partner_id)
+    VALUES (${options.businessName ?? unique("Kwiaty ")}, 'Warszawa', ${options.countryId},
+            ${options.languageCode ?? "pl"}, ${APPLICATION_REQUIRED.contact_name},
+            ${APPLICATION_REQUIRED.contact_email}, ${APPLICATION_REQUIRED.contact_phone},
+            ${APPLICATION_REQUIRED.privacy_notice_version}, ${options.status ?? "new"},
+            ${options.convertedPartnerId ?? null})
+    RETURNING id`;
+  const id = row?.id ?? "";
+  if (options.changedDaysAgo !== undefined) {
+    // `set_updated_at` stamps `now()` on UPDATE, so the age is set with the trigger off for
+    // this one statement (superuser only, rolled back with the test's transaction).
+    await tx`ALTER TABLE partner_application DISABLE TRIGGER USER`;
+    await tx`UPDATE partner_application
+             SET updated_at = now() - make_interval(days => ${options.changedDaysAgo})
+             WHERE id = ${id}`;
+    await tx`ALTER TABLE partner_application ENABLE TRIGGER USER`;
+  }
+  return id;
+}
