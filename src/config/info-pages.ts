@@ -18,7 +18,10 @@ import {
   type PathSegmentKey,
 } from "./locales.data.ts";
 
-/** The ten page ids of spec 041 §2's table, in its order. */
+/**
+ * The ten page ids of spec 041 §2's table, in its order, then the four of spec 011 §2's table (the
+ * `florists` family, TASK-210): the landing, the walkthrough, the application and its sent page.
+ */
 export const INFO_PAGE_IDS = [
   "how-it-works",
   "guarantee",
@@ -30,12 +33,21 @@ export const INFO_PAGE_IDS = [
   "privacy",
   "cookies",
   "cancellation",
+  "for-florists",
+  "how-orders-work",
+  "florist-apply",
+  "florist-apply-sent",
 ] as const;
 
 export const InfoPageIdSchema = z.enum(INFO_PAGE_IDS);
 export type InfoPageId = z.infer<typeof InfoPageIdSchema>;
 
-export const infoPageFamilies = ["trust", "legal"] as const;
+/**
+ * `florists` is spec 011's third family (§2, TASK-210): the trust family's frontmatter and gate
+ * rules, florist-facing copy (so the buyer relay ban does not apply, `RELAY_EXEMPT`), and two
+ * pages (the application and its sent page) that carry no prose file at all.
+ */
+export const infoPageFamilies = ["trust", "legal", "florists"] as const;
 export type InfoPageFamily = (typeof infoPageFamilies)[number];
 
 /** The JSON-LD types a page may emit (spec 041 §6 "Schema"). Nothing else is ever emitted. */
@@ -43,6 +55,7 @@ export const infoPageSchemaTypes = [
   "BreadcrumbList",
   "FAQPage",
   "Organization",
+  "WebPage",
 ] as const;
 export type InfoPageSchemaType = (typeof infoPageSchemaTypes)[number];
 
@@ -60,10 +73,28 @@ const InfoPageEntrySchema = z
     family: z.enum(infoPageFamilies),
     /** Top-level pages: the `PATH_SEGMENT_KEYS` key whose per-locale value is the URL segment. */
     segmentKey: z
-      .enum(["howItWorks", "guarantee", "help", "about", "delivery", "imprint"])
+      .enum([
+        "howItWorks",
+        "guarantee",
+        "help",
+        "about",
+        "delivery",
+        "imprint",
+        "forFlorists",
+      ])
       .optional(),
-    /** Legal documents: the leaf slug under the `legal` segment, per locale. */
+    /**
+     * Legal documents: the leaf slug under the `legal` segment, per locale. A page with a
+     * `parent` takes its leaf under the parent page's path instead (spec 011 §2's table).
+     */
     leafSlugs: z.record(z.string(), LeafSlugSchema).optional(),
+    /** The page whose path this page's leaf sits under (`how-orders-work` under `for-florists`). */
+    parent: InfoPageIdSchema.optional(),
+    /**
+     * `false` for a page with no content file (spec 011 §2: the apply and sent pages' strings are
+     * message keys). Such a page exists exactly where its parent does.
+     */
+    prose: z.boolean().optional(),
     /**
      * The `site-links.ts` row whose `infoPage` target names this page. Absent for `about`: the
      * canvas draws no footer link to it (spec 041 §2 "Links"); it is reached in-body.
@@ -80,6 +111,20 @@ const InfoPageEntrySchema = z
         code: "custom",
         path: ["segmentKey"],
         message: `\`${entry.id}\` needs exactly one of \`segmentKey\` (a top-level page) or \`leafSlugs\` (a legal leaf)`,
+      });
+    }
+    if (entry.parent !== undefined && entry.leafSlugs === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["parent"],
+        message: `\`${entry.id}\` has a \`parent\` and so needs \`leafSlugs\``,
+      });
+    }
+    if (entry.prose === false && entry.parent === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["prose"],
+        message: `\`${entry.id}\` has no content file and so needs a \`parent\` to exist through`,
       });
     }
     if (!entry.schemaTypes.includes("BreadcrumbList")) {
@@ -128,7 +173,7 @@ export const InfoPageRegistrySchema = z
     const seen = new Map<string, string>();
     entries.forEach((entry, index) => {
       for (const [locale, slug] of Object.entries(entry.leafSlugs ?? {})) {
-        const key = `${locale}/${slug}`;
+        const key = `${entry.parent ?? "legal"}/${locale}/${slug}`;
         const owner = seen.get(key);
         if (owner !== undefined) {
           ctx.addIssue({
@@ -222,6 +267,47 @@ const infoPages: readonly z.input<typeof InfoPageEntrySchema>[] = [
     schemaTypes: ["BreadcrumbList"],
     requiresRegistration: false,
   },
+  // Spec 011 §2's table (TASK-210). The `de` and `pl` leaves are proposals the native review of
+  // §13 Q10 confirms before the walkthrough is first indexed: an indexed slug changed later costs
+  // a redirect forever. `en`-language and pseudo locales read the English leaf.
+  {
+    id: "for-florists",
+    family: "florists",
+    segmentKey: "forFlorists",
+    siteLinkId: "for-florists",
+    schemaTypes: ["BreadcrumbList", "WebPage", "FAQPage"],
+    requiresRegistration: false,
+  },
+  {
+    id: "how-orders-work",
+    family: "florists",
+    parent: "for-florists",
+    leafSlugs: leaves(
+      "how-orders-work",
+      "so-kommen-auftraege",
+      "jak-przychodza-zamowienia",
+    ),
+    schemaTypes: ["BreadcrumbList"],
+    requiresRegistration: false,
+  },
+  {
+    id: "florist-apply",
+    family: "florists",
+    parent: "for-florists",
+    leafSlugs: leaves("apply", "bewerben", "zglos-sie"),
+    prose: false,
+    schemaTypes: ["BreadcrumbList"],
+    requiresRegistration: false,
+  },
+  {
+    id: "florist-apply-sent",
+    family: "florists",
+    parent: "florist-apply",
+    leafSlugs: leaves("sent", "gesendet", "wyslano"),
+    prose: false,
+    schemaTypes: ["BreadcrumbList"],
+    requiresRegistration: false,
+  },
 ];
 
 /** Parsed at module load: a malformed registry throws on first import, never at request time. */
@@ -244,9 +330,47 @@ export const TRUST_PAGE_IDS = INFO_PAGES.filter(
   (entry) => entry.family === "trust",
 ).map((entry) => entry.id);
 
+/** The florists family, in registry order (spec 011 §2). */
+export const FLORIST_PAGE_IDS = INFO_PAGE_IDS.filter(
+  (id) => infoPage(id).family === "florists",
+);
+
+/** Whether the page has a content file of its own (`false` for the apply and sent pages). */
+export function infoPageHasProse(id: InfoPageId): boolean {
+  return infoPage(id).prose !== false;
+}
+
+/**
+ * Where any page lives below `/{locale}`: a `PATH_SEGMENT_KEYS` key and the leaf slugs after it,
+ * `localePath()`'s two arguments (spec 041 §6, spec 011 §2). A page with a `parent` is the
+ * parent's location plus its own leaf, so `florist-apply-sent` is `forFlorists` + `apply` + `sent`.
+ */
+export function infoPageSegments(
+  id: InfoPageId,
+  locale: string,
+): {
+  readonly segmentKey: PathSegmentKey;
+  readonly leaves: readonly string[];
+} {
+  const entry = infoPage(id);
+  if (entry.segmentKey !== undefined) {
+    return { segmentKey: entry.segmentKey, leaves: [] };
+  }
+  const leaf = entry.leafSlugs?.[locale];
+  if (leaf === undefined) {
+    throw new Error(`info page \`${id}\` has no leaf slug in \`${locale}\``);
+  }
+  if (entry.parent === undefined)
+    return { segmentKey: "legal", leaves: [leaf] };
+  const parent = infoPageSegments(entry.parent, locale);
+  return { segmentKey: parent.segmentKey, leaves: [...parent.leaves, leaf] };
+}
+
 /**
  * Where the page lives below `/{locale}`: the `PATH_SEGMENT_KEYS` key of a top-level page, or the
  * `legal` key and the leaf slug of a legal document. `localePath()` composes it (spec 041 §6).
+ * A page nested under another page (spec 011's walkthrough and application) has no such location:
+ * read `infoPageSegments()` for it; the footer's `infoPage` links never name one.
  */
 export function infoPageLocation(
   id: InfoPageId,
@@ -256,6 +380,11 @@ export function infoPageLocation(
   | { readonly segmentKey: "legal"; readonly leaf: string } {
   const entry = infoPage(id);
   if (entry.segmentKey !== undefined) return { segmentKey: entry.segmentKey };
+  if (entry.parent !== undefined) {
+    throw new Error(
+      `info page \`${id}\` sits under \`${entry.parent}\`: read infoPageSegments()`,
+    );
+  }
   const leaf = entry.leafSlugs?.[locale];
   if (leaf === undefined) {
     throw new Error(`info page \`${id}\` has no leaf slug in \`${locale}\``);
