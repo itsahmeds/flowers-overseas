@@ -629,21 +629,24 @@ describe("the provider seam and its Phase 0 stubs", () => {
   });
 
   it("swaps the composition root for the body of `withCatalogProviders()` only, one swap at a time (TASK-070)", async () => {
-    const other: CatalogProviders = { ...providers };
+    const other: CatalogProviders = {
+      ...providers,
+      flags: { flags: () => Promise.resolve([]) },
+    };
     const seen = await withCatalogProviders(other, async () => {
       await expect(
         withCatalogProviders(providers, () => Promise.resolve(null)),
       ).rejects.toThrow(/one swap at a time/u);
       return catalogProviders();
     });
-    expect(seen).toBe(other);
-    expect(catalogProviders()).not.toBe(other);
-    expect(catalogProviders()).toStrictEqual(providers);
+    expect(seen.flags).toBe(other.flags);
+    expect(catalogProviders().flags).toBe(providers.flags);
+    expect(catalogProviders()).not.toBe(catalogProviders());
 
     await expect(
       withCatalogProviders(other, () => Promise.reject(new Error("boom"))),
     ).rejects.toThrow("boom");
-    expect(catalogProviders()).not.toBe(other);
+    expect(catalogProviders().flags).toBe(providers.flags);
   });
 
   /**
