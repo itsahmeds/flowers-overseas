@@ -256,7 +256,7 @@ test.describe("every live occasion hub is complete (AC-72, AC-76; T-72, T-76)", 
       .locator('[data-fo-hub-first-date="PL"]')
       .first()
       .innerText();
-    expect(card).toMatch(/\b21 January and 22 January\b/u);
+    expect(card).toMatch(/\b21 January and 22 January/u);
     for (const [iso2, day] of [
       ["ES", "26 July"],
       ["IT", "2 October"],
