@@ -639,6 +639,7 @@ Raised by: the founder's reply of 2026-10-14 to the orchestrator's page; written
 
 **Status: proposed.** The founder's instruction, verbatim, 2026-10-22: "we need to build a cart and the logging system for users, you know, users can make their accounts, right?" The first half reverses §13 Q11 ("one bouquet per order in Phase 0, no basket; the header basket link stays hidden") and the §3 non-goal "A multi-item basket and the header basket link". The second half (accounts) is spec 018's, which folds roadmap `019` in (018 header, "Boundaries"); this entry keeps guest checkout and only records what the basket asks of accounts (item 15). The design choices below carry recommended defaults; the founder answers Q18 to Q28 (a one-word "ok" per default is enough) before `/design` and `/plan-tasks`. The rest of spec 010 stays approved. No advisor ran (work order 2026-10-22: no advisor or reviewer agents).
 
+
 Original: §2 builds a checkout for **one** bouquet: the draft holds one product, tier, date, recipient and card (§5.1 B); placement writes one order (AC-20); the confirmation shows one order (AC-29). §3 put "a multi-item basket and the header basket link" out of scope, §13 Q11 defaulted to no basket, and spec 004 §14 A20 omits the header Basket because it has no page. `plan/04` §8 already describes the basket ("a `/basket` page exists for multi-item orders and for back navigation but is not a required step") and `plan/05` row 18 lists `/{locale}/basket` (SSR, `noindex`).
 
 Corrected:
