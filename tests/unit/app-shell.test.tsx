@@ -265,7 +265,13 @@ describe("the `[locale]` document (AC-6)", () => {
     // Spec 003 §14 A-founder-2026-10-14c clause 2: `/de` is reached by URL only. Its switcher
     // lists the shown locales (`en`, `en-gb`) as links, and neither the page's own hidden locale
     // nor the other hidden one: no `aria-current` entry, no `Deutsch`, no `Polski`, no `/pl`.
-    expect(html).toContain('<nav aria-label="Change language">');
+    // The label is the page's own language (`de`'s agent draft, spec 003 §14 A15), read from the
+    // catalogue rather than pinned as English.
+    const switcherLabel = (
+      loadMessages("de", ["a11y"])["a11y"] as { localeSwitcher: string }
+    ).localeSwitcher;
+    expect(switcherLabel).not.toBe("Change language");
+    expect(html).toContain(`<nav aria-label="${switcherLabel}">`);
     expect(html).toContain('lang="en" hrefLang="en">English</a>');
     expect(html).toContain('lang="en-GB" hrefLang="en-GB">English (UK)</a>');
     expect(html).not.toContain('<span aria-current="page" lang="de">');
