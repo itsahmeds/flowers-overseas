@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed (draft until the founder answers §13 and marks it approved) |
+| Status | approved (founder, 2026-10-22, "crm ok", on every §13 default) |
 | Phase | 1 (admin tooling for the first florists; built after spec 030a's payout ledger) |
 | Plan refs | plan/01 §3 (admin row) §4.1 §4.3 §5 §8 §9 · plan/02 §4.1 (admin has no locale, no canonical) · plan/03 §8 (formatting) · plan/05 #57 ("prices/margins per country", "exports") · plan/06 §2.2 (FX buffer, EUR settlement) §3 (money flow, unit economics) §4 (VAT models, must-confirm items 1, 4, 7, 8) §5.4 (payout ledger, rating) §6 (margin view "retail − payout − fees", exports) · plan/07 §1.1 §1.2 (florist personal data: contract + 10 years financial) §1.3 §4 §8 · plan/09 Phase 1 · plan/11 §1 (roles) §4.2 (florist pipeline tool; see §3 and §13 Q14) §7 (analytics later) · plan/12 §4 (test layers) |
 | ADRs | ADR-0009 (no order status write here) · ADR-0010 (buy the customer CRM; this spec builds no customer CRM, §3) · ADR-0005 (Stripe primary, Mollie fallback) · ADR-0015 (Neon, R2, Auth.js) · ADR-0018 (Railway). Proposes no ADR (§13 Q14) |
