@@ -314,8 +314,10 @@ export const REGISTER_PATTERNS: Readonly<Record<"de" | "pl", RegExp>> = {
 
 /**
  * The home rule (decisions log 2026-10-04, "No VAT-and-delivery line on the home"): no `home.*`
- * value states a price, a currency, or that VAT and delivery are included. Over-inclusive on
- * purpose, like the voice scan: a false positive costs one rewording.
+ * value states a price (a currency sign or code), VAT, or that something is included in the
+ * price, in English, German or Polish. Over-inclusive on purpose, like the voice scan: a false
+ * positive costs one rewording. The bare word "price" is not on it: "every price is final" says
+ * how we price, not what anything costs.
  */
 export const HOME_PRICE_PATTERN = new RegExp(
   [
@@ -330,9 +332,9 @@ export const HOME_PRICE_PATTERN = new RegExp(
     "w cenie",
     "wliczon",
     "podat",
-    "price",
-    "preis",
-    String.raw`(?<![\p{L}\p{N}_])cen(?:a|y|ie|ę|ą|ami|ach)?(?![\p{L}\p{N}_])`,
+    "includ",
+    "zawier",
+    String.raw`(?<![\p{L}\p{N}_])(?:delivery and vat|vat and delivery)(?![\p{L}\p{N}_])`,
   ].join("|"),
   "iu",
 );
