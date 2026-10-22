@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-22, "specs ok", on every §13 default) |
 | Phase | 1 (launch path: needed before the first real paid order) |
 | Plan refs | plan/01 §3 §4.2 §5 §8 §9 · plan/02 §4.1 · plan/03 §5 · plan/06 §2.2 §5.2 §6 · plan/07 §1.2 §1.3 §2.1 §2.3 §8 §9 · plan/09 Phase 1 (`020`, acceptance 1) · plan/11 §1 §2 §5 · plan/12 §4 |
 | ADRs | ADR-0009 (status only through `orderService.transition`) · ADR-0006 (no IP redirects, no location-based behaviour) · ADR-0013 (Resend) · ADR-0015 (Neon, Auth.js) · ADR-0019 (one florist sign-in; no per-order links). Proposes no ADR |
