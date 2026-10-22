@@ -8,8 +8,10 @@
  * It does two small things, both on text the server already printed:
  *
  *  1. **The card message.** It renders the card-message `<textarea>` and its counter, and mirrors
- *     what is typed into the printed-card preview (`[data-fo-card-text]`, drawn by the server in
- *     `PrintedCardPreview`). The limit is **graphemes**, the one constant checkout uses
+ *     what is typed into the card preview: the words go into the `<bdi>` of the
+ *     `[data-fo-card-text]` line `PrintedCardPreview` drew, and the sample sentence before it is
+ *     marked `aria-hidden="true"` while there are words, which is also what `globals.css` swaps the
+ *     two lines on (spec 042 §5.3.2, AC-10). The limit is **graphemes**, the one constant checkout uses
  *     (`CARD_MESSAGE_MAX`, spec 004 AC-51): the counter shows the grapheme count against it, and a
  *     grapheme past it is refused (a paste is cut to the limit). It sets no `maxLength`: that
  *     attribute counts UTF-16 units, so it would refuse a 200-grapheme message with an emoji in
@@ -52,7 +54,7 @@ export interface CardMessageFieldProps {
   readonly counterClassName?: string;
 }
 
-/** The selector of every preview paragraph the server drew. */
+/** The words line of the preview the server drew (and the build check's island marker). */
 export const CARD_TEXT_SELECTOR = "[data-fo-card-text]";
 
 /** Every node that shows a figure of the selected size, and the radios that carry each size's. */
@@ -101,14 +103,16 @@ export function CardMessageField({
   const [text, setText] = useState("");
 
   useEffect(() => {
-    for (const node of document.querySelectorAll<HTMLElement>(
-      CARD_TEXT_SELECTOR,
-    )) {
-      // The sample sentence is the server's text, kept on the node so clearing the field puts
-      // it back without a second copy of the string in this bundle.
-      node.dataset.foCardSample ??= node.textContent;
-      node.textContent = text === "" ? node.dataset.foCardSample : text;
-      node.dataset.foCardText = text === "" ? "sample" : "typed";
+    for (const line of document.querySelectorAll(CARD_TEXT_SELECTOR)) {
+      // The words replace the line's `<bdi>` text at once, keystroke by keystroke; the sample
+      // sentence stays the server's node, so clearing the field shows it again with no second
+      // copy of the string in this bundle.
+      const words = line.firstElementChild;
+      if (words !== null) words.textContent = text;
+      line.previousElementSibling?.setAttribute(
+        "aria-hidden",
+        String(text !== ""),
+      );
     }
   }, [text]);
 

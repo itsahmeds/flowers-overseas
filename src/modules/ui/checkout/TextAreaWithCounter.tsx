@@ -10,11 +10,19 @@
  * `CardCounter` (the island) keeps the counter and the preview in step as the buyer types; it
  * makes no network request and stores nothing.
  *
+ * **The preview is the product page's** (spec 042 §5.3.2, AC-11, §13 Q4 (a); motion 15; TASK-308):
+ * `PrintedCardPreview`, the one card component, with the words and the signature in Caveat and
+ * `card.preview` as its caption. Checkout gives it no sample, so an empty card shows the mark and
+ * the caption only and nothing fades. Field and card side by side from `md` (`1fr` and 200 px); on
+ * the phone the card sits above the field, so the keyboard never hides it.
+ *
  * The counter is `counterTemplate` with `{count}` left in it ("{count} of 200 characters"): the
  * caller formats the limit and the island only substitutes the live count, so no message
  * catalogue and no `Intl` reaches the browser.
  */
 import type { ReactElement, ReactNode } from "react";
+
+import { PrintedCardPreview } from "../product/PrintedCardPreview.tsx";
 
 import { CardCounter } from "./CardCounter.tsx";
 import { COUNT_SLOT, isOverLimit } from "./counter-slot.ts";
@@ -116,26 +124,19 @@ export function TextAreaWithCounter({
           </p>
         </div>
         {preview === undefined ? null : (
-          <figure
-            aria-label={preview.label}
-            className="bg-card m-0 grid gap-[10px] rounded-md px-[18px] pt-[18px] pb-[16px] shadow-[var(--shadow-sm),inset_0_0_0_1px_var(--color-rule)]"
-          >
-            <p className="font-display text-ink m-0 text-[17px] leading-[1.35] font-(--font-weight-display) break-words whitespace-pre-line">
-              <bdi data-fo-mirror={id}>{defaultValue}</bdi>
-              {preview.signatureFieldId === undefined &&
-              preview.signature === undefined ? null : (
-                <>
-                  <br />
-                  <bdi data-fo-mirror={preview.signatureFieldId}>
-                    {preview.signature}
-                  </bdi>
-                </>
-              )}
-            </p>
-            <figcaption className="border-rule text-ink-3 border-t border-solid pt-[8px] text-xs">
-              {preview.printed}
-            </figcaption>
-          </figure>
+          <PrintedCardPreview
+            caption={preview.printed}
+            className="max-md:order-first"
+            label={preview.label}
+            message={defaultValue}
+            messageFieldId={id}
+            {...(preview.signature === undefined
+              ? {}
+              : { signature: preview.signature })}
+            {...(preview.signatureFieldId === undefined
+              ? {}
+              : { signatureFieldId: preview.signatureFieldId })}
+          />
         )}
       </div>
       <FieldMessages id={id} {...messages} />

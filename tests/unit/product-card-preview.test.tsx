@@ -18,7 +18,7 @@ import { join, relative, resolve } from "node:path";
 
 import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ListingBreadcrumb, productView } from "../../src/modules/catalog";
 import { loadMessages } from "../../src/modules/i18n";
@@ -162,7 +162,7 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
     }
   });
 
-  it("draws the preview once, beside the field in the card section, with the sample sentence and the printed label (v3, TASK-197)", async () => {
+  it("draws the preview once, beside the field in the card section, with the sample sentence and the printed label as its caption (v3, TASK-197; spec 042 motion 15, TASK-308)", async () => {
     const html = await pageHtml("en");
     const en = loadMessages("en", ["product", "catalog"]) as {
       product: { card: { printed: string } };
@@ -172,21 +172,55 @@ describe("A21 clause 5: the card message has no name and goes nowhere", () => {
     // shown/hidden pair.
     const previews = [...html.matchAll(/data-fo-card-preview/gu)];
     expect(previews).toHaveLength(1);
-    expect(
-      html.split(`>${en.catalog.addon.card.description}<`).length,
-    ).toBeGreaterThanOrEqual(2);
+    const figure =
+      /<figure[^>]*data-fo-card-preview[^>]*>[\s\S]*?<\/figure>/u.exec(
+        html,
+      )?.[0];
+    expect(figure).toBeDefined();
+    // The sample is the figure's own first line, before the words line, and shown (not hidden
+    // from assistive technology) while the field is empty.
+    expect(figure).toContain(
+      `<p class="font-hand m-0 text-[22px] leading-[1.25] font-[500] wrap-anywhere whitespace-pre-line col-start-1 row-start-1 text-ink-3" data-fo-card-sample="true">${en.catalog.addon.card.description}</p>`,
+    );
     // The literal, not the catalogue's current value: A21 clause 5's label as the founder approved
     // it (`/break` round 1 hole 2 on PR 170).
     expect(en.product.card.printed).toBe("Printed on our card · included");
+    // Spec 042's band: the label moves from under the field into the card's caption, once.
     expect(html.split(`>${en.product.card.printed}<`)).toHaveLength(2);
-    // Inside the card section, after the field, and never hidden at a width.
+    expect(figure).toMatch(
+      new RegExp(
+        `<figcaption[^>]*>${en.product.card.printed}</figcaption></figure>$`,
+        "u",
+      ),
+    );
+    // Inside the card section, after the field in the source, and never hidden at a width; on
+    // the phone it is drawn first (above the field, so the keyboard never hides it).
     const card = html.slice(html.indexOf("data-fo-pdp-card"));
     expect(card.indexOf("data-fo-card-preview")).toBeGreaterThan(
       card.indexOf("<textarea"),
     );
+    expect(figure).toMatch(/^<figure class="[^"]* max-md:order-first"/u);
     expect(html).not.toMatch(
-      /class="[^"]*(lg:)?hidden[^"]*"><figure[^>]*data-fo-card-preview/u,
+      /class="[^"]*(lg:)?hidden[^"]*"><figure[^>]*data-fo-card-preview/u,
     );
+  });
+
+  it("gives the island an empty words line keyed to the field, after the sample, in four locales (spec 042 AC-10)", async () => {
+    for (const locale of LOCALES) {
+      const html = await pageHtml(locale);
+      const lines =
+        /<div class="grid"( data-fo-card-swap="")?>([\s\S]*?)<\/div>/u.exec(
+          html.slice(html.indexOf("data-fo-card-preview")),
+        );
+      expect(lines?.[1], locale).toBe(' data-fo-card-swap=""');
+      // The sample, then the words: the island writes into the `<bdi>` of the line it finds by
+      // `[data-fo-card-text]` and marks the line before it; `globals.css` swaps the two on that.
+      expect(lines?.[2], locale).toMatch(
+        /^<p class="[^"]*" data-fo-card-sample="true">[^<]+<\/p><p class="[^"]*" data-fo-card-text="true"><bdi data-fo-mirror="pdp-card-message" dir="auto"><\/bdi><\/p>$/u,
+      );
+      // No signature line on the product page.
+      expect(html, locale).not.toContain("data-fo-card-signature");
+    }
   });
 });
 
@@ -242,13 +276,23 @@ describe("A21 clause 3: Caveat is reachable from the printed-card preview only",
     expect(importers).toEqual([PREVIEW]);
   });
 
-  it("sets the hand face on the message line only", () => {
+  it("sets the hand face on the card's lines of words only: the sample, the words, the signature (A-founder-2026-10-20c clause 1)", async () => {
     const source = readFileSync(join(repoRoot, PREVIEW), "utf8").replace(
       /\/\*[\s\S]*?\*\//gu,
       "",
     );
+    // One class string carries the face, and only the three lines use it.
     expect([...source.matchAll(/\bfont-hand\b/gu)]).toHaveLength(1);
-    expect(source).toMatch(/className="font-hand[^"]*"\s+data-fo-card-text/u);
+    const html = await pageHtml("en");
+    const hand = [
+      ...html.matchAll(/<(\w+)\b[^>]*class="[^"]*\bfont-hand\b[^"]*"[^>]*>/gu),
+    ];
+    expect(hand.map((tag) => /data-fo-card-(\w+)/u.exec(tag[0])?.[1])).toEqual([
+      "sample",
+      "text",
+    ]);
+    // Never a heading, a label, a button or a price on the page.
+    for (const tag of hand) expect(tag[1]).toBe("p");
   });
 });
 
@@ -269,5 +313,39 @@ describe("A21 clause 5 / spec 004 T-17 (messages half): cards are printed, never
     };
     expect(en.catalog.addon.card.name).toBe("Printed card");
     expect(en.catalog.addon.card.description).toMatch(/printed/iu);
+  });
+});
+
+describe("spec 042 §12: the card preview's build switch", () => {
+  const render = async (cardPreviewMotion: boolean): Promise<string> => {
+    vi.resetModules();
+    vi.doMock("../../src/config/interactions.ts", () => ({
+      interactions: { cardPreviewMotion },
+    }));
+    const { PrintedCardPreview } =
+      await import("../../src/modules/ui/product/PrintedCardPreview.tsx");
+    vi.doUnmock("../../src/config/interactions.ts");
+    return renderToStaticMarkup(
+      <PrintedCardPreview
+        caption="Printed on our card · included"
+        messageFieldId="pdp-card-message"
+        sample="Your message, printed on our card and tucked into the bouquet."
+      />,
+    );
+  };
+
+  it("marks the cell for the crossfade when on, and leaves the swap instant (no mark) when off", async () => {
+    const on = await render(true);
+    const off = await render(false);
+    expect(on).toContain('<div class="grid" data-fo-card-swap="">');
+    expect(off).toContain('<div class="grid">');
+    expect(off).not.toContain("data-fo-card-swap");
+    // Off changes nothing else: the same card, sample, words line and caption.
+    expect(off).toBe(on.replace(' data-fo-card-swap=""', ""));
+  });
+
+  it("ships on", async () => {
+    const { interactions } = await import("../../src/config/interactions.ts");
+    expect(interactions.cardPreviewMotion).toBe(true);
   });
 });
