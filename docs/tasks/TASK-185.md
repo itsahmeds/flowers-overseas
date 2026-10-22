@@ -240,6 +240,23 @@ Each must be watched red with its subject removed, then green (CLAUDE.md DoD §4
   task leaves them byte-identical either way (AC-34).
 - **The consent sheet's `lang="en"` (memo, "Law and compliance" (3)).** Declined in A15 ("Still
   open"): it is a component change, not copy. It is out of scope here.
+- **Four keys excluded beyond A15's named list (to: orchestrator, then the spec writer for an A15
+  amendment; answer: `open`).** `content/i18n/draft-policy.json` `excluded` carries four keys A15
+  clause 4 does not name, so `/de` and `/pl` show them in English:
+  - `trust.price.name` ("The price includes delivery and VAT"), reason `price-display`;
+  - `checkout.summary.vat` ("VAT {rate}") and `checkout.summary.vatOf` ("Of which VAT {rate}"),
+    reason `price-display`, the checkout twins of the named `product.vat`;
+  - `checkout.placeKind.funeralHome` ("A funeral home"), reason `sympathy-funeral-all-saints`: its
+    segment is `funeralHome`, which the literal segment rule (`funeral`) misses.
+
+  Recommendation: keep all four excluded. The three VAT/price lines are price-display legal text of
+  the same class as `product.vat` and `nav.utility.pricesInclude`, which clause 4 keeps for a
+  person; a machine "inkl. MwSt." on a checkout line is exactly what clause 4 withholds. The
+  funeral-home option is the Trauer vocabulary fix 4 withholds. Amend A15 clause 4 to name the three
+  price keys and to read the segment rule as "a segment containing `sympathy`, `funeral` or
+  `allSaints`", so the policy and the spec agree. All four then fall under runbook §10's gate (a
+  person writes every excluded key before a locale is indexable, takes orders or switches on a
+  consent-gated tag), so nothing reaches a buyer in English after the gate.
 
 ## Progress
 
@@ -253,6 +270,12 @@ Each must be watched red with its subject removed, then green (CLAUDE.md DoD §4
 - **Left (time limit reached at 180 min), for the finisher:** a re-run of the 15 previously failing files still shows 7 red: (1) `codebase-map.test.ts` x2: run `pnpm codebase:map` (my `pnpm -s codebase:map` errored) and commit; (2) `design-docs.test.ts` "wireframes/cookies-mobile.dc.html uses no banned word": a German/Polish form in `BANNED_VOICE_FORMS` probably matches that artboard, or it timed out (59 s); read the failure and drop or narrow the form; (3) `product-page.test.tsx` A8 "no cutoff time on a past-cutoff `preview` chip" and HOLE 5 "a closed date never says included": check the de/pl `delivery.*` and `product.included`/`catalog.surcharge.*` drafts against those assertions; (4) `seed-check.test.ts` x2 (`prices/case-float-amount`, `media/alt-missing`): timings of 9 966 s and 59 s suggest the machine slept, so re-run alone first. Then `pnpm gates:cheap`, rebase on `origin/main`, PR ready + `ci:full`, Self-review in the PR body. `dev-os.test.ts` and `no-literal-disable.test.ts` timed out in the full run only (environment, not this diff), worth one re-run alone.
 - Carry-forwards found: the English rows FO-BQ-038 ("carnations often last two weeks") and FO-AR-014 ("alstroemeria often lasts two weeks") carry a freshness duration A11 withdrew; the drafts drop the number ("lange Freude", "długo cieszy oko"), and the English needs its own fix task. `catalog.descriptor.form.funeral` stays English (excluded) while the flower names it interpolates are now German/Polish, so a funeral descriptor reads mixed ("Chrysanthemen funeral tribute") until a person writes it. `checkout.placeKind.funeralHome`, `trust.price.name`, `checkout.summary.vat` and `checkout.summary.vatOf` are excluded beyond A15's named list (the reviewer confirms). Memo question 2 (who wrote the `human` German strings) is still open; those records are byte-identical.
 
+- 2026-10-22, finisher: the seven red cases re-run alone are green (design-docs `cookies-mobile`, product-page A8 and HOLE 5, seed-check x2: load or sleep, not the diff); codebase map regenerated. Rebased on `origin/main` 08c05034 (TASK-240 merged first; `seed:check`, `seed:diff`, `i18n:check` exit 0 after it). Two more tests pinned English on de/pl pages and now read the catalogue: `ui-site-header` (currency `aria-label`, `nav.currency.label`) and `ui-media-provenance` (`media.provenance.aiExample`). Mutations re-watched red: `de` `nav.send` restored to English (T-33 x3 red, `i18n:check` exit 1 naming file and key); FO-FN-001 removed from `excludedSeedRows` (T-35 red); `reviewed: true` on the machine record `home.hero.heading` (T-34 red).
+- Carry-forward found after the rebase: TASK-240 moved default stem counts (FO-BQ-001: 18 to 15), but the English seed copy still says "Eighteen stems as standard, with twelve and twenty-four" (and so do the de/pl drafts, which follow the English). The English rows need their own fix task; the drafts then go stale by `copySourceHash` and are regenerated.
+
 ## Result
 
-_Pending._
+- **Counts.** Messages: de 524 in scope, 510 drafted, 14 `identical`; pl 520 in scope, 509 drafted, 11 `identical`; no `held` entry (the three candidates were fixed upstream). Seed: 66 of 84 machine product rows per locale drafted (`descriptionMd`, `seoTitle`, `seoDescription`), 18 excluded (`excludedSeedRows`). `excluded` 21 entries, `reviewBeforeOrders` 31.
+- **AC-33 (T-33)** `tests/unit/i18n-drafts.test.ts:195`; **AC-34 (T-34)** `:258`, plus a script check over the base: no human or `reviewed: true` record changed in value or meta, 0 `reviewed: true` in either manifest; **AC-35 (T-35)** `:309`, no file under `content/{corridors,pages,legal}/**` touched; **AC-36 (T-36)** `:384`; **AC-37 (T-37)** `:441`; **AC-38 (T-38)** `:675`; **AC-39 (T-39)** `:740` and `:928`. 43 cases, green.
+- **Gates.** `gates:cheap` on the rebased head: typecheck, lint, format:check, i18n:check, check:no-db, codebase:map --check exit 0; the changed unit/contract files (177) green with `--maxWorkers=2` after the two test fixes. `seed:check` exit 0. No build slot taken: visual baselines for `/de` and `/pl` are CI's.
+- PR: https://github.com/itsahmeds/flowers-overseas/pull/328.
