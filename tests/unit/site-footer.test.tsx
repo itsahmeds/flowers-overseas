@@ -136,11 +136,13 @@ describe("SiteFooter: the Phase-0 colophon", () => {
             (id) => !isPublished(id as SiteLinkId) || missing.has(id),
           ),
       );
-      // The set is not vacuous: the for-florists entry and the three pages that wait for the
-      // company (spec 041 §13 Q1) are in it in every locale.
+      // The set is not vacuous: the three pages that wait for the company (spec 041 §13 Q1) are
+      // in it in every locale. The for-florists entry left it when spec 011 published its
+      // landing (TASK-210).
       expect(unpublished.map((link) => link.id)).toEqual(
-        expect.arrayContaining(["for-florists", "imprint", "terms", "privacy"]),
+        expect.arrayContaining(["imprint", "terms", "privacy"]),
       );
+      expect(unpublished.map((link) => link.id)).not.toContain("for-florists");
       const html = render(
         <SiteFooter locale={locale} view={layoutView(locale)} />,
         locale,
@@ -203,6 +205,8 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       // Spec 041's two legal pages that exist before registration (TASK-183).
       localePath("en", "legal", "cookies"),
       localePath("en", "legal", "cancellation"),
+      // Spec 011's for-florists landing (TASK-210).
+      localePath("en", "forFlorists"),
     ];
     expect(
       hrefs.filter(
@@ -228,6 +232,8 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
     expect(
       footerLinks.filter((link) => link.published).map((l) => l.id),
     ).toEqual([
+      // Spec 011's for-florists landing (TASK-210).
+      "for-florists",
       "destinations",
       "occasions",
       // Spec 041's four trust links (TASK-182).

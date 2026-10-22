@@ -238,6 +238,8 @@ function inContext(
     roses: `/${locale}/${country}/flowers/roses`,
     plants: `/${locale}/${country}/flowers/plants`,
     destinations: base.destinations,
+    // Spec 011 (TASK-210): the for-florists entry, out of every destination's context.
+    "for-florists": base["for-florists"],
   };
 }
 
