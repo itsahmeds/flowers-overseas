@@ -9,7 +9,7 @@
     {
       "sku": "FO-BQ-001",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -20,7 +20,7 @@
     {
       "sku": "FO-BQ-001",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -31,7 +31,7 @@
     {
       "sku": "FO-BQ-001",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -42,7 +42,7 @@
     {
       "sku": "FO-BQ-002",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -53,7 +53,7 @@
     {
       "sku": "FO-BQ-002",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -64,7 +64,7 @@
     {
       "sku": "FO-BQ-002",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -75,7 +75,7 @@
     {
       "sku": "FO-BQ-003",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -86,7 +86,7 @@
     {
       "sku": "FO-BQ-003",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -97,7 +97,7 @@
     {
       "sku": "FO-BQ-003",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -108,7 +108,7 @@
     {
       "sku": "FO-BQ-004",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_5",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -119,7 +119,7 @@
     {
       "sku": "FO-BQ-004",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_7",
       "retailMinor": 4490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -130,7 +130,7 @@
     {
       "sku": "FO-BQ-004",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_9",
       "retailMinor": 4890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -141,7 +141,7 @@
     {
       "sku": "FO-BQ-005",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -152,7 +152,7 @@
     {
       "sku": "FO-BQ-005",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -163,7 +163,7 @@
     {
       "sku": "FO-BQ-005",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -174,7 +174,7 @@
     {
       "sku": "FO-BQ-006",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 9090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -185,7 +185,7 @@
     {
       "sku": "FO-BQ-006",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 11090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -196,7 +196,7 @@
     {
       "sku": "FO-BQ-006",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 12990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -207,7 +207,7 @@
     {
       "sku": "FO-BQ-007",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -218,7 +218,7 @@
     {
       "sku": "FO-BQ-007",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -229,7 +229,7 @@
     {
       "sku": "FO-BQ-007",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -240,7 +240,7 @@
     {
       "sku": "FO-BQ-008",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -251,7 +251,7 @@
     {
       "sku": "FO-BQ-008",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -262,7 +262,7 @@
     {
       "sku": "FO-BQ-008",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -482,7 +482,7 @@
     {
       "sku": "FO-BQ-015",
       "countryIso2": "DE",
-      "tierKey": "stems_8",
+      "tierKey": "stems_9",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -493,7 +493,7 @@
     {
       "sku": "FO-BQ-015",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_15",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -515,7 +515,7 @@
     {
       "sku": "FO-BQ-016",
       "countryIso2": "DE",
-      "tierKey": "stems_8",
+      "tierKey": "stems_9",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -526,7 +526,7 @@
     {
       "sku": "FO-BQ-016",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_15",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -548,7 +548,7 @@
     {
       "sku": "FO-BQ-017",
       "countryIso2": "DE",
-      "tierKey": "stems_8",
+      "tierKey": "stems_9",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -559,7 +559,7 @@
     {
       "sku": "FO-BQ-017",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_15",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -581,7 +581,7 @@
     {
       "sku": "FO-BQ-018",
       "countryIso2": "DE",
-      "tierKey": "stems_8",
+      "tierKey": "stems_9",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -592,7 +592,7 @@
     {
       "sku": "FO-BQ-018",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_15",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -757,7 +757,7 @@
     {
       "sku": "FO-BQ-023",
       "countryIso2": "DE",
-      "tierKey": "stems_13",
+      "tierKey": "stems_15",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -790,7 +790,7 @@
     {
       "sku": "FO-BQ-024",
       "countryIso2": "DE",
-      "tierKey": "stems_13",
+      "tierKey": "stems_15",
       "retailMinor": 4890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -823,7 +823,7 @@
     {
       "sku": "FO-BQ-025",
       "countryIso2": "DE",
-      "tierKey": "stems_13",
+      "tierKey": "stems_15",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -834,7 +834,7 @@
     {
       "sku": "FO-BQ-026",
       "countryIso2": "DE",
-      "tierKey": "stems_10",
+      "tierKey": "stems_11",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -867,7 +867,7 @@
     {
       "sku": "FO-BQ-027",
       "countryIso2": "DE",
-      "tierKey": "stems_10",
+      "tierKey": "stems_11",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -900,7 +900,7 @@
     {
       "sku": "FO-BQ-028",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -911,7 +911,7 @@
     {
       "sku": "FO-BQ-028",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -922,7 +922,7 @@
     {
       "sku": "FO-BQ-028",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -933,7 +933,7 @@
     {
       "sku": "FO-BQ-029",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -944,7 +944,7 @@
     {
       "sku": "FO-BQ-029",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -955,7 +955,7 @@
     {
       "sku": "FO-BQ-029",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -966,7 +966,7 @@
     {
       "sku": "FO-BQ-030",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -977,7 +977,7 @@
     {
       "sku": "FO-BQ-030",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -988,7 +988,7 @@
     {
       "sku": "FO-BQ-030",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -999,7 +999,7 @@
     {
       "sku": "FO-BQ-031",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1010,7 +1010,7 @@
     {
       "sku": "FO-BQ-031",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 4490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1021,7 +1021,7 @@
     {
       "sku": "FO-BQ-031",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 4890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1032,7 +1032,7 @@
     {
       "sku": "FO-BQ-032",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1043,7 +1043,7 @@
     {
       "sku": "FO-BQ-032",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1054,7 +1054,7 @@
     {
       "sku": "FO-BQ-032",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1065,7 +1065,7 @@
     {
       "sku": "FO-BQ-033",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1076,7 +1076,7 @@
     {
       "sku": "FO-BQ-033",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 4490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1087,7 +1087,7 @@
     {
       "sku": "FO-BQ-033",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 4890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1098,7 +1098,7 @@
     {
       "sku": "FO-BQ-034",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1109,7 +1109,7 @@
     {
       "sku": "FO-BQ-034",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1120,7 +1120,7 @@
     {
       "sku": "FO-BQ-034",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1131,7 +1131,7 @@
     {
       "sku": "FO-BQ-035",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1142,7 +1142,7 @@
     {
       "sku": "FO-BQ-035",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1153,7 +1153,7 @@
     {
       "sku": "FO-BQ-035",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1164,7 +1164,7 @@
     {
       "sku": "FO-BQ-036",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1175,7 +1175,7 @@
     {
       "sku": "FO-BQ-036",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1186,7 +1186,7 @@
     {
       "sku": "FO-BQ-036",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1197,7 +1197,7 @@
     {
       "sku": "FO-BQ-037",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1208,7 +1208,7 @@
     {
       "sku": "FO-BQ-037",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 4490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1219,7 +1219,7 @@
     {
       "sku": "FO-BQ-037",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 4890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1230,7 +1230,7 @@
     {
       "sku": "FO-BQ-038",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 3990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1241,7 +1241,7 @@
     {
       "sku": "FO-BQ-038",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 4490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -1252,7 +1252,7 @@
     {
       "sku": "FO-BQ-038",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 4890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2209,7 +2209,7 @@
     {
       "sku": "FO-GS-001",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2220,7 +2220,7 @@
     {
       "sku": "FO-GS-001",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2231,7 +2231,7 @@
     {
       "sku": "FO-GS-001",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2242,7 +2242,7 @@
     {
       "sku": "FO-GS-002",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 6690,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2253,7 +2253,7 @@
     {
       "sku": "FO-GS-002",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 7890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2264,7 +2264,7 @@
     {
       "sku": "FO-GS-002",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 8890,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2275,7 +2275,7 @@
     {
       "sku": "FO-GS-003",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2286,7 +2286,7 @@
     {
       "sku": "FO-GS-003",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2297,7 +2297,7 @@
     {
       "sku": "FO-GS-003",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2308,7 +2308,7 @@
     {
       "sku": "FO-GS-004",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2319,7 +2319,7 @@
     {
       "sku": "FO-GS-004",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2330,7 +2330,7 @@
     {
       "sku": "FO-GS-004",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2374,7 +2374,7 @@
     {
       "sku": "FO-GS-006",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2385,7 +2385,7 @@
     {
       "sku": "FO-GS-006",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2396,7 +2396,7 @@
     {
       "sku": "FO-GS-006",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2429,7 +2429,7 @@
     {
       "sku": "FO-GS-007",
       "countryIso2": "DE",
-      "tierKey": "stems_13",
+      "tierKey": "stems_15",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2473,7 +2473,7 @@
     {
       "sku": "FO-GS-009",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2484,7 +2484,7 @@
     {
       "sku": "FO-GS-009",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2495,7 +2495,7 @@
     {
       "sku": "FO-GS-009",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2506,7 +2506,7 @@
     {
       "sku": "FO-GS-010",
       "countryIso2": "DE",
-      "tierKey": "stems_10",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2550,7 +2550,7 @@
     {
       "sku": "FO-GS-011",
       "countryIso2": "DE",
-      "tierKey": "stems_8",
+      "tierKey": "stems_9",
       "retailMinor": 11090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2561,7 +2561,7 @@
     {
       "sku": "FO-GS-011",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_15",
       "retailMinor": 12990,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2572,7 +2572,7 @@
     {
       "sku": "FO-GS-012",
       "countryIso2": "DE",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 5090,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2583,7 +2583,7 @@
     {
       "sku": "FO-GS-012",
       "countryIso2": "DE",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 5790,
       "currency": "EUR",
       "vatRateBp": 700,
@@ -2594,7 +2594,7 @@
     {
       "sku": "FO-GS-012",
       "countryIso2": "DE",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 6490,
       "currency": "EUR",
       "vatRateBp": 700,

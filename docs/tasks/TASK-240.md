@@ -63,12 +63,61 @@ follows it.
 ## Escalations
 
 - **2026-10-14, spec 005 §13 Q12 (to the founder, through the orchestrator):** which odd set, and
-  do prices move? Default 11 / 15 / 21 with prices kept by position. `open`.
+  do prices move? Default 11 / 15 / 21 with prices kept by position. `resolved` by spec 005 §14
+  A-founder-2026-10-15a (11 / 15 / 21, no 13; FO-BQ-004 at 5 / 7 / 9; six PL cells of FO-BQ-001,
+  -003 and -007 move under a per-SKU override).
+- **2026-10-21, implementer (to the orchestrator): the override task has no row.** A-founder-2026-10-15a
+  says AC-37 to AC-39 (T-38 to T-40: the per-SKU PL ladder override, the A1 band change in
+  `catalogue:check`, the `docs/runbooks/pricing.md` entry) go to "one new task", same agent, same
+  feature PR. `TASKS.md` has no row owning them, so PR 305 does not touch `prices.data.ts` and the
+  six PL cells still read 22 900 / 25 900 by position. T-37 leaves those six cells out (they are
+  T-38's), so the override lands on top of this PR without editing T-37. `open`.
 
 ## Progress
 
-_Not started._
+- 2026-10-21: worktree on origin/main 501c12f8; pinned base dumped (`tests/fixtures/catalog/tier-price-base.json`);
+  dataset remapped, `stemCount` mirrors the new default, seed projection and snapshot regenerated
+  (only `tierKey` lines move in the price files); `stem-tier` mode in `catalogue:check` and
+  `seed:check`; T-37 written and watched red; pinned keys moved in 22 test files and 7 seed
+  fixtures; draft PR 305, ready with `ci:full` and `visual:baselines`.
 
 ## Result
 
-_Pending._
+PR [#305](https://github.com/itsahmeds/flowers-overseas/pull/305). Spec 005 AC-36 (T-37), except
+its AC-37 clause (the six PL cells: see `## Escalations`); spec 006 §14 A-founder-2026-10-14c.
+
+- **Dataset:** 38 stem products remapped per point 3 (26 × 12/18/24 and 3 × 10/15/21 → 11/15/21,
+  5 × 5/8/12 and 4 × 5/9/13 → 5/9/15), FO-BQ-004 → 5/7/9; keys `stems_{n}`; default stays the
+  middle tier; `stemCount` mirrors the new default (31 products). No amount moves: prices follow
+  `sort`, and the regenerated price files differ only in `tierKey` lines.
+- **Gates:** `stem-tier` mode in `catalogue:check`, run by `seed:check` over `product-tiers.json`.
+- **Tests:** new `tests/unit/catalogue-odd-stems.test.ts` (18 cases) and pinned base
+  `tests/fixtures/catalog/tier-price-base.json` (main 501c12f8). Keys moved in 21 unit files and 7
+  seed price-case fixtures; one retired-key `?tier=` case added; `imagery-prompts.test.ts` holds a
+  hero prompt to the count its photograph was generated for (the base default), because the
+  prompts are hashed provenance and spec 006 keeps the imagery unchanged.
+- **Watched red:** FO-BQ-002 back to 12/18/24 (9 red); a 13 on FO-BQ-023 (9 red); PL classic
+  step 22 900 → 21 900 (price case red, naming every moved cell); 22 900 → 22 901 (module load
+  refuses); one seed PL cell +1 minor (seed price case red); the 13 rule removed (2 red); the key
+  rule removed (2 red); `stem-tier` dropped from `seed:check` (3 red).
+- **Visual:** Linux baselines from run 39480001208; six images opened: five product images
+  moved because the size labels read 11/15/21 stems (prices unchanged), `language-popup-desktop`
+  moved in bytes only, with no visible difference.
+- **Not done here:** AC-37 to AC-39 (no task row). The dev gallery's own fixture
+  (`src/app/(dev)/dev/components/product.ts`) and the integration test's self-made tier rows keep
+  12/18/24: neither is an offered product.
+- No expensive gate run locally. A first `gates:cheap` run went red on `url-pii.test.ts` timing
+  out at 5 s at load average 14; it passed alone (15/15), and the re-run below is green.
+
+```
+gates:cheap · 9dfcd9ef5de27a51a1d5d44b4fd72383565e825b · tree DIRTY · base origin/main · 2026-10-20T19:34:32.424Z
+typecheck             exit 0 · 2.3 s
+lint                  exit 0 · 21.3 s
+format:check          exit 0 · 12.0 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 71.1 s · changed 146 + map 0 + always 3 · always run: zod-boundaries, lint-coverage, url-pii
+format:check covers: every path except node_modules/ .next/ out/ coverage/ playwright-report/ test-results/ pnpm-lock.yaml next-env.d.ts .claude/ plan/ specs/ docs/ README.md TASKS.md CLAUDE.md /tests/fixtures/lint/ /tests/fixtures/seo/_cases/ /tests/fixtures/i18n/_cases/ /src/modules/geo/content/corpus.generated.ts /src/modules/content/corpus.generated.ts
+RESULT: PASS
+```

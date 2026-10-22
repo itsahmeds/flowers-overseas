@@ -190,7 +190,7 @@ if (product === undefined) throw new Error("the dataset has no products");
 const priceRow: CountryPriceData = {
   sku: product.sku,
   countryIso2: "PL",
-  tierKey: "stems_12",
+  tierKey: "stems_11",
   retailMinor: 19_900,
   currency: "PLN",
   vatRateBp: 800,

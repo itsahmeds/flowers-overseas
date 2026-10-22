@@ -433,7 +433,7 @@ describe("AC-9: the fee is on the chip before selection, and selecting moves exa
       await viewOf("en", "PL", AMBER, { now: WOMENS_DAY_WEEK }),
       await viewOf("en", "PL", AMBER, {
         now: WOMENS_DAY_WEEK,
-        selection: { tierKey: "stems_12" },
+        selection: { tierKey: "stems_11" },
       }),
       await liveViewOf("en", AMBER, { now: WOMENS_DAY_WEEK }),
     ]) {
@@ -886,11 +886,11 @@ describe("HOLE 3: each tier radio prints its own price, its own stem count, and 
     const byDefault = await viewOf("en", "PL", AMBER, { now: IN_WINDOW });
     const chosen = await viewOf("en", "PL", AMBER, {
       now: IN_WINDOW,
-      selection: { tierKey: "stems_12" },
+      selection: { tierKey: "stems_11" },
     });
     // The default is the middle tier, so neither "the first" nor "the last" is it by accident.
-    expect(byDefault.selectedTierKey).toBe("stems_18");
-    expect(chosen.selectedTierKey).toBe("stems_12");
+    expect(byDefault.selectedTierKey).toBe("stems_15");
+    expect(chosen.selectedTierKey).toBe("stems_11");
     for (const view of [byDefault, chosen]) {
       const checked = [...tierLabels(render(view))]
         .filter(([, radio]) => /<input[^>]*checked/u.test(radio))
@@ -1163,7 +1163,7 @@ describe("A21 / AC-21 (v2, TASK-179): the price under the H1 is the price charge
         await viewOf(locale, "PL", AMBER, { now: WOMENS_DAY_WEEK }),
         await viewOf(locale, "PL", AMBER, {
           now: IN_WINDOW,
-          selection: { tierKey: "stems_12" },
+          selection: { tierKey: "stems_11" },
         }),
       ]) {
         const html = render(view);

@@ -396,7 +396,7 @@ describe("spec 006 AC-6: one fixture per failure shape (T-06)", () => {
     ).toBe(true);
     const { modes, report } = problemsWithFixture("bad-unknown-tier.json");
     expect(modes).toContain("missing-price");
-    expect(report).toContain("FO-BQ-001 stems_24 PL");
+    expect(report).toContain("FO-BQ-001 stems_21 PL");
   });
 
   it("finds nothing wrong with the committed dataset", () => {

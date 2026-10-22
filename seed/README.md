@@ -172,7 +172,7 @@ table                inserts  updates  unchanged  skipped-real  orphans  conflic
 country_price              0        1       3415             0        0          0
 ...
 changes
-  country_price  update  sku=FO-BQ-001;country=PL;tier=stems_12;surcharge=retail;active_from=2026-09-01
+  country_price  update  sku=FO-BQ-001;country=PL;tier=stems_11;surcharge=retail;active_from=2026-09-01
       retail_minor: 15900 PLN -> 16900 PLN
 ```
 

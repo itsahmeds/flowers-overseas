@@ -1491,7 +1491,9 @@ function checkSlugs(tree: SeedTree, parsed: Parsed): SeedProblem[] {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The `checkCatalogue()` modes that are price rules (spec 006 §2.3 rule 5). The others —
+ * The `checkCatalogue()` modes that are price rules (spec 006 §2.3 rule 5), with `stem-tier`, the
+ * rule on the tiers every price row is keyed by (spec 005 AC-36, spec 006 §14
+ * A-founder-2026-10-14c), read from `product-tiers.json`. The others —
  * `facet`, `label-key`, `fx-snapshot`, `projection-columns` — are `pnpm catalogue:check`'s job
  * over the authored modules and are covered here by families 1 and 3; running them twice would
  * report the same fault under two gates.
@@ -1499,6 +1501,7 @@ function checkSlugs(tree: SeedTree, parsed: Parsed): SeedProblem[] {
 export const PRICE_CHECK_MODES: readonly CheckMode[] = [
   "no-tier",
   "default-tier",
+  "stem-tier",
   "missing-price",
   "ambiguous-price",
   "band",
@@ -1555,7 +1558,7 @@ function checkPrices(parsed: Parsed): SeedProblem[] {
       // The file named is the authored module, because that is where a price is *fixed*: the
       // dataset file this gate read is a projection of it and hand-editing one is itself a
       // failure (ADR-0017, family 1's `stale-projection`).
-      message: `${problem.reason} — read from \`${SEED_DATA_DIR}/prices/**\`, fixed in the authored module and re-projected with \`pnpm seed:project\` (ADR-0017)`,
+      message: `${problem.reason} — read from \`${SEED_DATA_DIR}/${problem.mode === "stem-tier" ? "product-tiers.json" : "prices/**"}\`, fixed in the authored module and re-projected with \`pnpm seed:project\` (ADR-0017)`,
     }));
 }
 

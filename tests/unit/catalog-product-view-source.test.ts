@@ -5,7 +5,7 @@
  * Two halves, and both can fail:
  *
  *  1. **A fake provider moves every consumer together.** The price provider is swapped for one
- *     that charges 100 zł more for Amber Hour's 18 stems in Poland. Every value a consumer reads —
+ *     that charges 100 zł more for Amber Hour's 15 stems in Poland. Every value a consumer reads —
  *     the summary total and the tier row the page prints, and the `Offer.price` spec 005's
  *     `offerProjection()` derives from the view's own projection for the JSON-LD (TASK-130) — moves
  *     by exactly that amount, and nothing else moves. A consumer holding its own copy of the price
@@ -41,7 +41,7 @@ vi.mock("../../src/modules/catalog/providers.ts", async () => {
             (await real.price.countryPrices()).map((row) =>
               row.sku === "FO-BQ-001" &&
               row.countryIso2 === "PL" &&
-              row.tierKey === "stems_18" &&
+              row.tierKey === "stems_15" &&
               row.surchargeKind === null &&
               row.activeTo === null
                 ? { ...row, retailMinor: row.retailMinor + bumpMinor }
@@ -100,9 +100,9 @@ async function consumers() {
   if (view === undefined) throw new Error("no view");
   return {
     pageSummary: view.price.displayPrice.amountMinor,
-    pageTierRow: view.tiers.find((tier) => tier.tierKey === "stems_18")?.price
+    pageTierRow: view.tiers.find((tier) => tier.tierKey === "stems_15")?.price
       .amountMinor,
-    pageOtherTier: view.tiers.find((tier) => tier.tierKey === "stems_12")?.price
+    pageOtherTier: view.tiers.find((tier) => tier.tierKey === "stems_11")?.price
       .amountMinor,
     jsonLdOfferPrice: offerProjection(view.price)?.price,
     jsonLdServedOfferPrice: servedOfferPrice(view),

@@ -9,7 +9,7 @@
     {
       "sku": "FO-BQ-001",
       "countryIso2": "PL",
-      "tierKey": "stems_12",
+      "tierKey": "stems_11",
       "retailMinor": 19900,
       "currency": "PLN",
       "vatRateBp": 800,
@@ -20,7 +20,7 @@
     {
       "sku": "FO-BQ-001",
       "countryIso2": "PL",
-      "tierKey": "stems_18",
+      "tierKey": "stems_15",
       "retailMinor": 22900,
       "currency": "PLN",
       "vatRateBp": 800,
@@ -31,7 +31,7 @@
     {
       "sku": "FO-BQ-001",
       "countryIso2": "PL",
-      "tierKey": "stems_24",
+      "tierKey": "stems_21",
       "retailMinor": 99900,
       "currency": "PLN",
       "vatRateBp": 800,

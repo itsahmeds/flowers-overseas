@@ -252,7 +252,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
     await expect(
       resolvePrice({
         productId: SKU,
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         countryIso: LIVE,
       }),
     ).resolves.toEqual({
@@ -265,14 +265,14 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
       surcharges: [],
       activeFrom: PRICE_ACTIVE_FROM,
       activeTo: null,
-      priceVersion: `cp:${SKU}:${LIVE}:stems_12:${PRICE_ACTIVE_FROM}`,
+      priceVersion: `cp:${SKU}:${LIVE}:stems_11:${PRICE_ACTIVE_FROM}`,
     });
   });
 
   it("carries exactly the `PricePoint` field set, so no consumer can render a partial price", async () => {
     const price = await resolvePrice({
       productId: SKU,
-      tierKey: "stems_18",
+      tierKey: "stems_15",
       countryIso: LIVE,
     });
 
@@ -311,7 +311,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
   it("prices in the destination's own currency, never a buyer's", async () => {
     const price = await resolvePrice({
       productId: SKU,
-      tierKey: "stems_12",
+      tierKey: "stems_11",
       countryIso: LIVE,
     });
 
@@ -329,7 +329,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
       await expect(
         resolvePrice({
           productId: SKU,
-          tierKey: "stems_12",
+          tierKey: "stems_11",
           countryIso: LIVE,
           ...rejected,
         } as Parameters<typeof resolvePrice>[0]),
@@ -344,14 +344,14 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
     await expect(
       resolvePrice({
         productId: "FO-BQ-999",
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         countryIso: LIVE,
       }),
     ).rejects.toThrow(/no active `country_price` row/);
     await expect(
       resolvePrice({
         productId: SKU,
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         countryIso: "GB" as typeof LIVE,
       }),
     ).rejects.toThrow();
@@ -363,7 +363,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
         (candidate) =>
           candidate.sku === SKU &&
           candidate.countryIso2 === LIVE &&
-          candidate.tierKey === "stems_12" &&
+          candidate.tierKey === "stems_11" &&
           candidate.surchargeKind === null &&
           candidate.activeTo === null,
       );
@@ -374,7 +374,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
     await expect(
       pricing.resolvePrice({
         productId: SKU,
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         countryIso: LIVE,
       }),
     ).rejects.toThrow(/2 active `country_price` rows/);
@@ -387,7 +387,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
           !(
             row.sku === SKU &&
             row.countryIso2 === LIVE &&
-            row.tierKey === "stems_12" &&
+            row.tierKey === "stems_11" &&
             row.surchargeKind === null
           ),
       ),
@@ -396,7 +396,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
     await expect(
       pricing.resolvePrice({
         productId: SKU,
-        tierKey: "stems_12",
+        tierKey: "stems_11",
         countryIso: LIVE,
       }),
     ).rejects.toThrow(/no active `country_price` row/);
@@ -408,7 +408,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
         (candidate) =>
           candidate.sku === SKU &&
           candidate.countryIso2 === LIVE &&
-          candidate.tierKey === "stems_12" &&
+          candidate.tierKey === "stems_11" &&
           candidate.surchargeKind === null &&
           candidate.activeTo === null,
       );
@@ -426,7 +426,7 @@ describe("resolvePrice: the whole price of a tier in a destination (AC-8, T-06)"
 
     const price = await pricing.resolvePrice({
       productId: SKU,
-      tierKey: "stems_12",
+      tierKey: "stems_11",
       countryIso: LIVE,
     });
 
@@ -570,7 +570,7 @@ describe("resolvePrice includes the date's surcharges in the amount (AC-16)", ()
 
     const price = await resolvePrice({
       productId: SKU,
-      tierKey: "stems_18",
+      tierKey: "stems_15",
       countryIso: SURCHARGED,
       deliveryDate: SUNDAY,
     });
@@ -589,13 +589,13 @@ describe("resolvePrice includes the date's surcharges in the amount (AC-16)", ()
     if (step === undefined) throw new Error("no authored DE ladder");
     const both = await resolvePrice({
       productId: SKU,
-      tierKey: "stems_12",
+      tierKey: "stems_11",
       countryIso: SURCHARGED,
       deliveryDate: VALENTINES,
     });
     const plain = await resolvePrice({
       productId: SKU,
-      tierKey: "stems_12",
+      tierKey: "stems_11",
       countryIso: SURCHARGED,
       deliveryDate: MONDAY,
     });
@@ -620,7 +620,7 @@ describe("resolvePrice includes the date's surcharges in the amount (AC-16)", ()
   it("keeps the surcharge legible on the price: amount, dates and label key", async () => {
     const price = await resolvePrice({
       productId: SKU,
-      tierKey: "stems_12",
+      tierKey: "stems_11",
       countryIso: LIVE,
       deliveryDate: WOMENS_DAY,
     });

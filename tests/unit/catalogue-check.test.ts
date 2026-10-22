@@ -220,7 +220,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
         countryPrices: clean.countryPrices.map((row) =>
           row.sku === "FO-BQ-001" &&
           row.countryIso2 === "PL" &&
-          row.tierKey === "stems_12"
+          row.tierKey === "stems_11"
             ? { ...row, retailMinor: 9900 }
             : row,
         ),
@@ -460,7 +460,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
         countryPrices: clean.countryPrices.map((row) =>
           row.sku === "FO-BQ-001" &&
           row.countryIso2 === "PL" &&
-          row.tierKey === "stems_18"
+          row.tierKey === "stems_15"
             ? { ...row, retailMinor: bottomOf("FO-BQ-001", "PL") }
             : row,
         ),
@@ -478,7 +478,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
         countryPrices: clean.countryPrices.map((row) =>
           row.sku === "FO-BQ-001" &&
           row.countryIso2 === "PL" &&
-          row.tierKey === "stems_12"
+          row.tierKey === "stems_11"
             ? { ...row, retailMinor: 14_990 }
             : row,
         ),
@@ -873,6 +873,9 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
     const asserted: readonly CheckMode[] = [
       "no-tier",
       "default-tier",
+      // Its fixtures (a 12-stem tier, a 13-stem tier, a mismatched key, a default off the
+      // middle) are T-37's, in `tests/unit/catalogue-odd-stems.test.ts` (spec 005 AC-36).
+      "stem-tier",
       "missing-price",
       "ambiguous-price",
       "band",

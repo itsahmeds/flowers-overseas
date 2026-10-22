@@ -67,7 +67,7 @@ describe("getProduct (spec 005 §5.2)", () => {
       occasions: ["birthday", "thank_you", "just_because"],
       substitutionClass: "main_flower",
       vaseIncluded: false,
-      stemCount: 18,
+      stemCount: 15,
       freshnessDays: 7,
       allergenNote: false,
       partnerOnly: false,

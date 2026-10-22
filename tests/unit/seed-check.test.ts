@@ -1236,7 +1236,7 @@ describe("spec 006 AC-9: no PII and no third-party marks", () => {
     expect(of("postcode").test("10115 Berlin")).toBe(true);
     // The dataset is full of dates and hashes; neither is a postcode.
     expect(of("postcode").test("2026-09-01")).toBe(false);
-    expect(of("postcode").test("stems_12")).toBe(false);
+    expect(of("postcode").test("stems_11")).toBe(false);
   });
 
   it("bans only marks that are traceable to `docs/research/competitors-*.md`", () => {

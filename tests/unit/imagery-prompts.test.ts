@@ -17,6 +17,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
+import { z } from "zod";
 
 import {
   IMAGERY_PROMPT_VERSION,
@@ -303,14 +304,42 @@ describe("the style guide is enforced in the prompt text, not merely written dow
     }
   });
 
-  it("states the default tier's stem count where the product has one", () => {
-    const bySku = new Map(PRODUCTS.map((product) => [product.sku, product]));
+  // The photographs were generated, hashed and approved at the default counts the products had
+  // then (18 roses, 8 lilies). Spec 005 §14 A-founder-2026-10-14c made every count odd and left
+  // the imagery unchanged ("Example arrangement"; spec 006 §14 A-founder-2026-10-14c), so a
+  // prompt is held to the count it was written for, read from the pinned pre-change base
+  // (TASK-240), and never edited: its hash is the photograph's provenance.
+  it("states the stem count its photograph was generated for, where the product has one", () => {
+    const generatedAt = z
+      .object({
+        products: z.record(
+          z.string(),
+          z.object({
+            stems: z.array(z.number().int().nullable()),
+            defaultSort: z.number().int(),
+          }),
+        ),
+      })
+      .parse(
+        JSON.parse(
+          readFileSync(
+            join(repoRoot, "tests/fixtures/catalog/tier-price-base.json"),
+            "utf8",
+          ),
+        ),
+      ).products;
+    const skus = new Set(PRODUCTS.map((product) => product.sku));
+    let checked = 0;
     for (const record of records) {
       if (record.sku === null || record.role !== "hero") continue;
-      const stems = bySku.get(record.sku)?.stemCount;
+      expect(skus.has(record.sku), record.assetId).toBe(true);
+      const base = generatedAt[record.sku];
+      const stems = base?.stems[base.defaultSort];
       if (stems === null || stems === undefined) continue;
-      expect(record.prompt, record.assetId).toContain(String(stems));
+      expect(record.prompt, record.assetId).toContain(`${String(stems)} `);
+      checked += 1;
     }
+    expect(checked).toBeGreaterThan(0);
   });
 
   it("describes no person, no premises and no in-image text", () => {

@@ -10,8 +10,8 @@
  * 9 September 2026, 09:00 in Warsaw: inside the committed ECB snapshot's window, before the 14:00
  * cutoff, with two Sundays (13 and 20 September) in the fourteen-day grid.
  *
- * Every figure is an exact integer in minor units. The one that carries Q3 is `en` / 12 stems: its
- * Sunday chip is **€5.00** while the 18-stem chip is **€4.00**, because each is the difference of
+ * Every figure is an exact integer in minor units. The one that carries Q3 is `en` / 11 stems: its
+ * Sunday chip is **€5.00** while the 15-stem chip is **€4.00**, because each is the difference of
  * two projected, individually rounded totals. A chip computed by converting 18 zł on its own would
  * be one figure for both tiers and would contradict one of the two summaries.
  */
@@ -115,9 +115,9 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     const view = await live("pl");
     expect(view.delivery.state).toBe("live");
     expect(view.totals).toEqual({
-      stems_12: row(19_900, 21_700),
-      stems_18: row(22_900, 24_700),
-      stems_24: row(25_900, 27_700),
+      stems_11: row(19_900, 21_700),
+      stems_15: row(22_900, 24_700),
+      stems_21: row(25_900, 27_700),
     });
   });
 
@@ -125,9 +125,9 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     const view = await live("en-gb");
     expect(view.fx.state).toBe("converted");
     expect(view.totals).toEqual({
-      stems_12: row(4090, 4490),
-      stems_18: row(4690, 5090),
-      stems_24: row(5290, 5690),
+      stems_11: row(4090, 4490),
+      stems_15: row(4690, 5090),
+      stems_21: row(5290, 5690),
     });
   });
 
@@ -135,9 +135,9 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     const view = await live("en");
     expect(view.fx.state).toBe("converted");
     expect(view.totals).toEqual({
-      stems_12: row(4790, 5190),
-      stems_18: row(5490, 5890),
-      stems_24: row(6190, 6590),
+      stems_11: row(4790, 5190),
+      stems_15: row(5490, 5890),
+      stems_21: row(6190, 6590),
     });
   });
 
@@ -161,10 +161,10 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     expect(today?.date).toBe("2026-09-09");
     expect(today?.selectable).toBe(false);
     expect(today?.reasonKey).toBe("delivery.reason.pastCutoff");
-    expect(Object.keys(view.totals["stems_18"] ?? {})).not.toContain(
+    expect(Object.keys(view.totals["stems_15"] ?? {})).not.toContain(
       "2026-09-09",
     );
-    expect(Object.keys(view.totals["stems_18"] ?? {})).toHaveLength(13);
+    expect(Object.keys(view.totals["stems_15"] ?? {})).toHaveLength(13);
     // And the earliest date that *can* be chosen is the one preselected (§2).
     expect(view.selectedDate).toBe("2026-09-10");
   });
@@ -174,7 +174,7 @@ describe("`dateTotals`: the all-in total of every tier on every selectable date 
     expect(view.delivery.state).toBe("preview");
     expect(view.delivery.dates).toHaveLength(14);
     expect(view.delivery.dates.every((date) => !date.selectable)).toBe(true);
-    expect(view.totals).toEqual({ stems_12: {}, stems_18: {}, stems_24: {} });
+    expect(view.totals).toEqual({ stems_11: {}, stems_15: {}, stems_21: {} });
     expect(view.selectedDate).toBeUndefined();
     expect(view.price.displayPrice).toEqual({
       amountMinor: 4690,
@@ -203,23 +203,23 @@ describe("the chip fee is the difference of two projected totals (design round Q
   });
 
   it("differs by tier in a converted currency, because each total is rounded on its own (en, EUR)", async () => {
-    const eighteen = await live("en", {}, STEPPED);
-    const twentyFour = await live(
+    const seven = await live("en", {}, STEPPED);
+    const nine = await live(
       "en",
-      { selection: { tierKey: "stems_24" } },
+      { selection: { tierKey: "stems_9" } },
       STEPPED,
     );
     // 169 zł → €40.90 and 187 zł → €44.90: €4.00. 189 zł → €44.90 and 207 zł → €49.90: €5.00.
-    expect(chips(eighteen)).toEqual([
+    expect(chips(seven)).toEqual([
       ["2026-09-13", 400, "EUR"],
       ["2026-09-20", 400, "EUR"],
     ]);
-    expect(chips(twentyFour)).toEqual([
+    expect(chips(nine)).toEqual([
       ["2026-09-13", 500, "EUR"],
       ["2026-09-20", 500, "EUR"],
     ]);
     // The identity the rule exists for: chip + tier price = the Sunday total, for the chosen tier.
-    for (const view of [eighteen, twentyFour]) {
+    for (const view of [seven, nine]) {
       const tier = view.tiers.find(
         (option) => option.tierKey === view.selectedTierKey,
       );
@@ -288,17 +288,17 @@ describe("the selected configuration is the one price (§8, AC-9's model half)",
     ]);
     // The tier option keeps its undated price: the date's fee is on the chip, not in the tier.
     expect(
-      view.tiers.find((tier) => tier.tierKey === "stems_18")?.price.amountMinor,
+      view.tiers.find((tier) => tier.tierKey === "stems_15")?.price.amountMinor,
     ).toBe(4690);
   });
 
   it("prices a chosen tier on a chosen date from the totals table", async () => {
     const view = await live("en-gb", {
-      selection: { tierKey: "stems_24", date: "2026-09-20" },
+      selection: { tierKey: "stems_21", date: "2026-09-20" },
     });
     expect(view.price.displayPrice.amountMinor).toBe(5690);
     expect(view.price.displayPrice.amountMinor).toBe(
-      view.totals["stems_24"]?.["2026-09-20"],
+      view.totals["stems_21"]?.["2026-09-20"],
     );
   });
 
@@ -325,7 +325,7 @@ describe("the selected configuration is the one price (§8, AC-9's model half)",
 
 /**
  * `ProductViewSchema` holds the chip to its totals (§8, design round Q3; `/break 101` hole 4). Each
- * case plants one lie into the real `en-gb` live view — selected tier `stems_18` at £46.90, its
+ * case plants one lie into the real `en-gb` live view — selected tier `stems_15` at £46.90, its
  * Sunday 13 September total £50.90, its chip £4.00 — and the view must stop parsing. The real view
  * is the control: without it a refusal below could be the fixture's doing.
  */
@@ -359,8 +359,8 @@ describe("`ProductViewSchema` refuses a chip, a tier or a card that contradicts 
 
   it("accepts the real view, whose Sunday chip is its total minus its tier price", async () => {
     const view = await live("en-gb");
-    expect(view.selectedTierKey).toBe("stems_18");
-    expect(view.totals["stems_18"]?.[SUNDAY]).toBe(5090);
+    expect(view.selectedTierKey).toBe("stems_15");
+    expect(view.totals["stems_15"]?.[SUNDAY]).toBe(5090);
     expect(
       view.delivery.dates.find((date) => date.date === SUNDAY)?.surcharge,
     ).toEqual({ amountMinor: 400, currency: "GBP" });
@@ -405,8 +405,8 @@ describe("`ProductViewSchema` refuses a chip, a tier or a card that contradicts 
       "H6: the Sunday total at the undated 4 690 beside its 400 chip",
       (view) => {
         const copy = structuredClone(view);
-        const row = copy.totals["stems_18"];
-        if (row === undefined) throw new Error("no stems_18 row");
+        const row = copy.totals["stems_15"];
+        if (row === undefined) throw new Error("no stems_15 row");
         row[SUNDAY] = 4690;
         return copy;
       },
@@ -414,12 +414,12 @@ describe("`ProductViewSchema` refuses a chip, a tier or a card that contradicts 
     ],
     [
       "H7: the selected tier at −1",
-      (view) => withTierPrice(view, "stems_18", -1),
+      (view) => withTierPrice(view, "stems_15", -1),
       ["tiers", 1, "price", "amountMinor"],
     ],
     [
       "H8: another tier at −1",
-      (view) => withTierPrice(view, "stems_12", -1),
+      (view) => withTierPrice(view, "stems_11", -1),
       ["tiers", 0, "price", "amountMinor"],
     ],
     [

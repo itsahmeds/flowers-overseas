@@ -39,7 +39,7 @@ const CLI = "validate-schema.ts";
 const FRESH = new Date(`${FX_SNAPSHOT_AS_OF}T10:00:00Z`);
 const LIVE = "PL" as const;
 const SKU = "FO-BQ-001" as const;
-const TIER = "stems_18" as const;
+const TIER = "stems_15" as const;
 const LOCALES = ["en", "en-gb", "pl"] as const satisfies readonly LocaleCode[];
 
 /**

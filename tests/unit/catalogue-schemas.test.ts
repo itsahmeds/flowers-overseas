@@ -37,7 +37,7 @@ const product = {
   occasions: ["birthday", "thank_you"],
   substitutionClass: "main_flower",
   vaseIncluded: false,
-  stemCount: 18,
+  stemCount: 15,
   freshnessDays: 7,
   allergenNote: false,
   partnerOnly: false,
@@ -48,23 +48,23 @@ const tierGroup = {
   sku: "FO-BQ-001",
   tiers: [
     {
-      tierKey: "stems_12",
+      tierKey: "stems_11",
       labelKey: "catalog.tier.stems",
-      stems: 12,
+      stems: 11,
       sort: 0,
       isDefault: false,
     },
     {
-      tierKey: "stems_18",
+      tierKey: "stems_15",
       labelKey: "catalog.tier.stems",
-      stems: 18,
+      stems: 15,
       sort: 1,
       isDefault: true,
     },
     {
-      tierKey: "stems_24",
+      tierKey: "stems_21",
       labelKey: "catalog.tier.stems",
-      stems: 24,
+      stems: 21,
       sort: 2,
       isDefault: false,
     },
@@ -85,7 +85,7 @@ const addon = {
 const countryPrice = {
   sku: "FO-BQ-001",
   countryIso2: "PL",
-  tierKey: "stems_18",
+  tierKey: "stems_15",
   retailMinor: 19_900,
   currency: "PLN",
   vatRateBp: 800,
@@ -157,7 +157,7 @@ describe("ProductDataSchema accepts the authored shape and nothing else", () => 
       { ...product, sku: "FO-XX-001" },
       { ...product, slug: "Amber Hour" },
       { ...product, slug: "amber/hour" },
-      { ...product, stemCount: 18.5 },
+      { ...product, stemCount: 15.5 },
       { ...product, freshnessDays: 0 },
     ]) {
       expect(
@@ -224,8 +224,8 @@ describe("ProductTierGroupSchema enforces the one-default rule at parse time", (
 
   it("rejects a stem count on an S/M/L tier and a missing one on a stem tier", () => {
     for (const tier of [
-      { tierKey: "size_m", labelKey: "catalog.tier.size.m", stems: 12 },
-      { tierKey: "stems_18", labelKey: "catalog.tier.stems", stems: null },
+      { tierKey: "size_m", labelKey: "catalog.tier.size.m", stems: 11 },
+      { tierKey: "stems_15", labelKey: "catalog.tier.stems", stems: null },
     ]) {
       expect(
         ProductTierGroupSchema.safeParse({
@@ -254,7 +254,7 @@ describe("ProductTierGroupSchema enforces the one-default rule at parse time", (
           {
             tierKey: "deluxe",
             labelKey: "catalog.tier.stems",
-            stems: 18,
+            stems: 15,
             sort: 0,
             isDefault: true,
           },
@@ -270,8 +270,8 @@ describe("ProductTierGroupSchema enforces the one-default rule at parse time", (
     ).toBe(false);
     const repeated = tierGroup.tiers.map((tier) => ({
       ...tier,
-      tierKey: "stems_18",
-      stems: 18,
+      tierKey: "stems_15",
+      stems: 15,
     }));
     expect(
       ProductTierGroupSchema.safeParse({ ...tierGroup, tiers: repeated })

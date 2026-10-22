@@ -278,9 +278,10 @@ describe("the tier structure of plan/10 §2.2 (AC-6, spec 005 §13 Q4/Q6)", () =
         }
       }
     }
-    // "12/18/24 roses; 15/25/35 tulips" (`plan/10` §2.2).
+    // "12/18/24 roses; 15/25/35 tulips" (`plan/10` §2.2), the roses made odd by spec 005 §14
+    // A-founder-2026-10-14c (11/15/21; TASK-240, whose T-37 pins every product's counts).
     expect(tiersForSku("FO-BQ-001").map((tier) => tier.stems)).toEqual([
-      12, 18, 24,
+      11, 15, 21,
     ]);
     expect(tiersForSku("FO-BQ-009").map((tier) => tier.stems)).toEqual([
       15, 25, 35,

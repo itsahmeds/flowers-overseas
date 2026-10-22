@@ -109,6 +109,7 @@ export const CLI_NAME = "catalogue:check";
 export const CHECK_MODES = [
   "no-tier",
   "default-tier",
+  "stem-tier",
   "missing-price",
   "ambiguous-price",
   "band",
@@ -366,6 +367,73 @@ function checkTiers(input: CatalogueCheckInput): Problem[] {
         subject: product.sku,
         reason: `has ${String(defaults.length)} default tiers; exactly one is required (spec 002 §14 A1 (b)'s one-per-product partial unique index, spec 005 §13 Q6)`,
       });
+    }
+  }
+  return problems;
+}
+
+/** The stem count no tier may offer: the French guide says thirteen is avoided (`fr-guide.md`). */
+export const FORBIDDEN_STEM_COUNT = 13;
+
+/**
+ * Every offered stem count is odd and never 13, in every country (spec 005 §14
+ * A-founder-2026-10-14c, AC-36; TASK-240). Our own Poland, Romania and Italy guides say an even
+ * number of stems is for a grave, the French one that thirteen is avoided, and a product's tiers
+ * are the same in every destination, so one rule covers all of them. Three further faults are the
+ * same rule seen from the key and the preselection:
+ *
+ *  - a `tierKey` other than `stems_{stems}`: the key is what a `?tier=` URL, a quote and a price
+ *    row carry, so a key that says 12 over an 11-stem tier misnames what the buyer gets;
+ *  - a default that is not the middle tier of a stem product (spec 005 §13 Q6, "the middle tier").
+ *
+ * Tiers without a stem count (`size_*`, `single`, §13 Q4) are not stem tiers and are untouched.
+ * Each problem names the SKU and the tier key.
+ */
+function checkStemTiers(input: CatalogueCheckInput): Problem[] {
+  const problems: Problem[] = [];
+  const bySku = new Map<string, ProductTierRecord[]>();
+  for (const tier of input.tiers) {
+    if (tier.stems === null) continue;
+    const subject = `${tier.sku} ${tier.tierKey}`;
+    if (tier.stems % 2 === 0) {
+      problems.push({
+        mode: "stem-tier",
+        file: TIERS_FILE,
+        subject,
+        reason: `offers ${String(tier.stems)} stems, an even count: every offered stem count is odd, in every country, because an even number is for a grave in Poland, Romania and Italy (spec 005 §14 A-founder-2026-10-14c, AC-36)`,
+      });
+    }
+    if (tier.stems === FORBIDDEN_STEM_COUNT) {
+      problems.push({
+        mode: "stem-tier",
+        file: TIERS_FILE,
+        subject,
+        reason: `offers ${String(FORBIDDEN_STEM_COUNT)} stems: no tier offers thirteen, which the French guide says is avoided (spec 005 §14 A-founder-2026-10-14c, AC-36)`,
+      });
+    }
+    if (tier.tierKey !== `stems_${String(tier.stems)}`) {
+      problems.push({
+        mode: "stem-tier",
+        file: TIERS_FILE,
+        subject,
+        reason: `carries ${String(tier.stems)} stems under the key \`${tier.tierKey}\`: a stem tier's key is \`stems_${String(tier.stems)}\` (spec 005 §14 A-founder-2026-10-14c point 4, AC-36)`,
+      });
+    }
+    const group = bySku.get(tier.sku) ?? [];
+    group.push(tier);
+    bySku.set(tier.sku, group);
+  }
+  for (const [sku, tiers] of bySku) {
+    const middle = Math.floor((tiers.length - 1) / 2);
+    for (const tier of tiers) {
+      if (tier.isDefault && tier.sort !== middle) {
+        problems.push({
+          mode: "stem-tier",
+          file: TIERS_FILE,
+          subject: `${sku} ${tier.tierKey}`,
+          reason: `is the default at position ${String(tier.sort)} of ${String(tiers.length)}: a stem product preselects its middle tier, position ${String(middle)} (spec 005 §13 Q6, AC-36)`,
+        });
+      }
     }
   }
   return problems;
@@ -1309,6 +1377,7 @@ function checkAddonPreselection(input: CatalogueCheckInput): Problem[] {
 export function checkCatalogue(input: CatalogueCheckInput): Problem[] {
   return [
     ...checkTiers(input),
+    ...checkStemTiers(input),
     ...checkDestinations(input),
     ...checkPriceCoverage(input),
     ...checkAmounts(input),

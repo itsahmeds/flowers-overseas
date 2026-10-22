@@ -20,7 +20,7 @@ import type { CountryPriceRecord } from "../../src/modules/catalog/providers.ts"
 const STATIC_MODULE = "../../src/modules/catalog/static/index.ts";
 const LIVE = "PL" as const;
 const SKU = "FO-BQ-001" as const;
-const TIER = "stems_12" as const;
+const TIER = "stems_11" as const;
 
 /** `asOf` for every case below; the window is therefore [2026-08-11, 2026-09-10]. */
 const AS_OF = "2026-09-10";
