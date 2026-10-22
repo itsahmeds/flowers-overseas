@@ -96,10 +96,10 @@ const HEADINGS: readonly {
     id: "hero-heading",
     words: {
       en: "Flowers for someone far away.",
-      de: "Blumen für jemanden, der weit weg ist.",
+      de: "Blumen für jemanden weit weg.",
       pl: "Kwiaty dla kogoś, kto jest daleko.",
     },
-    em: { en: "far away.", de: "weit weg ist.", pl: "daleko." },
+    em: { en: "far away.", de: "weit weg.", pl: "daleko." },
   },
   {
     name: "Popular choices",
