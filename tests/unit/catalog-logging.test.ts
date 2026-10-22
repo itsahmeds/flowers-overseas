@@ -43,6 +43,8 @@ const { dateSurcharges, resolvePrice, tierPrices } =
 const { priceProjection, priceTable, offerProjection } =
   await import("../../src/modules/catalog/pricing/project.ts");
 const { quote } = await import("../../src/modules/catalog/pricing/quote.ts");
+const { catalogProviders, withCatalogProviders } =
+  await import("../../src/modules/catalog/providers.ts");
 const { availability } =
   await import("../../src/modules/catalog/availability.ts");
 const { lowestPriceInLast30Days } =
@@ -201,6 +203,55 @@ describe("the three business signals of spec 005 §11", () => {
     ]);
     expect(captureMessage).toHaveBeenCalledWith(
       CATALOG_SIGNALS.priceMissing,
+      expect.objectContaining({ level: "warning" }),
+    );
+  });
+
+  it("warns and captures `catalog.price_ambiguous` on two active rows, and logs no amount (/review 56)", async () => {
+    // Impossible in Postgres under spec 002's partial unique index and in the dataset under
+    // `catalogue:check`; a provider handing two over is a migration or seed defect, so the seam is
+    // fed one directly (TASK-070: the database providers are a second source of rows).
+    const providers = catalogProviders();
+    const rows = await providers.price.countryPrices();
+    const active = rows.find(
+      (row) =>
+        row.sku === SKU &&
+        row.countryIso2 === LIVE &&
+        row.surchargeKind === null &&
+        row.activeTo === null,
+    );
+    expect(active).toBeDefined();
+    const doubled = {
+      ...providers,
+      price: {
+        ...providers.price,
+        countryPrices: () =>
+          Promise.resolve([...rows, { ...(active as (typeof rows)[number]) }]),
+      },
+    };
+
+    await expect(
+      withCatalogProviders(doubled, () =>
+        resolvePrice({
+          productId: SKU,
+          tierKey: active?.tierKey as string,
+          countryIso: LIVE,
+        }),
+      ),
+    ).rejects.toThrow();
+
+    const ambiguous = lines.filter(
+      (line) => line.msg === CATALOG_SIGNALS.priceAmbiguous,
+    );
+    expect(ambiguous).toHaveLength(1);
+    expect(ambiguous[0]?.level).toBe("warn");
+    expect(Object.keys(ambiguous[0]?.fields ?? {}).sort()).toEqual([
+      "country_iso",
+      "sku",
+      "tier_key",
+    ]);
+    expect(captureMessage).toHaveBeenCalledWith(
+      CATALOG_SIGNALS.priceAmbiguous,
       expect.objectContaining({ level: "warning" }),
     );
   });
