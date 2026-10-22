@@ -632,7 +632,7 @@
     },
     "hero": {
       "eyebrow": "Blumengrüße ins Ausland",
-      "heading": "Blumen für jemanden, der <em>weit weg ist.</em>",
+      "heading": "Blumen für jemanden <em>weit weg.</em>",
       "proposition": "Unser Florist am Wohnort Ihrer Liebsten bindet den Strauß und übergibt ihn persönlich. Wir verschicken nie einen Karton."
     },
     "howItWorks": {
@@ -1035,7 +1035,7 @@
     },
     "toolbar": {
       "count": "{count, plural, one {# Strauß} other {# Sträuße}}",
-      "disclosure": "Unsere Reihenfolge haben wir selbst gewählt. Sie ist keine Rangliste nach Verkäufen, Beliebtheit oder Bezahlung und ändert sich nicht danach, wer Sie sind.",
+      "disclosure": "Die Reihenfolge wählen wir selbst, nicht nach Verkäufen, Beliebtheit oder Bezahlung. Sie ist für alle gleich.",
       "reorderLabel": "Reihenfolge ändern",
       "sortLabel": "Sortieren nach",
       "submit": "Sortieren",

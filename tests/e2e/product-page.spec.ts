@@ -10,9 +10,25 @@
  * in `<head>`. The `live` state needs a florist, which no served build has — it is asserted in
  * `tests/unit/product-page.test.tsx` through spec 007's provider seam, on the same template.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { expect, test } from "@playwright/test";
 
 import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts";
+
+/** The locale's own `product.included` (`en-gb` inherits `en`'s; de/pl are drafted, TASK-185). */
+function includedIn(url: string): string {
+  const locale = url.split("/")[1] === "en-gb" ? "en" : url.split("/")[1];
+  return (
+    JSON.parse(
+      readFileSync(
+        resolve(import.meta.dirname, `../../messages/${locale ?? "en"}.json`),
+        "utf8",
+      ),
+    ) as { product: { included: string } }
+  ).product.included;
+}
 
 /** Amber Hour to Poland, in every launch locale: one authored slug shared by all four (§13 Q1). */
 const POLAND_PDPS = [
@@ -287,8 +303,11 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       await expect(card).not.toHaveText(/\d|[€£]|zł|PLN/u);
       await expect(card).not.toHaveText("");
       if (symbol !== "zł") {
-        // The approved "included", its first letter set upright: it reads "Included".
-        await expect(card).toHaveText(/^included$/iu);
+        // The approved "included" (the locale's own word), its first letter set upright: it reads
+        // "Included".
+        const included = includedIn(url);
+        if (url.startsWith("/en")) expect(included).toBe("included");
+        await expect(card).toHaveText(included);
         expect(
           await card.evaluate(
             (node) => getComputedStyle(node, "::first-letter").textTransform,
