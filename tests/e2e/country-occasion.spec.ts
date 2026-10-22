@@ -44,7 +44,7 @@ test.describe("Poland's Grandparents' Day prints both days (spec 008 AC-76, T-76
     const response = await page.goto("/en/poland/occasions/grandparents-day");
     expect(response?.status()).toBe(200);
     const line = await page.locator("p[data-fo-occasion-date]").innerText();
-    expect(line).toMatch(/\b21 January (\d{4}) and \w+ 22 January \1\b/u);
+    expect(line).toMatch(/\b21 January (\d{4}) and \w+, 22 January \1\b/u);
     await context.close();
   });
 });
@@ -180,11 +180,19 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
   }) => {
     await page.goto("/en/poland/flowers");
     const links = page.locator("[data-fo-occasion-page]");
-    await expect(links).toHaveCount(1);
-    await expect(links.first()).toHaveAttribute(
-      "href",
-      "/en/poland/occasions/mothers-day",
+    // Since spec 008 A-founder-2026-10-21c every occasion Poland keeps has a page, so every row
+    // of the table (the upcoming window moves with the date, so the count is not pinned) carries
+    // a link in its third column, and each link is that row's own Polish occasion page.
+    const rows = await page.locator("table tbody tr").count();
+    expect(rows).toBeGreaterThan(0);
+    await expect(links).toHaveCount(rows);
+    const hrefs = await links.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("href") ?? ""),
     );
+    for (const href of hrefs) {
+      expect(href).toMatch(/^\/en\/poland\/occasions\/[a-z-]+$/u);
+    }
+    expect(new Set(hrefs).size, "one link per occasion").toBe(rows);
     // The third column's header exists even where the cell is empty: the column is the table's,
     // not the row's.
     await expect(page.locator("table thead th")).toHaveCount(3);

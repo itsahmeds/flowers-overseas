@@ -251,7 +251,7 @@ test.describe("every live occasion hub is complete (AC-72, AC-76; T-72, T-76)", 
     await page.goto("/en/occasions/grandparents-day");
     // `calendarDate` in the table, joined by `Intl.ListFormat` ("… and …"), both in one year.
     const poland = await page.locator('[data-fo-hub-date="PL"]').innerText();
-    expect(poland).toMatch(/\b21 January (\d{4}) and \w+ 22 January \1\b/u);
+    expect(poland).toMatch(/\b21 January (\d{4}) and \w+, 22 January \1\b/u);
     const card = await page
       .locator('[data-fo-hub-first-date="PL"]')
       .first()

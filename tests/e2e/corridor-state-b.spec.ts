@@ -17,7 +17,7 @@ const SHOP = "[data-fo-corridor-shop]";
 const ROW = "[data-fo-corridor-shop-chips]";
 
 test.describe("state B: the shop entry's chip row (A10)", () => {
-  test("renders seven chips under the shop-root link, every one a page that answers 200", async ({
+  test("renders seventeen chips under the shop-root link, every one a page that answers 200", async ({
     page,
     request,
   }) => {
@@ -39,9 +39,9 @@ test.describe("state B: the shop entry's chip row (A10)", () => {
     await expect(row).toHaveCount(1);
     await expect(row.getByText("Also for Poland")).toBeVisible();
     const links = row.locator("a");
-    await expect(links).toHaveCount(7);
+    await expect(links).toHaveCount(17);
     await expect(row.locator('[data-fo-shop-chip="category"]')).toHaveCount(6);
-    await expect(row.locator('[data-fo-shop-chip="occasion"]')).toHaveCount(1);
+    await expect(row.locator('[data-fo-shop-chip="occasion"]')).toHaveCount(11);
     await expect(row.locator("a", { hasText: "Mother's Day" })).toHaveAttribute(
       "href",
       "/en/poland/occasions/mothers-day",
@@ -50,7 +50,7 @@ test.describe("state B: the shop entry's chip row (A10)", () => {
     const hrefs = await links.evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute("href") ?? ""),
     );
-    expect(new Set(hrefs).size, "seven distinct targets").toBe(7);
+    expect(new Set(hrefs).size, "seventeen distinct targets").toBe(17);
     for (const href of hrefs) {
       const target = await request.get(href, { maxRedirects: 0 });
       expect(target.status(), href).toBe(200);
@@ -67,7 +67,7 @@ test.describe("state B: the shop entry's chip row (A10)", () => {
         nodes.map((node) => node.getAttribute("href") ?? ""),
       );
     expect(order[0]).toBe("/en/poland/flowers");
-    expect(order).toHaveLength(8);
+    expect(order).toHaveLength(18);
     const name = await page
       .locator(ROW)
       .getAttribute("aria-labelledby")
