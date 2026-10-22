@@ -2048,6 +2048,202 @@ main > .th + .sec, main > .th + section { padding-block-start: 32px !important; 
 .state .tline h3 { font-size: var(--text-ui); }
 
   </style>
+  <style>
+/* ===== basket and accounts, 2026-10-22 (spec 010 §14 A-founder-2026-10-22; spec 018 §14 A-founder-2026-10-22) ===== */
+.hx-hdr .nav ul { gap: 22px; }
+.hx { display: flex; align-items: center; gap: 4px; }
+.M .hx { margin-inline-start: auto; }
+.M .hx-hdr .mnav { margin-inline-start: 0; }
+.M .hx-hdr .mnav summary { padding-inline: 12px; gap: 8px; }
+.hx-i { position: relative; display: inline-grid; place-items: center; inline-size: var(--target-min); block-size: var(--target-min); border-radius: var(--radius-full); color: var(--color-ink); text-decoration: none; }
+.hx-i svg { inline-size: 24px; block-size: 24px; }
+.hx-i.hover { background: var(--color-paper-3); }
+.hx-i.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.hx-i[aria-current] { box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+.hx-badge { position: absolute; inset-block-start: 1px; inset-inline-end: -1px; inline-size: 20px; block-size: 20px; display: grid; place-items: center; border-radius: var(--radius-full); font-size: 12px; font-weight: var(--font-weight-bold); line-height: 1; font-variant-numeric: lining-nums tabular-nums; color: var(--color-paper); }
+.hx-badge.on { background: var(--color-ink); box-shadow: 0 0 0 2px var(--color-paper); }
+.hx-i.slot-shown .hx-badge { outline: 1px dashed var(--color-accent); outline-offset: 1px; }
+.hx-macc a { display: flex; align-items: center; gap: 10px; }
+.hx-macc svg { inline-size: 22px; block-size: 22px; }
+.hx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 28px; }
+.hx-cell { display: grid; gap: 8px; justify-items: center; font-size: var(--text-xs); color: var(--color-ink-2); }
+/* basket page */
+.bk { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 56px; align-items: start; padding-block: 36px 72px; }
+.M .bk { grid-template-columns: minmax(0, 1fr); gap: 22px; padding-block: 22px 28px; }
+.bk-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin-block-end: 18px; }
+.bk-h h1 { font-size: var(--text-2xl-fluid); line-height: 1.08; }
+.M .bk-h h1 { font-size: var(--text-2xl-s); }
+.bk-h p { font-size: var(--text-sm); color: var(--color-ink-2); }
+.bk-list { background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); padding: 4px 30px; }
+.M .bk-list { padding: 2px 16px; }
+.bk-line { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 10px 22px; padding-block: 22px; border-block-end: var(--rule); align-items: start; }
+.bk-line:last-child { border-block-end: 0; }
+.M .bk-line { grid-template-columns: 96px minmax(0, 1fr); gap: 8px 14px; padding-block: 18px; }
+.bk-line > .img { inline-size: 96px; aspect-ratio: 4 / 5; border-radius: 12px; background-size: cover; background-position: center; background-color: var(--color-paper-3); }
+.M .bk-line > .img { grid-row: span 2; }
+.bk-line h2 { font-size: var(--text-md); line-height: 1.15; }
+.bk-meta { display: grid; gap: 3px; margin-block-start: 6px; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.4; }
+.bk-meta .to { color: var(--color-ink); font-weight: var(--font-weight-bold); }
+.bk-amt { display: grid; justify-items: end; gap: 4px; text-align: end; }
+.M .bk-amt { grid-column: 2; display: flex; justify-content: space-between; align-items: center; text-align: start; }
+.bk-amt strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); font-variant-numeric: lining-nums tabular-nums; }
+.bk-rm { min-block-size: var(--target-min); min-inline-size: var(--target-min); padding-inline: 2px; background: none; border: 0; color: var(--color-link); font: inherit; font-size: var(--text-sm); font-weight: var(--font-weight-bold); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.bk-line.off h2, .bk-line.off .bk-meta, .bk-line.off .bk-amt strong { color: var(--color-ink-3); }
+.bk-line.off > .img { filter: grayscale(1); }
+.bk-flag { grid-column: 2 / -1; display: grid; gap: 10px; padding: 12px 14px; border-radius: var(--radius-field); background: var(--color-blush); font-size: var(--text-ui); line-height: 1.45; }
+.M .bk-flag { grid-column: 1 / -1; }
+.bk-flag .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.bk-flag .btn { min-block-size: var(--control-sm); padding-inline: 20px; font-size: var(--text-ui); }
+.bk-sum h2 { font-size: var(--text-xl); }
+.M .bk-sum h2 { font-size: var(--text-lg); }
+.bk-sum .total { margin-block-start: 18px; }
+.bk-inc { margin-block-start: 8px; font-size: var(--text-sm); color: var(--color-included); font-weight: var(--font-weight-bold); }
+.bk-sum .btn.send { margin-block-start: 20px; }
+.bk-cont { display: flex; justify-content: center; margin-block-start: 8px; }
+.bk-promise { margin-block-start: 16px; padding-block-start: 14px; border-block-start: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2); }
+.bk-top { display: grid; gap: 12px; margin-block-end: 18px; }
+.bk-empty { display: grid; justify-items: start; gap: 16px; padding: 36px 34px 38px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); max-inline-size: 620px; }
+.M .bk-empty { padding: 24px 18px; }
+.bk-empty p { font-size: var(--text-md); font-family: var(--font-display); font-style: italic; font-weight: var(--font-weight-display-em); }
+.M .s10-bar.bk-bar .btn { max-inline-size: 210px; }
+.M .bk-sum .btn.send { display: none; }
+/* checkout: the line loop */
+.dl-of { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: var(--radius-field); background: var(--color-paper-2); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.dl-of > .img { flex: none; inline-size: 40px; aspect-ratio: 4 / 5; border-radius: 8px; background-size: cover; background-position: center; }
+.dl-of b { display: block; font-size: var(--text-xs); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); }
+.dl-of span { display: block; font-size: var(--text-ui); color: var(--color-ink); }
+.rl-list { display: grid; margin-block-start: 14px; border-block-start: var(--rule); }
+.rl { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 2px 12px; padding-block: 12px; border-block-end: var(--rule); align-items: start; }
+.rl > .img { grid-row: span 2; inline-size: 56px; aspect-ratio: 4 / 5; border-radius: 8px; background-size: cover; background-position: center; }
+.rl b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-ui); }
+.rl span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.35; }
+.rl strong { font-variant-numeric: lining-nums tabular-nums; font-weight: var(--font-weight-bold); font-size: var(--text-ui); text-align: end; }
+.rl .bk-rm { grid-column: 3; justify-self: end; min-block-size: 32px; }
+.rl.now { background: linear-gradient(to right, var(--color-sage-wash), var(--color-sage-wash)) no-repeat; background-size: 3px 100%; padding-inline-start: 10px; }
+.rl.off b, .rl.off span, .rl.off strong { color: var(--color-ink-3); }
+.ck { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 4px 12px; align-items: start; font-size: var(--text-ui); }
+.ck i { inline-size: 24px; block-size: 24px; border-radius: 6px; background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-field-edge); display: grid; place-items: center; color: var(--color-on-selected); }
+.ck.on i { background: var(--color-selected); box-shadow: none; }
+.ck i svg { inline-size: 16px; block-size: 16px; }
+.ck small { grid-column: 2; font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.4; }
+.rch { display: grid; gap: 8px; border: 0; padding: 0; margin: 0; }
+.rch legend { font-size: var(--text-sm); font-weight: var(--font-weight-bold); margin-block-end: 6px; padding: 0; }
+.rch label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 2px 12px; align-items: center; min-block-size: 54px; padding: 10px 14px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-ui); }
+.rch label small { grid-column: 2; font-size: var(--text-sm); color: var(--color-ink-2); }
+.rch label.on { box-shadow: inset 0 0 0 2px var(--color-selected); }
+.rch i { inline-size: 20px; block-size: 20px; border-radius: 50%; background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-field-edge); }
+.rch label.on i { box-shadow: inset 0 0 0 6px var(--color-selected); }
+.input.ro { background: var(--color-paper-2); color: var(--color-ink); border-style: dashed; }
+.co-signin { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; padding-block: 2px 4px; font-size: var(--text-sm); color: var(--color-ink-2); }
+.co-you { display: grid; gap: 14px; padding-block-start: 18px; border-block-start: var(--rule); }
+.co-you h2 { font-size: var(--text-lg); }
+.dlv { display: grid; gap: 0; padding: 14px 16px 6px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.dlv + .dlv { margin-block-start: 12px; }
+.dlv > header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; padding-block-end: 8px; }
+.dlv > header b { font-size: var(--text-xs); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); }
+.dlv > header strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); font-variant-numeric: lining-nums tabular-nums; }
+.dlv .s10-sum { border-block-start: var(--rule); }
+.dlv .s10-sum div:last-child { border-block-end: 0; }
+.pc-dl { display: grid; gap: 4px; }
+/* confirmation: several deliveries, the account nudge */
+.cf-list { display: grid; gap: 12px; inline-size: 100%; }
+.cf-dlv { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 4px 18px; padding: 16px 18px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); align-items: start; }
+.M .cf-dlv { grid-template-columns: 64px minmax(0, 1fr); padding: 14px; }
+.cf-dlv > .img { grid-row: span 2; inline-size: 72px; aspect-ratio: 4 / 5; border-radius: 10px; background-size: cover; background-position: center; }
+.M .cf-dlv > .img { inline-size: 64px; }
+.cf-dlv .eyebrow { margin: 0; }
+.cf-dlv h2 { font-size: var(--text-md); line-height: 1.15; }
+.cf-dlv dl { grid-column: 2 / -1; display: grid; gap: 4px; margin-block-start: 6px; }
+.cf-dlv dl div { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 10px; font-size: var(--text-sm); }
+.cf-dlv dt { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 2px; }
+.cf-dlv dd { margin: 0; }
+.cf-dlv > strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); font-variant-numeric: lining-nums tabular-nums; }
+.M .cf-dlv > strong { grid-column: 2; grid-row: 3; }
+.cf-total { display: flex; justify-content: space-between; align-items: baseline; inline-size: 100%; padding-block-start: 14px; border-block-start: 1px solid color-mix(in oklab, var(--color-ink) 18%, transparent); }
+.cf-total span { font-weight: var(--font-weight-bold); }
+.cf-total strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 32px; font-variant-numeric: lining-nums tabular-nums; }
+.nudge { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 24px; align-items: center; padding: 18px 20px; border-radius: var(--radius-field); background: var(--color-sage-wash); }
+.M .nudge { grid-template-columns: minmax(0, 1fr); }
+.nudge p { font-size: var(--text-ui); color: var(--color-ink); }
+.nudge .btn { min-block-size: var(--control-sm); padding-inline: 22px; font-size: var(--text-ui); }
+.nudge.sent { grid-template-columns: 28px minmax(0, 1fr); background: var(--color-leaf-wash); }
+.nudge.sent svg { inline-size: 22px; block-size: 22px; color: var(--color-included); }
+.cxl { padding-block: 22px 8px; font-size: var(--text-sm); color: var(--color-ink-2); }
+.cxl button { padding: 0; border: 0; background: none; font: inherit; color: var(--color-link); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; min-block-size: var(--target-min); }
+/* account */
+.ac { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 56px; align-items: start; padding-block: 36px 72px; }
+.M .ac { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 18px 36px; }
+.ac-nav { position: sticky; inset-block-start: 24px; }
+.ac-nav h2 { font-size: var(--text-xs); font-family: var(--font-body); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); margin-block-end: 10px; }
+.ac-nav ul { display: grid; gap: 2px; }
+.ac-nav a, .ac-nav button { display: flex; align-items: center; inline-size: 100%; min-block-size: var(--target-min); padding-inline: 14px; border: 0; border-radius: var(--radius-full); background: none; font: inherit; font-size: var(--text-ui); text-decoration: none; color: var(--color-ink-2); text-align: start; }
+.ac-nav a[aria-current] { background: var(--color-card); color: var(--color-ink); font-weight: var(--font-weight-bold); box-shadow: var(--shadow-sm); }
+.ac-nav .out { margin-block-start: 10px; padding-block-start: 10px; border-block-start: var(--rule); }
+.M .ac-nav { position: static; margin-inline: calc(-1 * var(--gutter-s)); }
+.M .ac-nav h2 { display: none; }
+.M .ac-nav ul { display: flex; gap: 8px; overflow-x: auto; padding-inline: var(--gutter-s); padding-block: 2px 6px; scrollbar-width: none; }
+.M .ac-nav li { flex: none; }
+.M .ac-nav a, .M .ac-nav button { inline-size: auto; padding-inline: 16px; background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); white-space: nowrap; }
+.M .ac-nav a[aria-current] { background: var(--color-selected); color: var(--color-on-selected); box-shadow: none; }
+.M .ac-nav .out { margin: 0; padding: 0; border: 0; }
+.ac-h { display: grid; gap: 6px; margin-block-end: 20px; }
+.ac-h h1 { font-size: var(--text-2xl-fluid); line-height: 1.08; }
+.M .ac-h h1 { font-size: var(--text-2xl-s); }
+.ac-h p { color: var(--color-ink-2); max-inline-size: 60ch; }
+.ac-h .eyebrow { margin: 0; }
+.ac-back { display: inline-flex; align-items: center; min-block-size: var(--target-min); font-size: var(--text-sm); color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; }
+.ac-card { display: grid; gap: 18px; padding: 26px 30px 28px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); }
+.M .ac-card { padding: 20px 16px 22px; gap: 14px; }
+.ac-card h2 { font-size: var(--text-lg); line-height: 1.15; }
+.ac-card + .ac-card, .ac-stack > * + * { margin-block-start: 22px; }
+.ac-grp { display: grid; }
+.ac-grp-h { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; padding-block-end: 10px; border-block-end: var(--rule); }
+.ac-grp-h b { font-size: var(--text-ui); }
+.ac-grp-h span { font-size: var(--text-sm); color: var(--color-ink-2); }
+.ac-ord { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 4px 18px; padding-block: 16px; border-block-end: var(--rule); align-items: start; text-decoration: none; color: inherit; }
+.ac-ord:last-child { border-block-end: 0; padding-block-end: 4px; }
+.M .ac-ord { grid-template-columns: 64px minmax(0, 1fr); gap: 4px 14px; }
+.ac-ord > .img { grid-row: span 3; inline-size: 72px; aspect-ratio: 4 / 5; border-radius: 10px; background-size: cover; background-position: center; }
+.M .ac-ord > .img { inline-size: 64px; }
+.ac-ord h3 { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); line-height: 1.15; }
+.ac-ord p { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.4; }
+.ac-ord > strong { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: var(--text-md); font-variant-numeric: lining-nums tabular-nums; text-align: end; }
+.M .ac-ord > strong { text-align: start; }
+.ac-st { justify-self: start; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--radius-full); background: var(--color-sage-wash); color: var(--color-ink); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.04em; }
+.ac-st.done { background: var(--color-leaf-wash); }
+.ac-st.end { background: var(--color-paper-3); color: var(--color-ink-2); }
+.ac-links { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: var(--text-sm); }
+.ac-links a { color: var(--color-link); font-weight: var(--font-weight-bold); text-underline-offset: 4px; display: inline-flex; align-items: center; min-block-size: 32px; }
+.ac-refund { font-size: var(--text-sm); color: var(--color-included); font-weight: var(--font-weight-bold); }
+.ac-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; padding-block: 14px; border-block-end: var(--rule); align-items: center; }
+.ac-row:last-child { border-block-end: 0; }
+.ac-row b { font-size: var(--text-ui); }
+.ac-row span { display: block; font-size: var(--text-sm); color: var(--color-ink-2); }
+.ac-sign { display: grid; gap: 16px; inline-size: min(480px, 100%); margin: 56px auto 96px; padding: 30px 32px 32px; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); }
+.M .ac-sign { margin: 24px auto 40px; padding: 22px 18px 24px; }
+.ac-sign h1 { font-size: var(--text-3xl-fluid); line-height: 1.1; }
+.M .ac-sign h1 { font-size: 32px; }
+.ac-sign .intro { color: var(--color-ink-2); }
+.ac-sign .btn { inline-size: 100%; }
+.ac-sign .guest { padding-block-start: 14px; border-block-start: var(--rule); font-size: var(--text-sm); color: var(--color-ink-2); }
+.ac-mail { inline-size: 44px; block-size: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--color-sage-wash); color: var(--color-sky); }
+.ac-mail svg { inline-size: 24px; block-size: 24px; }
+.ac-dl { display: grid; }
+.ac-dl a { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; min-block-size: 52px; padding-block: 6px; border-block-end: var(--rule); text-decoration: none; color: var(--color-ink); font-size: var(--text-ui); }
+.ac-dl a:last-child { border-block-end: 0; }
+.ac-dl svg { inline-size: 22px; block-size: 22px; color: var(--color-ink-2); }
+.ac-dl small { font-size: var(--text-sm); color: var(--color-link); font-weight: var(--font-weight-bold); }
+.ac-2 { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 24px; align-items: start; }
+.M .ac-2 { grid-template-columns: minmax(0, 1fr); gap: 0; }
+.ac-form { display: grid; gap: 16px; }
+.D .ac-form.two { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+.ac-form .full { grid-column: 1 / -1; }
+.ac-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.ac-acts .btn { min-block-size: var(--control-sm); padding-inline: 24px; font-size: var(--text-ui); }
+.M .ac-acts .btn { flex: 1; }
+.ac-fine { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.45; }
+.ac-404 { padding: 18px; border-radius: var(--radius-field); background: var(--color-paper-2); font-size: var(--text-sm); color: var(--color-ink-2); }
+  </style>
 </helmet>
 <div class="fo D" style="inline-size: 1440px;">
 <section class="note"><span class="nl">Order confirmation · demo, no longer available, and live (future) · desktop 1440 · round 2 + spec 010 pass, 2026-10-05 · [internal]</span><dl><dt>Founder ruling 2026-10-14</dt><dd><b>Charge at once.</b> The payment is taken when the buyer places the order, and buyer copy never describes how an order reaches our florist. Buyer steps: We have your order → Being made → On its way → Delivered, plus Cancelled, “Refunded {amount} on {date}” and Closed. Specs 013, 016 and 018 as amended in PR 220 (<code>docs/charge-now-no-relay</code>) are the source; strings they do not yet carry are <span class="prop">proposed</span>.</dd><dt>Purpose</dt><dd>After the order. In Phase 0 the only confirmation is the <b>demo</b> one (drawn below as a whole screen): it says plainly that nothing was charged or delivered, gives the reference and says what happens in the real service. The first screen is the <b>paid</b> live state, redrawn by the specs 013 + 018 pass (see the next block).</dd><dt>Status</dt><dd><b>Spec 010 approved (2026-10-04).</b> This pass adds the demo confirmation and “no longer available”. The live first screen loses the guard line (no banner in live) and the equivalents line; its sentences stay drafts for specs 013, 015, 017 and 018.</dd><dt>URL</dt><dd><code>/en-gb/checkout/done</code>, read from the <code>fo_checkout</code> cookie, no token in the URL (spec 010 §2) · <code>no-store</code>, <code>noindex, nofollow</code>, no canonical, no hreflang, no JSON-LD (AC-30).</dd><dt>Reads</dt><dd>The draft and its order: the reference <code>FO-XXXX-XXXX</code> derived from the order id, <code>order.mode</code>, the recipient recap, the date, the card, the total. Nothing personal in the URL or a log (AC-34).</dd><dt>States drawn</dt><dd>Paid, live (first screen; specs 013 + 018) · demo · no longer available · the payment states below.</dd><dt>Laptop band</dt><dd><b>1280 × 800</b>: H1 46px at y 153, primary action (“Track this order”) ends y 641 (in view) · <b>1470 × 830</b>: H1 46px at y 153, primary action (“Track this order”) ends y 641 (in view) · <b>1512 × 860</b>: H1 46px at y 153, primary action (“Track this order”) ends y 641 (in view) · <b>1512 × 945</b>: H1 46px at y 153, primary action (“Track this order”) ends y 641 (in view). Measured on this artboard rendered at each window size, annotation hidden (Playwright, 2026-10-05).</dd><dt>Build</dt><dd>One H1. Paid panel: <code>--color-sage-wash</code>, amount 40 px Fraunces <code>tabular-nums</code>, sentence 18 px; with the invoice issued: <code>--color-leaf-wash</code>. Tiles: 4 columns at 1440, a list with chevrons at 390. Track and calendar are links; Share is the one island (<code>navigator.share</code>, copy-link fallback, 018 Q9). “Cancel for free” is a server-action form that works without JavaScript; with JavaScript a native <code>&lt;dialog&gt;</code> asks once. WhatsApp link is <code>https://wa.me/12135925150</code> with no <code>text</code> (018 AC-9). The four steps are an <code>&lt;ol&gt;</code> with <code>aria-current="step"</code>. Phone: one dock, “Track this order”.</dd><dt>Copy</dt><dd>Spec 013 Appendix A (PR 220): <code>payments.confirmation.paid</code>, <code>.notCompleted</code>, <code>.cancelled</code> (unpaid orders only), <code>.cancelledByYouRefunded</code> (“You cancelled this order. We have refunded {amount}.”); the paid sentence goes to the lawyer with the legal set. Spec 018: “A confirmation is on its way to a•••@…”, “We have emailed it to you.”, “Share the tracking link”, “Cancel for free”. Shipped: recap keys, <code>common.homeLink</code>, <code>errors.serverError.retry</code>. <span class="prop-key">proposed</span> (dotted underline): “Thank you. Here is what happens next.”, “Paid”, “Not charged”, “What happens next” and its four steps, the tile lines, “Invoice”, “We will email it to you shortly.”, the cancel sentences, the dialog, “We have already started making it. Please contact us.”, “Questions? Quote FO-7K2M-9QXA.”, the not-completed H1.</dd><dt>Honesty</dt><dd>Never “Your order is confirmed” on this page (013 §5.3); the paid line states what happened. No photo promise (010 §8). The steps name nobody. Example values: FO-7K2M-9QXA, a•••@example.com, £45.90.</dd><dt>Owning spec</dt><dd>010 · AC-29, AC-30, AC-33, AC-34, AC-39 (baselines) · tasks TASK-206 (page), TASK-201 (<code>ConfirmationRecap</code>), TASK-208 (baselines) · 013, 015, 017, 018 (live).</dd></dl></section>
@@ -2070,6 +2266,15 @@ main > .th + .sec, main > .th + section { padding-block-start: 32px !important; 
 <p class="page-label" aria-hidden="true">Spec 018 · “Cancel for free” asks once: a native <code>&lt;dialog&gt;</code>, focus on “Keep my order”, focus returns on close · 018 AC-28, AC-33</p>
 <div class="scr"><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><a class="link" href="tel:+12135925150" style="margin-inline-start:auto;font-weight:400">Help &amp; WhatsApp +1 (213) 592-5150</a></div></header><main><div class="s13-dlg"><div role="dialog" aria-modal="true" aria-labelledby="dl-h"><h2 id="dl-h"><span class="prop">Cancel this order?</span></h2><p><span class="prop">We refund the full amount to your card, and we do not make it.</span></p><div class="acts"><button class="btn" type="submit">Cancel for free</button><button class="btn ghost" type="button" autofocus><span class="prop">Keep my order</span></button></div></div></div></main></div>
 <section class="state-band" aria-label="Spec 013 and 018 states"><span class="nl">Specs 013 + 018 · confirmation states · small</span><div class="states c3"><div class="state"><span class="state-tag">Invoice tile · issued</span><div class="s13-tile st" style="max-inline-size:280px"><b><span class="prop">Invoice</span></b><span>We have emailed it to you.</span></div><p class="stub">When an <code>invoice</code> row exists (live only; issued at the first <code>order.captured</code>, issued when the payment is taken at Pay, so the first screen says “We will email it to you shortly.”). “or download it from your account” is added only when the <code>account</code> flag is on: off at launch, not drawn. 018 §5.3, AC-9, AC-34.</p></div><div class="state"><span class="state-tag">Not cancellable</span><p class="stub">Status from being made onwards: the cancel row is <b>absent</b>, not disabled; the contact line stays. 018 AC-28 renders “Cancel for free” exactly when the status is in E. The confirmation lives 24 hours (the draft cookie); after that a buyer cancels by writing to us (018 Q15).</p><p class="s13-contact"><span><span class="prop">Questions? Quote FO-7K2M-9QXA.</span></span><a href="https://wa.me/12135925150">WhatsApp +1 (213) 592-5150</a><span>Message us any time, 24/7. We reply within a few hours.</span></p></div><div class="state"><span class="state-tag">Cancel refused</span><div class="s13-err focus" role="alert" tabindex="-1"><p><span class="prop">We have already started making it. Please contact us.</span></p></div><p class="s13-contact"><span><span class="prop">Questions? Quote FO-7K2M-9QXA.</span></span><a href="https://wa.me/12135925150">WhatsApp +1 (213) 592-5150</a><span>Message us any time, 24/7. We reply within a few hours.</span></p><p class="stub">The post found the order already being made: nothing written (018 AC-28). 018 §5.2's sentence with “Our” for the second-person opening (A5 first person, escalation E2); the copy batch may end it with a full stop.</p></div><div class="state"><span class="state-tag">Demo · no longer available</span><p class="stub">Spec 010's two screens above, unchanged: no Stripe, no block (018 AC-9, 010 AC-29). The page chooses the state from <code>order.mode</code>; a <code>test</code> or <code>live</code> order with no registered renderer fails closed to “no longer available” (010 A2.4).</p></div><div class="state"><span class="state-tag">Account nudge · after launch</span><p class="stub">Task 4 of spec 018 adds the one-tap account nudge to the block behind the <code>account</code> flag. Not drawn now (founder 18-14).</p></div></div></section>
+<!-- basket-accounts 2026-10-22 -->
+<section class="note"><span class="nl">Confirmation · several deliveries and the account nudge · desktop 1440 · spec 010 + spec 018 A-founder-2026-10-22, 2026-10-22 · [internal]</span><dl><dt>Purpose</dt><dd>Two additions to this page. <b>Spec 010:</b> a demo basket confirms every delivery on one page, in basket order. <b>Spec 018:</b> after a <code>live</code> guest order, one gentle offer to keep the order in an account, with no typing; it sits directly above the quiet cancel line, which stays the last element of <code>&lt;main&gt;</code>.</dd><dt>URL</dt><dd><code>/en-gb/checkout/done</code>, unchanged: <code>no-store</code>, <code>noindex</code>, read from the draft cookie.</dd><dt>Reads</dt><dd>The placed purchase and its orders, in basket order (demo); spec 013's paid state and spec 018's block (live); whether a buyer session owns the order and the <code>account</code> flag (nudge).</dd><dt>States drawn</dt><dd>Demo with three deliveries · live paid, signed out, with the nudge · the nudge after it is pressed · small: owner signed in, flag off, a live basket.</dd><dt>Build</dt><dd>Demo: the existing <code>s10-conf</code> heading and a <code>DeliveryRecap</code> per order (thumbnail, “Delivery n of N · Order FO-…”, product, recipient in <code>&lt;bdi&gt;</code>, date, card, amount), then the purchase total. No “Change” or “Edit”, no link to a checkout step, no form (AC-52 for every delivery). Nudge: <code>AccountNudge</code>, a cornflower-wash row with one button that posts <code>sendAccountLink()</code> with no field; pressed, it re-renders as the leaf-wash sent line. Cancel: spec 018's one text line with its text-styled button, unchanged (AC-9).</dd><dt>Copy</dt><dd>Verbatim: <code>confirmation.demo.title</code>, <code>confirmation.demo.reference</code>, <code>confirmation.recap.*</code>, <code>checkout.step.deliveryOf</code>, <code>confirmation.promise</code>, <code>payments.confirmation.paid</code>, <code>.arrival</code>; spec 018 C.15 <code>confirmation.postPurchase.accountNudge</code>, <code>.accountNudgeButton</code>, <code>.accountNudgeSent</code>; <code>postPurchase.cancelLine</code>. <code>confirmation.demo.next</code> names one city, so it is not repeated for a basket of several (a plural form is spec 010's to add, if wanted).</dd><dt>Honesty</dt><dd>No refund or failure wording anywhere on these screens, and nothing about how an order reaches our florist; the nudge promises only what it does. The earlier paid screen above still draws a cancel panel and a refund sentence: A-founder-2026-10-14b replaced both with the one quiet line drawn here, which is the version to build.</dd><dt>AC</dt><dd>010 AC-68, AC-73, AC-74 (confirmation half) · 018 AC-9, AC-34, AC-50, AC-52</dd><dt>Owning spec</dt><dd>010 §14 A-founder-2026-10-22 (TASK-206) · 018 C.6 (the new account rows) · 013 (live multi-delivery, its own state)</dd></dl></section>
+<p class="page-label" aria-hidden="true">Basket · the demo confirmation with three deliveries, in basket order · AC-68 · references and sample details are examples</p>
+<div class="scr"><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><a class="link" href="tel:+12135925150" style="margin-inline-start:auto;font-weight:400">Help &amp; WhatsApp +1 (213) 592-5150</a></div></header><main><div class="guard wrap s10-banner" role="note"><p><strong>This is a demo order.</strong> Nothing is charged and nothing is delivered. It shows how ordering works.</p></div><div class="wrap" style="padding-block:40px 96px"><div class="s10-conf" style="max-inline-size:860px"><h1>Your demo order <em>is in.</em></h1><p class="ref">Nothing was charged.</p><div class="cf-list"><article class="cf-dlv"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div><p class="eyebrow">Delivery 1 of 3 · Order FO-7K2M-9QXA</p><strong>£45.90</strong><h2>Amber Hour · 18 stems</h2><dl><div><dt>Recipient</dt><dd><bdi>Maria Przykładowa</bdi><br><bdi>ul. Przykładowa 1, 00-001 Warszawa</bdi></dd></div><div><dt>Date</dt><dd>Thursday 8 October</dd></div><div><dt>Card</dt><dd><bdi>Happy birthday Mama!</bdi> <bdi>Love, Anna</bdi></dd></div></dl></article><article class="cf-dlv"><div class="img" role="img" aria-label="A hand-tied bouquet of deep red long-stemmed roses with dark green foliage, wrapped in white paper" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-002-hero/384.webp);"></div><p class="eyebrow">Delivery 2 of 3 · Order FO-3PRT-H8WD</p><strong>£70.90</strong><h2>Vistula Red · 18 stems</h2><dl><div><dt>Recipient</dt><dd><bdi>Jan Przykładowy</bdi><br><bdi>ul. Przykładowa 2, 30-001 Kraków</bdi></dd></div><div><dt>Date</dt><dd>Saturday 10 October</dd></div><div><dt>Card</dt><dd><bdi>Wszystkiego najlepszego!</bdi> <bdi>Anna</bdi></dd></div></dl></article><article class="cf-dlv"><div class="img" role="img" aria-label="A restrained hand-tied bouquet of soft pastel roses with eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-004-hero/384.webp);"></div><p class="eyebrow">Delivery 3 of 3 · Order FO-Q4ZN-6CEF</p><strong>£33.90</strong><h2>Quiet Blush · 12 stems</h2><dl><div><dt>Recipient</dt><dd><bdi>Erika Mustermann</bdi><br><bdi>Musterstraße 1, 10115 Berlin</bdi></dd></div><div><dt>Date</dt><dd>Friday 9 October</dd></div><div><dt>Card</dt><dd><bdi>Thinking of you.</bdi> <bdi>Anna</bdi></dd></div></dl></article></div><div class="cf-total"><span>You pay</span><strong>£150.70</strong></div><p class="s10-promise">Our fresh-flower promise covers the flowers when they arrive.</p></div></div></main></div>
+<p class="page-label" aria-hidden="true">Spec 018 · <code>live</code>, paid, no buyer session: the account nudge, directly above the quiet cancel line · 018 AC-52, C.6</p>
+<div class="scr"><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><a class="link" href="tel:+12135925150" style="margin-inline-start:auto;font-weight:400">Help &amp; WhatsApp +1 (213) 592-5150</a></div></header><main><div class="wrap co" style="grid-template-columns:minmax(0,7fr) minmax(0,5fr)"><div class="s13-conf"><p class="eyebrow" style="margin:0">Order FO-7K2M-9QXA</p><h1>Thank you. <em>We have your order.</em></h1><p>Your flowers arrive in Warszawa on Thursday 8 October.</p><p class="s13-email">A confirmation is on its way to <b>a•••@example.com</b>.</p><p class="stub">The four-step list, the tiles and the contact path of spec 018's block, as drawn above.</p></div><aside class="recap plain" aria-labelledby="rc-n"><h2 id="rc-n">Your order</h2><div class="recap-item"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div><div><b>Amber Hour</b><span>18 stems</span><span>Thu 8 Oct · Warszawa</span></div></div><div class="total" style="margin-block-start:14px"><span>You pay</span><strong>£45.90</strong></div></aside></div><div class="wrap" style="display:grid;gap:4px;padding-block-start:24px"><form class="nudge" method="post"><p>Keep this order and your details for next time.</p><button class="btn" type="submit">Save to my account</button></form><p class="cxl">Plans changed? <button type="button">You can cancel for free</button> until we start preparing your order.</p></div></main></div>
+<p class="page-label" aria-hidden="true">Spec 018 · after “Save to my account”: the same place, now a sent line; nothing typed, no email shown · 018 AC-52</p>
+<div class="scr"><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><a class="link" href="tel:+12135925150" style="margin-inline-start:auto;font-weight:400">Help &amp; WhatsApp +1 (213) 592-5150</a></div></header><main><div class="wrap co" style="grid-template-columns:minmax(0,7fr) minmax(0,5fr)"><div class="s13-conf"><p class="eyebrow" style="margin:0">Order FO-7K2M-9QXA</p><h1>Thank you. <em>We have your order.</em></h1><p>Your flowers arrive in Warszawa on Thursday 8 October.</p><p class="s13-email">A confirmation is on its way to <b>a•••@example.com</b>.</p><p class="stub">The four-step list, the tiles and the contact path of spec 018's block, as drawn above.</p></div><aside class="recap plain" aria-labelledby="rc-n"><h2 id="rc-n">Your order</h2><div class="recap-item"><div class="img" role="img" aria-label="A hand-tied bouquet of orange garden roses with eucalyptus, wrapped in kraft paper, on a warm grey background" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-001-hero/384.webp);"></div><div><b>Amber Hour</b><span>18 stems</span><span>Thu 8 Oct · Warszawa</span></div></div><div class="total" style="margin-block-start:14px"><span>You pay</span><strong>£45.90</strong></div></aside></div><div class="wrap" style="display:grid;gap:4px;padding-block-start:24px"><div class="nudge sent" role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" focusable="false" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><p>We have emailed you a link to open your account.</p></div><p class="cxl">Plans changed? <button type="button">You can cancel for free</button> until we start preparing your order.</p></div></main></div>
+<section class="state-band" aria-label="Nudge states"><span class="nl">Account nudge · small states</span><div class="states c3"><div class="state"><span class="state-tag">Owner signed in</span><p class="stub">A buyer session whose customer owns the order: no nudge. The cancel line is still last.</p></div><div class="state"><span class="state-tag"><code>account</code> off</span><p class="stub">No nudge; the cancel line still renders for an order in set P (018 AC-34).</p></div><div class="state"><span class="state-tag">The link opened</span><p class="stub">The emailed link (T14, <code>email-account-*</code>) creates the account on first sign-in and lands on <code>/en-gb/account/orders/FO-7K2M-9QXA</code> (018 AC-49, AC-50). In another browser it lands on the account home.</p></div></div></section>
 </div>
 </x-dc>
 </body>

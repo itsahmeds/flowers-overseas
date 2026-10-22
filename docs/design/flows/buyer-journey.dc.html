@@ -93,7 +93,7 @@
       <dt>The shape of it</dt><dd>Destination and date are asked <b>once</b>, on the home finder, and the answer travels in the URL (locale prefix, destination country segment) and one cookie (display currency). There is no IP redirect anywhere in this flow, ever (ADR-0006), and no step re-asks a question an earlier step answered.</dd>
       <dt>Price identity</dt><dd>The all-in price shown on the product page — VAT and delivery included, with the date's surcharge already applied — is the same integer the checkout total and the payment charge use. There is no configuration of the flow in which a cost appears later than the tier chip that first showed a price (<code>plan/07</code> §4, drip-pricing ban).</dd>
       <dt>What is real in Phase 0</dt><dd>Steps 1–4 render. Step 5–7 are behind the <code>checkout.demo_guard</code> flag (on by default): the form renders, no order is placed and no card is charged. Steps 8–9 exist as designs for spec 010/015 and as the confirmation the demo shows a florist.</dd>
-      <dt>Owning specs</dt><dd>004 chrome and system · 007 country page and hub · 008 shop, category, occasion · 009 product page · 010 checkout · 015 order state and tracking</dd>
+      <dt>A-founder-2026-10-22</dt><dd>Two branches added at the foot: <b>the basket</b> (B1 to B5, spec 010) and <b>the account</b> (A1 to A5, spec 018). Guest checkout stays the spine; neither branch is required.</dd><dt>Owning specs</dt><dd>004 chrome and system · 007 country page and hub · 008 shop, category, occasion · 009 product page · 010 checkout · 015 order state and tracking</dd>
       <dt>010 · what changed</dt><dd>Steps 06–09 are redrawn to spec 010's demo (2026-10-05): step 05 gains “Try a demo order”, a form submit to <code>/api/checkout/start</code>; the three steps are recipient, card and you, check; the demo banner, the sample-details button, the privacy notice and the demo calendar are on step 06; step 08 places a <b>demo order</b> (no payment, routed to a demo florist, visible in the admin queue, step 10) instead of paying; step 09 is the demo confirmation at <code>/checkout/done</code>, read from the cookie. Gone from these steps: the marketing box, the payment tiles, the withdrawal line, the photo promise. Branches: <b>closed</b> (the country is not open: “We are not taking orders for Poland yet”, no form) and <b>expired</b> (the draft is gone), both in the exits table.</dd><dt>009 · what changed</dt><dd>Step 04&#39;s exit is gone: publishing the <code>product</code> link id in <code>site-links.ts</code> turns every card from a tile into an <code>&lt;a&gt;</code>, so the Phase 0 spine now runs <b>home finder &rarr; country page &rarr; country shop &rarr; category or occasion &rarr; product</b>, and stops at <b>step 05</b> rather than step 04. Step 05 is redrawn around the three picker states: the <b>countdown</b> and the relative <b>“today”</b> chip are gone from cached HTML, the <b>“Continue”</b> button is replaced by the honest “ordering is not open yet” sentence, the <b>add-on checkboxes</b> are a priced read-only list, and the <b>withdrawal notice</b> and <b>photo-on-delivery promise</b> are gone with the “our florist in the recipient&#39;s town” claim. Two new exit rows: <i>destination has no operational data</i> and <i>past the cutoff</i>, now stated as a picker state rather than a countdown.</dd><dt>007 · what changed</dt><dd>Steps 01–03 are redrawn as the journey spec 007 creates: <b>home finder → country page → (only when a florist exists) shop</b>. Step 02 loses its waiting-list exit and gains region grouping and the two destination states; step 03 is drawn in its guide state, because that is the state every one of the seven destinations is in while <code>hasActivePartners()</code> answers false. The consequence is worth stating plainly: <b>in Phase 0 the journey stops at step 03</b>, and steps 04 onwards are reachable only behind the demo guard. That is the correct shape for a site that indexes guides and sells nothing yet.</dd><dt>008 · what changed</dt><dd>The spine is now <b>home finder &rarr; country page &rarr; country shop &rarr; country category or country occasion &rarr; (009) product</b>, and step 04 is redrawn as the listing spec 008 actually specifies: a priced product row first, category tiles with a <code>from</code> price, the destination&#39;s own occasion dates, a <code>GET</code> sort form and <code>?page=N</code> pagination. Three things about it are worth reading before the thumbnails. <b>One</b>: the card is a <b>tile, not a link</b>, until spec 009 publishes the <code>product</code> link id, so in Phase 0 the journey stops at step 04 rather than step 03 — and it stops there without a dead link, because a tile has no <code>&lt;a&gt;</code>. <b>Two</b>: there is a <b>second entrance</b> that does not pass through a country at all — the category hub, the occasion hub and the occasions index, reached from search, the locale home and the footer. They carry no price, they ask for the destination, and they are the only page types in spec 008 that become indexable at the flip. <b>Three</b>: no card in this flow carries a delivery badge, a rating or a “bestseller” mark, and no step between 01 and 04 asks for a personal detail of any kind.</dd><dt>Round 2 · what changed</dt><dd>Destination and date are settled <b>before the basket</b>, not after it: the finder asks for both on step 01, the grid on step 04 carries the date control above it and badges every card against the destination cutoff, and step 05 numbers the three decisions and prints the fee on every date chip. Steps 06–07 are data entry only — the total cannot move. The field is split on this and the half that defers the date (Interflora UK, Bloom &amp; Wild) reveals “not available on that day” after the buyer has committed (benchmarks/00-summary.md, pattern 1).</dd>
     </dl>
   </section>
@@ -230,6 +230,76 @@
         <tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Just browsing</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Home finder</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);">“See everything” — the destinations hub, no commitment.</td></tr>
         <tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Phase 0 demo</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Checkout, every step</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);"><code>checkout.demo_guard</code> is on and the mode is <code>demo</code>: the banner on every step, sample details, and “Place demo order. Nothing is charged.” A demo order is created and routed to a demo florist; no payment provider is called and nothing is charged (spec 010 AC-2, AC-20).</td></tr><tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Country not open</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Product page → checkout</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);">The mode is <code>closed</code>: “We are not taking orders for Poland yet.” with a link back to the product, and no form (AC-3). A cached product page that still shows the button leads here.</td></tr><tr><td style="border-block-end: var(--rule); padding: 8px 12px;">Draft gone</td><td style="border-block-end: var(--rule); padding: 8px 12px;">Checkout or confirmation</td><td style="border-block-end: var(--rule); padding: 8px 12px; color: var(--color-ink-2);">Past 24 hours, or no cookie: “This order was not started, or it has expired.” on the checkout, “This confirmation is no longer available.” on the confirmation; no order data on either (AC-13, AC-29).</td></tr>
       </table>
+    </div>
+<!-- basket-accounts 2026-10-22 -->    <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The basket branch · spec 010 §14 A-founder-2026-10-22 (2026-10-22)</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">several bouquets, one payment</h2><p style="margin:0;font-size:var(--text-sm);color:var(--color-ink-2);max-width:110ch">The basket is never a required step: “Continue” on a product page still goes straight to checkout (now for the whole basket); “Add to basket” is the branch. Each bouquet becomes its own order with its own recipient, date, country and florist; the buyer pays once and sees one confirmation. Screens: <code>wireframes/basket-*</code>, the basket passes on <code>checkout-*</code>, <code>confirmation-*</code>, <code>product-*</code> and <code>chrome-*</code>.</p></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">B1</span><b>Product · Add to basket</b></header>
+        <code>/en-gb/poland/product/amber-hour</code>
+        <div class="thumb"><div class="ink"></div><div class="ph2">photo</div><div class="box">Which size? · 18 stems</div><div class="box" style="border-color: var(--color-accent)">Continue, &pound;45.90</div><div class="box">Add to basket</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Buy now (checkout for the whole basket) or keep shopping (“Add to basket”). Both are submits of one form to <code>/api/checkout/start</code> with <code>then=checkout|basket</code>.</dd><dt>Trust</dt><dd><span class="trust">The price on the button is the line's all-in amount; nothing is added later.</span></dd><dt>Reads</dt><dd><code>pickerState()</code>, <code>checkoutEntryFor()</code>; no cookie (the page is ISR and the same for everyone)</dd><dt>Spec</dt><dd>010 AC-5, AC-6</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">B2</span><b>Basket</b></header>
+        <code>/en-gb/basket</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Added to your basket.</div><div class="row2"><div class="box" style="flex:1">Amber Hour · To Poland · &pound;45.90</div></div><div class="row2"><div class="box" style="flex:1">Quiet Blush · To Germany · &pound;33.90</div></div><div class="box">Total · Each price includes VAT and delivery</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Check out, remove a line, or continue shopping (back to the last line's shop). Up to 5 lines; a line that stops being available, or whose date passes, stays visible, out of the total, until the buyer acts.</dd><dt>Trust</dt><dd><span class="trust">One amount per bouquet, one sum, the header count after paint.</span></dd><dt>Reads</dt><dd>the draft and its lines behind <code>fo_checkout</code>, re-derived each render</dd><dt>Index</dt><dd>noindex, nofollow + robots disallow; the header link is <code>rel="nofollow"</code></dd><dt>Spec</dt><dd>010 AC-57, AC-59 to AC-62, AC-72</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">B3</span><b>Step 1 · per bouquet</b></header>
+        <code>/en-gb/checkout?step=recipient&amp;line=2</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Delivery 2 of 3 · Vistula Red</div><div class="box">Who is it for? · saved or new</div><div class="bar"></div><div class="bar"></div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Recipient, place and date for this bouquet; then the next bouquet's step 1. A signed-in buyer may pick a saved recipient or save this one (spec 018 R3).</dd><dt>Trust</dt><dd><span class="trust">“Your basket also has 2 other bouquets” when checkout was opened from a product page.</span></dd><dt>Spec</dt><dd>010 AC-58 · 018 AC-54</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">B4</span><b>Step 2 · per bouquet, you once</b></header>
+        <code>/en-gb/checkout?step=card&amp;line=3</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Delivery 3 of 3 · card</div><div class="box">Your details · Have an account? Sign in</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Card and add-ons for each bouquet; the buyer's own details only on the last one, prefilled when signed in (spec 018 R1, R2). No password, no account step.</dd><dt>Spec</dt><dd>010 AC-58 · 018 AC-50, AC-61</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">B5</span><b>Step 3 · check and pay once</b></header>
+        <code>/en-gb/checkout?step=review</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Delivery 1 · 2 · 3, each with Change</div><div class="box">Of which VAT 8% · 7%</div><div class="box" style="border-color: var(--color-accent)">Place demo order (live: Pay &pound;150.70)</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Place: one transaction writes the purchase and every order, or nothing at all; one charge in <code>live</code>. Then <code>/checkout/done</code> lists every delivery.</dd><dt>Spec</dt><dd>010 AC-63 to AC-68, AC-77</dd></dl>
+      </div>
+    </div>
+    <div class="grp" style="display: flex; flex-direction: column; gap: var(--space-md);">
+      <div style="display: flex; flex-direction: column; gap: 6px;"><span class="label">The account · spec 018 §14 A-founder-2026-10-22 (2026-10-22)</span><h2 class="display" style="margin: 0; font-size: var(--text-2xl); line-height: 1.15;">an account when the buyer wants one</h2><p style="margin:0;font-size:var(--text-sm);color:var(--color-ink-2);max-width:110ch">Optional at every step. Two ways in: the header's Account link (sign in with an emailed link, no password) and one button on the live confirmation that keeps the order with no typing. Screens: <code>wireframes/account-*</code> and <code>email-account-*</code>.</p></div>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <header><span class="i">A1</span><b>Confirmation · Save to my account</b></header>
+        <code>/en-gb/checkout/done</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Thank you. We have your order.</div><div class="box" style="background: var(--color-paper-3)">Keep this order and your details for next time · Save to my account</div><div class="box">Plans changed? You can cancel for free…</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>One press, no field: we email a sign-in link to the order's address, returning to that order.</dd><dt>Trust</dt><dd><span class="trust">Nothing typed, nothing pre-ticked; the cancel line stays last.</span></dd><dt>Spec</dt><dd>018 AC-52</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">A2</span><b>Sign in</b></header>
+        <code>/en-gb/account</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Your account · Email</div><div class="box" style="border-color: var(--color-accent)">Email me a link</div><span>You never need an account to order.</span></div>
+        <dl class="meta"><dt>Decision</dt><dd>Type an email; the page answers the same for every address. The link works once, for one hour.</dd><dt>Index</dt><dd>200 with noindex (crawlable, so Google reads it); sub-pages blocked</dd><dt>Spec</dt><dd>018 AC-48, AC-51</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">A3</span><b>Email · Sign in</b></header>
+        <code>T14</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Your sign-in link</div><div class="acc"></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Open the link; a confirm page posts once. The first sign-in links every earlier guest order with that address.</dd><dt>Spec</dt><dd>018 AC-49, AC-50</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">A4</span><b>Orders · one order</b></header>
+        <code>/en-gb/account/orders/FO-7K2M-9QXA</code>
+        <div class="thumb"><div class="ink"></div><div class="box">Ordered on 6 October · 3 deliveries</div><div class="box">We have your order · Track · Invoice</div><div class="box">Cancel for free</div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Track, download the invoice and credit notes, cancel for free while allowed, keep the recipient for next time.</dd><dt>Spec</dt><dd>018 AC-10, AC-26, AC-28, AC-54</dd></dl>
+      </div>
+      <div class="step">
+        <header><span class="i">A5</span><b>Details · recipients · reminders · privacy</b></header>
+        <code>/en-gb/account/details …</code>
+        <div class="thumb"><div class="ink"></div><div class="row2"><div class="box" style="flex:1">Details</div><div class="box" style="flex:1">Recipients</div></div><div class="row2"><div class="box" style="flex:1">Reminders</div><div class="box" style="flex:1">Privacy</div></div></div>
+        <dl class="meta"><dt>Decision</dt><dd>Prefill for next time, saved people, dated reminders with their own consent, export or delete, sign out everywhere.</dd><dt>Spec</dt><dd>018 AC-53 to AC-60</dd></dl>
+      </div>
     </div>
   </div>
 </div>
