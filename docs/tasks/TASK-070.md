@@ -81,4 +81,32 @@ text and record the ruling, then continue"); none is about money, so none blocks
 
 ## Result
 
-_Pending._
+PR [#324](https://github.com/itsahmeds/flowers-overseas/pull/324). AC-27 and AC-28 met; the PR's
+`## Self-review` carries the AC table, the ten mutations (each red) and the money edge cases.
+
+- **Delivered:** `src/modules/catalog/db/{read,catalogue,price,fx,index}.ts`;
+  `src/modules/catalog/frozen.ts` (shared deep freeze); `withCatalogProviders()` in `providers.ts`;
+  migration `0020_product_facets` (+ down) and its Drizzle mirror; the seed writes the facet columns
+  and `product_occasion`; `check:no-db` leaves `src/modules/catalog/db` out; the contract's
+  `emptyInPlace` fix; the pricing runbook §3.1.
+- **Tests:** integration `catalog-db-providers` (65: the shared contract with exact seeded counts,
+  row-for-row and priced-output equality, the build login, the query counter, the FX-missing,
+  unsafe-integer and missing-name edges, the backfill); unit `catalog-db-read` (12), `catalog-logging` (+1, `catalog.price_ambiguous`),
+  `catalog-barrel` (+1 and the `db/` file list), `no-db-imports` (the catalogue adapter dir).
+- **Local runs:** PG16 (embedded, scratch, stopped by `pg_ctl stop`); the expensive gates are CI's.
+
+### Carry-forwards
+
+- **TASK-294:** select `dbCatalogueProvider` / `dbPriceProvider` by environment in
+  `catalogProviders()`; prove a warm ISR page performs zero queries through `next start` (E3);
+  route `ui/home/trending-provider.ts`'s product name through the barrel (E5); keep the static FX
+  provider until TASK-071 writes `fx_rate` rows.
+- **TASK-297:** the product editor writes the `en` `product_translation` in the same transaction as
+  the product: a product without it makes the database catalogue read fail closed.
+- **Orchestrator:** a spec 002 §5.1 amendment naming `0020`'s four columns (E1).
+- **Later:** a price read scoped to one (product, country) needs an interface change; reconsider
+  if `country_price` grows past a few tens of thousands of rows.
+- From `/review 56`: the `catalog.price_ambiguous` emit test is added here
+  (`tests/unit/catalog-logging.test.ts`, red with the signal removed); `checkSurchargeVatRates`'
+  last-wins baseline over superseded retail rows is a `catalogue:check` gate change outside the
+  providers and stays open.
