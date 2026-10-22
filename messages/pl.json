@@ -162,7 +162,6 @@
     },
     "floristSentence": "Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
     "price": {
-      "allIn": "w tym VAT i dostawa",
       "equivalents": "ok. {amounts} po kursie z {date}",
       "from": "from {price}",
       "inclusive": "w tym VAT i dostawa"
@@ -964,9 +963,6 @@
     "vat": "VAT {rate}"
   },
   "shop": {
-    "card": {
-      "noPrice": "No price here. The price depends on the destination."
-    },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
     },

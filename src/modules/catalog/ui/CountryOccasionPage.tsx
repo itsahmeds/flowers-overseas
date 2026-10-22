@@ -58,7 +58,6 @@ import type { ListingView } from "../listing";
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
   CountryListingResults,
-  GridProvenance,
   ListingChipRow,
   ListingPageHead,
   ListingPhoneNote,
@@ -301,7 +300,7 @@ export function CountryOccasionPage({
                   label={shop("occasion.siblingsHeading", { country })}
                 />
               }
-              gridLabel={<GridProvenance cards={view.items} locale={code} />}
+              gridProvenance={{ cards: view.items, locale: code }}
               afterGrid={
                 firstPage ? (
                   <ListingPhoneNote
@@ -317,7 +316,7 @@ export function CountryOccasionPage({
                   leadItemClassName={`md:absolute md:top-[24px] md:end-0 ${LEAD_BOX}`}
                   locale={code}
                   priority
-                  provenance="md"
+                  provenance="grid"
                 />
               }
               fx={

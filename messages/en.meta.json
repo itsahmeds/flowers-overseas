@@ -935,13 +935,6 @@
     "reviewedBy": "founder, 2026-10-04: ran record-approval-179.py after reading the exact text it printed (tense decision in chat: 'yes use present tense')",
     "reviewedAt": "2026-10-04T18:02:20Z"
   },
-  "catalog.price.allIn": {
-    "source": "human",
-    "reviewed": true,
-    "sourceHash": "059a68d7eeccef41b446c3dfece06b34baced9e8d2fa37a6cc2a47b859acd852",
-    "reviewedBy": "founder, 2026-10-04, in chat: 'ok from my end' (copy batch for TASK-176–179); recorded by the orchestrator on the founder's authorisation (2026-10-04: 'I authorise you to record my approval of the 14-item wording batch as reviewed by me.')",
-    "reviewedAt": "2026-10-03T21:49:22Z"
-  },
   "catalog.price.equivalents": {
     "source": "human",
     "reviewed": true,
@@ -3875,13 +3868,6 @@
     "reviewedBy": "founder (chat, 2026-10-03; PDP batch of 28)",
     "reviewedAt": "2026-10-03T00:00:00Z",
     "sourceHash": "7d1e11c5aab8c80b7e6169b91dcb26aa7cc5930e44260f85665c3553029c81d1"
-  },
-  "shop.card.noPrice": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder, 2026-10-19: ran record-approval-batch5.py (copy batch 5) after reading the exact text it printed",
-    "reviewedAt": "2026-10-19T04:22:38Z",
-    "sourceHash": "df56d1d22013b14a2f19d85f4580b6094f307bc150377c0c4a9363969ae83fa9"
   },
   "shop.cardNote.heading": {
     "source": "human",

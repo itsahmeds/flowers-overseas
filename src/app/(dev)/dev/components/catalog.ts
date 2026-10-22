@@ -92,7 +92,8 @@ export const SECTIONS = [
 /** TASK-175's gallery samples. Developer copy, never shipped on a public page. */
 export const V2_SAMPLES = {
   price: "€55.90",
-  priceQualifier: "all in",
+  priceQualifier: "Includes VAT and delivery",
+  stalePrice: "229.00\u00a0PLN",
   pageQualifier: "Includes VAT and delivery",
   equivalents: "about £47.32 · 238.58 PLN at the rate of 8 September",
   fromPrice: "from €35.90",
@@ -315,11 +316,13 @@ export const LISTING_STATES = {
   cardTile:
     "ProductCard \u00b7 tile \u2014 Phase 0 (\u00a713 Q8): no href on the view model, so no <a> in the DOM. We never link at a URL that 404s, and spec 009's product page does not exist yet.",
   cardNoMoney:
-    "ProductCard \u00b7 no money \u2014 the destination-less hubs only (spec 008 \u00a714 A3): a HubCardView is a ProductCardView with price and priceLabelKey omitted, so the card has nothing to render an amount from. The line stands where the price would be, and the page carries the full sentence once.",
+    "ProductCard \u00b7 no money \u2014 the destination-less hubs only (spec 008 \u00a714 A3): a HubCardView is a ProductCardView with price and priceLabelKey omitted, so the card has nothing to render an amount from. The photograph and the name only; the page carries the full sentence once (spec 004 \u00a714 A-founder-2026-10-19b clause 4).",
   cardLink:
     "ProductCard \u00b7 link \u2014 the day spec 009 publishes the product link id: the same children wrapped in one <a>, and nothing else in the markup changes.",
   gridDesktop:
     "ListingGrid \u2014 a <ul> with an accessible name carrying the count and one <li> per card; Grid columns=2-4, so 2-up at 390 and 4-up at 1440. Twelve products a page, six eager tiles.",
+  gridMixed:
+    "ListingGrid \u00b7 mixed \u2014 two generated photographs and one real one: the example label shows under each generated card from md up, and once above the grid below md (spec 004 \u00a714 A-founder-2026-10-19b clause 3). Every card keeps its label in the HTML.",
   toolbarDefault:
     "ListingToolbar \u00b7 default \u2014 no parameter on the URL, which is why the bare URL is the one canonical. The default order is the founder's curation, labelled plainly, with the ranking disclosure beside it (\u00a713 Q3).",
   toolbarSorted:

@@ -221,9 +221,12 @@ describe("the country occasion page (§5.3 row 2)", () => {
     const cards = html.match(/data-fo-product-card="/gu) ?? [];
     expect(cards.length).toBe(en.items.length);
     expect(cards.length).toBeGreaterThanOrEqual(6);
-    // The card's qualifier is "all in" (founder copy batch, 2026-10-04); the lede keeps the full words.
-    expect(text).toContain("all in");
-    expect(text).toMatch(/VAT and delivery/u);
+    // Each card says "Includes VAT and delivery" beside its one price (spec 004 §14
+    // A-founder-2026-10-19b clause 1; TASK-285); "all in" is retired.
+    expect(
+      text.split("Includes VAT and delivery").length - 1,
+    ).toBeGreaterThanOrEqual(cards.length);
+    expect(text).not.toMatch(/\ball in\b/u);
     expect(en.fxFallback).toBe(true);
     expect(text).toContain("currency of the delivery country");
   });

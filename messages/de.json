@@ -162,7 +162,6 @@
     },
     "floristSentence": "Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
     "price": {
-      "allIn": "inkl. MwSt. und Versand",
       "equivalents": "etwa {amounts} zum Kurs vom {date}",
       "from": "from {price}",
       "inclusive": "inkl. MwSt. und Versand"
@@ -964,9 +963,6 @@
     "vat": "VAT {rate}"
   },
   "shop": {
-    "card": {
-      "noPrice": "No price here. The price depends on the destination."
-    },
     "cardNote": {
       "heading": "Every one of these comes with a card, at no cost."
     },

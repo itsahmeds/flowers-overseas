@@ -122,7 +122,6 @@ import {
 } from "@/modules/ui";
 
 import { copyRow, copyRows } from "./copy";
-import { priceEquivalents } from "./pricing/equivalents";
 import { fromPriceProjection, priceProjection } from "./pricing/project";
 import {
   countProductsFor,
@@ -1034,10 +1033,10 @@ function photoFor(
 
 /**
  * One product card for a country-scoped listing (§2 "The product card contract"): the photo or
- * the placeholder, the name in this locale, and **one** all-in price — the default tier's
+ * the placeholder, the name in this locale, and **one** all-in price, the default tier's
  * `priceProjection().displayPrice`, a payable configuration, with the `catalog.price.inclusive`
- * wording beside it — and, under it, the approximate equivalents of spec 004 §14 A21 clause 6
- * (`priceEquivalents()`, same clock, same snapshot), or no line when the rate is stale.
+ * wording beside it. No approximate equivalents: they are the product page's alone (spec 004 §14
+ * A-founder-2026-10-19b clause 2; TASK-285), and `ProductCardViewSchema` has no field to carry them.
  *
  * `href` is present only when spec 009's `product` link id is published (§13 Q8, AC-12). It is
  * not in `site-links.ts` yet, so the caller passes `productLinks: false` — its default — and
@@ -1051,16 +1050,12 @@ export async function productCardView(
   options: { readonly productLinks?: boolean; readonly now?: Date } = {},
 ): Promise<ProductCardView> {
   const tier = await defaultTier(product.sku);
-  // One clock for the price and its equivalents: the equivalents line must use the charged
-  // price's own FX snapshot (spec 004 §14 A21 clause 6 (b)), so both reads share one instant.
-  const now = options.now ?? new Date();
   const projection = await priceProjection(locale, {
     productId: product.sku,
     tierKey: tier.tierKey,
     countryIso: iso2,
-    now,
+    now: options.now ?? new Date(),
   });
-  const equivalents = await priceEquivalents(projection, now);
   const { photo, provenance } = photoFor(product.sku, locale);
   const slug = slugFor("product", product.sku, locale);
   const href =
@@ -1075,7 +1070,6 @@ export async function productCardView(
     photo,
     price: projection.displayPrice,
     priceLabelKey: PRICE_LABEL_KEY,
-    ...(equivalents === null ? {} : { equivalents }),
     provenance,
   });
 }
@@ -1231,9 +1225,9 @@ export interface ListingViewOptions {
   readonly parameterised?: boolean;
   readonly deployment?: DeploymentDescriptor;
   /**
-   * The one instant every card's price and its equivalents line are evaluated at (spec 004 §14
-   * A21 clause 6 (b); TASK-178). A test passes a fixed one, because the committed FX snapshot
-   * ages; the route passes none and the render's own clock is read once.
+   * The one instant every card's price is evaluated at (spec 004 §14 A21 clause 6 (b); TASK-178).
+   * A test passes a fixed one, because the committed FX snapshot ages; the route passes none and
+   * the render's own clock is read once.
    */
   readonly now?: Date;
 }
@@ -1439,10 +1433,10 @@ export async function listingView(
   if (!(await listingExists(identity))) return undefined;
 
   /*
-   * **One clock for the whole view.** The cards, their equivalents, the page's stale-rate
-   * sentence, the category tiles' from-prices and the default date window all read this single
-   * instant. Two readings could straddle the 48-hour FX bound and render cards with equivalents
-   * under a sentence saying the rate is stale, or tiles in one currency beside cards in another
+   * **One clock for the whole view.** The cards' prices, the page's stale-rate sentence, the
+   * category tiles' from-prices and the default date window all read this single instant. Two
+   * readings could straddle the 48-hour FX bound and render cards converted at a rate under a
+   * sentence saying the rate is stale, or tiles in one currency beside cards in another
    * (`/break` round 2 holes 4 and 5 on PR 169).
    */
   const now = options.now ?? new Date();

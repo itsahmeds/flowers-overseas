@@ -148,7 +148,9 @@ describe("a hub carries no money, and the type is what says so (AC-7, §14 A3)",
       const text = textOf(html);
       expect(text).not.toMatch(MONEY);
       expect(text).toContain("We show no price on this page");
-      expect(text).toContain("The price depends on the destination.");
+      // Said once for the page; no card repeats it (spec 004 §14 A-founder-2026-10-19b clause 4).
+      expect(text.split("We show no price on this page").length - 1).toBe(1);
+      expect(text).not.toContain("The price depends on the destination.");
       // Every card on the page is on the priceless branch, and there are cards.
       const cards = html.match(/data-fo-product-card-money="none"/gu) ?? [];
       expect(cards).toHaveLength(view.hubItems.length);

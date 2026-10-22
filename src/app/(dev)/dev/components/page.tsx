@@ -49,6 +49,7 @@ import {
   OccasionTiles,
   Label,
   ListingEmpty,
+  GridProvenance,
   ListingGrid,
   ListingToolbar,
   Mark,
@@ -293,6 +294,28 @@ const GALLERY_LISTING_CARDS: readonly ProductCardView[] = [
   ...galleryCard(state as "image" | "placeholder" | "tile" | "link"),
   productId: `gallery-grid-${state}`,
 }));
+
+/**
+ * A **mixed** grid (spec 004 §14 A-founder-2026-10-19b clause 3; spec 008 T-06 amended; TASK-285):
+ * two generated photographs and one real one, so the grid owes its example label per card from
+ * `md` up and once for the grid below `md`. No catalogue listing mixes them yet (every committed
+ * photograph is an example), so this is the fixture T-06's mixed-grid case reads in a browser.
+ */
+const GALLERY_MIXED_CARDS: readonly ProductCardView[] = [
+  { ...galleryCard("image"), productId: "gallery-mixed-ai-1" },
+  {
+    ...galleryCard("tile"),
+    productId: "gallery-mixed-photo",
+    photo: {
+      kind: "asset",
+      assetId: GALLERY_PHOTO_ASSET,
+      alt: GALLERY_MEDIA_MANIFEST.alt["en"]?.[GALLERY_PHOTO_ASSET] ?? "",
+      slot: "grid",
+    },
+    provenance: "photo",
+  },
+  { ...galleryCard("link"), productId: "gallery-mixed-ai-2" },
+];
 
 /**
  * The `FooterView` each of the five §5.3 states is rendered from (TASK-049). `links-populated`
@@ -1069,6 +1092,23 @@ export default function DevComponentsPage(): ReactElement {
                   />,
                 ],
                 [
+                  "gridMixed",
+                  <Stack gap="sm" key="grid-mixed">
+                    <GridProvenance
+                      cards={GALLERY_MIXED_CARDS}
+                      locale={galleryLocale}
+                      manifest={GALLERY_MEDIA_MANIFEST}
+                    />
+                    <ListingGrid
+                      cards={GALLERY_MIXED_CARDS}
+                      headingLevel="h3"
+                      locale={galleryLocale}
+                      manifest={GALLERY_MEDIA_MANIFEST}
+                      provenance="grid"
+                    />
+                  </Stack>,
+                ],
+                [
                   "toolbarDefault",
                   <ListingToolbar
                     id="gallery-sort-default"
@@ -1387,13 +1427,14 @@ export default function DevComponentsPage(): ReactElement {
               </Text>
             </Cluster>
             <Cluster gap="xl">
+              {/* The card: one price and its inclusive words, never an equivalents line (spec 004
+                  §14 A-founder-2026-10-19b clause 2); at a fresh rate and at a stale one. */}
               <Price
                 amount={V2_SAMPLES.price}
                 qualifier={V2_SAMPLES.priceQualifier}
-                equivalents={V2_SAMPLES.equivalents}
               />
               <Price
-                amount={V2_SAMPLES.price}
+                amount={V2_SAMPLES.stalePrice}
                 qualifier={V2_SAMPLES.priceQualifier}
               />
               <Price

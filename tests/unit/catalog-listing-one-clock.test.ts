@@ -4,7 +4,7 @@
  *
  * No route passes `now` to `listingView()`, so in production the view reads the wall clock itself.
  * If it read it twice, once for the cards and once for the page's stale-rate sentence, a request
- * that straddled the 48-hour FX bound would render cards carrying equivalents under a sentence
+ * that straddled the 48-hour FX bound would render cards converted at a rate under a sentence
  * saying the rate is stale: a false statement about the price shown. Likewise the category tiles'
  * from-prices must be projected at the cards' instant, or an injected fresh clock prints the cards
  * in euros and the tiles in złoty.
@@ -60,17 +60,20 @@ describe("a view built without `now` reads the clock once (hole 4)", () => {
     expect(view).toBeDefined();
     const cards = view!.items;
     expect(cards.length).toBeGreaterThan(0);
-    const withLine = cards.filter((card) => card.equivalents !== undefined);
-    // Either every card carries the line and the page says nothing about a stale rate, or no
-    // card carries it and the page says which currency it quotes. Never both.
+    // `/en` over Poland converts every card from złoty at a fresh rate and falls back to złoty
+    // at a stale one (a card carries no equivalents since spec 004 §14 A-founder-2026-10-19b
+    // clause 2, so the converted price is what straddling the bound would split). Either every
+    // card is in euros and the page says nothing about a stale rate, or every card is in złoty
+    // and the page says which currency it quotes. Never both.
+    const converted = cards.filter((card) => card.price.currency === "EUR");
     if (view!.fxFallback) {
-      expect(withLine).toHaveLength(0);
+      expect(converted).toHaveLength(0);
     } else {
-      expect(withLine).toHaveLength(cards.length);
+      expect(converted).toHaveLength(cards.length);
     }
     // And the one reading was the current one: the view is the fresh state.
     expect(view!.fxFallback).toBe(false);
-    expect(withLine).toHaveLength(cards.length);
+    expect(converted).toHaveLength(cards.length);
     expect(clock.readings()).toBeGreaterThan(0);
   });
 });

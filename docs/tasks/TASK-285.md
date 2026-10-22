@@ -53,7 +53,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: dispatched as **two PRs in order** (orchestrator's work order of 2026-10-22 overrides the 2026-10-20 carry-forward above): this PR closes TASK-285 only; TASK-290 follows on its own branch. Built clauses 1 to 4: card qualifier `catalog.price.inclusive` (leaf, beside from `md`, under below `md`); `equivalents` gone from `ProductCardViewSchema` and from `productCardView()`; `gridProvenanceMode()` + `GridProvenance` (one element per grid; `all` at every width on the count line's row / the hubs' heading row, `mixed` below `md` only); `ListingGrid provenance="grid"` hides each card's own label (`hidden` in an all-example grid, `max-md:hidden` in a mixed one and on the lead); hub cards print nothing in the price slot; `catalog.price.allIn` and `shop.card.noPrice` deleted in en/de/pl and meta. The toolbar band's disclosure now sits on row 2 from `md` up at every width (it shared row 1 at `lg`), because the label joins the count line (the artboards' note). Mixed-grid fixture for T-06: `/dev/components` state `gridMixed` (A8 (b)'s choice). Unit tests green; next: push, CI, visual baselines.
 
 ## Result
 

@@ -239,6 +239,11 @@ describe("src/modules/ui barrel", () => {
         "LISTING_SORTS",
         "ListingEmpty",
         "ListingGrid",
+        // spec 004 §14 A-founder-2026-10-19b clause 3 (TASK-285): where a grid's example label
+        // is displayed, asked alike by the grid and by the page that places the label.
+        "GRID_PROVENANCE_MODES",
+        "GridProvenance",
+        "gridProvenanceMode",
         "ListingSortSchema",
         // TASK-187 (spec 004 A23 R8, A10): the sort form on its own, placed under the grid as
         // "Change the order" on the shop root and the country category. A Server Component GET
@@ -253,7 +258,7 @@ describe("src/modules/ui barrel", () => {
         "PriceLabelKeySchema",
         "PriceNoteKeySchema",
         // spec 004 §14 A21 clause 6 (TASK-178): the equivalents line's shape and its message
-        // values, shared by the card and the product page.
+        // values, the product page's only since A-founder-2026-10-19b clause 2 (TASK-285).
         "PriceEquivalentsViewSchema",
         "equivalentsMessageValues",
         "ProductCard",

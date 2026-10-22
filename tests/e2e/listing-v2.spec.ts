@@ -3,22 +3,21 @@
  * amended, AC-7; TASK-178).
  *
  * What a browser can see that the unit suite cannot: the served page, in each locale, has one
- * `<h1>` in the v2 intro, one priced grid, and the equivalents line in whichever FX state the
- * served build is in (A21 clause 6 (b)–(d)).
+ * `<h1>` in the v2 intro, one priced grid, and **no** equivalents line on any card in either FX
+ * state (spec 004 §14 A-founder-2026-10-19b clause 2, TASK-285: the line is the product page's
+ * alone), with the stale state's fallback sentence where a price was converted.
  *
  * Which state, read from the server rather than assumed: since spec 005 §14 A7 (TASK-180/181) a
  * build serves the ECB file it fetched or the committed snapshot, and `/api/health` reports which
  * (`fxAsOf`). The test asks it, applies the same weekday age rule the pages apply
  * (`isFxRateStaleAt`, AC-35), and asserts that state's half:
  *
- *  - **stale** (CI's test builds, which keep the committed 2026-09-08 snapshot): no card carries a
- *    line, and a converted page says once which currency it is quoting;
- *  - **fresh** (a build that fetched the day's rate): exactly one line per priced card, and no
- *    fallback sentence.
+ *  - **stale** (CI's test builds, which keep the committed 2026-09-08 snapshot): a converted page
+ *    says once which currency it is quoting;
+ *  - **fresh** (a build that fetched the day's rate): no fallback sentence.
  *
  * Both halves are also asserted page by page over a fixed clock in
- * `tests/unit/catalog-listing-pages-equivalents.test.tsx`. Neither state ever puts the line into
- * JSON-LD.
+ * `tests/unit/catalog-listing-card-price.test.tsx`. Neither state ever puts the line into JSON-LD.
  */
 import { expect, test } from "@playwright/test";
 
@@ -39,7 +38,7 @@ const HUBS = [
 ] as const;
 
 for (const [locale, url, native] of SHOP_ROOTS) {
-  test(`${locale}: the shop root renders the v2 intro and the equivalents line of the served FX state`, async ({
+  test(`${locale}: the shop root renders the v2 intro, no equivalents line, and the served FX state`, async ({
     page,
     request,
   }) => {
@@ -64,18 +63,15 @@ for (const [locale, url, native] of SHOP_ROOTS) {
       .locator("[data-fo-product-card-money='priced']")
       .count();
     expect(cards).toBeGreaterThan(0);
+    // No line on any card in either state (A-founder-2026-10-19b clause 2).
+    await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(0);
     if (stale) {
-      // No line anywhere; a converted page says once which currency it is quoting, and a native
-      // page (`/pl`) converted nothing, so it has no fallback to announce.
-      await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(0);
+      // A converted page says once which currency it is quoting, and a native page (`/pl`)
+      // converted nothing, so it has no fallback to announce.
       await expect(page.locator("main [data-fo-fx-fallback]")).toHaveCount(
         native ? 0 : 1,
       );
     } else {
-      // One line under every priced card, and nothing to fall back from.
-      await expect(page.locator("[data-fo-price-equivalents]")).toHaveCount(
-        cards,
-      );
       await expect(page.locator("main [data-fo-fx-fallback]")).toHaveCount(0);
     }
 

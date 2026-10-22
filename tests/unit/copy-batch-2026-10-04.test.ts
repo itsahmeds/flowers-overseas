@@ -30,7 +30,8 @@ const APPROVED: Readonly<Record<string, string>> = {
   "catalog.addon.card.description":
     "Your message, printed on our card and tucked into the bouquet.",
   "catalog.addon.card.name": "Printed card",
-  "catalog.price.allIn": "all in",
+  // `catalog.price.allIn` ("all in") left this batch: spec 004 §14 A-founder-2026-10-19b clause 1
+  // retired it from every card and deleted the key (TASK-285).
   "catalog.price.equivalents": "about {amounts} at the rate of {date}",
   "company.support.hours":
     "Message us any time, 24/7 — we reply within a few hours.",

@@ -11,8 +11,9 @@
  *  - the rate's `as_of` through `formatDate`'s `dayMonth` style in UTC, because an `as_of` is a
  *    calendar day, not an instant, and UTC midnight is that day everywhere `formatDate` is asked.
  *
- * Shared by the product card (TASK-178) and the product page (TASK-179), so the line reads the
- * same wherever a destination-specific price carries it. Pure: no clock, no `Intl` of its own.
+ * Used by the product page (TASK-179), the one place the line is printed since spec 004 §14
+ * A-founder-2026-10-19b clause 2 took it off the cards (TASK-285). Pure: no clock, no `Intl`
+ * of its own.
  */
 import type { LocaleCode } from "@/config/locales";
 import { formatDate, formatList, formatMoney } from "@/modules/i18n";

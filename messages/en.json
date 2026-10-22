@@ -398,8 +398,7 @@
     "price": {
       "inclusive": "Includes VAT and delivery",
       "from": "from {price}",
-      "equivalents": "about {amounts} at the rate of {date}",
-      "allIn": "all in"
+      "equivalents": "about {amounts} at the rate of {date}"
     },
     "availability": {
       "inStock": "Available to order",
@@ -764,9 +763,6 @@
       "shopRootLink": "Flowers for {country}",
       "seoTitle": "{occasion} flowers for {country}: {country}'s own date for it",
       "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet."
-    },
-    "card": {
-      "noPrice": "No price here. The price depends on the destination."
     },
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."

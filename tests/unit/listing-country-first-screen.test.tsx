@@ -243,7 +243,7 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
     }
   });
 
-  it('prices every card through `formatMoney` with "all in" beside it, in the same card', () => {
+  it('prices every card through `formatMoney` with "Includes VAT and delivery" beside it, in the same card', () => {
     for (const [page, subject] of [
       [<CountryCategoryPage key="c" view={roses} />, roses],
       [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot],
@@ -263,9 +263,10 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
           " ",
         );
         expect(body, card.productId).toContain(price);
-        // Never a bare number: the marker follows the price inside the same card.
+        // Never a bare number: the inclusive words follow the price inside the same card
+        // (spec 004 §14 A-founder-2026-10-19b clause 1; TASK-285).
         expect(body.slice(body.indexOf(price)), card.productId).toMatch(
-          /^\S[^]*?all in/u,
+          /^\S[^]*?Includes VAT and delivery/u,
         );
       });
     }
@@ -299,7 +300,7 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
     );
   });
 
-  it('prints the "Example arrangement" label once above the grid for the phone, and keeps every card\'s', () => {
+  it('prints the "Example arrangement" label once above the grid, at every width, and keeps every card\'s hidden', () => {
     for (const [page, subject] of [
       [<CountryCategoryPage key="c" view={roses} />, roses],
       [<CountryShopRootPage key="s" view={shopRoot} />, shopRoot],
@@ -312,11 +313,19 @@ describe("spec 004 T-49, unit half: no lead figure on two types, the state line 
       expect(readable(html.slice(slot, grid)), subject.path).toContain(
         "Example arrangement",
       );
-      // The per-card labels stay in the HTML (spec 008 §14 A16 (a)), hidden only by CSS below `md`.
+      // One grid label element (spec 004 §14 A-founder-2026-10-19b clause 3; TASK-285).
       expect(
-        html.match(/data-fo-card-provenance="md"/gu)?.length ?? 0,
+        html.match(/data-fo-grid-provenance=/gu)?.length ?? 0,
         subject.path,
-      ).toBeGreaterThan(0);
+      ).toBe(1);
+      // The per-card labels stay in the HTML, hidden by CSS at every width in an all-example grid.
+      expect(
+        html.match(/data-fo-card-provenance="hidden"/gu)?.length ?? 0,
+        subject.path,
+      ).toBe(
+        subject.items.filter((item) => item.photo.kind === "asset").length,
+      );
+      expect(html, subject.path).not.toContain('data-fo-card-provenance="md"');
     }
   });
 });

@@ -49,6 +49,7 @@ import type { ReactElement } from "react";
 
 import { sortBy } from "@/modules/i18n";
 import {
+  GridProvenance,
   Container,
   Display,
   Eyebrow,
@@ -212,16 +213,28 @@ export function OccasionHubPage({ view }: OccasionHubPageProps): ReactElement {
         >
           {/* The phone draws the grid straight under the chip row: the heading stays for the
               outline and is shown from `md` up. */}
-          <div className="mb-[28px] max-md:sr-only md:mb-[48px]">
-            <Eyebrow className="mb-[14px]">{hub("productsEyebrow")}</Eyebrow>
-            <Display as="h2" id="hub-products-heading" size="2xl">
-              {emphasise(productsHeading, entity)}
-            </Display>
+          {/* The grid's heading row: the heading on the start side (shown from `md` up) and the
+              grid's one example label on the end side (spec 004 §14 A-founder-2026-10-19b
+              clause 3; the hub artboards' item 7A). Below `md` the label is the line between the
+              destination chips and the first row. */}
+          <div className="md:mb-[48px] md:flex md:flex-wrap md:items-end md:justify-between md:gap-x-[40px] md:gap-y-[16px]">
+            <div className="max-md:sr-only">
+              <Eyebrow className="mb-[14px]">{hub("productsEyebrow")}</Eyebrow>
+              <Display as="h2" id="hub-products-heading" size="2xl">
+                {emphasise(productsHeading, entity)}
+              </Display>
+            </div>
+            <GridProvenance
+              cards={view.hubItems}
+              className="max-md:mb-[14px]"
+              locale={code}
+            />
           </div>
           <ListingGrid
             cards={view.hubItems}
             locale={code}
             priority
+            provenance="grid"
             {...(lead === undefined ? {} : { priorityAt: "below-md" as const })}
           />
         </section>

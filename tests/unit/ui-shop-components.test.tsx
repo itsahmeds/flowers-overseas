@@ -130,10 +130,12 @@ describe("ProductCard: the four states of the sheet's first row", () => {
     expect(textOf(link)).toBe(textOf(tile));
   });
 
-  it("shows one all-in price, through formatMoney, with `all in` beside it (de/pl: the legal formula)", () => {
+  it("shows one all-in price, through formatMoney, with the inclusive words beside it (de/pl: the legal formula)", () => {
     const html = render(<ProductCard card={CARD} locale="en-gb" />, "en-gb");
     expect(html).toContain("£46.90");
-    expect(textOf(html)).toContain("all in");
+    // Spec 004 §14 A-founder-2026-10-19b clause 1 (TASK-285): `catalog.price.inclusive`.
+    expect(textOf(html)).toContain("Includes VAT and delivery");
+    expect(textOf(html)).not.toMatch(/\ball in\b/u);
     // German and Polish price display keeps the VAT-and-delivery formula beside the card price.
     expect(
       textOf(render(<ProductCard card={CARD} locale="de" />, "de")),

@@ -64,13 +64,14 @@ export const PriceNoteKeySchema = z.enum(PRICE_NOTE_KEYS);
 const NonEmpty = z.string().min(1);
 
 /**
- * The approximate equivalents under a card price (spec 004 §14 A21 clause 6; TASK-178): the
- * rate's `as_of` and one to three amounts in the *other* currencies of {EUR, GBP, PLN, USD}.
+ * The approximate equivalents of a destination-specific price (spec 004 §14 A21 clause 6; TASK-178):
+ * the rate's `as_of` and one to three amounts in the *other* currencies of {EUR, GBP, PLN, USD}.
  *
+ * **The product page only** (spec 004 §14 A-founder-2026-10-19b clause 2; TASK-285): its price
+ * and its summary carry the line; no card does, and `ProductCardViewSchema` has no field for one.
  * `catalog`'s `priceEquivalents()` computes it; the schema only checks the shape a renderer may
- * rely on — integer `Money`, at most three, no currency twice. That the charged currency is not
- * among them is a refinement on the card (`ProductCardViewSchema`), because only the card knows
- * which currency was charged. Absent means **no line at all** (a stale rate, the fallback).
+ * rely on: integer `Money`, at most three, no currency twice. Absent means **no line at all** (a
+ * stale rate, the fallback).
  */
 export const PriceEquivalentsViewSchema = z
   .object({
@@ -135,24 +136,17 @@ const ProductCardFieldsSchema = z
     photo: ProductCardPhotoSchema,
     price: MoneySchema,
     priceLabelKey: PriceLabelKeySchema,
-    /** A21 clause 6: the approximate equivalents under the price, or absent (no line). */
-    equivalents: PriceEquivalentsViewSchema.optional(),
     provenance: ProductProvenanceSchema,
   })
   .strict();
 
-export const ProductCardViewSchema = ProductCardFieldsSchema.refine(
-  (card) =>
-    card.equivalents === undefined ||
-    card.equivalents.amounts.every(
-      (amount) => amount.currency !== card.price.currency,
-    ),
-  {
-    error:
-      "the equivalents line never repeats the charged currency (spec 004 §14 A21 clause 6 (b))",
-    path: ["equivalents"],
-  },
-);
+/**
+ * **One price, and nothing to print a second from** (spec 004 §14 A-founder-2026-10-19b clause 2;
+ * spec 008 AC-6 as amended; TASK-285). The card's shape has no `equivalents` field: the other
+ * currencies live on the product page only, and a projection that hands a card an equivalents
+ * object fails here, at the boundary, because the object is `.strict()`.
+ */
+export const ProductCardViewSchema = ProductCardFieldsSchema;
 export type ProductCardView = z.infer<typeof ProductCardViewSchema>;
 
 /**
@@ -172,7 +166,6 @@ export type ProductCardView = z.infer<typeof ProductCardViewSchema>;
 export const HubCardViewSchema = ProductCardFieldsSchema.omit({
   price: true,
   priceLabelKey: true,
-  equivalents: true,
 });
 export type HubCardView = z.infer<typeof HubCardViewSchema>;
 

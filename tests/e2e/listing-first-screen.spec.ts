@@ -11,7 +11,8 @@
  *   outside the viewport (a lead figure restored above the grid pushes the row down);
  * - the state line: text that is not the message for the `data-fo-listing-state-line` state the
  *   server rendered, a line not directly under the H1 at 390, or no line;
- * - the price marker: a card's price with no "all in" in the same card (a bare number);
+ * - the price marker: a card's price with no "Includes VAT and delivery" (`catalog.price.inclusive`,
+ *   spec 004 §14 A-founder-2026-10-19b clause 1) in the same card (a bare number);
  * - AC-45: a band of the first viewport over 120 px tall with no text, image or control in it, and
  *   any rotated element or `aria-hidden` element 48 px or larger;
  * - C3 (spec 008 §14 A-founder-2026-10-14c, AC-33, T-37; TASK-241, which withdrew T-36): a sort
@@ -124,9 +125,9 @@ async function firstRow(
         (card) => Math.abs(card.getBoundingClientRect().top - (first ?? 0)) < 1,
       )
       .map((card) => {
-        // The price is the amount with its "all in" (the `Price` primitive's first line). The
-        // approximate-equivalents line under it (spec 004 §14 A21 clause 6) is a separate line,
-        // as the TASK-187 brief lists "price, `catalog.price.allIn` and the equivalents line".
+        // The price is the amount with its inclusive words (the `Price` primitive's first child:
+        // beside the amount from `md` up, on the next line below `md`; spec 004 §14
+        // A-founder-2026-10-19b, item 7A). No card carries an equivalents line any more.
         const price = card.querySelector<HTMLElement>(
           "[data-fo-price] > :first-child",
         );
@@ -251,11 +252,14 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
             expect(card.bottom, `${card.id} price bottom`).toBeLessThanOrEqual(
               size.height + 0.5,
             );
-            expect(card.price, `${card.id} price`).toContain("all in");
+            expect(card.price, `${card.id} price`).toContain(
+              "Includes VAT and delivery",
+            );
           }
         }
 
-        // Every card's price has "all in" beside it, in the same card, at every width.
+        // Every card's price has its inclusive words beside it, in the same card, at every width,
+        // and no card carries an equivalents line (A-founder-2026-10-19b clauses 1 and 2).
         const cards = page.locator("main article[data-fo-product-card]");
         const count = await cards.count();
         expect(count).toBe(url === OCCASION ? 7 : 12);
@@ -263,7 +267,12 @@ test.describe("rebound AC-34 (T-49): the first screen of the three country types
           const price = cards.nth(index).locator("[data-fo-price]");
           await expect(price).toBeVisible();
           // Rendered text, so a marker hidden by CSS below `md` counts as absent (T-49).
-          await expect(price).toContainText("all in", { useInnerText: true });
+          await expect(price).toContainText("Includes VAT and delivery", {
+            useInnerText: true,
+          });
+          await expect(
+            cards.nth(index).locator("[data-fo-price-equivalents]"),
+          ).toHaveCount(0);
         }
 
         // Each product's URL once in `<main>` (AC-31).

@@ -33,12 +33,11 @@ import {
   Eyebrow,
   FromPriceChip,
   HorizontalScroller,
-  MediaProvenanceNote,
+  GridProvenance,
   Text,
   TextLink,
-  needsAiProvenanceNote,
   type CategoryTileView,
-  type ProductCardView,
+  type GridProvenanceProps,
 } from "@/modules/ui";
 
 /**
@@ -241,7 +240,8 @@ export function ListingCount({
   readonly disclosure: string;
   /**
    * The full VAT-and-delivery wording, once for the page, where the page's lede does not already
-   * carry it: the cards say only "all in" (the founder's copy batch).
+   * carry it (each card also says "Includes VAT and delivery" beside its price since spec 004
+   * §14 A-founder-2026-10-19b clause 1).
    */
   readonly inclusive?: string;
 }): ReactElement {
@@ -760,7 +760,7 @@ export function ListingCategoriesToggle({
   if (chips.length === 0) return null;
   return (
     <details
-      className="group col-start-1 row-start-3 self-end open:col-span-full open:row-start-4 supports-[selector(::details-content)]:contents md:col-start-3 md:row-start-1 md:self-center md:open:row-start-3 lg:open:row-start-2 [&::details-content]:col-span-full [&::details-content]:row-start-4 md:[&::details-content]:row-start-3 lg:[&::details-content]:row-start-2 [&:not([open])::details-content]:hidden"
+      className="group col-start-1 row-start-3 self-end open:col-span-full open:row-start-4 supports-[selector(::details-content)]:contents md:col-start-3 md:row-start-1 md:self-center md:open:row-start-3 [&::details-content]:col-span-full [&::details-content]:row-start-4 md:[&::details-content]:row-start-3 [&:not([open])::details-content]:hidden"
       data-fo-listing-categories
     >
       <summary className="text-ink text-ui hover:bg-surface-raised col-start-1 row-start-3 flex min-h-(--control-sm) w-fit cursor-pointer list-none items-center gap-[8px] self-end rounded-full px-[16px] font-bold whitespace-nowrap shadow-[inset_0_0_0_1.5px_var(--color-ink)] max-md:mb-[14px] md:col-start-3 md:row-start-1 md:self-center [&::-webkit-details-marker]:hidden">
@@ -816,8 +816,12 @@ export interface CountryListingResultsProps {
    * under the count-and-sort row.
    */
   readonly toolbar: "band" | "column";
-  /** The once-per-grid "Example arrangement" label shown below `md` (spec 008 §14 A16 (a)). */
-  readonly gridLabel?: ReactNode;
+  /**
+   * The grid's cards, for its one "Example arrangement" label (spec 004 §14
+   * A-founder-2026-10-19b clause 3): the same cards the page hands `ListingGrid` with
+   * `provenance="grid"`, so the label and the cards' own labels answer one question.
+   */
+  readonly gridProvenance?: GridProvenanceProps;
   readonly grid: ReactNode;
   /**
    * Directly after the grid's last card, before the fx line and the pager: the country occasion's
@@ -838,27 +842,28 @@ export interface CountryListingResultsProps {
 const TOOLBAR_PLACEMENT = {
   band: { chips: "md:hidden", rowGap: "gap-y-sm" },
   column: {
-    chips: "md:col-span-full md:row-start-3 md:pt-[4px] lg:row-start-2",
+    chips: "md:col-span-full md:row-start-3 md:pt-[4px]",
     rowGap: "gap-y-[10px]",
   },
 } as const;
 
 /**
  * The results block of the three country listings (spec 008 §14 A-founder-2026-10-14c, the
- * founder's C3 ruling, AC-33; TASK-241). One order in the DOM at every width:
+ * founder's C3 ruling, AC-33; TASK-241; the grid label of spec 004 §14 A-founder-2026-10-19b
+ * clause 3, TASK-285). One order in the DOM at every width:
  *
  * ```
- * count · disclosure · chip row · sort form  ·  label (phone) · grid  ·  fx  ·  pager
+ * count · label · disclosure · chip row · sort form  ·  grid  ·  fx  ·  pager
  * ```
  *
- * Below `md` each part is its own line, as the phone artboards draw them. From `md` up the count
- * and the sort form share one row (count on the start side, sort on the end side), the disclosure
- * between them from `lg` and on its own line under them before; the occasion's chip line sits
- * under that row. The country category passes no chip line: at every width its chips fold into a
- * "Categories" button before the sort form, on the sort form's row (with the count from `md` up),
- * and the opened panel takes a full-width row under it (A-founder-2026-10-15c). All of it ends
- * above the grid. Nothing that sorts or narrows the list follows it, and the ranking
- * disclosure is visible above the grid at every width (§8 L240).
+ * Below `md` each part is its own line, as the phone artboards draw them, and the grid's label is
+ * the band's last line (CSS `order`), between the count line and the first row. From `md` up the
+ * count and the label share the count line's row (item 7A), with the sort form on the end side;
+ * the disclosure wraps to its own line under them at every width, and the occasion's chip line
+ * and the category's opened panel sit under that. The country category passes no chip line: at
+ * every width its chips fold into a "Categories" button before the sort form, on the sort form's
+ * row (A-founder-2026-10-15c). All of it ends above the grid. Nothing that sorts or narrows the
+ * list follows it, and the ranking disclosure is visible above the grid at every width (§8 L240).
  */
 export function CountryListingResults({
   count,
@@ -867,7 +872,7 @@ export function CountryListingResults({
   chipsToggle,
   sortForm,
   toolbar,
-  gridLabel,
+  gridProvenance,
   grid,
   afterGrid,
   fx,
@@ -881,20 +886,31 @@ export function CountryListingResults({
         className={`md:border-rule grid ${place.rowGap} md:items-center md:gap-x-[20px] md:gap-y-[6px] md:border-b md:py-[6px] lg:gap-y-0 ${toggled ? "grid-cols-[auto_minmax(0,1fr)] gap-x-[12px] md:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-1 md:grid-cols-[auto_minmax(0,1fr)_auto]"}`}
         data-fo-listing-toolbar-band
       >
-        <p
-          className="col-span-full md:col-span-1 md:col-start-1 md:row-start-1"
-          data-fo-listing-count
+        {/* The count line's row (item 7A): the count and, from `md` up, the grid's one label
+            beside it. Below `md` the row dissolves (`display: contents`) so the count is the
+            band's first line and the label, by `order`, its last. */}
+        <div
+          className="contents md:col-span-1 md:col-start-1 md:row-start-1 md:flex md:flex-wrap md:items-baseline md:gap-x-[16px] md:gap-y-[2px]"
+          data-fo-listing-count-row
         >
-          <Text as="span" size="sm" tone="muted" className="md:hidden">
-            {count.phone}
-          </Text>
-          <Text as="span" size="md" className="display text-md max-md:hidden">
-            {count.desktop}
-          </Text>
-        </p>
+          <p className="col-span-full" data-fo-listing-count>
+            <Text as="span" size="sm" tone="muted" className="md:hidden">
+              {count.phone}
+            </Text>
+            <Text as="span" size="md" className="display text-md max-md:hidden">
+              {count.desktop}
+            </Text>
+          </p>
+          {gridProvenance === undefined ? null : (
+            <GridProvenance
+              {...gridProvenance}
+              className="order-last col-span-full max-md:mt-[6px]"
+            />
+          )}
+        </div>
         {/* The hook sits on a plain wrapper, because `Text` forwards no `data-*` attribute. */}
         <div
-          className="col-span-full -mt-[6px] max-w-[70ch] md:row-start-2 md:mt-0 lg:col-span-1 lg:col-start-2 lg:row-start-1"
+          className="col-span-full -mt-[6px] max-w-[70ch] md:row-start-2 md:mt-0"
           data-fo-listing-disclosure
         >
           <Text as="p" size="xs" tone="subtle" className="md:text-sm">
@@ -921,11 +937,6 @@ export function CountryListingResults({
           {sortForm}
         </div>
       </div>
-      {gridLabel === undefined ? null : (
-        <div className="mt-[14px] md:hidden" data-fo-grid-provenance>
-          {gridLabel}
-        </div>
-      )}
       <div className="mt-[12px] md:mt-[16px]" data-fo-listing-grid-slot>
         {grid}
       </div>
@@ -965,23 +976,4 @@ export function ListingPageHead({
       </Display>
     </div>
   );
-}
-
-/**
- * The phone's "Example arrangement" label, **once per grid** (spec 008 §14 A16 (a)): rendered only
- * where at least one card of this grid shows an `ai` asset (`MediaProvenanceNote` decides, from the
- * same manifest), placed by the page directly above the grid and shown below `md` only.
- */
-export function GridProvenance({
-  cards,
-  locale,
-}: {
-  readonly cards: readonly ProductCardView[];
-  readonly locale: LocaleCode;
-}): ReactElement | null {
-  const assetIds = cards.flatMap((card) =>
-    card.photo.kind === "asset" ? [card.photo.assetId] : [],
-  );
-  if (!needsAiProvenanceNote(assetIds, locale)) return null;
-  return <MediaProvenanceNote assetIds={assetIds} locale={locale} />;
 }
