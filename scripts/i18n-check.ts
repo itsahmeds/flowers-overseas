@@ -10,7 +10,7 @@
  *
  * ```
  * pnpm i18n:check [--messages-dir messages] [--src src] [--registry <file.json>]
- *                   [--scope <file.json>] [--summary]
+ *                   [--scope <file.json>] [--policy <file.json>] [--summary]
  * ```
  *
  * Exit 0 when the tree is clean; exit 1 with one line per problem otherwise. The flags exist so
@@ -41,8 +41,9 @@
  *    pair, or adds a second one, fails like a dropped argument.
  * 5. **Redundant overrides** — `en-gb` is a *thin* override (§13 Q5): a key whose value is
  *    byte-identical to the value it would inherit is noise that hides the real diff. Only locales
- *    that share their fallback's primary language are subject to it: `de` echoing English is
- *    honest machine-draft debt, counted by `unreviewedShare()`, not redundancy.
+ *    that share their fallback's primary language are subject to it. A `de` or `pl` value equal to
+ *    `en`'s is not redundancy but an undrafted key, and check 10 reports it (spec 003 §14 A15
+ *    retired the "honest machine-draft debt" reading).
  * 6. **Meta-manifest completeness** — a catalogue file implies a manifest file; every key in a
  *    catalogue has a review record; no record describes a key that is not there.
  * 7. **Stale `sourceHash`** — every record's `sourceHash` must equal sha256 of the current `en`
@@ -65,7 +66,17 @@
  *    because a human reading `/en-XA` in a diff would be reading copy the routes do not render.
  *    The pseudo-locales themselves take no part in checks 1–7: they have no authored catalogue
  *    and no review manifest to be complete, missing or stale against.
- * 10. **Drafts** (spec 003 §14 A15; TASK-185) — owned by that task; not in this file yet.
+ * 10. **Drafts** (spec 003 §14 A15 clauses 4 to 6, AC-33, AC-37, AC-39; TASK-185) — in a locale
+ *    whose primary language is not `en`'s (today `de` and `pl`), a key whose resolved value is
+ *    byte-identical to `en`'s is an error, naming file and key, unless
+ *    `content/i18n/draft-policy.json` excludes it or lists it under that locale's `identical` with
+ *    a reason from the closed set (`name`, `same-word`, `icu-only`, `held`). Stale `identical`
+ *    entries, malformed entries and `reviewBeforeOrders` entries that name no key or are also
+ *    excluded are errors too, and every `machine` value that differs from `en` passes the six
+ *    rules of AC-37 plus clause 4's formatting rule. The rules are in
+ *    `scripts/i18n-check-drafts.ts`. `--policy <file.json>` swaps the policy for a fixture; the
+ *    committed policy applies to the committed tree only, so a fixture tree with no `--policy`
+ *    runs without check 10, and the summary prints `n/a` in its "identical to `en`" column.
  * 11. **Scope** (spec 003 §14 A17, AC-41; TASK-224) — the scope registry
  *    (`src/modules/i18n/review-scope.ts`) says which keys the 5 % unreviewed share does not
  *    count. Check 11 holds each entry to it: it matches an `en` key, it is well formed, its keys
@@ -132,6 +143,12 @@ import {
   LocaleRegistrySchema,
   type LocaleConfig,
 } from "../src/config/locales.ts";
+import {
+  DRAFT_POLICY_FILE,
+  type DraftPolicy,
+  draftProblems,
+  readDraftPolicy,
+} from "./i18n-check-drafts.ts";
 import { scopeProblems, validScopeEntries } from "./i18n-check-scope.ts";
 import {
   describeHeadDashes,
@@ -200,6 +217,11 @@ export interface LocaleSummaryRow {
   readonly share: number;
   readonly stale: number;
   readonly indexable: boolean;
+  /**
+   * Check 10: keys whose resolved value is identical to `en`'s with no exclusion and no
+   * `identical` entry. Absent for `en`-language locales and for runs with no draft policy.
+   */
+  readonly identical?: number;
 }
 
 export interface CheckResult {
@@ -219,6 +241,8 @@ export interface CheckOptions {
   readonly registryFile?: string;
   /** A fixture scope registry (a JSON array of entries) in place of `review-scope.ts`. */
   readonly scopeFile?: string;
+  /** A fixture draft policy in place of `content/i18n/draft-policy.json` (check 10). */
+  readonly policyFile?: string;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -706,6 +730,9 @@ interface CatalogueCheckInput {
   readonly scopeFile: string;
   /** Check 12: the locale registry's file, named in its problems. */
   readonly registryFile: string;
+  /** Check 10: the draft policy in force, or `undefined` for a run without one. */
+  readonly policy:
+    { readonly policy: DraftPolicy; readonly file: string } | undefined;
 }
 
 function catalogueChecks(input: CatalogueCheckInput): CheckResult {
@@ -881,6 +908,32 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
     problems.push(problem);
   }
 
+  // 10: drafts, not echoes (A15).
+  const drafts =
+    input.policy === undefined
+      ? undefined
+      : draftProblems({
+          policy: input.policy.policy,
+          policyFile: input.policy.file,
+          sourceFlat,
+          locales: input.locales
+            .filter(
+              (locale) =>
+                primaryLanguage(locale.code) !== primaryLanguage(SOURCE_LOCALE),
+            )
+            .map((locale) => {
+              const resolved = resolveCatalogue(locale.code);
+              return {
+                code: locale.code,
+                cataloguePath: locale.cataloguePath,
+                resolved: (key: string) => valueAt(resolved, key),
+                flat: locale.flat,
+                source: (key: string) => locale.meta?.[key]?.source,
+              };
+            }),
+        });
+  if (drafts !== undefined) problems.push(...drafts.problems);
+
   // §11: the per-locale table, from the same functions `isLocaleIndexable()` uses.
   for (const locale of input.locales) {
     const resolved = resolveCatalogue(locale.code);
@@ -912,6 +965,9 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
       share,
       stale,
       indexable: isLocaleIndexable(locale.code),
+      ...(drafts?.identicalCount.has(locale.code) === true
+        ? { identical: drafts.identicalCount.get(locale.code) ?? 0 }
+        : {}),
     });
   }
 
@@ -986,6 +1042,34 @@ const COMMITTED_REGISTRY_FILE = "src/config/locales.ts";
 
 /** The repository this script belongs to; the committed registry describes its tree alone. */
 const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+
+/**
+ * The draft policy check 10 reads: `--policy <file>` when given; otherwise the committed one, but
+ * only over the committed `messages/` (its keys are the committed keys). A fixture tree with no
+ * `--policy` runs without check 10 (see the header).
+ */
+function readPolicy(
+  options: CheckOptions,
+  messagesDir: string,
+  problems: Problem[],
+): { policy: DraftPolicy; file: string } | undefined {
+  let path: string;
+  if (options.policyFile !== undefined) {
+    path = resolve(options.root, options.policyFile);
+  } else {
+    const committed = join(REPOSITORY_ROOT, DEFAULT_MESSAGES_DIR);
+    const isCommitted =
+      existsSync(messagesDir) &&
+      existsSync(committed) &&
+      realpathSync(messagesDir) === realpathSync(committed);
+    if (!isCommitted) return undefined;
+    path = join(REPOSITORY_ROOT, DRAFT_POLICY_FILE);
+  }
+  const file = displayPath(path, options.root);
+  const read = readDraftPolicy(path, file);
+  problems.push(...read.problems);
+  return read.policy === undefined ? undefined : { policy: read.policy, file };
+}
 
 /** The label check 11 names when a tree other than the committed one runs with no `--scope`. */
 export const NO_SCOPE_FILE = "(no scope registry: not the committed tree)";
@@ -1072,6 +1156,7 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
   // Check 11 reads the registry as written; the share and the summary run under the entries that
   // parse, so a malformed entry is reported once and, being unmatched, counts (it fails safe).
   const scope = readScope(options, { messagesDir, srcDir }, problems);
+  const policy = readPolicy(options, messagesDir, problems);
 
   const result = await withReviewScope(validScopeEntries(scope.raw), () =>
     withLocaleRegistry(localeRegistryOf(authored), () =>
@@ -1085,6 +1170,7 @@ export async function runCheck(options: CheckOptions): Promise<CheckResult> {
             root: options.root,
             scopeRaw: scope.raw,
             scopeFile: scope.file,
+            policy,
             registryFile:
               options.registryFile === undefined
                 ? COMMITTED_REGISTRY_FILE
@@ -1136,12 +1222,12 @@ export function formatSummary(
   const lines = [
     `### ${CLI_NAME}`,
     "",
-    "| locale | keys | counted | not counted | missing after fallback | unreviewed (counted) | unreviewed share | stale | indexable |",
-    "|---|---|---|---|---|---|---|---|---|",
+    "| locale | keys | counted | not counted | missing after fallback | unreviewed (counted) | unreviewed share | stale | indexable | identical to `en` |",
+    "|---|---|---|---|---|---|---|---|---|---|",
   ];
   for (const row of rows) {
     lines.push(
-      `| \`${row.locale}\` | ${String(row.keys)} | ${String(row.counted)} | ${String(row.notCounted)} | ${String(row.missing)} | ${String(row.unreviewed)} | ${formatShare(row.share)} | ${String(row.stale)} | ${row.indexable ? "yes" : "no"} |`,
+      `| \`${row.locale}\` | ${String(row.keys)} | ${String(row.counted)} | ${String(row.notCounted)} | ${String(row.missing)} | ${String(row.unreviewed)} | ${formatShare(row.share)} | ${String(row.stale)} | ${row.indexable ? "yes" : "no"} | ${row.identical === undefined ? "n/a" : String(row.identical)} |`,
     );
   }
   lines.push(
@@ -1152,6 +1238,10 @@ export function formatSummary(
     "(checkout, florist portal, email and the like) is in neither number. A locale that reads",
     "`no` here is excluded from hreflang, sitemaps and robots-meta lifting by spec 007, which is",
     "the correct answer while `de` and `pl` are machine-drafted and hidden.",
+    "",
+    "The column `identical to en` is check 10 (spec 003 §14 A15): keys of a `de` or `pl` catalogue still",
+    "byte-identical to English with no exclusion and no `identical` entry in",
+    "`content/i18n/draft-policy.json`; `n/a` for English and for runs without a policy.",
     "",
     "#### Buyer-facing keys not yet approved (not counted, not exempt)",
     "",
@@ -1185,12 +1275,14 @@ export async function main(
   const srcDir = argValue(argv, "--src");
   const registryFile = argValue(argv, "--registry");
   const scopeFile = argValue(argv, "--scope");
+  const policyFile = argValue(argv, "--policy");
   const options: CheckOptions = {
     root: process.cwd(),
     ...(messagesDir === undefined ? {} : { messagesDir }),
     ...(srcDir === undefined ? {} : { srcDir }),
     ...(registryFile === undefined ? {} : { registryFile }),
     ...(scopeFile === undefined ? {} : { scopeFile }),
+    ...(policyFile === undefined ? {} : { policyFile }),
   };
 
   const { problems, rows, unapproved } = await runCheck(options);
