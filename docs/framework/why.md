@@ -225,6 +225,10 @@ pages, launch) ahead of polish.
 
 On 2026-10-20 the founder said they had no time to spend on reviews, checks and gates, and chose "Light": one checker, one round, on the cheap model, with the breaker kept only on payments, orders, prices, dates, logins, data changes and legal text. Two full review rounds and two breaker rounds on every PR (W-22, W-23) had made the review cycle the slowest part of each PR. The breaker stays where a defect reaches a buyer's money, the law or an attacker; ranking work, presentation and tooling go review-only, and CI's SEO validators and Lighthouse remain the gate on ranking. W-22's two rounds and W-23's two breaker rounds are retired by this entry.
 
+## W-25 · No separate checkers: the implementer reviews and breaks its own work
+
+On 2026-10-22 the founder said reviewers "take too much usage and too much time" and told the orchestrator to let them go: the implementer is told it is the reviewer, and its output must be right first time. Vendors had agreed to come on board and the CMS, the vendor portal and the unfinished pages all waited behind the review queue. So `/review`, `/break` and `/advise` run only on the founder's ask. What the checkers did moves into the implementer's `## Self-review`: the AC-by-AC proof, the mutation of every AC assertion (W-21's rule survives intact), and, in the money, order, payment, date, auth, migration and legal areas, the breaker's awkward cases. The orchestrator still reads the file list and the self-review before merging, and CI stays the gate of record. This retires W-24's one review and one breaker round.
+
 ## Retired
 
 - **"The `preview` job waits on a Vercel preview deployment, so under Vercel's build rate limit the

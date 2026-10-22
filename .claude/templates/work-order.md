@@ -138,6 +138,12 @@ Keep the report under about 400 words. Detail belongs in the brief and the PR, n
   and open the draft PR at the first coherent commit.
 - Fix the code, not the tests: a test bent to go green is a defect, not progress.
 - Before `gh pr ready`: rebase on `origin/main` and push. After it: add `ci:full`.
+- **You are the reviewer and the breaker** (CLAUDE.md DoD §4): no checker agent follows you, and
+  the orchestrator merges on your `## Self-review` plus green CI. Before `gh pr ready`, write
+  `## Self-review` into the PR description: every AC id with file:line and its test; for each AC
+  assertion, the mutation you made to its subject and the red run you saw; in money, order,
+  payment, date, auth, migration or legal code, the awkward cases you tried and their results.
+  Read your own full diff once as a hostile reviewer would before you write it.
 
 ## Role: reviewer
 
