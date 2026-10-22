@@ -500,6 +500,17 @@ export const RELAY_EXEMPT: readonly RelayExemption[] = [
     route: "admin",
     reason: "Founder and ops routes; never reachable by a buyer.",
   },
+  // Spec 011's florists pages (TASK-210): recruitment copy addressed to florists, in the `en`, `de`
+  // and `pl` spelling of the `forFlorists` segment. A florist accepts and declines orders by design;
+  // the ban on "partner" stays, as one of the nine banned words (spec 011 §13 Q11).
+  ...(["for-florists", "fuer-floristen", "dla-kwiaciarni"] as const).map(
+    (route): RelayExemption => ({
+      kind: "non-buyer-route",
+      route,
+      reason:
+        "The for-florists landing, walkthrough and application address florists, never a buyer (spec 011).",
+    }),
+  ),
   {
     kind: "quoted-record",
     path: "specs/",
@@ -531,6 +542,16 @@ export function relayExemptKey(
     (rule) =>
       rule.kind === "non-buyer-namespace" &&
       messageKey.startsWith(rule.namespace),
+  );
+}
+
+/** Whether a route segment after the locale (`admin`, `for-florists`) is a non-buyer route. */
+export function relayExemptRoute(
+  segment: string,
+  exempt: readonly RelayExemption[] = RELAY_EXEMPT,
+): boolean {
+  return exempt.some(
+    (rule) => rule.kind === "non-buyer-route" && rule.route === segment,
   );
 }
 

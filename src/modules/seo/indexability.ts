@@ -129,6 +129,15 @@ export const PAGE_TYPE_POLICY: Readonly<
   privacy: "byRule",
   cookies: "byRule",
   cancellation: "byRule",
+  // Spec 011 §6 (TASK-210): the florists' landing and walkthrough are `byRule` (the content file
+  // reviewed, the locale indexable, the indexing environment), spec 041's rule; the application
+  // and its sent page are `noindex,follow` in every combination, rendered, linked and crawlable,
+  // never in a sitemap. §6 calls them `forFlorists`, `howOrdersWork`, `floristApply` and
+  // `floristApplySent`; they are registered by page id, as spec 041's ten are.
+  "for-florists": "byRule",
+  "how-orders-work": "byRule",
+  "florist-apply": "never",
+  "florist-apply-sent": "never",
 };
 
 /**
