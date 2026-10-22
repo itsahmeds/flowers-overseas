@@ -62,4 +62,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 330: one price per card with `catalog.price.inclusive`, no equivalents on any card or in its schema, the example label once per grid (`gridProvenanceMode`, `GridProvenance`), hub cards without a price line, `catalog.price.allIn` and `shop.card.noPrice` deleted (en-gb unreviewed share 1.786 % to 1.792 %). Tests: unit `ui-shop-card-price` (27), `catalog-listing-card-price` (27, incl. card price = PDP JSON-LD Offer.price in 4 locales), `catalog-listing-no-card-equivalents` (7), adapted page/component tests; e2e `listing-card-price-once` (T-06/T-07 amended, 4 locales x 4 page types x 2 widths, JS-off, lead, mixed gallery grid). Local build in the slot was needed (CI queue ~54 runs) because T-49 at 1280 x 800 went red: D-1 above (827 to 795.7 px). Mixed-grid fixture: `/dev/components` `gridMixed` (A8 (b)'s choice). Handed on: the Linux visual baselines from the `visual:baselines` run on the head; D-1 acceptance.
