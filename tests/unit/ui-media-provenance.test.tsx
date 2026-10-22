@@ -62,8 +62,17 @@ describe("AC-17: the note follows the displayed `ai` assets (T-17)", () => {
       expect(html).toContain('data-fo-media-provenance="ai"');
       // Server-rendered text, so it is in the HTML before any JavaScript runs and is crawlable
       // (`plan/02` §15: the structured data and the visible page agree).
-      expect(html).toContain("Example arrangement");
-      expect(html).toContain("our florist hand-makes each one");
+      // The locale's own `media.provenance.aiExample` (de/pl are drafted, TASK-185).
+      const media = loadMessages(locale, ["media"]).media as {
+        provenance: { aiExample: string };
+      };
+      const note = media.provenance.aiExample;
+      expect(html).toContain(`>${note}</p>`);
+      if (locale.startsWith("en")) {
+        expect(note).toBe(
+          "Example arrangement · our florist hand-makes each one",
+        );
+      }
       expect(html).not.toContain("your florist");
       expect(html).not.toContain("media.provenance");
     });
