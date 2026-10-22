@@ -9,6 +9,9 @@
  *    email and in the one request that consumes it.
  *  - `hashIdentifier(email)` — the SHA-256 hex of the normalised address: `auth_email_send` keys
  *    the send limit by it and never stores the address.
+ *  - `newSessionToken(surface)` / `isSessionTokenOf(surface, token)` — a session token names the
+ *    surface that minted it (`admin.…`, `florist.…`; TASK-212), so one surface's session
+ *    authenticates nothing on the other (spec 011 §2).
  */
 import { createHash, randomBytes } from "node:crypto";
 
@@ -27,4 +30,14 @@ export function normaliseEmail(email: string): string {
 
 export function hashIdentifier(email: string): string {
   return createHash("sha256").update(normaliseEmail(email)).digest("hex");
+}
+
+/** A database session token bound to its surface: `{surface}.{32 random bytes, base64url}`. */
+export function newSessionToken(surface: string): string {
+  return `${surface}.${randomBytes(32).toString("base64url")}`;
+}
+
+/** Whether `token` was minted by `surface` (the prefix before the first dot). */
+export function isSessionTokenOf(surface: string, token: string): boolean {
+  return token.startsWith(`${surface}.`) && token.length > surface.length + 1;
 }
