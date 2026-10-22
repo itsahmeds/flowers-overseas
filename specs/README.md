@@ -6,5 +6,6 @@ A letter suffix splits one reserved number when a spec's deferred half becomes i
 | Spec | Split from | Phase | What |
 |---|---|---|---|
 | `012b-cms.md` | `012-admin-v0.md` §15 | 1 | Catalogue CMS: the database as master copy, publishing, review for catalogue text and photos, florist bouquets, prices, photos, country go-live (slice A); review everywhere (slice B) |
+| `026a-florist-signin-live.md` | roadmap item `026` (vendor auth, `plan/09` Phase 2; the rest is unwritten) | 1 | Florist sign-in on the live site: the inbox moves to `/vendor`, `active` and `paused` florists sign in in production, and the founder grants access through the partner's contact email in admin |
 
 Outside the roadmap's reserved ranges: 040 hosting (Railway and Cloudflare), 041 trust, help and legal pages, 042 premium interactions (draft, PR 284), 043 site clarity (draft): the header follows the destination in the URL, one state line per page, chips grouped by kind, photographed products first, no internal words on public pages; 044 blog: posts written, approved and published from admin on spec 012b's machinery.
