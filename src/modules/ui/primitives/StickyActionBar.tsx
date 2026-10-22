@@ -73,7 +73,9 @@ export function StickyActionBar({
         </p>
       )}
       <div className="flex min-w-0 flex-1 [&>*]:min-h-[52px] [&>*]:flex-1">
-        <Button href={action.href} variant="accent">
+        {/* An in-page jump to its twin, never a page load, so motion 3's pending state (which
+            waits for the next page) is off (TASK-283). */}
+        <Button href={action.href} pending={false} variant="accent">
           {action.label}
         </Button>
       </div>

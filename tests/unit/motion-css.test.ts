@@ -917,3 +917,304 @@ describe("A-founder-2026-10-19e: motion 6, premium, value for value (T-48)", () 
     });
   }
 });
+
+/*
+ * T-48 and T-06 for the four motions TASK-194 left (TASK-283; spec 004 §14 A24 clause 9 (e)):
+ * motion 5 (the home H1's underline), motion 13 (the 404's route) and motion 10's close half,
+ * read rule by rule from the shipped stylesheet. Motion 3's reach is markup
+ * (`motion-markup.test.tsx`) and browser behaviour (`tests/e2e/motion.spec.ts` section 9).
+ * `motion283Violations` names each value it cannot find where the sheet puts it; the shipped CSS
+ * gives none, and each mutation below (a motion taken away, moved outside `no-preference`, or
+ * made to animate a property AC-44 forbids) gives the one it breaks.
+ */
+function motion283Violations(css: string): string[] {
+  const rules = walk(css).map((rule) => ({
+    ...rule,
+    selectors: rule.selector
+      .replaceAll(/\s+/g, " ")
+      .split(",")
+      .map((part) => part.trim()),
+  }));
+  const found: string[] = [];
+  const where = {
+    rest: (context: readonly string[]): boolean => context.length === 0,
+    moving: (context: readonly string[]): boolean =>
+      context.some(MOVES) && !context.some(REDUCE),
+  };
+  /** The value of `property` on `selector` in the last rule whose at-rules `test` accepts. */
+  const value = (
+    selector: string,
+    property: string,
+    test: (context: readonly string[]) => boolean,
+  ): string | undefined =>
+    rules
+      .filter(
+        (rule) =>
+          rule.selectors.includes(selector) &&
+          test(rule.context) &&
+          rule.declarations.has(property),
+      )
+      .at(-1)
+      ?.declarations.get(property);
+  const expectValue = (
+    name: string,
+    selector: string,
+    property: string,
+    expected: string,
+    test: (context: readonly string[]) => boolean,
+  ): void => {
+    if (value(selector, property, test) !== expected) found.push(name);
+  };
+  /** The declarations of one `@keyframes`, frame by frame. */
+  const frames = (name: string): string[] =>
+    rules
+      .filter((rule) => rule.context.at(-1) === `@keyframes ${name}`)
+      .map((rule) =>
+        [...rule.declarations]
+          .map(([property, declared]) => `${property}: ${declared}`)
+          .join("; "),
+      );
+
+  // Motion 5: 600 ms, `--ease-emphasised`, 500 ms after load, once, `stroke-dashoffset` on the
+  // inline SVG; drawn whole at rest (no dash), so reduced motion and no animation show it drawn.
+  const UNDERLINE = "#hero-heading [data-fo-em] path";
+  if (
+    frames("fo-underline-draw").join(" | ") !==
+    "stroke-dashoffset: 300 | stroke-dashoffset: 0"
+  ) {
+    found.push("5 keyframes");
+  }
+  expectValue(
+    "5 draw",
+    UNDERLINE,
+    "animation",
+    "fo-underline-draw var(--duration-draw) var(--ease-emphasised) 500ms 1 backwards",
+    where.moving,
+  );
+  expectValue("5 dash", UNDERLINE, "stroke-dasharray", "300", where.moving);
+  expectValue("5 paint", UNDERLINE, "stroke", "var(--color-sun)", where.rest);
+  if (value(UNDERLINE, "stroke-dasharray", where.rest) !== undefined) {
+    found.push("5 hidden at rest");
+  }
+  expectValue(
+    "5 out of flow",
+    "#hero-heading [data-fo-em] > svg",
+    "position",
+    "absolute",
+    where.rest,
+  );
+  expectValue(
+    "5 anchored",
+    "#hero-heading [data-fo-em]",
+    "position",
+    "relative",
+    where.rest,
+  );
+
+  // Motion 13: 1,200 ms, `--ease-standard`, once, a cover in the document's paper over the
+  // dashed route; rolled away at rest, so the route is drawn without the animation.
+  const COVER = "[data-fo-notice-route-cover]";
+  if (
+    frames("fo-route-unroll").join(" | ") !==
+    "stroke-dashoffset: 0 | stroke-dashoffset: -1"
+  ) {
+    found.push("13 keyframes");
+  }
+  expectValue(
+    "13 draw",
+    COVER,
+    "animation",
+    "fo-route-unroll var(--duration-bloom) var(--ease-standard) 1 backwards",
+    where.moving,
+  );
+  expectValue(
+    "13 paper",
+    COVER,
+    "stroke",
+    "var(--color-surface-raised)",
+    where.rest,
+  );
+  expectValue("13 dash", COVER, "stroke-dasharray", "1 1", where.rest);
+  expectValue("13 rolled away", COVER, "stroke-dashoffset", "-1", where.rest);
+
+  // Motion 10's close half: the fade under either preference, the movement only under
+  // `no-preference`, each the start state its opening came from.
+  const MENU = "details[data-fo-menu][data-fo-closing] [data-fo-menu-panel]";
+  const SHEET = '[data-fo-consent-sheet="fixed"][data-fo-closing]';
+  expectValue("10 menu fade", MENU, "opacity", "0", where.rest);
+  expectValue("10 sheet fade", SHEET, "opacity", "0", where.rest);
+  expectValue(
+    "10 menu rise",
+    MENU,
+    "transform",
+    "translateY(-8px)",
+    (context) => where.moving(context) && context.length === 1,
+  );
+  expectValue(
+    "10 sheet edge",
+    SHEET,
+    "transform",
+    "translateY(100%)",
+    (context) => where.moving(context) && context.length === 1,
+  );
+  expectValue(
+    "10 sheet 8 px from sm",
+    SHEET,
+    "transform",
+    "translateY(8px)",
+    (context) =>
+      where.moving(context) && context.some((at) => at.includes("40rem")),
+  );
+  expectValue(
+    "10 sheet on the action bar",
+    `body:has([data-fo-action-bar]) ${SHEET}`,
+    "transform",
+    "none",
+    (context) =>
+      where.moving(context) && context.some((at) => at.includes("48rem")),
+  );
+
+  // Nothing of the four moves outside `no-preference`.
+  for (const rule of rules) {
+    const ours = rule.selectors.some((selector) =>
+      /#hero-heading \[data-fo-em\]|data-fo-notice-route-cover|data-fo-closing/.test(
+        selector,
+      ),
+    );
+    if (
+      ours &&
+      (rule.declarations.has("animation") ||
+        rule.declarations.has("transform") ||
+        rule.declarations.has("transition-property")) &&
+      !where.moving(rule.context)
+    ) {
+      found.push(`reduced motion: ${rule.selectors.join(", ")}`);
+    }
+  }
+  return found;
+}
+
+describe("TASK-283: motions 5, 13 and 10's close half, value for value (T-48, T-06)", () => {
+  const swap = (from: string | RegExp, to: string): string => {
+    const mutated = shipped.replace(from, to);
+    expect(mutated, `mutation ${String(from)}`).not.toBe(shipped);
+    return mutated;
+  };
+
+  it("finds every value where the sheet puts it", () => {
+    expect(motion283Violations(shipped)).toEqual([]);
+  });
+
+  const MUTATIONS: readonly [string, () => string, string][] = [
+    [
+      "motion 5 taken away",
+      () => swap(/animation: fo-underline-draw[^;]*;/, ""),
+      "5 draw",
+    ],
+    [
+      "motion 5 at once, with no 500 ms wait",
+      () =>
+        swap(
+          /(fo-underline-draw var\(--duration-draw\) var\(--ease-emphasised\))\s+500ms/,
+          "$1 0ms",
+        ),
+      "5 draw",
+    ],
+    [
+      "motion 5's line dashed at rest (hidden without the animation)",
+      () =>
+        swap(
+          /(#hero-heading \[data-fo-em\] path \{\s*fill: none;)/,
+          "$1 stroke-dasharray: 300; stroke-dashoffset: 300;",
+        ),
+      "5 hidden at rest",
+    ],
+    [
+      "motion 5 drawn under reduced motion too",
+      () =>
+        `${shipped}\n#hero-heading [data-fo-em] path { animation: fo-underline-draw 600ms; }`,
+      "reduced motion: #hero-heading [data-fo-em] path",
+    ],
+    [
+      "motion 5 animating `width`",
+      () => swap(/(@keyframes fo-underline-draw \{\s*from \{)/, "$1 width: 0;"),
+      "5 keyframes",
+    ],
+    [
+      "motion 13 taken away",
+      () => swap(/animation: fo-route-unroll[^;]*;/, ""),
+      "13 draw",
+    ],
+    [
+      "motion 13's cover in another colour than the document's paper",
+      () =>
+        swap(
+          /(\[data-fo-notice-route-cover\] \{\s*fill: none;\s*stroke: )var\(--color-surface-raised\)/,
+          "$1var(--color-surface)",
+        ),
+      "13 paper",
+    ],
+    [
+      "motion 13 covering the route at rest",
+      () =>
+        swap(
+          /(\[data-fo-notice-route-cover\] \{[^}]*stroke-dashoffset: )-1/,
+          "$10",
+        ),
+      "13 rolled away",
+    ],
+    [
+      "motion 13 animating `stroke-width`",
+      () =>
+        swap(
+          /(@keyframes fo-route-unroll \{\s*from \{)/,
+          "$1 stroke-width: 0;",
+        ),
+      "13 keyframes",
+    ],
+    [
+      "the Menu's close fade taken away",
+      () =>
+        swap(
+          /(details\[data-fo-menu\]\[data-fo-closing\] \[data-fo-menu-panel\],\s*\[data-fo-consent-sheet="fixed"\]\[data-fo-closing\] \{\s*)opacity: 0;/,
+          "$1",
+        ),
+      "10 menu fade",
+    ],
+    [
+      "the Menu closing with no rise",
+      () =>
+        swap(
+          /(details\[data-fo-menu\]\[data-fo-closing\] \[data-fo-menu-panel\] \{\s*transform: )translateY\(-8px\)/,
+          "$1none",
+        ),
+      "10 menu rise",
+    ],
+    [
+      "the consent sheet's close moving under reduced motion",
+      () =>
+        `${shipped}\n@media (prefers-reduced-motion: reduce) { [data-fo-consent-sheet="fixed"][data-fo-closing] { transform: translateY(8px); } }`,
+      'reduced motion: [data-fo-consent-sheet="fixed"][data-fo-closing]',
+    ],
+  ];
+  for (const [name, mutate, broken] of MUTATIONS) {
+    it(`goes red with ${name}`, () => {
+      expect(motion283Violations(mutate())).toContain(broken);
+    });
+  }
+
+  it("goes red under AC-44's property scan when a new motion animates a layout property", () => {
+    expect(
+      disallowedMotion(
+        swap(/(@keyframes fo-underline-draw \{\s*from \{)/, "$1 width: 0;"),
+      ),
+    ).toContain("@keyframes fo-underline-draw: width");
+    expect(
+      disallowedMotion(
+        `${shipped}\n[data-fo-consent-sheet="fixed"][data-fo-closing] { transition-property: height; }`,
+      ),
+    ).toContain(
+      '[data-fo-consent-sheet="fixed"][data-fo-closing]: transition height',
+    );
+  });
+});

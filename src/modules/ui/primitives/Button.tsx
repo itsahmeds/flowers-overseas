@@ -23,12 +23,14 @@
  *
  * **Motion** (spec 004 §14 A24 clause 9, `system/motion.dc.html` motions 3 and 6; TASK-194).
  * A press scales the pill to 0.98 in `--duration-fast` (`transition-transform`: transform is the
- * only property a button animates, AC-44; colours change at once). `pending` marks a form's
- * primary submit: the client motion module (`../motion/MotionIsland.tsx`) sets `aria-busy="true"`
- * and `disabled` on submit, and `globals.css` opens the 22 px bloom, absolutely placed so the
- * button keeps its width: over the drawn arrow's slot where the label ends in one
- * (an icon passed as a child, the label's own `svg`, which goes while busy), in the label's
- * inline-end padding otherwise.
+ * only property a button animates, AC-44; colours change at once). `pending` marks a primary
+ * action (motion 3, "Every primary action"; TASK-283), and is on by default for every `primary`
+ * or `accent` pill that submits a form or navigates: the client motion module
+ * (`../motion/MotionIsland.tsx`) sets `aria-busy="true"` and `disabled` on submit (on a link,
+ * `aria-disabled`, on a click that leaves the page), and `globals.css` opens the 22 px bloom,
+ * absolutely placed so the pill keeps its width: over the drawn arrow's slot where the label ends
+ * in one (an icon passed as a child, the label's own `svg`, which goes while busy), in the label's
+ * inline-end padding otherwise. A disabled or `busy` pill never carries it.
  * With reduced motion only `aria-busy` changes; with JavaScript off nothing does.
  */
 import type { ReactElement, ReactNode } from "react";
@@ -158,8 +160,9 @@ export interface ButtonProps {
   /** Gallery only (`/dev/components`): render a pointer state statically. */
   readonly forceState?: ForcedButtonState;
   /**
-   * A form's primary submit (motion 3): renders the bloom slot the motion module shows while the
-   * next page loads. Ignored with `href`.
+   * A primary action (motion 3): renders the bloom slot the motion module shows while the next
+   * page loads. Defaults to `true` for a `primary` or `accent` pill with `href` or
+   * `type="submit"`; `false` opts out.
    */
   readonly pending?: boolean;
   readonly className?: string;
@@ -179,12 +182,18 @@ export function Button({
   href,
   iconStart,
   forceState,
-  pending = false,
+  pending,
   className,
   id,
   ...aria
 }: ButtonProps): ReactElement {
   const skin = VARIANT_SKIN[variant];
+  const marked =
+    !disabled &&
+    !busy &&
+    (pending ??
+      ((variant === "primary" || variant === "accent") &&
+        (href !== undefined || type === "submit")));
   const forced =
     forceState === "hover"
       ? skin.hover
@@ -217,12 +226,14 @@ export function Button({
   const content = (
     <>
       {iconStart}
-      {pending && href === undefined ? (
+      {marked ? (
         <span className="relative">
           {children}
+          {/* 4 px clear of the label inside 28 px of padding; the `sm` pill has 20, so its bloom
+              sits on the label's end (its petals stop 19 px out, inside the pill). */}
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute start-full top-1/2 ms-[4px] size-[22px] -translate-y-1/2 opacity-0"
+            className={`pointer-events-none absolute start-full top-1/2 size-[22px] -translate-y-1/2 opacity-0 ${size === "sm" ? "ms-0" : "ms-[4px]"}`}
             data-fo-pending-bloom
           >
             <Mark size={22} tone="current" />
@@ -236,7 +247,13 @@ export function Button({
 
   if (href !== undefined) {
     return (
-      <a id={id} className={classes} href={href} {...aria}>
+      <a
+        id={id}
+        className={classes}
+        href={href}
+        {...(marked ? { "data-fo-pending": "" } : {})}
+        {...aria}
+      >
         {content}
       </a>
     );
@@ -250,7 +267,7 @@ export function Button({
       disabled={disabled}
       aria-disabled={disabled ? true : undefined}
       aria-busy={busy ? true : undefined}
-      {...(pending ? { "data-fo-pending": "" } : {})}
+      {...(marked ? { "data-fo-pending": "" } : {})}
       {...aria}
     >
       {content}

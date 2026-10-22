@@ -46,6 +46,10 @@ import {
   NOTICE_WORDMARK_OUTLINED,
 } from "./noticeShell.ts";
 
+/** The dashed route's path, the artboard's (TASK-191), drawn twice for motion 13. */
+const NOTICE_404_ROUTE_PATH =
+  "M-20 520 C 200 420, 260 640, 470 560 S 760 300, 640 220 S 420 260, 520 120 S 980 60, 1060 260 S 1300 520, 1460 380";
+
 export interface NoticeDocumentProps {
   /** The trading name, from `src/config/company.ts` — never a literal (§7). */
   readonly wordmark: string;
@@ -100,6 +104,10 @@ export function NoticeDocument({
     // then the document, the dashed route behind the letter. The route's path is the artboard's.
     // The header bar is the first block of `<main>`, so the logo is where AC-31 measures every
     // page's first block (x 56 at 1440, x 20 at 390), while the letter is centred as drawn.
+    // Motion 13 (TASK-283): a second copy of the path, in the document's own paper and wide
+    // enough to hide the 2 px route at any width, unrolls once from the route's start
+    // (`stroke-dashoffset` over `pathLength` 1, `globals.css`). At rest it is rolled away, so
+    // with reduced motion or no CSS animation the route is drawn from the start.
     return (
       <main className={NOTICE_404_PAGE} id="main">
         <header className={NOTICE_404_HEADER}>
@@ -116,12 +124,18 @@ export function NoticeDocument({
             viewBox="0 0 1440 700"
           >
             <path
-              d="M-20 520 C 200 420, 260 640, 470 560 S 760 300, 640 220 S 420 260, 520 120 S 980 60, 1060 260 S 1300 520, 1460 380"
+              d={NOTICE_404_ROUTE_PATH}
               stroke="currentColor"
               strokeDasharray="8 9"
               strokeLinecap="round"
               strokeWidth="2"
               vectorEffect="non-scaling-stroke"
+            />
+            <path
+              d={NOTICE_404_ROUTE_PATH}
+              data-fo-notice-route-cover
+              pathLength={1}
+              strokeWidth="32"
             />
           </svg>
           <div className={NOTICE_404_FRAME}>

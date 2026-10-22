@@ -16,12 +16,18 @@
  *    150 ms timer; if the next document has not replaced this one by then, `<html data-fo-nav>`
  *    plays the header logo's bloom and the 2 px bar. The server's HTML never carries it, so no
  *    first load, reload, JavaScript-off load or `?page=2` response paints a loader (A24 (f)).
- *  - **Motion 3, the pending button.** On a form's submit, its `data-fo-pending` button takes
- *    `aria-busy="true"` and `disabled` in the next task (the submission has already read the form
- *    by then), and both come off on `pageshow`, when the back/forward cache brings the page back.
+ *  - **Motion 3, the pending button** (every primary action, TASK-283). On a form's submit, its
+ *    `data-fo-pending` button takes `aria-busy="true"` and `disabled` in the next task (the
+ *    submission has already read the form by then); a `data-fo-pending` link the click above lets
+ *    through takes `aria-busy="true"` and `aria-disabled="true"` (a link has no `disabled`), and
+ *    plays instead of motion 1's header bloom, one flourish at a time. All of it comes off on
+ *    `pageshow`, when the back/forward cache brings the page back.
  *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, unless the form was touched.
- *  - **Motion 10's `Esc`** for the phone Menu (spec 004 AC-47; was `MenuEscape`, TASK-195): closes
- *    every open Menu and returns focus to its summary.
+ *  - **Motion 10's close half and `Esc`** for the phone Menu (spec 004 AC-47; was `MenuEscape`,
+ *    TASK-195; the close, TASK-283). A click on an open Menu's summary, or `Esc` (focus back on
+ *    the summary), marks it `data-fo-closing`: the panel fades and rises out on the transition
+ *    `globals.css` gives it, and the `<details>` closes when that transition ends (at once when
+ *    nothing runs). `display` never transitions (AC-44), so the open state is held until then.
  *  - **Motion 11 and 12.** `<html data-fo-motion>` first; then only sections and not-yet-loaded
  *    images whose top is at or below the first viewport's foot take their `pending` start state,
  *    and each plays once (`in`). Nothing in the first viewport is ever hidden, and without
@@ -36,12 +42,34 @@ export function MotionIsland(): null {
     const here = location;
     const fold = innerHeight;
     const busy = "aria-busy";
-    const pending = "button[data-fo-pending]";
+    const pending = "[data-fo-pending]";
+    const closing = "data-fo-closing";
     let timer = 0;
     let touched = false;
 
+    // Motion 10's close: hold the Menu open until its panel's transition ends.
+    const close = (menu: HTMLDetailsElement): void => {
+      if (menu.hasAttribute(closing)) return;
+      menu.setAttribute(closing, "");
+      void Promise.allSettled(
+        (
+          menu.querySelector("[data-fo-menu-panel]")?.getAnimations?.() ?? []
+        ).map((animation) => animation.finished),
+      ).then(() => {
+        menu.open = false;
+        menu.removeAttribute(closing);
+      });
+    };
+
     d.addEventListener("click", (event) => {
-      const link = (event.target as Element).closest?.("a");
+      const target = event.target as Element;
+      const summary = target.closest?.("details[data-fo-menu][open]>summary");
+      if (summary) {
+        event.preventDefault();
+        close(summary.parentElement as HTMLDetailsElement);
+        return;
+      }
+      const link = target.closest?.("a");
       if (
         !link ||
         event.button ||
@@ -59,6 +87,13 @@ export function MotionIsland(): null {
       ) {
         return;
       }
+      if (link.matches(pending)) {
+        setTimeout(() => {
+          link.setAttribute(busy, "true");
+          link.setAttribute("aria-disabled", "true");
+        });
+        return;
+      }
       clearTimeout(timer);
       timer = window.setTimeout(() => {
         root.setAttribute("data-fo-nav", "pending");
@@ -66,7 +101,9 @@ export function MotionIsland(): null {
     });
 
     d.addEventListener("submit", (event) => {
-      const button = (event.target as Element).querySelector(pending);
+      const button = (event.target as Element).querySelector(
+        `button${pending}`,
+      );
       if (button && !event.defaultPrevented) {
         setTimeout(() => {
           button.setAttribute(busy, "true");
@@ -78,9 +115,11 @@ export function MotionIsland(): null {
     addEventListener("pageshow", () => {
       clearTimeout(timer);
       root.removeAttribute("data-fo-nav");
-      for (const button of d.querySelectorAll(pending)) {
-        button.removeAttribute(busy);
-        button.removeAttribute("disabled");
+      for (const action of d.querySelectorAll(pending)) {
+        action.removeAttribute(busy);
+        action.removeAttribute(
+          action.tagName === "A" ? "aria-disabled" : "disabled",
+        );
       }
     });
 
@@ -89,7 +128,7 @@ export function MotionIsland(): null {
         for (const menu of d.querySelectorAll<HTMLDetailsElement>(
           "details[data-fo-menu][open]",
         )) {
-          menu.open = false;
+          close(menu);
           menu.querySelector("summary")?.focus();
         }
       }

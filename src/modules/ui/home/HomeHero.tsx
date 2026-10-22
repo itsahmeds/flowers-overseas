@@ -37,10 +37,10 @@
  * carries the whole reviewed proposition (`docs/design/README.md`).
  */
 import { useTranslations } from "next-intl";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
-import { Display, Eyebrow, HEADING_EM } from "../primitives/typography.tsx";
+import { Display, Eyebrow } from "../primitives/typography.tsx";
 
 import { SentencePicker } from "./SentencePicker.tsx";
 
@@ -61,6 +61,31 @@ export const HOME_SECTION = "py-(--section-fluid)";
 
 /** The band's photograph in `seed/data/media.json` (spec 006 §2.4; TASK-080). */
 export const HOME_HERO_ASSET = "home-hero";
+
+/**
+ * Motion 5 (spec 004 §14 A24 clause 9; `system/motion.dc.html` cell 5; TASK-283): the H1's one
+ * phrase (`HEADING_EM`'s `<em data-fo-em>`, the same split of the same reviewed string) carries
+ * the sunflower underline as an inline, `aria-hidden` SVG laid under its words.
+ * `globals.css` (`#hero-heading [data-fo-em]`) places it out of flow, so the H1's text never
+ * moves, and draws it once, 500 ms after load, with `stroke-dashoffset`; under reduced motion,
+ * and with no CSS animation at all, it is drawn from the start. The path is the sheet's. Below
+ * 390 px the phrase is its own line, as wide as its words (`w-fit`), so the line stays under them.
+ */
+const HERO_HEADING_EM = {
+  em: (chunks: ReactNode): ReactElement => (
+    <em data-fo-em="">
+      {chunks}
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        preserveAspectRatio="none"
+        viewBox="0 0 300 10"
+      >
+        <path d="M2 6 C 80 2, 200 9, 298 4" />
+      </svg>
+    </em>
+  ),
+} as const;
 
 /**
  * The chrome above the band, in px, per breakpoint: the utility strip and the sticky header with
@@ -135,9 +160,9 @@ export function HomeHero({
               as={headingLevel}
               id="hero-heading"
               size="hero"
-              className="md:text-title-fluid max-md:text-on-inverse max-md:[&_em]:text-on-inverse-accent leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing) max-[390px]:[&_em]:block"
+              className="md:text-title-fluid max-md:text-on-inverse max-md:[&_em]:text-on-inverse-accent leading-(--text-hero-fluid--line-height) tracking-(--text-hero-fluid--letter-spacing) [font-variation-settings:var(--font-variation-display-hero)] md:leading-(--text-title-fluid--line-height) md:tracking-(--text-title-fluid--letter-spacing) max-[390px]:[&_em]:block max-[390px]:[&_em]:w-fit"
             >
-              {t.rich("hero.heading", HEADING_EM)}
+              {t.rich("hero.heading", HERO_HEADING_EM)}
             </Display>
             <p
               className="text-ui md:text-lede-fluid md:text-ink-muted max-md:text-on-inverse m-0 max-w-[32ch] leading-[1.5] md:max-w-[38ch]"
