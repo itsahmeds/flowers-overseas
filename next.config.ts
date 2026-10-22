@@ -5,6 +5,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import { adminHeaderRules } from "./src/lib/admin-headers";
+import { floristHeaderRules } from "./src/lib/florist-headers";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -115,6 +116,9 @@ const headerRules = [
   // Every `/admin` response: `noindex, nofollow` and `no-store, private` (spec 012 §2.2, AC-5;
   // TASK-217). After the environment-wide `noindex` rule above, so its value wins on `/admin`.
   ...adminHeaderRules(),
+  // Every florist response: `noindex, nofollow` and `private, no-store` (spec 011 §5.4, AC-22;
+  // TASK-212), after the environment-wide rule like admin's.
+  ...floristHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,
