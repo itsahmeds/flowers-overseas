@@ -417,7 +417,7 @@
       "headingGuide": "Co możemy dziś powiedzieć o dostawie w tym kraju",
       "headingLive": "Co dzieje się w dniu dostawy",
       "orderBy": {
-        "label": "Zamów do",
+        "label": "Termin zamówienia",
         "none": "Na razie brak.",
         "value": "{time}, strefa {zone}, czyli według czasu odbiorcy, nie Twojego, a dostarczymy tego samego dnia"
       },
@@ -568,7 +568,7 @@
     "eyebrow": "Zanim zamówisz",
     "heading": "O co ludzie <em>pytają najpierw</em>",
     "nobodyHome": {
-      "answer": "Nasz florysta najpierw dzwoni do odbiorcy. Jeśli nie uda się go złapać, ustalamy z Tobą ponowną dostawę, bez dodatkowej opłaty.",
+      "answer": "Nasz florysta najpierw dzwoni do odbiorcy. Jeśli nie uda się go złapać, umawiamy z Tobą nowy termin doręczenia i nic za to nie płacisz.",
       "question": "Co, jeśli nikogo nie będzie w domu?"
     },
     "photo": {
@@ -647,7 +647,7 @@
       },
       "eyebrow": "Jak wysyłamy Twoje kwiaty",
       "heading": "Twoim zamówieniem zajmują się trzy osoby. <em>Żadna z nich nie jest kurierem.</em>",
-      "intro": "Zamawiasz u nas w swoim języku i swojej walucie. Nasz florysta w miejscowości odbiorcy układa bukiet rano w dniu dostawy i wręcza go osobiście. Nic nie przekracza granicy, więc nie ma formularza celnego ani żadnych opłat przy odbiorze.",
+      "intro": "Zamawiasz u nas w swoim języku i swojej walucie. Nasz florysta w miejscowości odbiorcy układa bukiet rano w dniu doręczenia i wręcza go osobiście. Nic nie przekracza granicy, więc nie ma formularza celnego ani niczego do zapłacenia przy odbiorze.",
       "make": {
         "body": "Układany tego samego ranka z tego, co jest akurat w sezonie na miejscu. Jeśli coś zamieniamy, to na odpowiednik, i mówimy Ci o tym.",
         "title": "Nasz florysta w pobliżu przygotowuje go tego samego ranka."
@@ -673,7 +673,7 @@
     },
     "reviews": {
       "attribution": "{name} · wysłane do: {place} · {date} · {verification}",
-      "body": "Każda opinia tutaj pochodzi ze zrealizowanego zamówienia i pokazuje miejsce oraz datę dostawy. Ta sekcja pozostaje ukryta, dopóki nie pojawią się pierwsze sprawdzone opinie. Nic tu nie jest zmyślone.",
+      "body": "Każda opinia tutaj pochodzi ze zrealizowanego zamówienia i pokazuje miejsce oraz datę doręczenia. Ta sekcja pozostaje ukryta, dopóki nie pojawią się pierwsze sprawdzone opinie. Nic tu nie jest zmyślone.",
       "eyebrow": "Sprawdzone opinie",
       "heading": "Co mówią kupujący i obdarowani",
       "trustpilotPending": "Ocena w Trustpilot, gdy tylko przejmiemy profil",

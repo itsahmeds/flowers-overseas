@@ -189,7 +189,7 @@
       }
     },
     "deck": {
-      "bouquet": "Am Morgen der Lieferung von Hand gebunden und eingewickelt übergeben, bereit fürs Wasser.",
+      "bouquet": "Frühmorgens am Liefertag von Hand gebunden und eingewickelt übergeben, bereit fürs Wasser.",
       "plant": "Etwas, das in der nächsten Saison noch da ist.",
       "roses": "Rot für die Liebe, Weiß für den Abschied, Rosa und Orange für alles dazwischen."
     },
@@ -532,7 +532,7 @@
     },
     "state": {
       "deliveringNow": "Wir liefern",
-      "guideNotDelivering": "Ratgeber · noch keine Lieferung"
+      "guideNotDelivering": "Ratgeber · wir liefern noch nicht"
     }
   },
   "destinationsHub": {
@@ -568,7 +568,7 @@
     "eyebrow": "Bevor Sie bestellen",
     "heading": "Was Menschen <em>zuerst fragen</em>",
     "nobodyHome": {
-      "answer": "Unser Florist ruft die beschenkte Person vorher an. Ist sie nicht erreichbar, vereinbaren wir mit Ihnen eine neue Zustellung, ohne Aufpreis.",
+      "answer": "Unser Florist ruft die beschenkte Person vorher an. Ist sie nicht erreichbar, vereinbaren wir mit Ihnen einen neuen Termin, ohne Aufpreis.",
       "question": "Was, wenn niemand zu Hause ist?"
     },
     "photo": {
@@ -577,7 +577,7 @@
     },
     "whoDelivers": {
       "answer": "Unser eigener Florist am Wohnort der beschenkten Person, von Hand, an dem Tag, den Sie wählen.",
-      "answerCutoff": "Bestellen Sie bis 14:00 Uhr Warschauer Zeit, der Ortszeit am Zielort, für die Lieferung heute.",
+      "answerCutoff": "Bestellen Sie bis 14:00 Uhr Warschauer Zeit, der Ortszeit am Zielort, damit der Strauß noch heute ankommt.",
       "question": "Wer liefert, und wann?"
     }
   },
@@ -632,7 +632,7 @@
       "eyebrow": "Zielländer"
     },
     "hero": {
-      "eyebrow": "Internationale Blumenlieferung",
+      "eyebrow": "Blumengrüße ins Ausland",
       "heading": "Blumen für jemanden, der <em>weit weg ist.</em>",
       "proposition": "Unser Florist am Wohnort Ihrer Liebsten bindet den Strauß und übergibt ihn persönlich. Wir verschicken nie einen Karton."
     },
@@ -647,9 +647,9 @@
       },
       "eyebrow": "So kommen Ihre Blumen an",
       "heading": "Drei Menschen haben mit Ihrer Bestellung zu tun. <em>Keiner davon ist ein Kurier.</em>",
-      "intro": "Sie bestellen bei uns in Ihrer Sprache und Ihrer Währung. Unser Florist am Wohnort der beschenkten Person bindet den Strauß am Morgen des Liefertags und übergibt ihn persönlich. Nichts überquert eine Grenze, also gibt es kein Zollformular und nichts, was bei der Ankunft zu zahlen wäre.",
+      "intro": "Sie bestellen bei uns in Ihrer Sprache und Ihrer Währung. Unser Florist am Wohnort der beschenkten Person bindet den Strauß früh am Liefertag und übergibt ihn persönlich. Nichts überquert eine Grenze, also gibt es kein Zollformular und nichts, was bei der Ankunft zu zahlen wäre.",
       "make": {
-        "body": "Am selben Morgen gebunden, mit dem, was vor Ort Saison hat. Wird etwas ersetzt, dann gleichwertig, und wir sagen es Ihnen.",
+        "body": "Frühmorgens gebunden, mit dem, was vor Ort Saison hat. Wird etwas ersetzt, dann gleichwertig, und wir sagen es Ihnen.",
         "title": "Unser Florist in der Nähe bindet ihn an diesem Morgen."
       }
     },
@@ -659,7 +659,7 @@
     },
     "proof": {
       "guarantee": {
-        "body": "Kommen Ihre Blumen nicht frisch und in gutem Zustand an, schicken Sie uns innerhalb von 72 Stunden nach der Lieferung ein Foto. Dann ersetzen wir sie oder erstatten Ihnen den vollen Betrag.",
+        "body": "Kommen Ihre Blumen nicht frisch und in gutem Zustand an, schicken Sie uns innerhalb von 72 Stunden nach der Übergabe ein Foto. Dann ersetzen wir sie oder erstatten Ihnen den vollen Betrag.",
         "title": "Frische-Versprechen"
       },
       "local": {
@@ -952,7 +952,7 @@
     },
     "trust": {
       "freshness": {
-        "body": "Kommen Ihre Blumen nicht frisch und in gutem Zustand an, schicken Sie uns innerhalb von 72 Stunden nach der Lieferung ein Foto. Dann ersetzen wir sie oder erstatten Ihnen den vollen Betrag.",
+        "body": "Kommen Ihre Blumen nicht frisch und in gutem Zustand an, schicken Sie uns innerhalb von 72 Stunden nach der Übergabe ein Foto. Dann ersetzen wir sie oder erstatten Ihnen den vollen Betrag.",
         "title": "Frische-Versprechen"
       },
       "label": "Was wir versprechen",
@@ -971,7 +971,7 @@
       "heading": "Zu jedem davon gehört eine Karte, ohne Aufpreis."
     },
     "category": {
-      "lede": "{count, plural, one {Einer von unseren, gebunden von unserem Floristen am Wohnort der beschenkten Person, am Morgen des Liefertags.} other {# von unseren, gebunden von unserem Floristen am Wohnort der beschenkten Person, am Morgen des Liefertags.}} Jeder mit einem einzigen Preis, MwSt. und Lieferung schon inbegriffen.",
+      "lede": "{count, plural, one {Einer von unseren, gebunden von unserem Floristen am Wohnort der beschenkten Person, früh am Liefertag.} other {# von unseren, gebunden von unserem Floristen am Wohnort der beschenkten Person, früh am Liefertag.}} Jeder mit einem einzigen Preis, MwSt. und Lieferung schon inbegriffen.",
       "seoDescription": "{entity}, die unser Florist in {country} binden kann, jeweils mit einem Preis inklusive MwSt. und Lieferung. Noch kann nichts bestellt werden.",
       "seoTitle": "{entity} für {country}: ein Endpreis",
       "siblingsHeading": "Auch für {country}"
@@ -1022,9 +1022,9 @@
     "root": {
       "dateColumn": "Datum",
       "demoNotice": "Bestellen ist bald möglich. Jeder Preis hier ist der Preis, den Sie zahlen werden, mit MwSt. und Lieferung.",
-      "introBody": "Sie bestellen bei uns in Ihrer Sprache und Ihrer Währung. Unser Florist am Wohnort der beschenkten Person bindet den Strauß am Morgen des Liefertags und übergibt ihn persönlich. Nichts überquert eine Grenze, also gibt es kein Zollformular, keinen Papierkram und nichts, was bei der Ankunft zu zahlen wäre.",
+      "introBody": "Sie bestellen bei uns in Ihrer Sprache und Ihrer Währung. Unser Florist am Wohnort der beschenkten Person bindet den Strauß früh am Liefertag und übergibt ihn persönlich. Nichts überquert eine Grenze, also gibt es kein Zollformular, keinen Papierkram und nichts, was bei der Ankunft zu zahlen wäre.",
       "introHeading": "So kommt der Strauß in {country} an",
-      "lede": "Unser Florist am Wohnort der beschenkten Person bindet den Strauß am Morgen des Liefertags und übergibt ihn persönlich. Jeder Preis unten ist eine einzige Zahl, MwSt. und Lieferung schon inbegriffen.",
+      "lede": "Unser Florist am Wohnort der beschenkten Person bindet den Strauß früh am Liefertag und übergibt ihn persönlich. Jeder Preis unten ist eine einzige Zahl, MwSt. und Lieferung schon inbegriffen.",
       "listingHeading": "Alles, was wir für {country} fertigen können",
       "occasionColumn": "Anlass",
       "occasionPageLink": "Was wir dafür binden",

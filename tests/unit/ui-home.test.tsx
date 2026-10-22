@@ -330,12 +330,13 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
     expect(html).toMatch(/<option value="PL"[^>]* selected=""/);
   });
 
+  // The "not yet" words are each locale's own draft (spec 003 §14 A15), one value each.
   it.each([
-    ["de", "Polen", "Deutschland (not yet)"],
-    ["pl", "Polska", "Niemcy (not yet)"],
+    ["de", "Polen", "Deutschland (noch nicht)", "noch nicht"],
+    ["pl", "Polska", "Niemcy (jeszcze nie)", "jeszcze nie"],
   ])(
     '%s: Poland open, and every other country says "not yet" in words, not by greying alone (H1)',
-    (locale, poland, germany) => {
+    (locale, poland, germany, notYet) => {
       const options = countryOptions(picker(locale));
 
       expect(options.find(([iso]) => iso === "PL")).toEqual([
@@ -351,7 +352,7 @@ describe("the sentence picker (A21 clause 4, AC-11, T-12, T-13)", () => {
       const closed = options.filter(([, , disabled]) => disabled);
       expect(closed).toHaveLength(6);
       for (const [iso, label] of closed) {
-        expect(label, iso).toMatch(/ \(not yet\)$/u);
+        expect(label, iso).toMatch(new RegExp(` \\(${notYet}\\)$`, "u"));
       }
     },
   );

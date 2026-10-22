@@ -35,7 +35,14 @@ const FORBIDDEN: readonly {
   },
   {
     name: "partner name",
-    pattern: /\b(kwiaciarnia|blumen|fleurs|interflora|euroflorist|fleurop)\b/iu,
+    pattern: /\b(kwiaciarnia|fleurs|interflora|euroflorist|fleurop)\b/iu,
+  },
+  // "Blumen" is the German word for flowers and `/de` is drafted German (spec 003 §14 A15): a
+  // German shop name is "Blumen" or "Blumenhaus" plus a capitalised name, matched case-sensitively
+  // (the unit half, `tests/unit/home-honesty.test.ts`, exercises both sides).
+  {
+    name: "German shop name",
+    pattern: /\bBlumen(?:haus)?\s+\p{Lu}\p{Ll}+/u,
   },
 ];
 

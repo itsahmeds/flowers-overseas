@@ -123,8 +123,12 @@ describe("T-40: the neutral copy batch N1–N7 (AC-38)", () => {
         readMessages(`${locale}.meta.json`),
       );
       for (const [id, [key, text]] of Object.entries(APPROVED)) {
-        // The Phase 0 provider echoes the English (spec 003 §14 A15); its hash records the source.
-        expect(at(catalogue, key), `${locale} ${id}`).toBe(text);
+        // An agent-written draft of the new English (spec 003 §14 A15; TASK-185), not an echo;
+        // its hash records the English it translates, and nobody has reviewed it.
+        const value = at(catalogue, key);
+        expect(typeof value, `${locale} ${id}`).toBe("string");
+        expect(value, `${locale} ${id}`).not.toBe(text);
+        expect(meta[key]?.source, `${locale} ${id}`).toBe("machine");
         expect(meta[key]?.reviewed, `${locale} ${id}`).toBe(false);
         expect(meta[key]?.sourceHash, `${locale} ${id}`).toBe(
           createHash("sha256").update(text).digest("hex"),

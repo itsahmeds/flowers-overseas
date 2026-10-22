@@ -445,7 +445,13 @@ describe("the placeholder caption is real copy in every locale", () => {
         locale,
       );
       expect(html).not.toContain("media.placeholder");
-      expect(html).toMatch(/photography to supply/i);
+      // The caption's opening words in that locale's catalogue (`de` and `pl` are agent drafts,
+      // spec 003 §14 A15), one value per locale.
+      const opening: Readonly<Record<string, RegExp>> = {
+        de: /Foto folgt/u,
+        pl: /Zdjęcie wkrótce/u,
+      };
+      expect(html).toMatch(opening[locale] ?? /photography to supply/i);
     });
   }
 });
