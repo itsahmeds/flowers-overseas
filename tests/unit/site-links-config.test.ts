@@ -187,6 +187,8 @@ describe("src/config/site-links.ts", () => {
       "locale-home",
       // Spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): `/{locale}/basket` answers 200.
       "basket",
+      // Spec 011 §12 (TASK-210): the for-florists landing exists in all four locales.
+      "for-florists",
       "destinations",
       "occasions",
       // Spec 041's four trust links (TASK-182).

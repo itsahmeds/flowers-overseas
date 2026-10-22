@@ -293,10 +293,14 @@ describe("the header's registry projections (AC-14, spec 004 §14 A20)", () => {
     }
   });
 
-  it("projects no account item, no end-cluster item and no search while none has a page", () => {
+  it("projects no account item and no search while neither has a page, and For florists in the end cluster", () => {
     for (const locale of LOCALES) {
       expect(headerAccountItems(locale), locale).toEqual([]);
-      expect(headerEndClusterItems(locale), locale).toEqual([]);
+      // Spec 011 §12 (TASK-210): the for-florists landing exists in all four locales.
+      expect(
+        headerEndClusterItems(locale).map((item) => [item.id, item.href]),
+        locale,
+      ).toEqual([["for-florists", localePath(locale, "forFlorists")]]);
       expect(headerSearchHref(locale), locale).toBeUndefined();
     }
   });
@@ -321,17 +325,19 @@ describe("a published registry entry becomes a link with no template edit (AC-14
     const actual = await vi.importActual<
       typeof import("../../src/config/site-links.ts")
     >("../../src/config/site-links.ts");
+    // `for-florists` is published since spec 011 (TASK-210); unpublishing it in the registry alone
+    // takes the entry away, with no template edit, and the committed registry draws it.
     vi.doMock("../../src/config/site-links.ts", () => ({
       ...actual,
       isPublished: (id: SiteLinkId) =>
-        id === "for-florists" || actual.isPublished(id),
+        id !== "for-florists" && actual.isPublished(id),
     }));
     const model = await import("../../src/modules/ui/layout/header-model.ts");
 
-    expect(model.headerEndClusterItems("pl").map((item) => item.href)).toEqual([
+    expect(model.headerEndClusterItems("pl")).toEqual([]);
+    expect(headerEndClusterItems("pl").map((item) => item.href)).toEqual([
       localePath("pl", "forFlorists"),
     ]);
-    expect(headerEndClusterItems("pl")).toEqual([]);
   });
 });
 
@@ -358,9 +364,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
 
       // Internal: the lockup, the Send pill, the switcher's sibling shown locales (`en`, `en-gb`;
-      // spec 003 §14 A-founder-2026-10-14c), the category row and the Basket (spec 010 D10,
-      // TASK-349) — and nothing else: no account item, no `For florists`, no search (AC-14, §14
-      // A20).
+      // spec 003 §14 A-founder-2026-10-14c), the category row, `For florists` (spec 011, TASK-210)
+      // and the Basket (spec 010 D10, TASK-349) — and nothing else: no account item, no search
+      // (AC-14, §14 A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
@@ -370,6 +376,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
             localePath(other, "home"),
           ),
           ...(EXPECTED_ROW[locale] ?? []).map(([, href]) => href),
+          localePath(locale, "forFlorists"),
         ].toSorted(),
       );
       // External: the help line, opening WhatsApp on the one E.164 number in `company.ts`, with
@@ -385,6 +392,7 @@ describe("the rendered header (AC-7, AC-14)", () => {
         locale,
       ).toEqual([
         ...(EXPECTED_ROW[locale] ?? []).map(([id]) => id),
+        "for-florists",
         // The Basket icon link, after the pill (spec 010 D10; TASK-349).
         "basket",
       ]);
@@ -406,13 +414,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
       "same-day-delivery",
     ]);
     expect(UNPUBLISHED_HEADER_IDS).toEqual(
-      expect.arrayContaining([
-        "search",
-        "sign-in",
-        "my-orders",
-        "for-florists",
-      ]),
+      expect.arrayContaining(["search", "sign-in", "my-orders"]),
     );
+    expect(UNPUBLISHED_HEADER_IDS).not.toContain("for-florists");
     for (const locale of LOCALES) {
       const html = render(locale);
       for (const id of UNPUBLISHED_HEADER_IDS) {
@@ -435,7 +439,6 @@ describe("the rendered header (AC-7, AC-14)", () => {
       account.signIn,
       account.orders,
       "Basket (",
-      en.nav.forFlorists as string,
       category.addOns,
       search.label,
       search.help,
@@ -550,8 +553,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
     // The v2 mobile artboard draws the same eight links in the desktop order (a scrolling chip
     // row), so there is one DOM list and no per-breakpoint re-ordering.
     expect(html).not.toMatch(/\border-\d+\b/u);
-    // Eight row links, and the Basket icon link (spec 010 D10; TASK-349), which is not in the row.
-    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(9);
+    // Eight category entries, `For florists` at the row's end (spec 011, TASK-210), and the Basket
+    // icon link (spec 010 D10; TASK-349), which is not in the row.
+    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(10);
     expect([...html.matchAll(/data-fo-header-item="basket"/g)]).toHaveLength(1);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.
@@ -815,8 +819,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
     const anchors = [...banner.matchAll(/<a\s[^>]*>/g)].map(
       (match) => match[0],
     );
-    // The logo, the eight category links, the Send pill and the Basket link (spec 010 D10).
-    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1 + 1);
+    // The logo, the eight category links, `For florists` (spec 011), the Send pill and the Basket
+    // link (spec 010 D10).
+    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1 + 1 + 1);
     for (const anchor of anchors) {
       expect(anchor, anchor).toMatch(
         /(?:min-h|size)-\(--(?:target-min|control-sm)\)/u,

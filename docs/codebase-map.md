@@ -12,21 +12,20 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
+| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +6 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +98 |
-| `checkout` | Checkout's import path | 010 | `unit/basket-view.test.tsx`, `unit/checkout-address.test.ts` +7 |
-| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +92 |
+| `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
+| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +11 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +107 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +107 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
-| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
-| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
+| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
+| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `unit/florists-config.test.ts` +2 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
-| `search` | The only import path into the search module: site… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +61 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +32 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +55 |
 
 ## Config (`src/config/`)
 
@@ -48,23 +47,21 @@ task actually touches.
 | `categories.ts` | Category-row registry | 004 |
 | `checkout-samples.ts` | Demo samples | 010 |
 | `checkout.ts` | Checkout limits | 010 |
-| `commerce.ts` | The commerce structure's numbers (spec 004 §14… | 004 |
 | `company.data.ts` | The trading name as a plain constant, with no imports… | 004 |
 | `company.ts` | Company identity (spec 004 §2 "Everything data-gated is… | 004 |
 | `cookies.ts` | The cookie register | 004 |
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
+| `florists.ts` | The florists' configuration (spec 011 §5.2… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
 | `info-pages.ts` | The info-page registry | 041 |
-| `interactions.ts` | Spec 042's build-time switches, one per idea | 042 |
 | `locales-client.data.ts` | The few locale values the browser needs, and nothing… | 003 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free… | 004 |
 | `locales.ts` | Locale registry | 003 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2… | 004 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything… | 004 |
-| `search.ts` | Site search's numbers and word lists | 045 |
 | `site-links.ts` | Site-link registry | 004 |
 | `trending.ts` | The florists' picks the "Most sent this week" row shows… | 004 |
 | `url-keys.ts` | The query keys our own URLs carry | 001 |
@@ -87,18 +84,21 @@ task actually touches.
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today… | 004 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the parameter… | 008 |
-| `[locale]/(checkout)/basket/BasketView.tsx` | The basket page's body (spec 010 §14… | 010 |
-| `[locale]/(checkout)/basket/page.tsx` | `/{locale}/basket` (spec 010 §14 A-founder-2026-10-22… | 010 |
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
-| `[locale]/@header/(checkout)/basket/page.tsx` | The header of `/{locale}/basket` (spec 010 §14… | 010 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
 | `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`: the… | 043 |
 | `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of context. A… | 043 |
 | `[locale]/@header/default.tsx` | The `@header` slot's fallback: the out-of-context… | 043 |
+| `[locale]/@header/dla-kwiaciarni/zglos-sie/page.tsx` | The header of `/{locale}/dla-kwiaciarni/zglos-sie`: out… | 043 |
+| `[locale]/@header/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | The header of `/{locale}/dla-kwiaciarni/zglos-sie/wyslan… | 043 |
+| `[locale]/@header/for-florists/apply/page.tsx` | The header of `/{locale}/for-florists/apply`: out of any | 043 |
+| `[locale]/@header/for-florists/apply/sent/page.tsx` | The header of `/{locale}/for-florists/apply/sent`: out… | 043 |
+| `[locale]/@header/fuer-floristen/bewerben/gesendet/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben/gesende… | 043 |
+| `[locale]/@header/fuer-floristen/bewerben/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben`: out… | 043 |
 | `[locale]/@header/page.tsx` | The locale home's header: out of context, and with no… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
@@ -112,7 +112,13 @@ task actually touches.
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500… | 004 |
 | `[locale]/country-listing.tsx` | The country category's and the country occasion's head… | 008 |
 | `[locale]/country-shop-root.tsx` | The country shop root's head and body, once, for the… | 007 |
+| `[locale]/dla-kwiaciarni/zglos-sie/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie`: The application.… | 011 |
+| `[locale]/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie/wyslano`: The… | 011 |
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
+| `[locale]/for-florists/apply/page.tsx` | `/{locale}/for-florists/apply`: The application. A… | 011 |
+| `[locale]/for-florists/apply/sent/page.tsx` | `/{locale}/for-florists/apply/sent`: The application's… | 011 |
+| `[locale]/fuer-floristen/bewerben/gesendet/page.tsx` | `/{locale}/fuer-floristen/bewerben/gesendet`: The… | 011 |
+| `[locale]/fuer-floristen/bewerben/page.tsx` | `/{locale}/fuer-floristen/bewerben`: The application. A… | 011 |
 | `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once, for the… | 041 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
 | `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per route… | 008 |
@@ -123,9 +129,6 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles, orphans | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
-| `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only, every… | 012 |
-| `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue (AC-18,… | 012 |
-| `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips, money,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3, AC-4) | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
@@ -133,7 +136,6 @@ task actually touches.
 | `admin/api/auth/confirm/route.ts` | POST: confirm sign-in, use the token (AC-9) | 012 |
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | 012 |
-| `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll (AC-18) | 012 |
 | `admin/environment.ts` | The admin environment chip | 012 |
 | `admin/forbidden.tsx` | Admin 403, noindex | 012 |
 | `admin/layout.tsx` | Admin document: English, noindex | 012 |
@@ -171,7 +173,6 @@ task actually touches.
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20,… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate |
-| `check-relay-language.ts` | `check:relay-language` | `pnpm check:relay-language`: the catalogue scan of spec… |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec… |
 | `cloudflare/apply-zone-settings.ts` | `cloudflare:check` | Zone apply and check |
 | `cloudflare/edge.ts` | — | Edge as code |
@@ -184,7 +185,6 @@ task actually touches.
 | `db-check-live.ts` | — | `pnpm db:check`, connected half |
 | `db-check.ts` | `db:check` | `pnpm db:check` — the migration gate (spec 001 §2… |
 | `db-migrate.ts` | `db:migrate` | `pnpm db:migrate` / `pnpm db:rollback` — the migration… |
-| `decisions-log.ts` | `decisions:log` | Decision files collected into `docs/decisions-log.md` —… |
 | `dev-os-check.ts` | `dev-os:check` | `pnpm dev-os:check` (spec 001 §2 "Scripts", §11 "Dev… |
 | `env-check.ts` | `env:check` | `pnpm env:check` |
 | `fonts/build-fonts.ts` | `fonts:build` | `pnpm fonts:build` — regenerates the committed WOFF2… |
@@ -222,10 +222,10 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 387 |
-| `tests/integration/` | 48 |
-| `tests/contract/` | 25 |
-| `tests/e2e/` | 71 |
+| `tests/unit/` | 362 |
+| `tests/integration/` | 45 |
+| `tests/contract/` | 26 |
+| `tests/e2e/` | 70 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |

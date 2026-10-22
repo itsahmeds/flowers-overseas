@@ -273,6 +273,17 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
         surface,
         paths: [...paths, "src/modules/payments/**"],
       })),
+      // Spec 011 (TASK-210): the application and sent pages, noindex, on route files of their own.
+      ...["forFlorists.apply.*", "forFlorists.sent.*"].map((match) => ({
+        match,
+        surface: "florist",
+        paths: [
+          "src/app/[locale]/for-florists/apply/**",
+          "src/app/[locale]/fuer-floristen/bewerben/**",
+          "src/app/[locale]/dla-kwiaciarni/zglos-sie/**",
+          "src/modules/partners/ui/apply/**",
+        ],
+      })),
     ]);
     // The address-format labels are read by a shared module (`src/modules/i18n/address.ts`), so
     // they count: no entry may reach them.
