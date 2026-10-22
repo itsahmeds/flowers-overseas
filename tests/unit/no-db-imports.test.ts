@@ -229,24 +229,34 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
     ]);
   });
 
-  it("leaves a module's db/ adapter directory out, and only that directory (spec 012b §12; TASK-292)", () => {
+  it("leaves a module's db/ adapter directory out, and only that directory (spec 012b §12; TASK-292, TASK-070)", () => {
     // TASK-293 adds the review ledger's adapter directory (spec 012b §2.4).
     expect([...DATABASE_ADAPTER_DIRS]).toEqual([
       "src/modules/geo/db",
       "src/modules/i18n/db",
       // TASK-321: the blog's provider and commands (spec 044 §5.2).
       "src/modules/content/blog/db",
+      // TASK-070: the catalogue, price and FX providers.
+      "src/modules/catalog/db",
     ]);
-    const adapter = tempTree(
-      'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',
+    for (const file of [
       "src/modules/geo/db/registry.ts",
-    );
-    expect(findDatabaseImports(adapter)).toEqual([]);
+      "src/modules/catalog/db/price.ts",
+    ]) {
+      const adapter = tempTree(
+        'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',
+        file,
+      );
+      expect(findDatabaseImports(adapter)).toEqual([]);
+    }
     // A sibling of the adapter directory, and a directory whose name merely starts with `db`,
-    // are scanned as before.
+    // are scanned as before: the rest of the catalogue module stays database-free (AC-2).
     for (const file of [
       "src/modules/geo/registry.ts",
       "src/modules/geo/dbx/registry.ts",
+      "src/modules/catalog/providers.ts",
+      "src/modules/catalog/pricing/resolve.ts",
+      "src/modules/catalog/dbx/price.ts",
     ]) {
       const root = tempTree(
         'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',
