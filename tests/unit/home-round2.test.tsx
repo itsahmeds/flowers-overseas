@@ -79,8 +79,8 @@ function headingById(html: string, id: string): string {
 
 /**
  * Each drawn heading: the section, its heading id, the reviewed words and the one italic phrase,
- * per locale. `en-gb` inherits `en`; `de` and `pl` are drafts that carry the same markup where the
- * phrase exists (their Popular choices are translated).
+ * per locale. `en-gb` inherits `en`; `de` and `pl` are agent drafts (spec 003 §14 A15) that carry
+ * the same markup, one italic phrase each, in their own words.
  */
 const HEADINGS: readonly {
   readonly name: string;
@@ -94,8 +94,12 @@ const HEADINGS: readonly {
     render: (locale) =>
       render(<HomeHero locale={locale} shopCountries={["PL"]} />, locale),
     id: "hero-heading",
-    words: { en: "Flowers for someone far away." },
-    em: { en: "far away." },
+    words: {
+      en: "Flowers for someone far away.",
+      de: "Blumen für jemanden, der weit weg ist.",
+      pl: "Kwiaty dla kogoś, kto jest daleko.",
+    },
+    em: { en: "far away.", de: "weit weg ist.", pl: "daleko." },
   },
   {
     name: "Popular choices",
@@ -112,43 +116,71 @@ const HEADINGS: readonly {
     name: "dates",
     render: (locale) => render(<OccasionDates locale={locale} />, locale),
     id: "occasion-dates-heading",
-    words: { en: "Dates worth sending for" },
-    em: { en: "sending for" },
+    words: {
+      en: "Dates worth sending for",
+      de: "Tage, an denen sich Blumen lohnen",
+      pl: "Daty, na które warto wysłać kwiaty",
+    },
+    em: { en: "sending for", de: "Blumen lohnen", pl: "warto wysłać kwiaty" },
   },
   {
     name: "occasions",
     render: (locale) => render(<OccasionTiles locale={locale} />, locale),
     id: "occasions-heading",
-    words: { en: "What is the occasion?" },
-    em: { en: "occasion?" },
+    words: {
+      en: "What is the occasion?",
+      de: "Was ist der Anlass?",
+      pl: "Jaka to okazja?",
+    },
+    em: { en: "occasion?", de: "Anlass?", pl: "okazja?" },
   },
   {
     name: "how it works",
     render: (locale) => render(<HowItWorks />, locale),
     id: "how-it-works-heading",
-    words: { en: "Three people touch your order. None of them is a courier." },
-    em: { en: "None of them is a courier." },
+    words: {
+      en: "Three people touch your order. None of them is a courier.",
+      de: "Drei Menschen haben mit Ihrer Bestellung zu tun. Keiner davon ist ein Kurier.",
+      pl: "Twoim zamówieniem zajmują się trzy osoby. Żadna z nich nie jest kurierem.",
+    },
+    em: {
+      en: "None of them is a courier.",
+      de: "Keiner davon ist ein Kurier.",
+      pl: "Żadna z nich nie jest kurierem.",
+    },
   },
   {
     name: "promise",
     render: (locale) => render(<ProofRow />, locale),
     id: "promise-heading",
-    words: { en: "Our promise" },
-    em: { en: "promise" },
+    words: {
+      en: "Our promise",
+      de: "Unser Versprechen",
+      pl: "Nasza obietnica",
+    },
+    em: { en: "promise", de: "Versprechen", pl: "obietnica" },
   },
   {
     name: "FAQ",
     render: (locale) => render(<HomeFaq />, locale),
     id: "faq-heading",
-    words: { en: "Questions people ask first" },
-    em: { en: "ask first" },
+    words: {
+      en: "Questions people ask first",
+      de: "Was Menschen zuerst fragen",
+      pl: "O co ludzie pytają najpierw",
+    },
+    em: { en: "ask first", de: "zuerst fragen", pl: "pytają najpierw" },
   },
   {
     name: "destinations",
     render: (locale) => render(<DestinationsGrid locale={locale} />, locale),
     id: "destinations-heading",
-    words: { en: "Where we can send flowers" },
-    em: { en: "send flowers" },
+    words: {
+      en: "Where we can send flowers",
+      de: "Wohin wir Blumen senden können",
+      pl: "Dokąd możemy wysłać kwiaty",
+    },
+    em: { en: "send flowers", de: "Blumen senden", pl: "wysłać kwiaty" },
   },
 ];
 
@@ -242,15 +274,29 @@ describe("the date stamps (TASK-232 item 2)", () => {
           /<span class="([^"]*)" data-fo-stamp-second="true">([^<]*)<\/span>/gu,
         ),
       ];
+      // `de` names the Polish day and its German name; `pl` needs no second name for its own
+      // days, so only All Saints' Day, excluded from drafting (spec 003 §14 A15 clause 4), keeps
+      // its English first name and Polish second one there.
+      const expected: Readonly<Record<string, readonly string[]>> = {
+        de: [
+          "Wszystkich Świętych",
+          "Andreasnacht",
+          "Heiligabend",
+          "Dzień Kobiet",
+        ],
+        pl: ["Wszystkich Świętych"],
+      };
       expect(
         seconds.map((match) => match[2]),
         locale,
-      ).toEqual([
-        "Wszystkich Świętych",
-        "St Andrew&#x27;s Eve",
-        "Christmas Eve",
-        "Dzień Kobiet",
-      ]);
+      ).toEqual(
+        expected[locale] ?? [
+          "Wszystkich Świętych",
+          "St Andrew&#x27;s Eve",
+          "Christmas Eve",
+          "Dzień Kobiet",
+        ],
+      );
       for (const match of seconds) {
         expect(match[1]?.split(" "), locale).toEqual(
           expect.arrayContaining([

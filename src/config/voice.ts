@@ -67,8 +67,8 @@ export const BANNED_VOICE_FORMS = {
     "vermittel",
     // corridor
     "Korridor",
-    // partner (the English entry already matches it; listed so every word has its German form)
-    "Partner",
+    // partner: the German word is the English one, so the English entry matches it ("Partner",
+    // "Partnerin", "Partnerfloristen"); listing it again would report one word twice.
     // third party
     "Drittanbieter",
     "Drittpartei",
@@ -95,8 +95,7 @@ export const BANNED_VOICE_FORMS = {
     "przekaźnik",
     // corridor
     "korytarz",
-    // partner
-    "partner",
+    // partner: the English entry matches "partner", "partnerka", "partnerskie".
     // third party
     "strona trzecia",
     "strony trzeciej",
