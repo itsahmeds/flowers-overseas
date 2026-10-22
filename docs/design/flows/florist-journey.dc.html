@@ -93,7 +93,7 @@
       <dt>What changed (spec 011 Appendix B item 6)</dt><dd>Step 03 is the staging inbox reached through the one email sign-in (spec 011 §13 Q2, accepted): there is no per-order <code>/v/{token}</code> link. Step 04 drops the public-use consent question (§13 Q6: photos stay private until spec 029's recipient consent) and the substitution field (spec 027). The walkthrough has its own page now. “Not in Phase 0” names specs 026 and 027.</dd>
       <dt>What changed (spec 016, 2026-10-14)</dt><dd>Steps 06 to 11 add Phase 1: the offer by email with the one-tap link (and the founder's WhatsApp copy, offer and stop message only), the reminder and the timeout that re-offers the order to the next florist, the confirmation after capture, the stop message and the inbox's withdrawn stage, the photo reminder, and the founder's no-florist alert with the grace window. Templates: <code>wireframes/email-*</code>.</dd>
       <dt>What is honest here</dt><dd>No count of florists, no testimonial, no shop logo. The status line is drawn as “We are opening country by country, starting in Poland.” (founder copy pending; it replaces spec 011's “choosing” line, which the founder's ruling bans). The payout example is two lines, the buyer's price from the catalogue and the agreed amount, labelled as one example. Every inbox order on staging is synthetic.</dd>
-      <dt>Owning spec</dt><dd>011 · <code>plan/05</code> rows 41, 42, 43, 45 · artboards <code>wireframes/for-florists-*</code>, <code>for-florists-walkthrough-*</code>, <code>for-florists-apply-*</code>, <code>florist-sign-in-*</code>, <code>florist-inbox-*</code></dd>
+      <dt>What changed (spec 026a, 2026-10-22)</dt><dd>Step 03 now happens on the live site at <code>flowersoverseas.com/vendor</code>: the inbox moved from <code>/demo/vendor-inbox</code> to <code>/vendor</code> in every environment, and a florist of an <code>active</code> or <code>paused</code> shop signs in on production. The founder grants access in admin by entering the florist's contact email and switching the shop to active; the florist page shows “Not signed in yet” or “First signed in on {date}”. Step 04 notes the paused shop (Decline only). No public link to <code>/vendor</code>.</dd><dt>Owning spec</dt><dd>011 · 026a (step 03 on the live site) · <code>plan/05</code> rows 41, 42, 43, 45 · artboards <code>wireframes/for-florists-*</code>, <code>for-florists-walkthrough-*</code>, <code>for-florists-apply-*</code>, <code>florist-sign-in-*</code>, <code>florist-inbox-*</code></dd>
     </dl>
   </section>
   <div class="sheet">
@@ -111,19 +111,19 @@
         <dl class="meta"><dt>Decision</dt><dd>Send the application, or call instead (the form-off state is contact first).</dd><dt>Trust</dt><dd><span class="trust">The walkthrough's screens are the real inbox components; the notice at collection sits beside the form.</span></dd><dt>Reads</dt><dd>writes one <code>partner_application</code> row (insert only) and one alert email to the founder.</dd><dt>Index</dt><dd>walkthrough by rule; apply and sent never</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
-        <header><span class="i">03</span><b>Sign in on staging (demo call)</b></header>
-        <code>/demo/vendor-inbox/sign-in → email link → …/sign-in/confirm?t=… → /demo/vendor-inbox</code>
+        <header><span class="i">03</span><b>Sign in (live site, or staging on a demo call)</b></header>
+        <code>flowersoverseas.com/vendor → /vendor/sign-in → email link → …/sign-in/confirm?t=… → /vendor</code>
         <div class="thumb"><div class="ink"></div><span>Sign in to see your orders</span><div class="box">Email · Send me a link</div><div class="box">Check your email (same page for every address)</div><div class="box">Continue to your orders (one button; the GET uses nothing)</div><div class="acc"></div></div>
-        <dl class="meta"><dt>Decision</dt><dd>The founder adds the florist's email to a demo shop before the call (<code>pnpm florists:demo-member add</code>); the florist types the staging password, then signs in by email.</dd><dt>Trust</dt><dd><span class="trust">No email address in any URL; the link works once, for one hour.</span></dd><dt>Reads</dt><dd>the shared sign-in core (spec 012 task 1), florist instance; <code>partner_member</code>.</dd><dt>Index</dt><dd>noindex, 404 in production</dd><dt>Spec</dt><dd>011 on 012's core</dd></dl>
+        <dl class="meta"><dt>Decision</dt><dd><b>Live (spec 026a):</b> the founder enters the florist's email as the contact email on the florist's admin page, records the signed agreement and switches the shop to active, then sends the address in a message of their own; no welcome email. <b>Staging:</b> the founder adds the florist's email to a demo shop before the call (<code>pnpm florists:demo-member add</code>); the florist types the staging password, then signs in by email.</dd><dt>Trust</dt><dd><span class="trust">No email address in any URL; the link works once, for one hour.</span></dd><dt>Reads</dt><dd>the shared sign-in core (spec 012 task 1), florist instance; <code>partner_member</code>.</dd><dt>Index</dt><dd>noindex everywhere, <code>Disallow: /vendor/</code>, no public link</dd><dt>Admin</dt><dd>the Florist sign-in block on <code>admin-partner-detail-*</code>: “Not signed in yet”, then “First signed in on {date}”</dd><dt>Spec</dt><dd>011 on 012's core · 026a</dd></dl>
       </div>
     </div>
 
     <div class="steps">
       <div class="step">
         <header><span class="i">04</span><b>The offer, then the order</b></header>
-        <code>/demo/vendor-inbox · …/orders/{assignmentId}</code>
+        <code>/vendor · …/orders/{assignmentId}</code>
         <div class="thumb"><div class="ink"></div><span>Waiting for your answer · Answer by 15:40</span><div class="box">Amber Hour · 18 stems · + Vase · For Thu 8 Oct · Warszawa</div><div class="box">You receive 149 zł</div><div class="row2"><div class="box" style="flex:1">Decline</div><div class="acc" style="flex:2"></div></div><span>After Accept: recipient, phone, address, card message to print · Out for delivery</span></div>
-        <dl class="meta"><dt>Decision</dt><dd>Accept, or decline with one of five reasons. A “Send a test order” control on the list makes the offer appear within 5 seconds.</dd><dt>Trust</dt><dd><span class="trust">No buyer field exists in the view; the recipient's details appear only from acceptance to the photo.</span></dd><dt>Reads</dt><dd><code>floristOrderView</code> under row-level security; every action through spec 010's <code>orderService.transition</code>.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011</dd></dl>
+        <dl class="meta"><dt>Decision</dt><dd>Accept, or decline with one of five reasons. On staging a “Send a test order” control on the list makes the offer appear within 5 seconds; the live site has no such control. A <b>paused</b> shop sees Decline only and the notice “Your shop is paused.” (spec 026a).</dd><dt>Trust</dt><dd><span class="trust">No buyer field exists in the view; the recipient's details appear only from acceptance to the photo.</span></dd><dt>Reads</dt><dd><code>floristOrderView</code> under row-level security; every action through spec 010's <code>orderService.transition</code>.</dd><dt>Index</dt><dd>noindex</dd><dt>Spec</dt><dd>011</dd></dl>
       </div>
       <div class="step">
         <header><span class="i">05</span><b>Delivered, add the photo</b></header>
@@ -134,7 +134,7 @@
       <div class="step">
         <header><span class="i">·</span><b>Not in Phase 0</b></header>
         <div class="stub">
-          <span><b>Spec 026:</b> florists sign in on the live site (a small slice in Phase 1, at the first signed florist), owner and staff permissions, staff invites, a shop switcher for chains.</span>
+          <span><b>Spec 026a (Phase 1, drawn in step 03):</b> florists sign in on the live site at <code>/vendor</code>. <b>Spec 026 (Phase 2):</b> owner and staff permissions, staff invites, a shop switcher for chains.</span>
           <span><b>Spec 027:</b> capacity and days-off calendar, substitution notes, the printed card PDF, payout history, ratings, coverage editing, availability toggles, photo hints.</span>
           <span><b>Spec 016 (Phase 1, steps 06 to 11):</b> order emails that sign the florist in and open the order in one tap, and the founder's WhatsApp copies. <b>028:</b> WhatsApp sent by us. <b>029:</b> recipient consent for public photos. <b>030:</b> payouts.</span>
           <span>Florist terms as a legal page (Phase 1); “our florists” pages only for florists who opt in.</span>
@@ -178,9 +178,9 @@
       </div>
       <div class="step">
         <header><span class="i">11</span><b>Nobody took it (the founder)</b></header>
-        <code>order.no_partner_available → A1 → reroute (spec 020) or cancel at the end of the grace window</code>
+        <code>order.no_partner_available → A1 → reroute (spec 020a) or cancel at the end of the grace window</code>
         <div class="thumb"><div class="ink"></div><span>No florist: FO-7K2M-9QXA · Warszawa · Thu 8 Oct</span><div class="box">Cancels automatically at 16:40 Warsaw time unless you act.</div><div class="box">1 declined · 2 no answer · 3 declined</div><div class="row2"><div class="box" style="flex:1">Reroute → step 06</div><div class="box" style="flex:1">Cancel → B5, full refund</div></div></div>
-        <dl class="meta"><dt>Decision</dt><dd>Phone a florist and reroute to them (spec 020's button calls <code>manualReroute</code>), cancel, or let the window run out.</dd><dt>Grace window</dt><dd>Due today: 2 hours. Not due today: until 10:00 destination time the next morning (21:00 → 10:00; 06:00 → 10:00 the same day). Both end by the routing deadline (16-2). With <code>routing.auto</code> off, nothing cancels automatically.</dd><dt>Trust</dt><dd><span class="trust">The buyer has paid; a cancel refunds in full, and B5 says only “We could not deliver this order. We have refunded {amount}.”</span></dd><dt>Spec</dt><dd>016 A1, B5, AC-10 to AC-13, AC-35 · <code>email-founder-*</code></dd></dl>
+        <dl class="meta"><dt>Decision</dt><dd>Phone a florist and reroute to them (spec 020a's Reroute dialog calls <code>manualReroute</code>), cancel, or let the window run out. The admin side is drawn in <code>flows/admin-order-actions.dc.html</code>.</dd><dt>Grace window</dt><dd>Due today: 2 hours. Not due today: until 10:00 destination time the next morning (21:00 → 10:00; 06:00 → 10:00 the same day). Both end by the routing deadline (16-2). With <code>routing.auto</code> off, nothing cancels automatically.</dd><dt>Trust</dt><dd><span class="trust">The buyer has paid; a cancel refunds in full, and B5 says only “We could not deliver this order. We have refunded {amount}.”</span></dd><dt>Spec</dt><dd>016 A1, B5, AC-10 to AC-13, AC-35 · <code>email-founder-*</code></dd></dl>
       </div>
     </div>
     </div>
