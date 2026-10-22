@@ -18,9 +18,11 @@ import {
   BUILD_ROLE_READ_TABLES,
   CUSTOMER_SCOPED_TABLES,
   CUSTOMER_VIEWS,
+  PARTNER_FILTERED_TABLES,
   PARTNER_SCOPED_TABLES,
   PARTNER_VIEWS,
   PUBLIC_FILTERED_TABLES,
+  PUBLIC_INSERT_ONLY_TABLES,
   PUBLIC_REFERENCE_TABLES,
   RLS_EXEMPT_TABLES,
   SELF_SCOPED_TABLES,
@@ -105,6 +107,30 @@ const BUILD_POLICIES: Policy[] = [
 const policiesOf = (table: string): Policy[] =>
   POLICIES.filter((p) => p.table === table);
 
+/** Every `CREATE POLICY … ON <table>` name, whatever its shape (`FOR INSERT … WITH CHECK` too). */
+const anyPolicyNamesOf = (table: string): string[] =>
+  [
+    ...up.matchAll(
+      new RegExp(
+        `CREATE POLICY (\\w+) ON ${ref(table)}\\s+(?:AS \\w+\\s+)?(?:FOR \\w+\\s+)?TO app_web\\b`,
+        "g",
+      ),
+    ),
+  ].map((m) => m[1] ?? "");
+
+/** `0020`'s insert-only policies: `FOR INSERT TO app_web WITH CHECK (…)` (spec 011 §5.1). */
+const INSERT_POLICIES: Policy[] = [
+  ...up.matchAll(
+    /CREATE POLICY (\w+) ON public\.(\w+)\s+FOR INSERT TO app_web\s+WITH CHECK \(([\s\S]*?)\);/g,
+  ),
+].map((m) => ({
+  name: m[1] ?? "",
+  table: m[2] ?? "",
+  command: "INSERT",
+  using: "",
+  check: (m[3] ?? "").replace(/\s+/g, " ").trim(),
+}));
+
 describe("migration 0011 — coverage", () => {
   it("opens with the ownership preamble, closes with RESET ROLE, and never forces RLS", () => {
     expect(up0011.trimStart().startsWith("SET LOCAL ROLE app_owner;")).toBe(
@@ -115,10 +141,11 @@ describe("migration 0011 — coverage", () => {
   });
 
   it("every policy the file creates was parsed (none hides behind an odd layout)", () => {
-    // The build role's policies (`0018`, spec 012b) are read by their own block below.
-    expect(POLICIES.length + BUILD_POLICIES.length).toBe(
-      [...up.matchAll(/CREATE POLICY/g)].length,
-    );
+    // The build role's policies (`0018`, spec 012b) and the insert-only ones (`0020`, spec 011)
+    // are read by their own blocks below.
+    expect(
+      POLICIES.length + BUILD_POLICIES.length + INSERT_POLICIES.length,
+    ).toBe([...up.matchAll(/CREATE POLICY/g)].length);
   });
 
   it("enables RLS on every table of the mirror, and on nothing else", () => {
@@ -155,6 +182,8 @@ describe("migration 0011 — coverage", () => {
     const classified = new Set<string>([
       ...PUBLIC_REFERENCE_TABLES,
       ...Object.keys(PUBLIC_FILTERED_TABLES),
+      ...Object.keys(PARTNER_FILTERED_TABLES),
+      ...Object.keys(PUBLIC_INSERT_ONLY_TABLES),
       ...Object.keys(PARTNER_SCOPED_TABLES),
       ...Object.keys(CUSTOMER_SCOPED_TABLES),
       ...SELF_SCOPED_TABLES,
@@ -210,6 +239,8 @@ describe("migration 0011 — each class gets exactly its policies", () => {
         policiesOf(table).map((p) => p.name),
         table,
       ).toEqual([`${table}_staff`]);
+      // Whatever the policy's shape: an insert-only or a restrictive policy counts too.
+      expect(anyPolicyNamesOf(table), table).toEqual([`${table}_staff`]);
     }
   });
 
@@ -351,7 +382,13 @@ describe("migration 0011 — each class gets exactly its policies", () => {
 
 describe("rollback 0011", () => {
   it("drops the views, every policy, RLS on every table, and every function it created", () => {
-    for (const policy of POLICIES.filter((p) => !LATER_TABLES.has(p.table))) {
+    // `0011`'s own policies; a later migration's policy on an `0011` table is dropped by that
+    // migration's rollback (`0020_florists_v0`, below).
+    for (const policy of POLICIES.filter(
+      (p) =>
+        !LATER_TABLES.has(p.table) &&
+        up0011.includes(`CREATE POLICY ${p.name} `),
+    )) {
       expect(down, policy.name).toMatch(
         new RegExp(
           `DROP POLICY IF EXISTS ${policy.name} ON ${ref(policy.table)};`,
@@ -441,5 +478,73 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     const grant = /GRANT SELECT ON([\s\S]*?)TO app_build;/u.exec(up0018);
     expect(revoke?.[1]?.trim()).toBe(grant?.[1]?.trim());
     expect(down0018).toContain("DROP ROLE app_build;");
+  });
+});
+
+describe("migration 0020 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () => {
+  const up0020 = readMigration("0020_florists_v0.sql");
+  const down0020 = readMigration("0020_florists_v0.down.sql");
+
+  it("partner_application: staff, plus one public insert-only policy whose check pins status, partner and decision", () => {
+    expect(Object.keys(PUBLIC_INSERT_ONLY_TABLES)).toEqual([
+      "partner_application",
+    ]);
+    expect(anyPolicyNamesOf("partner_application").sort()).toEqual([
+      "partner_application_public_insert",
+      "partner_application_staff",
+    ]);
+    expect(
+      INSERT_POLICIES.filter((p) => p.table === "partner_application"),
+    ).toEqual([
+      {
+        name: "partner_application_public_insert",
+        table: "partner_application",
+        command: "INSERT",
+        using: "",
+        check:
+          "app_current_role() = 'public' AND status = 'new' AND converted_partner_id IS NULL AND decided_at IS NULL",
+      },
+    ]);
+    expect(up0020).toContain("CHECK (cardinality(media_asset_ids) = 0)");
+  });
+
+  it("media_asset: the partner reads delivery photos through a SECURITY DEFINER lookup on its open or accepted offers", () => {
+    expect(Object.keys(PARTNER_FILTERED_TABLES)).toEqual(["media_asset"]);
+    expect(
+      policiesOf("media_asset")
+        .map((p) => p.name)
+        .sort(),
+    ).toEqual(["media_asset_partner", "media_asset_read", "media_asset_staff"]);
+    expect(
+      policiesOf("media_asset").find((p) => p.name === "media_asset_partner"),
+    ).toEqual({
+      name: "media_asset_partner",
+      table: "media_asset",
+      command: "SELECT",
+      using: "kind = 'delivery_proof' AND app_partner_sees_media(id)",
+      check: "",
+    });
+    expect(up0020).toMatch(
+      /CREATE FUNCTION public\.app_partner_sees_media\(target uuid\) RETURNS boolean\s+LANGUAGE sql STABLE\s+SECURITY DEFINER\s+SET search_path = pg_catalog, public/,
+    );
+    expect(up0020).toMatch(
+      /WHERE p\.media_asset_id = target AND app_partner_sees_order\(p\.order_id\)/,
+    );
+  });
+
+  it("the rollback drops both policies, the lookup, the column, the constraints and the retention rows", () => {
+    for (const statement of [
+      "DROP POLICY IF EXISTS media_asset_partner ON public.media_asset;",
+      "DROP FUNCTION IF EXISTS public.app_partner_sees_media(uuid);",
+      "DROP POLICY IF EXISTS partner_application_public_insert ON public.partner_application;",
+      "DROP COLUMN IF EXISTS locale_code;",
+      "DROP CONSTRAINT IF EXISTS partner_application_media_asset_ids_empty_check,",
+      "DROP COLUMN IF EXISTS contact_name;",
+    ]) {
+      expect(down0020).toContain(statement);
+    }
+    expect(down0020).toMatch(
+      /DELETE FROM public\.retention_policy\s+WHERE key IN \('partner_application', 'auth_session', 'auth_verification_token'\);/,
+    );
   });
 });
