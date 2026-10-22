@@ -37,6 +37,10 @@ Branch `task/TASK-070-db-catalogue-providers`. **Blocked on TASK-013** (spec 002
 
 _None recorded._
 
+## Progress
+
+- 2026-10-22: worktree on `task/TASK-070-db-catalogue-providers`; contract `emptyInPlace` now overwrites and reverses a nested array before truncating it (red under H4a sealed and H4b non-writable `length`, green before). Next: migration `0020_product_facets`, the `db/` providers, the Postgres contract run.
+
 ## Result
 
 _Pending._

@@ -204,13 +204,28 @@ function nestedFieldsOf(row: Record<string, unknown>): string[] {
 }
 
 /**
- * Empty one nested value in place: an array to length 0, an object to no keys. Each delete is its
+ * Empty one nested value in place: an array to length 0, an object to no keys. Each write is its
  * own `attempt()`, so a refused one cannot hide a later one that would have landed.
+ *
+ * An array is first written element-wise, because `length = 0` alone is refused by an array whose
+ * `length` is the only thing locked: a **sealed** nested array (H4a) and one with a non-writable
+ * `length` (H4b) both throw on the truncation and still take an element overwrite and an in-place
+ * `reverse()` (`/break 132`). So: overwrite the first element, then reverse (skipped where the
+ * first element equals the last, which a reverse could not change), then truncate.
  */
 function emptyInPlace(value: object): void {
   if (Array.isArray(value)) {
+    const items = value as unknown[];
     attempt(() => {
-      value.length = 0;
+      items[0] = changed(items[0]);
+    });
+    if (!isDeepStrictEqual(items[0], items.at(-1))) {
+      attempt(() => {
+        items.reverse();
+      });
+    }
+    attempt(() => {
+      items.length = 0;
     });
     return;
   }
