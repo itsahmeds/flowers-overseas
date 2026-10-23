@@ -62,7 +62,14 @@ const FORBIDDEN: readonly {
   },
   {
     name: "partner name",
-    pattern: /\b(kwiaciarnia|blumen|fleurs|interflora|euroflorist|fleurop)\b/iu,
+    pattern: /\b(kwiaciarnia|fleurs|interflora|euroflorist|fleurop)\b/iu,
+  },
+  // "Blumen" is the German word for flowers, and `de` is drafted German (spec 003 §14 A15), so a
+  // German shop name is "Blumen" or "Blumenhaus" followed by a capitalised name ("Blumen
+  // Schmidt"). Case-sensitive on purpose: "Blumen der Saison" and "Blumen senden" are copy.
+  {
+    name: "German shop name",
+    pattern: /\bBlumen(?:haus)?\s+\p{Lu}\p{Ll}+/u,
   },
   // A photograph shown, as opposed to the promise that one is taken and sent: "see the photo
   // below", "photo gallery", "photos of our deliveries".
@@ -196,13 +203,13 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
         "partner name",
         [
           "Kwiaciarnia Rosa",
-          "Blumen Schmidt",
           "Fleurs de Paris",
           "Interflora",
           "Euroflorist",
           "Fleurop",
         ],
       ],
+      ["German shop name", ["Blumen Schmidt", "Blumenhaus Meyer"]],
       [
         "delivery-photo gallery claim",
         [
@@ -233,7 +240,7 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
     }
     // Stated per pattern (`/review 99` round 1), so a generator that found no alternation cannot
     // pass as zero-vs-zero, and one claim losing a branch cannot hide behind another gaining one.
-    // They sum to 28; a single-branch pattern yields none.
+    // They sum to 27; a single-branch pattern yields none.
     expect(mutants).toStrictEqual({
       review: 0,
       rating: 2,
@@ -244,7 +251,8 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       "Trustpilot mark": 3,
       "florist count": 0,
       "customer count": 3,
-      "partner name": 6,
+      "partner name": 5,
+      "German shop name": 0,
       "delivery-photo gallery claim": 7,
     });
     expect(survivors).toStrictEqual([]);
@@ -259,6 +267,8 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       "A picture arrives when the flowers do, so you know it happened.",
       "Our florist in the recipient's town makes it and hands it over in person.",
       "7-day freshness guarantee",
+      // German copy: the common noun, never a shop name.
+      "Blumen der Saison, Blumen senden, Blumen für jemanden, der weit weg ist.",
     ]) {
       expect(
         FORBIDDEN.filter(({ pattern }) => pattern.test(allowed)).map(

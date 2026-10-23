@@ -81,8 +81,8 @@ export const X_DEFAULT_ERROR_COPY: ErrorCopy = {
  * Per launch locale, in registry order. Values are the **resolved** ones — `en-gb` is `en`
  * overlaid with its own thin override, which is why its `body` says "apologise" — because the
  * fallback chain lives in `messages.ts` and nothing here may import it. `de` and `pl` carry the
- * echoed English drafts of `pnpm i18n:draft` exactly as their catalogues do, so a real German
- * translation lands in both places in one edit and the parity test proves it did.
+ * agent-written, unreviewed drafts exactly as their catalogues do (spec 003 §14 A15; TASK-185), so
+ * a reviewed translation lands in both places in one edit and the parity test proves it did.
  */
 export const ERROR_COPY: Readonly<Record<string, ErrorCopy>> = {
   en: X_DEFAULT_ERROR_COPY,
@@ -94,18 +94,18 @@ export const ERROR_COPY: Readonly<Record<string, ErrorCopy>> = {
     home: "Home",
   },
   de: {
-    title: "Something went wrong. Flowers Overseas",
-    heading: "Something went wrong",
-    body: "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
-    retry: "Try again",
-    home: "Home",
+    title: "Etwas ist schiefgelaufen. Flowers Overseas",
+    heading: "Etwas ist schiefgelaufen",
+    body: "Die Seite konnte nicht geladen werden. Nichts von dem, was Sie gerade getan haben, ist verloren. Bitte entschuldigen Sie die Unterbrechung.",
+    retry: "Erneut versuchen",
+    home: "Startseite",
   },
   pl: {
-    title: "Something went wrong. Flowers Overseas",
-    heading: "Something went wrong",
-    body: "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
-    retry: "Try again",
-    home: "Home",
+    title: "Coś poszło nie tak. Flowers Overseas",
+    heading: "Coś poszło nie tak",
+    body: "Nie udało się wczytać strony. Nic z tego, co robisz, nie przepadło. Przepraszamy za przerwę.",
+    retry: "Spróbuj ponownie",
+    home: "Strona główna",
   },
 };
 

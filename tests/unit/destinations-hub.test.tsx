@@ -211,7 +211,17 @@ describe("the hub, rendered (T-08, AC-19, AC-20)", () => {
     // in the phone's back link to it (spec 004 §14 A24 clause 4 (e); TASK-195).
     expect(hrefs(html)).toEqual(["/de", "/de"]);
     expect(html).toMatch(/data-fo-back-link[^>]*href="\/de"/u);
-    expect(text(html)).toContain("We have not written a guide to");
+    // The no-guide line in the page's own language (`de`'s agent draft, spec 003 §14 A15), read
+    // from the catalogue up to its `{country}` argument rather than pinned as English.
+    const noGuide = (
+      loadMessages("de", ["destinationsHub"])["destinationsHub"] as {
+        noGuide: string;
+      }
+    ).noGuide;
+    const stem = noGuide.slice(0, noGuide.indexOf("{")).trim();
+    expect(stem.length).toBeGreaterThan(10);
+    expect(stem).not.toContain("We have not written");
+    expect(text(html)).toContain(stem);
     // No region heading for a group with nothing to link to (§5.3's empty-group state).
     for (const region of countryRegions) {
       expect(html, region).not.toContain(`data-fo-hub-region="${region}"`);
@@ -370,7 +380,21 @@ describe("the hub's h1 draws no italic phrase (TASK-231)", () => {
       const h1s = [...html.matchAll(/<h1[^>]*>(.*?)<\/h1>/gu)];
       expect(h1s, locale).toHaveLength(1);
       const inner = h1s[0]?.[1] ?? "";
-      expect(inner, locale).toBe("Where we can send flowers");
+      // The catalogue's heading in that locale, with the italic marker stripped: the shipped
+      // words, not an English literal (`de` and `pl` are drafts, spec 003 §14 A15).
+      const h1 = (
+        loadMessages(locale, ["destinationsHub"])["destinationsHub"] as {
+          h1: string;
+        }
+      ).h1.replaceAll(/<\/?em>/gu, "");
+      expect(h1, locale).toBe(
+        locale === "de"
+          ? "Wohin wir Blumen senden können"
+          : locale === "pl"
+            ? "Dokąd możemy wysłać kwiaty"
+            : "Where we can send flowers",
+      );
+      expect(inner, locale).toBe(h1);
       expect(inner, locale).not.toContain("<em");
     },
   );

@@ -3,11 +3,15 @@
  *
  * Fills a target catalogue from `messages/en.json` and records what it did in
  * `messages/{locale}.meta.json`. The Phase 0 provider is `echoDraftProvider`, which copies the
- * English value verbatim: no LLM, no API key, **no network**, no clock, no randomness — so `de`
- * and `pl` ship as honest unreviewed echoes that `isLocaleIndexable()` (TASK-039) keeps out of
- * the index, and CI can assert byte-identical output (§13 Q7, Q10). Replacing the provider is
- * the only change a real translation backend needs; it is a separate task with a `plan/07`
- * processor note, per §3.
+ * English value verbatim: no LLM, no API key, **no network**, no clock, no randomness, so CI can
+ * assert byte-identical output (§13 Q7). The German and Polish values themselves are
+ * **agent-written drafts committed by a task** (spec 003 §14 A15; TASK-185), not echoes: the
+ * echo only fills a key no agent has drafted yet, and rule 2 below keeps every fresh draft on a
+ * re-run. `i18n:check` check 10 then refuses a `de`/`pl` key left identical to English, so an
+ * echo cannot merge. Every draft is `source: "machine"`, `reviewed: false`, so
+ * `isLocaleIndexable()` keeps both locales out of the index until a native reviewer attests them.
+ * Replacing the provider is the only change a real translation backend needs; it is a separate
+ * task with a `plan/07` processor note, per §3.
  *
  * Four rules make the output deterministic and safe to re-run (AC-23):
  *

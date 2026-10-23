@@ -1,182 +1,182 @@
 {
   "a11y": {
-    "breadcrumb": "Breadcrumb",
-    "localeChooser": "Languages",
-    "localeSwitcher": "Change language",
+    "breadcrumb": "Ścieżka nawigacji",
+    "localeChooser": "Języki",
+    "localeSwitcher": "Zmień język",
     "media": {
-      "gallery": "Product images",
-      "imageOfCount": "Image {index} of {total}"
+      "gallery": "Zdjęcia produktu",
+      "imageOfCount": "Zdjęcie {index} z {total}"
     },
-    "skipToContent": "Skip to content"
+    "skipToContent": "Przejdź do treści"
   },
   "breadcrumb": {
-    "destinations": "Send flowers to",
+    "destinations": "Wyślij kwiaty do",
     "entity": "{name}",
-    "occasions": "Occasions",
-    "shopRoot": "Flowers"
+    "occasions": "Okazje",
+    "shopRoot": "Kwiaty"
   },
   "catalog": {
     "addon": {
-      "allergen": "Contains food. Please check for allergies before you order.",
+      "allergen": "Zawiera żywność. Przed zamówieniem sprawdź, czy nie ma ryzyka alergii.",
       "balloon": {
-        "description": "One helium balloon, tied to the bouquet on delivery.",
-        "name": "Balloon"
+        "description": "Jeden balon z helem, przywiązany do bukietu przy doręczeniu.",
+        "name": "Balon"
       },
       "card": {
-        "description": "Your message, printed on our card and tucked into the bouquet.",
-        "name": "Printed card"
+        "description": "Twoja wiadomość wydrukowana na naszym bileciku i wsunięta w bukiet.",
+        "name": "Drukowany bilecik"
       },
       "chocolates": {
         "description": "Pudełko dobrych czekoladek, dostarczane razem z kwiatami.",
-        "name": "Box of chocolates"
+        "name": "Pudełko czekoladek"
       },
       "plush": {
         "description": "Mała, nowa przytulanka dobrana do bukietu.",
-        "name": "Soft toy"
+        "name": "Przytulanka"
       },
       "vase": {
-        "description": "A plain glass vase, so the flowers can go straight into water.",
-        "name": "Glass vase"
+        "description": "Prosty szklany wazon, żeby kwiaty mogły od razu trafić do wody.",
+        "name": "Szklany wazon"
       },
       "wine": {
         "description": "Butelka lokalnego wina, tam gdzie pozwala na to lokalne prawo.",
-        "name": "Bottle of wine"
+        "name": "Butelka wina"
       }
     },
     "availability": {
-      "countryDemo": "We do not deliver to this country yet.",
-      "fxUnavailable": "We are showing this price in the currency of the delivery country.",
-      "inStock": "Available to order",
-      "noPartner": "We do not deliver to this destination yet.",
-      "outOfStock": "Not available to order"
+      "countryDemo": "Do tego kraju jeszcze nie dostarczamy.",
+      "fxUnavailable": "Pokazujemy tę cenę w walucie kraju dostawy.",
+      "inStock": "Można zamówić",
+      "noPartner": "Pod ten adres jeszcze nie dostarczamy.",
+      "outOfStock": "Nie można zamówić"
     },
     "descriptor": {
       "flower": {
-        "alstroemeria": "alstroemeria",
-        "carnations": "carnation",
-        "chrysanthemums": "chrysanthemum",
-        "freesias": "freesia",
-        "gerberas": "gerbera",
-        "hydrangeas": "hydrangea",
-        "lilies": "lily",
-        "mixed": "mixed-flower",
-        "orchids": "orchid",
-        "peonies": "peony",
-        "roses": "rose",
-        "seasonal": "seasonal",
-        "sunflowers": "sunflower",
-        "tulips": "tulip"
+        "alstroemeria": "alstremerii",
+        "carnations": "goździków",
+        "chrysanthemums": "chryzantem",
+        "freesias": "frezji",
+        "gerberas": "gerber",
+        "hydrangeas": "hortensji",
+        "lilies": "lilii",
+        "mixed": "mieszanych kwiatów",
+        "orchids": "orchidei",
+        "peonies": "piwonii",
+        "roses": "róż",
+        "seasonal": "kwiatów sezonowych",
+        "sunflowers": "słoneczników",
+        "tulips": "tulipanów"
       },
       "form": {
-        "arrangement": "{flower} arrangement",
-        "bouquet": "hand-tied {flower} bouquet",
+        "arrangement": "kompozycja z {flower}",
+        "bouquet": "ręcznie wiązany bukiet {flower}",
         "funeral": "{flower} funeral tribute",
-        "giftSet": "{flower} bouquet and gift",
-        "plant": "{flower} plant"
+        "giftSet": "bukiet {flower} z upominkiem",
+        "plant": "kompozycja z {flower} w doniczce"
       },
       "name": "{name}: {descriptor}"
     },
     "facet": {
       "colour": {
-        "blue": "Blue",
-        "mixed": "Mixed colours",
-        "orange": "Orange",
-        "pastel": "Pastel",
-        "pink": "Pink",
-        "purple": "Purple",
-        "red": "Red",
-        "vibrant": "Vibrant",
-        "white": "White",
-        "yellow": "Yellow"
+        "blue": "Niebieski",
+        "mixed": "Różne kolory",
+        "orange": "Pomarańczowy",
+        "pastel": "Pastelowy",
+        "pink": "Różowy",
+        "purple": "Fioletowy",
+        "red": "Czerwony",
+        "vibrant": "Intensywny",
+        "white": "Biały",
+        "yellow": "Żółty"
       },
       "flowerType": {
-        "alstroemeria": "Alstroemeria",
-        "carnations": "Carnations",
-        "chrysanthemums": "Chrysanthemums",
-        "freesias": "Freesias",
-        "gerberas": "Gerberas",
-        "hydrangeas": "Hydrangeas",
-        "lilies": "Lilies",
-        "mixed": "Mixed flowers",
-        "orchids": "Orchids",
-        "peonies": "Peonies",
-        "roses": "Roses",
-        "seasonal": "Seasonal flowers",
-        "sunflowers": "Sunflowers",
-        "tulips": "Tulips"
+        "alstroemeria": "Alstremerie",
+        "carnations": "Goździki",
+        "chrysanthemums": "Chryzantemy",
+        "freesias": "Frezje",
+        "gerberas": "Gerbery",
+        "hydrangeas": "Hortensje",
+        "lilies": "Lilie",
+        "mixed": "Kwiaty mieszane",
+        "orchids": "Orchidee",
+        "peonies": "Piwonie",
+        "roses": "Róże",
+        "seasonal": "Kwiaty sezonowe",
+        "sunflowers": "Słoneczniki",
+        "tulips": "Tulipany"
       },
       "occasion": {
         "allSaints": "All Saints' Day",
-        "anniversary": "Anniversary",
-        "apology": "I am sorry",
-        "birthday": "Birthday",
-        "christmas": "Christmas",
-        "congratulations": "Congratulations",
-        "easter": "Easter",
-        "fathersDay": "Father's Day",
-        "feteDesGrandsMeres": "Grandmothers' Day (France)",
-        "getWell": "Get well",
-        "graduation": "Graduation",
-        "grandparentsDay": "Grandparents' Day",
-        "housewarming": "Housewarming",
-        "justBecause": "Just because",
-        "konfirmation": "Confirmation",
-        "mai17": "Norwegian Constitution Day",
-        "mothersDay": "Mother's Day",
-        "muguet": "May Day lily of the valley",
-        "nameDay": "Name day",
-        "newBaby": "New baby",
-        "newYear": "New Year",
-        "omatag": "Grandmother's Day (Estonia)",
-        "retirement": "Retirement",
-        "romance": "Love and romance",
-        "santJordi": "Sant Jordi",
-        "student": "School leaving day",
+        "anniversary": "Rocznica",
+        "apology": "Przepraszam",
+        "birthday": "Urodziny",
+        "christmas": "Boże Narodzenie",
+        "congratulations": "Gratulacje",
+        "easter": "Wielkanoc",
+        "fathersDay": "Dzień Ojca",
+        "feteDesGrandsMeres": "Dzień Babci (Francja)",
+        "getWell": "Powrót do zdrowia",
+        "graduation": "Ukończenie studiów",
+        "grandparentsDay": "Dzień Babci i Dziadka",
+        "housewarming": "Parapetówka",
+        "justBecause": "Bez okazji",
+        "konfirmation": "Konfirmacja",
+        "mai17": "Święto Konstytucji Norwegii",
+        "mothersDay": "Dzień Matki",
+        "muguet": "Konwalie na Święto Pracy",
+        "nameDay": "Imieniny",
+        "newBaby": "Narodziny dziecka",
+        "newYear": "Nowy Rok",
+        "omatag": "Dzień Babci (Estonia)",
+        "retirement": "Emerytura",
+        "romance": "Miłość i romantyzm",
+        "santJordi": "Sant Jordi, katalońskie święto św. Jerzego",
+        "student": "Zakończenie szkoły",
         "sympathy": "Sympathy",
-        "teachersDay": "Teachers' Day",
-        "thankYou": "Thank you",
-        "valentines": "Valentine's Day",
-        "wedding": "Wedding",
-        "womensDay": "Women's Day"
+        "teachersDay": "Dzień Nauczyciela",
+        "thankYou": "Podziękowanie",
+        "valentines": "Walentynki",
+        "wedding": "Ślub",
+        "womensDay": "Dzień Kobiet"
       },
       "priceTier": {
-        "classic": "Classic",
-        "essential": "Essential",
-        "luxury": "Luxury",
+        "classic": "Klasyczny",
+        "essential": "Podstawowy",
+        "luxury": "Luksusowy",
         "premium": "Premium"
       },
       "productType": {
-        "arrangement": "Arrangement",
-        "bouquet": "Hand-tied bouquet",
+        "arrangement": "Kompozycja",
+        "bouquet": "Bukiet wiązany ręcznie",
         "funeral": "Funeral and sympathy",
-        "giftSet": "Flowers and gift set",
-        "plant": "Plant"
+        "giftSet": "Kwiaty z upominkiem",
+        "plant": "Roślina"
       },
       "style": {
-        "classic": "Classic",
-        "luxury": "Luxury",
-        "minimal": "Minimal",
-        "modern": "Modern",
-        "rustic": "Rustic"
+        "classic": "Klasyczny",
+        "luxury": "Luksusowy",
+        "minimal": "Minimalistyczny",
+        "modern": "Nowoczesny",
+        "rustic": "Rustykalny"
       }
     },
     "floristSentence": "Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
     "price": {
       "allIn": "w tym VAT i dostawa",
       "equivalents": "ok. {amounts} po kursie z {date}",
-      "from": "from {price}",
+      "from": "od {price}",
       "inclusive": "w tym VAT i dostawa"
     },
     "surcharge": {
-      "peakDay": "Peak day delivery",
-      "sunday": "Sunday delivery"
+      "peakDay": "Dostawa w dniu szczególnie dużego ruchu",
+      "sunday": "Dostawa w niedzielę"
     },
     "tier": {
-      "single": "One plant",
+      "single": "Jedna roślina",
       "size": {
-        "l": "Large",
-        "m": "Medium",
-        "s": "Small"
+        "l": "Duży",
+        "m": "Średni",
+        "s": "Mały"
       },
       "stems": "{count, plural, one {# łodyga} few {# łodygi} many {# łodyg} other {# łodyg}}"
     }
@@ -184,110 +184,110 @@
   "categoryHub": {
     "about": {
       "roses": {
-        "eyebrow": "About roses",
-        "heading": "Which rose says what"
+        "eyebrow": "O różach",
+        "heading": "Co mówi która róża"
       }
     },
     "deck": {
-      "bouquet": "Tied by hand the morning they go, and handed over wrapped, ready for water.",
-      "plant": "Something that is still there next season.",
-      "roses": "Red for love, white for a loss, pink and orange for everything in between."
+      "bouquet": "Wiązane ręcznie rano w dniu wysyłki i wręczane w papierze, gotowe do wstawienia do wody.",
+      "plant": "Coś, co będzie tam jeszcze w następnym sezonie.",
+      "roses": "Czerwone na miłość, białe na pożegnanie, różowe i pomarańczowe na wszystko pomiędzy."
     },
     "destinationCount": "{count, plural, one {Możemy tam wykonać # z nich.} few {Możemy tam wykonać # z nich.} many {Możemy tam wykonać # z nich.} other {Możemy tam wykonać # z nich.}}",
-    "destinationLink": "See them with prices for {country}",
-    "destinationPending": "No page yet. This becomes a link the day we start delivering here.",
-    "destinationsEyebrow": "First, the destination",
-    "destinationsHeading": "Where are they?",
-    "h1": "{entity} to send abroad",
-    "productsEyebrow": "Then, what we make",
-    "productsHeading": "Our {entity}"
+    "destinationLink": "{country}: zobacz z cenami",
+    "destinationPending": "Nie ma jeszcze strony. Link pojawi się w dniu, w którym zaczniemy tu dostarczać.",
+    "destinationsEyebrow": "Najpierw kierunek",
+    "destinationsHeading": "Gdzie mieszka odbiorca?",
+    "h1": "{entity} do wysłania za granicę",
+    "productsEyebrow": "Potem to, co robimy",
+    "productsHeading": "{entity}: nasz wybór"
   },
   "checkout": {
     "action": {
-      "toCard": "Continue to your details",
-      "toReview": "Continue to check"
+      "toCard": "Przejdź do swoich danych",
+      "toReview": "Przejdź do sprawdzenia"
     },
     "address": {
-      "city": "Town or city",
-      "fullName": "Recipient's name",
-      "phone": "Recipient's phone",
-      "postcode": "Postal code",
-      "street": "Street and number"
+      "city": "Miejscowość",
+      "fullName": "Imię i nazwisko odbiorcy",
+      "phone": "Telefon odbiorcy",
+      "postcode": "Kod pocztowy",
+      "street": "Ulica i numer"
     },
     "buyer": {
-      "country": "Country you live in",
-      "email": "Email",
-      "fullName": "Your name",
-      "phone": "Your phone"
+      "country": "Kraj, w którym mieszkasz",
+      "email": "E-mail",
+      "fullName": "Twoje imię i nazwisko",
+      "phone": "Twój telefon"
     },
     "card": {
-      "blank": "Leave it blank and we send the flowers without a card.",
-      "counter": "{count} of {max} characters",
-      "label": "Card message",
-      "preview": "Printed on our card · included",
-      "previewLabel": "Preview of the printed card",
-      "signAs": "Sign as",
-      "signAsHint": "Up to {max} characters"
+      "blank": "Zostaw puste, a wyślemy kwiaty bez bileciku.",
+      "counter": "{count} z {max} znaków",
+      "label": "Treść bileciku",
+      "preview": "Wydrukowany na naszym bileciku · w cenie",
+      "previewLabel": "Podgląd wydrukowanego bileciku",
+      "signAs": "Podpis",
+      "signAsHint": "Do {max} znaków"
     },
     "demo": {
-      "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
-      "bannerTitle": "This is a demo order.",
-      "place": "Place demo order. Nothing is charged.",
-      "placing": "Placing your demo order…",
-      "useSample": "Use sample details"
+      "bannerBody": "Nic nie jest pobierane i nic nie jest dostarczane. Pokazuje, jak działa zamawianie.",
+      "bannerTitle": "To jest zamówienie pokazowe.",
+      "place": "Złóż zamówienie pokazowe. Nic nie pobieramy.",
+      "placing": "Składamy Twoje zamówienie pokazowe…",
+      "useSample": "Użyj przykładowych danych"
     },
     "error": {
-      "addonUnavailable": "This extra is not available for this delivery. Please remove it.",
-      "countryInvalid": "Please choose a country from the list.",
-      "dateInvalid": "Please pick a date from the calendar.",
-      "emailInvalid": "Please enter an email address in the form name@example.com.",
-      "invalidCharacters": "Please remove the special characters from this text.",
-      "phoneInvalid": "Please enter the full phone number, with the country code.",
-      "placeKindInvalid": "Please choose where the flowers are going.",
-      "postcodeFormat": "Please enter it in the form {example}.",
-      "required": "Please fill this in to continue.",
+      "addonUnavailable": "Ten dodatek nie jest dostępny przy tej dostawie. Usuń go.",
+      "countryInvalid": "Wybierz kraj z listy.",
+      "dateInvalid": "Wybierz datę z kalendarza.",
+      "emailInvalid": "Wpisz adres e-mail w formacie name@example.com.",
+      "invalidCharacters": "Usuń znaki specjalne z tego tekstu.",
+      "phoneInvalid": "Wpisz pełny numer telefonu z numerem kierunkowym kraju.",
+      "placeKindInvalid": "Wybierz, dokąd mają trafić kwiaty.",
+      "postcodeFormat": "Wpisz w formacie {example}.",
+      "required": "Wypełnij to pole, żeby przejść dalej.",
       "summaryItem": "{field}: {message}",
-      "summaryTitle": "Please check these details",
-      "tooLong": "Please shorten this to {max} characters or fewer."
+      "summaryTitle": "Sprawdź te dane",
+      "tooLong": "Skróć to do najwyżej {max} znaków."
     },
     "field": {
-      "optional": "optional"
+      "optional": "opcjonalnie"
     },
     "placeKind": {
-      "cemetery": "A cemetery",
-      "church": "A church",
+      "cemetery": "Cmentarz",
+      "church": "Kościół",
       "funeralHome": "A funeral home",
-      "home": "A home",
-      "hospital": "A hospital",
-      "hotel": "A hotel",
-      "legend": "Where is it going?",
-      "work": "A workplace"
+      "home": "Dom lub mieszkanie",
+      "hospital": "Szpital",
+      "hotel": "Hotel",
+      "legend": "Dokąd mają trafić kwiaty?",
+      "work": "Miejsce pracy"
     },
     "price": {
-      "changed": "<b>The price changed from {old} to {new} since you opened the product page.</b> Please check it before you continue.",
-      "confirm": "Continue at {new}",
+      "changed": "<b>Cena zmieniła się z {old} na {new} od chwili otwarcia strony produktu.</b> Sprawdź ją, zanim przejdziesz dalej.",
+      "confirm": "Kontynuuj za {new}",
       "currencyLine": "Płacisz w {buyerCurrency}."
     },
     "privacy": {
       "demoNotice": "<b>Użyj przykładowych danych, a nie danych prawdziwej osoby.</b> To, co tu wpiszesz, przechowujemy przez {period, select, hours24 {24 godziny} other {7 dni}}, aby pokazać, jak działa zamawianie, a potem usuwamy dane osobowe. {controllerLine}"
     },
     "progress": {
-      "card": "Card and you",
-      "compact": "Step {current} of {total} · {name}",
-      "label": "Checkout steps",
-      "recipient": "Recipient",
-      "review": "Check"
+      "card": "Bilecik i Ty",
+      "compact": "Krok {current} z {total} · {name}",
+      "label": "Kroki zamówienia",
+      "recipient": "Odbiorca",
+      "review": "Sprawdź"
     },
     "recipient": {
-      "phoneNonLocal": "This does not look like a phone number in {country}. Our florist may not be able to call it.",
-      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only."
+      "phoneNonLocal": "{country}: to nie wygląda na numer telefonu z tego kraju. Nasz florysta może nie móc się dodzwonić.",
+      "phoneReason": "Nasz florysta zadzwoni do odbiorcy, jeśli nikt nie otworzy drzwi. Używamy tego numeru tylko do tej dostawy."
     },
     "summary": {
-      "delivery": "Delivery",
-      "included": "included",
-      "mini": "Your order · {product}",
-      "title": "Your order",
-      "total": "You pay",
+      "delivery": "Dostawa",
+      "included": "w cenie",
+      "mini": "Twoje zamówienie · {product}",
+      "title": "Twoje zamówienie",
+      "total": "Płacisz",
       "vat": "VAT {rate}",
       "vatOf": "Of which VAT {rate}"
     }
@@ -295,7 +295,7 @@
   "common": {
     "beta": "Beta",
     "floristCount": "{count, plural, one {# kwiaciarnia} few {# kwiaciarnie} many {# kwiaciarni} other {# kwiaciarni}}",
-    "homeLink": "Home"
+    "homeLink": "Strona główna"
   },
   "company": {
     "description": "Wysyłamy kwiaty w całej Europie. Zamawiasz u nas; nasz florysta w miejscowości odbiorcy przygotowuje bukiet i wręcza go osobiście.",
@@ -308,10 +308,10 @@
   },
   "confirmation": {
     "recap": {
-      "card": "Card",
-      "date": "Date",
-      "nothingCharged": "Nothing was charged.",
-      "recipient": "Recipient"
+      "card": "Bilecik",
+      "date": "Data",
+      "nothingCharged": "Nic nie zostało pobrane.",
+      "recipient": "Odbiorca"
     }
   },
   "consent": {
@@ -380,130 +380,130 @@
   },
   "corridor": {
     "calendar": {
-      "caption": "Occasions in {country} over the next twelve months, with the rule each date is computed from",
-      "date": "Date",
-      "eyebrow": "The year in {country}",
-      "heading": "When flowers are given in {country}",
-      "intro": "These are {country}'s dates, and they are facts whether or not we deliver there — which is why the calendar is on this page in both states.",
-      "occasion": "Occasion",
-      "rule": "Rule",
-      "undated": "Also kept here, with no date of its own: {occasions}."
+      "caption": "{country}: okazje w najbliższych dwunastu miesiącach, z regułą, według której liczymy każdą datę",
+      "date": "Data",
+      "eyebrow": "{country}: rok w kalendarzu",
+      "heading": "{country}: kiedy daje się kwiaty",
+      "intro": "{country} ma własne daty i obowiązują one bez względu na to, czy tam dostarczamy. Dlatego kalendarz jest na tej stronie w obu przypadkach.",
+      "occasion": "Okazja",
+      "rule": "Reguła",
+      "undated": "Tu też, bez własnej daty: {occasions}."
     },
     "coverage": {
-      "bodyNone": "We are not delivering in {country} yet, so this page lists no towns.",
-      "eyebrow": "Where we deliver",
-      "headingCities": "The cities we reach in {country}",
-      "headingNone": "Nowhere in {country}, today"
+      "bodyNone": "{country} to kraj, do którego jeszcze nie dostarczamy, więc ta strona nie wymienia żadnych miejscowości.",
+      "eyebrow": "Dokąd dostarczamy",
+      "headingCities": "{country}: miasta, do których docieramy",
+      "headingNone": "{country}: dziś nigdzie"
     },
     "facts": {
       "cities": {
-        "label": "Cities we reach",
-        "none": "— none named. A country we do not deliver to may not list its cities."
+        "label": "Miasta, do których docieramy",
+        "none": "Żadne nie są podane. Kraj, do którego nie dostarczamy, nie ma listy miast."
       },
       "delivering": {
-        "label": "Delivering",
-        "none": "Not yet. This page will say so the day we start delivering in {country}."
+        "label": "Dostawa",
+        "none": "Jeszcze nie. Ta strona powie o tym w dniu, w którym zaczniemy dostarczać do tego kraju ({country})."
       },
       "deliveryDays": {
-        "label": "Delivery days",
-        "none": "— none to state"
+        "label": "Dni dostaw",
+        "none": "Brak do podania"
       },
-      "eyebrow": "Delivery facts",
-      "headingGuide": "What we can say about delivering here today",
-      "headingLive": "What happens on the day",
+      "eyebrow": "Dostawa w skrócie",
+      "headingGuide": "Co możemy dziś powiedzieć o dostawie w tym kraju",
+      "headingLive": "Co dzieje się w dniu dostawy",
       "orderBy": {
-        "label": "Order by",
+        "label": "Termin zamówienia",
         "none": "Na razie brak.",
-        "value": "{time} in {zone} — the recipient's own time, not yours — for delivery the same day"
+        "value": "{time}, strefa {zone}, czyli według czasu odbiorcy, nie Twojego, a dostarczymy tego samego dnia"
       },
       "prices": {
-        "fromLabel": "Prices from",
+        "fromLabel": "Ceny od",
         "fromValue": "{price}, delivery and VAT already in",
-        "label": "Prices",
-        "none": "— no price on this page. Prices appear when we start delivering here."
+        "label": "Ceny",
+        "none": "Na tej stronie nie ma cen. Pojawią się, gdy zaczniemy tu dostarczać."
       },
       "soonest": {
-        "label": "Soonest date",
-        "none": "— no date"
+        "label": "Najbliższy termin",
+        "none": "Brak terminu"
       },
       "sunday": {
-        "always": "Every Sunday, and the fee is printed on the date before you choose it",
-        "label": "Sundays",
-        "no": "No delivery on Sundays",
-        "peak": "On request on the days that matter, and the fee is printed on the date before you choose it"
+        "always": "W każdą niedzielę; dopłata jest podana przy dacie, zanim ją wybierzesz",
+        "label": "Niedziele",
+        "no": "Bez dostaw w niedziele",
+        "peak": "Na życzenie w ważne dni; dopłata jest podana przy dacie, zanim ją wybierzesz"
       }
     },
     "faq": {
-      "eyebrow": "Questions about {country}",
-      "heading": "{count, number} questions, and they are {country}'s own"
+      "eyebrow": "{country}: pytania",
+      "heading": "{country}: pytania tylko o ten kraj ({count, number})"
     },
     "flowers": {
-      "eyebrow": "Flowers in {country}",
-      "heading": "What is sent, and what is not",
-      "sentMost": "Sent most",
-      "sentRarely": "Sent rarely, or never"
+      "eyebrow": "{country}: kwiaty",
+      "heading": "Co się wysyła, a czego nie",
+      "sentMost": "Wysyłane najczęściej",
+      "sentRarely": "Wysyłane rzadko albo nigdy"
     },
     "photo": {
-      "caption": "Photo slot · {country}"
+      "caption": "Miejsce na zdjęcie · {country}"
     },
     "related": {
-      "eyebrow": "Related destinations",
-      "heading": "{count, plural, one {One more guide} other {# more guides}}"
+      "eyebrow": "Podobne kierunki",
+      "heading": "{count, plural, one {Jeszcze jeden przewodnik} few {Jeszcze # przewodniki} many {Jeszcze # przewodników} other {Jeszcze # przewodnika}}"
     },
     "shop": {
       "body": "Bukiety, które nasz florysta w {country} może zrobić, w cenach dla {country}, z dostawą i VAT już w cenie.",
-      "cta": "See flowers for {country}",
-      "heading": "See what can arrive in {country}"
+      "cta": "{country}: zobacz kwiaty",
+      "heading": "{country}: zobacz, co może tam dotrzeć"
     },
     "steps": {
-      "eyebrowGuide": "How we will work here",
-      "eyebrowLive": "How we work here",
+      "eyebrowGuide": "Jak będziemy tu działać",
+      "eyebrowLive": "Jak tu działamy",
       "guide": {
-        "oneBody": "In your own language and your own currency, with the whole price — delivery and VAT in it — shown before you pay.",
-        "oneTitle": "You order from us",
-        "threeBody": "The florist photographs what was handed over and we email it to you. If it is not what we promised, we make it right.",
-        "threeTitle": "You get the photo",
+        "oneBody": "W swoim języku i swojej walucie, z pełną ceną, razem z dostawą i VAT, pokazaną, zanim zapłacisz.",
+        "oneTitle": "Zamawiasz u nas",
+        "threeBody": "Florysta fotografuje to, co zostało wręczone, a my wysyłamy Ci zdjęcie e-mailem. Jeśli to nie jest to, co obiecaliśmy, naprawimy to.",
+        "threeTitle": "Dostajesz zdjęcie",
         "twoBody": "Nasz florysta widzi adres odbiorcy i treść Twojego bileciku, nic więcej o Tobie.",
-        "twoTitle": "Our florist makes it where it is going"
+        "twoTitle": "Nasz florysta układa bukiet tam, dokąd trafi"
       },
-      "headingGuide": "The same three steps, everywhere we open",
-      "headingLive": "How we send flowers to {country}",
+      "headingGuide": "Te same trzy kroki wszędzie, gdzie ruszamy",
+      "headingLive": "{country}: jak wysyłamy tam kwiaty",
       "live": {
-        "oneBody": "In your language, in your currency, with the all-in price shown before you pay.",
-        "oneTitle": "You order from anywhere",
-        "threeBody": "The florist photographs the delivered bouquet and we email it to you the same day.",
-        "threeTitle": "You get the photo",
+        "oneBody": "W swoim języku, w swojej walucie, z pełną ceną pokazaną, zanim zapłacisz.",
+        "oneTitle": "Zamawiasz, skądkolwiek jesteś",
+        "threeBody": "Florysta fotografuje doręczony bukiet, a my wysyłamy Ci zdjęcie e-mailem tego samego dnia.",
+        "threeTitle": "Dostajesz zdjęcie",
         "twoBody": "Nasz florysta widzi adres odbiorcy i treść Twojego bileciku, nic więcej o Tobie.",
-        "twoTitle": "Our florist in {country} makes it"
+        "twoTitle": "{country}: bukiet układa nasz florysta na miejscu"
       }
     },
     "weekday": {
-      "friday": "Friday",
-      "monday": "Monday",
-      "saturday": "Saturday",
-      "sunday": "Sunday",
-      "thursday": "Thursday",
-      "tuesday": "Tuesday",
-      "wednesday": "Wednesday"
+      "friday": "Piątek",
+      "monday": "Poniedziałek",
+      "saturday": "Sobota",
+      "sunday": "Niedziela",
+      "thursday": "Czwartek",
+      "tuesday": "Wtorek",
+      "wednesday": "Środa"
     }
   },
   "delivery": {
-    "corridorLink": "What we can tell you about sending flowers to {country}",
-    "legend": "When should it arrive?",
+    "corridorLink": "{country}: co możemy powiedzieć o wysyłaniu tam kwiatów",
+    "legend": "Kiedy kwiaty mają dotrzeć?",
     "picker": {
       "live": "Zamów do {time} ({city}), według czasu odbiorcy, nie Twojego",
-      "preview": "This is how delivery dates will work in {country}. We are not taking orders yet.",
-      "unavailable": "Delivery dates for {country} open when ordering does."
+      "preview": "{country}: tak będą działać terminy dostaw. Jeszcze nie przyjmujemy zamówień.",
+      "unavailable": "{country}: terminy dostaw pojawią się, gdy ruszą zamówienia."
     },
     "reason": {
-      "beforeEarliest": "This date has passed",
-      "notDeliveryDay": "We do not deliver on this day in {country}",
-      "notOrderable": "Not taking orders yet",
-      "pastCutoff": "Ordering closed at {time} in {city}",
-      "publicHoliday": "Public holiday in {country}",
-      "sundayClosed": "We do not deliver on Sundays in {country}"
+      "beforeEarliest": "Ta data już minęła",
+      "notDeliveryDay": "{country}: w ten dzień nie dostarczamy",
+      "notOrderable": "Jeszcze nie przyjmujemy zamówień",
+      "pastCutoff": "Zamówienia przyjmowaliśmy do {time} ({city})",
+      "publicHoliday": "{country}: święto państwowe",
+      "sundayClosed": "{country}: nie dostarczamy w niedziele"
     },
-    "submit": "Use this date"
+    "submit": "Wybierz tę datę"
   },
   "destinations": {
     "de": {
@@ -529,61 +529,61 @@
       "name": "Rumunia"
     },
     "state": {
-      "deliveringNow": "Delivering now",
-      "guideNotDelivering": "Guide · not delivering yet"
+      "deliveringNow": "Dostarczamy",
+      "guideNotDelivering": "Przewodnik · jeszcze nie dostarczamy"
     }
   },
   "destinationsHub": {
-    "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
-    "h1": "Where we can <em>send flowers</em>",
+    "emptyBody": "Nie mamy jeszcze przewodnika w tym języku, więc każdy kierunek na tej stronie to sam tekst. Piszemy o tych krajach: {destinations}. Każdy przewodnik pisze człowiek, w języku, w którym go czytasz. Dlatego ta strona woli poczekać, niż pokazać Ci tłumaczenie, którego nikt nie sprawdził.",
+    "h1": "Dokąd możemy <em>wysłać kwiaty</em>",
     "intro": "Siedem krajów w Europie, a o każdym z nich napisaliśmy przewodnik: co się daje, czego nigdy się nie daje, jak pisze się adres i które daty liczą się tam w ciągu roku. Najpierw piszemy przewodnik, a dostawę otwieramy po nim. Tam, gdzie jeszcze nie dostarczamy, ta strona mówi to tymi samymi słowami w każdym wierszu.",
-    "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
-    "phoneIntro": "Seven countries in Europe, each with a guide we wrote ourselves.",
-    "readGuide": "Read the guide →",
+    "noGuide": "{country}: nie mamy jeszcze przewodnika w tym języku. Kiedy powstanie, ta linia stanie się linkiem.",
+    "phoneIntro": "Siedem krajów w Europie, o każdym przewodnik, który napisaliśmy sami.",
+    "readGuide": "Czytaj przewodnik →",
     "region": {
-      "centralEurope": "Central Europe",
-      "southEasternEurope": "South-eastern Europe",
-      "westernSouthernEurope": "Western and Southern Europe"
+      "centralEurope": "Europa Środkowa",
+      "southEasternEurope": "Europa Południowo-Wschodnia",
+      "westernSouthernEurope": "Europa Zachodnia i Południowa"
     },
     "regionLabel": "Region · {region}",
-    "seoDescription": "Seven countries in Europe, each with a guide we wrote ourselves: what is given, what is never given, and which dates matter in a year there.",
-    "seoTitle": "Where we can send flowers"
+    "seoDescription": "Siedem krajów w Europie, o każdym przewodnik, który napisaliśmy sami: co się daje, czego nigdy się nie daje i które daty liczą się tam w ciągu roku.",
+    "seoTitle": "Dokąd możemy wysłać kwiaty"
   },
   "errors": {
     "notFound": {
-      "body": "That page does not exist. Check the address, or start again from the home page.",
-      "heading": "Page not found"
+      "body": "Ta strona nie istnieje. Sprawdź adres albo zacznij jeszcze raz od strony głównej.",
+      "heading": "Nie znaleziono strony"
     },
     "serverError": {
-      "body": "The page could not be loaded. Nothing you were doing was lost. We apologize for the interruption.",
-      "heading": "Something went wrong",
-      "retry": "Try again"
+      "body": "Nie udało się wczytać strony. Nic z tego, co robisz, nie przepadło. Przepraszamy za przerwę.",
+      "heading": "Coś poszło nie tak",
+      "retry": "Spróbuj ponownie"
     }
   },
   "faq": {
-    "allTopics": "All help topics",
-    "allTopicsPending": "Our help pages are being written. Until they are up, the answers below are the whole of what we promise.",
-    "eyebrow": "Before you order",
-    "heading": "Questions people <em>ask first</em>",
+    "allTopics": "Wszystkie tematy pomocy",
+    "allTopicsPending": "Nasze strony pomocy właśnie powstają. Dopóki ich nie ma, odpowiedzi poniżej to wszystko, co obiecujemy.",
+    "eyebrow": "Zanim zamówisz",
+    "heading": "O co ludzie <em>pytają najpierw</em>",
     "nobodyHome": {
-      "answer": "Our florist calls the recipient first. If they cannot be reached, we agree a redelivery with you, at no charge.",
-      "question": "What if nobody is home?"
+      "answer": "Nasz florysta najpierw dzwoni do odbiorcy. Jeśli nie uda się go złapać, umawiamy z Tobą nowy termin doręczenia i nic za to nie płacisz.",
+      "question": "Co, jeśli nikogo nie będzie w domu?"
     },
     "photo": {
       "answer": "Podobny, nie identyczny. Nasz florysta pracuje z tym, co tego ranka jest świeże, i zastępuje kwiaty odpowiednikami w kolorze i wartości. Każda zmiana jest odnotowana na zdjęciu, które od nas dostajesz.",
-      "question": "Will the bouquet look like the photo?"
+      "question": "Czy bukiet będzie wyglądał jak na zdjęciu?"
     },
     "whoDelivers": {
-      "answer": "Our own florist in the recipient's town, by hand, on the day you choose.",
-      "answerCutoff": "Order by 14:00 in Warsaw, the recipient's own time, for delivery today.",
-      "question": "Who delivers, and when?"
+      "answer": "Nasz własny florysta w miejscowości odbiorcy, osobiście, w dniu, który wybierzesz.",
+      "answerCutoff": "Zamów do 14:00 czasu warszawskiego, czyli czasu odbiorcy, a dostarczymy dziś.",
+      "question": "Kto dostarcza i kiedy?"
     }
   },
   "finder": {
     "country": {
-      "label": "Country"
+      "label": "Kraj"
     },
-    "submit": "Continue"
+    "submit": "Dalej"
   },
   "footer": {
     "cookieSettings": "Ustawienia plików cookie",
@@ -594,7 +594,7 @@
     },
     "link": {
       "cookies": "Pliki cookie",
-      "deliveryAndPayment": "Delivery and payment",
+      "deliveryAndPayment": "Dostawa i płatność",
       "destinations": "Kierunki",
       "guarantee": "Gwarancja",
       "helpAndContact": "Pomoc i kontakt",
@@ -611,80 +611,80 @@
       "processor": "Płatności kartą obsługuje Stripe. Nie przechowujemy numerów kart."
     },
     "reminders": {
-      "body": "Name days, All Saints, Women's Day: one email a few days before each, in your language. Unsubscribe in one click.",
+      "body": "Imieniny, Wszystkich Świętych, Dzień Kobiet: jeden e-mail kilka dni przed każdą okazją, w Twoim języku. Wypisujesz się jednym kliknięciem.",
       "consent": "Consent is asked in the email we send first; nothing is stored until you confirm.",
-      "emailLabel": "Email address",
-      "heading": "Occasion reminders",
-      "submit": "Remind me"
+      "emailLabel": "Adres e-mail",
+      "heading": "Przypomnienia o okazjach",
+      "submit": "Przypomnij mi"
     },
     "signoff": "Z miłością, skądkolwiek jesteś."
   },
   "home": {
     "dates": {
-      "eyebrow": "Coming up in Poland",
-      "heading": "Dates worth <em>sending for</em>",
-      "orderBy": "Order by {date}, {time}"
+      "eyebrow": "Wkrótce w Polsce",
+      "heading": "Daty, na które <em>warto wysłać kwiaty</em>",
+      "orderBy": "Zamów do {date}, {time}"
     },
     "destinations": {
       "body": "Otwieramy kraje jeden po drugim i tylko wtedy, gdy możemy obiecać te same kwiaty i tę samą troskę.",
-      "eyebrow": "Destinations"
+      "eyebrow": "Kierunki"
     },
     "hero": {
-      "eyebrow": "International flower delivery",
-      "heading": "Flowers for someone <em>far away.</em>",
-      "proposition": "Our florist in your recipient's town makes it and hands it over in person. We never ship a box."
+      "eyebrow": "Kwiaty za granicę",
+      "heading": "Kwiaty dla bliskich <em>w innym kraju.</em>",
+      "proposition": "Nasz florysta w miejscowości odbiorcy układa bukiet i wręcza go osobiście. Nigdy nie wysyłamy kwiatów w kartonie."
     },
     "howItWorks": {
       "choose": {
-        "body": "Every price is final, and any order-by time we show is on the recipient's clock, not yours.",
-        "title": "You choose the town, the day and a bouquet."
+        "body": "Każda cena jest ostateczna, a każda godzina, do której trzeba zamówić, liczy się według zegara odbiorcy, nie Twojego.",
+        "title": "Wybierasz miejscowość, dzień i bukiet."
       },
       "deliver": {
-        "body": "A picture arrives when the flowers do, so you know it happened.",
-        "title": "Delivered by hand. You get the photo."
+        "body": "Zdjęcie przychodzi razem z kwiatami, więc wiesz, że wszystko się udało.",
+        "title": "Wręczany osobiście. Dostajesz zdjęcie."
       },
-      "eyebrow": "How we send your flowers",
-      "heading": "Three people touch your order. <em>None of them is a courier.</em>",
-      "intro": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form and nothing to pay on arrival.",
+      "eyebrow": "Jak wysyłamy Twoje kwiaty",
+      "heading": "Twoim zamówieniem zajmują się trzy osoby. <em>Żadna z nich nie jest kurierem.</em>",
+      "intro": "Zamawiasz u nas w swoim języku i swojej walucie. Nasz florysta w miejscowości odbiorcy układa bukiet rano w dniu doręczenia i wręcza go osobiście. Nic nie przekracza granicy, więc nie ma formularza celnego ani niczego do zapłacenia przy odbiorze.",
       "make": {
-        "body": "Made that morning with what is in season locally. Substitutions are like for like, and we tell you.",
+        "body": "Układany tego samego ranka z tego, co jest akurat w sezonie na miejscu. Jeśli coś zamieniamy, to na odpowiednik, i mówimy Ci o tym.",
         "title": "Nasz florysta w pobliżu przygotowuje go tego samego ranka."
       }
     },
     "occasions": {
-      "eyebrow": "Shop by occasion",
-      "heading": "What is the <em>occasion?</em>"
+      "eyebrow": "Kwiaty na okazję",
+      "heading": "Jaka to <em>okazja?</em>"
     },
     "proof": {
       "guarantee": {
-        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
-        "title": "Fresh-flower promise"
+        "body": "Jeśli kwiaty nie dotrą świeże i w dobrym stanie, wyślij nam zdjęcie w ciągu 72 godzin od doręczenia. Wymienimy je albo zwrócimy Ci całą kwotę.",
+        "title": "Obietnica świeżych kwiatów"
       },
       "local": {
         "body": "Robi go nasz florysta, kilka ulic od ich drzwi.",
-        "title": "We make it in their own town"
+        "title": "Bukiet powstaje w ich własnym mieście"
       },
       "photo": {
-        "body": "We email you the picture of what was handed over",
-        "title": "We photograph it at the door"
+        "body": "Wysyłamy Ci e-mailem zdjęcie tego, co zostało wręczone",
+        "title": "Fotografujemy bukiet przy drzwiach"
       }
     },
     "reviews": {
-      "attribution": "{name} · sent to {place} · {date} · {verification}",
-      "body": "Every review here comes from a completed order and shows the destination and the date. This section is hidden until the first verified reviews exist; nothing here is invented.",
-      "eyebrow": "Verified reviews",
-      "heading": "What buyers and recipients say",
-      "trustpilotPending": "Trustpilot rating, once the profile is claimed",
+      "attribution": "{name} · wysłane do: {place} · {date} · {verification}",
+      "body": "Każda opinia tutaj pochodzi ze zrealizowanego zamówienia i pokazuje miejsce oraz datę doręczenia. Ta sekcja pozostaje ukryta, dopóki nie pojawią się pierwsze sprawdzone opinie. Nic tu nie jest zmyślone.",
+      "eyebrow": "Sprawdzone opinie",
+      "heading": "Co mówią kupujący i obdarowani",
+      "trustpilotPending": "Ocena w Trustpilot, gdy tylko przejmiemy profil",
       "trustpilotRegion": "Trustpilot",
       "verified": {
-        "delivery": "verified delivery",
-        "order": "verified order"
+        "delivery": "sprawdzona dostawa",
+        "order": "sprawdzone zamówienie"
       }
     },
     "sentence": {
       "frame": "Kwiaty dla <who></who> <occasion></occasion>, wysyłka do kraju: <country></country>.",
       "heading": "Zacznij od tego, dla kogo są kwiaty",
-      "notYet": "{country} (not yet)",
+      "notYet": "{country} (jeszcze nie)",
       "occasion": "{occasion, select, birthday {{pronoun, select, her {na jej urodziny} his {na jego urodziny} other {na urodziny}}} nameDay {{pronoun, select, her {na jej imieniny} his {na jego imieniny} other {na imieniny}}} anniversary {na rocznicę} sympathy {z wyrazami współczucia} justBecause {bez okazji} newBaby {z okazji narodzin} other {z okazji}}",
       "who": "{who, select, mum {mojej mamy} dad {mojego taty} grandma {mojej babci} grandad {mojego dziadka} friend {przyjaciela lub przyjaciółki} someoneILove {ukochanej osoby} other {mojej drugiej połówki}}"
     },
@@ -695,19 +695,19 @@
   },
   "infoPages": {
     "company": {
-      "notRegistered": "Flowers Overseas is not yet a registered company. We are registering it in Estonia and will publish its details here when that is done."
+      "notRegistered": "Flowers Overseas nie jest jeszcze zarejestrowaną firmą. Rejestrujemy ją w Estonii i opublikujemy tu jej dane, gdy to się stanie."
     },
     "contact": {
-      "body": "A person answers. Call us or message us on WhatsApp, and include your order number if you have one.",
-      "heading": "Talk to us",
-      "phone": "Phone",
-      "privacy": "Questions about your personal data come to the same number."
+      "body": "Odpowiada człowiek. Zadzwoń albo napisz do nas na WhatsApp i podaj numer zamówienia, jeśli go masz.",
+      "heading": "Porozmawiaj z nami",
+      "phone": "Telefon",
+      "privacy": "Pytania o Twoje dane osobowe kieruj pod ten sam numer."
     },
     "delivery": {
-      "status": "Status"
+      "status": "Stan"
     },
     "status": {
-      "notYetOpen": "We are not taking orders yet. This page describes how ordering will work when we open."
+      "notYetOpen": "Jeszcze nie przyjmujemy zamówień. Ta strona opisuje, jak zamawianie będzie działać, gdy ruszymy."
     }
   },
   "languagePopup": {
@@ -721,70 +721,70 @@
   },
   "media": {
     "placeholder": {
-      "delivery": "Photography to supply · a bouquet handed over at the recipient's door",
-      "hero": "Photography to supply · our florist finishing a hand-tied bouquet in morning light",
-      "occasion": "Photography to supply · flowers sent for this occasion",
-      "product": "Photography to supply · this bouquet as our florist makes it"
+      "delivery": "Zdjęcie wkrótce · bukiet wręczany w drzwiach odbiorcy",
+      "hero": "Zdjęcie wkrótce · nasz florysta kończy ręcznie wiązany bukiet w porannym świetle",
+      "occasion": "Zdjęcie wkrótce · kwiaty wysłane na tę okazję",
+      "product": "Zdjęcie wkrótce · ten bukiet w wykonaniu naszego florysty"
     },
     "provenance": {
-      "aiExample": "Example arrangement · our florist hand-makes each one"
+      "aiExample": "Przykładowa kompozycja · nasz florysta każdą układa ręcznie"
     },
     "watermark": {
-      "demoSample": "Sample"
+      "demoSample": "Przykład"
     }
   },
   "meta": {
     "error": {
-      "description": "The page could not be loaded. Nothing you were doing was lost.",
-      "title": "Something went wrong. Flowers Overseas"
+      "description": "Nie udało się wczytać strony. Nic z tego, co robisz, nie przepadło.",
+      "title": "Coś poszło nie tak. Flowers Overseas"
     },
     "home": {
-      "description": "Order flowers for someone in another country. Our florist in their town makes the bouquet by hand and hands it over in person.",
-      "title": "Flowers Overseas | Send Flowers Abroad"
+      "description": "Zamów kwiaty dla kogoś w innym kraju. Nasz florysta na miejscu ręcznie układa bukiet i wręcza go osobiście.",
+      "title": "Flowers Overseas | Wyślij kwiaty za granicę"
     },
     "notFound": {
-      "description": "That page does not exist. Start again from the home page.",
-      "title": "Page not found. Flowers Overseas"
+      "description": "Ta strona nie istnieje. Zacznij jeszcze raz od strony głównej.",
+      "title": "Nie znaleziono strony. Flowers Overseas"
     }
   },
   "nav": {
     "account": {
-      "orders": "My orders",
-      "signIn": "Sign in"
+      "orders": "Moje zamówienia",
+      "signIn": "Zaloguj się"
     },
-    "basket": "Basket ({count, number})",
+    "basket": "Koszyk ({count, number})",
     "categories": {
-      "label": "Categories"
+      "label": "Kategorie"
     },
     "category": {
-      "addOns": "Add-ons",
-      "birthday": "Birthday",
-      "bouquets": "Bouquets",
-      "destinations": "Destinations",
-      "occasions": "Occasions",
-      "ourSelection": "Our selection",
-      "plants": "Plants",
-      "roses": "Roses",
-      "sameDayDelivery": "Same-day delivery",
-      "sameDayShort": "Same-day",
+      "addOns": "Dodatki",
+      "birthday": "Urodziny",
+      "bouquets": "Bukiety",
+      "destinations": "Kierunki",
+      "occasions": "Okazje",
+      "ourSelection": "Nasz wybór",
+      "plants": "Rośliny",
+      "roses": "Róże",
+      "sameDayDelivery": "Dostawa tego samego dnia",
+      "sameDayShort": "Tego samego dnia",
       "sympathy": "Sympathy"
     },
     "currency": {
-      "label": "Prices shown in {currency}"
+      "label": "Ceny w walucie {currency}"
     },
-    "forFlorists": "For florists",
+    "forFlorists": "Dla florystów",
     "menu": {
       "label": "Menu"
     },
     "search": {
-      "help": "Search opens when the shop does.",
-      "label": "Search flowers, occasions, a city or a country",
-      "submit": "Search"
+      "help": "Wyszukiwarka ruszy razem ze sklepem.",
+      "label": "Szukaj kwiatów, okazji, miasta lub kraju",
+      "submit": "Szukaj"
     },
     "send": "Wyślij kwiaty",
     "utility": {
-      "cutoff": "Order by 14:00 in Warsaw for delivery today",
-      "cutoffShort": "Order by 14:00 in Warsaw · today",
+      "cutoff": "Zamów do 14:00 czasu warszawskiego, a dostarczymy dziś",
+      "cutoffShort": "Zamów do 14:00 (Warszawa) · dziś",
       "guarantee": "Obietnica świeżych kwiatów",
       "pricesInclude": "Ceny zawierają dostawę i VAT"
     }
@@ -792,61 +792,61 @@
   "occasionHub": {
     "about": {
       "birthday": {
-        "eyebrow": "About birthdays"
+        "eyebrow": "O urodzinach"
       }
     },
-    "aboutHeading": "What people send",
-    "countryColumn": "Country",
-    "dateColumn": "Date",
-    "dateUnknown": "Omitted — we cannot compute this country's date yet",
-    "datesCaption": "{entity} in every destination we cover, computed from each country's own rule",
-    "datesEyebrow": "The dates",
-    "datesHeading": "When it falls, where we deliver",
+    "aboutHeading": "Co się wysyła",
+    "countryColumn": "Kraj",
+    "dateColumn": "Data",
+    "dateUnknown": "Pominięte: nie umiemy jeszcze wyliczyć daty w tym kraju",
+    "datesCaption": "{entity} we wszystkich krajach, do których dostarczamy, według reguły każdego z nich",
+    "datesEyebrow": "Daty",
+    "datesHeading": "Kiedy wypada tam, gdzie dostarczamy",
     "deck": {
-      "birthday": "Bright flowers for the day itself, made by our florist in the town where they live."
+      "birthday": "Jasne kwiaty na sam dzień urodzin, ułożone przez naszego florystę w mieście obdarowanej osoby."
     },
-    "destinationLink": "{entity} flowers for {country}",
-    "destinationsHeading": "Where we have a page for it",
-    "h1": "{entity}, country by country",
-    "productsEyebrow": "What we make for it",
-    "productsHeading": "{entity} flowers",
-    "productsHeadingPlain": "Flowers for {entity}"
+    "destinationLink": "{entity}. Kwiaty z dostawą do kraju: {country}",
+    "destinationsHeading": "Gdzie mamy dla niej stronę",
+    "h1": "{entity}, kraj po kraju",
+    "productsEyebrow": "Co na nią robimy",
+    "productsHeading": "{entity}: kwiaty",
+    "productsHeadingPlain": "Kwiaty na okazję: {entity}"
   },
   "occasions": {
     "anniversary": {
-      "name": "Anniversary",
-      "subtitle": "Roses and peonies"
+      "name": "Rocznica",
+      "subtitle": "Róże i piwonie"
     },
     "birthday": {
-      "name": "Birthday",
-      "subtitle": "Any day of the year"
+      "name": "Urodziny",
+      "subtitle": "Każdego dnia w roku"
     },
     "date": {
       "allSaints": {
         "name": "All Saints' Day · Wszystkich Świętych"
       },
       "andrzejki": {
-        "name": "Andrzejki · St Andrew's Eve"
+        "name": "Andrzejki"
       },
       "wigilia": {
-        "name": "Wigilia · Christmas Eve"
+        "name": "Wigilia"
       },
       "womensDay": {
-        "name": "Women's Day · Dzień Kobiet",
-        "note": "Poland's biggest flower day"
+        "name": "Dzień Kobiet",
+        "note": "Największe kwiatowe święto w Polsce"
       }
     },
     "justBecause": {
-      "name": "Just because",
-      "subtitle": "No reason needed"
+      "name": "Bez okazji",
+      "subtitle": "Powód nie jest potrzebny"
     },
     "nameDay": {
-      "name": "Name day",
-      "subtitle": "Imieniny, the Polish tradition"
+      "name": "Imieniny",
+      "subtitle": "Polska tradycja"
     },
     "newBaby": {
-      "name": "New baby",
-      "subtitle": "Soft colours, no lilies"
+      "name": "Narodziny dziecka",
+      "subtitle": "Łagodne kolory, bez lilii"
     },
     "sympathy": {
       "name": "Sympathy",
@@ -854,197 +854,197 @@
     }
   },
   "occasionsIndex": {
-    "dateColumn": "Next date",
-    "dateSource": "Every date is computed from the destination's own rule, not copied from a list.",
-    "datedCaption": "The next date for each, in {country}. Every other country keeps its own date, and each page below carries the whole table.",
-    "datedEyebrow": "Dated",
-    "datedHeading": "The ones with a date",
-    "everydayEyebrow": "Everyday",
-    "everydayHeading": "Any day of the year",
-    "everydayNote": "These carry no date because they have none.",
-    "eyebrow": "Every occasion, on every calendar",
-    "h1": "Occasions",
-    "intro": "Some of these fall on a date, and the date is different in every country. Some of them are any day of the year. Each one has a page with what we make for it, and the dated ones carry the date for every destination we cover.",
-    "occasionColumn": "Occasion",
-    "undatedEyebrow": "Dated elsewhere",
-    "undatedHeading": "Kept on a date we cannot compute here",
-    "undatedNote": "These fall on a date, but not one we can work out from {country}'s calendar — the day belongs to another country, or the rule names no day at all. Each page says so in full. We would rather print nothing than a date we guessed."
+    "dateColumn": "Najbliższa data",
+    "dateSource": "Każdą datę liczymy według reguły kraju dostawy, a nie przepisujemy z listy.",
+    "datedCaption": "{country}: najbliższa data każdej z nich. Każdy inny kraj ma własną datę, a każda strona poniżej pokazuje całą tabelę.",
+    "datedEyebrow": "Z datą",
+    "datedHeading": "Te, które mają datę",
+    "everydayEyebrow": "Na co dzień",
+    "everydayHeading": "Każdego dnia w roku",
+    "everydayNote": "Te nie mają daty, bo po prostu jej nie mają.",
+    "eyebrow": "Każda okazja, w każdym kalendarzu",
+    "h1": "Okazje",
+    "intro": "Niektóre wypadają w konkretny dzień, a ten dzień w każdym kraju jest inny. Inne pasują na każdy dzień roku. Każda okazja ma stronę z tym, co na nią robimy, a te z datą podają ją dla każdego kraju, do którego dostarczamy.",
+    "occasionColumn": "Okazja",
+    "undatedEyebrow": "Datowane gdzie indziej",
+    "undatedHeading": "Obchodzone w dniu, którego nie umiemy tu wyliczyć",
+    "undatedNote": "Te wypadają w konkretny dzień, ale nie taki, który da się wyliczyć z kalendarza tego kraju ({country}): albo ten dzień należy do innego kraju, albo reguła w ogóle nie wskazuje dnia. Każda strona mówi o tym dokładnie. Wolimy nie podać nic niż datę zgadniętą."
   },
   "payments": {
     "confirmation": {
-      "arrival": "Your flowers arrive in {city} on {date}.",
-      "cancelled": "This order was cancelled and nothing was charged.",
-      "cancelledByYouRefunded": "You cancelled this order. We have refunded {amount}.",
-      "cancelledByYouRefunding": "You cancelled this order. We are refunding {amount} to your original payment method.",
-      "notCompleted": "Your payment was not completed. Nothing was charged. You can try again.",
-      "notDeliveredRefunded": "We could not deliver this order. We have refunded {amount}.",
-      "notDeliveredRefunding": "We could not deliver this order. We are refunding {amount} to your original payment method.",
-      "paid": "Thank you. We have your order."
+      "arrival": "Twoje kwiaty dotrą do odbiorcy ({city}) w dniu: {date}.",
+      "cancelled": "To zamówienie zostało anulowane i nic nie zostało pobrane.",
+      "cancelledByYouRefunded": "To zamówienie zostało przez Ciebie anulowane. Zwróciliśmy {amount}.",
+      "cancelledByYouRefunding": "To zamówienie zostało przez Ciebie anulowane. Zwracamy {amount} na Twoją pierwotną metodę płatności.",
+      "notCompleted": "Płatność nie została dokończona. Nic nie zostało pobrane. Możesz spróbować ponownie.",
+      "notDeliveredRefunded": "Nie udało nam się doręczyć tego zamówienia. Zwróciliśmy {amount}.",
+      "notDeliveredRefunding": "Nie udało nam się doręczyć tego zamówienia. Zwracamy {amount} na Twoją pierwotną metodę płatności.",
+      "paid": "Dziękujemy. Mamy Twoje zamówienie."
     },
     "error": {
-      "authenticationFailed": "We could not confirm the payment with your bank. Please try again.",
-      "cardDeclined": "Your bank declined this card. Try another card or payment method.",
-      "expiredCard": "This card has expired. Try another card.",
-      "generic": "The payment did not go through. Nothing was charged. Please try again or use another method.",
-      "incorrectCvc": "The security code does not match. Check the 3 digits on the back of the card.",
-      "insufficientFunds": "Your bank says there is not enough money on this card. Try another card or method.",
-      "processingError": "Something went wrong while processing the payment. Nothing was charged. Please try again.",
-      "tryAnotherMethod": "This payment did not go through. Try another payment method.",
-      "unavailable": "Payments are not available right now. Nothing was charged. Please try again in a few minutes."
+      "authenticationFailed": "Nie udało się potwierdzić płatności w Twoim banku. Spróbuj ponownie.",
+      "cardDeclined": "Twój bank nie zatwierdził płatności tą kartą. Spróbuj innej karty albo innej metody płatności.",
+      "expiredCard": "Ta karta straciła ważność. Spróbuj innej karty.",
+      "generic": "Płatność nie przeszła. Nic nie zostało pobrane. Spróbuj ponownie albo użyj innej metody.",
+      "incorrectCvc": "Kod bezpieczeństwa się nie zgadza. Sprawdź 3 cyfry na odwrocie karty.",
+      "insufficientFunds": "Twój bank informuje, że na tej karcie brakuje środków. Spróbuj innej karty albo metody.",
+      "processingError": "Coś poszło nie tak podczas przetwarzania płatności. Nic nie zostało pobrane. Spróbuj ponownie.",
+      "tryAnotherMethod": "Ta płatność nie przeszła. Spróbuj innej metody płatności.",
+      "unavailable": "Płatności są teraz niedostępne. Nic nie zostało pobrane. Spróbuj ponownie za kilka minut."
     },
     "step": {
-      "noScript": "Paying needs JavaScript. Turn it on, or call or message us and we will help you order.",
-      "submitting": "Processing your payment…",
-      "testLabel": "Test mode. Use a test card. No real money moves."
+      "noScript": "Do płatności potrzebny jest JavaScript. Włącz go albo zadzwoń lub napisz do nas, a pomożemy Ci złożyć zamówienie.",
+      "submitting": "Przetwarzamy Twoją płatność…",
+      "testLabel": "Tryb testowy. Użyj karty testowej. Żadne prawdziwe pieniądze nie są przesyłane."
     }
   },
   "product": {
     "addons": {
-      "label": "Add something"
+      "label": "Dodaj coś"
     },
     "card": {
-      "legend": "What should the card say?",
-      "printed": "Printed on our card · included"
+      "legend": "Co ma być na bileciku?",
+      "printed": "Wydrukowany na naszym bileciku · w cenie"
     },
     "demo": {
-      "body": "When ordering opens, this is the price you will pay. Nothing is added at a later step.",
-      "heading": "Ordering is not open yet"
+      "body": "Gdy ruszą zamówienia, to będzie cena, którą zapłacisz. Na dalszym etapie nic nie dochodzi.",
+      "heading": "Zamawianie jeszcze nie ruszyło"
     },
     "destination": {
-      "change": "change destination",
-      "label": "Where is it going?"
+      "change": "zmień kierunek",
+      "label": "Dokąd mają trafić kwiaty?"
     },
-    "excludes": "What the price does not include: a vase. The photograph is styled with one and the bouquet is delivered wrapped, so we say it here rather than let the picture imply it.",
-    "eyebrow": "{descriptor} · for {country}",
+    "excludes": "Czego cena nie obejmuje: wazonu. Na zdjęciu bukiet stoi w wazonie, a dostarczamy go w papierze, więc mówimy o tym tutaj, zamiast zostawiać to domysłom.",
+    "eyebrow": "{descriptor} · dostawa: {country}",
     "eyebrowPhone": "{category} · {country}",
-    "included": "included",
+    "included": "w cenie",
     "readMore": "Czytaj dalej",
     "related": {
-      "heading": "Six more, in our order",
-      "label": "More we make for {country}"
+      "heading": "Sześć kolejnych, w naszej kolejności",
+      "label": "{country}: więcej z tego, co robimy"
     },
-    "selected": "selected",
+    "selected": "wybrane",
     "summary": {
-      "delivery": "Delivery",
-      "total": "You pay"
+      "delivery": "Dostawa",
+      "total": "Płacisz"
     },
     "tier": {
-      "legend": "Which size?"
+      "legend": "Jaki rozmiar?"
     },
     "trust": {
       "freshness": {
-        "body": "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
-        "title": "Fresh-flower promise"
+        "body": "Jeśli kwiaty nie dotrą świeże i w dobrym stanie, wyślij nam zdjęcie w ciągu 72 godzin od doręczenia. Wymienimy je albo zwrócimy Ci całą kwotę.",
+        "title": "Obietnica świeżych kwiatów"
       },
-      "label": "What we promise",
+      "label": "Co obiecujemy",
       "substitution": {
-        "body": "We substitute to the same value, style and colour, and we tell you what changed.",
-        "title": "If something is unavailable"
+        "body": "Zamieniamy na coś o tej samej wartości, w tym samym stylu i kolorze, i mówimy Ci, co się zmieniło.",
+        "title": "Jeśli czegoś zabraknie"
       }
     },
     "vat": "VAT {rate}"
   },
   "shop": {
     "card": {
-      "noPrice": "No price here. The price depends on the destination."
+      "noPrice": "Tu nie ma ceny. Cena zależy od miejsca dostawy."
     },
     "cardNote": {
-      "heading": "Every one of these comes with a card, at no cost."
+      "heading": "Do każdego z nich dołączamy bilecik, bez dopłaty."
     },
     "category": {
       "lede": "{count, plural, one {Jeden bukiet, który nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} few {# bukiety, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} many {# bukietów, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.} other {# bukietu, które nasz florysta układa w mieście odbiorcy rano w dniu dostawy.}} Każdy w jednej cenie — z VAT-em i dostawą już w środku.",
       "seoDescription": "{entity}, które nasz florysta może zrobić w {country}, każdy z jedną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
-      "seoTitle": "{entity} for {country}: one all-in price",
-      "siblingsHeading": "Also for {country}"
+      "seoTitle": "{entity} z dostawą do kraju: {country}. Jedna pełna cena",
+      "siblingsHeading": "{country}: zobacz też"
     },
     "empty": {
-      "body": "We have nothing we can deliver in {country} today. The {country} guide has what we have learned about sending flowers there, and the occasions pages have the dates.",
-      "corridorLink": "Read the {country} guide",
-      "destinationsLink": "All destinations",
-      "heading": "Nothing we can deliver in {country} yet",
-      "occasionsLink": "Occasions"
+      "body": "Dziś nie mamy nic, co moglibyśmy dostarczyć w tym kraju ({country}). W przewodniku znajdziesz to, czego dowiedzieliśmy się o wysyłaniu tam kwiatów, a na stronach okazji są daty.",
+      "corridorLink": "{country}: przeczytaj przewodnik",
+      "destinationsLink": "Wszystkie kierunki",
+      "heading": "{country}: na razie nic nie możemy tam dostarczyć",
+      "occasionsLink": "Okazje"
     },
     "grid": {
       "label": "{count, plural, one {# bukiet na tej stronie} few {# bukiety na tej stronie} many {# bukietów na tej stronie} other {# bukietu na tej stronie}}"
     },
     "h1": {
-      "countryCategory": "{entity} we make for {country}",
-      "countryOccasion": "{occasion} flowers for {country}",
-      "countryShopRoot": "Flowers we make for {country}"
+      "countryCategory": "{entity} z dostawą do kraju: {country}",
+      "countryOccasion": "{occasion}. Kwiaty z dostawą do kraju: {country}",
+      "countryShopRoot": "{country}: kwiaty, które robimy na miejscu"
     },
     "hub": {
-      "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
+      "noMoney": "Na tej stronie nie pokazujemy cen, bo cena zależy od tego, dokąd jadą kwiaty. Wybierz kierunek, a każda cena, którą tam zobaczysz, obejmuje VAT i dostawę."
     },
     "listing": {
-      "eyebrow": "Sending to {country}"
+      "eyebrow": "Wysyłka do kraju: {country}"
     },
     "note": {
-      "label": "A note before you choose",
-      "mark": "P.S."
+      "label": "Słowo, zanim wybierzesz",
+      "mark": "PS"
     },
     "occasion": {
-      "dateNote": "That is the date {country} keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.",
-      "datedLine": "{occasion} in {country} is {date}.",
-      "lede": "These are the ones we make for it, and our florist in {country} hands them over in person.",
-      "seoDescription": "Every bouquet our florist in {country} can make for {occasion}, with one all-in price that includes VAT and delivery. Nothing can be ordered yet.",
-      "seoTitle": "{occasion} flowers for {country}: {country}'s own date for it",
-      "shopRootLink": "Flowers for {country}",
-      "siblingsHeading": "Also in {country}",
-      "undatedLine": "We are not printing a date for {occasion} in {country}. We do not have a rule we can work it out from, and a date we cannot stand behind is worse than none."
+      "dateNote": "To data, której trzyma się ten kraj ({country}), wyliczona według jego własnej reguły. Może wypaść innego dnia niż ten, który obchodzisz w domu.",
+      "datedLine": "{occasion}, kraj: {country}. Data: {date}.",
+      "lede": "To te, które na nią robimy, a nasz florysta na miejscu ({country}) wręcza je osobiście.",
+      "seoDescription": "Każdy bukiet, który nasz florysta na miejscu ({country}) może zrobić na tę okazję ({occasion}), z jedną pełną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
+      "seoTitle": "{occasion}. Kwiaty i data obchodów, kraj: {country}",
+      "shopRootLink": "{country}: kwiaty",
+      "siblingsHeading": "{country}: zobacz też",
+      "undatedLine": "{occasion}, kraj: {country}. Nie podajemy daty. Nie mamy reguły, według której moglibyśmy ją wyliczyć, a data, za którą nie możemy ręczyć, jest gorsza niż żadna."
     },
     "pagination": {
-      "label": "Pages of products",
-      "next": "Next",
-      "page": "Page {page}",
-      "pageOf": "Page {page} of {total}",
-      "previous": "Previous",
-      "titleSuffix": "{title} · Page {page}"
+      "label": "Strony produktów",
+      "next": "Następna",
+      "page": "Strona {page}",
+      "pageOf": "Strona {page} z {total}",
+      "previous": "Poprzednia",
+      "titleSuffix": "{title} · strona {page}"
     },
     "root": {
-      "dateColumn": "Date",
-      "demoNotice": "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-      "introBody": "You order from us in your own language and currency. Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Nothing crosses a border, so there is no customs form, no paperwork and nothing to pay on arrival.",
-      "introHeading": "How it reaches {country}",
-      "lede": "Our florist in the recipient's town makes the bouquet the morning it is delivered and hands it over in person. Every price below is one number with VAT and delivery already inside it.",
-      "listingHeading": "Everything we can make for {country}",
-      "occasionColumn": "Occasion",
-      "occasionPageLink": "What we make for it",
-      "occasionsCaption": "The next twelve months in {country}, computed from the destination's own rules",
-      "occasionsEyebrow": "Coming up in {country}",
-      "occasionsHeading": "{country}'s own dates",
-      "pageColumn": "Page",
+      "dateColumn": "Data",
+      "demoNotice": "Zamawianie ruszy wkrótce. Każda cena tutaj to cena, którą zapłacisz, z VAT i dostawą.",
+      "introBody": "Zamawiasz u nas w swoim języku i swojej walucie. Nasz florysta w miejscowości odbiorcy układa bukiet rano w dniu dostawy i wręcza go osobiście. Nic nie przekracza granicy, więc nie ma formularza celnego, papierów ani żadnych opłat przy odbiorze.",
+      "introHeading": "{country}: jak docierają tam kwiaty",
+      "lede": "Nasz florysta w miejscowości odbiorcy układa bukiet rano w dniu dostawy i wręcza go osobiście. Każda cena poniżej to jedna kwota, z VAT i dostawą już w środku.",
+      "listingHeading": "{country}: wszystko, co możemy tam zrobić",
+      "occasionColumn": "Okazja",
+      "occasionPageLink": "Co na nią robimy",
+      "occasionsCaption": "{country}: najbliższe dwanaście miesięcy, według reguł obowiązujących w tym kraju",
+      "occasionsEyebrow": "{country}: wkrótce",
+      "occasionsHeading": "{country}: własne daty",
+      "pageColumn": "Strona",
       "seoDescription": "Każdy bukiet, który nasz florysta może zrobić w {country}, z jedną pełną ceną obejmującą VAT i dostawę. Na razie nie można niczego zamówić.",
-      "seoTitle": "Send flowers to {country}: what we can make there",
+      "seoTitle": "{country}: wyślij kwiaty i zobacz, co możemy tam zrobić",
       "tileCount": "{noun, select, plant {{count, plural, one {# roślina, którą możemy wykonać dla {country}} few {# rośliny, które możemy wykonać dla {country}} many {# roślin, które możemy wykonać dla {country}} other {# rośliny, które możemy wykonać dla {country}}}} arrangement {{count, plural, one {# kompozycja, którą możemy wykonać dla {country}} few {# kompozycje, które możemy wykonać dla {country}} many {# kompozycji, które możemy wykonać dla {country}} other {# kompozycji, które możemy wykonać dla {country}}}} other {{count, plural, one {# bukiet, który możemy wykonać dla {country}} few {# bukiety, które możemy wykonać dla {country}} many {# bukietów, które możemy wykonać dla {country}} other {# bukietu, które możemy wykonać dla {country}}}}}",
-      "tilesHeading": "By what it is",
-      "tilesSubheading": "Narrow it down"
+      "tilesHeading": "Według rodzaju",
+      "tilesSubheading": "Zawęź wybór"
     },
     "sort": {
-      "default": "Our order",
-      "priceAsc": "Price: low to high",
-      "priceDesc": "Price: high to low"
+      "default": "Nasza kolejność",
+      "priceAsc": "Cena: od najniższej",
+      "priceDesc": "Cena: od najwyższej"
     },
     "toolbar": {
       "count": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}}",
-      "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
-      "reorderLabel": "Change the order",
-      "sortLabel": "Sort by",
-      "submit": "Sort",
+      "disclosure": "Kolejność wybraliśmy sami. To nie jest ranking według sprzedaży, popularności ani opłat i nie zmienia się w zależności od tego, kim jesteś.",
+      "reorderLabel": "Zmień kolejność",
+      "sortLabel": "Sortuj według",
+      "submit": "Sortuj",
       "summary": "{count, plural, one {# bukiet} few {# bukiety} many {# bukietów} other {# bukietu}} · strona {page} z {pageCount}"
     }
   },
   "trust": {
     "guarantee": {
-      "claim": "We redeliver or refund, your choice.",
+      "claim": "Dostarczymy ponownie albo zwrócimy pieniądze, jak wolisz.",
       "name": "Obietnica świeżych kwiatów"
     },
-    "heading": "Our <em>promise</em>",
+    "heading": "Nasza <em>obietnica</em>",
     "local": {
-      "claim": "Our florist there makes it by hand and hands it over in person.",
-      "name": "Hand-made in the recipient's own town"
+      "claim": "Nasz florysta na miejscu układa bukiet ręcznie i wręcza go osobiście.",
+      "name": "Ręcznie robione w miejscowości odbiorcy"
     },
     "price": {
-      "claim": "What you see is what we charge, in your own currency.",
+      "claim": "Płacisz tyle, ile widzisz, w swojej walucie.",
       "name": "The price includes delivery and VAT"
     }
   }
