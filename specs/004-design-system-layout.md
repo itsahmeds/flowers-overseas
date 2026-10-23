@@ -18,6 +18,10 @@
 
 **Test cases** — `T-1` §10 L301 · `T-2` §10 L302 · `T-3` §10 L303 · `T-4` §10 L304 · `T-5` §10 L305 · `T-6` §10 L306 · `T-7` §10 L307 · `T-8` §10 L308 · `T-9` §10 L309 · `T-10` §10 L310 · `T-11` §10 L311 · `T-12` §10 L312 · `T-13` §10 L313 · `T-14` §10 L314 · `T-15` §10 L315 · `T-16` §10 L316 · `T-17` §10 L317 · `T-18` §10 L318 · `T-19` §10 L319 · `T-20` §10 L320 · `T-21` §10 L321 · `T-22` §10 L322 · `T-23` §10 L323 · `T-24` §10 L324 · `T-25` §10 L325 · `T-26` §10 L326 · `T-27` §10 L327 · `T-28` §10 L328 · `T-29` §10 L329 · `T-30` §10 L330 · `T-31` §10 L331 · `T-32` §10 L332 · `T-33` §14 L1564 · `T-34` §14 L1565 · `T-35` §14 L1566 · `T-36` §14 L1567 · `T-37` §14 L1568 · `T-38` §14 L1569 · `T-39` §14 L1570 · `T-40` §14 L1571 · `T-41` §14 L1572 · `T-42` §14 L1573 · `T-43` §14 L1574 · `T-44` §14 L1575 · `T-45` §14 L1576 · `T-46` §14 L1577 · `T-47` §14 L1578 · `T-48` §14 L1579 · `T-49` §14 L2136 · `T-50` §14 L2137 · `T-51` §14 L2138 · `T-52` §14 L2139 · `T-53` §14 L2140 · `T-54` §14 L2141 · `T-55` §14 L2142 · `T-56` §14 L2208 · `T-57` §14 L2245 · `T-58` §14 L2280 · `T-59` §14 L2323 · `T-60` §14 L2391 · `T-61` §14 L2453 · `T-62` §14 L2619 · `T-65` §14 L3709 · `T-66` §14 L3710 · `T-67` §14 L3711 · `T-68` §14 L3712 · `T-69` §14 L3713 · `T-70` §14 L3714 · `T-71` §14 L3715 · `T-72` §14 L3716 · `T-73` §14 L3717 · `T-74` §14 L3718 · `T-75` §14 L3719 · `T-76` §14 L3720 · `T-77` §14 L3721
 
+**Acceptance criteria** — `AC-1` §9 L258 · `AC-2` §9 L259 · `AC-3` §9 L260 · `AC-4` §9 L261 · `AC-5` §9 L262 · `AC-6` §9 L263 · `AC-7` §9 L266 · `AC-8` §9 L267 · `AC-9` §9 L268 · `AC-10` §9 L269 · `AC-11` §9 L270 · `AC-12` §9 L271 · `AC-13` §9 L272 · `AC-14` §9 L275 · `AC-15` §9 L276 · `AC-16` §9 L277 · `AC-17` §9 L280 · `AC-18` §9 L281 · `AC-19` §9 L282 · `AC-20` §9 L283 · `AC-21` §9 L284 · `AC-22` §9 L285 · `AC-23` §9 L288 · `AC-24` §9 L289 · `AC-25` §9 L290 · `AC-26` §9 L291 · `AC-27` §9 L292 · `AC-28` §9 L293 · `AC-29` §9 L294 · `AC-30` §9 L295 · `AC-31` §14 L1448 · `AC-32` §14 L1453 · `AC-33` §14 L1456 · `AC-34` §14 L1462 · `AC-35` §14 L1474 · `AC-36` §14 L1486 · `AC-37` §14 L1495 · `AC-38` §14 L1506 · `AC-39` §14 L1512 · `AC-40` §14 L1520 · `AC-41` §14 L1526 · `AC-42` §14 L1538 · `AC-43` §14 L1541 · `AC-44` §14 L1548 · `AC-45` §14 L2029 · `AC-46` §14 L2039 · `AC-47` §14 L2060 · `AC-48` §14 L2071 · `AC-49` §14 L2082 · `AC-50` §14 L2093 · `AC-51` §14 L2201 · `AC-52` §14 L2237 · `AC-53` §14 L2274 · `AC-54` §14 L2316 · `AC-55` §14 L2379 · `AC-56` §14 L2445 · `AC-57` §14 L2604 · `AC-58` §14 L3825 · `AC-59` §14 L3838
+
+**Test cases** — `T-01` §10 L301 · `T-02` §10 L302 · `T-03` §10 L303 · `T-04` §10 L304 · `T-05` §10 L305 · `T-06` §10 L306 · `T-07` §10 L307 · `T-08` §10 L308 · `T-09` §10 L309 · `T-10` §10 L310 · `T-11` §10 L311 · `T-12` §10 L312 · `T-13` §10 L313 · `T-14` §10 L314 · `T-15` §10 L315 · `T-16` §10 L316 · `T-17` §10 L317 · `T-18` §10 L318 · `T-19` §10 L319 · `T-20` §10 L320 · `T-21` §10 L321 · `T-22` §10 L322 · `T-23` §10 L323 · `T-24` §10 L324 · `T-25` §10 L325 · `T-26` §10 L326 · `T-27` §10 L327 · `T-28` §10 L328 · `T-29` §10 L329 · `T-30` §10 L330 · `T-31` §10 L331 · `T-32` §10 L332 · `T-33` §14 L1564 · `T-34` §14 L1565 · `T-35` §14 L1566 · `T-36` §14 L1567 · `T-37` §14 L1568 · `T-38` §14 L1569 · `T-39` §14 L1570 · `T-40` §14 L1571 · `T-41` §14 L1572 · `T-42` §14 L1573 · `T-43` §14 L1574 · `T-44` §14 L1575 · `T-45` §14 L1576 · `T-46` §14 L1577 · `T-47` §14 L1578 · `T-48` §14 L1579 · `T-49` §14 L2136 · `T-50` §14 L2137 · `T-51` §14 L2138 · `T-52` §14 L2139 · `T-53` §14 L2140 · `T-54` §14 L2141 · `T-55` §14 L2142 · `T-56` §14 L2208 · `T-57` §14 L2245 · `T-58` §14 L2280 · `T-59` §14 L2323 · `T-60` §14 L2391 · `T-61` §14 L2453 · `T-62` §14 L2619 · `T-63` §14 L3851 · `T-64` §14 L3852
+
 <!-- /index -->
 
 ## 1. Problem
@@ -3734,3 +3738,239 @@ The ruling, the facts and the tests are spec 041's. This spec owns the footer.
 - **`CompanySchema`.** `registered: true` requires the legal name, the register, the registration number and the address. The VAT ID is required only where one is issued (spec 041 AC-35).
 - **AC-9 amended.** It adds: "With the committed config (`registered: true`, no `vatId`), the company block renders `company.operatedBy` with `legalName`, the one-line address with region and country, and `registrationNumber`, and no VAT clause, exactly as spec 041 AC-36 (a) states. A fixture with `registered: true` and no `vatId` parses." The rest of AC-9 is unchanged.
 - **T-11 amended.** Spec 041 T-38's colophon cases run as named cases of T-11. Red when `companyIdentity()` again requires `vatId`.
+
+
+**A-orchestrator-2026-10-23: The Polish letters move into the Latin font files, so Polish text
+renders from the preloaded body face at first paint (A21 clause 3 "Subsets" L797 to L800,
+"Loading" L801 to L804, "Budget" L805 to L810; §14 A7 L487; AC-4, AC-7; T-05, T-06, T-27; new
+AC-58, AC-59, T-63, T-64; `plan/01` §7 L222; `plan/03` L67; TASK-185 escalation of 2026-10-23).**
+Status: ruled by the orchestrator on 2026-10-23, in its dispatch to the spec writer: fix it by
+font, not by keeping English labels on `/pl`. This is the orchestrator's ruling, not a founder
+answer. The spec writer does not approve it: the orchestrator records the approval, and the
+founder may overrule.
+
+**Problem.** PR 328 (TASK-185, the Polish and German drafts) makes the `/pl` nav labels Polish.
+CI run 39964055125 on b9631763 fails `tests/e2e/header.spec.ts:138` ("/pl renders the header at
+its artboard's reserved height") at 1280 px. Its `headerShift` is 0.000246, and AC-7 and A7
+require 0.
+
+The trace shows the nav moving about 3 px when the Alegreya Sans Latin-Ext files arrive under
+"Róże", "Rośliny" and "Wyślij kwiaty". The nav is right-aligned (`xl:justify-end`), so one wider
+label moves every item to its left. The cause:
+
+- `ż`, `ś` and `ł` live in the Latin-Ext files, and A21 clause 3 forbids preloading those.
+- The Latin-Ext calls in `src/modules/ui/fonts/index.ts` have no fallback face of their own
+  (`adjustFontFallback: false`).
+- Until the Latin-Ext file arrives, those letters render from the Latin call's metric-matched
+  Liberation Sans face. Its widths per letter differ from Alegreya Sans, so the word changes
+  width once when the file arrives.
+
+Polish has no spelling of these words without those letters, so no copy change fixes this. macOS
+does not reproduce it (TASK-185 brief, Escalations).
+
+**Original.**
+
+- A21 clause 3: "Latin and Latin-Ext for every family (AC-4's `ą ć ę ł ń ó ś ź ż` rule holds), as
+  separate `unicode-range` files", and "Never preload the italic, the Latin-Ext files or Caveat."
+- `SUBSET_RANGES` in `scripts/fonts/build-fonts.ts` (L87 to L112) puts U+0100-024F, less U+0131 and
+  U+0152-0153, in Latin-Ext. So 16 of the 18 Polish letters ship in the Latin-Ext files.
+
+**Corrected.**
+
+1. **What is already Latin.** These letters are Latin-1, inside the Latin range U+0000-00FF, and
+   stay where they are, so German needs no change:
+   - `ó` (U+00F3) and `Ó` (U+00D3);
+   - German `ä ö ü ß Ä Ö Ü` (U+00E4, U+00F6, U+00FC, U+00DF, U+00C4, U+00D6, U+00DC).
+2. **What moves.** The other 16 Polish letters move from the Latin-Ext subset to the Latin subset,
+   as five ranges:
+   - U+0104-0107 (`Ą ą Ć ć`);
+   - U+0118-0119 (`Ę ę`);
+   - U+0141-0144 (`Ł ł Ń ń`);
+   - U+015A-015B (`Ś ś`);
+   - U+0179-017C (`Ź ź Ż ż`).
+
+   The two subsets stay disjoint, and their union is unchanged:
+   - Latin: `U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153,
+     U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212`.
+   - Latin-Ext: `U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159,
+     U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF`.
+
+   Of the repertoire, the Latin-Ext files keep only the Romanian and Turkish letters (`Ă ă Ș ș Ț ț
+   Ğ ğ İ Ş ş`, 11 of today's 27 Latin-Ext letters). No launch locale renders them.
+3. **Which faces.** `SUBSET_RANGES` and `unicodeRange()` hold one pair of ranges shared by every
+   face, so the move applies to all five:
+   - **Alegreya Sans 400 and 700.** The header, every label and the body text. These are the two
+     preloaded files.
+   - **Fraunces 400 and 300 italic.** Every heading, listing heads included, and the poppy phrase.
+     This adds no preload: A21's Fraunces preload rule is unchanged, and `index.ts` preloads no
+     Fraunces file. A Polish heading then swaps once instead of twice, from the same file and at
+     the same moment as an English heading.
+   - **Caveat 500.** It follows only because the ranges are shared. A range per face would save
+     about a kilobyte of Caveat on the product page and checkout step 2, but it needs a second
+     range table, so it is not taken.
+4. **What A21 clause 3 now permits.**
+   - **"Subsets"** reads: "Latin and Latin-Ext for every family, as separate `unicode-range` files.
+     The Latin file carries Basic Latin, Latin-1 and the Polish letters (`ą ć ę ł ń ś ź ż` and their
+     capitals; `ó` is Latin-1); the Latin-Ext file carries the rest of Latin Extended. AC-4's
+     `ą ć ę ł ń ó ś ź ż` rule holds, now served from the Latin file."
+   - **"Loading"** keeps its words: at most two preloads; the Alegreya Sans 400 Latin file always;
+     never the italic, a Latin-Ext file or Caveat. What changes is the content of the preloaded
+     Alegreya Sans Latin files: they now carry the Polish letters, so Polish chrome is preloaded
+     exactly as English chrome is. The Latin-Ext files are still never preloaded.
+   - **The plan.** `plan/01` §7 L222 and `plan/03` L67 ("Latin-Ext for pl/ro/tr") read as this
+     clause: Polish is Latin script, and its letters ride in the Latin file. This follows the
+     stated-deviation pattern of A6 and A21, and no ADR is proposed.
+5. **Bytes.** Budgets are not raised (A21 clause 3: "not raised a second time").
+   - **Not measured yet.** The spec writer had no shell and did not run `pnpm fonts:build`. The
+     numbers below are an upper bound computed from the committed files' sizes in `subset.json`.
+   - **The implementer measures.** It commits the regenerated `subset.json` and pastes the byte
+     table `pnpm fonts:build` prints into the brief's `## Result`, with each file's delta.
+   - **The bound.** Each Latin file grows by at most the size of its own Latin-Ext file today,
+     because the glyphs it gains are a subset of that file's. The Latin-Ext files only shrink.
+
+   | File (Latin subset) | Today, B | Upper bound after, B |
+   |---|---|---|
+   | `alegreya-sans-400-latin.woff2` (preloaded) | 9,592 | 12,336 |
+   | `alegreya-sans-700-latin.woff2` (preloaded) | 9,728 | 12,484 |
+   | `fraunces-400-latin.woff2` | 13,352 | 17,532 |
+   | `fraunces-300-italic-latin.woff2` | 16,848 | 21,652 |
+   | `caveat-500-latin.woff2` | 20,048 | 24,760 |
+
+   | Budget (A21 clause 3, `FONT_BUDGETS`) | Ceiling, B | Today, B | Upper bound after, B |
+   |---|---|---|---|
+   | Preloaded per page (`preloadBytes`) | 51,200 | 19,320 | 24,820 |
+   | `en`/`en-gb`/`de` page, charged Latin plus Latin-Ext (`latinPageBytes`) | 92,160 | 64,004 | 78,488 |
+   | `pl` page, the same sum (`latinExtPageBytes`) | 122,880 | 64,004 | 78,488 |
+   | Caveat, both files (`handBytes`) | 30,720 | 24,760 | 29,472 |
+
+   **Expected in practice** (an estimate, for orientation only):
+   - **Growth per file.** The 16 letters are 16 of the 27 Latin-Ext letters. Their accents
+     (ogonek, dot above, acute, stroke) partly reuse components the Latin file already holds for
+     `á` and its kin. So each Latin file should grow well below its bound: roughly 1 to 2 KB for
+     each Alegreya Sans file.
+   - **Budget sums.** The sums in the second table should move by a few hundred bytes.
+   - **Pages that show a Polish letter fetch fewer bytes and fewer requests.** A `pl` page, and an
+     `en` page that names Wrocław or Gdańsk, no longer fetch any Latin-Ext file.
+   - **Pages that show none pay the growth.** An `en`, `en-gb` or `de` page with no Polish letter
+     fetches the larger Latin files, for glyphs it does not show.
+
+   If a measured sum breaks a ceiling, which the bound says it cannot, the task escalates. Nothing
+   is raised.
+6. **Alternatives weighed.**
+   - **(a) A metric-matched fallback for the Latin-Ext faces.** This means `size-adjust`,
+     `ascent-override` and their kin, or `adjustFontFallback` on the Latin-Ext calls. It costs 0
+     bytes. But those descriptors scale the whole fallback face by one factor, and the 3 px comes
+     from the widths of single letters (`ż`, `ś`, `ł` in Liberation Sans against Alegreya Sans).
+     One factor cannot match every word. The shift would shrink but would not reliably be 0, and
+     AC-7 requires 0.
+   - **(b) Preloading the Latin-Ext files on `pl` pages only.** This costs no `en` byte, but:
+     - every `pl` page preloads both Alegreya Sans Latin-Ext files, 5,500 B today with the Romanian
+       and Turkish glyphs, against an estimated 2 to 3 KB for the move;
+     - it takes the page to four preloads, against A21's two (`MAX_PRELOADS`);
+     - `next/font` preloads per call from the root layout, so it needs a hand-written,
+       locale-specific `<link rel="preload">`;
+     - it still leaves a race: the shift is 0 only if two more files arrive before the first paint.
+   - **Default: the move.** Of the options that make the shift exactly 0, it preloads the fewest
+     bytes on the page that has the problem. It fetches fewer bytes in total on every page that
+     shows a Polish letter. And it reduces `/pl`'s header to the case `/en` already passes: the
+     Polish labels come from the same preloaded file, on the same timing, as "Roses".
+7. **Coupled files, all in one PR.**
+   - **`scripts/fonts/build-fonts.ts`.** `SUBSET_RANGES`, the header comment that says the Polish
+     letters live in Latin-Ext, and the `latinPageBytes` comment.
+   - **The font files.** The eight page-face files, the two Caveat files and `subset.json`, all
+     regenerated by `pnpm fonts:build`. It downloads the upstream fonts and licences, so it needs
+     the network. It is a light run and needs no build slot.
+   - **`src/modules/ui/fonts/index.ts` and `hand.ts`.** The six `unicode-range` literals, which
+     `tests/unit/fonts.test.ts` pins to `unicodeRange()`. In `index.ts`, also the comment at L11 to
+     L19 that names `ą` as a Latin-Ext character, and the 19,320 B preload figure at L36.
+   - **`src/app/globals.css`, only if needed.** Its two Liberation fallback faces change only if
+     Next's recomputed overrides change. The unit case "carries the overrides Next computes" says
+     whether they did.
+   - **Tests.** T-63 amends the `tests/unit/fonts.test.ts` case "puts the Polish, Romanian and
+     Turkish letters in the Latin-Ext file". T-64 amends the `pl` case of `tests/e2e/fonts.spec.ts`
+     and its Latin-Ext `unicode-range` pattern (`U+100-130` becomes `U+100-103`).
+   - **Visual baselines.** Kerning now applies between a Polish letter and its Latin neighbours,
+     because they share one file and one `kern` table. A `/pl` visual baseline may move, and is
+     then re-taken through the `ci:full` flow (AC-27) like any baseline.
+8. **Unchanged.**
+   - The font files: families, axes, `swap`, and the two preloads and which files they are.
+   - The budgets: the 50 KB, 90 KB, 120 KB and 30 KB ceilings; LCP <2,000 ms; CLS <0.05; the
+     client-JS budget.
+   - AC-7's 0, with no tolerance added to the header test (TASK-185's option (3) is rejected), and
+     `FONT_SWAP_REGIONS`.
+   - T-06's `pl` diacritics baseline and the no-Google-Fonts rule.
+   - The Latin-Ext calls keep `adjustFontFallback: false`. After this amendment no launch locale
+     renders a Latin-Ext letter. The `ro` and `tr` locales (Phase 4) revisit it (Non-goals).
+
+**New acceptance criteria.**
+
+- **AC-58** The Polish letters ship in the Latin files.
+  - (a) `subsetOf` returns `"latin"` for each of `Ą ą Ć ć Ę ę Ł ł Ń ń Ó ó Ś ś Ź ź Ż ż` and
+    `Ä Ö Ü ä ö ü ß`, and `"latin-ext"` for each of `Ă ă Ș ș Ț ț Ğ ğ İ Ş ş`.
+  - (b) `unicodeRange("latin")` and `unicodeRange("latin-ext")` equal clause 2's two strings
+    exactly. Every code point in today's union of the two subsets is in exactly one subset, and the
+    union is unchanged.
+  - (c) Read with the fontkit build the unit suite already uses, each of the five committed Latin
+    files has a glyph for each of the 18 Polish letters. No committed Latin-Ext file has a glyph
+    for any of the 16 letters that moved.
+  - (d) Every character of every value under the `nav` namespace, in every committed message
+    catalogue, is in the Latin subset.
+  - (e) `subset.json` records each file's real size, and the sums fit clause 5's ceilings (the
+    existing cases, run on the new bytes).
+- **AC-59** Polish chrome renders from the preloaded face, and no file arrives late. On `/pl`:
+  - (a) no font file whose URL matches `_latin_ext` is requested during load and the 500 ms settle;
+  - (b) the Alegreya Sans Latin family (`--font-alegreya`) has its 400 face `loaded`, and
+    `document.fonts.check("400 17px <that family>", "ąćęłńśźż")` is true;
+  - (c) the page has exactly two `<link rel="preload" as="font">`: the Alegreya Sans 400 and 700
+    Latin files;
+  - (d) the `/pl` case of `tests/e2e/header.spec.ts` measures a header shift of exactly 0 in both
+    e2e projects (412 px and 1280 px), with no tolerance added.
+
+**Tests** (each watched red by mutating its subject, CLAUDE.md DoD 4).
+
+| ID | Layer | Case | AC |
+|---|---|---|---|
+| T-63 | unit (`tests/unit/fonts.test.ts`) | Covers AC-58 (a) to (e). The case "puts the Polish, Romanian and Turkish letters in the Latin-Ext file" becomes "puts the Polish letters in the Latin file and the Romanian and Turkish letters in the Latin-Ext file". The glyph case opens each committed `.woff2` and asserts `hasGlyphForCodePoint` for each letter in each file. Red: (a) and (b) with `U+0141-0144` returned to the Latin-Ext range; (c) and the byte case with `main`'s `alegreya-sans-400-latin.woff2` restored over the new file; (d) with a fixture catalogue whose `nav` value holds `ș`. | AC-58 |
+| T-64 | e2e (`tests/e2e/fonts.spec.ts`, `tests/e2e/header.spec.ts`) | Covers AC-59 (a) to (c) on `/pl`. It replaces the `pl` case's "pulls the Alegreya Sans Latin-Ext file" assertion and its coverage check on the Latin-Ext family. The Latin-Ext `unicode-range` pattern reads `U+100-103`. (d) is the existing header case, unchanged. Red: (a) with the old ranges restored, because `/pl` on `main` renders Polish place names. (d) is shown red, then green, on PR 328: red today on b9631763 (run 39964055125, 0.000246), green once PR 328 rebases onto this task's merge. On `main` alone the `/pl` nav labels are English, so this task's own CI cannot turn (d) red; (a) is the guard that can. | AC-59 |
+
+**SEO.**
+- No URL, HTML text, canonical, robots, hreflang, sitemap or schema changes. Rendering stays as
+  `plan/01` §3 sets it.
+- Core Web Vitals (`plan/02` §14): CLS on `/pl` falls to the 0 that AC-7 requires.
+- Preloaded font bytes rise by at most 5,500 B per page (clause 5), inside the 50 KB cap. The
+  Lighthouse set's LCP <2,000 ms gate (AC-24, A18) is re-checked by CI and is not expected to move.
+- `pl` pages, and `en` pages that name Polish places, fetch fewer font bytes and fewer requests.
+- `de` and `pl` stay `noindex` (TASK-185), whatever this amendment does.
+
+**i18n.**
+- No message key changes.
+- Polish, a launch locale, now renders wholly from the Latin file; German already did.
+- `plan/03` L67's "Latin-Ext subset (pl/ro/tr diacritics)" now covers `ro` and `tr` only.
+- AC-58 (d) guards every locale's header copy against a letter outside the preloaded files.
+
+**Compliance.**
+- No data flow; the RoPA is unchanged.
+- All three families are SIL OFL 1.1, which permits subsetting, and the committed licence files
+  are unchanged.
+- No WCAG criterion changes: contrast, size and focus are untouched.
+
+**Non-goals.**
+- Preloading Fraunces: A21's rule is unchanged.
+- Fallback metrics for the Latin-Ext faces, and the `ro` and `tr` letters: these belong to the
+  Phase 4 locale spec that adds those locales.
+- A range per face (clause 3).
+- The `/pl` picker sentence that wraps at a comma (a TASK-185 carry-forward): that is copy and
+  picker layout, not fonts.
+
+**Owner and order.**
+- **Owner.** TASK-NNN, frontend, small. It is review-only under DoD 4: presentation and a font
+  budget, with no money, order, data flow or legal text.
+- **Order.** It has no dependency and merges before TASK-185.
+- **PR 328 afterwards.** PR 328 (TASK-185) then rebases on `main` and re-runs CI with its own
+  commits unchanged, and `header.spec.ts:138` measures 0 on `/pl`.
+- **The one possible commit on PR 328.** If the new kerning moves a `/pl` visual baseline past the
+  threshold, PR 328 refreshes it through the CI baseline job. That is a baseline refresh, not a
+  code or copy change.
+
+---
+
