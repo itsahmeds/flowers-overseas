@@ -125,7 +125,7 @@ One answer for TASK-175's T-01: the name on the right, with the value on the rig
 | `homepage-v1/` | The founder-approved homepage, identity and token file from the 2026-09-08 review: **the v1 record**. Superseded as the direction by v2 (2026-10-03, `wireframes/home-*`); never edited again. | nobody |
 | `directions/` | The 2026-10-03 brand directions the founder compared, the colour research, and the chosen `warm-c/` pages v2 is drawn from. Under spec 004 §14 A21, **`warm-c/` is binding for the look** (palette, type, shapes); the v2 `system/` and `wireframes/` are binding for the build, and they win wherever they differ from `warm-c/` (see “What the warm-c direction draws that the specs forbid”). The other directions are a record only. | nobody |
 | `system/` | `tokens.css` (canonical, v2), `components.dc.html` (every shipped primitive at every state), `typography.dc.html` (ramp, measure, script coverage), `colour.dc.html` (palette, semantic aliases, contrast manifest). | whoever changes `src/modules/ui` |
-| `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html`, `admin-florist-bouquets.dc.html`, `admin-go-live.dc.html`, `admin-blog-publish.dc.html`: screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
+| `flows/` | `buyer-journey.dc.html`, `florist-journey.dc.html`, `consent-and-locale.dc.html`, `admin-florist-bouquets.dc.html`, `admin-go-live.dc.html`, `admin-blog-publish.dc.html`, `admin-finance.dc.html`: screen-thumbnail flows annotated with the decision points, the trust moments and the data each step reads. | the spec that changes a journey |
 | `wireframes/` | One desktop (1440) and one mobile (390) artboard per Phase 0 page type. Structural, in the approved system: grey photo slots, real registry copy where it exists, `[slot]` markers where it does not, every state and empty state shown. | the spec that owns the page |
 | `benchmarks/` | The 2026-09-09 competitor study — nine files across eight page types and nine brands — plus a `README.md` mapping every page type's wireframe to its benchmark file with "what we took / what we dropped / why", the ten patterns and where each landed, and the fourteen questions only the founder can answer. Evidence, not instructions: where the study and `CLAUDE.md` disagree, `CLAUDE.md` wins. | the study that replaces it |
 | `audits/` | Dated design audits of the live site: what the first screen shows, alignment faults with their measurements, v1 leftovers, differences from the artboards, the rulings asked for and the copy for batch approval. | the designer |
@@ -453,6 +453,22 @@ Slice A of the blog in the CMS, in the spec 012 admin system and spec 012b's rev
 | Posts: status chips, filters, empty | `wireframes/admin-blog-list-desktop.dc.html` · `wireframes/admin-blog-list-mobile.dc.html` | 044 task 3 |
 | Authors: add, own-name confirmation, name change, withdraw | `wireframes/admin-blog-authors-desktop.dc.html` · `wireframes/admin-blog-authors-mobile.dc.html` | 044 task 3 |
 | Flow: a blog post, write to unpublish, with a failed run | `flows/admin-blog-publish.dc.html` | 044 |
+
+### Admin finance and florist CRM (spec 030b)
+
+Admin only, in the spec 012 admin system: a calm finance page of tables and one statement of totals, no charts (spec 030b §3). Money is integer minor units through `formatMoney`, right-aligned in tabular figures; a reporting column names EUR in its header; buyer-currency amounts carry their ISO code and are never added across currencies. Every converted figure carries its rate, date and source (ECB or Stripe); a total of many orders carries one “rates used” line, with each order’s rates on the order list and its Money panel. Percentages follow `Intl` for `en` (66.67%). Each route’s loading state is its `loading.tsx` skeleton. Figures on these artboards are sample figures, marked on every first screen; fixture F1 of AC-13 is drawn exactly. Every string not yet in `messages/admin/en.json` is a `[slot]` with a dotted underline, owned by spec 030b §7. New parts proposed for `system/components.dc.html` “Admin”: the money waterfall row, the rate-and-date annotation, the provisional chip with reasons, the range picker, the tax banner, the note card and the contact-log row. The spec 030b amendment (contracts, Products tab, supply matrix, florist “My bouquets”) is not drawn yet; the tab bar and the Relationship side column keep room for it.
+
+| Page type | Wireframe artboards | Owning spec |
+|---|---|---|
+| Finance overview: range, live or test, tax banner, totals, by country, by florist, VAT estimate, counts, owed and paid, CSVs | `wireframes/admin-finance-overview-desktop.dc.html` · `wireframes/admin-finance-overview-mobile.dc.html` | 030b task 2 |
+| Order figures: rows with rates, status and reasons, filters, empty | `wireframes/admin-finance-orders-desktop.dc.html` · `wireframes/admin-finance-orders-mobile.dc.html` | 030b task 2 |
+| One order: the Money panel (final, provisional, fee not available, rate missing, test, absent for ops), a block on spec 012’s page | `wireframes/admin-order-detail-desktop.dc.html` · `wireframes/admin-order-detail-mobile.dc.html` | 030b task 2 |
+| Florists: Follow-ups due, last accepted, rating, follow-ups, owed now (admin) | `wireframes/admin-partners-desktop.dc.html` · `wireframes/admin-partners-mobile.dc.html` | 030b task 3 |
+| One florist: the tab bar per role (Profile, Payout terms, Prices, Money, Relationship), a block on spec 012’s page | `wireframes/admin-partner-detail-desktop.dc.html` · `wireframes/admin-partner-detail-mobile.dc.html` | 030b task 3 |
+| A florist’s Prices tab | `wireframes/admin-partner-prices-desktop.dc.html` · `wireframes/admin-partner-prices-mobile.dc.html` | 030b task 3 |
+| A florist’s Money tab | `wireframes/admin-partner-money-desktop.dc.html` · `wireframes/admin-partner-money-mobile.dc.html` | 030b task 3 |
+| A florist’s Relationship tab: notes, contact log, follow-ups, dialogs | `wireframes/admin-partner-relationship-desktop.dc.html` · `wireframes/admin-partner-relationship-mobile.dc.html` | 030b task 3 |
+| Flow: totals to a florist, a payout and the CSV | `flows/admin-finance.dc.html` | 030b |
 
 ### Emails (spec 016)
 
