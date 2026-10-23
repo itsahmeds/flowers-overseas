@@ -3656,3 +3656,11 @@ florist's print instructions (spec 011) name the face, which spec 011 records in
 contrast stays in `tokens/contrast.ts` (WCAG 1.4.3). No data flow; RoPA unchanged.
 
 **Owner.** Spec 042's task 042-2. It keeps the breaker (checkout, font budget).
+
+### A-founder-2026-10-23: the script budget gains 1 KiB while Next 16.4.2 lands
+
+**Status: approved (founder, 2026-10-23, "A").** The security bump TASK-375 (next 16.3.8 to 16.4.2, @sentry/nextjs to ^10.75.3, critical advisories GHSA-2464-fhr4-w9xw, GHSA-p3m5-59mp-jv5r, GHSA-mchm-gjx6-7h55) measures 131 428 B of Brotli script on all 16 Lighthouse URLs against the 131 072 B budget of §13 Q13 and AC-24: 356 B over, all of it from Next 16.4's own runtime (main on 16.3.8: 130 316 B). The founder chose option A of three (A: raise the budget; B: trim app script first, which cannot start until the bump merges; C: re-enable the shared runtime and hash its inline script).
+
+- The script budget is **132 096 B (129 KiB)** for every URL that is not a product address, and **134 144 B** for product addresses (the product allowance stays budget + 2 KiB, §14 product-page rule). `CLIENT_JS_BUDGET_BYTES` in `scripts/client-js-budget.ts`, the two `resource-summary:script:size` assertions in `lighthouserc.json` and their unit pins move together in TASK-375.
+- **The raise is temporary.** TASK-376 trims the script back under 131 072 B and restores the original budget; the 1 KiB is headroom for the bump only, never for new features.
+- Nothing else in AC-24 changes: Brotli transfer, all 16 URLs, the same measurement.
