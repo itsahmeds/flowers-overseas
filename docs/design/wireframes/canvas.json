@@ -462,7 +462,7 @@
       "x": 0,
       "y": 385247,
       "w": 1440,
-      "h": 13067
+      "h": 13710
     },
     {
       "file": "florist-inbox-mobile.dc.html",
@@ -470,13 +470,14 @@
       "x": 1520,
       "y": 385247,
       "w": 390,
-      "h": 16320
+      "h": 17379
     },
     {
       "file": "admin-sign-in-desktop.dc.html",
       "title": "admin sign in · desktop · spec 012",
       "x": 0,
       "y": 401767,
+      "y": 324391,
       "w": 1440,
       "h": 4193
     },
@@ -485,6 +486,7 @@
       "title": "admin sign in · mobile · spec 012",
       "x": 1520,
       "y": 401767,
+      "y": 324391,
       "w": 390,
       "h": 4256
     },
@@ -493,6 +495,7 @@
       "title": "admin home · desktop · spec 012",
       "x": 0,
       "y": 406223,
+      "y": 328847,
       "w": 1440,
       "h": 4237
     },
@@ -501,6 +504,7 @@
       "title": "admin home · mobile · spec 012",
       "x": 1520,
       "y": 406223,
+      "y": 328847,
       "w": 390,
       "h": 6191
     },
@@ -509,6 +513,7 @@
       "title": "admin orders · desktop · spec 012",
       "x": 0,
       "y": 412614,
+      "y": 335238,
       "w": 1440,
       "h": 3953
     },
@@ -517,6 +522,7 @@
       "title": "admin orders · mobile · spec 012",
       "x": 1520,
       "y": 412614,
+      "y": 335238,
       "w": 390,
       "h": 5194
     },
@@ -525,6 +531,7 @@
       "title": "admin order detail · desktop · spec 012",
       "x": 0,
       "y": 418008,
+      "y": 340632,
       "w": 1440,
       "h": 9055
     },
@@ -533,6 +540,7 @@
       "title": "admin order detail · mobile · spec 012",
       "x": 1520,
       "y": 418008,
+      "y": 340632,
       "w": 390,
       "h": 15083
     },
@@ -542,6 +550,7 @@
       "x": 0,
       "y": 424375,
       "y": 354856,
+      "y": 355915,
       "w": 1440,
       "h": 2996
     },
@@ -551,6 +560,7 @@
       "x": 1520,
       "y": 424375,
       "y": 354856,
+      "y": 355915,
       "w": 390,
       "h": 3873
     },
@@ -560,8 +570,9 @@
       "x": 0,
       "y": 428448,
       "y": 358929,
+      "y": 359988,
       "w": 1440,
-      "h": 4027
+      "h": 5740
     },
     {
       "file": "admin-partners-mobile.dc.html",
@@ -569,8 +580,9 @@
       "x": 1520,
       "y": 428448,
       "y": 358929,
+      "y": 359988,
       "w": 390,
-      "h": 5623
+      "h": 8233
     },
     {
       "file": "admin-partner-detail-desktop.dc.html",
@@ -578,8 +590,9 @@
       "x": 0,
       "y": 431425,
       "y": 364752,
+      "y": 368421,
       "w": 1440,
-      "h": 7514
+      "h": 9379
     },
     {
       "file": "admin-partner-detail-mobile.dc.html",
@@ -587,8 +600,9 @@
       "x": 1520,
       "y": 431425,
       "y": 364752,
+      "y": 368421,
       "w": 390,
-      "h": 9642
+      "h": 11052
     },
     {
       "file": "admin-applications-desktop.dc.html",
@@ -596,6 +610,7 @@
       "x": 0,
       "y": 438938,
       "y": 374594,
+      "y": 379673,
       "w": 1440,
       "h": 4518
     },
@@ -605,6 +620,7 @@
       "x": 1520,
       "y": 438938,
       "y": 374594,
+      "y": 379673,
       "w": 390,
       "h": 5758
     },
@@ -614,6 +630,7 @@
       "x": 0,
       "y": 444896,
       "y": 380552,
+      "y": 385631,
       "w": 1440,
       "h": 2100
     },
@@ -623,6 +640,7 @@
       "x": 1520,
       "y": 444896,
       "y": 380552,
+      "y": 385631,
       "w": 390,
       "h": 2531
     },
@@ -632,6 +650,7 @@
       "x": 0,
       "y": 447627,
       "y": 383283,
+      "y": 388362,
       "w": 1440,
       "h": 2150
     },
@@ -641,6 +660,7 @@
       "x": 1520,
       "y": 447627,
       "y": 383283,
+      "y": 388362,
       "w": 390,
       "h": 2869
     },
@@ -650,6 +670,7 @@
       "x": 0,
       "y": 450742,
       "y": 386398,
+      "y": 391477,
       "w": 1440,
       "h": 3979
     },
@@ -659,6 +680,7 @@
       "x": 1520,
       "y": 450742,
       "y": 386398,
+      "y": 391477,
       "w": 390,
       "h": 4749
     },
@@ -668,6 +690,7 @@
       "x": 0,
       "y": 455737,
       "y": 391393,
+      "y": 396472,
       "w": 1440,
       "h": 10238
     },
@@ -677,6 +700,7 @@
       "x": 1520,
       "y": 455737,
       "y": 391393,
+      "y": 396472,
       "w": 390,
       "h": 15127
     },
@@ -686,6 +710,7 @@
       "x": 0,
       "y": 474048,
       "y": 409704,
+      "y": 414783,
       "w": 1440,
       "h": 5717
     },
@@ -695,6 +720,7 @@
       "x": 1520,
       "y": 474048,
       "y": 409704,
+      "y": 414783,
       "w": 390,
       "h": 7954
     },
@@ -704,8 +730,9 @@
       "x": 0,
       "y": 482272,
       "y": 417928,
+      "y": 423007,
       "w": 1440,
-      "h": 3965
+      "h": 6254
     },
     {
       "file": "email-founder-mobile.dc.html",
@@ -713,8 +740,9 @@
       "x": 1520,
       "y": 482272,
       "y": 417928,
+      "y": 423007,
       "w": 390,
-      "h": 6385
+      "h": 10368
     },
     {
       "file": "qa-judgments-2026-10-18-desktop.dc.html",
@@ -722,6 +750,7 @@
       "x": 0,
       "y": 488823,
       "y": 424479,
+      "y": 433541,
       "w": 1440,
       "h": 12900
     },
@@ -731,6 +760,7 @@
       "x": 1520,
       "y": 488823,
       "y": 424479,
+      "y": 433541,
       "w": 390,
       "h": 23300
     },
@@ -740,6 +770,7 @@
       "x": 0,
       "y": 512723,
       "y": 448379,
+      "y": 457441,
       "w": 1440,
       "h": 6000
     },
@@ -749,6 +780,7 @@
       "x": 1520,
       "y": 512723,
       "y": 448379,
+      "y": 457441,
       "w": 390,
       "h": 7600
     },
@@ -758,6 +790,7 @@
       "x": 0,
       "y": 520923,
       "y": 456579,
+      "y": 465641,
       "w": 1440,
       "h": 5200
     },
@@ -767,6 +800,7 @@
       "x": 1520,
       "y": 520923,
       "y": 456579,
+      "y": 465641,
       "w": 390,
       "h": 5200
     },
@@ -776,6 +810,7 @@
       "x": 0,
       "y": 526689,
       "y": 462345,
+      "y": 471407,
       "w": 1440,
       "h": 2720
     },
@@ -785,6 +820,7 @@
       "x": 1520,
       "y": 526689,
       "y": 462345,
+      "y": 471407,
       "w": 390,
       "h": 5309
     },
@@ -794,6 +830,7 @@
       "x": 0,
       "y": 532238,
       "y": 467894,
+      "y": 476956,
       "w": 1440,
       "h": 7964
     },
@@ -803,6 +840,7 @@
       "x": 1520,
       "y": 532238,
       "y": 467894,
+      "y": 476956,
       "w": 390,
       "h": 9612
     },
@@ -812,6 +850,7 @@
       "x": 0,
       "y": 542090,
       "y": 477746,
+      "y": 486808,
       "w": 1440,
       "h": 7428
     },
@@ -821,6 +860,7 @@
       "x": 1520,
       "y": 542090,
       "y": 477746,
+      "y": 486808,
       "w": 390,
       "h": 11053
     },
@@ -830,6 +870,7 @@
       "x": 0,
       "y": 553383,
       "y": 489039,
+      "y": 498101,
       "w": 1440,
       "h": 4148
     },
@@ -839,6 +880,7 @@
       "x": 1520,
       "y": 553383,
       "y": 489039,
+      "y": 498101,
       "w": 390,
       "h": 6577
     },
@@ -848,6 +890,7 @@
       "x": 0,
       "y": 560200,
       "y": 495856,
+      "y": 504918,
       "w": 1440,
       "h": 2834
     },
@@ -857,6 +900,7 @@
       "x": 1520,
       "y": 560200,
       "y": 495856,
+      "y": 504918,
       "w": 390,
       "h": 5029
     },
@@ -866,6 +910,7 @@
       "x": 0,
       "y": 565469,
       "y": 501125,
+      "y": 510187,
       "w": 1440,
       "h": 1925
     },
@@ -875,6 +920,7 @@
       "x": 1520,
       "y": 565469,
       "y": 501125,
+      "y": 510187,
       "w": 390,
       "h": 2736
     },
@@ -884,6 +930,7 @@
       "x": 0,
       "y": 568445,
       "y": 504101,
+      "y": 513163,
       "w": 1440,
       "h": 6925
     },
@@ -893,6 +940,7 @@
       "x": 1520,
       "y": 568445,
       "y": 504101,
+      "y": 513163,
       "w": 390,
       "h": 7650
     },
@@ -902,6 +950,7 @@
       "x": 0,
       "y": 576335,
       "y": 511991,
+      "y": 521053,
       "w": 1440,
       "h": 5875
     },
@@ -911,6 +960,7 @@
       "x": 1520,
       "y": 576335,
       "y": 511991,
+      "y": 521053,
       "w": 390,
       "h": 9536
     },
@@ -920,6 +970,7 @@
       "x": 0,
       "y": 586037,
       "y": 521693,
+      "y": 530755,
       "w": 1440,
       "h": 3740
     },
@@ -929,6 +980,7 @@
       "x": 1520,
       "y": 586037,
       "y": 521693,
+      "y": 530755,
       "w": 390,
       "h": 5886
     },
@@ -938,6 +990,7 @@
       "x": 1990,
       "y": 586037,
       "y": 521693,
+      "y": 530755,
       "w": 1440,
       "h": 4539
     },
@@ -947,6 +1000,7 @@
       "x": 3510,
       "y": 586037,
       "y": 521693,
+      "y": 530755,
       "w": 390,
       "h": 7632
     },
@@ -956,6 +1010,7 @@
       "x": 0,
       "y": 593835,
       "y": 529491,
+      "y": 538553,
       "w": 1440,
       "h": 11618
     },
@@ -965,6 +1020,7 @@
       "x": 1520,
       "y": 593835,
       "y": 529491,
+      "y": 538553,
       "w": 390,
       "h": 17306
     },
@@ -974,6 +1030,7 @@
       "x": 0,
       "y": 611307,
       "y": 546963,
+      "y": 556025,
       "w": 1440,
       "h": 3613
     },
@@ -983,6 +1040,7 @@
       "x": 1520,
       "y": 611307,
       "y": 546963,
+      "y": 556025,
       "w": 390,
       "h": 4202
     },
@@ -992,6 +1050,7 @@
       "x": 0,
       "y": 615675,
       "y": 551331,
+      "y": 560393,
       "w": 1440,
       "h": 5601
     },
@@ -1001,6 +1060,7 @@
       "x": 1520,
       "y": 615675,
       "y": 551331,
+      "y": 560393,
       "w": 390,
       "h": 6510
     },
@@ -1150,7 +1210,7 @@
       "file": "admin-finance-overview-desktop.dc.html",
       "title": "admin finance overview · desktop · spec 030b",
       "x": 0,
-      "y": 558007,
+      "y": 567069,
       "w": 1440,
       "h": 4482
     },
@@ -1158,7 +1218,7 @@
       "file": "admin-finance-overview-mobile.dc.html",
       "title": "admin finance overview · mobile · spec 030b",
       "x": 1520,
-      "y": 558007,
+      "y": 567069,
       "w": 390,
       "h": 8454
     },
@@ -1166,7 +1226,7 @@
       "file": "admin-finance-orders-desktop.dc.html",
       "title": "admin finance orders · desktop · spec 030b",
       "x": 0,
-      "y": 566627,
+      "y": 575689,
       "w": 1440,
       "h": 4101
     },
@@ -1174,7 +1234,7 @@
       "file": "admin-finance-orders-mobile.dc.html",
       "title": "admin finance orders · mobile · spec 030b",
       "x": 1520,
-      "y": 566627,
+      "y": 575689,
       "w": 390,
       "h": 4599
     },
@@ -1182,23 +1242,23 @@
       "file": "admin-partner-prices-desktop.dc.html",
       "title": "admin partner prices · desktop · spec 030b",
       "x": 0,
-      "y": 571392,
+      "y": 580454,
       "w": 1440,
-      "h": 2350
+      "h": 3870
     },
     {
       "file": "admin-partner-prices-mobile.dc.html",
       "title": "admin partner prices · mobile · spec 030b",
       "x": 1520,
-      "y": 571392,
+      "y": 580454,
       "w": 390,
-      "h": 3750
+      "h": 5893
     },
     {
       "file": "admin-partner-money-desktop.dc.html",
       "title": "admin partner money · desktop · spec 030b",
       "x": 0,
-      "y": 575308,
+      "y": 586513,
       "w": 1440,
       "h": 2835
     },
@@ -1206,7 +1266,7 @@
       "file": "admin-partner-money-mobile.dc.html",
       "title": "admin partner money · mobile · spec 030b",
       "x": 1520,
-      "y": 575308,
+      "y": 586513,
       "w": 390,
       "h": 4997
     },
@@ -1214,7 +1274,7 @@
       "file": "admin-partner-relationship-desktop.dc.html",
       "title": "admin partner relationship · desktop · spec 030b",
       "x": 0,
-      "y": 580471,
+      "y": 591676,
       "w": 1440,
       "h": 4573
     },
@@ -1222,9 +1282,73 @@
       "file": "admin-partner-relationship-mobile.dc.html",
       "title": "admin partner relationship · mobile · spec 030b",
       "x": 1520,
-      "y": 580471,
+      "y": 591676,
       "w": 390,
       "h": 9915
+    },
+    {
+      "file": "admin-partner-contracts-desktop.dc.html",
+      "title": "admin partner contracts · desktop · spec 030b",
+      "x": 0,
+      "y": 601757,
+      "w": 1440,
+      "h": 6250
+    },
+    {
+      "file": "admin-partner-contracts-mobile.dc.html",
+      "title": "admin partner contracts · mobile · spec 030b",
+      "x": 1520,
+      "y": 601757,
+      "w": 390,
+      "h": 12201
+    },
+    {
+      "file": "admin-product-edit-made-by-desktop.dc.html",
+      "title": "admin product editor made by · desktop · spec 030b",
+      "x": 0,
+      "y": 614124,
+      "w": 1440,
+      "h": 4111
+    },
+    {
+      "file": "admin-product-edit-made-by-mobile.dc.html",
+      "title": "admin product editor made by · mobile · spec 030b",
+      "x": 1520,
+      "y": 614124,
+      "w": 390,
+      "h": 5453
+    },
+    {
+      "file": "admin-supply-desktop.dc.html",
+      "title": "admin supply · desktop · spec 030b",
+      "x": 0,
+      "y": 619743,
+      "w": 1440,
+      "h": 3786
+    },
+    {
+      "file": "admin-supply-mobile.dc.html",
+      "title": "admin supply · mobile · spec 030b",
+      "x": 1520,
+      "y": 619743,
+      "w": 390,
+      "h": 4076
+    },
+    {
+      "file": "florist-bouquets-desktop.dc.html",
+      "title": "florist my bouquets · desktop · spec 030b",
+      "x": 0,
+      "y": 623985,
+      "w": 1440,
+      "h": 4241
+    },
+    {
+      "file": "florist-bouquets-mobile.dc.html",
+      "title": "florist my bouquets · mobile · spec 030b",
+      "x": 1520,
+      "y": 623985,
+      "w": 390,
+      "h": 6920
     }
   ],
   "annotations": [
@@ -1435,6 +1559,7 @@
       "id": "s012-signin",
       "x": 0,
       "y": 401721,
+      "y": 324345,
       "w": 1400,
       "text": "Spec 012 · Admin v0 · sign-in (shared core, admin instance). Every admin artboard: desktop-first and dense, works at 390. Founder copy pending; English only."
     },
@@ -1442,6 +1567,7 @@
       "id": "s012-home",
       "x": 0,
       "y": 406177,
+      "y": 328801,
       "w": 1400,
       "text": "Spec 012 · Admin · Today: three counters, navigation per role, zero state, 403 and 404."
     },
@@ -1449,6 +1575,7 @@
       "id": "s012-orders",
       "x": 0,
       "y": 412568,
+      "y": 335192,
       "w": 1400,
       "text": "Spec 012 · Admin · Orders (read only): filters, the 3 s live check and its pause, demo marker, new-arrival highlight, empty and filtered-empty."
     },
@@ -1456,6 +1583,7 @@
       "id": "s012-order",
       "x": 0,
       "y": 417962,
+      "y": 340586,
       "w": 1400,
       "text": "Spec 012 · Admin · One order: lines and VAT, recipient by role, the event timeline with raw payloads, assignments, payments. No action panel in v0 (spec 020)."
     },
@@ -1464,6 +1592,7 @@
       "x": 0,
       "y": 424329,
       "y": 354810,
+      "y": 355869,
       "w": 1400,
       "text": "Spec 012 · Admin · Flags: checkout.open per country, checkout.demo_guard with the typed-key confirmation, an orphaned key."
     },
@@ -1472,6 +1601,7 @@
       "x": 0,
       "y": 428402,
       "y": 358883,
+      "y": 359942,
       "w": 1400,
       "text": "Spec 012 · Admin · Florists: list by status."
     },
@@ -1480,6 +1610,7 @@
       "x": 0,
       "y": 431379,
       "y": 364706,
+      "y": 368375,
       "w": 1400,
       "text": "Spec 012 · Admin · One florist: profile, terms, zones, days off, products and payouts; status with the missing conditions (Make active absent until all are met); demo florist."
     },
@@ -1488,6 +1619,7 @@
       "x": 0,
       "y": 438892,
       "y": 374548,
+      "y": 379627,
       "w": 1400,
       "text": "Spec 012 · Admin · Applications: list, one application, mark contacted, convert, reject with a reason."
     },
@@ -1496,6 +1628,7 @@
       "x": 0,
       "y": 444850,
       "y": 380506,
+      "y": 385585,
       "w": 1400,
       "text": "Spec 012 · Admin · Audit log: filters, before/after diff with masked values."
     },
@@ -1504,6 +1637,7 @@
       "x": 0,
       "y": 447581,
       "y": 383237,
+      "y": 388316,
       "w": 1400,
       "text": "Spec 012 · Admin · Users: roles, deactivate, your own last admin role."
     },
@@ -1512,6 +1646,7 @@
       "x": 0,
       "y": 450696,
       "y": 386352,
+      "y": 391431,
       "w": 1400,
       "text": "Spec 016 · Emails · the layout: buyer, florist and founder frames, and the parts every template is built from."
     },
@@ -1520,6 +1655,7 @@
       "x": 0,
       "y": 455691,
       "y": 391347,
+      "y": 396426,
       "w": 1400,
       "text": "Spec 016 · Emails · buyer B1 to B8: we have your order (charged at once), being made, on its way, delivered with the photo, cancelled, refund, payment refused, invoice and credit note. Plain text beside each."
     },
@@ -1528,6 +1664,7 @@
       "x": 0,
       "y": 474002,
       "y": 409658,
+      "y": 414737,
       "w": 1400,
       "text": "Spec 016 · Emails · florist V1 to V5: offer, reminder, confirmed, stop, photo reminder. One-tap link; no recipient data."
     },
@@ -1536,6 +1673,7 @@
       "x": 0,
       "y": 482226,
       "y": 417882,
+      "y": 422961,
       "w": 1400,
       "text": "Spec 016 · Emails · founder: the no-florist alert with the grace window, and the WhatsApp copies (offer and stop message) to paste."
     },
@@ -1544,6 +1682,7 @@
       "x": 0,
       "y": 488777,
       "y": 424433,
+      "y": 433495,
       "w": 1400,
       "text": "TASK-252 · QA judgments of 2026-10-18, awaiting founder: cookie card placement, cookie settings length, the phone Menu, Esc, the phone Popular choices row, short screens, the listing card, static add-on rows. Answer each with one word (1A, 2B...)."
     },
@@ -1552,6 +1691,7 @@
       "x": 0,
       "y": 512603,
       "y": 448259,
+      "y": 457321,
       "w": 1200,
       "text": "Founder ruling 2026-10-19 (A-founder-2026-10-19d): no cookie banner while only essential cookies are set, the compact banner when analytics is on, the settings panel from the footer; the language popup's future slim one-line bar."
     },
@@ -1560,6 +1700,7 @@
       "x": 0,
       "y": 526523,
       "y": 462179,
+      "y": 471241,
       "w": 1400,
       "text": "Spec 012b · Admin catalogue CMS, slice A (2026-10-20). Products, one product, price change, photos, photo review, countries, one country, publish; and the two flows. Every new string is a [slot] (dotted underline)."
     },
@@ -1568,6 +1709,7 @@
       "x": 0,
       "y": 526643,
       "y": 462299,
+      "y": 471361,
       "w": 1400,
       "text": "Spec 012b · Admin · Catalogue: every product with its text review per language, photos, Polish price, placeholder and waiting-to-publish chips; empty, filtered empty, backup warning. Dotted underline = [slot] copy."
     },
@@ -1576,6 +1718,7 @@
       "x": 0,
       "y": 532192,
       "y": 467848,
+      "y": 476910,
       "w": 1400,
       "text": "Spec 012b · Admin · One product: details with the florist who makes it, sizes with the florist’s price, text per language with Approve, photos with alt text, prices, margin with the suggested price; every rule state."
     },
@@ -1584,6 +1727,7 @@
       "x": 0,
       "y": 542044,
       "y": 477700,
+      "y": 486762,
       "w": 1400,
       "text": "Spec 012b · Admin · Price change: type the all-in price, then see it in en, en-gb, de, pl, the per cent change, the 30-day lowest; the ±30 % warning, same-day refusal, florist’s share above 65 %, below the florist’s price."
     },
@@ -1592,6 +1736,7 @@
       "x": 0,
       "y": 553337,
       "y": 488993,
+      "y": 498055,
       "w": 1400,
       "text": "Spec 012b · Admin · Photos: the grid, upload with provenance by source (florist, AI, stock), progress, making sizes, every refusal."
     },
@@ -1600,6 +1745,7 @@
       "x": 0,
       "y": 560154,
       "y": 495810,
+      "y": 504872,
       "w": 1400,
       "text": "Spec 012b · Admin · One photo: the four checks, Approve or Reject through the ledger; approved, rejected, florist without terms, imported not re-read."
     },
@@ -1608,6 +1754,7 @@
       "x": 0,
       "y": 565423,
       "y": 501079,
+      "y": 510141,
       "w": 1400,
       "text": "Spec 012b · Admin · Countries: status, first live, real florists, priced and buyable products, what the go-live check still needs. Operations editing is later (§13 Q16)."
     },
@@ -1616,6 +1763,7 @@
       "x": 0,
       "y": 568399,
       "y": 504055,
+      "y": 513117,
       "w": 1400,
       "text": "Spec 012b · Admin · One country: the go-live check with named reasons, Go live with the typed code, live with what no longer holds, back to demo."
     },
@@ -1624,6 +1772,7 @@
       "x": 0,
       "y": 576289,
       "y": 511945,
+      "y": 521007,
       "w": 1400,
       "text": "Spec 012b · Admin · Publish: pages added and removed per language, one Publish button, building, live and checked, failed, timed out, daily limit, indexable removals refused, Railway only."
     },
@@ -1632,6 +1781,7 @@
       "x": 0,
       "y": 585991,
       "y": 521647,
+      "y": 530709,
       "w": 1400,
       "text": "Spec 044 · Blog index and blog post, desktop 1440 and mobile 390 (2026-10-21): posts written and approved in admin. Index: a ruled list newest first, no lead story. Post: byline, Published and Updated, the not-open line, cover and AI note, excerpt, the body subset, one end link to the guide of the first country tag. Replaces the round 2 shared pair."
     },
@@ -1640,6 +1790,7 @@
       "x": 0,
       "y": 593789,
       "y": 529445,
+      "y": 538507,
       "w": 1400,
       "text": "Spec 044 · Admin · One blog post: write with the checks card, insert a link to our pages, preview, approve the exact text, Publish post (a rebuild), live and checked, edit by revision and Publish changes (no rebuild), unpublish. The preview is a state of this page."
     },
@@ -1648,6 +1799,7 @@
       "x": 0,
       "y": 611261,
       "y": 546917,
+      "y": 555979,
       "w": 1400,
       "text": "Spec 044 · Admin · Blog posts: every post with its status chip (draft, awaiting approval, published, changes waiting, unpublished), filtered by status and country, empty."
     },
@@ -1656,6 +1808,7 @@
       "x": 0,
       "y": 615629,
       "y": 551285,
+      "y": 560347,
       "w": 1400,
       "text": "Spec 044 · Admin · Blog authors: real people who agreed to be named, their own-name confirmation (theirs alone), a name change clearing it, withdrawal unpublishing their posts; public author pages by number from slice B."
     },
@@ -1667,37 +1820,65 @@
       "text": "Basket and customer accounts, 2026-10-22 (spec 010 and spec 018, A-founder-2026-10-22): the basket page, the account pages and the two account emails. The basket's checkout, confirmation, product and header changes are the 2026-10-22 sections at the foot of those artboards."
       "id": "s030b-finance-overview",
       "x": 0,
-      "y": 557961,
+      "y": 567023,
       "w": 1400,
       "text": "Spec 030b · Admin · Finance: the founder's Monday page. Range and basis, live or test, the Accountant to confirm banner, one statement of totals from gross to margin with one rates-used line, by country, by florist, VAT estimate, final and provisional counts, owed and paid, three CSVs."
     },
     {
       "id": "s030b-finance-orders",
       "x": 0,
-      "y": 566581,
+      "y": 575643,
       "w": 1400,
       "text": "Spec 030b · Admin · Order figures: one row per paid order with its rates (ECB and Stripe, with dates), status and reasons; filters; empty; rate missing; the F2 split charge."
     },
     {
       "id": "s030b-partner-prices",
       "x": 0,
-      "y": 571346,
+      "y": 580408,
       "w": 1400,
       "text": "Spec 030b · Admin · A florist's Prices tab: every bouquet and size with the florist price, retail, VAT, net and margin from spec 012b's margin view; add-ons not priced; price history."
     },
     {
       "id": "s030b-partner-money",
       "x": 0,
-      "y": 575262,
+      "y": 586467,
       "w": 1400,
       "text": "Spec 030b · Admin · A florist's Money tab: sales to margin for the range, what we owe now, earned awaiting photo, open adjustments, statements paid."
     },
     {
       "id": "s030b-partner-relationship",
       "x": 0,
-      "y": 580425,
+      "y": 591630,
       "w": 1400,
       "text": "Spec 030b · Admin · A florist's Relationship tab: standing, contact, notes with their dialogs, the contact log with follow-ups, the minimisation hint and the refused-text error."
+    },
+    {
+      "id": "s030b-partner-contracts",
+      "x": 0,
+      "y": 601711,
+      "w": 1400,
+      "text": "Spec 030b amendment (awaiting approval of its defaults) · Admin · A florist's Contracts tab: agreement, addendum and annexes with versions, upload with its refusals, edit, withdraw inside 7 days, flags."
+    },
+    {
+      "id": "s030b-product-edit-made-by",
+      "x": 0,
+      "y": 614078,
+      "w": 1400,
+      "text": "Spec 030b amendment (awaiting approval of its defaults) · Admin · A bouquet's Made by tab: every florist who makes it, per size, with price, shown price, margin, coverage, sale per country and origin."
+    },
+    {
+      "id": "s030b-supply",
+      "x": 0,
+      "y": 619697,
+      "w": 1400,
+      "text": "Spec 030b amendment (awaiting approval of its defaults) · Admin · Supply: bouquets by florists per country, with the flags no active florist, only one florist, unpriced, share above 65%, price spread."
+    },
+    {
+      "id": "s030b-florist-bouquets",
+      "x": 0,
+      "y": 623939,
+      "w": 1400,
+      "text": "Spec 030b amendment (awaiting approval of its defaults) · Florist · My bouquets: the florist's own bouquets, the amount they receive and each state, in Polish; read only."
     }
   ],
   "launch": {

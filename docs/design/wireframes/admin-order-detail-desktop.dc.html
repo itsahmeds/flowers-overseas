@@ -667,6 +667,31 @@ fieldset.fm-f { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 .M .b030 .ad-stage { padding: 24px 0 0; border-radius: 0; place-items: end stretch; }
 .b030 .ad-cb { display: inline-block; flex: none; inline-size: 18px; block-size: 18px; border-radius: 4px; background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-field-edge); vertical-align: middle; }
 .M .b030 .ad-dialog { max-inline-size: none; border-radius: 16px 16px 0 0; padding: 20px 16px 24px; }
+
+/* spec 030b amendment */
+.b030 .fn-doc { display: grid; gap: 10px; padding: 14px 16px; border-radius: 10px; background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 14px; }
+.b030 .fn-doc .hd { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.b030 .fn-doc .hd b { font-size: 15px; }
+.b030 .fn-doc .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.b030 .fn-doc .ad-kv { grid-template-columns: 110px minmax(0, 1fr); }
+.b030 .fn-hist { display: grid; gap: 8px; margin-block-start: 8px; font-size: 14px; }
+.b030 .fn-hist summary { cursor: pointer; min-block-size: 32px; display: flex; align-items: center; gap: 8px; color: var(--color-ink-2); font-weight: var(--font-weight-bold); }
+.b030 .fn-hist .fn-doc { background: var(--color-paper-2); }
+.b030 .fn-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.b030 .fn-file { display: flex; align-items: center; gap: 10px; }
+.b030 .fn-rule { display: grid; gap: 2px; padding-block: 6px; border-block-end: var(--rule); }
+.b030 .fn-rule code { font-size: 12px; color: var(--color-ink-3); }
+.b030 .fn-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-block-start: 4px; }
+.b030 .fn-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.b030 .fn-cov { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 14px; }
+.b030 .fn-nm { color: var(--color-ink-3); }
+.b030 .fn-t thead a { text-transform: none; letter-spacing: 0; }
+.b030 .fn-t thead th { white-space: normal; vertical-align: bottom; }
+.b030 .fn-orow { max-inline-size: 640px; }
+.b030 .fn-flagcounts { grid-template-columns: repeat(5, minmax(0, 1fr)); display: grid; gap: 0 20px; }
+.M .b030 .fn-flagcounts { grid-template-columns: minmax(0, 1fr); }
+.b030 .fn-flagcounts a { border-block-end: 0; }
+.b030 .ad-banner.ok { background: var(--color-leaf-wash); }
 </style>
 <div class="b030">
 <section class="note"><span class="nl">Spec 030b · the order’s Money panel · desktop 1440 · 2026-10-23 · [internal]</span><dl><dt>What changes</dt><dd>Spec 030b §2.8 and §5.3.1 item 3: <code>/admin/orders/[id]</code> gains a read-only <b>Money</b> panel for <code>finance.view</code>, placed in the main column <b>after Payments</b>. Everything drawn above is spec 012’s page with spec 020a’s Actions card; this block redraws none of it. The page above is a demo order, which takes no money, so it never shows the panel: the panel is drawn here on live sample orders.</dd><dt>Panel</dt><dd>Status chip (Final, Provisional or Rate missing) with each reason as text; the “Accountant to confirm” line naming the open questions (AC-18); the 11 lines of <code>orderMargin</code> (gross at ECB, FX cost, settled, refunds, VAT, net sale, florist cost, fees, disputes, margin, margin %), each converted figure with its rate, source and date (AC-21, AC-31); the balance transactions by provider reference. No control writes (AC-31).</dd><dt>Permission</dt><dd><code>finance.view</code> (admin only). For <code>ops</code>, <code>finance</code> and <code>content</code> the panel and every figure in it are absent from the HTML, with no placeholder (AC-2, AC-31).</dd><dt>Reads</dt><dd><code>orderMoney(orderId)</code>: one order’s facts, its <code>payment_balance_txn</code> rows and the rates it needs.</dd><dt>States</dt><dd>Final (F1) · provisional, florist cost pending · provisional, fee pending and no florist · fee not available (Mollie) · rate missing · a refund and its VAT estimate · test order · absent for ops.</dd><dt>Data drawn</dt><dd><b>Sample figures.</b> F1 is spec AC-13’s fixture exactly: 45.90 GBP, settled 53.02 EUR with fee 1.58, florist 149.00 PLN paid 27 Oct, margin 12.45 EUR, 25.36%.</dd><dt>Copy</dt><dd><span class="pending">[slot] copy</span> Dotted-underlined strings are [slots] owned by spec 030b §7 (<code>admin.finance.*</code>).</dd><dt>AC</dt><dd>spec 030b AC-2, AC-17, AC-18, AC-21, AC-31, AC-34</dd><dt>Owning spec</dt><dd>030b (suggested task 2)</dd></dl></section>
