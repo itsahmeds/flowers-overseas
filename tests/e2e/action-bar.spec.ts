@@ -250,6 +250,32 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
     ).toBe(before);
   });
 
+  for (const viewport of [
+    { width: 640, height: 400 },
+    { width: 844, height: 390 },
+  ] as const) {
+    test(`is not drawn on a short screen, ${String(viewport.width)} × ${String(viewport.height)} (A-founder-2026-10-19c clause 5, T-53)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(FIXTURE);
+      await expect(page.locator(BAR)).toBeHidden();
+      expect(
+        await page.evaluate(
+          () => getComputedStyle(document.body).paddingBlockEnd,
+        ),
+      ).toBe("0px");
+    });
+  }
+
+  test("is drawn at 390 × 844, where the short-screen rule does not apply (T-53's control)", async ({
+    page,
+  }) => {
+    await page.setViewportSize(PHONE);
+    await page.goto(FIXTURE);
+    await expect(page.locator(BAR)).toBeVisible();
+  });
+
   test("is not drawn from `md` up", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(FIXTURE);
