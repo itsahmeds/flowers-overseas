@@ -38,7 +38,6 @@
  * when the bytes move to R2 (AC-27); until then a second convention invented here would be a
  * convention nobody reads.
  */
-import { createHash } from "node:crypto";
 import {
   existsSync,
   mkdirSync,
@@ -70,17 +69,36 @@ import {
   type MediaFormat,
   type MediaSlot,
   type MediaVariantManifest,
-  mediaFormats,
 } from "./schema/media.ts";
 import {
   ENCODER_CONCURRENCY,
-  PINNED_LIBVIPS_VERSION,
   PINNED_SHARP_VERSION,
   type MediaVariantPipeline,
   variantDimensions,
   variantPipeline,
 } from "./schema/variants.ts";
-import { watermarkSvg } from "./watermark.ts";
+import {
+  assertPinnedEncoder,
+  deriveVariants,
+  hasC2paXmp,
+  sha256,
+  sortVariants,
+  variantLeaf,
+  variantObjectKey,
+} from "./derive.ts";
+
+// The derive half lives in `./derive.ts` since TASK-082 (the worker shares it without `prettier`
+// or the filesystem); every name this module exported before is still exported from here.
+export {
+  type DerivedVariant,
+  type LadderStep,
+  assertPinnedEncoder,
+  deriveVariants,
+  hasC2paXmp,
+  ladderFor,
+  sha256,
+  variantObjectKey,
+} from "./derive.ts";
 
 /* -------------------------------------------------------------------------- */
 /* Paths and keys.                                                            */
@@ -116,24 +134,6 @@ export const ORIGINAL_EXTENSIONS = [
   "tiff",
   "webp",
 ] as const;
-
-/** `{assetId}/{width}.{fmt}` — the one place the file name is decided. */
-function variantLeaf(
-  assetId: string,
-  width: number,
-  format: MediaFormat,
-): string {
-  return `${assetId}/${String(width)}.${format}`;
-}
-
-/** The `object_key` of one variant: the `public/` path and the URL agree by construction. */
-export function variantObjectKey(
-  assetId: string,
-  width: number,
-  format: MediaFormat,
-): string {
-  return `media/${variantLeaf(assetId, width, format)}`;
-}
 
 /** The repository-relative path one variant is written to. */
 export function variantFilePath(
@@ -189,178 +189,6 @@ export function findOriginal(root: string, assetId: string): string | null {
     );
   }
   return found[0] ?? null;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Deriving.                                                                  */
-/* -------------------------------------------------------------------------- */
-
-/** One derived file: its manifest row and the bytes that produced the row's checksum. */
-export interface DerivedVariant {
-  readonly row: MediaVariantManifest;
-  readonly data: Buffer;
-}
-
-/** The format order inside one width, and the order rows are written in. */
-const FORMAT_ORDER: readonly MediaFormat[] = mediaFormats;
-
-/** A lowercase hex SHA-256 of a buffer — the `checksum_sha256` of spec 002 §5.1. */
-export function sha256(data: Buffer): string {
-  return createHash("sha256").update(data).digest("hex");
-}
-
-/**
- * Whether the original's XMP carries a C2PA claim. Spec 006 §8 asks that any C2PA marking the
- * generator embedded be preserved while EXIF/GPS is stripped unconditionally, and XMP is the only
- * container a `sharp` re-encode can carry across formats: an XMP-embedded claim survives, a
- * JUMBF-boxed one cannot and is reported per asset. Provenance stays authoritative in
- * `seed/data/media.json` either way, which is what §8's "provenance is data" already relies on.
- */
-export function hasC2paXmp(xmp: Buffer | undefined): boolean {
-  if (xmp === undefined) return false;
-  return xmp.toString("latin1").toLowerCase().includes("c2pa");
-}
-
-/** Refuse to encode with anything but the pinned encoder (AC-13). */
-export function assertPinnedEncoder(): void {
-  const versions = sharp.versions;
-  if (versions.sharp !== PINNED_SHARP_VERSION) {
-    throw new Error(
-      `sharp ${versions.sharp} is loaded but ${PINNED_SHARP_VERSION} is pinned: every checksum in ${VARIANT_MANIFEST_PATH} was produced by the pinned build, so a different one must not write over them (spec 006 AC-13). Run \`pnpm install\`, or bump PINNED_SHARP_VERSION in seed/schema/variants.ts and re-derive every asset in one commit`,
-    );
-  }
-  if (versions.vips !== PINNED_LIBVIPS_VERSION) {
-    throw new Error(
-      `libvips ${String(versions.vips)} is loaded but ${PINNED_LIBVIPS_VERSION} is pinned (sharp ${PINNED_SHARP_VERSION} ships it as a prebuilt binary): a globally installed libvips encodes different bytes (spec 006 AC-13). Unset SHARP_FORCE_GLOBAL_LIBVIPS and re-install`,
-    );
-  }
-}
-
-/**
- * Derive the whole ladder of one asset: AVIF + WebP at each width **the slot ships** in its
- * declared aspect ratio, plus the single OG/email JPEG where the slot is one of `ogJpegSlots`.
- *
- * The widths come from the pipeline header's `aspects[slot]` rather than from its `widths`
- * (TASK-080). `widths` is the §13 Q5 vocabulary; `aspects[slot]` is the Phase-0 ladder
- * `PHASE0_SLOT_WIDTHS` chose for this slot, and deriving from the same field `--check` verifies is
- * what keeps "the manifest describes the bytes" true by construction rather than by agreement.
- *
- * Pure in the sense that matters: buffer in, buffers out, no filesystem and no clock. That is what
- * lets T-12/T-13 assert the ladder, the ratios, the stripped metadata and the byte-identity of two
- * runs without writing anything, and what TASK-082's worker will call with the same options to
- * reproduce these checksums (AC-25).
- */
-export async function deriveVariants(
-  asset: {
-    readonly id: string;
-    readonly slot: MediaSlot;
-    readonly depicts?: string;
-  },
-  original: Buffer,
-  pipeline: MediaVariantPipeline = variantPipeline(),
-  options: { readonly demo?: boolean } = {},
-): Promise<readonly DerivedVariant[]> {
-  sharp.concurrency(pipeline.concurrency);
-  const keepXmp = hasC2paXmp((await sharp(original).metadata()).xmp);
-
-  // The demo watermark of §2.5, baked into the bytes rather than painted on with CSS, and applied
-  // to `depicts: "context"` assets only — the in-home shots that could be mistaken for a delivery
-  // photograph. §13 Q12 keeps the mechanism and ships nothing marked: `--demo` is off by default
-  // and the Phase-0 dataset has no `context` asset, so this branch is unreachable today and
-  // `tests/unit/media-watermark.test.ts` asserts both halves rather than trusting the sentence.
-  const watermark = options.demo === true && asset.depicts === "context";
-
-  const ladder = [
-    ...new Set(
-      (pipeline.aspects[asset.slot] ?? []).flatMap((step) => step.widths),
-    ),
-  ].sort((left, right) => left - right);
-
-  const jobs: { readonly width: number; readonly format: MediaFormat }[] = [
-    ...ladder.flatMap((width) =>
-      (["avif", "webp"] as const).map((format) => ({ width, format })),
-    ),
-    ...(pipeline.ogJpegSlots.includes(asset.slot)
-      ? [{ width: pipeline.ogJpegWidth, format: "jpeg" as const }]
-      : []),
-  ];
-
-  const derived: DerivedVariant[] = [];
-  for (const job of jobs) {
-    const box = variantDimensions(asset.slot, job.width);
-    // Metadata: `sharp` writes none unless asked, so EXIF and GPS are gone by construction
-    // (`plan/01` §6, AC-12 — asserted by reading the output's metadata in the test, not trusted
-    // here); the ICC profile is kept because a colour-accurate bouquet is the point of the style
-    // guide; XMP only when it carries the C2PA claim of spec 006 §8.
-    let pipe = sharp(original)
-      .resize({
-        width: box.width,
-        height: box.height,
-        fit: pipeline.resize.fit as "cover",
-        position: pipeline.resize.position,
-        kernel: pipeline.resize.kernel as "lanczos3",
-        withoutEnlargement: pipeline.resize.withoutEnlargement,
-      })
-      .keepIccProfile();
-    if (keepXmp) pipe = pipe.keepXmp();
-    if (watermark) {
-      pipe = pipe.composite([
-        { input: Buffer.from(watermarkSvg(box.width, box.height)) },
-      ]);
-    }
-
-    const data =
-      job.format === "avif"
-        ? await pipe
-            .avif({
-              ...pipeline.encoders.avif,
-              // The schema types the pinned options as plain numbers (it is a JSON header, and a
-              // hand-edited `bitdepth: 9` must fail the gate with a message rather than fail to
-              // compile); `sharp` types this one as the 8 | 10 | 12 union, so the narrowing
-              // happens once, here, at the call.
-              bitdepth: pipeline.encoders.avif.bitdepth as 8 | 10 | 12,
-            })
-            .toBuffer()
-        : job.format === "webp"
-          ? await pipe.webp(pipeline.encoders.webp).toBuffer()
-          : await pipe.jpeg(pipeline.encoders.jpeg).toBuffer();
-
-    derived.push({
-      data,
-      row: {
-        assetId: asset.id,
-        // The ladder step's name is the width as a string — spec 006 §5.2, so that
-        // `objectKey(kind, id, variant)` needs no second vocabulary.
-        variant: String(job.width),
-        width: box.width,
-        height: box.height,
-        format: job.format,
-        bytes: data.byteLength,
-        checksumSha256: sha256(data),
-        objectKey: variantObjectKey(asset.id, job.width, job.format),
-      },
-    });
-  }
-  return sortVariants(derived, [asset.id]);
-}
-
-/** Rows in `media.json` asset order, then width ascending, then AVIF, WebP, JPEG. */
-function sortVariants(
-  derived: readonly DerivedVariant[],
-  assetOrder: readonly string[],
-): DerivedVariant[] {
-  return [...derived].sort((left, right) => {
-    const byAsset =
-      assetOrder.indexOf(left.row.assetId) -
-      assetOrder.indexOf(right.row.assetId);
-    if (byAsset !== 0) return byAsset;
-    if (left.row.width !== right.row.width)
-      return left.row.width - right.row.width;
-    return (
-      FORMAT_ORDER.indexOf(left.row.format) -
-      FORMAT_ORDER.indexOf(right.row.format)
-    );
-  });
 }
 
 /* -------------------------------------------------------------------------- */
