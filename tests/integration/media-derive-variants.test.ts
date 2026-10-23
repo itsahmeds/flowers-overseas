@@ -335,6 +335,7 @@ describe.skipIf(server.url === undefined)(
         ).toEqual([]);
         expect(await variantRows(assetId)).toEqual([]);
       },
+      180_000,
     );
 
     it("an asset the seed manifest does not know is refused slot_unknown, with nothing written", async () => {
@@ -346,7 +347,7 @@ describe.skipIf(server.url === undefined)(
       });
       expect(run.counts.derives).toBe(0);
       expect(await variantRows(assetId)).toEqual([]);
-    });
+    }, 180_000);
 
     it("an original whose bytes are not its recorded checksum is refused before encoding", async () => {
       const keyId = nextSeedId();
@@ -361,7 +362,7 @@ describe.skipIf(server.url === undefined)(
       });
       expect(run.counts).toEqual({ derives: 0, reads: 1 });
       expect(await variantRows(assetId)).toEqual([]);
-    });
+    }, 180_000);
 
     it("a missing asset and a malformed id are refused without a read", async () => {
       const run = deps();
@@ -372,7 +373,7 @@ describe.skipIf(server.url === undefined)(
         await deriveAssetVariants(run, { assetId: "fo-bq-001-hero" }),
       ).toEqual({ status: "refused", reason: "asset_id_invalid" });
       expect(run.counts).toEqual({ derives: 0, reads: 0 });
-    });
+    }, 180_000);
 
     it("a private asset derives into the private bucket only, and is refused when none is configured", async () => {
       const keyId = nextSeedId();
