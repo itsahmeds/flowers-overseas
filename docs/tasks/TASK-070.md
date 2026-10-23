@@ -33,6 +33,20 @@ Branch `task/TASK-070-db-catalogue-providers`. **Blocked on TASK-013** (spec 002
   hardening task opens before then.
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** unblocked: TASK-069 and TASK-013 are done. Spec 012b's cutover (TASK-292, TASK-294) builds on these providers (spec 012b §12, requirement on spec 005), so this task now has its consumer.
 
+- **TASK-294:** select `dbCatalogueProvider` / `dbPriceProvider` by environment in
+  `catalogProviders()`; prove a warm ISR page performs zero queries through `next start` (E3);
+  route `ui/home/trending-provider.ts`'s product name through the barrel (E5); keep the static FX
+  provider until TASK-071 writes `fx_rate` rows.
+- **TASK-297:** the product editor writes the `en` `product_translation` in the same transaction as
+  the product: a product without it makes the database catalogue read fail closed.
+- **Orchestrator:** a spec 002 §5.1 amendment naming `0020`'s four columns (E1).
+- **Later:** a price read scoped to one (product, country) needs an interface change; reconsider
+  if `country_price` grows past a few tens of thousands of rows.
+- From `/review 56`: the `catalog.price_ambiguous` emit test is added here
+  (`tests/unit/catalog-logging.test.ts`, red with the signal removed); `checkSurchargeVatRates`'
+  last-wins baseline over superseded retail rows is a `catalogue:check` gate change outside the
+  providers and stays open.
+
 ## Escalations
 
 Rulings made by the implementer on 2026-10-22 under the orchestrator's order ("follow the spec
@@ -114,19 +128,3 @@ PR [#324](https://github.com/itsahmeds/flowers-overseas/pull/324). AC-27 and AC-
   unsafe-integer and missing-name edges, the backfill); unit `catalog-db-read` (12), `catalog-logging` (+1, `catalog.price_ambiguous`),
   `catalog-barrel` (+1 and the `db/` file list), `no-db-imports` (the catalogue adapter dir).
 - **Local runs:** PG16 (embedded, scratch, stopped by `pg_ctl stop`); the expensive gates are CI's.
-
-### Carry-forwards
-
-- **TASK-294:** select `dbCatalogueProvider` / `dbPriceProvider` by environment in
-  `catalogProviders()`; prove a warm ISR page performs zero queries through `next start` (E3);
-  route `ui/home/trending-provider.ts`'s product name through the barrel (E5); keep the static FX
-  provider until TASK-071 writes `fx_rate` rows.
-- **TASK-297:** the product editor writes the `en` `product_translation` in the same transaction as
-  the product: a product without it makes the database catalogue read fail closed.
-- **Orchestrator:** a spec 002 §5.1 amendment naming `0020`'s four columns (E1).
-- **Later:** a price read scoped to one (product, country) needs an interface change; reconsider
-  if `country_price` grows past a few tens of thousands of rows.
-- From `/review 56`: the `catalog.price_ambiguous` emit test is added here
-  (`tests/unit/catalog-logging.test.ts`, red with the signal removed); `checkSurchargeVatRates`'
-  last-wins baseline over superseded retail rows is a `catalogue:check` gate change outside the
-  providers and stays open.
