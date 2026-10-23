@@ -436,6 +436,28 @@ describe("signed URLs — where they point and how long they live", () => {
     expect((await good.s3.fetch(forged)).status).toBe(403);
   });
 
+  it("a URL signed for one bucket does not read the same key in another", async () => {
+    const { s3, storage } = rig();
+    const objectKey = "originals/product/shared";
+    await storage.put({
+      bucket: PRIVATE,
+      objectKey,
+      body: new Uint8Array([1]),
+      mime: "image/png",
+    });
+    await storage.put({
+      bucket: BACKUPS,
+      objectKey,
+      body: new Uint8Array([2]),
+      mime: "image/png",
+    });
+    const url = await storage.getSignedUrl({ bucket: PRIVATE, objectKey }, 60);
+    const swapped = url.replace(`/${PRIVATE}/`, `/${BACKUPS}/`);
+    expect(swapped).not.toBe(url);
+    expect((await s3.fetch(url)).status).toBe(200);
+    expect((await s3.fetch(swapped)).status).toBe(403);
+  });
+
   it("a URL whose expiry was raised is refused", async () => {
     const { s3, storage } = rig();
     const location = { bucket: PRIVATE, objectKey: "originals/product/x" };
