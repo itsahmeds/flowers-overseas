@@ -288,7 +288,9 @@ export function presignGet(options: {
     region: options.region,
     now: options.now,
   });
-  return `${options.origin}${path}?${query}&X-Amz-Signature=${signature}`;
+  // The signature joins the other parameters; their order is not signed (the store re-sorts).
+  const signed = canonicalQuery({ ...params, "X-Amz-Signature": signature });
+  return `${options.origin}${path}?${signed}`;
 }
 
 /* -------------------------------------------------------------------------- */
