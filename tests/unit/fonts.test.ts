@@ -27,6 +27,7 @@ import {
   repertoireOf,
   REPERTOIRE,
   SUBSETS,
+  SUBSET_RANGES,
   subsetOf,
   unicodeRange,
 } from "../../scripts/fonts/build-fonts.ts";
@@ -41,6 +42,65 @@ function bytesOf(file: string): number {
 }
 
 const KB = 1024;
+
+/**
+ * Spec 004 §14 A-orchestrator-2026-10-23 (TASK-377, AC-58): the Polish letters ride in the Latin
+ * file, so a `pl` header renders from the two preloaded Alegreya Sans files and never waits for a
+ * Latin-Ext file (AC-7's header shift of 0 on `/pl`).
+ */
+/** The 18 Polish letters outside ASCII; `Ó ó` are Latin-1 and were always Latin. */
+const POLISH_LETTERS = "ĄąĆćĘęŁłŃńÓóŚśŹźŻż";
+/** The 16 that moved from Latin-Ext to Latin (clause 2). */
+const MOVED_LETTERS = "ĄąĆćĘęŁłŃńŚśŹźŻż";
+/** What the Latin-Ext files keep of the repertoire: the Romanian and Turkish letters (clause 2). */
+const RO_TR_EXT_LETTERS = "ĂăȘșȚțĞğİŞş";
+/** Clause 2's two strings, verbatim. */
+const LATIN_RANGE =
+  "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212";
+const LATIN_EXT_RANGE =
+  "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF";
+/** Both subsets' ranges as they stood before the move: the union the move must not change. */
+const UNION_BEFORE_AC58: readonly (readonly [number, number])[] = [
+  [0x0000, 0x00ff],
+  [0x0131, 0x0131],
+  [0x0152, 0x0153],
+  [0x2000, 0x206f],
+  [0x20ac, 0x20ac],
+  [0x2122, 0x2122],
+  [0x2190, 0x2193],
+  [0x2212, 0x2212],
+  [0x0100, 0x0130],
+  [0x0132, 0x0151],
+  [0x0154, 0x024f],
+  [0x1e00, 0x1eff],
+  [0x2c60, 0x2c7f],
+  [0xa720, 0xa7ff],
+];
+
+function inRanges(
+  ranges: readonly (readonly [number, number])[],
+  codePoint: number,
+): boolean {
+  return ranges.some(([start, end]) => codePoint >= start && codePoint <= end);
+}
+
+/** Every distinct character of every string value under a catalogue's `nav` namespace that is not in the Latin subset. */
+function navCharactersOutsideLatin(
+  catalogue: Record<string, unknown>,
+): string[] {
+  const outside = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (typeof value === "string") {
+      for (const character of value) {
+        if (subsetOf(character) !== "latin") outside.add(character);
+      }
+    } else if (value !== null && typeof value === "object") {
+      for (const child of Object.values(value)) walk(child);
+    }
+  };
+  walk(catalogue.nav);
+  return [...outside];
+}
 
 /** Caveat's one module, and the one file allowed to import it (spec 004 §14 A21 clause 3). */
 const HAND_FILE = "src/modules/ui/fonts/hand.ts";
@@ -192,19 +252,103 @@ describe("the Latin / Latin-Ext split", () => {
     ).toBe(REPERTOIRE.length);
   });
 
-  it("keeps English and German in the Latin file, so text without Polish, Romanian or Turkish letters never loads Latin-Ext", () => {
+  it("keeps English, German and Polish in the Latin file, so text without Romanian or Turkish letters never loads Latin-Ext", () => {
     for (const character of "AZaz09€£„“”–—…·äöüßÄÖÜ ") {
       expect(subsetOf(character), character).toBe("latin");
     }
   });
 
-  it("puts the Polish, Romanian and Turkish letters in the Latin-Ext file", () => {
-    for (const character of "ąćęłńśźżĄĆĘŁŃŚŹŻășțğş") {
+  // T-63, AC-58 (a): spec 004 §14 A-orchestrator-2026-10-23 clause 2.
+  it("puts the Polish letters in the Latin file and the Romanian and Turkish letters in the Latin-Ext file", () => {
+    for (const character of [...POLISH_LETTERS, ..."ÄÖÜäöüß"]) {
+      expect(subsetOf(character), character).toBe("latin");
+    }
+    for (const character of RO_TR_EXT_LETTERS) {
       expect(subsetOf(character), character).toBe("latin-ext");
     }
-    // `ó` and `î` are Latin-1, so they live in the Latin file — and they are still covered.
-    expect(subsetOf("ó")).toBe("latin");
+    // `î` is Latin-1, so it lives in the Latin file and is still covered.
     expect(subsetOf("î")).toBe("latin");
+  });
+
+  // T-63, AC-58 (b): the two strings exactly, disjoint, and the same union as before the move.
+  it("declares clause 2's two ranges exactly, disjoint, with the union unchanged", () => {
+    expect(unicodeRange("latin")).toBe(LATIN_RANGE);
+    expect(unicodeRange("latin-ext")).toBe(LATIN_EXT_RANGE);
+    const overlaps: string[] = [];
+    const changed: string[] = [];
+    for (let codePoint = 0; codePoint <= 0xffff; codePoint += 1) {
+      const latin = inRanges(SUBSET_RANGES.latin, codePoint);
+      const ext = inRanges(SUBSET_RANGES["latin-ext"], codePoint);
+      const before = inRanges(UNION_BEFORE_AC58, codePoint);
+      if (latin && ext) overlaps.push(codePoint.toString(16));
+      if ((latin || ext) !== before) changed.push(codePoint.toString(16));
+    }
+    expect(overlaps, "code points in both subsets").toEqual([]);
+    expect(changed, "code points added to or dropped from the union").toEqual(
+      [],
+    );
+  });
+
+  // T-63, AC-58 (c): read the committed files, not the ranges.
+  it("ships a glyph for every Polish letter in each Latin file, and none of the 16 moved letters in a Latin-Ext file", () => {
+    const missing: string[] = [];
+    const stray: string[] = [];
+    let extKept = 0;
+    for (const face of FACES) {
+      const latinFile = fontFile(face, "latin");
+      const extFile = fontFile(face, "latin-ext");
+      const latin = fontFromBuffer(
+        readFileSync(resolve(repoRoot, FONT_DIR, latinFile)),
+      );
+      const ext = fontFromBuffer(
+        readFileSync(resolve(repoRoot, FONT_DIR, extFile)),
+      );
+      for (const character of POLISH_LETTERS) {
+        if (!latin.hasGlyphForCodePoint(character.codePointAt(0) ?? 0))
+          missing.push(`${latinFile} ${character}`);
+      }
+      for (const character of MOVED_LETTERS) {
+        if (ext.hasGlyphForCodePoint(character.codePointAt(0) ?? 0))
+          stray.push(`${extFile} ${character}`);
+      }
+      // The reader sees glyphs at all: each Latin-Ext file keeps the Romanian and Turkish ones.
+      for (const character of RO_TR_EXT_LETTERS) {
+        if (ext.hasGlyphForCodePoint(character.codePointAt(0) ?? 0))
+          extKept += 1;
+      }
+    }
+    expect(missing, "Polish letters missing from a Latin file").toEqual([]);
+    expect(stray, "moved letters still in a Latin-Ext file").toEqual([]);
+    expect(extKept).toBe(FACES.length * RO_TR_EXT_LETTERS.length);
+  });
+
+  // T-63, AC-58 (d): the header's copy renders from the preloaded Latin files only.
+  it("keeps every character of every nav value, in every committed catalogue, in the Latin subset", () => {
+    const messagesDir = resolve(repoRoot, "messages");
+    const offenders: string[] = [];
+    const withNav: string[] = [];
+    for (const file of readdirSync(messagesDir)) {
+      if (!file.endsWith(".json") || file.includes(".meta.")) continue;
+      const catalogue = JSON.parse(
+        readFileSync(resolve(messagesDir, file), "utf8"),
+      ) as Record<string, unknown>;
+      if (catalogue.nav === undefined) continue;
+      withNav.push(file);
+      for (const character of navCharactersOutsideLatin(catalogue)) {
+        offenders.push(`${character} (${file})`);
+      }
+    }
+    expect(withNav.sort()).toEqual(["de.json", "en.json", "pl.json"]);
+    expect(offenders).toEqual([]);
+  });
+
+  it("flags a nav value with a Latin-Ext letter, and only under nav (the walk's own check)", () => {
+    expect(
+      navCharactersOutsideLatin({
+        nav: { send: "Wyślij kwiaty", category: { roses: "Trandafiri ș" } },
+        home: { title: "ț outside nav" },
+      }),
+    ).toEqual(["ș"]);
   });
 
   it("writes the CSS unicode-range of each subset into the manifest", () => {
@@ -212,7 +356,7 @@ describe("the Latin / Latin-Ext split", () => {
       expect(face.unicodeRange, face.file).toBe(unicodeRange(face.subset));
     }
     expect(unicodeRange("latin")).toMatch(/^U\+0000-00FF, /);
-    expect(unicodeRange("latin-ext")).toMatch(/^U\+0100-0130, /);
+    expect(unicodeRange("latin-ext")).toMatch(/^U\+0100-0103, /);
   });
 
   it("covers every character of every committed message catalogue", () => {
@@ -455,9 +599,13 @@ interface SrcEntry {
 
 const nextRequire = createRequire(resolve(repoRoot, "package.json"));
 const NEXT_FONT = "next/dist/compiled/@next/font/dist";
+/** What the glyph case (AC-58 (c)) reads from fontkit beside the metrics. */
+interface FontFile extends FontMetrics {
+  hasGlyphForCodePoint(codePoint: number): boolean;
+}
 const fontkitModule = nextRequire(`${NEXT_FONT}/fontkit`) as {
-  default: ((buffer: Buffer) => FontMetrics) & {
-    default?: (buffer: Buffer) => FontMetrics;
+  default: ((buffer: Buffer) => FontFile) & {
+    default?: (buffer: Buffer) => FontFile;
   };
 };
 const fontFromBuffer = fontkitModule.default.default ?? fontkitModule.default;
