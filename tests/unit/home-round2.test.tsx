@@ -97,9 +97,9 @@ const HEADINGS: readonly {
     words: {
       en: "Flowers for someone far away.",
       de: "Blumen für jemanden weit weg.",
-      pl: "Kwiaty dla kogoś, kto jest daleko.",
+      pl: "Kwiaty dla bliskich w innym kraju.",
     },
-    em: { en: "far away.", de: "weit weg.", pl: "daleko." },
+    em: { en: "far away.", de: "weit weg.", pl: "w innym kraju." },
   },
   {
     name: "Popular choices",
