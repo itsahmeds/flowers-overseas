@@ -302,25 +302,54 @@ export function parseScriptTags(html: string): ScriptTag[] {
  * boundary components share the framework chunk) is kept: the point of the list is *which
  * components this URL mounts*, and that is what the assertions in
  * `tests/unit/client-js-budget.test.ts` read.
+ *
+ * A chunk arrives in one of two forms. Up to Next 16.3 the path sits in the reference itself
+ * (`I[63491,["/_next/static/chunks/a.js"],"default"]`). From Next 16.4 (TASK-375) the payload
+ * writes each chunk path once, as its own row (`1b:"/_next/static/chunks/a.js"`), and every
+ * reference names the row (`I[144668,["$2","$1b"],"default"]`). Both are read. A `$` reference
+ * whose row is not in the document throws: reading it as "no chunk" is how the 16.4 bump first
+ * hid three island chunks from this script, and a budget that under-counts in silence is worse
+ * than one that stops.
  */
 const CLIENT_REFERENCE = /I\[(\d+),\[([^\]]*)\],"([^"]*)"\]/g;
-const REFERENCE_CHUNK = /"\/_next\/(static\/[^"]+?\.js)"/g;
+const REFERENCE_ENTRY = /"([^"]*)"/g;
+const INLINE_CHUNK = /^\/_next\/(static\/[^"]+?\.js)$/;
+const ROW_REFERENCE = /^\$([0-9a-f]+)$/;
+// A flight row starts the payload, follows a newline (escaped `\n` in the HTML form, a real one
+// in the `.rsc` form), or opens a `self.__next_f.push([1,"…` string.
+const CHUNK_ROW =
+  /(?:^|\\n|\n|\[1,")([0-9a-f]+):"\/_next\/(static\/[^"]+?\.js)"/g;
 
 export function parseClientReferences(html: string): ClientReference[] {
   const flight = html.replaceAll('\\"', '"');
+  const chunkRows = new Map<string, string>();
+  for (const [, row, asset] of flight.matchAll(CHUNK_ROW)) {
+    if (row !== undefined && asset !== undefined) chunkRows.set(row, asset);
+  }
   const seen = new Set<string>();
   const references: ClientReference[] = [];
   for (const match of flight.matchAll(CLIENT_REFERENCE)) {
     const [, id, chunkList, name] = match;
     if (id === undefined || name === undefined || seen.has(id)) continue;
     seen.add(id);
-    references.push({
-      id,
-      name,
-      chunks: [...(chunkList ?? "").matchAll(REFERENCE_CHUNK)].flatMap(
-        (chunk) => (chunk[1] === undefined ? [] : [chunk[1]]),
-      ),
-    });
+    const chunks: string[] = [];
+    for (const [, entry] of (chunkList ?? "").matchAll(REFERENCE_ENTRY)) {
+      const inline = INLINE_CHUNK.exec(entry ?? "")?.[1];
+      if (inline !== undefined) {
+        chunks.push(inline);
+        continue;
+      }
+      const row = ROW_REFERENCE.exec(entry ?? "")?.[1];
+      if (row === undefined) continue;
+      const asset = chunkRows.get(row);
+      if (asset === undefined) {
+        throw new Error(
+          `client reference ${id} names flight row $${row}, and no chunk row ${row}:"/_next/static/….js" is in the document`,
+        );
+      }
+      chunks.push(asset);
+    }
+    references.push({ id, name, chunks });
   }
   return references;
 }

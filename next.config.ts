@@ -147,14 +147,8 @@ const nextConfig: NextConfig = {
   // `unauthorized()` and `forbidden()` (spec 012 AC-1, AC-4; TASK-217): the admin guard answers a
   // server action or route handler without a session with a 401, and one without the permission
   // with a 403, rendered by `src/app/admin/unauthorized.tsx` and `forbidden.tsx`.
-  //
-  // `turbopackSharedRuntime: false` (TASK-375): Next 16.4 defaults it to `true`, which writes a
-  // per-route `<script id="_R_">` (the chunk-group bootstrap) into every document. That inline
-  // script is not a flight push, so the per-response policy never hashes it and an enforcing
-  // policy blocks it; it also moves chunks out of the document's `<script src>` list, which
-  // `budget:client-js` reads. Next 16.3 left it off; this keeps the markup the CSP and the budget
-  // were built against.
-  experimental: { authInterrupts: true, turbopackSharedRuntime: false },
+  // `turbopackSharedRuntime` is set below the object (TASK-375).
+  experimental: { authInterrupts: true },
   // The enforced Content-Security-Policy of every cached HTML document (spec 004 §14 A2,
   // ADR-0016; TASK-058). Next's own file-system cache, extended to stamp each `APP_PAGE` entry
   // with the static policy above plus the `'sha256-…'` of that document's flight blocks — the
@@ -191,6 +185,17 @@ const nextConfig: NextConfig = {
       afterFiles: [],
       fallback: [],
     }),
+};
+
+// `turbopackSharedRuntime: false` (TASK-375): Next 16.4 defaults it to `true`, which writes the
+// per-route chunk-group bootstrap into every document as an inline `<script id="_R_">`. That
+// script is not a flight push, so the per-response policy (ADR-0016, ADR-0020) never hashes it
+// and an enforcing policy blocks it: `tests/e2e/csp-enforced.spec.ts` failed on it. Off, the
+// document loads `_R_` by `src` from `'self'` (checked in CI's 16.4.2 build). Set apart from the `experimental`
+// literal above, which `tests/unit/admin-scans.test.ts` (spec 012 AC-5) reads verbatim.
+nextConfig.experimental = {
+  ...nextConfig.experimental,
+  turbopackSharedRuntime: false,
 };
 
 // next-intl's *rendering* layer only: the plugin points the library at the request config in
