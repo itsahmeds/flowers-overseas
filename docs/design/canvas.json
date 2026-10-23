@@ -1055,6 +1055,14 @@
       "y": 590777,
       "w": 1440,
       "h": 2777
+    },
+    {
+      "file": "proposals/trust-bar-options.dc.html",
+      "title": "Trust bar · three options · home and product page · desktop 1440 and phone 390 · proposal 2026-10-24",
+      "x": 0,
+      "y": 593720,
+      "w": 1440,
+      "h": 13900
     }
   ],
   "annotations": [
@@ -1505,6 +1513,13 @@
       "y": 590731,
       "w": 1400,
       "text": "Spec 044 · Flow: a blog post from the first word to the site and back down."
+    },
+    {
+      "id": "proposal-trust-bar",
+      "x": 0,
+      "y": 593674,
+      "w": 1400,
+      "text": "Proposal · Trust bar, three options for the founder to pick from (2026-10-24): a slim row under the header, three points by the buy button, a band above the footer with one line by the price. Not a build design."
     }
   ],
   "launch": {
