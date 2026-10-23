@@ -6,15 +6,16 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- Spec 004 §14 A-founder-2026-10-23: the 132 096 B (product 134 144 B) script budget is temporary, "headroom for the bump only, never for new features"; this task trims the script back under 131 072 B and restores the original budget (product 133 120 B).
+- AC-24 (as amended by §14 A1, A12 and the product-page rule): Brotli `resource-summary:script:size` on all 16 Lighthouse URLs, blocking.
+- Carry-forward from TASK-375: unit cases for the Next 16.4 flight-format parser in `scripts/client-js-budget.ts` (the old inline path form, the new `$row` form, and the throw on an unresolvable row).
+- No feature is removed to get under; if that is the only way, stop and report the numbers.
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/004-design-system-layout.md` §14 A-founder-2026-10-23, AC-24
+- `scripts/client-js-budget.ts`, `lighthouserc.json`, `tests/fixtures/seo/bundle-baseline.json`
+- `tests/unit/client-js-budget.test.ts`, `tests/unit/product-script-budget.test.ts`
 
 ## Carry-forwards
 
@@ -34,7 +35,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: worktree and branch; measuring CI run 39965504535 (16.4.2): 131 428 B on all 16 URLs, 11 scripts.
 
 ## Result
 
