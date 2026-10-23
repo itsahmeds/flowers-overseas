@@ -19,8 +19,9 @@
  *    separately. `backups/YYYY/MM/DD/` is spec 002 §2's own wording (AC-25).
  *  - `Storage` — `put`, `head`, `getSignedUrl`, `delete`, `objectKey`, every input parsed by zod
  *    before it reaches an implementation ("Zod at every boundary").
- *  - `InMemoryStorage` — the fake every test uses. The S3-API implementation over R2 is spec 006
- *    (TASK-082) and must pass the same contract suite (`tests/contract/support/storage-contract.ts`).
+ *  - `InMemoryStorage` — the fake every test uses. The S3-API implementation over R2 is
+ *    `R2Storage` in `./storage-r2.ts` (spec 006 §2.6, TASK-082); both pass the same contract suite
+ *    (`tests/contract/support/storage-contract.ts`).
  *
  * Nothing here reads the environment, opens a connection or logs: the R2 implementation takes its
  * bucket names and credentials from `lib/env.ts` when it exists, and an object key is on the
@@ -249,11 +250,13 @@ export function objectKey(
 /* Shared input checks                                                        */
 /* -------------------------------------------------------------------------- */
 
-function parseLocation(location: ObjectLocation): ObjectLocation {
+/** Parse a location through `ObjectLocation`; shared with the R2 implementation (`./storage-r2.ts`). */
+export function parseLocation(location: ObjectLocation): ObjectLocation {
   return ObjectLocation.parse(location);
 }
 
-function assertTtl(ttlSeconds: number): void {
+/** The 1 … 604 800 whole-second bound of `getSignedUrl`, shared with `./storage-r2.ts`. */
+export function assertTtl(ttlSeconds: number): void {
   if (
     !Number.isInteger(ttlSeconds) ||
     ttlSeconds < 1 ||
