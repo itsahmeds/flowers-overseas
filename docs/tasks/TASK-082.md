@@ -18,6 +18,10 @@ Branch `task/TASK-082-r2-storage-upload-derive-job`. **Blocked on TASK-013** (sp
 
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** unblocked: TASK-017 (PR 184) and TASK-024 (PR 224) are done, so `src/lib/storage.ts`'s seam and the jobs registry exist. Spec 012b's photos task (TASK-299) builds on it.
 
+## Progress
+
+- 2026-10-23: started on `task/TASK-082-r2-storage` (worktree `../fo-wt-082`); plan: R2Storage + fake S3 contract, derive worker, `media:upload --originals`.
+
 ## Escalations
 
 _None recorded._
