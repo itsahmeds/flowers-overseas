@@ -110,12 +110,12 @@ import { loadMessages } from "../../src/modules/i18n/messages.ts";
 const repoRoot = resolve(__dirname, "../..");
 
 describe("the budget constants are plan/01 §7's as spec 004 §13 Q13 restated them", () => {
-  it("caps client JS at 129 KB (132 096 B) and the client message payload at 4 KB", () => {
+  it("caps client JS at 128 KB (131 072 B) and the client message payload at 4 KB", () => {
     // 120 KB was spec 004 §13 Q13's restatement; §14 A1 corrected it to 128 KB after TASK-046
     // measured the locale documents at 129 638 B with no application code left to remove. The
     // amendment says the budget is not raised a second time, and `lighthouserc.json` takes the
     // same number when TASK-056 flips the Lighthouse job to blocking.
-    expect(CLIENT_JS_BUDGET_BYTES).toBe(132096);
+    expect(CLIENT_JS_BUDGET_BYTES).toBe(131072);
     expect(MESSAGES_PAYLOAD_BUDGET_BYTES).toBe(4096);
   });
 
@@ -357,7 +357,7 @@ describe("measurePages against a fake build output", () => {
     );
     expect(table).toContain("| Route | first-load JS (br) |");
     expect(table).toContain("+ `next/dynamic` (br)");
-    expect(table).toContain("129 KB br");
+    expect(table).toContain("128 KB br");
     expect(table).toContain("| `/` |");
     expect(table).toContain("| `/en` |");
     // spec 004 §11's table has a Fonts column and a budget line; a budget printed nowhere is a
@@ -680,6 +680,87 @@ describe("parseClientReferences (which Client Components a document mounts)", ()
     expect(
       parseClientReferences("<html><body>no scripts</body></html>"),
     ).toEqual([]);
+  });
+
+  // Next 16.4 (TASK-375; the carry-forward TASK-376 closes): each chunk path is written once, as
+  // its own flight row, and a reference names the row. The shapes below are the ones CI's 16.4.2
+  // build wrote into `.next/server/app/en.html` (run 39965504535).
+  it("resolves the Next 16.4 form: `$row` references to chunk rows, in the HTML payload", () => {
+    const html =
+      '<script>self.__next_f.push([1,"1:\\"$Sreact.fragment\\"\\n2:\\"/_next/static/chunks/f.js\\"\\n' +
+      '3:I[836782,[\\"$2\\"],\\"default\\"]\\n"])</script>' +
+      '<script>self.__next_f.push([1,"1b:\\"/_next/static/chunks/a.js\\"\\n' +
+      '1c:\\"/_next/static/chunks/e.js\\"\\n' +
+      '1d:I[144668,[\\"$2\\",\\"$1b\\",\\"$1c\\"],\\"default\\"]\\n"])</script>';
+
+    expect(parseClientReferences(html)).toEqual([
+      { id: "836782", name: "default", chunks: ["static/chunks/f.js"] },
+      {
+        id: "144668",
+        name: "default",
+        chunks: [
+          "static/chunks/f.js",
+          "static/chunks/a.js",
+          "static/chunks/e.js",
+        ],
+      },
+    ]);
+  });
+
+  it("reads a chunk row that opens a push string, and one in the raw `.rsc` form", () => {
+    // The row is the first thing in its `self.__next_f.push([1,"…` string: no newline before it.
+    const opening =
+      '<script>self.__next_f.push([1,"2:\\"/_next/static/chunks/f.js\\"\\n"])</script>' +
+      '<script>self.__next_f.push([1,"9:I[7,[\\"$2\\"],\\"Loader\\"]\\n"])</script>';
+    expect(parseClientReferences(opening)).toEqual([
+      { id: "7", name: "Loader", chunks: ["static/chunks/f.js"] },
+    ]);
+
+    // The `.rsc` file: unescaped quotes and real newlines.
+    const rsc =
+      '0:{"b":"x"}\n2:"/_next/static/chunks/f.js"\n' +
+      '1b:"/_next/static/chunks/a.js"\n' +
+      '29:I[317756,["$2","$1b"],"ConsentBannerLoader"]\n';
+    expect(parseClientReferences(rsc)).toEqual([
+      {
+        id: "317756",
+        name: "ConsentBannerLoader",
+        chunks: ["static/chunks/f.js", "static/chunks/a.js"],
+      },
+    ]);
+  });
+
+  it("reads both forms side by side in one reference", () => {
+    const html =
+      '<script>self.__next_f.push([1,"1b:\\"/_next/static/chunks/a.js\\"\\n' +
+      '3:I[63491,[\\"/_next/static/chunks/old.js\\",\\"$1b\\"],\\"default\\"]\\n"])</script>';
+
+    expect(parseClientReferences(html)).toEqual([
+      {
+        id: "63491",
+        name: "default",
+        chunks: ["static/chunks/old.js", "static/chunks/a.js"],
+      },
+    ]);
+  });
+
+  it("throws on a `$row` reference whose chunk row is not in the document, naming both", () => {
+    const missing =
+      '<script>self.__next_f.push([1,"2:\\"/_next/static/chunks/f.js\\"\\n' +
+      '1d:I[144668,[\\"$2\\",\\"$1c\\"],\\"default\\"]\\n"])</script>';
+    expect(() => parseClientReferences(missing)).toThrow(
+      'client reference 144668 names flight row $1c, and no chunk row 1c:"/_next/static/….js" is in the document',
+    );
+
+    // A row that exists but is not a chunk path (here, an export name the payload deduplicated)
+    // is not a chunk either: reading it as one would charge a string, reading it as none would
+    // hide one.
+    const notAChunk =
+      '<script>self.__next_f.push([1,"28:\\"ConsentBannerLoader\\"\\n' +
+      '29:I[317756,[\\"$28\\"],\\"$28\\"]\\n"])</script>';
+    expect(() => parseClientReferences(notAChunk)).toThrow(
+      "client reference 317756 names flight row $28",
+    );
   });
 });
 

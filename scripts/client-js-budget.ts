@@ -116,7 +116,7 @@ import {
  * transfer on an indexable page. The same number `lighthouserc.json` asserts as
  * `resource-summary:script:size`, now against the same encoding.
  */
-export const CLIENT_JS_BUDGET_BYTES = 129 * 1024; // temporary 129 KiB: spec 004 A-founder-2026-10-23; TASK-376 restores 128 KiB
+export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
 
 /**
  * The product page's budget: 131 072 + 2 048 = **133 120 B** Brotli first-load, the island
