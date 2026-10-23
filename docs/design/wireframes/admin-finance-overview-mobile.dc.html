@@ -655,6 +655,31 @@ fieldset.fm-f { border: 0; margin: 0; padding: 0; min-inline-size: 0; }
 .ad-cb { display: inline-block; flex: none; inline-size: 18px; block-size: 18px; border-radius: 4px; background: var(--color-card); box-shadow: inset 0 0 0 1.5px var(--color-field-edge); vertical-align: middle; }
 .M .ad-dialog { max-inline-size: none; border-radius: 16px 16px 0 0; padding: 20px 16px 24px; }
 
+/* spec 030b amendment */
+.fn-doc { display: grid; gap: 10px; padding: 14px 16px; border-radius: 10px; background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: 14px; }
+.fn-doc .hd { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.fn-doc .hd b { font-size: 15px; }
+.fn-doc .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fn-doc .ad-kv { grid-template-columns: 110px minmax(0, 1fr); }
+.fn-hist { display: grid; gap: 8px; margin-block-start: 8px; font-size: 14px; }
+.fn-hist summary { cursor: pointer; min-block-size: 32px; display: flex; align-items: center; gap: 8px; color: var(--color-ink-2); font-weight: var(--font-weight-bold); }
+.fn-hist .fn-doc { background: var(--color-paper-2); }
+.fn-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.fn-file { display: flex; align-items: center; gap: 10px; }
+.fn-rule { display: grid; gap: 2px; padding-block: 6px; border-block-end: var(--rule); }
+.fn-rule code { font-size: 12px; color: var(--color-ink-3); }
+.fn-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-block-start: 4px; }
+.fn-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.fn-cov { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font-size: 14px; }
+.fn-nm { color: var(--color-ink-3); }
+.fn-t thead a { text-transform: none; letter-spacing: 0; }
+.fn-t thead th { white-space: normal; vertical-align: bottom; }
+.fn-orow { max-inline-size: 640px; }
+.fn-flagcounts { grid-template-columns: repeat(5, minmax(0, 1fr)); display: grid; gap: 0 20px; }
+.M .fn-flagcounts { grid-template-columns: minmax(0, 1fr); }
+.fn-flagcounts a { border-block-end: 0; }
+.ad-banner.ok { background: var(--color-leaf-wash); }
+
   </style>
 </helmet>
 <div class="fo M" style="inline-size: 390px;">
