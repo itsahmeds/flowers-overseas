@@ -184,6 +184,7 @@ task actually touches.
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir messages]`… |
 | `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product that has… |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` |
+| `media-originals.ts` | — | `pnpm media:upload --originals [--backfill] [--dry-run]… |
 | `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only <assetId>]… |
 | `pages-check.ts` | `pages:check` | `pnpm pages:check` — the info-page honesty gate (spec… |
 | `pages-index.ts` | `pages:index` | `pnpm pages:index` — regenerate the typed info-page… |
@@ -208,9 +209,9 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 357 |
-| `tests/integration/` | 41 |
-| `tests/contract/` | 25 |
+| `tests/unit/` | 359 |
+| `tests/integration/` | 42 |
+| `tests/contract/` | 27 |
 | `tests/e2e/` | 69 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
