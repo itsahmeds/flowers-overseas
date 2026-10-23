@@ -345,7 +345,7 @@ test.describe("T-52 (A-founder-2026-10-19c): the open Menu and short screens (AC
     });
   }
 
-  test("off the home, Send flowers is a link to the home's #send, and activating it closes the Menu", async ({
+  test("off the home, Send flowers is a link to the home's #send, and activating it leaves for the home", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });

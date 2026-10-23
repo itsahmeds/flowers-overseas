@@ -24,8 +24,8 @@
  *    `pageshow`, when the back/forward cache brings the page back.
  *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, unless the form was touched.
  *  - **The open phone Menu** (spec 004 §14 A-founder-2026-10-19c clause 3, AC-47; TASK-282). A tap
- *    on its scrim closes it; `Tab` and `Shift+Tab` keep focus inside it and its summary; Send
- *    flowers (any link to `#send`) closes it. On the page that holds `#send` (the home), at every
+ *    on its scrim closes it; `Tab` and `Shift+Tab` keep focus inside it and its summary. On the
+ *    page that holds `#send` (the home), Send flowers closes it and, at every
  *    width, Send flowers scrolls the sentence letter in below the sticky header and moves focus to
  *    its first choice instead of jumping to the anchor. With the module not loaded, the `<details>`
  *    and the `#send` link work natively (the scrim is not drawn without it, `globals.css`).
@@ -82,15 +82,17 @@ export function MotionIsland(): null {
         return;
       }
       const link = target.closest?.("a");
-      // Send flowers: the Menu closes; on the home, the letter comes in under the header and its
-      // first choice takes focus (with its ring) rather than the page jumping to the anchor.
+      // Send flowers on the home: the Menu closes, the letter comes in under the header and its
+      // first choice takes focus (with its ring) rather than the page jumping to the anchor. On any
+      // other page it is a link to the home's `#send`: the next document replaces this one, and the
+      // open Menu holds motion 3's pending bloom on it until then.
       if (link?.hash === "#send") {
-        for (const menu of d.querySelectorAll<HTMLDetailsElement>(openMenu)) {
-          close(menu);
-        }
         const form =
           link.pathname === here.pathname && d.getElementById("send");
         if (form) {
+          for (const menu of d.querySelectorAll<HTMLDetailsElement>(openMenu)) {
+            close(menu);
+          }
           event.preventDefault();
           const card = form.closest("[data-fo-hero-card]");
           const letter =

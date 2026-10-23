@@ -23,9 +23,9 @@
  * no new key), so its accessible name is the close label: CSS (`group-open:`), the same with or
  * without JavaScript. With JavaScript on (`html[data-fo-motion]`, `globals.css`) a scrim
  * (`--color-scrim`) dims the page below the header, and the motion module closes the Menu on a tap
- * on it, keeps focus inside the Menu and its summary, and closes it when Send flowers is activated
- * (on the home, Send flowers then scrolls the sentence letter in below the header and focuses its
- * first choice). The scrim is `display: none` until the module has loaded, so with JavaScript off,
+ * on it and keeps focus inside the Menu and its summary; on the home, Send flowers closes it, scrolls
+ * the sentence letter in below the header and focuses its first choice (elsewhere it is a link to
+ * the home's `#send`). The scrim is `display: none` until the module has loaded, so with JavaScript off,
  * or before the deferred module arrives, the native `<details>` is all there is.
  *
  * The panel scrolls inside itself (`max-block-size` of the viewport under the 65 px header,
