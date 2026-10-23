@@ -606,3 +606,9 @@ Tests:
 
 Tasks (ids confirmed by `/plan-tasks`): TASK-240 is unblocked and carries the amended AC-36 and T-37, FO-BQ-004's 5 / 7 / 9 included. One new task carries the per-SKU override (memo F4: a code change, not a data edit) with AC-37 to AC-39 and T-38 to T-40. It shares `prices.data.ts`, `catalogue:check` and the pinned base with TASK-240, so it goes to the same agent in the same feature PR. Not review-only (money): it keeps the breaker.
 Raised by: the founder's answer to §13 Q12, 2026-10-15; advisor memo `docs/advice/2026-10-15-stem-prices.md`; written by the spec writer on 2026-10-15.
+
+- **Spec 005 §14 (pointer).**
+  - `ProductSchema` gains an optional `mergedInto` (spec 043 §14 A-founder-2026-10-22 item 4).
+  - AC-6's 84 products count rows: 74 active and 10 retired, merged into their base.
+  - AC-7's `toProductRow` column list gains `merged_into_product_id`.
+  - AC-19 is unchanged: no add-on is preselected by a redirect.
