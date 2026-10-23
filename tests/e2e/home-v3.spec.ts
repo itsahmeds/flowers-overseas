@@ -25,7 +25,6 @@ import { type Page, expect, test } from "@playwright/test";
 import { COVER_FADE_RAMP_PX } from "../../src/modules/ui/home/cover-fade.ts";
 import { openConsentSettings } from "../support/consent.ts";
 import { recordLayoutShifts } from "../support/layout-shift.ts";
-import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 const HOME = "/en-gb";
 const BAR = "[data-fo-action-bar]";
@@ -443,37 +442,9 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
     ).toBe(false);
   });
 
-  test("the language popup never covers the bar's action", async ({
-    browser,
-  }) => {
-    // TASK-119's popup (spec 003 §14 A16) opens on a first visit: below `md` a top sheet,
-    // block-start 0 and at most 260 px, so it stays clear of the bar at the viewport's foot.
-    // Coordinated by test, not by editing the popup (work order). A first visit means no
-    // `fo_locale`: `NO_LOCALE_CHOICE` overrides the config's returning-visitor cookie.
-    const context = await browser.newContext({
-      viewport: { width: 390, height: 844 },
-      locale: "de-DE",
-      storageState: NO_LOCALE_CHOICE,
-    });
-    await context.addInitScript(() => {
-      Object.defineProperty(navigator, "languages", {
-        configurable: true,
-        get: () => ["de-DE", "de"],
-      });
-    });
-    const page = await context.newPage();
-    try {
-      await page.goto(HOME);
-      const popup = "dialog[data-fo-language-popup][open]";
-      await expect(page.locator(popup)).toBeVisible();
-      await expect(page.locator(ACTION)).toBeVisible();
-      expect(
-        intersects(await rectOf(page, popup), await rectOf(page, ACTION)),
-      ).toBe(false);
-    } finally {
-      await context.close();
-    }
-  });
+  // The language overlay's half of AC-48 moves to spec 003's bar task (spec 004 §14
+  // A-founder-2026-10-19d, AC-48 as amended; TASK-280): the popup never opens on the committed
+  // registry.
 
   test("the bar moves no layout while the page scrolls (CLS 0)", async ({
     page,

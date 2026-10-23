@@ -67,6 +67,34 @@ const LOCALE_HOMES = new Set(["/en", "/en-gb", "/de", "/pl"]);
 
 const SCRIPT = /\/_next\/static\/.+\.js(?:\?|$)/u;
 
+/**
+ * Clause 9 (spec 004 §14 A-founder-2026-10-19d): the language popup island's chunk, named by the
+ * file the build output records for it — the locale page's `react-loadable-manifest.json` entry
+ * whose bytes carry the island's marker — after asserting exactly one exists and is non-empty, so a
+ * wrong marker cannot pass as "never requested".
+ */
+function popupChunkFile(): string {
+  const dist = resolve(import.meta.dirname, "../../.next");
+  const manifest = JSON.parse(
+    readFileSync(
+      resolve(dist, "server/app/[locale]/page/react-loadable-manifest.json"),
+      "utf8",
+    ),
+  ) as Record<string, { files?: readonly string[] }>;
+  const carrying = [
+    ...new Set(Object.values(manifest).flatMap((entry) => entry.files ?? [])),
+  ].filter(
+    (asset) =>
+      asset.endsWith(".js") &&
+      readFileSync(resolve(dist, asset), "utf8").includes(
+        markerOf("language-popup"),
+      ),
+  );
+  expect(carrying).toHaveLength(1);
+  expect(statSync(resolve(dist, carrying[0]!)).size).toBeGreaterThan(0);
+  return carrying[0]!;
+}
+
 interface Measured {
   readonly lcp: { startTime: number; tag: string } | null;
   readonly resources: { name: string; startTime: number }[];
@@ -156,11 +184,9 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
       const response = await page.goto(url, { waitUntil: "load" });
       expect(response?.status()).toBe(200);
 
-      // The popup loads by itself (after the paint): its dialog opens, since there is no cookie.
-      await expect(page.locator("dialog[data-fo-language-popup]")).toBeVisible({
-        timeout: 60_000,
-      });
-      // So do the motions (after the paint): the module marks `<html>` when it runs.
+      // The motions load by themselves (after the paint): the module marks `<html>` when it runs.
+      // The popup does not load at all: on the committed registry no page offers another language
+      // (spec 003 §14 A-founder-2026-10-19d; T-60 as spec 004 §14 19d amends it, below).
       await expect(page.locator("html[data-fo-motion]")).toHaveCount(1, {
         timeout: 60_000,
       });
@@ -172,8 +198,9 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
       expect(atRest.lcp, "a largest-contentful-paint entry").not.toBeNull();
       const lcpAt = atRest.lcp?.startTime ?? Number.POSITIVE_INFINITY;
 
-      // The interaction islands: not one byte of them on a load nobody touched.
-      for (const id of ["home-sentence"] as const) {
+      // The interaction islands, and the popup on the committed registry: not one byte of them on
+      // a load nobody touched.
+      for (const id of ["home-sentence", "language-popup"] as const) {
         expect
           .soft(
             untouched
@@ -189,10 +216,7 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
       const interaction = LOCALE_HOMES.has(url)
         ? (["home-sentence"] as const)
         : ([] as const);
-      // Close the popup (its own Esc), then the first interaction with each control: on a home a
-      // focus on the sentence's first select.
-      await page.keyboard.press("Escape");
-      await expect(page.locator("dialog[data-fo-language-popup]")).toBeHidden();
+      // The first interaction with each control: on a home a focus on the sentence's first select.
       if (LOCALE_HOMES.has(url)) await page.locator("#send-who").focus();
       await page.waitForFunction(
         (marks) =>
@@ -203,7 +227,18 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
       const after = await measure(page);
       const scripts = await Promise.all(bodies);
 
-      for (const id of ["motions", "language-popup", ...interaction] as const) {
+      // T-60 (spec 004 §14 A-founder-2026-10-19d): the popup's chunk has no resource-timing
+      // entry on any audited URL, even after the interactions; clause 9's existence check on that
+      // chunk is the build-output describe at the end of this file.
+      const popupFile = popupChunkFile();
+      expect(
+        after.resources
+          .map((entry) => entry.name)
+          .filter((name) => new URL(name).pathname === `/_next/${popupFile}`),
+        `${url}: the language popup's chunk ${popupFile} was requested`,
+      ).toEqual([]);
+
+      for (const id of ["motions", ...interaction] as const) {
         const marker = markerOf(id);
         const chunks = scripts
           .filter((script) => script.body.includes(marker))

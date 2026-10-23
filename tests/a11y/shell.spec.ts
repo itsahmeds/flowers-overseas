@@ -41,7 +41,6 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 import { atRest } from "../support/at-rest.ts";
-import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 const BLOCKING_IMPACTS = new Set(["serious", "critical"]);
 
@@ -152,45 +151,6 @@ test.describe("the localised 500 boundary", () => {
   }
 });
 
-/**
- * `/en` with the language popup open (spec 003 AC-25 as §14 A16 restates it, T-25; TASK-119): a
- * first visit at the two sizes A16 names, so axe scans the modal dialog itself (its label, its
- * close button's name, the four `lang`-annotated links) as well as the page it makes inert.
- */
-test.describe("/en with the language popup open", () => {
-  test.use({ storageState: NO_LOCALE_CHOICE });
-
-  for (const viewport of [
-    { width: 360, height: 640 },
-    { width: 1280, height: 800 },
-  ]) {
-    test(`at ${viewport.width} × ${viewport.height} has no serious or critical violations`, async ({
-      page,
-    }, testInfo) => {
-      await page.setViewportSize(viewport);
-      await page.goto("/en");
-      await expect(
-        page.locator("dialog[data-fo-language-popup][open]"),
-      ).toBeVisible();
-
-      const results = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-        .analyze();
-
-      await testInfo.attach(`axe-results_en_popup_${viewport.width}.json`, {
-        body: JSON.stringify(results.violations, null, 2),
-        contentType: "application/json",
-      });
-
-      const blocking = results.violations
-        .filter(
-          (violation) =>
-            typeof violation.impact === "string" &&
-            BLOCKING_IMPACTS.has(violation.impact),
-        )
-        .map((violation) => violation.id)
-        .sort();
-      expect(blocking).toEqual([]);
-    });
-  }
-});
+// `/en` with the language popup open is withdrawn from AC-25's set (spec 003 §14
+// A-founder-2026-10-19d, T-25; TASK-280): the popup never opens on the committed registry. The
+// slim bar's task adds the bar's axe case.

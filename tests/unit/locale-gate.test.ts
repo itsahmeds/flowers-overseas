@@ -321,6 +321,14 @@ describe("one `Esc`, one layer (AC-17 (d))", () => {
     ).toBe("close");
   });
 
+  it("with no gate attribute served (the committed registry, spec 003 AC-28 (f) as A-founder-2026-10-19d amends it), the sheet does not wait", () => {
+    // The layout serves `data-fo-locale-gate` only where `languageOffer()` is not empty
+    // (`tests/unit/app-shell.test.tsx`); with nothing served, the reader answers "not held" from
+    // the first frame, so the sheet paints as soon as its island decides.
+    expect(root.hasAttribute(LOCALE_GATE_ATTRIBUTE)).toBe(false);
+    expect(localeGateHeld()).toBe(false);
+  });
+
   it("without a gate (no popup can open) the first press is the sheet's", () => {
     sheetEnd();
     expect(localeGateHeld()).toBe(false);

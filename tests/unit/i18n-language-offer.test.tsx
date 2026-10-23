@@ -18,6 +18,9 @@
  * (committed `languageOffer("de")` becomes `["en","en-gb"]`), and the server half rendered
  * unconditionally (the committed render shows a loader).
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { renderToStaticMarkup } from "react-dom/server";
 import { type ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -46,7 +49,7 @@ vi.mock("../../src/modules/i18n/ui/LanguagePopupLoader.tsx", () => ({
   ),
 }));
 
-const { LanguagePopup } =
+const { LanguagePopup, popupCandidates } =
   await import("../../src/modules/i18n/ui/LanguagePopup.tsx");
 
 /** `de` shown, `pl` still hidden: the registry the day German is reviewed. */
@@ -97,6 +100,14 @@ describe("languageOffer on the committed registry: nothing to offer anywhere", (
 });
 
 describe("languageOffer with `de` shown: other languages, in registry order", () => {
+  it("popupCandidates() lists en, en-gb and de, never the hidden pl (AC-46, T-46)", async () => {
+    expect(
+      (await withLocaleRegistry(deShown, () => popupCandidates())).map(
+        (candidate) => candidate.code,
+      ),
+    ).toEqual(["en", "en-gb", "de"]);
+  });
+
   it("en → [de], en-gb → [de], de → [en, en-gb]", async () => {
     await withLocaleRegistry(deShown, () => {
       expect(languageOffer("en")).toEqual(["de"]);
@@ -144,4 +155,27 @@ describe("languageOffer with `de` shown: other languages, in registry order", ()
     expect(withCountry).toBe(without);
     expect(without).toContain("data-loader-props");
   });
+});
+
+describe("the popup's client half sends nothing (T-28 (c), (d)'s `fetch` half, pinned from source)", () => {
+  const code = (path: string): string =>
+    readFileSync(resolve(import.meta.dirname, "../..", path), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//gu, "")
+      .replace(/(^|[^:])\/\/.*$/gmu, "$1");
+
+  for (const path of [
+    "src/modules/i18n/ui/LanguagePopupIsland.tsx",
+    "src/modules/i18n/ui/LanguagePopupLoader.tsx",
+    "src/modules/i18n/ui/localeGate.ts",
+  ]) {
+    it(`${path} makes no request and navigates nowhere`, () => {
+      const source = code(path);
+      expect(source).not.toMatch(/\bfetch\s*\(/u);
+      expect(source).not.toContain("/api/geo");
+      expect(source).not.toMatch(
+        /location\.(assign|replace)\s*\(|location\.href\s*=/u,
+      );
+      expect(source).not.toMatch(/sendBeacon|XMLHttpRequest/u);
+    });
+  }
 });
