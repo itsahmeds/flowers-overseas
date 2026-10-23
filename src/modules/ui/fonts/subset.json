@@ -16,7 +16,7 @@
       "weight": 400,
       "style": "normal",
       "subset": "latin",
-      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "unicodeRange": "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
       "role": "display",
       "use": "every heading, the sentence, the product page's price and total",
       "axes": {
@@ -25,7 +25,7 @@
         "SOFT": 100,
         "WONK": 0
       },
-      "bytes": 13352,
+      "bytes": 13964,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT,WONK,opsz,wght%5D.ttf"
     },
     {
@@ -34,7 +34,7 @@
       "weight": 400,
       "style": "normal",
       "subset": "latin-ext",
-      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "unicodeRange": "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
       "role": "display",
       "use": "every heading, the sentence, the product page's price and total",
       "axes": {
@@ -43,7 +43,7 @@
         "SOFT": 100,
         "WONK": 0
       },
-      "bytes": 4180,
+      "bytes": 2556,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces%5BSOFT,WONK,opsz,wght%5D.ttf"
     },
     {
@@ -52,7 +52,7 @@
       "weight": 300,
       "style": "italic",
       "subset": "latin",
-      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "unicodeRange": "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
       "role": "display-em",
       "use": "the one poppy phrase per heading, the sentence's choices, the P.S., every note warm-c drew in Caveat",
       "axes": {
@@ -61,7 +61,7 @@
         "SOFT": 100,
         "WONK": 0
       },
-      "bytes": 16848,
+      "bytes": 17540,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5BSOFT,WONK,opsz,wght%5D.ttf"
     },
     {
@@ -70,7 +70,7 @@
       "weight": 300,
       "style": "italic",
       "subset": "latin-ext",
-      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "unicodeRange": "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
       "role": "display-em",
       "use": "the one poppy phrase per heading, the sentence's choices, the P.S., every note warm-c drew in Caveat",
       "axes": {
@@ -79,7 +79,7 @@
         "SOFT": 100,
         "WONK": 0
       },
-      "bytes": 4804,
+      "bytes": 2672,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/fraunces/Fraunces-Italic%5BSOFT,WONK,opsz,wght%5D.ttf"
     },
     {
@@ -88,11 +88,11 @@
       "weight": 400,
       "style": "normal",
       "subset": "latin",
-      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "unicodeRange": "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
       "role": "body",
       "use": "running text and controls (warm-c's 500 renders here, --font-weight-medium)",
       "axes": {},
-      "bytes": 9592,
+      "bytes": 10000,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Regular.ttf"
     },
     {
@@ -101,11 +101,11 @@
       "weight": 400,
       "style": "normal",
       "subset": "latin-ext",
-      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "unicodeRange": "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
       "role": "body",
       "use": "running text and controls (warm-c's 500 renders here, --font-weight-medium)",
       "axes": {},
-      "bytes": 2744,
+      "bytes": 1796,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Regular.ttf"
     },
     {
@@ -114,11 +114,11 @@
       "weight": 700,
       "style": "normal",
       "subset": "latin",
-      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "unicodeRange": "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
       "role": "body-bold",
       "use": "labels, eyebrows, buttons, standalone links",
       "axes": {},
-      "bytes": 9728,
+      "bytes": 10124,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Bold.ttf"
     },
     {
@@ -127,11 +127,11 @@
       "weight": 700,
       "style": "normal",
       "subset": "latin-ext",
-      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "unicodeRange": "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
       "role": "body-bold",
       "use": "labels, eyebrows, buttons, standalone links",
       "axes": {},
-      "bytes": 2756,
+      "bytes": 1784,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/alegreyasans/AlegreyaSans-Bold.ttf"
     },
     {
@@ -140,13 +140,13 @@
       "weight": 500,
       "style": "normal",
       "subset": "latin",
-      "unicodeRange": "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+      "unicodeRange": "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
       "role": "hand",
       "use": "the buyer's own words in the product page's printed-card preview, nowhere else",
       "axes": {
         "wght": 500
       },
-      "bytes": 20048,
+      "bytes": 20536,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/Caveat%5Bwght%5D.ttf"
     },
     {
@@ -155,13 +155,13 @@
       "weight": 500,
       "style": "normal",
       "subset": "latin-ext",
-      "unicodeRange": "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+      "unicodeRange": "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
       "role": "hand",
       "use": "the buyer's own words in the product page's printed-card preview, nowhere else",
       "axes": {
         "wght": 500
       },
-      "bytes": 4712,
+      "bytes": 2640,
       "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/caveat/Caveat%5Bwght%5D.ttf"
     }
   ]
