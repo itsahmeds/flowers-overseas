@@ -563,3 +563,12 @@ Status: approved with spec 042 by the founder's answer of 2026-10-20, verbatim: 
 **SEO.** No URL, alt or schema change; image transfer on first load is unchanged. **i18n.** No key. **Compliance.** Same approved assets, metadata stripped (AC-12); RoPA unchanged.
 **Owner.** Spec 042's task 042-V (backend-implementer, keeps the breaker: seed data). Tasks 042-3 and 042-5 wait for it.
 
+- **A-founder-2026-10-22b (pointer): a new seed slot, `occasionHero`, for the occasion hub hero photographs (spec 008 §14 A-founder-2026-10-22b; no new AC or T id here).** Status: proposed with spec 008 §14 A-founder-2026-10-22b, awaiting the founder's answers to its 5 open questions (founder, 2026-10-22: "i meant hero images for pages. like grandfather page hero image").
+  - §2.4 and §5.2: a new seed slot, `occasionHero` (`depicts: "brand"`, `occasionKey` required, no `productSku`, at most one `approved` per key); `MediaAssetManifestSchema` gains optional `occasionKey`.
+  - §13 Q5 and A11: the `occasionHero` ladder is 3:2 at 480 / 672 / 828 / 1,080 / 1,440, AVIF and WebP at A11 clause 2's qualities; an original under 1,440 px wide or off 3:2 by more than 1 % is refused, never enlarged (A6 (3) does not apply to this slot).
+  - §2.5 Budgets: `occasionHero` per-variant cap 120,000 B; its 480 and 672 AVIF variants at most 40,000 B.
+  - `pnpm media:variants` records a `grounds` row (mean start-third colour and `inkContrast`) per `occasionHero` asset in `seed/data/media-variants.json`; `seed:check` refuses an approved hero without one or with `inkContrast` below 4.5.
+  - A8: `occasionHero` is served from R2; `SITE_ORIGIN_MEDIA_SLOTS` and the 6 MB cap are unchanged.
+  - A9: `media/alt-missing` and `media/alt-empty` also cover every `approved` `occasionHero` asset.
+  - The style guide gains an "Occasion hero (3:2, `slot: "occasionHero"`)" section: the brief's prompt shape, its negative prompt, and the hero checklist of spec 008 A-founder-2026-10-22b item 9.
+  - AC-31 and AC-32 are unchanged. AC-32 is why heroes come from ChatGPT unless the Grok record is amended.
