@@ -26,7 +26,11 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-- **From `/review N` (YYYY-MM-DD):** what must change or be carried into this task.
+- **From the self-review (2026-10-24):** three comments outside clause 7's file list still describe
+  the old split ("a page without Polish text never downloads it" and kin): `src/app/globals.css`
+  L179, `scripts/client-js-budget.ts` L996 and L1011, `tests/e2e/product-card-preview.spec.ts` L24.
+  Prose only; no check reads them. Left out of this PR to keep its scope to clause 7; a later
+  spec 004 task touching those files corrects them.
 
 ## Escalations
 
