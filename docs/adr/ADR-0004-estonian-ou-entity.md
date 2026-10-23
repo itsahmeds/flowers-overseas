@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | accepted |
+| Status | superseded-by ADR-0021 |
 | Date | 2026-09-05 |
 | Deciders | Ahmed |
 | Supersedes | — |
