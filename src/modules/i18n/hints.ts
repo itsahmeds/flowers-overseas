@@ -352,6 +352,11 @@ export interface PopupInput {
   readonly cookie: string | null;
   /** The launch locales, in registry order, projected by the Server Component parent. */
   readonly candidates: readonly PopupCandidate[];
+  /**
+   * `languageOffer(urlLocale)`, decided on the server from the registry (spec 003 §14
+   * A-founder-2026-10-19d clause 1 (i)): the codes the popup may offer on this page.
+   */
+  readonly offer: readonly string[];
 }
 
 /**
@@ -360,7 +365,7 @@ export interface PopupInput {
  * is the island's fail-closed value for "reading the browser facts threw" — a page with no popup is
  * a better answer than an error document.
  */
-export type PopupClosedReason = "cookie" | "error";
+export type PopupClosedReason = "cookie" | "hint" | "error";
 
 export type PopupDecision =
   | { readonly open: false; readonly reason: PopupClosedReason }
@@ -384,18 +389,26 @@ export type PopupDecision =
  * §14 A14 Shape as amended by A16, AC-12, AC-28; TASK-119). `tests/unit/i18n-hints.test.ts` walks
  * the matrix; the island adds the two `document` reads, the dialog and the cookie write.
  *
- * It opens on any localised page while there is no valid `fo_locale`, **whatever the hint says**
- * (A16 clause 2, Reading 2): a missing cookie and a forged one (`fo_locale=zz`) are the same
- * first visit. The hint changes which option is highlighted and nothing else.
+ * It opens only under spec 003 §14 A-founder-2026-10-19d clause 1 (which replaced A16 clause 2's
+ * "whatever the hint says"): another language can be offered on the page (`offer`, from the
+ * server), there is no valid `fo_locale` (a missing cookie and a forged one, `fo_locale=zz`, are
+ * the same first visit), and the browser's own language asks for an offered locale. Browser
+ * language only: no country input exists here, and the decision carries no URL and no navigation.
  */
 export function decideLanguagePopup(input: PopupInput): PopupDecision {
   if (readLocaleCookie(input.cookie) !== null) {
     return { open: false, reason: "cookie" };
   }
+  // Spec 003 §14 A-founder-2026-10-19d clause 1: it opens only when the browser's own language
+  // asks for a locale this page can offer — (i) a non-empty offer and (iii) a hint inside it. A
+  // missing hint, a hint for the page's own language, or an empty offer keep it closed.
+  const hinted = popupHint(input.languages, input.candidates);
+  if (hinted === null || !input.offer.includes(hinted)) {
+    return { open: false, reason: "hint" };
+  }
   const current = input.candidates.some((c) => c.code === input.urlLocale)
     ? input.urlLocale
     : null;
-  const hinted = popupHint(input.languages, input.candidates);
   return {
     open: true,
     current,
