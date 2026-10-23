@@ -97,9 +97,13 @@ async function visit(
   const chunk = popupChunk();
   const requests: string[] = [];
   const navigations: string[] = [];
-  page.on("request", (request) => requests.push(request.url()));
-  page.on("framenavigated", (frame) => {
-    if (frame === page.mainFrame()) navigations.push(frame.url());
+  page.on("request", (request) => {
+    requests.push(request.url());
+    // A document request of the main frame: a navigation that loads a page. Next's own
+    // same-document history updates are not navigations and do not appear here.
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+      navigations.push(request.url());
+    }
   });
   await forceLanguages(page, languages);
   if (Object.keys(headers).length > 0) {
