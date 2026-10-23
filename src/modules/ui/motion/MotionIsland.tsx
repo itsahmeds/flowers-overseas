@@ -23,6 +23,12 @@
  *    plays instead of motion 1's header bloom, one flourish at a time. All of it comes off on
  *    `pageshow`, when the back/forward cache brings the page back.
  *  - **Motion 4, the sentence's shimmer.** 800 ms after load, once, unless the form was touched.
+ *  - **The open phone Menu** (spec 004 §14 A-founder-2026-10-19c clause 3, AC-47; TASK-282). A tap
+ *    on its scrim closes it; `Tab` and `Shift+Tab` keep focus inside it and its summary; Send
+ *    flowers (any link to `#send`) closes it. On the page that holds `#send` (the home), at every
+ *    width, Send flowers scrolls the sentence letter in below the sticky header and moves focus to
+ *    its first choice instead of jumping to the anchor. With the module not loaded, the `<details>`
+ *    and the `#send` link work natively (the scrim is not drawn without it, `globals.css`).
  *  - **Motion 10's close half and `Esc`** for the phone Menu (spec 004 AC-47; was `MenuEscape`,
  *    TASK-195; the close, TASK-283). A click on an open Menu's summary, or `Esc` (focus back on
  *    the summary), marks it `data-fo-closing`: the panel fades and rises out on the transition
@@ -44,6 +50,7 @@ export function MotionIsland(): null {
     const busy = "aria-busy";
     const pending = "[data-fo-pending]";
     const closing = "data-fo-closing";
+    const openMenu = "details[data-fo-menu][open]";
     let timer = 0;
     let touched = false;
 
@@ -69,7 +76,40 @@ export function MotionIsland(): null {
         close(summary.parentElement as HTMLDetailsElement);
         return;
       }
+      const scrim = target.closest?.("[data-fo-menu-scrim]");
+      if (scrim) {
+        close(scrim.parentElement as HTMLDetailsElement);
+        return;
+      }
       const link = target.closest?.("a");
+      // Send flowers: the Menu closes; on the home, the letter comes in under the header and its
+      // first choice takes focus (with its ring) rather than the page jumping to the anchor.
+      if (link?.hash === "#send") {
+        for (const menu of d.querySelectorAll<HTMLDetailsElement>(openMenu)) {
+          close(menu);
+        }
+        const form =
+          link.pathname === here.pathname && d.getElementById("send");
+        if (form) {
+          event.preventDefault();
+          const card = form.closest("[data-fo-hero-card]");
+          const letter =
+            card && getComputedStyle(card).display !== "contents" ? card : form;
+          const header = d.querySelector("[data-fo-header]");
+          const under =
+            header && getComputedStyle(header).position === "sticky"
+              ? header.getBoundingClientRect().height
+              : 0;
+          scrollTo({
+            top: scrollY + letter.getBoundingClientRect().top - under - 16,
+          });
+          form.querySelector<HTMLElement>("select,input,button")?.focus({
+            preventScroll: true,
+            focusVisible: true,
+          } as FocusOptions);
+          return;
+        }
+      }
       if (
         !link ||
         event.button ||
@@ -125,11 +165,24 @@ export function MotionIsland(): null {
 
     d.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
-        for (const menu of d.querySelectorAll<HTMLDetailsElement>(
-          "details[data-fo-menu][open]",
-        )) {
+        for (const menu of d.querySelectorAll<HTMLDetailsElement>(openMenu)) {
           close(menu);
           menu.querySelector("summary")?.focus();
+        }
+      }
+      // Focus stays inside the open Menu and its summary (WCAG 2.4.3); `Esc` above always leaves.
+      const menu = d.querySelector(`${openMenu}:not([${closing}])`);
+      if (event.key === "Tab" && menu) {
+        const stops = [
+          ...menu.querySelectorAll<HTMLElement>(
+            "summary,a[href],button,select,input",
+          ),
+        ].filter((stop) => stop.getClientRects().length);
+        const active = d.activeElement;
+        const edge = event.shiftKey ? stops[0] : stops.at(-1);
+        if (stops.length && (!menu.contains(active) || active === edge)) {
+          event.preventDefault();
+          (event.shiftKey ? stops.at(-1) : stops[0])?.focus();
         }
       }
     });

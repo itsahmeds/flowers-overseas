@@ -189,6 +189,7 @@ describe('motion 3 on every primary action (TASK-283; A24 clause 9, sheet cell 3
   it("reaches the Menu's Send, and not the action bar's in-page jump", () => {
     const menu = renderToStaticMarkup(
       <MenuSheet
+        closeLabel="Close"
         currency={{ code: "EUR", label: "Currency" }}
         help={{ href: "https://wa.me/1", label: "Help" }}
         label="Menu"

@@ -17,6 +17,17 @@
  * (close, focus back on the summary) and renders nothing, so the header's box is the server's
  * (AC-7). Every target in the panel is at least 44 px tall.
  *
+ * **The open Menu (spec 004 §14 A-founder-2026-10-19c clause 3, AC-47; TASK-282;
+ * `chrome-mobile.dc.html` item 3A).** While it is open the summary shows a close mark and reads the
+ * reviewed "Close" (`consent.close`, reused as A-founder-2026-10-18a reused `nav.categories.label`;
+ * no new key), so its accessible name is the close label: CSS (`group-open:`), the same with or
+ * without JavaScript. With JavaScript on (`html[data-fo-motion]`, `globals.css`) a scrim
+ * (`--color-scrim`) dims the page below the header, and the motion module closes the Menu on a tap
+ * on it, keeps focus inside the Menu and its summary, and closes it when Send flowers is activated
+ * (on the home, Send flowers then scrolls the sentence letter in below the header and focuses its
+ * first choice). The scrim is `display: none` until the module has loaded, so with JavaScript off,
+ * or before the deferred module arrives, the native `<details>` is all there is.
+ *
  * The panel scrolls inside itself (`max-block-size` of the viewport under the 65 px header,
  * `overscroll-contain`): the header is sticky, so a panel taller than the screen would otherwise
  * leave its foot where no scroll can reach it (WCAG 1.4.10, 360 × 640).
@@ -38,6 +49,8 @@ export interface MenuSheetLink {
 export interface MenuSheetProps {
   /** The summary's text, `nav.menu.label`. */
   readonly label: string;
+  /** The open summary's text and accessible name: the reviewed "Close" (`consent.close`). */
+  readonly closeLabel: string;
   /** The links list's accessible name, the category row's (`nav.categories.label`). */
   readonly navLabel: string;
   /** The header's published entries, in the row's order. */
@@ -57,6 +70,7 @@ const SWITCHER =
 
 export function MenuSheet({
   label,
+  closeLabel,
   navLabel,
   links,
   send,
@@ -79,10 +93,29 @@ export function MenuSheet({
         {/* The artboard's `.bars`: three 2 px strokes in an 18 × 12 box, drawn, not a glyph. */}
         <span
           aria-hidden="true"
-          className="relative block h-[12px] w-[18px] border-y-2 border-current after:absolute after:start-0 after:end-0 after:top-[3px] after:border-t-2 after:border-current after:content-['']"
+          className="relative block h-[12px] w-[18px] border-y-2 border-current group-open:hidden after:absolute after:start-0 after:end-0 after:top-[3px] after:border-t-2 after:border-current after:content-['']"
         />
-        {label}
+        {/* Open: the artboard's `.aa-x`, two 2 px strokes crossed in a 14 × 14 box. */}
+        <span
+          aria-hidden="true"
+          className="relative hidden h-[14px] w-[14px] group-open:block before:absolute before:start-[6px] before:top-0 before:bottom-0 before:rotate-45 before:border-s-2 before:border-current before:content-[''] after:absolute after:start-[6px] after:top-0 after:bottom-0 after:-rotate-45 after:border-s-2 after:border-current after:content-['']"
+          data-fo-menu-close-mark=""
+        />
+        {/* One of the two labels is `display: none`, so the summary's accessible name is the
+            visible one: "Menu" closed, the close label open (AC-47). */}
+        <span className="group-open:hidden">{label}</span>
+        <span className="hidden group-open:inline" data-fo-menu-close="">
+          {closeLabel}
+        </span>
       </summary>
+      {/* The scrim under the open panel, over the page below the header (65 px on the phone).
+          `display: none` until the motion module marks the page (`globals.css`): a tap on it
+          closes the Menu only where that module runs. */}
+      <div
+        aria-hidden="true"
+        className="bg-scrim fixed start-0 end-0 top-[65px] bottom-0 hidden"
+        data-fo-menu-scrim=""
+      />
       <div
         className="bg-surface border-rule absolute start-0 end-0 top-full grid max-h-[calc(100dvh-65px)] gap-[16px] overflow-y-auto overscroll-contain border-b px-(--gutter-s) pt-[8px] pb-[24px] shadow-md"
         data-fo-menu-panel

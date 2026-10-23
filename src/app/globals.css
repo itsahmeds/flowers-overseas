@@ -775,6 +775,69 @@
 }
 
 /*
+ * The open phone Menu (spec 004 §14 A-founder-2026-10-19c clause 3, AC-47; TASK-282;
+ * `chrome-mobile.dc.html` item 3A). With JavaScript on — `html[data-fo-motion]`, which the motion
+ * module sets once it runs — the scrim under the open panel is drawn, and the sticky header that
+ * holds both is lifted to the overlay layer so the scrim dims the docked action bar too (the bar is
+ * `--layer-banner`, above the header's own layer). The consent sheet shares that layer and comes
+ * later in the document, so it still paints above the Menu. Without the module the scrim stays
+ * `display: none` (`MenuSheet`), because only the module can close the Menu on a tap on it.
+ */
+html[data-fo-motion] details[data-fo-menu][open] [data-fo-menu-scrim] {
+  display: block;
+}
+
+html[data-fo-motion] [data-fo-header]:has(details[data-fo-menu][open]) {
+  z-index: var(--layer-overlay);
+}
+
+/*
+ * Short screens (spec 004 §14 A-founder-2026-10-19c clause 5, AC-47, AC-48; TASK-282): under
+ * 500 CSS px tall, at any width — a laptop at 200 % zoom (640 × 400), a phone on its side
+ * (844 × 390) — the header scrolls away with the page, the docked action bar is not drawn (every
+ * action in it has a twin in the flow, AC-48), and the home cover gives the H1 the first screen:
+ * on the phone layout the cover is the viewport less the 65 px header, and from `md` up the hero
+ * drops its 560 px floor and takes the height of its card. CSS only, so the header's box is the
+ * same before and after hydration (AC-7); at 500 px tall and above nothing here applies.
+ */
+@media (max-height: 500px) {
+  [data-fo-header] {
+    position: relative;
+  }
+
+  [data-fo-action-bar] {
+    display: none;
+  }
+
+  body:has([data-fo-action-bar]) {
+    padding-block-end: 0;
+  }
+
+  body:has([data-fo-action-bar]) [data-fo-consent-sheet="fixed"] {
+    inset-block-end: 0;
+  }
+
+  [data-fo-hero-photo] {
+    block-size: calc(100svh - 65px);
+    min-block-size: 0;
+  }
+
+  @media (width >= 48rem) {
+    [data-fo-hero] {
+      block-size: auto;
+    }
+
+    [data-fo-hero-photo] {
+      block-size: auto;
+    }
+
+    [data-fo-hero-frame] {
+      padding-block: 16px;
+    }
+  }
+}
+
+/*
  * Motion: the approved set (spec 004 §14 A23 clause 11 as A24 clause 9 amends it, AC-44, AC-6;
  * TASK-194; `docs/design/system/motion.dc.html`, each cell's Trigger, Tokens, Reduced motion and
  * Where rows). CSS and inline SVG only; the one client module (`MotionIsland`) toggles the
@@ -1100,6 +1163,19 @@
     }
   }
 
+  /* 10. Its scrim fades in with it (TASK-282). */
+  details[data-fo-menu][open] [data-fo-menu-scrim] {
+    transition-property: opacity;
+    transition-duration: var(--duration-slow);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  @starting-style {
+    details[data-fo-menu][open] [data-fo-menu-scrim] {
+      opacity: 0;
+    }
+  }
+
   /* 10. The consent sheet: from its edge on the phone, fade and 8 px rise from `sm`. */
   [data-fo-consent-sheet="fixed"] {
     transition-property: opacity, transform;
@@ -1294,6 +1370,7 @@
 /* 10, the close half's fade, under either preference: with reduced motion it is the 120 ms
    opacity transition below, and nothing else changes. */
 details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
+details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
 [data-fo-consent-sheet="fixed"][data-fo-closing] {
   opacity: 0;
 }
@@ -1309,6 +1386,7 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
   @media (prefers-reduced-motion: reduce) {
     dialog[data-fo-language-popup][open],
     details[data-fo-menu][open] [data-fo-menu-panel],
+    details[data-fo-menu][open] [data-fo-menu-scrim],
     [data-fo-consent-sheet="fixed"] {
       transition-property: opacity !important;
       transition-duration: var(--duration-fast) !important;
@@ -1318,6 +1396,7 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
     @starting-style {
       dialog[data-fo-language-popup][open],
       details[data-fo-menu][open] [data-fo-menu-panel],
+      details[data-fo-menu][open] [data-fo-menu-scrim],
       [data-fo-consent-sheet="fixed"] {
         opacity: 0;
       }
