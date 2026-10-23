@@ -120,6 +120,17 @@ export type DeriveOutcome =
     }
   | { readonly status: "refused"; readonly reason: DeriveRefusal };
 
+/** The largest original the worker will decode: well above spec 012b's 15 MB upload cap. */
+export const MAX_ORIGINAL_BYTES = 50 * 1024 * 1024;
+
+/** The downloaded original, checked at the boundary before `sharp` sees a byte. */
+const OriginalBytesSchema = z
+  .instanceof(ArrayBuffer)
+  .refine(
+    (bytes) => bytes.byteLength > 0 && bytes.byteLength <= MAX_ORIGINAL_BYTES,
+    "an original is 1 byte to MAX_ORIGINAL_BYTES",
+  );
+
 /** A signed read of the original lives this long: one download, not a shareable link. */
 export const ORIGINAL_READ_TTL_SECONDS = 300;
 
@@ -302,7 +313,7 @@ async function readOriginal(
   if (response.status !== 200) {
     throw new MediaDeriveReadError(response.status);
   }
-  return Buffer.from(await response.arrayBuffer());
+  return Buffer.from(OriginalBytesSchema.parse(await response.arrayBuffer()));
 }
 
 /** The original could not be read for a reason worth retrying. Names the status, never the URL. */
