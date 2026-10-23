@@ -36,6 +36,8 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-24: worktree and branch; measuring CI run 39965504535 (16.4.2): 131 428 B on all 16 URLs, 11 scripts.
+- 2026-10-24: numbers restored (128 KiB constant, lighthouserc 131 072 / 133 120 B, baseline, unit pins, synthetic chunk 132_000) and the 16.4 parser cases added (542db060).
+- 2026-10-24: the trim. Split CI's 16.4.2 chunks by module: `next/dynamic`'s runtime (app-dynamic, loadable, PreloadChunks, BailoutToCSR, async storage) is 1 272 B of the layout loader chunk's 2 331 B Brotli, used only by our four loaders. Loaders moved to `React.lazy` (consent behind `useHydrated()`), and `budget:client-js` now reads lazy candidates from Turbopack's loader stubs less `ON_INPUT_CHUNK_MARKERS` (45b2c75a). No local build: the build needs a seeded Postgres; CI measures.
 
 ## Result
 
