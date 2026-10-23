@@ -6,7 +6,7 @@
       "x": 0,
       "y": 0,
       "w": 1440,
-      "h": 6281
+      "h": 6849
     },
     {
       "file": "home-mobile.dc.html",
@@ -14,7 +14,7 @@
       "x": 1520,
       "y": 0,
       "w": 390,
-      "h": 8443
+      "h": 9253
     },
     {
       "file": "chrome-desktop.dc.html",
@@ -70,7 +70,7 @@
       "x": 0,
       "y": 34044,
       "w": 1440,
-      "h": 4157
+      "h": 4498
     },
     {
       "file": "all-destinations-mobile.dc.html",
@@ -78,7 +78,7 @@
       "x": 1520,
       "y": 34044,
       "w": 390,
-      "h": 2589
+      "h": 3404
     },
     {
       "file": "corridor-country-desktop.dc.html",
@@ -86,7 +86,7 @@
       "x": 0,
       "y": 41531,
       "w": 1440,
-      "h": 10706
+      "h": 8735
     },
     {
       "file": "corridor-country-mobile.dc.html",
@@ -94,7 +94,7 @@
       "x": 1520,
       "y": 41531,
       "w": 390,
-      "h": 3188
+      "h": 2508
     },
     {
       "file": "country-shop-desktop.dc.html",
@@ -102,7 +102,7 @@
       "x": 0,
       "y": 61157,
       "w": 1440,
-      "h": 9028
+      "h": 10592
     },
     {
       "file": "country-shop-mobile.dc.html",
@@ -110,7 +110,7 @@
       "x": 1520,
       "y": 61157,
       "w": 390,
-      "h": 4117
+      "h": 6324
     },
     {
       "file": "country-category-desktop.dc.html",
@@ -118,7 +118,7 @@
       "x": 0,
       "y": 78600,
       "w": 1440,
-      "h": 4218
+      "h": 6947
     },
     {
       "file": "country-category-mobile.dc.html",
@@ -126,7 +126,7 @@
       "x": 1520,
       "y": 78600,
       "w": 390,
-      "h": 4156
+      "h": 7088
     },
     {
       "file": "country-occasion-desktop.dc.html",
@@ -134,7 +134,7 @@
       "x": 0,
       "y": 88584,
       "w": 1440,
-      "h": 4375
+      "h": 4996
     },
     {
       "file": "country-occasion-mobile.dc.html",
@@ -142,7 +142,7 @@
       "x": 1520,
       "y": 88584,
       "w": 390,
-      "h": 4142
+      "h": 4303
     },
     {
       "file": "product-desktop.dc.html",
@@ -150,7 +150,7 @@
       "x": 0,
       "y": 97550,
       "w": 1440,
-      "h": 7489
+      "h": 5062
     },
     {
       "file": "product-mobile.dc.html",
@@ -158,7 +158,7 @@
       "x": 1520,
       "y": 97550,
       "w": 390,
-      "h": 10795
+      "h": 6968
     },
     {
       "file": "checkout-desktop.dc.html",
@@ -222,7 +222,7 @@
       "x": 0,
       "y": 183134,
       "w": 1440,
-      "h": 5959
+      "h": 6009
     },
     {
       "file": "category-hub-mobile.dc.html",
@@ -230,7 +230,7 @@
       "x": 1520,
       "y": 183134,
       "w": 390,
-      "h": 3356
+      "h": 3448
     },
     {
       "file": "occasion-hub-desktop.dc.html",
@@ -238,7 +238,7 @@
       "x": 0,
       "y": 193379,
       "w": 1440,
-      "h": 6014
+      "h": 6063
     },
     {
       "file": "occasion-hub-mobile.dc.html",
@@ -246,7 +246,7 @@
       "x": 1520,
       "y": 193379,
       "w": 390,
-      "h": 3391
+      "h": 3503
     },
     {
       "file": "occasions-index-desktop.dc.html",
@@ -254,7 +254,7 @@
       "x": 0,
       "y": 203663,
       "w": 1440,
-      "h": 3717
+      "h": 3767
     },
     {
       "file": "occasions-index-mobile.dc.html",
@@ -262,7 +262,7 @@
       "x": 1520,
       "y": 203663,
       "w": 390,
-      "h": 2930
+      "h": 3083
     },
     {
       "file": "how-it-works-desktop.dc.html",
