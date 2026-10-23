@@ -330,6 +330,91 @@ describe("the `[locale]` document (AC-6)", () => {
   });
 });
 
+const { AnalyticsScripts } = await import("../../src/modules/analytics");
+const { ConsentBanner } = await import("../../src/modules/ui");
+
+/** Every element of a layout's returned tree whose type is `type`, depth first (no render). */
+function elementsOfType(
+  node: unknown,
+  type: unknown,
+): ReactElement<Record<string, unknown>>[] {
+  if (Array.isArray(node))
+    return node.flatMap((child) => elementsOfType(child, type));
+  if (node === null || typeof node !== "object" || !("props" in node))
+    return [];
+  const element = node as ReactElement<Record<string, unknown>>;
+  return [
+    ...(element.type === type ? [element] : []),
+    ...elementsOfType(element.props["children"], type),
+  ];
+}
+
+describe("the layout reads consent once (spec 004 §14 A-founder-2026-10-19d clause 1, AC-21, T-23)", () => {
+  async function layoutTree(): Promise<ReactElement> {
+    return (await LocaleLayout({
+      children: null,
+      params: Promise.resolve({ locale: "en" }),
+    })) as ReactElement;
+  }
+
+  it("blank id: no tag, and the banner does not ask", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "");
+    try {
+      const tree = await layoutTree();
+      const scripts = elementsOfType(tree, AnalyticsScripts);
+      const banners = elementsOfType(tree, ConsentBanner);
+      expect(scripts.map((element) => element.props["measurementId"])).toEqual([
+        undefined,
+      ]);
+      expect(banners.map((element) => element.props["prompt"])).toEqual([
+        false,
+      ]);
+      expect(renderToStaticMarkup(scripts[0]!)).not.toContain(
+        "googletagmanager",
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("`G-FIXTURE00`: the tag's `src` carries the reader's id, and the banner asks", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "G-FIXTURE00");
+    try {
+      const tree = await layoutTree();
+      const scripts = elementsOfType(tree, AnalyticsScripts);
+      const banners = elementsOfType(tree, ConsentBanner);
+      expect(scripts.map((element) => element.props["measurementId"])).toEqual([
+        "G-FIXTURE00",
+      ]);
+      expect(banners.map((element) => element.props["prompt"])).toEqual([true]);
+      expect(renderToStaticMarkup(scripts[0]!)).toContain(
+        'src="https://www.googletagmanager.com/gtag/js?id=G-FIXTURE00"',
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("a `GTM-…` id is no id: no tag, no question", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "GTM-ABC123");
+    try {
+      const tree = await layoutTree();
+      expect(
+        elementsOfType(tree, AnalyticsScripts).map(
+          (element) => element.props["measurementId"],
+        ),
+      ).toEqual([undefined]);
+      expect(
+        elementsOfType(tree, ConsentBanner).map(
+          (element) => element.props["prompt"],
+        ),
+      ).toEqual([false]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
 describe("the app-root layout (spec 003 §5.3's accepted alternative)", () => {
   it("renders no document of its own, so each leaf renders its own language", () => {
     // Same children, no `<html>`/`<body>` added: the root is a pass-through, so each leaf's
