@@ -334,7 +334,7 @@ export class StorageRequestError extends Error {
   constructor(operation: "put" | "head" | "delete", status: number) {
     super(
       status === 0
-        ? `R2 ${operation}: no response (network failure or timeout)`
+        ? `R2 ${operation}: no response (connection failure or timeout)`
         : `R2 ${operation}: unexpected status ${String(status)}`,
     );
     this.operation = operation;
@@ -401,7 +401,7 @@ export function assertPlacement(access: BucketAccess, input: PutInput): void {
   }
   if (!PUBLIC_KEY.test(input.objectKey)) {
     throw new StoragePlacementError(
-      "put: a public bucket takes only derived variants of a public kind (media/product/… or media/brand/…); originals, dumps, delivery photographs and partner files are private",
+      "put: a public bucket takes only derived variants of a public kind (media/product/… or media/brand/…); originals, dumps and every private kind's objects stay private",
     );
   }
   if (!(PUBLIC_MIME_TYPES as readonly string[]).includes(input.mime)) {
