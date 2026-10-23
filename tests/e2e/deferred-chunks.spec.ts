@@ -24,11 +24,15 @@
  *
  * The URL set is `tests/fixtures/seo/lighthouse-urls.json`, the one the `lighthouse` job audits.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { type Page, type Route, expect, test } from "@playwright/test";
 
+import {
+  parseClientReferences,
+  parseScriptTags,
+} from "../../scripts/client-js-budget.ts";
 import {
   DEFERRED_ISLANDS,
   type DeferredIslandId,
@@ -323,4 +327,57 @@ test.describe("a tap before the islands load still works (clause 3)", () => {
       new RegExp(`${(href ?? "").replace(/[/]/gu, "\\/")}$`, "u"),
     );
   });
+});
+
+/**
+ * T-60 as spec 004 §14 A-founder-2026-10-19d amends it, the build-output half (AC-55's popup
+ * bullet; TASK-279): the language popup island's module is in **no route's initial chunk set**.
+ * Read from the build the suite runs against (`.next` in the checkout), not from a browser: the
+ * initial set of a locale document is its `<script src>` list and the chunks of every client
+ * reference its flight payload names (`parseScriptTags`, `parseClientReferences`, the parsers
+ * `pnpm budget:client-js` uses). Clause 9's positive control first: the popup's chunk is resolved
+ * from the locale page's `react-loadable-manifest.json` by its marker and must exist, non-empty,
+ * so a wrong marker cannot pass as "absent". Red when `LanguagePopupLoader` imports the island
+ * statically: its marker then rides in the loader's chunk, which the flight payload names.
+ *
+ * The other half, "no resource-timing entry for the popup's chunk on any audited URL", needs the
+ * popup never to open on the committed registry: spec 003 §14 A-founder-2026-10-19d, TASK-280.
+ */
+test.describe("T-60: the popup island is in no initial chunk set (build output)", () => {
+  const DIST = resolve(import.meta.dirname, "../../.next");
+  const MARKER = markerOf("language-popup");
+  const read = (asset: string): string =>
+    readFileSync(resolve(DIST, asset), "utf8");
+
+  test.beforeEach(({}, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "e2e-desktop",
+      "reads the build output once",
+    );
+  });
+
+  test("the popup's deferred chunk exists in the build output (clause 9)", () => {
+    const manifest = JSON.parse(
+      read("server/app/[locale]/page/react-loadable-manifest.json"),
+    ) as Record<string, { files?: readonly string[] }>;
+    const carrying = [
+      ...new Set(Object.values(manifest).flatMap((entry) => entry.files ?? [])),
+    ].filter((asset) => asset.endsWith(".js") && read(asset).includes(MARKER));
+    expect(carrying).toHaveLength(1);
+    expect(statSync(resolve(DIST, carrying[0]!)).size).toBeGreaterThan(0);
+  });
+
+  for (const url of URLS.filter((candidate) => LOCALE_HOMES.has(candidate))) {
+    test(`${url}: no chunk of the initial set carries the popup island`, () => {
+      const html = read(`server/app${url}.html`);
+      const initial = new Set([
+        ...parseScriptTags(html).map((tag) => tag.asset),
+        ...parseClientReferences(html).flatMap((reference) => reference.chunks),
+      ]);
+      expect(initial.size).toBeGreaterThan(0);
+      expect(
+        [...initial].filter((asset) => read(asset).includes(MARKER)),
+      ).toEqual([]);
+    });
+  }
 });
