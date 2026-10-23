@@ -22,7 +22,7 @@
     "here and the number `pnpm budget:client-js` prints from `.next/` are the same number, and both",
     "are what an edge CDN serves.",
     "",
-    "**2. What the number is: 132 096 B (128 KB) of Brotli script transfer.** spec 004 §13 Q13",
+    "**2. What the number is: 131 072 B (128 KB) of Brotli script transfer.** spec 004 §13 Q13",
     "restated `plan/01` §7's 120 KB gzip as 120 KB Brotli (founder, 2026-09-08, option (a)) and",
     "§14 A1 corrected it to 128 KB once TASK-046 measured the locale documents at 129 638 B with no",
     "application code left to remove. It is not raised a second time (§14 A1). The measured numbers",
@@ -45,13 +45,14 @@
     "than the page, and nobody should be able to make a number green by indexing early. Spec 007",
     "asserts it when there is an indexable set.",
     "",
-    "**3. The product page's script budget is 134 144 B; every other URL keeps 132 096 B** (spec 004",
+    "**3. The product page's script budget is 133 120 B; every other URL keeps 131 072 B** (spec 004",
     "§14 A-founder-2026-10-18a, AC-56; spec 009 AC-14 as amended). `assertMatrix` holds it: the first",
-    "entry carries every other assertion for every URL, the second the 132 096 B script assertion for",
-    "every URL that is not a product address, the third 134 144 B for product addresses only. The",
+    "entry carries every other assertion for every URL, the second the 131 072 B script assertion for",
+    "every URL that is not a product address, the third 133 120 B for product addresses only. The",
     "product pattern names each locale's `product` segment (`pathSegments.product`) and is pinned",
     "against the registry by `tests/unit/product-script-budget.test.ts`, so it cannot widen to a",
-    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here."
+    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here.",
+    "**Temporary (spec 004 §14 A-founder-2026-10-23, founder option A):** the script assertions below read 132 096 B (product 134 144 B), 1 KiB above the budget stated here, while Next 16.4.2 lands (TASK-375 measured 131 428 B from the framework alone). TASK-376 trims the script and restores 131 072 B and 133 120 B."
   ],
   "ci": {
     "collect": {
