@@ -14,9 +14,12 @@
  * (`--font-body: var(--font-alegreya-ext), var(--font-alegreya)` in `src/app/globals.css`): the
  * Latin-Ext family's faces cover none of the Latin code points, so the browser falls through to
  * the Latin family for every ASCII letter and reaches the Latin-Ext file only for a character such
- * as `ą` — which an `en`, `en-gb` or `de` page never renders, so it never downloads the file. The
- * Latin family's variable carries the metric-matched fallback (`adjustFontFallback`) and the named
- * fallbacks, so the stack ends in the right order.
+ * as `ș`, which no launch locale renders, so no page downloads the file. The Polish letters
+ * (`ą ć ę ł ń ś ź ż` and capitals; `ó` is Latin-1) ride in the **Latin** files since spec 004 §14
+ * A-orchestrator-2026-10-23, so a `pl` header renders from the preloaded Alegreya Sans files on the
+ * same timing as an English one and shifts nothing (AC-58, AC-59). The Latin family's variable
+ * carries the metric-matched fallback (`adjustFontFallback`) and the named fallbacks, so the stack
+ * ends in the right order.
  *
  * **Matched fallback metrics on Linux too.** `adjustFontFallback` writes one metric-matched face
  * over `local("Arial")` / `local("Times New Roman")`, which a Linux machine (the CI runners
@@ -33,7 +36,7 @@
  * `next/font` preloads every file of a call or none of them, and a weight cannot move to a second
  * family without breaking font matching (a family holding only a 400 face renders bold text as a
  * synthesised 400). So the Alegreya Sans **Latin** call — 400 and 700 — is the one preloaded call:
- * two files, 19,320 B against the 50 KB preload budget. Fraunces is preloaded nowhere: A21 permits
+ * two files, 20,124 B against the 50 KB preload budget. Fraunces is preloaded nowhere: A21 permits
  * its Latin roman "only on a page whose LCP element is display-face text", and a layout cannot know
  * that for every page under it. The 700 in the second preload slot is recorded in
  * `docs/tasks/TASK-175.md` under Escalations.
@@ -68,7 +71,7 @@ export const displayFont = localFont({
     {
       prop: "unicode-range",
       value:
-        "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+        "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
     },
   ],
 });
@@ -91,7 +94,7 @@ export const displayFontExt = localFont({
     {
       prop: "unicode-range",
       value:
-        "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+        "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
     },
   ],
 });
@@ -117,7 +120,7 @@ export const bodyFont = localFont({
     {
       prop: "unicode-range",
       value:
-        "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+        "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
     },
   ],
 });
@@ -144,7 +147,7 @@ export const bodyFontExt = localFont({
     {
       prop: "unicode-range",
       value:
-        "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+        "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
     },
   ],
 });

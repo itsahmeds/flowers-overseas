@@ -8,7 +8,7 @@
  * `handFontVariables` there and puts it on the preview's container). Never preloaded (A21 clause
  * 3), never a price, a button, a label or a heading. Latin and Latin-Ext as two calls for the same
  * reason as the page faces (`./index.ts`); the theme's `--font-hand` stacks them Latin-Ext first.
- * Its two files are 24,760 B against the 30 KB Caveat budget (`subset.json`).
+ * Its two files are 23,176 B against the 30 KB Caveat budget (`subset.json`).
  */
 import localFont from "next/font/local";
 
@@ -24,7 +24,7 @@ export const handFont = localFont({
     {
       prop: "unicode-range",
       value:
-        "U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
+        "U+0000-00FF, U+0104-0107, U+0118-0119, U+0131, U+0141-0144, U+0152-0153, U+015A-015B, U+0179-017C, U+2000-206F, U+20AC, U+2122, U+2190-2193, U+2212",
     },
   ],
 });
@@ -42,7 +42,7 @@ export const handFontExt = localFont({
     {
       prop: "unicode-range",
       value:
-        "U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
+        "U+0100-0103, U+0108-0117, U+011A-0130, U+0132-0140, U+0145-0151, U+0154-0159, U+015C-0178, U+017D-024F, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF",
     },
   ],
 });
