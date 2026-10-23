@@ -12,8 +12,8 @@
  *
  * ## Contracts, and where each one is kept
  *
- *  - **The cached HTML is identical for every visitor.** The island is imported with
- *    `ssr: false` by `ConsentBannerLoader`, so it has no server pass: no `Vary`, no `Set-Cookie`
+ *  - **The cached HTML is identical for every visitor.** `ConsentBannerLoader` imports the island
+ *    only after hydration (`useHydrated()`, TASK-376), so it has no server pass: no `Vary`, no `Set-Cookie`
  *    on a cached response, one cache entry per path (§5.4; spec 001 AC-15, spec 003 AC-12).
  *  - **It reserves no space and steals no focus.** The sheet is `fixed` (CLS delta 0) and nothing
  *    here calls `focus()` on appearance; the visitor reaches it by continuing to tab, because it
@@ -33,8 +33,9 @@
  *    `referrerPolicy: "no-referrer"`, so neither a cookie nor the URL of the page the visitor was
  *    reading reaches the endpoint (§8, `docs/compliance/ropa.md` row 3).
  */
-import dynamic from "next/dynamic";
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useId,
@@ -58,14 +59,13 @@ import type { ConsentView } from "./consentTypes";
 
 /**
  * The settings panel, in its own chunk, imported the first time it is opened — "the default path
- * pays for the banner only" (§5.3). `next/dynamic` rather than `React.lazy` on purpose: Next
- * records the boundary in the route's `react-loadable-manifest.json`, which is the file
- * `pnpm budget:client-js` reads, so the chunk is *counted* against the budget even on the paths
- * that never fetch it. A measurement that hid this chunk would be the wrong kind of green.
+ * pays for the banner only" (§5.3). `React.lazy` inside a `Suspense` (TASK-376): this island is
+ * never server-rendered, so `next/dynamic`'s `ssr: false` added nothing but its runtime.
+ * `pnpm budget:client-js` does not charge the chunk to a page load, because nothing fetches it
+ * without input: it is in `ON_INPUT_CHUNK_MARKERS` by the panel's `data-fo-consent-panel`, and
+ * `tests/e2e/client-js-budget.spec.ts` checks that against the browser.
  */
-const SettingsPanel = dynamic(() => import("./ConsentSettingsPanel"), {
-  ssr: false,
-});
+const SettingsPanel = lazy(async () => import("./ConsentSettingsPanel"));
 
 const NO_CHOICES: ConsentChoices = { analytics: false, marketing: false };
 
@@ -348,19 +348,21 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
       strings={strings}
     >
       {phase === "settings" ? (
-        <SettingsPanel
-          categories={categories}
-          choices={choices}
-          idPrefix={idPrefix}
-          onSave={() => {
-            decide(choices);
-          }}
-          onToggle={(category, on) => {
-            setChoices((current) => ({ ...current, [category]: on }));
-          }}
-          strings={strings}
-          takeFocus
-        />
+        <Suspense fallback={null}>
+          <SettingsPanel
+            categories={categories}
+            choices={choices}
+            idPrefix={idPrefix}
+            onSave={() => {
+              decide(choices);
+            }}
+            onToggle={(category, on) => {
+              setChoices((current) => ({ ...current, [category]: on }));
+            }}
+            strings={strings}
+            takeFocus
+          />
+        </Suspense>
       ) : undefined}
     </ConsentBannerView>
   );

@@ -11,9 +11,9 @@
  * island, and a "who" changed in that same interaction is read back when the island mounts
  * (`SentenceIsland` syncs once when it starts).
  *
- * `React.lazy`, not `next/dynamic`: `AfterPaint` already renders these only on the client and
- * inside a `Suspense`, and a chunk loaded only on input is outside the page-load budget that
- * `budget:client-js` models from `next/dynamic` (`./deferredSet.ts`). One file and one `import()`
+ * `React.lazy`, as every loader is since TASK-376: `AfterPaint` already renders these only on the
+ * client and inside a `Suspense`, and a chunk loaded only on input is outside the page-load budget
+ * `budget:client-js` models, by the island's `marker` (`./deferredSet.ts`). One file and one `import()`
  * for every interaction island, and one lazy chunk (`./lazyIslands.ts`): this file is in every
  * document's initial chunk, inside the 131,072 B budget.
  */

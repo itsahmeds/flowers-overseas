@@ -53,6 +53,11 @@
  * neither. The end-to-end check on the same claim is `tests/e2e/client-js-budget.spec.ts`, which
  * records what Chromium really fetches and asserts the two sets are equal.
  *
+ * **What TASK-376 changed:** the loaders use `React.lazy`, which writes no loadable manifest, so
+ * the candidate list is now every chunk a Turbopack loader stub names, less the on-input chunks of
+ * `ON_INPUT_CHUNK_MARKERS` (`lazyCandidatesFor`, `lazyChunksNamedIn`). The reachability filter
+ * above is unchanged.
+ *
  * TASK-085 also added `catalogueLeaks()`: no chunk a page fetches may contain a `home.*`,
  * `finder.*`, `catalog.*` or `media.*` catalogue value. That is the byte-level half of the
  * §14 A1 addendum — the source-level half is `tests/unit/client-message-graph.test.ts` — and it
@@ -85,7 +90,9 @@ import {
   segmentLeaks,
   segmentProbes,
   forbiddenModuleHits,
-  loadableAssetsFor,
+  lazyCandidatesFor,
+  lazyChunksNamedIn,
+  ON_INPUT_CHUNK_MARKERS,
   measurePages,
   messagesPayloadSizes,
   parseClientReferences,
@@ -215,9 +222,9 @@ describe("measurePages against a fake build output", () => {
       join(dist, "static/chunks/loader.js"),
       'e.v(()=>Promise.all(["static/chunks/island.js"].map(t=>e.l(t))));',
     );
-    // The two manifests a real `next build` writes: the URL -> entry map, and the entry's
-    // `next/dynamic` chunk list. `/small` and `/band` are served by the `[locale]` entry, which
-    // has no loadable manifest of its own here — a route with no dynamic import.
+    // The URL -> entry map a real `next build` writes. The lazy candidates are read from the loader
+    // stubs (`loader.js` above), an app-level list, so whether `island.js` is charged is decided by
+    // reachability alone (TASK-376).
     writeFileSync(
       join(dist, "app-path-routes-manifest.json"),
       JSON.stringify({
@@ -227,17 +234,6 @@ describe("measurePages against a fake build output", () => {
         "/quiet/page": "/quiet",
       }),
     );
-    // The same app-level list under two entries, which is what Turbopack really writes and the
-    // reason per-route attribution needed fixing (TASK-085, `/review 36`).
-    for (const entry of ["(chooser)/page", "quiet/page"]) {
-      mkdirSync(join(dist, "server/app", entry), { recursive: true });
-      writeFileSync(
-        join(dist, "server/app", entry, "react-loadable-manifest.json"),
-        JSON.stringify({
-          "1": { id: 1, files: ["static/chunks/island.js"] },
-        }),
-      );
-    }
     // `/` **mounts** the loader: its flight payload names it, so the browser fetches the island
     // chunk after hydration and the page is charged for it.
     writeFileSync(
@@ -356,7 +352,7 @@ describe("measurePages against a fake build output", () => {
       readBaseline(repoRoot),
     );
     expect(table).toContain("| Route | first-load JS (br) |");
-    expect(table).toContain("+ `next/dynamic` (br)");
+    expect(table).toContain("+ lazy (br)");
     expect(table).toContain("128 KB br");
     expect(table).toContain("| `/` |");
     expect(table).toContain("| `/en` |");
@@ -438,7 +434,7 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
     // *mounts* this one (TASK-085); `/` and `/en` list it without mounting it, `/banner` mounts it.
     writeFileSync(
       join(dist, "static/chunks/clean.js"),
-      'export const a=1;const b=_zodiac;e.v(()=>e.l("static/chunks/lazy-zod.js"));',
+      'export const a=1;const b=_zodiac;e.v(t=>Promise.all(["static/chunks/lazy-zod.js"].map(t=>e.l(t))).then(()=>t(58628)));',
     );
     writeFileSync(
       join(dist, "static/chunks/zod.js"),
@@ -471,8 +467,8 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
         '<script src="/_next/static/chunks/sentry.js"></script>',
     );
     // `/review 26`'s finding, as a fixture: a document whose own scripts are clean and whose
-    // route defers a zod-carrying chunk through `next/dynamic`. Before the fix this page
-    // measured 0 forbidden modules and 5 KB.
+    // route defers a zod-carrying chunk through a lazy import. Before the fix this page measured
+    // 0 forbidden modules and 5 KB.
     writeFileSync(
       join(dist, "static/chunks/lazy-zod.js"),
       `class $ZodError extends Error{};${"/*pad*/".repeat(500)}`,
@@ -488,16 +484,6 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
         "/(chooser)/page": "/",
         "/[locale]/page": "/[locale]",
         "/banner/page": "/banner",
-      }),
-    );
-    mkdirSync(join(dist, "server/app/banner/page"), { recursive: true });
-    writeFileSync(
-      join(dist, "server/app/banner/page/react-loadable-manifest.json"),
-      JSON.stringify({
-        "58628": {
-          id: 58628,
-          files: ["static/chunks/lazy-zod.js", "static/chunks/clean.js"],
-        },
       }),
     );
   });
@@ -528,7 +514,7 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
    * The assertion whose absence let the regression ship (`/review 26`): the island's chunk is not
    * in any document, so a check that reads only `<script src>` cannot see what it contains.
    */
-  it("sees a forbidden module in a `next/dynamic` chunk no document lists", () => {
+  it("sees a forbidden module in a lazy chunk no document lists", () => {
     const [page] = measurePages(dist, ["/banner"]);
 
     expect(
@@ -565,7 +551,7 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
       main(["--dist", dist, "--url", "/banner"], { write }, { write }),
     ).toBe(1);
     expect(out.join("")).toContain("`zod` in its client bundle");
-    expect(out.join("")).toContain("next/dynamic, fetched after hydration");
+    expect(out.join("")).toContain("[lazy, fetched after hydration]");
   });
 
   it("maps a URL to its app-router entry, route group and dynamic segment included", () => {
@@ -576,14 +562,28 @@ describe("forbiddenModuleHits — no zod, no browser Sentry on a public route (A
     expect(routeEntryFor(dist, "/a/b/c")).toBeNull();
   });
 
-  it("answers `[]` for a route with no dynamic import, and throws when it cannot tell", () => {
-    expect(loadableAssetsFor(dist, "/en")).toEqual([]);
-    expect(() => loadableAssetsFor(dist, "/a/b/c")).toThrow(
+  it("lists every chunk a loader stub names as a candidate, and throws when it cannot tell", () => {
+    // App-level, as the loadable manifest was: `/en` mounts nothing that runs the import, which is
+    // `reachableAssets()`'s question, not this one's.
+    expect(lazyCandidatesFor(dist, "/en")).toEqual([
+      { asset: "static/chunks/lazy-zod.js", noModule: false, kind: "lazy" },
+    ]);
+    expect(() => lazyCandidatesFor(dist, "/a/b/c")).toThrow(
       /no app-router entry/,
     );
     expect(() =>
       routeEntryFor(mkdtempSync(join(tmpdir(), "fo-empty-")), "/"),
     ).toThrow(/pnpm build/);
+    // A routes manifest and no chunk directory: "no lazy chunks" would be a guess.
+    const bare = mkdtempSync(join(tmpdir(), "fo-bare-"));
+    writeFileSync(
+      join(bare, "app-path-routes-manifest.json"),
+      JSON.stringify({ "/[locale]/page": "/[locale]" }),
+    );
+    expect(() => lazyCandidatesFor(bare, "/en")).toThrow(
+      /static\/chunks — run `pnpm build` first/,
+    );
+    rmSync(bare, { recursive: true, force: true });
   });
 
   it("ignores `noModule` chunks, which no modern browser fetches", () => {
@@ -820,6 +820,105 @@ describe("reachableAssets (the edge the Turbopack runtime follows)", () => {
         [candidate("static/chunks/first.js")],
       ),
     ).toEqual([]);
+  });
+});
+
+describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
+  let dist = "";
+  const stub = (...assets: string[]): string =>
+    `e.v(t=>Promise.all([${assets.map((asset) => `"${asset}"`).join(",")}].map(t=>e.l(t))).then(()=>t(1)))`;
+
+  beforeAll(() => {
+    dist = mkdtempSync(join(tmpdir(), "fo-lazy-"));
+    mkdirSync(join(dist, "static/chunks"), { recursive: true });
+    writeFileSync(
+      join(dist, "app-path-routes-manifest.json"),
+      JSON.stringify({ "/[locale]/page": "/[locale]" }),
+    );
+    // The layout's loader chunk, as CI's 16.4.2 build wrote it: one stub per lazy import.
+    writeFileSync(
+      join(dist, "static/chunks/loaders.js"),
+      `${stub("static/chunks/popup.js")},${stub("static/chunks/sentence.js")},${stub("static/chunks/consent.js")}`,
+    );
+    writeFileSync(
+      join(dist, "static/chunks/popup.js"),
+      'q("data-fo-language-popup");',
+    );
+    // An interaction island of the deferred set, by its marker: fetched only on input.
+    writeFileSync(
+      join(dist, "static/chunks/sentence.js"),
+      `performance.mark("fo:deferred:home-sentence");${stub("static/chunks/under-sentence.js")}`,
+    );
+    writeFileSync(join(dist, "static/chunks/under-sentence.js"), "x();");
+    // The consent island names the settings panel, which is fetched only when "Settings" is pressed.
+    writeFileSync(
+      join(dist, "static/chunks/consent.js"),
+      `q("data-fo-consent-sheet");${stub("static/chunks/panel.js")}`,
+    );
+    writeFileSync(
+      join(dist, "static/chunks/panel.js"),
+      'h("div",{"data-fo-consent-panel":""});',
+    );
+    // The runtime's own list of the document's chunks is a string mention, not a loader stub.
+    writeFileSync(
+      join(dist, "static/chunks/runtime.js"),
+      'R({otherChunks:["static/chunks/listed.js"]});',
+    );
+    writeFileSync(join(dist, "static/chunks/listed.js"), "y();");
+  });
+
+  afterAll(() => {
+    rmSync(dist, { recursive: true, force: true });
+  });
+
+  it("reads every chunk path a loader stub requests, and nothing a plain string mentions", () => {
+    expect(
+      lazyChunksNamedIn(
+        `${stub("static/chunks/a.js", "static/chunks/b.js")};${stub("static/chunks/c.js")}`,
+      ),
+    ).toEqual([
+      "static/chunks/a.js",
+      "static/chunks/b.js",
+      "static/chunks/c.js",
+    ]);
+    expect(
+      lazyChunksNamedIn('R({otherChunks:["static/chunks/listed.js"]});'),
+    ).toEqual([]);
+  });
+
+  it("marks the deferred set's interaction islands and the consent settings panel as on-input", () => {
+    expect(ON_INPUT_CHUNK_MARKERS).toEqual([
+      "fo:deferred:home-sentence",
+      "data-fo-consent-panel",
+    ]);
+  });
+
+  it("offers every stub-named chunk but the on-input ones as a candidate", () => {
+    // `under-sentence.js` is a candidate (nothing marks it), but only an on-input chunk names it,
+    // so no page reaches it: the next case.
+    expect(lazyCandidatesFor(dist, "/en").map((tag) => tag.asset)).toEqual([
+      "static/chunks/consent.js",
+      "static/chunks/popup.js",
+      "static/chunks/under-sentence.js",
+    ]);
+  });
+
+  it("charges a page that mounts the loaders the page-load chunks, and none of the on-input ones", () => {
+    mkdirSync(join(dist, "server/app"), { recursive: true });
+    writeFileSync(
+      join(dist, "server/app/en.html"),
+      '<script src="/_next/static/chunks/runtime.js"></script>' +
+        '<script>self.__next_f.push([1,"3:I[7,[\\"/_next/static/chunks/loaders.js\\"],\\"Loaders\\"]\\n"])</script>',
+    );
+    const [page] = measurePages(dist, ["/en"]);
+    expect(
+      (page?.assets ?? []).map((asset) => [asset.asset, asset.kind]).sort(),
+    ).toEqual([
+      ["static/chunks/consent.js", "lazy"],
+      ["static/chunks/loaders.js", "lazy"],
+      ["static/chunks/popup.js", "lazy"],
+      ["static/chunks/runtime.js", "document"],
+    ]);
   });
 });
 

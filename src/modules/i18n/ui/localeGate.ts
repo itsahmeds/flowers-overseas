@@ -91,14 +91,14 @@ export function releaseAbandonedLocaleGate(): void {
  * gate pending, so a popup chunk that fails or never arrives would otherwise hide the consent
  * sheet for good (`/break 205` hole 4).
  *
- *  - `withGateRelease()` wraps the one `import()` inside `next/dynamic`: when it **rejects**, the
+ *  - `withGateRelease()` wraps the one `import()` inside the loader's `React.lazy`: when it **rejects**, the
  *    gate is released at once and the popup renders nothing, instead of the failure reaching the
  *    page's error boundary.
  *  - `guardLocaleGate()` is the effect: when the import **never settles**, or the island never
  *    runs, the gate is released after `LOCALE_GATE_TIMEOUT_MS`. Returns the cleanup.
  *
  * Both release only a gate still pending, never one an open popup holds. One `import()` only: a
- * second one outside `next/dynamic` is a second fetch path the client-JS budget does not model.
+ * second one outside the loader is a second fetch path the client-JS budget does not model.
  */
 export async function withGateRelease<T>(
   island: Promise<{ default: T }>,

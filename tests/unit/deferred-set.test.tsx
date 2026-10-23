@@ -12,8 +12,9 @@
  *
  *  - **no static import** of a deferred module anywhere under `src/`: an eager import puts the
  *    island into a chunk the document requests at once, which is T-60's red case;
- *  - **one loader** per island, holding the only `import()` of its chunk: `next/dynamic` with
- *    `ssr: false` after the paint, `React.lazy` for an island that waits for input;
+ *  - **one loader** per island, holding the only `import()` of its chunk, through `React.lazy`
+ *    (`next/dynamic` left every loader in TASK-376, taking its runtime off every page); whether
+ *    `budget:client-js` charges the chunk to the page load is its `ON_INPUT_CHUNK_MARKERS`;
  *  - **one mount**, inside `<AfterPaint island="…" on="…">`, so the loader's `import()` waits.
  *
  * It also drives `whenReady()` (`src/modules/ui/deferred/paintSignal.ts`) through every path
@@ -26,6 +27,7 @@ import { dirname, join, relative, resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { ON_INPUT_CHUNK_MARKERS } from "../../scripts/client-js-budget.ts";
 import { AfterPaint } from "../../src/modules/ui/deferred/AfterPaint.tsx";
 import { SENTENCE_IDS } from "../../src/modules/ui/home/sentence-model.ts";
 import {
@@ -302,17 +304,16 @@ describe.each(deferred.map((island) => [island.id, island] as const))(
 
     it(
       island.trigger === "paint"
-        ? "loads through next/dynamic with ssr: false, which budget:client-js charges to the page load"
-        : "loads through React.lazy, outside the page-load model, because nothing fetches it without input",
+        ? "loads through React.lazy, and budget:client-js charges its chunk to the page load"
+        : "loads through React.lazy, and budget:client-js leaves its chunk out by its marker, because nothing fetches it without input",
       () => {
         const loader = code(byPath(island.loader));
-        if (island.trigger === "paint") {
-          expect(loader).toMatch(/import dynamic from "next\/dynamic";/u);
-          expect(loader).toMatch(/\{\s*ssr:\s*false\s*\}/u);
-        } else {
-          expect(loader).not.toMatch(/next\/dynamic/u);
-          expect(loader).toMatch(/import \{ lazy \} from "react";/u);
-        }
+        expect(loader).not.toMatch(/next\/dynamic/u);
+        expect(loader).toMatch(/import \{[^}]*\blazy\b[^}]*\} from "react";/u);
+        expect(loader).toMatch(/=\s*lazy\b/u);
+        expect(ON_INPUT_CHUNK_MARKERS.includes(island.marker)).toBe(
+          island.trigger === "interaction",
+        );
       },
     );
 
@@ -354,6 +355,14 @@ describe("every other client module is accounted for (clause 2: every other isla
     // And the list names nothing stale.
     expect(
       Object.keys(NOT_DEFERRED).filter((path) => !clients.includes(path)),
+    ).toEqual([]);
+  });
+
+  it("no module under src/ imports next/dynamic, whose runtime would return to every page (TASK-376)", () => {
+    expect(
+      ALL.filter((source) =>
+        /from\s+["']next\/dynamic["']/u.test(code(source.text)),
+      ).map((source) => source.path),
     ).toEqual([]);
   });
 

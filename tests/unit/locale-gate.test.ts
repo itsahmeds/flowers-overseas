@@ -236,7 +236,7 @@ describe("the components call the two effects (their wiring, pinned from source)
   it("the loader wraps its one import and runs the timer from an effect that runs once", () => {
     const loader = source("src/modules/i18n/ui/LanguagePopupLoader.tsx");
     expect(loader).toMatch(
-      /dynamic\(\s*async \(\) => withGateRelease\(import\("\.\/LanguagePopupIsland\.tsx"\)\),/u,
+      /lazy<[^\n]*>\(async \(\) =>\s*withGateRelease\(import\("\.\/LanguagePopupIsland\.tsx"\)\),/u,
     );
     expect(loader).toMatch(
       /useEffect\(\(\)\s*=>\s*guardLocaleGate\(\),\s*\[\]\)/u,

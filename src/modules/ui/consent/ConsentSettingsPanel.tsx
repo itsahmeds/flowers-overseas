@@ -3,10 +3,10 @@
 /**
  * `ConsentSettings` (spec 004 §5.3, §8, AC-20; TASK-051).
  *
- * The per-category panel, in its own chunk: the island imports it with `next/dynamic` **on open**,
+ * The per-category panel, in its own chunk: the island imports it with `React.lazy` **on open**,
  * so a visitor who accepts or refuses at the sheet never downloads it (§5.3's "settings-open"
- * state, and the byte discipline of §14 A1). It is `ssr: false` for the same reason the island is:
- * the cached HTML must be identical for every visitor.
+ * state, and the byte discipline of §14 A1). It has no server pass for the same reason the island
+ * has none: the cached HTML must be identical for every visitor.
  *
  * Controlled, and stateless on purpose: `choices` and `onToggle` come from the island, so the
  * three §5.3 states — `default` (all non-essential off), `dirty`, `saved` — are reachable by

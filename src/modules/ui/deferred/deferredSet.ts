@@ -15,7 +15,7 @@
  *
  *  - `trigger: "paint"`: after the window's `load`, one animation frame and the idle period after
  *    it (the LCP element has painted), or at the first interaction anywhere. For an island that
- *    acts by itself, each with its own `next/dynamic` loader and chunk: the language popup, and
+ *    acts by itself, each with its own `React.lazy` loader and chunk: the language popup, and
  *    the motion module (TASK-194), which also carries the header and phone Menu's `Esc` (AC-47;
  *    it replaced TASK-195's `MenuEscape`). The press or focus that reaches the Menu before idle is
  *    a first interaction, so the `Esc` has loaded before it can follow (spec 004 §14
@@ -28,9 +28,10 @@
  * 380 B) on top of its Brotli body against the 131,072 B script budget (spec 004 §14 A1), so a
  * chunk fetched on every page load costs a request even when it is small. A chunk fetched only on
  * input is not part of a page load nobody
- * touches, which is what Lighthouse and `tests/e2e/client-js-budget.spec.ts` measure, and
- * `budget:client-js` models page-load chunks from `next/dynamic`, so these loaders use
- * `React.lazy` and stay out of a model that would charge a chunk the browser never fetches.
+ * touches, which is what Lighthouse and `tests/e2e/client-js-budget.spec.ts` measure, so
+ * `budget:client-js` leaves an interaction island's chunk out of the page load by its `marker`
+ * (`ON_INPUT_CHUNK_MARKERS`) and charges every other lazy chunk a loaded chunk names (TASK-376:
+ * every loader is `React.lazy`, and `next/dynamic`'s runtime is off every page).
  *
  * Every control keeps a native fallback for a tap before its island (clause 3): the Menu is a
  * `<details>`, the language links are `<a>`, the home's sentence is a plain form.
