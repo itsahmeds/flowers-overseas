@@ -3656,3 +3656,5 @@ florist's print instructions (spec 011) name the face, which spec 011 records in
 contrast stays in `tokens/contrast.ts` (WCAG 1.4.3). No data flow; RoPA unchanged.
 
 **Owner.** Spec 042's task 042-2. It keeps the breaker (checkout, font budget).
+
+- **A-founder-2026-10-22b (pointer): the hub band's hero state (spec 008 §14 A-founder-2026-10-22b; no new AC or T id here).** Status: proposed, awaiting the founder's answers to its 5 open questions. The hub band (A23 R1 and R2, A24 clause 2 (c) and clause 5) gains a hero state on occasion hubs: the ground is the hero's ground colour, the copy spans 6 columns from `md` up and is set in `--color-ink`, the lead figure does not render, and the photograph is the page's one priority image at every width. Below `md`, the photograph sits between the back link and the H1 at 16:9. The fallback is the band as it is. `system/components.dc.html` gains the "Hub hero" drawing. The budgets of `lighthouserc.json` are unchanged; the URL set gains `/en/occasions/grandparents-day`.
