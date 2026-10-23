@@ -69,9 +69,10 @@ test.describe("the largest contentful paint is the page's own main content", () 
       const response = await page.goto(`/${locale}`);
       expect(response?.status()).toBe(200);
 
-      // Both islands have to be on screen before the last candidate can be trusted: the consent
-      // sheet is the one that used to win, and the suggestion banner paints in the same corner.
-      await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
+      // The consent sheet used to be the candidate that won (TASK-056). Since spec 004 §14
+      // A-founder-2026-10-19d nothing asks on the committed build, so no sheet can compete: the
+      // network settling is what makes the last candidate trustworthy.
+      await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
       await page.waitForLoadState("networkidle");
       await page.evaluate(
         async () =>

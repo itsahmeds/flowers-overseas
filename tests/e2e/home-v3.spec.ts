@@ -23,6 +23,7 @@
 import { type Page, expect, test } from "@playwright/test";
 
 import { COVER_FADE_RAMP_PX } from "../../src/modules/ui/home/cover-fade.ts";
+import { openConsentSettings } from "../support/consent.ts";
 import { recordLayoutShifts } from "../support/layout-shift.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
@@ -423,8 +424,17 @@ test.describe("T-53 on the home at 390 × 844 (AC-48)", () => {
     }
   });
 
-  test("the consent sheet never covers the bar's action", async ({ page }) => {
+  test("the settings panel from the footer never covers the bar's action", async ({
+    page,
+  }) => {
     await open(page);
+    // The committed build asks nothing (spec 004 §14 A-founder-2026-10-19d): the panel is the
+    // overlay "Cookie settings" opens over the bar.
+    await openConsentSettings(page);
+    // Back to the first screen, where the bar shows; the fixed panel stays where it is.
+    await page.evaluate(() => {
+      scrollTo(0, 0);
+    });
     const sheet = '[data-fo-consent-sheet="fixed"] [data-fo-consent]';
     await expect(page.locator(sheet)).toBeVisible();
     await expect(page.locator(ACTION)).toBeVisible();

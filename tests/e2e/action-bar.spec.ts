@@ -13,6 +13,7 @@
  */
 import { type Page, expect, test } from "@playwright/test";
 
+import { openConsentSettings } from "../support/consent.ts";
 import { recordLayoutShifts } from "../support/layout-shift.ts";
 
 const FIXTURE = "/dev/components/action-bar";
@@ -185,8 +186,17 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
     expect(inBar).toBe(inFlow);
   });
 
-  test("the consent sheet never covers the bar's action", async ({ page }) => {
+  test("the settings panel opened from the footer never covers the bar's action (AC-48 overlay, T-53)", async ({
+    page,
+  }) => {
     await page.goto(FIXTURE);
+    // Nothing asks on the committed build (spec 004 §14 A-founder-2026-10-19d): the overlay that
+    // can stand over the bar is the panel "Cookie settings" opens. The banner's case is the
+    // `consent-active` project's.
+    await openConsentSettings(page);
+    await page.evaluate(() => {
+      scrollTo(0, 0);
+    });
     const sheet = page.locator(
       '[data-fo-consent-sheet="fixed"] [data-fo-consent]',
     );

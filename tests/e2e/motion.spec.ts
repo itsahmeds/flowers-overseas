@@ -31,6 +31,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
+import { openConsentSettings } from "../support/consent.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 const HOME = "/en";
@@ -741,8 +742,10 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
     await page.emulateMedia({ reducedMotion: "reduce" });
     await recordMotions(page);
     await page.goto(HOME);
-    await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
     await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
+    // Nothing asks on the committed build (spec 004 §14 A-founder-2026-10-19d): the panel opened
+    // from the footer is the consent layer's appearance here (AC-6 as amended; T-08).
+    await openConsentSettings(page);
     if (isMobile) await page.locator("[data-fo-menu-summary]").click();
     await page.mouse.wheel(0, 3000);
     await page.waitForTimeout(1200);
@@ -779,7 +782,6 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await recordMotions(page);
     await page.goto(HOME);
-    await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
     await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
     await page.waitForTimeout(1500);
     const motions = await recorded(page);
@@ -801,7 +803,7 @@ test.describe("6. reduced motion (AC-6, T-06): opacity of 120 ms or less only", 
       });
     });
     await page.goto(HOME);
-    await expect(page.locator('[data-fo-consent="shown"]')).toBeVisible();
+    await openConsentSettings(page);
     await page.waitForTimeout(500);
     expect(reducedViolations(await recorded(page))).toContain(
       "opacity 300ms ×1",
@@ -1523,6 +1525,7 @@ test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-
   }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto(SHOP);
+    await openConsentSettings(page);
     const sheet = page.locator('[data-fo-consent-sheet="fixed"]');
     await expect(sheet).toHaveCSS("opacity", "1");
     await expect(sheet).toHaveCSS("transform", "none");
@@ -1544,6 +1547,7 @@ test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.goto(HOME);
     await expect(page.locator("[data-fo-action-bar]")).toHaveCount(1);
+    await openConsentSettings(page);
     const sheet = page.locator('[data-fo-consent-sheet="fixed"]');
     await expect(sheet).toHaveCSS("opacity", "1");
     expect(await closeAndRead(page, "consent")).toEqual({
@@ -1559,6 +1563,7 @@ test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-
   }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(SHOP);
+    await openConsentSettings(page);
     await expect(page.locator('[data-fo-consent-sheet="fixed"]')).toHaveCSS(
       "opacity",
       "1",
@@ -1584,6 +1589,7 @@ test.describe("12. motion 10's close half: the Menu and the consent sheet (TASK-
       });
     });
     await page.goto(SHOP);
+    await openConsentSettings(page);
     await expect(page.locator('[data-fo-consent-sheet="fixed"]')).toHaveCSS(
       "opacity",
       "1",

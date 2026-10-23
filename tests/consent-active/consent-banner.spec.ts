@@ -1,7 +1,23 @@
 /**
- * T-19 / AC-17, T-21 / AC-19, T-22 / AC-20 and the post-accept halves of T-20 / T-23 / T-24
- * (TASK-051): the consent sheet in a real browser, on all four launch locales, in both the
- * desktop and the mobile project.
+ * The `consent-active` project (spec 004 §14 A-founder-2026-10-19d clause 8; TASK-279): the
+ * banner-shown halves of T-19 (AC-17 (b)), T-21 (AC-19 (b)), T-22 (AC-20's equal prominence),
+ * T-11 (AC-9 with a category active) and T-24 (AC-22 after "Accept all"), against a second build
+ * with `NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-FIXTURE00`, where `consentSources()` reports
+ * `active: ["analytics"]` and the banner asks on first view. CI builds and serves it in the
+ * `consent-active` job on `ci:full`.
+ *
+ * **The fixture cannot run silently against the committed configuration**: the first test asserts
+ * the GA4 tag element is in the served HTML. **No request reaches Google**: every request to
+ * `www.googletagmanager.com` or `*.google-analytics.com` is aborted by route interception, and the
+ * suite asserts each was aborted and none answered.
+ *
+ * Moved here from `tests/e2e/consent-banner.spec.ts` (TASK-051's suite), which now tests the
+ * committed build, where nothing asks. Not here yet: AC-17 (b)'s "its box intersects neither the
+ * H1's, the sentence letter's nor the AC-48 bar's", which only the compact form's placement can
+ * meet (clause 4, TASK-281; the runbook's step (a) makes it a precondition of any flip), and its
+ * "`<html>` carries no `data-fo-locale-gate`", which is spec 003's gate (TASK-280).
+ *
+ * The original description, which still holds for every case below:
  *
  * What only a browser can answer, and is therefore here rather than in
  * `tests/unit/consent-islands.test.tsx`:
@@ -37,6 +53,7 @@ import {
   shiftOutside,
 } from "../support/layout-shift.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
+import { GA4_FIXTURE_ID, abortGoogle } from "../support/consent-active.ts";
 
 import { COOKIE_REGISTRY, isRegisteredCookie } from "../../src/config/cookies";
 import { ConsentDecisionSchema } from "../../src/lib/consent";
@@ -169,6 +186,27 @@ function contrastRatio(a: readonly number[], b: readonly number[]): number {
   const darker = Math.min(luminance(a), luminance(b));
   return (lighter + 0.05) / (darker + 0.05);
 }
+
+test.beforeEach(async ({ page }) => {
+  await abortGoogle(page);
+});
+
+test.describe("the fixture (clause 8)", () => {
+  test("the served HTML carries the GA4 tag, so this is the consent-active build", async ({
+    page,
+  }) => {
+    const google = await abortGoogle(page);
+    const response = await page.goto("/en");
+    const html = await response!.text();
+    expect(html).toContain(
+      `https://www.googletagmanager.com/gtag/js?id=${GA4_FIXTURE_ID}`,
+    );
+    await page.waitForLoadState("networkidle");
+    // The tag was asked for, and the request was aborted, never answered.
+    expect(google.aborted.length).toBeGreaterThan(0);
+    expect(google.answered).toEqual([]);
+  });
+});
 
 test.describe("the sheet appears without disturbing the page (AC-17)", () => {
   for (const locale of LOCALES) {
@@ -741,12 +779,12 @@ test.describe("post-decision: the register and the third-party silence hold", ()
       .filter((name) => !name.startsWith("_vercel"));
     expect(names).toContain("fo_consent");
     expect(names.filter((name) => !isRegisteredCookie(name))).toEqual([]);
-    // Accepting analytics with no measurement id configured sets no analytics cookie: the tag
-    // does not exist to set one (AC-21).
+    // Accepting analytics sets no analytics cookie here: the fixture's tag is aborted before it
+    // can run (clause 8), so nothing but our own `fo_*` cookies can exist.
     expect(names.filter((name) => name.startsWith("_ga"))).toEqual([]);
   });
 
-  test("accepting requests no third-party origin while GA4 is unset (T-23's second half)", async ({
+  test("accepting requests no third-party origin but the aborted GA4 tag (T-23's second half)", async ({
     page,
     baseURL,
   }) => {
@@ -775,13 +813,16 @@ test.describe("post-decision: the register and the third-party silence hold", ()
       ...new Set(
         requested
           .map((url) => new URL(url).origin)
-          .filter((origin) => origin !== base.origin && !allowed.has(origin)),
+          .filter((origin) => origin !== base.origin && !allowed.has(origin))
+          // The fixture's tag, aborted in the route (`abortGoogle`): asked for, never answered.
+          .filter(
+            (origin) =>
+              origin !== "https://www.googletagmanager.com" &&
+              !origin.endsWith(".google-analytics.com"),
+          ),
       ),
     ];
     expect(thirdParty).toEqual([]);
-    expect(requested.filter((url) => url.includes("googletagmanager"))).toEqual(
-      [],
-    );
   });
 
   test("the default-denied block is still the first `dataLayer` entry (T-20's second half)", async ({
