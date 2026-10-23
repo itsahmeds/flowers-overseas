@@ -51,7 +51,8 @@
     "every URL that is not a product address, the third 133 120 B for product addresses only. The",
     "product pattern names each locale's `product` segment (`pathSegments.product`) and is pinned",
     "against the registry by `tests/unit/product-script-budget.test.ts`, so it cannot widen to a",
-    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here."
+    "listing. LHCI refuses `assertions` beside `assertMatrix`, which is why the budgets moved here.",
+    "**Temporary (spec 004 §14 A-founder-2026-10-23, founder option A):** the script assertions below read 132 096 B (product 134 144 B), 1 KiB above the budget stated here, while Next 16.4.2 lands (TASK-375 measured 131 428 B from the framework alone). TASK-376 trims the script and restores 131 072 B and 133 120 B."
   ],
   "ci": {
     "collect": {
@@ -122,7 +123,7 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 131072
+                "maxNumericValue": 132096
               }
             ]
           }
@@ -133,7 +134,7 @@
             "resource-summary:script:size": [
               "error",
               {
-                "maxNumericValue": 133120
+                "maxNumericValue": 134144
               }
             ]
           }

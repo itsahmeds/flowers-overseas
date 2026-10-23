@@ -8,7 +8,7 @@
     "Regenerate deliberately with `pnpm budget:client-js --update-baseline` and say in the PR",
     "which import moved the number."
   ],
-  "budgetBytes": 131072,
+  "budgetBytes": 132096,
   "regressionAllowanceBytes": 5120,
   "routes": {
     "/en": 124387,

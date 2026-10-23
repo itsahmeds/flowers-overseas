@@ -80,11 +80,11 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@next/env": "16.3.8",
-    "@sentry/nextjs": "^10.73.0",
+    "@next/env": "16.4.2",
+    "@sentry/nextjs": "^10.75.3",
     "drizzle-orm": "^0.45.2",
     "libphonenumber-js": "^1.13.14",
-    "next": "16.3.8",
+    "next": "16.4.2",
     "next-auth": "5.0.0-beta.32",
     "next-intl": "4.14.2",
     "pg-boss": "12.37.1",
@@ -112,7 +112,7 @@
     "drizzle-kit": "^0.31.10",
     "entities": "8.1.0",
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.8",
+    "eslint-config-next": "16.4.2",
     "eslint-config-prettier": "^10.1.8",
     "fast-xml-parser": "^5.11.1",
     "husky": "^9.1.7",
