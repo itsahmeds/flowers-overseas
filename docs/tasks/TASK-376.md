@@ -41,7 +41,9 @@ here.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR #363. `next/dynamic` left the four island loaders (motion, language popup, consent sheet, consent settings panel) for `React.lazy`; its runtime was 1 272 B Brotli of the layout loader chunk on every page. Lighthouse script transfer on all 16 URLs: 131 428 B (main, Next 16.4.2) to **130 060 B** (CI run 40014204409), 1 012 B inside the restored **131 072 B** (product 133 120 B). Every temporary number is back: `CLIENT_JS_BUDGET_BYTES = 128 * 1024`, both lighthouserc assertions, the baseline fixture, the unit pins and the 132_000 synthetic chunk; the lighthouserc "Temporary" line is gone. `budget:client-js` now takes lazy candidates from Turbopack's loader stubs less `ON_INPUT_CHUNK_MARKERS` (only `next/dynamic` writes `react-loadable-manifest.json`); on CI's 16.4.2 build it charges `/en` exactly the old set, and the e2e equality check passed on every URL with the new build. Tests: unit +4 parser cases (TASK-375 carry-forward), +4 lazy-candidate cases, +1 deferred-set guard (no `next/dynamic` under `src/`), `use-hydrated.test.tsx` (3), pins updated in `deferred-set`, `locale-gate`, `client-js-budget`, `product-script-budget`. No local build (the build needs a seeded Postgres): CI measured.
 
-_Pending._
+Carry-forwards:
+- **PR 352 (TASK-279) and PR 357 (TASK-280)** both edit `ConsentBannerLoader.tsx` / `ConsentBannerIsland.tsx`. Whichever merges second rebases onto `React.lazy` (no `next/dynamic`; the deferred-set test fails on it). In 352's no-prompt mode the consent island is fetched only on a click, so its chunk then needs an on-input entry in `ON_INPUT_CHUNK_MARKERS` (conditional on the prompt), or `tests/e2e/client-js-budget.spec.ts` reports it "charged and not fetched".
+- The flight payload of 16.4 also dedupes export names into rows (`I[317756,["$2","$1b"],"$28"]`, row `28:"ConsentBannerLoader"`), so the printed "client references" list shows `$28` for some names. Cosmetic (names are printed only); resolve string rows when the parser is next touched.
+- CI `audit` is red on main too: zod < 4.6.6, GHSA-mrhx-c7xc-m3w5 (high). Not this task's scope; needs its own bump task.
