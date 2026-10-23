@@ -40,7 +40,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: T-63 unit cases written red (93fa9867); `SUBSET_RANGES` moved, `pnpm fonts:build` re-run, six `localFont` ranges and T-64 e2e case updated (ee075b38). A rebuild with main's ranges from today's upstream reproduced main's ten files byte for byte, so every byte delta below is the range move alone. Draft PR 360.
+- 2026-10-24: proof PRs opened, both `ci:full`, never to merge: PR 361 (PR 360 + PR 328 merged on top: AC-59 (d) on `/pl` with Polish nav) and PR 362 (main + the new `fonts.spec.ts` only: T-64 red on main's ranges). Close both once they report.
 
 ## Result
 
