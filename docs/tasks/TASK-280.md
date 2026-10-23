@@ -53,4 +53,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#357](https://github.com/itsahmeds/flowers-overseas/pull/357), stacked on #352. `languageOffer()` (routing barrel), the decision's third condition (`reason: "hint"`), the server half and `<html data-fo-locale-gate>` only where an offer exists: on today's registry none, so no popup, no chunk, no gate, no `fo_locale` write. Tests: unit matrix rewritten (`i18n-hints`), `i18n-language-offer.test.tsx` (15), `app-shell` gate cases, `locale-gate` no-gate case, barrel pin; e2e `language-popup.spec.ts` restated as AC-28 (a) (8 page×size cases × 4 language sets + `cf-ipcountry`), T-60 resource half in `deferred-chunks`; popup visual baselines and axe case deleted; consent-active first-visit block asserts no gate. Handed on: T-28 (c)/(d) browser/jsdom cases and the bar (escalation).
