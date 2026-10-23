@@ -1218,7 +1218,7 @@
       "file": "wireframes/admin-catalogue-import-desktop.dc.html",
       "title": "admin catalogue import · desktop · spec 012b slice A.2",
       "x": 0,
-      "y": 554597,
+      "y": 593920,
       "w": 1440,
       "h": 12506
     },
@@ -1226,7 +1226,7 @@
       "file": "wireframes/admin-catalogue-import-mobile.dc.html",
       "title": "admin catalogue import · mobile · spec 012b slice A.2",
       "x": 1520,
-      "y": 554597,
+      "y": 593920,
       "w": 390,
       "h": 15097
     },
@@ -1234,7 +1234,7 @@
       "file": "flows/admin-florist-price-list.dc.html",
       "title": "Flow · a florist's price list · list → template → upload → check → reasons → apply → photos → approve → activate → publish (spec 012b A.2)",
       "x": 0,
-      "y": 569994,
+      "y": 609317,
       "w": 1440,
       "h": 2575
     }
@@ -1696,21 +1696,21 @@
       "text": "Basket and customer accounts, 2026-10-22 (spec 010 and spec 018, A-founder-2026-10-22): the basket page, the account pages and the two account emails. The basket's checkout, confirmation, product and header changes are the 2026-10-22 sections at the foot of those artboards."
       "id": "s012b-a2-head",
       "x": 0,
-      "y": 554431,
+      "y": 593754,
       "w": 1400,
       "text": "Spec 012b · slice A.2, bulk upload (2026-10-21, founder “bulk defaults”). One florist's bouquets, sizes, text and prices from one CSV or Excel file: template or their current list, upload, check every row, a reason per warning, Apply all or nothing, photos by file name."
     },
     {
       "id": "s012b-admin-catalogue-import",
       "x": 0,
-      "y": 554551,
+      "y": 593874,
       "w": 1400,
       "text": "Spec 012b · Admin · Catalogue import: upload, check with errors (Apply absent), ready with reasons, applied report, photo step; refused files, changed since the check, expired, applied twice."
     },
     {
       "id": "s012b-a2-flow",
       "x": 0,
-      "y": 569948,
+      "y": 609271,
       "w": 1400,
       "text": "Spec 012b · Flow: a florist's price list, from their email to their bouquets on the Polish shop."
     }
