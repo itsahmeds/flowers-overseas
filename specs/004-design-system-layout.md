@@ -3664,3 +3664,12 @@ contrast stays in `tokens/contrast.ts` (WCAG 1.4.3). No data flow; RoPA unchange
 - The script budget is **132 096 B (129 KiB)** for every URL that is not a product address, and **134 144 B** for product addresses (the product allowance stays budget + 2 KiB, §14 product-page rule). `CLIENT_JS_BUDGET_BYTES` in `scripts/client-js-budget.ts`, the two `resource-summary:script:size` assertions in `lighthouserc.json` and their unit pins move together in TASK-375.
 - **The raise is temporary.** TASK-376 trims the script back under 131 072 B and restores the original budget; the 1 KiB is headroom for the bump only, never for new features.
 - Nothing else in AC-24 changes: Brotli transfer, all 16 URLs, the same measurement.
+
+**A-founder-2026-10-23 (pointer): the colophon names Flowers Overseas LLC, with a VAT ID only where one is issued (spec 041 §14 A-founder-2026-10-23; ADR-0021, superseding ADR-0004; §3 L125; §5.1 table row `company.ts`; §5.3 "Footer"; AC-9 and T-11 amended; no new id).**
+
+The ruling, the facts and the tests are spec 041's. This spec owns the footer.
+- **§3 L125.** "`Organization` schema needs the OÜ's registry data, which does not exist" reads "`Organization` is specs 007 and 041's, and it reads `company.ts` (spec 041 AC-36)".
+- **§5.1, the `company.ts` row.** "founder data after OÜ registration (`plan/09` 1 Nov)" reads "Flowers Overseas LLC's registry data (ADR-0021)".
+- **`CompanySchema`.** `registered: true` requires the legal name, the register, the registration number and the address. The VAT ID is required only where one is issued (spec 041 AC-35).
+- **AC-9 amended.** It adds: "With the committed config (`registered: true`, no `vatId`), the company block renders `company.operatedBy` with `legalName`, the one-line address with region and country, and `registrationNumber`, and no VAT clause, exactly as spec 041 AC-36 (a) states. A fixture with `registered: true` and no `vatId` parses." The rest of AC-9 is unchanged.
+- **T-11 amended.** Spec 041 T-38's colophon cases run as named cases of T-11. Red when `companyIdentity()` again requires `vatId`.

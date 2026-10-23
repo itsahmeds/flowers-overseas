@@ -535,3 +535,14 @@ Corrected:
 **Changed acceptance criteria:** AC-9, AC-28, AC-34. **Added:** AC-46 (AC-44 and AC-45 are skipped because the index already lists spec 010's AC-44 and AC-45 cited in this file). **Changed test cases:** T-09, T-28, T-33. **Added:** T-46.
 **Copy:** `postPurchase.cancelLine` is the founder's approved wording, `proposed` until the copy batch attests it; the four `cancelConfirm*` keys are new and `proposed`. No em dash; `RELAY_PATTERNS` finds nothing in them (AC-38).
 **Design:** the confirmation artboards (`confirmation-*.dc.html`, the `.s13-cancel` panel) are redrawn by the designer with the line at the foot of the block before the launch slice's task 2 builds it; the orchestrator re-runs `pnpm specs:index`.
+
+**A-founder-2026-10-23 (pointer): the invoice issuer is Flowers Overseas LLC (ADR-0021, superseding ADR-0004; spec 041 §14 A-founder-2026-10-23 clauses 3, 4 and 6; header ADR row; §2 "Invoices", "Issuer identity"; AC-17 and T-17 amended; no new id).**
+
+This pointer decides no VAT treatment. Whether and where the LLC registers for VAT, and what the invoice's VAT lines show, is the accountant's answer in `docs/compliance/vat-signoff.md` (ADR-0021).
+- **ADR row.** "ADR-0004 (Estonian OÜ, the invoice issuer)" reads "ADR-0021 (Flowers Overseas LLC, Wyoming, the invoice issuer; supersedes ADR-0004)".
+- **Issuer identity.** The issuer snapshot (`InvoiceSnapshotV1.issuer`) takes `legalName`, `registryName`, `registrationNumber` and the address with region and country from `src/config/company.ts`.
+  - VAT IDs come only from the issuer's `tax_registration` rows, never from `company.ts`'s `vatId` and never invented.
+  - The snapshot carries no person's name and no EIN. No law known to the spec writer requires an EIN on an invoice (Directive 2006/112/EC Art. 226(3) asks for a VAT identification number, which an EIN is not).
+  - "plus the OÜ's VAT registrations held as data" reads "plus the issuer's VAT registrations held as data".
+- **AC-17.** "the issuer legal name, registry code, EE and PL VAT IDs and address" reads "the issuer legal name, register and registration number, address with region and country, and the VAT ID of each `tax_registration` the profile names (the fixture holds one PL registration; no EE number exists)". **T-17** follows it.
+- **Unchanged.** `INVOICE_ISSUER_INCOMPLETE` keeps its meaning (`company.registered` false, or no `tax_registration` for the profile's country), so no invoice issues before the accountant's answer creates a registration.
