@@ -20,7 +20,12 @@ import { useTranslations } from "next-intl";
 import { type PopupCandidate } from "../hints.ts";
 import { documentFallbackLocale } from "../registry.ts";
 import { localeBetaTag } from "../review.ts";
-import { type PageType, localePath, shownLocales } from "../routing.ts";
+import {
+  type PageType,
+  languageOffer,
+  localePath,
+  shownLocales,
+} from "../routing.ts";
 
 import { LanguagePopupLoader } from "./LanguagePopupLoader.tsx";
 import { languagePopupCopy } from "./languagePopupCopy.ts";
@@ -57,6 +62,27 @@ export function LanguagePopup({
   pageLang,
   pageType = "home",
 }: LanguagePopupProps) {
+  // Spec 003 §14 A-founder-2026-10-19d clause 1 (i): where no other language can be offered, the
+  // server half renders nothing — no loader, so the island's chunk is never requested — and the
+  // layout serves no `data-fo-locale-gate` (`src/app/[locale]/layout.tsx`). On today's registry that is every page.
+  const offer = languageOffer(locale);
+  if (offer.length === 0) return null;
+  return (
+    <PopupServerHalf
+      locale={locale}
+      offer={offer}
+      pageLang={pageLang}
+      pageType={pageType}
+    />
+  );
+}
+
+function PopupServerHalf({
+  locale,
+  pageLang,
+  pageType,
+  offer,
+}: Required<LanguagePopupProps> & { offer: readonly string[] }) {
   const popup = useTranslations("languagePopup");
   const a11y = useTranslations("a11y");
   const common = useTranslations("common");
@@ -70,6 +96,7 @@ export function LanguagePopup({
       })}
       defaultLocale={documentFallbackLocale().code}
       locale={locale}
+      offer={offer}
       pageLang={pageLang}
     />
   );

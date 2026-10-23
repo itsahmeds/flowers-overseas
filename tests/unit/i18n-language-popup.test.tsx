@@ -32,6 +32,7 @@ import {
   withLocaleRegistry,
 } from "../../src/modules/i18n/registry.ts";
 import { decideLanguagePopup } from "../../src/modules/i18n/hints.ts";
+import { languageOffer } from "../../src/modules/i18n/routing.ts";
 import { popupCandidates } from "../../src/modules/i18n/ui/LanguagePopup.tsx";
 import {
   ALTERNATES_ATTRIBUTE,
@@ -176,14 +177,15 @@ describe("popupCandidates (the props the island renders)", () => {
     ]);
   });
 
-  it("highlights nothing beyond English's default mark for a German browser on /en (AC-46)", () => {
+  it("opens nothing for a German browser on /en while `de` is hidden, and the body still lists only the shown locales (AC-46 as A-founder-2026-10-19d amends it)", () => {
     const decision = decideLanguagePopup({
       urlLocale: "en",
       languages: ["de-DE", "de"],
       cookie: null,
       candidates: popupCandidates(),
+      offer: languageOffer("en"),
     });
-    expect(decision).toEqual({ open: true, current: "en", hint: null });
+    expect(decision).toEqual({ open: false, reason: "hint" });
     const html = renderToStaticMarkup(
       <PopupBody
         candidates={popupCandidates()}
@@ -201,14 +203,15 @@ describe("popupCandidates (the props the island renders)", () => {
       [...html.matchAll(/data-fo-language-option="([^"]+)"/g)].map((m) => m[1]),
     ).toEqual(["en", "en-gb"]);
     expect(html).not.toContain('data-fo-mark="hint"');
-    // The same German browser on a registry that shows `de` would be highlighted: the hint is
-    // gone because `de` is hidden, not because the hint code is broken.
+    // The same German browser on a registry that shows `de` is offered Deutsch: it stays closed
+    // because `de` is hidden, not because the hint code is broken.
     expect(
       decideLanguagePopup({
         urlLocale: "en",
         languages: ["de-DE", "de"],
         cookie: null,
         candidates: fourCandidates,
+        offer: ["de", "pl"],
       }),
     ).toEqual({ open: true, current: "en", hint: "de" });
   });

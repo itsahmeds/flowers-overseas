@@ -68,6 +68,8 @@ const PINNED_EXPORTS = [
   "fallbackChain",
   "getLocaleRegistry",
   "isLaunchLocale",
+  // Spec 003 §14 A-founder-2026-10-19d (AC-3 as amended; TASK-280): what the popup may offer.
+  "languageOffer",
   "launchLocale",
   "launchLocaleCodes",
   "launchLocales",
