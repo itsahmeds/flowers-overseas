@@ -14,8 +14,8 @@
  * Moved here from `tests/e2e/consent-banner.spec.ts` (TASK-051's suite), which now tests the
  * committed build, where nothing asks. Not here yet: AC-17 (b)'s "its box intersects neither the
  * H1's, the sentence letter's nor the AC-48 bar's", which only the compact form's placement can
- * meet (clause 4, TASK-281; the runbook's step (a) makes it a precondition of any flip), and its
- * "`<html>` carries no `data-fo-locale-gate`", which is spec 003's gate (TASK-280).
+ * meet (clause 4, TASK-281; the runbook's step (a) makes it a precondition of any flip). Its
+ * "`<html>` carries no `data-fo-locale-gate`" is the first-visit block below (TASK-280).
  *
  * The original description, which still holds for every case below:
  *
@@ -725,25 +725,37 @@ test.describe("a forged or stale cookie is no consent (AC-19)", () => {
   }
 });
 
-test.describe("the language popup is asked first (spec 003 §14 A14 as amended by A16, AC-28 (f))", () => {
-  // A first visit: no `fo_locale`, so the popup opens and the sheet must wait for it.
+test.describe("a first visit: no popup to wait for (AC-17 (b), spec 003 AC-28 (f) as A-founder-2026-10-19d amends it)", () => {
+  // A first visit: no `fo_locale`. The committed registry offers no other language anywhere, so
+  // `<html>` carries no gate and the sheet does not wait on a popup that cannot open (TASK-280).
   test.use({ storageState: NO_LOCALE_CHOICE });
 
-  test("the sheet stays off screen while the popup is open, and appears once it closes", async ({
-    page,
-  }) => {
-    await emptyLanguages(page);
-    await page.goto("/");
-    const popup = page.locator("dialog[data-fo-language-popup][open]");
-    await expect(popup).toBeVisible();
-    // Long enough for the consent island's chunk to have loaded and decided.
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator(SHOWN)).toHaveCount(0);
-
-    await page.locator("[data-fo-language-popup-close]").click();
-    await expect(popup).toHaveCount(0);
-    await expect(page.locator(SHOWN)).toBeVisible();
-  });
+  for (const locale of LOCALES) {
+    for (const size of [
+      { width: 1440, height: 900 },
+      { width: 390, height: 844 },
+    ] as const) {
+      test(`/${locale} at ${String(size.width)} × ${String(size.height)}: no gate, no popup, and the sheet shows`, async ({
+        page,
+      }) => {
+        await page.setViewportSize(size);
+        await page.addInitScript(() => {
+          Object.defineProperty(navigator, "languages", {
+            configurable: true,
+            get: () => ["de-DE", "de"],
+          });
+        });
+        await page.goto(`/${locale}`);
+        await expect(page.locator(SHOWN)).toBeVisible();
+        expect(
+          await page.evaluate(() =>
+            document.documentElement.getAttribute("data-fo-locale-gate"),
+          ),
+        ).toBeNull();
+        await expect(page.locator("[data-fo-language-popup]")).toHaveCount(0);
+      });
+    }
+  }
 
   test("a returning visitor gets the sheet straight away, with no popup in front of it", async ({
     page,

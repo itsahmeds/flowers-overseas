@@ -26,8 +26,6 @@ import { fileURLToPath } from "node:url";
 
 import { type BrowserContext, type Page, expect, test } from "@playwright/test";
 
-import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
-
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
   { name: "desktop", width: 1440, height: 900 },
@@ -139,39 +137,9 @@ for (const { name, path, status } of DOCUMENTS) {
   }
 }
 
-/**
- * The language popup open on `/en` (spec 003 AC-30 as §14 A16 restates it, T-30; spec 004 §14
- * A23 AC-39; TASK-119): a first visit, so no `fo_locale`, at the two artboard widths of
- * `docs/design/wireframes/locale-popup-{mobile,desktop}.dc.html`. The browser asks for British
- * English, which is the artboards' drawn state: English current and default, English (UK)
- * highlighted. The frame is the viewport, because the popup is fixed to it: a top sheet at 390 and
- * a centred card over the dimmed page at 1440. `/ar-XB` is `./pseudo-rtl.spec.ts`.
- */
-test.describe("the language popup", () => {
-  test.use({ storageState: NO_LOCALE_CHOICE });
-
-  for (const viewport of VIEWPORTS) {
-    test(`matches the ${viewport.name} baseline`, async ({ page }) => {
-      await page.setViewportSize(viewport);
-      await page.addInitScript(() => {
-        Object.defineProperty(navigator, "languages", {
-          configurable: true,
-          get: () => ["en-GB", "en"],
-        });
-      });
-
-      await page.goto("/en");
-      const popup = page.locator("dialog[data-fo-language-popup][open]");
-      await expect(popup).toBeVisible();
-      await settle(page);
-      await expect(page.locator('[data-fo-consent="shown"]')).toHaveCount(0);
-
-      await expect(page).toHaveScreenshot(
-        `language-popup-${viewport.name}.png`,
-      );
-    });
-  }
-});
+// The language popup's baselines are deleted (spec 003 §14 A-founder-2026-10-19d, AC-30; spec 004
+// AC-27 as amended; TASK-280): on the committed registry no page offers another language, so the
+// popup never opens. The slim bar's task adds the bar's.
 
 /**
  * The two 500 documents and the component gallery — AC-27's last three rows (TASK-056).

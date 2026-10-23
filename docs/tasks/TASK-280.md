@@ -38,7 +38,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-23 (implementer, to the orchestrator): T-28 (c) and (d) ask for component tests of the island under the fixture "jsdom, `fetch` spied". The repository has no DOM test environment (no `jsdom` or `happy-dom` in `package.json`; the unit project is `environment: "node"`), and the browser e2e that covered closing and choosing cannot reach the dialog any more because the committed registry never opens it. Adding `jsdom` is a dependency decision. Until then (c) and (d) stand on the pure pieces (`decideLanguagePopup`, `serialiseLocaleCookie`, `linkedCandidates`, `PopupBody`'s anchors, the source pin that the island has no `fetch`); the slim bar's task replaces the dialog and owns its browser cases. `open`.
 
 ## Progress
 
@@ -46,7 +46,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-23: worktree `../fo-wt-280`, branch `task/TASK-280-language-popup`, **stacked on PR 352** (TASK-279's branch): both rewrite the same consent and popup suites, so a branch from `origin/main` would conflict file by file. `languageOffer()` in the barrel, the decision's third condition, the conditional server half and gate attribute, the unit matrix and offer tests, the e2e restatement (AC-28 (a)), popup baselines and a11y case deleted, runbook §10 guard. Next: gates, a local run of the e2e, PR.
 
 ## Result
 

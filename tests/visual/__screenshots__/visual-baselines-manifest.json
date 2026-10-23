@@ -1,7 +1,6 @@
 {
   "platform": "linux",
   "files": {
-    "pseudo-rtl/ar-XB-language-popup.png": "f2378c77eb6948c8aa3eab88d0cf2c5637b67d860cb436fb4b0ff6e0721ad1fc",
     "pseudo-rtl/ar-XB.png": "460fea897f5b2af94cd3ec4f12876d7a2c4c985251c9390496df3c47407ff43e",
     "visual/all-destinations-desktop-head.png": "7911dd3cccb360f08dec0938c4f32666fe28cbe9a7f3a4e1944e274f5236632e",
     "visual/all-destinations-desktop-region.png": "5d22a7f26cf6f7ad70e301f9c498a5a57a718e03ec93d2a33c8203b563599f11",
@@ -70,8 +69,6 @@
     "visual/home-mobile-trending.png": "47a983b693bc69ccaaa1cc2e738f0a75f307ee5e9ad00f4b5456b08463db4e7a",
     "visual/home-pl-desktop.png": "0eeb804f853092d198bc9b46b183c48ab49af3d0fa53b68279c0aa7e8305fedf",
     "visual/home-pl-mobile.png": "4421b036d8810f10a8d6ae363b54b1904dfc40020cbab81bca28ca6ddb16840c",
-    "visual/language-popup-desktop.png": "554eb09001c3c3a9fb861dba04977731d9bf2a0d0e2bc17bd6309f3e6264c809",
-    "visual/language-popup-mobile.png": "4617c52df04bcad472b6ec59087d143bb9c9f27663842071ad5246e49eb8965c",
     "visual/laptop-category-hub.png": "536c7bd1e89fc413ed169c1fb0012567c9e5f4749434b6ee3c7efe5dacc3433d",
     "visual/laptop-country-category.png": "2320adfa1092091ccbf622ca90ce136feb5e6296eadca4293eaddd1559cce906",
     "visual/laptop-country-shop.png": "c4b7bc88a9aba0bd0c57f2b076ad48c97030fa0afca31e807f44e1d52ddd8e57",
