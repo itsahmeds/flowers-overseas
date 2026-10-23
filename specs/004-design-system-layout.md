@@ -3725,3 +3725,12 @@ Status: approved 2026-10-21 on the founder's choice "Our own dropdown on desktop
 Open for the founder (defaults bind until answered):
 - **Q1: Do the site's other native selects (the listing "Sort by", checkout and account fields) get the same listbox?** Default: no. This amendment is the sentence only (clause 12). If the founder wants it everywhere, the component moves to `src/modules/ui/primitives/` as a new row against the listing and checkout specs, not by widening this task.
 - **Q2: If the home cannot fit 3,072 B inside the script budget, what gives?** Default: the task escalates with the measured number, the budget is not raised (A1), and the fallback is loading the enhancement on first pointer movement over the sentence (after the LCP, so the native select serves the first interaction) instead of on idle. The founder can instead say "raise the budget by that amount".
+
+**A-founder-2026-10-23 (pointer): the colophon names Flowers Overseas LLC, with a VAT ID only where one is issued (spec 041 §14 A-founder-2026-10-23; ADR-0021, superseding ADR-0004; §3 L125; §5.1 table row `company.ts`; §5.3 "Footer"; AC-9 and T-11 amended; no new id).**
+
+The ruling, the facts and the tests are spec 041's. This spec owns the footer.
+- **§3 L125.** "`Organization` schema needs the OÜ's registry data, which does not exist" reads "`Organization` is specs 007 and 041's, and it reads `company.ts` (spec 041 AC-36)".
+- **§5.1, the `company.ts` row.** "founder data after OÜ registration (`plan/09` 1 Nov)" reads "Flowers Overseas LLC's registry data (ADR-0021)".
+- **`CompanySchema`.** `registered: true` requires the legal name, the register, the registration number and the address. The VAT ID is required only where one is issued (spec 041 AC-35).
+- **AC-9 amended.** It adds: "With the committed config (`registered: true`, no `vatId`), the company block renders `company.operatedBy` with `legalName`, the one-line address with region and country, and `registrationNumber`, and no VAT clause, exactly as spec 041 AC-36 (a) states. A fixture with `registered: true` and no `vatId` parses." The rest of AC-9 is unchanged.
+- **T-11 amended.** Spec 041 T-38's colophon cases run as named cases of T-11. Red when `companyIdentity()` again requires `vatId`.
