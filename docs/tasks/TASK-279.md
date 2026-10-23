@@ -62,7 +62,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-23: worktree `../fo-wt-279`, branch `task/TASK-279-consent-and-menu` (also closes TASK-282; TASK-280 is its own PR per the orchestrator's order). Reader `consentSources()` + unit table, layout wiring, loader/island prompt and footer activation, `consentEscape.ts` written. Next: unit tests for the Esc stack and layout render, e2e restatement, `consent-active` project and CI job, Menu (TASK-282).
 
 ## Result
 

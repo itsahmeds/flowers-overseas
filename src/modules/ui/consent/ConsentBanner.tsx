@@ -9,8 +9,11 @@
  * and a key that does not resolve fails `pnpm i18n:check`.
  *
  * Rendered once by `src/app/[locale]/layout.tsx`, which is what makes "once per locale document"
- * true. The island waits for the language popup: the popup is asked first and the two are never
- * on screen together (spec 003 §14 A14 as amended by A16; the gate in `ConsentBannerIsland.tsx`).
+ * true. Whether the sheet asks at all is the layout's `prompt`, from the one reader
+ * `consentSources()` (spec 004 §14 A-founder-2026-10-19d clause 1; TASK-279): with no consent
+ * source active, nothing mounts until "Cookie settings" is activated (`ConsentBannerLoader`). The
+ * island waits for the language popup: the popup is asked first and the two are never on screen
+ * together (spec 003 §14 A14 as amended by A16; the gate in `ConsentBannerIsland.tsx`).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
@@ -19,16 +22,22 @@ import { ConsentBannerLoader } from "./ConsentBannerLoader";
 import { type ConsentTranslate, consentView } from "./consentView";
 
 /**
- * No props: the locale is the request's, published by `setRequestLocale()` in the layout, and the
- * register is global. A `locale` prop would be a second source of truth for something the
- * translator already knows — `SiteFooter` takes one only because it builds locale-prefixed hrefs.
+ * One prop: whether a consent source is active (`consentPrompt(consentSources(process.env))`,
+ * decided by the layout). The locale is the request's, published by `setRequestLocale()` in the
+ * layout, and the register is global. A `locale` prop would be a second source of truth for
+ * something the translator already knows — `SiteFooter` takes one only because it builds
+ * locale-prefixed hrefs.
  */
-export function ConsentBanner(): ReactElement {
+export function ConsentBanner({
+  prompt,
+}: {
+  readonly prompt: boolean;
+}): ReactElement {
   const translate = useTranslations();
   // The one cast, and the same one `SiteFooter` makes: config-supplied keys
   // (`consent.cookies.ga.purpose`) are strings, the translator's parameter is the catalogue's key
   // union, and `pnpm i18n:check` reads the same register to prove every one of them resolves.
   const narrowed: ConsentTranslate = (key, values) =>
     translate(key as Parameters<typeof translate>[0], values);
-  return <ConsentBannerLoader view={consentView(narrowed)} />;
+  return <ConsentBannerLoader prompt={prompt} view={consentView(narrowed)} />;
 }
