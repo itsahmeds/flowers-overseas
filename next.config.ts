@@ -147,7 +147,14 @@ const nextConfig: NextConfig = {
   // `unauthorized()` and `forbidden()` (spec 012 AC-1, AC-4; TASK-217): the admin guard answers a
   // server action or route handler without a session with a 401, and one without the permission
   // with a 403, rendered by `src/app/admin/unauthorized.tsx` and `forbidden.tsx`.
-  experimental: { authInterrupts: true },
+  //
+  // `turbopackSharedRuntime: false` (TASK-375): Next 16.4 defaults it to `true`, which writes a
+  // per-route `<script id="_R_">` (the chunk-group bootstrap) into every document. That inline
+  // script is not a flight push, so the per-response policy never hashes it and an enforcing
+  // policy blocks it; it also moves chunks out of the document's `<script src>` list, which
+  // `budget:client-js` reads. Next 16.3 left it off; this keeps the markup the CSP and the budget
+  // were built against.
+  experimental: { authInterrupts: true, turbopackSharedRuntime: false },
   // The enforced Content-Security-Policy of every cached HTML document (spec 004 §14 A2,
   // ADR-0016; TASK-058). Next's own file-system cache, extended to stamp each `APP_PAGE` entry
   // with the static policy above plus the `'sha256-…'` of that document's flight blocks — the
