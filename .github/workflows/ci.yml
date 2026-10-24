@@ -1895,13 +1895,18 @@ jobs:
           fi
           echo "- checkout database: migrated, seeded insert-only, \`checkout.open\` on for PL" >> "$GITHUB_STEP_SUMMARY"
       # The same build again, on port 3100, with the database (process env wins over the
-      # `.env.local` placeholders `serve.sh` copies).
+      # `.env.local` placeholders `serve.sh` copies). `next start` is a production Node process,
+      # which never signs a price with the committed development key (`quoteSigningSecret`), so
+      # this origin gets a random quote key of its own, made here and never stored.
       - name: Serve the database-backed origin for the checkout (TASK-208)
         env:
           PREVIEW_PORT: "3100"
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/fo_e2e
           DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/fo_e2e
-        run: bash ./.github/actions/preview-origin/serve.sh
+        run: |
+          QUOTE_SIGNING_SECRET="$(openssl rand -hex 32)"
+          export QUOTE_SIGNING_SECRET
+          bash ./.github/actions/preview-origin/serve.sh
       - run: pnpm exec playwright install --with-deps chromium
       - name: pnpm test:e2e (shard ${{ matrix.shard }} of 3)
         env:
