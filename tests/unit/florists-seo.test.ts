@@ -5,9 +5,8 @@
  * T-09 / AC-9 (the header and footer link to the landing) and the robots disallows.
  *
  * The committed English landing is reviewed here through a corpus overlay (as
- * `info-pages-sitemap.test.ts` does for help); the English walkthrough is read as committed
- * (`reviewed: true`, the founder's "walkthrough ok" of 2026-10-24), and the `de`/`pl` drafts as
- * committed (`reviewed: false`), so both sides of the rule are read from real files in one run.
+ * `info-pages-sitemap.test.ts` does for help), and the walkthrough is left as committed
+ * (`reviewed: false`), so both sides of the rule are read from real files in one run.
  */
 import { describe, expect, it, vi } from "vitest";
 
@@ -153,19 +152,15 @@ describe("T-05 / AC-5: the rule, over every combination", () => {
 });
 
 describe("T-05 / AC-5: what the committed files make of it", () => {
-  it("indexes the reviewed English landing and walkthrough, and nothing a draft holds", () => {
+  it("indexes the reviewed English landing, and nothing a draft or an unreviewed file holds", () => {
+    expect(infoPageMetadata("for-florists", "en", INDEXING)?.robots).toBe(
+      INDEX_FOLLOW,
+    );
+    expect(infoPageMetadata("for-florists", "en-gb", INDEXING)?.robots).toBe(
+      INDEX_FOLLOW,
+    );
     for (const [pageId, locale] of [
-      ["for-florists", "en"],
-      ["for-florists", "en-gb"],
       ["how-orders-work", "en"],
-      ["how-orders-work", "en-gb"],
-    ] as const) {
-      expect(
-        infoPageMetadata(pageId, locale, INDEXING)?.robots,
-        `${pageId} ${locale}`,
-      ).toBe(INDEX_FOLLOW);
-    }
-    for (const [pageId, locale] of [
       ["for-florists", "de"],
       ["for-florists", "pl"],
       ["how-orders-work", "pl"],
@@ -188,11 +183,9 @@ describe("T-05 / AC-5: what the committed files make of it", () => {
       );
     expect(florist("en").map((row) => row.loc)).toEqual([
       `${ORIGIN}/en/for-florists`,
-      `${ORIGIN}/en/for-florists/how-orders-work`,
     ]);
     expect(florist("en-gb").map((row) => row.loc)).toEqual([
       `${ORIGIN}/en-gb/for-florists`,
-      `${ORIGIN}/en-gb/for-florists/how-orders-work`,
     ]);
     expect(florist("de")).toEqual([]);
     expect(florist("pl")).toEqual([]);
@@ -223,9 +216,7 @@ describe("T-05 / AC-5: what the committed files make of it", () => {
       "en",
       "en-gb",
     ]);
-    expect(
-      Object.keys(infoPageHreflangPaths("how-orders-work")).sort(),
-    ).toEqual(["en", "en-gb"]);
+    expect(infoPageHreflangPaths("how-orders-work")).toEqual({});
     const alternates = infoPageMetadata("for-florists", "en", INDEXING)
       ?.alternates?.languages as Record<string, string> | undefined;
     expect(Object.values(alternates ?? {}).join(" ")).not.toMatch(
