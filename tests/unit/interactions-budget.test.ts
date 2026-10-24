@@ -10,8 +10,8 @@
  *    build's quality after a whitespace minify (comments, runs of spaces); the build's minifier
  *    also shortens values, so this can only over-state what ships.
  *  - **HTML** is the corridor document's growth: the page rendered as shipped against the page
- *    rendered with the switch off and the hero's two additions (`relative`, the
- *    `data-fo-corridor-hero` marker) taken back out, which is the document before the diff.
+ *    rendered with the switch off and the first screen's one addition (its `relative`
+ *    class) taken back out, which is the document before the diff.
  *  - **JS**: the route line and its switch are server modules (no `"use client"`, no hook), so no
  *    byte reaches a client bundle; `pnpm budget:client-js` holds the route budgets in CI.
  */
@@ -94,9 +94,7 @@ describe("idea 6, the route line, against §5.3.0's caps (AC-1)", () => {
     }));
     const off = await corridorHtml();
     vi.doUnmock("../../src/config/interactions.ts");
-    const before = off
-      .replace(' data-fo-corridor-hero=""', "")
-      .replace('class="relative grid ', 'class="grid ');
+    const before = off.replace('class="relative grid ', 'class="grid ');
     expect(before).not.toBe(off);
     const growth =
       Buffer.byteLength(on, "utf8") - Buffer.byteLength(before, "utf8");
