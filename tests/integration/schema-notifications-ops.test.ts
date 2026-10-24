@@ -35,9 +35,10 @@ describe.skipIf(server.url === undefined)(
       expect(on.map((row) => row.key)).toEqual(["checkout.demo_guard"]);
       const [count] = await scratch.sql<{ n: number }[]>`
         SELECT count(*)::int AS n FROM feature_flag`;
-      expect(count?.n).toBe(16);
+      // 0009's sixteen, plus spec 018's two (`NNNN_post_purchase`, TASK-337), both off.
+      expect(count?.n).toBe(18);
       const scopes = await scratch.sql`
-        SELECT flag_key, scope, scope_ref, enabled FROM feature_flag_scope`;
+        SELECT flag_key, scope, scope_ref, enabled FROM feature_flag_scope ORDER BY flag_key`;
       expect([...scopes]).toEqual([
         {
           flag_key: "checkout.open",
@@ -45,10 +46,16 @@ describe.skipIf(server.url === undefined)(
           scope_ref: "PL",
           enabled: false,
         },
+        {
+          flag_key: "invoice.issue",
+          scope: "country",
+          scope_ref: "PL",
+          enabled: false,
+        },
       ]);
     });
 
-    it("§8: retention_policy carries the eight rows, each with a basis and a legal note", async () => {
+    it("§8: retention_policy carries the nine rows, each with a basis and a legal note (spec 010 §14 A-founder-2026-10-22 item 2 C: 30 days and checkout_draft_personal)", async () => {
       const rows = await scratch.sql<
         { key: string; retention_days: number | null; action: string }[]
       >`SELECT key, retention_days, action FROM retention_policy ORDER BY key`;
@@ -56,7 +63,8 @@ describe.skipIf(server.url === undefined)(
         rows.map((r) => `${r.key}:${String(r.retention_days)}:${r.action}`),
       ).toEqual([
         "buyer_personal:1095:pseudonymise",
-        "checkout_draft:1:delete",
+        "checkout_draft:30:delete",
+        "checkout_draft_personal:1:pseudonymise",
         "consent_records:1825:delete",
         "delivery_photo:730:delete",
         "demo_order_personal:1:pseudonymise",

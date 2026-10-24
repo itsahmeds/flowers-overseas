@@ -65,6 +65,8 @@ const FUNCTIONS = [
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
+  // 0021 (TASK-337): an issued invoice never changes (spec 018 §5.1, AC-16).
+  "invoice_immutable",
   "media_asset_delivery_proof_guard",
   "media_asset_partner_application_guard",
   "order_assignment_mode_check",
@@ -80,6 +82,9 @@ const FUNCTIONS = [
   "partner_application_media_check",
   "partner_coverage_country_check",
   "payout_currency_check",
+  // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
+  // A-founder-2026-10-22 item 2 A).
+  "purchase_total_check",
   "set_updated_at",
   "status_flip_guard",
 ];

@@ -8,9 +8,16 @@
 import { appendEvent } from "./append-event";
 import { demoRoute } from "./demo-router";
 import { place } from "./place";
+import { placePurchase } from "./purchase";
 import { transition } from "./transition";
 
-export const orderService = { place, transition, appendEvent, demoRoute };
+export const orderService = {
+  place,
+  placePurchase,
+  transition,
+  appendEvent,
+  demoRoute,
+};
 
 export {
   ActorSchema,
@@ -83,6 +90,16 @@ export {
   VatSplitSchema,
 } from "./place";
 export type { PlaceOptions, PlaceOrderInput, PlaceResult } from "./place";
+export {
+  PlacePurchaseInputSchema,
+  placePurchase,
+  placePurchaseWith,
+} from "./purchase";
+export type {
+  PlacePurchaseInput,
+  PlacePurchaseOptions,
+  PlacePurchaseResult,
+} from "./purchase";
 export { ORDER_REFERENCE_PATTERN, orderReference } from "./reference";
 export { transition } from "./transition";
 export type { EngineOptions, TransitionResult } from "./transition";

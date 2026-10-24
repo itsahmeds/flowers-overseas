@@ -1,15 +1,22 @@
 /**
  * The `fo_checkout` cookie, its token and the log redaction the checkout adds (spec 010 §5.2,
- * §8 "Logs and PII", "Security", AC-6 cookie attributes, AC-36 cookie half; TASK-203).
+ * §8 "Logs and PII", "Security", AC-6 cookie attributes, AC-36 cookie half; TASK-203), and
+ * `fo_basket` (§14 A-founder-2026-10-22 item 7, AC-62; TASK-348).
  */
 import { createHash } from "node:crypto";
 
 import { describe, expect, it } from "vitest";
 
+import { BASKET_MAX_LINES } from "@/config/checkout";
 import { redact } from "@/lib/logger";
 import {
+  BASKET_COOKIE_ATTRIBUTES,
+  BASKET_COOKIE_NAME,
+  BASKET_COOKIE_VALUE_PATTERN,
   CHECKOUT_COOKIE_ATTRIBUTES,
+  CHECKOUT_COOKIE_MAX_AGE_SECONDS,
   CHECKOUT_COOKIE_NAME,
+  basketCookieHeader,
   checkoutCookieHeader,
   draftTokenFromCookieHeader,
   draftTokenHash,
@@ -53,7 +60,7 @@ describe("the draft token (§8: 256-bit, hashed at rest)", () => {
 });
 
 describe("the cookie (AC-6)", () => {
-  it("is fo_checkout; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400", () => {
+  it("is fo_checkout; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000 (30 days, §14 A-founder-2026-10-22 D7)", () => {
     const token = newDraftToken();
     const header = checkoutCookieHeader(token);
     const [pair, ...attributes] = header.split("; ");
@@ -61,7 +68,7 @@ describe("the cookie (AC-6)", () => {
     expect(new Set(attributes)).toEqual(
       new Set([
         "Path=/",
-        "Max-Age=86400",
+        "Max-Age=2592000",
         "HttpOnly",
         "Secure",
         "SameSite=Lax",
@@ -73,7 +80,7 @@ describe("the cookie (AC-6)", () => {
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 86_400,
+      maxAge: 2_592_000,
     });
   });
 
@@ -89,6 +96,39 @@ describe("the cookie (AC-6)", () => {
     expect(draftTokenFromCookieHeader("fo_checkout=forged")).toBeNull();
     expect(draftTokenFromCookieHeader("fo_checkoutx=abc")).toBeNull();
     expect(draftTokenFromCookieHeader(null)).toBeNull();
+  });
+});
+
+describe("fo_basket: the number of unplaced lines, nothing else (item 7, AC-62, T-62)", () => {
+  it("is the count, digits only, not HttpOnly, with fo_checkout's Max-Age; zero deletes it", () => {
+    for (let count = 1; count <= BASKET_MAX_LINES; count += 1) {
+      const header = basketCookieHeader(count);
+      const [pair, ...attributes] = header.split("; ");
+      expect(pair).toBe(`fo_basket=${String(count)}`);
+      expect(pair?.split("=")[1]).toMatch(BASKET_COOKIE_VALUE_PATTERN);
+      expect(new Set(attributes)).toEqual(
+        new Set([
+          "Path=/",
+          `Max-Age=${String(CHECKOUT_COOKIE_MAX_AGE_SECONDS)}`,
+          "Secure",
+          "SameSite=Lax",
+        ]),
+      );
+    }
+    expect(basketCookieHeader(0)).toBe(
+      "fo_basket=; Path=/; Max-Age=0; Secure; SameSite=Lax",
+    );
+    expect(BASKET_COOKIE_NAME).toBe("fo_basket");
+    expect(BASKET_COOKIE_ATTRIBUTES).toEqual({
+      ...CHECKOUT_COOKIE_ATTRIBUTES,
+      httpOnly: false,
+    });
+  });
+
+  it("refuses a count that is not 0 to BASKET_MAX_LINES", () => {
+    for (const count of [-1, 1.5, BASKET_MAX_LINES + 1, Number.NaN]) {
+      expect(() => basketCookieHeader(count), String(count)).toThrow();
+    }
   });
 });
 

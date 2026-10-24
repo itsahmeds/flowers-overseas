@@ -32,6 +32,7 @@ export {
   type DeliveryWindowInput,
   type DeliveryPlanInput,
   type PickerStateTerms,
+  checkoutDeliveryWindow,
   cutoffAt,
   deliveryCalendar,
   deliveryWindow,

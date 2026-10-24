@@ -64,7 +64,7 @@ describe.skipIf(server.url === undefined)(
       expect(rows).toHaveLength(26);
     });
 
-    it("AC-14: order_transition equals A6.3 (73 rows), both ways, actors included", async () => {
+    it("AC-14: order_transition equals A6.3 plus A8.1 (75 rows), both ways, actors included", async () => {
       const rows = await scratch.sql<
         {
           from_status: string;
@@ -73,7 +73,7 @@ describe.skipIf(server.url === undefined)(
           allowed_actors: string[];
         }[]
       >`SELECT from_status, event, to_status, allowed_actors FROM order_transition`;
-      expect(rows).toHaveLength(73);
+      expect(rows).toHaveLength(75);
       expect(
         new Set(
           rows.map(
@@ -140,29 +140,33 @@ describe.skipIf(server.url === undefined)(
         await by(
           "no mode",
           () =>
-            tx`INSERT INTO "order" (public_token, customer_id, recipient_id, destination_country_id,
+            tx`INSERT INTO "order" (customer_id, recipient_id, destination_country_id,
                delivery_date, buyer_currency_code, buyer_total_minor, base_currency_code,
                base_total_minor, buyer_snapshot, recipient_snapshot)
-             VALUES ('abcdefghijklmnopqrstuvwx', ${parents.customerId}, ${parents.recipientId},
+             VALUES (${parents.customerId}, ${parents.recipientId},
                ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}')`,
         );
         await by(
           "live without terms",
           () =>
-            tx`INSERT INTO "order" (public_token, mode, customer_id, recipient_id,
+            tx`INSERT INTO "order" (mode, customer_id, recipient_id,
                destination_country_id, delivery_date, buyer_currency_code, buyer_total_minor,
-               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-             VALUES ('abcdefghijklmnopqrstuvwy', 'live', ${parents.customerId}, ${parents.recipientId},
-               ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}')`,
+               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot,
+               purchase_id)
+             VALUES ('live', ${parents.customerId}, ${parents.recipientId},
+               ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}',
+               gen_random_uuid())`,
         );
         await by(
           "float-ish fx missing",
           () =>
-            tx`INSERT INTO "order" (public_token, mode, customer_id, recipient_id,
+            tx`INSERT INTO "order" (mode, customer_id, recipient_id,
                destination_country_id, delivery_date, buyer_currency_code, buyer_total_minor,
-               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-             VALUES ('abcdefghijklmnopqrstuvwz', 'demo', ${parents.customerId}, ${parents.recipientId},
-               ${parents.countryId}, DATE '2027-02-14', 'GBP', 100, 'PLN', 100, '{}', '{}')`,
+               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot,
+               purchase_id)
+             VALUES ('demo', ${parents.customerId}, ${parents.recipientId},
+               ${parents.countryId}, DATE '2027-02-14', 'GBP', 100, 'PLN', 100, '{}', '{}',
+               gen_random_uuid())`,
         );
         await tx`SELECT set_config('app.allow_status_write', '', true)`;
         await by(
