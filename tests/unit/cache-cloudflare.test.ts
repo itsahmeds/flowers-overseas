@@ -38,6 +38,7 @@ import {
   corridorAlternatePaths,
   listCorridorPages,
 } from "../../src/modules/geo";
+import { infoPagePath, listInfoPages } from "../../src/modules/content";
 import { localePath, routableLocaleCodes } from "../../src/modules/i18n";
 import {
   absoluteUrl,
@@ -159,7 +160,15 @@ describe("urlsForTag — hub:{locale} and the rest of the vocabulary", () => {
       expect(urls).toEqual([
         absoluteUrl(localePath(locale, "destinations"), options),
       ]);
+      // The info pages share static.xml but no hub tag: their content changes only on deploy
+      // (spec 041 §2; spec 011 §5.4, whose florists pages join the file with TASK-210).
+      const infoPages = new Set(
+        listInfoPages().map((page) =>
+          absoluteUrl(infoPagePath(page.pageId, page.locale), options),
+        ),
+      );
       for (const entry of staticSitemapEntries(locale, indexing)) {
+        if (infoPages.has(entry.loc)) continue;
         expect(urls).toContain(entry.loc);
       }
     },
