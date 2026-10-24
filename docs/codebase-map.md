@@ -23,7 +23,7 @@ task actually touches.
 | `notifications` | Public barrel for `notifications` (email +… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine,… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
 | `partners` | Public barrel for `partners` (fulfilment… | 011, 026 | `unit/florist-surface.test.ts` |
-| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
+| `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +9 |
 | `search` | The only import path into the search module:… | 045 | `unit/search-config.test.ts`, `unit/search-default-engine.test.ts` +6 |
 | `seo` | Indexability rule engine, canonical builder,… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +31 |
 | `ui` | The only import path for the design system… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +59 |
@@ -149,8 +149,10 @@ task actually touches.
 | `api/internal/db-health/route.ts` | GET: secret-gated database probe for cron | 002 |
 | `api/internal/jobs/tick/route.ts` | POST: secret-gated minute pg-boss tick, counts… | 002 |
 | `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | 012 |
+| `api/internal/payments/replay-webhooks/route.ts` | POST: secret-gated replay of missed Stripe… | 013 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence… | 004 |
+| `api/webhooks/stripe/route.ts` | POST: Stripe webhook endpoint, verify, store… | 013 |
 | `demo/vendor-inbox/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
 | `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the… | 011 |
 | `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every… | 011 |
@@ -210,6 +212,7 @@ task actually touches.
 | `i18n-draft.ts` | `i18n:draft` | `pnpm i18n:draft --locale <code> [--dry-run]` |
 | `i18n-pseudo.ts` | `i18n:pseudo` | `pnpm i18n:pseudo [--check] [--messages-dir… |
 | `imagery-prompts-remaining.ts` | — | Generate the prompt records for every product… |
+| `jobs-replay-webhooks.ts` | `jobs:replay-webhooks` | Replay missed Stripe webhooks through the inbox |
 | `lint-fixtures.ts` | `lint:fixtures` | `pnpm lint:fixtures` |
 | `media-upload.ts` | `media:upload` | `pnpm media:upload [--dry-run] [--only… |
 | `pages-check.ts` | `pages:check` | `pnpm pages:check` — the info-page honesty gate… |
@@ -235,8 +238,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 391 |
-| `tests/integration/` | 57 |
+| `tests/unit/` | 393 |
+| `tests/integration/` | 58 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 72 |
 | `tests/a11y/` | 15 |
