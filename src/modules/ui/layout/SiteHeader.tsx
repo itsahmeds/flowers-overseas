@@ -206,13 +206,14 @@ const BASKET_LINK =
 
 /**
  * The desktop row's gap once the Basket link takes its column. The basket board draws 22 px at
- * 1440 (`.hx-hdr .nav ul`); at 1280 the eight links, the pill and the 44 px icon leave the links
- * about 25 px short of the board's 32 px column gap to the logo, so the gap eases from 22 px at a
- * 1440 px viewport to 17.6 px at 1280 (never below 14 px). `vw`, not a container unit: a size
- * container would also become the containing block of the Menu sheet.
+ * 1440 (`.hx-hdr .nav ul`); at 1280 the eight links, the pill and the 44 px icon ran the links
+ * under the wordmark on the Linux runner (German is about 10 px longer still), so the gap eases
+ * from 22 px at a 1440 px viewport to 16 px at 1280, which keeps the board's 32 px column gap to the
+ * logo (`tests/e2e/header.spec.ts`). `vw`, not a container unit: a size container would also become
+ * the containing block of the Menu sheet.
  */
 const BASKET_ROW_GAP =
-  "xl:gap-[clamp(14px,calc(18px_+_(100vw_-_1296px)_/_36),22px)]";
+  "xl:gap-[clamp(16px,calc(16px_+_(100vw_-_1280px)_*_0.0375),22px)]";
 
 /**
  * Every state the count can take, for `../basket/basket-count.ts`: index 0 the empty link
