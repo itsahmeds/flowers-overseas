@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: migration `0029_reviews_close` + down (review columns and checks, `review_content_immutable`, the audit trigger with `text` and `display_name` masked, `review_invite` staff only, `customer.review_invite_opt_out_at`, `public_review` replacing `review_read`, the two flags), Drizzle mirror, `db/rls.ts`, `src/config/reviews.ts`, `review.created` v1 in the new `reviews` module, `REVIEW_TOKEN_SECRET` and `TRUSTPILOT_AFS_ADDRESS`; unit and integration green locally with uncommitted empty placeholders for `0021` to `0028`. Next: rebase and renumber once `0021` to `0028` merge, then `db-check.ts --write-snapshot` on a fresh scratch database.
 
 ## Result
 

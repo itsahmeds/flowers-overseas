@@ -45,7 +45,8 @@ const down = readMigration("0007_orders_payments.down.sql");
  */
 const a7 = readMigration("0017_payments_a7.sql");
 /** `0019` (spec 010 §14 A-founder-2026-10-22, TASK-347) adds `"order".purchase_id`, its key and index. */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${readMigration("0019_purchase.sql")}`;
+/** `0029` (spec 022a §5.1, TASK-368) adds `review`'s moderation, display and routing columns. */
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${readMigration("0019_purchase.sql")}\n${readMigration("0029_reviews_close.sql")}`;
 
 const TABLES = [
   "order_status",

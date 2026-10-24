@@ -15,7 +15,7 @@
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { CUSTOMER_VIEWS, PARTNER_VIEWS } from "../../db/rls.ts";
+import { CUSTOMER_VIEWS, PARTNER_VIEWS, PUBLIC_VIEWS } from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import {
   probeLocalServer,
@@ -37,7 +37,11 @@ const MIRROR_TABLES = Object.values(schema)
   .sort();
 
 /** The column-limited read paths of `0011` (`db/rls.ts`). */
-const VIEWS = [...Object.keys(PARTNER_VIEWS), ...Object.keys(CUSTOMER_VIEWS)];
+const VIEWS = [
+  ...Object.keys(PARTNER_VIEWS),
+  ...Object.keys(CUSTOMER_VIEWS),
+  ...Object.keys(PUBLIC_VIEWS),
+];
 
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
 const FUNCTIONS = [
@@ -83,6 +87,8 @@ const FUNCTIONS = [
   // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
   // A-founder-2026-10-22 item 2 A).
   "purchase_total_check",
+  // 0029 (TASK-368): a review's stars and words never change (spec 022a §5.1).
+  "review_content_immutable",
   "set_updated_at",
   "status_flip_guard",
 ];

@@ -13,6 +13,8 @@
       "RESEND_API_KEY": "re_placeholder",
       "EMAIL_FROM": "Flowers Overseas <sign-in@example.test>",
       "MAILER": "resend",
+      "REVIEW_TOKEN_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "TRUSTPILOT_AFS_ADDRESS": "",
       "LOG_LEVEL": "SENTINEL-VALUE",
       "NEON_API_KEY": "SENTINEL-VALUE",
       "NEON_BRANCH": "SENTINEL-VALUE",

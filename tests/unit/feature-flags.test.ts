@@ -32,12 +32,27 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly the two database flags spec 010's checkout reads", () => {
+  it("holds exactly the two database flags spec 010's checkout reads and spec 022a's two review switches", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
+      "reviews.invite",
+      "reviews.trustpilot",
     ]);
   });
+
+  it.each(["reviews.invite", "reviews.trustpilot"] as const)(
+    "registers %s as global and high-risk, dirtying no public page (spec 022a §12)",
+    (key) => {
+      expect(flagDefinition(key)).toEqual({
+        key,
+        scopeKinds: ["global"],
+        risk: "high",
+        dirties: [],
+        description: expect.stringMatching(/\S/u) as unknown as string,
+      });
+    },
+  );
 
   it("registers checkout.open with country scope, standard risk and the catalog:{iso2} tag", () => {
     expect(flagDefinition("checkout.open")).toEqual({

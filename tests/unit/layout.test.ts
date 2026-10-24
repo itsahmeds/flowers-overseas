@@ -52,6 +52,8 @@ describe("plan/01 §5 layout manifest (T-03)", () => {
         "orders",
         "partners",
         "payments",
+        // spec 022a §2, §5.2 (TASK-368): reviews.
+        "reviews",
         "seo",
         "ui",
       ].sort(),

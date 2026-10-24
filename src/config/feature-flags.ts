@@ -20,7 +20,8 @@
  *    dirties no public page (spec 012 §5.4). High-risk means admin-only, with the key typed to
  *    confirm (TASK-220).
  *
- * Spec 013 adds `payments.stripe` and `payments.mollie` here, high-risk, when it lands.
+ * Spec 013 adds `payments.stripe` and `payments.mollie` here, high-risk, when it lands. Spec 022a
+ * adds `reviews.invite` and `reviews.trustpilot`, global and high-risk (TASK-368).
  *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
@@ -129,6 +130,24 @@ const REGISTRY = [
     scopeKinds: ["global"],
     description:
       "Every checkout is a demo while this is on: no card is charged and no florist is paid (spec 010). Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  // Spec 022a §5.1, §12 (migration `0029_reviews_close`, TASK-368): the two review switches,
+  // global, off, high-risk. Display follows data, so neither dirties a page.
+  {
+    key: "reviews.invite",
+    scopeKinds: ["global"],
+    description:
+      "One review email to every delivered live order, 24 hours after the photo (spec 022a). Turn on only after the founder approves the email copy and the review policy. Admin only; type the key to confirm.",
+    risk: "high",
+    dirties: [],
+  },
+  {
+    key: "reviews.trustpilot",
+    scopeKinds: ["global"],
+    description:
+      "The review email carries Trustpilot's automatic feedback BCC (spec 022a §13 Q2). Turn on only after the Trustpilot DPA is filed and TRUSTPILOT_AFS_ADDRESS is set. Admin only; type the key to confirm.",
     risk: "high",
     dirties: [],
   },

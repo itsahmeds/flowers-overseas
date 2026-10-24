@@ -20,6 +20,7 @@ export { clientEnv } from "./env.client";
 export { env, environment, serverEnv } from "./env.server";
 export { assertBuildEnv, assertEnv, envReport } from "./env.assert";
 export { type MailerConfig, authSecret, mailerConfig } from "./env.auth";
+export { reviewTokenSecret, trustpilotAfsAddress } from "./env.reviews";
 export {
   APP_ENV_KEY,
   BUILD_ENV_KEYS,

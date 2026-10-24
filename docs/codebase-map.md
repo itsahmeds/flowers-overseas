@@ -21,9 +21,10 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +103 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
-| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
+| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/reviews-data.test.ts` |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
+| `reviews` | Spec 022a §2, §5.2: the module starts with the… | 022 | `unit/reviews-data.test.ts` |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +30 |
 | `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +54 |
 
@@ -61,6 +62,7 @@ task actually touches.
 | `locales.ts` | Locale registry | 003 |
 | `occasions.ts` | Occasion registry for the locale home (spec 004 §2… | 004 |
 | `payment-methods.ts` | Payment-method registry (spec 004 §2 "Everything… | 004 |
+| `reviews.ts` | Review constants: invite timing, text cap, display and… | 022 |
 | `site-links.ts` | Site-link registry | 004 |
 | `trending.ts` | The florists' picks the "Most sent this week" row shows… | 004 |
 | `url-keys.ts` | The query keys our own URLs carry | 001 |
@@ -209,8 +211,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 359 |
-| `tests/integration/` | 45 |
+| `tests/unit/` | 360 |
+| `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 70 |
 | `tests/a11y/` | 15 |

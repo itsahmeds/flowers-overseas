@@ -269,6 +269,26 @@
     "reviewed": false,
     "sourceHash": "d820ecd2b46017afdb648120509d19c3fc0cb6910c682714ba3f1c9e08f0caea"
   },
+  "admin.flags.confirmBody.reviews.invite.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a349ce5d27afebcbe3e35e4a93b3ceec5c22bf31eb3925d1f772d7e169c76a91"
+  },
+  "admin.flags.confirmBody.reviews.invite.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2214878667aa4eb6262c6d597719d41253dfd50119d73c8420602f836fbc92b1"
+  },
+  "admin.flags.confirmBody.reviews.trustpilot.off": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f99ad5f280a0c4260c2288df73d881f5a6f9f5daf8aab768c4837e4bf06c3fdc"
+  },
+  "admin.flags.confirmBody.reviews.trustpilot.on": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c7e51d39a8ba2ea6a6a671814950872f8479889ff00c886d1d3a6292f2b1c6af"
+  },
   "admin.flags.confirmField": {
     "source": "human",
     "reviewed": false,
@@ -328,6 +348,16 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "b7782038d9c09c78393acb1caacd36bb49fe0455371c1d375f3b837595139590"
+  },
+  "admin.flags.description.reviews.invite": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "db6c07996c52a8235051326a6196f17afa091de6ddc001801b6108d19e3c718f"
+  },
+  "admin.flags.description.reviews.trustpilot": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c38762df332c6519b7d39d859c0ce8ff55e5a9029a18e6feb2462ca88af0fae4"
   },
   "admin.flags.lead": {
     "source": "human",
