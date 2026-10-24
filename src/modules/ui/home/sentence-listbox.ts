@@ -239,9 +239,11 @@ export function enhanceSentence(
       "data-fo-sentence-listbox": "",
     });
     trigger.append(text);
-    // The select's own box (clause 3): the inline extent is the pick span's, which is the select's.
-    trigger.style.insetBlockStart = `${String(select.offsetTop)}px`;
-    trigger.style.blockSize = `${String(select.offsetHeight)}px`;
+    // The select's own box (clause 3), to the fraction of a pixel: the inline extent is the pick
+    // span's, which is the select's; the block offset and size are read here.
+    const box = select.getBoundingClientRect();
+    trigger.style.insetBlockStart = `${String(box.top - pick.getBoundingClientRect().top)}px`;
+    trigger.style.blockSize = `${String(box.height)}px`;
     const control: Control = {
       select,
       trigger,

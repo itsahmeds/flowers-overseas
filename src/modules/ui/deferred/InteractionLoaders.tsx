@@ -23,8 +23,14 @@ import type { SentenceIslandProps } from "../home/SentenceIsland.tsx";
 
 const islands = async () => import("./lazyIslands.ts");
 
+// A chunk that never arrives renders nothing: the native selects stay and serve the reader
+// (spec 004 §14 A-founder-2026-10-21d, AC-69), rather than a rejected import reaching the route's
+// error boundary.
 const Sentence = lazy(async () =>
-  islands().then((module) => ({ default: module.SentenceIsland })),
+  islands().then(
+    (module) => ({ default: module.SentenceIsland }),
+    () => ({ default: () => null }),
+  ),
 );
 
 export function SentenceLoader(props: SentenceIslandProps) {

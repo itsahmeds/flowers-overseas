@@ -12,7 +12,9 @@
  * targets are exercised on a page a buyer would see.
  */
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { type Page, expect, test } from "@playwright/test";
+
+import { enhanceSentence, sentenceTrigger } from "../support/sentence.ts";
 
 const BLOCKING = new Set(["serious", "critical"]);
 
@@ -180,4 +182,101 @@ test("every FAQ summary paints the artboards' `+`, which rotates when the answer
   await expect
     .poll(async () => first.evaluate((node) => getComputedStyle(node).rotate))
     .toBe("45deg");
+});
+
+/**
+ * T-74 / AC-68 (spec 004 §14 A-founder-2026-10-21d; TASK-326): the sentence's own listbox on a
+ * mouse (this project is Desktop Chrome, a fine pointer). Axe over `/en` with the country listbox
+ * open, with the who listbox open, and with both closed: nothing serious or critical, and none of
+ * the four rules a listbox breaks first. Then the focus rings, by keyboard.
+ */
+test.describe("the sentence listbox (AC-68, T-74)", () => {
+  const LISTBOX_RULES = [
+    "aria-hidden-focus",
+    "aria-valid-attr-value",
+    "aria-required-children",
+    "nested-interactive",
+  ];
+
+  async function auditListbox(page: Page): Promise<string[]> {
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    return results.violations
+      .filter(
+        (violation) =>
+          BLOCKING.has(violation.impact ?? "") ||
+          LISTBOX_RULES.includes(violation.id),
+      )
+      .map((violation) => `${violation.id} (${String(violation.impact)})`);
+  }
+
+  async function openByKeyboard(
+    page: Page,
+    field: "who" | "country",
+  ): Promise<void> {
+    await sentenceTrigger(page, field).focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(sentenceTrigger(page, field)).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    // Axe reads a panel mid-fade as low-contrast text: let motion 10 finish.
+    await page.waitForTimeout(400);
+  }
+
+  test("closed, country open and who open: no serious or critical violation, none of the listbox rules", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    await enhanceSentence(page);
+    expect(await auditListbox(page), "closed").toEqual([]);
+
+    await openByKeyboard(page, "country");
+    expect(await auditListbox(page), "country open").toEqual([]);
+    await page.keyboard.press("Escape");
+
+    await openByKeyboard(page, "who");
+    expect(await auditListbox(page), "who open").toEqual([]);
+  });
+
+  test("the focused option and the focused trigger draw the focus ring, 2 px or more in the focus colour", async ({
+    page,
+  }) => {
+    await page.goto("/en");
+    await enhanceSentence(page);
+    const focusColour = await page.evaluate(() => {
+      const probe = document.createElement("span");
+      probe.style.color = "var(--color-focus)";
+      document.body.append(probe);
+      const colour = getComputedStyle(probe).color;
+      probe.remove();
+      return colour;
+    });
+    const ring = (): Promise<[string, number, string]> =>
+      page.evaluate(() => {
+        const style = getComputedStyle(document.activeElement as Element);
+        return [
+          style.outlineStyle,
+          Number.parseFloat(style.outlineWidth),
+          style.outlineColor,
+        ];
+      });
+
+    await openByKeyboard(page, "country");
+    const option = await ring();
+    expect(
+      await page.evaluate(() => document.activeElement?.getAttribute("role")),
+    ).toBe("option");
+    expect(option[0]).not.toBe("none");
+    expect(option[1]).toBeGreaterThanOrEqual(2);
+    expect(option[2]).toBe(focusColour);
+
+    await page.keyboard.press("Escape");
+    await expect(sentenceTrigger(page, "country")).toBeFocused();
+    const trigger = await ring();
+    expect(trigger[0]).not.toBe("none");
+    expect(trigger[1]).toBeGreaterThanOrEqual(2);
+    expect(trigger[2]).toBe(focusColour);
+  });
 });
