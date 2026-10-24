@@ -1,12 +1,12 @@
 /**
- * The draft's quote with an injected clock (spec 010 §2 "Money", §5.2 `pricing.ts`, AC-17, T-17;
- * AC-11's arithmetic half; TASK-203).
+ * A basket line's quote with an injected clock (spec 010 §2 "Money", §5.2 `pricing.ts`, AC-17,
+ * T-17; AC-11's arithmetic half; TASK-203; per line since §14 A-founder-2026-10-22, TASK-348).
  *
- * Every case builds a draft in memory with a real spec 005 quote (the committed dataset, the real
+ * Every case builds a line in memory with a real spec 005 quote (the committed dataset, the real
  * signing path) and moves the clock: fresh → used as is; expired and the same → reissued with no
  * notice; changed → the notice names both amounts; tampered → discarded and re-derived. The draft
  * service and the actions that store these verdicts are covered against Postgres in
- * `tests/integration/checkout-draft.test.ts`.
+ * `tests/integration/checkout-draft.test.ts` and `checkout-basket.test.ts`.
  */
 import { describe, expect, it } from "vitest";
 
@@ -23,11 +23,11 @@ import {
 } from "@/modules/catalog";
 import {
   ADDON_TIER_PREFIX,
-  type Draft,
+  type BasketLine,
   deriveQuote,
-  draftTotals,
-  priceChange,
-  verifyDraftQuote,
+  linePriceChange,
+  lineTotals,
+  verifyLineQuote,
 } from "@/modules/checkout";
 
 const T0 = new Date(`${FX_SNAPSHOT_AS_OF}T09:00:00.000Z`);
@@ -46,32 +46,32 @@ if (ADDON === undefined) throw new Error("PL offers no add-on");
 function draftWith(
   signed: Quote | null,
   addonKeys: readonly string[] = [],
-): Draft {
+): BasketLine {
   return {
     id: "00000000-0000-4000-8000-000000000001",
-    locale: "pl",
+    position: 1,
     countryIso: "PL",
     sku: SKU,
     tierKey: TIER?.tierKey ?? "",
     deliveryDate: null,
     addonKeys,
     recipient: null,
-    buyer: null,
     card: null,
     quote: signed,
-    expected: null,
-    confirmed:
+    lastSeen:
       signed === null
         ? null
         : { amountMinor: signed.totalMinor, currency: signed.currency },
-    mode: "demo",
     stepsCompleted: 0,
     orderId: null,
-    lastActivityAt: T0,
-    expiresAt: minutes(24 * 60),
     quoteStamp: signed?.digest ?? null,
   };
 }
+
+/** The basket's currency for a `pl` basket, and the request's locale. */
+const verifyDraftQuote = (line: BasketLine, at: Date) =>
+  verifyLineQuote(line, "PLN", "pl", at);
+const draftTotals = (line: BasketLine, at: Date) => lineTotals(line, "pl", at);
 
 const selection = (addonKeys: readonly string[] = []) => ({
   locale: "pl" as const,
@@ -124,9 +124,9 @@ describe("verifyDraftQuote with an injected clock (AC-17, T-17)", () => {
     expect(check.quote.digest).not.toBe(signed.digest);
     expect(Date.parse(check.quote.expiresAt)).toBe(minutes(61).getTime());
     expect(
-      priceChange({
+      linePriceChange({
         quote: check.quote,
-        confirmed: draftWith(signed).confirmed,
+        lastSeen: draftWith(signed).lastSeen,
       }),
     ).toBeNull();
   });
@@ -140,7 +140,7 @@ describe("verifyDraftQuote with an injected clock (AC-17, T-17)", () => {
       const fresh = await deriveQuote(selection(), at);
       expect(check.quote.totalMinor).toBe(fresh.totalMinor);
       expect(
-        priceChange({ quote: check.quote, confirmed: draft.confirmed }),
+        linePriceChange({ quote: check.quote, lastSeen: draft.lastSeen }),
       ).toEqual({
         previous: { amountMinor: stale.totalMinor, currency: stale.currency },
         current: { amountMinor: fresh.totalMinor, currency: fresh.currency },
@@ -183,31 +183,31 @@ describe("verifyDraftQuote with an injected clock (AC-17, T-17)", () => {
   });
 });
 
-describe("priceChange", () => {
+describe("linePriceChange", () => {
   it("is null while the buyer has seen the quote's total, and names both amounts otherwise", () => {
     const quoteLike = { totalMinor: 18_900, currency: "PLN" as const };
     expect(
-      priceChange({
+      linePriceChange({
         quote: quoteLike,
-        confirmed: { amountMinor: 18_900, currency: "PLN" },
+        lastSeen: { amountMinor: 18_900, currency: "PLN" },
       }),
     ).toBeNull();
     expect(
-      priceChange({
+      linePriceChange({
         quote: quoteLike,
-        confirmed: { amountMinor: 17_900, currency: "PLN" },
+        lastSeen: { amountMinor: 17_900, currency: "PLN" },
       }),
     ).toEqual({
       previous: { amountMinor: 17_900, currency: "PLN" },
       current: { amountMinor: 18_900, currency: "PLN" },
     });
     expect(
-      priceChange({
+      linePriceChange({
         quote: quoteLike,
-        confirmed: { amountMinor: 18_900, currency: "EUR" },
+        lastSeen: { amountMinor: 18_900, currency: "EUR" },
       }),
     ).not.toBeNull();
-    expect(priceChange({ quote: null, confirmed: null })).toBeNull();
+    expect(linePriceChange({ quote: null, lastSeen: null })).toBeNull();
   });
 });
 
@@ -286,7 +286,7 @@ describe("the quote must price exactly the draft's selection (/review 275 change
       TIER.tierKey,
     ]);
     expect(
-      priceChange({ quote: check.quote, confirmed: draft.confirmed }),
+      linePriceChange({ quote: check.quote, lastSeen: draft.lastSeen }),
     ).not.toBeNull();
   });
 
@@ -297,7 +297,7 @@ describe("the quote must price exactly the draft's selection (/review 275 change
     expect(check.verdict).toBe("changed");
     expect(check.quote.totalMinor).toBeGreaterThan(bare.totalMinor);
     expect(
-      priceChange({ quote: check.quote, confirmed: draft.confirmed }),
+      linePriceChange({ quote: check.quote, lastSeen: draft.lastSeen }),
     ).not.toBeNull();
     expect(await draftTotals(draft, minutes(1))).toBeNull();
   });
@@ -309,7 +309,7 @@ describe("the quote must price exactly the draft's selection (/review 275 change
     expect(await draftTotals(draft, minutes(1))).toBeNull();
   });
 
-  it("answers `changed` for the same total in another currency", async () => {
+  it("discards a quote in another currency than the basket's (D6: a basket never holds two currencies)", async () => {
     const projection = await priceProjection("pl", {
       productId: SKU,
       tierKey: TIER.tierKey,
@@ -330,7 +330,7 @@ describe("the quote must price exactly the draft's selection (/review 275 change
       T0,
     );
     const check = await verifyDraftQuote(draftWith(inEuro), minutes(5));
-    expect(check.verdict).toBe("changed");
+    expect(check.verdict).toBe("tampered");
     expect(check.quote.currency).toBe("PLN");
     expect(check.quote.totalMinor).toBe(inEuro.totalMinor);
   });

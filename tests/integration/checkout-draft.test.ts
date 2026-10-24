@@ -24,20 +24,22 @@ import {
   productAlternatePaths,
 } from "@/modules/catalog";
 import {
+  type BasketLine,
   type CheckoutFlagReader,
+  type Draft,
   type DraftConnection,
-  draftTotals,
-  verifyDraftQuote,
   type StepOutcome,
   draftTokenFromCookieHeader,
   expireDrafts,
+  linePriceChange,
+  lineTotals,
   loadDraft,
-  priceChange,
   runCardAndBuyerStep,
   runRecipientStep,
   runUpdateSelection,
-  saveStep,
+  saveLine,
   startCheckout,
+  verifyLineQuote,
 } from "@/modules/checkout";
 
 import { country } from "./support/rows.ts";
@@ -57,6 +59,25 @@ const server = await probeLocalServer();
 const T0 = new Date(`${FX_SNAPSHOT_AS_OF}T09:00:00.000Z`);
 const at = (minutes: number): Date => new Date(T0.getTime() + minutes * 60_000);
 const HOUR = 60;
+const DAY = 24 * HOUR;
+
+/**
+ * A one-line basket read the way TASK-203's draft was: the draft's fields, then its only line's
+ * (spec 010 §14 A-founder-2026-10-22: the per-line columns moved to `checkout_draft_line`).
+ */
+type Flat = Draft & BasketLine & { readonly line: BasketLine };
+
+function flat(draft: Draft): Flat {
+  const line = draft.lines[0];
+  if (line === undefined) throw new Error("the basket has no line");
+  return { ...draft, ...line, id: draft.id, line };
+}
+
+const priceChange = (view: Flat) =>
+  linePriceChange({ quote: view.quote, lastSeen: view.lastSeen });
+const verifyDraftQuote = (view: Flat, now: Date) =>
+  verifyLineQuote(view.line, "PLN", "pl", now);
+const draftTotals = (view: Flat, now: Date) => lineTotals(view.line, "pl", now);
 
 const [PRODUCT] = await listProducts({ countryIso: "PL" });
 if (PRODUCT === undefined) throw new Error("the dataset prices nothing for PL");
@@ -209,6 +230,7 @@ const DELIVERY_DATE = new Date(T0.getTime() + 3 * 24 * 3_600_000)
 
 function recipientForm(overrides: Record<string, string> = {}): FormData {
   return form({
+    line: "1",
     ...SAMPLE.recipient.fields,
     placeKind: SAMPLE.recipient.placeKind,
     deliveryNote: "Ring twice",
@@ -221,6 +243,7 @@ function cardForm(
   overrides: Record<string, string | readonly string[]> = {},
 ): FormData {
   return form({
+    line: "1",
     cardMessage: "Happy birthday",
     signAs: "Sam",
     email: SAMPLE.buyer.email,
@@ -250,10 +273,14 @@ function location(outcome: StepOutcome): string {
   return outcome.location;
 }
 
-async function active(connection: DraftConnection, token: string, minutes = 2) {
+async function active(
+  connection: DraftConnection,
+  token: string,
+  minutes = 2,
+): Promise<Flat> {
   const lookup = await loadDraft(token, at(minutes), connection);
   if (lookup.status !== "active") throw new Error(`draft is ${lookup.status}`);
-  return lookup.draft;
+  return flat(lookup.draft);
 }
 
 describe.skipIf(server.url === undefined)(
@@ -380,7 +407,10 @@ describe.skipIf(server.url === undefined)(
           expect(response.status).toBe(303);
           expect(response.headers.get("location")).toBe("/pl/checkout");
           expect(response.headers.get("cache-control")).toBe("no-store");
-          const cookie = response.headers.get("set-cookie") ?? "";
+          const [cookie = "", basket = ""] = response.headers.getSetCookie();
+          expect(basket).toBe(
+            "fo_basket=1; Path=/; Max-Age=2592000; Secure; SameSite=Lax",
+          );
           const [pair, ...attributes] = cookie.split("; ");
           expect(pair).toMatch(/^fo_checkout=[A-Za-z0-9_-]{43}$/u);
           expect(new Set(attributes)).toEqual(
@@ -389,7 +419,7 @@ describe.skipIf(server.url === undefined)(
               "Secure",
               "SameSite=Lax",
               "Path=/",
-              "Max-Age=86400",
+              "Max-Age=2592000",
             ]),
           );
           expect(await draftCount(tx)).toBe(1);
@@ -403,6 +433,9 @@ describe.skipIf(server.url === undefined)(
           );
           expect(rows[0]?.mode).toBe("demo");
           expect(rows[0]?.row).not.toContain(token);
+          const [lines] = await tx<{ n: number }[]>`
+            SELECT count(*)::int AS n FROM checkout_draft_line WHERE position = 1`;
+          expect(lines?.n).toBe(1);
           const draft = await active(connection, token);
           expect(draft.quote?.totalMinor).toBe(await shownTotal());
           expect(draft.addonKeys).toEqual([]);
@@ -428,7 +461,7 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
-    describe("the steps keep what was typed for 24 hours (AC-13, T-13)", () => {
+    describe("the steps keep what was typed (AC-13, T-13; 30 days since the basket)", () => {
       it("saves step 1, shows every value on a refresh and on a return within 24 hours", async () => {
         await run(async (tx) => {
           const connection = await seeded(tx);
@@ -459,18 +492,25 @@ describe.skipIf(server.url === undefined)(
         });
       });
 
-      it("expires 24 hours after the last activity: the expired state, the row deleted", async () => {
+      it("expires 30 days after the last change: the expired state, the row and its lines deleted", async () => {
         await run(async (tx) => {
           const connection = await seeded(tx);
           const token = await started(connection);
           await runRecipientStep(ctx(connection, token, HOUR), recipientForm());
-          // The save at +1 h moved the window: +24 h 30 min is still inside it.
-          await active(connection, token, 24 * HOUR + 30);
-          expect(await loadDraft(token, at(25 * HOUR), connection)).toEqual({
+          // The save at +1 h moved the window: +30 days 30 min is still inside it.
+          await active(connection, token, 30 * DAY + 30);
+          expect(
+            await loadDraft(token, at(30 * DAY + HOUR), connection),
+          ).toEqual({
             status: "expired",
           });
+          const [lines] = await tx<{ n: number }[]>`
+            SELECT count(*)::int AS n FROM checkout_draft_line`;
+          expect(lines?.n).toBe(0);
           expect(await draftCount(tx)).toBe(0);
-          expect(await loadDraft(token, at(25 * HOUR), connection)).toEqual({
+          expect(
+            await loadDraft(token, at(30 * DAY + HOUR), connection),
+          ).toEqual({
             status: "missing",
           });
         });
@@ -481,7 +521,7 @@ describe.skipIf(server.url === undefined)(
           const connection = await seeded(tx);
           const token = await started(connection);
           const outcome = await runRecipientStep(
-            ctx(connection, token, 24 * HOUR),
+            ctx(connection, token, 30 * DAY),
             recipientForm(),
           );
           expect(outcome).toEqual({
@@ -501,8 +541,8 @@ describe.skipIf(server.url === undefined)(
             ctx(connection, first, 2 * HOUR),
             recipientForm(),
           );
-          expect(await expireDrafts(at(24 * HOUR + 1), connection)).toBe(1);
-          await active(connection, first, 24 * HOUR + 1);
+          expect(await expireDrafts(at(30 * DAY + 1), connection)).toBe(1);
+          await active(connection, first, 30 * DAY + 1);
           expect(await draftCount(tx)).toBe(1);
         });
       });
@@ -514,13 +554,14 @@ describe.skipIf(server.url === undefined)(
           for (const role of ["public", "customer", "partner", "admin"]) {
             await tx`SELECT set_config('app.role', ${role}, true)`;
             expect(await draftCount(tx), role).toBe(0);
+            const [lines] = await tx<{ n: number }[]>`
+              SELECT count(*)::int AS n FROM checkout_draft_line`;
+            expect(lines?.n, role).toBe(0);
             const failure = await pgFailure(
               tx,
               (sp) =>
-                sp`INSERT INTO checkout_draft (token_sha256, locale_code, destination_country_id,
-                   product_id, tier_key, mode, expires_at)
-                 SELECT ${"a".repeat(64)}, 'pl', c.id, p.id, 't', 'demo', now() + interval '1 day'
-                   FROM country c, product p LIMIT 1`,
+                sp`INSERT INTO checkout_draft (token_sha256, locale_code, mode, expires_at)
+                 VALUES (${"a".repeat(64)}, 'pl', 'demo', now() + interval '1 day')`,
             );
             expect(failure.code, role).toBe("42501");
           }
@@ -627,6 +668,7 @@ describe.skipIf(server.url === undefined)(
           const added = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "addAddon",
               addonKey: PAID_ADDON,
               returnStep: "recipient",
@@ -642,6 +684,7 @@ describe.skipIf(server.url === undefined)(
           await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "removeAddon",
               addonKey: PAID_ADDON,
               returnStep: "recipient",
@@ -690,6 +733,7 @@ describe.skipIf(server.url === undefined)(
           await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "tier",
               tierKey: OTHER_TIER.tierKey,
               returnStep: "review",
@@ -714,6 +758,7 @@ describe.skipIf(server.url === undefined)(
           await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "addAddon",
               addonKey: PAID_ADDON,
               returnStep: "card",
@@ -723,6 +768,7 @@ describe.skipIf(server.url === undefined)(
             runUpdateSelection(
               ctx(connection, token, 2),
               form({
+                line: "1",
                 intent: "removeAddon",
                 addonKey: PAID_ADDON,
                 returnStep: "card",
@@ -753,6 +799,7 @@ describe.skipIf(server.url === undefined)(
             runUpdateSelection(
               ctx(connection, token, 2),
               form({
+                line: "1",
                 intent: "tier",
                 tierKey: OTHER_TIER.tierKey,
                 returnStep: "recipient",
@@ -781,7 +828,7 @@ describe.skipIf(server.url === undefined)(
         await run(async (tx) => {
           const connection = await seeded(tx);
           const token = await started(connection);
-          await tx`UPDATE checkout_draft SET tier_key = ${OTHER_TIER.tierKey}`;
+          await tx`UPDATE checkout_draft_line SET tier_key = ${OTHER_TIER.tierKey}`;
           const draft = await active(connection, token);
           const check = await verifyDraftQuote(draft, at(2));
           expect(check.verdict).toBe("changed");
@@ -800,6 +847,7 @@ describe.skipIf(server.url === undefined)(
           const outcome = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "addAddon",
               addonKey: "wine",
               returnStep: "recipient",
@@ -823,6 +871,7 @@ describe.skipIf(server.url === undefined)(
           const outcome = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "tier",
               tierKey: "stems_999",
               returnStep: "recipient",
@@ -840,6 +889,7 @@ describe.skipIf(server.url === undefined)(
           const outcome = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "tier",
               tierKey: OTHER_TIER.tierKey,
               returnStep: "review",
@@ -850,6 +900,7 @@ describe.skipIf(server.url === undefined)(
           const second = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "tier",
               tierKey: TIER.tierKey,
               returnStep: "review",
@@ -866,11 +917,12 @@ describe.skipIf(server.url === undefined)(
           await runRecipientStep(ctx(connection, token), recipientForm());
           const total =
             (await active(connection, token)).quote?.totalMinor ?? -1;
-          await tx`UPDATE checkout_draft
+          await tx`UPDATE checkout_draft_line
                       SET quote = jsonb_set(quote, '{digest}', to_jsonb(${"0".repeat(64)}::text))`;
           const outcome = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "confirmPrice",
               seenTotalMinor: String(total),
               seenCurrency: "PLN",
@@ -895,6 +947,7 @@ describe.skipIf(server.url === undefined)(
           const outcome = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "confirmPrice",
               seenTotalMinor: String(shown),
               seenCurrency: "EUR",
@@ -910,8 +963,8 @@ describe.skipIf(server.url === undefined)(
         await run(async (tx) => {
           const connection = await seeded(tx);
           await started(connection);
-          expect(await expireDrafts(at(24 * HOUR - 1), connection)).toBe(0);
-          expect(await expireDrafts(at(24 * HOUR), connection)).toBe(1);
+          expect(await expireDrafts(at(30 * DAY - 1), connection)).toBe(0);
+          expect(await expireDrafts(at(30 * DAY), connection)).toBe(1);
         });
       });
 
@@ -1006,6 +1059,7 @@ describe.skipIf(server.url === undefined)(
           const stale = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "confirmPrice",
               seenTotalMinor: String(shown - 700),
               seenCurrency: "PLN",
@@ -1018,6 +1072,7 @@ describe.skipIf(server.url === undefined)(
           const confirmed = await runUpdateSelection(
             ctx(connection, token),
             form({
+              line: "1",
               intent: "confirmPrice",
               seenTotalMinor: String(current),
               seenCurrency: "PLN",
@@ -1042,8 +1097,9 @@ describe.skipIf(server.url === undefined)(
             ...(await validStart()),
             expectedTotalMinor: String(shown + 1),
           });
-          await saveStep(
+          await saveLine(
             (await active(connection, token)).id,
+            1,
             { stepsCompleted: 1 },
             at(1),
             connection,
@@ -1061,7 +1117,7 @@ describe.skipIf(server.url === undefined)(
           const connection = await seeded(tx);
           const token = await started(connection);
           await runRecipientStep(ctx(connection, token), recipientForm());
-          await tx`UPDATE checkout_draft
+          await tx`UPDATE checkout_draft_line
                       SET quote = jsonb_set(quote, '{digest}', to_jsonb(${"0".repeat(64)}::text))`;
           const outcome = await runCardAndBuyerStep(
             ctx(connection, token),
@@ -1080,8 +1136,9 @@ describe.skipIf(server.url === undefined)(
       it("restarts at step 1 when the stored quote no longer parses, instead of reloading the step (hole 16)", async () => {
         for (const breakQuote of [
           (tx: Tx) =>
-            tx`UPDATE checkout_draft SET quote = jsonb_set(quote, '{totalMinor}', to_jsonb('x'::text))`,
-          (tx: Tx) => tx`UPDATE checkout_draft SET quote = quote - 'lines'`,
+            tx`UPDATE checkout_draft_line SET quote = jsonb_set(quote, '{totalMinor}', to_jsonb('x'::text))`,
+          (tx: Tx) =>
+            tx`UPDATE checkout_draft_line SET quote = quote - 'lines'`,
         ]) {
           await run(async (tx) => {
             const connection = await seeded(tx);

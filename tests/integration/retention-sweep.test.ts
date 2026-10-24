@@ -802,6 +802,8 @@ describe.skipIf(server.url === undefined)(
           [
             ["buyer_personal", "applied"],
             ["checkout_draft", "no_handler"],
+            // spec 010 §14 A-founder-2026-10-22 item 2 C (`0020`); its handler is TASK-207's.
+            ["checkout_draft_personal", "no_handler"],
             ["consent_records", "applied"],
             ["delivery_photo", "storage_unavailable"],
             ["demo_order_personal", "no_handler"],

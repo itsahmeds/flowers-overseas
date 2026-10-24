@@ -26,6 +26,7 @@ import {
   SELF_SCOPED_TABLES,
   STAFF_ONLY_TABLES,
   SYSTEM_ONLY_TABLES,
+  SYSTEM_WRITE_ADMIN_READ_TABLES,
 } from "../../db/rls.ts";
 import {
   MIGRATIONS_DIR,
@@ -135,8 +136,11 @@ describe("migration 0011 — coverage", () => {
   });
 
   it("gives every table its staff policy: admin and system, everything", () => {
-    const systemOnly: readonly string[] = SYSTEM_ONLY_TABLES;
-    for (const table of MIRROR.filter((name) => !systemOnly.includes(name))) {
+    const withoutStaff: readonly string[] = [
+      ...SYSTEM_ONLY_TABLES,
+      ...SYSTEM_WRITE_ADMIN_READ_TABLES,
+    ];
+    for (const table of MIRROR.filter((name) => !withoutStaff.includes(name))) {
       expect(policiesOf(table), table).toContainEqual({
         name: `${table}_staff`,
         table,
@@ -156,6 +160,7 @@ describe("migration 0011 — coverage", () => {
       ...SELF_SCOPED_TABLES,
       ...STAFF_ONLY_TABLES,
       ...SYSTEM_ONLY_TABLES,
+      ...SYSTEM_WRITE_ADMIN_READ_TABLES,
     ]);
     expect([...classified].sort()).toEqual(MIRROR);
   });
@@ -172,6 +177,28 @@ describe("migration 0011 — each class gets exactly its policies", () => {
           command: "ALL",
           using: "public.app_current_role() = 'system'",
           check: "public.app_current_role() = 'system'",
+        },
+      ]);
+    }
+  });
+
+  it("system-write, admin-read tables have exactly those two policies (spec 010 §14 A-founder-2026-10-22)", () => {
+    expect(SYSTEM_WRITE_ADMIN_READ_TABLES).toEqual(["purchase"]);
+    for (const table of SYSTEM_WRITE_ADMIN_READ_TABLES) {
+      expect(policiesOf(table), table).toEqual([
+        {
+          name: `${table}_system`,
+          table,
+          command: "ALL",
+          using: "public.app_current_role() = 'system'",
+          check: "public.app_current_role() = 'system'",
+        },
+        {
+          name: `${table}_admin`,
+          table,
+          command: "SELECT",
+          using: "public.app_current_role() = 'admin'",
+          check: "",
         },
       ]);
     }

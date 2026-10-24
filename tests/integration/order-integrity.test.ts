@@ -239,6 +239,8 @@ describe.skipIf(server.url === undefined)(
           "order_mode_immutable",
           "order_set_updated_at",
           "order_status_guard",
+          // 0019 (TASK-347): the deferred check that a purchase totals its orders.
+          "purchase_total_check",
         ].sort(),
       );
       for (const state of STATES.filter((s) => s.key !== INITIAL_STATUS)) {

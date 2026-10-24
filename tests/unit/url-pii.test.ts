@@ -89,6 +89,13 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "the checkout's step selector (spec 010 §2: `?step=` is the only query; no personal data)",
   },
+  // Spec 010 §14 A-founder-2026-10-22 item 5 (TASK-348): `&line={n}` beside `step`, an integer
+  // position from 1 to BASKET_MAX_LINES, never personal data (AC-34).
+  {
+    entry: "src/modules/checkout/steps.ts#line",
+    reason:
+      "the basket line a checkout screen is for (spec 010 §14 A-founder-2026-10-22: `&line=` is an integer position)",
+  },
   {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
@@ -542,102 +549,143 @@ const GA4_LIKE = [
   "",
 ].join("\n");
 
+/**
+ * Each case below parses the whole of `src/` with the TypeScript compiler: about 7 s on a busy
+ * machine and more on a shared CI runner, past Vitest's 5 s default (TASK-348 added files to it).
+ */
+const REAL_TREE_MS = 60_000;
+
 describe("the real tree (T-59)", () => {
-  it("is green with EXTERNAL_QUERY_KEYS = [src/modules/analytics/ga4.ts#id]", () => {
-    expect(EXTERNAL).toEqual([
-      "src/modules/analytics/ga4.ts#id",
-      "src/lib/auth/surface.ts#t",
-      "src/lib/auth/surface.ts#state",
-      "src/lib/auth/surface.ts#token",
-      "src/lib/auth/surface.ts#callbackUrl",
-      "src/modules/checkout/steps.ts#step",
-      "src/app/admin/(signed-in)/users/actions.ts#result",
-      "src/app/admin/(signed-in)/audit/page.tsx#entity",
-      "src/app/admin/(signed-in)/audit/page.tsx#actor",
-      "src/app/admin/(signed-in)/audit/page.tsx#action",
-      "src/app/admin/(signed-in)/audit/page.tsx#from",
-      "src/app/admin/(signed-in)/audit/page.tsx#to",
-      "src/app/admin/(signed-in)/audit/page.tsx#open",
-      "src/modules/payments/stripe/adapter.ts#expand[]",
-      "src/modules/payments/stripe/adapter.ts#created[gte]",
-      "src/modules/payments/stripe/adapter.ts#limit",
-      "src/modules/payments/stripe/adapter.ts#starting_after",
-      "src/app/admin/(signed-in)/flags/actions.ts#result",
-      "src/app/admin/(signed-in)/flags/actions.ts#key",
-      "src/app/admin/(signed-in)/flags/actions.ts#ref",
-    ]);
-    expect(urlPiiViolations(repoRoot)).toEqual([]);
-  });
+  it(
+    "is green with EXTERNAL_QUERY_KEYS = [src/modules/analytics/ga4.ts#id]",
+    () => {
+      expect(EXTERNAL).toEqual([
+        "src/modules/analytics/ga4.ts#id",
+        "src/lib/auth/surface.ts#t",
+        "src/lib/auth/surface.ts#state",
+        "src/lib/auth/surface.ts#token",
+        "src/lib/auth/surface.ts#callbackUrl",
+        "src/modules/checkout/steps.ts#step",
+        "src/modules/checkout/steps.ts#line",
+        "src/app/admin/(signed-in)/users/actions.ts#result",
+        "src/app/admin/(signed-in)/audit/page.tsx#entity",
+        "src/app/admin/(signed-in)/audit/page.tsx#actor",
+        "src/app/admin/(signed-in)/audit/page.tsx#action",
+        "src/app/admin/(signed-in)/audit/page.tsx#from",
+        "src/app/admin/(signed-in)/audit/page.tsx#to",
+        "src/app/admin/(signed-in)/audit/page.tsx#open",
+        "src/modules/payments/stripe/adapter.ts#expand[]",
+        "src/modules/payments/stripe/adapter.ts#created[gte]",
+        "src/modules/payments/stripe/adapter.ts#limit",
+        "src/modules/payments/stripe/adapter.ts#starting_after",
+        "src/app/admin/(signed-in)/flags/actions.ts#result",
+        "src/app/admin/(signed-in)/flags/actions.ts#key",
+        "src/app/admin/(signed-in)/flags/actions.ts#ref",
+      ]);
+      expect(urlPiiViolations(repoRoot)).toEqual([]);
+    },
+    REAL_TREE_MS,
+  );
 
-  it("finds the listing's page and ga4's id, so the scan is not reading nothing", () => {
-    const named = namedQueryKeys(repoRoot, "checker");
-    expect(
-      named.some(
-        (n) => n.file === "src/modules/analytics/ga4.ts" && n.key === "id",
-      ),
-    ).toBe(true);
-    expect(named.some((n) => n.key === "page")).toBe(true);
-  });
-
-  it("keeps today's five dynamic segments, none a PII key", () => {
-    const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
-      const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
-      return name === undefined ? [] : [name];
-    });
-    expect([...new Set(names)].sort()).toEqual([
-      "child",
-      "grandchild",
-      "locale",
-      "nextauth",
-      "segment",
-    ]);
-  });
-
-  it("reads QUERY_KEYS = page, sort from src/config/url-keys.ts", () => {
-    expect(readQueryKeys(repoRoot)).toEqual(["page", "sort"]);
-  });
-
-  it("goes red when the receiver is matched by method name instead of the checker", () => {
-    const violations = urlPiiViolations(repoRoot, { receiver: "name" });
-    expect(
-      violations.some((v) =>
-        v.startsWith(
-          'src/lib/consent.ts:196: query key "content-type" (URLSearchParams.get)',
+  it(
+    "finds the listing's page and ga4's id, so the scan is not reading nothing",
+    () => {
+      const named = namedQueryKeys(repoRoot, "checker");
+      expect(
+        named.some(
+          (n) => n.file === "src/modules/analytics/ga4.ts" && n.key === "id",
         ),
-      ),
-    ).toBe(true);
-  });
+      ).toBe(true);
+      expect(named.some((n) => n.key === "page")).toBe(true);
+    },
+    REAL_TREE_MS,
+  );
 
-  it("names ga4.ts:13 when the ga4.ts#id entry is removed", () => {
-    expect(
-      urlPiiViolations(repoRoot, {
-        external: EXTERNAL.filter(
-          (entry) => !entry.startsWith("src/modules/analytics/ga4.ts#"),
+  it(
+    "keeps today's five dynamic segments, none a PII key",
+    () => {
+      const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
+        const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
+        return name === undefined ? [] : [name];
+      });
+      expect([...new Set(names)].sort()).toEqual([
+        "child",
+        "grandchild",
+        "locale",
+        "nextauth",
+        "segment",
+      ]);
+    },
+    REAL_TREE_MS,
+  );
+
+  it(
+    "reads QUERY_KEYS = page, sort from src/config/url-keys.ts",
+    () => {
+      expect(readQueryKeys(repoRoot)).toEqual(["page", "sort"]);
+    },
+    REAL_TREE_MS,
+  );
+
+  it(
+    "goes red when the receiver is matched by method name instead of the checker",
+    () => {
+      const violations = urlPiiViolations(repoRoot, { receiver: "name" });
+      expect(
+        violations.some((v) =>
+          v.startsWith(
+            'src/lib/consent.ts:196: query key "content-type" (URLSearchParams.get)',
+          ),
         ),
-      }),
-    ).toEqual([
-      'src/modules/analytics/ga4.ts:13: query key "id" (literal) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
-    ]);
-  });
+      ).toBe(true);
+    },
+    REAL_TREE_MS,
+  );
 
-  it("goes red on an entry src/x.ts#email", () => {
-    expect(
-      urlPiiViolations(repoRoot, { external: [...EXTERNAL, "src/x.ts#email"] }),
-    ).toEqual([
-      'EXTERNAL_QUERY_KEYS: entry "src/x.ts#email" is a PII key name (AC-55 (b))',
-      'EXTERNAL_QUERY_KEYS: entry "src/x.ts#email": src/x.ts no longer names "email" (AC-55 (e))',
-    ]);
-  });
+  it(
+    "names ga4.ts:13 when the ga4.ts#id entry is removed",
+    () => {
+      expect(
+        urlPiiViolations(repoRoot, {
+          external: EXTERNAL.filter(
+            (entry) => !entry.startsWith("src/modules/analytics/ga4.ts#"),
+          ),
+        }),
+      ).toEqual([
+        'src/modules/analytics/ga4.ts:13: query key "id" (literal) is in neither QUERY_KEYS nor EXTERNAL_QUERY_KEYS (AC-55 (c))',
+      ]);
+    },
+    REAL_TREE_MS,
+  );
 
-  it("goes red on an entry whose file no longer names its key", () => {
-    expect(
-      urlPiiViolations(repoRoot, {
-        external: [...EXTERNAL, "src/modules/analytics/ga4.ts#tid"],
-      }),
-    ).toEqual([
-      'EXTERNAL_QUERY_KEYS: entry "src/modules/analytics/ga4.ts#tid": src/modules/analytics/ga4.ts no longer names "tid" (AC-55 (e))',
-    ]);
-  });
+  it(
+    "goes red on an entry src/x.ts#email",
+    () => {
+      expect(
+        urlPiiViolations(repoRoot, {
+          external: [...EXTERNAL, "src/x.ts#email"],
+        }),
+      ).toEqual([
+        'EXTERNAL_QUERY_KEYS: entry "src/x.ts#email" is a PII key name (AC-55 (b))',
+        'EXTERNAL_QUERY_KEYS: entry "src/x.ts#email": src/x.ts no longer names "email" (AC-55 (e))',
+      ]);
+    },
+    REAL_TREE_MS,
+  );
+
+  it(
+    "goes red on an entry whose file no longer names its key",
+    () => {
+      expect(
+        urlPiiViolations(repoRoot, {
+          external: [...EXTERNAL, "src/modules/analytics/ga4.ts#tid"],
+        }),
+      ).toEqual([
+        'EXTERNAL_QUERY_KEYS: entry "src/modules/analytics/ga4.ts#tid": src/modules/analytics/ga4.ts no longer names "tid" (AC-55 (e))',
+      ]);
+    },
+    REAL_TREE_MS,
+  );
 });
 
 describe("scratch trees (T-59)", () => {
