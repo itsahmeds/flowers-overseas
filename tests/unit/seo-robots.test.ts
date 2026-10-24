@@ -67,6 +67,7 @@ Disallow: /vendor/
 Disallow: /account/
 Disallow: /checkout/
 Disallow: /*/basket
+Disallow: /*/checkout
 Disallow: /track/
 Disallow: /*/track/
 Disallow: /*/account/
@@ -169,6 +170,10 @@ describe("the disallow list against plan/02 §7 (AC-12, T-13)", () => {
       "/checkout/payment",
       "/en-gb/basket",
       "/pl/basket",
+      // Spec 010 AC-30 (TASK-204): the locale-prefixed checkout and its confirmation.
+      "/en-gb/checkout",
+      "/pl/checkout?step=card&line=2",
+      "/de/checkout/done",
       "/track/abc123",
       "/search?q=roses",
       "/dev/components",

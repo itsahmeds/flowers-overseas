@@ -26,6 +26,7 @@
  */
 import {
   type CountryCode,
+  getCountries,
   getCountryCallingCode,
   isSupportedCountry,
   parsePhoneNumberFromString,
@@ -155,4 +156,13 @@ export function parseBuyerPhone(
 /** Whether a two-letter code is a country the library knows a numbering plan for. */
 export function hasNumberingPlan(countryIso: string): boolean {
   return planFor(countryIso) !== undefined;
+}
+
+/**
+ * Every country a buyer may live in (spec 010 §2 step 2, §8 geo-blocking: any country may be
+ * chosen): the regions the numbering-plan library knows, so the buyer's phone can be parsed for
+ * whichever one is picked. Two-letter codes, sorted.
+ */
+export function residenceCountryCodes(): readonly string[] {
+  return [...getCountries()].filter((code) => /^[A-Z]{2}$/u.test(code)).sort();
 }

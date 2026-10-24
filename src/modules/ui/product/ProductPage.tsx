@@ -87,6 +87,17 @@ export interface ProductPageProps {
    * fresh-flower promise's title links to it. Absent: the title is plain text, as before.
    */
   readonly guaranteeHref?: string | undefined;
+  /**
+   * The checkout entry the route decided with `checkoutEntryFor()` (spec 010 §5.3, the spec 009
+   * amendment; AC-5; TASK-206): `demo` draws "Try a demo order", `continue` the live label with
+   * the total, both beside "Add to basket"; `none` (or absent) keeps the status pill. Both are
+   * submits of the buy section's form posting to `action`, so no JavaScript, no new island, no
+   * link and nothing that varies by visitor.
+   */
+  readonly checkout?: {
+    readonly entry: "none" | "demo" | "continue";
+    readonly action: string;
+  };
 }
 
 /** The related row's full length, which the approved heading names in words ("Six more"). */
@@ -105,6 +116,13 @@ const G12 = "lg:grid-cols-12 lg:gap-x-[clamp(24px,2.22vw,32px)]";
 const LEFT = "lg:col-[1/8]";
 const RIGHT = "lg:col-[9/13]";
 
+/** The checkout entry's two submits (spec 010 AC-5): 56 px tall, full width, the pill's shape. */
+const ENTRY_BUTTON =
+  "inline-grid min-h-[56px] w-full cursor-pointer place-items-center rounded-full px-[20px] text-center font-bold";
+const ENTRY_GHOST =
+  "bg-card text-ink shadow-[inset_0_0_0_1.5px_var(--color-ink)] hover:bg-surface-muted";
+const ENTRY_PRIMARY = "bg-accent text-on-accent hover:bg-accent-strong";
+
 /** The id of the primary action in the flow, which the docked bar links to (AC-48's twin). */
 export const BUY_ACTION_ID = "buy";
 
@@ -112,12 +130,15 @@ export function ProductPage({
   view,
   breadcrumb,
   guaranteeHref,
+  checkout,
 }: ProductPageProps): ReactElement {
   const t = useTranslations();
   const product = useTranslations("product");
   const catalog = useTranslations("catalog");
+  const checkoutCopy = useTranslations("checkout");
   const code = localeOf(view.locale);
   const country = messageFor(t, view.country.nameKey);
+  const entryOpen = checkout !== undefined && checkout.entry !== "none";
   const live = view.delivery.state === "live";
   const selectedTier = view.tiers.find(
     (tier) => tier.tierKey === view.selectedTierKey,
@@ -254,54 +275,117 @@ export function ProductPage({
               </p>
             )}
 
-            <div className="col-span-full">
-              <TierSelector
-                locale={code}
-                look="buy"
-                say={say}
-                selectedTierKey={view.selectedTierKey}
-                tiers={view.tiers}
-              />
-            </div>
+            {/* The buy section's form (spec 010 AC-5): the size and date radios, the selection's
+                keys and what the page displayed for each size, so the start route can open step 1
+                with the price-changed notice when its total differs (AC-6). `display: contents`
+                keeps the grid's rows. A plain submit (Enter) reloads this page, which reads no
+                parameter. */}
+            <form className="contents" data-fo-pdp-form="" method="get">
+              {entryOpen ? (
+                <>
+                  <input name="locale" type="hidden" value={view.locale} />
+                  <input
+                    name="countryIso"
+                    type="hidden"
+                    value={view.country.iso2}
+                  />
+                  <input name="sku" type="hidden" value={view.product.sku} />
+                  <input
+                    name="expectedCurrency"
+                    type="hidden"
+                    value={view.price.displayPrice.currency}
+                  />
+                  {view.tiers.map((tier) => (
+                    <input
+                      key={tier.tierKey}
+                      name={`expect-${tier.tierKey}`}
+                      type="hidden"
+                      value={String(tier.price.amountMinor)}
+                    />
+                  ))}
+                </>
+              ) : null}
+              <div className="col-span-full">
+                <TierSelector
+                  locale={code}
+                  look="buy"
+                  say={say}
+                  selectedTierKey={view.selectedTierKey}
+                  tiers={view.tiers}
+                />
+              </div>
 
-            <div className="col-span-full">
-              <DeliveryDatePicker
-                country={country}
-                delivery={view.delivery}
-                locale={code}
-                look="buy"
-                {...(view.selectedDate === undefined
-                  ? {}
-                  : { selectedDate: view.selectedDate })}
-                {...(view.country.corridorPath === undefined
-                  ? {}
-                  : { corridorPath: view.country.corridorPath })}
-              />
-            </div>
+              <div className="col-span-full">
+                <DeliveryDatePicker
+                  country={country}
+                  delivery={view.delivery}
+                  locale={code}
+                  look="buy"
+                  {...(view.selectedDate === undefined
+                    ? {}
+                    : { selectedDate: view.selectedDate })}
+                  {...(view.country.corridorPath === undefined
+                    ? {}
+                    : { corridorPath: view.country.corridorPath })}
+                />
+              </div>
 
-            {/* The primary action. Phase 0: the round-2 status pill, never a button, with the demo
+              {/* The primary action. Phase 0: the round-2 status pill, never a button, with the demo
                 sentence (N2) under it at every width (A24 clause 1). */}
-            <div
-              className="col-span-full grid gap-[10px]"
-              data-fo-pdp-action
-              id={BUY_ACTION_ID}
-            >
-              <p
-                className="bg-surface-muted text-ink-muted m-0 grid min-h-[56px] place-items-center rounded-full px-[20px] text-center font-bold shadow-[inset_0_0_0_1px_var(--color-rule)]"
-                data-fo-pdp-status
-                role="status"
+              <div
+                className="col-span-full grid gap-[10px]"
+                data-fo-pdp-action
+                id={BUY_ACTION_ID}
               >
-                {product("demo.heading")}
-              </p>
-              {live ? null : (
-                <p
-                  className="text-ink-muted text-ui m-0 leading-[1.4]"
-                  data-fo-pdp-demo
-                >
-                  {product("demo.body")}
-                </p>
-              )}
-            </div>
+                {entryOpen ? (
+                  <div
+                    className={`grid gap-[10px] ${checkout?.entry === "demo" ? "sm:grid-cols-2" : ""}`}
+                    data-fo-pdp-entry={checkout?.entry}
+                  >
+                    <button
+                      className={`${ENTRY_BUTTON} ${checkout?.entry === "continue" ? ENTRY_PRIMARY : ENTRY_GHOST}`}
+                      formAction={checkout?.action}
+                      formMethod="post"
+                      name="then"
+                      type="submit"
+                      value="checkout"
+                    >
+                      {checkout?.entry === "continue"
+                        ? checkoutCopy("entry.continue", {
+                            total: selectedPrice ?? "",
+                          })
+                        : checkoutCopy("demo.try")}
+                    </button>
+                    <button
+                      className={`${ENTRY_BUTTON} ${ENTRY_GHOST}`}
+                      formAction={checkout?.action}
+                      formMethod="post"
+                      name="then"
+                      type="submit"
+                      value="basket"
+                    >
+                      {checkoutCopy("basket.add")}
+                    </button>
+                  </div>
+                ) : (
+                  <p
+                    className="bg-surface-muted text-ink-muted m-0 grid min-h-[56px] place-items-center rounded-full px-[20px] text-center font-bold shadow-[inset_0_0_0_1px_var(--color-rule)]"
+                    data-fo-pdp-status
+                    role="status"
+                  >
+                    {product("demo.heading")}
+                  </p>
+                )}
+                {live ? null : (
+                  <p
+                    className="text-ink-muted text-ui m-0 leading-[1.4]"
+                    data-fo-pdp-demo
+                  >
+                    {product("demo.body")}
+                  </p>
+                )}
+              </div>
+            </form>
 
             <p
               className="text-ink-muted border-rule col-span-full m-0 border-t pt-[16px] text-sm"

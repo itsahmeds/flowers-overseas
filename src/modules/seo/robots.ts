@@ -35,7 +35,7 @@
  * (`/en-gb/checkout/*`), and their localised segments do not exist yet (specs 008/010/013 own
  * them, `src/config/locales.data.ts` has no `checkout`/`search`/`track` key today). The unprefixed
  * forms of spec 007 §2 are what ships here; the locale-prefixed forms are added by the spec that
- * creates the segment, to this array. `/account/`, `/admin/`, `/vendor/` and `/api/` carry no
+ * creates the segment, to this array (spec 010 added the locale-prefixed checkout, TASK-204). `/account/`, `/admin/`, `/vendor/` and `/api/` carry no
  * locale prefix (`plan/02` §4.1) and are complete as written.
  */
 import type { MetadataRoute } from "next";
@@ -66,6 +66,8 @@ export const DISALLOWED_PATHS: readonly string[] = [
   // catalogue slug does, and a new one that did would be blocked (`tests/unit/basket-seo.test.ts`
   // pins the slug set).
   "/*/basket",
+  // Spec 010 §6, AC-30 (TASK-204): the checkout and its confirmation under every locale prefix.
+  "/*/checkout",
   "/track/",
   // Spec 018 §2 "Cross-cutting", AC-13 (TASK-337): the locale-prefixed token and account pages.
   // The trailing slash is the point: `/{locale}/track` (the lookup) and `/{locale}/account` (its

@@ -51,7 +51,10 @@ export {
   TRANSACTIONAL_PAGE_TYPES,
   TRANSACTIONAL_ROBOTS,
   TRANSACTIONAL_ROBOTS_HEADER,
+  TRANSACTIONAL_ROBOTS_META,
+  type TransactionalHeaderRule,
   type TransactionalPageType,
+  checkoutHeaderRules,
   transactionalMetadata,
 } from "./transactional.ts";
 
