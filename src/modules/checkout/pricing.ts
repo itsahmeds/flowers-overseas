@@ -287,11 +287,11 @@ function sameAmounts(left: Quote, right: Quote): boolean {
 /**
  * What became of a line's quote (AC-17, per line):
  *
- *  - `ok` — still the price; `quote` is the stored one, unchanged;
- *  - `reissued` — it expired and the re-derived price is the same: `quote` is a fresh signature
+ *  - `ok`: still the price; `quote` is the stored one, unchanged;
+ *  - `reissued`: it expired and the re-derived price is the same: `quote` is a fresh signature
  *    of it, stored with no notice;
- *  - `changed` — the price moved: `quote` is the new price, the notice opens;
- *  - `tampered` — the stored quote does not verify (an edited row, a rotated secret) or is in
+ *  - `changed`: the price moved: `quote` is the new price, the notice opens;
+ *  - `tampered`: the stored quote does not verify (an edited row, a rotated secret) or is in
  *    another currency than the basket's: it is discarded, `quote` is the fresh price and the line
  *    restarts at step 1.
  */

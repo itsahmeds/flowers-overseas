@@ -1,5 +1,5 @@
 /**
- * `placePurchase` — the orders of one basket, bought together (spec 010 §14 A-founder-2026-10-22
+ * `placePurchase`: the orders of one basket, bought together (spec 010 §14 A-founder-2026-10-22
  * items 1 D1, D9, 2 A and 3; AC-63 service half, AC-66 purchase half; TASK-347).
  *
  * In the caller's transaction (or one it opens), and in this order:
