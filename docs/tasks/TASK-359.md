@@ -31,7 +31,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: the refund effects (AC-17 to AC-19, AC-21, AC-23) need spec 013's `refund`/`adminRefund` (TASK-261) and the per-order ceiling (TASK-350); neither exists. `parseMinorUnits`, `remainingRefundable` and `suggestedRefunds` are built in PR 398. `open`.
 
 ## Progress
 
@@ -39,7 +39,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: `parseMinorUnits` (AC-16 in full, T-17), `remainingRefundable`, `suggestedRefunds` with half-to-even (T-23) and the schema half of AC-20 (T-21) built in PR 398, mutation-checked. Next: the refund effects once TASK-261 and TASK-350 merge.
 
 ## Result
 

@@ -30,7 +30,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: needs the `notification_delivery` table and spec 016's pipeline (TASK-327, TASK-331, TASK-333); none exists on any branch. Not started. `open`.
 
 ## Progress
 
