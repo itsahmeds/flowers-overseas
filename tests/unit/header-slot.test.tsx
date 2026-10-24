@@ -122,6 +122,7 @@ function drawn(props: SiteHeaderProps): {
   row: Hrefs;
   menu: Hrefs;
   send: string | undefined;
+  basket: string | undefined;
 } {
   const html = renderToStaticMarkup(
     <NextIntlClientProvider
@@ -150,10 +151,14 @@ function drawn(props: SiteHeaderProps): {
   const send = anchors
     .map((tag) => attr(tag, "href"))
     .find((href) => href?.endsWith("#send"));
+  // The Basket link (spec 010 D10; TASK-349) carries `data-fo-header-item="basket"` but is the
+  // header's icon link, not a row entry: it is asserted on its own, so the row stays main's.
+  const { basket, ...row } = collect("data-fo-header-item");
   return {
-    row: collect("data-fo-header-item"),
+    row,
     menu: collect("data-fo-menu-item"),
     send,
+    basket,
   };
 }
 
@@ -202,6 +207,11 @@ const OUT_OF_CONTEXT: readonly {
     path: "../@header/default.tsx",
     params: (locale) => ({ locale }),
   },
+  {
+    name: "the basket",
+    path: "(checkout)/basket/page.tsx",
+    params: (locale) => ({ locale }),
+  },
 ];
 
 describe("out of context, the row and the Menu keep main's hrefs (AC-3, T-03)", () => {
@@ -211,12 +221,13 @@ describe("out of context, the row and the Menu keep main's hrefs (AC-3, T-03)", 
         const target = path.startsWith("../")
           ? path.slice("../@header/".length)
           : path;
-        const { row, menu, send } = drawn(
+        const { row, menu, send, basket } = drawn(
           await headerProps(target, params(locale)),
         );
         expect(entriesOf(row)).toEqual(entriesOf(baseline[locale].row));
         expect(entriesOf(menu)).toEqual(entriesOf(baseline[locale].menu));
         expect(send).toBe(baseline[locale].send);
+        expect(basket).toBe(`/${locale}/basket`);
       });
     }
   }
@@ -314,12 +325,13 @@ describe("in a destination's context, the shop items link to its own pages (AC-1
   for (const locale of ["en", "en-gb"] as const) {
     for (const { name, path, country, params } of IN_CONTEXT) {
       it(`${name} in ${locale}`, async () => {
-        const { row, menu, send } = drawn(
+        const { row, menu, send, basket } = drawn(
           await headerProps(path, params(locale)),
         );
         expect(entriesOf(row)).toEqual(entriesOf(inContext(locale, country)));
         expect(entriesOf(menu)).toEqual(entriesOf(inContext(locale, country)));
         expect(send).toBe(baseline[locale].send);
+        expect(basket).toBe(`/${locale}/basket`);
       });
     }
   }

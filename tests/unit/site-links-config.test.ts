@@ -157,6 +157,18 @@ describe("src/config/site-links.ts", () => {
         expect(INFO_PAGE_IDS, link.id).toContain(link.target.page);
         continue;
       }
+      if (link.target.kind === "transactional") {
+        // Spec 010's transactional pages (TASK-349): the English word under every locale prefix
+        // (spec 010 §13 Q10), owned by spec 010.
+        expect(link.target.page, link.id).toBe("basket");
+        expect(link.owningSpec, link.id).toBe("010");
+        for (const locale of launchLocales) {
+          expect(localePath(locale, "home", link.target.page)).toBe(
+            `/${locale}/basket`,
+          );
+        }
+        continue;
+      }
       expect(link.target.kind, link.id).toBe("pending");
       expect(isPublished(link.id), link.id).toBe(false);
     }
@@ -173,6 +185,8 @@ describe("src/config/site-links.ts", () => {
     // so does a missing one.
     expect(published).toEqual([
       "locale-home",
+      // Spec 010 §14 A-founder-2026-10-22 D10 (TASK-349): `/{locale}/basket` answers 200.
+      "basket",
       "destinations",
       "occasions",
       // Spec 041's four trust links (TASK-182).
