@@ -252,7 +252,9 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
             href: node.getAttribute("href") ?? "",
           })),
         );
-      expect(row.map((item) => item.id)).toEqual([...ROW_IDS]);
+      // …then the Basket icon link (spec 010 §14 A-founder-2026-10-22 D10; TASK-349).
+      expect(row.map((item) => item.id)).toEqual([...ROW_IDS, "basket"]);
+      expect(row.at(-1)?.href).toBe(`/${locale}/basket`);
       for (const item of row) {
         expect(item.tag, item.id).toBe("A");
         expect(item.href, item.id).toMatch(new RegExp(`^/${locale}/`, "u"));
@@ -261,7 +263,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       expect(row[0]?.href).toMatch(
         /\/(?:poland|polen|polska)\/(?:flowers|blumen|kwiaty)$/u,
       );
-      expect(row.at(-1)?.href).toBe(localePath(locale, "destinations"));
+      expect(row.at(-2)?.href).toBe(localePath(locale, "destinations"));
 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
       // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and

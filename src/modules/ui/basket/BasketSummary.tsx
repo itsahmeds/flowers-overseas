@@ -64,7 +64,7 @@ export function BasketSummary({
       <div
         aria-atomic="true"
         aria-live="polite"
-        className="border-ink/18 mt-[18px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]"
+        className="border-rule mt-[18px] flex items-baseline justify-between gap-[16px] border-t border-solid pt-[14px]"
         data-fo-basket-total=""
       >
         <span className="font-bold">{totalLabel}</span>

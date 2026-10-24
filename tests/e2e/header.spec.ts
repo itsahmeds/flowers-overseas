@@ -316,8 +316,13 @@ test.describe("the site header (AC-7)", () => {
     await page.goto("/en");
 
     // Every keyed entry is a link (spec 004 §14 A20; TASK-173): not one `<span>` dressed as one.
+    // Eight row entries and the Basket icon link (spec 010 §14 A-founder-2026-10-22 D10;
+    // TASK-349), whose page answers 200 and which is drawn with `rel="nofollow"`.
     const items = page.locator("[data-fo-header-item]");
-    await expect(items).toHaveCount(8);
+    await expect(items).toHaveCount(9);
+    const basket = page.locator('[data-fo-header-item="basket"]');
+    await expect(basket).toHaveAttribute("href", "/en/basket");
+    await expect(basket).toHaveAttribute("rel", "nofollow");
     for (const handle of await items.all()) {
       expect(await handle.evaluate((node) => node.tagName)).toBe("A");
     }
@@ -325,7 +330,6 @@ test.describe("the site header (AC-7)", () => {
     for (const id of [
       "sign-in",
       "my-orders",
-      "basket",
       "for-florists",
       "add-ons",
       "same-day-delivery",
@@ -338,7 +342,8 @@ test.describe("the site header (AC-7)", () => {
     for (const word of [
       "Sign in",
       "My orders",
-      "Basket",
+      // "Basket" is the link's visually hidden name now; "Basket (" was the dead label.
+      "Basket (",
       "For florists",
       "Add-ons",
     ]) {
@@ -404,8 +409,9 @@ test.describe("the site header (AC-7)", () => {
       // At 1 440 px the logo, the eight category links, the Send pill, the help line and the
       // switcher's one sibling shown locale (§14 A4; spec 003 §14 A-founder-2026-10-14c). At 390 px only the logo is a rendered link: the Menu
       // is closed, and its summary is measured below (§14 A24 clause 3).
+      // The Basket icon link is rendered at both widths (spec 010 D10, §13 Q26; TASK-349).
       expect(measured.length, String(viewport.width)).toBe(
-        viewport.width >= XL_BREAKPOINT ? 12 : 1,
+        viewport.width >= XL_BREAKPOINT ? 13 : 2,
       );
       if (viewport.width < MD_BREAKPOINT) {
         const summary = await page.locator(MENU_SUMMARY).boundingBox();

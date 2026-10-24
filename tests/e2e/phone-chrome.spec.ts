@@ -96,7 +96,14 @@ test.describe("T-52: the phone header (AC-47)", () => {
         expect(
           Math.abs((await headerBox(page)).height - PHONE_HEADER),
         ).toBeLessThanOrEqual(1);
-        expect(await displayedControls(page)).toEqual(["logo", "summary"]);
+        // The logo, the Basket icon link beside the Menu (spec 010 §14 A-founder-2026-10-22 D10,
+        // §13 Q26; TASK-349), and the Menu.
+        const locale = path.split("/")[1] ?? "";
+        expect(await displayedControls(page)).toEqual([
+          "logo",
+          `/${locale}/basket`,
+          "summary",
+        ]);
         // No utility-strip element is displayed: not the strip, not anything inside it.
         await expect(page.locator(UTILITY)).toBeHidden();
         expect(
@@ -139,8 +146,13 @@ test.describe("T-52: the phone header (AC-47)", () => {
         await expect(page.locator(`${MENU}[open]`)).toHaveCount(1);
 
         const items = page.locator("[data-fo-menu-item]");
+        // Every row entry is in the Menu; the Basket icon link stays in the bar (TASK-349).
         expect(await items.count()).toBe(
-          await page.locator("[data-fo-header-item]").count(),
+          await page
+            .locator(
+              '[data-fo-header-item]:not([data-fo-header-item="basket"])',
+            )
+            .count(),
         );
         await expect(page.locator(`${PANEL} a[href="/en-gb#send"]`)).toHaveText(
           "Send flowers",
@@ -226,7 +238,8 @@ test.describe("T-52: the phone header (AC-47)", () => {
     await expect(page.locator(UTILITY)).toBeVisible();
     expect(Math.round((await headerBox(page)).height)).toBe(83);
     await expect(page.locator(MENU)).toBeHidden();
-    await expect(page.locator("[data-fo-header-item]")).toHaveCount(8);
+    // Eight row entries and the Basket icon link (spec 010 D10; TASK-349).
+    await expect(page.locator("[data-fo-header-item]")).toHaveCount(9);
     for (const item of await page.locator("[data-fo-header-item]").all()) {
       await expect(item).toBeVisible();
     }
