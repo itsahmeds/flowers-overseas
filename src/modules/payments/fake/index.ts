@@ -65,6 +65,12 @@ export interface FakePaymentProviderOptions {
   readonly now?: () => Date;
   readonly webhookSecret?: string;
   readonly livemode?: boolean;
+  /**
+   * Prefixed to every reference (`{namespace}_pi_0001`), so several fakes can write payment rows
+   * into one database without two of them claiming the same unique `provider_ref` (TASK-257's
+   * integration suite). Defaults to `fake`.
+   */
+  readonly namespace?: string;
 }
 
 function pad(value: number): string {
@@ -88,6 +94,7 @@ export class FakePaymentProvider implements PaymentProvider {
   >();
   private readonly events: StoredEvent[] = [];
   private counter = 0;
+  private readonly namespace: string;
   /** Every call, in order, for tests that assert what the lifecycle asked for. */
   readonly calls: { method: string; ref?: string; key?: string }[] = [];
 
@@ -95,6 +102,7 @@ export class FakePaymentProvider implements PaymentProvider {
     this.clock = options.now ?? (() => new Date());
     this.webhookSecret = options.webhookSecret ?? "fake_whsec_contract";
     this.livemode = options.livemode ?? false;
+    this.namespace = options.namespace ?? "fake";
   }
 
   private next(prefix: string): string {
@@ -127,7 +135,7 @@ export class FakePaymentProvider implements PaymentProvider {
       const state = this.intents.get(existing);
       if (state !== undefined) return Promise.resolve(this.view(state));
     }
-    const ref = this.next("fake_pi");
+    const ref = this.next(`${this.namespace}_pi`);
     const state: FakeIntentState = {
       ref,
       status: "requires_payment_method",
@@ -236,7 +244,7 @@ export class FakePaymentProvider implements PaymentProvider {
     }
     state.refundedMinor += requested;
     const refund: ProviderRefund = {
-      ref: this.next("fake_re"),
+      ref: this.next(`${this.namespace}_re`),
       intentRef: ref,
       status: "succeeded",
       amount: { amountMinor: requested, currency: state.amount.currency },
@@ -342,12 +350,14 @@ export class FakePaymentProvider implements PaymentProvider {
     createdAt: Date,
   ): Promise<ProviderEvent> {
     const event: ProviderEvent = {
-      id: this.next("fake_evt"),
+      id: this.next(`${this.namespace}_evt`),
       type,
       livemode: this.livemode,
       createdAt,
       objectRef,
-      objectType: objectRef.startsWith("fake_re") ? "refund" : "payment_intent",
+      objectType: objectRef.startsWith(`${this.namespace}_re`)
+        ? "refund"
+        : "payment_intent",
     };
     const rawBody = JSON.stringify({
       id: event.id,

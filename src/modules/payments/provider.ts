@@ -43,21 +43,26 @@ export type ProviderMethodType = (typeof providerMethodTypes)[number];
 export type PaymentOrderMode = "test" | "live";
 
 /**
- * The six non-personal facts an intent carries for Radar rules (spec 013 §5.2 "metadata", §13 Q4).
- * Nothing else: no name, no email, no address, no card message.
+ * The seven non-personal facts an intent carries for Radar rules (spec 013 §5.2 "metadata", §13
+ * Q4, as §14 A-founder-2026-10-22 item 3 amends them: one intent pays a purchase of one to five
+ * orders). Nothing else: no name, no email, no address, no card message.
  */
 export interface IntentMetadataInput {
-  readonly orderId: string;
+  readonly purchaseId: string;
   readonly paymentId: string;
-  readonly destinationCountry: string;
+  /** The number of orders the intent pays for (1 to 5). */
+  readonly orderCount: number;
+  /** The distinct ISO 3166-1 alpha-2 destinations, in basket order. */
+  readonly destinationCountries: readonly [string, ...string[]];
   readonly buyerCountryDeclared: string;
   readonly isFirstOrder: boolean;
   readonly orderMode: PaymentOrderMode;
 }
 
 /**
- * What a lifecycle hands a provider to create an intent. Read from the **order**, never from a
- * request (AC-1, AC-9): `amount` is the order's `buyer_total_minor` and `buyer_currency_code`.
+ * What a lifecycle hands a provider to create an intent. Read from the **purchase**, never from a
+ * request (AC-1, AC-9; §14 A-founder-2026-10-22 item 3): `amount` is `purchase.total_minor` and
+ * `purchase.buyer_currency_code`.
  */
 export interface CreateIntentInput {
   readonly amount: Money;
@@ -66,7 +71,7 @@ export interface CreateIntentInput {
   /** `paymentMethodTypesFor()` (`methods.ts`); never empty. */
   readonly methodTypes: readonly [ProviderMethodType, ...ProviderMethodType[]];
   readonly metadata: IntentMetadataInput;
-  /** The order reference, `orderReference(orderId)` (spec 010 §14 A2.1). */
+  /** The orders' references in basket order, joined by ", " (spec 010 §14 A2.1; item 3). */
   readonly description: string;
   /** `pi:create:{paymentId}` (spec 013 §5.2, step 3). */
   readonly idempotencyKey: string;
@@ -357,9 +362,10 @@ function contractInput(
     captureMethod: "automatic",
     methodTypes: ["card"],
     metadata: {
-      orderId: CONTRACT_ORDER_ID,
+      purchaseId: CONTRACT_ORDER_ID,
       paymentId: CONTRACT_PAYMENT_ID,
-      destinationCountry: "PL",
+      orderCount: 1,
+      destinationCountries: ["PL"],
       buyerCountryDeclared: "GB",
       isFirstOrder: true,
       orderMode: "test",

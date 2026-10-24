@@ -8,18 +8,20 @@
  *  - `payment_method_types` exactly as `paymentMethodTypesFor()` gave them, never
  *    `automatic_payment_methods`, so the list is ours;
  *  - `payment_method_options.card.request_three_d_secure: 'any'` (§13 Q1);
- *  - `metadata`: exactly the six non-personal keys, for Radar rules;
- *  - `description`: the order reference. No `receipt_email` (spec 016 sends our confirmation) and
+ *  - `metadata`: exactly the seven non-personal keys of §14 A-founder-2026-10-22 item 3, for
+ *    Radar rules (`order_count` a decimal string, `destination_countries` joined by ",");
+ *  - `description`: the orders' references in basket order. No `receipt_email` (spec 016 sends our confirmation) and
  *    no `shipping` (recipient data never reaches Stripe, §8, §13 Q4).
  */
 import type { CreateIntentInput } from "../provider.ts";
 import { toStripeAmount } from "./amount.ts";
 
-/** The six metadata keys, in Stripe's snake case. Nothing else may be added (AC-1). */
+/** The seven metadata keys, in Stripe's snake case. Nothing else may be added (AC-1). */
 export const INTENT_METADATA_KEYS = [
-  "order_id",
+  "purchase_id",
   "payment_id",
-  "destination_country",
+  "order_count",
+  "destination_countries",
   "buyer_country_declared",
   "is_first_order",
   "order_mode",
@@ -31,9 +33,10 @@ export type IntentMetadata = Readonly<
 
 export function stripeCreateIntentParams(input: CreateIntentInput) {
   const metadata: IntentMetadata = {
-    order_id: input.metadata.orderId,
+    purchase_id: input.metadata.purchaseId,
     payment_id: input.metadata.paymentId,
-    destination_country: input.metadata.destinationCountry,
+    order_count: String(input.metadata.orderCount),
+    destination_countries: input.metadata.destinationCountries.join(","),
     buyer_country_declared: input.metadata.buyerCountryDeclared,
     is_first_order: input.metadata.isFirstOrder ? "true" : "false",
     order_mode: input.metadata.orderMode,
