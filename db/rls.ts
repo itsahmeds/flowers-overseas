@@ -46,6 +46,12 @@ export const PUBLIC_REFERENCE_TABLES = [
 
 /** Read by anyone, but only some rows: the condition is the migration's. */
 export const PUBLIC_FILTERED_TABLES = {
+  // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321): a post only once published; a
+  // revision only as the published revision of a published post; a tag only of such a post.
+  blog_post: "status = 'published'",
+  blog_post_country: "its post is published",
+  blog_post_occasion: "its post is published",
+  blog_post_revision: "the published revision of a published post",
   media_asset: "visibility = 'public'",
   media_variant: "its media_asset is readable (public)",
   review: "moderation_status = 'published'",
@@ -91,8 +97,27 @@ export const BUILD_ROLE_READ_TABLES = [
   "feature_flag_scope",
 ].sort();
 
-/** The build role's filtered reads: the same rows a public render sees (`PUBLIC_FILTERED_TABLES`). */
-export const BUILD_ROLE_FILTERED_TABLES = PUBLIC_FILTERED_TABLES;
+/**
+ * The build role's filtered reads granted by `0018`: the same rows a public render sees
+ * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants).
+ */
+export const BUILD_ROLE_FILTERED_TABLES = {
+  media_asset: PUBLIC_FILTERED_TABLES.media_asset,
+  media_variant: PUBLIC_FILTERED_TABLES.media_variant,
+  review: PUBLIC_FILTERED_TABLES.review,
+} as const;
+
+/**
+ * The blog tables the build reads (spec 044 §5.1 item 7; migration `0024_blog`, TASK-321): the
+ * rows a public render sees, each with a `<table>_build_read` policy equal to its public read.
+ * Authors are read through `PUBLIC_VIEWS` only.
+ */
+export const BUILD_ROLE_BLOG_TABLES = [
+  "blog_post",
+  "blog_post_country",
+  "blog_post_occasion",
+  "blog_post_revision",
+] as const;
 
 /**
  * Partner-scoped (`app.role = 'partner'`, the row's partner in `app.partner_ids`). `write` tables
@@ -169,6 +194,15 @@ export const PARTNER_VIEWS = {
   ],
 } as const;
 
+/**
+ * The public's column-limited read paths (spec 044 §5.1 item 7, migration `0024_blog`,
+ * TASK-321): a `security_barrier` view owned by `app_owner`, `SELECT` only for `app_web` and
+ * `app_build`, each listing exactly the columns it shows.
+ */
+export const PUBLIC_VIEWS = {
+  blog_author_public: ["id", "display_name"],
+} as const;
+
 /** The buyer's order timeline without the internal payload and actor (review round 1, nit 3). */
 export const CUSTOMER_VIEWS = {
   customer_order_event: [
@@ -208,6 +242,10 @@ export const STAFF_ONLY_TABLES = [
   "admin_profile",
   "audit_log",
   "auth_email_send",
+  // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321): the author record holds the user id
+  // and the agreement date; the public reads `id` and `display_name` of an author with a
+  // published post only through the view `blog_author_public` (`PUBLIC_VIEWS`).
+  "blog_author",
   "consent_log",
   "db_usage_sample",
   "feature_flag",
