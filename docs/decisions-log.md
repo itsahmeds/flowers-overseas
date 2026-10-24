@@ -192,3 +192,5 @@ Running, append-only log of decisions. Each entry links its ADR. Summary table l
 | 2026-10-24 | none | Spec 034 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
 | 2026-10-24 | none | Spec 047 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
 | 2026-10-24 | none | Spec 010 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 048 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 049 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
