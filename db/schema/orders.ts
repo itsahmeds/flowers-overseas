@@ -84,7 +84,7 @@ export const reviewModerationStatuses = [
 ] as const;
 
 /**
- * Spec 022a §5.1 (migration `0029_reviews_close`): the closed moderation reasons. The first three
+ * Spec 022a §5.1 (migration `0031_reviews_close`): the closed moderation reasons. The first three
  * withhold a published review's text (its stars stay public and counted); the last three remove a
  * review that is not genuine. None concerns the rating or the tone.
  */
@@ -585,8 +585,8 @@ export const review = pgTable(
     }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     ...timestamps,
-    // Spec 022a §5.1 (migration `0029_reviews_close`, TASK-368): display, moderation, reply,
-    // routing and erasure, after the timestamps because `0029` adds them. The four denormalised
+    // Spec 022a §5.1 (migration `0031_reviews_close`, TASK-368): display, moderation, reply,
+    // routing and erasure, after the timestamps because `0031` adds them. The four denormalised
     // columns let display and routing read a review without joining the private `order`.
     /** First name only, and only when the buyer chose to show it. */
     displayName: text("display_name"),
@@ -657,7 +657,7 @@ export const review = pgTable(
 
 /**
  * One review invitation per delivered `live` order (spec 022a §5.1, §5.2; migration
- * `0029_reviews_close`; TASK-368). No address is stored: the `review.request` job resolves it from
+ * `0031_reviews_close`; TASK-368). No address is stored: the `review.request` job resolves it from
  * `order.buyer_snapshot` at send time. `token_hash` is the lower-case hex SHA-256 of the link's
  * token (the token itself is never stored), as `text` because `bytea` is refused in `public`
  * (spec 002 AC-22, ADR-0015; `checkout_draft.token_sha256` is the precedent). Staff only (RLS).

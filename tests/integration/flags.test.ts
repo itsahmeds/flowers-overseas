@@ -43,14 +43,14 @@ describe.skipIf(server.url === undefined)(
       });
     }
 
-    it("reads the registered flags as migrations 0009 and 0029 seed them, and nothing else", async () => {
+    it("reads the registered flags as migrations 0009 and 0031 seed them, and nothing else", async () => {
       const snapshot = await snapshotAs("system");
       expect(
         [...snapshot.flags].sort((a, b) => a.key.localeCompare(b.key)),
       ).toEqual([
         { key: "checkout.demo_guard", enabledDefault: true },
         { key: "checkout.open", enabledDefault: false },
-        // Spec 022a (`0029`, TASK-368): the two review switches, off.
+        // Spec 022a (`0031`, TASK-368): the two review switches, off.
         { key: "reviews.invite", enabledDefault: false },
         { key: "reviews.trustpilot", enabledDefault: false },
       ]);

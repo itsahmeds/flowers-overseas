@@ -93,7 +93,7 @@ const CREATED_POLICIES: Policy[] = [
 
 /**
  * The policies in force after every forward migration: a later migration's `DROP POLICY` removes
- * one an earlier file created (spec 022a's `0029` drops `0011`'s `review_read`). A drop is matched
+ * one an earlier file created (spec 022a's `0031` drops `0011`'s `review_read`). A drop is matched
  * against the creations of the files before it, so a drop and re-create keeps the new one.
  */
 const DROPPED = new Set(
@@ -257,7 +257,7 @@ describe("migration 0011 — each class gets exactly its policies", () => {
       policiesOf("media_asset").find((p) => p.name === "media_asset_read")
         ?.using,
     ).toBe("visibility = 'public'");
-    // Spec 022a §5.1 (`0029`, AC-19): the public reads published reviews through
+    // Spec 022a §5.1 (`0031`, AC-19): the public reads published reviews through
     // `public_review`, never the table.
     expect(DROPPED.has("review.review_read")).toBe(true);
     expect(policiesOf("review").map((p) => p.name)).toEqual(["review_staff"]);
@@ -437,7 +437,7 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     for (const policy of BUILD_POLICIES) {
       expect(policy.name).toBe(`${policy.table}_build_read`);
       expect(policy.command).toBe("SELECT");
-      // As the public render's policy was written: `review_read` (`0011`) is dropped by `0029`,
+      // As the public render's policy was written: `review_read` (`0011`) is dropped by `0031`,
       // whose `public_review` view filters on the same condition.
       const publicRead = CREATED_POLICIES.find(
         (p) => p.table === policy.table && p.name === `${policy.table}_read`,

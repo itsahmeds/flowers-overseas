@@ -46,7 +46,7 @@ export const PUBLIC_REFERENCE_TABLES = [
 
 /**
  * Read by anyone, but only some rows: the condition is the migration's. `review` left this set in
- * spec 022a §5.1 (migration `0029_reviews_close`, TASK-368): the public reads published reviews
+ * spec 022a §5.1 (migration `0031_reviews_close`, TASK-368): the public reads published reviews
  * through the `public_review` view (`PUBLIC_VIEWS`), and the table itself is staff only.
  */
 export const PUBLIC_FILTERED_TABLES = {
@@ -73,7 +73,7 @@ export const BUILD_ROLE_READ_TABLES = [
 
 /**
  * The build role's filtered reads: the same rows a public render sees (`PUBLIC_FILTERED_TABLES`),
- * and `0018`'s `review_build_read` on published reviews, which `0029` leaves in place (moving the
+ * and `0018`'s `review_build_read` on published reviews, which `0031` leaves in place (moving the
  * build to `public_review` is spec 022a's display task, TASK-373).
  */
 export const BUILD_ROLE_FILTERED_TABLES = {
@@ -154,7 +154,7 @@ export const PARTNER_VIEWS = {
 } as const;
 
 /**
- * Spec 022a §5.1 (migration `0029_reviews_close`, TASK-368, AC-19): the published reviews, for
+ * Spec 022a §5.1 (migration `0031_reviews_close`, TASK-368, AC-19): the published reviews, for
  * everyone, with the text `NULL` when withheld and no private column (no order, partner,
  * moderation note or moderator). Filtered by `moderation_status = 'published'` rather than a
  * lookup: every role sees the same published set.
@@ -227,7 +227,7 @@ export const STAFF_ONLY_TABLES = [
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
   "retention_policy",
-  // spec 022a §5.1 (migration `0029_reviews_close`, TASK-368): a review is staff only once its
+  // spec 022a §5.1 (migration `0031_reviews_close`, TASK-368): a review is staff only once its
   // public read moved to `public_review`; an invite (one per order, a token hash) never was public.
   "review",
   "review_invite",

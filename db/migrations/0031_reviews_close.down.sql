@@ -1,17 +1,17 @@
 SET LOCAL ROLE app_owner;
 
--- Rollback of 0029_reviews_close (spec 022a §5.1; TASK-368), in reverse order.
+-- Rollback of 0031_reviews_close (spec 022a §5.1; TASK-368), in reverse order.
 --
 -- Refuses with `REVIEWS_ROLLBACK_DATA_PRESENT`, changing nothing, while any `internal` review or
 -- any invite exists: dropping the columns would lose a buyer's verified review or the record that
 -- an order was invited (spec 002 §14 A10's guard precedent). On a database with neither, every
--- object `0029` created is dropped and `0011`'s public read of `review` comes back.
+-- object `0031` created is dropped and `0011`'s public read of `review` comes back.
 
 DO $guard$
 BEGIN
   IF EXISTS (SELECT 1 FROM public.review WHERE source = 'internal')
      OR EXISTS (SELECT 1 FROM public.review_invite) THEN
-    RAISE EXCEPTION 'REVIEWS_ROLLBACK_DATA_PRESENT: first-party reviews or review invites exist; rolling back 0029 would drop them'
+    RAISE EXCEPTION 'REVIEWS_ROLLBACK_DATA_PRESENT: first-party reviews or review invites exist; rolling back 0031 would drop them'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END;

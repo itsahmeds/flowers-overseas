@@ -52,8 +52,8 @@ const partnersDown = read("0005_partners.down.sql");
 const customers = read("0006_customers.sql");
 const customersDown = read("0006_customers.down.sql");
 const both = `${partners}\n${customers}`;
-/** `0029` (spec 022a §5.1, TASK-368) adds `customer.review_invite_opt_out_at`. */
-const later = read("0029_reviews_close.sql");
+/** `0031` (spec 022a §5.1, TASK-368) adds `customer.review_invite_opt_out_at`. */
+const later = read("0031_reviews_close.sql");
 
 const PARTNER_TABLES = [
   "fulfillment_partner",

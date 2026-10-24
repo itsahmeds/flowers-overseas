@@ -7,7 +7,7 @@
  *    an optional email; both in `.env.example`;
  *  - `review.created` v1: registered, `{ mode, reviewId, rating }` only, actor class `buyer` only;
  *  - `src/config/reviews.ts`: §5.2's constants;
- *  - migration `0029` read as text: `review_invite` equals its Drizzle mirror, the hash is hex
+ *  - migration `0031` read as text: `review_invite` equals its Drizzle mirror, the hash is hex
  *    `text` (no `bytea`), the down file refuses before it drops anything.
  */
 import { readFileSync } from "node:fs";
@@ -36,8 +36,8 @@ import { mirrorShape, sqlShape } from "./support/migration-sql.ts";
 
 const REPO = resolve(import.meta.dirname, "../..");
 const read = (relative: string) => readFileSync(join(REPO, relative), "utf8");
-const up = read("db/migrations/0029_reviews_close.sql");
-const down = read("db/migrations/0029_reviews_close.down.sql");
+const up = read("db/migrations/0031_reviews_close.sql");
+const down = read("db/migrations/0031_reviews_close.down.sql");
 
 const REAL = "f".repeat(64);
 const REVIEW_ID = "4b7a0f0e-8f7c-4d7e-9a43-2a1c3e5d6f70";
@@ -188,7 +188,7 @@ describe("src/config/reviews.ts (spec 022a §5.2 'Constants')", () => {
   });
 });
 
-describe("migration 0029 read as text (spec 022a §5.1)", () => {
+describe("migration 0031 read as text (spec 022a §5.1)", () => {
   it("opens with the ownership preamble and closes with RESET ROLE, both files", () => {
     for (const sql of [up, down]) {
       expect(sql.trimStart().startsWith("SET LOCAL ROLE app_owner;")).toBe(

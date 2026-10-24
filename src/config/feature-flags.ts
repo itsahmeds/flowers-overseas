@@ -133,7 +133,7 @@ const REGISTRY = [
     risk: "high",
     dirties: [],
   },
-  // Spec 022a §5.1, §12 (migration `0029_reviews_close`, TASK-368): the two review switches,
+  // Spec 022a §5.1, §12 (migration `0031_reviews_close`, TASK-368): the two review switches,
   // global, off, high-risk. Display follows data, so neither dirties a page.
   {
     key: "reviews.invite",

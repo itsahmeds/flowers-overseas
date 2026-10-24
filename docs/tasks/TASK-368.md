@@ -24,7 +24,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-- 2026-10-24 (self-review, PR 408): `0029` leaves a gap after main's `0020` (`0021` to `0027` claimed by open PRs, `0028` by PR 403). Once they merge: rebase, renumber if needed, add it to `tests/unit/db-migrate.test.ts`'s pinned list in order, run `node scripts/db-check.ts --write-snapshot` on a fresh migrated scratch database, re-fire `ci:full`.
+- 2026-10-24 (self-review, PR 408): `0031` leaves a gap after main's `0020` (`0021` to `0027` claimed by open PRs, `0028` by PR 403, `0029` by PR 405, `0030` by TASK-261; `0031` given by the orchestrator). Once `0021` to `0030` merge: rebase, renumber if needed, add it to `tests/unit/db-migrate.test.ts`'s pinned list in order, run `node scripts/db-check.ts --write-snapshot` on a fresh migrated scratch database, re-fire `ci:full`.
 - 2026-10-24 (self-review, PR 408): `app_build` keeps `0018`'s `review_build_read`; moving the build onto `public_review` is TASK-373's (carried there).
 
 ## Escalations
@@ -39,11 +39,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-- 2026-10-24: migration `0029_reviews_close` + down (review columns and checks, `review_content_immutable`, the audit trigger with `text` and `display_name` masked, `review_invite` staff only, `customer.review_invite_opt_out_at`, `public_review` replacing `review_read`, the two flags), Drizzle mirror, `db/rls.ts`, `src/config/reviews.ts`, `review.created` v1 in the new `reviews` module, `REVIEW_TOKEN_SECRET` and `TRUSTPILOT_AFS_ADDRESS`; unit and integration green locally with uncommitted empty placeholders for `0021` to `0028`. Next: rebase and renumber once `0021` to `0028` merge, then `db-check.ts --write-snapshot` on a fresh scratch database.
+- 2026-10-24: migration `0031_reviews_close` + down (review columns and checks, `review_content_immutable`, the audit trigger with `text` and `display_name` masked, `review_invite` staff only, `customer.review_invite_opt_out_at`, `public_review` replacing `review_read`, the two flags), Drizzle mirror, `db/rls.ts`, `src/config/reviews.ts`, `review.created` v1 in the new `reviews` module, `REVIEW_TOKEN_SECRET` and `TRUSTPILOT_AFS_ADDRESS`; unit and integration green locally with uncommitted empty placeholders for `0021` to `0028`. Next: rebase and renumber once `0021` to `0028` merge, then `db-check.ts --write-snapshot` on a fresh scratch database.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-PR 408: migration `0029_reviews_close` + down, Drizzle mirror, `db/rls.ts`, `src/config/reviews.ts`, the `reviews` module with `ReviewCreatedV1`, the two flags (database, registry, admin page), `REVIEW_TOKEN_SECRET` and `TRUSTPILOT_AFS_ADDRESS`. Tests: integration `tests/integration/reviews-migration.test.ts` (6: T-19, checks, trigger, audit masking, invite RLS and flags, the rollback guard round trip) plus updates to `rls-policies`, `schema-orders-payments`, `schema-notifications-ops`, `flags`, `migrations-round-trip`; unit `tests/unit/reviews-data.test.ts` (18) plus updates to the RLS, schema, env, flags, layout and module-boundary tests; contract `railway-check` (35 keys). CI is expected red on the migration gap until `0021` to `0028` merge. TASK-370 and TASK-372 were not started: their dependencies (TASK-331, 332, 215, 371, 327, design PR 338) are not on main.
+PR 408: migration `0031_reviews_close` + down, Drizzle mirror, `db/rls.ts`, `src/config/reviews.ts`, the `reviews` module with `ReviewCreatedV1`, the two flags (database, registry, admin page), `REVIEW_TOKEN_SECRET` and `TRUSTPILOT_AFS_ADDRESS`. Tests: integration `tests/integration/reviews-migration.test.ts` (6: T-19, checks, trigger, audit masking, invite RLS and flags, the rollback guard round trip) plus updates to `rls-policies`, `schema-orders-payments`, `schema-notifications-ops`, `flags`, `migrations-round-trip`; unit `tests/unit/reviews-data.test.ts` (18) plus updates to the RLS, schema, env, flags, layout and module-boundary tests; contract `railway-check` (35 keys). CI is expected red on the migration gap until `0021` to `0028` merge. TASK-370 and TASK-372 were not started: their dependencies (TASK-331, 332, 215, 371, 327, design PR 338) are not on main.

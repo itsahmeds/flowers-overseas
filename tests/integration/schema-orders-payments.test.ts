@@ -222,7 +222,7 @@ describe.skipIf(server.url === undefined)(
             tx`INSERT INTO webhook_inbox (provider, event_id, signature_verified, raw, livemode, event_type)
              VALUES ('stripe', 'evt_1', true, '{}', false, 'payment_intent.succeeded')`,
         );
-        // `trustpilot`, so spec 022a's `review_internal_verified_check` (`0029`: an `internal`
+        // `trustpilot`, so spec 022a's `review_internal_verified_check` (`0031`: an `internal`
         // review is a verified order's) is not the constraint that answers first.
         await by(
           "review rating 6",

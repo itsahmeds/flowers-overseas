@@ -1,5 +1,5 @@
 /**
- * Migration `0029_reviews_close` on a database (spec 022a §5.1, §10 T-19; AC-19; TASK-368).
+ * Migration `0031_reviews_close` on a database (spec 022a §5.1, §10 T-19; AC-19; TASK-368).
  *
  * On a migrated PG16 scratch database (`support/scratch-db.ts`; never the shared database):
  *
@@ -113,7 +113,7 @@ async function objects(sql: Sql | Tx) {
 }
 
 describe.skipIf(server.url === undefined)(
-  `spec 022a — migration 0029_reviews_close${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
+  `spec 022a — migration 0031_reviews_close${server.url === undefined ? ` (skipped: ${server.reason})` : ""}`,
   () => {
     let scratch: ScratchDatabase;
 
@@ -564,7 +564,7 @@ describe.skipIf(server.url === undefined)(
       const refused = await runner(scratch.url, [
         "--down",
         "--to",
-        "0028",
+        "0030",
       ]).then(
         () => "rolled back",
         (error: unknown) =>
@@ -578,7 +578,7 @@ describe.skipIf(server.url === undefined)(
       expect(await objects(scratch.sql)).toEqual(applied);
 
       await scratch.sql`DELETE FROM review_invite WHERE order_id = ${orderId}`;
-      await runner(scratch.url, ["--down", "--to", "0028"]);
+      await runner(scratch.url, ["--down", "--to", "0030"]);
       expect(await objects(scratch.sql)).toEqual({
         view: 0,
         invite: 0,

@@ -92,7 +92,7 @@ export const customer = pgTable(
     redactedAt: timestamp("redacted_at", { withTimezone: true }),
     ...timestamps,
     /**
-     * The buyer's objection to review emails (spec 022a §5.1, migration `0029_reviews_close`):
+     * The buyer's objection to review emails (spec 022a §5.1, migration `0031_reviews_close`):
      * set by the opt-out link, kept across orders; every later invite is skipped `opted_out`.
      */
     reviewInviteOptOutAt: timestamp("review_invite_opt_out_at", {

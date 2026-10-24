@@ -824,7 +824,7 @@ describe.skipIf(server.url === undefined)(
                  VALUES (${occasion?.id ?? ""}, 'en', 'Birthday', 'birthday')`;
         await mediaAsset(tx, { kind: "product", visibility: "public" });
         await mediaAsset(tx, { kind: "product", visibility: "private" });
-        // `trustpilot`: spec 022a's `0029` keeps `internal` reviews to verified orders.
+        // `trustpilot`: spec 022a's `0031` keeps `internal` reviews to verified orders.
         await tx`INSERT INTO review (source, rating, moderation_status, published_at)
                  VALUES ('trustpilot', 5, 'published', now()), ('trustpilot', 1, 'pending', NULL)`;
         const [someone] = await tx<{ id: string }[]>`
@@ -868,7 +868,7 @@ describe.skipIf(server.url === undefined)(
           "partner_application",
           "feature_flag",
           "retention_policy",
-          // Spec 022a §5.1 (`0029`, AC-19): the public reads reviews through `public_review`,
+          // Spec 022a §5.1 (`0031`, AC-19): the public reads reviews through `public_review`,
           // never the table.
           "review",
           ...Object.keys(PARTNER_SCOPED_TABLES),

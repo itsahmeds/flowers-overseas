@@ -1,6 +1,6 @@
 SET LOCAL ROLE app_owner;
 
--- 0029_reviews_close: the review data of spec 022a (§5.1; AC-19; TASK-368).
+-- 0031_reviews_close: the review data of spec 022a (§5.1; AC-19; TASK-368).
 --
 --   1. `review` gains the moderation, reply, display and routing columns: `display_name` (first
 --      name only, by the buyer's choice), `text_visible`, `moderation_reason`, `moderation_note`,
@@ -30,7 +30,7 @@ SET LOCAL ROLE app_owner;
 --
 -- No `order_transition` or `order_status` row changes: A6 rows 26, 29 and 33 exist.
 --
--- Rollback: `0029_reviews_close.down.sql`, which refuses (`REVIEWS_ROLLBACK_DATA_PRESENT`) while
+-- Rollback: `0031_reviews_close.down.sql`, which refuses (`REVIEWS_ROLLBACK_DATA_PRESENT`) while
 -- any `internal` review or any invite exists.
 
 /* ---------------------------------------------------------------------------
