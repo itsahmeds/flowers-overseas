@@ -1415,12 +1415,14 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
  * `docs/design/system/motion-interactions.dc.html` motion 18). `CorridorRouteLine` draws one
  * `aria-hidden` SVG in the corridor hero; these rules place it, paint it and draw it.
  *
- *  - Place: out of flow in the hero grid (its containing block), so the hero's layout is the same
- *    with it or without it (CLS 0). It is centred in the gap between the H1's track and the lead
- *    slot, 74 px from the grid's top, as wide as that gap up to 180 px, at the viewBox's 3∶2. The
- *    gap is the grid's own arithmetic, kept in step with `CorridorPage`'s
- *    `md:grid-cols-[7fr_4fr] md:gap-[72px]` and `Photo`'s `card` lead cap; the e2e suite measures
- *    the boxes at 768, 1,024 and 1,440. Not displayed below `md` (Q8 (d)).
+ *  - Place: out of flow in the first-screen grid (its containing block), so the band's layout is
+ *    the same with it or without it (CLS 0). It is centred in the gap between the end of column 6
+ *    (the H1's column) and the start of the dates, 74 px from the grid's top, as wide as that gap
+ *    up to 180 px, at the viewBox's 3∶2. The gap is the grid's own arithmetic, kept in step with
+ *    `CorridorFirstScreen`'s `md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)]`, the copy's
+ *    `md:col-span-6` and the dates' `md:col-start-8 md:max-w-[470px] md:justify-self-end`; the
+ *    e2e suite measures the boxes at 768, 1,024, 1,280 and 1,440. Not displayed below `md`
+ *    (Q8 (d)).
  *  - Paint: the widths, dashes and caps are the SVG's own presentation attributes (the artboard's
  *    2 px accent dash of 6 and 7, the 7 px cover, the 1.5 px ring); here only the colours that are
  *    tokens: the accent through `currentColor`, the cover and the "you" dot in the page colour.
@@ -1452,10 +1454,12 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
 }
 
 [data-fo-route-line] {
-  --fo-route-h1: calc((100% - 72px) * 7 / 11);
+  --fo-route-gutter: clamp(24px, 2.22vw, 32px);
+  --fo-route-col: calc((100% - var(--fo-route-gutter) * 11) / 12);
+  --fo-route-h1: calc(var(--fo-route-col) * 6 + var(--fo-route-gutter) * 5);
   --fo-route-gap: calc(
     100% - var(--fo-route-h1) -
-      min((100% - 72px) * 4 / 11, var(--hero-photo-max) * 4 / 5)
+      min(470px, var(--fo-route-col) * 5 + var(--fo-route-gutter) * 4)
   );
   --fo-route-size: min(180px, var(--fo-route-gap));
   --fo-route-delay: calc(var(--duration-base) * 2.5);
