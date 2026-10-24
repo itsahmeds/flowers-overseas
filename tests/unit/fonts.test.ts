@@ -532,9 +532,7 @@ describe("the next/font/local declarations", () => {
     // `@font-face` on every route that imports the barrel (breaker hole 3, PR 168). The walk
     // counts a type-only import as an edge, so it can only be too strict.
     const reachable = reachableFrom("src/modules/ui/index.ts");
-    // The page faces left the barrel too (route handlers reach it; `route-import-graph.test.ts`):
-    // layouts import `@/modules/ui/fonts` themselves.
-    expect(reachable).not.toContain("src/modules/ui/fonts/index.ts");
+    expect(reachable).toContain("src/modules/ui/fonts/index.ts");
     expect(reachable).not.toContain(CARD_PREVIEW);
     expect(reachable).not.toContain(HAND_FILE);
   });

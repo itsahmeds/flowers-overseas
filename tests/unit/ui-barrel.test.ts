@@ -24,8 +24,10 @@ describe("src/modules/ui barrel", () => {
   it("exports exactly the documented surface", () => {
     expect(Object.keys(ui).sort()).toEqual(
       [
-        // fonts: none. The layouts import `@/modules/ui/fonts`; a route handler reaches this
-        // barrel, and `next/font` there fails `next dev` at load (route-import-graph.test.ts).
+        // fonts
+        "bodyFont",
+        "displayFont",
+        "fontVariables",
         // icons
         "ICON_NAMES",
         "Icon",
@@ -330,7 +332,8 @@ describe("src/modules/ui barrel", () => {
   });
 
   it("exports no colour, size or duration value (the tokens stay in globals.css)", () => {
-    // The exported strings, and why each is a string: TASK-049's five are DOM contracts — an attribute the consent island
+    // The exported strings, and why each is a string: `fontVariables` names CSS variables rather
+    // than font files, and TASK-049's five are DOM contracts — an attribute the consent island
     // binds to, a form action, and the id prefix and ids the reminder stub redirects to. None of
     // them is a token value, which is what this assertion is about.
     const EXPECTED_STRINGS = [
@@ -365,6 +368,7 @@ describe("src/modules/ui barrel", () => {
       // TASK-186: the page frame, a utility list like `HOME_BLEED`, shared by the header and every
       // page's `Container` so the two cannot drift (spec 004 §14 A23 clause 2).
       "PAGE_FRAME",
+      "fontVariables",
     ];
     for (const [name, value] of Object.entries(ui)) {
       if (typeof value !== "string") continue;
