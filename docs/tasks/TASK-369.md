@@ -24,7 +24,8 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size S
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (self-review, PR 406): AC-5's `notificationsFor('order.closed', from, mode)` row assertion belongs to TASK-331 (spec 016's `notificationsFor` is not on main); this PR proves no outbox target and no `notification_delivery` row.
+- 2026-10-24 (self-review, PR 406): the refund check joins `refund` to `payment.order_id`. Once TASK-350 (PR 403: one payment per purchase, each refund names its order) merges, a sibling order's open refund also holds this order's close (a delay, never an early close); switch the check to the refund's own order column then.
 
 ## Escalations
 
@@ -45,4 +46,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 406. `src/modules/orders/close/` (`closeDueAt`, `OrderClosedV1`, `runCloseSweep`), the `order.close_sweep` job (registered, handled, enqueued by the minute tick under a `singletonKey`), `COMPLAINT_WINDOW_HOURS = 72` in `company.ts`, `alert=orders.close_backlog` above 20. Tests: unit `tests/unit/order-close.test.ts` (14: T-01 over 26 statuses and the Warsaw DST case, `OrderClosedV1`, AC-5 targets, AC-2 source scan) plus job-registry, runtime and tick updates; integration `tests/integration/order-close.test.ts` (8: T-02, T-03 x2, T-04 x2 including two real connections on the lock, T-05, the backlog alert). No build-slot gate run locally; CI is the gate.
