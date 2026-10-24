@@ -151,18 +151,22 @@ describe.skipIf(server.url === undefined)(
           () =>
             tx`INSERT INTO "order" (public_token, mode, customer_id, recipient_id,
                destination_country_id, delivery_date, buyer_currency_code, buyer_total_minor,
-               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
+               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot,
+               purchase_id)
              VALUES ('abcdefghijklmnopqrstuvwy', 'live', ${parents.customerId}, ${parents.recipientId},
-               ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}')`,
+               ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}',
+               gen_random_uuid())`,
         );
         await by(
           "float-ish fx missing",
           () =>
             tx`INSERT INTO "order" (public_token, mode, customer_id, recipient_id,
                destination_country_id, delivery_date, buyer_currency_code, buyer_total_minor,
-               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
+               base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot,
+               purchase_id)
              VALUES ('abcdefghijklmnopqrstuvwz', 'demo', ${parents.customerId}, ${parents.recipientId},
-               ${parents.countryId}, DATE '2027-02-14', 'GBP', 100, 'PLN', 100, '{}', '{}')`,
+               ${parents.countryId}, DATE '2027-02-14', 'GBP', 100, 'PLN', 100, '{}', '{}',
+               gen_random_uuid())`,
         );
         await tx`SELECT set_config('app.allow_status_write', '', true)`;
         await by(

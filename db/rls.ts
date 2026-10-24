@@ -163,6 +163,8 @@ export const PARTNER_FORBIDDEN_COLUMNS = [
   "buyer_total_minor",
   "base_total_minor",
   "unit_retail_minor",
+  // spec 010 §14 A-founder-2026-10-22 (AC-69): the purchase would name a florist's sibling orders.
+  "purchase_id",
 ] as const;
 
 /** Readable by the signed-in person themself (`customer` or `partner` role, `app.user_id` matches). */
@@ -210,6 +212,15 @@ export const SYSTEM_ONLY_TABLES = [
   // and written only by the dispatcher's system transactions.
   "outbox_delivery",
 ] as const;
+
+/**
+ * The system role writes, an admin session reads, nobody else sees a row: one `<table>_system`
+ * policy (all, `app.role = 'system'`) and one `<table>_admin` policy (select, `app.role =
+ * 'admin'`), and no staff policy, so an admin cannot write one. Spec 010 §14 A-founder-2026-10-22
+ * item 2 A (migration `0019_purchase`, TASK-347): a purchase groups a buyer's orders, so no
+ * partner, customer or public policy exists and a florist never sees a sibling order through it.
+ */
+export const SYSTEM_WRITE_ADMIN_READ_TABLES = ["purchase"] as const;
 
 /**
  * Tables without RLS, and why. `schema_migrations` is the runner's bookkeeping: created and owned
