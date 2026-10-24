@@ -56,6 +56,7 @@ import {
   type Subject,
   subjectKey,
   subjectLocale,
+  subjectOf,
 } from "../attestation.ts";
 
 /** What the ledger runs its statements through: a Drizzle transaction, or any SQL runner. */
@@ -182,6 +183,18 @@ export async function attest(
                     t.product_id, t.locale_code, t.name, t.slug, t.description_md, t.seo_title,
                     t.seo_description) = ${valueHash}`,
       );
+    } else if (subject.kind === "blog_post_revision") {
+      // Spec 044 §2.4 (TASK-321): an approval freezes the revision; `blog_revision_freeze()`
+      // refuses it without this transaction's own `approved` row for the current hash. Any other
+      // decision leaves the draft open for the next edit.
+      if (decision === "approved") {
+        await db.execute(
+          sql`UPDATE public.blog_post_revision
+              SET frozen_at = ${attestedAt}::timestamptz
+              WHERE id = ${subject.ref}::uuid AND frozen_at IS NULL
+                AND public.review_blog_revision_current_hash(id) = ${valueHash}`,
+        );
+      }
     } else {
       const state =
         decision === "approved"
@@ -205,14 +218,11 @@ export async function attest(
   if (command.channel === "import") {
     const entry = LedgerEntrySchema.parse(command.entry);
     const db = command.db;
-    const subject: Subject =
-      entry.subjectKind === "media_asset"
-        ? { kind: "media_asset", ref: entry.subjectRef }
-        : {
-            kind: "product_translation",
-            ref: entry.subjectRef,
-            locale: entry.localeCode ?? "",
-          };
+    const subject: Subject = subjectOf(
+      entry.subjectKind,
+      entry.subjectRef,
+      entry.localeCode,
+    );
     const [existing] = await rows<{ id: string; attested_at: string }>(
       db,
       sql`SELECT id, to_char(attested_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS attested_at
@@ -300,7 +310,7 @@ export async function attest(
       }
       const attesterName = reviewer.display_name.trim();
       if (attesterName === "") return refused("no_display_name");
-      if (subject.kind === "product_translation") {
+      if (subject.kind !== "media_asset") {
         if (
           !deps.can(roles, "translation.attest") ||
           !(reviewer.locales ?? []).includes(subject.locale)
@@ -425,14 +435,11 @@ async function headsIn(
                  (a.channel = 'admin') DESC, a.id DESC`,
   );
   for (const row of found) {
-    const subject: Subject =
-      row.subject_kind === "media_asset"
-        ? { kind: "media_asset", ref: row.subject_ref }
-        : {
-            kind: "product_translation",
-            ref: row.subject_ref,
-            locale: row.locale_code ?? "",
-          };
+    const subject = subjectOf(
+      row.subject_kind,
+      row.subject_ref,
+      row.locale_code,
+    );
     out.set(subjectKey(subject), {
       decision: row.decision,
       valueHash: row.value_hash,
