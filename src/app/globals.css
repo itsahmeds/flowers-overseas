@@ -1086,6 +1086,25 @@
     }
   }
 
+  /* 10. The home sentence's listbox (spec 004 §14 A-founder-2026-10-21d clause 9; TASK-326): the
+     language popup's fade and 8 px rise on opening; the close is the opacity fade alone, 120 ms. */
+  [data-fo-sentence-listbox]:popover-open {
+    transition-property: opacity, transform;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  [data-fo-sentence-listbox][data-fo-closing] {
+    transition-duration: var(--duration-fast);
+  }
+
+  @starting-style {
+    [data-fo-sentence-listbox]:popover-open {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
   /* 10. The phone Menu drops from the header's foot. */
   details[data-fo-menu][open] [data-fo-menu-panel] {
     transition-property: opacity, transform;
@@ -1298,6 +1317,12 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
   opacity: 0;
 }
 
+/* The sentence listbox's close (spec 004 §14 A-founder-2026-10-21d clause 9): the same fade, set
+   by `sentence-listbox.ts` before the panel leaves the top layer. */
+[data-fo-sentence-listbox][data-fo-closing] {
+  opacity: 0;
+}
+
 /*
  * Reduced motion (AC-6 as A24 clause 9 (c) reads it): the base layer's rule collapses every
  * transition and animation to 0.01 ms, and the rules above do not apply at all. The one change over
@@ -1309,7 +1334,8 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
   @media (prefers-reduced-motion: reduce) {
     dialog[data-fo-language-popup][open],
     details[data-fo-menu][open] [data-fo-menu-panel],
-    [data-fo-consent-sheet="fixed"] {
+    [data-fo-consent-sheet="fixed"],
+    [data-fo-sentence-listbox]:popover-open {
       transition-property: opacity !important;
       transition-duration: var(--duration-fast) !important;
       transition-timing-function: var(--ease-standard);
@@ -1318,7 +1344,8 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
     @starting-style {
       dialog[data-fo-language-popup][open],
       details[data-fo-menu][open] [data-fo-menu-panel],
-      [data-fo-consent-sheet="fixed"] {
+      [data-fo-consent-sheet="fixed"],
+      [data-fo-sentence-listbox]:popover-open {
         opacity: 0;
       }
     }
@@ -1407,5 +1434,150 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
         opacity: 1;
       }
     }
+  }
+}
+
+/*
+ * The home sentence's own listbox on a mouse (spec 004 §14 A-founder-2026-10-21d clauses 3, 4 and
+ * 10; TASK-326; the "Sentence listbox" group of `docs/design/system/components.dc.html`). Nothing
+ * here matches the server's HTML: `src/modules/ui/home/sentence-listbox.ts` adds every attribute
+ * these rules read. Tokens only for every colour, background, radius and family (AC-67's scan in
+ * `tests/unit/sentence-listbox-css.test.ts`).
+ */
+@layer components {
+  /* Clause 3: the select stays in the flow, its box unchanged, out of sight and of the tab order. */
+  [data-fo-pick][data-fo-listbox] > select {
+    visibility: hidden;
+  }
+
+  /* Clause 4: the select's own skin (`SentencePicker`'s `SELECT`), laid over its box. The block
+     offset and size are the select's, copied by the script; the inline extent is the pick span's. */
+  [data-fo-sentence-trigger] {
+    position: absolute;
+    inset-inline: 0;
+    display: block;
+    margin: 0;
+    padding-block: 0;
+    padding-inline: 2px 24px;
+    border: 0;
+    border-block-end: 2px dashed var(--color-accent);
+    border-radius: 0;
+    background: none;
+    font-family: var(--font-display);
+    font-size: var(--text-lg-s);
+    font-style: italic;
+    font-weight: var(--font-weight-display-em);
+    line-height: 40px;
+    color: var(--color-accent);
+    text-align: start;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  @media (width >= 48rem) {
+    [data-fo-sentence-trigger] {
+      font-size: var(--text-lg);
+    }
+  }
+
+  [data-fo-sentence-trigger] > span {
+    display: block;
+  }
+
+  [data-fo-sentence-trigger]:hover,
+  [data-fo-sentence-trigger][aria-expanded="true"] {
+    background: var(--color-blush);
+  }
+
+  [data-fo-sentence-trigger]:focus-visible {
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+  }
+
+  /* Clause 10: the panel, in the top layer, placed by the script from the trigger's rectangle. */
+  [data-fo-sentence-listbox] {
+    position: fixed;
+    inset: auto;
+    box-sizing: border-box;
+    inline-size: max-content;
+    max-inline-size: 360px;
+    margin: 0;
+    padding-block: var(--space-sm);
+    padding-inline: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-letter);
+    background: var(--color-surface-card);
+    box-shadow: var(--shadow-md);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-style: normal;
+    line-height: normal;
+    text-align: start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+
+  [data-fo-sentence-listbox][data-fo-closing] {
+    pointer-events: none;
+  }
+
+  /* Options: Fraunces 400 at `--text-h3`, 44 px rows, a 14 px column for the check mark. */
+  [data-fo-sentence-listbox] [role="option"] {
+    display: grid;
+    grid-template-columns: 14px auto;
+    align-items: center;
+    column-gap: 10px;
+    min-block-size: var(--target-min);
+    padding-inline: var(--space-md) var(--space-md2);
+    font-size: var(--text-h3);
+    font-weight: var(--font-weight-display);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  [data-fo-sentence-listbox] [role="option"]::before {
+    content: "";
+  }
+
+  /* Selected: poppy italic 300 and a drawn check, so the choice is never colour alone. */
+  [data-fo-sentence-listbox] [aria-selected="true"] {
+    color: var(--color-accent);
+    font-style: italic;
+    font-weight: var(--font-weight-display-em);
+  }
+
+  [data-fo-sentence-listbox] [aria-selected="true"]::before {
+    justify-self: center;
+    margin-block-start: -5px;
+    inline-size: 6px;
+    block-size: 12px;
+    border-inline-end: 2px solid currentColor;
+    border-block-end: 2px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  /* A check is not mirrored: under `dir="rtl"` its stroke moves to the other inline side. */
+  [dir="rtl"] [data-fo-sentence-listbox] [aria-selected="true"]::before {
+    border-inline-end: 0;
+    border-inline-start: 2px solid currentColor;
+  }
+
+  [data-fo-sentence-listbox] [aria-disabled="true"] {
+    color: var(--color-ink-subtle);
+    cursor: default;
+  }
+
+  /* Hover moves the highlight only, never the selection (clause 7). */
+  [data-fo-sentence-listbox] [role="option"]:not([aria-disabled="true"]):hover,
+  [data-fo-sentence-listbox] [role="option"]:focus-visible {
+    background: var(--color-blush);
+  }
+
+  [data-fo-sentence-listbox] [role="option"]:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: -3px;
+    border-radius: var(--radius-md);
   }
 }

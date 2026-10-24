@@ -36,6 +36,7 @@ import {
   NOT_DEFERRED,
 } from "../../src/modules/ui/deferred/deferredSet.ts";
 import {
+  CONTROL_INTERACTION_EVENTS,
   FIRST_INTERACTION_EVENTS,
   IDLE_TIMEOUT_MS,
   type ReadyEnvironment,
@@ -591,19 +592,19 @@ describe("whenReady() with a control: the first interaction with that control on
     const run = counting(browser, "#control");
     expect(browser.listening()).toEqual([]);
     expect(browser.controlListening()).toEqual(
-      [...FIRST_INTERACTION_EVENTS].sort(),
+      [...CONTROL_INTERACTION_EVENTS].sort(),
     );
     browser.dispatch("load");
     browser.frame();
     browser.frame();
     browser.idle();
     browser.timeout();
-    for (const type of FIRST_INTERACTION_EVENTS) browser.dispatch(type);
+    for (const type of CONTROL_INTERACTION_EVENTS) browser.dispatch(type);
     expect(run.fired()).toBe(0);
     expect(browser.queued()).toBe(0);
   });
 
-  it.each(FIRST_INTERACTION_EVENTS)(
+  it.each(CONTROL_INTERACTION_EVENTS)(
     "fires on the first %s on the control, once",
     (type) => {
       const browser = fakeBrowser("complete");
@@ -640,5 +641,26 @@ describe("whenReady() with a control: the first interaction with that control on
       "focusin",
       "input",
     ]);
+  });
+
+  it("on a control, also for a pointer reaching it, so a mouse's first click finds the island (TASK-326)", () => {
+    expect([...CONTROL_INTERACTION_EVENTS]).toEqual([
+      "pointerdown",
+      "focusin",
+      "input",
+      "pointerover",
+    ]);
+    const browser = fakeBrowser("complete");
+    const run = counting(browser, "#control");
+    browser.onControl("pointerover");
+    expect(run.fired()).toBe(1);
+  });
+
+  it("never loads a paint island on a pointer passing over the window: that wait does not listen for it", () => {
+    const browser = fakeBrowser("loading");
+    const run = counting(browser);
+    expect(browser.listening()).not.toContain("pointerover");
+    browser.dispatch("pointerover");
+    expect(run.fired()).toBe(0);
   });
 });
