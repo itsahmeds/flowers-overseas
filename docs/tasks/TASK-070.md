@@ -126,6 +126,8 @@ text and record the ruling, then continue"); none is about money, so none blocks
   holds `0024` and PR 307 has no migration. The gap now closes when PRs 383, 384, 326, 320 and 394
   merge; the follow-up (rebase, `db-migrate.test.ts` list, snapshot, `ci:full`) is unchanged.
 
+- 2026-10-24 finisher: restacked onto TASK-321 (PR 394) so `0025_product_facets` follows 0019 to 0024 in one tree; resolved `DATABASE_ADAPTER_DIRS` (geo, i18n, content/blog, catalog, with the pin in `no-db-imports.test.ts`) and the committed migration list in `db-migrate.test.ts` (0019 to 0025). On a local PG16 the tree migrates to 0025 and `db:check` passes with the merged snapshot (25 migrations, RLS 86/86). PR 324's base is now `task/TASK-321-blog-data`.
+
 ## Result
 
 PR [#324](https://github.com/itsahmeds/flowers-overseas/pull/324). AC-27 and AC-28 met; the PR's
