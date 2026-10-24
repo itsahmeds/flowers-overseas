@@ -98,6 +98,11 @@ export interface LocaleData {
   readonly numberingSystem: string;
   readonly hreflangAliases: readonly string[];
   readonly pathSegments: Readonly<Record<PathSegmentKey, string>>;
+  /**
+   * The country chooser's segment (spec 004 §14 A-founder-2026-10-24a item 3):
+   * `/{locale}/{chooseSegment}/{next}`. Human-authored URL data like `pathSegments`.
+   */
+  readonly chooseSegment: string;
 }
 
 /**
@@ -127,6 +132,7 @@ export const LAUNCH_LOCALE_DATA = [
     currencyDefault: "EUR",
     numberingSystem: "latn",
     hreflangAliases: ["en", X_DEFAULT, "en-IE", "en-NL", "en-150"],
+    chooseSegment: "choose-country",
     pathSegments: {
       destinations: "send-flowers-to",
       shopCategory: "flowers",
@@ -157,6 +163,7 @@ export const LAUNCH_LOCALE_DATA = [
     currencyDefault: "GBP",
     numberingSystem: "latn",
     hreflangAliases: ["en-GB"],
+    chooseSegment: "choose-country",
     pathSegments: {
       destinations: "send-flowers-to",
       shopCategory: "flowers",
@@ -188,6 +195,7 @@ export const LAUNCH_LOCALE_DATA = [
     currencyDefault: "EUR",
     numberingSystem: "latn",
     hreflangAliases: ["de", "de-DE", "de-AT"],
+    chooseSegment: "land-waehlen",
     pathSegments: {
       destinations: "blumen-verschicken",
       shopCategory: "blumen",
@@ -219,6 +227,7 @@ export const LAUNCH_LOCALE_DATA = [
     currencyDefault: "PLN",
     numberingSystem: "latn",
     hreflangAliases: ["pl", "pl-PL"],
+    chooseSegment: "wybierz-kraj",
     pathSegments: {
       destinations: "wyslij-kwiaty",
       shopCategory: "kwiaty",
@@ -270,6 +279,7 @@ export const PSEUDO_LOCALE_DATA = [
     currencyDefault: "EUR",
     numberingSystem: "latn",
     hreflangAliases: [],
+    chooseSegment: "choose-country",
     pathSegments: {
       destinations: "send-flowers-to",
       shopCategory: "flowers",
@@ -302,6 +312,7 @@ export const PSEUDO_LOCALE_DATA = [
     currencyDefault: "EUR",
     numberingSystem: "latn",
     hreflangAliases: [],
+    chooseSegment: "choose-country",
     pathSegments: {
       destinations: "send-flowers-to",
       shopCategory: "flowers",

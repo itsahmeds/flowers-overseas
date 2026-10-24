@@ -6,7 +6,8 @@
  *
  *  1. a priced card prints `formatMoney(card.price)` and, beside it, the locale's resolved
  *     `catalog.price.inclusive`, and nothing else in the price element;
- *  2. no card prints an equivalents line, and neither card schema can carry one;
+ *  2. no card prints an equivalents line yet; the country card's schema carries a nullable field
+ *     for one since spec 004 §14 A-founder-2026-10-24a item 7 (TASK-381), which TASK-389 renders;
  *  3. a hub card prints the photograph and the name only: no `shop.card.noPrice`, no price element;
  *  4. the example label's three modes (`gridProvenanceMode`) and what the grid does with each card's
  *     own label: hidden at every width in an all-example grid, from `md` up in a mixed one, and
@@ -101,6 +102,9 @@ const EUR_CARD: ProductCardView = {
   price: { amountMinor: 4590, currency: "EUR" },
   priceLabelKey: "catalog.price.inclusive",
   provenance: "ai",
+  equivalents: null,
+  slots: null,
+  localSpecial: false,
 };
 
 const HUB_CARD: HubCardView = {
@@ -208,7 +212,10 @@ describe("no equivalents on a card (clause 2; A21's amended test bullet)", () =>
     },
   );
 
-  it("the card's view model has no field to carry them, priced or hub", () => {
+  it("the country card carries a nullable equivalents field (item 7 reverses clause 2); the country-less card has none", () => {
+    // Spec 004 §14 A-founder-2026-10-24a item 7 reverses A-founder-2026-10-19b clause 2: every
+    // card that shows a price regains the line, so its view model carries the field (TASK-381;
+    // TASK-389 renders it). A card with no price has nothing to give an equivalent of.
     const equivalents = {
       asOf: "2026-09-08",
       amounts: [{ amountMinor: 3885, currency: "GBP" }],
@@ -216,7 +223,10 @@ describe("no equivalents on a card (clause 2; A21's amended test bullet)", () =>
     expect(ProductCardViewSchema.safeParse(EUR_CARD).success).toBe(true);
     expect(
       ProductCardViewSchema.safeParse({ ...EUR_CARD, equivalents }).success,
-    ).toBe(false);
+    ).toBe(true);
+    const withoutField: Partial<ProductCardView> = { ...EUR_CARD };
+    delete withoutField.equivalents;
+    expect(ProductCardViewSchema.safeParse(withoutField).success).toBe(false);
     expect(HubCardViewSchema.safeParse(HUB_CARD).success).toBe(true);
     expect(
       HubCardViewSchema.safeParse({ ...HUB_CARD, equivalents }).success,

@@ -73,6 +73,7 @@ import {
   categoryPresentation,
   occasionPresentation,
 } from "@/config/catalogue/listing-presentation";
+import { CATALOGUE_LOCALE } from "@/config/catalogue/schemas";
 import { type LocaleCode, LOCALES, isLocaleCode } from "@/config/locales";
 import {
   type ListingLinkPageType,
@@ -123,6 +124,7 @@ import {
 } from "@/modules/ui";
 
 import { copyRow, copyRows } from "./copy";
+import { orderedCountryCodes } from "./country-order";
 import { fromPriceProjection, priceProjection } from "./pricing/project";
 import {
   countProductsFor,
@@ -541,11 +543,22 @@ export function isPublishedCountry(iso2: string): boolean {
   return countryConfig(iso2).status === "live" || isGuidePublished(iso2);
 }
 
-/** Every published destination, in registry order (Poland first). */
-export function publishedCountries(): readonly CountryIso2[] {
-  return COUNTRY_CODES.filter(
-    (iso2): iso2 is CountryIso2 =>
-      isCountryIso2(iso2) && isPublishedCountry(iso2),
+/**
+ * Every published destination, in the one country order (spec 004 §14 A-founder-2026-10-24a
+ * item 13; TASK-381): the registry's `sortWeight`, then the name in `locale`'s collation
+ * (`orderCountries()`). Never the registry file's typing order: that was "Poland first". A caller
+ * that only asks *whether* a country is in the set may omit the locale; one that walks the set to
+ * build or draw something passes its own.
+ */
+export function publishedCountries(
+  locale: LocaleCode = CATALOGUE_LOCALE,
+): readonly CountryIso2[] {
+  return orderedCountryCodes(
+    locale,
+    COUNTRY_CODES.filter(
+      (iso2): iso2 is CountryIso2 =>
+        isCountryIso2(iso2) && isPublishedCountry(iso2),
+    ),
   );
 }
 
@@ -815,7 +828,7 @@ export async function listingPages(
     const categories = copyRows("category", code);
     const occasions = copyRows("occasion", code);
 
-    for (const iso2 of publishedCountries()) {
+    for (const iso2 of publishedCountries(code)) {
       if (!(await shopRootExists(iso2, code))) continue;
       const country = corridorSlug(iso2, code);
       pages.push({
@@ -1040,8 +1053,9 @@ export function photoFor(
  * One product card for a country-scoped listing (§2 "The product card contract"): the photo or
  * the placeholder, the name in this locale, and **one** all-in price, the default tier's
  * `priceProjection().displayPrice`, a payable configuration, with the `catalog.price.inclusive`
- * wording beside it. No approximate equivalents: they are the product page's alone (spec 004 §14
- * A-founder-2026-10-19b clause 2; TASK-285), and `ProductCardViewSchema` has no field to carry them.
+ * wording beside it. The equivalents line, the delivery slots and the local-special label have
+ * their fields since TASK-381 (spec 004 §14 A-founder-2026-10-24a items 7, 8, 10) and are filled
+ * by the tasks that render them.
  *
  * `href` is present only when spec 009's `product` link id is published (§13 Q8, AC-12). It is
  * not in `site-links.ts` yet, so the caller passes `productLinks: false` — its default — and
@@ -1076,6 +1090,12 @@ export async function productCardView(
     price: projection.displayPrice,
     priceLabelKey: PRICE_LABEL_KEY,
     provenance,
+    // The country card's three new fields (spec 008 AC-6 as amended; TASK-381 adds the shape).
+    // Rendered by TASK-389 (equivalents, local special) and the countdown's task (slots), which
+    // fill them; until then no card prints a line from them, so none is computed here.
+    equivalents: null,
+    slots: null,
+    localSpecial: false,
   });
 }
 
@@ -1634,7 +1654,7 @@ export async function listingView(
         )),
     ...(pageType === "occasionHub" && entityKey !== undefined
       ? {
-          occasionDates: publishedCountries().map((country2) => {
+          occasionDates: publishedCountries(locale).map((country2) => {
             // R3: an entry links only where its **country occasion page** exists: the picker's own
             // link, decided once in `linksFor()` by the existence rule (spec 004 AC-14), and only
             // when it is that page (not the same-key category the picker falls back to).
@@ -2151,11 +2171,11 @@ async function linksFor(
   if (iso2 === undefined && entityKey !== undefined && kind !== undefined) {
     // The hub's destination picker (§2, §5.3, §13 Q4: countries first). **Every published
     // destination is named**, and the ones whose page exists are the ones that carry an `href`.
-    // Collating the names is the renderer's job — the label is a message key and only the page can
-    // resolve it — so the order here is the registry's and the order on screen is `collator()`'s.
+    // In the one country order (`publishedCountries(locale)`: `sortWeight`, then the name in this
+    // locale's collation); a renderer may collate again and gets the same answer.
     // Which page a row links is `destinationRowHref()`'s, the one rule the header in context reads
     // too (spec 043 §5.2; `hubDestinationHref()`).
-    for (const country of publishedCountries()) {
+    for (const country of publishedCountries(locale)) {
       const href = await destinationRowHref(
         locale,
         kind,
@@ -2211,8 +2231,7 @@ async function linksFor(
       : {}),
     ...(occasionsIndex === undefined ? {} : { occasionsIndex }),
     chips: sortBy(chips, locale, (chip) => chip.name),
-    // Registry order (Poland first): the visible label is a *message*, and collating the country
-    // names is the renderer's job because only it can resolve them (TASK-112).
+    // The one country order (`publishedCountries(locale)`, TASK-381), not the registry file's.
     destinations,
   });
 }

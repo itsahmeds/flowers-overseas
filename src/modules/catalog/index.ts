@@ -409,6 +409,39 @@ export {
   occasionsIndexHref,
 } from "./listing";
 
+// The commerce structure's foundation (spec 004 §14 A-founder-2026-10-24a items 1, 3 and 13,
+// AC-72; TASK-381): the shop set, the core range, the one country order, and the chooser's paths.
+// Pure over registry and catalogue data; none reads a header, a cookie or an IP.
+export {
+  type CoreRangeEntry,
+  type ShopData,
+  type ShopProduct,
+  type ShopSet,
+  type ShopSetMode,
+  committedShopData,
+  coreRange,
+  isCore,
+  isCoreRangeSize,
+  shopCountries,
+  shopSet,
+} from "./shop";
+export {
+  type OrderableCountry,
+  countryDisplayName,
+  orderCountries,
+  orderedCountryCodes,
+} from "./country-order";
+export {
+  type ChooserNext,
+  type CountryVersion,
+  chooseSegment,
+  chooserNextPath,
+  chooserPath,
+  countryVersionOf,
+  parseChooserNext,
+  parseChooserPath,
+} from "./chooser";
+
 // The corridor page's shop entry (spec 007 §2 "Internal links", spec 008 §2 "Links", AC-20;
 // TASK-113). `src/modules/geo` cannot read the catalogue — the dependency runs catalog → geo — so
 // the corridor's `liveSlots` are supplied by its route, and this is the one function that answers

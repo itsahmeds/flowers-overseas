@@ -139,6 +139,7 @@ const FAKE_FIFTH: LocaleConfig = {
   currencyDefault: "EUR",
   numberingSystem: "latn",
   hreflangAliases: ["ar-XB"],
+  chooseSegment: "choose-country",
   pathSegments: {
     destinations: "send-flowers-to",
     shopCategory: "flowers",

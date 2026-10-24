@@ -360,6 +360,24 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // and its href, for the colophon (TASK-113): published **and** existing in this locale,
         // answered once so the footer never has to ask the catalogue itself.
         "occasionsIndexHref",
+        // the commerce structure's foundation (spec 004 §14 A-founder-2026-10-24a items 1, 3, 13;
+        // TASK-381): the shop set and the core range over a data seam, the one country order, and
+        // the chooser's paths that TASK-383 and TASK-385 build on.
+        "committedShopData",
+        "coreRange",
+        "isCore",
+        "isCoreRangeSize",
+        "shopCountries",
+        "shopSet",
+        "countryDisplayName",
+        "orderCountries",
+        "orderedCountryCodes",
+        "chooseSegment",
+        "chooserNextPath",
+        "chooserPath",
+        "countryVersionOf",
+        "parseChooserNext",
+        "parseChooserPath",
       ].sort(),
     );
   });
@@ -370,7 +388,11 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/alternates.ts`,
       `${moduleDir}/availability.ts`,
       `${moduleDir}/cache.ts`,
+      // The chooser's paths (spec 004 §14 A-founder-2026-10-24a item 3; TASK-381).
+      `${moduleDir}/chooser.ts`,
       `${moduleDir}/copy.ts`,
+      // The one country order: `sortWeight`, then collation (item 13; TASK-381).
+      `${moduleDir}/country-order.ts`,
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
       `${moduleDir}/listing.ts`,
@@ -395,6 +417,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
       `${moduleDir}/shop-entry.ts`,
+      // The shop set and the core range (item 1, AC-72; TASK-381).
+      `${moduleDir}/shop.ts`,
       // The header in a destination's context (spec 043 §5.2; TASK-288).
       `${moduleDir}/shop-nav.ts`,
       `${moduleDir}/slugs.ts`,

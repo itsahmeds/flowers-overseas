@@ -355,6 +355,9 @@ const CARD: ProductCardView = {
   priceLabelKey: "catalog.price.inclusive",
   provenance: "ai",
   href: "/en/poland/product/amber-hour",
+  equivalents: null,
+  slots: null,
+  localSpecial: false,
 };
 
 function renderCard(priority: boolean): string {

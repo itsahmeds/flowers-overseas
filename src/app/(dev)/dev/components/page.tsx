@@ -265,6 +265,9 @@ function galleryCard(
     price: state === "link" ? LISTING_CARDS.lowPrice : LISTING_CARDS.price,
     priceLabelKey: "catalog.price.inclusive",
     provenance: "ai",
+    equivalents: null,
+    slots: null,
+    localSpecial: false,
   };
 }
 

@@ -1,0 +1,24 @@
+{
+  "family": "counts",
+  "rule": "core-range-size",
+  "replaces": "products.json",
+  "expect": "has 7 core products",
+  "why": "Spec 004 §14 A-founder-2026-10-24a item 1 and AC-72: the core range holds 8 to 12. Three of the ten ranked products lose their rank, leaving 7, and the gate names the count.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": { "sku": "FO-BQ-015" },
+      "set": { "coreRank": null }
+    },
+    {
+      "op": "setRow",
+      "match": { "sku": "FO-PT-001" },
+      "set": { "coreRank": null }
+    },
+    {
+      "op": "setRow",
+      "match": { "sku": "FO-FN-002" },
+      "set": { "coreRank": null }
+    }
+  ]
+}

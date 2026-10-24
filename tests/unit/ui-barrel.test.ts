@@ -236,6 +236,13 @@ describe("src/modules/ui barrel", () => {
         // `hasCardPrice()` is the discriminator `ProductCard` reads: a destination-less hub shows
         // no price, and the shape is what says so (spec 008 §14 A3; TASK-112).
         "HubCardViewSchema",
+        // spec 008 AC-6's two forms (spec 004 §14 A-founder-2026-10-24a; TASK-381): the
+        // country-less card (`HubCardViewSchema`'s new name), either form, and the country card's
+        // delivery-slot facts for the countdown.
+        "CountryLessCardViewSchema",
+        "ListingCardViewSchema",
+        "DeliverySlotViewSchema",
+        "DeliverySlotsViewSchema",
         "LISTING_SORTS",
         "ListingEmpty",
         "ListingGrid",
