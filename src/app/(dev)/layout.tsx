@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { documentFallbackLocale } from "@/modules/i18n";
-import { fontVariables } from "@/modules/ui/fonts";
+import { fontVariables } from "@/modules/ui";
 
 import "../globals.css";
 
