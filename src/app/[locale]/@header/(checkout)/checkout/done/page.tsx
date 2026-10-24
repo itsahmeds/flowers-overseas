@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 
-import { RouteHeader } from "../../route-header";
+import { RouteHeader } from "../../../../route-header";
 
 /**
  * The checkout's header (spec 010 §5.3; TASK-204): the site header with no destination context,

@@ -96,6 +96,26 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "the basket line a checkout screen is for (spec 010 §14 A-founder-2026-10-22: `&line=` is an integer position)",
   },
+  // Spec 010 §2 (TASK-204): the checkout page builds the same `?step=` and `&line=` links (the
+  // progress, the review's "Change", the 303 back to a refused screen).
+  {
+    entry: "src/app/[locale]/(checkout)/_views/CheckoutView.tsx#step",
+    reason:
+      "the progress and the review's Change links (`?step=`; no personal data)",
+  },
+  {
+    entry: "src/app/[locale]/(checkout)/_views/CheckoutView.tsx#line",
+    reason:
+      "the review's Change link for a basket line (`&line=` is an integer position)",
+  },
+  {
+    entry: "src/app/[locale]/(checkout)/checkout/actions.ts#step",
+    reason: "the 303 back to the screen a refused post came from (`?step=`)",
+  },
+  {
+    entry: "src/app/[locale]/(checkout)/checkout/actions.ts#line",
+    reason: "the same 303's basket line (`&line=` is an integer position)",
+  },
   {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
@@ -599,6 +619,10 @@ describe("the real tree (T-59)", () => {
         "src/lib/auth/surface.ts#callbackUrl",
         "src/modules/checkout/steps.ts#step",
         "src/modules/checkout/steps.ts#line",
+        "src/app/[locale]/(checkout)/_views/CheckoutView.tsx#step",
+        "src/app/[locale]/(checkout)/_views/CheckoutView.tsx#line",
+        "src/app/[locale]/(checkout)/checkout/actions.ts#step",
+        "src/app/[locale]/(checkout)/checkout/actions.ts#line",
         "src/app/admin/(signed-in)/users/actions.ts#result",
         "src/app/admin/(signed-in)/audit/page.tsx#entity",
         "src/app/admin/(signed-in)/audit/page.tsx#actor",

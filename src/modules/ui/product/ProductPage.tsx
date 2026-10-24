@@ -349,11 +349,19 @@ export function ProductPage({
                       type="submit"
                       value="checkout"
                     >
-                      {checkout?.entry === "continue"
-                        ? product("entry.continue", {
-                            total: selectedPrice ?? "",
-                          })
-                        : product("entry.demo")}
+                      {checkout?.entry === "continue" ? (
+                        // "Continue" and the selected size's total. The founder-approved
+                        // `finder.submit` until a reviewed "Continue, {total}" key exists: a
+                        // new unreviewed key here would push the counted share past 5 %.
+                        <>
+                          {t("finder.submit")}
+                          {selectedPrice === undefined ? null : (
+                            <bdi className="num ms-[8px]">{selectedPrice}</bdi>
+                          )}
+                        </>
+                      ) : (
+                        product("entry.demo")
+                      )}
                     </button>
                     <button
                       className={`${ENTRY_BUTTON} ${ENTRY_GHOST}`}

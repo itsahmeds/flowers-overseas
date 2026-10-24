@@ -16,6 +16,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import { z } from "zod";
 
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import {
@@ -43,10 +44,19 @@ import { sampleValues } from "../_views/CheckoutView";
 const ROUTING = new Set<string>(Object.values(CHECKOUT_FORM_FIELDS));
 const IDLE = { status: "idle" } as const;
 
-function text(form: FormData, key: string): string | undefined {
-  const value = form.get(key);
-  return typeof value === "string" ? value : undefined;
-}
+/**
+ * The routing fields, parsed before anything else is read. Every other field is parsed by the
+ * step's own `.strict()` schema in the module's runner.
+ */
+const RoutingSchema = z.object({
+  [CHECKOUT_FORM_FIELDS.locale]: z.string().refine(isLocaleCode),
+  [CHECKOUT_FORM_FIELDS.intent]: z.enum(CHECKOUT_FORM_INTENTS),
+  [CHECKOUT_FORM_FIELDS.step]: z.string().max(16).optional(),
+  [CHECKOUT_FORM_FIELDS.line]: z.string().max(4).optional(),
+});
+
+/** The posted body is a form; its fields are the step schemas' to parse. */
+const PostedFormSchema = z.instanceof(FormData);
 
 /** The posted form without the routing fields and Next's own keys. */
 function stripped(form: FormData): FormData {
@@ -112,24 +122,18 @@ async function echoTo(
 }
 
 export async function checkoutAction(form: FormData): Promise<void> {
-  const locale = text(form, CHECKOUT_FORM_FIELDS.locale);
-  const intent = text(form, CHECKOUT_FORM_FIELDS.intent);
-  if (
-    locale === undefined ||
-    !isLocaleCode(locale) ||
-    intent === undefined ||
-    !(CHECKOUT_FORM_INTENTS as readonly string[]).includes(intent)
-  ) {
-    return;
-  }
+  const routing = RoutingSchema.safeParse(Object.fromEntries(form.entries()));
+  if (!routing.success) return;
+  const locale = routing.data[CHECKOUT_FORM_FIELDS.locale] as LocaleCode;
+  const intent = routing.data[CHECKOUT_FORM_FIELDS.intent];
   setRequestLocale(locale);
   (await cookies()).delete({
     name: CHECKOUT_ECHO_COOKIE_NAME,
     path: checkoutEchoCookieAttributes(locale).path,
   });
-  const step = text(form, CHECKOUT_FORM_FIELDS.step);
-  const line = text(form, CHECKOUT_FORM_FIELDS.line);
-  const posted = stripped(form);
+  const step = routing.data[CHECKOUT_FORM_FIELDS.step];
+  const line = routing.data[CHECKOUT_FORM_FIELDS.line];
+  const posted = stripped(PostedFormSchema.parse(form));
 
   // "Use sample details" (AC-33): the form drawn again with the destination's sample, nothing
   // saved.

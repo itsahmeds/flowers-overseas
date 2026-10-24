@@ -1239,16 +1239,6 @@
     "reviewed": false,
     "sourceHash": "c0e2d4066ca2af2510909025a6dd0e7a1f091f8f075b3f593db43e901bffa214"
   },
-  "consent.cookies.checkout.purpose": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "362bca673b8a30a647fa80cc05ec29fcfb86e035ceff502019040b7fc09b31e3"
-  },
-  "consent.cookies.checkoutEcho.purpose": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "c7556d96af37e152c77456f1786ff1e546d27e1f8ca002b41591e442d1dedb4b"
-  },
   "consent.cookies.consent.purpose": {
     "source": "machine",
     "reviewed": false,
@@ -3564,14 +3554,14 @@
     "reviewed": false,
     "sourceHash": "276ef9a05af4e88c84072fcfd7241705d10fd3f400ae1a58ade9fbc36323b9d7"
   },
-  "product.entry.continue": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "a9cb4ff078c3edcfeb3f2047e89e646ab14106ddd8a30e16fa94441e6b510380"
-  },
   "product.entry.demo": {
     "source": "machine",
     "reviewed": false,
     "sourceHash": "a0a54cc461dbc887eb87ec36926bace436b61cf09990b52b0ad11219b7a68c42"
+  },
+  "consent.cookies.csrf.purpose": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "157577b97358de8bc5e689edae741a707595f266c0b6fa376b51ea45bdec41d9"
   }
 }

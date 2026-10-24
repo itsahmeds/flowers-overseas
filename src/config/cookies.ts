@@ -89,18 +89,6 @@ const NAME_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9_-]*\*?$/;
 /** The message key the settings panel and the cookie policy read the purpose from (§7). */
 const PURPOSE_KEY_PATTERN = /^consent\.cookies\.[a-z][A-Za-z0-9]*\.purpose$/;
 
-/**
- * The cookies the server sets, all from the checkout's `no-store` responses only (the start route
- * and the checkout's server actions; spec 010 §8, AC-36, AC-62, AC-75). No cached response ever
- * carries their `Set-Cookie`, which is the invariant the refusal below protects. Any other
- * server-written row marked `set` is refused.
- */
-export const NO_STORE_SERVER_COOKIES: readonly string[] = [
-  "fo_checkout",
-  "fo_basket",
-  "fo_checkout_echo",
-];
-
 export const CookieRegistryEntrySchema = z
   .object({
     /** Exact name, or a prefix family ending in `*` (`_ga_*`). */
@@ -136,15 +124,11 @@ export const CookieRegistryEntrySchema = z
         message: `\`${entry.name}\`: consentRequired must be ${String(entry.category !== "essential")} for category \`${entry.category}\``,
       });
     }
-    if (
-      entry.status === "set" &&
-      entry.writer === "server" &&
-      !NO_STORE_SERVER_COOKIES.includes(entry.name)
-    ) {
+    if (entry.status === "set" && entry.writer === "server") {
       ctx.addIssue({
         code: "custom",
         path: ["writer"],
-        message: `\`${entry.name}\`: only the checkout's no-store responses set a cookie from the server — a cached response must carry no \`Set-Cookie\` (spec 001 AC-15, spec 003 AC-12, spec 010 AC-62)`,
+        message: `\`${entry.name}\`: nothing is set by the server in Phase 0 — a cached response must carry no \`Set-Cookie\` (spec 001 AC-15, spec 003 AC-12)`,
       });
     }
     if (entry.kind !== "cookie" && entry.party !== "first") {
@@ -226,6 +210,19 @@ const REGISTER: readonly unknown[] = [
     scope: "Path=/; SameSite=Lax; HttpOnly; Secure",
   },
   {
+    name: "fo_csrf",
+    kind: "cookie",
+    category: "essential",
+    consentRequired: false,
+    party: "first",
+    writer: "server",
+    status: "declared",
+    lifetime: { kind: "session" },
+    purposeKey: "consent.cookies.csrf.purpose",
+    spec: "010",
+    scope: "Path=/; SameSite=Lax; Secure",
+  },
+  {
     name: "fo_currency",
     kind: "cookie",
     category: "essential",
@@ -239,43 +236,17 @@ const REGISTER: readonly unknown[] = [
     scope: "Path=/; SameSite=Lax; Secure outside development",
   },
   {
-    name: "fo_checkout",
-    kind: "cookie",
-    category: "essential",
-    consentRequired: false,
-    party: "first",
-    writer: "server",
-    status: "set",
-    lifetime: { kind: "maxAge", seconds: 30 * DAY },
-    purposeKey: "consent.cookies.checkout.purpose",
-    spec: "010",
-    scope: "Path=/; SameSite=Lax; HttpOnly; Secure",
-  },
-  {
     name: "fo_basket",
     kind: "cookie",
     category: "essential",
     consentRequired: false,
     party: "first",
-    writer: "server",
-    status: "set",
+    writer: "browser",
+    status: "declared",
     lifetime: { kind: "maxAge", seconds: 30 * DAY },
     purposeKey: "consent.cookies.basket.purpose",
     spec: "010",
-    scope: "Path=/; SameSite=Lax; Secure",
-  },
-  {
-    name: "fo_checkout_echo",
-    kind: "cookie",
-    category: "essential",
-    consentRequired: false,
-    party: "first",
-    writer: "server",
-    status: "set",
-    lifetime: { kind: "maxAge", seconds: 300 },
-    purposeKey: "consent.cookies.checkoutEcho.purpose",
-    spec: "010",
-    scope: "Path=/{locale}/checkout; SameSite=Lax; HttpOnly; Secure",
+    scope: "Path=/; SameSite=Lax; Secure outside development",
   },
   // The two Stripe rows are classified `essential` / `consentRequired: false` on the Art. 5(3)
   // fraud-prevention exemption, which is the right reading for a payment the visitor asked for —

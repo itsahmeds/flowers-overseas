@@ -14,6 +14,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactElement } from "react";
+import { z } from "zod";
 
 import { isLocaleCode } from "@/config/locales";
 import {
@@ -45,9 +46,13 @@ export async function generateMetadata({
   return { title: t("summary.title"), robots: TRANSACTIONAL_ROBOTS_META };
 }
 
-function one(value: string | string[] | undefined): string | undefined {
-  return typeof value === "string" ? value : undefined;
-}
+/** `?step=` and `&line=`, each kept only when it is one short string; `checkoutScreen` decides. */
+const one = z
+  .union([z.string().max(16), z.array(z.string())])
+  .optional()
+  .transform((value) => (typeof value === "string" ? value : undefined))
+  .catch(undefined);
+const CheckoutQuerySchema = z.object({ step: one, line: one });
 
 export default async function CheckoutPage({
   params,
@@ -56,14 +61,14 @@ export default async function CheckoutPage({
   const { locale } = await params;
   if (!isLocaleCode(locale)) notFound();
   setRequestLocale(locale);
-  const query = await searchParams;
+  const query = CheckoutQuerySchema.parse(await searchParams);
   const jar = await cookies();
   const value = jar.get(CHECKOUT_COOKIE_NAME)?.value ?? null;
   const screen = await checkoutScreen({
     locale,
     token: isDraftToken(value) ? value : null,
-    step: one(query["step"]),
-    line: one(query["line"]),
+    step: query.step,
+    line: query.line,
   });
   if (screen.kind === "placed") redirect(`/${locale}/checkout/done`);
   const echo = decodeCheckoutEcho(jar.get(CHECKOUT_ECHO_COOKIE_NAME)?.value);

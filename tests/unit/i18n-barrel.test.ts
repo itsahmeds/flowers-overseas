@@ -83,6 +83,8 @@ const PINNED_EXPORTS = [
   "formatNumber",
   "formatPercentFromBasisPoints",
   "formatRange",
+  // TASK-204 (spec 010 AC-12): a country's name in the locale, for the residence select.
+  "formatRegionName",
   "formatRelativeTime",
   "formatTimeInZone",
   "loadMessages",
