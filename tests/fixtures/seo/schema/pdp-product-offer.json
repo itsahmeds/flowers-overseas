@@ -5,7 +5,7 @@
     "name": "FO-BQ-001",
     "offers": {
       "@type": "Offer",
-      "price": "54.90",
+      "price": "56.90",
       "priceCurrency": "EUR",
       "availability": "https://schema.org/InStock",
       "eligibleRegion": "PL",
@@ -23,6 +23,6 @@
       }
     }
   },
-  "visiblePrice": "54.90",
+  "visiblePrice": "56.90",
   "visibleCurrency": "EUR"
 }

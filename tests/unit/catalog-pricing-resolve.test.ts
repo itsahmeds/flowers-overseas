@@ -679,8 +679,10 @@ describe("tierPrices and fromPrice (spec 005 §5.2, §6)", () => {
     expect(prices.map((entry) => entry.tierKey)).toEqual(
       bouquetTiers.map((tier) => tier.tierKey),
     );
+    // FO-BQ-001 in PL is priced by its ladder override, not the classic ladder (spec 005 §14
+    // A-founder-2026-10-15a point 2): 199 / 239 / 329 zł.
     expect(prices.map((entry) => entry.price.amountMinor)).toEqual([
-      ...plLadder,
+      19_900, 23_900, 32_900,
     ]);
     expect(prices.filter((entry) => entry.isDefault)).toHaveLength(1);
     for (const entry of prices) {
