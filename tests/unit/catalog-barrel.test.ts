@@ -338,6 +338,12 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "productJsonLd",
         "productOfferGateOpen",
         "productOfferNode",
+        // spec 008's listing structured data (TASK-115): the listings' JSON-LD nodes from one
+        // `ListingView`, the cards the `ItemList` lists, and the occasions index's grouping that
+        // the page and its `ItemList` share so the list's order is the order shown.
+        "listingItemListEntries",
+        "listingJsonLd",
+        "occasionsIndexGroups",
         // the corridor's shop entry (TASK-113): the one function that composes "may the site
         // link into the shop" with "does this destination have a shop root in this locale", so
         // `src/modules/geo` never reads the catalogue (spec 008 AC-20).
@@ -366,6 +372,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/flags.ts`,
       `${moduleDir}/index.ts`,
       `${moduleDir}/listing.ts`,
+      // The listings' JSON-LD over their view (spec 008 AC-17, AC-18; TASK-115).
+      `${moduleDir}/listingSchema.ts`,
       `${moduleDir}/observability.ts`,
       `${moduleDir}/params.ts`,
       `${moduleDir}/pricing/equivalents.ts`,

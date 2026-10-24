@@ -6,15 +6,21 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-What the spec binds this task to, in the spec's own words: the resolution notes that override
-defaults, the AC ids owned, the rulings from earlier reviews that apply here, the gates that must
-be green. One paragraph or a short list — no restatement of the spec.
+- Spec 008 **AC-17** (T-17): every page emits a `BreadcrumbList` equal to the visible breadcrumb in order and label;
+  every listing and the occasions index emit an `ItemList` whose count, order, names and URLs equal the rendered cards.
+- Spec 008 **AC-18** (T-18): no `Product`, `Offer`, `AggregateOffer`, `aggregateRating`, `review`, `Event`,
+  `LocalBusiness` or `FloristShop` on any page, by a JSON-LD type scan over every rendered page in every locale;
+  `pnpm seo:validate` (schema) passes on fixtures for all six page types.
+- §2 "Schema": `ListItem { position, url, name }`, no price, no image, no rating. §5.2: `listingView()` is the only
+  input (T-31). §14 A3: the builder reads `items` and `hubItems`. §14 A15 (c), A16 (b): `items[0]` is position 1.
+  §14 A16 (d): the visible breadcrumb is the trail in the server HTML.
+- Class: review-only (SEO markup). Self-review per `.claude/state/wo-1022-common.md`.
 
 ## Read
 
-- `specs/NNN-*.md` — read `## 0. Index` first, then only the sections the ACs name
-- `docs/codebase-map.md` — where everything lives
-- (the two or three files the deliverable actually touches)
+- `specs/008-country-shop-category-occasion-pages.md` §0, §2 "Schema", §6 "Schema types", §9 AC-17/AC-18, §14 A3, A15, A16
+- `src/modules/seo/schema/` (TASK-093's builders), `scripts/seo/validate-schema.ts`, `tests/e2e/schema.spec.ts`
+- `src/modules/catalog/listing.ts` (`ListingViewSchema`, `breadcrumbFor`), `src/modules/catalog/productSchema.ts` (precedent)
 
 ## Carry-forwards
 
@@ -28,6 +34,10 @@ One dated bullet per `/review`, newest last.
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
 _None recorded._
+
+## Progress
+
+- 2026-10-24: builder, `listingJsonLd()`, route mounts, validator rule, eight fixtures, unit/contract/e2e tests; draft PR 387.
 
 ## Result
 

@@ -13,6 +13,9 @@
  * top of page 1 of every type. A sort that changed the grid and not the list, or a page slice the
  * list ignored, turns a case red.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 import type { ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -609,4 +612,37 @@ describe("the e2e scanner holds on every rendered fixture, and bites (AC-17, AC-
       listingJsonLdProblems(served(index, mutated), "reversed", "occasions"),
     ).not.toStrictEqual([]);
   });
+});
+
+/**
+ * The routes mount the nodes beside the page, from the same `view` (T-31's wiring half). The e2e
+ * scan proves it on the served HTML; this proves it without a build, so a route that drops the
+ * mount goes red in the cheap gates too.
+ */
+describe("every listing route mounts ListingJsonLd with the view its page renders", () => {
+  const routes = [
+    "src/app/[locale]/country-shop-root.tsx",
+    "src/app/[locale]/country-listing.tsx",
+    "src/app/[locale]/[segment]/[child]/page.tsx",
+    "src/app/[locale]/[segment]/page.tsx",
+  ].map((file) => readFileSync(resolve(__dirname, "../..", file), "utf8"));
+
+  for (const page of Object.keys(PAGES).map((type) =>
+    type === "countryShopRoot"
+      ? "CountryShopRootPage"
+      : `${type[0]?.toUpperCase() ?? ""}${type.slice(1)}Page`,
+  )) {
+    it(`${page} is followed by <ListingJsonLd view={view} />`, () => {
+      const mounts = routes.flatMap((source) => [
+        ...source.matchAll(
+          new RegExp(
+            `<${page} view=\\{view\\} />\\s*(<ListingJsonLd view=\\{view\\} />)?`,
+            "g",
+          ),
+        ),
+      ]);
+      expect(mounts.length, page).toBeGreaterThan(0);
+      for (const mount of mounts) expect(mount[1], page).toBeDefined();
+    });
+  }
 });
