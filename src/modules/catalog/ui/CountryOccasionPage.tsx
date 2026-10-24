@@ -119,8 +119,8 @@ export function CountryOccasionPage({
       <div className="pb-(--section-fluid)">
         <ListingBreadcrumb crumbs={view.breadcrumb} tone="quiet" />
 
-        {/* The head (spec 043 §14 A-founder-2026-10-22 items 1, 2, 3, 5 and 7, revised
-            2026-10-24; TASK-289): the short H1, the date line directly under it (no lead
+        {/* The head (spec 043 §14 A-founder-10-22 items 1, 2, 3, 5 and 7, revised by
+            design PR 347; TASK-289): the short H1, the date line directly under it (no lead
             photograph, no date card, no band), one quiet line, one toolbar row whose start is
             "Also in {country}" and its one chip, the shop root. Below `md` the status parts
             follow the grid (spec 004 AC-57). */}

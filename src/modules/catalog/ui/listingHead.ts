@@ -1,6 +1,6 @@
 /**
  * What the country listings' head says, computed once for the three page types (spec 043 §14
- * A-founder-2026-10-22 items 1 and 3, revised 2026-10-24, and §5.3 E; TASK-289). Pure functions
+ * A-founder-10-22 items 1 and 3, revised by design PR 347, and §5.3 E; TASK-289). Pure functions
  * over the view and the page's translators: no clock, no request, no copy written here.
  */
 import type { useTranslations } from "next-intl";

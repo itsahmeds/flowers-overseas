@@ -31,7 +31,7 @@ export interface ListingBreadcrumbProps {
   readonly crumbs: readonly ListingCrumb[];
   /** Below `md`: the back link (default) or the trail (the product page; spec 004 AC-50). */
   readonly phone?: BreadcrumbsPhone;
-  /** `quiet`: the country listings' head (spec 043 §14 A-founder-2026-10-22 item 1). */
+  /** `quiet`: the country listings' head (spec 043 §14 A-founder-10-22 item 1). */
   readonly tone?: "default" | "quiet";
 }
 

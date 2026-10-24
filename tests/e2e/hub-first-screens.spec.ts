@@ -25,7 +25,7 @@ const PHONE = { width: 390, height: 844 } as const;
 type Size = { readonly width: number; readonly height: number };
 
 const NO_MONEY = "We show no price on this page";
-const GUIDE_STATE = "Guide · not delivering yet";
+const GUIDE_STATE = "Ordering opens soon";
 
 test.beforeEach(({}, testInfo) => {
   test.skip(
