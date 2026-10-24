@@ -146,6 +146,9 @@ export const DATABASE_ADAPTER_DIRS = [
   "src/modules/geo/db",
   // spec 012b §2.4 (TASK-293): the review ledger's writer and reads (`attest()`).
   "src/modules/i18n/db",
+  // spec 044 §5.2 (TASK-321): the blog's database provider and commands; the rest of
+  // `src/modules/content` stays database-free (spec 041 §2).
+  "src/modules/content/blog/db",
 ] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
