@@ -64,4 +64,6 @@ the ledger's 38 objects; RLS 81 of 81).
 green. `vitest --changed a4aa02a3` (unit and contract, two workers): 364 files, 10925 tests green.
 typecheck, lint, format, i18n, no-db and map checks exit 0. Nothing in the ledger's logic changed;
 the renumber touches file names, comments and the lists that pin them.
-
+CI on `33c47970`: `test-integration` timed out (5 s default) in PR 383's
+`checkout-draft-lines-migration.test.ts`, whose rollback to `0019` now walks `0023` to `0020`; that
+case and `purchase-migration.test.ts`'s now allow 120 s (`RUNNER_TIMEOUT_MS`), both green locally.
