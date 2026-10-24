@@ -389,9 +389,9 @@
       "intro": "{country} ma własne daty i obowiązują one bez względu na to, czy tam dostarczamy. Dlatego kalendarz jest na tej stronie w obu przypadkach.",
       "occasion": "Okazja",
       "rule": "Reguła",
-      "ruleEaster": "Moves with Easter",
-      "ruleFixed": "Same date every year",
-      "ruleWeekday": "A set weekday of the month",
+      "ruleEaster": "Zależy od Wielkanocy",
+      "ruleFixed": "Ten sam dzień co roku",
+      "ruleWeekday": "Określony dzień tygodnia w miesiącu",
       "undated": "Tu też, bez własnej daty: {occasions}."
     },
     "coverage": {
