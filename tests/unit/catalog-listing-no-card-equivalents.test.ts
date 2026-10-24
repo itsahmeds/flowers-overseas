@@ -1,11 +1,14 @@
 /**
- * No card carries the approximate equivalents (spec 004 §14 A-founder-2026-10-19b clause 2; spec
+ * No card prints the approximate equivalents yet (spec 004 §14 A-founder-2026-10-19b clause 2; spec
  * 008 AC-6 as amended, T-06 amended and A21's amended test bullet; TASK-285).
  *
- * `listingView()` over the committed catalogue, with the clock injected **inside** the committed
- * snapshot's window, the one state in which a card used to carry the other three currencies: no
- * country-scoped card's view model has an `equivalents` field in any of the four locales, at a
- * fresh rate or a stale one, and every card's one price is the charged amount in the locale's
+ * Spec 004 §14 A-founder-2026-10-24a item 7 reverses clause 2: every card with a price regains
+ * the line, and TASK-381 gives the country card's view model a nullable `equivalents` field for it.
+ * Until TASK-389 fills and renders it, the field is `null` on every card (no line), which is what
+ * this file now pins: `listingView()` over the committed catalogue, with the clock injected
+ * **inside** the committed snapshot's window, the one state in which a card used to carry the
+ * other three currencies: every country-scoped card's `equivalents` is `null` in each of the four
+ * locales, at a fresh rate or a stale one, and every card's one price is the charged amount in the locale's
  * display currency (EUR on `/en` and `/de`, GBP on `/en-gb`, złoty on `/pl`; złoty everywhere once
  * the rate is stale). A destination-less hub carries no money at all (T-07).
  */
@@ -40,7 +43,7 @@ describe("country-scoped cards carry one price and no equivalents (clause 2)", (
     ["en", STALE, "PLN"],
     ["en-gb", STALE, "PLN"],
   ] as const)(
-    "%s at %s: every card is charged in %s and has no equivalents field",
+    "%s at %s: every card is charged in %s and its equivalents field is null",
     async (locale, now, charged) => {
       const view = await shopRoot(locale, now);
       expect(view.items.length).toBeGreaterThan(0);
@@ -48,7 +51,7 @@ describe("country-scoped cards carry one price and no equivalents (clause 2)", (
         expect(card.price.currency).toBe(charged);
         expect(Number.isInteger(card.price.amountMinor)).toBe(true);
         expect(card.price.amountMinor).toBeGreaterThan(0);
-        expect(Object.keys(card)).not.toContain("equivalents");
+        expect(card.equivalents).toBeNull();
       }
     },
   );

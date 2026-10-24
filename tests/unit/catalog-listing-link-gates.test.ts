@@ -226,7 +226,8 @@ describe("a shop root links its corridor page only where that page exists (AC-21
 
   it("the corridor link: none in de and pl; all seven in en and en-gb, unchanged", () => {
     const { seen, expected } = byLocale((root) => root.corridor);
-    expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
+    // The first shop root in the one country order (TASK-381): France, not Poland.
+    expect(seen.en?.[0]).toBe("/en/send-flowers-to/france");
     expect(seen.de?.[0]).toBeNull();
     expect(seen).toEqual(expected);
   });
@@ -235,7 +236,8 @@ describe("a shop root links its corridor page only where that page exists (AC-21
     // The crumb is there in every locale: only its href depends on the corridor page.
     expect(shopRoots.every((root) => root.crumb !== undefined)).toBe(true);
     const { seen, expected } = byLocale((root) => root.crumb?.href ?? null);
-    expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
+    // The first shop root in the one country order (TASK-381): France, not Poland.
+    expect(seen.en?.[0]).toBe("/en/send-flowers-to/france");
     expect(seen.de?.[0]).toBeNull();
     expect(seen.pl?.[0]).toBeNull();
     expect(seen).toEqual(expected);
@@ -243,7 +245,8 @@ describe("a shop root links its corridor page only where that page exists (AC-21
 
   it("country.corridorPath: none in de and pl; all seven in en and en-gb, unchanged", () => {
     const { seen, expected } = byLocale((root) => root.corridorPath);
-    expect(seen.en?.[0]).toBe("/en/send-flowers-to/poland");
+    // The first shop root in the one country order (TASK-381): France, not Poland.
+    expect(seen.en?.[0]).toBe("/en/send-flowers-to/france");
     expect(seen.de?.[0]).toBeNull();
     expect(seen).toEqual(expected);
   });

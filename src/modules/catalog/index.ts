@@ -411,14 +411,15 @@ export {
 
 // The commerce structure's foundation (spec 004 §14 A-founder-2026-10-24a items 1, 3 and 13,
 // AC-72; TASK-381): the shop set, the core range, the one country order, and the chooser's paths.
-// Pure over registry and catalogue data; none reads a header, a cookie or an IP.
+// Pure over registry and catalogue data; none reads a header, a cookie or an IP. The committed
+// `ShopData` value stays inside the module (a provider-shaped object, AC-2's rule); a test hands
+// its own fixture to the functions.
 export {
   type CoreRangeEntry,
   type ShopData,
   type ShopProduct,
   type ShopSet,
   type ShopSetMode,
-  committedShopData,
   coreRange,
   isCore,
   isCoreRangeSize,

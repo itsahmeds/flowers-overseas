@@ -14,7 +14,7 @@
  * |---|---|
  * | empty | the shop root |
  * | `{shopCategory}/{slug}` (the locale's own segment) | the country category of that key, else the shop root |
- * | `{occasions}/{slug}` | the country occasion of that key, else the shop root |
+ * | `{occasions}/{slug}` | the country occasion of that key (an evergreen one: the same-key category, as the hub's own row), else the shop root |
  * | `{product}/{slug}` | the product page, else the not-available page |
  * | `price/{band}` | the shop root with `?price={band}` |
  * | `search` | spec 045's results (the shop root until spec 045 is published) |
@@ -40,7 +40,7 @@ import { type LocaleCode, localeConfig } from "@/config/locales";
 import { corridorSlug } from "@/modules/geo";
 import { listingPath, productPath } from "@/modules/i18n";
 
-import { listingExists } from "./listing";
+import { hubDestinationHref } from "./listing";
 import { productPageExists } from "./product";
 import { resolveSlug, slugFor } from "./slugs";
 
@@ -265,7 +265,6 @@ export async function countryVersionOf(
 ): Promise<CountryVersion> {
   const { locale } = next;
   const root = shopRootPath(locale, iso2);
-  const country = corridorSlug(iso2, locale);
   switch (next.kind) {
     case "home":
     case "search":
@@ -279,21 +278,16 @@ export async function countryVersionOf(
       };
     case "category":
     case "occasion": {
-      const pageType =
-        next.kind === "category" ? "countryCategory" : "countryOccasion";
-      const exists = await listingExists({
-        pageType,
+      // The hub's own rule for its country version, so the chooser lands exactly where the
+      // hub's destination row for that country links (spec 008 §2 "Links"; AC-82): the country
+      // page of the same key, and for an evergreen occasion, which has no country occasion page
+      // (spec 008 §14 A1), the country category of the same key. Else the shop root.
+      const href = await hubDestinationHref(
         locale,
-        countryIso: iso2,
-        entityKey: next.key,
-      });
-      const slug = slugFor(next.kind, next.key, locale);
-      return exists && slug !== undefined
-        ? {
-            kind: "page",
-            path: listingPath(locale, { pageType, country, slug }),
-          }
-        : { kind: "page", path: root };
+        { kind: next.kind, entityKey: next.key },
+        iso2,
+      );
+      return { kind: "page", path: href ?? root };
     }
     case "product": {
       const slug = slugFor("product", next.sku, locale);
@@ -303,7 +297,10 @@ export async function countryVersionOf(
         locale,
       });
       return exists && slug !== undefined
-        ? { kind: "page", path: productPath(locale, country, slug) }
+        ? {
+            kind: "page",
+            path: productPath(locale, corridorSlug(iso2, locale), slug),
+          }
         : {
             kind: "unavailable",
             sku: next.sku,

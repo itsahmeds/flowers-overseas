@@ -363,7 +363,6 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         // the commerce structure's foundation (spec 004 §14 A-founder-2026-10-24a items 1, 3, 13;
         // TASK-381): the shop set and the core range over a data seam, the one country order, and
         // the chooser's paths that TASK-383 and TASK-385 build on.
-        "committedShopData",
         "coreRange",
         "isCore",
         "isCoreRangeSize",
@@ -417,10 +416,10 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/routes.ts`,
       `${moduleDir}/schemas.ts`,
       `${moduleDir}/shop-entry.ts`,
-      // The shop set and the core range (item 1, AC-72; TASK-381).
-      `${moduleDir}/shop.ts`,
       // The header in a destination's context (spec 043 §5.2; TASK-288).
       `${moduleDir}/shop-nav.ts`,
+      // The shop set and the core range (item 1, AC-72; TASK-381).
+      `${moduleDir}/shop.ts`,
       `${moduleDir}/slugs.ts`,
       // The bundled-FX boundary (spec 005 §14 A7 Corrected 2; TASK-181): pure, reads no dataset.
       `${moduleDir}/static/fx-bundle.ts`,

@@ -119,6 +119,9 @@ describe("a hub carries no money, and the type is what says so (AC-7, §14 A3)",
       price: { amountMinor: 1000, currency: "EUR" },
       priceLabelKey: "catalog.price.inclusive",
       provenance: "ai",
+      equivalents: null,
+      slots: null,
+      localSpecial: false,
     };
     const both = { ...roses, items: [priced] };
     const parsed = ListingViewSchema.safeParse(both);
@@ -497,14 +500,16 @@ describe("the occasion hub's date table (AC-11, §14 A1, A10, design-round Q6)",
     // links its category of the same key instead (`occasion-hub-desktop`: "Birthday flowers for
     // France" goes to `/france/flowers/birthday-flowers`), never a dead end (QA 2026-10-18 Q1-12).
     const evergreen = render(<OccasionHubPage view={birthday} />, "en");
+    // In the one country order (spec 004 §14 A-founder-2026-10-24a item 13; TASK-381):
+    // `sortWeight`, all 0 today, then the English names, never Poland first.
     expect(birthday.links.destinations.map((d) => d.href)).toEqual([
-      "/en/poland/flowers/birthday-flowers",
-      "/en/germany/flowers/birthday-flowers",
       "/en/france/flowers/birthday-flowers",
-      "/en/spain/flowers/birthday-flowers",
+      "/en/germany/flowers/birthday-flowers",
       "/en/italy/flowers/birthday-flowers",
-      "/en/romania/flowers/birthday-flowers",
       "/en/netherlands/flowers/birthday-flowers",
+      "/en/poland/flowers/birthday-flowers",
+      "/en/romania/flowers/birthday-flowers",
+      "/en/spain/flowers/birthday-flowers",
     ]);
     expect(evergreen).toContain('aria-label="Birthday flowers for Poland"');
     expect(evergreen).toContain('href="/en/poland/flowers/birthday-flowers"');
