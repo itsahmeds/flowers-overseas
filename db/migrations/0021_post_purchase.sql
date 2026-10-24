@@ -1,4 +1,4 @@
--- 0019_post_purchase — the data spec 018's launch slice stands on (spec 018 §5.1 `NNNN_post_purchase`,
+-- 0021_post_purchase — the data spec 018's launch slice stands on (spec 018 §5.1 `NNNN_post_purchase`,
 -- §12 task 1; AC-2, AC-16 trigger half, AC-27 schema half; TASK-337), carrying spec 002 §14 A8 for
 -- specs 016 and 018 (A8.1 rows 37 and 38, A8.2 `sessions.created_at`, A8.3).
 --
@@ -38,7 +38,7 @@
 -- No `recipient` column, retention row, route or consent purpose for an address book (spec 018
 -- §13 Q6, AC-27).
 --
--- Rollback: `0019_post_purchase.down.sql`, which refuses while an invoice exists
+-- Rollback: `0021_post_purchase.down.sql`, which refuses while an invoice exists
 -- (`POST_PURCHASE_ROLLBACK_INVOICES_EXIST`: issued invoices are legal records, §12) or while an
 -- order event records an A8 transition (`A8_ROLLBACK_ROWS_IN_USE`).
 

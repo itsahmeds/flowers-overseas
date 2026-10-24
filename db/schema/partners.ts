@@ -126,7 +126,7 @@ export const fulfillmentPartner = pgTable(
     source: text("source").notNull().default("seed"),
     ...timestamps,
     /**
-     * Spec 018 §5.1 (`0019`, TASK-337): the first name the buyer sees once the order is being
+     * Spec 018 §5.1 (`0021`, TASK-337): the first name the buyer sees once the order is being
      * made, set with the florist's agreement; null reads "Made by our florist in {city}".
      */
     displayFirstName: text("display_first_name"),

@@ -1,4 +1,4 @@
--- Rollback of 0019_post_purchase (spec 018 §5.1 "Rollback", §12; spec 002 §14 A8.3, AC-47;
+-- Rollback of 0021_post_purchase (spec 018 §5.1 "Rollback", §12; spec 002 §14 A8.3, AC-47;
 -- TASK-337).
 --
 -- Guards first; the runner wraps the file in one transaction, so a guard that raises changes
@@ -25,7 +25,7 @@ SET LOCAL ROLE app_owner;
 DO $guard$
 BEGIN
   IF EXISTS (SELECT 1 FROM public.invoice) THEN
-    RAISE EXCEPTION 'POST_PURCHASE_ROLLBACK_INVOICES_EXIST: an invoice exists; 0019_post_purchase is not rolled back (spec 018 §12: forward fix)'
+    RAISE EXCEPTION 'POST_PURCHASE_ROLLBACK_INVOICES_EXIST: an invoice exists; 0021_post_purchase is not rolled back (spec 018 §12: forward fix)'
       USING ERRCODE = 'restrict_violation';
   END IF;
   IF EXISTS (
@@ -33,7 +33,7 @@ BEGIN
     WHERE type = 'order.no_partner_available'
       AND from_status IN ('authorised', 'paid_unrouted')
   ) THEN
-    RAISE EXCEPTION 'A8_ROLLBACK_ROWS_IN_USE: an order_event records an A8 transition; 0019_post_purchase is not rolled back (spec 002 §14 A8.3)'
+    RAISE EXCEPTION 'A8_ROLLBACK_ROWS_IN_USE: an order_event records an A8 transition; 0021_post_purchase is not rolled back (spec 002 §14 A8.3)'
       USING ERRCODE = 'restrict_violation';
   END IF;
 END
