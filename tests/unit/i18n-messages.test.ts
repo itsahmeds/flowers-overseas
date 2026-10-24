@@ -90,6 +90,7 @@ describe("the shell catalogue", () => {
       "floristAuth",
       "floristInbox",
       "footer",
+      "forFlorists",
       "home",
       // `infoPages` is spec 041 §7's namespace (TASK-182): the trust pages' not-open line, the
       // help page's contact block and the about page's company line. Server Components only.
