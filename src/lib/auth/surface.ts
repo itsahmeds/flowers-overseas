@@ -423,8 +423,9 @@ export function createAuthSurface(
         );
       if (row === undefined) return null;
       // Rolling (spec 011 §2: the florist's 30 days): a session used with less than `maxAge −
-      // one day` left is pushed back to a full `maxAge`. The cookie keeps its first `Max-Age`;
-      // the row is what decides (database sessions), so a used session never lapses.
+      // one day` left is pushed back to a full `maxAge`. The row is what decides (database
+      // sessions); the florist cookie's `Max-Age` is renewed by the proxy on a page `GET`
+      // (`src/lib/florist-headers.ts`, `rollingCookie`).
       if (
         config.rolling &&
         row.expires.getTime() - at.getTime() < rollAfterMs
