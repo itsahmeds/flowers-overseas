@@ -59,7 +59,7 @@ import {
 const server = await probeLocalServer();
 
 const ORIGIN = "https://staging.example.test";
-const SECRET = "integration-florist-secret-0123456789abcdef";
+const SECRET = "placeholder-florist-auth-secret-0123456789abcdef";
 const BASE = "/demo/vendor-inbox";
 const STATUSES = [
   "demo",
