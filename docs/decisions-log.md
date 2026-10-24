@@ -194,3 +194,5 @@ Running, append-only log of decisions. Each entry links its ADR. Summary table l
 | 2026-10-24 | none | Spec 010 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
 | 2026-10-24 | none | Spec 048 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
 | 2026-10-24 | none | Spec 049 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Commerce structure amendment (spec 004 §14 A-founder-2026-10-24a, with spec 008, 043 and pointer amendments) applied. Founder, verbatim: "whatever the research found, start working on that as well", "trust", "apply shop", and on prices before a country: "b, if you are confident in your plan But you have to complete all the edge cases" with the rule "He has to select a country. We have to show him his country prices." Core range is a fixed curated list of 8 to 12; no country in code. |
+| 2026-10-24 | none | Trust bar copy approved. Founder, verbatim: "trust copy ok" (trust.promise.line, trust.photo.short, trust.payment.name). |

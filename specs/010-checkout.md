@@ -1058,6 +1058,7 @@ The contract suite of E7 runs both adapters in `tests/contract/express-wallet-ad
 - **Q37 The switch.** Default: **off per destination until the founder turns it on in admin, after the staging device check (AC-98) passes.** Alternative: on for Poland when spec 013 registers its test step.
 
 Raised by: the founder's approval of 2026-10-24 (`PRODUCT-PLAN-2026-10-24.md` row B); written by the spec writer on the orchestrator's work order of 2026-10-24. Cites CRD Art. 6, 8(2), 22; BGB § 312j(3); UK CCRs reg. 14; GDPR Art. 13; EU 2018/302; ADR-0006, ADR-0016, ADR-0020; specs 004 (A21 clause 5, A-founder-2026-10-14c, A-founder-2026-10-23), 005, 009 (AC-8, AC-14, AC-22), 013 (AC-1, AC-2, §6, §8), 041, 047.
+**A-founder-2026-10-24a (pointer; spec 004 §14 A-founder-2026-10-24a items 3 and 5; no new AC or T id here).** The header Basket link and count slot (A-founder-2026-10-22 AC-70) sit at the end of spec 004 item 5's row and in the phone row. No country-less page holds an add-to-basket control or a form posting to the basket or checkout; their purchase entry reads "Choose where to send" and leads to the chooser (spec 004 AC-87), so every basket line carries a country, and a line without one stays refused. When the visitor changes country from the header selector, the basket keeps every line with its own country and price, and a line for the new country can be added beside them (spec 004 AC-88). Checkout is otherwise unchanged and shows no equivalents (AC-18).
 
 ## Appendix A — English copy for the founder's batch approval
 
