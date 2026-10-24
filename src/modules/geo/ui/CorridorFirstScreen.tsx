@@ -34,10 +34,12 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { interactions } from "../../../config/interactions.ts";
 import { formatDateParts } from "../../i18n/index.ts";
 import { TextLink } from "../../ui/index.ts";
 import type { CorridorOccasionView, CorridorView } from "../corridor.ts";
 
+import { CorridorRouteLine } from "./CorridorRouteLine.tsx";
 import { localeCode, registryLabel } from "./labels.ts";
 
 /** How many of the calendar's rows the first screen shows (A11 (b)). */
@@ -67,7 +69,7 @@ export function CorridorFirstScreen({
 
   return (
     <div
-      className="grid grid-cols-[minmax(0,1fr)] items-start gap-y-[18px] pt-[24px] pb-[36px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)] md:gap-y-[20px] md:pt-[40px] md:pb-0"
+      className="relative grid grid-cols-[minmax(0,1fr)] items-start gap-y-[18px] pt-[24px] pb-[36px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)] md:gap-y-[20px] md:pt-[40px] md:pb-0"
       data-fo-corridor-first-screen
     >
       <div className="grid min-w-0 justify-items-start gap-[12px] md:col-span-6 md:row-start-1 md:gap-[20px]">
@@ -147,6 +149,11 @@ export function CorridorFirstScreen({
       <p className="text-ink-muted text-body-s m-0 max-w-prose md:col-span-6 md:row-start-2 md:text-[19px]">
         {view.intro}
       </p>
+
+      {/* Spec 042 idea 6 (TASK-311): out of flow, so this band is the same with it or without
+          it; `relative` above makes this grid its containing block, and `globals.css` centres it
+          in the gap between column 6 and the dates. Hidden below `md`. */}
+      {interactions.routeLine ? <CorridorRouteLine /> : null}
     </div>
   );
 }
