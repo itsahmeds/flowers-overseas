@@ -21,6 +21,7 @@ import { describe, expect, it } from "vitest";
 import { CORE_RANGE_SIZE, PICKER_CHIPS } from "../../src/config/commerce.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
 import { PRODUCTS as products } from "../../src/config/catalogue/products.data.ts";
+import { ProductRegistrySchema } from "../../src/config/catalogue/schemas.ts";
 import {
   type ShopData,
   coreRange,
@@ -67,6 +68,30 @@ describe("the seed: coreRank on the founder's ten, sortWeight on every country",
     expect(COUNTRIES.map((country) => country.sortWeight)).toEqual(
       COUNTRIES.map(() => 0),
     );
+  });
+
+  it("refuses two products at one rank (spec 002's unique core_rank)", () => {
+    const twin = products.map((product) =>
+      product.sku === "FO-BQ-004" ? { ...product, coreRank: 1 } : product,
+    );
+    const parsed = ProductRegistrySchema.safeParse(twin);
+    expect(parsed.success).toBe(false);
+    expect(JSON.stringify(parsed.error?.issues)).toContain(
+      "core rank 1 of `FO-BQ-034` is already held by `FO-BQ-004`",
+    );
+    expect(ProductRegistrySchema.safeParse(products).success).toBe(true);
+  });
+
+  it("refuses a rank outside 1 to 20 (spec 002's CHECK)", () => {
+    for (const coreRank of [0, 21, 1.5]) {
+      const bad = products.map((product) =>
+        product.sku === "FO-BQ-004" ? { ...product, coreRank } : product,
+      );
+      expect(
+        ProductRegistrySchema.safeParse(bad).success,
+        String(coreRank),
+      ).toBe(false);
+    }
   });
 
   it("CORE_RANGE_SIZE is 8 to 12 and isCoreRangeSize is its one comparison", () => {

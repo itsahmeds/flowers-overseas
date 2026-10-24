@@ -33,6 +33,37 @@ vi.mock("../../src/modules/catalog/product.ts", async (importOriginal) => {
   };
 });
 
+/**
+ * The longest product slug the catalogue could hold is far below 256 characters, so the length
+ * limit is only observable with a slug that long: this one resolves, as a product, to Amber Hour,
+ * and every other lookup calls through.
+ */
+const LONG_SLUG = "a".repeat(248);
+
+/**
+ * A slug prefix the wrapped lookup resolves whatever follows it, so the chooser's own alphabet
+ * check is observable on its own: the real lookup refuses the same characters, and a test through
+ * it alone would pass with the check removed.
+ */
+const ANY_SLUG = "zz-any";
+
+vi.mock("../../src/modules/catalog/slugs.ts", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../../src/modules/catalog/slugs.ts")>();
+  return {
+    ...actual,
+    resolveSlug: (
+      locale: Parameters<typeof actual.resolveSlug>[0],
+      kind: Parameters<typeof actual.resolveSlug>[1],
+      slug: string,
+    ): string | undefined =>
+      kind === "product" &&
+      (slug.startsWith(LONG_SLUG) || slug.startsWith(ANY_SLUG))
+        ? "FO-BQ-001"
+        : actual.resolveSlug(locale, kind, slug),
+  };
+});
+
 const {
   chooseSegment,
   chooserNextPath,
@@ -84,11 +115,15 @@ describe("T-83: parseChooserNext accepts item 3's six shapes", () => {
     expect(parseChooserNext("en", [])).toEqual({ locale: "en", kind: "home" });
   });
 
-  it("accepts exactly 256 characters and no more (the length is checked before the shape)", () => {
-    // 256 characters of a valid-looking but unknown slug still fails on the slug, so the
-    // boundary is pinned by the string the length test alone sees.
-    const longest = `flowers/${"a".repeat(248)}`;
+  it("accepts exactly 256 characters and no more", () => {
+    const longest = `product/${LONG_SLUG}`;
     expect(longest).toHaveLength(256);
+    expect(parseChooserNext("en", longest)).toEqual({
+      locale: "en",
+      kind: "product",
+      sku: "FO-BQ-001",
+    });
+    // The same shape, one character longer: the slug still resolves, so only the limit refuses it.
     const tooLong = `${longest}a`;
     expect(tooLong).toHaveLength(257);
     expect(parseChooserNext("en", tooLong)).toEqual({
@@ -106,6 +141,9 @@ describe("T-83: parseChooserNext rejects, each falling back to the shop root", (
     ["an encoded slash", "%2F%2Fx"],
     ["an encoded slash inside a segment", "product%2Fvistula-red"],
     ["another locale's segment (de's blumen in en)", "blumen/rosen"],
+    ["another locale's segment before an en slug", "blumen/roses"],
+    ["pl's category segment before an en slug", "kwiaty/roses"],
+    ["de's occasion segment before an en slug", "anlaesse/birthday"],
     ["another locale's product segment", "produkt/vistula-red"],
     ["an unknown shape", "basket/vistula-red"],
     ["an unknown product slug", "product/no-such-bouquet"],
@@ -125,6 +163,28 @@ describe("T-83: parseChooserNext rejects, each falling back to the shop root", (
       kind: "home",
     });
   });
+
+  it.each([
+    ["a dot", `product/${ANY_SLUG}.test`],
+    ["a percent", `product/${ANY_SLUG}%2F`],
+    ["an uppercase letter", `product/${ANY_SLUG}X`],
+    ["a colon", `product/${ANY_SLUG}:x`],
+    ["a backslash", `product/${ANY_SLUG}\\x`],
+    ["a double hyphen", `product/${ANY_SLUG}--x`],
+  ])(
+    "refuses %s itself, before any lookup (the lookup here resolves anything)",
+    (_label, next) => {
+      expect(parseChooserNext("en", `product/${ANY_SLUG}`)).toEqual({
+        locale: "en",
+        kind: "product",
+        sku: "FO-BQ-001",
+      });
+      expect(parseChooserNext("en", next)).toEqual({
+        locale: "en",
+        kind: "home",
+      });
+    },
+  );
 
   it("rejects decoded route segments that smuggle an empty segment", () => {
     expect(parseChooserNext("en", ["", "", "x.test"])).toEqual({
