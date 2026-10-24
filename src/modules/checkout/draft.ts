@@ -458,7 +458,7 @@ export type DraftLookup =
 
 /**
  * The draft a cookie's token names (AC-13). `missing` for no token, a malformed one or no row;
- * `expired` — after deleting the row and its lines — when `now` is at or past `expires_at`;
+ * `expired`, after deleting the row and its lines, when `now` is at or past `expires_at`;
  * otherwise `active`, placed drafts included (`draft.purchaseId` set), which the caller answers
  * with the confirmation.
  */
