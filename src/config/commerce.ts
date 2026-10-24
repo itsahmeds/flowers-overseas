@@ -30,18 +30,12 @@ export const PICKER_CHIPS = 6;
 
 /**
  * The three price bands' keys (spec 008 §14 A-founder-2026-10-24a "Price bands"): the chooser's
- * `price/{band}` next and the shop root's band facet. The thresholds are computed per country by
+ * `price/{band}` next and the shop root's band facet (`?price=`, `QUERY_KEY.price` in
+ * `src/config/url-keys.ts`). The thresholds are computed per country by
  * `priceBands()`; no amount is configured for any currency.
  */
 export const PRICE_BAND_KEYS = ["low", "mid", "high"] as const;
 export type PriceBandKey = (typeof PRICE_BAND_KEYS)[number];
-
-/**
- * The query parameter a band travels in on a country page (`?price={band}`; spec 008's facet
- * amendment names it `FACET_PARAMETERS.priceBand`). Only the chooser's 303 and GET forms produce
- * it; no `<a href>` carries it (spec 004 §6 "No parameterised `<a href>`").
- */
-export const PRICE_BAND_PARAMETER = "price";
 
 /**
  * The `next` shapes of the chooser that are not a locale's path segment (item 3): a price band and

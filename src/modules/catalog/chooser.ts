@@ -32,11 +32,11 @@ import {
   CHOOSER_NEXT_MAX_CHARS,
   CHOOSER_NEXT_WORDS,
   PRICE_BAND_KEYS,
-  PRICE_BAND_PARAMETER,
   type PriceBandKey,
 } from "@/config/commerce";
 import { type CountryIso2, isCountryIso2 } from "@/config/countries";
 import { type LocaleCode, localeConfig } from "@/config/locales";
+import { QUERY_KEY } from "@/config/url-keys";
 import { corridorSlug } from "@/modules/geo";
 import { listingPath, productPath } from "@/modules/i18n";
 
@@ -274,7 +274,7 @@ export async function countryVersionOf(
     case "price":
       return {
         kind: "page",
-        path: `${root}?${new URLSearchParams({ [PRICE_BAND_PARAMETER]: next.band }).toString()}`,
+        path: `${root}?${new URLSearchParams({ [QUERY_KEY.price]: next.band }).toString()}`,
       };
     case "category":
     case "occasion": {

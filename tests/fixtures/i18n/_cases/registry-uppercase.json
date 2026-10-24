@@ -18,6 +18,7 @@
       "en-NL",
       "en-150"
     ],
+    "chooseSegment": "choose-country",
     "pathSegments": {
       "destinations": "Send-Flowers-To",
       "shopCategory": "flowers",
@@ -48,6 +49,7 @@
     "hreflangAliases": [
       "en-GB"
     ],
+    "chooseSegment": "choose-country",
     "pathSegments": {
       "destinations": "send-flowers-to",
       "shopCategory": "flowers",
@@ -81,6 +83,7 @@
       "de-DE",
       "de-AT"
     ],
+    "chooseSegment": "land-waehlen",
     "pathSegments": {
       "destinations": "blumen-verschicken",
       "shopCategory": "blumen",
@@ -113,6 +116,7 @@
       "pl",
       "pl-PL"
     ],
+    "chooseSegment": "wybierz-kraj",
     "pathSegments": {
       "destinations": "wyslij-kwiaty",
       "shopCategory": "kwiaty",
