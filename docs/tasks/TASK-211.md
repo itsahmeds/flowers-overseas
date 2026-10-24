@@ -49,9 +49,9 @@ _Pending._
 
 **Renumber and rebase (finisher, 2026-10-24).** PR 326 now carries migration
 **`0022_florists_v0`** (orchestrator's order: PR 383 `0019`/`0020`, PR 384 `0021`, this `0022`,
-PR 320 `0023`). The branch is **stacked on PR 384's head `a4688a7b`** (which is stacked on PR
-383's `07eb165c`): a version gap fails `db:check` and the runner, so it merges only after 384, then
-`git rebase --onto origin/main a4688a7b` and re-fire `ci:full`. `scripts/db-check.snapshot.json`
+PR 320 `0023`). The branch is **stacked on PR 384's head `1df51dec`** (which carries PR 383's
+commits replayed onto `main` `692a24b5`): a version gap fails `db:check` and the runner, so it merges only after 384, then
+`git rebase --onto origin/main 1df51dec` and re-fire `ci:full`. `scripts/db-check.snapshot.json`
 regenerated from a migrated throwaway PG16 (only this migration's 11 objects were missing). Tests
 adjusted for sitting on 0019 to 0021: `schema-partners-customers.test.ts` (unit) merged with PR
 384's generic later-migration reader, plus `SET NOT NULL` columns and `\s+CHECK` names;
@@ -66,4 +66,5 @@ the old gap had hidden); `schema-notifications-ops.test.ts` lists twelve retenti
 went red on the round trip because a migrated database of mine (`fin_snap`, for the snapshot)
 sat in the same cluster; dropped, and the rerun's round trip is green. Live `db:check` against
 the migrated database: 22 migrations, RLS 79 of 79, no drift after the snapshot.
-
+After TASK-115 merged, the stack was replayed onto `main` `692a24b5` (only `docs/codebase-map.md`
+conflicted, regenerated); this branch moved from `a4688a7b` to `1df51dec` with its own commits unchanged.
