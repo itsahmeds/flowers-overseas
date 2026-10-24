@@ -1201,10 +1201,14 @@
       transition-timing-function: var(--ease-photo);
     }
 
-    a[data-fo-card-motion] [data-fo-card-shadow] {
-      transition-property: opacity;
-      transition-duration: var(--duration-hover);
-      transition-timing-function: var(--ease-photo);
+    /* On a screen only, like the layer's resting opacity: printed, the layer goes to full opacity
+       at once instead of fading up over 500 ms (spec 043 AC-15; TASK-290). */
+    @media screen {
+      a[data-fo-card-motion] [data-fo-card-shadow] {
+        transition-property: opacity;
+        transition-duration: var(--duration-hover);
+        transition-timing-function: var(--ease-photo);
+      }
     }
 
     a[data-fo-card-motion] [data-fo-card-line] {
