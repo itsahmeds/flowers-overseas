@@ -43,7 +43,7 @@
  * on a `ListingOccasionEntry` to render one from (§2, §8).
  *
  * Server Component: no island, no state, no fetch (§5.4). `BreadcrumbList` and `ItemList` are
- * TASK-115's; the slot is here and empty.
+ * `listingJsonLd()`'s (TASK-115), mounted by the route from this same view.
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
@@ -53,6 +53,7 @@ import { Chip, Container, Display, Eyebrow, Icon, Text } from "@/modules/ui";
 import { HubBand, HubDateCards, HubHeading } from "./HubHero";
 
 import type { ListingOccasionEntry, ListingView } from "../listing";
+import { occasionsIndexGroups } from "../listingSchema";
 
 import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import { ListingSubsection, OccasionDatesTable } from "./ListingChrome";
@@ -93,16 +94,10 @@ export function OccasionsIndexPage({
   const shop = useTranslations("shop");
   const code = localeCode(view.locale);
 
-  const entries = view.occasions ?? [];
   // `kind` and `nextDate` are the view model's two facts about an entry; the three groups are the
-  // three combinations that exist. Nothing here consults a calendar.
-  const dated = entries.filter(
-    (entry) => entry.kind === "seasonal" && entry.nextDate !== null,
-  );
-  const undated = entries.filter(
-    (entry) => entry.kind === "seasonal" && entry.nextDate === null,
-  );
-  const everyday = entries.filter((entry) => entry.kind === "evergreen");
+  // three combinations that exist. Nothing here consults a calendar. One grouping for this page and
+  // its `ItemList` (TASK-115), so the list's order is the order shown.
+  const { dated, undated, everyday } = occasionsIndexGroups(view);
 
   // The destination the dates were computed in, named by its own registry key — the same key the
   // dates came from, which is what stops the caption and the table from disagreeing (§14 Q4).

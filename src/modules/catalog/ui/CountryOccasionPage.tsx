@@ -34,7 +34,7 @@
  * breadcrumb links to (dated row in `docs/design/README.md`). The **toolbar** and **pagination**
  * the artboard draws are TASK-114's (§14 **A8** (c)): nothing here reads `searchParams`, and a
  * sort form that cannot sort is a control the page does not pretend to have. `BreadcrumbList` and
- * `ItemList` are TASK-115's. No client island, no `useState`, no fetch (§5.4).
+ * `ItemList` are `listingJsonLd()`'s (TASK-115). No client island, no `useState`, no fetch (§5.4).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";

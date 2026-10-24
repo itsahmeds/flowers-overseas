@@ -1,0 +1,113 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://flowersoverseas.com/en"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Send flowers to",
+            "item": "https://flowersoverseas.com/en/send-flowers-to"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Poland",
+            "item": "https://flowersoverseas.com/en/send-flowers-to/poland"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Flowers"
+          }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "numberOfItems": 12,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Azalea Pot",
+            "url": "https://flowersoverseas.com/en/poland/product/azalea-pot"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Jasmine Pot",
+            "url": "https://flowersoverseas.com/en/poland/product/jasmine-pot"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Bright Side",
+            "url": "https://flowersoverseas.com/en/poland/product/bright-side"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Carousel",
+            "url": "https://flowersoverseas.com/en/poland/product/carousel"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "Desk Bloom",
+            "url": "https://flowersoverseas.com/en/poland/product/desk-bloom"
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "High Summer",
+            "url": "https://flowersoverseas.com/en/poland/product/high-summer"
+          },
+          {
+            "@type": "ListItem",
+            "position": 7,
+            "name": "Kraków Spring",
+            "url": "https://flowersoverseas.com/en/poland/product/krakow-spring"
+          },
+          {
+            "@type": "ListItem",
+            "position": 8,
+            "name": "Linen Basket",
+            "url": "https://flowersoverseas.com/en/poland/product/linen-basket"
+          },
+          {
+            "@type": "ListItem",
+            "position": 9,
+            "name": "Long Weekend",
+            "url": "https://flowersoverseas.com/en/poland/product/long-weekend"
+          },
+          {
+            "@type": "ListItem",
+            "position": 10,
+            "name": "Meadow Post",
+            "url": "https://flowersoverseas.com/en/poland/product/meadow-post"
+          },
+          {
+            "@type": "ListItem",
+            "position": 11,
+            "name": "Old Town",
+            "url": "https://flowersoverseas.com/en/poland/product/old-town"
+          },
+          {
+            "@type": "ListItem",
+            "position": 12,
+            "name": "Paper Window",
+            "url": "https://flowersoverseas.com/en/poland/product/paper-window"
+          }
+        ]
+      }
+    ]
+  }
+}

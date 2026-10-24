@@ -29,6 +29,7 @@ import {
 } from "@/modules/seo";
 
 import { InfoPageRoute, infoPageRouteMetadata } from "../info-page-route";
+import { ListingJsonLd } from "../listing-json-ld";
 
 /**
  * `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14 **A5**, spec 007 §14
@@ -205,12 +206,12 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
     );
     if (view === undefined) notFound();
     setRequestLocale(match.locale);
-    // `BreadcrumbList` is TASK-115's, from this same `view.breadcrumb`; the slot is the empty
-    // `JsonLd` below on the hub branch and is deliberately not duplicated here.
+    // `BreadcrumbList` + `ItemList` from this same view (`listingJsonLd()`, TASK-115).
     // `LanguageAlternates`: this page in the other locales, for the language popup (TASK-119).
     return (
       <>
         <OccasionsIndexPage view={view} />
+        <ListingJsonLd view={view} />
         <LanguageAlternates
           paths={await listingAlternatePaths({
             pageType: "occasionsIndex",

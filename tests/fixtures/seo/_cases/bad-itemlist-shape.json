@@ -1,0 +1,21 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "numberOfItems": 3,
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Amber Hour",
+        "url": "/en/poland/product/amber-hour",
+        "price": "45.90"
+      },
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": { "@type": "Thing", "name": "Baltic Dawn" }
+      }
+    ]
+  }
+}

@@ -519,6 +519,16 @@ export {
   productOfferNode,
 } from "./productSchema";
 
+// The listing pages' structured data (spec 008 §2 "Schema", AC-17, AC-18; TASK-115): the
+// `BreadcrumbList` from `view.breadcrumb` and the `ItemList` of the rendered cards, in rendered
+// order. One `ListingView` in, nodes out; no Product, Offer or rating on any listing.
+export {
+  type OccasionsIndexGroups,
+  listingItemListEntries,
+  listingJsonLd,
+  occasionsIndexGroups,
+} from "./listingSchema";
+
 // The country shop root's page component and its breadcrumb (spec 008 §5.3, AC-1/AC-8/AC-24;
 // TASK-109). The page component lives in the module that owns its view model — spec 007's
 // `CorridorPage` precedent — so `app/` holds one resolve and one mount, and every decision about

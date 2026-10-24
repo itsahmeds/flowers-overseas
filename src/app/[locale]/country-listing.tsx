@@ -19,6 +19,8 @@ import {
   pageMetadata,
 } from "@/modules/seo";
 
+import { ListingJsonLd } from "./listing-json-ld";
+
 /**
  * The country category's and the country occasion's head and body, **once**, for the two route
  * files that render them (spec 008 §14 **A15 (a)**, AC-10, AC-15, AC-16, AC-29; TASK-146,
@@ -202,11 +204,13 @@ export async function CountryListing({
   return match.kind === "countryCategory" ? (
     <>
       <CountryCategoryPage view={view} />
+      <ListingJsonLd view={view} />
       {alternates}
     </>
   ) : (
     <>
       <CountryOccasionPage view={view} />
+      <ListingJsonLd view={view} />
       {alternates}
     </>
   );
