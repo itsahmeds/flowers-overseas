@@ -95,6 +95,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  Object.defineProperty(window, "scrollY", { configurable: true, value: 0 });
   vi.useRealTimers();
   document.body.replaceChildren();
   delete (HTMLElement.prototype as Partial<HTMLElement>).showPopover;
@@ -478,7 +479,13 @@ describe("AC-64: the pointer", () => {
     ],
     [
       "a page scroll",
-      () => document.dispatchEvent(new Event("scroll", { bubbles: true })),
+      () => {
+        Object.defineProperty(window, "scrollY", {
+          configurable: true,
+          value: 40,
+        });
+        document.dispatchEvent(new Event("scroll", { bubbles: true }));
+      },
     ],
     ["a resize", () => window.dispatchEvent(new Event("resize"))],
     ["pagehide", () => window.dispatchEvent(new Event("pagehide"))],
@@ -509,6 +516,17 @@ describe("AC-64: the pointer", () => {
     );
 
     expect(trigger("country").getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("a scroll event that lands after the opening press, the page where it stood, does not close it", () => {
+    enhanceSentence(page());
+    trigger("country").click();
+    document.dispatchEvent(new Event("scroll", { bubbles: true }));
+    expect(trigger("country").getAttribute("aria-expanded")).toBe("true");
+
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 1 });
+    document.dispatchEvent(new Event("scroll", { bubbles: true }));
+    expect(trigger("country").getAttribute("aria-expanded")).toBe("false");
   });
 
   it("an option's own scroll does not close it (only the page's does)", () => {
