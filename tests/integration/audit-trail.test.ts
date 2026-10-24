@@ -238,7 +238,7 @@ const CASES: readonly TableCase[] = [
   {
     table: "partner_application",
     parents: async (tx) => ({ countryId: await insertCountry(tx) }),
-    // `0020_florists_v0` (TASK-211): country, contact and notice version are required.
+    // `0022_florists_v0` (TASK-211): country, contact and notice version are required.
     insert: (tx, p) =>
       one(tx<{ id: string }[]>`
         INSERT INTO partner_application (business_name, city, language_code, country_id,
