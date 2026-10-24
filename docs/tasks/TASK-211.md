@@ -46,3 +46,24 @@ What shipped, in one paragraph: the PR, the tests added per layer, the numbers a
 (budgets, counts), and anything handed to a later task.
 
 _Pending._
+
+**Renumber and rebase (finisher, 2026-10-24).** PR 326 now carries migration
+**`0022_florists_v0`** (orchestrator's order: PR 383 `0019`/`0020`, PR 384 `0021`, this `0022`,
+PR 320 `0023`). The branch is **stacked on PR 384's head `a4688a7b`** (which is stacked on PR
+383's `07eb165c`): a version gap fails `db:check` and the runner, so it merges only after 384, then
+`git rebase --onto origin/main a4688a7b` and re-fire `ci:full`. `scripts/db-check.snapshot.json`
+regenerated from a migrated throwaway PG16 (only this migration's 11 objects were missing). Tests
+adjusted for sitting on 0019 to 0021: `schema-partners-customers.test.ts` (unit) merged with PR
+384's generic later-migration reader, plus `SET NOT NULL` columns and `\s+CHECK` names;
+`auth-adapter.test.ts` seeds locale `en` before a `partner_member` (0022's locale key, a failure
+the old gap had hidden); `schema-notifications-ops.test.ts` lists twelve retention rows (383's
+`checkout_draft_personal`, this PR's three); `post-purchase.test.ts`'s guard case rolls back to
+`0021` before it compares catalogues (0022 now rolls back first). `db-migrate.test.ts` pins
+`0022_florists_v0.sql`.
+
+**Self-review of the renumber.** Full integration project on a throwaway PG16: 43 files, 491 of
+492 green, the one red the guard case fixed above and then green alone (26 of 26). A first run
+went red on the round trip because a migrated database of mine (`fin_snap`, for the snapshot)
+sat in the same cluster; dropped, and the rerun's round trip is green. Live `db:check` against
+the migrated database: 22 migrations, RLS 79 of 79, no drift after the snapshot.
+
