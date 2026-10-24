@@ -30,6 +30,7 @@ import {
   AUDITED_TABLES,
   logAdminRead,
 } from "../../src/modules/admin/audit.ts";
+import { BLOG_TABLES } from "../../src/modules/content/blog/schemas.ts";
 import { country as insertCountry, partner, unique } from "./support/rows.ts";
 import {
   asApp,
@@ -340,8 +341,10 @@ describe.skipIf(server.url === undefined)(
         JOIN pg_proc p ON p.oid = t.tgfoid
         WHERE p.proname = 'audit_row_change' AND NOT t.tgisinternal
         ORDER BY 1`;
+      // Spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321) attaches the same trigger to the five
+      // blog tables; their audit rows are asserted by `tests/integration/blog.test.ts`.
       expect(triggers.map((row) => row.table)).toEqual(
-        [...AUDITED_TABLES].sort(),
+        [...AUDITED_TABLES, ...BLOG_TABLES].sort(),
       );
     });
 

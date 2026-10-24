@@ -11,6 +11,18 @@ import { INFO_PAGE_IDS } from "@/config/info-pages";
 
 import { HonestyAllowSchema } from "../schemas.ts";
 
+/**
+ * The five blog tables (migration `0024_blog`): each carries `0016`'s audit trigger, so every
+ * admin write to one is an `audit_log` row (spec 044 §5.1 item 7).
+ */
+export const BLOG_TABLES = [
+  "blog_author",
+  "blog_post",
+  "blog_post_country",
+  "blog_post_occasion",
+  "blog_post_revision",
+] as const;
+
 /* -------------------------------------------------------------------------- */
 /* The editor's limits (§2.3).                                                 */
 /* -------------------------------------------------------------------------- */
