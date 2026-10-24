@@ -58,7 +58,5 @@
   },
   "reason": "general",
   "status": "warning_needs_response",
-  "enhanced_eligibility_types": [
-    "visa_compelling_evidence_3"
-  ]
+  "enhanced_eligibility_types": ["visa_compelling_evidence_3"]
 }
