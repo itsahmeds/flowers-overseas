@@ -262,7 +262,10 @@ test.describe("T-15: every card image visible after a real scroll, and in print 
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(path);
       await page.waitForLoadState("networkidle");
-      // The motion module has marked what lies below the fold as pending on screen.
+      // The motion module loads after the window's `load`, a frame and an idle callback, so
+      // network idle does not mean it has run. It marks `<html>` and, in the same task, what lies
+      // below the fold as pending on screen; wait for the mark before reading the pending set.
+      await expect(page.locator("html[data-fo-motion]")).toHaveCount(1);
       expect(
         await page
           .locator("[data-fo-reveal='pending'], img[data-fo-fade='pending']")

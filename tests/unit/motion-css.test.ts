@@ -235,6 +235,21 @@ describe("spec 043 AC-15: a printed page hides nothing (TASK-290)", () => {
       '@media (prefers-reduced-motion: no-preference) @media screen | html[data-fo-motion] img[data-fo-fade="pending"]',
     ]);
   });
+
+  it("fades the card's shadow layer on a screen only, so print shows it at full opacity at once", () => {
+    // A transition left on in print would start at the switch to print and read 0 for 500 ms.
+    expect(
+      walk(shipped)
+        .filter(
+          (rule) =>
+            rule.selector.includes("[data-fo-card-shadow]") &&
+            rule.declarations.has("transition-property"),
+        )
+        .map((rule) => `${rule.context.join(" ")} | ${rule.selector}`),
+    ).toEqual([
+      "@media (prefers-reduced-motion: no-preference) @media (hover: hover) and (pointer: fine) @media screen | a[data-fo-card-motion] [data-fo-card-shadow]",
+    ]);
+  });
 });
 
 describe("AC-6 as A24 clause 9 (c): reduced motion", () => {
