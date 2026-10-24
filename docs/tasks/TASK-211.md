@@ -70,3 +70,7 @@ sat in the same cluster; dropped, and the rerun's round trip is green. Live `db:
 the migrated database: 22 migrations, RLS 79 of 79, no drift after the snapshot.
 After TASK-115 merged, the stack was replayed onto `main` `692a24b5` (only `docs/codebase-map.md`
 conflicted, regenerated); this branch moved from `a4688a7b` to `1df51dec` with its own commits unchanged.
+The squash that made PR head `42fde07d` had dropped four 2026-10-22 commits (the gitleaks-safe
+placeholder secret in `florist-auth.test.ts`, the rolling-cookie note in `surface.ts`, the TASK-212
+and TASK-214 brief entries, the `TASKS.md` statuses); CI's `test-unit` caught the secret, and all
+four are restored in `a4aa02a3`. The old local tip is kept as branch `backup/211-local-1022`.
