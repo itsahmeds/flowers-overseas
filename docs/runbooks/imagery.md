@@ -51,7 +51,7 @@ That is what makes the command safe to run in any worktree.
 | `hero` | 384, 640, 828 (4:3) · 1080, 1200 (16:9) | 90 000 B | 59 878 B |
 | `occasionTile` | 384 | 18 000 B | 17 830 B |
 | `productHero` | 384, 480, 640, 828 | 90 000 B | 81 486 B |
-| `productDetail` | 384 | 60 000 B | 38 398 B |
+| `productDetail` | 384, 480, 640, 828 (the `productHero` ladder, TASK-306) | 120 000 B | 117 920 B (bucket) |
 
 **The `productHero` 480 rung (spec 006 §14 A11, TASK-168)** exists for the home's "Most sent this
 week" row, whose card is the `trending` slot (`src/modules/ui/media/slots.ts`): 178 CSS px on a
@@ -60,6 +60,16 @@ so at DPR 2.625 a 384 → 640 ladder fetched 640 w and the locale homes went ove
 204 800 B. 480 w (density 2.70) is the honest pick, and the homes measure 178 813 B. It is
 derived and uploaded for `approved` assets only, and is never an enlargement (every original
 is at least 784 px wide).
+
+**`productDetail` takes the `productHero` ladder (spec 006 §14 A-founder-2026-10-20b, spec 042
+AC-20, TASK-306).** The detail photograph is the phone gallery's second slide and spec 042's
+second photo on hover, both as wide as the hero, so the slot ships the hero's rungs by reference
+(`PRODUCT_HERO_WIDTHS`) and `pnpm seed:check`'s `detail-ladder` rule fails an approved detail asset
+that lacks one. Its cap is 120 000 B because a close-up is busier than a bouquet (828 WebP up to
+117 920 B). The 12 Grok details cropped to 784×980 are enlarged about 6 % at 828, as the Grok
+heroes are. After a re-derive, upload the new rungs **before** the PR that lists them deploys,
+or a phone fetches a 404 for the second slide: `pnpm media:upload --only <each detail id>`, then
+`pnpm media:upload --verify --only <the same ids>`.
 
 Widening a ladder is an edit to `PHASE0_SLOT_WIDTHS` plus `pnpm media:variants`; the manifest header
 records the ladder, so `--check` fails if the two ever disagree.

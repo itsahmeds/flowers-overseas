@@ -161,7 +161,9 @@ describe("T-15: the imagery in the manifest is inside every byte cap (AC-15)", (
     expect(widestPerSlot.get("hero")).toBeLessThanOrEqual(1200);
     expect(widestPerSlot.get("occasionTile")).toBeLessThanOrEqual(384);
     expect(widestPerSlot.get("productHero")).toBeLessThanOrEqual(828);
-    expect(widestPerSlot.get("productDetail")).toBeLessThanOrEqual(384);
+    // The product hero's ladder since TASK-306 (spec 042 AC-20; its own test is
+    // `media-variants-ladder.test.ts`).
+    expect(widestPerSlot.get("productDetail")).toBeLessThanOrEqual(828);
   });
 });
 
