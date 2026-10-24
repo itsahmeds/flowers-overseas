@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 (roadmap slot 30 Nov to 18 Dec; needed live for Poland before 1 Feb 2027, the "capacity caps set by 1 Feb" line of `plan/06` §7) |
 | Plan refs | plan/01 §3 §4.3 §5 §8 · plan/02 §4.1 §9 §10 §15 · plan/03 §7 §9 §10 · plan/06 §5.1 §5.2 (rules 1 and 5) §6 §7 · plan/07 §2.1 §3 §4 §8 · plan/09 Phase 1 (`024`), Phase 2 AC ("zero capacity-caused charges") · plan/10 §2.3 §2.5 · plan/11 §6 (capacity and blackout dates) · plan/12 §4 |
 | ADRs | ADR-0006 (no IP redirects) · ADR-0007 · ADR-0009 (status only through `orderService.transition`; this spec writes no status) · ADR-0015 · ADR-0018 (single Railway replica, pg-boss worker) · ADR-0019 (one florist sign-in). Proposes no ADR. Requests amendments to specs 002, 005, 009, 010, 011, 012/012b and 016, listed in §5.1 and §12 |
 | Builds on | spec 005 (`dateSurcharges`, `CapacityProvider` seam, `fromPrice`, quotes) · spec 009 (`deliveryGrid`, reasons, `pickerState`, the PDP view) · spec 010 (`place`, step 1 calendar, `checkout.coverage.noCapacity`) · spec 013 (charge at placement, the 2 h `abandoned` sweep) · spec 016 (`eligibleCandidates`, `canServe`, ops alerts) · spec 011 (florist area) · spec 012b (database as master copy, `invalidate()` within 60 s, country admin) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (founder) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
