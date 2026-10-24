@@ -138,6 +138,8 @@ export const PARTNER_SCOPED_TABLES = {
   partner_catalog_mapping: "read",
   payout: "read",
   payout_line: "read",
+  // Spec 002 §14 A10.3 (`0029_cancel_window_a10`, TASK-258): read-only, like every money record.
+  payout_adjustment: "read",
   order_assignment: "read",
   delivery_proof: "read",
   substitution_note: "read",

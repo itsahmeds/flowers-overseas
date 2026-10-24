@@ -432,7 +432,7 @@ describe.skipIf(server.url === undefined)(
           expect((await paymentRow(paymentId))?.attempts).toBe(1);
         });
 
-        it(`${label}: succeeded against abandoned orders writes no order event, captures, requests one full refund per order for its own total, and alerts once`, async () => {
+        it(`${label}: succeeded against abandoned orders writes no transition, captures, refunds each order its own total at once (one order.refund_requested each), and alerts once`, async () => {
           const fake = newFake();
           const purchase = await purchaseOf(totals);
           const { paymentId, intentRef } = await started(fake, purchase);
@@ -459,10 +459,30 @@ describe.skipIf(server.url === undefined)(
           >`
             SELECT order_id, amount_minor, reason, status FROM refund WHERE payment_id = ${paymentId}`;
           expect(result.outcome).toBe("captured_after_close");
-          expect(
-            await Promise.all(purchase.orderIds.map((id) => events(id))),
-          ).toEqual(before);
+          const after = await Promise.all(
+            purchase.orderIds.map((id) => events(id)),
+          );
+          for (const [index, log] of after.entries()) {
+            const prior = before[index] ?? [];
+            expect(log.slice(0, prior.length)).toEqual(prior);
+            expect(
+              log.slice(prior.length).map((e) => [e.type, e.to_status]),
+            ).toEqual([["order.refund_requested", null]]);
+          }
           expect((await paymentRow(paymentId))?.status).toBe("captured");
+          expect(
+            fake.calls
+              .filter((call) => call.method === "refund")
+              .map((call) => call.key)
+              .sort(),
+          ).toEqual(
+            (
+              await scratch.sql<{ id: string }[]>`
+                SELECT id FROM refund WHERE payment_id = ${paymentId}`
+            )
+              .map((r) => r.id)
+              .sort(),
+          );
           expect(
             refunds
               .map((r) => [
@@ -478,7 +498,7 @@ describe.skipIf(server.url === undefined)(
                 orderId,
                 totals[index],
                 "other",
-                "requested",
+                "succeeded",
               ])
               .sort(),
           );
