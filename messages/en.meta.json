@@ -1672,13 +1672,6 @@
     "reviewedAt": "2026-09-09T00:00:00Z",
     "sourceHash": "f5d9f6831a8543a65f0a116a2bca0d1eaa0508f09ff6921831568c9b739e797e"
   },
-  "consent.cookies.csrf.purpose": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "founder",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "157577b97358de8bc5e689edae741a707595f266c0b6fa376b51ea45bdec41d9"
-  },
   "consent.cookies.currency.purpose": {
     "source": "human",
     "reviewed": true,
@@ -4910,5 +4903,15 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "consent.cookies.checkout.purpose": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "362bca673b8a30a647fa80cc05ec29fcfb86e035ceff502019040b7fc09b31e3"
+  },
+  "consent.cookies.checkoutEcho.purpose": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c7556d96af37e152c77456f1786ff1e546d27e1f8ca002b41591e442d1dedb4b"
   }
 }
