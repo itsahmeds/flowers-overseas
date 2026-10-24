@@ -389,6 +389,9 @@
       "intro": "These are {country}'s dates, and they are facts whether or not we deliver there — which is why the calendar is on this page in both states.",
       "occasion": "Occasion",
       "rule": "Rule",
+      "ruleEaster": "Moves with Easter",
+      "ruleFixed": "Same date every year",
+      "ruleWeekday": "A set weekday of the month",
       "undated": "Also kept here, with no date of its own: {occasions}."
     },
     "coverage": {
@@ -444,9 +447,6 @@
       "heading": "What is sent, and what is not",
       "sentMost": "Sent most",
       "sentRarely": "Sent rarely, or never"
-    },
-    "photo": {
-      "caption": "Photo slot · {country}"
     },
     "related": {
       "eyebrow": "Related destinations",

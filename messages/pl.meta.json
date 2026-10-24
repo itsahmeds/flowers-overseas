@@ -1279,6 +1279,21 @@
     "reviewed": false,
     "sourceHash": "62845f31a2fe00be3ebaaeb93f5b27af82ab81dfcbaa1871c76f596cd98cf3c9"
   },
+  "corridor.calendar.ruleEaster": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "adf381b0e3010d5f7f0e9bf9d9422c01d71a4a1928ca70bb1a012d9d151c1386"
+  },
+  "corridor.calendar.ruleFixed": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ae8003ccead967445c56e42bb82a302d468ed1188833f82e72bc7fb6f1ed0c3e"
+  },
+  "corridor.calendar.ruleWeekday": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "1b038ee52b6df444133839319a74b59989d9f1dcc146846fd74d63992048a9ba"
+  },
   "corridor.calendar.undated": {
     "source": "machine",
     "reviewed": false,
@@ -1443,11 +1458,6 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "c90c4db68f222ae0c523835d205bb870a342f0b5191b4013a1507a47ccc9752b"
-  },
-  "corridor.photo.caption": {
-    "source": "machine",
-    "reviewed": false,
-    "sourceHash": "bc2bb0b48f51ea99b5777038bf79755e45233db774bd60468aef4a00c8677da9"
   },
   "corridor.related.eyebrow": {
     "source": "machine",

@@ -4,7 +4,11 @@
  *
  * A captioned `<table>` with a column scope on every header and a row header on every occasion —
  * "because a calendar read by a screen reader is a table", as the artboard puts it — and three
- * columns: the occasion, its date, and the `plan/03` §9 rule the date was computed from.
+ * columns: the occasion, its date, and the `plan/03` §9 rule the date was computed from, **in
+ * words** ("Same date every year"), never the evaluator's identifier and never in a code font
+ * (spec 007 §14 A11 (a), AC-30; `./calendar-rule.ts`; TASK-189). Each row carries its ISO date as
+ * `data-fo-calendar-date`, which is how the suites prove the first screen's three dates are this
+ * table's first three rows (AC-31).
  *
  * **No date is typed anywhere.** Every row's date is `occasionDate(rule, year)`'s answer for the
  * destination, rendered by spec 003's `formatDate` in the page's locale, so "Sunday 1 November
@@ -28,6 +32,7 @@ import type {
 } from "../corridor.ts";
 
 import { CorridorSection } from "./CorridorSection.tsx";
+import { calendarRuleKey } from "./calendar-rule.ts";
 import { localeCode, registryLabel } from "./labels.ts";
 
 /** Midday UTC: the hour that is the same calendar date in every European zone. */
@@ -51,6 +56,11 @@ export function CorridorCalendar({
   const t = useTranslations();
   const c = useTranslations("corridor");
   const code = localeCode(locale);
+  // The Rule column in words (spec 007 §14 A11 (a), AC-30): an empty cell for a `none` row.
+  const ruleWords = (kind: CorridorOccasionView["ruleKind"]): string => {
+    const key = calendarRuleKey(kind);
+    return key === undefined ? "" : t(key);
+  };
 
   const cell =
     "border-rule border-b py-[14px] pe-[12px] text-start align-baseline";
@@ -85,7 +95,10 @@ export function CorridorCalendar({
         </thead>
         <tbody>
           {occasions.map((occasion) => (
-            <tr key={`${occasion.occasionKey}-${occasion.date}`}>
+            <tr
+              data-fo-calendar-date={occasion.date}
+              key={`${occasion.occasionKey}-${occasion.date}`}
+            >
               <th
                 className={`${cell} display text-[19px] font-normal`}
                 scope="row"
@@ -101,7 +114,7 @@ export function CorridorCalendar({
                 )}
               </td>
               <td className={`${cell} text-ink-subtle text-sm`}>
-                <code className="font-body">{occasion.ruleKind}</code>
+                {ruleWords(occasion.ruleKind)}
               </td>
             </tr>
           ))}

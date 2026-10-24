@@ -2,8 +2,9 @@
  * The corridor page, one template for both states (spec 007 §5.3, AC-8, AC-19, AC-24;
  * `docs/design/wireframes/corridor-country-desktop.dc.html` and `-mobile`; TASK-091).
  *
- * The artboards' block order, top to bottom: breadcrumb · hero (h1, status chip, authored intro,
- * the reserved photo slot) · delivery facts · how we work here · the authored guide · the
+ * The artboards' block order, top to bottom: breadcrumb · the first screen (h1, the state line,
+ * the next three dates of the calendar, the authored intro; `CorridorFirstScreen`, TASK-189) ·
+ * delivery facts · how we work here · the authored guide · the
  * occasion calendar · what is sent and what is not · where we deliver · the FAQ · related
  * destinations · the shop entry. **Zero template edits between the two states**: every difference
  * is a branch on data the view model already decided (AC-8).
@@ -26,13 +27,14 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
-import { Chip, PAGE_FRAME, Photo } from "../../ui/index.ts";
+import { PAGE_FRAME } from "../../ui/index.ts";
 import type { CorridorView } from "../corridor.ts";
 
 import { CorridorBreadcrumb } from "./CorridorBreadcrumb.tsx";
 import { CorridorCalendar } from "./CorridorCalendar.tsx";
 import { CorridorFacts } from "./CorridorFacts.tsx";
 import { CorridorFaq } from "./CorridorFaq.tsx";
+import { CorridorFirstScreen } from "./CorridorFirstScreen.tsx";
 import { CorridorGuideBody } from "./CorridorGuideBody.tsx";
 import { CorridorRelated } from "./CorridorRelated.tsx";
 import { CorridorSection } from "./CorridorSection.tsx";
@@ -93,28 +95,11 @@ export function CorridorPage({ view }: CorridorPageProps): ReactElement {
     >
       <CorridorBreadcrumb crumbs={view.breadcrumb} />
 
-      {/* Hero: the one `<h1>` (the text LCP element — there is no photography of any destination,
-          so the slot is spec 004's placeholder and the LCP stays server-rendered text), the
-          status chip, and the authored intro, in the artboard's 7∶4 pair. */}
-      <div className="grid items-start gap-[28px] pt-[24px] pb-[36px] md:grid-cols-[7fr_4fr] md:gap-[72px] md:pt-[40px] md:pb-[56px]">
-        <div>
-          <h1 className="display text-display-fluid m-0">{view.h1}</h1>
-          <p className="m-0 mt-[20px]">
-            <Chip live={live} tone="muted">
-              {registryLabel(t, view.stateKey)}
-            </Chip>
-          </p>
-          <p className="text-ink-muted text-body-s m-0 mt-[20px] max-w-prose md:text-[19px]">
-            {view.intro}
-          </p>
-        </div>
-        <Photo
-          caption={c("photo.caption", { country })}
-          className="md:justify-self-end"
-          lead
-          ratio="card"
-        />
-      </div>
+      {/* The first screen (spec 007 §14 A11 (b), A12 (a); TASK-189): the one `<h1>` (the LCP
+          element: no photograph of any destination exists, so no image and no preload), the
+          state as one quiet line, the next three rows of this page's own calendar, and the
+          authored intro. */}
+      <CorridorFirstScreen country={country} view={view} />
 
       {/* Delivery facts, in the form the data allows. */}
       <CorridorSection
