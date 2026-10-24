@@ -152,6 +152,7 @@ describe("consentView (AC-20's projection)", () => {
     expect(Object.keys(view).sort()).toEqual([
       "categories",
       "config",
+      "controller",
       "strings",
     ]);
   });

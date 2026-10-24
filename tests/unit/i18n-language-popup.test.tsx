@@ -248,7 +248,7 @@ describe("popupCandidates (the props the island renders)", () => {
       "/en/legal",
       "/en-gb/legal",
       "/de/rechtliches",
-      "/pl/regulamin",
+      "/pl/informacje-prawne",
     ]);
   });
 });

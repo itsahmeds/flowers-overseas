@@ -161,7 +161,7 @@ describe("src/config/locales.ts (AC-1 / T-01)", () => {
       product: "produkt",
       blog: "blog",
       forFlorists: "dla-kwiaciarni",
-      legal: "regulamin",
+      legal: "informacje-prawne",
       howItWorks: "jak-to-dziala",
       guarantee: "gwarancja",
       help: "pomoc",

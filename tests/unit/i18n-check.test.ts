@@ -515,7 +515,7 @@ describe("localePath per locale for every plan/02 §4.1 page type (AC-13 / T-13)
       product: "/pl/produkt",
       blog: "/pl/blog",
       forFlorists: "/pl/dla-kwiaciarni",
-      legal: "/pl/regulamin",
+      legal: "/pl/informacje-prawne",
       howItWorks: "/pl/jak-to-dziala",
       guarantee: "/pl/gwarancja",
       help: "/pl/pomoc",

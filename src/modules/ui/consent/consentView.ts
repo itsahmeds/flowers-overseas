@@ -30,12 +30,14 @@ import {
   cookieCategories,
   cookiesInCategory,
 } from "@/config/cookies";
+import { type Company, COMPANY, controllerName } from "@/config/company";
 import { CONSENT_POLICY_VERSION } from "@/lib/consent";
 
 import { CONSENT_REOPEN_ATTRIBUTE } from "../layout/SiteFooter";
 
 import type {
   ConsentCategoryView,
+  ConsentController,
   ConsentCookieView,
   ConsentView,
 } from "./consentTypes";
@@ -117,8 +119,47 @@ function cookieView(
   };
 }
 
+/** What the caller knows that this module may not read (`src/modules/content` is off limits). */
+export interface ConsentViewOptions {
+  /**
+   * The privacy notice's URL in this locale, where it exists (`infoPageExists("privacy",
+   * locale)`, asked by the layout). Absent: the controller sentence; present: the link (AC-29).
+   */
+  readonly privacyHref?: string | undefined;
+  readonly company?: Company;
+}
+
+/**
+ * The controller line (spec 041 AC-29): `company.controller` with the company's name and the
+ * phone, and no link, while the privacy notice does not exist; `consent.privacyLink` to it once it
+ * does. It names the company, never a person, and never an address.
+ */
+export function consentController(
+  translate: ConsentTranslate,
+  options: ConsentViewOptions = {},
+): ConsentController {
+  const company = options.company ?? COMPANY;
+  if (options.privacyHref !== undefined) {
+    return {
+      kind: "privacyLink",
+      text: translate("consent.privacyLink"),
+      href: options.privacyHref,
+    };
+  }
+  return {
+    kind: "sentence",
+    text: translate("company.controller", {
+      name: controllerName(company),
+      phone: company.contact.phoneDisplay,
+    }),
+  };
+}
+
 /** The whole projection. Pure: same register plus same catalogue gives the same object. */
-export function consentView(translate: ConsentTranslate): ConsentView {
+export function consentView(
+  translate: ConsentTranslate,
+  options: ConsentViewOptions = {},
+): ConsentView {
   const categories: ConsentCategoryView[] = cookieCategories.map((category) => {
     const rows = cookiesInCategory(category).map((entry) =>
       cookieView(entry, translate),
@@ -158,6 +199,7 @@ export function consentView(translate: ConsentTranslate): ConsentView {
       saved: translate("consent.saved"),
       close: translate("consent.close"),
     },
+    controller: consentController(translate, options),
     config: {
       cookieName: CONSENT_COOKIE_NAME,
       policyVersion: CONSENT_POLICY_VERSION,

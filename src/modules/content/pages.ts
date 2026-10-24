@@ -4,8 +4,9 @@
  * `infoPageExists()` is **the** existence predicate: the route params, the sitemap, the site-link
  * resolver and every in-body link call it, so deleting one content file removes that page's URL,
  * its sitemap entry, its footer link and every link to it, with no other change (AC-2). A page
- * with `requiresRegistration` (imprint, terms, privacy) exists only once `isCompanyRegistered()` is
- * true, whatever files are committed (§13 Q1).
+ * with `requiresRegistration` (imprint, terms, privacy) exists only once
+ * `isTraderIdentityComplete()` is true (the company registered, with its support mailbox),
+ * whatever files are committed (§13 Q1; §14 A-founder-2026-10-23 clause 1).
  *
  * `infoPageView()` is the single view model the page, its JSON-LD, its metadata and the sitemap
  * read. It reads no cookie, no header and no clock: every visitor gets the same page.
@@ -13,7 +14,7 @@
 import {
   type Company,
   COMPANY,
-  isCompanyRegistered,
+  isTraderIdentityComplete,
   whatsappHref,
 } from "@/config/company";
 import { anyDeliveryDatesOpen } from "@/config/countries";
@@ -52,6 +53,11 @@ import type {
 export interface InfoPageOptions {
   readonly provider?: InfoContentProvider;
   readonly company?: Company;
+  /**
+   * The gate's answer for the three pages that wait for the company, overriding
+   * `isTraderIdentityComplete(company)`; and, on the about page, whether the company block shows
+   * the registered identity. A test fixture's switch, never a second flag in the application.
+   */
   readonly registered?: boolean;
   /** `anyDeliveryDatesOpen()` unless a test hands in the other answer (AC-6). */
   readonly datesOpen?: boolean;
@@ -127,7 +133,7 @@ function hasContent(
 
 /**
  * **The** existence predicate (AC-2): a parsed content file exists for the page in a routable
- * locale and, for a page with `requiresRegistration`, the company is registered.
+ * locale and, for a page with `requiresRegistration`, the trader identity is complete.
  */
 export function infoPageExists(
   pageId: InfoPageId,
@@ -135,8 +141,9 @@ export function infoPageExists(
   options: InfoPageOptions = {},
 ): boolean {
   if (routableLocale(locale) === undefined) return false;
-  const registered = options.registered ?? isCompanyRegistered();
-  if (infoPage(pageId).requiresRegistration && !registered) return false;
+  const identity =
+    options.registered ?? isTraderIdentityComplete(options.company ?? COMPANY);
+  if (infoPage(pageId).requiresRegistration && !identity) return false;
   return hasContent(
     pageId,
     locale,
@@ -213,6 +220,25 @@ export function infoPageForSegment(
   });
 }
 
+/**
+ * The legal document whose path this is in the locale, if any: `/{locale}/{legal}/{leaf}`, the
+ * resolver's question at depth 3 (spec 041 §2 "Top-level segments": the four legal documents are
+ * leaves under the `legal` segment).
+ */
+export function infoPageForLeaf(
+  locale: string,
+  segment: string,
+  leaf: string,
+): InfoPageId | undefined {
+  return INFO_PAGE_IDS.find((pageId) => {
+    const location = infoPageLocation(pageId, locale);
+    return (
+      location.leaf !== undefined &&
+      infoPagePath(pageId, locale) === `/${locale}/${segment}/${leaf}`
+    );
+  });
+}
+
 /* -------------------------------------------------------------------------- */
 /* The view model.                                                            */
 /* -------------------------------------------------------------------------- */
@@ -245,12 +271,14 @@ export interface ContactView {
   readonly privacyHref: string | undefined;
 }
 
-/** The about page's company block (spec 041 §2 "Unregistered company", AC-11). */
+/**
+ * The about page's company block (spec 041 §2 "Unregistered company", AC-11). It carries no
+ * person's name in either state (§14 A-founder-2026-10-23 clause 4).
+ */
 export type CompanyBlockView =
-  | { readonly registered: false; readonly representativeName: string }
+  | { readonly registered: false }
   | {
       readonly registered: true;
-      readonly representativeName: string;
       readonly legalName: string;
       readonly address: string;
       readonly registrationNumber: string;
@@ -295,22 +323,62 @@ export interface InfoPageView {
   readonly honestyAllow: readonly HonestyAllow[];
 }
 
-/** `{representativeName}` is data, never copy: the one token a content file may carry. */
-function interpolate(text: string, company: Company): string {
-  return text.replaceAll("{representativeName}", company.representative.name);
+/**
+ * `{legalName}` is data, never copy: the one token a trust file may carry (the parser refuses any
+ * other). It resolves only while the company is registered; `undefined` otherwise, and the section
+ * that carries it does not render, so neither the token nor an empty name can appear (spec 041
+ * §14 A-founder-2026-10-23 clause 3, About).
+ */
+function interpolate(
+  text: string,
+  company: Company,
+  registered: boolean,
+): string | undefined {
+  if (!text.includes("{legalName}")) return text;
+  if (!registered || company.legalName === undefined) return undefined;
+  return text.replaceAll("{legalName}", company.legalName);
 }
 
-function paragraphsOf(
-  body: string | undefined,
-  company: Company,
-): readonly string[] {
+function paragraphsOf(body: string | undefined): readonly string[] {
   if (body === undefined) return [];
   return body
     .split(/\n\s*\n/u)
-    .map((paragraph) =>
-      interpolate(paragraph.trim().replace(/\s+/gu, " "), company),
-    )
+    .map((paragraph) => paragraph.trim().replace(/\s+/gu, " "))
     .filter((paragraph) => paragraph !== "");
+}
+
+/** One section with its data slots filled, or `undefined` when a slot has nothing to say. */
+function sectionView(
+  section: InfoPageContent["sections"][number],
+  company: Company,
+  registered: boolean,
+): InfoSectionView | undefined {
+  const fill = (text: string) => interpolate(text, company, registered);
+  const heading = fill(section.heading);
+  const paragraphs = paragraphsOf(section.body).map(fill);
+  const items = (section.items ?? []).map((item) => ({
+    title: fill(item.title),
+    text: fill(item.text),
+  }));
+  if (
+    heading === undefined ||
+    paragraphs.some((paragraph) => paragraph === undefined) ||
+    items.some((item) => item.title === undefined || item.text === undefined)
+  ) {
+    return undefined;
+  }
+  return {
+    id: section.id,
+    heading,
+    paragraphs: paragraphs.filter((text) => text !== undefined),
+    items: items.flatMap((item) =>
+      item.title === undefined || item.text === undefined
+        ? []
+        : [{ title: item.title, text: item.text }],
+    ),
+    ordered: section.ordered ?? false,
+    block: section.block,
+  };
 }
 
 function linkHref(
@@ -332,14 +400,10 @@ function companyBlock(company: Company, registered: boolean): CompanyBlockView {
     address === undefined ||
     registrationNumber === undefined
   ) {
-    return {
-      registered: false,
-      representativeName: company.representative.name,
-    };
+    return { registered: false };
   }
   return {
     registered: true,
-    representativeName: company.representative.name,
     legalName,
     // Printed inline in the `company.operatedBy` sentence, as the footer prints it.
     address: [...address.lines, address.postalCode, address.city].join(", "),
@@ -363,7 +427,7 @@ export function infoPageView(
   if (content === undefined) return undefined;
 
   const company = options.company ?? COMPANY;
-  const registered = options.registered ?? isCompanyRegistered();
+  const registered = options.registered ?? company.registered;
   const blocks = new Set(
     content.sections.flatMap((section) => section.block ?? []),
   );
@@ -387,17 +451,9 @@ export function infoPageView(
     reviewed: content.reviewed,
     updatedAt: content.updatedAt,
     notYetOpen: !(options.datesOpen ?? anyDeliveryDatesOpen()),
-    sections: content.sections.map((section) => ({
-      id: section.id,
-      heading: section.heading,
-      paragraphs: paragraphsOf(section.body, company),
-      items: (section.items ?? []).map((item) => ({
-        title: interpolate(item.title, company),
-        text: interpolate(item.text, company),
-      })),
-      ordered: section.ordered ?? false,
-      block: section.block,
-    })),
+    sections: content.sections.flatMap(
+      (section) => sectionView(section, company, registered) ?? [],
+    ),
     faq: content.faq ?? [],
     links,
     contact:

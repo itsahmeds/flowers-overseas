@@ -69,8 +69,23 @@ export interface ConsentConfig {
 }
 
 /** What the Server Component hands to the loader, and the loader to the island. */
+/**
+ * Who is responsible, chosen on the server by `consentView()` (spec 041 §2 "The consent banner
+ * before the privacy notice exists", AC-29): the controller sentence while the privacy notice
+ * does not exist in the locale, the link to it once it does. Exactly one of the two.
+ */
+export type ConsentController =
+  | { readonly kind: "sentence"; readonly text: string }
+  | {
+      readonly kind: "privacyLink";
+      readonly text: string;
+      readonly href: string;
+    };
+
 export interface ConsentView {
   readonly strings: ConsentStrings;
+  /** Rendered in the settings panel (spec 041 §14 A-founder-2026-10-19d; the slot is TASK-281's). */
+  readonly controller: ConsentController;
   readonly config: ConsentConfig;
   /** Register order, essential first — the order the disclosure reads in. */
   readonly categories: readonly ConsentCategoryView[];

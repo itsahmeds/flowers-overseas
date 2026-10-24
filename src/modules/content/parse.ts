@@ -16,6 +16,7 @@ import {
   infoPage,
 } from "../../config/info-pages.ts";
 
+import { REGISTRY_TOKENS, legalBody, tokensIn } from "./legal-body.ts";
 import {
   ExtendsEnSchema,
   InfoPageContentSchema,
@@ -193,6 +194,8 @@ export function parseInfoFile(
     const parsed = InfoPageContentSchema.safeParse(frontmatter);
     if (!parsed.success)
       return { ok: false, issues: zodIssues(file, parsed.error) };
+    const tokenIssues = trustTokenIssues(file, yamlText);
+    if (tokenIssues.length > 0) return { ok: false, issues: tokenIssues };
     return {
       ok: true,
       file: { ...facts, kind: "trust", content: parsed.data, body },
@@ -201,8 +204,90 @@ export function parseInfoFile(
   const parsed = LegalDocumentSchema.safeParse(frontmatter);
   if (!parsed.success)
     return { ok: false, issues: zodIssues(file, parsed.error) };
+  const bodyIssues = legalBodyIssues(file, facts.pageId, parsed.data, body);
+  if (bodyIssues.length > 0) return { ok: false, issues: bodyIssues };
   return {
     ok: true,
     file: { ...facts, kind: "legal", content: parsed.data, body },
   };
+}
+
+/**
+ * The one data slot a trust page may carry is `{legalName}` (spec 041 §14 A-founder-2026-10-23
+ * clause 3, About). `{representativeName}` is withdrawn: no person's name is printed on the site
+ * (clause 4, AC-37), so a file that still carries it fails, naming the file.
+ */
+function trustTokenIssues(
+  file: string,
+  yamlText: string,
+): readonly InfoParseIssue[] {
+  return tokensIn(yamlText)
+    .filter((token) => token !== "legalName")
+    .map((token) => ({
+      file,
+      field: "-",
+      message:
+        token === "representativeName"
+          ? "`{representativeName}` is withdrawn: no person's name appears on the site (spec 041 §14 A-founder-2026-10-23 clause 4)"
+          : `\`{${token}}\` is not a data slot a trust page may carry (only \`{legalName}\`)`,
+    }));
+}
+
+/** The body and its frontmatter agree (spec 041 §2, AC-3, AC-10, AC-11, AC-13, AC-29). */
+function legalBodyIssues(
+  file: string,
+  pageId: InfoPageId,
+  doc: LegalDocument,
+  body: string,
+): readonly InfoParseIssue[] {
+  const parsed = legalBody(body, pageId);
+  const issues: InfoParseIssue[] = parsed.issues.map((issue) => ({
+    file,
+    ...issue,
+  }));
+  const directives = new Set(
+    parsed.sections.flatMap((section) =>
+      section.blocks.flatMap((block) =>
+        block.kind === "directive" ? [block.name] : [],
+      ),
+    ),
+  );
+  if (directives.has("register") && doc.labels?.register === undefined) {
+    issues.push({
+      file,
+      field: "labels.register",
+      message: "`[[register]]` needs the register's labels",
+    });
+  }
+  if (directives.has("facts") && doc.labels?.facts === undefined) {
+    issues.push({
+      file,
+      field: "labels.facts",
+      message: "`[[facts]]` needs the imprint's field labels",
+    });
+  }
+  const anchors = new Set(parsed.sections.map((section) => section.id));
+  (doc.interim?.sections ?? []).forEach((id, index) => {
+    if (!anchors.has(id)) {
+      issues.push({
+        file,
+        field: `interim.sections.${String(index)}`,
+        message: `\`${id}\` is not a section anchor of this document`,
+      });
+    }
+  });
+  // A document that exists before the company does may not print a registry fact (AC-11): its
+  // slot would have nothing to say, and an empty slot is the one thing no page may show.
+  if (!infoPage(pageId).requiresRegistration) {
+    for (const token of tokensIn(body)) {
+      if (REGISTRY_TOKENS.includes(token as (typeof REGISTRY_TOKENS)[number])) {
+        issues.push({
+          file,
+          field: "body",
+          message: `\`{${token}}\` needs the registered company, and \`${pageId}\` exists before it`,
+        });
+      }
+    }
+  }
+  return issues;
 }

@@ -6,7 +6,7 @@ intro: "Flowers Overseas sends flowers to people in other European countries, ma
 sections:
   - id: who-runs-it
     heading: "Who runs it"
-    body: "Flowers Overseas is run by its founder, {representativeName}."
+    body: "Flowers Overseas is run by {legalName}."
   - id: why
     heading: "Why we do it this way"
     body: "Sending flowers to someone abroad usually means a box that has spent days in transit, or a site that leaves you guessing once you have paid. We think both are the wrong way round. You order from us; our florist in the recipient's town makes the bouquet and hands it over in person; we handle the payment, put your message in the right language, and answer for the result."

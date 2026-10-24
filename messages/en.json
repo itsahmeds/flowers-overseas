@@ -110,7 +110,8 @@
       "gaContainer": {
         "purpose": "Google Analytics: the same, for our own measurement id. Not set unless you accept analytics."
       }
-    }
+    },
+    "privacyLink": "How we use your personal data"
   },
   "nav": {
     "categories": {
@@ -195,7 +196,8 @@
       "label": "Help & WhatsApp",
       "hours": "Message us any time, 24/7 — we reply within a few hours.",
       "whatsapp": "WhatsApp"
-    }
+    },
+    "controller": "This website is run by {name}. For questions about your cookie choices or your personal data, call or WhatsApp {phone}."
   },
   "destinations": {
     "pl": {
@@ -1018,6 +1020,23 @@
     },
     "delivery": {
       "status": "Status"
+    },
+    "legal": {
+      "notInForce": "Draft, not in force. We are not taking orders yet, so these terms do not apply to anyone. A lawyer will review them before our first order, and the reviewed version will be published here with its date.",
+      "unreviewed": "This notice describes what our website does today. A lawyer has not reviewed it yet; when the reviewed version replaces it, the change will be listed below.",
+      "version": "Version {version}",
+      "inForceSince": "In force since {date}",
+      "notInForceYet": "Not in force yet",
+      "inForce": "In force",
+      "appliesTo": {
+        "eu": "Applies to buyers in the European Union",
+        "uk": "Applies to buyers in the United Kingdom"
+      },
+      "contents": "Contents",
+      "changeLog": "What changed"
+    },
+    "cookies": {
+      "change": "Change cookie settings"
     }
   },
   "payments": {

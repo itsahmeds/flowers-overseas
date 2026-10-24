@@ -138,8 +138,58 @@ export const InfoPageContentSchema = ReviewFieldsSchema.extend({
 export type InfoPageContent = z.infer<typeof InfoPageContentSchema>;
 
 /**
- * The legal family's frontmatter (spec 041 §2, §5.2). Its documents are TASK-183's; the schema
- * lives here because AC-3 names both and `pages:check` parses both families.
+ * The cookie register's column headings and status words (spec 041 §2 "Cookies", AC-13). They
+ * are part of the cookie notice the founder approves as legal batch 2 (TASK-183): the notice is
+ * `noindex` until a lawyer signs it, so its labels gate only their own page, like the rest of its
+ * text (spec 041 §7 "Two mechanisms").
+ */
+export const RegisterLabelsSchema = z
+  .object({
+    caption: z.string().min(1),
+    name: z.string().min(1),
+    category: z.string().min(1),
+    purpose: z.string().min(1),
+    lifetime: z.string().min(1),
+    status: z.string().min(1),
+    setToday: z.string().min(1),
+    planned: z.string().min(1),
+    /** "Consent policy version {version}": the line under the re-open button. */
+    policyVersion: z.string().min(1),
+  })
+  .strict();
+export type RegisterLabels = z.infer<typeof RegisterLabelsSchema>;
+
+/** The imprint's field labels (spec 041 §5.3 "Imprint", AC-11), approved with the imprint. */
+export const FactsLabelsSchema = z
+  .object({
+    name: z.string().min(1),
+    register: z.string().min(1),
+    registrationNumber: z.string().min(1),
+    address: z.string().min(1),
+    vatId: z.string().min(1),
+    email: z.string().min(1),
+    phone: z.string().min(1),
+  })
+  .strict();
+export type FactsLabels = z.infer<typeof FactsLabelsSchema>;
+
+/**
+ * The cookie notice's interim sections (spec 041 §2 "Cookies", AC-29): the section anchors that
+ * render only while the privacy notice does not exist in the locale, and the heading of the one
+ * section that replaces them with a link to it once it does.
+ */
+export const InterimSchema = z
+  .object({
+    sections: z.array(z.string().min(1)).min(1),
+    heading: z.string().min(1),
+  })
+  .strict();
+
+/**
+ * The legal family's frontmatter (spec 041 §2, §5.2; TASK-183). Three additions to §2's field
+ * list, recorded in the PR: `links` (the in-body links of §6, as on a trust page), `labels` (the
+ * register's and the imprint's field labels) and `interim` (the cookie notice's two sections that
+ * wait for the privacy notice).
  */
 export const LegalDocumentSchema = ReviewFieldsSchema.extend({
   seoTitle: z.string().min(1).max(SEO_TITLE_MAX),
@@ -165,6 +215,15 @@ export const LegalDocumentSchema = ReviewFieldsSchema.extend({
     )
     .min(1),
   honestyAllow: z.array(HonestyAllowSchema).optional(),
+  links: z.array(InfoLinkSchema).optional(),
+  labels: z
+    .object({
+      register: RegisterLabelsSchema.optional(),
+      facts: FactsLabelsSchema.optional(),
+    })
+    .strict()
+    .optional(),
+  interim: InterimSchema.optional(),
 })
   .strict()
   .superRefine((doc, ctx) => {

@@ -37,6 +37,7 @@ import {
   countryShopRootMetadata,
   windowStart,
 } from "../../country-shop-root";
+import { InfoPageRoute, infoPageRouteMetadata } from "../../info-page-route";
 
 /**
  * `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008 §14 **A5**, spec
@@ -49,6 +50,7 @@ import {
  * /{locale}/{countrySlug}/{shopCategory}   spec 008's country shop root   (TASK-109)
  * /{locale}/{shopCategory}/{categorySlug}  spec 008's category hub        (TASK-112)
  * /{locale}/{occasions}/{occasionSlug}     spec 008's occasion hub        (TASK-112)
+ * /{locale}/{legal}/{leaf}                 spec 041's legal documents     (TASK-183)
  * ```
  *
  * They cannot each own a route file: Next.js allows exactly one dynamic slug **name** per (depth,
@@ -177,6 +179,10 @@ export async function generateMetadata({
     });
   }
 
+  if (match.kind === "infoPage") {
+    return infoPageRouteMetadata(match.pageId, match.locale);
+  }
+
   if (match.kind === "countryShopRoot") {
     return countryShopRootMetadata(match, listingRequest());
   }
@@ -289,6 +295,11 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
         />
       </>
     );
+  }
+
+  if (match.kind === "infoPage") {
+    // Spec 041's legal documents (TASK-183), through the one info-page helper.
+    return <InfoPageRoute pageId={match.pageId} locale={match.locale} />;
   }
 
   if (match.kind === "countryShopRoot") {

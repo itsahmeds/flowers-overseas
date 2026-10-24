@@ -15,7 +15,11 @@ import type { Metadata } from "next";
 import { COMPANY } from "@/config/company";
 import type { InfoPageId } from "@/config/info-pages";
 
-import { infoPageAlternatePaths, infoPageView } from "../content/index.ts";
+import {
+  infoPageAlternatePaths,
+  infoPageHeadView,
+  infoPageView,
+} from "../content/index.ts";
 import { alternatesFor } from "../i18n/index.ts";
 import { canonicalFor } from "./canonical.ts";
 import type { DeploymentDescriptor } from "./environment.ts";
@@ -40,7 +44,8 @@ export function infoPageMetadata(
   locale: string,
   deployment: DeploymentDescriptor,
 ): Metadata | undefined {
-  const view = infoPageView(pageId, locale);
+  // Either family: a legal page's `reviewed` is `reviewed && lawyerReviewed` (AC-17).
+  const view = infoPageHeadView(pageId, locale);
   if (view === undefined) return undefined;
   const verdict = pageIndexability(
     { pageType: pageId, locale, exists: true, reviewed: view.reviewed },
@@ -72,12 +77,13 @@ export function infoPageJsonLd(
   deployment: DeploymentDescriptor,
   label: BreadcrumbLabel,
 ): readonly JsonLdNode[] {
-  const view = infoPageView(pageId, locale);
+  const head = infoPageHeadView(pageId, locale);
   const options = schemaOptions(deployment.siteUrl);
-  if (view === undefined || options === undefined) return [];
+  if (head === undefined || options === undefined) return [];
+  const view = infoPageView(pageId, locale);
   return [
-    breadcrumbList(view.breadcrumb, label, options),
-    pageId === "help" ? faqPage(view.faq) : undefined,
+    breadcrumbList(head.breadcrumb, label, options),
+    pageId === "help" && view !== undefined ? faqPage(view.faq) : undefined,
     pageId === "about" ? organization(COMPANY, options) : undefined,
   ].filter((node) => node !== undefined);
 }

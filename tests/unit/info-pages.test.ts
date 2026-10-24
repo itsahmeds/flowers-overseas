@@ -21,6 +21,7 @@ import {
 import { relayMatches } from "../../src/config/honesty.ts";
 import {
   INFO_PAGE_IDS,
+  type InfoPageId,
   InfoPageRegistrySchema,
   INFO_PAGES,
   TRUST_PAGE_IDS,
@@ -35,6 +36,7 @@ import {
   fixtureInfoContentProvider,
   infoPageExists,
   infoPageView,
+  legalDocumentView,
   listInfoPages,
   missingInfoPageLinkIds,
   parseInfoFile,
@@ -80,10 +82,31 @@ function source(path: string): string {
 }
 
 /** Every prose string a trust view renders, one block per string (so no sentence spans two). */
-function proseOf(
-  pageId: (typeof TRUST_PAGE_IDS)[number],
-  locale: string,
-): string {
+function proseOf(pageId: InfoPageId, locale: string): string {
+  const legal = legalDocumentView(pageId, locale);
+  if (legal !== undefined) {
+    return [
+      legal.seoTitle,
+      legal.seoDescription,
+      legal.h1,
+      ...legal.sections.flatMap((section) => [
+        section.heading,
+        ...section.blocks.flatMap((block) =>
+          block.kind === "paragraph"
+            ? [block.spans.map((span) => span.text).join("")]
+            : block.kind === "subheading"
+              ? [block.text]
+              : block.kind === "list"
+                ? block.items.map((item) =>
+                    item.map((span) => span.text).join(""),
+                  )
+                : [],
+        ),
+      ]),
+      ...legal.changeLog.map((entry) => entry.summary),
+      ...legal.links.map((link) => link.label),
+    ].join("\n\n");
+  }
   const view = infoPageView(pageId, locale);
   if (view === undefined) return "";
   return [
@@ -99,6 +122,13 @@ function proseOf(
     ...view.faq.flatMap((item) => [item.q, item.a]),
     ...view.links.map((link) => link.label),
   ].join("\n\n");
+}
+
+/** Every string under a nested message group, depth-first. */
+function leafValues(tree: unknown): readonly string[] {
+  if (typeof tree === "string") return [tree];
+  if (typeof tree !== "object" || tree === null) return [];
+  return Object.values(tree).flatMap((value) => leafValues(value));
 }
 
 /** A minimal legal file, for the registration gate (the legal set itself is TASK-183's). */
@@ -350,7 +380,7 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
   const en = JSON.parse(
     readFileSync(resolve(ROOT, "messages/en.json"), "utf8"),
   ) as {
-    infoPages: Record<string, Record<string, string>>;
+    infoPages: Record<string, unknown>;
   };
   const meta = JSON.parse(
     readFileSync(resolve(ROOT, "messages/en.meta.json"), "utf8"),
@@ -362,10 +392,9 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
   });
 
   it("no infoPages.* value exceeds 400 characters", () => {
-    for (const group of Object.values(en.infoPages)) {
-      for (const value of Object.values(group))
-        expect(value.length).toBeLessThanOrEqual(400);
-    }
+    const values = leafValues(en.infoPages);
+    expect(values.length).toBeGreaterThan(0);
+    for (const value of values) expect(value.length).toBeLessThanOrEqual(400);
   });
 
   it("no agent marked a new key reviewed", () => {
@@ -381,25 +410,39 @@ describe("T-07 / AC-7: the copy share and the 400-character cap", () => {
 });
 
 describe("T-11 / AC-11: the company block and company.ts's refinements", () => {
-  it("about renders the representative and notRegistered, and no address field", () => {
+  it("about renders notRegistered, no name and no address field while unregistered", () => {
     const view = infoPageView("about", "en", { registered: false });
-    expect(view?.company).toEqual({
-      registered: false,
-      representativeName: "Sheikh Ahmad Hameed",
+    expect(view?.company).toEqual({ registered: false });
+    // "Who runs it" names the company once it is registered and is not drawn before (spec 041
+    // §14 A-founder-2026-10-23 clause 3): no token, no empty name, and never a person.
+    expect(
+      view?.sections.find((section) => section.id === "who-runs-it"),
+    ).toBeUndefined();
+    expect(JSON.stringify(view)).not.toMatch(
+      /address|registrationNumber|vatId|legalName|\{legalName\}|Hameed|Sheikh/u,
+    );
+  });
+
+  it("about names the company, never a person, once it is registered (TASK-183)", () => {
+    const view = infoPageView("about", "en", {
+      company: REGISTERED_COMPANY,
     });
     const whoRunsIt = view?.sections.find(
       (section) => section.id === "who-runs-it",
     );
-    expect(whoRunsIt?.paragraphs.join(" ")).toContain("Sheikh Ahmad Hameed");
-    expect(JSON.stringify(view)).not.toMatch(
-      /address|registrationNumber|vatId|legalName/u,
-    );
+    expect(whoRunsIt?.paragraphs).toEqual([
+      "Flowers Overseas is run by Flowers Overseas OÜ.",
+    ]);
+    expect(JSON.stringify(view)).not.toMatch(/Hameed|Sheikh|representative/u);
   });
 
-  it("company.ts refuses no representative, registered without supportEmail, an operatorAddress", () => {
-    const noRepresentative: Record<string, unknown> = { ...COMPANY };
-    delete noRepresentative["representative"];
-    expect(CompanySchema.safeParse(noRepresentative).success).toBe(false);
+  it("company.ts carries no person's name, and refuses registered without supportEmail and an operatorAddress", () => {
+    // The founder, 2026-10-23: "dont add the name on our site bro" (spec 041 §14
+    // A-founder-2026-10-23 clause 4). The committed identity carries no representative at all.
+    expect(COMPANY.representative).toBeUndefined();
+    expect(
+      readFileSync(resolve(ROOT, "src/config/company.ts"), "utf8"),
+    ).not.toMatch(/Hameed|Sheikh/u);
     const noEmail: Record<string, unknown> = { ...REGISTERED_COMPANY };
     delete noEmail["supportEmail"];
     expect(CompanySchema.safeParse(noEmail).success).toBe(false);
@@ -625,11 +668,11 @@ describe("T-21 / AC-21: the infoPage link kind and the footer", () => {
       guarantee: { page: "guarantee", published: true },
       "help-and-contact": { page: "help", published: true },
       "delivery-times": { page: "delivery", published: true },
-      imprint: { page: "imprint", published: false },
-      terms: { page: "terms", published: false },
-      privacy: { page: "privacy", published: false },
-      cookies: { page: "cookies", published: false },
-      "withdrawal-and-refunds": { page: "cancellation", published: false },
+      imprint: { page: "imprint", published: true },
+      terms: { page: "terms", published: true },
+      privacy: { page: "privacy", published: true },
+      cookies: { page: "cookies", published: true },
+      "withdrawal-and-refunds": { page: "cancellation", published: true },
     };
     for (const [id, want] of Object.entries(expected)) {
       const link = byId.get(id);
@@ -682,12 +725,12 @@ describe("T-32 / AC-30: no relay language in the content or in infoPages.*", () 
     const en = JSON.parse(
       readFileSync(resolve(ROOT, "messages/en.json"), "utf8"),
     ) as {
-      infoPages: Record<string, Record<string, string>>;
+      infoPages: Record<string, unknown>;
     };
-    for (const group of Object.values(en.infoPages)) {
-      for (const value of Object.values(group))
-        expect(relayMatches(value, "en"), value).toEqual([]);
-    }
+    const values = leafValues(en.infoPages);
+    expect(values.length).toBeGreaterThan(0);
+    for (const value of values)
+      expect(relayMatches(value, "en"), value).toEqual([]);
   });
 
   it("restoring 'until our florist accepts your order' turns it red (mutation)", () => {

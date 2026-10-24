@@ -175,6 +175,13 @@ describe("src/config/site-links.ts", () => {
       "guarantee",
       "how-it-works",
       "help-and-contact",
+      // Spec 041's five legal links (TASK-183). Published is permission, not existence: the
+      // imprint, terms and privacy are drawn nowhere until `infoPageExists()` says so (AC-21).
+      "imprint",
+      "terms",
+      "privacy",
+      "cookies",
+      "withdrawal-and-refunds",
       "corridor-pl",
       "corridor-de",
       "corridor-fr",
@@ -207,7 +214,7 @@ describe("src/config/site-links.ts", () => {
       "category-row-destinations",
     ]);
     expect(isPublished("locale-home")).toBe(true);
-    expect(isPublished("terms")).toBe(false);
+    expect(isPublished("for-florists")).toBe(false);
   });
 
   it("names the five ids spec 007 reserved, and publishes every one of them (AC-20)", () => {

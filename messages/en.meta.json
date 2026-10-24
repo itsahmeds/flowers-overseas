@@ -4565,5 +4565,70 @@
     "reviewed": false,
     "sourceHash": "dda3c0fb27c6f55f8098ec094e024c21f6cfbea249c430653a8316cd5b0db90d",
     "retained": true
+  },
+  "company.controller": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ab3ddb4c8e482d2ff5fab71d0c27957b0c8b419ddedb6bbcaff5aae45ced47db"
+  },
+  "consent.privacyLink": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7b73c89536c76dd2793bf9b726a881b539a86166f56fb78d524af93130a72d35"
+  },
+  "infoPages.cookies.change": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "81559ad261ac9065276634f32d6079a6d404c302f23c1a31ba2de08185619421"
+  },
+  "infoPages.legal.appliesTo.eu": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "61952969af0a10a1982bc0364b2d3b6ba5388c6d2e44d6fca5988f770629dd74"
+  },
+  "infoPages.legal.appliesTo.uk": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "df4f10ff444f161d28f5b0ac2a9f7264d8cf98314f0c03c1c175a97161d38475"
+  },
+  "infoPages.legal.changeLog": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1bcbf1dcad4ffe4950cdae6b868f8a81fabe5f9da2d92abc3cef577e25fee639"
+  },
+  "infoPages.legal.contents": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "437aea62a5bd6ad4762e494c81b88532809a231477c82bdecf6fd6636908b7ab"
+  },
+  "infoPages.legal.inForce": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1652cbbbc6d266a3a183f700227ef382d1bbbab0ebef42fa40952f57229f6345"
+  },
+  "infoPages.legal.inForceSince": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fa9ac9866f385045a1ac225d5d1d51ff77b5de5ca213ff1f1e8bf60638e32d88"
+  },
+  "infoPages.legal.notInForce": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52091bb007b10b4a160125ee8a17046089b07800875d9babd683d8e82e1479be"
+  },
+  "infoPages.legal.notInForceYet": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3be5956ac06fe1144301a1b71e76f1cfaf3dd6280af1fbb9dfc2407a94fb2ec8"
+  },
+  "infoPages.legal.unreviewed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "01c2a424123fcb2df7c35b6cc243e5c0d4838e0ae7af188509baee1bea351bc9"
+  },
+  "infoPages.legal.version": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a18745121bb8af6d1a0c689cfb3c2a2245d10d5fe3b37ff37c8b69fd74773dfa"
   }
 }

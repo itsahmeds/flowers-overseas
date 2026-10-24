@@ -39,7 +39,10 @@ import {
 } from "../../geo/index.ts";
 import type { InfoPageId } from "@/config/info-pages";
 
-import { infoPageAlternatePaths, infoPageView } from "../../content/index.ts";
+import {
+  infoPageAlternatePaths,
+  infoPageHeadView,
+} from "../../content/index.ts";
 import {
   alternatesFor,
   catalogueUpdatedAt,
@@ -117,14 +120,14 @@ function hubEntry(
 }
 
 /**
- * One trust page's row (spec 041 §6 "Sitemap membership", AC-20; TASK-182): present only when
+ * One info page's row (spec 041 §6 "Sitemap membership", AC-20; TASK-182): present only when
  * `pageIndexability()` says `index,follow` (the same call the page's `<head>` makes), with the
  * page's own alternates and `<lastmod>` equal to its content file's `updatedAt`.
  */
 function infoPageEntry(pageId: InfoPageId): StaticSitemapEntryBuilder {
   return (locale, deployment) => {
     if (routableLocale(locale) === undefined) return undefined;
-    const view = infoPageView(pageId, locale);
+    const view = infoPageHeadView(pageId, locale);
     if (view === undefined) return undefined;
     const verdict = pageIndexability(
       { pageType: pageId, locale, exists: true, reviewed: view.reviewed },
@@ -153,12 +156,18 @@ function infoPageEntry(pageId: InfoPageId): StaticSitemapEntryBuilder {
  */
 const STATIC_SITEMAP_ENTRY_BUILDERS = {
   destinationsHub: hubEntry,
-  // Spec 041's trust pages (TASK-182). The legal set joins with TASK-183's legal view.
+  // Spec 041's ten pages (TASK-182, TASK-183). A legal page joins only once a lawyer has
+  // signed it: its `reviewed` term is `reviewed && lawyerReviewed` (AC-17, AC-20).
   "how-it-works": infoPageEntry("how-it-works"),
   guarantee: infoPageEntry("guarantee"),
   help: infoPageEntry("help"),
   about: infoPageEntry("about"),
   delivery: infoPageEntry("delivery"),
+  imprint: infoPageEntry("imprint"),
+  terms: infoPageEntry("terms"),
+  privacy: infoPageEntry("privacy"),
+  cookies: infoPageEntry("cookies"),
+  cancellation: infoPageEntry("cancellation"),
 } as const satisfies Readonly<
   Partial<Record<SeoPageType, StaticSitemapEntryBuilder>>
 >;
