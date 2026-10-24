@@ -99,7 +99,7 @@ What to know once the database is the source:
   quotes in the destination's own currency (§4). Do not select the database FX provider before the
   job runs.
 - **The facets live in `product.other_flowers`, `product.other_colours`, `product.allergen_note`
-  and `product_occasion.sort`** (migration `0026_product_facets`), beside `primary_flower` and
+  and `product_occasion.sort`** (migration `0025_product_facets`), beside `primary_flower` and
   `colour_primary`. The migration filled them once on seeded rows; the seed writes them from then on.
 
 ## 4. What happens when FX is stale

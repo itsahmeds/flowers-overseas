@@ -21,7 +21,7 @@
  *    none; a new request reads again;
  *  - the money edges: an empty `fx_rate` fails closed to the destination currency, a price no
  *    number holds exactly is refused, a product without its `en` name is refused, and
- *    `0026_product_facets`' one-time backfill turns a database seeded before it into the dataset.
+ *    `0025_product_facets`' one-time backfill turns a database seeded before it into the dataset.
  *
  * Local, disposable server only (`support/scratch-db.ts`); skipped with the reason when none
  * answers, and a failure in CI.
@@ -158,15 +158,15 @@ async function defaultTierOf(sku: string): Promise<string> {
   return tier.tierKey;
 }
 
-/** The migration version just before `0026_product_facets`, whatever has merged before it. */
+/** The migration version just before `0025_product_facets`, whatever has merged before it. */
 function versionBeforeFacets(): string {
   const versions = readdirSync(resolve(REPO_ROOT, "db/migrations"))
     .filter((file) => /^\d{4}_.+(?<!\.down)\.sql$/u.test(file))
     .map((file) => file.slice(0, 4))
     .sort();
-  const at = versions.indexOf("0026");
+  const at = versions.indexOf("0025");
   const before = versions[at - 1];
-  if (at < 1 || before === undefined) throw new Error("0026 is not applied");
+  if (at < 1 || before === undefined) throw new Error("0025 is not applied");
   return before;
 }
 
@@ -525,9 +525,9 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
-    describe("0026_product_facets: a database seeded before it reads as the dataset after it", () => {
+    describe("0025_product_facets: a database seeded before it reads as the dataset after it", () => {
       it("backfills the seeded rows once, and never a `real` one", async () => {
-        // Back to the shape before 0026 on this seeded database, then forward again: the backfill
+        // Back to the shape before 0025 on this seeded database, then forward again: the backfill
         // runs over rows the seed wrote before the columns existed. One product is `real`.
         await runner(scratch.url, ["--down", "--to", versionBeforeFacets()]);
         await scratch.sql`UPDATE product SET source = 'real' WHERE sku = 'FO-BQ-004'`;
