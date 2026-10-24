@@ -21,14 +21,18 @@
  * The flip is data: setting `NEXT_PUBLIC_GA4_MEASUREMENT_ID` and rebuilding, or a register row
  * turning `set` (runbook `docs/runbooks/analytics-consent.md` §1, §2). Pure, so the register is a
  * parameter for the unit table's fixtures; production passes nothing and gets the real one.
+ *
+ * Imported by relative `.ts` paths so `node scripts/client-js-budget.ts` can read the same answer:
+ * the budget leaves the consent island's chunk out of the page load exactly when `consentPrompt()`
+ * is false (`onInputChunkMarkers()`), so the two cannot disagree either.
  */
 import {
   COOKIE_REGISTRY,
   type CookieCategory,
   type CookieRegistryEntry,
   cookieCategories,
-} from "@/config/cookies";
-import { type EnvSource, ga4MeasurementId } from "@/lib/env.schema";
+} from "../../config/cookies.ts";
+import { type EnvSource, ga4MeasurementId } from "../../lib/env.schema.ts";
 
 /** A category a visitor is asked about: every category but `essential`. */
 export type ConsentCategory = Exclude<CookieCategory, "essential">;

@@ -28,7 +28,7 @@
  * click listener, no message import and no register import. The island and the settings panel
  * arrive as two later chunks. In the second mode the island's chunk is an on-input chunk, so
  * `pnpm budget:client-js` does not charge it to a page load (`ON_INPUT_CHUNK_MARKERS`, by the
- * island's `data-fo-consent-island` marker, while `consentPrompt()` is false).
+ * island's own `performance.mark` (`CONSENT_ISLAND_MARKER`), while `consentPrompt()` is false).
  */
 import { lazy, Suspense, useEffect, useState } from "react";
 

@@ -179,6 +179,17 @@ export function ConsentBannerIsland({
     stored === null ? NO_CHOICES : choicesOf(stored),
   );
 
+  // The island's chunk carries this literal and no other chunk does: `budget:client-js` finds the
+  // chunk by it (`CONSENT_ISLAND_MARKER`) and, while nothing needs consent, leaves it out of the
+  // page load, because then only a press on "Cookie settings" fetches it (TASK-279).
+  useEffect(() => {
+    try {
+      performance.mark("fo:consent:island");
+    } catch {
+      // No User Timing is no reason to lose the sheet.
+    }
+  }, []);
+
   // The moment the gate is released, so `Esc` can tell the press that closed the popup from a
   // later one (`./consentEscape.ts`).
   useEffect(
