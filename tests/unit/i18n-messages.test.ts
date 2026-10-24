@@ -34,6 +34,9 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
+      // `blog` is spec 044 §7's namespace (TASK-322): Appendix A's index and post labels, rendered
+      // by Server Components only, so no `ROUTE_NAMESPACES` entry and no client bytes.
+      "blog",
       // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
       // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no

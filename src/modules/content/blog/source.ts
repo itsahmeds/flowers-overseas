@@ -247,3 +247,8 @@ export async function blogPostAlternatePaths(
   }
   return paths;
 }
+
+/** Forget the build's kept read (tests only: one process plays several builds). */
+export function resetBlogSource(): void {
+  buildRead = undefined;
+}

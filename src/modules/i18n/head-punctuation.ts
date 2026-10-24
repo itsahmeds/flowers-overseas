@@ -57,6 +57,10 @@ export const HEAD_MESSAGE_KEYS: readonly string[] = [
   // The occasions index reuses these as its `<title>` and description.
   "occasionsIndex.h1",
   "occasionsIndex.intro",
+  // Spec 044's blog index `<title>` and meta description (Appendix A; TASK-322). A post's own SEO
+  // title and description are post data, not catalogue keys.
+  "blog.index.seoTitle",
+  "blog.index.seoDescription",
   // The `BreadcrumbList` item names (breaker r1 on PR 266, hole 7): the trail's labels, the home
   // crumb and the country names, which also fill `{country}` in the shop titles.
   "breadcrumb.*",

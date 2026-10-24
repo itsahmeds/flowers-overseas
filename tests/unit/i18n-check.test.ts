@@ -1032,6 +1032,9 @@ describe("check 13: no dash in head copy (spec 003 AC-50 / T-50)", () => {
       ).not.toEqual([]);
     }
     expect(keys.filter((key) => isHeadMessageKey(key)).sort()).toEqual([
+      "blog.index.seoDescription",
+      "blog.index.seoTitle",
+      "breadcrumb.blog",
       "breadcrumb.destinations",
       "breadcrumb.entity",
       "breadcrumb.occasions",

@@ -37,7 +37,8 @@ export function editorialSitemapEntries(
   const baseUrl = deployment.siteUrl;
   const entries: SitemapEntry[] = [];
   for (const page of pages) {
-    if (!blogPageVerdict({ ...page, locale }, deployment).indexable) continue;
+    const verdict = blogPageVerdict({ ...page, locale }, deployment);
+    if (!verdict.indexable) continue;
     entries.push({
       loc: absoluteUrl(page.path, { baseUrl }),
       lastmod: lastmodDay(page.lastmod),

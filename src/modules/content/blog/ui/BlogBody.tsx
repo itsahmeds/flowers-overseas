@@ -6,7 +6,7 @@
  * arrived here as its literal text. Every `a` is a resolved reference (`view.ts`); a reference
  * whose target is gone arrived as text.
  */
-import type { ReactElement } from "react";
+import { Fragment, type ReactElement } from "react";
 
 import type { BlogBlockView, BlogInlineView } from "../view.ts";
 
@@ -22,8 +22,9 @@ function Inlines({
     <>
       {inlines.map((inline, index) => {
         switch (inline.kind) {
+          // Bare text, no wrapper: the article body holds only the subset's elements (AC-7).
           case "text":
-            return <span key={index}>{inline.text}</span>;
+            return <Fragment key={index}>{inline.text}</Fragment>;
           case "strong":
             return (
               <strong className="font-bold" key={index}>

@@ -389,8 +389,8 @@ export const serverEnvSchema = z.object({
    * no Blog link. **Absent means none**, which is what every deployed build gets until spec 012b's
    * catalogue cutover (TASK-294) makes a build read the database; the blog then follows the
    * environment like the catalogue. Read at build and at run time
-   * (`src/modules/content/blog/source.ts`), so it is set together with `DATABASE_BUILD_URL` and
-   * the `0024_blog` migration.
+   * (`src/modules/content/blog/source.ts`), so it is set together with the build's database
+   * login (`src/lib/db.ts`) and the `0024_blog` migration.
    */
   BLOG_SOURCE: z.preprocess(
     emptyToUndefined,
