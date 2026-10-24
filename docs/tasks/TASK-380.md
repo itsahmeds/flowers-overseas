@@ -26,3 +26,9 @@ _None recorded._
 ## Progress
 
 _Not started._
+## Result
+
+What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
+(budgets, counts), and anything handed to a later task.
+
+_Pending._
