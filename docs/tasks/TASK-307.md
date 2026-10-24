@@ -40,7 +40,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: built (PR 407): `src/modules/ui/motion/morph.ts` (click arms, `pageswap` names and sizes
+  the card box), `Gallery` `<style data-fo-morph>`, motion 14 in `globals.css`, `src/config/interactions.ts`.
+  Unit: `interactions-css`, `interactions-budget`, `interactions-morph`; e2e `photo-morph.spec.ts` (T-7 to
+  T-9). Next: run the e2e once locally in the build slot (view transitions cannot be judged without a
+  browser), then CI with `ci:full` for the AC-9 medians.
 
 ## Result
 
