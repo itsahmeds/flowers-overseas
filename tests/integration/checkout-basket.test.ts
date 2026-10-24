@@ -939,6 +939,21 @@ describe.skipIf(server.url === undefined)(
           expect((await basket(connection, token, at(3))).lines).toEqual(
             before.lines,
           );
+          // An emptied basket sends a step post to the basket, not to a screen of no line.
+          await runRemoveLine(
+            ctx(connection, token, at(4)),
+            form({ line: "1" }),
+          );
+          expect(
+            await runRecipientStep(
+              ctx(connection, token, at(5)),
+              form({ line: "1", deliveryDate: "2027-03-10" }),
+            ),
+          ).toEqual({
+            kind: "redirect",
+            location: "/pl/basket",
+            basketCount: 0,
+          });
         });
       });
     });
