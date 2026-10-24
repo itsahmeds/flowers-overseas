@@ -339,11 +339,13 @@ async function writeTags(
 ): Promise<void> {
   const countryIds = await rows<{ id: string; iso2: string }>(
     db,
-    sql`SELECT id, iso2 FROM public.country WHERE iso2 = ANY(${[...countries]}::text[])`,
+    sql`SELECT id, iso2 FROM public.country
+        WHERE iso2 = ANY(string_to_array(${countries.join(",")}, ','))`,
   );
   const occasionIds = await rows<{ id: string; key: string }>(
     db,
-    sql`SELECT id, key FROM public.occasion WHERE key = ANY(${[...occasions]}::text[])`,
+    sql`SELECT id, key FROM public.occasion
+        WHERE key = ANY(string_to_array(${occasions.join(",")}, ','))`,
   );
   if (
     countryIds.length !== new Set(countries).size ||
