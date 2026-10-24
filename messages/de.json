@@ -415,12 +415,6 @@
       "basket": {
         "purpose": "Remembers what you put in your basket. Not set yet."
       },
-      "checkout": {
-        "purpose": "Keeps your basket and the order you are writing between its steps. It holds a random code, not your details."
-      },
-      "checkoutEcho": {
-        "purpose": "Brings back what you typed when a checkout form needs a correction, for one page. Deleted within 5 minutes."
-      },
       "consent": {
         "purpose": "Remembers these cookie choices and when you made them: 12 months if you accept anything, 6 months if you refuse everything."
       },
@@ -444,6 +438,9 @@
       },
       "stripeSid": {
         "purpose": "Stripe's short-lived companion to the one above, for the same fraud checks. Not set yet."
+      },
+      "csrf": {
+        "purpose": "Stops a form you send us being forged by someone else. Not set yet — there is no form."
       }
     },
     "essentialLocked": "These keep the site working — your language, your basket and the security of your order — so they cannot be switched off. We use them whether or not you accept anything else.",
@@ -1039,7 +1036,6 @@
     "vat": "VAT {rate}",
     "entry": {
       "addToBasket": "Add to basket",
-      "continue": "Continue, {total}",
       "demo": "Try a demo order"
     }
   },

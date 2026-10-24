@@ -93,13 +93,13 @@ task actually touches.
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
+| `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header: the site header with no… | 010 |
+| `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header: the site header with no… | 010 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
 | `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`: the… | 043 |
 | `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of context. A… | 043 |
-| `[locale]/@header/checkout/done/page.tsx` | The checkout's header: the site header with no… | 010 |
-| `[locale]/@header/checkout/page.tsx` | The checkout's header: the site header with no… | 010 |
 | `[locale]/@header/default.tsx` | The `@header` slot's fallback: the out-of-context… | 043 |
 | `[locale]/@header/page.tsx` | The locale home's header: out of context, and with no… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |

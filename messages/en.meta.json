@@ -4874,11 +4874,6 @@
     "reviewed": false,
     "sourceHash": "a0a54cc461dbc887eb87ec36926bace436b61cf09990b52b0ad11219b7a68c42"
   },
-  "product.entry.continue": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "a9cb4ff078c3edcfeb3f2047e89e646ab14106ddd8a30e16fa94441e6b510380"
-  },
   "product.entry.addToBasket": {
     "source": "human",
     "reviewed": false,
@@ -4904,14 +4899,11 @@
     "reviewed": false,
     "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
   },
-  "consent.cookies.checkout.purpose": {
+  "consent.cookies.csrf.purpose": {
     "source": "human",
-    "reviewed": false,
-    "sourceHash": "362bca673b8a30a647fa80cc05ec29fcfb86e035ceff502019040b7fc09b31e3"
-  },
-  "consent.cookies.checkoutEcho.purpose": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "c7556d96af37e152c77456f1786ff1e546d27e1f8ca002b41591e442d1dedb4b"
+    "reviewed": true,
+    "reviewedBy": "founder",
+    "reviewedAt": "2026-09-09T00:00:00Z",
+    "sourceHash": "157577b97358de8bc5e689edae741a707595f266c0b6fa376b51ea45bdec41d9"
   }
 }
