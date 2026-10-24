@@ -34,6 +34,7 @@ import {
   recordLayoutShifts,
   shiftInside,
 } from "../support/layout-shift.ts";
+import { chooseSentence } from "../support/sentence.ts";
 
 const LOCALES = ["/en", "/en-gb", "/de", "/pl"] as const;
 
@@ -366,7 +367,7 @@ test.describe("the locale home, above the fold", () => {
     // Choosing in the sentence writes nothing either: no island stores a preference. The one
     // cookie in the jar is the returning visitor's `fo_locale` the config seeds
     // (`tests/support/locale-choice.ts`), unchanged.
-    await page.locator('select[name="occasion"]').selectOption("sympathy");
+    await chooseSentence(page, "occasion", "sympathy");
     expect(
       (await context.cookies()).map(({ name, value }) => ({ name, value })),
     ).toEqual([{ name: "fo_locale", value: "en" }]);
@@ -435,11 +436,11 @@ test.describe("the sentence keeps its possessive in step (the home's one island)
     const birthday = page.locator('#send-occasion option[value="birthday"]');
     await expect(birthday).toHaveText("her birthday");
 
-    await page.locator("#send-who").selectOption("dad");
+    await chooseSentence(page, "who", "dad");
     await expect(birthday).toHaveText("his birthday");
-    await page.locator("#send-who").selectOption("partner");
+    await chooseSentence(page, "who", "partner");
     await expect(birthday).toHaveText("their birthday");
-    await page.locator("#send-who").selectOption("friend");
+    await chooseSentence(page, "who", "friend");
     await expect(birthday).toHaveText("their birthday");
     // A neutral occasion has one form for everybody.
     await expect(
@@ -461,8 +462,8 @@ test.describe("the sentence picker with JavaScript disabled (AC-11, T-12)", () =
     await expect(
       page.locator('#send-occasion option[value="birthday"]'),
     ).toHaveText("na jej urodziny");
-    await page.locator('select[name="country"]').selectOption("PL");
-    await page.locator('select[name="occasion"]').selectOption("birthday");
+    await chooseSentence(page, "country", "PL");
+    await chooseSentence(page, "occasion", "birthday");
     await page.locator(`${SENTENCE} button[type="submit"]`).click();
 
     await page.waitForURL("**/pl/polska/kwiaty/kwiaty-na-urodziny");

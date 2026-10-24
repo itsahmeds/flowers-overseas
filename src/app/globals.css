@@ -1590,6 +1590,7 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
     color: var(--color-ink);
     font-family: var(--font-display);
     font-style: normal;
+    letter-spacing: normal;
     line-height: normal;
     text-align: start;
     overflow-y: auto;
