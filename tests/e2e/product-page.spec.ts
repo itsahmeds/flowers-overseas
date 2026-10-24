@@ -240,7 +240,20 @@ test.describe("one price, read-only add-ons, nothing unbacked (AC-9, AC-10, AC-2
       expect(main).not.toMatch(
         /\b(tomorrow|morgen|jutro)\b|order within|countdown/u,
       );
-      expect(main).not.toMatch(/basket|warenkorb|koszyk|trustpilot|★/u);
+      expect(main).not.toMatch(/trustpilot|★/u);
+      // The basket is named once, by the checkout entry's own submit (spec 010 AC-5), which
+      // posts to the start route; nothing else on the page promises a basket.
+      const outsideEntry = await page.locator("main").evaluate((node) => {
+        const copy = node.cloneNode(true) as HTMLElement;
+        for (const entry of copy.querySelectorAll("[data-fo-pdp-entry]")) {
+          entry.remove();
+        }
+        return (copy.textContent ?? "").toLowerCase();
+      });
+      expect(outsideEntry).not.toMatch(/basket|warenkorb|koszyk/u);
+      await expect(
+        page.locator('[data-fo-pdp-entry] button[value="basket"]'),
+      ).toHaveCount(1);
       await expect(page.locator('main input[type="checkbox"]')).toHaveCount(0);
     });
   }

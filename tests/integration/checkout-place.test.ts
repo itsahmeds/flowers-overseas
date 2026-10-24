@@ -28,18 +28,17 @@ import {
   loadDraft,
   nextDeliveryDate,
   placeBasket,
-  registerPaymentStep,
   runCardAndBuyerStep,
   runPlaceOrder,
   runRecipientStep,
   saveLine,
   startCheckout,
 } from "@/modules/checkout";
-import { orderService } from "@/modules/orders";
+import { PlaceOrderInputSchema, orderService } from "@/modules/orders";
 
 import { runRetentionSweep } from "../../src/jobs/retention.ts";
 
-import { country, partner } from "./support/rows.ts";
+import { country, customer, partner, recipient } from "./support/rows.ts";
 import {
   asApp,
   probeLocalServer,
@@ -783,16 +782,12 @@ describeDb(
       });
     });
 
-    /**
-     * A placed order of `mode`. `test` and `live` have no payment step in this spec (spec 013
-     * registers them), so a step that authorises nothing stands in, the draft is made in that mode
-     * before placement, and a live order carries a terms version as `placePurchase` demands. The
-     * order is written in its mode from the start: no trigger is switched off (AC-36's scan).
-     */
-    async function placedAs(
-      tx: Tx,
-      mode: "demo" | "test" | "live" = "demo",
-    ): Promise<{ orderId: string; purchaseId: string }> {
+    /** A placed demo order, and the input the checkout handed `placePurchase` for it. */
+    async function placedDemoWithInput(tx: Tx): Promise<{
+      orderId: string;
+      purchaseId: string;
+      input: Parameters<typeof orderService.placePurchase>[0];
+    }> {
       const connection = await seeded(tx);
       const token = await add(
         connection,
@@ -800,34 +795,22 @@ describeDb(
         TIER?.tierKey ?? "",
       );
       await fill(connection, token, 1);
-      const seen = await reviewTotal(connection, token);
-      const restore: (() => void)[] = [];
-      if (mode !== "demo") {
-        await tx.unsafe("RESET ROLE");
-        await tx`UPDATE checkout_draft SET mode = ${mode}`;
-        registerPaymentStep({ mode, authorise: () => Promise.resolve() });
-        if (mode === "live") {
-          const original = orderService.placePurchase;
-          const spy = vi
-            .spyOn(orderService, "placePurchase")
-            .mockImplementation((input, options) =>
-              original(
-                {
-                  ...input,
-                  orders: input.orders.map((order) => ({
-                    ...order,
-                    termsVersion: "terms-test",
-                  })),
-                },
-                options,
-              ),
-            );
-          restore.push(() => spy.mockRestore());
-        }
+      const original = orderService.placePurchase;
+      let input: Parameters<typeof orderService.placePurchase>[0] | undefined;
+      const spy = vi
+        .spyOn(orderService, "placePurchase")
+        .mockImplementation((given, options) => {
+          input = given;
+          return original(given, options);
+        });
+      const outcome = await placeBasket(
+        ctx(connection, token, 2),
+        await reviewTotal(connection, token),
+      );
+      spy.mockRestore();
+      if (outcome.kind !== "placed" || input === undefined) {
+        throw new Error(outcome.kind);
       }
-      const outcome = await placeBasket(ctx(connection, token, 2), seen);
-      for (const undo of restore) undo();
-      if (outcome.kind !== "placed") throw new Error(outcome.kind);
       await tx.unsafe("RESET ROLE");
       // The draft is fresh, so only the demo-order rule can act.
       await tx`UPDATE checkout_draft SET last_activity_at = ${NOW.toISOString()}::timestamptz,
@@ -835,7 +818,47 @@ describeDb(
       return {
         orderId: outcome.orderIds[0] ?? "",
         purchaseId: outcome.purchaseId,
+        input,
       };
+    }
+
+    async function placedAs(
+      tx: Tx,
+    ): Promise<{ orderId: string; purchaseId: string }> {
+      const { orderId, purchaseId } = await placedDemoWithInput(tx);
+      return { orderId, purchaseId };
+    }
+
+    /**
+     * An order placed in `mode` from the same checkout input: the checkout has no `test` or `live`
+     * payment step in this spec (spec 013 adds them), so the order engine places it directly, a
+     * purchase of one, in its mode from the start; no trigger is switched off (AC-36's scan). It
+     * has a customer and a recipient of its own, and the demo order the input came from is made
+     * fresh, so only the new order's age matters.
+     */
+    async function placedIn(
+      tx: Tx,
+      mode: "test" | "live",
+    ): Promise<{ orderId: string }> {
+      const demo = await placedDemoWithInput(tx);
+      await placedAgo(tx, demo.orderId, 0);
+      const [first] = demo.input.orders;
+      if (first === undefined) throw new Error("no order input");
+      const customerId = await customer(tx);
+      const recipientId = await recipient(tx, customerId);
+      await asApp(tx, { role: "system" });
+      const placed = await orderService.place(
+        PlaceOrderInputSchema.parse({
+          ...first,
+          customerId,
+          recipientId,
+          mode,
+          ...(mode === "live" ? { termsVersion: "terms-test" } : {}),
+        }),
+        { executor: runnerOf(tx) },
+      );
+      await tx.unsafe("RESET ROLE");
+      return { orderId: placed.orderId };
     }
 
     async function placedAgo(
@@ -931,7 +954,7 @@ describeDb(
 
     it("T-35: staging seed (7 days): untouched at 24 h, pseudonymised at 7 days; a test order too", async () => {
       await rolledBack(sql(), async (tx) => {
-        const { orderId } = await placedAs(tx, "test");
+        const { orderId } = await placedIn(tx, "test");
         await tx`UPDATE retention_policy SET retention_days = 7 WHERE key = 'demo_order_personal'`;
 
         await placedAgo(tx, orderId, 24 * HOUR_MS);
@@ -952,7 +975,7 @@ describeDb(
 
     it("T-35: a live order, its recipient and its buyer are never touched", async () => {
       await rolledBack(sql(), async (tx) => {
-        const { orderId } = await placedAs(tx, "live");
+        const { orderId } = await placedIn(tx, "live");
         await placedAgo(tx, orderId, 400 * 24 * HOUR_MS);
 
         expect((await sweep(tx))["demo_order_personal"]?.counts).toEqual({
