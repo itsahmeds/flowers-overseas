@@ -448,6 +448,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
       `${moduleDir}/ui/OccasionsIndexPage.tsx`,
       `${moduleDir}/ui/PageLocaleSwitcher.tsx`,
       `${moduleDir}/ui/labels.ts`,
+      // What the three country listings' head says (spec 043 item 1, §5.3 E; TASK-289).
+      `${moduleDir}/ui/listingHead.ts`,
     ]);
   });
 });
