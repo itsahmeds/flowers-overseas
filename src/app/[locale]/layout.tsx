@@ -26,11 +26,11 @@ import { occasionsIndexHref } from "@/modules/catalog";
 import {
   AfterPaint,
   ConsentBanner,
-  fontVariables,
   footerView,
   SiteFooter,
   SkipLink,
 } from "@/modules/ui";
+import { fontVariables } from "@/modules/ui/fonts";
 
 /**
  * The document layout for every localised URL (spec 003 §2, §5.3, §5.4, AC-6, AC-8, AC-9;
