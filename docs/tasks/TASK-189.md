@@ -113,7 +113,13 @@ _None recorded._
 
 One line per coherent step, newest last.
 
-_Not started._
+- 2026-10-24: started on `origin/main` a3f18468. What PR 170 (TASK-179) already closed: finding 9's
+  steps are the numbered route (`<ol>`, rings and a dashed rule), the shop link is a pill
+  (`Button`, `self-start`), and the card-language answer prints ("We will print it on our card…")
+  in every `content/corridors/` file, so this task makes no corpus change. Still open: finding 6
+  (the "Photo slot" box) and finding 7 (`<code>` identifiers in the Rule column).
+  `corridor.facts.orderBy.none` is already "None yet." and attested (2026-10-15), so A12 (d) needs
+  nothing here.
 
 ## Result
 
