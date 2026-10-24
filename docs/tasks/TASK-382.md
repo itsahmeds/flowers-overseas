@@ -27,7 +27,7 @@ _None recorded._
 
 ## Escalations
 
-- **2026-10-24, the mapping** (orchestrator → founder; `open`): confirm the 10 SKUs above or name changes.
+- **2026-10-24, the mapping** (orchestrator → founder; `closed`): founder, verbatim, "core ok". The list above stands as proposed (rank 1 to 10, with Pastel Weekend `FO-BQ-031` at rank 2, not the Quiet Blush alternative).
 
 ## Progress
 
@@ -35,11 +35,8 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: founder confirmed the list ("core ok"); nothing to change in the seed.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+Closed with no code: the founder confirmed the proposed core list on 2026-10-24 ("core ok"). `coreRank` in the seed already carries it if TASK-381 seeds it as listed; TASK-381 owns writing `coreRank`. Rows 383, 386, 387 and 388 are free to merge on their own gates.
