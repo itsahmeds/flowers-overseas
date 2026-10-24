@@ -52,6 +52,7 @@ import {
   A6_TRANSITIONS,
   A8_TRANSITIONS,
   A10_TRANSITIONS,
+  TRANSITIONS,
   SET_E,
 } from "../fixtures/order-machine.ts";
 import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
@@ -869,11 +870,8 @@ describe.skipIf(server.url === undefined)(
         ]);
         const [count] = await scratch.sql<{ n: number }[]>`
           SELECT count(*)::int AS n FROM order_transition`;
-        expect(count?.n).toBe(
-          A6_TRANSITIONS.length +
-            A8_TRANSITIONS.length +
-            A10_TRANSITIONS.length,
-        );
+        // Every row after this branch's migrations: A6, A8.1, A10 and A9.7 (`0030_set_c_a9`).
+        expect(count?.n).toBe(TRANSITIONS.length);
       });
 
       for (const state of ["accepted", "paid"] as const) {

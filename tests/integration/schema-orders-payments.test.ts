@@ -64,7 +64,7 @@ describe.skipIf(server.url === undefined)(
       expect(rows).toHaveLength(26);
     });
 
-    it("AC-14: order_transition equals A6.3 (73 rows) plus A8.1's rows 37 and 38 and A10's rows 39 and 40, both ways, actors included", async () => {
+    it("AC-14: order_transition equals A6.3 (73 rows) plus A8.1's rows 37 and 38, A10's rows 39 and 40 and A9.7's three row-34 rows, both ways, actors included", async () => {
       const rows = await scratch.sql<
         {
           from_status: string;
@@ -73,7 +73,7 @@ describe.skipIf(server.url === undefined)(
           allowed_actors: string[];
         }[]
       >`SELECT from_status, event, to_status, allowed_actors FROM order_transition`;
-      expect(rows).toHaveLength(77);
+      expect(rows).toHaveLength(80);
       expect(
         new Set(
           rows.map(
