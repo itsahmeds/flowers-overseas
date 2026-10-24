@@ -319,6 +319,11 @@
     "reviewed": false,
     "sourceHash": "ea23726dd0fd4e4dd85eb695843fcdd3b6928ab5561fa959f1523bd36bb613fe"
   },
+  "admin.flags.description.account.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49aa5ea7f28d8fb0040c9eb00d1cd0898dfcf8007a48bd92fea5720bfb0fb65a"
+  },
   "admin.flags.description.checkout.demo_guard": {
     "source": "human",
     "reviewed": false,
@@ -328,6 +333,11 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "b7782038d9c09c78393acb1caacd36bb49fe0455371c1d375f3b837595139590"
+  },
+  "admin.flags.description.invoice.issue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d1a12a3aad496e68ffa808bae076ed53603271acef5bc3700e41096fe306cee6"
   },
   "admin.flags.lead": {
     "source": "human",

@@ -255,19 +255,19 @@ describe.skipIf(server.url === undefined)(
       const result = await rolledBack(scratch.sql, async (tx) => {
         const parents = await orderParents(tx);
         const insert = (status: string) =>
-          tx`INSERT INTO "order" (public_token, mode, status, customer_id, recipient_id,
+          tx`INSERT INTO "order" (mode, status, customer_id, recipient_id,
                destination_country_id, delivery_date, buyer_currency_code, buyer_total_minor,
                base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-             VALUES (${`tok${status}${"x".repeat(24)}`}, 'demo', ${status}, ${parents.customerId},
+             VALUES ('demo', ${status}, ${parents.customerId},
                ${parents.recipientId}, ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN',
                100, '{}', '{}')`;
         const outside = await pgFailure(tx, () => insert("placed"));
         const wrongStart = await pgFailure(tx, async (sp) => {
           await sp`SELECT set_config('app.allow_status_write', 'on', true)`;
-          await sp`INSERT INTO "order" (public_token, mode, status, customer_id, recipient_id,
+          await sp`INSERT INTO "order" (mode, status, customer_id, recipient_id,
                destination_country_id, delivery_date, buyer_currency_code, buyer_total_minor,
                base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-             VALUES (${"tokpaid" + "x".repeat(24)}, 'demo', 'paid', ${parents.customerId},
+             VALUES ('demo', 'paid', ${parents.customerId},
                ${parents.recipientId}, ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN',
                100, '{}', '{}')`;
         });

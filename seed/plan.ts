@@ -86,6 +86,48 @@ export interface SeedTablePlan {
   readonly rows: readonly SeedDbRow[];
 }
 
+/**
+ * The invoice profiles (spec 018 §5.1, §7 "Invoice wording", AC-18; TASK-337). One **active**
+ * `principal/PL` profile: a VAT invoice labelled in Polish plus the order's locale (`{buyer}`),
+ * VAT on products, add-ons and surcharges, and a PLN VAT line at the NBP rate of the previous
+ * business day (§13 Q5). One **inactive** `agent/PL` fixture with no issuer statement, which only
+ * an SQL flip activates, and only after the founder's decision (§13 Q18). The numbering series
+ * they name are `0019_post_purchase`'s rows; the profiles are seeded here because they reference
+ * the seeded `currency` table. `active` is written on insert only.
+ */
+export const INVOICE_PROFILES: readonly SeedDbRow[] = [
+  {
+    key: "principal-pl",
+    supply_model: "principal",
+    destination_iso2: "PL",
+    document_kind: "vat_invoice",
+    title_key: "invoice.title.vatInvoice",
+    issuer_statement_key: null,
+    label_locales: ["pl", "{buyer}"],
+    vat_bearing_line_kinds: ["product", "addon", "surcharge"],
+    series_key: "fo-pl-2026",
+    credit_series_key: "fok-pl-2026",
+    vat_currency_code: "PLN",
+    vat_rate_source: "nbp_previous_business_day",
+    active: true,
+  },
+  {
+    key: "agent-pl",
+    supply_model: "agent",
+    destination_iso2: "PL",
+    document_kind: "receipt_on_behalf",
+    title_key: "invoice.title.receiptOnBehalf",
+    issuer_statement_key: null,
+    label_locales: ["pl", "{buyer}"],
+    vat_bearing_line_kinds: ["surcharge"],
+    series_key: "fo-pl-2026",
+    credit_series_key: "fok-pl-2026",
+    vat_currency_code: "PLN",
+    vat_rate_source: "nbp_previous_business_day",
+    active: false,
+  },
+];
+
 /** Locales whose product translations the seed writes; `de`/`pl` stay absent (§6). */
 export const SEEDED_TRANSLATION_LOCALES = ["en", "en-gb"] as const;
 
@@ -233,6 +275,15 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
           rounding_style: row.rounding_style,
         };
       }),
+    },
+    {
+      group: "reference",
+      table: "invoice_profile",
+      key: ["key"],
+      sourceGuarded: false,
+      // Which profile is active is a data flip (spec 018 AC-18, §13 Q18), never undone by a seed.
+      insertOnlyColumns: ["active"],
+      rows: INVOICE_PROFILES,
     },
   ];
 

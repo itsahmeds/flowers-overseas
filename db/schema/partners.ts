@@ -125,6 +125,11 @@ export const fulfillmentPartner = pgTable(
     acceptanceRateBp: integer("acceptance_rate_bp"),
     source: text("source").notNull().default("seed"),
     ...timestamps,
+    /**
+     * Spec 018 §5.1 (`0019`, TASK-337): the first name the buyer sees once the order is being
+     * made, set with the florist's agreement; null reads "Made by our florist in {city}".
+     */
+    displayFirstName: text("display_first_name"),
   },
   (table) => [
     unique("fulfillment_partner_code_key").on(table.code),
@@ -158,6 +163,10 @@ export const fulfillmentPartner = pgTable(
     check(
       "fulfillment_partner_payout_currency_code_check",
       sql.raw(`payout_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+    check(
+      "fulfillment_partner_display_first_name_check",
+      sql`${table.displayFirstName} is null or btrim(${table.displayFirstName}) <> ''`,
     ),
     check(
       "fulfillment_partner_capacity_per_day_check",
