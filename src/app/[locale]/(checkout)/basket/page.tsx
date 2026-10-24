@@ -66,7 +66,9 @@ export async function generateMetadata({
     locale: locale.code,
     namespace: "checkout",
   });
-  return transactionalMetadata("basket", t("basket.title"));
+  // The `<h1>`'s accent (`<em>`, the board's "Your *basket*") is markup, not title text.
+  const title = t.markup("basket.title", { em: (chunks) => chunks });
+  return transactionalMetadata("basket", title);
 }
 
 export default async function BasketRoute({

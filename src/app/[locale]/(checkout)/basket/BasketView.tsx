@@ -20,7 +20,7 @@ import { BASKET_MAX_LINES } from "@/config/basket";
 import { countryConfig } from "@/config/countries";
 import type { LocaleCode } from "@/config/locales";
 import { formatDate, formatList, formatMoney } from "@/modules/i18n";
-import { MediaAsset } from "@/modules/ui";
+import { HEADING_EM, MediaAsset } from "@/modules/ui";
 import {
   BasketLine,
   BasketRefresh,
@@ -98,7 +98,7 @@ export async function BasketView({
   const heading = (
     <div className="mb-[18px] flex flex-wrap items-baseline justify-between gap-x-[16px] gap-y-[6px]">
       <h1 className={HEADING} id={BASKET_HEADING_ID} tabIndex={-1}>
-        {t("basket.title")}
+        {t.rich("basket.title", HEADING_EM)}
       </h1>
     </div>
   );
@@ -112,7 +112,9 @@ export async function BasketView({
       >
         {heading}
         <div className="bg-card grid max-w-[620px] justify-items-start gap-[16px] rounded-(--radius-letter) px-[18px] py-[24px] shadow-(--shadow-letter) lg:px-[34px] lg:pt-[36px] lg:pb-[38px]">
-          <p className="display text-md m-0 italic">{t("basket.empty")}</p>
+          <p className="display text-md m-0 font-(--font-weight-display-em) italic">
+            {t("basket.empty")}
+          </p>
           <a className={buttonClass("primary", "md")} href={hrefs.home}>
             {t("basket.emptyLink")}
           </a>
