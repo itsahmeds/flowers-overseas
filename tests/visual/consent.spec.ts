@@ -1,25 +1,22 @@
 /**
- * AC-27's two consent baselines (TASK-051): **the sheet shown** and **the settings panel open**,
- * as element screenshots of the sheet subtree at the mobile and desktop artboards.
+ * AC-27's consent baseline on the committed build (TASK-051; restated by TASK-279 for spec 004
+ * §14 A-founder-2026-10-19d): **the settings panel open**, opened from the footer's "Cookie
+ * settings", as an element screenshot of the sheet subtree at the mobile and desktop artboards.
+ * Nothing asks on the committed build, so the **banner shown** baselines are taken in the
+ * `consent-active` project (`tests/consent-active/consent-visual.spec.ts`).
  *
  * Element screenshots, for the reason `./footer.spec.ts` gives: the full-page baselines of
  * `./shell.spec.ts` change with every section a later 004 task adds, so a consent regression would
- * be one diff among many and would be re-baselined away by the next task. What these four PNGs
- * gate is what the sheet is *for*: a bottom sheet on the phone and an inline card on the desktop,
- * three controls of visibly identical weight with no accented "Accept", and a settings panel whose
- * non-essential toggles are visibly off.
+ * be one diff among many. What these PNGs gate is a settings panel whose non-essential toggles are
+ * visibly off and whose three answers are of visibly identical weight.
  *
  * `de` is screenshotted alongside `en` because German compounds are the length case the controls
- * are specified to wrap for (§7).
- *
- * `navigator.languages` is emptied so the language-suggestion island — which paints in the same
- * corner — cannot put the runner's language configuration into a committed PNG.
- *
- * Baselines are per platform (`snapshotPathTemplate`): `darwin/` is committed from a local
- * `pnpm test:visual --update-snapshots`; the `linux/` set is refreshed once from a `ci:full`
- * visual-job artifact, which the orchestrator's `/review 30` ruling assigns to TASK-053's PR.
+ * are specified to wrap for (§7). `navigator.languages` is emptied so no language island can put
+ * the runner's language configuration into a committed PNG.
  */
 import { expect, test } from "@playwright/test";
+
+import { openConsentSettings } from "../support/consent.ts";
 
 const VIEWPORTS = [
   { name: "mobile", width: 390, height: 844 },
@@ -27,28 +24,19 @@ const VIEWPORTS = [
 ] as const;
 
 const SHEET = "[data-fo-consent]";
-const SHOWN = '[data-fo-consent="shown"]';
 const SETTINGS_OPEN = '[data-fo-consent="settings"]';
-const CHOOSE = '[data-fo-consent-action="settings"]';
 /**
- * The gate that the panel is actually **there**. `[data-fo-consent="settings"]` is on the sheet
- * and flips the moment "Choose" is pressed, but the panel itself is a `next/dynamic` chunk, so
- * for one paint the sheet says `settings` and still renders only the collapsed banner — which is
- * how `/review 40` found the two mobile baselines re-captured at 390×320 (the banner) instead of
- * 390×718 (the panel), silently disabling TASK-051's settings-open gate. Wait for something
- * inside the loaded panel: the analytics toggle and its cookie-register rows are the panel's
- * whole point, and the "Save" control is its last element, so all three present means the chunk
- * has arrived and laid out.
+ * The gate that the panel is actually **there**: the panel is a `next/dynamic` chunk, so wait for
+ * something inside it (`/review 40`: a sheet that said `settings` while still drawing the banner).
  */
 const PANEL = "[data-fo-consent-panel]";
 const ANALYTICS_TOGGLE = '[data-fo-consent-category="analytics"]';
 const SAVE = '[data-fo-consent-action="save"]';
-/** A cookie-register row: the `<code>` name in the panel's per-category `<dl>`. */
 const COOKIE_ROW = "[data-fo-consent-panel] dl dt code";
 
 for (const locale of ["en", "de"] as const) {
   for (const viewport of VIEWPORTS) {
-    test(`/${locale} consent sheet matches the ${viewport.name} baseline`, async ({
+    test(`/${locale} consent settings panel matches the ${viewport.name} baseline`, async ({
       page,
     }) => {
       await page.addInitScript(() => {
@@ -64,20 +52,16 @@ for (const locale of ["en", "de"] as const) {
 
       const response = await page.goto(`/${locale}`);
       expect(response?.status()).toBe(200);
-      await expect(page.locator('[data-fo-banner="shown"]')).toHaveCount(0);
+      await expect(page.locator(SHEET)).toHaveCount(0);
 
-      const sheet = page.locator(SHOWN);
-      await expect(sheet).toBeVisible();
-      await expect(page.locator(SHEET)).toHaveScreenshot(
-        `consent-shown-${locale}-${viewport.name}.png`,
-      );
-
-      await page.locator(CHOOSE).click();
+      await openConsentSettings(page);
       await expect(page.locator(SETTINGS_OPEN)).toBeVisible();
       await expect(page.locator(PANEL)).toBeVisible();
       await expect(page.locator(ANALYTICS_TOGGLE)).toBeVisible();
       await expect(page.locator(COOKIE_ROW).first()).toBeVisible();
       await expect(page.locator(SAVE)).toBeVisible();
+      // No pointer resting on a control: the photograph is of the panel, not of a hover state.
+      await page.mouse.move(0, 0);
       await expect(page.locator(SHEET)).toHaveScreenshot(
         `consent-settings-${locale}-${viewport.name}.png`,
       );

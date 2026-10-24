@@ -147,6 +147,7 @@ Every script in `package.json`, once.
 | `pnpm test:e2e` | Playwright `e2e-desktop` + `e2e-mobile` against `PLAYWRIGHT_BASE_URL` |
 | `pnpm test:visual` | Playwright `visual` + `pseudo-rtl` against the baselines in `tests/visual/__screenshots__/<project>/<platform>/` (`--update-snapshots` to regenerate). Baselines are **per platform** since spec 003 gave `/` real text: your macOS run compares against `darwin/`, CI against `linux/`. Regenerate the `linux/` baseline from the `visual` job — it uploads the screenshots it wrote when it fails — and commit both. |
 | `pnpm test:a11y` | Playwright `a11y` with `@axe-core/playwright`: zero serious/critical violations, **no exception list**, on the eight surfaces of spec 004 AC-26 — `/`, the four locale homes, `/dev/components`, a 404, `/ar-XB` and the 500 boundary (both documents, through `/dev/boom` and `/{locale}/boom`). The target needs `ENABLE_DEV_UI=true` and `ENABLE_PSEUDO_LOCALES=true` |
+| `pnpm test:consent-active` | Playwright `consent-active` (spec 004 §14 A-founder-2026-10-19d clause 8): the banner-shown consent cases, against a build made with `NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-FIXTURE00` only (CI's `consent-active` job); every request to Google is aborted in the suites. Against the committed build it fails its first case on purpose |
 | `pnpm dev-os:check` | the shell checks in `tests/dev-os/` against the real hooks and `.claude/bin/task.sh`, in throwaway project roots |
 
 **SEO and repository policy**

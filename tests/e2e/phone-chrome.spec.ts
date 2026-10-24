@@ -235,6 +235,208 @@ test.describe("T-52: the phone header (AC-47)", () => {
   });
 });
 
+/**
+ * T-52 as spec 004 §14 A-founder-2026-10-19c clause 3 and 5 amend it (AC-47; TASK-282): the open
+ * Menu with JavaScript on, and the short-screen header. Red with the Menu left open after Send
+ * flowers, and red with the header sticky at 640 × 400.
+ */
+test.describe("T-52 (A-founder-2026-10-19c): the open Menu and short screens (AC-47)", () => {
+  const SCRIM = "[data-fo-menu-scrim]";
+  const SHOP = "/en-gb/poland/flowers";
+
+  /** The motion module carries the Menu's enhancements; it loads after the paint by itself. */
+  async function withModule(page: Page, path: string): Promise<void> {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator("html[data-fo-motion]")).toHaveCount(1, {
+      timeout: 15_000,
+    });
+  }
+
+  async function openMenu(page: Page): Promise<void> {
+    await page.locator(SUMMARY).click();
+    await expect(page.locator(`${MENU}[open]`)).toHaveCount(1);
+    await expect(page.locator(SCRIM)).toBeVisible();
+  }
+
+  for (const viewport of PHONES) {
+    test(`at ${String(viewport.width)} × ${String(viewport.height)}: a scrim covers the page below the header, the summary is named by the close label`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await withModule(page, SHOP);
+      await expect(page.locator(SUMMARY)).toHaveAccessibleName("Menu");
+      await openMenu(page);
+      await expect(page.locator(SUMMARY)).toHaveAccessibleName("Close");
+      const scrim = (await page.locator(SCRIM).boundingBox())!;
+      const header = await headerBox(page);
+      expect(
+        Math.abs(scrim.y - (header.top + header.height)),
+      ).toBeLessThanOrEqual(1);
+      expect(scrim.y + scrim.height).toBeCloseTo(viewport.height, 0);
+      expect(scrim.width).toBeCloseTo(viewport.width, 0);
+      // It dims: the scrim token, painted, over everything below the header but the panel.
+      expect(
+        await page
+          .locator(SCRIM)
+          .evaluate((node) => getComputedStyle(node).backgroundColor),
+      ).not.toBe("rgba(0, 0, 0, 0)");
+    });
+  }
+
+  test("at 390 × 844 a tap on the scrim closes the Menu", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await withModule(page, SHOP);
+    await openMenu(page);
+    const panel = (await page.locator(PANEL).boundingBox())!;
+    // A point on the scrim, below the panel's foot: what a visitor taps to dismiss.
+    const y = Math.round((panel.y + panel.height + 844) / 2);
+    expect(y).toBeLessThan(844);
+    expect(
+      await page.evaluate(
+        ([x, at]) =>
+          document
+            .elementFromPoint(x!, at!)
+            ?.hasAttribute("data-fo-menu-scrim") ?? false,
+        [195, y],
+      ),
+    ).toBe(true);
+    await page.mouse.click(195, y);
+    await expect(page.locator(`${MENU}[open]`)).toHaveCount(0);
+    await expect(page.locator(SCRIM)).toBeHidden();
+  });
+
+  for (const viewport of PHONES) {
+    test(`at ${String(viewport.width)} × ${String(viewport.height)}: Tab and Shift+Tab keep focus inside the Menu and its summary`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await withModule(page, SHOP);
+      await openMenu(page);
+      const inside = () =>
+        page.evaluate(
+          () =>
+            document.activeElement?.closest("details[data-fo-menu]") !== null,
+        );
+      await page.locator(SUMMARY).focus();
+      const stops = await page
+        .locator(`${MENU} summary, ${MENU} a[href]`)
+        .evaluateAll(
+          (nodes) =>
+            nodes.filter((node) => node.getClientRects().length > 0).length,
+        );
+      for (let press = 0; press < stops + 2; press += 1) {
+        await page.keyboard.press("Tab");
+        expect(await inside(), `Tab ${String(press + 1)}`).toBe(true);
+      }
+      // Round the end: the summary is the stop after the last.
+      await page.locator(SUMMARY).focus();
+      await page.keyboard.press("Shift+Tab");
+      expect(await inside()).toBe(true);
+      expect(
+        await page.evaluate(() =>
+          document.activeElement?.hasAttribute("data-fo-menu-summary"),
+        ),
+      ).toBe(false);
+      // `Esc` still leaves (no keyboard trap, WCAG 2.1.2).
+      await page.keyboard.press("Escape");
+      await expect(page.locator(`${MENU}[open]`)).toHaveCount(0);
+      await expect(page.locator(SUMMARY)).toBeFocused();
+    });
+  }
+
+  test("off the home, Send flowers is a link to the home's #send, and activating it leaves for the home", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await withModule(page, SHOP);
+    await openMenu(page);
+    const send = page.locator(`${PANEL} a[href$="#send"]`);
+    await expect(send).toHaveAttribute("href", "/en-gb#send");
+    await send.click();
+    await page.waitForURL(/\/en-gb#send$/u);
+  });
+
+  for (const viewport of [
+    { width: 390, height: 844, from: "menu" },
+    { width: 360, height: 640, from: "menu" },
+    { width: 1440, height: 900, from: "pill" },
+  ] as const) {
+    test(`on the home at ${String(viewport.width)} × ${String(viewport.height)}, Send flowers (${viewport.from}) closes the Menu, brings the letter in below the header and focuses its first choice`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await withModule(page, "/en-gb");
+      if (viewport.from === "menu") {
+        await openMenu(page);
+        await page.locator(`${PANEL} a[href$="#send"]`).click();
+        await expect(page.locator(`${MENU}[open]`)).toHaveCount(0);
+      } else {
+        await page
+          .locator(`${HEADER} a[href$="#send"]:visible`)
+          .first()
+          .click();
+      }
+      await expect(page.locator("[data-fo-sentence-who]")).toBeFocused();
+      const header = await headerBox(page);
+      const letter = await page.evaluate(() => {
+        const form = document.getElementById("send")!;
+        const card = form.closest("[data-fo-hero-card]");
+        const box = (
+          card !== null && getComputedStyle(card).display !== "contents"
+            ? card
+            : form
+        ).getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom };
+      });
+      expect(letter.top).toBeGreaterThanOrEqual(header.top + header.height - 1);
+      expect(letter.top).toBeLessThan(viewport.height);
+      // The page stayed where it was: no navigation, no jump to the anchor.
+      expect(new URL(page.url()).pathname).toBe("/en-gb");
+    });
+  }
+
+  for (const viewport of [
+    { width: 640, height: 400 },
+    { width: 844, height: 390 },
+  ] as const) {
+    test(`at ${String(viewport.width)} × ${String(viewport.height)} the header is not sticky and the home's H1 is on the first screen`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto("/en");
+      expect(
+        await page
+          .locator(HEADER)
+          .evaluate((node) => getComputedStyle(node).position),
+      ).not.toMatch(/^(sticky|fixed)$/u);
+      const h1 = (await page.locator("h1").boundingBox())!;
+      expect(h1.y).toBeGreaterThanOrEqual(0);
+      expect(h1.y + h1.height).toBeLessThanOrEqual(viewport.height);
+      // And it is not under the header either.
+      const header = await headerBox(page);
+      expect(h1.y).toBeGreaterThanOrEqual(header.top + header.height - 1);
+    });
+  }
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 1440, height: 900 },
+  ] as const) {
+    test(`at ${String(viewport.width)} × ${String(viewport.height)} the header is sticky as before`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto("/en");
+      expect(
+        await page
+          .locator(HEADER)
+          .evaluate((node) => getComputedStyle(node).position),
+      ).toBe("sticky");
+    });
+  }
+});
+
 /** Every page type with a breadcrumb that exists today (spec 004 AC-50), in `/en-gb`. */
 const WITH_BREADCRUMB = {
   countryShop: "/en-gb/poland/flowers",

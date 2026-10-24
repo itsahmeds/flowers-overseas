@@ -67,6 +67,7 @@
 import {
   mkdtempSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -75,7 +76,15 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
 
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 import {
   CLIENT_FORBIDDEN_NAMESPACES,
@@ -93,6 +102,8 @@ import {
   lazyCandidatesFor,
   lazyChunksNamedIn,
   ON_INPUT_CHUNK_MARKERS,
+  CONSENT_ISLAND_MARKER,
+  onInputChunkMarkers,
   measurePages,
   messagesPayloadSizes,
   parseClientReferences,
@@ -825,6 +836,12 @@ describe("reachableAssets (the edge the Turbopack runtime follows)", () => {
 
 describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
   let dist = "";
+  /** The id CI's `consent-active` build carries (`tests/support/consent-active.ts`). */
+  const GA4_FIXTURE = "G-FIXTURE00";
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
   const stub = (...assets: string[]): string =>
     `e.v(t=>Promise.all([${assets.map((asset) => `"${asset}"`).join(",")}].map(t=>e.l(t))).then(()=>t(1)))`;
 
@@ -851,9 +868,10 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     );
     writeFileSync(join(dist, "static/chunks/under-sentence.js"), "x();");
     // The consent island names the settings panel, which is fetched only when "Settings" is pressed.
+    // It carries its mark, so while nothing needs consent it is on-input itself (TASK-279).
     writeFileSync(
       join(dist, "static/chunks/consent.js"),
-      `q("data-fo-consent-sheet");${stub("static/chunks/panel.js")}`,
+      `performance.mark("fo:consent:island");q("data-fo-consent-sheet");${stub("static/chunks/panel.js")}`,
     );
     writeFileSync(
       join(dist, "static/chunks/panel.js"),
@@ -893,11 +911,58 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
     ]);
   });
 
+  it("adds the consent island's mark exactly while nothing needs consent (TASK-279)", () => {
+    expect(CONSENT_ISLAND_MARKER).toBe("fo:consent:island");
+    expect(onInputChunkMarkers({})).toEqual([
+      "fo:deferred:home-sentence",
+      "data-fo-consent-panel",
+      "fo:consent:island",
+    ]);
+    // A malformed id loads no tag (`ga4MeasurementId`), so nothing needs consent.
+    expect(
+      onInputChunkMarkers({ NEXT_PUBLIC_GA4_MEASUREMENT_ID: "G-" }),
+    ).toEqual([...ON_INPUT_CHUNK_MARKERS, "fo:consent:island"]);
+    // The consent-active build: the sheet asks on load, so its chunk is page-load again.
+    expect(
+      onInputChunkMarkers({ NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE }),
+    ).toEqual(["fo:deferred:home-sentence", "data-fo-consent-panel"]);
+  });
+
+  it("finds the consent island by a mark only the island's module carries (TASK-279)", () => {
+    // The chunk is found by the literal, so it must ship in the island's code and in no other
+    // module: one more carrier would hide that module's chunk from the page load too.
+    const root = resolve(import.meta.dirname, "../../src");
+    const carriers = readdirSync(root, { recursive: true, encoding: "utf8" })
+      .filter((file) => /\.(ts|tsx)$/u.test(file))
+      .filter((file) =>
+        readFileSync(join(root, file), "utf8").includes(CONSENT_ISLAND_MARKER),
+      );
+    expect(carriers).toEqual([
+      join("modules", "ui", "consent", "ConsentBannerIsland.tsx"),
+    ]);
+    const island = readFileSync(
+      join(root, "modules/ui/consent/ConsentBannerIsland.tsx"),
+      "utf8",
+    )
+      .replace(/\/\*[\s\S]*?\*\//gu, "")
+      .replace(/(^|[^:])\/\/.*$/gmu, "$1");
+    expect(island).toContain(`performance.mark("${CONSENT_ISLAND_MARKER}")`);
+  });
+
   it("offers every stub-named chunk but the on-input ones as a candidate", () => {
     // `under-sentence.js` is a candidate (nothing marks it), but only an on-input chunk names it,
     // so no page reaches it: the next case.
-    expect(lazyCandidatesFor(dist, "/en").map((tag) => tag.asset)).toEqual([
+    expect(
+      lazyCandidatesFor(dist, "/en", {
+        NEXT_PUBLIC_GA4_MEASUREMENT_ID: GA4_FIXTURE,
+      }).map((tag) => tag.asset),
+    ).toEqual([
       "static/chunks/consent.js",
+      "static/chunks/popup.js",
+      "static/chunks/under-sentence.js",
+    ]);
+    // Nothing needs consent: the island is fetched only on a press, so it is no candidate.
+    expect(lazyCandidatesFor(dist, "/en", {}).map((tag) => tag.asset)).toEqual([
       "static/chunks/popup.js",
       "static/chunks/under-sentence.js",
     ]);
@@ -910,11 +975,25 @@ describe("lazy candidates from Turbopack's loader stubs (TASK-376)", () => {
       '<script src="/_next/static/chunks/runtime.js"></script>' +
         '<script>self.__next_f.push([1,"3:I[7,[\\"/_next/static/chunks/loaders.js\\"],\\"Loaders\\"]\\n"])</script>',
     );
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", GA4_FIXTURE);
     const [page] = measurePages(dist, ["/en"]);
     expect(
       (page?.assets ?? []).map((asset) => [asset.asset, asset.kind]).sort(),
     ).toEqual([
       ["static/chunks/consent.js", "lazy"],
+      ["static/chunks/loaders.js", "lazy"],
+      ["static/chunks/popup.js", "lazy"],
+      ["static/chunks/runtime.js", "document"],
+    ]);
+  });
+
+  it("charges no consent island to a page load while nothing needs consent (TASK-279)", () => {
+    // `server/app/en.html` from the previous case; the build's environment carries no GA4 id.
+    vi.stubEnv("NEXT_PUBLIC_GA4_MEASUREMENT_ID", "");
+    const [page] = measurePages(dist, ["/en"]);
+    expect(
+      (page?.assets ?? []).map((asset) => [asset.asset, asset.kind]).sort(),
+    ).toEqual([
       ["static/chunks/loaders.js", "lazy"],
       ["static/chunks/popup.js", "lazy"],
       ["static/chunks/runtime.js", "document"],

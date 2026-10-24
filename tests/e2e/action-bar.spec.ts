@@ -13,6 +13,7 @@
  */
 import { type Page, expect, test } from "@playwright/test";
 
+import { openConsentSettings } from "../support/consent.ts";
 import { recordLayoutShifts } from "../support/layout-shift.ts";
 
 const FIXTURE = "/dev/components/action-bar";
@@ -185,8 +186,17 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
     expect(inBar).toBe(inFlow);
   });
 
-  test("the consent sheet never covers the bar's action", async ({ page }) => {
+  test("the settings panel opened from the footer never covers the bar's action (AC-48 overlay, T-53)", async ({
+    page,
+  }) => {
     await page.goto(FIXTURE);
+    // Nothing asks on the committed build (spec 004 §14 A-founder-2026-10-19d): the overlay that
+    // can stand over the bar is the panel "Cookie settings" opens. The banner's case is the
+    // `consent-active` project's.
+    await openConsentSettings(page);
+    await page.evaluate(() => {
+      scrollTo(0, 0);
+    });
     const sheet = page.locator(
       '[data-fo-consent-sheet="fixed"] [data-fo-consent]',
     );
@@ -238,6 +248,32 @@ test.describe("T-53: the sticky action bar (AC-48)", () => {
     expect(
       await page.evaluate(() => document.documentElement.scrollHeight),
     ).toBe(before);
+  });
+
+  for (const viewport of [
+    { width: 640, height: 400 },
+    { width: 844, height: 390 },
+  ] as const) {
+    test(`is not drawn on a short screen, ${String(viewport.width)} × ${String(viewport.height)} (A-founder-2026-10-19c clause 5, T-53)`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(FIXTURE);
+      await expect(page.locator(BAR)).toBeHidden();
+      expect(
+        await page.evaluate(
+          () => getComputedStyle(document.body).paddingBlockEnd,
+        ),
+      ).toBe("0px");
+    });
+  }
+
+  test("is drawn at 390 × 844, where the short-screen rule does not apply (T-53's control)", async ({
+    page,
+  }) => {
+    await page.setViewportSize(PHONE);
+    await page.goto(FIXTURE);
+    await expect(page.locator(BAR)).toBeVisible();
   });
 
   test("is not drawn from `md` up", async ({ page }) => {

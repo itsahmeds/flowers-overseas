@@ -3,10 +3,10 @@
 # the job names straight out of it, so a job added here is part of the branch-protection contract
 # without anybody editing a list (`pnpm branch-protection --verify`).
 #
-# Jobs (24): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
+# Jobs (25): lint · typecheck · test-unit · test-integration · test-contract · build · container ·
 # db-check · env-build-failure · commitlint · seo-validate · i18n-check · catalogue-check ·
 # corridor-check · pages-check · seed-check · dev-os-check · cloudflare-check · audit · preview ·
-# e2e · visual · a11y · lighthouse.
+# e2e · visual · a11y · consent-active · lighthouse.
 # The lint job also runs the three orientation gates of §14 A15: `codebase:map --check`,
 # `specs:index --check`, `tasks:check`.
 #
@@ -1976,6 +1976,78 @@ jobs:
             echo "- projects: $projects"
             echo "- tests: $expected — $statuses"
             echo "- axe: zero serious/critical violations required (spec 001 §8)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Spec 004 §14 A-founder-2026-10-19d clause 8 (TASK-279): the **consent-active** build. The
+  # committed configuration asks nothing about consent (`consentSources()` finds no active source:
+  # the GA4 id is blank), so the banner-shown halves of AC-6, AC-9, AC-17, AC-19, AC-20, AC-22,
+  # AC-27 and AC-48 cannot run against the `preview` build. This job builds the site a second time
+  # with `NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-FIXTURE00`, serves it the way `preview` does (the same
+  # `serve.sh` gate on `/api/health`), and runs the `consent-active` Playwright project against
+  # it. Every request to Google is aborted by route interception in the suites, and their first
+  # case asserts the tag element is in the served HTML, so the job cannot pass silently against
+  # the committed configuration. No Lighthouse run and no script budget on this build (A15: the tag
+  # breaks the budget by design). Pull requests with `ci:full` only, like `preview`, so a push to
+  # `main` skips it. On a failure the report and the screenshots Playwright wrote are uploaded:
+  # that artifact is how this project's `linux` baselines are refreshed
+  # (`docs/runbooks/visual-baselines.md`).
+  consent-active:
+    name: consent-active
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci:full')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Read by `next build` (the CSP and the inlined tag) and by `next start` (the layout's reader
+      # on any dynamic render): one value for both, from the job's environment, which Next ranks
+      # above `.env.local`.
+      NEXT_PUBLIC_GA4_MEASUREMENT_ID: G-FIXTURE00
+      PLAYWRIGHT_BASE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - name: Build the app with the GA4 fixture id, with no credential in scope
+        run: |
+          set -euo pipefail
+          if env | grep -qE '^(DATABASE_URL|DATABASE_URL_UNPOOLED|INTERNAL_CRON_SECRET|R2_)'; then
+            echo "::error::a server credential is present in the build environment (spec 001 §14 A17)"
+            exit 1
+          fi
+          cp .env.example .env.local
+          pnpm build
+      - name: Serve it and gate on /api/health
+        run: bash ./.github/actions/preview-origin/serve.sh
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: pnpm test:consent-active
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-consent-active.json
+        run: pnpm test:consent-active --reporter=github,json,list
+      - name: Upload the Playwright report (with the screenshots)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-consent-active
+          path: |
+            playwright-report/
+            test-results/
+            tests/consent-active/__screenshots__/
+          retention-days: 7
+          if-no-files-found: warn
+      - name: Summarise the consent-active run (spec 004 §14 A-founder-2026-10-19d clause 8)
+        if: always()
+        run: |
+          set -uo pipefail
+          if [ ! -f playwright-consent-active.json ]; then
+            echo "::error::Playwright produced no JSON report; cannot summarise the consent-active run"
+            exit 1
+          fi
+          expected=$(jq '[.suites | .. | .tests? // empty | .[]] | length' playwright-consent-active.json)
+          statuses=$(jq -r '[.suites | .. | .specs? // empty | .[] | if .ok then "passed" else "failed" end] | group_by(.) | map("\(.[0]): \(length)") | join(", ")' playwright-consent-active.json)
+          {
+            echo "### consent-active (spec 004 §14 A-founder-2026-10-19d clause 8)"
+            echo ""
+            echo "- build: \`NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-FIXTURE00\`; every request to Google aborted in the suites"
+            echo "- tests: $expected — $statuses"
           } >> "$GITHUB_STEP_SUMMARY"
 
   # AC-23 / T-24 (TASK-009); spec 003 AC-27 / T-27 (TASK-043); **spec 004 AC-24 (TASK-056), which

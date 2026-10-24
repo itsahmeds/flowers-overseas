@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
-import { ga4MeasurementId } from "@/lib/env.schema";
 import { setLocaleTag } from "@/lib/sentry";
-import { AnalyticsScripts } from "@/modules/analytics";
+import {
+  AnalyticsScripts,
+  consentPrompt,
+  consentSources,
+} from "@/modules/analytics";
 import { missingInfoPageLinkIds } from "@/modules/content";
 import {
   LanguagePopup,
@@ -118,6 +121,11 @@ export default async function LocaleLayout({
   setLocaleTag(locale.code);
 
   const t = await getTranslations({ locale: locale.code, namespace: "a11y" });
+  // The one decision about consent, read once per document (spec 004 §14 A-founder-2026-10-19d
+  // clause 1; TASK-279): the GA4 tag's id and whether the consent banner asks both come from this
+  // result, so the tag can never load without the question about it, nor the question appear with
+  // nothing to ask about. Today `active` is empty and the id is `undefined`.
+  const consent = consentSources(process.env);
 
   return (
     // `fontVariables`: the two self-hosted families and their preload links (spec 004 AC-4).
@@ -133,13 +141,13 @@ export default async function LocaleLayout({
       <head>
         {/* The only inline script in the application and the first thing in the document: the
             Consent Mode v2 **default-denied** block, plus the GA4 tag when — and only when —
-            `NEXT_PUBLIC_GA4_MEASUREMENT_ID` is set (spec 004 §2, AC-18, AC-21; TASK-050). Its
+            `consentSources()` reads a GA4 id (spec 004 §2, AC-18, AC-21; TASK-050, TASK-279). Its
             `'sha256-'` hash is in the CSP `script-src` of every environment, computed in
             `next.config.ts` from the same constant, which is why editing the script without the
             policy is not a reachable state (ADR-0016). Nothing here varies by visitor, so the
             document stays one cache entry with no `Vary` and no `Set-Cookie`: the banner that
             *reads* the decision is a client island (TASK-051). */}
-        <AnalyticsScripts measurementId={ga4MeasurementId(process.env)} />
+        <AnalyticsScripts measurementId={consent.ga4MeasurementId} />
       </head>
       <body className="min-h-dvh">
         {/* No `NextIntlClientProvider`, and that is the point of TASK-085 (spec 004 §13 Q13
@@ -199,14 +207,17 @@ export default async function LocaleLayout({
             ],
           })}
         />
-        {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). A
+        {/* Out of flow and above everything: the consent sheet (AC-17, AC-19, AC-20). It asks
+            only while a consent source is active (`prompt`, spec 004 §14 A-founder-2026-10-19d);
+            with none, nothing mounts and its chunk is not requested until "Cookie settings" is
+            activated, which opens the settings panel (TASK-279). A
             Server Component resolves the copy and projects the cookie register, and a client
             loader imports the island after hydration (`ssr: false`), so this document's HTML is
             identical for every visitor, carries no `Vary` and sets no cookie — the decision is
             read from and written to `document.cookie` in the browser, only on a press. It waits
             for the language popup: the popup is asked first and the two are never on screen
             together (spec 003 §14 A14 as amended by A16; `localeGate.ts`). */}
-        <ConsentBanner />
+        <ConsentBanner prompt={consentPrompt(consent)} />
         {/* Last in the document: the language popup, the site's only language chooser (spec 003
             §14 A14 as amended by A16). A Server Component projects the registry and the resolved
             copy and hands both to a client loader, which imports the island after hydration

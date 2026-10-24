@@ -3,10 +3,13 @@
 /**
  * The consent island (spec 004 §2 "Consent", §5.3, §5.4, §8, AC-17, AC-19, AC-20; TASK-051).
  *
- * The only application JavaScript that decides anything about storage. It reads `fo_consent` after
- * hydration, shows the sheet when there is no decision to honour, writes the cookie on an explicit
- * press, tells Consent Mode what changed, records the decision at `POST /api/consent` and does
- * nothing else. Everything it renders arrives as props (§13 Q13 option (b)), so it imports no
+ * The only application JavaScript that decides anything about storage. Where a consent source is
+ * active (`prompt`, from `consentSources()`; spec 004 §14 A-founder-2026-10-19d), it reads
+ * `fo_consent` after hydration and shows the sheet when there is no decision to honour. Where none
+ * is, it is not loaded at all until the visitor activates "Cookie settings", and then it opens the
+ * settings panel straight away (`ConsentBannerLoader`). Either way it writes the cookie on an
+ * explicit press, tells Consent Mode what changed, records the decision at `POST /api/consent` and
+ * does nothing else. Everything it renders arrives as props (§13 Q13 option (b)), so it imports no
  * translator, no cookie register and no zod — which is what keeps a locale document inside §14
  * A1's budget.
  *
@@ -45,6 +48,7 @@ import {
 } from "react";
 
 import { ConsentBannerView, ConsentSavedView } from "./ConsentBannerView";
+import { type ConsentPhase, consentEscapeStep } from "./consentEscape";
 import { localeGateHeld, subscribeLocaleGate } from "./localeGateReader";
 import {
   type ConsentChoices,
@@ -69,7 +73,7 @@ const SettingsPanel = lazy(async () => import("./ConsentSettingsPanel"));
 
 const NO_CHOICES: ConsentChoices = { analytics: false, marketing: false };
 
-type Phase = "hidden" | "shown" | "settings" | "saved";
+type Phase = ConsentPhase;
 
 interface GtagWindow {
   gtag?: (...args: unknown[]) => void;
@@ -114,6 +118,15 @@ export function consentBody(stored: StoredConsent): Record<string, unknown> {
 export interface ConsentBannerIslandProps {
   /** Everything resolved on the server: copy, categories, lifetimes, endpoint (see `ConsentView`). */
   readonly view: ConsentView;
+  /**
+   * Whether a consent source is active (`consentSources().active` non-empty, decided once by the
+   * locale layout). True: the sheet asks on first view and "Cookie settings" re-opens it. False:
+   * nothing is asked; the island is loaded only on activation of "Cookie settings" and opens the
+   * settings panel itself, with or without a recorded decision (AC-9 as amended).
+   */
+  readonly prompt: boolean;
+  /** The "Cookie settings" control whose activation loaded the island (`prompt` false only). */
+  readonly opener?: HTMLElement | null | undefined;
 }
 
 /** Whether the page is served over HTTPS, so the cookie carries `Secure`. Read at call time. */
@@ -124,14 +137,20 @@ function secure(): boolean {
 /** Motion 10's close mark on the sheet, read by `globals.css`. */
 const CLOSING = "data-fo-closing";
 
-export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
+export function ConsentBannerIsland({
+  view,
+  prompt,
+  opener,
+}: ConsentBannerIslandProps) {
   const { config, strings, categories } = view;
   const headlineId = useId();
   const idPrefix = useId();
   const sheet = useRef<HTMLDivElement>(null);
   const settingsButton = useRef<HTMLButtonElement>(null);
   /** Whatever opened the sheet last, so focus can go back where it came from. */
-  const trigger = useRef<HTMLElement | null>(null);
+  const trigger = useRef<HTMLElement | null>(opener ?? null);
+  /** When the language popup last released its gate: the press that closed it is not ours. */
+  const gateReleasedAt = useRef(Number.NEGATIVE_INFINITY);
 
   // The stored decision is the island's **initial** state, read lazily on mount — the pattern and
   // the reasoning of `LanguagePopupIsland`: this component has no server pass to
@@ -146,8 +165,9 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
       return null;
     }
   });
+  // With nothing to ask, the island exists only because the visitor asked for the panel.
   const [phase, setPhase] = useState<Phase>(() =>
-    stored === null ? "shown" : "hidden",
+    !prompt ? "settings" : stored === null ? "shown" : "hidden",
   );
   // The language popup is asked first (`./localeGateReader.ts`; spec 003 §14 A16).
   const localeGated = useSyncExternalStore(
@@ -157,6 +177,27 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
   );
   const [choices, setChoices] = useState<ConsentChoices>(() =>
     stored === null ? NO_CHOICES : choicesOf(stored),
+  );
+
+  // The island's chunk carries this literal and no other chunk does: `budget:client-js` finds the
+  // chunk by it (`CONSENT_ISLAND_MARKER`) and, while nothing needs consent, leaves it out of the
+  // page load, because then only a press on "Cookie settings" fetches it (TASK-279).
+  useEffect(() => {
+    try {
+      performance.mark("fo:consent:island");
+    } catch {
+      // No User Timing is no reason to lose the sheet.
+    }
+  }, []);
+
+  // The moment the gate is released, so `Esc` can tell the press that closed the popup from a
+  // later one (`./consentEscape.ts`).
+  useEffect(
+    () =>
+      subscribeLocaleGate(() => {
+        if (!localeGateHeld()) gateReleasedAt.current = performance.now();
+      }),
+    [],
   );
 
   /** Move focus back to the control that opened the sheet, but only if the sheet holds it. */
@@ -229,25 +270,36 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
       if (control === null) return;
       trigger.current = control instanceof HTMLElement ? control : null;
       sheet.current?.removeAttribute(CLOSING);
-      setPhase("shown");
+      setPhase(prompt ? "shown" : "settings");
     };
     document.addEventListener("click", onClick);
     return () => {
       document.removeEventListener("click", onClick);
     };
-  }, [config.reopenAttribute]);
+  }, [config.reopenAttribute, prompt]);
 
   /**
    * `Esc` records nothing, ever (AC-17, §8). It steps back one layer at a time: from the settings
    * panel to the sheet — returning focus to the control that opened it, so a keyboard visitor is
    * not left on a detached node — and from the sheet to nothing. Two presses to leave an open
    * panel is the standard nested-layer behaviour and the only version in which focus survives.
+   * A panel opened on its own from "Cookie settings" (no `prompt`) has no sheet behind it, so one
+   * press closes it and focus goes back to that control. While the language popup holds its gate
+   * the sheet is not the top layer, and the press that closed the popup is not for the sheet
+   * (`consentEscapeStep`, AC-17 (d)).
    */
   useEffect(() => {
     if (phase === "hidden") return undefined;
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== "Escape") return;
-      if (phase === "settings") {
+      const step = consentEscapeStep(phase, {
+        prompt,
+        gated: localeGateHeld(),
+        pressedAt: event.timeStamp,
+        releasedAt: gateReleasedAt.current,
+      });
+      if (step === "ignore") return;
+      if (step === "back") {
         restoreFocus();
         setPhase("shown");
         return;
@@ -258,7 +310,7 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [phase, close, restoreFocus]);
+  }, [phase, prompt, close, restoreFocus]);
 
   const decide = useCallback(
     (next: ConsentChoices) => {
@@ -337,7 +389,9 @@ export function ConsentBannerIsland({ view }: ConsentBannerIslandProps) {
         decide({ analytics: true, marketing: true });
       }}
       onOpenSettings={() => {
-        trigger.current = settingsButton.current;
+        // Already open (the panel opened from "Cookie settings" draws the sheet's controls too):
+        // focus still goes back to whatever opened it, not to "Choose".
+        if (phase !== "settings") trigger.current = settingsButton.current;
         setPhase("settings");
       }}
       onReject={() => {

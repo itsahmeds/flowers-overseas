@@ -108,6 +108,11 @@ describe("the required-check contract on the committed workflows (AC-21)", () =>
       // `cloudflare:apply` (TASK-100 escalation E-3).
       "cloudflare-check",
       "commitlint",
+      // Spec 004 §14 A-founder-2026-10-19d clause 8 (TASK-279): the GA4-fixture build and its
+      // Playwright project. Derived from `ci.yml`; required in fact once the settings on GitHub
+      // are re-applied (`pnpm branch-protection`). Skipped (which GitHub counts as passing) on a
+      // pull request without `ci:full` and on a push.
+      "consent-active",
       // Spec 040 AC-8 / T-08 (TASK-135): the `container` job builds the image with no credential
       // in the environment and probes the running artefact. Derived from `ci.yml` like every
       // other entry, so it appeared here by itself — the settings on GitHub must be re-applied

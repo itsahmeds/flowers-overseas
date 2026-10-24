@@ -54,7 +54,7 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-23 (implementer, to the orchestrator): the new `consent-active` job is in `ci.yml`, so `scripts/branch-protection.ts` derives it as a required check; GitHub requires it in fact only after `pnpm branch-protection` is re-applied (founder's act, `docs/runbooks/branch-protection.md`). Skipped (passing) without `ci:full`. `open`.
 
 ## Progress
 
@@ -62,11 +62,15 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-23: worktree `../fo-wt-279`, branch `task/TASK-279-consent-and-menu` (also closes TASK-282; TASK-280 is its own PR per the orchestrator's order). Reader `consentSources()` + unit table, layout wiring, loader/island prompt and footer activation, `consentEscape.ts` written. Next: unit tests for the Esc stack and layout render, e2e restatement, `consent-active` project and CI job, Menu (TASK-282).
+- 2026-10-23: unit (reader table, source scan, layout render, Esc stack), the committed-build e2e suite, the `consent-active` project, job and runbook steps, T-60's build-output check all written; local build in the slot: the touched e2e, a11y and consent-active suites green, mutations red (PR 352 `## Self-review`). Next: linux baselines from `visual:baselines`, then ready + `ci:full`.
+- 2026-10-24 (finisher): rebased onto main after PR 363 (TASK-376). The loader keeps 363's `React.lazy` + `useHydrated()` + `Suspense` and re-applies both modes; the island carries `performance.mark("fo:consent:island")` and `budget:client-js` treats its chunk as on-input exactly while `consentPrompt(consentSources(env))` is false (`onInputChunkMarkers()`), which is what CI's "fetches exactly what `budget:client-js` charges it" failure on `/en`, `/en-gb`, `/de` asked for (TASK-376 carry-forward). The chunk matchers (`consentIslandChunk()`, T-60's positive control) read Turbopack's loader stubs, since `React.lazy` writes no `react-loadable-manifest.json`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#352](https://github.com/itsahmeds/flowers-overseas/pull/352), with TASK-282. `consentSources(env)` (analytics barrel) is the one reader: the locale layout calls it once for the GA4 tag's id and the banner's `prompt`. With nothing active (today) no sheet mounts and the island's chunk is not requested until "Cookie settings" is activated, which opens the settings panel (today's panel) with focus inside; `Esc` closes it and returns focus; one `Esc` acts on one layer (`consentEscape.ts`). Tests: unit `consent-sources.test.ts` (10), `app-shell.test.tsx` (+3 layout renders), `locale-gate.test.ts` (+4 Esc stack), `ci-workflow` and `branch-protection` updated; e2e `tests/e2e/consent-banner.spec.ts` rewritten for the committed build (25, AC-17 (a) with clause 9's chunk matcher and positive control), the banner-shown suite moved to `tests/consent-active/` (56 cases incl. a11y, visual, popup order, AC-6, AC-48), T-60's build-output check in `deferred-chunks.spec.ts`; CI job `consent-active` builds with `G-FIXTURE00` and aborts every Google request. A local build was run in the slot to run the new e2e and to mutate the built output (no CI round trip per mutation). **Handed on:** AC-17 (b)'s non-intersection clause needs the compact placement (TASK-281; runbook §1 (a) makes it a precondition of any flip); AC-17 (b)'s no-gate clause, AC-13, AC-39/T-41, AC-55/T-60's resource-timing half and the popup baselines' deletion need the popup gate (TASK-280, its own PR); spec 041's AC-13/T-13 and AC-29/T-31 restatements land with TASK-183/TASK-281 (the shared `data-fo-consent-reopen` behaviour is built here). Carried for the lawyer (19d carry-forward (1)): "no banner while only essential cookies" and the production cookies against the register (Cloudflare's edge cookie is not in it).
+
+**Finisher, 2026-10-24 (rebase onto PR 363).** `ConsentBannerLoader` is `React.lazy` behind `useHydrated()`, each island mount in its own `Suspense`; nothing under `src/` imports `next/dynamic`. `ConsentBannerIsland` marks `fo:consent:island` on mount, the one literal `CONSENT_ISLAND_MARKER` finds its chunk by; `onInputChunkMarkers(env)` adds it to `ON_INPUT_CHUNK_MARKERS` only while nothing needs consent, so a consent-active build is still charged the island. `consent-sources.ts` imports by relative `.ts` paths so the node script reads the same reader as the layout. Tests: unit `client-js-budget.test.ts` +3 (the conditional marker list incl. a malformed id, the candidate list in both modes, a page charged no island while nothing needs consent) +1 (the literal lives only in the island, inside `performance.mark`), `use-hydrated.test.tsx` restated for both modes (4). Mutations, each red: the hydration gate removed (2 cases), the marker never added (3), the marker always added (3), the island's literal renamed (1).

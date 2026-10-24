@@ -1,7 +1,18 @@
 # Turning Google Analytics on (and the consent plumbing around it)
 
-Spec 004 §2, §8, AC-18, AC-21 · TASK-050 · `docs/compliance/ropa.md` rows 3–4 ·
-`docs/compliance/cookie-register.md`
+Spec 004 §2, §8, AC-18, AC-21, §14 A-founder-2026-10-19d · TASK-050, TASK-279 ·
+`docs/compliance/ropa.md` rows 3–4 · `docs/compliance/cookie-register.md`
+
+**No banner while nothing needs consent (spec 004 §14 A-founder-2026-10-19d; TASK-279).** One reader,
+`consentSources(process.env)` in `src/modules/analytics`, decides whether anything on the site needs
+consent: `analytics` is active when the GA4 id is set (or a register row in that category is `set`),
+`marketing` when a marketing row is `set`. While nothing is active — today — no consent banner
+mounts and its chunk is not requested on load; the footer's "Cookie settings" opens the settings
+panel. The moment a source is active the banner asks on first view again, with no file under
+`src/app/` or `src/modules/` changed: the flip is this runbook's §2, or a register row turning `set`
+in the PR that ships its writer. CI proves both states: the browser suites run the committed build,
+and the `consent-active` job builds a second site with `G-FIXTURE00` and runs the banner-shown cases
+against it, with every request to Google aborted.
 
 The analytics tag is **wired and dark**. Every localised document already carries the Consent Mode
 v2 default-denied block; nothing loads `googletagmanager.com` and nothing sets an analytics cookie,
@@ -19,6 +30,33 @@ processor** of visitor data (`ropa.md` row 4), the two GA4 cookies become reacha
 test: a preview built with the id set sends real pings.
 
 ## 1. Before the variable is set
+
+**Before the first category is switched on** (spec 004 §14 A-founder-2026-10-19d clause 3; procedural,
+none of these is a code gate). Every step is done, and named in the flip's PR, before the id is set
+or a register row turns `set`:
+
+- (a) **The compact banner is on `main`**: clause 4's one-line form (TASK-281), whose first layer
+  does not cover the home's H1, the sentence letter or the phone's action bar (AC-17 (b), (c)). The
+  sheet that ships today predates it and is not to be shown to visitors.
+- (b) **`CONSENT_POLICY_VERSION` is bumped** (`src/lib/consent.ts`) in the PR that updates the cookie
+  notice for that category, so a decision saved while nothing was active is asked again (§4a).
+- (c) **The records are true first**: RoPA row 4, the DPA, the privacy notice and the cookie notice,
+  as steps 1 to 5 below list them.
+- (d) **A15's budget decision** is taken: the tag breaks the script budget by design, and the
+  `consent-active` build carries no Lighthouse run for that reason.
+- (e) **The founder's lawyer has ruled, in writing filed under `docs/compliance/`**, on two points:
+  whether the GA4 tag may load before a decision under Consent Mode v2 default-denied and send
+  cookieless pings ("advanced" mode, as §2 L94, AC-21 and `plan/04` §11 specify today) or must wait
+  for a grant ("basic" mode); and whether clause 4's layering (the controller sentence in the panel,
+  a link to the cookie notice in the first layer) is enough. A "basic" ruling is a new spec
+  amendment to AC-18, AC-21 and §2 L94 before the id is set.
+
+Carried, not gating: the lawyer also reviews the "no banner while only essential cookies" position
+and the production site's real cookies against the register (an edge cookie Cloudflare sets is
+essential but not in the register today); the result goes into `docs/tasks/TASK-279.md` and
+`docs/compliance/`.
+
+Then, for GA4 specifically:
 
 1. **Create the GA4 property** in the EU-based account, set **data retention to 14 months**, switch
    Google-signals and ads personalisation **off**, and keep IP anonymisation on (it is default in
@@ -96,13 +134,18 @@ carry no message catalogue and no zod.
 | Decision cookie | `fo_consent`, first-party, `Path=/`, `SameSite=Lax`, `Secure` off `localhost`, JSON `{v,a,m,ts,cid}`, **12 months** if anything was accepted, **6 months** for a refusal |
 | Record | `POST /api/consent`, sent with `credentials: "omit"` and `referrerPolicy: "no-referrer"` — no cookie, no page URL |
 | Consent Mode | one `gtag('consent','update',…)` per decision: `analytics_storage` from the analytics answer, the three ad signals from the marketing one |
-| Withdrawal | the footer's `data-fo-consent-reopen` control, on every page; a delegated listener in the island re-opens the sheet with the recorded answer pre-filled |
+| Whether it asks | `consentSources()` (§0 above): with no active source the loader renders nothing and binds one delegated listener for `data-fo-consent-reopen`; its first activation imports the island, which opens the settings panel with focus inside it |
+| Withdrawal | the footer's `data-fo-consent-reopen` control (and the cookie notice's, spec 041), on every page; with a source active, a delegated listener in the island re-opens the sheet with the recorded answer pre-filled; with none, it opens the panel |
 
 Operational notes:
 
 - **`Esc` records nothing.** It closes the settings panel if one is open and the sheet otherwise,
-  and the sheet returns on the next page view. Dismissal is not consent.
-- **A forged, corrupt or stale `fo_consent` is deleted and the sheet asks again.** Bumping
+  and the sheet returns on the next page view. Dismissal is not consent. A panel opened from
+  "Cookie settings" with nothing active closes on one press and focus returns to that control. One
+  press acts on one layer: while the language popup holds its gate the sheet ignores the key, and
+  the press that closed the popup does not also close the sheet (AC-17 (d)).
+- **A forged, corrupt or stale `fo_consent` is deleted and the sheet asks again** (with nothing
+  active: deleted when the island loads on activation, and the panel shows nothing ticked). Bumping
   `CONSENT_POLICY_VERSION` in `src/lib/consent.ts` has the same effect for every visitor at once:
   that is the lever to pull when the categories or the disclosure text change.
 - **Nothing is pre-ticked and no control is disabled.** The essential group is stated in prose with

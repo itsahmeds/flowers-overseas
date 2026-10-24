@@ -1,10 +1,12 @@
 /**
  * Playwright harness (spec 001 §2 "Testing harness", §7, §8, AC-17, TASK-008).
  *
- * One config, five projects, three scripts:
+ * One config, six projects, four scripts:
  *   `pnpm test:e2e`    -> `e2e-desktop` + `e2e-mobile`  (tests/e2e/**)
  *   `pnpm test:visual` -> `visual` (`/`, `/en`, `/de`) + `pseudo-rtl` (`/ar-XB`)
  *   `pnpm test:a11y`   -> `a11y`                        (tests/a11y/**)
+ *   `pnpm test:consent-active` -> `consent-active` (tests/consent-active/**), against the
+ *                         GA4-fixture build only (TASK-279)
  *
  * `baseURL` comes from `PLAYWRIGHT_BASE_URL`: the Vercel preview URL in CI (from the `preview`
  * job's output), `http://localhost:3000` locally against `pnpm build && pnpm start`. There is
@@ -159,6 +161,15 @@ export default defineConfig({
     {
       name: "a11y",
       testMatch: "a11y/**/*.spec.ts",
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      // Spec 004 §14 A-founder-2026-10-19d clause 8 (TASK-279): the banner-shown halves of the
+      // consent ACs, against a second build with `NEXT_PUBLIC_GA4_MEASUREMENT_ID=G-FIXTURE00`
+      // (the `consent-active` job in `ci.yml`). Every request to Google is aborted in the suites
+      // (`tests/support/consent-active.ts`). Viewports are set per case.
+      name: "consent-active",
+      testMatch: "consent-active/**/*.spec.ts",
       use: { ...devices["Desktop Chrome"] },
     },
   ],
