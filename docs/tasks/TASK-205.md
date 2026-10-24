@@ -50,7 +50,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: done on PR 400 (feature PR of TASK-204): `placeBasket`/`runPlaceOrder` in one transaction under the draft row lock, the payment-step seam (`demoPaymentStep`), the daily cap under an advisory lock, `markDraftPlaced`; 9 integration tests on PG16 (`tests/integration/checkout-place.test.ts`), mutations seen red (FOR UPDATE removed, cap `>=`, seen-total check removed, buyer not cleared, authorise skipped). Next: nothing beyond the PR's CI.
 
 ## Result
 

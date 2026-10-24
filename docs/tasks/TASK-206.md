@@ -48,7 +48,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: done on PR 400: `/{locale}/checkout/done` (`confirmationFor`, renderer per order mode, `gone` state), the demo banner and sample details, the product page's two entry buttons (`product.entry.demo`, `product.entry.addToBasket`; the entry decision moved to `modules/geo` so the indexable PDP imports nothing under the checkout paths). JS-off walk proved by hand to the `FO-` reference. Next: confirmation recap does not list add-ons (carry-forward); design compare.
 
 ## Result
 

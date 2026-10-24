@@ -35,7 +35,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: on PR 400: `retention.sweep` handlers `checkout_draft_personal`, `checkout_draft`, `demo_order_personal` (5 integration cases in `checkout-place.test.ts`, mutations seen red: mode filter dropped, `<=` to `<`), RoPA rows 8 to 10, `docs/runbooks/checkout.md`, the architecture row, `tests/unit/checkout-records.test.ts`. **Not done: the cookie-register half of AC-36/AC-75** (`fo_checkout`, `fo_checkout_echo` rows, `fo_basket` set, `fo_csrf` removed): it needs purpose copy, and two more unreviewed counted keys push `en-gb` past the 5 % share and deindex it, so it waits for the founder's approval of that copy (the change was built and reverted; see PR 400). `consent.cookies.basket.purpose` still says "Not set yet" although `fo_basket` is set on main.
 
 ## Result
 
