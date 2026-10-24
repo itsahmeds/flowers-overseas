@@ -213,6 +213,37 @@ describe("the populated country category (§5.3 row 2)", () => {
     }
   });
 
+  it("groups the panel by kind: what it is, then the occasions, each under its reviewed heading (spec 043 §5.3 E)", async () => {
+    const { CATEGORIES } =
+      await import("../../src/config/catalogue/categories.data");
+    const kindOf = new Map(CATEGORIES.map((c) => [c.key, c.kind] as const));
+    const start = html.indexOf("data-fo-listing-categories");
+    const panel = html.slice(start, html.indexOf("</details>", start));
+    const headings = [...panel.matchAll(/<h3[^>]*>([^<]*)<\/h3>/gu)].map(
+      (match) => match[1],
+    );
+    expect(headings).toStrictEqual(["By what it is", "Shop by occasion"]);
+    // Every chip's kind, in DOM order: no occasion before a product or flower type.
+    const keys = roses.links.chips.map((chip) => chip.key);
+    const order = keys
+      .map((key) => ({
+        key,
+        at: panel.indexOf(
+          `>${roses.links.chips.find((c) => c.key === key)?.name ?? ""}<`,
+        ),
+      }))
+      .sort((a, b) => a.at - b.at)
+      .map((entry) => kindOf.get(entry.key));
+    const firstOccasion = order.indexOf("occasion");
+    expect(firstOccasion).toBeGreaterThan(0);
+    expect(
+      order.slice(firstOccasion).every((kind) => kind === "occasion"),
+    ).toBe(true);
+    expect(roses.occasionCategoryKeys?.length).toBe(
+      order.length - firstOccasion,
+    );
+  });
+
   it("is a breadcrumb of five crumbs, the leaf marked and not a link", () => {
     expect(roses.breadcrumb.map((crumb) => crumb.labelKey)).toEqual([
       "common.homeLink",

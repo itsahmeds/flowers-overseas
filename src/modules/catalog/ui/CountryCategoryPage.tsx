@@ -118,7 +118,7 @@ export function CountryCategoryPage({
           sort={<ListingSortForm path={view.path} sort={view.sort} />}
           start={
             <ListingCategoriesToggle
-              groups={chipGroups(siblings, {
+              groups={chipGroups(siblings, view, {
                 what: shop("root.tilesHeading"),
                 occasion: t("home.occasions.eyebrow"),
               })}
