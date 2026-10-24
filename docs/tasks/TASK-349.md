@@ -51,6 +51,7 @@ here.
 - 2026-10-24 (resumed after a usage-limit cut-off): committed the previous agent's components, header link and count island; rebased onto main after PR 383 merged.
 - 2026-10-24: copy keys (en, pl plural forms, de/pl drafts), the basket route and view, the `basket` page type, `Disallow: /*/basket`, the basket header rules, the header slot page.
 - 2026-10-24: unit tests (count island, header link, SEO, view states), the integration test of `loadBasketPage` on a local PG16, the header baselines moved once; mutations run. Next: PR ready with `ci:full`.
+- 2026-10-25 (resumed after a usage-limit cut-off): CI on `ff0cc86f` red on `links.spec.ts` (the chrome link count lacked the Basket link; fixed), e2e cancelled at the 30-minute limit after retries, visual red on the moved header (expected), Lighthouse `/de` LCP 2031 ms (noise). Rebased on main; baselines re-rendered by the `visual:baselines` run on the new head. Next: commit baselines, `ci:full`.
 
 ## Result
 
