@@ -23,30 +23,47 @@
  *     `amount_refunded_minor`, and on a `cancelled` or `cancelled_refunded` order row 32
  *     (`order.refunded_full`, status unchanged) by `system:payments`.
  *
- * TASK-261 owns the rest of §5.2 "Refunds": `refund({ orderId, amount, reason, actor })` with its
- * typed refusals, rows 30 and 31 in set F, the webhook settlement, `succeededRefunds`,
- * `adminRefund`. Until then a settlement on an order outside the cancelled states writes no event
- * and raises `payment.refund_state_mismatch`.
+ * TASK-261 adds the rest of §5.2 "Refunds" on the same three steps (AC-28 to AC-30):
+ *
+ *  - `refund({ orderId, amount, reason, actor })`: the general request, with its typed refusals
+ *    (no provider call and no row on any of them), under the same `payment` then order locks.
+ *    There is no destination parameter: a refund goes back to the original method only (§8).
+ *  - `settleRefund` writes row 30 (`order.refunded_partial`) in set F while the order's own
+ *    succeeded refunds stay below its `buyer_total_minor`, row 31 (`order.refunded_full`) when
+ *    they reach it, row 32 on the cancelled states; anywhere else it keeps the money fact on the
+ *    row, writes no order event and raises `payment.refund_state_mismatch`.
+ *  - `applyProviderRefund`: the webhook settlement (`refund.*`, `charge.refunded`), which works
+ *    from the refund as the provider holds it now, so any order of arrival converges.
+ *  - `succeededRefunds(orderId)`: spec 018's one source of "Refunded {amount} on {date}".
  *
  * Logs and alerts carry ids, amounts and codes only.
  */
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { isCurrencyCode } from "@/config/currencies";
+import { isCurrencyCode, type CurrencyCode } from "@/config/currencies";
 import { captureAlert } from "@/lib/sentry";
 import { logger } from "@/lib/logger";
+import type { Money } from "@/modules/i18n";
 import {
+  ActorSchema,
+  actorClass,
   appendEvent,
   transition,
   withExecutor,
   type AlertRaiser,
+  type EngineConnection,
   type OrderExecutor,
 } from "@/modules/orders";
 
 import { RefundReasonSchema, type RefundReason } from "./events.ts";
 import { PAYMENTS_ACTOR, type PaymentTransaction } from "./context.ts";
-import { isProviderFailure, type PaymentProvider } from "./provider.ts";
+import {
+  isProviderFailure,
+  type PaymentProvider,
+  type ProviderRefund,
+} from "./provider.ts";
+import { IN_CANCELLED, IN_CLOSED_UNPAID, IN_SET_F } from "./states.ts";
 
 /** The refund statuses that count against a ceiling (spec 013 §5.2 "Refunds"). */
 export const REFUND_COUNTED_STATUSES = [
@@ -55,17 +72,8 @@ export const REFUND_COUNTED_STATUSES = [
   "succeeded",
 ] as const;
 
-/** The two states row 32 (`order.refunded_full`, a self-loop) starts from. */
-const CANCELLED_STATES: ReadonlySet<string> = new Set([
-  "cancelled",
-  "cancelled_refunded",
-]);
-
-/** The closed-unpaid states of the reconcile anomaly: a refund there writes no order event. */
-const CLOSED_UNPAID: ReadonlySet<string> = new Set([
-  "abandoned",
-  "payment_failed",
-]);
+const CANCELLED_STATES = IN_CANCELLED;
+const CLOSED_UNPAID = IN_CLOSED_UNPAID;
 
 export interface RefundDeps {
   readonly provider: PaymentProvider;
@@ -456,18 +464,34 @@ export async function settleRefund(
     SELECT status, mode, buyer_total_minor, buyer_currency_code
     FROM "order" WHERE id = ${refund.order_id} FOR UPDATE`);
   const order = OrderRow.parse(orderRaw);
+  const payload = {
+    mode: order.mode,
+    refund_id: refund.id,
+    amount_minor: refund.amount_minor,
+    currency_code: refund.currency_code,
+    reason: refund.reason,
+  };
   if (CANCELLED_STATES.has(order.status)) {
+    // Row 32: status unchanged.
     await transition(
       refund.order_id,
       "order.refunded_full",
       PAYMENTS_ACTOR,
-      {
-        mode: order.mode,
-        refund_id: refund.id,
-        amount_minor: refund.amount_minor,
-        currency_code: refund.currency_code,
-        reason: refund.reason,
-      },
+      payload,
+      { executor },
+    );
+  } else if (IN_SET_F.has(order.status)) {
+    // Rows 30 and 31 are decided by the named order's own succeeded refunds against its own
+    // total, never by the purchase's payment (spec 013 §14 A-founder-2026-10-22 item 6).
+    const [settled] = await executor.execute(sql`
+      SELECT coalesce(sum(amount_minor), 0) AS total FROM refund
+      WHERE order_id = ${refund.order_id} AND status = 'succeeded'`);
+    const full = sumOf(settled) >= order.buyer_total_minor;
+    await transition(
+      refund.order_id,
+      full ? "order.refunded_full" : "order.refunded_partial",
+      PAYMENTS_ACTOR,
+      payload,
       { executor },
     );
   } else if (!CLOSED_UNPAID.has(order.status)) {
@@ -493,4 +517,326 @@ export async function staleRequestedRefunds(
     WHERE status = 'requested' AND created_at <= ${cutoff.toISOString()}::timestamptz
     ORDER BY created_at, id`);
   return rows.map((row) => z.uuid().parse(row["id"]));
+}
+
+// ---------------------------------------------------------------------------------------------
+// refund (spec 013 §5.2 "Refunds"; AC-28, AC-29; TASK-261)
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * What `refund` is asked for. No destination field exists: a refund goes back to the original
+ * method only (§8, `plan/07` §9).
+ */
+export interface RefundInput {
+  readonly orderId: string;
+  readonly amount: Money;
+  readonly reason: RefundReason;
+  /** Whoever asks (`admin:{userId}`, `system:payments`, …): `requested_by` and the event's actor. */
+  readonly actor: string;
+}
+
+/** Why `refund` wrote nothing. Every refusal makes no provider call and writes no row. */
+export type RefundRefusal =
+  /** The amount is not a positive safe integer of minor units. */
+  | "REFUND_AMOUNT_INVALID"
+  /** The amount's currency is not the payment's. */
+  | "CURRENCY_MISMATCH"
+  /** The named order's refunds would pass its own `buyer_total_minor`. */
+  | "REFUND_EXCEEDS_ORDER"
+  /** The purchase's refunds would pass what its payment captured. */
+  | "REFUND_EXCEEDS_CAPTURED"
+  /** On a cancelled or closed-unpaid order, only the order's remaining balance may be refunded. */
+  | "REFUND_AMOUNT_NOT_BALANCE"
+  /** No captured payment, or the order's state allows no refund (`closed` included). */
+  | "NOT_REFUNDABLE";
+
+export type RefundResult =
+  | {
+      readonly kind: "requested";
+      readonly refundId: string;
+      readonly submitted: SubmitOutcome;
+    }
+  | {
+      readonly kind: "refused";
+      readonly code: RefundRefusal;
+      readonly status?: string;
+    };
+
+/** Positive safe-integer minor units, or `null` (`REFUND_AMOUNT_INVALID`). */
+function refundMinor(units: unknown): number | null {
+  if (typeof units === "bigint") {
+    return units > 0n && units <= BigInt(Number.MAX_SAFE_INTEGER)
+      ? Number(units)
+      : null;
+  }
+  return typeof units === "number" && Number.isSafeInteger(units) && units > 0
+    ? units
+    : null;
+}
+
+/** The anomaly refund's actors (§5.2 "Refunds": `system:payments` or an admin). */
+function anomalyActor(actor: string): boolean {
+  if (actor === PAYMENTS_ACTOR) return true;
+  const parsed = ActorSchema.safeParse(actor);
+  return parsed.success && actorClass(parsed.data) === "admin";
+}
+
+type RequestDecision =
+  | { readonly kind: "requested"; readonly refundId: string }
+  | {
+      readonly kind: "refused";
+      readonly code: RefundRefusal;
+      readonly status?: string;
+    };
+
+/**
+ * Refunds `amount` of the order `orderId` to the original method (spec 013 §5.2 "Refunds",
+ * §14 A-founder-2026-10-22 item 6). Under the purchase's `payment` row lock, then the order's:
+ *
+ *  - the amount is a positive integer in the payment's currency;
+ *  - the order is in set F (rows 30, 31), or `cancelled` / `cancelled_refunded` (row 32), or, for
+ *    the reconcile anomaly, `abandoned` / `payment_failed` with actor `system:payments` or an
+ *    admin and reason `other`; in the last two the amount must be the order's remaining balance;
+ *  - the order's `requested`, `pending` and `succeeded` refunds plus `amount` stay within its
+ *    `buyer_total_minor` (`REFUND_EXCEEDS_ORDER`), and the purchase's within what was captured
+ *    (`REFUND_EXCEEDS_CAPTURED`). The lock serialises two concurrent refunds on one purchase, so
+ *    of two that fit alone but not together exactly one is written; `0028`'s
+ *    `refund_order_ceiling` trigger is the database's second line.
+ *
+ * Then it inserts the `requested` row and appends `order.refund_requested` with the requester as
+ * actor, commits, and sends it (`submitRefund`, keyed by the row's id).
+ */
+export async function refund(
+  input: RefundInput,
+  deps: RefundDeps,
+): Promise<RefundResult> {
+  const orderId = z.uuid().parse(input.orderId);
+  const reason = RefundReasonSchema.parse(input.reason);
+  const actor = ActorSchema.parse(input.actor);
+  const amountMinor = refundMinor(input.amount.amountMinor);
+  if (amountMinor === null) {
+    return { kind: "refused", code: "REFUND_AMOUNT_INVALID" };
+  }
+  const currency: string = input.amount.currency;
+  const d = resolve(deps);
+
+  const requested = await d.transaction(
+    async (executor): Promise<RequestDecision> => {
+      const [paymentRaw] = await executor.execute(sql`
+        SELECT p.id, p.purchase_id, p.status, p.currency_code, p.amount_captured_minor
+        FROM payment p JOIN "order" o ON o.purchase_id = p.purchase_id
+        WHERE o.id = ${orderId} AND p.status = 'captured'
+        FOR UPDATE OF p`);
+      const [orderRaw] = await executor.execute(sql`
+        SELECT status, mode, buyer_total_minor, buyer_currency_code
+        FROM "order" WHERE id = ${orderId} FOR UPDATE`);
+      if (orderRaw === undefined) {
+        return { kind: "refused", code: "NOT_REFUNDABLE" };
+      }
+      const order = OrderRow.parse(orderRaw);
+      if (paymentRaw === undefined) {
+        return { kind: "refused", code: "NOT_REFUNDABLE", status: order.status };
+      }
+      const payment = PaymentRow.parse(paymentRaw);
+      if (currency !== payment.currency_code) {
+        return { kind: "refused", code: "CURRENCY_MISMATCH" };
+      }
+
+      let balanceOnly: boolean;
+      if (IN_SET_F.has(order.status)) {
+        balanceOnly = false;
+      } else if (CANCELLED_STATES.has(order.status)) {
+        balanceOnly = true;
+      } else if (
+        CLOSED_UNPAID.has(order.status) &&
+        reason === "other" &&
+        anomalyActor(actor)
+      ) {
+        balanceOnly = true;
+      } else {
+        return { kind: "refused", code: "NOT_REFUNDABLE", status: order.status };
+      }
+
+      const [orderAsked] = await executor.execute(sql`
+        SELECT coalesce(sum(amount_minor), 0) AS total FROM refund
+        WHERE order_id = ${orderId} AND status IN ${counted}`);
+      const remaining = order.buyer_total_minor - sumOf(orderAsked);
+      if (balanceOnly && amountMinor !== remaining) {
+        return { kind: "refused", code: "REFUND_AMOUNT_NOT_BALANCE" };
+      }
+      if (amountMinor > remaining) {
+        return { kind: "refused", code: "REFUND_EXCEEDS_ORDER" };
+      }
+      const [paymentAsked] = await executor.execute(sql`
+        SELECT coalesce(sum(amount_minor), 0) AS total FROM refund
+        WHERE payment_id = ${payment.id} AND status IN ${counted}`);
+      if (amountMinor > payment.amount_captured_minor - sumOf(paymentAsked)) {
+        return { kind: "refused", code: "REFUND_EXCEEDS_CAPTURED" };
+      }
+
+      const [inserted] = await executor.execute(sql`
+        INSERT INTO refund (payment_id, order_id, purchase_id, amount_minor, currency_code, reason,
+                            status, requested_by)
+        VALUES (${payment.id}, ${orderId}, ${payment.purchase_id}, ${amountMinor},
+                ${payment.currency_code}, ${reason}, 'requested', ${actor})
+        RETURNING id`);
+      const refundId = z.uuid().parse(inserted?.["id"]);
+      await appendEvent(
+        orderId,
+        "order.refund_requested",
+        actor,
+        {
+          mode: order.mode,
+          refund_id: refundId,
+          amount_minor: amountMinor,
+          currency_code: payment.currency_code,
+          reason,
+        },
+        { executor },
+      );
+      return { kind: "requested", refundId };
+    },
+  );
+
+  if (requested.kind === "refused") {
+    logger.info(
+      { order_id: orderId, outcome: requested.code },
+      "payments.refund_refused",
+    );
+    return requested;
+  }
+  const submitted = await submitRefund(requested.refundId, deps);
+  logger.info(
+    {
+      order_id: orderId,
+      refund_id: requested.refundId,
+      submitted: submitted.kind,
+    },
+    "payments.refund_requested",
+  );
+  return { ...requested, submitted };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Webhook settlement (`refund.*`, `charge.refunded`; AC-24, AC-29)
+// ---------------------------------------------------------------------------------------------
+
+export type ProviderRefundApplied =
+  /** The refund row moved (a reference, `pending`, `succeeded` with its event, or `failed`). */
+  | "changed"
+  /** The row already says what the provider says: a stale or repeated notification. */
+  | "unchanged"
+  /** No refund row of ours matches the provider's refund. */
+  | "unknown";
+
+/**
+ * Brings our refund row to the provider's refund as it is now, in the caller's transaction (the
+ * webhook run's). Matched by `provider_ref`, or, when the create response was lost, by the
+ * `refund_id` the refund carries in its metadata. A success settles through `settleRefund`
+ * (one money fact, one event), so `refund.updated` and `charge.refunded` for one refund write one
+ * event whichever comes first.
+ */
+export async function applyProviderRefund(
+  executor: OrderExecutor,
+  remote: ProviderRefund,
+  now: Date,
+  alert: AlertRaiser,
+): Promise<ProviderRefundApplied> {
+  const [byRef] = await executor.execute(sql`
+    SELECT id FROM refund WHERE provider_ref = ${remote.ref}`);
+  let id: string | undefined =
+    byRef === undefined ? undefined : z.uuid().parse(byRef["id"]);
+  const ours = z.uuid().safeParse(remote.refundId);
+  if (id === undefined && ours.success) {
+    const [byId] = await executor.execute(sql`
+      SELECT id FROM refund WHERE id = ${ours.data} AND provider_ref IS NULL`);
+    id = byId === undefined ? undefined : z.uuid().parse(byId["id"]);
+  }
+  if (id === undefined) return "unknown";
+  const row = await lockRefund(executor, id);
+  if (row === null) return "unknown";
+
+  let changed = false;
+  if (row.provider_ref === null || row.status === "requested") {
+    if (row.status === "requested") {
+      await executor.execute(sql`
+        UPDATE refund SET provider_ref = ${remote.ref}, status = 'pending' WHERE id = ${id}`);
+      changed = true;
+    } else if (row.provider_ref === null) {
+      await executor.execute(sql`
+        UPDATE refund SET provider_ref = ${remote.ref} WHERE id = ${id}`);
+      changed = true;
+    }
+  }
+
+  if (remote.status === "succeeded") {
+    if (await settleRefund(executor, id, now, alert)) changed = true;
+  } else if (remote.status === "failed" || remote.status === "canceled") {
+    if (row.status === "requested" || row.status === "pending") {
+      await markFailed(
+        executor,
+        row,
+        remote.failureCode ?? remote.status,
+        remote.ref,
+        alert,
+      );
+      changed = true;
+    } else if (row.status === "succeeded") {
+      // The money came back to us after it had reached the buyer: the money fact and its event
+      // stand, and the founder looks at it.
+      alert("payment.refund_failed", {
+        order_id: row.order_id,
+        refund_id: row.id,
+        code: remote.failureCode ?? remote.status,
+      });
+    }
+  }
+  return changed ? "changed" : "unchanged";
+}
+
+// ---------------------------------------------------------------------------------------------
+// succeededRefunds (AC-30)
+// ---------------------------------------------------------------------------------------------
+
+export interface SucceededRefund {
+  readonly amount: Money;
+  readonly succeededAt: Date;
+}
+
+const SucceededRow = z.object({
+  amount_minor: Minor,
+  currency_code: z.string().transform((value, ctx): CurrencyCode => {
+    if (isCurrencyCode(value)) return value;
+    ctx.addIssue({ code: "custom", message: "not a currency of ours" });
+    return z.NEVER;
+  }),
+  succeeded_at: z.union([z.date(), z.string()]).transform((v) => new Date(v)),
+});
+
+/**
+ * The order's succeeded refunds, oldest first: the one source of spec 018's "Refunded {amount}
+ * on {date}" (advisor F4). `requested`, `pending` and `failed` rows are never returned, and the
+ * date is the row's `succeeded_at`, never an event's `occurred_at`.
+ */
+export async function succeededRefunds(
+  orderId: string,
+  options: EngineConnection = {},
+): Promise<SucceededRefund[]> {
+  const id = z.uuid().parse(orderId);
+  const rows = await withExecutor(options, "payments.refunds", (executor) =>
+    executor.execute(sql`
+      SELECT amount_minor, currency_code, succeeded_at FROM refund
+      WHERE order_id = ${id} AND status = 'succeeded'
+      ORDER BY succeeded_at, id`),
+  );
+  return rows.map((raw) => {
+    const row = SucceededRow.parse(raw);
+    return {
+      amount: {
+        amountMinor: row.amount_minor,
+        currency: row.currency_code,
+      },
+      succeededAt: row.succeeded_at,
+    };
+  });
 }
