@@ -9,16 +9,25 @@
  * (clause 8; `tests/consent-active/`).
  *
  * **Clause 9, the chunk matcher.** A "chunk not requested" assertion names the consent island's
- * chunk by the file the build output records for it: the entries of the locale page's
- * `react-loadable-manifest.json` (the file `pnpm budget:client-js` counts) whose bytes carry the
- * island's marker. `consentIslandChunks()` throws unless exactly one such file exists and is
- * non-empty, so a wrong name, a moved manifest or an emptied file cannot pass as "not requested";
- * the same run then activates "Cookie settings" and the same matcher must find it requested.
+ * chunk by the file the build output records for it: the lazy chunks Turbopack's loader stubs
+ * request (`lazyChunksNamedIn`, the edge `pnpm budget:client-js` reads since TASK-376, when
+ * `React.lazy` replaced `next/dynamic` and `react-loadable-manifest.json` stopped being written)
+ * whose bytes carry the island's mark (`CONSENT_ISLAND_MARKER`). `consentIslandChunk()` throws
+ * unless exactly one such file exists and is non-empty, so a wrong name, a missing build or an
+ * emptied file cannot pass as "not requested"; the same run then activates "Cookie settings" and
+ * the same matcher must find it requested.
  */
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { type Page, expect } from "@playwright/test";
+
+import {
+  CONSENT_ISLAND_MARKER,
+  lazyChunksNamedIn,
+} from "../../scripts/client-js-budget.ts";
+
+export { CONSENT_ISLAND_MARKER };
 
 export const CONSENT = {
   sheet: "[data-fo-consent]",
@@ -54,45 +63,43 @@ export async function openConsentSettings(page: Page): Promise<void> {
 
 /** The build output the suites run against (`next start` over `.next` in the checkout). */
 const DIST = resolve(import.meta.dirname, "../../.next");
-/** The locale page's loadable manifest: the `next/dynamic` chunks of every `/{locale}` document. */
-const LOCALE_PAGE_MANIFEST = join(
-  DIST,
-  "server/app/[locale]/page/react-loadable-manifest.json",
-);
+
 /**
- * A literal the consent island's chunk carries and no other chunk of that manifest does: the
- * sheet's viewport anchor (`ConsentBannerView`, which only the island renders on a locale page; the
- * settings panel is its own chunk and does not carry it).
+ * Every lazy chunk of the build that carries `marker`: the chunk paths any loader stub under
+ * `static/chunks` requests (`lazyChunksNamedIn`), kept where the emitted file's bytes include the
+ * literal. Throws without a build, so "no such chunk" and "no build to look in" differ.
  */
-export const CONSENT_ISLAND_MARKER = "data-fo-consent-sheet";
+export function lazyChunksCarrying(marker: string, dist = DIST): string[] {
+  const chunks = join(dist, "static/chunks");
+  if (!existsSync(chunks)) {
+    throw new Error(
+      `no ${chunks}: the suite needs the build it is testing in the checkout`,
+    );
+  }
+  const named = new Set<string>();
+  for (const file of readdirSync(chunks, {
+    recursive: true,
+    encoding: "utf8",
+  })) {
+    if (!file.endsWith(".js")) continue;
+    for (const asset of lazyChunksNamedIn(
+      readFileSync(join(chunks, file), "utf8"),
+    )) {
+      named.add(asset);
+    }
+  }
+  return [...named].sort().filter((asset) => {
+    const path = join(dist, asset);
+    return existsSync(path) && readFileSync(path, "utf8").includes(marker);
+  });
+}
 
 /** `static/chunks/….js`: the consent island's chunk, resolved and checked (clause 9). */
 export function consentIslandChunk(): string {
-  if (!existsSync(LOCALE_PAGE_MANIFEST)) {
-    throw new Error(
-      `no ${LOCALE_PAGE_MANIFEST}: the suite needs the build it is testing in the checkout`,
-    );
-  }
-  const manifest = JSON.parse(
-    readFileSync(LOCALE_PAGE_MANIFEST, "utf8"),
-  ) as Record<string, { files?: readonly string[] }>;
-  const files = [
-    ...new Set(
-      Object.values(manifest).flatMap(({ files: listed = [] }) =>
-        listed.filter((file) => file.endsWith(".js")),
-      ),
-    ),
-  ];
-  const matches = files.filter((file) => {
-    const path = join(DIST, file);
-    return (
-      existsSync(path) &&
-      readFileSync(path, "utf8").includes(CONSENT_ISLAND_MARKER)
-    );
-  });
+  const matches = lazyChunksCarrying(CONSENT_ISLAND_MARKER);
   if (matches.length !== 1) {
     throw new Error(
-      `expected exactly one consent island chunk in ${LOCALE_PAGE_MANIFEST}, found ${String(matches.length)} of ${String(files.length)}`,
+      `expected exactly one lazy chunk carrying ${CONSENT_ISLAND_MARKER}, found ${String(matches.length)}`,
     );
   }
   const chunk = matches[0]!;
