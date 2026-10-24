@@ -48,12 +48,15 @@ export async function RouteHeader({
   segments,
   switcherSegments,
   home = false,
+  basketCurrent = false,
 }: {
   readonly locale: string;
   readonly segments: readonly string[];
   readonly switcherSegments: readonly string[];
   /** The locale home: no price claim in the notice bar. */
   readonly home?: boolean;
+  /** The basket page: its header link is the current page (spec 010 D10). */
+  readonly basketCurrent?: boolean;
 }): Promise<ReactElement> {
   const locale = (routableLocale(requested) ?? documentFallbackLocale()).code;
   setRequestLocale(locale);
@@ -72,6 +75,7 @@ export async function RouteHeader({
           : inContextListingHrefs(outOfContext, shopLinks)
       }
       priceClaim={home ? null : <NoticePriceClaim />}
+      basketCurrent={basketCurrent}
       switcher={
         <PageLocaleSwitcher locale={locale} segments={switcherSegments} />
       }

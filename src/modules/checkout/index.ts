@@ -101,6 +101,7 @@ export {
   LinePatchSchema,
   NewLineSchema,
   appendLine,
+  clearPendingNotice,
   createDraft,
   draftExpiryAt,
   draftModes,
