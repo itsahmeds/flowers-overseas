@@ -63,6 +63,15 @@ const READERS: readonly Entry[] = [
 
 /** Functions trusted to parse their argument. A raw input passed to one counts as parsed. */
 const PARSERS: readonly Entry[] = [
+  // Spec 013 §5.2 "Webhook inbox" (TASK-260): the raw body is measured against the 1 MB cap, then
+  // the provider verifies its signature over the exact bytes and parses it (Stripe:
+  // `StripeEventSchema.safeParse` in `stripe/webhook.ts`; the fake: `FakeEventSchema`) before
+  // anything reads a field. The signature must be checked on the unparsed text.
+  {
+    entry: "src/modules/payments/webhooks.ts#ingestWebhook",
+    reason:
+      "Buffer.byteLength cap, then provider.verifyAndParseWebhook (StripeEventSchema.safeParse) before any field is read",
+  },
   {
     entry: "src/modules/catalog/params.ts#listingRequest",
     reason:
@@ -954,11 +963,12 @@ describe("T-57: the real tree", () => {
     expect(problems(result)).toEqual([]);
   });
 
-  it("the lists are today's: one reader, seven parsers (adding one changes this file)", () => {
+  it("the lists are today's: one reader, eight parsers (adding one changes this file)", () => {
     expect(READERS.map((e) => e.entry)).toEqual([
       "src/lib/consent.ts#readBoundedBody",
     ]);
     expect(PARSERS.map((e) => e.entry)).toEqual([
+      "src/modules/payments/webhooks.ts#ingestWebhook",
       "src/modules/catalog/params.ts#listingRequest",
       "src/modules/checkout/steps.ts#runRecipientStep",
       "src/modules/checkout/steps.ts#runCardAndBuyerStep",

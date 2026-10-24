@@ -17,7 +17,7 @@ Orders stuck in `placed`/`authorised`; buyers charged with no confirmation; `web
 Signature mismatch (rotated secret / wrong env), schema change in a payload (zod failure), DB down, timeout (processing inline instead of via job).
 
 ## Fix / recovery
-Fix env or code; then **replay** missed events: Stripe dashboard → resend, or `pnpm jobs:replay-webhooks --since <ts>`. Verify every `authorised` order progressed; capture or void manually via admin where needed.
+Fix env or code; then **replay** missed events: Stripe dashboard → resend, or `pnpm jobs:replay-webhooks --since <ISO> [--dry-run]` (posts to the deployment's `/api/internal/payments/replay-webhooks` with `INTERNAL_CRON_SECRET`; set `NEXT_PUBLIC_SITE_URL` or pass `--base-url`). A replay is idempotent: an event already in the inbox changes nothing. To re-process one stored row (for example one `dead` after 8 attempts, or one left `ignored` with `awaiting_handler`), use `pnpm jobs:replay-webhooks --inbox-id <id>`. Verify every `authorised` order progressed; capture or void manually via admin where needed.
 
 ## Communication
 If buyers were affected >30 min: proactive email to affected buyers (template T1 resend). Florists: none unless routing was delayed past SLA.

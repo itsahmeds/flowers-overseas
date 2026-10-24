@@ -74,3 +74,19 @@ export type {
   RefundDeps,
   SubmitOutcome,
 } from "./refunds.ts";
+
+// Spec 013 §5.2 "Webhook inbox" (TASK-260): the endpoint's body, the job and the replay.
+export {
+  ingestStripeWebhook,
+  processWebhook,
+  replayStripeWebhooks,
+  replayWebhooks,
+  WEBHOOK_MAX_ATTEMPTS,
+  WEBHOOK_MAX_BYTES,
+} from "./webhooks.ts";
+export type {
+  ProcessOutcome,
+  ReplayCounts,
+  ReplayOptions,
+  StripeEndpointConfig,
+} from "./webhooks.ts";

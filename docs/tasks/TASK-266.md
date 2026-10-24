@@ -25,6 +25,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 _None yet._
+- **From TASK-260 (2026-10-24, PR 406):** `webhook.process` is registered in `src/jobs/index.ts` without a handler, so its jobs wait. With the test keys, add the handler in `src/jobs/handlers.ts` (`processWebhook(inboxId, { provider: createStripeProvider(...) })`) and set `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` in staging.
 
 ## Escalations
 

@@ -7,7 +7,8 @@
  * Thin by design (`plan/01` §5): the secret gate and the response are `@/jobs/internal`; the tick
  * is `@/jobs/runtime` (`ensureQueues`, then `runTick` with the handlers of `@/jobs/handlers`) over
  * `DATABASE_URL_UNPOOLED`, on a pg-boss instance that lives for this request only. Every tick
- * first enqueues one `outbox.dispatch` (spec 013 §5.2, TASK-254), which the same tick consumes.
+ * first enqueues one `outbox.dispatch` (spec 013 §5.2, TASK-254) and one `payments.production_start`
+ * (TASK-258), which the same tick consumes.
  */
 import { JOB_HANDLERS } from "@/jobs/handlers";
 import { tickResponse } from "@/jobs/internal";
@@ -31,6 +32,13 @@ export function POST(request: Request): Promise<Response> {
           {
             requestId: "system:jobs.tick",
           },
+        );
+        // Spec 013 §5.2 (TASK-258): row 16 on the delivery morning, checked every minute.
+        await enqueue(
+          boss,
+          "payments.production_start",
+          {},
+          { requestId: "system:jobs.tick" },
         );
         return runTick(boss, JOB_HANDLERS);
       }),
