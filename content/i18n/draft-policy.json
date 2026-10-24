@@ -24,6 +24,11 @@
       "note": "the operator line"
     },
     {
+      "key": "company.controller",
+      "reason": "legal",
+      "note": "the data controller sentence in the cookie panel, the twin of company.operatedBy; added by TASK-185 after TASK-183 merged it"
+    },
+    {
       "key": "nav.utility.pricesInclude",
       "reason": "price-display"
     },
