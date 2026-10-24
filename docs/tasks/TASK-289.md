@@ -47,7 +47,19 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-25, copy headroom (to the orchestrator for the founder; `open`): the work order ships the
+  short H1 pattern and "How we sort" unreviewed, and the not-open state must read "Ordering opens
+  soon". Five values are unreviewed: `shop.h1.countryShopRoot` "Flowers to {country}",
+  `shop.h1.countryCategory` "{entity} to {country}", `shop.h1.countryOccasion` "{occasion} flowers
+  to {country}", `shop.toolbar.howWeSort` "How we sort", `destinations.state.guideNotDelivering`
+  "Ordering opens soon". `en` goes to 30 of 568 (5.3%) and `en-gb` to 31 (5.5%), over spec 003
+  A17's 5%, so both locales read non-indexable and 26 unit and contract files fail until the
+  founder's record run sets them `reviewed: true` (TASK-119 precedent). With the record simulated
+  locally only `sitemap-fixtures` fails, regenerated with `UPDATE_SEO_FIXTURES=1` in the same
+  commit. Not routed around.
+- 2026-10-25, TASK-239 overlap (to the orchestrator; `open`): TASK-239 is not built, so this task
+  changes `destinations.state.guideNotDelivering` to TASK-239's prescribed "Ordering opens soon";
+  the home and destinations hub read it too.
 
 ## Progress
 
@@ -56,10 +68,27 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-25: worktree `fo-wt-289` on `task/TASK-289-listing-head`; row `in_progress`; Binding updated to the 2026-10-24 redraw. Next: the head components, the sort island, the copy, the tests.
+- 2026-10-25: head, quiet line, toolbar, sort island, copy and tests built; local build e2e green on the touched files except the /dev gallery and pseudo-locale cases (env flags off locally); row `in_review`, PR 415.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 415 builds the redrawn head on the shop root, country category and country occasion: the quiet
+trail, the short H1 at `--text-3xl-fluid`, one quiet line (count, the not-open state, "Prices
+include delivery and VAT"), "page N of M" from page 2 only, Categories in two groups, a closed "How
+we sort", a "Sort by" pill whose select applies on change (`listing-sort` deferred island; the
+Sort button only in `<noscript>`), the example note under the grid, and no lead photo or date card
+on the occasion page. Tests: unit (head, count, parts, grouping, sort href, deferred set, barrels)
+and e2e (`listing-first-screen.spec.ts` rewritten; band, params, price-once, chunks and page specs
+updated). First screen on a local build (load average 5 to 9; today's header, about 34 px taller
+than TASK-383's): first photo top 353 px (occasion 386) and first-row price bottom 812 (845) at
+1440 x 900, 762 (795) at 1280 x 800; first photo top 273 (occasion 337) at 390 x 844. A local
+build ran inside the build slot because the first-screen numbers and the screenshot comparison
+cannot be judged without one. Deviations: the phone back link's box is 44 px (spec 004 AC-50) laid
+over the artboard's 32 px row; the phone select keeps 16 px (iOS zoom). Carry-forwards: AC-5's
+header half waits for TASK-383; AC-40 on the hubs goes to TASK-388; AC-12 (count by noun) is not
+built; `ListingGrid`'s `lead` prop is now unused; the occasion page's "Also in" holds the shop root
+chip only, as drawn; `system/components.dc.html` should draw the quiet `Breadcrumbs` tone, the sort
+pill and `ChevronDown`.
