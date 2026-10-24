@@ -3,7 +3,7 @@
  * A-founder-2026-10-22 AC-68; TASK-206).
  *
  * Read from the `fo_checkout` cookie, never from a URL token: the basket it names, and, once that
- * basket is placed, its purchase's orders in basket order, each with its `FO-XXXX-XXXX` reference
+ * basket is placed, its purchase's orders in basket order, each with its `FO-` reference
  * (derived from the order id), the recipient's name and address, the date, the card and the
  * amount, from the orders' own snapshots (the draft's copies were cleared at placement). Without a
  * cookie, for an expired one, or for a basket with no purchase, the answer is `gone`, which the

@@ -28,12 +28,14 @@ import {
   loadDraft,
   nextDeliveryDate,
   placeBasket,
+  registerPaymentStep,
   runCardAndBuyerStep,
   runPlaceOrder,
   runRecipientStep,
   saveLine,
   startCheckout,
 } from "@/modules/checkout";
+import { orderService } from "@/modules/orders";
 
 import { runRetentionSweep } from "../../src/jobs/retention.ts";
 
@@ -781,8 +783,15 @@ describeDb(
       });
     });
 
-    async function placedDemo(
+    /**
+     * A placed order of `mode`. `test` and `live` have no payment step in this spec (spec 013
+     * registers them), so a step that authorises nothing stands in, the draft is made in that mode
+     * before placement, and a live order carries a terms version as `placePurchase` demands. The
+     * order is written in its mode from the start: no trigger is switched off (AC-36's scan).
+     */
+    async function placedAs(
       tx: Tx,
+      mode: "demo" | "test" | "live" = "demo",
     ): Promise<{ orderId: string; purchaseId: string }> {
       const connection = await seeded(tx);
       const token = await add(
@@ -791,10 +800,33 @@ describeDb(
         TIER?.tierKey ?? "",
       );
       await fill(connection, token, 1);
-      const outcome = await placeBasket(
-        ctx(connection, token, 2),
-        await reviewTotal(connection, token),
-      );
+      const seen = await reviewTotal(connection, token);
+      const restore: (() => void)[] = [];
+      if (mode !== "demo") {
+        await tx.unsafe("RESET ROLE");
+        await tx`UPDATE checkout_draft SET mode = ${mode}`;
+        registerPaymentStep({ mode, authorise: () => Promise.resolve() });
+        if (mode === "live") {
+          const original = orderService.placePurchase;
+          const spy = vi
+            .spyOn(orderService, "placePurchase")
+            .mockImplementation((input, options) =>
+              original(
+                {
+                  ...input,
+                  orders: input.orders.map((order) => ({
+                    ...order,
+                    termsVersion: "terms-test",
+                  })),
+                },
+                options,
+              ),
+            );
+          restore.push(() => spy.mockRestore());
+        }
+      }
+      const outcome = await placeBasket(ctx(connection, token, 2), seen);
+      for (const undo of restore) undo();
       if (outcome.kind !== "placed") throw new Error(outcome.kind);
       await tx.unsafe("RESET ROLE");
       // The draft is fresh, so only the demo-order rule can act.
@@ -843,7 +875,7 @@ describeDb(
 
     it("T-35: production seed (1 day): a demo order is pseudonymised at 24 h, its order, lines, events and purchase kept", async () => {
       await rolledBack(sql(), async (tx) => {
-        const { orderId } = await placedDemo(tx);
+        const { orderId } = await placedAs(tx);
         const events = (await personal(tx, orderId)).events;
 
         await placedAgo(tx, orderId, 24 * HOUR_MS - 60_000);
@@ -899,12 +931,8 @@ describeDb(
 
     it("T-35: staging seed (7 days): untouched at 24 h, pseudonymised at 7 days; a test order too", async () => {
       await rolledBack(sql(), async (tx) => {
-        const { orderId } = await placedDemo(tx);
+        const { orderId } = await placedAs(tx, "test");
         await tx`UPDATE retention_policy SET retention_days = 7 WHERE key = 'demo_order_personal'`;
-        await tx.unsafe("SET LOCAL session_replication_role = replica");
-        await tx`UPDATE "order" SET mode = 'test' WHERE id = ${orderId}`;
-        await tx`UPDATE purchase SET mode = 'test' WHERE id = (SELECT purchase_id FROM "order" WHERE id = ${orderId})`;
-        await tx.unsafe("SET LOCAL session_replication_role = origin");
 
         await placedAgo(tx, orderId, 24 * HOUR_MS);
         expect(
@@ -924,11 +952,7 @@ describeDb(
 
     it("T-35: a live order, its recipient and its buyer are never touched", async () => {
       await rolledBack(sql(), async (tx) => {
-        const { orderId } = await placedDemo(tx);
-        await tx.unsafe("SET LOCAL session_replication_role = replica");
-        await tx`UPDATE "order" SET mode = 'live', terms_version = 'terms-test' WHERE id = ${orderId}`;
-        await tx`UPDATE purchase SET mode = 'live' WHERE id = (SELECT purchase_id FROM "order" WHERE id = ${orderId})`;
-        await tx.unsafe("SET LOCAL session_replication_role = origin");
+        const { orderId } = await placedAs(tx, "live");
         await placedAgo(tx, orderId, 400 * 24 * HOUR_MS);
 
         expect((await sweep(tx))["demo_order_personal"]?.counts).toEqual({
