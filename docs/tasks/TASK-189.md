@@ -159,6 +159,9 @@ One line per coherent step, newest last.
   (both sides kept: TASK-183's two legal keys and this task's three rule keys in the founder
   queue) and `docs/codebase-map.md` (regenerated). PR 375's re-rendered baselines touch none of
   this PR's pictures; the manifest merged line by line and `--verify` matches all 116.
+- 2026-10-24 (finisher): CI on 73a0861e was red only in `test-unit`, `design-docs.test.ts`
+  (two `docs/design/canvas.json` artboards overlapping, a main-side clash fixed by PR 386, no
+  file of this PR); rebased cleanly onto efcd895b and re-fired.
 
 ## Result
 
