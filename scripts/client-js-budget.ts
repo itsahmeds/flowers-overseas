@@ -104,6 +104,7 @@ import { LAUNCH_LOCALE_DATA } from "../src/config/locales.data.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { productRoutePathFor } from "../src/lib/product-rewrites.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
+import { languageOffer } from "../src/modules/i18n/routing.ts";
 import {
   consentPrompt,
   consentSources,
@@ -438,7 +439,9 @@ function matchSegment(segment: string, actual: string | undefined): boolean {
  *  - the consent settings panel (§5.3, "the default path pays for the banner only"), imported the
  *    first time the sheet's "Settings" is pressed, by the `data-fo-consent-panel` it renders.
  *
- * The consent island itself joins them only while nothing needs consent: `onInputChunkMarkers()`.
+ * Two islands join them where the build's data mounts no loader for them: the consent island
+ * while nothing needs consent, and the language popup on a page with nothing to offer
+ * (`onInputChunkMarkers()`).
  *
  * A lazy chunk missing from this list is charged to every page whose chunks name it: an over-count,
  * which `tests/e2e/client-js-budget.spec.ts` reports as "charged by budget:client-js and not
@@ -461,16 +464,44 @@ export const ON_INPUT_CHUNK_MARKERS: readonly string[] = [
 export const CONSENT_ISLAND_MARKER = "fo:consent:island";
 
 /**
- * `ON_INPUT_CHUNK_MARKERS`, plus the consent island's while nothing needs consent. Read from the
- * same environment the build saw (`consentSources()`, the reader the locale layout uses), so the
- * budget and the page cannot disagree: a consent-active build is charged the island.
+ * The language popup's chunk, by its deferred-set marker. A paint-triggered island, so a page load
+ * fetches it wherever its loader mounts; since TASK-280 the popup's server half mounts the loader
+ * only where `languageOffer(pageLocale)` is non-empty (spec 003 §14 A-founder-2026-10-19d clause
+ * 1), so on a page with nothing to offer no input and no paint ever fetches it.
+ */
+export const LANGUAGE_POPUP_MARKER: string =
+  DEFERRED_ISLANDS.find((island) => island.id === "language-popup")?.marker ??
+  "missing:language-popup";
+
+/**
+ * The chunk markers a page load never fetches: `ON_INPUT_CHUNK_MARKERS`, plus
+ *
+ *  - the consent island's while nothing needs consent, read from the same environment the build
+ *    saw (`consentSources()`, the reader the locale layout uses), so a consent-active build is
+ *    charged the island (TASK-279);
+ *  - the language popup's on a page whose locale has nothing to offer (`languageOffer()`, the rule
+ *    `LanguagePopup` renders by), so a registry that shows a second language charges the popup to
+ *    exactly the pages that mount it (TASK-280). Without a `pageLocale` the popup is left charged.
+ *
+ * Both are the readers the page itself uses, so the budget and the page cannot disagree.
  */
 export function onInputChunkMarkers(
   env: EnvSource = process.env,
+  pageLocale?: string,
 ): readonly string[] {
-  return consentPrompt(consentSources(env))
-    ? ON_INPUT_CHUNK_MARKERS
-    : [...ON_INPUT_CHUNK_MARKERS, CONSENT_ISLAND_MARKER];
+  return [
+    ...ON_INPUT_CHUNK_MARKERS,
+    ...(consentPrompt(consentSources(env)) ? [] : [CONSENT_ISLAND_MARKER]),
+    ...(pageLocale !== undefined && languageOffer(pageLocale).length === 0
+      ? [LANGUAGE_POPUP_MARKER]
+      : []),
+  ];
+}
+
+/** The locale segment of a URL (`/en-gb/poland/flowers` → `en-gb`), or `undefined` for `/`. */
+export function pageLocaleOf(url: string): string | undefined {
+  const segment = url.split("/")[1];
+  return segment === undefined || segment === "" ? undefined : segment;
 }
 
 /**
@@ -492,8 +523,8 @@ export function lazyChunksNamedIn(source: string): string[] {
 
 /**
  * The lazy chunks a URL **may** fetch on a page load: every chunk a loader stub anywhere in the
- * build's `static/chunks` names, except the on-input chunks of `ON_INPUT_CHUNK_MARKERS`. An
- * app-level candidate list, not a bill — `reachableAssets()` keeps the ones this URL's mounted
+ * build's `static/chunks` names, except the chunks `onInputChunkMarkers()` names for this URL's
+ * locale. A candidate list, not a bill — `reachableAssets()` keeps the ones this URL's mounted
  * chunks actually lead to.
  *
  * Until TASK-376 this list was the route's `react-loadable-manifest.json`, which only `next/dynamic`
@@ -511,7 +542,7 @@ export function lazyCandidatesFor(
   env: EnvSource = process.env,
 ): ScriptTag[] {
   assertRouteEntry(dist, url);
-  return lazyCandidatesIn(dist, env);
+  return lazyCandidatesIn(dist, onInputChunkMarkers(env, pageLocaleOf(url)));
 }
 
 function assertRouteEntry(dist: string, url: string): void {
@@ -522,12 +553,11 @@ function assertRouteEntry(dist: string, url: string): void {
   }
 }
 
-/** The app-level half of `lazyCandidatesFor()`: read once per `measurePages()` call. */
+/** The build-level half of `lazyCandidatesFor()`: read once per marker set per `measurePages()` call. */
 function lazyCandidatesIn(
   dist: string,
-  env: EnvSource = process.env,
+  markers: readonly string[],
 ): ScriptTag[] {
-  const markers = onInputChunkMarkers(env);
   const chunks = join(dist, "static/chunks");
   let files: string[];
   try {
@@ -716,7 +746,7 @@ export function measurePages(
   dist: string,
   urls: readonly string[],
 ): PageMeasurement[] {
-  let candidates: ScriptTag[] | undefined;
+  const candidatesBy = new Map<string, ScriptTag[]>();
   return urls.map((url) => {
     // A product address is rewritten to the product route (`src/lib/product-rewrites.ts`), so its
     // document and its route entry live under that path; the row keeps the address a visitor asks.
@@ -749,10 +779,16 @@ export function measurePages(
     // lazy chunk is requested by the component that mounts, so the mounted set is the
     // honest seed.
     const loaded = references.flatMap((reference) => [...reference.chunks]);
-    // Every URL must have a route entry ("cannot tell" is not "none"); the app-level candidate
-    // list is read once per call.
+    // Every URL must have a route entry ("cannot tell" is not "none"); the candidate list is read
+    // once per marker set per call (the popup's marker depends on the page's locale, TASK-280).
     assertRouteEntry(dist, served);
-    candidates ??= lazyCandidatesIn(dist);
+    const markers = onInputChunkMarkers(process.env, pageLocaleOf(url));
+    const key = markers.join("\n");
+    let candidates = candidatesBy.get(key);
+    if (candidates === undefined) {
+      candidates = lazyCandidatesIn(dist, markers);
+      candidatesBy.set(key, candidates);
+    }
     const lazyTags = reachableAssets(
       dist,
       loaded,
