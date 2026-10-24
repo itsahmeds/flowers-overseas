@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: worktree `fo-wt-289` on `task/TASK-289-listing-head`; row `in_progress`; Binding updated to the 2026-10-24 redraw. Next: the head components, the sort island, the copy, the tests.
 
 ## Result
 
