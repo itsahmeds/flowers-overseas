@@ -26,6 +26,7 @@ import {
   listProductPages,
   listingPages,
 } from "@/modules/catalog";
+import { isBlogTag } from "@/modules/content";
 import { hubView, listCorridorPages } from "@/modules/geo";
 import { localePath, routableLocaleCodes } from "@/modules/i18n";
 import { absoluteUrl, deploymentDescriptor } from "@/modules/seo";
@@ -190,6 +191,12 @@ async function catalogDocuments(iso2: CountryIso2): Promise<TaggedDocument[]> {
  */
 export async function pathsForTag(tag: string): Promise<string[]> {
   if (UNRESOLVED_TAGS.includes(tag)) return [];
+  // Spec 044 §5.4 (TASK-322): `blog:{locale}` and `blog:post:{id}` resolve through the blog's own
+  // reader, whatever the post's status, so an unpublish purges the URL it took down.
+  if (isBlogTag(tag)) {
+    const { blogTagPaths } = await import("@/modules/content/blog/db/tags");
+    return [...(await blogTagPaths(tag))];
+  }
   const iso2 = catalogDestinationOf(tag);
   const documents =
     iso2 === undefined ? taggedDocuments() : await catalogDocuments(iso2);

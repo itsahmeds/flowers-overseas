@@ -64,6 +64,7 @@ export {
   SITEMAP_INDEX_PATH,
   SITEMAP_LOCALE_INDEX,
   type SitemapChild,
+  type SitemapSources,
   type SitemapParams,
   SitemapParamsSchema,
   isSitemapChild,
@@ -99,6 +100,23 @@ export {
 } from "./sitemap/xml.ts";
 
 export { corridorSitemapEntries } from "./sitemap/corridors.ts";
+
+// Spec 044's blog (TASK-322): its sitemap child, its head and its schema, from plain inputs the
+// route reads from the blog and hands in.
+export {
+  type EditorialSitemapPage,
+  editorialSitemapEntries,
+} from "./sitemap/editorial.ts";
+export {
+  type BlogHeadInput,
+  type BlogPostSchemaInput,
+  blogAlternates,
+  blogIndexJsonLd,
+  blogPageMetadata,
+  blogPageVerdict,
+  blogPostJsonLd,
+} from "./blog-head.ts";
+export { type BlogPostingInput, blogPosting } from "./schema/blogPosting.ts";
 
 export {
   STATIC_SITEMAP_PAGE_TYPES,

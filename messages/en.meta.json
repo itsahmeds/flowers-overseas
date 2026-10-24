@@ -4713,5 +4713,55 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "285bafa98c36fe604321e613379eca4f838565817caa3fd3fad5a1df49b4cda0"
+  },
+  "blog.index.h1": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b8ca2efe414683db0bccedaf0c29703f521e4aaa7bc8aa4bb093de8216a46322"
+  },
+  "blog.index.intro": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f5bb00f903771636ca21b29d2f0ede64ce2a0177eaf3f5e8eecac26650379eac"
+  },
+  "blog.index.seoTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8685de952eadc33785b07fb3cddb2e50004b7a4a009b45ddce05f0c4fe0d87ab"
+  },
+  "blog.index.seoDescription": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3c00d699a0e296758516b19d218699e04913d129bc8cdfe65ba5185ae1bb6007"
+  },
+  "blog.post.byline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e4feaaa98320efa41d7057d1c722af8accd59368fdc1ff40378fa394692052c7"
+  },
+  "blog.post.published": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8d403ca9e9dd360a9c12edb76547deee9c10cae0e7569284543fe67f198fc10d"
+  },
+  "blog.post.updated": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "328a4d4c6ba2b1acfac3808c3ca8623f892b30f8088b7a0e4299abe560c0f98e"
+  },
+  "blog.post.nextCorridor": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "137ea5579fb8872b0759daa9cfd7cac3f9276f01a2c6016e3aa88225a5068eb3"
+  },
+  "breadcrumb.blog": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c6bc099534a0251b576f6b88bd2db124ae9497c64bd9242e92a6aec23e6a73a"
+  },
+  "footer.link.blog": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8c6bc099534a0251b576f6b88bd2db124ae9497c64bd9242e92a6aec23e6a73a"
   }
 }

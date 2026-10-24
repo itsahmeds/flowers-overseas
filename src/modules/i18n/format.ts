@@ -356,14 +356,26 @@ export function formatPercentFromBasisPoints(
  * `dayMonthTime` is the fifth, added by TASK-218 for spec 012's audit log (artboard
  * `admin-audit-desktop.dc.html`): the day, the short month and a 24-hour time ("5 Oct, 12:02"),
  * in the viewer's zone, which the column header names. Admin-only; no buyer page prints it.
+ *
+ * `longDate` is the sixth, added by TASK-322 for spec 044's blog (artboards `blog-index-*` and
+ * `blog-post-*`): the day, the full month name and the year with no weekday ("21 October 2026",
+ * "21. Oktober 2026", "21 października 2026"), the absolute date a post was published or updated.
+ * `calendarDate` would add a weekday the artboards do not print, and a post's date is never
+ * relative (§2.7), so the year is always there.
  */
 export type DateStyle =
-  "short" | "deliveryDate" | "calendarDate" | "dayMonth" | "dayMonthTime";
+  | "short"
+  | "deliveryDate"
+  | "calendarDate"
+  | "dayMonth"
+  | "dayMonthTime"
+  | "longDate";
 
 const DATE_STYLE_OPTIONS: Record<DateStyle, Intl.DateTimeFormatOptions> = {
   short: { day: "2-digit", month: "2-digit", year: "numeric" },
   deliveryDate: { weekday: "short", day: "numeric", month: "short" },
   dayMonth: { day: "numeric", month: "long" },
+  longDate: { day: "numeric", month: "long", year: "numeric" },
   dayMonthTime: {
     day: "numeric",
     month: "short",

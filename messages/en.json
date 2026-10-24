@@ -172,7 +172,8 @@
       "privacy": "Privacy",
       "cookies": "Cookies",
       "withdrawal": "Withdrawal and refunds",
-      "deliveryAndPayment": "Delivery and payment"
+      "deliveryAndPayment": "Delivery and payment",
+      "blog": "Blog"
     },
     "payment": {
       "heading": "Payment",
@@ -582,7 +583,8 @@
     "destinations": "Send flowers to",
     "shopRoot": "Flowers",
     "entity": "{name}",
-    "occasions": "Occasions"
+    "occasions": "Occasions",
+    "blog": "Blog"
   },
   "corridor": {
     "facts": {
@@ -1088,6 +1090,20 @@
     "floristSignIn": {
       "subject": "Your link to sign in to Flowers Overseas",
       "body": "Open your orders: {link}. The link works once, for one hour. If you did not ask for it, you can ignore this email."
+    }
+  },
+  "blog": {
+    "index": {
+      "h1": "The Flowers Overseas blog",
+      "intro": "Customs, occasions and practical advice for sending flowers to someone in another country.",
+      "seoTitle": "Blog: sending flowers across Europe | Flowers Overseas",
+      "seoDescription": "Customs, occasions and practical advice for sending flowers to someone in another European country, from Flowers Overseas."
+    },
+    "post": {
+      "byline": "By {name}",
+      "published": "Published {date}",
+      "updated": "Updated {date}",
+      "nextCorridor": "Read our guide to sending flowers to {country}"
     }
   }
 }

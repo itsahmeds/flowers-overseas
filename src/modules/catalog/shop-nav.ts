@@ -55,6 +55,10 @@ export async function pageDestination(
     case "categoryHub":
     case "occasionHub":
     case "infoPage":
+    // Spec 044 (TASK-322): a post is about a country but sells nothing (§2.7), so the header
+    // keeps its out-of-context links rather than pointing them into one destination's shop.
+    case "blogIndex":
+    case "blogPost":
       return undefined;
   }
 }

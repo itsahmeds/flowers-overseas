@@ -82,7 +82,13 @@ export type SeoPageType =
   // here rather than branching there (AC-17; TASK-182). A trust page is indexable iff it exists,
   // its content is reviewed, the locale is indexable and this is the indexing environment; a
   // legal page passes `reviewed && lawyerReviewed` as its `reviewed` term.
-  | InfoPageId;
+  | InfoPageId
+  // Spec 044 §6's two blog page types (TASK-322), registered here rather than branching there: a
+  // blog page is indexable iff it exists (a published, attested revision in the build), its
+  // served revision's approval still covers its text, the locale is indexable and this is the
+  // indexing environment.
+  | "blogIndex"
+  | "blogPost";
 
 /**
  * Whether a page type may ever be indexed (`plan/02` §7; spec 004 AC-28; spec 007 §6).
@@ -122,6 +128,10 @@ export const PAGE_TYPE_POLICY: Readonly<
   privacy: "byRule",
   cookies: "byRule",
   cancellation: "byRule",
+  // Spec 044 §6: both `byRule`; every blog page is `noindex,follow` today because this is not the
+  // indexing environment, a data answer, not a policy one.
+  blogIndex: "byRule",
+  blogPost: "byRule",
 };
 
 /**

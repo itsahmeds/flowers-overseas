@@ -382,6 +382,20 @@ export const serverEnvSchema = z.object({
     emptyToUndefined,
     z.enum(["true", "false"]).optional(),
   ),
+  /**
+   * Where the public blog reads its posts (spec 044 §5.2, §5.4; TASK-322): `"database"` reads the
+   * published posts (`dbBlogProvider`, through `app_build` during `next build` and `app_web` at
+   * run time); absent or `"none"` reads none, so `/{locale}/blog` answers 404 and the footer has
+   * no Blog link. **Absent means none**, which is what every deployed build gets until spec 012b's
+   * catalogue cutover (TASK-294) makes a build read the database; the blog then follows the
+   * environment like the catalogue. Read at build and at run time
+   * (`src/modules/content/blog/source.ts`), so it is set together with `DATABASE_BUILD_URL` and
+   * the `0024_blog` migration.
+   */
+  BLOG_SOURCE: z.preprocess(
+    emptyToUndefined,
+    z.enum(["database", "none"]).optional(),
+  ),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
