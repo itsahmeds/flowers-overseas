@@ -20,10 +20,9 @@
  * Output: the report lines go to **stdout**, and on a red run the verdict goes to **stderr**. A
  * red trigger check prints only its failing rows, so with `RAILWAY_ENVIRONMENT_ID` unset the run
  * AC-42 records while production has no `web` (TASK-104 creates it) is exactly its
- * `production · <service> · triggers on none, declared release` lines on stdout, plus, while
- * staging has no `worker` (TASK-103 creates it), `staging · worker · triggers on none, declared
- * main`; exit 1, and a stderr verdict that labels it `EXPECTED RED until …` with AC-44's line for
- * the cases present. Any other failure carries no such label.
+ * `production · <service> · triggers on none, declared release` lines on stdout; exit 1, and a
+ * stderr verdict that labels it `EXPECTED RED until …` (AC-42, AC-44 case (a)). Any other
+ * failure carries no such label: since TASK-103, a missing staging `worker` is one of them.
  *
  * Credentials: `RAILWAY_API_TOKEN` (a token the founder pastes into their shell or the CI secret
  * store) and `RAILWAY_PROJECT_ID`. Neither is in the repository, and with either absent the
@@ -47,6 +46,9 @@ import {
   type RailwayVariablesResponse,
   type TriggerReport,
   WEB_SERVICE_NAME,
+  WORKER_ENVIRONMENTS,
+  WORKER_SERVICE_NAME,
+  compareWorkerService,
   compareDeployTriggers,
   compareVariableKeys,
   compareWebService,
@@ -102,6 +104,30 @@ export function runRailwayCheck(input: RailwayCheckInput): RailwayCheckReport {
     }
   }
 
+  // Spec 040 AC-10 (TASK-103): the `worker` seat, in production and staging, with no public
+  // domain and nothing running. A PR environment forked from staging may carry it too, and is held
+  // to the same two rules when it does.
+  const worker = findServiceInstance(input.environment, WORKER_SERVICE_NAME);
+  if (worker === undefined) {
+    if (WORKER_ENVIRONMENTS.includes(input.environmentName)) {
+      ok = false;
+      lines.push(
+        `service ${WORKER_SERVICE_NAME}: not found in environment ${input.environmentName} (spec 040 AC-10)`,
+      );
+    }
+  } else {
+    const failures = compareWorkerService(worker);
+    for (const failure of failures) {
+      ok = false;
+      lines.push(`service ${WORKER_SERVICE_NAME}: ${failure}`);
+    }
+    if (failures.length === 0) {
+      lines.push(
+        `service ${WORKER_SERVICE_NAME}: no public domain and no running deployment (spec 040 AC-10)`,
+      );
+    }
+  }
+
   if (input.variables !== undefined) {
     const keys = Object.keys(input.variables.data.variables);
     const report = compareVariableKeys(keys, input.environmentName);
@@ -136,24 +162,15 @@ export function loadDeclaredTriggers(repoRoot: string): DeployTriggers {
 }
 
 /**
- * AC-44's three stderr lines, one per set of expected cases present. Case (b), staging's
- * `worker`, retires with TASK-103: its PR deletes the `staging-worker` and
- * `production-services+staging-worker` lines here, and the case in `src/lib/railway.ts`.
+ * AC-44's stderr label for the expected case still open, production's services until TASK-104.
+ * Case (b), staging's `worker`, and its two lines retired with TASK-103 (spec 040 §14 A4): a
+ * missing staging `worker` is a plain failure.
  */
 const EXPECTED_RED_LABELS: Readonly<Record<string, string>> = {
   "production-services":
     "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` " +
     "(spec 040 AC-42, T-44): every failure above is a declared production service that does " +
     "not exist yet. Once production `web` exists, this output is a real failure.\n",
-  "staging-worker":
-    "railway:check: EXPECTED RED until TASK-103 creates staging `worker` " +
-    "(spec 040 AC-44, T-45): every failure above is staging's `worker`, which does not exist " +
-    "yet. Once staging `worker` exists, this output is a real failure.\n",
-  "production-services+staging-worker":
-    "railway:check: EXPECTED RED until TASK-104 creates production `web` on `release` and " +
-    "TASK-103 creates staging `worker` (spec 040 AC-42, AC-44, T-44, T-45): every failure " +
-    "above is a declared production service or staging's `worker`, none of which exists yet. " +
-    "Once both exist, this output is a real failure.\n",
 };
 
 /**
@@ -194,6 +211,17 @@ const ENVIRONMENT_QUERY = `query Environment($id: String!) {
           restartPolicyType
           restartPolicyMaxRetries
           startCommand
+          domains {
+            serviceDomains {
+              domain
+            }
+            customDomains {
+              domain
+            }
+          }
+          latestDeployment {
+            status
+          }
         }
       }
     }

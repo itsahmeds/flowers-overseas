@@ -367,6 +367,29 @@ export async function warm(
   return { pages, warmed, problems };
 }
 
+/**
+ * The pull request's Railway environment sits behind the staging wall (spec 040 AC-25), so on that
+ * path the `lighthouse` job sets `LHCI_AUTHORIZATION` (`Basic …`) and every warm-up request to the
+ * audited origin carries it, as Lighthouse's own runs do through `extraHeaders` (TASK-099). It is
+ * never sent to another origin, and nothing here prints it.
+ */
+export function withAuthorization(
+  fetchImpl: Fetch,
+  baseUrl: string,
+  authorization: string | undefined,
+): Fetch {
+  if (authorization === undefined || authorization.trim() === "") {
+    return fetchImpl;
+  }
+  const origin = new URL(baseUrl).origin;
+  return (url, init) => {
+    if (new URL(url).origin === origin) {
+      init.headers.set("authorization", authorization);
+    }
+    return fetchImpl(url, init);
+  };
+}
+
 /** Node's `fetch`, with the request init (headers and the timeout signal) passed through whole. */
 export const defaultFetch: Fetch = (url, init) => fetch(url, init);
 
@@ -384,7 +407,11 @@ export async function warmMain(
     );
     const baseUrl = argValue(argv, "--base") ?? resolveBaseUrl(env);
     const paths = parseUrlList(readFileSync(file, "utf8"));
-    const report = await warm(baseUrl, paths, fetchImpl);
+    const report = await warm(
+      baseUrl,
+      paths,
+      withAuthorization(fetchImpl, baseUrl, env["LHCI_AUTHORIZATION"]),
+    );
     for (const page of report.pages) {
       out.write(
         `lighthouse-warmup: ${page.path} + ${String(page.subresources)} subresources\n`,

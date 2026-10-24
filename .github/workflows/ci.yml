@@ -54,15 +54,15 @@
 #    image is invisible until a deploy fails; the expensive steps are skipped when no file of the
 #    container contract changed, so the budget of §14 A14 is spent only on the pull requests that
 #    can break it.
-#  - `preview` → `e2e`/`visual`/`a11y` is the one real chain. Since **TASK-137** `preview` no
-#    longer waits on a third party for it: it builds the app on the runner from the committed
-#    `.env.example` placeholders, publishes that build, serves it and gates on `/api/health` 200,
-#    and the three Playwright suites re-serve the same build through
-#    `.github/actions/preview-origin`. Before that they were `needs: preview` on a Vercel preview
-#    whose `/api/health` answers 500 (ADR-0018's cold fallback, empty environment store), so no
-#    Playwright suite had ever run in CI — skipped identically on PRs 84, 85 and 87. `lighthouse`
-#    hangs off `build`, not off this chain: since TASK-056 it builds and serves what it measures
-#    behind `scripts/seo/brotli-origin.ts`.
+#  - `preview` → `e2e`/`visual`/`a11y` is the one real chain. Since **TASK-099** `preview`
+#    resolves the pull request's Railway environment (forked from `staging`, removed on close)
+#    at `https://pr-<n>.flowersoverseas.com`, through Cloudflare, waits up to 15 minutes for its
+#    head SHA, fails rather than skips, and asserts the 401 wall, the Amsterdam region and
+#    `noindex` on it (spec 040 AC-12, AC-26); the three Playwright suites run against that URL.
+#    TASK-137's interim, a build served on each runner with a Vercel probe beside it, is gone
+#    (spec 040 §14 A2). `lighthouse` hangs off `build`, not off this chain, so it still runs on a
+#    push (AC-38): on a pull request it measures the same PR environment itself, and on any
+#    other event it builds and serves what it measures behind `scripts/seo/brotli-origin.ts`.
 #
 # spec 001 §11: **every job writes a GitHub step summary.** A green tick says a command exited 0;
 # the summary says what it measured, and it is what the reviewer quotes in the PR.
@@ -1567,6 +1567,17 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
         run: pnpm cloudflare:check --require-token 2>&1 | tee cloudflare-check.log
+      # Spec 040 AC-12, "closing the PR removes it": Railway deletes the environment, and this
+      # removes the `pr-<n>` records `preview` wrote for it, so no proxied name is left pointing at
+      # a Railway target nobody owns (TASK-099). Nightly only: a pull request run deletes nothing.
+      - name: Remove the DNS records of closed pull requests' environments
+        if: github.event_name == 'schedule'
+        env:
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: node scripts/railway-preview.ts --sweep
       - name: Summarise the verdict
         if: always()
         run: |
@@ -1587,238 +1598,91 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-  # **The origin the browser suites run against is CI's own (TASK-137).**
+  # **The browser suites run against the pull request's Railway environment, through Cloudflare
+  # (spec 040 §5.5, AC-12, AC-26, §14 A2; TASK-099).**
   #
-  # What this job used to be, and why it changed. It polled the GitHub Deployments API for up to
-  # fifteen minutes for a non-production deployment on the PR head SHA and handed that
-  # `environment_url` to `e2e`, `visual` and `a11y` (each `needs: preview`). On this repository
-  # the deployment either never appeared or answered `/api/health` with **500**, because the
-  # Vercel project is the cold fallback of ADR-0018 and carries an empty environment store —
-  # observed identically on PR 84, PR 85 and PR 87. The consequence, stated so nobody
-  # re-discovers it: **no Playwright suite had ever run in CI on this project.** Every "CI green"
-  # before 2026-09-21 meant lint, types, units and Lighthouse.
+  # Railway forks an environment from `staging` for every pull request and deletes it when the
+  # pull request closes (founder step P1 of `docs/runbooks/railway-cloudflare-setup.md` "PR
+  # environments"). `scripts/railway-preview.ts --provision` turns it into this pull request's
+  # preview: the custom domain `pr-<n>.flowersoverseas.com` on its `web` service, the DNS record
+  # Railway asks for written **proxied** into the zone, and `APP_ENV=preview` with its own
+  # `NEXT_PUBLIC_SITE_URL` (and the two preview-only switches) set on it, which makes Railway
+  # rebuild it. It then waits, 45 x 20 s, for a `SUCCESS` deployment of the head SHA made after
+  # that change, and **fails, never skips**, when none appears, when a credential is missing, or
+  # when the deployment of the head failed or is held by "Wait for CI".
   #
-  # So the job now produces the origin itself: `next build` from the committed `.env.example`
-  # placeholders, `next start` on the runner, and a `/api/health` 200 gate before it declares
-  # success. The build is uploaded once and re-served by the three browser jobs through
-  # `.github/actions/preview-origin`, so all three measure the same bytes and the Actions-minutes
-  # budget (spec 001 §14 A14) pays for one build, not four. `preview_url` still names the origin,
-  # so no downstream job changed how it consumes it.
+  # The second step asserts AC-26's three properties in their Railway form (§14 A2 clause 1), and
+  # is blocking: a 401 with a `Basic` challenge, not an SSO 302; `/api/health`'s region in
+  # `europe-west4`, the Amsterdam origin; `X-Robots-Tag: noindex`. It also asserts that the
+  # response crossed Cloudflare (`cf-ray`), that the deployment answering is `preview` at the head
+  # SHA, and that the page names its own origin. The Vercel probe that stood beside the CI-built
+  # origin (TASK-137) is deleted with it, as §14 A2 clause 1 requires, and so is the CI-built
+  # origin itself (clause 2): `e2e`, `visual` and `a11y` read `preview_url`.
   #
-  # **No secret is a build argument or a run-time value here** — the ruling of spec 001 §14 A17 /
-  # spec 040 §14 A1 (TASK-135) stands, and the first step asserts it. `hostPlatform()` is
-  # untouched: on a runner it resolves `local`, exactly as it does for the reviewer's `pnpm start`.
-  #
-  # Vercel's own check keeps its place on the pull request and keeps meaning what it says. The
-  # last step still probes whatever Vercel deployed for Deployment Protection, the `fra1` function
-  # region and `X-Robots-Tag: noindex` (AC-29 / T-30) and writes the verdict into the step
-  # summary — but as **evidence**, `continue-on-error`, because a host we are leaving must never
-  # again deny four suites an origin. When spec 040 §5.5 gives PRs a Railway environment (AC-26),
-  # that is the deployment this job probes, and this step is where it lands.
+  # Credentials (repository secrets, founder step P2): `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_ID`,
+  # `CLOUDFLARE_API_TOKEN` (its DNS Edit scope), `CLOUDFLARE_ZONE_ID`, and `STAGING_BASIC_AUTH`,
+  # the wall's `user:password`, which every PR environment inherits from staging.
   preview:
     name: preview
-    # Pull requests only (a manual dispatch has no PR to probe), and only with the `ci:full` label.
+    # Pull requests only (a manual dispatch has no PR to resolve), and only with the `ci:full` label.
     if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ci:full')
     runs-on: ubuntu-latest
+    # The 15-minute wait for Railway, the setup, and the assertions.
     timeout-minutes: 25
     permissions:
       contents: read
-      # Read-only, and now only so the evidence step can *look at* what Vercel deployed.
-      deployments: read
     outputs:
-      preview_url: ${{ steps.serve.outputs.preview_url }}
-    env:
-      NEXT_TELEMETRY_DISABLED: "1"
+      preview_url: ${{ steps.resolve.outputs.preview_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-
-      # The same clean-clone build the `build` job makes (spec 001 §13 Q10, AC-1), and the same
-      # assertion the `container` job makes about its environment: a server credential in scope
-      # here would end up inlined or in a layer, and neither is allowed (spec 001 §14 A17).
-      - name: Build the app from the committed placeholders, with no credential in scope
-        id: next
-        run: |
-          set -euo pipefail
-          if env | grep -qE '^(DATABASE_URL|DATABASE_URL_UNPOOLED|INTERNAL_CRON_SECRET|R2_)'; then
-            echo "::error::a server credential is present in the build environment (spec 001 §14 A17)"
-            exit 1
-          fi
-          cp .env.example .env.local
-          pnpm build
-
-      # `.next/cache` is the incremental cache and `.next/standalone` is a second copy of the
-      # server that `next start` never reads: excluding both is what keeps the artifact in the
-      # tens of megabytes instead of hundreds.
-      - name: Package the build for the browser jobs
-        id: package
-        run: |
-          set -euo pipefail
-          tar -czf "$RUNNER_TEMP/preview-build.tgz" \
-            --exclude='.next/cache' --exclude='.next/standalone' .next
-          size=$(du -h "$RUNNER_TEMP/preview-build.tgz" | cut -f1)
-          echo "size=$size" >> "$GITHUB_OUTPUT"
-          echo "packaged $size"
-
-      - name: Publish it
-        uses: actions/upload-artifact@v4
-        with:
-          name: preview-build
-          path: ${{ runner.temp }}/preview-build.tgz
-          retention-days: 1
-          if-no-files-found: error
-
-      # The gate: this step cannot succeed unless `/api/health` answers 200 with `"status":"ok"`,
-      # so `preview` can never again hand four suites a URL that is not serving the application.
-      - name: Serve it and gate on /api/health (TASK-137)
-        id: serve
-        run: bash ./.github/actions/preview-origin/serve.sh
-
-      # AC-29 / T-30, as evidence rather than as a gate. Three facts about whatever Vercel
-      # deployed for this head SHA — Deployment Protection refuses an unauthenticated request,
-      # the function region is `fra1`, the response is `noindex` — reported in the step summary
-      # and in the job log. Absences (no bypass secret, no deployment) are facts about the
-      # platform, not defects in the pull request, and are recorded rather than failed.
-      - name: Vercel's own preview, probed as evidence (AC-29 / T-30)
-        id: vercel
-        continue-on-error: true
+      - name: Resolve the Railway PR environment behind Cloudflare (AC-12, AC-26)
+        id: resolve
         env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
-          # One short look, not fifteen minutes: the browser suites are waiting on this job.
-          ATTEMPTS: "3"
-          INTERVAL: "10"
+        run: node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA"
+      - name: Assert the 401 wall, the Amsterdam region and noindex on it (AC-26)
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          set -uo pipefail
-          summary() { printf '%s\n' "$@" | tee -a "$GITHUB_STEP_SUMMARY"; }
-          summary "### Vercel preview, as evidence (AC-29 / T-30)" ""
-          if [ -z "$BYPASS_SECRET" ]; then
-            summary "- no \`VERCEL_AUTOMATION_BYPASS_SECRET\` is set in this repository, so" \
-                    "  Deployment Protection cannot be probed. Recorded, not failed: the browser" \
-                    "  suites run against CI's own origin (TASK-137), and \`docs/runbooks/vercel-setup.md\`" \
-                    "  says how to create the bypass if this evidence is wanted again."
-            exit 0
+          set -euo pipefail
+          {
+            echo "### preview (spec 040 AC-26)"
+            echo ""
+            echo "- target: ${{ steps.resolve.outputs.preview_url }}"
+            echo ""
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          # No `||` anywhere: the exit status is taken from `if`, so no edit to this script can
+          # swallow a failed property and still read as blocking (/break 263 hole 5).
+          out="$RUNNER_TEMP/preview-assert.txt"
+          if node scripts/railway-preview.ts --assert --pr "$PR_NUMBER" --sha "$HEAD_SHA" > "$out"; then
+            status=0
+          else
+            status=$?
           fi
-          set -o pipefail
-          preview_url=""
-          for attempt in $(seq 1 "$ATTEMPTS"); do
-            # `select(... != "production")`: a push to `main` and a PR can share a head SHA, and
-            # the Production deployment must never be probed as if it were a preview.
-            deployments=$(gh api "repos/$REPO/deployments?sha=$HEAD_SHA&per_page=100" \
-              --jq '.[] | select(((.environment // "") | ascii_downcase) != "production") | .id' || true)
-            for id in $deployments; do
-              url=$(gh api "repos/$REPO/deployments/$id/statuses?per_page=100" \
-                --jq 'map(select(.state == "success" and (.environment_url // "") != "" and (((.environment // "") | ascii_downcase) != "production"))) | .[0].environment_url // ""' || true)
-              if [ -n "$url" ]; then
-                preview_url="$url"
-                break
-              fi
-            done
-            if [ -n "$preview_url" ]; then break; fi
-            echo "no successful deployment with an environment_url yet for $HEAD_SHA (attempt $attempt/$ATTEMPTS)"
-            sleep "$INTERVAL"
-          done
-          if [ -z "$preview_url" ]; then
-            summary "- no non-production Vercel deployment with an \`environment_url\` for" \
-                    "  \`$HEAD_SHA\` after $((ATTEMPTS * INTERVAL)) s. ADR-0018 keeps the Vercel project as a" \
-                    "  cold fallback with an empty environment store, so this is the expected" \
-                    "  state; it is recorded, not failed. The \`Vercel\` check on this pull" \
-                    "  request reports what the platform itself did."
-            exit 0
-          fi
-          preview_url="${preview_url%/}"
-          summary "- deployment: $preview_url"
+          cat "$out"
+          cat "$out" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
 
-          # 1. Without the bypass: Deployment Protection must refuse the request. Vercel
-          # Authentication does not answer 401/403 to a plain GET: it answers a 302 to
-          # `https://vercel.com/sso-api?url=...` (plus a `_vercel_sso_nonce` cookie). Both shapes
-          # count as protected; a 200, or a redirect anywhere else, does not.
-          unauth_headers=$(mktemp)
-          unprotected_status=$(curl -sSI -o "$unauth_headers" -w '%{http_code}' "$preview_url/api/health")
-          unprotected_location=$(grep -i '^location:' "$unauth_headers" | head -n1 | cut -d' ' -f2- | tr -d '\r' || true)
-          rm -f "$unauth_headers"
-          case "$unprotected_status" in
-            401|403)
-              protection_evidence="$unprotected_status"
-              ;;
-            301|302|303|307|308)
-              case "$unprotected_location" in
-                https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*)
-                  protection_evidence="$unprotected_status to vercel.com/sso-api"
-                  ;;
-                *)
-                  echo "::error::GET $preview_url/api/health without the bypass header returned $unprotected_status redirecting to '$unprotected_location'; expected 401, 403, or a redirect to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
-                  summary "- **unauthenticated \`/api/health\`: $unprotected_status to '$unprotected_location' — not protected**"
-                  exit 1
-                  ;;
-              esac
-              ;;
-            *)
-              echo "::error::GET $preview_url/api/health without the bypass header returned $unprotected_status; expected 401, 403, or a 302 to https://vercel.com/sso-api. Deployment Protection is not enabled on previews (AC-29)."
-              summary "- **unauthenticated \`/api/health\`: $unprotected_status — not protected**"
-              exit 1
-              ;;
-          esac
-
-          # 2. With the bypass: 200, function region fra1, and noindex.
-          headers=$(mktemp)
-          bypass_status=$(curl -sSI -o "$headers" -w '%{http_code}' \
-            -H "x-vercel-protection-bypass: $BYPASS_SECRET" \
-            -H "x-vercel-set-bypass-cookie: false" \
-            "$preview_url/api/health")
-          vercel_id=$(grep -i '^x-vercel-id:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
-          robots=$(grep -i '^x-robots-tag:' "$headers" | head -n1 | cut -d' ' -f2- | tr -d '\r')
-          rm -f "$headers"
-          summary "- unauthenticated \`/api/health\`: $protection_evidence (protected)" \
-                  "- with bypass: $bypass_status" \
-                  "- \`x-vercel-id\`: ${vercel_id:-absent}" \
-                  "- \`X-Robots-Tag\`: ${robots:-absent}"
-          if [ "$bypass_status" != "200" ]; then
-            echo "::error::GET $preview_url/api/health with the bypass header returned $bypass_status; expected 200 (AC-29). ADR-0018's cold fallback has an empty environment store, which is what makes this 500 — it is why the browser suites no longer depend on it (TASK-137)."
-            exit 1
-          fi
-          if [ -z "$vercel_id" ]; then
-            echo "::error::no x-vercel-id response header; cannot verify the function region (AC-29)."
-            exit 1
-          fi
-          # `x-vercel-id` is `<cdn-node>::<function-region>::<id>`: the first segment is the edge
-          # node that took the request (wherever the runner is), so `fra1` must be *a* segment,
-          # never the prefix.
-          case "::$vercel_id::" in
-            *"::fra1::"*) ;;
-            *)
-              echo "::error::x-vercel-id is '$vercel_id'; expected 'fra1' as one of its '::'-separated segments (spec 001 §5 Hosting, §8 EU data residency)."
-              exit 1
-              ;;
-          esac
-          case "$robots" in
-            *noindex*) ;;
-            *)
-              echo "::error::X-Robots-Tag is '$robots'; every Phase 0 response must be noindex (spec 001 §5, AC-15)."
-              exit 1
-              ;;
-          esac
-
-  # AC-17 / T-15, T-16, T-18 (TASK-008), on the origin TASK-137 gave them. The three suites ran
-  # against the Vercel preview until 2026-09-21 — that is what the AC asked for, and it is why
-  # they never ran at all: the deployment answers `/api/health` with 500 (ADR-0018's cold
-  # fallback, empty environment store), so `preview` failed and all three were skipped on PRs 84,
-  # 85 and 87. Each job now unpacks the build `preview` published and serves it on its own runner
-  # through `./.github/actions/preview-origin`, which does not return until `/api/health` answers
-  # 200. `PLAYWRIGHT_BASE_URL` is still `${{ needs.preview.outputs.preview_url }}`; it now names
-  # that origin (`http://localhost:3000`), which is also the origin `.env.example`'s
-  # `NEXT_PUBLIC_SITE_URL` inlines, so every canonical under test matches the host serving it.
+  # AC-17 / T-15, T-16, T-18 (TASK-008), against the pull request's Railway environment through
+  # Cloudflare (spec 040 AC-26, §14 A2 clause 2; TASK-099). `PLAYWRIGHT_BASE_URL` is `preview`'s
+  # `preview_url`, `https://pr-<n>.flowersoverseas.com`: the origin a visitor gets, with the real
+  # edge, the real headers and `APP_ENV=preview`. The CI-built origin of TASK-137 (one build
+  # served on each runner through `.github/actions/preview-origin`) is retired with it: there is
+  # an environment to point at now, which is the only reason that origin existed.
   #
-  # What this costs: the Vercel-only assertions (`fra1`, Deployment Protection, the `vercel.live`
-  # allowance) are not exercised by these suites any more — the specs that make them branch on
-  # the hostname already, and `preview`'s evidence step reports them. What it buys: the suites
-  # run.
-  #
-  # `VERCEL_AUTOMATION_BYPASS_SECRET` is gone from all three: a localhost origin has no
-  # Deployment Protection to get past, and sending the header would put a secret on the wire for
-  # nothing.
+  # The environment sits behind the staging wall (AC-25), so each job hands Playwright
+  # `STAGING_BASIC_AUTH`; `playwright.config.ts` sends it, as HTTP credentials scoped to the
+  # preview origin, and never to any other host.
   #
   # These jobs are skipped on `push` to `main`, because `preview` is a pull-request job.
   e2e:
@@ -1828,19 +1692,26 @@ jobs:
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
-      # answers 200 (TASK-137).
-      - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
       - name: pnpm test:e2e
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-e2e.json
         run: pnpm test:e2e --reporter=github,json,list
-      - name: Upload the Playwright report
+      # No trace is recorded with the wall's credential in scope (`playwright.config.ts`), and
+      # every file is checked before upload anyway: a call log or an error context can still name
+      # it, and the repository is public (spec 040 AC-25; /review 263 item 1).
+      - name: Scrub and check the report for the wall's credential
+        id: credscan
         if: failure()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub playwright-report test-results
+      - name: Upload the Playwright report
+        if: failure() && steps.credscan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-e2e
@@ -1877,12 +1748,10 @@ jobs:
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
-      # answers 200 (TASK-137).
-      - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
       # Baselines are committed (AC-17) and, since spec 003 gave `/` real text, per platform:
       # this job compares against `__screenshots__/<project>/linux/`. `--update-snapshots` is
@@ -1893,8 +1762,17 @@ jobs:
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-visual.json
         run: pnpm test:visual --reporter=github,json,list
-      - name: Upload the Playwright report (with the diff images)
+      # No trace is recorded with the wall's credential in scope (`playwright.config.ts`), and
+      # every file is checked before upload anyway: a call log or an error context can still name
+      # it, and the repository is public (spec 040 AC-25; /review 263 item 1).
+      - name: Scrub and check the report for the wall's credential
+        id: credscan
         if: failure()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub playwright-report test-results tests/visual/__screenshots__
+      - name: Upload the Playwright report (with the diff images)
+        if: failure() && steps.credscan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-visual
@@ -1934,20 +1812,27 @@ jobs:
     needs: preview
     env:
       PLAYWRIGHT_BASE_URL: ${{ needs.preview.outputs.preview_url }}
+      STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      # Unpack the build `preview` published, serve it, and do not proceed until `/api/health`
-      # answers 200 (TASK-137).
-      - uses: ./.github/actions/preview-origin
       - run: pnpm exec playwright install --with-deps chromium
       # spec 001 §8: zero serious/critical axe violations on `/`.
       - name: pnpm test:a11y
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-a11y.json
         run: pnpm test:a11y --reporter=github,json,list
-      - name: Upload the Playwright report (with the axe attachment)
+      # No trace is recorded with the wall's credential in scope (`playwright.config.ts`), and
+      # every file is checked before upload anyway: a call log or an error context can still name
+      # it, and the repository is public (spec 040 AC-25; /review 263 item 1).
+      - name: Scrub and check the report for the wall's credential
+        id: credscan
         if: failure()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub playwright-report test-results
+      - name: Upload the Playwright report (with the axe attachment)
+        if: failure() && steps.credscan.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-a11y
@@ -1991,15 +1876,27 @@ jobs:
   # (see `lighthouserc.json`'s note and `tests/e2e/lcp.spec.ts`). A red check here is now a
   # regression, which is the whole point of a budget.
   #
-  # **It measures this repository's bytes, not a preview.** The job builds, starts `next start` and
-  # puts `scripts/seo/brotli-origin.ts` in front of it, because `resource-summary:script:size` is
-  # transfer size and neither previously available origin sent the encoding the budget is written
-  # in: `next start` negotiates gzip, and a protected Vercel preview injects `vercel.live` — tens of
-  # KB of platform script that is absent from production and in no build output of ours. That is
-  # the decision `lighthouserc.json` left to TASK-056 ("production URLs, or a first-party-only
-  # budget"), and it makes this number equal to the one `pnpm budget:client-js` prints in `build`.
-  # The consequence to keep in mind: this job no longer proves anything about the *deployment*
-  # (TTFB, edge cache, real headers) — the `e2e` suite against the preview does that.
+  # **What it measures depends on the event (spec 040 AC-26, AC-27, §14 A2 clause 2, A3 AC-37 /
+  # AC-38; TASK-099, TASK-103).**
+  #
+  #  - **A pull request: the pull request's Railway environment, through Cloudflare.** The job
+  #    resolves `https://pr-<n>.flowersoverseas.com` with `scripts/railway-preview.ts` (the same
+  #    command `preview` runs; both may provision, and each tolerates the other having done it
+  #    first) and measures it with the staging wall's credential in `extraHeaders`. Cloudflare
+  #    serves Brotli over HTTP/2 there, which is the encoding the 128 KB script budget is written
+  #    in (spec 004 §13 Q13, §14 A1), so no proxy is needed. It does not skip: no environment in
+  #    15 minutes, or a missing credential, is a red job.
+  #  - **A push to `main`, the nightly run, a dispatch: this repository's own build on the runner,
+  #    behind `scripts/seo/brotli-origin.ts`.** There is no pull request environment to measure,
+  #    and the one Cloudflare-fronted deployment of `main`'s commit is staging, which with "Wait
+  #    for CI" on (spec 040 §14 A3 F4) deploys only after this run is green: waiting on it here
+  #    would deadlock. `lighthouse` stays `needs: build` with no `if:` (AC-38; `/review 104` round
+  #    3), so every release still carries its budgets. That this path keeps the proxy AC-27 says
+  #    to delete is escalated in `docs/tasks/TASK-103.md` `## Escalations` (E-1).
+  #
+  # The credential: the wall's `user:password` (`STAGING_BASIC_AUTH`) is masked, its Basic form
+  # is masked too (GitHub masks only the literal secret), and every report file is scrubbed of it
+  # before the upload, because Lighthouse writes its `extraHeaders` into each report.
   #
   # `NO_FCP` — Lighthouse aborting because the page painted nothing — has not been the expected
   # outcome since TASK-035 gave `/` real text. The branch below stays because that outcome must
@@ -2013,52 +1910,92 @@ jobs:
   lighthouse:
     name: lighthouse
     runs-on: ubuntu-latest
-    # Five URLs x three runs on a shared runner, plus a build.
-    timeout-minutes: 30
+    # Up to 15 minutes for Railway, then five URLs x three runs, plus a warm-up.
+    timeout-minutes: 40
     needs: build
     env:
       NEXT_TELEMETRY_DISABLED: "1"
-      LHCI_BASE_URL: http://127.0.0.1:3001
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      # The same clean-clone build the `build` job makes, from the committed placeholders; the
-      # measured document must be one this repository produced, not one a platform rewrote.
-      - run: cp .env.example .env.local
-      - name: Build and serve the production output behind the Brotli origin
+      # Sets `LHCI_BASE_URL` and `LHCI_CONFIG` for every later step, and on a pull request
+      # `LHCI_AUTHORIZATION`. One step with no `if:`, so neither path can be skipped into green.
+      - name: Choose the measured origin and bring it up
+        id: origin
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          pnpm build
-          pnpm start &
-          npx --yes wait-on http://127.0.0.1:3000/en --timeout 120000
-          pnpm lighthouse:origin &
-          npx --yes wait-on http://127.0.0.1:3001/en --timeout 60000
-      # spec 004 §14 A18: the measurement basis is the Brotli origin, **warmed**. Measured locally
-      # at TASK-056, the first request to a cold `next start` reported LCP 2 679 ms on `/` against
-      # 1 459-1 492 ms on the two runs after it: a start-up cost, not a page cost, and one that
-      # would decide a required check by whichever run happened to be first.
-      #
-      # Until TASK-235 this warmed each document with a `curl` (no `br`, no subresource), so every
-      # stylesheet, preloaded font, LCP image candidate and script chunk, and the origin's Brotli
-      # path itself, were first fetched by a measured run. Two passes now, both before the
-      # measured collect and both discarded:
-      #  1. `lighthouse-urls.ts --warm` fetches every audited document and every
-      #     same-origin subresource it names, with `br` and Chrome's `accept`; it exits 1 if
-      #     anything answers non-2xx or a document names nothing to warm.
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            if [ -z "$STAGING_BASIC_AUTH" ]; then
+              echo "::error::STAGING_BASIC_AUTH is not a repository secret: the PR environment is behind the staging wall and cannot be measured (founder step P2, docs/runbooks/railway-cloudflare-setup.md \"PR environments\")"
+              exit 2
+            fi
+            url=$(node scripts/railway-preview.ts --provision --pr "$PR_NUMBER" --sha "$HEAD_SHA")
+            # The header comes from the same function the artifact check searches with (trimmed
+            # secret), so the bytes Lighthouse records are always bytes the scrub looks for.
+            authorization=$(node scripts/artifact-credential-check.ts --basic)
+            basic=${authorization#Basic }
+            echo "::add-mask::$basic"
+            config="$RUNNER_TEMP/lighthouserc.json"
+            jq --arg auth "$authorization" \
+              '.ci.collect.settings.extraHeaders = {"Authorization": $auth}' \
+              lighthouserc.json > "$config"
+            {
+              echo "LHCI_BASE_URL=$url"
+              echo "LHCI_CONFIG=$config"
+              echo "LHCI_AUTHORIZATION=$authorization"
+            } >> "$GITHUB_ENV"
+            echo "measured=$url (the pull request's Railway environment through Cloudflare)" >> "$GITHUB_OUTPUT"
+          else
+            # A pull request is never measured here: if the event were ever read wrongly, the
+            # pull request number would still be set, and this refuses (/break 263 hole 4).
+            if [ -n "$PR_NUMBER" ]; then
+              echo "::error::pull request #$PR_NUMBER reached the runner-origin path; a pull request is measured on its Railway environment (spec 040 AC-26)"
+              exit 1
+            fi
+            # The same clean-clone build the `build` job makes, from the committed placeholders.
+            cp .env.example .env.local
+            pnpm build
+            pnpm start &
+            npx --yes wait-on http://127.0.0.1:3000/en --timeout 120000
+            pnpm lighthouse:origin &
+            npx --yes wait-on http://127.0.0.1:3001/en --timeout 60000
+            {
+              echo "LHCI_BASE_URL=http://127.0.0.1:3001"
+              echo "LHCI_CONFIG=$GITHUB_WORKSPACE/lighthouserc.json"
+            } >> "$GITHUB_ENV"
+            echo "measured=\`next start\` behind \`scripts/seo/brotli-origin.ts\` on the runner (a $EVENT_NAME run has no PR environment)" >> "$GITHUB_OUTPUT"
+          fi
+      # spec 004 §14 A18: the measurement basis is warmed. Measured locally at TASK-056, the first
+      # request to a cold origin reported LCP 2 679 ms on `/` against 1 459-1 492 ms on the two
+      # runs after it: a start-up cost, not a page cost, and one that would decide a required
+      # check by whichever run happened to be first. Two passes, both before the measured collect
+      # and both discarded:
+      #  1. `lighthouse-urls.ts --warm` fetches every audited document and every same-origin
+      #     subresource it names, with `br` and Chrome's `accept` (and the wall's credential on a
+      #     pull request); it exits 1 if anything answers non-2xx or a document names nothing.
       #  2. One Lighthouse run of the first audited URL with the measured settings, in
       #     `$RUNNER_TEMP` so its report can never reach `.lighthouseci/` or an assertion: it
       #     pays the cold browser start and whatever a page fetches that its HTML does not name.
-      #     Under TASK-103's `median` a cold first run would count; here it never runs measured.
+      #     Under `median` (TASK-103) a cold first run would count; here it never runs measured.
       - name: Warm every audited page and its subresources before measuring
         run: |
           set -euo pipefail
           node scripts/seo/lighthouse-urls.ts --warm
           first=$(node -p 'require("./tests/fixtures/seo/lighthouse-urls.json")[0]')
           (cd "$RUNNER_TEMP" && npx --yes @lhci/cli@0.15.1 collect \
-            --config="$GITHUB_WORKSPACE/lighthouserc.json" \
+            --config="$LHCI_CONFIG" \
             --numberOfRuns=1 \
             --url="$LHCI_BASE_URL$first")
-      - name: Run Lighthouse CI against the Brotli origin
+      - name: Run Lighthouse CI against the measured origin
         id: lhci
         run: |
           set -euo pipefail
@@ -2067,16 +2004,13 @@ jobs:
           urls=$(node scripts/seo/lighthouse-urls.ts)
           # shellcheck disable=SC2086
           npx --yes @lhci/cli@0.15.1 autorun \
-            --config=lighthouserc.json \
+            --config="$LHCI_CONFIG" \
             $urls 2>&1 | tee lhci-output.log
-
-      # Written after the run, with `if: always()`, because "did the budgets hold?" is not
-      # answerable before it. The per-URL table is spec 004 §11's requirement: a regression must
-      # name the locale it happened in.
       - name: Summarise what Lighthouse actually measured
         if: always()
         env:
           LHCI_OUTCOME: ${{ steps.lhci.outcome }}
+          LHCI_MEASURED: ${{ steps.origin.outputs.measured }}
         run: |
           set -uo pipefail
           log=lhci-output.log
@@ -2091,8 +2025,7 @@ jobs:
             echo "### lighthouse (spec 004 AC-24 — required)"
             echo ""
             echo "URL set \`tests/fixtures/seo/lighthouse-urls.json\`, measured against"
-            echo "\`next start\` behind \`scripts/seo/brotli-origin.ts\` (Brotli, quality 11) —"
-            echo "this repository's own bytes, with no platform script in the total."
+            echo "$LHCI_MEASURED; each assertion is the median of three runs (TASK-103)."
             echo "Budgets: performance / accessibility / best-practices >= 0.95, LCP < 2000 ms,"
             echo "CLS < 0.05, script transfer <= 131 072 B, image transfer <= 204 800 B."
             echo ""
@@ -2160,8 +2093,20 @@ jobs:
             # `gh run view --log` without opening the run summary page.
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload the Lighthouse reports
+      # Lighthouse writes `extraHeaders` into every report, so on a pull request the wall's
+      # credential would be in a public artifact. `artifact-credential-check.ts` reads the secret
+      # itself (no earlier step can forget to hand it on, /break 263 hole 3), redacts every form of
+      # it, deletes nothing, and fails the job by name if anything still holds it (an archive, a
+      # form it cannot rewrite, a bomb); the upload below runs only after it succeeded.
+      - name: Scrub the wall's credential from the reports
+        id: scrub
         if: always()
+        env:
+          STAGING_BASIC_AUTH: ${{ secrets.STAGING_BASIC_AUTH }}
+        run: node scripts/artifact-credential-check.ts --scrub .lighthouseci
+
+      - name: Upload the Lighthouse reports
+        if: always() && steps.scrub.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: lighthouseci

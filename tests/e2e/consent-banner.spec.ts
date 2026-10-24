@@ -736,6 +736,9 @@ test.describe("post-decision: the register and the third-party silence hold", ()
     await page.locator(ACCEPT).click();
     await expect(page.locator(SAVED)).toBeVisible();
 
+    // `_vercel*` comes only from Vercel Deployment Protection on the cold fallback (ADR-0018);
+    // the CI target is the Railway PR environment behind Basic auth (spec 040 §14 A2), which sets
+    // no cookie.
     const names = (await context.cookies())
       .map((cookie) => cookie.name)
       .filter((name) => !name.startsWith("_vercel"));
@@ -769,6 +772,9 @@ test.describe("post-decision: the register and the third-party silence hold", ()
       // profile a visitor, and the two assertions below still say so: an analytics or ad origin
       // appearing here fails exactly as it did before.
       MEDIA_ORIGIN,
+      // Tolerated only for the cold Vercel fallback (ADR-0018). The CI target is the Railway PR
+      // environment (spec 040 §14 A2), whose policy names no `vercel.live` (AC-6), so in CI
+      // nothing loads it.
       ...(local.has(base.hostname) ? [] : ["https://vercel.live"]),
     ]);
     const thirdParty = [

@@ -89,18 +89,13 @@ interface Workflow {
  * **spec 001 §14 A18 supersedes AC-29 / T-30**, and spec 040 §14 A2 puts the three properties —
  * authentication in front of a non-production environment, an Amsterdam origin, and
  * `X-Robots-Tag: noindex` — on spec 040 AC-26, against the Railway PR environment, where the probe
- * is blocking again. So the assertions below are deliberately assertions about *evidence*: they
- * pin that the step records the three facts and cannot fail the job, and the AC they once enforced
- * is enforced by the AC-26 task, not by this file.
+ * is blocking again. TASK-099 is that task: the evidence step is deleted, and what is left here
+ * pins only that it stays deleted.
  */
 describe("ci.yml preview gate (AC-29 / T-30)", () => {
   const workflow = parse(read(".github/workflows/ci.yml")) as Workflow;
   const preview = workflow.jobs["preview"];
   const steps = preview?.steps ?? [];
-  /** The Vercel evidence step alone: no comment and no other step can satisfy these. */
-  const probe = steps.find((step) => (step.run ?? "").includes("gh api"));
-  const script = probe?.run ?? "";
-
   it("declares a preview job that runs on labelled pull requests only (spec 001 §14 A14)", () => {
     expect(preview).toBeDefined();
     expect(preview?.name).toBe("preview");
@@ -111,70 +106,14 @@ describe("ci.yml preview gate (AC-29 / T-30)", () => {
     );
   });
 
-  it("reads deployments to find the Vercel URL for the PR head SHA", () => {
-    expect(preview?.permissions?.["deployments"]).toBe("read");
-    expect(script).toContain("gh api");
-    expect(script).toContain("environment_url");
-    const env = Object.values(probe?.env ?? {}).join("\n");
-    expect(env).toContain("pull_request.head.sha");
-  });
-
-  it("cannot block the browser suites, whatever Vercel did (TASK-137)", () => {
-    // The measured defect: 45 x 20 s of polling, then a hard failure, then three skipped suites.
-    // The probe is now a single short look, marked `continue-on-error`, and its verdict is text.
-    expect(probe?.["continue-on-error"]).toBe(true);
-    expect(script).toContain("GITHUB_STEP_SUMMARY");
-  });
-
-  it("asserts Deployment Protection blocks an unauthenticated request", () => {
-    expect(script).toContain("/api/health");
-    expect(script).toContain("401|403");
-  });
-
-  it("accepts the Vercel Authentication redirect to vercel.com/sso-api as protected", () => {
-    // Vercel Authentication answers a plain GET with a 302 to the SSO endpoint, not 401/403.
-    expect(script).toContain("301|302|303|307|308");
-    expect(script).toContain(
-      "https://vercel.com/sso-api|https://vercel.com/sso-api[?/]*",
-    );
-    // A redirect to any other location, and a 200, must still be reported as a failure.
-    expect(script).toMatch(
-      /::error::[^\n]*without the bypass header returned \$unprotected_status redirecting to/,
-    );
-  });
-
-  it("asserts fra1 as a '::' segment of x-vercel-id, not as its prefix", () => {
-    expect(script).toContain("x-vercel-id");
-    expect(script).toContain('*"::fra1::"*');
-    expect(script).not.toContain("fra1*)");
-  });
-
-  it("asserts noindex and 200 with the protection-bypass header", () => {
-    expect(script).toContain("x-vercel-protection-bypass");
-    const secrets = Object.values(probe?.env ?? {}).join("\n");
-    expect(secrets).toContain("secrets.VERCEL_AUTOMATION_BYPASS_SECRET");
-    expect(script).toContain("X-Robots-Tag");
-    expect(script.toLowerCase()).toContain("noindex");
-  });
-
-  it("says so in the summary, rather than failing, when there is nothing to probe", () => {
-    // Two absences are facts about the platform, not defects in this pull request: no
-    // `VERCEL_AUTOMATION_BYPASS_SECRET` in the repository, and no non-production deployment for
-    // the head SHA. Both used to fail the job and take the three browser suites with them.
-    expect(script).toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
-    expect(script).toContain("no non-production Vercel deployment");
-  });
-
-  it("hands the CI-owned origin to the browser jobs rather than letting them guess", () => {
-    // `lighthouse` is deliberately not in this list since TASK-056: it builds and serves what it
-    // measures behind `scripts/seo/brotli-origin.ts`, because the budget is Brotli transfer and a
-    // protected preview adds tens of KB of `vercel.live` to the script total (spec 004 AC-24).
-    for (const name of ["e2e", "visual", "a11y"]) {
-      const job = workflow.jobs[name];
-      expect(job?.needs).toBe("preview");
-      expect(job?.env?.["PLAYWRIGHT_BASE_URL"]).toBe(
-        "${{ needs.preview.outputs.preview_url }}",
-      );
-    }
+  it("no longer probes Vercel at all: AC-26 probes the Railway PR environment, blocking (spec 040 §14 A2 clause 1; TASK-099)", () => {
+    // The `continue-on-error` evidence step is deleted in the AC-26 task's PR, "not left beside
+    // it". What replaced it is pinned in `tests/unit/ci-workflow.test.ts`.
+    const script = steps.map((step) => step.run ?? "").join("\n");
+    expect(script).not.toContain("gh api");
+    expect(script).not.toContain("x-vercel-id");
+    expect(script).not.toContain("VERCEL_AUTOMATION_BYPASS_SECRET");
+    expect(preview?.permissions?.["deployments"]).toBeUndefined();
+    expect(script).toContain("scripts/railway-preview.ts --assert");
   });
 });

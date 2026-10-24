@@ -1,5 +1,5 @@
 {
-  "_fixture": "Railway GraphQL `environment(id)` answer for a staging environment whose `web` service matches config/railway.json (spec 040 AC-9, T-10; TASK-098). Shape recorded from the public API schema; no token, no project id and no variable value appears in this file.",
+  "_fixture": "Railway GraphQL `environment(id)` answer for a staging environment whose `web` service matches config/railway.json (spec 040 AC-9, T-10; TASK-098). Shape recorded from the public API schema; no token, no project id and no variable value appears in this file. Since TASK-103 (spec 040 AC-10) it also carries the `worker` seat: no service or custom domain, and no deployment.",
   "data": {
     "environment": {
       "name": "staging",
@@ -14,7 +14,39 @@
               "healthcheckTimeout": 300,
               "restartPolicyType": "ON_FAILURE",
               "restartPolicyMaxRetries": 10,
-              "startCommand": "node server.js"
+              "startCommand": "node server.js",
+              "domains": {
+                "serviceDomains": [
+                  {
+                    "domain": "web-staging.up.railway.app"
+                  }
+                ],
+                "customDomains": [
+                  {
+                    "domain": "staging.flowersoverseas.com"
+                  }
+                ]
+              },
+              "latestDeployment": {
+                "status": "SUCCESS"
+              }
+            }
+          },
+          {
+            "node": {
+              "serviceName": "worker",
+              "region": "europe-west4",
+              "numReplicas": 1,
+              "healthcheckPath": null,
+              "healthcheckTimeout": null,
+              "restartPolicyType": "ON_FAILURE",
+              "restartPolicyMaxRetries": 10,
+              "startCommand": null,
+              "domains": {
+                "serviceDomains": [],
+                "customDomains": []
+              },
+              "latestDeployment": null
             }
           }
         ]
