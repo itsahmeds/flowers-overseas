@@ -43,17 +43,28 @@ describe.skipIf(server.url === undefined)(
       });
     }
 
-    it("reads the two registered flags as migration 0009 seeds them, and nothing else", async () => {
+    it("reads the four registered flags as migrations 0009 and 0019 seed them, and nothing else", async () => {
       const snapshot = await snapshotAs("system");
       expect(
         [...snapshot.flags].sort((a, b) => a.key.localeCompare(b.key)),
       ).toEqual([
+        // spec 018 (`NNNN_post_purchase`, TASK-337): both off.
+        { key: "account.open", enabledDefault: false },
         { key: "checkout.demo_guard", enabledDefault: true },
         { key: "checkout.open", enabledDefault: false },
+        { key: "invoice.issue", enabledDefault: false },
       ]);
-      expect(snapshot.scopes).toEqual([
+      expect(
+        [...snapshot.scopes].sort((a, b) => a.flagKey.localeCompare(b.flagKey)),
+      ).toEqual([
         {
           flagKey: "checkout.open",
+          scope: "country",
+          scopeRef: "PL",
+          enabled: false,
+        },
+        {
+          flagKey: "invoice.issue",
           scope: "country",
           scopeRef: "PL",
           enabled: false,

@@ -48,9 +48,8 @@ SET LOCAL ROLE app_owner;
  * 1. "order": tracking token version, public_token default and exact check
  * ------------------------------------------------------------------------ */
 
-ALTER TABLE public."order"
-  ADD COLUMN tracking_token_version smallint NOT NULL DEFAULT 1,
-  ADD CONSTRAINT order_tracking_token_version_check CHECK (tracking_token_version >= 1);
+ALTER TABLE public."order" ADD COLUMN tracking_token_version smallint NOT NULL DEFAULT 1;
+ALTER TABLE public."order" ADD CONSTRAINT order_tracking_token_version_check CHECK (tracking_token_version >= 1);
 
 -- Backfill first: a row whose token is not exactly 22 characters gets a fresh one.
 UPDATE public."order"
@@ -60,10 +59,8 @@ SET public_token = translate(rtrim(encode(substring(
 WHERE public_token !~ '^[A-Za-z0-9_-]{22}$';
 
 ALTER TABLE public."order" DROP CONSTRAINT order_public_token_check;
-ALTER TABLE public."order"
-  ADD CONSTRAINT order_public_token_check CHECK (public_token ~ '^[A-Za-z0-9_-]{22}$');
-ALTER TABLE public."order"
-  ALTER COLUMN public_token SET DEFAULT translate(rtrim(encode(substring(
+ALTER TABLE public."order" ADD CONSTRAINT order_public_token_check CHECK (public_token ~ '^[A-Za-z0-9_-]{22}$');
+ALTER TABLE public."order" ALTER COLUMN public_token SET DEFAULT translate(rtrim(encode(substring(
       sha256(uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid())) FROM 1 FOR 16),
       'base64'), '='), '+/', '-_');
 
@@ -71,11 +68,10 @@ ALTER TABLE public."order"
  * 2. fulfillment_partner.display_first_name
  * ------------------------------------------------------------------------ */
 
-ALTER TABLE public.fulfillment_partner
-  ADD COLUMN display_first_name text NULL,
-  ADD CONSTRAINT fulfillment_partner_display_first_name_check CHECK (
-    display_first_name IS NULL OR btrim(display_first_name) <> ''
-  );
+ALTER TABLE public.fulfillment_partner ADD COLUMN display_first_name text NULL;
+ALTER TABLE public.fulfillment_partner ADD CONSTRAINT fulfillment_partner_display_first_name_check CHECK (
+  display_first_name IS NULL OR btrim(display_first_name) <> ''
+);
 
 /* ---------------------------------------------------------------------------
  * 3. tax_registration, invoice_series, invoice_profile, invoice
