@@ -221,6 +221,33 @@
         "conflict": "This flag changed since the page opened. Nothing changed; the current value is shown.",
         "not_seeded": "This flag is not in the database. Nothing changed."
       }
+    },
+    "blog": {
+      "rule": {
+        "slugShape": "The slug uses lowercase letters, digits and single hyphens only.",
+        "slugReserved": "The slug \"{slug}\" is reserved for a blog page. Choose another.",
+        "length": "This field has {length} characters; it needs {min} to {max}.",
+        "countryTag": "Tag at least one destination country.",
+        "linkCorridor": "Link at least one destination guide that exists in this language.",
+        "linkOccasionOrCategory": "Link at least one occasion or flower page that exists in this language.",
+        "anchorGeneric": "The link text \"{anchor}\" does not say where it goes. Use at least two descriptive words.",
+        "minWords": "The body has {words} words; a post needs at least {min}.",
+        "distinct": "The body is too close to {against} (distinctness {score}, at least {min} needed).",
+        "rawContact": "Remove \"{match}\": posts carry no web address, email address or phone number. Link pages with the link picker.",
+        "priceLiteral": "Remove the price \"{match}\": posts carry no prices.",
+        "scaleClaim": "Remove \"{match}\": posts make no claim of scale.",
+        "relay": "Rephrase this sentence ({pattern}, \"{match}\"): \"{sentence}\"",
+        "voice": "Rephrase without the word \"{word}\".",
+        "freshness": "Remove the claim {detail}: posts promise no number of days.",
+        "competitor": "Remove the brand name \"{mark}\".",
+        "claim": "This sentence makes a {label} claim (\"{match}\"): \"{sentence}\". Rephrase it, or add the exact sentence to the honesty list with a reason.",
+        "allowStale": "The honesty list entry \"{sentence}\" matches no sentence that needs it. Remove it.",
+        "h1InBody": "Line {line} is a top-level heading. The title is the only one; use ## for a section.",
+        "titleLong": "The title has {length} characters; search results may cut it after {max}.",
+        "bodyLong": "The body has {words} words; consider splitting it above {max}.",
+        "noHeading": "The body has {words} words and no ## heading.",
+        "unknownConstruct": "Line {line} has something the editor does not format ({construct}); it shows as plain text."
+      }
     }
   }
 }

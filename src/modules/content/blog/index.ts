@@ -28,6 +28,7 @@ export {
   type BlogRuleResult,
   type BlogSoftRule,
   blogBodyRefs,
+  blogRuleMessageKey,
   blogWordCount,
   hardFailures,
   validateBlogRevision,
