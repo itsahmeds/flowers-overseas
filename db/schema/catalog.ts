@@ -203,7 +203,7 @@ export const product = pgTable(
     source: text("source").notNull().default("seed"),
     /**
      * The flower types and colours **after** the primary one, in authored order, and the allergen
-     * attribute (`plan/10` §1.1; migration `0026_product_facets`, TASK-070). The primary stays in
+     * attribute (`plan/10` §1.1; migration `0025_product_facets`, TASK-070). The primary stays in
      * its own column above, and a check refuses it here, so `[primary, ...others]` is the facet.
      */
     otherFlowers: text("other_flowers")
@@ -369,7 +369,7 @@ export const productOccasion = pgTable(
     occasionId: uuid("occasion_id")
       .notNull()
       .references(() => occasion.id, { onDelete: "restrict" }),
-    /** The authored order of the product's occasions (`0026_product_facets`, TASK-070). */
+    /** The authored order of the product's occasions (`0025_product_facets`, TASK-070). */
     sort: integer("sort").notNull().default(0),
     ...timestamps,
   },

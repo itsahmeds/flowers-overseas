@@ -188,7 +188,7 @@ describe("the committed migration set", () => {
       "0022_florists_v0.sql",
       "0023_review_attestation.sql",
       "0024_blog.sql",
-      "0026_product_facets.sql",
+      "0025_product_facets.sql",
     ]);
   });
 });
