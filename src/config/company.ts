@@ -232,3 +232,12 @@ export function controllerName(company: Company = COMPANY): string {
     ? company.legalName
     : company.tradingName;
 }
+
+/**
+ * `complaintWindowHours` (spec 018 §13 Q1, spec 022a §2 "The close"): how long after the
+ * delivery photo a buyer may still say "not what I ordered", and so how long an order waits in
+ * `photo_uploaded` before the close sweep closes it. **Absolute hours**, never calendar days: 72
+ * hours after a photo taken the day before a clock change is still 72 × 3600 seconds later. One
+ * number, so the tracking page, the guarantee page and the closing job cannot disagree.
+ */
+export const COMPLAINT_WINDOW_HOURS = 72;

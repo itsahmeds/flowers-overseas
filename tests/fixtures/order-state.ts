@@ -62,12 +62,17 @@ export function shortestPath(
   return undefined;
 }
 
-/** Applies one legal transition the way the engine does. Returns nothing; throws what Postgres throws. */
+/**
+ * Applies one legal transition the way the engine does. Returns nothing; throws what Postgres
+ * throws. `occurredAt` sets the event's instant (`order_event` is append-only, so a suite that
+ * needs a photo 72 hours ago writes it so; spec 022a T-02); without it, `now()`.
+ */
 export async function applyTransition(
   tx: Tx,
   orderId: string,
   event: string,
   to: string,
+  occurredAt?: Date,
 ): Promise<void> {
   const [current] = await tx<{ status: string; seq: number | null }[]>`
     SELECT o.status, (SELECT max(seq) FROM order_event e WHERE e.order_id = o.id) AS seq
@@ -79,9 +84,11 @@ export async function applyTransition(
   await tx`SELECT set_config('app.allow_status_write', '', true)`;
   await tx`SELECT set_config('app.transition_event', '', true)`;
   await tx`
-    INSERT INTO order_event (order_id, seq, type, from_status, to_status, actor, payload, payload_version)
+    INSERT INTO order_event (order_id, seq, type, from_status, to_status, actor, payload,
+                             payload_version, occurred_at)
     VALUES (${orderId}, ${(current.seq ?? 0) + 1}, ${event}, ${current.status}, ${to},
-            ${FIXTURE_ACTOR}, '{}'::jsonb, 1)`;
+            ${FIXTURE_ACTOR}, '{}'::jsonb, 1,
+            COALESCE(${occurredAt?.toISOString() ?? null}::timestamptz, now()))`;
 }
 
 /**

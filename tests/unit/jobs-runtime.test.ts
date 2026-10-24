@@ -181,6 +181,7 @@ describe("ensureQueues", () => {
       "db.backup_verify",
       "media.derive_variants",
       "neon.usage_probe",
+      "order.close_sweep",
       "outbox.dispatch",
       "retention.sweep",
     ]);
@@ -360,9 +361,10 @@ describe("runTick — each job settled exactly once", () => {
     });
   });
 
-  it("the production map handles retention.sweep (TASK-025) and outbox.dispatch (TASK-254), nothing else yet", async () => {
+  it("the production map handles retention.sweep (TASK-025), outbox.dispatch (TASK-254) and order.close_sweep (TASK-369), nothing else yet", async () => {
     const { JOB_HANDLERS } = await import("../../src/jobs/handlers");
     expect(Object.keys(JOB_HANDLERS).sort()).toEqual([
+      "order.close_sweep",
       "outbox.dispatch",
       "retention.sweep",
     ]);
@@ -382,5 +384,32 @@ describe("runTick — each job settled exactly once", () => {
       rejected: 0,
     });
     expect(fake.raw.supervise).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("enqueue — the minute tick's singletonKey (spec 022a §5.2, TASK-369)", () => {
+  it("passes singletonKey with a one-minute window only when asked, and the plain send otherwise", async () => {
+    const send = vi.fn(async () => "job-id");
+    const boss = { send } as never;
+    await runtime.enqueue(
+      boss,
+      "order.close_sweep",
+      {},
+      { requestId: "system:jobs.tick", singletonKey: "order.close_sweep" },
+    );
+    await runtime.enqueue(
+      boss,
+      "outbox.dispatch",
+      {},
+      { requestId: "system:jobs.tick" },
+    );
+    expect(send.mock.calls).toEqual([
+      [
+        "order.close_sweep",
+        { v: 1, requestId: "system:jobs.tick", payload: {} },
+        { singletonKey: "order.close_sweep", singletonSeconds: 60 },
+      ],
+      ["outbox.dispatch", { v: 1, requestId: "system:jobs.tick", payload: {} }],
+    ]);
   });
 });
