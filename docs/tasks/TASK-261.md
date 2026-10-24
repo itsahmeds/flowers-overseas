@@ -36,7 +36,9 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-25, to the orchestrator (non-blocking, declared in PR 411): **A9 shipped here.** Spec 002 §14 A9.3 says A9 (A9.1's projection and A9.7's three row-34 rows) ships in the first migration of spec 016 or 018; none carries it (`0021_post_purchase` on TASK-070's branch has A8 only), and AC-31 needs A9.7's set C. `0030_set_c_a9` ships A9 whole, as A9.3 words it, with the `A9_ROLLBACK_ROWS_IN_USE` guard. Whoever merges spec 016/018's first migration must not ship A9 again. Answer: open.
+- 2026-10-25, to the founder via the orchestrator: **an inquiry closed without a decision.** Stripe closes an inquiry (`warning_closed`) with no `won`/`lost`; spec 013 §5.2 names rows 35/36 for `won`/`lost` only, and no row leaves `chargeback_open` otherwise. Built: the dispute row becomes `closed` and every order left in `chargeback_open` raises `payment.dispute_outside_machine` for the founder. Question: should a closed inquiry write row 35 (`chargeback_won`), or should inquiries not open a chargeback at all? Answer: open.
+- 2026-10-25, declared: **`adminRefund`/`adminCancel` write no `audit_log` row.** Spec 013 §5.2 says "audit-logged in spec 002's `audit_log`"; no audited table is touched and `audit_write` is revoked from `app_web`, so a row needs spec 020a's `admin_order_action` (TASK-357, carry-forward written there). The refund row's `requested_by` and the order event's actor record the admin meanwhile. Answer: open (TASK-357).
 
 ## Progress
 
@@ -44,7 +46,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: provider lookups (`retrieveRefund`, `listChargeRefunds`, `retrieveDispute`) on the interface, the contract suite, the fake (async refunds, disputes) and the Stripe adapter + emulator; `refund`, rows 30/31, `applyProviderRefund`, `succeededRefunds`, `disputes.ts`, webhook routes, `adminRefund`/`adminCancel`, `0030_set_c_a9`; `tests/integration/payments-refunds-disputes.test.ts` 55 green on local PG16 (with the never-committed 0021..0027 placeholders), 17 mutations all red. Next: cheap gates, PR ready, CI.
 
 ## Result
 
