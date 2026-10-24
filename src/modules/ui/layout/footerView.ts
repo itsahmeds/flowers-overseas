@@ -124,6 +124,11 @@ function hrefFor(
       ? localePath(locale, location.segmentKey)
       : localePath(locale, "legal", location.leaf);
   }
+  // Spec 044's blog index (TASK-322): published means "may be linked"; whether a post exists in
+  // this locale is `blogIndexExists()`'s answer, which the layout hands in as `unavailable`.
+  if (link.target.kind === "blogIndex") {
+    return unavailable.has(link.id) ? undefined : localePath(locale, "blog");
+  }
   if (link.target.kind !== "route") return undefined;
   // **Permission is not existence** (spec 004 AC-14; TASK-113). `isPublished()` says the site may
   // link at this page type; whether the page is *there in this locale* is a fact only the owning

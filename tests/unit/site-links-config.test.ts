@@ -152,6 +152,17 @@ describe("src/config/site-links.ts", () => {
         expect(INFO_PAGE_IDS, link.id).toContain(link.target.page);
         continue;
       }
+      if (link.target.kind === "blogIndex") {
+        // Spec 044 §2.8 (TASK-322): the blog index, whose existence per locale is
+        // `blogIndexExists()`'s answer, asked by the layout. Its URL is the `blog` segment.
+        expect(link.owningSpec, link.id).toBe("044");
+        for (const locale of launchLocales) {
+          expect(localePath(locale, "blog"), `${link.id}/${locale}`).toMatch(
+            new RegExp(`^/${locale}/blog$`),
+          );
+        }
+        continue;
+      }
       expect(link.target.kind, link.id).toBe("pending");
       expect(isPublished(link.id), link.id).toBe(false);
     }
@@ -178,6 +189,8 @@ describe("src/config/site-links.ts", () => {
       // Spec 041's five legal links (TASK-183). Published is permission, not existence: the
       // imprint, terms and privacy are drawn nowhere until `infoPageExists()` says so (AC-21).
       "imprint",
+      // Spec 044 §2.8 (TASK-322): permission, not existence; drawn only where a post exists.
+      "blog",
       "terms",
       "privacy",
       "cookies",
@@ -393,6 +406,8 @@ describe("src/config/site-links.ts", () => {
       "for-florists",
       "help-and-contact",
       "imprint",
+      // Spec 044 §2.8 (TASK-322), last in Company as the blog artboards draw it.
+      "blog",
     ]);
     expect(groupLinks("legal").map((link) => link.id)).toEqual([
       "terms",
@@ -572,7 +587,13 @@ describe("src/config/site-links.ts", () => {
       // The product link is drawn on no chrome canvas: its label is the product's own name, which
       // the listing cards print (spec 009 AC-20), not a phrase the homepage artboard could carry.
       if (link.id === "product") continue;
+      // The Blog row is drawn on spec 044's blog artboards (TASK-322), which the 2026-09 homepage
+      // canvas predates; its label is Appendix A's "Blog", checked against those artboards.
       const label = messageAt(link.labelKey) as string;
+      if (link.id === "blog") {
+        expect(label).toBe("Blog");
+        continue;
+      }
       // Spec 041 §2 "Links" relabels "Delivery times and cutoffs" as "Delivery and payment"
       // (Appendix A.1, TASK-182): spec 041's copy, which the 2026-09 homepage canvas predates.
       if (link.id === "delivery-times") {

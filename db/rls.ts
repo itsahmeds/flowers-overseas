@@ -46,9 +46,38 @@ export const PUBLIC_REFERENCE_TABLES = [
 
 /** Read by anyone, but only some rows: the condition is the migration's. */
 export const PUBLIC_FILTERED_TABLES = {
+  // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321): a post only once published; a
+  // revision only as the published revision of a published post; a tag only of such a post.
+  blog_post: "status = 'published'",
+  blog_post_country: "its post is published",
+  blog_post_occasion: "its post is published",
+  blog_post_revision: "the published revision of a published post",
   media_asset: "visibility = 'public'",
   media_variant: "its media_asset is readable (public)",
   review: "moderation_status = 'published'",
+} as const;
+
+/**
+ * Partner-filtered (`app.role = 'partner'`): a table whose rows are otherwise hidden or public by
+ * condition, of which a partner also sees the rows tied to an order it holds an open or accepted
+ * offer for. Spec 011 §5.1 (migration `0022_florists_v0`, TASK-211): the delivery photo of such an
+ * order, so a florist can see their own photo and nothing else widens. The policy is
+ * `<table>_partner`, its correlation a `SECURITY DEFINER` lookup.
+ */
+export const PARTNER_FILTERED_TABLES = {
+  media_asset:
+    "kind = 'delivery_proof' and the photo of an order the partner sees (app_partner_sees_media)",
+} as const;
+
+/**
+ * Insert-only for the public (`app.role` unset or `public`): a visitor adds a row and reads,
+ * changes and deletes nothing, not even their own (spec 011 §5.1, AC-14; migration
+ * `0022_florists_v0`, TASK-211). One `<table>_public_insert` policy `FOR INSERT … WITH CHECK`
+ * beside the staff policy; no partner or customer policy.
+ */
+export const PUBLIC_INSERT_ONLY_TABLES = {
+  partner_application:
+    "status = 'new', no converted partner, no decision time (the WITH CHECK)",
 } as const;
 
 /**
@@ -68,8 +97,27 @@ export const BUILD_ROLE_READ_TABLES = [
   "feature_flag_scope",
 ].sort();
 
-/** The build role's filtered reads: the same rows a public render sees (`PUBLIC_FILTERED_TABLES`). */
-export const BUILD_ROLE_FILTERED_TABLES = PUBLIC_FILTERED_TABLES;
+/**
+ * The build role's filtered reads granted by `0018`: the same rows a public render sees
+ * (`PUBLIC_FILTERED_TABLES`, without the blog's, which `0024` grants).
+ */
+export const BUILD_ROLE_FILTERED_TABLES = {
+  media_asset: PUBLIC_FILTERED_TABLES.media_asset,
+  media_variant: PUBLIC_FILTERED_TABLES.media_variant,
+  review: PUBLIC_FILTERED_TABLES.review,
+} as const;
+
+/**
+ * The blog tables the build reads (spec 044 §5.1 item 7; migration `0024_blog`, TASK-321): the
+ * rows a public render sees, each with a `<table>_build_read` policy equal to its public read.
+ * Authors are read through `PUBLIC_VIEWS` only.
+ */
+export const BUILD_ROLE_BLOG_TABLES = [
+  "blog_post",
+  "blog_post_country",
+  "blog_post_occasion",
+  "blog_post_revision",
+] as const;
 
 /**
  * Partner-scoped (`app.role = 'partner'`, the row's partner in `app.partner_ids`). `write` tables
@@ -110,6 +158,9 @@ export const CUSTOMER_SCOPED_TABLES = {
   substitution_note: "read",
   payment: "read",
   refund: "read",
+  // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the buyer's own invoices and
+  // credit notes, read-only (an invoice never changes).
+  invoice: "read",
 } as const;
 
 /**
@@ -141,6 +192,15 @@ export const PARTNER_VIEWS = {
     "partner_payout_minor",
     "payout_currency_code",
   ],
+} as const;
+
+/**
+ * The public's column-limited read paths (spec 044 §5.1 item 7, migration `0024_blog`,
+ * TASK-321): a `security_barrier` view owned by `app_owner`, `SELECT` only for `app_web` and
+ * `app_build`, each listing exactly the columns it shows.
+ */
+export const PUBLIC_VIEWS = {
+  blog_author_public: ["id", "display_name"],
 } as const;
 
 /** The buyer's order timeline without the internal payload and actor (review round 1, nit 3). */
@@ -182,20 +242,33 @@ export const STAFF_ONLY_TABLES = [
   "admin_profile",
   "audit_log",
   "auth_email_send",
+  // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321): the author record holds the user id
+  // and the agreement date; the public reads `id` and `display_name` of an author with a
+  // published post only through the view `blog_author_public` (`PUBLIC_VIEWS`).
+  "blog_author",
   "consent_log",
   "db_usage_sample",
   "feature_flag",
   "feature_flag_scope",
+  // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the issuer's VAT registrations,
+  // the invoice profiles and the numbering series are admin and system only; `public` reads none.
+  "invoice_profile",
+  "invoice_series",
   "message_catalog",
   "order_event",
   "outbox",
   "outbox_attempt",
-  "partner_application",
   // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
   "retention_policy",
+  // spec 012b (migration `0023_review_attestation`, TASK-293): the review ledger and the reviewer
+  // locales. Runtime review lookups run in `withSystemContext('attestations.read')`; the ledger
+  // is append-only by trigger, so the staff policy never means update or delete.
+  "review_attestation",
+  "reviewer_locale",
   "sessions",
+  "tax_registration",
   "verification_tokens",
   "webhook_inbox",
 ] as const;

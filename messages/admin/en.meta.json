@@ -184,6 +184,121 @@
     "reviewed": false,
     "sourceHash": "92542b982132ceaa9c9ab17f39b5ac792e50c4fe53f23d9d548a1ee7fc5e71fa"
   },
+  "admin.blog.rule.allowStale": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "13a9a4fd84b0905376741e807980550fc3103fbb39a0826c23041789f77f5c78"
+  },
+  "admin.blog.rule.anchorGeneric": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0e1bc477ce37f4aa8eb88ac7aec78567ab986c2d3ba1887bb50601229ea86143"
+  },
+  "admin.blog.rule.bodyLong": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "36693bff41b8d9670c8d7189c7c75b375f0980d8107568ea49c51112a022b203"
+  },
+  "admin.blog.rule.claim": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "28f8fa5e34737e1996ff0be42e31401950d860eb6274c413264eaabdfee73257"
+  },
+  "admin.blog.rule.competitor": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "87e05a84207afc688f63beefa5eaf76b24c86705797801f2b0fc7862f744c775"
+  },
+  "admin.blog.rule.countryTag": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a1e569407abae9502fbabe1da2dc3ffedf430d6d5a4555fc0bec3cbe4653c06a"
+  },
+  "admin.blog.rule.distinct": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "138a029e65afd54d36c3efddea28f5be42fbf72653acf2520c30849c031b5d53"
+  },
+  "admin.blog.rule.freshness": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "67754e2c5d9bf8bf8c50583c1235e36e78a902451a220ad5c3375862d9cac380"
+  },
+  "admin.blog.rule.h1InBody": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "322455d479550676c6d06ae8b1a08a804a4fcaee29fe58e5a4822ea97263adcb"
+  },
+  "admin.blog.rule.length": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "58f59d3254d6bc8d2e609cd478dcc6b6ee28173b60e7b3f53b3384763785187b"
+  },
+  "admin.blog.rule.linkCorridor": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "25ea41698ddaa4f36d75e2e1063cc348349d994a16bf327ced33972aa5bee765"
+  },
+  "admin.blog.rule.linkOccasionOrCategory": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "abd896cb2dab1e47bbb3738b92db6ebb801f259ec7d868e65fc6aa236f370737"
+  },
+  "admin.blog.rule.minWords": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0ca354b9f316adcc9214a706a0fb0b7260d361d0c1c108aa56051a4a779914eb"
+  },
+  "admin.blog.rule.noHeading": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c61b48f55ca1e208b25c1ac6a6fa400c6ea4ca0d21706a4513d1a8a49aa59c48"
+  },
+  "admin.blog.rule.priceLiteral": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bd5f9235a0a1c3d175b642e76997eae6ad0d58735c425745244fcdedc4d9e4a6"
+  },
+  "admin.blog.rule.rawContact": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0fc8291033a4d3a12b811483a3daee52b4cf9e0661f8166ad18eb6f494ae53d4"
+  },
+  "admin.blog.rule.relay": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6d3c2416423c68d3c037a728f2ecfb2962c310cf55c335a75df26d31bb982fd8"
+  },
+  "admin.blog.rule.scaleClaim": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "83e02cc02b227b6f5105d6d9ae1388fbbdb86110473a6aac08b4b3a46eccda4e"
+  },
+  "admin.blog.rule.slugReserved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ea2a5098c6cad4c56cb1a3461194dccc290217e7040357cab6feaa973040b296"
+  },
+  "admin.blog.rule.slugShape": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "341f2e2d3e5fd9998a8e273e266197eed04e4b0159718d8b631032b3c27a03a7"
+  },
+  "admin.blog.rule.titleLong": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "de43baea7825effa92b9448077be6c9a69f7644155713929007a96842454095b"
+  },
+  "admin.blog.rule.unknownConstruct": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7a1c6c7c000c4579faecb192d501d26b848ece0661400bba0d5487a7530ecac7"
+  },
+  "admin.blog.rule.voice": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ff11d0f39432c6769bdcc69f4096b0be19854b61de23caee2aebef34a1986e2e"
+  },
   "admin.email.body": {
     "source": "human",
     "reviewed": false,
@@ -319,6 +434,11 @@
     "reviewed": false,
     "sourceHash": "ea23726dd0fd4e4dd85eb695843fcdd3b6928ab5561fa959f1523bd36bb613fe"
   },
+  "admin.flags.description.account.open": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49aa5ea7f28d8fb0040c9eb00d1cd0898dfcf8007a48bd92fea5720bfb0fb65a"
+  },
   "admin.flags.description.checkout.demo_guard": {
     "source": "human",
     "reviewed": false,
@@ -328,6 +448,11 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "b7782038d9c09c78393acb1caacd36bb49fe0455371c1d375f3b837595139590"
+  },
+  "admin.flags.description.invoice.issue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d1a12a3aad496e68ffa808bae076ed53603271acef5bc3700e41096fe306cee6"
   },
   "admin.flags.lead": {
     "source": "human",

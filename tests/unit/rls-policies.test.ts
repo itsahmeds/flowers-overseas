@@ -14,14 +14,18 @@ import { describe, expect, it } from "vitest";
 
 import * as schema from "../../db/schema/index.ts";
 import {
+  BUILD_ROLE_BLOG_TABLES,
   BUILD_ROLE_FILTERED_TABLES,
   BUILD_ROLE_READ_TABLES,
   CUSTOMER_SCOPED_TABLES,
   CUSTOMER_VIEWS,
+  PARTNER_FILTERED_TABLES,
   PARTNER_SCOPED_TABLES,
   PARTNER_VIEWS,
   PUBLIC_FILTERED_TABLES,
+  PUBLIC_INSERT_ONLY_TABLES,
   PUBLIC_REFERENCE_TABLES,
+  PUBLIC_VIEWS,
   RLS_EXEMPT_TABLES,
   SELF_SCOPED_TABLES,
   STAFF_ONLY_TABLES,
@@ -105,6 +109,30 @@ const BUILD_POLICIES: Policy[] = [
 const policiesOf = (table: string): Policy[] =>
   POLICIES.filter((p) => p.table === table);
 
+/** Every `CREATE POLICY … ON <table>` name, whatever its shape (`FOR INSERT … WITH CHECK` too). */
+const anyPolicyNamesOf = (table: string): string[] =>
+  [
+    ...up.matchAll(
+      new RegExp(
+        `CREATE POLICY (\\w+) ON ${ref(table)}\\s+(?:AS \\w+\\s+)?(?:FOR \\w+\\s+)?TO app_web\\b`,
+        "g",
+      ),
+    ),
+  ].map((m) => m[1] ?? "");
+
+/** `0022`'s insert-only policies: `FOR INSERT TO app_web WITH CHECK (…)` (spec 011 §5.1). */
+const INSERT_POLICIES: Policy[] = [
+  ...up.matchAll(
+    /CREATE POLICY (\w+) ON public\.(\w+)\s+FOR INSERT TO app_web\s+WITH CHECK \(([\s\S]*?)\);/g,
+  ),
+].map((m) => ({
+  name: m[1] ?? "",
+  table: m[2] ?? "",
+  command: "INSERT",
+  using: "",
+  check: (m[3] ?? "").replace(/\s+/g, " ").trim(),
+}));
+
 describe("migration 0011 — coverage", () => {
   it("opens with the ownership preamble, closes with RESET ROLE, and never forces RLS", () => {
     expect(up0011.trimStart().startsWith("SET LOCAL ROLE app_owner;")).toBe(
@@ -115,10 +143,11 @@ describe("migration 0011 — coverage", () => {
   });
 
   it("every policy the file creates was parsed (none hides behind an odd layout)", () => {
-    // The build role's policies (`0018`, spec 012b) are read by their own block below.
-    expect(POLICIES.length + BUILD_POLICIES.length).toBe(
-      [...up.matchAll(/CREATE POLICY/g)].length,
-    );
+    // The build role's policies (`0018`, spec 012b) and the insert-only ones (`0022`, spec 011)
+    // are read by their own blocks below.
+    expect(
+      POLICIES.length + BUILD_POLICIES.length + INSERT_POLICIES.length,
+    ).toBe([...up.matchAll(/CREATE POLICY/g)].length);
   });
 
   it("enables RLS on every table of the mirror, and on nothing else", () => {
@@ -155,6 +184,8 @@ describe("migration 0011 — coverage", () => {
     const classified = new Set<string>([
       ...PUBLIC_REFERENCE_TABLES,
       ...Object.keys(PUBLIC_FILTERED_TABLES),
+      ...Object.keys(PARTNER_FILTERED_TABLES),
+      ...Object.keys(PUBLIC_INSERT_ONLY_TABLES),
       ...Object.keys(PARTNER_SCOPED_TABLES),
       ...Object.keys(CUSTOMER_SCOPED_TABLES),
       ...SELF_SCOPED_TABLES,
@@ -210,6 +241,8 @@ describe("migration 0011 — each class gets exactly its policies", () => {
         policiesOf(table).map((p) => p.name),
         table,
       ).toEqual([`${table}_staff`]);
+      // Whatever the policy's shape: an insert-only or a restrictive policy counts too.
+      expect(anyPolicyNamesOf(table), table).toEqual([`${table}_staff`]);
     }
   });
 
@@ -351,7 +384,13 @@ describe("migration 0011 — each class gets exactly its policies", () => {
 
 describe("rollback 0011", () => {
   it("drops the views, every policy, RLS on every table, and every function it created", () => {
-    for (const policy of POLICIES.filter((p) => !LATER_TABLES.has(p.table))) {
+    // `0011`'s own policies; a later migration's policy on an `0011` table is dropped by that
+    // migration's rollback (`0022_florists_v0`, below).
+    for (const policy of POLICIES.filter(
+      (p) =>
+        !LATER_TABLES.has(p.table) &&
+        up0011.includes(`CREATE POLICY ${p.name} `),
+    )) {
       expect(down, policy.name).toMatch(
         new RegExp(
           `DROP POLICY IF EXISTS ${policy.name} ON ${ref(policy.table)};`,
@@ -398,6 +437,7 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     const tables = [
       ...BUILD_ROLE_READ_TABLES,
       ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+      ...BUILD_ROLE_BLOG_TABLES,
     ].sort();
     expect(BUILD_POLICIES.map((p) => p.table).sort()).toEqual(tables);
     for (const policy of BUILD_POLICIES) {
@@ -432,7 +472,10 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
   });
 
   it("rolls back every policy it creates, revokes the grants and drops the role", () => {
-    for (const policy of BUILD_POLICIES) {
+    const blog: readonly string[] = BUILD_ROLE_BLOG_TABLES;
+    for (const policy of BUILD_POLICIES.filter(
+      (p) => !blog.includes(p.table),
+    )) {
       expect(down0018).toContain(
         `DROP POLICY IF EXISTS ${policy.name} ON public.${policy.table};`,
       );
@@ -441,5 +484,129 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     const grant = /GRANT SELECT ON([\s\S]*?)TO app_build;/u.exec(up0018);
     expect(revoke?.[1]?.trim()).toBe(grant?.[1]?.trim());
     expect(down0018).toContain("DROP ROLE app_build;");
+  });
+});
+
+describe("migration 0024 — the blog (spec 044 §5.1 item 7, AC-2; TASK-321)", () => {
+  const up0024 = readMigration("0024_blog.sql");
+  const down0024 = readMigration("0024_blog.down.sql");
+
+  it("grants app_build SELECT on the four blog tables and the author view, and nothing else", () => {
+    const grant =
+      /GRANT SELECT ON (public\.blog_post,[\s\S]*?)TO app_build;/u.exec(up0024);
+    const granted = (grant?.[1] ?? "")
+      .split(",")
+      .map((name) => name.trim().replace(/^public\./u, ""))
+      .filter((name) => name !== "")
+      .sort();
+    expect(granted).toEqual([...BUILD_ROLE_BLOG_TABLES].sort());
+    expect(up0024).toContain(
+      "GRANT SELECT ON public.blog_author_public TO app_build;",
+    );
+    expect(up0024).not.toMatch(/GRANT (?:INSERT|UPDATE|DELETE|TRUNCATE|ALL)/u);
+    expect(up0024).not.toMatch(/GRANT SELECT[^;]*public\.blog_author\b(?!_)/u);
+  });
+
+  it("public reads: posts once published, revisions only as the published one, authors only through the view", () => {
+    expect(
+      policiesOf("blog_post").find((p) => p.name === "blog_post_read")?.using,
+    ).toBe("status = 'published'");
+    expect(
+      policiesOf("blog_post_revision").find(
+        (p) => p.name === "blog_post_revision_read",
+      )?.using,
+    ).toContain("p.published_revision_id = blog_post_revision.id");
+    expect(anyPolicyNamesOf("blog_author")).toEqual(["blog_author_staff"]);
+    expect(PUBLIC_VIEWS.blog_author_public).toEqual(["id", "display_name"]);
+    expect(up0024).toMatch(
+      /CREATE VIEW public\.blog_author_public WITH \(security_barrier = true\) AS\s+SELECT a\.id, a\.display_name\s/u,
+    );
+    expect(up0024).toContain(
+      "REVOKE ALL ON public.blog_author_public FROM app_web;",
+    );
+  });
+
+  it("the rollback drops the five tables and the view, and restores the ledger check NOT VALID", () => {
+    for (const table of [
+      "blog_post_occasion",
+      "blog_post_country",
+      "blog_post_revision",
+      "blog_post",
+      "blog_author",
+    ]) {
+      expect(down0024).toContain(`DROP TABLE IF EXISTS public.${table};`);
+    }
+    expect(down0024).toContain(
+      "DROP VIEW IF EXISTS public.blog_author_public;",
+    );
+    expect(down0024).toMatch(/'media_asset'\s*\)\) NOT VALID;/u);
+  });
+});
+
+describe("migration 0022 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () => {
+  const up0022 = readMigration("0022_florists_v0.sql");
+  const down0022 = readMigration("0022_florists_v0.down.sql");
+
+  it("partner_application: staff, plus one public insert-only policy whose check pins status, partner and decision", () => {
+    expect(Object.keys(PUBLIC_INSERT_ONLY_TABLES)).toEqual([
+      "partner_application",
+    ]);
+    expect(anyPolicyNamesOf("partner_application").sort()).toEqual([
+      "partner_application_public_insert",
+      "partner_application_staff",
+    ]);
+    expect(
+      INSERT_POLICIES.filter((p) => p.table === "partner_application"),
+    ).toEqual([
+      {
+        name: "partner_application_public_insert",
+        table: "partner_application",
+        command: "INSERT",
+        using: "",
+        check:
+          "app_current_role() = 'public' AND status = 'new' AND converted_partner_id IS NULL AND decided_at IS NULL",
+      },
+    ]);
+    expect(up0022).toContain("CHECK (cardinality(media_asset_ids) = 0)");
+  });
+
+  it("media_asset: the partner reads delivery photos through a SECURITY DEFINER lookup on its open or accepted offers", () => {
+    expect(Object.keys(PARTNER_FILTERED_TABLES)).toEqual(["media_asset"]);
+    expect(
+      policiesOf("media_asset")
+        .map((p) => p.name)
+        .sort(),
+    ).toEqual(["media_asset_partner", "media_asset_read", "media_asset_staff"]);
+    expect(
+      policiesOf("media_asset").find((p) => p.name === "media_asset_partner"),
+    ).toEqual({
+      name: "media_asset_partner",
+      table: "media_asset",
+      command: "SELECT",
+      using: "kind = 'delivery_proof' AND app_partner_sees_media(id)",
+      check: "",
+    });
+    expect(up0022).toMatch(
+      /CREATE FUNCTION public\.app_partner_sees_media\(target uuid\) RETURNS boolean\s+LANGUAGE sql STABLE\s+SECURITY DEFINER\s+SET search_path = pg_catalog, public/,
+    );
+    expect(up0022).toMatch(
+      /WHERE p\.media_asset_id = target AND app_partner_sees_order\(p\.order_id\)/,
+    );
+  });
+
+  it("the rollback drops both policies, the lookup, the column, the constraints and the retention rows", () => {
+    for (const statement of [
+      "DROP POLICY IF EXISTS media_asset_partner ON public.media_asset;",
+      "DROP FUNCTION IF EXISTS public.app_partner_sees_media(uuid);",
+      "DROP POLICY IF EXISTS partner_application_public_insert ON public.partner_application;",
+      "DROP COLUMN IF EXISTS locale_code;",
+      "DROP CONSTRAINT IF EXISTS partner_application_media_asset_ids_empty_check,",
+      "DROP COLUMN IF EXISTS contact_name;",
+    ]) {
+      expect(down0022).toContain(statement);
+    }
+    expect(down0022).toMatch(
+      /DELETE FROM public\.retention_policy\s+WHERE key IN \('partner_application', 'auth_session', 'auth_verification_token'\);/,
+    );
   });
 });

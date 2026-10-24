@@ -500,7 +500,9 @@ describe("pnpm lint:fixtures over the real configs", () => {
           .map((m) => `${result.filePath}:${String(m.line)}:${m.ruleId ?? ""}`),
       );
       expect(restricted).toEqual([]);
-    }, 120_000);
+      // About 26 s on a quiet machine; a CI unit job running every suite at once took it past
+      // 120 s (PR 394), so the runner's time, not the lint, sets this bound.
+    }, 300_000);
   });
 
   it("keeps the fixture directory out of the main lint run", async () => {

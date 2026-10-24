@@ -92,8 +92,17 @@ function render(node: React.ReactElement, locale = "en"): string {
  * The footer as the locale layout composes it: every info page that does not exist in the locale
  * is `unavailable` (spec 041 AC-21; the imprint, terms and privacy wait for the company).
  */
-function layoutView(locale: string) {
-  return footerView(locale, { unavailable: missingInfoPageLinkIds(locale) });
+/**
+ * What the `[locale]` layout hands the footer in Phase 0: the info pages that do not exist, and
+ * the blog index, which does not exist while no post is published (spec 044 §2.8; TASK-322).
+ */
+function layoutView(locale: string, blogIndexExists = false) {
+  return footerView(locale, {
+    unavailable: [
+      ...missingInfoPageLinkIds(locale),
+      ...(blogIndexExists ? [] : ["blog"]),
+    ],
+  });
 }
 
 const phase0 = render(<SiteFooter locale="en" view={layoutView("en")} />);
@@ -238,11 +247,22 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       // Spec 041's five legal links (TASK-183). Published is permission: imprint, terms and
       // privacy are still drawn nowhere while their page does not exist (AC-21).
       "imprint",
+      // Spec 044 §2.8 (TASK-322): permission, not existence; drawn only where a post exists.
+      "blog",
       "terms",
       "privacy",
       "cookies",
       "withdrawal-and-refunds",
     ]);
+  });
+
+  it("draws the Blog link exactly where the index exists (spec 044 AC-13)", () => {
+    const withPost = render(
+      <SiteFooter locale="en" view={layoutView("en", true)} />,
+    );
+    expect(withPost).toMatch(/<a [^>]*href="\/en\/blog"[^>]*>Blog<\/a>/u);
+    expect(phase0).not.toContain('href="/en/blog"');
+    expect(phase0).not.toMatch(/>Blog</u);
   });
 
   it("draws nothing for a published row whose page does not exist in this locale", () => {

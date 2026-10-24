@@ -205,6 +205,10 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
       privacy: "byRule",
       cookies: "byRule",
       cancellation: "byRule",
+      // spec 044 §6 (TASK-322): a blog page is indexable iff it exists ∧ its served revision's
+      // approval still covers it ∧ `isLocaleIndexable()` ∧ `isIndexingEnvironment()`.
+      blogIndex: "byRule",
+      blogPost: "byRule",
     });
   });
 });

@@ -38,6 +38,10 @@ import type { DeploymentDescriptor } from "../environment.ts";
 import { SITEMAP_PATH } from "../robots.ts";
 
 import { corridorSitemapEntries } from "./corridors.ts";
+import {
+  type EditorialSitemapPage,
+  editorialSitemapEntries,
+} from "./editorial.ts";
 import { staticSitemapEntries } from "./statics.ts";
 import {
   type SitemapEntry,
@@ -71,9 +75,23 @@ export function sitemapNameOf(child: string): string {
 export const SITEMAP_INDEX_PATH = SITEMAP_PATH;
 
 /** The children that exist today, in the order the locale index lists them. */
-export const SITEMAP_CHILDREN = ["static", "corridors"] as const;
+export const SITEMAP_CHILDREN = ["static", "corridors", "editorial"] as const;
 
 export type SitemapChild = (typeof SITEMAP_CHILDREN)[number];
+
+/**
+ * What a child needs that this module does not read itself (spec 044 §2.8; TASK-322): the blog's
+ * pages per locale, read by the route from the blog source (a database read this module never
+ * makes) and handed in. Absent means no blog page anywhere, so every existing caller keeps its
+ * answer and `editorial.xml` is absent from every locale index.
+ */
+export interface SitemapSources {
+  readonly editorial?: Readonly<
+    Record<string, readonly EditorialSitemapPage[]>
+  >;
+}
+
+const NO_SOURCES: SitemapSources = {};
 
 /** The locale index's own file name — a child slot that is not a `<urlset>`. */
 export const SITEMAP_LOCALE_INDEX = "index";
@@ -98,20 +116,31 @@ export function sitemapChildEntries(
   locale: string,
   child: string,
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): readonly SitemapEntry[] {
   if (!isSitemapChild(child)) return [];
-  return child === "static"
-    ? staticSitemapEntries(locale, deployment)
-    : corridorSitemapEntries(locale, deployment);
+  switch (child) {
+    case "static":
+      return staticSitemapEntries(locale, deployment);
+    case "corridors":
+      return corridorSitemapEntries(locale, deployment);
+    case "editorial":
+      return editorialSitemapEntries(
+        locale,
+        sources.editorial?.[locale] ?? [],
+        deployment,
+      );
+  }
 }
 
 /** Every URL a locale announces, across its children. */
 function localeEntries(
   locale: string,
   deployment: DeploymentDescriptor,
+  sources: SitemapSources,
 ): readonly SitemapEntry[] {
   return SITEMAP_CHILDREN.flatMap((child) =>
-    sitemapChildEntries(locale, child, deployment),
+    sitemapChildEntries(locale, child, deployment, sources),
   );
 }
 
@@ -126,18 +155,20 @@ function newestLastmod(entries: readonly SitemapEntry[]): string | undefined {
 /** The locales the index announces: those with at least one URL, in registry order. */
 export function sitemapLocales(
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): readonly string[] {
   return routableLocaleCodes().filter(
-    (locale) => localeEntries(locale, deployment).length > 0,
+    (locale) => localeEntries(locale, deployment, sources).length > 0,
   );
 }
 
 /** The `<sitemap>` rows of `/sitemap.xml`: one child index per announced locale. */
 export function sitemapIndexEntries(
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): readonly SitemapIndexEntry[] {
-  return sitemapLocales(deployment).map((locale) => {
-    const lastmod = newestLastmod(localeEntries(locale, deployment));
+  return sitemapLocales(deployment, sources).map((locale) => {
+    const lastmod = newestLastmod(localeEntries(locale, deployment, sources));
     return {
       loc: absoluteUrl(localeSitemapIndexPath(locale), {
         baseUrl: deployment.siteUrl,
@@ -151,9 +182,11 @@ export function sitemapIndexEntries(
 export function localeSitemapChildren(
   locale: string,
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): readonly string[] {
   return SITEMAP_CHILDREN.filter(
-    (child) => sitemapChildEntries(locale, child, deployment).length > 0,
+    (child) =>
+      sitemapChildEntries(locale, child, deployment, sources).length > 0,
   ).map((child) =>
     absoluteUrl(sitemapChildPath(locale, child), {
       baseUrl: deployment.siteUrl,
@@ -162,18 +195,22 @@ export function localeSitemapChildren(
 }
 
 /** `/sitemap.xml`, always served: an empty index is an honest announcement, not a 404. */
-export function sitemapIndexDocument(deployment: DeploymentDescriptor): string {
-  return sitemapIndexXml(sitemapIndexEntries(deployment));
+export function sitemapIndexDocument(
+  deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
+): string {
+  return sitemapIndexXml(sitemapIndexEntries(deployment, sources));
 }
 
 /** `/sitemaps/{locale}/index.xml`, or `undefined` when the locale announces nothing → 404. */
 export function localeSitemapDocument(
   locale: string,
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): string | undefined {
   const children = SITEMAP_CHILDREN.map((child) => ({
     child,
-    entries: sitemapChildEntries(locale, child, deployment),
+    entries: sitemapChildEntries(locale, child, deployment, sources),
   })).filter(({ entries }) => entries.length > 0);
   if (children.length === 0) return undefined;
 
@@ -195,8 +232,9 @@ export function sitemapChildDocument(
   locale: string,
   child: string,
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): string | undefined {
-  const entries = sitemapChildEntries(locale, child, deployment);
+  const entries = sitemapChildEntries(locale, child, deployment, sources);
   if (entries.length === 0) return undefined;
   return urlSetXml(entries, `${locale}/${child}`);
 }
@@ -209,8 +247,9 @@ export function sitemapDocumentFor(
   locale: string,
   name: string,
   deployment: DeploymentDescriptor,
+  sources: SitemapSources = NO_SOURCES,
 ): string | undefined {
   return name === SITEMAP_LOCALE_INDEX
-    ? localeSitemapDocument(locale, deployment)
-    : sitemapChildDocument(locale, name, deployment);
+    ? localeSitemapDocument(locale, deployment, sources)
+    : sitemapChildDocument(locale, name, deployment, sources);
 }

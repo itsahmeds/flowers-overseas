@@ -514,8 +514,9 @@ describe.skipIf(server.url === undefined)(
         }
         return { rows: rows.length, seen };
       });
-      expect(outcomes.rows).toBe(73);
-      expect(outcomes.seen).toHaveLength(73 * ACTOR_CLASSES.length);
+      // A6.3's 73 plus spec 002 §14 A8.1's two (`0021`, TASK-337).
+      expect(outcomes.rows).toBe(75);
+      expect(outcomes.seen).toHaveLength(75 * ACTOR_CLASSES.length);
       const expected = TRANSITIONS.flatMap((row) =>
         ACTOR_CLASSES.map(
           (klass) =>
@@ -783,10 +784,10 @@ describe.skipIf(server.url === undefined)(
         const raw = await pgFailure(
           tx,
           (sp) => sp`
-          INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
+          INSERT INTO "order" (mode, customer_id, recipient_id, destination_country_id,
                                delivery_date, buyer_currency_code, buyer_total_minor,
                                base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-          VALUES (${"r".repeat(24)}, 'demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
+          VALUES ('demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
                   DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}'::jsonb, '{}'::jsonb)`,
         );
         return { after, raw };
@@ -858,10 +859,10 @@ describe.skipIf(server.url === undefined)(
       const result = await rolledBack(scratch.sql, async (tx) => {
         const w = await world(tx);
         const insert = (sp: Tx, status: string) => sp`
-          INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
+          INSERT INTO "order" (mode, customer_id, recipient_id, destination_country_id,
                                delivery_date, status, buyer_currency_code, buyer_total_minor,
                                base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-          VALUES (${"t".repeat(24)}, 'demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
+          VALUES ('demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
                   DATE '2027-02-14', ${status}, 'PLN', 100, 'PLN', 100, '{}'::jsonb, '{}'::jsonb)`;
         const noFlag = await pgFailure(tx, (sp) => insert(sp, "placed"));
         const wrongStatus = await pgFailure(tx, async (sp) => {
@@ -1613,10 +1614,10 @@ describe.skipIf(server.url === undefined)(
         const rawInsert = await pgFailure(
           tx,
           (sp) => sp`
-          INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
+          INSERT INTO "order" (mode, customer_id, recipient_id, destination_country_id,
                                delivery_date, buyer_currency_code, buyer_total_minor,
                                base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
-          VALUES (${"h".repeat(24)}, 'demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
+          VALUES ('demo', ${w.customerId}, ${w.recipientId}, ${w.countryId},
                   DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}'::jsonb, '{}'::jsonb)`,
         );
         return {

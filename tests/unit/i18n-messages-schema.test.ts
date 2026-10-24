@@ -314,6 +314,18 @@ describe("the shipped catalogues and manifests", () => {
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
+    // TASK-322, spec 044 Appendix A: the blog's public strings, approved by the founder
+    // ("blog ok", 2026-10-21) and shipped `reviewed: false` until the founder's own
+    // record-approval-322 run attests the exact values.
+    "blog.index.h1",
+    "blog.index.intro",
+    "blog.index.seoDescription",
+    "blog.index.seoTitle",
+    "blog.post.byline",
+    "blog.post.nextCorridor",
+    "blog.post.published",
+    "blog.post.updated",
+    "breadcrumb.blog",
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     "company.controller",
@@ -326,6 +338,26 @@ describe("the shipped catalogues and manifests", () => {
     "corridor.calendar.ruleWeekday",
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
+    // TASK-212, spec 011 Appendix A: the florist sign-in, inbox chrome and sign-in email copy,
+    // shipped `reviewed: false` (founder copy pending on the artboards); not counted in the
+    // unreviewed share (`review-scope.ts`, A17).
+    "emails.floristSignIn.body",
+    "emails.floristSignIn.subject",
+    "floristAuth.confirmSubmit",
+    "floristAuth.email",
+    "floristAuth.expiredBody",
+    "floristAuth.sentBody",
+    "floristAuth.sentTitle",
+    "floristAuth.submit",
+    "floristAuth.title",
+    "floristInbox.demoNotice",
+    "floristInbox.homeLabel",
+    "floristInbox.language",
+    "floristInbox.menu",
+    "floristInbox.orders",
+    "floristInbox.signOut",
+    // TASK-322 (spec 044 Appendix A), with the blog keys above.
+    "footer.link.blog",
     "footer.link.deliveryAndPayment",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
     "infoPages.company.notRegistered",
@@ -477,6 +509,8 @@ describe("the shipped catalogues and manifests", () => {
       "destinations",
       // Spec 007 §7's hub namespace (TASK-092).
       "destinationsHub",
+      // Spec 044 §7's blog namespace (TASK-322).
+      "blog",
       // Spec 005 §7's namespace: the dataset's label keys, seeded by TASK-062 and rendered from
       // TASK-067. Typed like the rest, so a tier label is `t()`-checkable rather than a string.
       "catalog",
@@ -529,6 +563,11 @@ describe("the shipped catalogues and manifests", () => {
       // Spec 013 §7's namespace (TASK-255): the pay step's decline messages and labels and the
       // confirmation states' payment lines.
       "payments",
+      // Spec 011 §7's namespaces (TASK-212): the florist sign-in pages and the inbox chrome, under
+      // `FLORIST_BASE_PATH` only, and the florist sign-in email (`emails.floristSignIn`).
+      "floristAuth",
+      "floristInbox",
+      "emails",
     ];
     const provenanceLabel: Messages["media"]["provenance"]["aiExample"] =
       enSource.media.provenance.aiExample;

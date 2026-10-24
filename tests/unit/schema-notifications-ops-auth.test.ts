@@ -6,6 +6,8 @@
  * The connected halves are `tests/integration/schema-notifications-ops.test.ts` (seeds read back,
  * constraints refusing) and `tests/integration/auth-adapter.test.ts` (T-35).
  */
+import { readdirSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { adminRoles } from "../../db/schema/auth.ts";
@@ -19,6 +21,7 @@ import {
   usageSampleSources,
 } from "../../db/schema/ops.ts";
 import {
+  MIGRATIONS_DIR,
   checkList,
   createdTables,
   droppedTables,
@@ -33,6 +36,12 @@ const auth = readMigration("0010_auth.sql");
 const authDown = readMigration("0010_auth.down.sql");
 /** `0017` (spec 002 §14 A7.7, TASK-254) adds `outbox_attempt.target`. */
 const a7 = readMigration("0017_payments_a7.sql");
+/** Spec 002 §14 A8.2 (`NNNN_post_purchase`, TASK-337) adds `sessions.created_at`. */
+const a8 = readMigration(
+  readdirSync(MIGRATIONS_DIR).find((name) =>
+    /^\d{4}_post_purchase\.sql$/.test(name),
+  ) ?? "NNNN_post_purchase.sql",
+);
 
 const OPS_TABLES = [
   "outbox",
@@ -177,7 +186,7 @@ describe("migrations 0009 and 0010 — shape", () => {
   });
   for (const table of AUTH_TABLES) {
     it(`${table} equals its mirror`, () => {
-      expect(mirrorShape(table)).toEqual(sqlShape(auth, table));
+      expect(mirrorShape(table)).toEqual(sqlShape(auth, table, a8));
     });
   }
 
@@ -318,8 +327,9 @@ describe("§13 Q1 — the Auth.js adapter's names", () => {
         "session_state",
       ].sort(),
     );
+    // `createdAt` is spec 002 §14 A8.2's: it has a default, so the adapter never names it.
     expect(props(schema.sessions).sort()).toEqual(
-      ["sessionToken", "userId", "expires"].sort(),
+      ["sessionToken", "userId", "expires", "createdAt"].sort(),
     );
     expect(props(schema.verificationTokens).sort()).toEqual(
       ["identifier", "token", "expires"].sort(),

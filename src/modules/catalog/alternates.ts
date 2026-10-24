@@ -14,7 +14,11 @@
  * An empty segment list is the locale home; a path the resolver refuses is `{}`.
  */
 import { launchLocaleCodes, localePath } from "@/modules/i18n";
-import { infoPageAlternatePaths } from "@/modules/content";
+import {
+  blogIndexAlternatePaths,
+  blogPostAlternatePaths,
+  infoPageAlternatePaths,
+} from "@/modules/content";
 import { corridorAlternatePaths } from "@/modules/geo";
 
 import { listingAlternatePaths } from "./listing";
@@ -99,5 +103,10 @@ export async function pageAlternatePaths(
         sku: match.sku,
         countryIso: match.iso2,
       });
+    // Spec 044 (TASK-322): the locales where the blog page exists now, `en` and `en-gb` only.
+    case "blogIndex":
+      return blogIndexAlternatePaths(launchLocaleCodes());
+    case "blogPost":
+      return blogPostAlternatePaths(launchLocaleCodes(), match.slug);
   }
 }

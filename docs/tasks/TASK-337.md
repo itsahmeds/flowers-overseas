@@ -32,12 +32,24 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (b) (2026-10-22):** spec 018 §14 A-founder-2026-10-22 narrows AC-27 here: the schema half checks only that `recipient` has no saving column; "no `saved_recipient` retention row" and "no `recipients` route" are withdrawn, because TASK-352 adds both.
+- **From the implementer's self-review (2026-10-24), handed on:**
+  - **TASK-338:** the rest of AC-13's track half needs the page: a `GET /en-gb/track` answering with `X-Robots-Tag: noindex, nofollow` and the robots meta, and no §5.3 path in any sitemap child. This task ships the two disallow lines and the Google-rules matcher cases only. `robots.ts` carries `/checkout/` but not spec 010's locale-prefixed `/*/checkout`, which AC-13 says sits beside the new lines: that line is spec 010's to add.
+  - **TASK-338 / spec 020:** `pnpm orders:rotate-tracking --order <id>` is not built. `rotateTrackingToken(orderId, actor, { channel })` is exported from `@/modules/orders`; a script under `scripts/` cannot import it (Node's type stripping resolves neither `@/` nor the extensionless relative imports of `src/lib/env.*`), so the CLI needs a small runner or the admin button of spec 020.
+  - **Task 3 (invoices):** the two series rows are `fo-pl-2026` and `fok-pl-2026` and the seeded profiles point at them; the year boundary (a 2027 series, the profile repointed) is the invoices runbook's. The profiles are seeded by `pnpm db:seed` (`seed/plan.ts`, `active` insert-only), not by the migration, because they reference the seeded `currency` table. `invoice.issue` is registered `standard` risk; spec 012/020 may want it `high` (typed confirmation).
+  - **Task 5 (privacy):** the by-hand erasure in `docs/runbooks/dsar.md` uses spec 018 §5.2's placeholder `redacted+{id}@invalid`; `retention.sweep` writes `redacted-{id}@redacted.invalid`. Task 5 picks one. `docs/compliance/dsar-templates.md`, which the runbook has always named, does not exist yet.
+  - **Task 6 pass A:** the RoPA row for invoices (spec 018 §12 task 6) is not written here.
+  - **Spec 002 §14 A9** (`with_florist` → `confirmed`, and row 34 from three more states, 78 rows) is not in this migration: the brief named A8 only. A9.3 puts it in the next of spec 016's and 018's first migrations, so it falls to TASK-327 or to an amendment task.
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-24, declared deviations, decided by the implementer, not blocking (orchestrator may overrule):**
+  1. The flag spec 018 §5.1 and §12 call `account` is `account.open`: `0009`'s `feature_flag_key_check` (and the registry's pattern) requires a dotted key; `checkout.open` is the precedent.
+  2. `public_token`'s default is the first 16 bytes of `sha256(uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid()))`, base64url, not pgcrypto's `gen_random_bytes(16)`: spec 002 AC-7 forbids every extension. Both draw on `pg_strong_random()`; 244 random input bits, 128 kept; same 22-character shape.
+  3. The down file restores `"order".public_token` to `0007`'s shape (`NOT NULL`, the `{22,}` check, no default): `0007` already had both, so §5.1's "without default, `NOT NULL` or check" is read as "as before this migration". It also gives every rotated order (version above 1) a fresh `public_token`, so a token revoked by a rotation never verifies again after a down-then-up.
+  4. The tracking link's end (§13 Q7), which §5.2 leaves to the implementer: local midnight starting the 91st day after the delivery date in the destination country's `iana_zone`, or 90 calendar days (in that zone) after the first `order_event` into a status whose `buyer_projection` is `cancelled`, whichever is earlier.
+  5. Checks beyond §5.1's list, each tightening only: `tracking_token_version >= 1`, a non-blank `display_first_name`, an invoice answers no refund and a credit note corrects an invoice, the render columns all-or-none, `pdf_sha256` lower-case hex, an invoice in its order's currency (key `(order_id, currency_code)` to `"order" (id, buyer_currency_code)`, as `payment`), and `TRUNCATE` refused beside `UPDATE` and `DELETE`.
 
 ## Progress
 
@@ -45,11 +57,38 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24 implementer: worktree `../fo-wt-337`, draft PR #384. Migration `0019_post_purchase` + down, `src/lib/signed-link.ts`, `SIGNED_LINK_SECRET`, `tracking.linkFor` / `tracking.resolve` / `rotateTrackingToken`, robots lines, `scripts/check-relay-language.ts` (also `i18n:check` check 14), flags, seed profiles, DSAR runbook and log. Integration on a throwaway PG16 green; mutations all red. Next: rebase, ready, `ci:full`.
+- 2026-10-24 finisher (renumber): rebased onto PR 383's head `07eb165c` (main plus `0019`/`0020`), renumbered to `0021`, merged `purchase_id` into `place` and three suites; full integration (41 files, 473 tests) green on a throwaway PG16.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#384](https://github.com/itsahmeds/flowers-overseas/pull/384), migration **0021_post_purchase** (renumbered from `0019` on 2026-10-24 to the orchestrator's order: PR 383's `0019_purchase` and `0020_checkout_draft_lines` first; the tests find the file by name). Ships spec 018 task 1 and spec 002 §14 A8: the migration and its guarded rollback (`POST_PURCHASE_ROLLBACK_INVOICES_EXIST`, `A8_ROLLBACK_ROWS_IN_USE`), `order_transition` at 75 rows with the fixture, `src/lib/signed-link.ts` with `SIGNED_LINK_SECRET` (env schema, `.env.example`, Railway runbook, contract 34 keys / 30 required), `tracking.linkFor`, `tracking.resolve` and `rotateTrackingToken` in `@/modules/orders`, `place` leaving `public_token` to the column default, `/*/track/` and `/*/account/` in `robots.txt`, `scripts/check-relay-language.ts` (`pnpm check:relay-language`, and check 14 of `i18n:check`), the `account.open` and `invoice.issue` flags (DB rows, registry, admin copy `reviewed: false`), the two seeded invoice profiles, the regenerated `db:check` snapshot, and the by-hand DSAR runbook with its dated log `docs/compliance/dsar-log.md`. Tests: unit `signed-link.test.ts` (T-01, 32 cases), `check-relay-language.test.ts` (T-38, 14), `seo-robots.test.ts` (+5, T-13 track half), `feature-flags.test.ts` (+1); integration `post-purchase.test.ts` (26: T-02, T-16 trigger half, T-36 schema half, RLS, A8 AC-14/44/45/46/47, rollback round trip); 17 existing suites adjusted for 75 rows, two flags, 22-character tokens and the new function. 31 named mutations, every one red (listed in the PR). No local build, Playwright or Lighthouse was run: nothing here renders a page. Handed on: see Carry-forwards.
+
+**Renumber and rebase (finisher, 2026-10-24).** The orchestrator fixed the migration order: PR 383
+(`0019_purchase`, `0020_checkout_draft_lines`), then this PR at **`0021_post_purchase`**, then PR
+326 (`0022`) and PR 320 (`0023`). PR 383 was not on `main` yet, and a gap fails both `db:check`
+and the runner itself (`readMigrations` refuses an inconsistent set), so this branch is **stacked
+on PR 383** (its head `07eb165c`, replayed onto `main` `c81edd9e` (after TASK-115, the spec batch and TASK-285 merged); the
+last 383 commit in this branch is `d77f1383`): until 383 merges, this PR's diff shows 383's
+commits too, and it must merge after 383 (then `git rebase --onto origin/main d77f1383` drops
+them). Conflicts merged
+by hand: `db/schema/orders.ts` (`purchaseId` then `trackingTokenVersion`), `place.ts` (383's
+`insertOwnPurchase` kept; 383's `publicToken()` dropped, since 0021's column default draws the
+token), and the two order inserts in `order-reference` / `schema-orders-payments` (no
+`public_token`, with `purchase_id`). Tests adjusted for sitting on 383: `post-purchase.test.ts`
+(the exact-check insert names a `purchase_id` so the row reaches the check; the backfill test
+inserts its own purchase), `purchase.test.ts` (the raw insert's token is 22 characters, so the
+foreign key is what fails), `purchase-migration.test.ts` (legacy tokens of 22 characters and
+`tracking_token_version` left out of the compare, since a forward run now also applies `0021`).
+
+**Self-review of the renumber.** Mutation: `0021`'s check widened to `{21,23}` makes the
+exact-check case red (`order_purchase_id_…_fk` received instead of `order_public_token_check`);
+restored, green. `db:check`: 21 migrations, each with a rollback. Full integration project on a
+throwaway PG16: 41 files, 473 tests green. Unit: `db-migrate`, `db-check`,
+`db-check-recipient-email`, `schema-orders-payments` and the files that timed out under another
+agent's load (load 22) re-run green (11 files, 432 tests). Carry-forward: after PR 383 merges,
+rebase `--onto origin/main d77f1383`, re-fire `ci:full`.
+

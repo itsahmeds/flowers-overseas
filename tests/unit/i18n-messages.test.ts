@@ -34,6 +34,9 @@ describe("the shell catalogue", () => {
   it("ships the spec 003 §2 shell namespaces plus spec 004's chrome namespaces", () => {
     expect([...MESSAGE_NAMESPACES].sort()).toEqual([
       "a11y",
+      // `blog` is spec 044 §7's namespace (TASK-322): Appendix A's index and post labels, rendered
+      // by Server Components only, so no `ROUTE_NAMESPACES` entry and no client bytes.
+      "blog",
       // `catalog` is spec 005 §7's namespace: the tier, add-on, surcharge and facet **label
       // keys** the authored dataset refers to, seeded `retained: true` by TASK-062 and rendered
       // from TASK-067. It is deliberately in no `ROUTE_NAMESPACES` entry, so it reaches no
@@ -75,6 +78,10 @@ describe("the shell catalogue", () => {
       // hub's `h1`, intro, region headings and the one state line a destination without a page
       // in this locale carries.
       "destinationsHub",
+      // `emails`, `floristAuth` and `floristInbox` are spec 011 §7's (TASK-212): the florist
+      // sign-in email, the sign-in pages and the inbox chrome, all under `FLORIST_BASE_PATH` or in
+      // email, so in no `ROUTE_NAMESPACES` entry and in no indexable page's share (A17).
+      "emails",
       "errors",
       // `faq`, `occasions` and `trust` are the locale home's lower sections (TASK-053): the five
       // `<details>` questions, the occasion tiles and dated occasions, and the three trust
@@ -83,6 +90,8 @@ describe("the shell catalogue", () => {
       // `finder` and `home` are the locale home's own copy (TASK-052): the hero, the finder card,
       // the destination states and the four-fact proof row.
       "finder",
+      "floristAuth",
+      "floristInbox",
       "footer",
       "home",
       // `infoPages` is spec 041 §7's namespace (TASK-182): the trust pages' not-open line, the

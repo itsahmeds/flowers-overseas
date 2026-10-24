@@ -158,7 +158,7 @@ describe.skipIf(server.url === undefined)(
       expect(outcome.left).toEqual([{ sessions: 0, accounts: 0 }]);
     });
 
-    it("the three keys into users exist with their delete rules", async () => {
+    it("the keys into users exist with their delete rules", async () => {
       const RULE: Record<string, string> = {
         RESTRICT: "r",
         CASCADE: "c",
@@ -172,6 +172,14 @@ describe.skipIf(server.url === undefined)(
         // `0014_admin_identity` (spec 012, TASK-217): an admin with a history is deactivated,
         // never deleted.
         { fk: "admin_profile_user_id_users_id_fk", rule: "r" },
+        // `0023_review_attestation` (spec 012b, TASK-293): a ledger row keeps its attester; a
+        // reviewer's locale grants go with the account.
+        { fk: "review_attestation_attester_user_id_users_id_fk", rule: "r" },
+        { fk: "reviewer_locale_user_id_users_id_fk", rule: "c" },
+        // `0024_blog` (spec 044, TASK-321): a withdrawn author and a revision's writer keep their
+        // account, so neither key lets a user row go.
+        { fk: "blog_author_user_id_users_id_fk", rule: "r" },
+        { fk: "blog_post_revision_created_by_users_id_fk", rule: "r" },
       ].sort((a, b) => (a.fk < b.fk ? -1 : 1));
       const rows = await scratch.sql<{ fk: string; rule: string }[]>`
         SELECT conname AS fk, confdeltype::text AS rule FROM pg_constraint
@@ -188,6 +196,10 @@ describe.skipIf(server.url === undefined)(
           INSERT INTO users (email) VALUES ('buyer@example.test') RETURNING id`;
         const userId = user?.id ?? "";
         await tx`INSERT INTO currency (code, minor_unit_exponent) VALUES ('PLN', 2)`;
+        // `partner_member.locale_code` defaults to `en` and is keyed to `locale` (`0022_florists_v0`,
+        // TASK-211), so the member's language must exist.
+        await tx`INSERT INTO locale (code, bcp47, name) VALUES ('en', 'en', 'English')
+                 ON CONFLICT DO NOTHING`;
         const [country] = await tx<{ id: string }[]>`
           INSERT INTO country (iso2, currency_code, vat_rate_bp, iana_zone)
           VALUES ('PL', 'PLN', 800, 'Europe/Warsaw') RETURNING id`;
