@@ -65,6 +65,9 @@ export const CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME = 4;
 /** The raw ceiling of a short, machine-shaped field: a phone, a postcode, a country code. */
 export const CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS = 64;
 
+/** The basket's cap and lifetime (§14 A-founder-2026-10-22 D3, D7): `src/config/basket.ts`. */
+export { BASKET_LIFETIME_DAYS, BASKET_MAX_LINES } from "./basket.ts";
+
 /** At most this many demo orders per UTC calendar day, across the whole deployment (§2, §13 Q1). */
 export const DEMO_DAILY_ORDER_CAP = 200;
 
@@ -75,7 +78,11 @@ export const DEMO_DAILY_ORDER_CAP = 200;
  */
 export const QUOTE_LOCK_MINUTES = 30;
 
-/** An unfinished checkout is deleted this many hours after its last activity (§2 "Retention"). */
+/**
+ * The buyer's, recipients' and cards' details in an unfinished checkout are cleared this many
+ * hours after its last activity (§2 "Retention"; §14 A-founder-2026-10-22 D7: the retention row
+ * `checkout_draft_personal`). The basket's lines live `BASKET_LIFETIME_DAYS`.
+ */
 export const DRAFT_LIFETIME_HOURS = 24;
 
 /**

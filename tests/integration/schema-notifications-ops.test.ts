@@ -48,7 +48,7 @@ describe.skipIf(server.url === undefined)(
       ]);
     });
 
-    it("§8: retention_policy carries the eight rows, each with a basis and a legal note", async () => {
+    it("§8: retention_policy carries the nine rows, each with a basis and a legal note (spec 010 §14 A-founder-2026-10-22 item 2 C: 30 days and checkout_draft_personal)", async () => {
       const rows = await scratch.sql<
         { key: string; retention_days: number | null; action: string }[]
       >`SELECT key, retention_days, action FROM retention_policy ORDER BY key`;
@@ -56,7 +56,8 @@ describe.skipIf(server.url === undefined)(
         rows.map((r) => `${r.key}:${String(r.retention_days)}:${r.action}`),
       ).toEqual([
         "buyer_personal:1095:pseudonymise",
-        "checkout_draft:1:delete",
+        "checkout_draft:30:delete",
+        "checkout_draft_personal:1:pseudonymise",
         "consent_records:1825:delete",
         "delivery_photo:730:delete",
         "demo_order_personal:1:pseudonymise",

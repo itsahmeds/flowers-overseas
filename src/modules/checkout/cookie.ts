@@ -7,13 +7,19 @@
  * opens a draft. The token is a credential: it is never logged, never put in a URL, and every log
  * line names the draft by `draft_id` instead (§8 "Logs and PII").
  *
- * Attributes are fixed by AC-6: `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=86400`. Only the
- * start route and the step actions write it, and both answer `no-store`, so no cached response
- * ever carries a `Set-Cookie`.
+ * Attributes are fixed by AC-6: `HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000` (30
+ * days after the last change, spec 010 §14 A-founder-2026-10-22 D7). Only the start route and the
+ * step actions write it, and both answer `no-store`, so no cached response ever carries a
+ * `Set-Cookie` (AC-62).
+ *
+ * `fo_basket` (item 7, AC-62) holds **only the number of unplaced lines**, digits matching
+ * `^[0-9]{1,2}$`, so the header's count island can show it without a request. It is not
+ * `HttpOnly` (the island reads it), has the same `Max-Age` as `fo_checkout`, and is deleted
+ * (`Max-Age=0`) at zero. It holds no token, id or personal data.
  */
 import { createHash, randomBytes } from "node:crypto";
 
-import { DRAFT_LIFETIME_HOURS } from "@/config/checkout";
+import { BASKET_LIFETIME_DAYS, BASKET_MAX_LINES } from "@/config/checkout";
 
 /** The cookie's name, as the cookie register lists it. */
 export const CHECKOUT_COOKIE_NAME = "fo_checkout";
@@ -24,11 +30,11 @@ const TOKEN_BYTES = 32;
 /** A base64url token of 32 bytes: 43 characters, no padding. */
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/u;
 
-const SECONDS_PER_HOUR = 3600;
+const SECONDS_PER_DAY = 86_400;
 
-/** `Max-Age`: the draft's lifetime, 24 hours (§2 "Retention", AC-6: 86 400). */
+/** `Max-Age`: the basket's lifetime, 30 days (D7, AC-6: 2 592 000). */
 export const CHECKOUT_COOKIE_MAX_AGE_SECONDS =
-  DRAFT_LIFETIME_HOURS * SECONDS_PER_HOUR;
+  BASKET_LIFETIME_DAYS * SECONDS_PER_DAY;
 
 /** The attributes, in the order AC-6 names them, for `cookies().set()`. */
 export const CHECKOUT_COOKIE_ATTRIBUTES = {
@@ -78,4 +84,39 @@ export function draftTokenFromCookieHeader(
     return isDraftToken(value) ? value : null;
   }
   return null;
+}
+
+/* -------------------------------------------------------------------------- */
+/* fo_basket                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/** The count cookie's name, as the cookie register lists it. */
+export const BASKET_COOKIE_NAME = "fo_basket";
+
+/** Its value: the number of unplaced lines, digits only. */
+export const BASKET_COOKIE_VALUE_PATTERN = /^[0-9]{1,2}$/u;
+
+/** Its attributes: `fo_checkout`'s, except readable by the header's island (not `HttpOnly`). */
+export const BASKET_COOKIE_ATTRIBUTES = {
+  httpOnly: false,
+  secure: true,
+  sameSite: "lax",
+  path: "/",
+  maxAge: CHECKOUT_COOKIE_MAX_AGE_SECONDS,
+} as const;
+
+/**
+ * The `Set-Cookie` header value for a basket of `count` unplaced lines: the count, or a deletion
+ * (`Max-Age=0`) at zero.
+ */
+export function basketCookieHeader(count: number): string {
+  if (!Number.isInteger(count) || count < 0 || count > BASKET_MAX_LINES) {
+    throw new Error(
+      "refusing to set a basket count outside 0 to BASKET_MAX_LINES",
+    );
+  }
+  if (count === 0) {
+    return `${BASKET_COOKIE_NAME}=; Path=/; Max-Age=0; Secure; SameSite=Lax`;
+  }
+  return `${BASKET_COOKIE_NAME}=${String(count)}; Path=/; Max-Age=${String(CHECKOUT_COOKIE_MAX_AGE_SECONDS)}; Secure; SameSite=Lax`;
 }
