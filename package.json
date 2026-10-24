@@ -53,6 +53,7 @@
     "media:variants": "node seed/media-variants.ts",
     "media:upload": "node scripts/media-upload.ts",
     "i18n:check": "node scripts/i18n-check.ts",
+    "check:relay-language": "node scripts/check-relay-language.ts",
     "catalogue:check": "node scripts/catalogue-check.ts",
     "catalogue:parity": "node scripts/catalogue-parity.ts",
     "corridor:check": "node scripts/corridor-check.ts",
