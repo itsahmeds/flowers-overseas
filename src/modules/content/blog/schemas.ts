@@ -94,8 +94,12 @@ export const BlogLinkRefObjectSchema = z.discriminatedUnion("kind", [
       id: z.string().regex(/^[A-Z]{2}$/u),
     })
     .strict(),
-  z.object({ kind: z.literal("occasion-hub"), id: CatalogueKeySchema }).strict(),
-  z.object({ kind: z.literal("category-hub"), id: CatalogueKeySchema }).strict(),
+  z
+    .object({ kind: z.literal("occasion-hub"), id: CatalogueKeySchema })
+    .strict(),
+  z
+    .object({ kind: z.literal("category-hub"), id: CatalogueKeySchema })
+    .strict(),
   z.object({ kind: z.literal("info"), id: z.enum(INFO_PAGE_IDS) }).strict(),
   z.object({ kind: z.literal("post"), id: z.uuid() }).strict(),
 ]);
@@ -104,7 +108,7 @@ export type BlogLinkRef = z.infer<typeof BlogLinkRefObjectSchema>;
 /** `fo:<kind>/<id>` as written in the body, parsed into a `BlogLinkRef`. */
 export const BlogLinkRefSchema = z
   .string()
-  .regex(/^fo:[a-z-]+\/[^/\s]+$/u, "a reference such as fo:corridor/PL")
+  .regex(/^fo:[a-z-]+\/[^/\s]+$/u, "an internal reference, fo:<kind>/<id>")
   .transform((text, ctx) => {
     const [kind, id] = text.slice("fo:".length).split("/");
     const parsed = BlogLinkRefObjectSchema.safeParse({ kind, id });
@@ -150,10 +154,13 @@ export const BlogRevisionFieldsSchema = z
     honestyAllow: z.array(HonestyAllowSchema),
   })
   .strict()
-  .refine((fields) => (fields.coverMediaId === null) === (fields.coverAlt === null), {
-    message: "a cover needs its alt text, and alt text needs a cover",
-    path: ["coverAlt"],
-  });
+  .refine(
+    (fields) => (fields.coverMediaId === null) === (fields.coverAlt === null),
+    {
+      message: "a cover needs its alt text, and alt text needs a cover",
+      path: ["coverAlt"],
+    },
+  );
 export type BlogRevisionFields = z.infer<typeof BlogRevisionFieldsSchema>;
 
 export const BlogPostCreateSchema = ActorSchema.extend({

@@ -234,6 +234,8 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
     expect([...DATABASE_ADAPTER_DIRS]).toEqual([
       "src/modules/geo/db",
       "src/modules/i18n/db",
+      // TASK-321: the blog's provider and commands (spec 044 §5.2).
+      "src/modules/content/blog/db",
     ]);
     const adapter = tempTree(
       'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',

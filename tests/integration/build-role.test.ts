@@ -211,7 +211,9 @@ describe.skipIf(server.url === undefined)(
       const readableViews: readonly string[] = Object.keys(PUBLIC_VIEWS);
       const outside = relations
         .map((r) => r.name)
-        .filter((name) => !BUILD_SET.includes(name) && !readableViews.includes(name));
+        .filter(
+          (name) => !BUILD_SET.includes(name) && !readableViews.includes(name),
+        );
       for (const table of NAMED_PRIVATE) expect(outside).toContain(table);
       expect(outside).toContain("partner_catalog_mapping");
       expect(outside).toContain("partner_coverage");
