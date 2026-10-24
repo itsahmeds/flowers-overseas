@@ -238,9 +238,9 @@ describe("country listings at a fresh rate: one price per card, with the inclusi
   );
 });
 
-describe("the grid's example label: one element, displayed at every width, above the grid (clause 3)", () => {
+describe("the grid's example label: one element, displayed at every width (clause 3; spec 043 AC-53 places it under the country grids)", () => {
   it.each(COUNTRY_PAGES)(
-    "$name: on the count line's row",
+    "$name: under the grid, before the pager",
     async ({ identity, page, locale }) => {
       const v = await view(identity as Identity, FRESH);
       const html = render(page(v), locale);
@@ -250,25 +250,21 @@ describe("the grid's example label: one element, displayed at every width, above
       // An all-example grid (every committed photograph is an example): no `md:hidden`.
       expect(label).toContain('data-fo-grid-provenance="all"');
       expect(label).not.toContain("md:hidden");
-      // Inside the count line's row, and before the grid's first card.
-      const row = html.indexOf("data-fo-listing-count-row");
-      expect(row).toBeGreaterThan(-1);
-      expect(at).toBeGreaterThan(row);
-      expect(at).toBeLessThan(html.indexOf("data-fo-listing-disclosure"));
-      expect(at).toBeLessThan(html.indexOf("data-fo-product-card="));
-      // Every grid card's own label is in the HTML and hidden at every width; only the country
-      // occasion's lead figure (the grid's first `<li>` on page 1) shows its own from `md` up.
+      // Inside the note under the grid: after the last card, before the pager (spec 043
+      // §14 A-founder-2026-10-22 item 6, revised 2026-10-24).
+      const foot = html.indexOf("data-fo-listing-foot");
+      expect(foot).toBeGreaterThan(html.lastIndexOf("data-fo-product-card="));
+      expect(at).toBeGreaterThan(foot);
+      const pager = html.indexOf("data-fo-pagination=");
+      if (pager > -1) expect(at).toBeLessThan(pager);
+      // Every grid card's own label is in the HTML and hidden at every width: with the
+      // occasion's lead figure gone (item 7) no card shows its own.
       const own = cards(html).map(
         (part) => /data-fo-card-provenance="([^"]+)"/u.exec(part)?.[1],
       );
-      const lead = identity.pageType === "countryOccasion";
       expect(own).toEqual(
-        v.items.map((item, index) =>
-          item.photo.kind !== "asset"
-            ? undefined
-            : lead && index === 0
-              ? "md"
-              : "hidden",
+        v.items.map((item) =>
+          item.photo.kind !== "asset" ? undefined : "hidden",
         ),
       );
     },

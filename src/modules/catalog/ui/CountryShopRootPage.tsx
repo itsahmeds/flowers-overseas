@@ -118,8 +118,8 @@ export function CountryShopRootPage({
           </div>
         ) : (
           <>
-            {/* The head (spec 043 §14 A-founder-2026-10-22 items 1, 2, 3 and 5, revised
-                2026-10-24; TASK-289): the short H1, one quiet line, one toolbar row. The shop
+            {/* The head (spec 043 §14 A-founder-10-22 items 1, 2, 3 and 5, revised by
+                design PR 347; TASK-289): the short H1, one quiet line, one toolbar row. The shop
                 root's categories (its tiles) move into the "Categories" panel above the grid,
                 grouped by kind (§5.3 E); the tiles block under the lede stays. */}
             <ListingHead

@@ -524,8 +524,8 @@ export function OccasionDatesTable({
 }
 
 /* -------------------------------------------------------------------------- */
-/* The country listings' head (spec 043 §14 A-founder-2026-10-22 items 1, 2,  */
-/* 3, 5, 6 and 7, revised 2026-10-24; the `lh:2026-10-24b` artboards of        */
+/* The country listings' head (spec 043 §14 A-founder-10-22 items 1, 2,  */
+/* 3, 5, 6 and 7, revised by design PR 347; the `lh:2026-10-24b` artboards of        */
 /* design PR 347; TASK-289).                                                   */
 /* -------------------------------------------------------------------------- */
 
