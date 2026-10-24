@@ -180,6 +180,11 @@ export const purchase = pgTable(
       table.buyerCurrencyCode,
       table.mode,
     ),
+    /** `0028_payment_purchase` (TASK-350): the target of `payment`'s money pair. */
+    unique("purchase_id_buyer_currency_code_key").on(
+      table.id,
+      table.buyerCurrencyCode,
+    ),
     check("purchase_mode_check", sql.raw(`mode in ${valueList(orderModes)}`)),
     check(
       "purchase_buyer_currency_code_check",
@@ -287,6 +292,8 @@ export const order = pgTable(
       table.id,
       table.buyerCurrencyCode,
     ),
+    /** `0028_payment_purchase` (TASK-350): the target of `refund`'s `(order_id, purchase_id)`. */
+    unique("order_id_purchase_id_key").on(table.id, table.purchaseId),
     check(
       "order_public_token_check",
       sql.raw(`public_token ~ '^[A-Za-z0-9_-]{22}$'`),

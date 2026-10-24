@@ -120,6 +120,12 @@ export interface PlacedOrder {
   readonly mode?: "demo" | "test" | "live";
   readonly currencyCode?: string;
   readonly totalMinor?: number;
+  /**
+   * An existing purchase to join (spec 013 §14 A-founder-2026-10-22, TASK-350): the caller wrote
+   * it with the sum of its orders' totals, checked at commit by `purchase_total_check`. Without
+   * it the order gets a purchase of its own.
+   */
+  readonly purchaseId?: string;
 }
 
 /**
@@ -140,8 +146,8 @@ export async function insertPlacedOrder(
   // and its orders have no such column.
   const [has] = await tx<{ purchase: boolean }[]>`
     SELECT to_regclass('public.purchase') IS NOT NULL AS purchase`;
-  let purchaseId: string | null = null;
-  if (has?.purchase === true) {
+  let purchaseId: string | null = input.purchaseId ?? null;
+  if (has?.purchase === true && purchaseId === null) {
     const [purchase] = await tx<{ id: string }[]>`
       INSERT INTO purchase (mode, buyer_currency_code, total_minor, locale_code, customer_id)
       VALUES (${mode}, ${currency}, ${input.totalMinor ?? 18900}, 'en', ${input.customerId})
