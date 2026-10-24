@@ -213,6 +213,27 @@
       "postcode": "Postal code",
       "street": "Street and number"
     },
+    "basket": {
+      "addOns": "Add-ons · {list}",
+      "added": "Added to your basket.",
+      "checkout": "Check out",
+      "continue": "Continue shopping",
+      "dateLater": "You choose the date at checkout.",
+      "empty": "Your basket is empty.",
+      "emptyLink": "Choose flowers",
+      "full": "Your basket holds up to {max} bouquets. Please check out first, then start a new basket.",
+      "included": "Each price includes VAT and delivery to its address.",
+      "otherCurrency": "Your basket is in {currency}, and this bouquet cannot be priced in {currency} today. Please check out your basket first.",
+      "otherMode": "This bouquet cannot go in this basket. Please check out or empty your basket first.",
+      "remove": "Remove",
+      "removeLabel": "Remove {product} from your basket",
+      "title": "Your basket",
+      "to": "To {country}",
+      "total": "Total",
+      "unavailable": "This bouquet is no longer available. Please remove it to continue.",
+      "unavailableSummary": "{count, plural, one {Jeden bukiet w koszyku jest już niedostępny. Usuń go, aby kontynuować.} few {# bukiety w koszyku są już niedostępne. Usuń je, aby kontynuować.} many {# bukietów w koszyku jest już niedostępnych. Usuń je, aby kontynuować.} other {# bukietu w koszyku jest już niedostępne. Usuń je, aby kontynuować.}}",
+      "useNext": "Use {next}"
+    },
     "buyer": {
       "country": "Country you live in",
       "email": "Email",
@@ -227,6 +248,9 @@
       "previewLabel": "Preview of the printed card",
       "signAs": "Sign as",
       "signAsHint": "Up to {max} characters"
+    },
+    "date": {
+      "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}."
     },
     "demo": {
       "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
@@ -764,7 +788,8 @@
       "orders": "My orders",
       "signIn": "Sign in"
     },
-    "basket": "Basket ({count, number})",
+    "basket": "Basket",
+    "basketCount": "{count, plural, one {Koszyk, # bukiet} few {Koszyk, # bukiety} many {Koszyk, # bukietów} other {Koszyk, # bukietu}}",
     "categories": {
       "label": "Categories"
     },

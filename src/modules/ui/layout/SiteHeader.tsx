@@ -22,9 +22,12 @@
  *
  * **Every entry with no page is absent** (AC-14 as §14 A20 amends it; TASK-173). An entry is drawn
  * exactly when `./header-model.ts` resolves it to a URL; this file has no `published` branch, so a
- * go-live is a data flip in `src/config/site-links.ts`. No search, no account cluster, no basket:
- * each would be a control that does nothing. The phone's Menu opens something real (A24 clause 3
- * lifts A20 clause 2's omission of it).
+ * go-live is a data flip in `src/config/site-links.ts`. No search and no account cluster: each
+ * would be a control that does nothing. The phone's Menu opens something real (A24 clause 3 lifts
+ * A20 clause 2's omission of it), and so does the Basket link since `/{locale}/basket` answers 200
+ * (spec 010 §14 A-founder-2026-10-22 D10, item 13 "Spec 004"; TASK-349): an icon link after
+ * "Send flowers", beside the Menu on a phone, with a count slot the motion module fills after the
+ * LCP paint.
  *
  * **A reserved box, the same before and after hydration** (AC-7). One Server Component and no
  * `<button>`; the Menu is a native disclosure, and its one island (`MotionIsland`, which adds `Esc` with
@@ -48,10 +51,17 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement, ReactNode } from "react";
 
+import { BASKET_MAX_LINES } from "../../../config/basket.ts";
 import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY, whatsappHref } from "../../../config/company.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
-import { LocaleSwitcher, localePath } from "../../i18n/index.ts";
+import {
+  type LocaleCode,
+  isLocaleCode,
+  xDefaultLocale,
+} from "../../../config/locales.ts";
+import { LocaleSwitcher, formatNumber, localePath } from "../../i18n/index.ts";
+import { BasketCountBadge } from "../basket/BasketCountBadge.tsx";
 import { AfterPaint } from "../deferred/AfterPaint.tsx";
 import { MotionLoader } from "../deferred/MotionLoader.tsx";
 import { Icon } from "../icons/Icon.tsx";
@@ -65,6 +75,7 @@ import {
   type HeaderItem,
   type HeaderListingHrefs,
   headerAccountItems,
+  headerBasketHref,
   headerCategoryItems,
   headerCurrencyCode,
   headerEndClusterItems,
@@ -177,6 +188,40 @@ export interface SiteHeaderProps {
    * homes, for a header with no route behind it (the gallery, a unit render).
    */
   readonly switcher?: ReactNode;
+  /**
+   * This document is the basket page: its Basket link carries `aria-current="page"` (the
+   * `chrome-*` "Basket current" state). Decided by the route, like the price claim.
+   */
+  readonly basketCurrent?: boolean;
+}
+
+/**
+ * The header's Basket link (spec 010 §14 A-founder-2026-10-22 D10; `chrome-desktop.dc.html`
+ * `.hx-i`): a 44 px round icon target, ink on paper, a paper-3 wash on hover, an inset ink ring when
+ * it is the current page.
+ */
+const BASKET_LINK =
+  "text-ink hover:bg-paper-3 relative inline-grid size-(--target-min) place-items-center rounded-full no-underline focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-focus aria-[current=page]:shadow-[inset_0_0_0_1.5px_var(--color-ink)]";
+
+/**
+ * Every state the count can take, for `../basket/basket-count.ts`: index 0 the empty link
+ * (`nav.basket`, no figure), index n the figure n through `Intl` and the `nav.basketCount` plural,
+ * up to `BASKET_MAX_LINES`. Resolved here on the server, the same for every visitor, so the island
+ * carries no catalogue and no formatter.
+ */
+export function basketCountStates(
+  locale: string,
+  empty: string,
+  named: (count: number) => string,
+): readonly (readonly [string, string])[] {
+  const code: LocaleCode = isLocaleCode(locale) ? locale : xDefaultLocale;
+  return [
+    ["", empty],
+    ...Array.from(
+      { length: BASKET_MAX_LINES },
+      (_, index) => [formatNumber(index + 1, code), named(index + 1)] as const,
+    ),
+  ];
 }
 
 /**
@@ -198,6 +243,7 @@ export function SiteHeader({
   listingHrefs = {},
   priceClaim = <NoticePriceClaim />,
   switcher = <LocaleSwitcher locale={locale} />,
+  basketCurrent = false,
 }: SiteHeaderProps): ReactElement {
   const t = useTranslations();
   // Namespace-bound for the one key with an ICU argument (`{currency}`).
@@ -212,6 +258,10 @@ export function SiteHeader({
     ...headerEndClusterItems(locale),
     ...headerAccountItems(locale),
   ];
+  // The Basket link, once `/{locale}/basket` is published (spec 010 D10). Below `md` it sits
+  // between the logo and the Menu; from `md` after "Send flowers".
+  const basketHref = headerBasketHref(locale);
+  const basket = basketHref !== undefined;
   const { contact, tradingName } = COMPANY;
   /** A19's single chrome predicate: may this document assert a delivery date at all? */
   const datesOpen = anyDeliveryDatesOpen();
@@ -322,7 +372,7 @@ export function SiteHeader({
           <MotionLoader />
         </AfterPaint>
         <div
-          className={`grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-cols-[auto_minmax(0,1fr)_auto] xl:grid-rows-[82px] xl:gap-x-(--space-lg2) ${CHROME_WRAP}`}
+          className={`grid ${basket ? "grid-cols-[minmax(0,1fr)_auto_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto_auto]" : "grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[auto_minmax(0,1fr)_auto]"} grid-rows-[64px_auto] items-center gap-x-(--space-sm2) xl:grid-rows-[82px] xl:gap-x-(--space-lg2) ${CHROME_WRAP}`}
           data-fo-header-band="masthead"
         >
           {/* The logo: the mark and the outlined wordmark; the wordmark's name (the trading name)
@@ -345,11 +395,11 @@ export function SiteHeader({
               between the logo and the pill on desktop. */}
           <nav
             aria-label={registryLabel(t, CATEGORY_NAV_LABEL_KEY)}
-            className={`col-span-2 row-start-2 -mx-(--gutter-s) min-w-0 max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0`}
+            className={`${basket ? "col-span-3" : "col-span-2"} row-start-2 -mx-(--gutter-s) min-w-0 max-md:hidden md:-mx-(--gutter) xl:col-span-1 xl:col-start-2 xl:row-start-1 xl:mx-0`}
             data-fo-header-band="categories"
           >
             <ul
-              className={`m-0 flex list-none gap-(--space-sm) overflow-x-auto px-(--gutter-s) pb-(--space-sm2) md:px-(--gutter) xl:justify-end xl:gap-[26px] xl:overflow-visible xl:px-0 xl:pb-0`}
+              className={`m-0 flex list-none gap-(--space-sm) overflow-x-auto px-(--gutter-s) pb-(--space-sm2) md:px-(--gutter) xl:justify-end ${basket ? "xl:gap-[22px]" : "xl:gap-[26px]"} xl:overflow-visible xl:px-0 xl:pb-0`}
             >
               {entries.map((item) => (
                 <CategoryEntry item={item} key={item.id} t={t} />
@@ -366,11 +416,40 @@ export function SiteHeader({
             {t("nav.send")}
           </Button>
 
+          {/* The Basket link (spec 010 §14 A-founder-2026-10-22 D10, AC-70): the same static
+              HTML for every visitor, `rel="nofollow"` (the page is `noindex` and disallowed in
+              robots), its name `nav.basket` and an empty badge slot of a fixed 20 x 20 px. The
+              motion module, after the LCP paint, reads `fo_basket` and writes the figure and the
+              `nav.basketCount` name from `data-fo-basket` (`../basket/basket-count.ts`). Below
+              `md` it sits between the logo and the Menu (spec 010 §13 Q26); from `md` after the
+              pill. */}
+          {basketHref === undefined ? null : (
+            <a
+              aria-current={basketCurrent ? "page" : undefined}
+              className={`${BASKET_LINK} col-start-2 row-start-1 justify-self-end md:col-start-3 xl:col-start-4`}
+              data-fo-basket={JSON.stringify(
+                basketCountStates(locale, t("nav.basket"), (count) =>
+                  nav("basketCount", { count }),
+                ),
+              )}
+              data-fo-header-item="basket"
+              href={basketHref}
+              rel="nofollow"
+            >
+              <Icon name="basket" size={24} strokeWidth={1.8} />
+              <BasketCountBadge name={t("nav.basket")} />
+            </a>
+          )}
+
           {/* Below `md`: the Menu, the header's second and last control (§14 A24 clause 3). It
               holds the same entries, Send flowers, the switcher, the currency and the help line;
               from `md` up it is `display: none` and the row, the pill and the strip draw them. */}
           <MenuSheet
-            className="col-start-2 row-start-1 justify-self-end md:hidden"
+            className={
+              basket
+                ? "col-start-3 row-start-1 justify-self-end md:hidden [&>summary]:gap-[8px] [&>summary]:px-[12px]"
+                : "col-start-2 row-start-1 justify-self-end md:hidden"
+            }
             currency={{
               code: currency,
               label: nav("currency.label", { currency }),

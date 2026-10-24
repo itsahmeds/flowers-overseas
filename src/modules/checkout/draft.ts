@@ -629,6 +629,27 @@ export async function saveDraft(
 }
 
 /**
+ * Clears the start route's pending notice once the basket page has rendered it (spec 010 §14
+ * A-founder-2026-10-22 item 2 B: "set by the start route, cleared by the next basket render", so
+ * no notice ever travels in a URL and none shows twice; TASK-349). Rendering is not a change to
+ * the basket, so the 30-day window and the last activity are **not** moved. `false` when there was
+ * nothing to clear, or the draft is gone or placed.
+ */
+export async function clearPendingNotice(
+  draftId: string,
+  connection?: DraftConnection,
+): Promise<boolean> {
+  const id = z.uuid().parse(draftId);
+  return withDraftConnection(connection, async (executor) => {
+    const rows = await executor.execute(sql`
+      UPDATE checkout_draft SET pending_notice = NULL
+       WHERE id = ${id} AND purchase_id IS NULL AND pending_notice IS NOT NULL
+      RETURNING id`);
+    return rows.length === 1;
+  });
+}
+
+/**
  * Saves one line's changes and the draft-level ones beside them (AC-13). The line is written
  * first, under the compare-and-set when `ifUnchanged` (the line as the caller loaded it) is given,
  * and only on an unplaced draft; the draft half (and the 30-day window) is written only when the

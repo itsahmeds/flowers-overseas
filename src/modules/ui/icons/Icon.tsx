@@ -121,10 +121,11 @@ const GEOMETRY: Readonly<Record<IconName, ReactElement>> = {
       <circle cx="18" cy="18" r="1.6" />
     </>
   ),
+  // The header's basket link (spec 010 D10; `chrome-desktop.dc.html` "Header icons", TASK-349).
   basket: (
     <>
-      <path d="M6 7h12l-1 12H7L6 7z" />
-      <path d="M9 7a3 3 0 0 1 6 0" />
+      <path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z" />
+      <path d="M9 8V6.5a3 3 0 0 1 6 0V8" />
     </>
   ),
   calendar: (
@@ -173,6 +174,8 @@ export interface IconProps {
    */
   readonly label?: string;
   readonly className?: string;
+  /** The stroke, 1.6 by default; the header's icon links draw 1.8 (`chrome-*.dc.html`). */
+  readonly strokeWidth?: 1.6 | 1.8;
 }
 
 export function Icon({
@@ -180,6 +183,7 @@ export function Icon({
   size = 20,
   label,
   className,
+  strokeWidth = 1.6,
 }: IconProps): ReactElement {
   const mirror = MIRRORED_IN_RTL.has(name) ? "mirror-in-rtl" : "";
   return (
@@ -189,7 +193,7 @@ export function Icon({
       viewBox={V2_GRID_ICONS.has(name) ? "0 0 34 34" : "0 0 24 24"}
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.6}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={`${mirror} ${className ?? ""}`.trim()}
