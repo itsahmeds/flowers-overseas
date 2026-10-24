@@ -467,7 +467,7 @@ describe.skipIf(server.url === undefined)(
             expect(log.slice(0, prior.length)).toEqual(prior);
             expect(
               log.slice(prior.length).map((e) => [e.type, e.to_status]),
-            ).toEqual([["order.refund_requested", null]]);
+            ).toEqual([["order.refund_requested", "abandoned"]]);
           }
           expect((await paymentRow(paymentId))?.status).toBe("captured");
           expect(
