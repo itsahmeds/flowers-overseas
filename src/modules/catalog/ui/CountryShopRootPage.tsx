@@ -141,6 +141,7 @@ export function CountryShopRootPage({
                       name: tile.name,
                       href: tile.href,
                     })),
+                    view,
                     {
                       what: shop("root.tilesHeading"),
                       occasion: t("home.occasions.eyebrow"),

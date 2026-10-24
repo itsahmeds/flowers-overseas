@@ -5,8 +5,6 @@
  */
 import type { useTranslations } from "next-intl";
 
-import { CATEGORIES } from "@/config/catalogue/categories.data";
-
 import type { ListingView } from "../listing";
 
 import {
@@ -53,22 +51,20 @@ export function listingStatusParts(
     : [{ key: "state", text: registryLabel(t, NOT_OPEN_STATE_KEY) }, prices];
 }
 
-/** The category keys of kind `occasion`, from the authored taxonomy (`plan/10` §2.1). */
-const OCCASION_KINDS: ReadonlySet<string> = new Set(
-  CATEGORIES.filter((category) => category.kind === "occasion").map(
-    (category) => category.key,
-  ),
-);
-
 /**
  * The Categories panel's two groups (§5.3 E): the categories of kind `productType` and
- * `flowerType` under "By what it is", then those of kind `occasion` under "Shop by occasion";
- * within a group the order the caller gave. A group with no chip is dropped by the panel.
+ * `flowerType` under "By what it is", then those of kind `occasion` (the view's
+ * `occasionCategoryKeys`, read from the authored taxonomy) under "Shop by occasion"; within a
+ * group the order the caller gave. A group with no chip is dropped by the panel.
  */
 export function chipGroups(
   chips: readonly ListingChip[],
+  view: ListingView,
   headings: { readonly what: string; readonly occasion: string },
 ): readonly ListingChipGroup[] {
+  const OCCASION_KINDS: ReadonlySet<string> = new Set(
+    view.occasionCategoryKeys ?? [],
+  );
   return [
     {
       id: "listing-categories-what",
