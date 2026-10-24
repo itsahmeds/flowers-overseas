@@ -2,11 +2,11 @@
   "artboards": [
     {
       "file": "buyer-journey.dc.html",
-      "title": "Buyer journey · home → demo order (010) and the pay branch (013, 018) · basket and account branches (2026-10-22)",
+      "title": "Buyer journey · home → demo order (010) and the pay branch (013, 018)",
       "x": 0,
       "y": 0,
       "w": 1440,
-      "h": 10156
+      "h": 12644
     },
     {
       "file": "florist-journey.dc.html",
@@ -68,7 +68,7 @@
       "file": "admin-florist-price-list.dc.html",
       "title": "Flow · a florist's price list · list → template → upload → check → reasons → apply → photos → approve → activate → publish (spec 012b A.2)",
       "x": 7600,
-      "y": 7217,
+      "y": 9705,
       "w": 1440,
       "h": 2575
     }
