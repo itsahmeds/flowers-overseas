@@ -188,6 +188,9 @@ describe.skipIf(server.url === undefined)(
           INSERT INTO users (email) VALUES ('buyer@example.test') RETURNING id`;
         const userId = user?.id ?? "";
         await tx`INSERT INTO currency (code, minor_unit_exponent) VALUES ('PLN', 2)`;
+        // `partner_member.locale_code` defaults to `en` and is keyed to `locale` (`0022_florists_v0`,
+        // TASK-211), so the member's language must exist.
+        await tx`INSERT INTO locale (code, bcp47, name) VALUES ('en', 'en', 'English')`;
         const [country] = await tx<{ id: string }[]>`
           INSERT INTO country (iso2, currency_code, vat_rate_bp, iana_zone)
           VALUES ('PL', 'PLN', 800, 'Europe/Warsaw') RETURNING id`;
