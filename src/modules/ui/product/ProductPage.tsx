@@ -126,6 +126,9 @@ const ENTRY_PRIMARY = "bg-accent text-on-accent hover:bg-accent-strong";
 /** The id of the primary action in the flow, which the docked bar links to (AC-48's twin). */
 export const BUY_ACTION_ID = "buy";
 
+/** The buy section's form, which the docked bar's twins of the checkout entry submit (AC-5). */
+export const BUY_FORM_ID = "buy-form";
+
 export function ProductPage({
   view,
   breadcrumb,
@@ -148,6 +151,21 @@ export function ProductPage({
     selectedTier === undefined
       ? undefined
       : formatMoney(selectedTier.price, code);
+  // The checkout entry's first submit, in the flow and in the docked bar alike: "Continue" and the
+  // selected size's total live, "Try a demo order" in preview. The founder-approved
+  // `finder.submit` until a reviewed "Continue, {total}" key exists: a new unreviewed key here
+  // would push the counted share past 5 %.
+  const entryLabel =
+    checkout?.entry === "continue" ? (
+      <>
+        {t("finder.submit")}
+        {selectedPrice === undefined ? null : (
+          <bdi className="num ms-[8px]">{selectedPrice}</bdi>
+        )}
+      </>
+    ) : (
+      product("entry.demo")
+    );
   // What each size's radio carries for the island (AC-31): the total of that size on the selected
   // date (the totals table's entry, or the size's own price when no date is chosen) and its own
   // equivalents line. Strings formatted here, from the view model's amounts; never summed.
@@ -279,7 +297,12 @@ export function ProductPage({
                 with the price-changed notice when its total differs (AC-6). `display: contents`
                 keeps the grid's rows. A plain submit (Enter) reloads this page, which reads no
                 parameter. */}
-            <form className="contents" data-fo-pdp-form="" method="get">
+            <form
+              className="contents"
+              data-fo-pdp-form=""
+              id={BUY_FORM_ID}
+              method="get"
+            >
               {entryOpen ? (
                 <>
                   <input name="locale" type="hidden" value={view.locale} />
@@ -349,19 +372,7 @@ export function ProductPage({
                       type="submit"
                       value="checkout"
                     >
-                      {checkout?.entry === "continue" ? (
-                        // "Continue" and the selected size's total. The founder-approved
-                        // `finder.submit` until a reviewed "Continue, {total}" key exists: a
-                        // new unreviewed key here would push the counted share past 5 %.
-                        <>
-                          {t("finder.submit")}
-                          {selectedPrice === undefined ? null : (
-                            <bdi className="num ms-[8px]">{selectedPrice}</bdi>
-                          )}
-                        </>
-                      ) : (
-                        product("entry.demo")
-                      )}
+                      {entryLabel}
                     </button>
                     <button
                       className={`${ENTRY_BUTTON} ${ENTRY_GHOST}`}
@@ -579,9 +590,34 @@ export function ProductPage({
       </main>
       {/* The phone's docked bar (AC-48): the selected size and its price, the same strings the
           sheet prints and the same slots the island fills, and an in-page link to the status in
-          the flow. On the first screen from load (spec 004 §14 A-founder-2026-10-14h). */}
+          the flow. On the first screen from load (spec 004 §14 A-founder-2026-10-14h). With the
+          checkout entry open it holds the entry's two submits instead, "Add to basket" first
+          and narrower, as `product-mobile.dc.html` draws it (spec 010 AC-5). */}
       <StickyActionBar
         action={{ href: `#${BUY_ACTION_ID}`, label: product("demo.heading") }}
+        submits={
+          entryOpen && checkout !== undefined
+            ? [
+                {
+                  form: BUY_FORM_ID,
+                  formAction: checkout.action,
+                  name: "then",
+                  value: "basket",
+                  label: product("entry.addToBasket"),
+                  look: "ghost",
+                  narrow: true,
+                },
+                {
+                  form: BUY_FORM_ID,
+                  formAction: checkout.action,
+                  name: "then",
+                  value: "checkout",
+                  label: entryLabel,
+                  look: checkout.entry === "continue" ? "accent" : "ghost",
+                },
+              ]
+            : undefined
+        }
         className="[&_a]:bg-surface-muted [&_a]:text-ink-muted [&_a:hover]:bg-surface-muted [&_a]:text-sm [&_a]:shadow-[inset_0_0_0_1px_var(--color-rule)]"
         price={
           selectedTier === undefined || selectedPrice === undefined

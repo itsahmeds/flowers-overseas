@@ -128,7 +128,10 @@ export function OrderSummaryPanel({
       data-fo-order-summary=""
       id={id}
     >
-      <h2 className={join("text-ink m-0 text-xl", headClassName)} id={titleId}>
+      <h2
+        className={join("display text-ink m-0 text-xl", headClassName)}
+        id={titleId}
+      >
         {title}
       </h2>
       <div

@@ -558,6 +558,72 @@ describe("the sticky action bar (AC-48, T-53's stylesheet half)", () => {
     );
     expect(source).not.toMatch(/readonly children/u);
   });
+
+  it("with submits, draws twins of the page form's submits by its id, and no price or link (spec 010 AC-5)", () => {
+    const submit = {
+      form: "buy-form",
+      formAction: "/api/checkout/start",
+      name: "then",
+    } as const;
+    const html = renderToStaticMarkup(
+      <StickyActionBar
+        action={{ href: "#buy", label: "Ordering is not open yet" }}
+        price={{ amount: "£44.90", caption: "15 stems" }}
+        submits={[
+          {
+            ...submit,
+            value: "basket",
+            label: "Add to basket",
+            look: "ghost",
+            narrow: true,
+          },
+          {
+            ...submit,
+            value: "checkout",
+            label: "Try a demo order",
+            look: "ghost",
+          },
+        ]}
+      />,
+    );
+    const buttons = [...html.matchAll(/<button\s[^>]*>/gu)].map((m) => m[0]);
+    expect(buttons).toHaveLength(2);
+    for (const button of buttons) {
+      expect(button).toContain('form="buy-form"');
+      expect(button).toContain('formAction="/api/checkout/start"');
+      expect(button).toContain('type="submit"');
+    }
+    expect(buttons[0]).toContain('value="basket"');
+    expect(buttons[0]).toContain("flex-none");
+    expect(buttons[1]).toContain('value="checkout"');
+    expect(html).not.toContain("<a ");
+    expect(html).not.toContain("data-fo-action-bar-price");
+    expect(html).not.toContain("Ordering is not open yet");
+  });
+
+  it("refuses a submit that names no form of the page", () => {
+    for (const form of ["", "#buy-form", "buy form"]) {
+      expect(
+        () =>
+          renderToStaticMarkup(
+            <StickyActionBar
+              action={{ href: "#buy", label: "Continue" }}
+              submits={[
+                {
+                  form,
+                  formAction: "/api/checkout/start",
+                  name: "then",
+                  value: "checkout",
+                  label: "Continue",
+                  look: "accent",
+                },
+              ]}
+            />,
+          ),
+        form,
+      ).toThrow(/page form/u);
+    }
+  });
 });
 
 const OPTIONS = [
