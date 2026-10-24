@@ -90,12 +90,12 @@ function resolveStep(step: Step, width: number, height: number): number {
 /**
  * The page's hero or lead photograph, found by its **place** in the page, not by the
  * `data-fo-lead-photo` marker the cap adds: a test that finds the photo through the same prop that
- * caps it goes green when the prop is removed (`/break` round 1, hole 1). Today only the guide draws
- * one, the photo box beside its `<h1>` (the home hero is exempt, A24 clause 5); TASK-187 and TASK-188
- * add their lead figures here when they build them.
+ * caps it goes green when the prop is removed (`/break` round 1, hole 1). The home hero is exempt
+ * (A24 clause 5); TASK-187 and TASK-188 added their lead figures here.
  */
 const LEAD_PHOTO: Readonly<Partial<Record<PageType, string>>> = {
-  guide: "main div:has(> div > h1) > .photo",
+  // TASK-189: the guide draws no photograph any more (spec 007 §14 A11 (b)); its first screen is
+  // the state and the calendar's next three dates, pinned by `corridor-first-screen.spec.ts`.
   // TASK-187: the country occasion's lead figure is `items[0]`'s own card, the grid's first `<li>`,
   // placed over the hero from `md` up (spec 008 §14 A16 (b)); the shop root and the country
   // category draw no lead figure.
@@ -172,7 +172,12 @@ const FIRST_SCREEN: Readonly<
  *    shortened its intro, so its row left this list); the occasions
  *    index's occasion links are 21 px inline links, and at 390 the category hub's destination link
  *    is 26 px tall where a primary action needs 44 (TASK-188's hub first screens);
- *  - the guide's way into the shop is at y 7,166 (TASK-189: the guide's first screen).
+ *  - the guide's way into the shop is still at the foot of the page. TASK-189 rebuilt the guide's
+ *    first screen to its round-2 artboard (`corridor-country-desktop`), which draws the state,
+ *    the next three dates and a link to the calendar there and the shop pill at the foot, after
+ *    the related destinations; on phones the artboard docks it. Whether the desktop first screen
+ *    should carry the shop pill as well is the founder's call, recorded as a carry-forward in
+ *    `docs/tasks/TASK-189.md`; the row leaves when that is decided and built.
  */
 type Check = "inView" | "target" | "primaryTarget";
 const PENDING: Readonly<
@@ -183,7 +188,9 @@ const PENDING: Readonly<
     >
   >
 > = {
-  guide: { inView: "TASK-189" },
+  guide: {
+    inView: "the founder's call on the guide's shop pill (TASK-189 brief)",
+  },
 };
 
 function pendingOwner(

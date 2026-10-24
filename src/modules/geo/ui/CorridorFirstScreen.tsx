@@ -21,6 +21,10 @@
  *    puts the dates above the intro, so they stay in the first viewport at 390 × 844). From `md`
  *    up the band is the 12-column hero: the copy on columns 1–6, the dates on 8–12 beside it.
  *
+ * From `md` up the band keeps no bottom padding: the facts section's own `--section-fluid` is the
+ * gap under the intro, which keeps the first viewport's largest empty band under AC-45's 120 px
+ * (56 px more was a 160 px band at 1440 × 900).
+ *
  * The dates are three equal columns at every width. The phone artboard draws 132 px cards in a
  * row that runs off the screen; three equal columns keep all three wholly inside the first
  * viewport, which AC-31 measures. Each card carries its ISO date (`data-fo-first-date`) so the
@@ -63,7 +67,7 @@ export function CorridorFirstScreen({
 
   return (
     <div
-      className="grid grid-cols-[minmax(0,1fr)] items-start gap-y-[18px] pt-[24px] pb-[36px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)] md:gap-y-[20px] md:pt-[40px] md:pb-[56px]"
+      className="grid grid-cols-[minmax(0,1fr)] items-start gap-y-[18px] pt-[24px] pb-[36px] md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)] md:gap-y-[20px] md:pt-[40px] md:pb-0"
       data-fo-corridor-first-screen
     >
       <div className="grid min-w-0 justify-items-start gap-[12px] md:col-span-6 md:row-start-1 md:gap-[20px]">
