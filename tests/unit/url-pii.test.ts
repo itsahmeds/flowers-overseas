@@ -137,6 +137,11 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "Stripe's `GET /v1/payment_intents/:id` and `GET /v1/events` query (spec 013 §5.2)",
   })),
+  // TASK-261: `GET /v1/refunds?charge=ch_…` (a `charge.refunded` webhook's refunds): a charge id.
+  {
+    entry: "src/modules/payments/stripe/adapter.ts#charge",
+    reason: "Stripe's `GET /v1/refunds` filter by charge id (spec 013 §5.2)",
+  },
   // Spec 012 §2.4 (TASK-220): /admin/flags's outcome after a toggle, on a `noindex`, `no-store`,
   // admin-only page. A code, a registry key and a scope reference; no person, not listing keys.
   {
@@ -638,6 +643,7 @@ describe("the real tree (T-59)", () => {
         "src/modules/payments/stripe/adapter.ts#created[gte]",
         "src/modules/payments/stripe/adapter.ts#limit",
         "src/modules/payments/stripe/adapter.ts#starting_after",
+        "src/modules/payments/stripe/adapter.ts#charge",
         "src/app/admin/(signed-in)/flags/actions.ts#result",
         "src/app/admin/(signed-in)/flags/actions.ts#key",
         "src/app/admin/(signed-in)/flags/actions.ts#ref",

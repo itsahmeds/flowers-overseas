@@ -51,7 +51,6 @@ import {
 import {
   A6_TRANSITIONS,
   A8_TRANSITIONS,
-  A10_TRANSITIONS,
   TRANSITIONS,
   SET_E,
 } from "../fixtures/order-machine.ts";
