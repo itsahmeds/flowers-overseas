@@ -50,6 +50,7 @@ import {
   A6_TRANSITIONS,
   A8_TRANSITIONS,
   A10_TRANSITIONS,
+  A9_TRANSITIONS,
   TRANSITIONS,
 } from "../fixtures/order-machine.ts";
 import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
@@ -897,10 +898,13 @@ describe.skipIf(server.url === undefined)(
       const [count] = await first.sql<
         { n: number }[]
       >`SELECT count(*)::int AS n FROM order_transition`;
-      // A7 adds no row; the rows after it are spec 002 §14 A8.1's two (`0021`, TASK-337) and A10's
-      // two (`0027`, TASK-258).
+      // A7 adds no row; the rows after it are spec 002 §14 A8.1's two (`0021`, TASK-337), A10's two
+      // (`0029`, TASK-258) and A9.7's three (`0030`, TASK-261).
       expect(count?.n).toBe(
-        transitionsBefore + A8_TRANSITIONS.length + A10_TRANSITIONS.length,
+        transitionsBefore +
+          A8_TRANSITIONS.length +
+          A10_TRANSITIONS.length +
+          A9_TRANSITIONS.length,
       );
       expect(transitionsBefore).toBe(A6_TRANSITIONS.length);
       expect(count?.n).toBe(TRANSITIONS.length);
