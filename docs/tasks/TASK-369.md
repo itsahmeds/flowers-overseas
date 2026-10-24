@@ -25,7 +25,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size S
 One dated bullet per `/review`, newest last.
 
 - 2026-10-24 (self-review, PR 406): AC-5's `notificationsFor('order.closed', from, mode)` row assertion belongs to TASK-331 (spec 016's `notificationsFor` is not on main); this PR proves no outbox target and no `notification_delivery` row.
-- 2026-10-24 (self-review, PR 406): the refund check joins `refund` to `payment.order_id`. Once TASK-350 (PR 403: one payment per purchase, each refund names its order) merges, a sibling order's open refund also holds this order's close (a delay, never an early close); switch the check to the refund's own order column then.
+- 2026-10-24 (self-review, PR 406): the refund check joins `refund` to `payment.order_id`. PR 403 (TASK-350, `0028_payment_purchase`) moves the order onto `refund.order_id` and drops `payment.order_id`, so whichever of PR 403 and PR 406 merges second rewrites the check in `src/modules/orders/close/sweep.ts` (`closeOne`) to `WHERE r.order_id = $1` and the `refundOf` helper of `tests/integration/order-close.test.ts`; T-03 goes red until it does.
 
 ## Escalations
 
