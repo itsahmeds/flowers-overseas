@@ -38,7 +38,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: `src/modules/orders/close/` (`closeDueAt`, `OrderClosedV1`, `runCloseSweep`), `order.close_sweep` registered, handled and enqueued by the tick under a `singletonKey`; `COMPLAINT_WINDOW_HOURS` in `company.ts`; unit T-01, T-05 unit half, AC-2 scan; integration T-02 to T-05 and the backlog alert, green on a local PG16 with six mutations seen red. Next: PR, CI.
 
 ## Result
 

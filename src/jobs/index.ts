@@ -11,7 +11,8 @@
  *    (TASK-025), `neon.usage_probe` (TASK-029), `db.backup_verify` (TASK-028), `outbox.dispatch`
  *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick),
  *    `payments.production_start` (spec 013 §5.2, TASK-258: row 16 on the delivery morning),
- *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook);
+ *    `webhook.process` (spec 013 §5.2, TASK-260: one stored webhook), `order.close_sweep`
+ *    (spec 022a §5.2, TASK-369: one run of the close sweep, enqueued by every minute tick);
  *  - **declared only** — the name is reserved for the spec that implements it (`order.route`,
  *    `assignment.timeout`, `notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -72,6 +73,13 @@ export const PaymentsProductionStartPayload = z.object({}).strict();
  */
 export const WebhookProcessPayload = z.object({ inboxId: z.uuid() }).strict();
 
+/**
+ * `order.close_sweep` (spec 022a §5.2, AC-2 to AC-4; TASK-369): one run of the close sweep, which
+ * closes every due order (at most 200). Takes nothing; the minute tick enqueues one run under a
+ * `singletonKey`.
+ */
+export const OrderCloseSweepPayload = z.object({}).strict();
+
 /** One registered job: its payload schema and that schema's version. */
 export interface RegisteredJob<Schema extends z.ZodType = z.ZodType> {
   readonly version: number;
@@ -90,6 +98,7 @@ export const REGISTERED_JOBS = {
     payload: PaymentsProductionStartPayload,
   },
   "webhook.process": { version: 1, payload: WebhookProcessPayload },
+  "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */
