@@ -226,7 +226,8 @@ test.describe("T-52: the phone header (AC-47)", () => {
     await expect(page.locator(UTILITY)).toBeVisible();
     expect(Math.round((await headerBox(page)).height)).toBe(83);
     await expect(page.locator(MENU)).toBeHidden();
-    await expect(page.locator("[data-fo-header-item]")).toHaveCount(8);
+    // Eight category entries and `For florists` (spec 011, TASK-210).
+    await expect(page.locator("[data-fo-header-item]")).toHaveCount(9);
     for (const item of await page.locator("[data-fo-header-item]").all()) {
       await expect(item).toBeVisible();
     }
