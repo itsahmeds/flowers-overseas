@@ -101,6 +101,7 @@ export {
   type HolidayProvider,
   type PickerState,
   type PickerStateTerms,
+  checkoutDeliveryWindow,
   cutoffAt,
   deliveryCalendar,
   deliveryReasonKeys,

@@ -83,6 +83,22 @@ const PARSERS: readonly Entry[] = [
     entry: "src/modules/checkout/steps.ts#runUpdateSelection",
     reason: "SelectionUpdateSchema.safeParse(formValues(form))",
   },
+  // Spec 010 §14 A-founder-2026-10-22 item 4 (TASK-348): the basket's line actions parse the
+  // posted line with LinePositionSchema and the rest with their own strict schema.
+  {
+    entry: "src/modules/checkout/steps.ts#runRemoveLine",
+    reason: "LinePositionSchema.safeParse(formValues(form).line)",
+  },
+  {
+    entry: "src/modules/checkout/steps.ts#runUpdateLine",
+    reason:
+      "LinePositionSchema (through linePrelude) and UpdateLineSchema.safeParse(formValues(form))",
+  },
+  {
+    entry: "src/modules/checkout/steps.ts#runUseNextDate",
+    reason:
+      "LinePositionSchema (through linePrelude) and UseNextDateSchema.safeParse(formValues(form))",
+  },
 ];
 
 const BODY_METHODS = new Set([
@@ -938,7 +954,7 @@ describe("T-57: the real tree", () => {
     expect(problems(result)).toEqual([]);
   });
 
-  it("the lists are today's: one reader, four parsers (adding one changes this file)", () => {
+  it("the lists are today's: one reader, seven parsers (adding one changes this file)", () => {
     expect(READERS.map((e) => e.entry)).toEqual([
       "src/lib/consent.ts#readBoundedBody",
     ]);
@@ -947,6 +963,9 @@ describe("T-57: the real tree", () => {
       "src/modules/checkout/steps.ts#runRecipientStep",
       "src/modules/checkout/steps.ts#runCardAndBuyerStep",
       "src/modules/checkout/steps.ts#runUpdateSelection",
+      "src/modules/checkout/steps.ts#runRemoveLine",
+      "src/modules/checkout/steps.ts#runUpdateLine",
+      "src/modules/checkout/steps.ts#runUseNextDate",
     ]);
   });
 

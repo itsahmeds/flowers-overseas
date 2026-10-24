@@ -28,7 +28,27 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (self-review, PR 383; no reviewer agent, founder 2026-10-22):
+  - **TASK-205** (placement) owns: `placeOrderAction` sets `checkout_draft.purchase_id` and every
+    line's `order_id`; it places only when `assessBasket(draft).placeable` (no unavailable or
+    date-gone line, no open notice, every screen saved); `purchase.total_minor` is the basket's
+    confirmed total, equal to the sum of the lines' current quotes; the cap counted in orders; its
+    redirect carries `basketCount: 0` so `fo_basket` is deleted (AC-62's placement half, AC-59's
+    and AC-60's "placement writes nothing", AC-61's placed total).
+  - **TASK-207** owns the cookie register rows (AC-75): `fo_checkout` (30 days) and `fo_basket`
+    (server-written, `set`, not `HttpOnly`); `CookieRegistryEntrySchema` still refuses
+    `writer: "server"` with `status: "set"` ("nothing is set by the server in Phase 0"), so that
+    refinement changes there. Also the `checkout_draft_personal` and 30-day `checkout_draft`
+    handlers of `retention.sweep` (the rows are seeded here and report `no_handler` until then).
+  - **TASK-204** draws the demo calendar from `geo`'s new `checkoutDeliveryWindow()` (the grid as
+    if the florists were active), the same one `lineDateStatus` re-checks against, and posts
+    `line` on every form; `stepPath(locale, step, line)` and `firstIncompleteScreen` are its URLs.
+  - Recorded choices: a **closed** destination added to an existing basket answers 303 to the
+    basket with no notice (the `pending_notice` check has no `closed` value), and with no basket
+    303 to the product page (TASK-203's behaviour); a post without `then` is `checkout`; a stored
+    line quote in another currency than the basket's is `tampered` (D6: a basket never holds two
+    currencies) where TASK-203 answered `changed`; `scripts/db-migrate.ts` now prints a migration's
+    coded `NOTICE` (`CODE: …`) so the down file's counts are printed.
 
 ## Escalations
 
@@ -42,11 +62,23 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: same PR 383 as TASK-347. Migration `0020_checkout_draft_lines` + down (lines, the
+  basket columns, the copy into line 1, the placed-draft refusal, the retention rows); the draft
+  service, pricing, start route and step runners per line; `removeLine`, `updateLine`,
+  `useNextDate`; `fo_basket`; `assessBasket`; `geo`'s `checkoutDeliveryWindow`. Suites
+  `checkout-basket.test.ts` (20), `checkout-draft-lines-migration.test.ts` (1), TASK-203's
+  `checkout-draft.test.ts` adapted (37); unit pins. Mutations N1 to N14 (PR `## Self-review`).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 383 (feature PR with TASK-347). Migration **`0020_checkout_draft_lines`** + down. Tests:
+integration `checkout-basket.test.ts` (20: T-06 rewritten, T-54 with two committed parallel-append
+cases, T-55, T-56, T-59 and T-60 server halves with the Warsaw DST night, T-61, T-62, T-76, T-78),
+`checkout-draft-lines-migration.test.ts` (1: refusal, copy, down counts printed, up again),
+`checkout-draft.test.ts` (37, TASK-203's cases per line); unit `checkout-basket-pricing.test.ts`
+(currency per basket, stale refusal, AC-76 source scan), `checkout-config.test.ts` (the
+`BASKET_MAX_LINES` pin), `checkout-cookie.test.ts` (`fo_basket`), `checkout-draft-pricing.test.ts`
+(per line). Handed on: see Carry-forwards.

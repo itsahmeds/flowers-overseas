@@ -11,7 +11,13 @@
  * The page binds the request's locale as the first argument
  * (`saveRecipientStep.bind(null, locale)`) and uses the action with `useActionState`, so it works
  * with JavaScript off. A successful save refreshes the cookie's `Max-Age` with the same token, so
- * the cookie lives as long as the draft: 24 hours after the last activity.
+ * the cookie lives as long as the basket: 30 days after the last change (spec 010 §14
+ * A-founder-2026-10-22 D7). Every redirect from an open basket also writes `fo_basket` with its
+ * number of lines, deleting it at zero (item 7, AC-62); a server action's response is never
+ * cached, so no cached response carries either cookie.
+ *
+ * The basket's line actions (item 4, TASK-348): `removeLine`, `updateLine`, `useNextDate`. Every
+ * form posts the line's position as `line`.
  */
 "use server";
 
@@ -22,6 +28,8 @@ import { z } from "zod";
 import { isLocaleCode } from "@/config/locales";
 
 import {
+  BASKET_COOKIE_ATTRIBUTES,
+  BASKET_COOKIE_NAME,
   CHECKOUT_COOKIE_ATTRIBUTES,
   CHECKOUT_COOKIE_NAME,
   isDraftToken,
@@ -32,7 +40,10 @@ import {
   type StepState,
   runCardAndBuyerStep,
   runRecipientStep,
+  runRemoveLine,
+  runUpdateLine,
   runUpdateSelection,
+  runUseNextDate,
 } from "./steps";
 
 /** The bound locale, parsed like every other input (an unknown one renders the expired state). */
@@ -48,12 +59,19 @@ async function answer(
   token: string | null,
 ): Promise<StepState> {
   if (outcome.kind === "render") return outcome.state;
-  if (token !== null) {
-    (await cookies()).set(
-      CHECKOUT_COOKIE_NAME,
-      token,
-      CHECKOUT_COOKIE_ATTRIBUTES,
-    );
+  const jar = await cookies();
+  if (token !== null && outcome.basketCount !== 0) {
+    jar.set(CHECKOUT_COOKIE_NAME, token, CHECKOUT_COOKIE_ATTRIBUTES);
+  }
+  if (outcome.basketCount !== undefined) {
+    if (outcome.basketCount === 0) jar.delete(BASKET_COOKIE_NAME);
+    else {
+      jar.set(
+        BASKET_COOKIE_NAME,
+        String(outcome.basketCount),
+        BASKET_COOKIE_ATTRIBUTES,
+      );
+    }
   }
   redirect(outcome.location);
 }
@@ -92,4 +110,40 @@ export async function updateSelection(
   if (!bound.success) return { status: "expired" };
   const ctx = await context(bound.data);
   return answer(await runUpdateSelection(ctx, form), ctx.token);
+}
+
+/** Remove one line from the basket (item 4). */
+export async function removeLineAction(
+  locale: unknown,
+  _previous: StepState,
+  form: FormData,
+): Promise<StepState> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runRemoveLine(ctx, form), ctx.token);
+}
+
+/** Change one line's size and add-ons from the basket (item 4). */
+export async function updateLineAction(
+  locale: unknown,
+  _previous: StepState,
+  form: FormData,
+): Promise<StepState> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runUpdateLine(ctx, form), ctx.token);
+}
+
+/** "Use {next}" for one line whose date has gone (D8, AC-60). */
+export async function useNextDateAction(
+  locale: unknown,
+  _previous: StepState,
+  form: FormData,
+): Promise<StepState> {
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runUseNextDate(ctx, form), ctx.token);
 }
