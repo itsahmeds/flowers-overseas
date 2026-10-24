@@ -112,19 +112,19 @@ test.describe("what the page renders (AC-6, AC-24)", () => {
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("[data-fo-listing-grid]")).toHaveCount(1);
     await expect(page.locator("[data-fo-product-card]")).toHaveCount(12);
-    // The demo sentence, the whole of the Phase 0 state: no control that cannot act. The one
-    // form and the one button in `<main>` are TASK-114's sort control — a `GET` form whose
-    // submit re-renders the same bouquets in another order, which *can* act and needs no
-    // JavaScript. Counted exactly, so a basket, an email capture or a second form fails here.
+    // The Phase 0 state, said once in the quiet line (spec 043 AC-7): no control that cannot act.
+    // The one form in `<main>` is TASK-114's sort control, a `GET` form that re-renders the same
+    // bouquets in another order; its Sort button is in `<noscript>` (spec 043 item 3), so with
+    // JavaScript on `<main>` holds no button at all. Counted exactly, so a basket, an email
+    // capture or a second form fails here.
     await expect(
-      page.getByText(
-        "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-      ),
+      page
+        .locator("main [data-fo-listing-status]")
+        .getByText("Ordering opens soon"),
     ).toBeVisible();
     await expect(page.locator('main form[method="get"]')).toHaveCount(1);
     await expect(page.locator("main form")).toHaveCount(1);
-    await expect(page.locator("main button")).toHaveCount(1);
-    await expect(page.locator('main button[type="submit"]')).toHaveCount(1);
+    await expect(page.locator("main button")).toHaveCount(0);
   });
 
   test("nominates exactly one LCP image — the first card's photograph — and preloads that one (AC-24)", async ({
