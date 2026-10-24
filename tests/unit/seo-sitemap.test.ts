@@ -19,7 +19,7 @@
  * a reviewer can reach until the §12 flip) has an empty sitemap, and the interesting table is the
  * indexing one.
  */
-import { infoPageView } from "../../src/modules/content/index.ts";
+import { infoPageHeadView } from "../../src/modules/content/index.ts";
 import { describe, expect, it, vi } from "vitest";
 
 import { countrySlug } from "../../src/config/countries.ts";
@@ -382,6 +382,11 @@ describe("static.xml is the page-type list applied (AC-13, AC-14)", () => {
     help: (locale) => `${ORIGIN}/${locale}/help`,
     about: (locale) => `${ORIGIN}/${locale}/about`,
     delivery: (locale) => `${ORIGIN}/${locale}/delivery`,
+    imprint: (locale) => `${ORIGIN}/${locale}/imprint`,
+    terms: (locale) => `${ORIGIN}/${locale}/legal/terms`,
+    privacy: (locale) => `${ORIGIN}/${locale}/legal/privacy`,
+    cookies: (locale) => `${ORIGIN}/${locale}/legal/cookies`,
+    cancellation: (locale) => `${ORIGIN}/${locale}/legal/cancellation`,
   };
 
   /**
@@ -390,7 +395,8 @@ describe("static.xml is the page-type list applied (AC-13, AC-14)", () => {
    */
   function announced(pageType: StaticSitemapPageType, locale: string): boolean {
     if (pageType === "destinationsHub") return true;
-    return infoPageView(pageType, locale)?.reviewed === true;
+    // A legal page also waits for the lawyer (AC-17): the head view's `reviewed` is both flags.
+    return infoPageHeadView(pageType, locale)?.reviewed === true;
   }
 
   it("emits one row per listed page type, in the list's order", () => {

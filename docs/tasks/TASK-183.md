@@ -103,19 +103,136 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-24, to the orchestrator (decision taken, open to overrule):** spec 041 §7 lists the
+  imprint's field labels and the cookie table's column headings among the new message keys. The
+  `en` unreviewed headroom was 20 counted keys (9 of 560, against the 5 % gate) and the work order
+  says headroom is tight, so the 13 keys the spec names by id (`infoPages.legal.*`,
+  `infoPages.cookies.change`, `company.controller`, `consent.privacyLink`) are message keys and
+  the 16 labels live in the two legal files' frontmatter (`labels.register`, `labels.facts`). They
+  render only on those two pages, which are `noindex` until a lawyer signs them, and the founder
+  approves them with the document (batch 2). Moving them to `messages/` later is mechanical.
+  Answer: open.
+- **2026-10-24, to the orchestrator (urgent, for the company-identity row of PR 351):** with
+  `registered: false` still committed, the about page renders `infoPages.company.notRegistered`,
+  which says "We are registering it in Estonia". That is no longer true (ADR-0021). TASK-183 does
+  not flip `company.ts` (the work order's fence); the company-identity row's flip makes that
+  branch fixture-only and fixes it. Answer: open.
 
 ## Progress
 
-One line per coherent step, newest last, written by the agent doing the work and pushed with
-the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
-here.
-
-_Not started._
+- 2026-10-24: worktree, row `in_progress`, draft PR 375.
+- 2026-10-24: legal template, five legal files in `en`/`en-gb`, trader-identity gate, router
+  leaves, consent controller projection, Polish rename, site-link flips, no name in `company.ts`
+  or on about (commit `929a420f`).
+- 2026-10-24: unit and e2e cases, RoPA rows 2 and 3 and the spec 041 note, every touched suite
+  green, mutations run (commit `d8ddefd0`); Linux footer baselines refreshed through the
+  `visual:baselines` label.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR [#375](https://github.com/itsahmeds/flowers-overseas/pull/375). The legal document template
+(`src/modules/content/legal.ts`, `legal-body.ts`, `components/LegalDocument.tsx`: white sheet on
+cream, `aria-hidden` stamp, version header, draft line, contents generated from the `##`
+headings, change log, chips; the cookie register table, the re-open button and its phone dock;
+the imprint `<dl>`), the five legal files in `en` and `en-gb` (`content/legal/**`: terms,
+privacy and cancellation as own `regime: uk` files; cookies and imprint extend `en`), the
+trader-identity gate (`isTraderIdentityComplete()` in `company.ts`, called by
+`infoPageExists()`), the legal leaves in `resolveLocalePath()` / `localeChildParams()` and the
+shared `src/app/[locale]/info-page-route.tsx`, the legal half of the head, JSON-LD breadcrumb and
+`static.xml` (`infoPageHeadView()`: a legal page's `reviewed` is `reviewed && lawyerReviewed`),
+`consentView().controller` (sentence or privacy link, chosen on the server), the Polish
+`informacje-prawne` segment, the five legal links published, RoPA rows 2 and 3 corrected with the
+"spec 041: no new processing" note, and no person's name in `company.ts`, on the about page or in
+any content or message (founder, 2026-10-23). Tests: unit `tests/unit/legal-pages.test.tsx` (51
+cases) plus updates to `info-pages`, `info-page-render`, `pages-check` (four legal overlay rows),
+`site-footer`, `site-links-config`, `catalog-routes`, `seo-sitemap`, `consent-view`,
+`home-honesty`, `i18n-messages-schema`, `locales-config`, `i18n-check` and `i18n-language-popup`;
+e2e `tests/e2e/info-pages.spec.ts` (legal T-01, T-24, the footer crawl in `en`/`en-gb`, T-13).
+13 new counted `en` keys, all `reviewed: false` (`en` unreviewed share 9/560 to 22/573, 3.8 %).
+No local build, Playwright or Lighthouse run: CI is the gate of record; the Linux footer
+baselines came from the `visual-baselines` workflow.
 
-_Pending._
+### Self-review
+
+1. **AC map** (file and the test that proves it; tests in `tests/unit/legal-pages.test.tsx`
+   unless named):
+   - AC-1 (legal half): `tests/e2e/info-pages.spec.ts` "T-01 / AC-1 (legal half)" (200, one h1,
+     `lang`, draft line, contents, no form) and the existing 404 cases for imprint, terms and
+     privacy in four locales (Polish paths renamed); router: `src/modules/catalog/routes.ts`
+     legal branch, "the router's prebuilt set is exactly the legal pages that exist".
+   - AC-2 (registration gate): `src/modules/content/pages.ts` `infoPageExists`,
+     `src/config/company.ts` `isTraderIdentityComplete`; "T-02 / AC-2" (three cases).
+   - AC-4 (rename): `src/config/locales.data.ts`; "T-04 / AC-4"; `locales-config`, `i18n-check`.
+   - AC-9: `legal.ts` `draftLineOf`, stamp; "T-09 / AC-9" (four cases, incl. the one-node diff).
+   - AC-10: `legal-body.ts`, `legal.ts` `toc`; "T-10 / AC-10" (regime per file, contents equal an
+     independent parse of the `##` headings with anchors, version and change log).
+   - AC-11 (imprint half) and AC-39 (a), (e): `LegalDocument.tsx` `Facts`; "T-11 / AC-11, AC-39".
+   - AC-13: table and button in `LegalDocument.tsx`; "T-13 / AC-13" (unit) and the T-13 e2e.
+   - AC-17 (legal half, `/break 270` hole 8): `legal.ts` `indexReviewed`, `infoPageHeadView`;
+     "T-17 / AC-17".
+   - AC-21 (legal half): `src/config/site-links.ts`; "T-21 / AC-21"; e2e footer crawl;
+     `site-footer`, `site-links-config`.
+   - AC-25: `docs/compliance/ropa.md`; "T-25 / AC-25" (row 2, privacy coverage, cookie section).
+   - AC-29 (unit half): `consentView.ts` `consentController`, the cookie interim swap in
+     `legal.ts`; "T-31 / AC-29" (five cases).
+   - AC-31 (`cancellation` and `terms` half): the two files; "T-33 / AC-31".
+   - AC-37 (content half) and the founder's no-name ruling: "AC-37 (content half)" (three cases),
+     `info-pages` T-11, `info-page-render` about.
+   - Carried `/break 270` hole 11: `scripts/pages-check.ts` legal `proseOf`;
+     `tests/unit/pages-check.test.ts` rows `changeLog.0.summary`, `links.0.label`,
+     `labels.register.caption`, `interim.heading`.
+2. **Mutations, each run and each red** (19, by script, the file restored after each):
+   gate on `registered` only (1 red); gate always open (8 red); `notInForce` line dropped (1);
+   imprint given a draft line (1); contents drop the last heading (4); regime hard-coded `eu` (3);
+   VAT row always drawn (1); register drops a row (1); page button loses
+   `data-fo-consent-reopen` (1); `&& lawyerReviewed` dropped (1); cookies unpublished (1);
+   every "Sentry" removed from the cookie notice only (1); `consentView` never links (1);
+   interim sections never swapped (1); controller name empty (2); charge sentence removed from
+   the cancellation file (2); Polish segment back to `regulamin` (1); `changeLog` push dropped
+   from `pages:check` (1); about back to `{representativeName}` (suite fails to load). One
+   mutation came back green on the first try (only the "Who handles it" Sentry line removed): the
+   section still named Sentry twice, so the assertion was right and the mutation too weak; the
+   recorded red one removes every Sentry from the cookie section.
+3. **Awkward cases tried (legal and consent text):** a document in force with no effective date
+   and an `en-gb` terms that `extends` (refused, TASK-182's parser); a registry slot in a document
+   that exists before the company (refused at parse); an unknown slot, an unknown or misfiled
+   data block, a duplicate anchor, interim anchors that are not sections, a register without
+   labels (each refused, naming the field); registered without a mailbox (no imprint, terms or
+   privacy); a company with no VAT ID (no VAT label, no empty slot); privacy present vs absent
+   (the banner projection and the cookie notice both swap, and only then); the honesty gate over
+   every legal prose field (no relay word: "hold", "holds", "taken" with a florist were reworded;
+   no "partner", "third party", price literal, scale claim, day count beside a freshness or
+   promise word); no em dash in any new line; the approved A.1 sentence "A lawyer will review
+   them" tripped the home reviews scan, so the scan exempts that one exact sentence under that one
+   key (`tests/unit/home-honesty.test.ts`), not the key or the word.
+4. **Left deliberately (carry-forwards):**
+   - **Company-identity row (PR 351):** flipping `company.ts` to Flowers Overseas LLC (no
+     `vatId`, `region`, the US address format, the colophon, `Organization`, RoPA Block E, the EIN
+     env). Built for it: the controller sentence, about's "Who runs it" and the imprint read
+     `company.ts`, so they switch to the LLC with a data edit only; `isTraderIdentityComplete()`
+     exists; the imprint draws a VAT row only when `vatId` is set. The imprint prints the address
+     on one line as the colophon does; the country name via `Intl.DisplayNames` is that row's
+     (AC-36). Until then the about page still says "registering it in Estonia" (Escalations).
+   - **TASK-281:** render `consentView().controller` in the settings panel, and have the layout
+     pass `privacyHref` (`infoPageExists("privacy", locale)`) to `ConsentBanner`: both files are
+     in PR 352 (TASK-279), so this PR leaves them alone; AC-29's e2e (the panel from the footer in
+     four locales) lands there.
+   - **After TASK-279 merges:** tighten the T-13 e2e to "on the committed build the button opens
+     the panel, not the banner"; it is written to pass on both builds today.
+   - **TASK-184:** `de`/`pl` drafts of the five legal files (labels included), the runbook's
+     trader-identity checklist with PR 351 clause 7's items, the component-level a11y check of
+     the imprint, terms and privacy views (mount `LegalDocumentPage` with
+     `legalDocumentView(id, locale, { company })`), the legal-document visual baselines and the
+     `/en/legal/cookies` Lighthouse URL.
+   - **Lawyer points (⚖️, none settled here):** the interim cookie notice and the privacy
+     transfers wording now that the controller is in the US; the formation clause; the CRD Art.
+     16(d) and CCRs reg. 28 citations; non-perishable add-ons; the liability section (unwritten);
+     the complaints / ADR body; governing law (Rome I Art. 6(2) protection stated); EU and UK
+     Art. 27 representatives (nothing claims one); the German imprint without a named
+     representative (no name printed, no completeness claim); the registered agent's address as
+     the trader's address; processor DPAs in the LLC's name and Railway's DPA; "our florist" as
+     the recipients disclosure; the controller sentence's layering in the compact banner; the UK
+     transfer instruments named in the `en-gb` privacy notice; concrete retention periods for the
+     hosting logs.
+   - **Copy (founder, batch 2):** every legal file and the 13 keys ship `reviewed: false`; the
+     exact texts are in the PR description.

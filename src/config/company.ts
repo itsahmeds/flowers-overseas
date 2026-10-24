@@ -114,11 +114,15 @@ export const CompanySchema = z
     address: RegisteredAddressSchema.optional(),
     contact: CompanyContactSchema,
     /**
-     * The person who runs the site (spec 041 §5.1, §13 Q1): the founder before registration, the
-     * OÜ's management-board member after it. Rendered with the phone number and never with an
-     * address. Required, so the about page and the consent notice always have a name to print.
+     * The person who runs the company, kept for internal records only (spec 041 §14
+     * A-founder-2026-10-23 clause 4; the founder, 2026-10-23: "dont add the name on our site
+     * bro"). Optional, absent from the committed file because the repository is public, and read
+     * by no public module: no page, banner, notice, schema node or imprint prints a person's name.
      */
-    representative: z.object({ name: z.string().min(1) }).strict(),
+    representative: z
+      .object({ name: z.string().min(1) })
+      .strict()
+      .optional(),
     /**
      * The support mailbox (spec 041 §5.1, §13 Q2): optional while `registered` is false (no
      * mailbox exists until Google Workspace does), **required** once it is true, because an
@@ -190,8 +194,6 @@ const company = {
     labelKey: "company.support.label",
     hoursKey: "company.support.hours",
   },
-  // Spec 041 §13 Q1 (founder, 2026-10-04): "my name is Sheikh Ahmad Hameed".
-  representative: { name: "Sheikh Ahmad Hameed" },
   descriptionKey: "company.description",
   operatedByKey: "company.operatedBy",
 } as const;
@@ -205,4 +207,28 @@ export const COMPANY: Company = CompanySchema.parse(company);
  */
 export function isCompanyRegistered(): boolean {
   return COMPANY.registered;
+}
+
+/**
+ * May the imprint, the terms and the privacy notice exist (spec 041 §2 "Three pages wait for the
+ * company", AC-2; §14 A-founder-2026-10-23 clause 1)? Only once the company is registered **and**
+ * has a support mailbox: an imprint or a trader identity without an email address is incomplete
+ * (DDG §5(1) no. 2; CRD Art. 6(1)(c)). Derived from `registered`, never a second flag; today the
+ * refinement above already makes `registered: true` imply `supportEmail`, and the predicate keeps
+ * the gate right when that refinement is relaxed for a company that has no mailbox yet.
+ */
+export function isTraderIdentityComplete(company: Company = COMPANY): boolean {
+  return company.registered && company.supportEmail !== undefined;
+}
+
+/**
+ * The name the controller sentence prints (`company.controller`, spec 041 AC-29): the company's
+ * legal name once it is registered, its trading name before. Never a person: the site names no
+ * one (spec 041 §14 A-founder-2026-10-23 clause 4). One rule for the cookie notice and the
+ * consent settings panel, so the two cannot name two different controllers.
+ */
+export function controllerName(company: Company = COMPANY): string {
+  return company.registered && company.legalName !== undefined
+    ? company.legalName
+    : company.tradingName;
 }

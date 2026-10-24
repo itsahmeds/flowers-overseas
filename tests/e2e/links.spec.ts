@@ -290,6 +290,21 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           ? [localePath(locale, "howItWorks"), localePath(locale, "help")]
           : [],
       );
+      // Spec 041's legal row (TASK-183): cookies and withdrawal and refunds exist in English;
+      // imprint, terms and privacy wait for the company, so no locale draws them.
+      const legal = await page
+        .locator('footer nav[aria-label="Legal"] a')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => node.getAttribute("href") ?? ""),
+        );
+      expect(legal).toEqual(
+        hasTrustPages
+          ? [
+              localePath(locale, "legal", "cookies"),
+              localePath(locale, "legal", "cancellation"),
+            ]
+          : [],
+      );
 
       // The trending row: five cards, five product pages.
       await expect(page.locator("[data-fo-trending] li a[href]")).toHaveCount(
@@ -317,10 +332,10 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       // Exactly: the header's eight (the footer's two are among them), five products, the
       // lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
       // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
-      // four trust pages. A further control is a diff here.
+      // four trust pages and two legal pages. A further control is a diff here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
       expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + (hasTrustPages ? 4 : 0));
+      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0));
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }
@@ -334,7 +349,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           "For florists",
           "Add-ons",
           "Imprint",
-          "Withdrawal and refunds",
+          // "Withdrawal and refunds" has a page since TASK-183 and is a live footer link above.
           "Search flowers, occasions, a city or a country",
         ]) {
           for (const region of ["[data-fo-header]", "footer"]) {

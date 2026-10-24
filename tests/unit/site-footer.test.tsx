@@ -41,6 +41,7 @@ import {
   loadMessages,
   MESSAGE_NAMESPACES,
 } from "../../src/modules/i18n/messages.ts";
+import { missingInfoPageLinkIds } from "../../src/modules/content/index.ts";
 import { localePath } from "../../src/modules/i18n/routing.ts";
 import {
   CONSENT_REOPEN_ATTRIBUTE,
@@ -87,7 +88,15 @@ function render(node: React.ReactElement, locale = "en"): string {
   );
 }
 
-const phase0 = render(<SiteFooter locale="en" />);
+/**
+ * The footer as the locale layout composes it: every info page that does not exist in the locale
+ * is `unavailable` (spec 041 AC-21; the imprint, terms and privacy wait for the company).
+ */
+function layoutView(locale: string) {
+  return footerView(locale, { unavailable: missingInfoPageLinkIds(locale) });
+}
+
+const phase0 = render(<SiteFooter locale="en" view={layoutView("en")} />);
 
 describe("SiteFooter: the Phase-0 colophon", () => {
   it("is one `contentinfo` landmark and nothing nested inside another", () => {
@@ -97,14 +106,13 @@ describe("SiteFooter: the Phase-0 colophon", () => {
 
   it("renders the one link column with a page behind it, as a named nav, and no empty one", () => {
     // `Sending` keeps Destinations, Occasions, Delivery and payment and the guarantee; `Company`
-    // gains How it works and Help and contact (spec 041, TASK-182). The legal row still has no
-    // entry with a page (TASK-183 builds them), so it is not drawn: no heading over nothing, and
-    // no empty `navigation` landmark (spec 004 §14 A20; TASK-173). The language list is spec
-    // 003's nav.
+    // gains How it works and Help and contact (spec 041, TASK-182). The legal row gains Cookies
+    // and Withdrawal and refunds (TASK-183); terms and privacy wait for the company, so they are
+    // not drawn. The language list is spec 003's nav.
     expect(phase0).toContain('aria-labelledby="footer-group-sending"');
     expect(phase0).toContain('aria-labelledby="footer-group-company"');
-    expect(phase0).not.toContain('aria-label="Legal"');
-    expect(phase0.match(/<nav/g)).toHaveLength(3);
+    expect(phase0).toContain('aria-label="Legal"');
+    expect(phase0.match(/<nav/g)).toHaveLength(4);
   });
 
   it("prints the labels whose page exists, and none of the ones whose page does not", () => {
@@ -114,21 +122,29 @@ describe("SiteFooter: the Phase-0 colophon", () => {
     // Built from the registry, not typed: every footer link with no page, and the heading of
     // every group left with none, must be absent from the colophon in every launch locale. Each
     // one looked like a link on the live site and went nowhere (2026-10-03; spec 004 §14 A20).
-    const unpublished = SITE_LINKS.filter(
-      (link) => link.surfaces.includes("footer") && !isPublished(link.id),
-    );
-    const emptyGroups = SITE_LINK_GROUPS.filter(
-      (group) =>
-        group.surface === "footer" &&
-        group.linkIds.every((id) => !isPublished(id as SiteLinkId)),
-    );
-    // The set is not vacuous: the for-florists entry, the imprint and the legal row are in it.
-    expect(unpublished.map((link) => link.id)).toEqual(
-      expect.arrayContaining(["for-florists", "imprint", "cookies"]),
-    );
-    expect(emptyGroups.map((group) => group.id)).toEqual(["legal"]);
     for (const locale of ["en", "en-gb", "de", "pl"]) {
-      const html = render(<SiteFooter locale={locale} />, locale);
+      const missing = new Set<string>(missingInfoPageLinkIds(locale));
+      const unpublished = SITE_LINKS.filter(
+        (link) =>
+          link.surfaces.includes("footer") &&
+          (!isPublished(link.id) || missing.has(link.id)),
+      );
+      const emptyGroups = SITE_LINK_GROUPS.filter(
+        (group) =>
+          group.surface === "footer" &&
+          group.linkIds.every(
+            (id) => !isPublished(id as SiteLinkId) || missing.has(id),
+          ),
+      );
+      // The set is not vacuous: the for-florists entry and the three pages that wait for the
+      // company (spec 041 §13 Q1) are in it in every locale.
+      expect(unpublished.map((link) => link.id)).toEqual(
+        expect.arrayContaining(["for-florists", "imprint", "terms", "privacy"]),
+      );
+      const html = render(
+        <SiteFooter locale={locale} view={layoutView(locale)} />,
+        locale,
+      );
       const messages = loadMessages(locale, MESSAGE_NAMESPACES) as Record<
         string,
         unknown
@@ -184,6 +200,9 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       localePath("en", "guarantee"),
       localePath("en", "howItWorks"),
       localePath("en", "help"),
+      // Spec 041's two legal pages that exist before registration (TASK-183).
+      localePath("en", "legal", "cookies"),
+      localePath("en", "legal", "cancellation"),
     ];
     expect(
       hrefs.filter(
@@ -216,6 +235,13 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       "guarantee",
       "how-it-works",
       "help-and-contact",
+      // Spec 041's five legal links (TASK-183). Published is permission: imprint, terms and
+      // privacy are still drawn nowhere while their page does not exist (AC-21).
+      "imprint",
+      "terms",
+      "privacy",
+      "cookies",
+      "withdrawal-and-refunds",
     ]);
   });
 
@@ -259,7 +285,7 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
 
   it("renders a link the moment a target is published, with no template edit", () => {
     // The `links-populated` state of §5.3, reached the way 007 will reach it: a published target.
-    const view = footerView("en");
+    const view = layoutView("en");
     const populated = {
       ...view,
       columns: view.columns.map((group) => ({

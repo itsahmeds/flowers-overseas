@@ -226,7 +226,7 @@ export const LAUNCH_LOCALE_DATA = [
       product: "produkt",
       blog: "blog",
       forFlorists: "dla-kwiaciarni",
-      legal: "regulamin",
+      legal: "informacje-prawne",
       howItWorks: "jak-to-dziala",
       guarantee: "gwarancja",
       help: "pomoc",

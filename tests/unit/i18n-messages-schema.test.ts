@@ -314,15 +314,31 @@ describe("the shipped catalogues and manifests", () => {
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
+    // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
+    // batch 1) ship `reviewed: false` until the founder's own record-approval run.
+    "company.controller",
+    "consent.privacyLink",
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
     "footer.link.deliveryAndPayment",
+    // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
     "infoPages.company.notRegistered",
     "infoPages.contact.body",
     "infoPages.contact.heading",
     "infoPages.contact.phone",
     "infoPages.contact.privacy",
+    "infoPages.cookies.change",
     "infoPages.delivery.status",
+    "infoPages.legal.appliesTo.eu",
+    "infoPages.legal.appliesTo.uk",
+    "infoPages.legal.changeLog",
+    "infoPages.legal.contents",
+    "infoPages.legal.inForce",
+    "infoPages.legal.inForceSince",
+    "infoPages.legal.notInForce",
+    "infoPages.legal.notInForceYet",
+    "infoPages.legal.unreviewed",
+    "infoPages.legal.version",
     "infoPages.status.notYetOpen",
     "occasionHub.dateUnknown",
     // TASK-113, the occasions index. Eleven of its thirteen strings are transcribed from

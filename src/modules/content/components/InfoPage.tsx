@@ -15,8 +15,9 @@
  *    questions sit beside it, the other eight follow in two CSS columns in document order. Every
  *    question is a visible `<h2>` with its answer: no `<details>`, nothing hidden (AC-15). The
  *    01–12 numbers are `aria-hidden` decoration.
- *  - **About**: h1, status, intro, who runs it, why, today, the company. The name repeated under
- *    the sentence is `aria-hidden` decoration in the display face.
+ *  - **About**: h1, status, intro, who runs it, why, today, the company. "Who runs it" names the
+ *    company, never a person, and renders only once the company is registered (spec 041 §14
+ *    A-founder-2026-10-23 clauses 3 and 4); the decorative repeat of a name is withdrawn.
  *  - **The rest** of each page: one section per heading, the heading on columns 1–4 and the prose
  *    on 5–11; the two promise lists of how it works side by side; the in-body links as chips.
  *
@@ -352,14 +353,6 @@ function AsideCard({
             {paragraph}
           </p>
         ))}
-        {view.company === undefined ? null : (
-          <p
-            aria-hidden="true"
-            className="font-display text-ink m-0 text-xl leading-[1.1] italic"
-          >
-            {view.company.representativeName}
-          </p>
-        )}
       </section>
     );
   }

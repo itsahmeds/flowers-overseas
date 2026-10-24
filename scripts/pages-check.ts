@@ -103,10 +103,22 @@ function proseOf(file: ParsedInfoFile): readonly (readonly [string, string])[] {
     ["h1", content.h1],
   ];
   if (file.kind === "legal") {
+    const legal = file.content;
     fields.push(["body", file.body]);
-    file.content.changeLog.forEach((entry, index) => {
+    legal.changeLog.forEach((entry, index) => {
       fields.push([`changeLog.${String(index)}.summary`, entry.summary]);
     });
+    (legal.links ?? []).forEach((link, index) => {
+      fields.push([`links.${String(index)}.label`, link.label]);
+    });
+    for (const [group, labels] of Object.entries(legal.labels ?? {})) {
+      for (const [name, text] of Object.entries(labels ?? {})) {
+        fields.push([`labels.${group}.${name}`, text]);
+      }
+    }
+    if (legal.interim !== undefined) {
+      fields.push(["interim.heading", legal.interim.heading]);
+    }
     return fields;
   }
   const trust = file.content;

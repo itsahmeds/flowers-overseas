@@ -10,11 +10,6 @@ import {
   localeSegmentParams,
   resolveLocalePath,
 } from "@/modules/catalog";
-import {
-  InfoPage,
-  infoPageAlternatePaths,
-  infoPageView,
-} from "@/modules/content";
 import { DestinationsHubPage, hubView } from "@/modules/geo";
 import {
   LanguageAlternates,
@@ -28,12 +23,12 @@ import {
   breadcrumbList,
   canonicalFor,
   deploymentDescriptor,
-  infoPageJsonLd,
-  infoPageMetadata,
   pageIndexability,
   pageMetadata,
   schemaOptions,
 } from "@/modules/seo";
+
+import { InfoPageRoute, infoPageRouteMetadata } from "../info-page-route";
 
 /**
  * `/{locale}/{segment}` — **one route file for one URL depth** (spec 008 §14 **A5**, spec 007 §14
@@ -144,13 +139,7 @@ export async function generateMetadata({
     return occasionsIndexMetadata(match.locale);
   }
   if (match.kind === "infoPage") {
-    return (
-      infoPageMetadata(
-        match.pageId,
-        match.locale,
-        deploymentDescriptor(process.env),
-      ) ?? notFound()
-    );
+    return infoPageRouteMetadata(match.pageId, match.locale);
   }
   if (match.kind !== "destinationsHub") notFound();
 
@@ -233,24 +222,7 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
   }
 
   if (match.kind === "infoPage") {
-    setRequestLocale(match.locale);
-    const view = infoPageView(match.pageId, match.locale);
-    if (view === undefined) notFound();
-    // JSON-LD from the same view model the page renders (spec 041 AC-19), built in
-    // `modules/seo` so the unit suite reads what this route serves.
-    const nodes = infoPageJsonLd(
-      match.pageId,
-      match.locale,
-      deploymentDescriptor(process.env),
-      await registryLabels(match.locale),
-    );
-    return (
-      <>
-        <InfoPage pageId={match.pageId} locale={match.locale} />
-        <LanguageAlternates paths={infoPageAlternatePaths(match.pageId)} />
-        <JsonLd nodes={nodes} />
-      </>
-    );
+    return <InfoPageRoute pageId={match.pageId} locale={match.locale} />;
   }
 
   if (match.kind !== "destinationsHub") notFound();

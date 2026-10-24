@@ -68,6 +68,7 @@ import {
 import type { InfoPageId } from "@/config/info-pages";
 import {
   infoPageExists,
+  infoPageForLeaf,
   infoPageForSegment,
   infoPagePath,
   listInfoPages,
@@ -171,9 +172,9 @@ export type LocalePathResolution =
    */
   | { readonly kind: "occasionsIndex"; readonly locale: LocaleCode }
   /**
-   * Spec 041's top-level info pages, `/{locale}/{howItWorks|guarantee|help|about|delivery|imprint}`
-   * (§2; TASK-182). One more page type at depth 2, disjoint from the hub and the occasions index
-   * by segment. Its existence answer is `infoPageExists()`, asked once, so the router, the sitemap
+   * Spec 041's info pages: the top-level ones, `/{locale}/{howItWorks|guarantee|help|about|
+   * delivery|imprint}` (§2; TASK-182), disjoint from the hub and the occasions index by segment,
+   * and the four legal documents at depth 3, `/{locale}/{legal}/{leaf}` (TASK-183). Its existence answer is `infoPageExists()`, asked once, so the router, the sitemap
    * and every link agree (spec 041 AC-2).
    */
   | {
@@ -252,6 +253,17 @@ export async function resolveLocalePath(
         return NOT_FOUND;
       }
       return { kind: "corridor", locale: code, iso2, countrySlug: child };
+    }
+
+    // `/{locale}/{legal}/{leaf}` — spec 041's four legal documents (TASK-183): leaves under the
+    // `legal` segment, whose slugs are `info-pages.ts` data. A document whose file is missing in
+    // this locale, or that waits for the company (terms, privacy), is a hard 404 here:
+    // `infoPageExists()`'s rule, asked once. The bare `/{locale}/{legal}` is no page.
+    const legalPage = infoPageForLeaf(code, segment, child);
+    if (legalPage !== undefined) {
+      return infoPageExists(legalPage, code)
+        ? { kind: "infoPage", locale: code, pageId: legalPage }
+        : NOT_FOUND;
     }
 
     // `/{locale}/{countrySlug}/{shopCategory}` — spec 008's country shop root. The destination
@@ -504,6 +516,21 @@ export async function localeChildParams(): Promise<
     for (const slug of corridorSlugsIn(locale)) {
       params.push({ locale, segment: destinations, child: slug });
     }
+  }
+
+  // Spec 041's legal documents (TASK-183): exactly `listInfoPages()`'s set at this depth, so a
+  // document whose file is missing, or that waits for the company, has no URL (spec 041 AC-2).
+  const listed = new Set(listingLocales() as readonly string[]);
+  for (const page of listInfoPages()) {
+    if (!listed.has(page.locale)) continue;
+    const [segment, child, ...rest] = infoPageSegments(
+      page.pageId,
+      page.locale,
+    );
+    if (segment === undefined || child === undefined || rest.length > 0) {
+      continue;
+    }
+    params.push({ locale: page.locale, segment, child });
   }
 
   return params;

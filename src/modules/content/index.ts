@@ -23,6 +23,7 @@ export {
   type InfoSectionView,
   infoPageAlternatePaths,
   infoPageExists,
+  infoPageForLeaf,
   infoPageForSegment,
   infoPagePath,
   infoPageView,
@@ -56,4 +57,27 @@ export {
   type InfoPageContent,
   type LegalDocument,
 } from "./schemas.ts";
+export {
+  type ControllerView,
+  type CookieRegisterRowView,
+  type ImprintFactsView,
+  type InfoPageHeadView,
+  type LegalBlockView,
+  type LegalDocumentView,
+  type LegalDraftLine,
+  type LegalSectionView,
+  type LegalStamp,
+  infoPageHeadView,
+  legalDocumentView,
+} from "./legal.ts";
+export {
+  type LegalBlock,
+  type LegalSection,
+  blockTexts,
+  legalBody,
+} from "./legal-body.ts";
 export { InfoPage, type InfoPageProps } from "./components/InfoPage.tsx";
+export {
+  LegalDocumentPage,
+  type LegalDocumentPageProps,
+} from "./components/LegalDocument.tsx";

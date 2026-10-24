@@ -115,12 +115,14 @@ describe("T-06 / AC-6 and AC-26: every trust page", () => {
 describe("AC-1 (§14 A1) and AC-11: about", () => {
   const html = render(<InfoPage pageId="about" locale="en" />);
 
-  it("orders h1, status, intro, who runs it, why, today, the company", () => {
+  it("orders h1, status, intro, why, today, the company (who runs it waits for the company)", () => {
+    // "Who runs it" names the company once it is registered and is not drawn before (spec 041
+    // §14 A-founder-2026-10-23 clause 3); the rest keeps §14 A1's order.
+    expect(html).not.toContain(">Who runs it<");
     const order = [
       "<h1",
       NOT_YET_OPEN,
       "Flowers Overseas sends flowers to people in other European countries",
-      ">Who runs it<",
       ">Why we do it this way<",
       ">Where we are today<",
       ">The company<",
@@ -130,8 +132,10 @@ describe("AC-1 (§14 A1) and AC-11: about", () => {
     expect([...order].sort((a, b) => a - b)).toEqual(order);
   });
 
-  it("names the representative and prints no address", () => {
-    expect(html).toContain("Sheikh Ahmad Hameed");
+  it("names no person and prints no address", () => {
+    // The founder, 2026-10-23: "dont add the name on our site bro" (spec 041 §14
+    // A-founder-2026-10-23 clause 4, AC-37's rendered half for this page).
+    expect(html).not.toMatch(/Hameed|Sheikh|Tahoor/u);
     expect(html).not.toMatch(
       /Operated by|VAT|Tallinn|registr(?:y|ation) number/iu,
     );
