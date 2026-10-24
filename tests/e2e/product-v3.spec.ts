@@ -30,6 +30,12 @@ import { type Page, expect, test } from "@playwright/test";
 const PDP = "/en-gb/poland/product/amber-hour";
 const PHONE = { width: 390, height: 844 } as const;
 const BAR = "[data-fo-action-bar]";
+/**
+ * The buy section's primary action, `#buy`'s first child: the status pill where the checkout is
+ * closed, or the checkout entry's two submits (spec 010 AC-5) where the demo or the live checkout
+ * is open, as on the database-less preview, which draws the demo entry for an open country.
+ */
+const PRIMARY = "#buy > :first-child";
 
 /** The demo sentence (N2), restated from `messages/en.json`, not read from it. */
 const N2 =
@@ -139,7 +145,7 @@ test.describe("T-51: the product first screens (AC-46, product half)", () => {
         "[data-fo-pdp-buy] h1",
         "[data-fo-pdp-price]",
         "[data-fo-pdp-buy] [data-fo-tier-selector]",
-        "[data-fo-pdp-status]",
+        PRIMARY,
       ]) {
         const box = await boxOf(page, selector);
         expect(
@@ -205,8 +211,8 @@ test.describe("T-51: the product first screens (AC-46, product half)", () => {
       sheet.top,
     );
     expect(grips, "a grip handle").toEqual([]);
-    // N2 under the status pill, in the sheet.
-    const status = await boxOf(page, "[data-fo-pdp-status]");
+    // N2 under the primary action, in the sheet.
+    const status = await boxOf(page, PRIMARY);
     const demo = page.locator("[data-fo-pdp-buy] [data-fo-pdp-demo]");
     await expect(demo).toBeVisible();
     await expect(demo).toHaveText(N2);
@@ -278,9 +284,9 @@ test.describe("T-53: the docked bar on the product page (AC-48)", () => {
     ).toHaveText(checked ?? "");
     const href = await page.locator(`${BAR} a`).getAttribute("href");
     expect(href).toBe("#buy");
-    await expect(page.locator("#buy [data-fo-pdp-status]")).toHaveCount(1);
+    await expect(page.locator(PRIMARY)).toHaveCount(1);
     await page.locator(`${BAR} a`).click();
-    await expect(page.locator("#buy [data-fo-pdp-status]")).toBeInViewport();
+    await expect(page.locator(PRIMARY)).toBeInViewport();
   });
 
   test("scrolled to the bottom, no text node sits under it", async ({
