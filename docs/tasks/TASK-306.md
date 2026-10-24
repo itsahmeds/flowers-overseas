@@ -53,6 +53,7 @@ here.
 
 - 2026-10-21: started; worktree `../fo-wt-306`, branch `task/TASK-306-detail-ladder`. Next: measure the detail ladder's bytes, the red test, the ladder change, the re-derive.
 - 2026-10-21: `PRODUCT_HERO_WIDTHS` shared by `productHero` and `productDetail`; `seed:check` rule `detail-ladder`; `tests/unit/media-variants-ladder.test.ts`; cap 120 000 B (escalated); full `pnpm media:variants` re-derive from the main checkout's originals (symlinked into the worktree's git-ignored `.local/`).
+- 2026-10-24, finisher: rebased on `origin/main` (map regenerated, no code conflict; zod 4.6.7 from main clears `audit`); `pnpm gates:cheap` PASS on `e4b879af` (tests: 142 changed files green at load 7). Still open before merge: escalation 2, upload the new rungs to R2 (`pnpm media:upload --only <ids>` then `--verify`), which needs the founder's R2 credential.
 
 ## Result
 
