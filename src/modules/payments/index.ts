@@ -50,3 +50,27 @@ export type {
   StartPaymentResult,
   SweepCounts,
 } from "./lifecycle.ts";
+
+// Spec 013 §5.2 (TASK-258): cancellation, the refund on cancel, and the delivery-morning start.
+// No amount parameter anywhere (AC-9): a cancel refunds the order's own remaining balance.
+export { cancelOrder, paymentsOutboxHandler } from "./cancel.ts";
+export type { CancelOrderRefusal, CancelOrderResult } from "./cancel.ts";
+export {
+  PRODUCTION_START_ACTOR,
+  productionStartAt,
+  runProductionStart,
+  startProduction,
+} from "./production.ts";
+export type {
+  ProductionStartCounts,
+  ProductionStartDeps,
+  ProductionTiming,
+  StartProductionOptions,
+  StartProductionResult,
+} from "./production.ts";
+export { refundCancelledOrder, submitRefund } from "./refunds.ts";
+export type {
+  CancelRefundOutcome,
+  RefundDeps,
+  SubmitOutcome,
+} from "./refunds.ts";

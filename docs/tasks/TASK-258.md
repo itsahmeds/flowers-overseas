@@ -44,7 +44,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: WIP pushed. Written: `0029_cancel_window_a10` + down (rows 39, 40, `payout_adjustment` with RLS, guard `A10_ROLLBACK_ROWS_IN_USE`), Drizzle mirror and RLS class, transition fixture split (`A6_TRANSITIONS` 73 + `A10_TRANSITIONS` 2), `src/config/orders.ts`, `production.ts` (`productionStartAt`, `runProductionStart`, `startProduction`), `cancel.ts` (`cancelOrder`, `paymentsOutboxHandler` cancel branch), `refunds.ts` (request, submit keyed by refund id, settle with row 32; the seam TASK-261 extends). Unit `production-start.test.ts` green (DST table under TZ=Pacific/Auckland). Next: run `tests/integration/payments-cancel-production.test.ts` (T-15, T-44, T-45, T-52 to T-54) with the local 0021..0027 placeholders, fix, mutations, regenerate `scripts/db-check.snapshot.json`, codebase map, open the 257+258 feature PR. Spec 002 A10 says 80/78 transition rows; this base has 73+2 because A8/A9 rows live in unmerged migrations, so tests count from the fixture, not a literal.
 
 ## Result
 
