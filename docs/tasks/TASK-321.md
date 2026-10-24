@@ -52,6 +52,8 @@ here.
 
 - 2026-10-24: worktree on `task/TASK-321-blog-data`, stacked on PR 320 (TASK-293's `attest()`), rebased onto `origin/main` 5adb1e0b. Migration `0024_blog` + rollback, Drizzle mirror, RLS map, db-check snapshot; `attest()`/`subjectHash()` learn `blog_post_revision`; lint rule guards `published_revision_id` and `frozen_at`; shared distinctness in `src/lib/distinctness.ts`; `PROSE_RELAY_CONTEXT`; competitor list moved to `src/config/competitors.ts`; blog module (schemas, markdown, rules, links, provider, db provider, commands); unit and integration suites green on a local PG16. Seed fixtures not started.
 
+- 2026-10-24 finisher: restacked onto TASK-293's rebased head 0569181b (after PR 383 merged); `auth-adapter.test.ts` now lists 0024's two RESTRICT keys into `users` (`blog_author_user_id_users_id_fk`, `blog_post_revision_created_by_users_id_fk`), which CI reported as unexpected; the whole-tree lint case in `lint-fixtures.test.ts` gets a 300 s bound (26 s locally on this branch and on 293's, 120 s exceeded on a loaded CI unit job). PR 394's base is now `task/TASK-293-review-ledger`.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
