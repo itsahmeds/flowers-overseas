@@ -205,3 +205,9 @@ Running, append-only log of decisions. Each entry links its ADR. Summary table l
 | 2026-10-24 | none | Spec 030b §14 A-founder-2026-10-22 (contracts, supply, my bouquets) approved. Founder, verbatim: "contracts ok, Q21 blocks": a florist cannot be activated without a signed agreement on file; every other default as written. |
 | 2026-10-24 | none | Commerce design calls by the orchestrator under the founder's design delegation (not the founder's words): the home's "Our selection" shows all 10 core products; the `shop.hub.noMoney` line is replaced by "Sending to {country}" once a remembered country's prices are filled in; on the phone the three trust points close the buy sheet. Carried in the TASK-386, TASK-391 and TASK-394 briefs. |
 | 2026-10-24 | none | Core range confirmed. Founder, verbatim: "core ok": the 10 SKUs proposed in TASK-382 (spec 004 Q-24a) stand as listed, Pastel Weekend `FO-BQ-031` at rank 2. TASK-382 closes with no code. |
+| 2026-10-24 | none | Spec 025 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 023 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 021 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 014 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 024 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Specs 014, 021, 023, 024 and 025 restored to main: batch PR 390 named their PRs (380, 379, 378, 381, 376) and closed them but carried none of their files. Each file is byte-identical to its PR head. Found by the orchestrator, not a founder decision. |
