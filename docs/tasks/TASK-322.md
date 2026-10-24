@@ -34,7 +34,9 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- **2026-10-24, AC-20 copy approval (to the founder via the orchestrator): open.** The ten Appendix A keys ship `reviewed: false` as the brief says. They lift `en`'s unreviewed share to 35 of 583 counted keys (6.0 %, `en-gb` 6.2 %), over spec 003's 5 %, so `isLocaleIndexable("en")` is false and four unit files are red until the founder records the approval: `catalog-indexability`, `seo-indexability`, `sitemap-route`, `i18n-check`. The founder's own run: `python3 .claude/state/record-approval-322.py` (prints the ten texts, asks APPROVE, records them, takes them out of the pinned review queue, regenerates the sitemap fixtures, commits on its own), then push. `--check` runs every check and writes nothing; it passes on bc38a86c5. After it, 25 of 583 (4.3 %).
+- **2026-10-24, the browser halves (to the orchestrator): open.** T-08 (e2e build and publish), T-12's built-HTML scan, T-13 (footer crawl over four locales), T-14 (bundle diff, Lighthouse, axe), T-22's public visual baselines and T-23's e2e need a build in which the blog exists. CI's `preview` build (the one `e2e`, `visual`, `a11y` and `lighthouse` serve) has no database by design, and `BLOG_SOURCE` stays unset until spec 012b's cutover (TASK-294), so no browser job can see a post. Either a seeded Postgres and `BLOG_SOURCE=database` in `preview` and the four browser jobs (a CI change outside this task's files), or the browser halves move to the task that brings the cutover. The unit halves of every one of these ACs are written and mutation-checked (PR description, `## Self-review`).
+- **2026-10-24, dependency on TASK-295 and TASK-296 (both `todo`): recorded, not blocking.** The blog gates existence on its own reading of the running build's prerender manifest (`src/modules/content/blog/manifest.ts`, database AND manifest, AC-8). TASK-295's `existsNow` should absorb it when it lands.
 
 ## Progress
 
@@ -42,11 +44,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: the first agent's two commits (pages, source, sitemap child, footer row, ten keys; page, SEO and integration suites) rebased onto PR 394's head 8868e2918; footer order pins and the review queue fixed; TASK-323 to 325 rows back to their own status (this PR closes TASK-322 only). Mutations M1 to M5 red as recorded in the PR. Next: the founder's approval run, then the browser halves once the orchestrator answers the second escalation.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+**Partial (2026-10-24).** PR 396 (stacked on PR 394). The public blog index and post pages, server components with no island; `BLOG_SOURCE` (`database` or none) with database AND manifest existence; `BlogPosting` and breadcrumb JSON-LD from the rendered view; the two `SeoPageType`s with one robots verdict for head and `editorial.xml`; the `blogIndex` site-link kind as the last Company row; the ten Appendix A keys `reviewed: false`; the end-of-post corridor link only where that corridor exists. Tests: unit `blog-pages.test.tsx` (30), `blog-seo.test.ts` (9) and edits to nine existing unit files; integration `blog-pages.test.ts` (seed idempotence, insert-only refusal, reads per role, reassignment, tag URLs). Not done: the browser halves and the founder's approval (both in `## Escalations`). Carry-forward for a follow-up row: nothing refuses an em dash, spaced hyphen or spaced en dash in a post's own `seoTitle` (TASK-321's rule set has no such rule); the index's two head keys are in `HEAD_MESSAGE_KEYS` and are scanned.
