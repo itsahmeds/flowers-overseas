@@ -38,7 +38,7 @@ import {
 /** A key that arrives as data (a country, a size, an add-on, a calendar reason). */
 type DataKeyTranslator = (
   key: string,
-  values?: Readonly<Record<string, string>>,
+  values?: Readonly<Record<string, string | number>>,
 ) => string;
 
 import type { BasketPage, BasketPageLine } from "@/modules/checkout";
@@ -223,7 +223,14 @@ export async function BasketView({
         remove={remove("link")}
         state={entry.state}
         tier={
-          entry.display.tier === null ? "" : tAll(entry.display.tier.labelKey)
+          entry.display.tier === null
+            ? ""
+            : tAll(
+                entry.display.tier.labelKey,
+                entry.display.tier.stems === null
+                  ? undefined
+                  : { count: entry.display.tier.stems },
+              )
         }
       />
     );

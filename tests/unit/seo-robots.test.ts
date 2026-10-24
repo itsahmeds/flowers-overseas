@@ -66,6 +66,7 @@ Disallow: /admin/
 Disallow: /vendor/
 Disallow: /account/
 Disallow: /checkout/
+Disallow: /*/basket
 Disallow: /track/
 Disallow: /*/track/
 Disallow: /*/account/
@@ -166,6 +167,8 @@ describe("the disallow list against plan/02 §7 (AC-12, T-13)", () => {
       "/vendor/payouts",
       "/account/settings",
       "/checkout/payment",
+      "/en-gb/basket",
+      "/pl/basket",
       "/track/abc123",
       "/search?q=roses",
       "/dev/components",
