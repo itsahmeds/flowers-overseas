@@ -224,7 +224,7 @@
     },
     "state": {
       "deliveringNow": "Delivering now",
-      "guideNotDelivering": "Guide · not delivering yet"
+      "guideNotDelivering": "Ordering opens soon"
     }
   },
   "destinationsHub": {
@@ -694,9 +694,9 @@
       "count": "{count, plural, one {# bouquet} other {# bouquets}}",
       "summary": "{count, plural, one {# bouquet} other {# bouquets}} · page {page} of {pageCount}",
       "disclosure": "Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.",
+      "howWeSort": "How we sort",
       "sortLabel": "Sort by",
-      "submit": "Sort",
-      "reorderLabel": "Change the order"
+      "submit": "Sort"
     },
     "sort": {
       "default": "Our order",
@@ -719,9 +719,9 @@
       "occasionsLink": "Occasions"
     },
     "h1": {
-      "countryCategory": "{entity} we make for {country}",
-      "countryOccasion": "{occasion} flowers for {country}",
-      "countryShopRoot": "Flowers we make for {country}"
+      "countryCategory": "{entity} to {country}",
+      "countryOccasion": "{occasion} flowers to {country}",
+      "countryShopRoot": "Flowers to {country}"
     },
     "category": {
       "lede": "{count, plural, one {One of ours, made by our florist in the recipient's town on the morning it is delivered.} other {# of ours, made by our florist in the recipient's town on the morning they are delivered.}} One price each, with VAT and delivery already in it.",
@@ -760,9 +760,6 @@
     },
     "hub": {
       "noMoney": "We show no price on this page, because the price depends on where the flowers are going. Choose a destination and every price you see there includes VAT and delivery."
-    },
-    "listing": {
-      "eyebrow": "Sending to {country}"
     },
     "note": {
       "mark": "P.S.",

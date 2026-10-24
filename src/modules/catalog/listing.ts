@@ -65,6 +65,7 @@ import {
   type CountryIso2,
   COUNTRY_CODES,
   countryConfig,
+  deliveryDatesOpen,
   isCountryIso2,
   isGuidePublished,
 } from "@/config/countries";
@@ -242,6 +243,13 @@ export const ListingCountrySchema = z
      * listing module reads `corridorView()` (spec 008 §14 A9).
      */
     state: z.enum(["guide", "live"]),
+    /**
+     * Whether ordering is open in this destination: `deliveryDatesOpen(iso2)`, the one predicate
+     * spec 007 §14 A-founder-2026-10-14c clause 1 names. The listing head's quiet line prints the
+     * not-open state part only while this is `false` (spec 043 §14 A-founder-2026-10-22 item 1,
+     * revised 2026-10-24; AC-36; TASK-289).
+     */
+    orderingOpen: z.boolean(),
   })
   .strict();
 
@@ -1574,6 +1582,7 @@ export async function listingView(
                 }
               : {}),
             state: state ?? "guide",
+            orderingOpen: deliveryDatesOpen(iso2),
           },
         }),
     ...(entityKey === undefined ||

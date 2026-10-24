@@ -119,6 +119,7 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
       "motions:paint",
       "language-popup:paint",
       "home-sentence:interaction",
+      "listing-sort:paint",
     ]);
   });
 
