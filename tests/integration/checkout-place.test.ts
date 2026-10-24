@@ -33,6 +33,8 @@ import {
   startCheckout,
 } from "@/modules/checkout";
 
+import { runRetentionSweep } from "../../src/jobs/retention.ts";
+
 import { country, partner } from "./support/rows.ts";
 import {
   asApp,
@@ -610,6 +612,285 @@ describeDb(`placing a basket (${server.reason})`, () => {
     });
   });
 });
+
+/* -------------------------------------------------------------------------- */
+/* T-35: retention of drafts and demo orders (TASK-207). Before the concurrent  */
+/* block: that one commits, and its rows would be due at `NOW`.                 */
+/* -------------------------------------------------------------------------- */
+
+const HOUR_MS = 3_600_000;
+const NOW = new Date("2027-03-01T12:00:00.000Z");
+const before = (ms: number): string =>
+  new Date(NOW.getTime() - ms).toISOString();
+
+describeDb(
+  `retention of checkout drafts and demo orders (${server.reason})`,
+  () => {
+    const sql = (): Sql => {
+      if (db === undefined) throw new Error("no scratch database");
+      return db.sql;
+    };
+
+    async function sweep(tx: Tx, dryRun = false) {
+      await asApp(tx, { role: "system" });
+      const result = await runRetentionSweep(runnerOf(tx), {
+        now: NOW,
+        dryRun,
+      });
+      await tx.unsafe("RESET ROLE");
+      return Object.fromEntries(
+        result.policies.map((policy) => [policy.key, policy]),
+      );
+    }
+
+    async function idle(tx: Tx, token: string, ms: number): Promise<void> {
+      await tx.unsafe("RESET ROLE");
+      await tx`UPDATE checkout_draft
+                SET last_activity_at = ${before(ms)}::timestamptz,
+                    expires_at = ${before(ms)}::timestamptz + interval '30 days'
+              WHERE token_sha256 = encode(sha256(convert_to(${token}, 'UTF8')), 'hex')`;
+    }
+
+    async function draftRow(tx: Tx) {
+      const [draft] = await tx<
+        {
+          buyer: unknown;
+          recipient: unknown;
+          card: unknown;
+          tier_key: string;
+          delivery_date: string | null;
+          addon_keys: string[];
+        }[]
+      >`SELECT d.buyer, l.recipient, l.card, l.tier_key, l.delivery_date::text, l.addon_keys
+        FROM checkout_draft d JOIN checkout_draft_line l ON l.draft_id = d.id`;
+      return draft;
+    }
+
+    it("T-35: the buyer, recipient and card are cleared at 24 h of idleness, not at 23 h 59 min; the line stays", async () => {
+      await rolledBack(sql(), async (tx) => {
+        const connection = await seeded(tx);
+        const token = await add(connection, PRODUCT.sku, TIER.tierKey);
+        await fill(connection, token, 1);
+
+        await idle(tx, token, 24 * HOUR_MS - 60_000);
+        expect((await sweep(tx))["checkout_draft_personal"]?.counts).toEqual({
+          drafts: 0,
+          draft_lines: 0,
+        });
+        expect((await draftRow(tx))?.buyer).not.toBeNull();
+
+        await idle(tx, token, 24 * HOUR_MS);
+        const dry = await sweep(tx, true);
+        expect(dry["checkout_draft_personal"]?.counts).toEqual({
+          drafts: 1,
+          draft_lines: 1,
+        });
+        expect((await draftRow(tx))?.recipient).not.toBeNull();
+
+        const done = await sweep(tx);
+        expect(done["checkout_draft_personal"]?.counts).toEqual({
+          drafts: 1,
+          draft_lines: 1,
+        });
+        const row = await draftRow(tx);
+        expect(row?.buyer).toBeNull();
+        expect(row?.recipient).toBeNull();
+        expect(row?.card).toBeNull();
+        expect(row?.tier_key).toBe(TIER.tierKey);
+        expect(row?.delivery_date).toBe(DELIVERY_DATE);
+      });
+    });
+
+    it("T-35: a draft and its lines are deleted at 30 days of idleness, not at 29 days 23 h", async () => {
+      await rolledBack(sql(), async (tx) => {
+        const connection = await seeded(tx);
+        const token = await add(connection, PRODUCT.sku, TIER.tierKey);
+        await fill(connection, token, 1);
+
+        await idle(tx, token, 30 * 24 * HOUR_MS - HOUR_MS);
+        expect((await sweep(tx))["checkout_draft"]?.counts).toEqual({
+          drafts: 0,
+          draft_lines: 0,
+        });
+        expect(await draftRow(tx)).toBeDefined();
+
+        await idle(tx, token, 30 * 24 * HOUR_MS);
+        expect((await sweep(tx, true))["checkout_draft"]?.counts).toEqual({
+          drafts: 1,
+          draft_lines: 1,
+        });
+        expect(await draftRow(tx)).toBeDefined();
+        expect((await sweep(tx))["checkout_draft"]?.counts).toEqual({
+          drafts: 1,
+          draft_lines: 1,
+        });
+        expect(await draftRow(tx)).toBeUndefined();
+      });
+    });
+
+    async function placedDemo(
+      tx: Tx,
+    ): Promise<{ orderId: string; purchaseId: string }> {
+      const connection = await seeded(tx);
+      const token = await add(
+        connection,
+        PRODUCT?.sku ?? "",
+        TIER?.tierKey ?? "",
+      );
+      await fill(connection, token, 1);
+      const outcome = await placeBasket(
+        ctx(connection, token, 2),
+        await reviewTotal(connection, token),
+      );
+      if (outcome.kind !== "placed") throw new Error(outcome.kind);
+      await tx.unsafe("RESET ROLE");
+      // The draft is fresh, so only the demo-order rule can act.
+      await tx`UPDATE checkout_draft SET last_activity_at = ${NOW.toISOString()}::timestamptz,
+                expires_at = ${NOW.toISOString()}::timestamptz + interval '30 days'`;
+      return {
+        orderId: outcome.orderIds[0] ?? "",
+        purchaseId: outcome.purchaseId,
+      };
+    }
+
+    async function placedAgo(
+      tx: Tx,
+      orderId: string,
+      ms: number,
+    ): Promise<void> {
+      await tx`UPDATE "order" SET created_at = ${before(ms)}::timestamptz WHERE id = ${orderId}`;
+    }
+
+    async function personal(tx: Tx, orderId: string) {
+      const [row] = await tx<
+        {
+          recipient_snapshot: Record<string, unknown>;
+          buyer_snapshot: Record<string, unknown>;
+          full_name: string;
+          phone_e164: string | null;
+          contact_redacted: boolean;
+          customer_name: string | null;
+          customer_redacted: boolean;
+          events: number;
+          lines: number;
+          purchase: number;
+        }[]
+      >`SELECT o.recipient_snapshot, o.buyer_snapshot, r.full_name, r.phone_e164, r.contact_redacted,
+             c.name AS customer_name, c.redacted AS customer_redacted,
+             (SELECT count(*)::int FROM order_event e WHERE e.order_id = o.id) AS events,
+             (SELECT count(*)::int FROM order_line ol WHERE ol.order_id = o.id) AS lines,
+             (SELECT count(*)::int FROM purchase p WHERE p.id = o.purchase_id) AS purchase
+        FROM "order" o
+        JOIN recipient r ON r.id = o.recipient_id
+        JOIN customer c ON c.id = o.customer_id
+       WHERE o.id = ${orderId}`;
+      if (row === undefined) throw new Error("no order");
+      return row;
+    }
+
+    it("T-35: production seed (1 day): a demo order is pseudonymised at 24 h, its order, lines, events and purchase kept", async () => {
+      await rolledBack(sql(), async (tx) => {
+        const { orderId } = await placedDemo(tx);
+        const events = (await personal(tx, orderId)).events;
+
+        await placedAgo(tx, orderId, 24 * HOUR_MS - 60_000);
+        expect((await sweep(tx))["demo_order_personal"]?.counts).toEqual({
+          order_snapshots: 0,
+          recipients: 0,
+          customers: 0,
+        });
+        expect(
+          (await personal(tx, orderId)).recipient_snapshot["fullName"],
+        ).toBe("Anna Przykładowa 1");
+
+        await placedAgo(tx, orderId, 24 * HOUR_MS);
+        const counts = { order_snapshots: 1, recipients: 1, customers: 1 };
+        expect((await sweep(tx, true))["demo_order_personal"]?.counts).toEqual(
+          counts,
+        );
+        expect((await personal(tx, orderId)).contact_redacted).toBe(false);
+        expect((await sweep(tx))["demo_order_personal"]?.counts).toEqual(
+          counts,
+        );
+
+        const after = await personal(tx, orderId);
+        expect(after.recipient_snapshot["fullName"]).toBe("A. P. 1.");
+        expect(after.recipient_snapshot["redacted"]).toBe(true);
+        for (const gone of [
+          "addressLines",
+          "postcode",
+          "phone",
+          "cardMessage",
+          "street",
+        ]) {
+          expect(after.recipient_snapshot).not.toHaveProperty(gone);
+        }
+        expect(after.buyer_snapshot["redacted"]).toBe(true);
+        expect(after.buyer_snapshot).not.toHaveProperty("email");
+        expect(after.full_name).toBe("A. P. 1.");
+        expect(after.phone_e164).toBeNull();
+        expect(after.contact_redacted).toBe(true);
+        expect(after.customer_name).toBeNull();
+        expect(after.customer_redacted).toBe(true);
+        expect(after.events).toBe(events);
+        expect(after.lines).toBeGreaterThan(0);
+        expect(after.purchase).toBe(1);
+        // A second sweep finds nothing left to do.
+        expect((await sweep(tx))["demo_order_personal"]?.counts).toEqual({
+          order_snapshots: 0,
+          recipients: 0,
+          customers: 0,
+        });
+      });
+    });
+
+    it("T-35: staging seed (7 days): untouched at 24 h, pseudonymised at 7 days; a test order too", async () => {
+      await rolledBack(sql(), async (tx) => {
+        const { orderId } = await placedDemo(tx);
+        await tx`UPDATE retention_policy SET retention_days = 7 WHERE key = 'demo_order_personal'`;
+        await tx.unsafe("SET LOCAL session_replication_role = replica");
+        await tx`UPDATE "order" SET mode = 'test' WHERE id = ${orderId}`;
+        await tx`UPDATE purchase SET mode = 'test' WHERE id = (SELECT purchase_id FROM "order" WHERE id = ${orderId})`;
+        await tx.unsafe("SET LOCAL session_replication_role = origin");
+
+        await placedAgo(tx, orderId, 24 * HOUR_MS);
+        expect(
+          (await sweep(tx))["demo_order_personal"]?.counts?.["order_snapshots"],
+        ).toBe(0);
+        await placedAgo(tx, orderId, 7 * 24 * HOUR_MS - 60_000);
+        expect(
+          (await sweep(tx))["demo_order_personal"]?.counts?.["order_snapshots"],
+        ).toBe(0);
+        await placedAgo(tx, orderId, 7 * 24 * HOUR_MS);
+        expect(
+          (await sweep(tx))["demo_order_personal"]?.counts?.["order_snapshots"],
+        ).toBe(1);
+        expect((await personal(tx, orderId)).contact_redacted).toBe(true);
+      });
+    });
+
+    it("T-35: a live order, its recipient and its buyer are never touched", async () => {
+      await rolledBack(sql(), async (tx) => {
+        const { orderId } = await placedDemo(tx);
+        await tx.unsafe("SET LOCAL session_replication_role = replica");
+        await tx`UPDATE "order" SET mode = 'live', terms_version = 'terms-test' WHERE id = ${orderId}`;
+        await tx`UPDATE purchase SET mode = 'live' WHERE id = (SELECT purchase_id FROM "order" WHERE id = ${orderId})`;
+        await tx.unsafe("SET LOCAL session_replication_role = origin");
+        await placedAgo(tx, orderId, 400 * 24 * HOUR_MS);
+
+        expect((await sweep(tx))["demo_order_personal"]?.counts).toEqual({
+          order_snapshots: 0,
+          recipients: 0,
+          customers: 0,
+        });
+        const after = await personal(tx, orderId);
+        expect(after.recipient_snapshot["fullName"]).toBe("Anna Przykładowa 1");
+        expect(after.contact_redacted).toBe(false);
+        expect(after.customer_redacted).toBe(false);
+      });
+    });
+  },
+);
 
 describeDb(`placing one basket twice at once (${server.reason})`, () => {
   it("T-21, T-65: two concurrent placements commit one purchase and both end on it", async () => {
