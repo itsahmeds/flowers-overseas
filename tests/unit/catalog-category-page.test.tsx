@@ -46,6 +46,7 @@ const NAMESPACES = [
   "destinations",
   // The "Categories" button's reviewed label (spec 008 §14 A-founder-2026-10-18a).
   "nav",
+  "home",
 ] as const;
 
 function render(node: ReactElement, locale: string): string {
@@ -83,7 +84,9 @@ describe("the populated country category (§5.3 row 2)", () => {
 
   it("renders one `<h1>`, and it names the category and the destination", () => {
     expect(html.match(/<h1/gu)).toHaveLength(1);
-    expect(text).toContain("Roses we make for Poland");
+    expect(textOf(/<h1[^>]*>(.*?)<\/h1>/su.exec(html)?.[1] ?? "")).toBe(
+      "Roses to Poland",
+    );
   });
 
   // v2 (spec 004 §14 A21; `country-category-desktop.dc.html`): the grid comes straight after the
@@ -104,13 +107,12 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(html).not.toContain("data-fo-listing-chips");
   });
 
-  it("carries the counted lede and the demo sentence", () => {
+  it("carries the counted lede, and the state once in the quiet line, no demo sentence (spec 043 AC-7)", () => {
     expect(roses.resultCount).toBeGreaterThan(1);
     expect(text).toContain(`${String(roses.resultCount)} of ours`);
-    // N1 (spec 004 §14 A23 clause 12; TASK-193): the whole sentence, so a reworded notice is red.
-    expect(text).toContain(
-      "Ordering opens soon. Every price here is the price you will pay, with VAT and delivery included.",
-    );
+    expect(text.split("Ordering opens soon")).toHaveLength(2);
+    expect(text.split("Prices include delivery and VAT")).toHaveLength(2);
+    expect(text).not.toContain("Every price here is the price you will pay");
   });
 
   it("prices every card, through `formatMoney` and nowhere else", () => {
@@ -178,9 +180,13 @@ describe("the populated country category (§5.3 row 2)", () => {
   });
 
   it('folds the siblings into a native "Categories" disclosure on the toolbar row, every link in the HTML (A-founder-2026-10-15c; TASK-241)', () => {
-    // One `<details>`, before the sort form and the grid, its `<summary>` the button's words; every
-    // sibling that is not this page is a real link inside it, closed, with no script.
-    expect(html.match(/<details/gu) ?? []).toHaveLength(1);
+    // Two `<details>` on the toolbar row: "Categories" and "How we sort" (spec 043 item 2). The
+    // first, before the sort form and the grid, its `<summary>` the button's words; every sibling
+    // that is not this page is a real link inside it, closed, with no script.
+    expect(html.match(/<details/gu) ?? []).toHaveLength(2);
+    expect(
+      html.match(/<details[^>]*data-fo-ranking-disclosure/gu) ?? [],
+    ).toHaveLength(1);
     const start = html.indexOf("data-fo-listing-categories");
     const end = html.indexOf("</details>", start);
     expect(start).toBeGreaterThan(-1);
@@ -221,8 +227,8 @@ describe("the populated country category (§5.3 row 2)", () => {
   });
 
   it("renders the sort form above the grid and a real pager after it (spec 008 §14 A-founder-2026-10-14c; TASK-241)", () => {
-    // C3 (AC-33): one `<form method="get">`, before the grid, labelled "Change the order" (A10);
-    // the pager after the grid.
+    // C3 (AC-33): one `<form method="get">`, before the grid, its label "Sort by" (spec 043
+    // item 3: no "Change the order"); the pager after the grid.
     expect(html.match(/<form/giu) ?? []).toHaveLength(1);
     const grid = html.indexOf("data-fo-listing-grid=");
     const form = html.indexOf("<form");
@@ -230,7 +236,10 @@ describe("the populated country category (§5.3 row 2)", () => {
     expect(form).toBeGreaterThan(-1);
     expect(form).toBeLessThan(grid);
     expect(html.indexOf("data-fo-pagination")).toBeGreaterThan(grid);
-    expect(text).toContain("Change the order");
+    expect(text).not.toContain("Change the order");
+    expect(html).toMatch(
+      /<label[^>]*for="listing-sort"[^>]*>Sort by<\/label>/u,
+    );
     // The pager links only `?page=N`; no sorted URL is ever a crawlable link (AC-15).
     expect(html).not.toMatch(/href="[^"]*[?&]sort=/iu);
     expect(roses.pageCount).toBe(2);
