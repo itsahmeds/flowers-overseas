@@ -37,6 +37,8 @@ links:
     label: "For florists"
 honestyAllow: []
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "founder, 2026-10-24, in chat: '149 ok, walkthrough ok' (the walkthrough and its added sentences, listed in PR 344); recorded by the TASK-210 finisher on the orchestrator's work order"
+reviewedAt: "2026-10-24"
 updatedAt: "2026-10-23"
 ---
