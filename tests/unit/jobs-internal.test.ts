@@ -293,17 +293,23 @@ describe("the route files, as Next loads them", () => {
     );
     expect(allowed.status).toBe(200);
     expect(ensure).toHaveBeenCalledTimes(1);
-    // Spec 013 §5.2 (TASK-254): every tick enqueues one outbox.dispatch, before it ticks, so the
-    // same tick consumes it.
-    expect(enqueue).toHaveBeenCalledTimes(1);
+    // Spec 013 §5.2 (TASK-254): every tick enqueues one outbox.dispatch, and spec 022a §5.2
+    // (TASK-369) one order.close_sweep under its singletonKey, before it ticks, so the same tick
+    // consumes both.
+    expect(enqueue).toHaveBeenCalledTimes(2);
     expect(enqueue.mock.calls[0]?.slice(1)).toEqual([
       "outbox.dispatch",
       {},
       { requestId: "system:jobs.tick" },
     ]);
-    expect(enqueue.mock.invocationCallOrder[0]).toBeLessThan(
-      tick.mock.invocationCallOrder[0] ?? 0,
-    );
+    expect(enqueue.mock.calls[1]?.slice(1)).toEqual([
+      "order.close_sweep",
+      {},
+      { requestId: "system:jobs.tick", singletonKey: "order.close_sweep" },
+    ]);
+    for (const order of enqueue.mock.invocationCallOrder) {
+      expect(order).toBeLessThan(tick.mock.invocationCallOrder[0] ?? 0);
+    }
     expect(tick).toHaveBeenCalledTimes(1);
     // Identity, not deep equality: `JOB_HANDLERS` is `{}` today, so `toHaveBeenCalledWith` would
     // also pass for a route that ticked with a fresh `{}` (breaker hole 7, U39).

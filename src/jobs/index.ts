@@ -9,7 +9,8 @@
  *    enqueued, and the minute tick consumes it once a handler is supplied:
  *    `media.derive_variants` (payload from spec 006 §5.2, worker in spec 006), `retention.sweep`
  *    (TASK-025), `neon.usage_probe` (TASK-029), `db.backup_verify` (TASK-028), `outbox.dispatch`
- *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick);
+ *    (spec 013 §5.2, TASK-254: one run of the outbox dispatcher, enqueued by every minute tick),
+ *    `order.close_sweep` (spec 022a §5.2, TASK-369: one run of the close sweep, likewise);
  *  - **declared only** — the name is reserved for the spec that implements it (`order.route`,
  *    `assignment.timeout`, `notification.deliver`, `fx.refresh`, `sitemap.regenerate`,
  *    `occasion.reminders`, `review.request`, `payout.accrue`). No queue, no schema: the
@@ -58,6 +59,13 @@ export const OutboxDispatchPayload = z
   .object({ orderId: z.uuid().optional() })
   .strict();
 
+/**
+ * `order.close_sweep` (spec 022a §5.2, AC-2 to AC-4; TASK-369): one run of the close sweep, which
+ * closes every due order (at most 200). Takes nothing; the minute tick enqueues one run under a
+ * `singletonKey`.
+ */
+export const OrderCloseSweepPayload = z.object({}).strict();
+
 /** One registered job: its payload schema and that schema's version. */
 export interface RegisteredJob<Schema extends z.ZodType = z.ZodType> {
   readonly version: number;
@@ -71,6 +79,7 @@ export const REGISTERED_JOBS = {
   "neon.usage_probe": { version: 1, payload: NeonUsageProbePayload },
   "db.backup_verify": { version: 1, payload: BackupVerifyPayload },
   "outbox.dispatch": { version: 1, payload: OutboxDispatchPayload },
+  "order.close_sweep": { version: 1, payload: OrderCloseSweepPayload },
 } as const satisfies Record<string, RegisteredJob>;
 
 /** The declared-only names (spec 002 §5.2 "Declared only"; `plan/01` §8). */

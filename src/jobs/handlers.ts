@@ -15,6 +15,9 @@
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import { dispatchOutbox } from "../modules/orders";
+// The close is not in the `orders` barrel: importing it registers `OrderClosedV1`, and only the
+// processes that close orders need that (spec 022a §5.2, TASK-369).
+import { runCloseSweep } from "../modules/orders/close";
 
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
@@ -27,6 +30,12 @@ export const JOB_HANDLERS: JobHandlers = {
     await dispatchOutbox(
       payload.orderId === undefined ? {} : { orderId: payload.orderId },
     );
+  },
+  // Spec 022a §5.2 (TASK-369): every due order closed in its own `system` transaction. Idempotent:
+  // each order is locked and re-read before it is closed, so a re-run or a second sweep finds it
+  // `closed` and skips it.
+  "order.close_sweep": async () => {
+    await runCloseSweep();
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.

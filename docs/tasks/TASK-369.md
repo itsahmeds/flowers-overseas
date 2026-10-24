@@ -24,7 +24,8 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size S
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (self-review, PR 406): AC-5's `notificationsFor('order.closed', from, mode)` row assertion belongs to TASK-331 (spec 016's `notificationsFor` is not on main); this PR proves no outbox target and no `notification_delivery` row.
+- 2026-10-24 (self-review, PR 406): the refund check joins `refund` to `payment.order_id`. PR 403 (TASK-350, `0028_payment_purchase`) moves the order onto `refund.order_id` and drops `payment.order_id`, so whichever of PR 403 and PR 406 merges second rewrites the check in `src/modules/orders/close/sweep.ts` (`closeOne`) to `WHERE r.order_id = $1` and the `refundOf` helper of `tests/integration/order-close.test.ts`; T-03 goes red until it does.
 
 ## Escalations
 
@@ -38,11 +39,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: `src/modules/orders/close/` (`closeDueAt`, `OrderClosedV1`, `runCloseSweep`), `order.close_sweep` registered, handled and enqueued by the tick under a `singletonKey`; `COMPLAINT_WINDOW_HOURS` in `company.ts`; unit T-01, T-05 unit half, AC-2 scan; integration T-02 to T-05 and the backlog alert, green on a local PG16 with six mutations seen red. Next: PR, CI.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 406. `src/modules/orders/close/` (`closeDueAt`, `OrderClosedV1`, `runCloseSweep`), the `order.close_sweep` job (registered, handled, enqueued by the minute tick under a `singletonKey`), `COMPLAINT_WINDOW_HOURS = 72` in `company.ts`, `alert=orders.close_backlog` above 20. Tests: unit `tests/unit/order-close.test.ts` (14: T-01 over 26 statuses and the Warsaw DST case, `OrderClosedV1`, AC-5 targets, AC-2 source scan) plus job-registry, runtime and tick updates; integration `tests/integration/order-close.test.ts` (8: T-02, T-03 x2, T-04 x2 including two real connections on the lock, T-05, the backlog alert). No build-slot gate run locally; CI is the gate.
