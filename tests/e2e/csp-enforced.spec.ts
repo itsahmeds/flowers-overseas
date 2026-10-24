@@ -76,9 +76,22 @@ function promotedCopies(path: string): string[] {
     .filter((file) => existsSync(file));
 }
 
-const SHOWN = '[data-fo-consent="shown"]';
+/**
+ * The hydration marker. Nothing asks on the committed build (spec 004 §14
+ * A-founder-2026-10-19d), so the consent island is loaded by activating the footer's "Cookie
+ * settings", which only a hydrated page answers: its settings sheet is the marker now.
+ */
+const OPENED = '[data-fo-consent="settings"] [data-fo-consent-panel]';
 const REJECT = '[data-fo-consent-action="reject"]';
 const SAVED = '[data-fo-consent="saved"]';
+
+/** Activate "Cookie settings" on the enforcing origin until the island answers (`openConsentSettings`). */
+async function hydrated(page: Page): Promise<void> {
+  await expect(async () => {
+    await page.locator("[data-fo-consent-reopen]").first().click();
+    await expect(page.locator(OPENED)).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 20_000 });
+}
 
 interface Violation {
   readonly directive: string;
@@ -220,8 +233,8 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
         expect(scriptSources(policy), digest).toContain(digest);
       }
 
-      // Hydrated: the consent sheet only exists after React mounts, and it answers a click.
-      await expect(page.locator(SHOWN)).toBeVisible();
+      // Hydrated: the consent island loads only on a hydrated page's click, and it answers one.
+      await hydrated(page);
       await page.locator(REJECT).click();
       await expect(page.locator(SAVED)).toBeAttached();
 
@@ -255,7 +268,7 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
 
     const response = await page.goto(target);
     expect(response?.headers()["content-security-policy"]).toBeDefined();
-    await expect(page.locator(SHOWN)).toBeVisible();
+    await hydrated(page);
 
     expect(await page.evaluate(() => window.__foInjected)).toBeUndefined();
     expect(await violations(page)).toContainEqual({
@@ -309,7 +322,7 @@ test.describe("enforced CSP over the real build (TASK-058)", () => {
       expect(scriptSources(policy)).not.toContain(
         `'sha256-${createHash("sha256").update("window.__foStoredInjected=1", "utf8").digest("base64")}'`,
       );
-      await expect(page.locator(SHOWN)).toBeVisible();
+      await hydrated(page);
 
       expect(
         await page.evaluate(() => window.__foStoredInjected),

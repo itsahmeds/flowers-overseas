@@ -37,6 +37,7 @@ import {
   localeGateHeld,
   subscribeLocaleGate,
 } from "../../src/modules/ui/consent/localeGateReader.ts";
+import { consentEscapeStep } from "../../src/modules/ui/consent/consentEscape.ts";
 
 /** `<html>`: the attribute calls the two modules make, and nothing else. */
 class FakeRoot {
@@ -251,5 +252,125 @@ describe("the components call the two effects (their wiring, pinned from source)
     expect(source("src/modules/i18n/ui/LanguagePopupIsland.tsx")).toMatch(
       /useEffect\(\(\)\s*=>\s*\{\s*syncLocaleGate\(dialogRef\.current,\s*open\);\s*\},\s*\[open\]\)/u,
     );
+  });
+});
+
+/**
+ * AC-17 (d) (spec 004 §14 A-founder-2026-10-19c clause 4, restated by A-founder-2026-10-19d
+ * clause 5; T-19's unit half; TASK-279): with the language overlay and the banner both pending,
+ * one `Esc` closes the language overlay only, and a second closes the banner with no
+ * `fo_consent` set. Driven through the real gate writer (the popup's end) and reader (the sheet's
+ * end) and the island's own decision, `consentEscapeStep`, with the release time recorded the way
+ * the island records it (a gate subscriber reading the clock). Red with one `Esc` closing both:
+ * drop the gate or the release-time term from `consentEscapeStep` and the first press closes the
+ * sheet too.
+ */
+describe("one `Esc`, one layer (AC-17 (d))", () => {
+  /** The island's clock and its gate subscriber, as `ConsentBannerIsland` wires them. */
+  function sheetEnd(): { releasedAt: () => number; at: (t: number) => void } {
+    let now = 0;
+    let releasedAt = Number.NEGATIVE_INFINITY;
+    subscribeLocaleGate(() => {
+      if (!localeGateHeld()) releasedAt = now;
+    });
+    return { releasedAt: () => releasedAt, at: (t) => (now = t) };
+  }
+
+  it("the first press closes the popup only; the sheet then shows; the second closes it, deciding nothing", () => {
+    const sheet = sheetEnd();
+    renderDocument();
+    holdLocaleGate(); // the popup is open over the page
+    const phase = "shown" as const; // the sheet is mounted and pending behind the gate
+
+    // Press 1, at t = 100, while the popup is open: not the sheet's.
+    sheet.at(100);
+    expect(
+      consentEscapeStep(phase, {
+        prompt: true,
+        gated: localeGateHeld(),
+        pressedAt: 100,
+        releasedAt: sheet.releasedAt(),
+      }),
+    ).toBe("ignore");
+
+    // The popup closes on that press and releases the gate: the sheet is the top layer now.
+    sheet.at(105);
+    releaseLocaleGate();
+    expect(localeGateHeld()).toBe(false);
+    expect(sheet.releasedAt()).toBe(105);
+
+    // The same press reaching the sheet after the release (a popup that released during the
+    // dispatch) is still not the sheet's.
+    expect(
+      consentEscapeStep(phase, {
+        prompt: true,
+        gated: localeGateHeld(),
+        pressedAt: 100,
+        releasedAt: sheet.releasedAt(),
+      }),
+    ).toBe("ignore");
+
+    // Press 2, later: it closes the sheet, which records nothing (`close`, never a decision).
+    expect(
+      consentEscapeStep(phase, {
+        prompt: true,
+        gated: localeGateHeld(),
+        pressedAt: 200,
+        releasedAt: sheet.releasedAt(),
+      }),
+    ).toBe("close");
+  });
+
+  it("without a gate (no popup can open) the first press is the sheet's", () => {
+    sheetEnd();
+    expect(localeGateHeld()).toBe(false);
+    expect(
+      consentEscapeStep("shown", {
+        prompt: true,
+        gated: localeGateHeld(),
+        pressedAt: 1,
+        releasedAt: Number.NEGATIVE_INFINITY,
+      }),
+    ).toBe("close");
+  });
+
+  it("steps back from the panel to the sheet only where there is a sheet; a panel opened from the footer closes", () => {
+    const context = {
+      gated: false,
+      pressedAt: 10,
+      releasedAt: Number.NEGATIVE_INFINITY,
+    };
+    expect(consentEscapeStep("settings", { ...context, prompt: true })).toBe(
+      "back",
+    );
+    expect(consentEscapeStep("settings", { ...context, prompt: false })).toBe(
+      "close",
+    );
+    expect(consentEscapeStep("saved", { ...context, prompt: false })).toBe(
+      "close",
+    );
+    expect(consentEscapeStep("hidden", { ...context, prompt: true })).toBe(
+      "ignore",
+    );
+  });
+
+  it("the island wires it: the gate's release time, the gate read at the press, and no sheet while gated", () => {
+    const island = readFileSync(
+      resolve(
+        import.meta.dirname,
+        "../../src/modules/ui/consent/ConsentBannerIsland.tsx",
+      ),
+      "utf8",
+    )
+      .replace(/\/\*[\s\S]*?\*\//gu, "")
+      .replace(/(^|[^:])\/\/.*$/gmu, "$1");
+    expect(island).toMatch(
+      /subscribeLocaleGate\(\(\) => \{\s*if \(!localeGateHeld\(\)\) gateReleasedAt\.current = performance\.now\(\);\s*\}\)/u,
+    );
+    expect(island).toMatch(
+      /consentEscapeStep\(phase, \{\s*prompt,\s*gated: localeGateHeld\(\),\s*pressedAt: event\.timeStamp,\s*releasedAt: gateReleasedAt\.current,\s*\}\)/u,
+    );
+    expect(island).toMatch(/if \(step === "ignore"\) return;/u);
+    expect(island).toMatch(/if \(localeGated\) return null;/u);
   });
 });

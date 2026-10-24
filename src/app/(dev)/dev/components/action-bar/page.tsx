@@ -6,6 +6,7 @@ import { setRequestLocale } from "next-intl/server";
 import { z } from "zod";
 
 import { devUiEnabled } from "@/lib/env.schema";
+import { consentPrompt, consentSources } from "@/modules/analytics";
 import { documentFallbackLocale } from "@/modules/i18n";
 import {
   Button,
@@ -105,7 +106,10 @@ export default async function ActionBarFixturePage({
         hidden={bar === "hidden"}
         price={{ amount: fixture.price, caption: fixture.caption }}
       />
-      <ConsentBanner />
+      {/* The layout's decision, from the same reader (spec 004 §14 A-founder-2026-10-19d clause
+          1): on the committed build "Cookie settings" opens the panel over the bar; in the
+          `consent-active` build the banner asks on load. */}
+      <ConsentBanner prompt={consentPrompt(consentSources(process.env))} />
     </>
   );
 }

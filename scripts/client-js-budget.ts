@@ -104,6 +104,11 @@ import { LAUNCH_LOCALE_DATA } from "../src/config/locales.data.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { productRoutePathFor } from "../src/lib/product-rewrites.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
+import {
+  consentPrompt,
+  consentSources,
+} from "../src/modules/analytics/consent-sources.ts";
+import type { EnvSource } from "../src/lib/env.schema.ts";
 import { DEFERRED_ISLANDS } from "../src/modules/ui/deferred/deferredSet.ts";
 
 import {
@@ -433,6 +438,8 @@ function matchSegment(segment: string, actual: string | undefined): boolean {
  *  - the consent settings panel (§5.3, "the default path pays for the banner only"), imported the
  *    first time the sheet's "Settings" is pressed, by the `data-fo-consent-panel` it renders.
  *
+ * The consent island itself joins them only while nothing needs consent: `onInputChunkMarkers()`.
+ *
  * A lazy chunk missing from this list is charged to every page whose chunks name it: an over-count,
  * which `tests/e2e/client-js-budget.spec.ts` reports as "charged by budget:client-js and not
  * fetched by the browser", never a silent under-count.
@@ -443,6 +450,28 @@ export const ON_INPUT_CHUNK_MARKERS: readonly string[] = [
   ),
   "data-fo-consent-panel",
 ];
+
+/**
+ * The consent island's chunk, by the `performance.mark` literal it alone carries (TASK-279).
+ * Whether it is on-input depends on the build's data, not on the code: while nothing needs consent
+ * (`consentPrompt(consentSources(env))` false; spec 004 §14 A-founder-2026-10-19d clause 2) the
+ * loader mounts nothing and only a press on "Cookie settings" fetches the island; once a source is
+ * active the sheet asks on first view and its chunk is a page-load chunk again.
+ */
+export const CONSENT_ISLAND_MARKER = "fo:consent:island";
+
+/**
+ * `ON_INPUT_CHUNK_MARKERS`, plus the consent island's while nothing needs consent. Read from the
+ * same environment the build saw (`consentSources()`, the reader the locale layout uses), so the
+ * budget and the page cannot disagree: a consent-active build is charged the island.
+ */
+export function onInputChunkMarkers(
+  env: EnvSource = process.env,
+): readonly string[] {
+  return consentPrompt(consentSources(env))
+    ? ON_INPUT_CHUNK_MARKERS
+    : [...ON_INPUT_CHUNK_MARKERS, CONSENT_ISLAND_MARKER];
+}
 
 /**
  * Turbopack's loader stub for a dynamic import, `next/dynamic` and `React.lazy` alike: the chunk
@@ -476,9 +505,13 @@ export function lazyChunksNamedIn(source: string): string[] {
  * "this URL has no lazy chunks" and "this script cannot tell" must not be the same answer (that
  * equivalence is the `/review 26` bug).
  */
-export function lazyCandidatesFor(dist: string, url: string): ScriptTag[] {
+export function lazyCandidatesFor(
+  dist: string,
+  url: string,
+  env: EnvSource = process.env,
+): ScriptTag[] {
   assertRouteEntry(dist, url);
-  return lazyCandidatesIn(dist);
+  return lazyCandidatesIn(dist, env);
 }
 
 function assertRouteEntry(dist: string, url: string): void {
@@ -490,7 +523,11 @@ function assertRouteEntry(dist: string, url: string): void {
 }
 
 /** The app-level half of `lazyCandidatesFor()`: read once per `measurePages()` call. */
-function lazyCandidatesIn(dist: string): ScriptTag[] {
+function lazyCandidatesIn(
+  dist: string,
+  env: EnvSource = process.env,
+): ScriptTag[] {
+  const markers = onInputChunkMarkers(env);
   const chunks = join(dist, "static/chunks");
   let files: string[];
   try {
@@ -518,7 +555,7 @@ function lazyCandidatesIn(dist: string): ScriptTag[] {
       // Named but not emitted: no browser can fetch it, so no page is charged for it.
       continue;
     }
-    if (ON_INPUT_CHUNK_MARKERS.some((marker) => source.includes(marker))) {
+    if (markers.some((marker) => source.includes(marker))) {
       continue;
     }
     tags.push({ asset, noModule: false, kind: "lazy" });

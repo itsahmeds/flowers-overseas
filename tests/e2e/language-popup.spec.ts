@@ -377,47 +377,9 @@ test.describe("(e) the cookie decides whether it opens", () => {
   });
 });
 
-test.describe("(f) never on screen with the consent sheet", () => {
-  test("the sheet waits until the popup has closed, however long it stays open", async ({
-    page,
-  }) => {
-    // Sample every frame from the first paint: was the sheet ever painted while the popup was
-    // open? A state check at the end cannot see a sheet that came and went (`/break 205` hole 3).
-    await page.addInitScript(() => {
-      const store = window as unknown as { __foCoVisible?: boolean };
-      store.__foCoVisible = false;
-      const sample = (): void => {
-        const popupOpen =
-          document.querySelector("dialog[data-fo-language-popup][open]") !==
-          null;
-        const sheet = document.querySelector('[data-fo-consent="shown"]');
-        if (popupOpen && sheet !== null && sheet.getClientRects().length > 0) {
-          store.__foCoVisible = true;
-        }
-        requestAnimationFrame(sample);
-      };
-      requestAnimationFrame(sample);
-    });
-
-    await openFromRoot(page);
-    await page.waitForLoadState("networkidle");
-    // Past the loader's fail-open timer (`LOCALE_GATE_TIMEOUT_MS`, 4 s): a gate the open popup
-    // did not hold would be released here and the sheet would paint over the popup.
-    await page.waitForTimeout(5_500);
-    await expect(page.locator(OPEN)).toBeVisible();
-    await expect(page.locator(CONSENT_SHOWN)).toHaveCount(0);
-
-    await page.locator(CLOSE).click();
-    await expect(page.locator(CONSENT_SHOWN)).toBeVisible();
-    await expect(page.locator(POPUP)).toHaveCount(0);
-    expect(
-      await page.evaluate(
-        () => (window as unknown as { __foCoVisible?: boolean }).__foCoVisible,
-      ),
-    ).toBe(false);
-  });
-});
-
+// (f), "never on screen with the consent sheet", runs where a sheet can show: the
+// `consent-active` project (`tests/consent-active/language-popup-order.spec.ts`), since the
+// committed build asks nothing (spec 004 §14 A-founder-2026-10-19d; TASK-279).
 test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
   // Each case sets its own viewport; the mobile project's device emulation would fight it.
   test.skip(

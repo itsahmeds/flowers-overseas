@@ -380,6 +380,8 @@ export function SiteHeader({
               label: `${t("company.support.label")} ${contact.phoneDisplay}`,
             }}
             label={t("nav.menu.label")}
+            // The reviewed "Close", reused (spec 004 §14 A-founder-2026-10-19c clause 3; no new key).
+            closeLabel={t("consent.close")}
             links={entries.map((item) => ({
               id: item.id,
               href: item.href,

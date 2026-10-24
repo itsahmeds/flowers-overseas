@@ -79,7 +79,13 @@ function renderHeader(locale: string): string {
   return renderToStaticMarkup(
     <NextIntlClientProvider
       locale={locale}
-      messages={loadMessages(locale, ["nav", "company", "a11y", "common"])}
+      messages={loadMessages(locale, [
+        "nav",
+        "company",
+        "a11y",
+        "common",
+        "consent",
+      ])}
       timeZone="UTC"
     >
       <SiteHeader locale={locale} listingHrefs={HREFS[locale] ?? {}} />
@@ -124,7 +130,9 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
     const summary = tagWith(html, "data-fo-menu-summary");
     expect(summary.startsWith("<summary")).toBe(true);
     expect(classOf(summary)).toContain("min-h-(--target-min)");
-    expect(menuOf(html)).toMatch(/<summary[^>]*>[\s\S]*Menu<\/summary>/u);
+    expect(menuOf(html)).toMatch(
+      /<summary[^>]*>[\s\S]*>Menu<\/span>[\s\S]*<\/summary>/u,
+    );
   });
 
   it("leaves the logo and the summary as the only controls below `md`: the strip, the row and the pill are `max-md:hidden`", () => {
@@ -242,6 +250,60 @@ describe("the phone header (AC-47, T-52's contract half)", () => {
         : "[&amp;_a]:min-h-(--target-min)";
       expect(own || (inSwitcher && wrapper.includes(rule)), tag).toBe(true);
     }
+  });
+
+  it("names the open summary with the reviewed close label and draws a close mark, by CSS alone (A-founder-2026-10-19c clause 3)", () => {
+    const menu = menuOf(renderHeader("en"));
+    const summary = /<summary[\s\S]*?<\/summary>/u.exec(menu)?.[0] ?? "";
+    // Closed: the bars and "Menu" show; the mark and "Close" are `display: none`, so they are out
+    // of the accessibility tree and the name is "Menu". Open (`group-open:`): the reverse.
+    expect(summary).toMatch(
+      /<span class="group-open:hidden">Menu<\/span><span class="hidden group-open:inline" data-fo-menu-close="">Close<\/span><\/summary>$/u,
+    );
+    const mark = classOf(tagWith(summary, "data-fo-menu-close-mark")).split(
+      " ",
+    );
+    expect(mark).toEqual(
+      expect.arrayContaining(["hidden", "group-open:block"]),
+    );
+    expect(tagWith(summary, "data-fo-menu-close-mark")).toContain(
+      'aria-hidden="true"',
+    );
+    // The bars hide when open, so only one mark is ever drawn.
+    expect(summary).toMatch(
+      /<span aria-hidden="true" class="relative block h-\[12px\] w-\[18px\] [^"]*group-open:hidden/u,
+    );
+    // `consent.close` is the reviewed "Close" in `en` (no new key, copy headroom zero).
+    expect(menuOf(renderHeader("en-gb"))).toContain(">Close</span></summary>");
+  });
+
+  it("carries a scrim below the 65 px header that is not drawn until the motion module runs", () => {
+    const menu = menuOf(renderHeader("en"));
+    const scrim = tagWith(menu, "data-fo-menu-scrim");
+    expect(scrim.startsWith("<div")).toBe(true);
+    expect(scrim).toContain('aria-hidden="true"');
+    expect(classOf(scrim).split(" ").sort()).toEqual(
+      [
+        "bg-scrim",
+        "bottom-0",
+        "end-0",
+        "fixed",
+        "hidden",
+        "start-0",
+        "top-[65px]",
+      ].sort(),
+    );
+    // Before the panel, so the panel paints over it.
+    expect(menu.indexOf("data-fo-menu-scrim")).toBeLessThan(
+      menu.indexOf("data-fo-menu-panel"),
+    );
+    // Drawn only with the module's mark on `<html>`, and the header lifted over the docked bar.
+    expect(CSS).toMatch(
+      /html\[data-fo-motion\] details\[data-fo-menu\]\[open\] \[data-fo-menu-scrim\] \{\s*display: block;\s*\}/u,
+    );
+    expect(CSS).toMatch(
+      /html\[data-fo-motion\] \[data-fo-header\]:has\(details\[data-fo-menu\]\[open\]\) \{\s*z-index: var\(--layer-overlay\);\s*\}/u,
+    );
   });
 
   it("is a panel that scrolls inside itself under the 65 px header", () => {
@@ -370,6 +432,38 @@ function block(selector: string): string {
   }
   throw new Error(`unclosed ${selector}`);
 }
+
+describe("short screens (A-founder-2026-10-19c clause 5, AC-47, AC-48; T-52, T-53 stylesheet half)", () => {
+  const short = block("@media (max-height: 500px)");
+
+  it("unsticks the header and does not draw the docked bar under 500 px tall, at any width", () => {
+    expect(short).toMatch(/\[data-fo-header\] \{\s*position: relative;\s*\}/u);
+    expect(short).toMatch(/\[data-fo-action-bar\] \{\s*display: none;\s*\}/u);
+    // With the bar gone, its foot padding and the consent sheet's lift go too.
+    expect(short).toMatch(
+      /body:has\(\[data-fo-action-bar\]\) \{\s*padding-block-end: 0;\s*\}/u,
+    );
+    expect(short).toMatch(
+      /body:has\(\[data-fo-action-bar\]\) \[data-fo-consent-sheet="fixed"\] \{\s*inset-block-end: 0;\s*\}/u,
+    );
+  });
+
+  it("caps the home cover at the viewport less the header, and drops the desktop hero's floor", () => {
+    expect(short).toMatch(
+      /\[data-fo-hero-photo\] \{\s*block-size: calc\(100svh - 65px\);\s*min-block-size: 0;\s*\}/u,
+    );
+    expect(short).toMatch(
+      /@media \(width >= 48rem\) \{\s*\[data-fo-hero\] \{\s*block-size: auto;/u,
+    );
+  });
+
+  it("comes after the bar's phone rules, so it wins them, and is the only height query", () => {
+    expect(CSS.indexOf("@media (max-height: 500px)")).toBeGreaterThan(
+      CSS.indexOf("@media (width < 48rem) {\n  body:has([data-fo-action-bar])"),
+    );
+    expect(CSS.match(/max-height: 500px/gu)).toHaveLength(1);
+  });
+});
 
 describe("the sticky action bar (AC-48, T-53's stylesheet half)", () => {
   it("is opaque card white, fixed to the foot, with the safe area in its block size and its block-end padding", () => {

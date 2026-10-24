@@ -1176,7 +1176,7 @@ describe("TASK-283: motions 5, 13 and 10's close half, value for value (T-48, T-
       "the Menu's close fade taken away",
       () =>
         swap(
-          /(details\[data-fo-menu\]\[data-fo-closing\] \[data-fo-menu-panel\],\s*\[data-fo-consent-sheet="fixed"\]\[data-fo-closing\] \{\s*)opacity: 0;/,
+          /(details\[data-fo-menu\]\[data-fo-closing\] \[data-fo-menu-panel\],\s*details\[data-fo-menu\]\[data-fo-closing\] \[data-fo-menu-scrim\],\s*\[data-fo-consent-sheet="fixed"\]\[data-fo-closing\] \{\s*)opacity: 0;/,
           "$1",
         ),
       "10 menu fade",

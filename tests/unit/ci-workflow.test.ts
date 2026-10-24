@@ -112,6 +112,9 @@ const EXPECTED_JOBS = [
   "e2e",
   "visual",
   "a11y",
+  // spec 004 §14 A-founder-2026-10-19d clause 8 (TASK-279): the GA4-fixture build and its
+  // Playwright project, pull requests with `ci:full` only, like `preview`.
+  "consent-active",
   "lighthouse",
 ] as const;
 
@@ -1290,8 +1293,17 @@ const dispatchContext = githubContext({
   event: {},
 });
 
-/** The four jobs a push may skip: `preview` on its own `if:`, the rest through `needs: preview`. */
-const PREVIEW_CHAIN = ["preview", "e2e", "visual", "a11y"] as const;
+/**
+ * The jobs a push may skip: `preview` and `consent-active` on their own `if:`, the rest through
+ * `needs: preview`.
+ */
+const PREVIEW_CHAIN = [
+  "preview",
+  "e2e",
+  "visual",
+  "a11y",
+  "consent-active",
+] as const;
 const SPINE = ["lint", "typecheck", "test-unit", "build"] as const;
 
 describe("the evaluator T-39 relies on", () => {
@@ -1344,7 +1356,7 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
     });
   });
 
-  it("runs every job on a push except exactly preview, e2e, visual and a11y", () => {
+  it("runs every job on a push except exactly preview, e2e, visual, a11y and consent-active", () => {
     const push = jobSet(pushContext);
     const skipped = jobs
       .map(([key]) => key)
@@ -1352,6 +1364,22 @@ describe("CI on every push to main (spec 040 AC-38, T-39)", () => {
     expect(skipped).toEqual([...PREVIEW_CHAIN]);
     for (const key of SPINE) expect(push, key).toContain(key);
     expect(push).toHaveLength(EXPECTED_JOBS.length - PREVIEW_CHAIN.length);
+  });
+
+  it("skips `consent-active` on its own `if:`, the same as `preview`'s, and runs it with the label (TASK-279)", () => {
+    const job = ci.jobs["consent-active"];
+    expect(job?.if).toBe(ci.jobs.preview?.if);
+    expect(evaluateIf(job?.if, pushContext)).toBe(false);
+    expect(evaluateIf(job?.if, pullRequestContext([]))).toBe(false);
+    expect(evaluateIf(job?.if, pullRequestContext(["ci:full"]))).toBe(true);
+    const env =
+      (job as { env?: Record<string, string> } | undefined)?.env ?? {};
+    expect(env["NEXT_PUBLIC_GA4_MEASUREMENT_ID"]).toBe("G-FIXTURE00");
+    const runs = (job?.steps ?? []).map((step) => step.run ?? "").join("\n");
+    expect(runs).toContain("pnpm build");
+    expect(runs).toContain("bash ./.github/actions/preview-origin/serve.sh");
+    expect(runs).toContain("pnpm test:consent-active");
+    expect(runs).not.toContain("lighthouse");
   });
 
   it("skips `preview` on its own `if:` and the three browser jobs only through `needs: preview`", () => {

@@ -51,11 +51,11 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-23: built in TASK-279's PR 352 (branch `task/TASK-279-consent-and-menu`): `MenuSheet` close mark, close label (`consent.close`, reviewed "Close"), scrim; `MotionIsland` scrim tap, focus trap, Send flowers on the home; the short-screen block in `globals.css`. Unit and e2e green locally against a slot build; four built-output mutations red. Next: CI on the head.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR [#352](https://github.com/itsahmeds/flowers-overseas/pull/352) (with TASK-279). The open Menu (below `md`, JavaScript on): a `--color-scrim` scrim from the 65 px header down, drawn only once the motion module runs (`html[data-fo-motion]`), the header lifted to the overlay layer so the scrim dims the docked bar; a tap on it closes the Menu; `Tab`/`Shift+Tab` stay inside the Menu and its summary, `Esc` still leaves; the open summary shows a 14 px close mark and reads "Close" (`consent.close`, reviewed; CSS `group-open:`, so the name is right with JavaScript off too). Send flowers on the home, at every width, closes the Menu, scrolls the letter in below the sticky header and focuses "my mum"; elsewhere it stays the `/{locale}#send` link and navigates (reading: the next document's Menu is closed, and the open Menu keeps motion 3's pending bloom until then; closing it there broke TASK-283's motion 3 case). Under 500 px tall: header `position: relative`, no action bar, the phone cover `100svh − 65px`, the desktop hero drops its 560 px floor. Tests: unit `ui-phone-chrome.test.tsx` (+5), `motion-css` regex updated; e2e `phone-chrome.spec.ts` (+14 cases × 2 projects), `action-bar.spec.ts` (+3).

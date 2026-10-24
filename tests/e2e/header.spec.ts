@@ -247,10 +247,14 @@ test.describe("the site header (AC-7)", () => {
    * **not** usable for this: `/dev/components` renders a *demo copy* of the header inside `<main>`
    * in a bordered wrapper whose containing block is the header's own box, so that instance
    * scrolls with the page by construction (measured: top 7 277 px after a 600 px scroll).
+   *
+   * The viewport is 600 px tall, not shorter: at 500 px tall and below the header is deliberately
+   * not sticky (spec 004 §14 A-founder-2026-10-19c clause 5, `(max-height: 500px)`; TASK-282), and
+   * that half is `tests/e2e/phone-chrome.spec.ts` T-52's.
    */
   for (const { width, height, scroll } of [
-    { width: 390, height: 300, scroll: 600 },
-    { width: 1440, height: 300, scroll: 235 },
+    { width: 390, height: 600, scroll: 600 },
+    { width: 1440, height: 600, scroll: 235 },
   ] as const) {
     test(`at ${String(width)} px the banner pins to the top and the strip scrolls away`, async ({
       page,
