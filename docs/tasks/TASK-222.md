@@ -47,7 +47,7 @@ here.
 - 2026-10-21: unit (poll, pages, head, scan, detail query) and integration (PG16, real `place()`) tests green; 21 mutations each watched red; gates:cheap PASS. Next: ready, CI.
 - 2026-10-21: CI's `client-message-graph` refused zod in the island; the poll now compares the head endpoint's `ETag` and reads no body (24 mutations red). CI's other red, `design-docs` "leaves room between artboards", is main's (fix PR 304).
 - 2026-10-21: rebased on main after PR 304 merged (head 93b6d611). The `ci:full` run 39490026324 ended `failure` with **only `lighthouse` red**; every other job was green. I could not read the assertion before the 180-minute limit stopped me. The diff touches no public page and adds no public JavaScript (`client-message-graph` and the admin-only island), so this is probably the known LCP flake on `/en`/`/en-gb` (TASK-244/235). That is unconfirmed. **A finisher reads the lighthouse log on 93b6d611**: if it is LCP within 2200 ms, it is not this PR's; any other assertion (bytes, CLS) is.
-- 2026-10-24 finisher: rebased onto `main` `692a24b5` (only `docs/codebase-map.md` conflicted, regenerated). No migration, so no number and no stack; `admin-orders` integration green on main and on a trial merge with the 383 to 320 stack.
+- 2026-10-24 finisher: rebased onto `main` `c81edd9e` (only `docs/codebase-map.md` conflicted, regenerated). No migration, so no number and no stack; `admin-orders` integration green on main and on a trial merge with the 383 to 320 stack.
 
 ## Result
 
@@ -73,7 +73,7 @@ tests                 exit 0 · 64.5 s · changed 160 + map 0 + always 2 · alwa
 RESULT: PASS
 ```
 
-**Rebase (finisher, 2026-10-24).** Rebased onto `main` `692a24b5`; this PR adds **no migration**,
+**Rebase (finisher, 2026-10-24).** Rebased onto `main` `c81edd9e`; this PR adds **no migration**,
 so it takes no number and is not stacked. Gates: typecheck, lint, format, i18n, no-db and map
 exit 0; `vitest --changed origin/main` (unit and contract, two workers) 185 files, 5110 tests
 green; `admin-orders.test.ts` on a throwaway PG16 green (6 of 6) on `main`, and green again on a
