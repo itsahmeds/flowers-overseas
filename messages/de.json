@@ -748,7 +748,7 @@
       },
       "notice": {
         "body": "Wir nutzen diese Angaben, um Ihre Bewerbung zu prüfen und Sie wegen einer Zusammenarbeit zu kontaktieren. Rechtsgrundlage sind Schritte, um die Sie vor einem Vertrag gebeten haben (DSGVO Art. 6 Abs. 1 lit. b). Wir bewahren sie 12 Monate nach unserem letzten Kontakt auf und löschen sie dann, es sei denn, wir beginnen eine Zusammenarbeit. Gespeichert werden sie bei unseren Anbietern für Hosting, Datenbank und E-Mail, darunter US-Unternehmen, die unter den EU-Garantien für Datenübermittlungen arbeiten. Wir verkaufen sie nicht und zeigen sie keinem Käufer. Um sie einzusehen, zu berichtigen oder zu löschen, rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
-        "controller": "Diese Website wird von {representativeName} betrieben. Bei Fragen zu Ihren personenbezogenen Daten rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
+        "controller": "Diese Website wird von {name} betrieben. Bei Fragen zu Ihren personenbezogenen Daten rufen Sie uns an oder schreiben Sie uns unter {phoneDisplay}.",
         "heading": "Was wir mit Ihren Angaben tun",
         "privacyLink": "Unsere Datenschutzerklärung"
       },

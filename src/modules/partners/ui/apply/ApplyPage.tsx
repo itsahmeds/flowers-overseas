@@ -18,7 +18,12 @@
 import { getTranslations } from "next-intl/server";
 import type { ReactElement, ReactNode } from "react";
 
-import { type Company, COMPANY, whatsappHref } from "@/config/company";
+import {
+  type Company,
+  COMPANY,
+  controllerName,
+  whatsappHref,
+} from "@/config/company";
 import { COUNTRIES } from "@/config/countries";
 import type { ApplicationFormState } from "@/config/florists";
 import { infoPageExists, infoPagePath, infoPageView } from "@/modules/content";
@@ -407,7 +412,9 @@ export async function ApplyPage({
       <p className="text-ui text-ink-2 m-0 leading-[1.5]">
         {privacyHref === undefined ? (
           t("forFlorists.apply.notice.controller", {
-            representativeName: company.representative.name,
+            // The company, never a person: the site names no one (spec 041 §14
+            // A-founder-2026-10-23 clause 4; `controllerName()` is the cookie notice's rule too).
+            name: controllerName(company),
             phoneDisplay: phone,
           })
         ) : (
