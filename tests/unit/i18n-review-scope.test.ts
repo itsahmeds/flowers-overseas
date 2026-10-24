@@ -241,8 +241,11 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
     expect(NON_INDEXABLE_SCOPE).toEqual([
       ...[
         "action",
+        // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349).
+        "basket",
         "buyer",
         "card",
+        "date",
         "demo",
         "error",
         "field",

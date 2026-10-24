@@ -358,12 +358,14 @@ describe("the rendered header (AC-7, AC-14)", () => {
       const external = hrefs(html).filter((href) => !href.startsWith("/"));
 
       // Internal: the lockup, the Send pill, the switcher's sibling shown locales (`en`, `en-gb`;
-      // spec 003 §14 A-founder-2026-10-14c) and the category row — and nothing else: no account
-      // item, no `For florists`, no search (AC-14, §14 A20).
+      // spec 003 §14 A-founder-2026-10-14c), the category row and the Basket (spec 010 D10,
+      // TASK-349) — and nothing else: no account item, no `For florists`, no search (AC-14, §14
+      // A20).
       expect(internal.toSorted(), locale).toEqual(
         [
           localePath(locale, "home"),
           `${localePath(locale, "home")}#${SEND_ANCHOR}`,
+          `/${locale}/basket`,
           ...SHOWN.filter((other) => other !== locale).map((other) =>
             localePath(other, "home"),
           ),
@@ -381,7 +383,11 @@ describe("the rendered header (AC-7, AC-14)", () => {
       expect(
         items.map(({ id }) => id),
         locale,
-      ).toEqual((EXPECTED_ROW[locale] ?? []).map(([id]) => id));
+      ).toEqual([
+        ...(EXPECTED_ROW[locale] ?? []).map(([id]) => id),
+        // The Basket icon link, after the pill (spec 010 D10; TASK-349).
+        "basket",
+      ]);
       for (const { id, tag } of items) {
         expect(tag, `${locale}/${id}`).toMatch(/^<a\s/);
       }
@@ -544,7 +550,9 @@ describe("the rendered header (AC-7, AC-14)", () => {
     // The v2 mobile artboard draws the same eight links in the desktop order (a scrolling chip
     // row), so there is one DOM list and no per-breakpoint re-ordering.
     expect(html).not.toMatch(/\border-\d+\b/u);
-    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(8);
+    // Eight row links, and the Basket icon link (spec 010 D10; TASK-349), which is not in the row.
+    expect([...html.matchAll(/data-fo-header-item=/g)]).toHaveLength(9);
+    expect([...html.matchAll(/data-fo-header-item="basket"/g)]).toHaveLength(1);
     // Tailwind's arbitrary `min-[…]:` variant compiles this project's stylesheet down to its base
     // layer with no error raised (measured twice on a clean `.next`). Named breakpoints only.
     expect(html).not.toMatch(/min-\[\d+px\]:/);
@@ -807,10 +815,12 @@ describe("the rendered header (AC-7, AC-14)", () => {
     const anchors = [...banner.matchAll(/<a\s[^>]*>/g)].map(
       (match) => match[0],
     );
-    // The logo, the eight category links and the Send pill.
-    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1);
+    // The logo, the eight category links, the Send pill and the Basket link (spec 010 D10).
+    expect(anchors).toHaveLength(1 + (EXPECTED_ROW.en ?? []).length + 1 + 1);
     for (const anchor of anchors) {
-      expect(anchor, anchor).toMatch(/min-h-\(--(?:target-min|control-sm)\)/u);
+      expect(anchor, anchor).toMatch(
+        /(?:min-h|size)-\(--(?:target-min|control-sm)\)/u,
+      );
     }
   });
 

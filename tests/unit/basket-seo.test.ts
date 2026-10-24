@@ -81,7 +81,10 @@ describe("the basket page type (AC-72)", () => {
     );
     expect(route).toContain('transactionalMetadata("basket"');
     expect(route).toContain('export const dynamic = "force-dynamic"');
-    for (const source of [route, view]) {
+    // Code only: the header comments name what is absent ("no canonical").
+    const code = (source: string): string =>
+      source.replaceAll(/\/\*[\s\S]*?\*\//gu, "").replaceAll(/\/\/.*$/gmu, "");
+    for (const source of [code(route), code(view)]) {
       expect(source).not.toMatch(
         /alternates|canonical|application\/ld\+json|JsonLd/u,
       );

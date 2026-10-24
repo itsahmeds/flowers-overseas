@@ -112,7 +112,7 @@ describe("AC-70: one Basket link, the same for every visitor", () => {
     const element = basketElement(render("en"));
     expect(element).toContain(">Basket</span>");
     expect(element).not.toMatch(/data-fo-basket-badge="">[^<]/u);
-    expect(element).not.toContain("data-on");
+    expect(element).not.toContain(' data-on=""');
   });
 
   it("is marked as the current page on the basket only", () => {

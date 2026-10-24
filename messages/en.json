@@ -1000,7 +1000,7 @@
       "continue": "Continue shopping",
       "remove": "Remove",
       "removeLabel": "Remove {product} from your basket",
-      "full": "Your basket holds up to {max} bouquets. Please check out first, then start a new basket.",
+      "full": "Your basket has room for up to {max} bouquets. Please check out first, then start a new basket.",
       "otherMode": "This bouquet cannot go in this basket. Please check out or empty your basket first.",
       "otherCurrency": "Your basket is in {currency}, and this bouquet cannot be priced in {currency} today. Please check out your basket first.",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",
