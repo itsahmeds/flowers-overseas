@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 
 import * as schema from "../../db/schema/index.ts";
 import {
+  BUILD_ROLE_BLOG_TABLES,
   BUILD_ROLE_FILTERED_TABLES,
   BUILD_ROLE_READ_TABLES,
   CUSTOMER_SCOPED_TABLES,
@@ -24,6 +25,7 @@ import {
   PUBLIC_FILTERED_TABLES,
   PUBLIC_INSERT_ONLY_TABLES,
   PUBLIC_REFERENCE_TABLES,
+  PUBLIC_VIEWS,
   RLS_EXEMPT_TABLES,
   SELF_SCOPED_TABLES,
   STAFF_ONLY_TABLES,
@@ -435,6 +437,7 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     const tables = [
       ...BUILD_ROLE_READ_TABLES,
       ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+      ...BUILD_ROLE_BLOG_TABLES,
     ].sort();
     expect(BUILD_POLICIES.map((p) => p.table).sort()).toEqual(tables);
     for (const policy of BUILD_POLICIES) {
@@ -469,7 +472,8 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
   });
 
   it("rolls back every policy it creates, revokes the grants and drops the role", () => {
-    for (const policy of BUILD_POLICIES) {
+    const blog: readonly string[] = BUILD_ROLE_BLOG_TABLES;
+    for (const policy of BUILD_POLICIES.filter((p) => !blog.includes(p.table))) {
       expect(down0018).toContain(
         `DROP POLICY IF EXISTS ${policy.name} ON public.${policy.table};`,
       );
@@ -478,6 +482,57 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
     const grant = /GRANT SELECT ON([\s\S]*?)TO app_build;/u.exec(up0018);
     expect(revoke?.[1]?.trim()).toBe(grant?.[1]?.trim());
     expect(down0018).toContain("DROP ROLE app_build;");
+  });
+});
+
+describe("migration 0024 — the blog (spec 044 §5.1 item 7, AC-2; TASK-321)", () => {
+  const up0024 = readMigration("0024_blog.sql");
+  const down0024 = readMigration("0024_blog.down.sql");
+
+  it("grants app_build SELECT on the four blog tables and the author view, and nothing else", () => {
+    const grant = /GRANT SELECT ON (public\.blog_post,[\s\S]*?)TO app_build;/u.exec(
+      up0024,
+    );
+    const granted = (grant?.[1] ?? "")
+      .split(",")
+      .map((name) => name.trim().replace(/^public\./u, ""))
+      .filter((name) => name !== "")
+      .sort();
+    expect(granted).toEqual([...BUILD_ROLE_BLOG_TABLES].sort());
+    expect(up0024).toContain(
+      "GRANT SELECT ON public.blog_author_public TO app_build;",
+    );
+    expect(up0024).not.toMatch(/GRANT (?:INSERT|UPDATE|DELETE|TRUNCATE|ALL)/u);
+    expect(up0024).not.toMatch(/GRANT SELECT[^;]*public\.blog_author\b(?!_)/u);
+  });
+
+  it("public reads: posts once published, revisions only as the published one, authors only through the view", () => {
+    expect(policiesOf("blog_post").find((p) => p.name === "blog_post_read")?.using).toBe(
+      "status = 'published'",
+    );
+    expect(
+      policiesOf("blog_post_revision").find((p) => p.name === "blog_post_revision_read")?.using,
+    ).toContain("p.published_revision_id = blog_post_revision.id");
+    expect(anyPolicyNamesOf("blog_author")).toEqual(["blog_author_staff"]);
+    expect(PUBLIC_VIEWS.blog_author_public).toEqual(["id", "display_name"]);
+    expect(up0024).toMatch(
+      /CREATE VIEW public\.blog_author_public WITH \(security_barrier = true\) AS\s+SELECT a\.id, a\.display_name\s/u,
+    );
+    expect(up0024).toContain("REVOKE ALL ON public.blog_author_public FROM app_web;");
+  });
+
+  it("the rollback drops the five tables and the view, and restores the ledger check NOT VALID", () => {
+    for (const table of [
+      "blog_post_occasion",
+      "blog_post_country",
+      "blog_post_revision",
+      "blog_post",
+      "blog_author",
+    ]) {
+      expect(down0024).toContain(`DROP TABLE IF EXISTS public.${table};`);
+    }
+    expect(down0024).toContain("DROP VIEW IF EXISTS public.blog_author_public;");
+    expect(down0024).toMatch(/'media_asset'\s*\)\) NOT VALID;/u);
   });
 });
 

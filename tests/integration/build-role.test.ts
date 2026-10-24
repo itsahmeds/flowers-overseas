@@ -39,6 +39,7 @@ import {
 } from "vitest";
 
 import {
+  BUILD_ROLE_BLOG_TABLES,
   BUILD_ROLE_FILTERED_TABLES,
   BUILD_ROLE_READ_TABLES,
 } from "../../db/rls.ts";
@@ -62,6 +63,8 @@ const run = promisify(execFile);
 const BUILD_SET = [
   ...BUILD_ROLE_READ_TABLES,
   ...Object.keys(BUILD_ROLE_FILTERED_TABLES),
+  // spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321).
+  ...BUILD_ROLE_BLOG_TABLES,
 ].sort();
 
 const MIRROR_TABLES = Object.values(schema)

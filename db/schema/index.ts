@@ -18,10 +18,11 @@
  * (`0005`), `customers` (`0006`), `orders` and `payments` (`0007`), notifications and ops
  * (`0009`), `auth` (`0010`), the admin identity (`0014`, spec 012), the checkout draft
  * (`0015`, spec 010), the invoice tables (`0021`, spec 018) and the review ledger (`0023`,
- * spec 012b).
+ * spec 012b) and the blog (`0024`, spec 044).
  */
 export * from "./admin.ts";
 export * from "./auth.ts";
+export * from "./blog.ts";
 export * from "./catalog.ts";
 export * from "./checkout.ts";
 export * from "./customers.ts";
