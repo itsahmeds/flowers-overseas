@@ -96,10 +96,8 @@ function resolveStep(step: Step, width: number, height: number): number {
 const LEAD_PHOTO: Readonly<Partial<Record<PageType, string>>> = {
   // TASK-189: the guide draws no photograph any more (spec 007 §14 A11 (b)); its first screen is
   // the state and the calendar's next three dates, pinned by `corridor-first-screen.spec.ts`.
-  // TASK-187: the country occasion's lead figure is `items[0]`'s own card, the grid's first `<li>`,
-  // placed over the hero from `md` up (spec 008 §14 A16 (b)); the shop root and the country
-  // category draw no lead figure.
-  countryOccasion: "main li[data-fo-lead-item] img",
+  // TASK-289: no country listing draws a lead figure any more; the country occasion's went with
+  // spec 043 §14 A-founder-2026-10-22 item 7 (revised 2026-10-24, AC-54).
   // TASK-188: the hubs' lead figure (R2), from `md` up only (A24 clause 2 (c)).
   occasionHub: "main figure[data-fo-hub-lead] img",
   categoryHub: "main figure[data-fo-hub-lead] img",
@@ -124,15 +122,16 @@ const FIRST_SCREEN: Readonly<
   },
   // The first price line: the amount with "Includes VAT and delivery" beside it from `md` up
   // (spec 004 §14 A-founder-2026-10-19b clause 1; no card carries an equivalents line).
-  // Spec 004 §14 A-founder-2026-10-18b (AC-41 and T-43 amended): the shop root's and the country
-  // category's H1 take the title step, the PR 236 artboards' size, so the first row's prices
-  // stay on the first screen with the toolbar above the grid (rebound AC-34).
-  countryShop: { h1: "title", action: "main [data-fo-price] > :first-child" },
+  // Spec 043 §14 A-founder-2026-10-22 item 5 (revised 2026-10-24, AC-51; TASK-289) amends spec
+  // 004 §14 A-founder-2026-10-18b on the three country listings: the short H1 takes
+  // `--text-3xl-fluid` (46 px at 1280 × 800 and 1440 × 900), so the first row's prices stay on
+  // the first screen (spec 043 AC-41, rebound AC-34).
+  countryShop: { h1: "3xl", action: "main [data-fo-price] > :first-child" },
   countryCategory: {
-    h1: "title",
+    h1: "3xl",
     action: "main [data-fo-price] > :first-child",
   },
-  countryOccasion: { h1: "display", action: "main [data-fo-price]" },
+  countryOccasion: { h1: "3xl", action: "main [data-fo-price]" },
   // TASK-188: a hub's way to a price is its first destination pill from `md` up and the first
   // chip of the phone's chip row below `md`; `:visible` picks the one displayed at the width.
   occasionHub: {

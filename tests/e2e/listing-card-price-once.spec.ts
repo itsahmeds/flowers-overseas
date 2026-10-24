@@ -141,7 +141,7 @@ for (const locale of LOCALES) {
   const words = messages(locale);
   const pages = PAGES[locale];
   for (const size of SIZES) {
-    for (const [kind, url] of [
+    for (const [, url] of [
       ["shop", pages.shop],
       ["category", pages.category],
       ["occasion", pages.occasion],
@@ -176,31 +176,27 @@ for (const locale of LOCALES) {
         ).toHaveCount(0);
 
         // All-example grid (every committed photograph is an example): one displayed label in
-        // the results region, above the first card, with the resolved words.
-        const region = page.locator("main [data-fo-listing-results]");
+        // `<main>`, under the grid's last card (spec 043 §14 A-founder-2026-10-22 item 6, revised
+        // 2026-10-24; AC-53), with the resolved words.
+        const region = page.locator("main");
         const labels = await displayedGridLabels(region);
         expect(labels, url).toHaveLength(1);
         expect(labels[0]?.text).toBe(words.media.provenance.aiExample);
-        expect(labels[0]?.bottom ?? Infinity).toBeLessThanOrEqual(
-          await firstCardTop(region),
+        const lastCardBottom = await region.evaluate((root) =>
+          Math.max(
+            ...Array.from(
+              root.querySelectorAll("[data-fo-listing-grid] > li"),
+            ).map((li) => li.getBoundingClientRect().bottom),
+          ),
         );
-        // Every grid card's own label is in the server HTML (hidden by CSS).
+        expect(labels[0]?.bottom ?? -1).toBeGreaterThan(lastCardBottom);
+        // Every grid card's own label is in the server HTML (hidden by CSS); no lead figure.
         const own = await page
           .locator(
-            "main [data-fo-listing-grid] > li:not([data-fo-lead-item]) [data-fo-card-provenance] [data-fo-media-provenance]",
+            "main [data-fo-listing-grid] > li [data-fo-card-provenance] [data-fo-media-provenance]",
           )
           .count();
-        expect(own, url).toBe(count - (kind === "occasion" ? 1 : 0));
-
-        // The country occasion's lead figure: its own label at 1440, none at 390.
-        if (kind === "occasion") {
-          const lead = page.locator(
-            "main [data-fo-lead-item] [data-fo-media-provenance]",
-          );
-          await expect(lead).toHaveCount(1);
-          if (size.width >= 768) await expect(lead).toBeVisible();
-          else await expect(lead).toBeHidden();
-        }
+        expect(own, url).toBe(count);
       });
     }
 
