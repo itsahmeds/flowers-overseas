@@ -16,9 +16,7 @@ import type { ReactElement } from "react";
 import type { LocaleCode } from "@/config/locales";
 import type { Confirmation } from "@/modules/checkout";
 import { formatDate, formatMoney, formatNumber } from "@/modules/i18n";
-
-import { ConfirmationRecap } from "./ConfirmationRecap.tsx";
-import { DemoBanner } from "./DemoBanner.tsx";
+import { ConfirmationRecap, DemoBanner } from "@/modules/ui/checkout";
 
 type Placed = Extract<Confirmation, { kind: "placed" }>;
 
@@ -152,11 +150,11 @@ export async function DemoConfirmation({
             className="m-0 flex justify-between gap-[16px] font-bold"
             data-fo-purchase-total=""
           >
-            <span>{c("total")}</span>
+            <span>{c("page.total")}</span>
             <bdi className="num">{formatMoney(confirmation.total, locale)}</bdi>
           </p>
         ) : null}
-        <p className="text-ink-muted m-0 text-sm">{c("promise")}</p>
+        <p className="text-ink-muted m-0 text-sm">{c("page.promise")}</p>
       </div>
     </>
   );
@@ -177,7 +175,7 @@ export async function ConfirmationGone({
       className="grid max-w-[640px] gap-[16px] py-[48px]"
       data-fo-confirmation="gone"
     >
-      <h1 className={H1}>{c("gone")}</h1>
+      <h1 className={H1}>{c("page.gone")}</h1>
       <p className="m-0">
         <a className={LINK} href={`/${locale}`}>
           {t("expired.link")}

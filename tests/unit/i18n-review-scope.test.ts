@@ -241,19 +241,25 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
     expect(NON_INDEXABLE_SCOPE).toEqual([
       ...[
         "action",
-        // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349).
+        // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349),
+        // and TASK-204's checkout page subtrees.
+        "addons",
         "basket",
         "buyer",
         "card",
+        "closed",
         "date",
         "demo",
         "error",
+        "expired",
         "field",
         "placeKind",
         "price",
         "privacy",
         "progress",
         "recipient",
+        "review",
+        "step",
         "summary",
       ].map((subtree) => ({
         match: `checkout.${subtree}.*`,

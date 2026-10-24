@@ -99,19 +99,26 @@ const PAYMENTS_PATHS = [...CHECKOUT_PATHS, "src/modules/payments/**"];
 const CHECKOUT_SUBTREES = [
   "action",
   // The basket page and its date-gone notice (spec 010 §14 A-founder-2026-10-22; TASK-349): only
-  // `/{locale}/basket`, a `no-store` `noindex` page under `(checkout)`, renders them.
+  // `/{locale}/basket`, a `no-store` `noindex` page under `(checkout)`, renders them. TASK-204:
+  // the checkout page's add-ons, basket notice, closed and expired states, date notice, review
+  // list and step titles render on `/{locale}/checkout` only.
+  "addons",
   "basket",
   "buyer",
   "card",
+  "closed",
   "date",
   "demo",
   "error",
+  "expired",
   "field",
   "placeKind",
   "price",
   "privacy",
   "progress",
   "recipient",
+  "review",
+  "step",
   "summary",
 ];
 

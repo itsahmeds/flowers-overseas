@@ -4736,11 +4736,6 @@
     "reviewed": false,
     "sourceHash": "35c2f9fc1f2eb7c7fb0f21631bd5cf9f9bc690b0571855024962ef8be18896ae"
   },
-  "checkout.unable": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "959f8fba8fd2455f9549d4c31a72e5a38a7e19d7dd59ac7de689e9d1ff01fa30"
-  },
   "checkout.closed.title": {
     "source": "human",
     "reviewed": false,
@@ -4770,36 +4765,6 @@
     "source": "human",
     "reviewed": false,
     "sourceHash": "ff50c942048abfb244515d332bc63607e6689d178e09cddd487a05d7fc6c402c"
-  },
-  "checkout.address.houseNumber": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "b9115fb3a52fbcf09cde4ba2522a083cfefdfa9432d21c8f966b8f816dc51f57"
-  },
-  "checkout.address.addressLine1": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "56ef8f20955f256423d328f65b62106005252551db25d660031887e421cb4684"
-  },
-  "checkout.address.addressLine2": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "350b2b85c4af17248574a3d55d07aee1489588a78eea78cdaf6610dfdd0d153d"
-  },
-  "checkout.address.careOf": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "a255931cd26571032ecd0f83559094d103886cc2dda6e045de549353cf39993d"
-  },
-  "checkout.address.apartment": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "f71914b798ffd399963d30a5952ad76bdef8880cff0af8707502981270f3f633"
-  },
-  "checkout.address.region": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "136c87dec4695cefef030fd6dc7c32faeb6280a795fda70b017197b60e3b7873"
   },
   "checkout.recipient.deliveryNote": {
     "source": "human",
@@ -4911,34 +4876,39 @@
     "reviewed": false,
     "sourceHash": "b5e12f05a214a495ec590c1a30605b2a6a62aeeef873dcf36f75188dad75c866"
   },
-  "confirmation.promise": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "bb665a52536e859f75b586c994d4acb332cd37ecfd6cd69e559a0cf78cbdf869"
-  },
-  "confirmation.gone": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "6950a89088169eff05ea24dfffe8ddfa4cbf0d8ba77d86e879658b507d20c8c7"
-  },
-  "confirmation.total": {
-    "source": "human",
-    "reviewed": false,
-    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
-  },
-  "checkout.demo.try": {
+  "product.entry.demo": {
     "source": "human",
     "reviewed": false,
     "sourceHash": "a0a54cc461dbc887eb87ec36926bace436b61cf09990b52b0ad11219b7a68c42"
   },
-  "checkout.entry.continue": {
+  "product.entry.continue": {
     "source": "human",
     "reviewed": false,
     "sourceHash": "a9cb4ff078c3edcfeb3f2047e89e646ab14106ddd8a30e16fa94441e6b510380"
   },
-  "checkout.basket.add": {
+  "product.entry.addToBasket": {
     "source": "human",
     "reviewed": false,
     "sourceHash": "276ef9a05af4e88c84072fcfd7241705d10fd3f400ae1a58ade9fbc36323b9d7"
+  },
+  "checkout.error.unable": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "959f8fba8fd2455f9549d4c31a72e5a38a7e19d7dd59ac7de689e9d1ff01fa30"
+  },
+  "confirmation.page.gone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6950a89088169eff05ea24dfffe8ddfa4cbf0d8ba77d86e879658b507d20c8c7"
+  },
+  "confirmation.page.promise": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bb665a52536e859f75b586c994d4acb332cd37ecfd6cd69e559a0cf78cbdf869"
+  },
+  "confirmation.page.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
   }
 }

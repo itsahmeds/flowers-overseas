@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { CHECKOUT_START_PATH } from "@/config/checkout-entry";
 import { isPublished } from "@/config/site-links";
 import { appEnvironment } from "@/lib/env.schema";
 import {
@@ -15,8 +16,8 @@ import {
   resolveLocalePath,
   writeProductExistenceSummary,
 } from "@/modules/catalog";
-import { CHECKOUT_START_PATH, checkoutEntryFor } from "@/modules/checkout";
 import { infoPageExists, infoPagePath } from "@/modules/content";
+import { checkoutEntryFor } from "@/modules/geo";
 import { LanguageAlternates } from "@/modules/i18n";
 import {
   type BreadcrumbLabel,

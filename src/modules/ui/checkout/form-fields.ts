@@ -30,8 +30,5 @@ export const CHECKOUT_FORM_IDS = {
   place: "co-place",
 } as const;
 
-/** The page's one action: the previous answer and the posted form, the next answer. */
-export type CheckoutAction = (
-  previous: import("react").ReactNode,
-  form: FormData,
-) => Promise<import("react").ReactNode>;
+/** The page's one action: it answers every post with a 303, so it returns nothing. */
+export type CheckoutAction = (form: FormData) => Promise<void>;

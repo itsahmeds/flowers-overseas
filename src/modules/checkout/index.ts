@@ -244,3 +244,15 @@ export {
   type Confirmation,
   type ConfirmedDelivery,
 } from "./confirmation";
+
+// TASK-204: a refused post's one-hop echo (the JavaScript-off path).
+export {
+  CHECKOUT_ECHO_COOKIE_NAME,
+  CHECKOUT_ECHO_MAX_AGE_SECONDS,
+  CheckoutEchoSchema,
+  type CheckoutEchoInput,
+  type CheckoutEchoState,
+  checkoutEchoCookieAttributes,
+  decodeCheckoutEcho,
+  encodeCheckoutEcho,
+} from "./echo";

@@ -57,7 +57,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: done on PR 400: placement in one transaction (TASK-205, 9 integration tests on PG16), the checkout page and its states, confirmation (TASK-206), PDP entry, SEO noindex/no-store headers and robots. JavaScript-off walk proved by hand against `next dev --webpack` with a local DB: PDP, start, step 1 error (values kept, messages, 303 with the `fo_checkout_echo` one-hop cookie), step 1, add-on Add, step 2, review, place, `/done` with `FO-` reference. Refused posts now 303 with the echo cookie (`modules/checkout/echo.ts`) because a React element as `useActionState` state breaks JS-off forms. Views moved to `src/app/[locale]/(checkout)/_views/` and the PDP entry to `modules/geo` + `config/checkout-entry.ts` for i18n:check scope (check 11). Next: de/pl drafts, `codebase:map`, `gates:cheap`, TASK-207 retention handlers + runbook + RoPA/cookie rows, TASK-208 suites (CI preview has no DB), PR body with self-review, ready + `ci:full`.
 
 ## Result
 

@@ -2,7 +2,8 @@
  * `/{locale}/checkout` (spec 010 §2 "The checkout: three steps on one URL", §5.4, §6; AC-3, AC-7,
  * AC-13, AC-30; §14 A-founder-2026-10-22 item 5; TASK-204). Thin: `checkoutScreen()` decides the
  * screen from the `fo_checkout` cookie and `?step=`/`&line=`, `modules/ui/checkout` draws it, and
- * every form posts to `checkoutAction`.
+ * every form posts to `checkoutAction`. A refused post comes back here as a 303 with its echo in the
+ * `fo_checkout_echo` cookie (`modules/checkout/echo.ts`), drawn only on the screen it names.
  *
  * Server-rendered per request and never cached (`force-dynamic`; the header rule adds
  * `Cache-Control: no-store` and `X-Robots-Tag: noindex, nofollow`); the robots meta is the same
@@ -17,13 +18,14 @@ import type { ReactElement } from "react";
 import { isLocaleCode } from "@/config/locales";
 import {
   CHECKOUT_COOKIE_NAME,
+  CHECKOUT_ECHO_COOKIE_NAME,
   checkoutScreen,
+  decodeCheckoutEcho,
   isDraftToken,
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 import { PAGE_FRAME } from "@/modules/ui";
-import { CheckoutStatePage, CheckoutStepPage } from "@/modules/ui/checkout";
-
+import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
 import { checkoutAction } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -55,7 +57,8 @@ export default async function CheckoutPage({
   if (!isLocaleCode(locale)) notFound();
   setRequestLocale(locale);
   const query = await searchParams;
-  const value = (await cookies()).get(CHECKOUT_COOKIE_NAME)?.value ?? null;
+  const jar = await cookies();
+  const value = jar.get(CHECKOUT_COOKIE_NAME)?.value ?? null;
   const screen = await checkoutScreen({
     locale,
     token: isDraftToken(value) ? value : null,
@@ -63,10 +66,22 @@ export default async function CheckoutPage({
     line: one(query["line"]),
   });
   if (screen.kind === "placed") redirect(`/${locale}/checkout/done`);
+  const echo = decodeCheckoutEcho(jar.get(CHECKOUT_ECHO_COOKIE_NAME)?.value);
+  const matched =
+    screen.kind === "step" &&
+    echo !== null &&
+    echo.step === screen.step &&
+    echo.line === screen.line
+      ? echo
+      : undefined;
   return (
     <main className={PAGE_FRAME} id="main">
       {screen.kind === "step" ? (
-        <CheckoutStepPage action={checkoutAction} screen={screen} />
+        <CheckoutStepPage
+          action={checkoutAction}
+          screen={screen}
+          {...(matched === undefined ? {} : { echo: matched })}
+        />
       ) : (
         <CheckoutStatePage locale={locale} screen={screen} />
       )}
