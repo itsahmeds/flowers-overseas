@@ -1214,6 +1214,9 @@ describe.skipIf(server.url === undefined)(
                     'withdrawn_by_buyer_after_acceptance') RETURNING id`;
           return { orderId, adjustmentId: adjustment?.id ?? "" };
         });
+        // Migrations after A10 (`0030_set_c_a9`, TASK-261) are rolled back first, each in its
+        // own transaction, so the guard below is A10's alone.
+        await locked(() => runner(used.url, ["--down", "--to", A10_VERSION]));
         const catalogue = await readCatalogue(used.sql);
         const counts = await rowCounts(used.sql);
         const withAdjustment = await down(used);
