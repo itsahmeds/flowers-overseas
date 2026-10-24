@@ -10,32 +10,110 @@ import type { BlogRevisionFields } from "../../src/modules/content/blog/schemas.
 import type { BlogRevisionContent } from "../../src/modules/i18n/attestation.ts";
 
 const ADJECTIVES = [
-  "bright", "soft", "pale", "deep", "warm", "cool", "simple", "generous", "seasonal",
-  "fragrant", "tall", "low", "loose", "tidy", "wild", "classic", "golden", "dusky", "early",
-  "late", "humble", "lavish", "gentle", "bold",
+  "bright",
+  "soft",
+  "pale",
+  "deep",
+  "warm",
+  "cool",
+  "simple",
+  "generous",
+  "seasonal",
+  "fragrant",
+  "tall",
+  "low",
+  "loose",
+  "tidy",
+  "wild",
+  "classic",
+  "golden",
+  "dusky",
+  "early",
+  "late",
+  "humble",
+  "lavish",
+  "gentle",
+  "bold",
 ] as const;
 const FLOWERS = [
-  "tulips", "roses", "lilies", "peonies", "carnations", "gerberas", "sunflowers", "freesias",
-  "ranunculus", "anemones", "hydrangeas", "daisies", "orchids", "irises", "asters",
-  "chrysanthemums", "sweet peas", "cornflowers", "snapdragons", "dahlias",
+  "tulips",
+  "roses",
+  "lilies",
+  "peonies",
+  "carnations",
+  "gerberas",
+  "sunflowers",
+  "freesias",
+  "ranunculus",
+  "anemones",
+  "hydrangeas",
+  "daisies",
+  "orchids",
+  "irises",
+  "asters",
+  "chrysanthemums",
+  "sweet peas",
+  "cornflowers",
+  "snapdragons",
+  "dahlias",
 ] as const;
 const VERBS = [
-  "suit", "brighten", "welcome", "honour", "mark", "celebrate", "comfort", "cheer", "greet",
-  "thank", "surprise", "remember", "charm", "please",
+  "suit",
+  "brighten",
+  "welcome",
+  "honour",
+  "mark",
+  "celebrate",
+  "comfort",
+  "cheer",
+  "greet",
+  "thank",
+  "surprise",
+  "remember",
+  "charm",
+  "please",
 ] as const;
 const PEOPLE = [
-  "a grandmother", "an old friend", "a new neighbour", "a favourite teacher", "a younger sister",
-  "a godchild", "a colleague", "a distant cousin", "a proud father", "a busy aunt",
-  "a retired uncle", "a school friend",
+  "a grandmother",
+  "an old friend",
+  "a new neighbour",
+  "a favourite teacher",
+  "a younger sister",
+  "a godchild",
+  "a colleague",
+  "a distant cousin",
+  "a proud father",
+  "a busy aunt",
+  "a retired uncle",
+  "a school friend",
 ] as const;
 const PLACES = [
-  "in Kraków", "in Gdańsk", "in Warsaw", "in Poznań", "in Wrocław", "in Lublin", "in Toruń",
-  "in Katowice", "in Szczecin", "in Białystok", "near the Tatras", "by the Baltic",
+  "in Kraków",
+  "in Gdańsk",
+  "in Warsaw",
+  "in Poznań",
+  "in Wrocław",
+  "in Lublin",
+  "in Toruń",
+  "in Katowice",
+  "in Szczecin",
+  "in Białystok",
+  "near the Tatras",
+  "by the Baltic",
 ] as const;
 const MOMENTS = [
-  "on a spring morning", "on a winter evening", "after a long week", "before a family lunch",
-  "on a quiet Sunday", "at the end of summer", "during the autumn rains", "for a name day",
-  "on a birthday", "for a christening", "after an exam", "for a new home",
+  "on a spring morning",
+  "on a winter evening",
+  "after a long week",
+  "before a family lunch",
+  "on a quiet Sunday",
+  "at the end of summer",
+  "during the autumn rains",
+  "for a name day",
+  "on a birthday",
+  "for a christening",
+  "after an exam",
+  "for a new home",
 ] as const;
 
 /** A small linear congruential generator: the same seed always writes the same text. */
@@ -74,7 +152,10 @@ export const BLOG_LINKS_PARAGRAPH =
   "Read [our guide to sending flowers to Poland](fo:corridor/PL) and browse [flowers for a name day](fo:occasion-hub/name_day) before you choose.";
 
 /** The `fo:` references `BLOG_LINKS_PARAGRAPH` uses, as `existingRefs` holds them. */
-export const BLOG_LINK_REFS = ["fo:corridor/PL", "fo:occasion-hub/name_day"] as const;
+export const BLOG_LINK_REFS = [
+  "fo:corridor/PL",
+  "fo:occasion-hub/name_day",
+] as const;
 
 /** A body that passes every hard rule: a heading, distinct prose and the two links. */
 export function blogBody(seed = 1, words = 540): string {
@@ -104,7 +185,8 @@ export function blogRevisionFields(
 export const HASH_FIXTURE: BlogRevisionContent = {
   title: "How to send flowers to Poland from the UK",
   slug: "send-flowers-to-poland",
-  excerpt: "A plain guide to choosing flowers for someone in Poland (imieniny, żółte róże).",
+  excerpt:
+    "A plain guide to choosing flowers for someone in Poland (imieniny, żółte róże).",
   seoTitle: "Sending flowers to Poland",
   seoDescription: "Which flowers suit which moment in Poland.",
   bodyMd: "## Name days\n\nRead [our guide](fo:corridor/PL).",
