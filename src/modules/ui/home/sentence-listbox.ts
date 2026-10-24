@@ -80,6 +80,9 @@ export function enhanceSentence(
   let waiting: (() => void)[] = [];
   let open: Control | undefined;
   let current = 0;
+  /** Where the page stood when the listbox opened: a scroll closes it only if the page moved. */
+  let at = "";
+  const where = (): string => `${String(win.scrollX)},${String(win.scrollY)}`;
 
   const items = (control: Control): HTMLElement[] =>
     [...control.list.children] as HTMLElement[];
@@ -137,12 +140,19 @@ export function enhanceSentence(
     if (focus) control.trigger.focus();
   };
 
-  /** A press outside the panel and its trigger, a page scroll, a resize or `pagehide` (clause 7). */
+  /**
+   * A press outside the panel and its trigger, a page scroll, a resize or `pagehide` (clause 7).
+   * A scroll event reaches us a frame after the scroll itself, so one that lands just after the
+   * opening press may belong to a scroll that ended before it: it closes only if the page has
+   * moved since the listbox opened.
+   */
   function dismiss(event: Event): void {
     const target = event.target as Node;
     if (
-      event.type !== "pointerdown" ||
-      !(open?.list.contains(target) || open?.trigger.contains(target))
+      event.type === "scroll"
+        ? where() !== at
+        : event.type !== "pointerdown" ||
+          !(open?.list.contains(target) || open?.trigger.contains(target))
     )
       close(false);
   }
@@ -193,6 +203,7 @@ export function enhanceSentence(
     place(control);
     trigger.setAttribute("aria-expanded", "true");
     open = control;
+    at = where();
     listen("addEventListener");
     focusAt(
       openingIndex(
