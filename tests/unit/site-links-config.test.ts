@@ -216,7 +216,8 @@ describe("src/config/site-links.ts", () => {
       "category-row-destinations",
     ]);
     expect(isPublished("locale-home")).toBe(true);
-    expect(isPublished("for-florists")).toBe(false);
+    // Spec 011 published the florists' landing (TASK-210).
+    expect(isPublished("for-florists")).toBe(true);
   });
 
   it("names the five ids spec 007 reserved, and publishes every one of them (AC-20)", () => {
