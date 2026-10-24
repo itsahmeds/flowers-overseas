@@ -34,44 +34,17 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 _None recorded._
 
-
-- 2026-10-24: not started. The checkout e2e needs a database and CI's preview has none, so the JS-on/off journeys, axe in four locales and visual baselines per step need a decision on where they run (a DB-backed preview, or the integration layer plus a seeded e2e job). The JS-off journey was walked by hand against `next dev` with a local DB.
-
-## Result`.
-- **The 5-second p95 (spec 010 §12 task 8; `/review 191` nit 5):** re-record it here from the real place-order submit on staging, 20 runs, in the PR. AC-25 stays TASK-202's, measured from `place()`.
-- **Class:** not review-only (`CLAUDE.md` DoD §4): CI gates and the PII scan. `/review` and `/break` both run.
-
-## Read
-
-- `specs/010-checkout.md`: `## 0. Index`; §5.4; §8; §10; §11 (CI); §9 AC-31, AC-34, AC-37, AC-38, AC-39; §12 task 8.
-- `specs/040-hosting-railway-cloudflare.md` §5.4 (the cache rules); the baselines follow `docs/design/wireframes/checkout-{desktop,mobile}.dc.html` and `docs/design/wireframes/confirmation-{desktop,mobile}.dc.html` (PR 189; `docs/design/audits/2026-10-05-round-2.md`), as completed by the spec 010 design pass.
-- `docs/codebase-map.md` (the e2e, visual and a11y layers under `tests/`).
-
-## Carry-forwards
-
-One dated bullet per `/review`, newest last.
-
-- **From `/plan-tasks` (2026-10-05, after PR 189 merged):** the merged round-2 `checkout-*`, `confirmation-*` and `product-*` boards (`docs/design/audits/2026-10-05-round-2.md`) draw the round-2 layout (segmented steps, the form as a white letter, the recap) and a demo guard band reading "This is a demonstration. No order is placed and no card is charged.", but carry none of spec 010 Appendix A's state strings: no "Use sample details", inline privacy notice, demo calendar heading, price-changed, date-gone, daily-cap, closed or expired state, "Place demo order", demo confirmation or "no longer available"; the product board's preview state draws the "Ordering is not open yet" status pill, not "Try a demo order" (checked by a text search of the merged files). Those states need a spec 010 design pass (`/design 010`, spec 010 §12's artboard list) merged before this task is dispatched (`CLAUDE.md`: no page is built from a description alone). The guard band's wording differs from Appendix A's banner and goes to the founder with that pass.
-- **From `/plan-tasks` (2026-10-22):** spec 010 §14 A3.5 left AC-50 with no owner; it is this task's: the `checkout.coverage_refused` log line, the capture-logger journey and the Sentry fixture hold no postcode, town or date; no checkout URL carries the postcode; no PDP, shop route or module they render imports `canServe` or the coverage seam.
-- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 adds the basket to every suite: the rewritten AC-34's scan half (two-line, two-locale journey), AC-71's Lighthouse half, AC-72's staging half (`cf-cache-status` on `/basket` after the founder's Cloudflare rule), AC-79 (axe matrix, keyboard-only basket run, baselines). Waits for TASK-349.
-
-## Escalations
-
-One dated bullet per escalation: the question, who it went to, the answer or `open`.
-
-_None recorded._
-
 ## Progress
 
 One line per coherent step, newest last, written by the agent doing the work and pushed with
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: orchestrator ruling: the checkout e2e runs in CI's `e2e` job against a Postgres 16 service (migrate, `db:seed --insert-only`, `checkout.open` on for PL by a CI-only SQL step), serving the same build a second time on port 3100. `tests/e2e/checkout-journey.spec.ts`: product page to confirmation in `en-gb` and `pl`, JS on and off, both e2e projects (12 cases), axe (wcag2a/aa, 21a/aa) on each step and the confirmation on desktop with JS on, the URL scan for personal values and query keys, the gone state, Enter continues. Run locally against `next dev` with a local PG: 12 passed; Enter case red with the default button removed. Not done: visual baselines per step, the four-locale axe matrix (de, ar-XB), `budget:client-js` for the checkout route, the log and Sentry PII scan, the Cloudflare staging check, the 20-run p95, and the basket additions (TASK-349).
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Partial, on PR 400 (https://github.com/itsahmeds/flowers-overseas/pull/400): the CI e2e job with a Postgres-backed origin and `checkout-journey.spec.ts` (AC-34 URL half, T-29, T-33, T-68 single delivery, axe in `en-gb` and `pl`). Adds about a minute (service, migrate, seed) plus about two (the spec) to the `e2e` job only. Left for this task: visual baselines (AC-39), the four-locale axe matrix and keyboard-only run (AC-37), `budget:client-js` (AC-38), the log and Sentry scan (AC-34, AC-50), the Cloudflare staging check (AC-31), the p95, and the basket additions after TASK-349.
