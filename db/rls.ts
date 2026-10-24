@@ -208,6 +208,9 @@ export const STAFF_ONLY_TABLES = [
  */
 export const SYSTEM_ONLY_TABLES = [
   "checkout_draft",
+  // spec 010 §14 A-founder-2026-10-22 (migration `0020_checkout_draft_lines`, TASK-348): a
+  // basket's lines, with the same single policy as their draft.
+  "checkout_draft_line",
   // spec 002 §14 A7.7 (migration `0017_payments_a7`, TASK-254): one row per outbox target, read
   // and written only by the dispatcher's system transactions.
   "outbox_delivery",
