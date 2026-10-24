@@ -333,6 +333,42 @@ export const RELAY_PATTERNS: Readonly<
   pl: PL,
 };
 
+/**
+ * The prose refinement of the relay check, for blog posts only (spec 044 §2.3 rule 5 (b), advisor
+ * fix 1; TASK-321). Four context-free `en` patterns are also everyday words in editorial prose
+ * ("flowers for your partner", "hold the stems under running water"), so in a post they fail only
+ * when the same sentence carries a florist or order word: the existing `floristOrOrder` context.
+ * Read by the blog rule alone (`proseRelayPatterns`); `RELAY_PATTERNS` and spec 041's scans are
+ * unchanged, and no exemption of any kind applies.
+ */
+export const PROSE_RELAY_CONTEXT: Readonly<Record<string, RelayContext>> = {
+  partner: "floristOrOrder",
+  held: "floristOrOrder",
+  hold: "floristOrOrder",
+  authorise: "floristOrOrder",
+};
+
+/**
+ * `RELAY_PATTERNS` with `context` taken from `PROSE_RELAY_CONTEXT` where it names the pattern.
+ * `refinement` exists for the unit test's mutations; the blog rule passes the default.
+ */
+export function proseRelayPatterns(
+  refinement: Readonly<Record<string, RelayContext>> = PROSE_RELAY_CONTEXT,
+): Readonly<Record<RelayLocale, readonly RelayPattern[]>> {
+  const refine = (
+    patterns: readonly RelayPattern[],
+  ): readonly RelayPattern[] =>
+    patterns.map((pattern) => {
+      const context = refinement[pattern.id];
+      return context === undefined ? pattern : { ...pattern, context };
+    });
+  return {
+    en: refine(RELAY_PATTERNS.en),
+    de: RELAY_PATTERNS.de,
+    pl: RELAY_PATTERNS.pl,
+  };
+}
+
 /** The words an in-context pattern needs beside it, per locale. */
 const CONTEXT_WORDS: Readonly<
   Record<RelayLocale, Readonly<Record<"florist" | "order", RegExp>>>

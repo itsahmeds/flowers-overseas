@@ -208,6 +208,8 @@ export {
   AttestInputSchema,
   type AttestOutcome,
   type AttestRefusal,
+  type BlogRevisionContent,
+  blogRevisionHash,
   type LedgerHead,
   type ProductCopyContent,
   type RequestChangeInput,
