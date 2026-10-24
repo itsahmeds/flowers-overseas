@@ -11,6 +11,10 @@
       "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
     },
     {
+      "path": "/demo/",
+      "because": "spec 011 §6 'robots.txt gains Disallow: /demo/': the florist inbox's Phase 0 mount, /demo/vendor-inbox, noindex and no-store, 404 in production (TASK-210)"
+    },
+    {
       "path": "/vendor/",
       "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
     },

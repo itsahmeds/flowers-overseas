@@ -1,0 +1,107 @@
+{
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://flowersoverseas.com/en"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "For florists"
+          }
+        ]
+      },
+      {
+        "@type": "WebPage",
+        "name": "Flower orders for florists in Europe | Flowers Overseas",
+        "description": "We bring you orders from people abroad sending flowers home. You make and deliver them locally and receive a fixed amount per order, agreed in advance.",
+        "url": "https://flowersoverseas.com/en/for-florists",
+        "inLanguage": "en"
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Do I have to work only with you?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. You keep your shop, your customers and any other work you do."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is there a fee?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. There is no fee to join and no monthly fee."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What if I am full on a day?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Decline the order. It costs you nothing."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Who is the customer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "We are. The buyer pays us, and any question or complaint comes to us. You never chase a payment."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I see the buyer's details?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. After you accept, you see what delivery needs: the recipient's name, phone number and address, the card message and the date."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens to the recipient's details after delivery?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You use them only to deliver that order and do not keep them afterwards. Our agreement with you says so."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "In which language do orders arrive?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "In Polish, German or English, as you choose."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need a registered business?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. We work with registered flower shops and florists, and we ask for your registration number when we speak."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I start?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Apply here, or call or message us first. We talk, agree what you receive for each bouquet, and send you a test order before a real one."
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

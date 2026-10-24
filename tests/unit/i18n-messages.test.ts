@@ -83,7 +83,11 @@ describe("the shell catalogue", () => {
       // `finder` and `home` are the locale home's own copy (TASK-052): the hero, the finder card,
       // the destination states and the four-fact proof row.
       "finder",
+      // `floristInbox` and `forFlorists` are spec 011 §7's namespaces (TASK-210): the
+      // presentational inbox's labels and the florists' apply, sent and status lines.
+      "floristInbox",
       "footer",
+      "forFlorists",
       "home",
       // `infoPages` is spec 041 §7's namespace (TASK-182): the trust pages' not-open line, the
       // help page's contact block and the about page's company line. Server Components only.

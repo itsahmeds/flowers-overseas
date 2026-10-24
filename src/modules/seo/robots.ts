@@ -57,6 +57,9 @@ export const SITEMAP_PATH = "/sitemap.xml";
 export const DISALLOWED_PATHS: readonly string[] = [
   "/api/",
   "/admin/",
+  // Spec 011 §6 (TASK-210): the florist inbox's Phase 0 mount, `/demo/vendor-inbox`, and the
+  // portal's later one, disallowed now so spec 026 cannot forget it. Both are also `noindex`.
+  "/demo/",
   "/vendor/",
   "/account/",
   "/checkout/",

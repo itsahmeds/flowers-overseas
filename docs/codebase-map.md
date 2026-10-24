@@ -14,18 +14,18 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +6 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +89 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +91 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
-| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
+| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/cache-cloudflare.test.ts` +12 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +103 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +107 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
-| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
+| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | `contract/florists-schema-fixtures.test.ts`, `unit/florists-config.test.ts` +2 |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +30 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +53 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/florists-schema-fixtures.test.ts`, `contract/listing-schema-fixtures.test.ts` +32 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +54 |
 
 ## Config (`src/config/`)
 
@@ -52,6 +52,7 @@ task actually touches.
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
+| `florists.ts` | The florists' configuration (spec 011 §5.2… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
 | `info-pages.ts` | The info-page registry | 041 |
@@ -91,6 +92,12 @@ task actually touches.
 | `[locale]/@header/[segment]/page.tsx` | The header at depth 2, `/{locale}/{segment}`: the… | 043 |
 | `[locale]/@header/boom/page.tsx` | The header of the `boom` test route: out of context. A… | 043 |
 | `[locale]/@header/default.tsx` | The `@header` slot's fallback: the out-of-context… | 043 |
+| `[locale]/@header/dla-kwiaciarni/zglos-sie/page.tsx` | The header of `/{locale}/dla-kwiaciarni/zglos-sie`: out… | 043 |
+| `[locale]/@header/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | The header of `/{locale}/dla-kwiaciarni/zglos-sie/wyslan… | 043 |
+| `[locale]/@header/for-florists/apply/page.tsx` | The header of `/{locale}/for-florists/apply`: out of any | 043 |
+| `[locale]/@header/for-florists/apply/sent/page.tsx` | The header of `/{locale}/for-florists/apply/sent`: out… | 043 |
+| `[locale]/@header/fuer-floristen/bewerben/gesendet/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben/gesende… | 043 |
+| `[locale]/@header/fuer-floristen/bewerben/page.tsx` | The header of `/{locale}/fuer-floristen/bewerben`: out… | 043 |
 | `[locale]/@header/page.tsx` | The locale home's header: out of context, and with no… | 043 |
 | `[locale]/@switcher/-product/[segment]/[child]/[grandchild]/page.tsx` | Product page language links | 003 |
 | `[locale]/@switcher/[segment]/[child]/[grandchild]/page.tsx` | Depth-4 language links | 003 |
@@ -104,7 +111,13 @@ task actually touches.
 | `[locale]/boom/page.tsx` | A route that throws on purpose: the localised 500… | 004 |
 | `[locale]/country-listing.tsx` | The country category's and the country occasion's head… | 008 |
 | `[locale]/country-shop-root.tsx` | The country shop root's head and body, once, for the… | 007 |
+| `[locale]/dla-kwiaciarni/zglos-sie/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie`: The application.… | 011 |
+| `[locale]/dla-kwiaciarni/zglos-sie/wyslano/page.tsx` | `/{locale}/dla-kwiaciarni/zglos-sie/wyslano`: The… | 011 |
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
+| `[locale]/for-florists/apply/page.tsx` | `/{locale}/for-florists/apply`: The application. A… | 011 |
+| `[locale]/for-florists/apply/sent/page.tsx` | `/{locale}/for-florists/apply/sent`: The application's… | 011 |
+| `[locale]/fuer-floristen/bewerben/gesendet/page.tsx` | `/{locale}/fuer-floristen/bewerben/gesendet`: The… | 011 |
+| `[locale]/fuer-floristen/bewerben/page.tsx` | `/{locale}/fuer-floristen/bewerben`: The application. A… | 011 |
 | `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once, for the… | 041 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
 | `[locale]/listing-json-ld.tsx` | The listing pages' JSON-LD, mounted once per route… | 008 |
@@ -208,14 +221,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 357 |
+| `tests/unit/` | 360 |
 | `tests/integration/` | 41 |
-| `tests/contract/` | 25 |
+| `tests/contract/` | 26 |
 | `tests/e2e/` | 70 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 351 |
+| `tests/fixtures/` | 354 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?
