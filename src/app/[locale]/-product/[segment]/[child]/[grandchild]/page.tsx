@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { isPublished } from "@/config/site-links";
+import { appEnvironment } from "@/lib/env.schema";
 import {
   ListingBreadcrumb,
   type LocalePathResolution,
@@ -14,6 +15,7 @@ import {
   resolveLocalePath,
   writeProductExistenceSummary,
 } from "@/modules/catalog";
+import { CHECKOUT_START_PATH, checkoutEntryFor } from "@/modules/checkout";
 import { infoPageExists, infoPagePath } from "@/modules/content";
 import { LanguageAlternates } from "@/modules/i18n";
 import {
@@ -185,6 +187,15 @@ export default async function LocaleProductRoute(props: ProductParams) {
   return (
     <>
       <ProductPage
+        // The checkout entry, decided without a database so the cached page is the same for
+        // every visitor (spec 010 §5.3, §5.4, AC-5; TASK-206): the start route re-decides the
+        // mode on the click.
+        checkout={{
+          entry: checkoutEntryFor(product.delivery.state, {
+            environment: appEnvironment(process.env),
+          }),
+          action: CHECKOUT_START_PATH,
+        }}
         breadcrumb={
           // The product page keeps its trail on the phone and shows no back link (spec 004
           // §14 A24 clause 4 (e)); `ProductPage` displays it below the buy section there.

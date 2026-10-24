@@ -65,6 +65,7 @@ export {
 export {
   parseBuyerPhone,
   parseRecipientPhone,
+  residenceCountryCodes,
   phoneRejections,
   type ParsedPhone,
   type PhoneRejection,
@@ -160,6 +161,8 @@ export {
 } from "./basket";
 export { lineDateStatus, nextDeliveryDate, type LineDateStatus } from "./dates";
 export {
+  CHECKOUT_START_PATH,
+  startFields,
   isSameOrigin,
   methodNotAllowed as checkoutMethodNotAllowed,
   startCheckout,
@@ -222,3 +225,22 @@ export {
   type CheckoutPaymentStep,
   type PaymentStepContext,
 } from "./payment-step";
+
+// TASK-204: what `/{locale}/checkout` draws.
+export {
+  checkoutScreen,
+  selectScreen,
+  type CalendarDay,
+  type CheckoutScreen,
+  type OfferedAddon,
+  type ScreenLine,
+  type ScreenRequest,
+  type StepScreen,
+} from "./screen";
+
+// TASK-206: the confirmation the cookie leads to.
+export {
+  confirmationFor,
+  type Confirmation,
+  type ConfirmedDelivery,
+} from "./confirmation";

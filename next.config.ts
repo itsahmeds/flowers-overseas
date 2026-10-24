@@ -6,6 +6,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 import { adminHeaderRules } from "./src/lib/admin-headers";
 import { basketHeaderRules } from "./src/lib/transactional-headers";
+import { checkoutHeaderRules } from "./src/modules/seo/transactional";
 import { consentBootstrapHash } from "./src/lib/consent-bootstrap";
 import { securityHeaderRules } from "./src/lib/csp";
 import { assertBuildEnv } from "./src/lib/env.assert";
@@ -119,6 +120,9 @@ const headerRules = [
   // Every basket response: `noindex, nofollow` and `no-store, private` (spec 010 §14
   // A-founder-2026-10-22 item 12, AC-72; TASK-349). After the environment-wide rule, as above.
   ...basketHeaderRules(),
+  // Every checkout address under every locale: `noindex, nofollow` and `no-store` (spec 010 §6,
+  // AC-30; TASK-204). After the environment-wide rule, so its value wins.
+  ...checkoutHeaderRules(),
   ...securityHeaderRules(environment, {
     inlineHashes: [consentBootstrapHash()],
     ga4: ga4MeasurementId(process.env) !== undefined,

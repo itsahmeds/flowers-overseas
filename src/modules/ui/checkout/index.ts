@@ -85,3 +85,29 @@ export {
   NOTICE_CALM,
   buttonClass,
 } from "./styles.ts";
+
+// TASK-204: the checkout page, its forms and the routing fields the page's action reads.
+export {
+  CheckoutStatePage,
+  CheckoutStepBody,
+  CheckoutStepPage,
+  PlaceArea,
+  sampleValues,
+  type CheckoutEcho,
+} from "./CheckoutView.tsx";
+export {
+  CHECKOUT_FORM_FIELDS,
+  CHECKOUT_FORM_IDS,
+  CHECKOUT_FORM_INTENTS,
+  type CheckoutAction,
+  type CheckoutFormIntent,
+} from "./form-fields.ts";
+export { StepForm, type StepFormProps } from "./StepForm.tsx";
+export {
+  ConfirmationGone,
+  ConfirmationPage,
+  DemoConfirmation,
+  confirmationStateFor,
+  registerConfirmationState,
+  type ConfirmationRenderer,
+} from "./ConfirmationView.tsx";

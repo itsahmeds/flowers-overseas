@@ -437,6 +437,26 @@ export interface DateParts {
 }
 
 /**
+ * A country's name in the locale's language, through `Intl.DisplayNames` (spec 010 §2 step 2:
+ * the buyer's country of residence, every country selectable). An unknown code reads as itself.
+ */
+export function formatRegionName(
+  countryIso: string,
+  locale: LocaleCode,
+): string {
+  const code = z
+    .string()
+    .regex(/^[A-Z]{2}$/u)
+    .parse(countryIso);
+  return (
+    new Intl.DisplayNames([tagFor(locale)], {
+      type: "region",
+      fallback: "code",
+    }).of(code) ?? code
+  );
+}
+
+/**
  * The day, month, weekday and year of **one** `calendarDate` value, as `Intl` spells each part in
  * that value (spec 004 §14 A23 clause 5; TASK-187). The country occasion page's date card sets them
  * apart ("26" · "May" · "Wednesday" · "2027"); they come from `formatToParts` of the same

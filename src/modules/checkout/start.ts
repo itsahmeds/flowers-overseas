@@ -119,6 +119,36 @@ export function isSameOrigin(request: Request): boolean {
   }
 }
 
+/** Where the product page's two submits post (`formaction`, AC-5). */
+export const CHECKOUT_START_PATH = "/api/checkout/start";
+
+/**
+ * The product page's form as `CheckoutStartSchema` reads it (AC-5, TASK-206): the size radio is
+ * named `tier` (the page's `GET` form shares it with the size island), and the page carries what
+ * it displayed for **each** size as `expect-{tierKey}`, because the size can change after the
+ * page was served; the one matching the posted size is `expectedTotalMinor`. A body already in the
+ * schema's own shape passes unchanged.
+ */
+export function startFields(
+  fields: Readonly<Record<string, string>>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    if (key === "tier" || key.startsWith("expect-")) continue;
+    out[key] = value;
+  }
+  const tier = fields["tier"];
+  if (out["tierKey"] === undefined && tier !== undefined) out["tierKey"] = tier;
+  const shown =
+    out["tierKey"] === undefined
+      ? undefined
+      : fields[`expect-${out["tierKey"]}`];
+  if (out["expectedTotalMinor"] === undefined && shown !== undefined) {
+    out["expectedTotalMinor"] = shown;
+  }
+  return out;
+}
+
 /** The posted form: string fields only (a file part is refused), each key once. */
 const StartBodySchema = z.record(z.string().max(256), z.string().max(256));
 
@@ -133,7 +163,7 @@ async function formFields(
     const parsed = StartBodySchema.safeParse(
       Object.fromEntries((await request.formData()).entries()),
     );
-    return parsed.success ? parsed.data : null;
+    return parsed.success ? startFields(parsed.data) : null;
   } catch {
     return null;
   }
