@@ -32,12 +32,13 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly spec 010's two checkout flags and spec 018's two", () => {
+  it("holds exactly spec 010's two checkout flags, spec 018's two and spec 013's payments.stripe", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
       "account.open",
       "invoice.issue",
+      "payments.stripe",
     ]);
   });
 
@@ -53,6 +54,16 @@ describe("T-16 — the registry", () => {
       key: "invoice.issue",
       scopeKinds: ["country"],
       risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
+  });
+
+  it("registers payments.stripe as global and high-risk, dirtying no public page (spec 013 §12)", () => {
+    expect(flagDefinition("payments.stripe")).toEqual({
+      key: "payments.stripe",
+      scopeKinds: ["global"],
+      risk: "high",
       dirties: [],
       description: expect.stringMatching(/\S/u) as unknown as string,
     });
@@ -122,9 +133,11 @@ describe("T-16 — the registry", () => {
   it("knows its keys and no others", () => {
     expect(isRegisteredFlagKey("checkout.open")).toBe(true);
     expect(isRegisteredFlagKey("checkout.demo_guard")).toBe(true);
-    expect(isRegisteredFlagKey("payments.stripe")).toBe(false);
+    expect(isRegisteredFlagKey("payments.stripe")).toBe(true);
+    // Seeded by 0009 but not registered: spec 014 registers it.
+    expect(isRegisteredFlagKey("payments.mollie")).toBe(false);
     expect(isRegisteredFlagKey("checkout.opened")).toBe(false);
-    expect(() => flagDefinition("payments.stripe" as never)).toThrow(
+    expect(() => flagDefinition("payments.mollie" as never)).toThrow(
       UnregisteredFlagError,
     );
   });
@@ -159,7 +172,7 @@ describe("FlagToggleSchema", () => {
   it.each([
     [
       {
-        key: "payments.stripe",
+        key: "payments.mollie",
         scope: { kind: "global", ref: "*" },
         enabled: true,
       },
@@ -337,7 +350,7 @@ describe("T-16 — isEnabled", () => {
   it("refuses an unregistered key, before reading anything", async () => {
     const load = vi.fn(() => Promise.resolve(snapshot({})));
     const reader = createFlagReader({ load });
-    await expect(reader.isEnabled("payments.stripe" as never)).rejects.toThrow(
+    await expect(reader.isEnabled("payments.mollie" as never)).rejects.toThrow(
       UnregisteredFlagError,
     );
     await expect(reader.isEnabled("checkout.opened" as never)).rejects.toThrow(

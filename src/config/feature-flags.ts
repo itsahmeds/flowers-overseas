@@ -20,7 +20,10 @@
  *    dirties no public page (spec 012 §5.4). High-risk means admin-only, with the key typed to
  *    confirm (TASK-220).
  *
- * Spec 013 adds `payments.stripe` and `payments.mollie` here, high-risk, when it lands.
+ * Spec 013 adds `payments.stripe` (TASK-257), high-risk and global: migration `0009` already
+ * seeds its row. The per-method `payments.method.{id}` keys wait for their seed rows (a reader
+ * refuses a registered key with no row), so until then no method is on and `startPayment` answers
+ * `payments_unavailable` (fail closed; carry-forward in `docs/tasks/TASK-257.md`).
  *
  * Spec 018 (TASK-337, migration `0021_post_purchase`) adds two, neither dirtying a public page
  * (every route they gate is `noindex`, `no-store`):
@@ -153,6 +156,14 @@ const REGISTRY = [
     description:
       "Issue invoices and credit notes for live orders to a destination (spec 018). On for a country only after docs/compliance/vat-signoff.md records the accountant's answers.",
     risk: "standard",
+    dirties: [],
+  },
+  {
+    key: "payments.stripe",
+    scopeKinds: ["global"],
+    description:
+      "Stripe takes payments (spec 013; ADR-0005). Off returns new checkouts to demo while orders already paid keep moving. Admin only; type the key to confirm.",
+    risk: "high",
     dirties: [],
   },
 ] as const satisfies readonly FeatureFlagDefinition[];
