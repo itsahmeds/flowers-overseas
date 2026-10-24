@@ -988,7 +988,7 @@
       "invalidCharacters": "Please remove the special characters from this text."
     },
     "basket": {
-      "title": "Your basket",
+      "title": "Your <em>basket</em>",
       "added": "Added to your basket.",
       "empty": "Your basket is empty.",
       "emptyLink": "Choose flowers",

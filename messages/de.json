@@ -227,7 +227,7 @@
       "otherMode": "This bouquet cannot go in this basket. Please check out or empty your basket first.",
       "remove": "Remove",
       "removeLabel": "Remove {product} from your basket",
-      "title": "Your basket",
+      "title": "Your <em>basket</em>",
       "to": "To {country}",
       "total": "Total",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",

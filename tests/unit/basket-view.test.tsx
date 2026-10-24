@@ -246,6 +246,41 @@ describe("AC-57: each line and the one total, JavaScript off", () => {
     expect(html).toMatch(
       /<h1[^>]*id="basket-title"[^>]*tabindex="-1"|<h1[^>]*tabIndex="-1"[^>]*id="basket-title"/u,
     );
+    // The board's "Your *basket*": the accent is an `<em>` inside the heading, not literal tags.
+    expect(html).toMatch(
+      /<h1[^>]*id="basket-title"[^>]*>Your <em data-fo-em="">basket<\/em><\/h1>/u,
+    );
+  });
+});
+
+describe("the document title is the heading's words, without its accent markup", () => {
+  it.each(["en", "en-gb", "de", "pl"] as const)(
+    "%s: `t.markup` drops the <em> the heading renders",
+    (locale) => {
+      const t = createTranslator({
+        locale,
+        messages: loadMessages(locale, MESSAGE_NAMESPACES),
+        namespace: "checkout",
+      } as Parameters<typeof createTranslator>[0]);
+      const title = t.markup("basket.title", {
+        em: (chunks: string) => chunks,
+      });
+      expect(title).toBe("Your basket");
+    },
+  );
+  it("the route passes that plain title to transactionalMetadata", () => {
+    const route = readFileSync(
+      join(
+        import.meta.dirname,
+        "..",
+        "..",
+        "src/app/[locale]/(checkout)/basket/page.tsx",
+      ),
+      "utf8",
+    );
+    expect(route).toContain(
+      't.markup("basket.title", { em: (chunks) => chunks })',
+    );
   });
 });
 
