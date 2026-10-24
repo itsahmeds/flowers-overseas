@@ -144,6 +144,16 @@ One line per coherent step, newest last.
   `next build` (680 passed across the guide suites) and each mutation watched red on `next dev`;
   the first run found a 160 px band under the intro at 1440 × 900, fixed by dropping the band's
   bottom padding from `md` up.
+- 2026-10-24 (finisher): rebased onto `origin/main` 0935d7b3 (PRs 323, 336, 340, 341 landed
+  after the branch's base; PR 360's fonts were already under it). Conflicts: `docs/codebase-map.md`
+  regenerated with `pnpm codebase:map`; `corridor-state-b-mobile-shop.png` and the baselines
+  manifest taken from `origin/main`, then the Linux set re-rendered by the `visual:baselines` run
+  40064239087 on the rebased head 37db27ba. Three PNGs moved against the rebased branch, each
+  looked at beside its old picture: `corridor-state-b-desktop-shop` (140 px, 0.043 %),
+  `corridor-state-b-mobile-shop` (150 px, 0.065 %) and `laptop-country-category` (109 px,
+  0.011 %), all sub-pixel anti-aliasing of chip text and a photo edge, same geometry. The branch's
+  other four baselines (`laptop-guide`, `corridor-country-desktop-hero`, both `-facts`) came back
+  byte-identical. Manifest copied in; `visual:baselines --verify` matches all 116, `--check` ok.
 
 ## Result
 
@@ -166,6 +176,13 @@ no image, no preload); the Rule column prints the three approved sentences throu
   the build slot (load average 4.8 to 11.8 during the run, other agents active); 680 passed. It
   found the 160 px band at 1440 × 900 that the `md:pb-0` fix closed. The build slot is released
   and the local `.next` is deleted (it slowed one ESLint-in-vitest case past its timeout).
+- **Database used by the local build:** not recorded by the builder, so unknown for certain. This
+  worktree holds no `.env.local` or `.env` (only `.env.example`, which `next build` does not
+  load), so no Neon URL could have come from a file here; whether a `DATABASE_URL` was exported in
+  the builder's shell is not known. The finisher used no database at all: no local build, no
+  Playwright, no integration suite; only `pnpm gates:cheap` (unit tests with what the test scripts
+  provide) and the CI runners, which build from `.env.example` and refuse a real `DATABASE_URL`.
+- **Rebase and baseline refresh:** see the finisher line in `## Progress` (run 40064239087).
 - **Cheap gates:**
 
 ```
