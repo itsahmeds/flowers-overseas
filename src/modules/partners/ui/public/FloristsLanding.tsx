@@ -42,7 +42,7 @@ const H3 = "font-display text-h3 m-0 font-normal leading-[1.25]";
 const BOX =
   "grid content-start gap-[18px] rounded-(--radius-photo) px-[20px] py-[22px] md:px-[34px] md:py-[32px]";
 const TICKS =
-  "m-0 grid list-none p-0 [&>li]:border-b [&>li]:border-ink/12 [&>li]:py-[10px] [&>li]:text-ink [&>li]:before:me-[10px] [&>li]:before:font-bold [&>li]:before:text-stem [&>li]:before:content-['✓']";
+  "m-0 grid list-none p-0 [&>li]:border-b [&>li]:border-rule [&>li]:py-[10px] [&>li]:text-ink [&>li]:before:me-[10px] [&>li]:before:font-bold [&>li]:before:text-stem [&>li]:before:content-['✓']";
 
 /** One section by its authored id; the content gate (`pages:check`) guarantees every one exists. */
 function section(view: InfoPageView, id: string): InfoSectionView {
@@ -213,7 +213,7 @@ export function FloristsLanding({
         <div className="mx-auto w-full max-w-[calc(var(--container-page)+2*var(--gutter))] px-(--gutter-s) md:px-(--gutter)">
           <Breadcrumbs
             label={t("a11y.breadcrumb")}
-            className="[&_a]:text-paper/85 [&_ol]:text-paper/85 [&_span[aria-current]]:text-paper/85"
+            className="[&_a]:text-on-inverse [&_ol]:text-on-inverse [&_span[aria-current]]:text-on-inverse opacity-85"
             crumbs={page.breadcrumb.map((crumb) => ({
               key: crumb.labelKey,
               label:
@@ -241,7 +241,7 @@ export function FloristsLanding({
                 </p>
               ) : null}
               {lede === undefined ? null : (
-                <p className="text-body-s md:text-lede-fluid text-paper/85 m-0 max-w-[46ch] leading-[1.5]">
+                <p className="text-body-s md:text-lede-fluid text-on-inverse m-0 max-w-[46ch] leading-[1.5] opacity-85">
                   {lede}
                 </p>
               )}
@@ -260,7 +260,7 @@ export function FloristsLanding({
               </div>
               {page.notYetOpen ? (
                 <p
-                  className="text-on-inverse border-paper/22 before:bg-sun m-0 inline-flex items-baseline gap-[10px] border-t pt-[14px] text-sm before:size-[8px] before:shrink-0 before:-translate-y-px before:rounded-full before:content-['']"
+                  className="text-on-inverse before:bg-sun after:bg-on-inverse relative m-0 inline-flex items-baseline gap-[10px] pt-[14px] text-sm before:size-[8px] before:shrink-0 before:-translate-y-px before:rounded-full before:content-[''] after:absolute after:start-0 after:end-0 after:top-0 after:h-px after:opacity-22 after:content-['']"
                   role="status"
                   data-fo-status-line
                 >
