@@ -715,3 +715,152 @@ test.describe("the docked bar under reduced motion (review round 1)", () => {
     }
   });
 });
+
+/** Where a tab stop lies in the first block: the trail, the gallery, the buy section, or neither. */
+type Region = "trail" | "gallery" | "buy";
+
+/**
+ * Tab from the top of the document and name the region of every stop inside the first block, in
+ * the order the keyboard reaches them (consecutive stops in one region collapsed), and the first
+ * stop inside `<main>` as `TAG[href]`. Stops once focus has left the first block after entering it.
+ */
+async function tabWalk(
+  page: Page,
+): Promise<{ firstInMain: string; regions: Region[] }> {
+  let firstInMain = "";
+  const regions: Region[] = [];
+  let entered = false;
+  for (let press = 0; press < 80; press += 1) {
+    await page.keyboard.press("Tab");
+    const stop = await page.evaluate(() => {
+      const active = document.activeElement;
+      if (active === null || active === document.body) return undefined;
+      const href = active.getAttribute("href");
+      const region: Region | undefined = active.closest("[data-fo-pdp-trail]")
+        ? "trail"
+        : active.closest("[data-fo-pdp-gallery]")
+          ? "gallery"
+          : active.closest("[data-fo-pdp-buy]")
+            ? "buy"
+            : undefined;
+      return {
+        name: href === null ? active.tagName : `${active.tagName}[${href}]`,
+        inMain: active.closest("main") !== null,
+        region,
+      };
+    });
+    if (stop === undefined) continue;
+    if (stop.inMain && firstInMain === "") firstInMain = stop.name;
+    if (stop.region === undefined) {
+      if (entered) break;
+      continue;
+    }
+    entered = true;
+    if (regions.at(-1) !== stop.region) regions.push(stop.region);
+  }
+  return { firstInMain, regions };
+}
+
+/** The three regions in reading order on screen: by top edge, then by inline-start edge. */
+async function visualRegions(page: Page): Promise<Region[]> {
+  const placed = await Promise.all(
+    (["trail", "gallery", "buy"] as const).map(async (region) => ({
+      region,
+      box: await boxOf(page, `[data-fo-pdp-${region}]`),
+    })),
+  );
+  return placed
+    .sort((a, b) =>
+      Math.abs(a.box.top - b.box.top) > 1
+        ? a.box.top - b.box.top
+        : a.box.left - b.box.left,
+    )
+    .map(({ region }) => region);
+}
+
+test.describe("TASK-249 N-07: the trail is the keyboard's first stop on a laptop (spec 004 AC-50, §8 WCAG 2.4.3)", () => {
+  test("at 1440 × 900 the first tab stop in <main> is the trail's Home link, and trail, gallery and buy section are reached in the order they are drawn", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await open(page);
+    const { firstInMain, regions } = await tabWalk(page);
+    // The one value: the Home crumb of `/en-gb/poland/product/amber-hour`, restated.
+    expect(firstInMain).toBe("A[/en-gb]");
+    expect(regions[0]).toBe("trail");
+    // The drawing at 1440: the trail on its own row above, the gallery left, the buy section right.
+    expect(await visualRegions(page)).toEqual(["trail", "gallery", "buy"]);
+    expect(regions).toEqual(
+      (await visualRegions(page)).filter((region) => regions.includes(region)),
+    );
+    expect(regions).toContain("buy");
+  });
+
+  test("at 390 × 844 the keyboard follows the screen: gallery, buy section, then the trail under it (reading-flow)", async ({
+    page,
+  }) => {
+    await page.setViewportSize(PHONE);
+    await open(page);
+    expect(
+      await page.evaluate(() => CSS.supports("reading-flow", "grid-rows")),
+      "the e2e browser (Chromium) supports reading-flow",
+    ).toBe(true);
+    expect(await visualRegions(page)).toEqual(["gallery", "buy", "trail"]);
+    const { regions } = await tabWalk(page);
+    expect(regions).toEqual(
+      (await visualRegions(page)).filter((region) => regions.includes(region)),
+    );
+    expect(regions.at(-1)).toBe("trail");
+  });
+});
+
+test.describe("TASK-249 Q1-22: the trail never wraps to a line that starts with a separator (spec 004 AC-50)", () => {
+  for (const width of [320, 360, 390] as const) {
+    test(`at ${String(width)}: every line of the trail starts with a crumb, and each separator ends its own crumb's line`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await open(page);
+      const items = await page
+        .locator("main [data-fo-breadcrumb-trail] > li")
+        .evaluateAll((nodes) =>
+          nodes.map((li) => {
+            const crumb = li.querySelector(
+              ':scope > a, :scope > span:not([aria-hidden="true"])',
+            );
+            const own = li.getBoundingClientRect();
+            const box = crumb?.getBoundingClientRect();
+            const after = getComputedStyle(li, "::after").content;
+            return {
+              top: Math.round(own.top),
+              // How far the crumb starts after its own <li> does: 0 when nothing precedes it.
+              lead: box === undefined ? -1 : Math.round(box.left - own.left),
+              // How much the <li> draws after its crumb: the separator and its gap.
+              trail: box === undefined ? -1 : Math.round(own.right - box.right),
+              separator: after !== "none" && after !== "normal",
+            };
+          }),
+        );
+      // Home / Send flowers to / Poland / Flowers / Roses / Amber Hour.
+      expect(items).toHaveLength(6);
+      const lines = new Set(items.map((item) => item.top)).size;
+      // At 320 the trail does wrap, so the line-start rule below is exercised, not vacuous.
+      if (width === 320) expect(lines).toBeGreaterThanOrEqual(2);
+      test.info().annotations.push({
+        type: "trail lines",
+        description: `${String(lines)} at ${String(width)} px`,
+      });
+      for (const [index, item] of items.entries()) {
+        const last = index === items.length - 1;
+        // Nothing before a crumb inside its <li>, so no line, the last one included, can open
+        // with "/" (the lone "/ Amber Hour" of Q1-22).
+        expect(item.lead, `crumb ${String(index)}`).toBe(0);
+        // Every crumb but the last carries the separator after it, on its own line box (the
+        // <li> is one flex row), and the last carries none.
+        expect(item.separator, `crumb ${String(index)}`).toBe(!last);
+        if (last) expect(item.trail, `crumb ${String(index)}`).toBe(0);
+        else expect(item.trail, `crumb ${String(index)}`).toBeGreaterThan(6);
+      }
+    });
+  }
+});

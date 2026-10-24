@@ -4,10 +4,10 @@
  * AC-50; spec 009 §14 A12, AC-30 to AC-33; `docs/design/wireframes/product-{desktop,mobile}.dc.html`
  * round 2; TASK-197, after TASK-127 and TASK-179).
  *
- * **One DOM order, the same at every width** (A12): the gallery, then the **buy section** holding
- * exactly the seven elements of A12 move 1 (the eyebrow, the `<h1>`, the price with its inclusive
- * text, the sizes, the dates as `pickerState()` renders them, the primary action and the
- * destination line), then the visible trail, then the sections below the action in A12's default
+ * **One DOM order, the same at every width** (A12): the visible trail, the gallery, then the **buy
+ * section** holding exactly the seven elements of A12 move 1 (the eyebrow, the `<h1>`, the price
+ * with its inclusive text, the sizes, the dates as `pickerState()` renders them, the primary action
+ * and the destination line), then the sections below the action in A12's default
  * order (description with "Read more" and the exclusion sentence outside the clamp, the trust
  * block, the card message with its printed preview, the add-ons, "The price", related products).
  * There is **no delivery-facts block** (spec 009 §14 A-founder-2026-10-14d, AC-35): the picker says
@@ -15,11 +15,16 @@
  * section out of its DOM place; the desktop's two columns below the action are auto-placed row by
  * row, so reading left to right, top to bottom is the DOM order.
  *
- * **The trail** (A24 clause 4 (e), AC-50). Below `md` it is displayed below the buy section and
- * before the sections, as the desktop trail at the phone's size, the product page's only visible
- * breadcrumb (no back link). From `md` up the same one element is placed on the grid's first row,
- * above the gallery, 20 px under the header (AC-32). It is in the server HTML once, at every
- * width, so a `BreadcrumbList` built from `view.breadcrumb` equals it item for item.
+ * **The trail** (A24 clause 4 (e), AC-50; TASK-249). It comes **first in the DOM**, so from `md` up,
+ * where it sits on the grid's first row above the gallery, 20 px under the header (AC-32), it is
+ * also the first stop in `<main>` by keyboard and the visual order is the tab order (WCAG 2.4.3,
+ * QA N-07: it used to come after the gallery, the sizes and the dates). Below `md` the same one
+ * element is placed on the grid's third row, under the buy section and before the sections, as the
+ * desktop trail at the phone's size, the product page's only visible breadcrumb (no back link);
+ * `reading-flow: grid-rows` there makes the focus order follow the rows (gallery, buy section,
+ * trail) where the browser supports it, and the DOM order (trail first) is the fallback. It is in
+ * the server HTML once, at every width, so a `BreadcrumbList` built from `view.breadcrumb` equals
+ * it item for item.
  *
  * **Desktop** (`lg`): a 12-column grid inside the frame. The gallery spans columns 1–7 (thumbnails
  * on 1, the photograph a full 4∶5 on 2–7, no height cap: A24 clause 5); column 8 is air; the buy
@@ -179,7 +184,19 @@ export function ProductPage({
         data-fo-pdp={view.product.sku}
         data-fo-pdp-picker={view.delivery.state}
       >
-        <div className={`grid md:grid-cols-1 ${G12}`} data-fo-pdp-first>
+        <div
+          className={`grid max-md:[reading-flow:grid-rows] md:grid-cols-1 ${G12}`}
+          data-fo-pdp-first
+        >
+          {/* The trail first in the DOM, so it is the first stop in `<main>` (TASK-249, N-07): on
+              the first row from `md`, and placed on the third row below it, under the buy section
+              (AC-50), where the gallery and the buy section fill rows 1 and 2 by auto-placement. */}
+          <div
+            className="max-md:row-start-3 max-md:pt-[8px] md:col-span-full md:row-start-1"
+            data-fo-pdp-trail
+          >
+            {breadcrumb}
+          </div>
           <div
             className="max-md:-mx-(--gutter-s) md:row-start-2 md:mt-[24px] lg:col-[1/8] lg:grid lg:grid-cols-subgrid lg:self-start"
             data-fo-pdp-gallery
@@ -305,14 +322,6 @@ export function ProductPage({
               )}
             </p>
           </section>
-
-          {/* The trail: below the buy section on the phone, on the first row from `md`. */}
-          <div
-            className="pt-[8px] md:col-span-full md:row-start-1 md:pt-0"
-            data-fo-pdp-trail
-          >
-            {breadcrumb}
-          </div>
         </div>
 
         <div

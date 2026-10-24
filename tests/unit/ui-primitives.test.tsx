@@ -423,7 +423,23 @@ describe("FactsList, Breadcrumbs, NoticeBar and the wordmark (TASK-175)", () => 
       '<span aria-current="page" class="text-ink">Roses</span>',
     );
     expect(html).toContain("<span>Flowers</span>");
-    expect(trail.match(/aria-hidden="true"/g)).toHaveLength(2);
+    // The separator follows its crumb, as generated content silent to assistive technology, so
+    // a wrapped trail never starts a line with "/" (TASK-249, Q1-22): every crumb but the last
+    // draws one, and no `<li>` holds a separator element before its crumb.
+    const items = [...trail.matchAll(/<li class="([^"]*)">(.*?)<\/li>/gs)];
+    expect(items).toHaveLength(3);
+    for (const [, className = "", inner = ""] of items) {
+      expect(className.replaceAll("&#x27;", "'").split(" ")).toEqual(
+        expect.arrayContaining([
+          "after:content-['/'_/_'']",
+          "after:text-rule",
+          "last:after:content-none",
+        ]),
+      );
+      expect(inner).not.toContain("/</span>");
+      expect(inner).not.toMatch(/^<span aria-hidden/u);
+    }
+    expect(trail).not.toContain('aria-hidden="true"');
   });
 
   it("draws the notice bar on the inverse surface, its phrase in sunflower", () => {
