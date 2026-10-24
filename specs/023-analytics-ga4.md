@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 |
 | Plan refs | plan/01 §2 (Analytics row) §3 §5 §7 §9 · plan/02 §4 §14 §16 · plan/03 §1 §7 · plan/04 §11 §14 · plan/07 §1.2 §1.4 §1.5 §4 §5 §10 · plan/09 Phase 0 AC 7, Phase 1 (`023`) AC 8 · plan/11 §2 (outbox consumers) and its GA4 row · plan/12 §4 |
 | ADRs | ADR-0006 (no IP-derived behaviour) · ADR-0009 (status only through `orderService.transition`) · ADR-0016 and ADR-0020 (CSP) · ADR-0018 (Railway behind Cloudflare). **Proposes ADR-NNNN** (next free number): "Consent Mode basic: no request to Google before an analytics grant; server-side purchase only for consenting buyers" (§5.0, §13 Q1), because it reverses the advanced-mode choice of plan/04 §11 and plan/09 Phase 0 AC 7 |
 | Builds on | spec 004 (consent banner, cookie register, `consentSources()`, the bootstrap, A15, A-founder-2026-10-19d, A-founder-2026-10-23) · spec 008 and 009 (declared event names and `page_type` values) · spec 010 (checkout, `placeOrderAction`, `outboxTargets`) · spec 013 (outbox dispatcher, `order.captured` row 2, refund events, Payment Element island) · spec 018 (token routes) · spec 002 (`retention_policy`, `feature_flag`) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (founder, pending) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
