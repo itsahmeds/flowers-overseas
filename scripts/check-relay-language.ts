@@ -249,24 +249,32 @@ export function catalogueProblems(
           .split(".")
           .slice(namespace.split(".").length);
         for (const segment of nameSegments) {
-          for (const match of relayMatches(
-            keyWords(segment),
-            locale,
-            forKeys,
-          )) {
+          // `de` and `pl` read the `en` list too, so one word can match twice: one line per segment.
+          const ids = [
+            ...new Set(
+              relayMatches(keyWords(segment), locale, forKeys).map(
+                (match) => match.id,
+              ),
+            ),
+          ];
+          if (ids.length > 0) {
             problems.push({
               locale,
               key: leaf.key,
-              reason: `key name segment "${segment}" gives the relay match ${match.id} ("${match.match}")`,
+              reason: `key name segment "${segment}" gives the relay match ${ids.join(", ")}`,
             });
           }
         }
         if (leaf.value === undefined) continue;
-        for (const match of relayMatches(leaf.value, locale, patterns)) {
+        // One line per value, naming every pattern that matched and the first sentence.
+        const matches = relayMatches(leaf.value, locale, patterns);
+        const [first] = matches;
+        if (first !== undefined) {
+          const ids = [...new Set(matches.map((match) => match.id))];
           problems.push({
             locale,
             key: leaf.key,
-            reason: `value gives the relay match ${match.id} ("${match.match}") in "${match.sentence}"`,
+            reason: `value gives the relay match ${ids.join(", ")} ("${first.match}") in "${first.sentence}"`,
           });
         }
       }
