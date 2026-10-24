@@ -863,7 +863,7 @@ export function ListingHead({
           data-fo-listing-status
         >
           <span
-            className="text-ink font-bold"
+            className="text-ink self-start font-bold"
             data-fo-listing-status-part="count"
           >
             {count}
