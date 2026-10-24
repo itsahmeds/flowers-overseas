@@ -34,6 +34,7 @@ One dated bullet per `/review`, newest last.
     `consent.cookies.checkout.purpose`; TASK-203's Escalations hold the proposed text and the exact change) **and**
     TASK-207's three RoPA rows are on main. Its review checks both.
 - **From `/plan-tasks` (2026-10-22):** spec 010 §14 A2.4 left AC-46 with no owner; it is this task's: the done page ships `registerConfirmationState(mode, renderer)`, picks the state from the order's `mode` (never `checkoutMode()`), and fails closed to "no longer available" when no renderer is registered for `test` or `live`. Spec 013's TASK-263 registers the renderers; spec 018's TASK-340 mounts its block inside them.
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 rewrites AC-5 (the PDP's two submits, "Try a demo order" or the live label, and "Add to basket", `name="then"`) and adds AC-68 (the multi-delivery demo confirmation, no edit control) and AC-74's confirmation half. Built from PR 336's `product-*` and `confirmation-*` boards.
 
 ## Escalations
 

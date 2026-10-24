@@ -30,7 +30,7 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 022a §12: `rankCandidates` reads a null `rating_90d_bp` as 9000 (the encoding is mean × 2000 in basis points, 4.50 = 9000; TASK-372's AC-22 fixture checks it). Spec 010 item 13: routing stays per order; `canServe` is called per basket line at step 1 and at placement.
 
 ## Escalations
 

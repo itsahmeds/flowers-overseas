@@ -31,7 +31,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 gives this task AC-77 (T-77): in `test` and `live`, one pre-contract block naming each delivery's main characteristics and date, the total and the cancellation item once, directly above the Pay button; the Pay button names the purchase total (item 13 (f)). Depends on TASK-350 (Q19). Spec 022a's `checkout.reviewNotice` renders on this step (owned by TASK-373).
 
 ## Escalations
 

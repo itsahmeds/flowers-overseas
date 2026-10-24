@@ -28,7 +28,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 020a §12 request 1: `adminRefund` and `adminCancel` take `AdminOrderActionBaseSchema`'s fields (`orderId`, `actionId`, `expectedSeq`) and run inside `runOrderAction`; `refund` accepts an optional transaction handle and, given one, calls the provider only after commit; permissions become `orders.refund` and `orders.cancel` (admin only). If this merges first, TASK-357 lands the change. Spec 010 Q19 (TASK-350): every refund names its order and never exceeds that order's own total.
 
 ## Escalations
 

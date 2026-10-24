@@ -31,7 +31,7 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 018 §14 A-founder-2026-10-22 narrows AC-27 here: the schema half checks only that `recipient` has no saving column; "no `saved_recipient` retention row" and "no `recipients` route" are withdrawn, because TASK-352 adds both.
 
 ## Escalations
 

@@ -20,6 +20,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** staging needs a demo member (`pnpm florists:demo-member add`, TASK-214) and an admin grant (`pnpm admin:grant`, TASK-217), behind the staging basic-auth gate.
+- **From `/plan-tasks` (b) (2026-10-22):** spec 026a moves the florist inbox to `/vendor`; once TASK-354 merges, this task's path reads `/vendor`, not `/demo/vendor-inbox`.
 
 ## Escalations
 

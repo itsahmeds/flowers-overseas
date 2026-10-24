@@ -6,9 +6,9 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Binding
 
-Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges after: TASK-344, TASK-345.
+Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges after: TASK-344, TASK-345, TASK-352, TASK-353 (amended 2026-10-22 (b): launch slice).
 - Spec 018 §12 task 6, pass B. AC-32 (account half), AC-33 (account and privacy pages).
-- **ACs owned:** AC-32 (account half), AC-33 (account and privacy half) (T-25 spy, T-32 account half).
+- **ACs owned:** AC-32 (account half, amended), AC-33 (account and privacy half, amended) (T-25 spy, T-32 account half, T-33 account half); spec 018 §14 A-founder-2026-10-22 C.16 binds the cookie and RoPA rows.
 - **Class:** self-review (no checker agents; founder 2026-10-22). You are the reviewer and the breaker: put `## Self-review` in the PR (every AC with file:line and its test; the mutation and red run for each AC assertion; the awkward cases below with each result; carry-forwards) before `gh pr ready`.
 - Presentation and records: no breaker class, but still mutate each AC's subject once before you claim it.
 - **Founder rulings bind every line** (spec 016 and 018 §14): every payment is captured at placement; no buyer surface, email, PDF or copy key says or implies partners, a florist accepting, offers, re-routing or a held card (`RELAY_PATTERNS`, `RELAY_EXEMPT`, `relayMatches` in `src/config/honesty.ts`: use them, keep no list of your own); no refund or failure wording after payment except the cancellation and refund messages; no em dash in any copy.
@@ -24,7 +24,7 @@ Planned 2026-10-22 by `/plan-tasks` (work order `wo-1022-common.md`). Merges aft
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** launch slice: AC-32 and AC-33 as amended (new pages, the spy over T-48, T-52, T-54, T-57, T-58), cookie register rows `__Secure-fo-buyer.*` replacing `fo_session`, RoPA rows for accounts, saved recipients and reminders, and a check that `docs/compliance/lia-saved-recipients.md` exists before `account.recipients` is on.
 
 ## Escalations
 

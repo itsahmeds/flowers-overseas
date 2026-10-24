@@ -28,7 +28,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From `/plan-tasks` (b) (2026-10-22):** spec 010 §14 A-founder-2026-10-22 item 13 (d): a dispute on the purchase's one charge applies row 34 to every order of the purchase in set C, and the outside-machine alert for the rest.
 
 ## Escalations
 
