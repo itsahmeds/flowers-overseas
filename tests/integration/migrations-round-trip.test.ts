@@ -15,7 +15,7 @@
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { CUSTOMER_VIEWS, PARTNER_VIEWS } from "../../db/rls.ts";
+import { CUSTOMER_VIEWS, PARTNER_VIEWS, PUBLIC_VIEWS } from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import {
   probeLocalServer,
@@ -37,7 +37,12 @@ const MIRROR_TABLES = Object.values(schema)
   .sort();
 
 /** The column-limited read paths of `0011` (`db/rls.ts`). */
-const VIEWS = [...Object.keys(PARTNER_VIEWS), ...Object.keys(CUSTOMER_VIEWS)];
+const VIEWS = [
+  ...Object.keys(PARTNER_VIEWS),
+  ...Object.keys(CUSTOMER_VIEWS),
+  // 0024 (TASK-321): the public author view (spec 044 §5.1 item 7).
+  ...Object.keys(PUBLIC_VIEWS),
+];
 
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
 const FUNCTIONS = [
@@ -64,6 +69,16 @@ const FUNCTIONS = [
   "audit_record_view",
   "audit_row_change",
   "audit_write",
+  // 0024 (TASK-321): the blog's hash, freeze, publish guard, slug lock and author rules (spec 044
+  // §5.1 item 5).
+  "blog_author_follow_profile",
+  "blog_author_guard",
+  "blog_post_rehash_drafts",
+  "blog_publish_guard",
+  "blog_revision_approved",
+  "blog_revision_freeze",
+  "blog_revision_hash",
+  "blog_slug_lock",
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
@@ -89,6 +104,8 @@ const FUNCTIONS = [
   "purchase_total_check",
   // 0023 (TASK-293): the review ledger (spec 012b §5.1 item 2).
   "review_attestation_append_only",
+  "review_blog_revision_current_hash",
+  "review_blog_revision_hash",
   "review_hash_part",
   "review_product_copy_hash",
   "review_row_is_own",
