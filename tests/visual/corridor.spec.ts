@@ -3,10 +3,13 @@
  * guide state at both artboard widths; the live state, the hub and `/ar-XB` join the matrix with
  * TASK-092/TASK-095).
  *
- * Four PNGs: the two blocks whose geometry the artboards actually fix — the first screen's `h1`
+ * Five PNGs: the two blocks whose geometry the artboards actually fix — the first screen's `h1`
  * (the photo slot beside it left with TASK-189; the dates that replaced it move with the build
  * date, so they are pinned by `tests/e2e/corridor-first-screen.spec.ts`, not by a picture), and
- * the delivery-facts list with its labels and its honest blanks — at 1440 px and at 390 px. `tests/visual/home.spec.ts`'s
+ * the delivery-facts list with its labels and its honest blanks — at 1440 px and at 390 px, plus,
+ * at 1440 only, spec 042's route line drawn in the gap beside the `h1` (TASK-311; the SVG alone,
+ * so the dates beside it stay out of the picture; its place is measured by
+ * `tests/e2e/corridor-route-line.spec.ts`). `tests/visual/home.spec.ts`'s
  * reasoning applies unchanged: a full-page shot at the project's 1280 px would show neither at
  * the width it was drawn at, and on a page this long it would hide a four-pixel change inside a
  * five-thousand-pixel image.
@@ -57,20 +60,31 @@ const PARTS = [
   { suffix: "facts", selector: "[data-fo-corridor-facts]" },
 ] as const;
 
+/**
+ * Spec 042's route line, drawn (this project runs with reduced motion, where it is drawn from the
+ * first frame; T-19). Not displayed below `md`, so desktop only.
+ */
+const ROUTE_PART = {
+  suffix: "route-line",
+  selector: "[data-fo-corridor] [data-fo-route-line]",
+} as const;
+
 const CASES = [
   {
     name: "corridor-country-desktop",
     path: "/en/send-flowers-to/poland",
     viewport: { width: 1440, height: 900 },
+    parts: [...PARTS, ROUTE_PART],
   },
   {
     name: "corridor-country-mobile",
     path: "/en/send-flowers-to/poland",
     viewport: { width: 390, height: 844 },
+    parts: PARTS,
   },
 ] as const;
 
-for (const { name, path, viewport } of CASES) {
+for (const { name, path, viewport, parts } of CASES) {
   test(`${path} at ${String(viewport.width)}px matches ${name}-*`, async ({
     page,
     context,
@@ -89,7 +103,7 @@ for (const { name, path, viewport } of CASES) {
     expect(response?.status()).toBe(200);
     await expect(page.locator("[data-fo-consent]")).toHaveCount(0);
 
-    for (const { suffix, selector } of PARTS) {
+    for (const { suffix, selector } of parts) {
       await expect(page.locator(selector)).toHaveScreenshot(
         `${name}-${suffix}.png`,
         { stylePath: HEADER_STYLE },
