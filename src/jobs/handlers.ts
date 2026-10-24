@@ -15,6 +15,7 @@
 import { withSystemContext } from "../lib/db";
 import { logger } from "../lib/logger";
 import { dispatchOutbox } from "../modules/orders";
+import { runProductionStart } from "../modules/payments";
 
 import { runRetentionSweep } from "./retention";
 import type { JobHandlers } from "./runtime";
@@ -27,6 +28,11 @@ export const JOB_HANDLERS: JobHandlers = {
     await dispatchOutbox(
       payload.orderId === undefined ? {} : { orderId: payload.orderId },
     );
+  },
+  // Spec 013 §5.2 (TASK-258): row 16 at 06:00 destination-local on the delivery date. Idempotent:
+  // each due order is locked `SKIP LOCKED` and re-read; a second run finds it `in_production`.
+  "payments.production_start": async () => {
+    await runProductionStart();
   },
   // No storage yet: the R2 adapter is spec 006's (TASK-082), so delivery photos are reported
   // `storage_unavailable` and kept rather than losing their rows while the objects stay.
