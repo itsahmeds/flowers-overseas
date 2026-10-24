@@ -162,7 +162,8 @@ export const FLORISTS: FloristsConfig = FloristsConfigSchema.parse({
     productId: "FO-BQ-001",
     countryIso2: "PL",
     tier: "stems_15",
-    // 149 zł: spec 011 §13 Q7's default, open with the founder (docs/tasks/TASK-210.md).
+    // 149 zł: spec 011 §13 Q7's default, approved by the founder for Amber Hour, 15 stems,
+    // Poland: 2026-10-05 (item 4, decisions log) and 2026-10-24 ("149 ok").
     payoutMinor: 14_900,
     currency: "PLN",
   },
