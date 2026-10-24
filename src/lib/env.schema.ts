@@ -303,6 +303,19 @@ export const serverEnvSchema = z.object({
    */
   RESEND_API_KEY: optionalText,
   /**
+   * Stripe secret key (test `sk_test_` or production's restricted `rk_live_`; spec 013 §5.2
+   * "Keys and environments"; TASK-260). SECRET. Optional until the founder opens the Stripe
+   * account (spec 013 §12 action 1); required at use: without it the webhook endpoint answers 503
+   * and stores nothing. A live prefix outside production is refused (AC-10).
+   */
+  STRIPE_SECRET_KEY: optionalText,
+  /**
+   * The signing secret of the environment's one Stripe webhook endpoint (`whsec_…`; spec 013
+   * §5.2 "Webhook inbox"; TASK-260). SECRET: never logged, never in an error. Required at use, as
+   * `STRIPE_SECRET_KEY`.
+   */
+  STRIPE_WEBHOOK_SECRET: optionalText,
+  /**
    * The sender of the sign-in mail, `Name <address>` or a bare address on the domain verified in
    * Resend (spec 012 §2.2; TASK-217). Not secret. Required at use where the mailer is `resend`.
    */

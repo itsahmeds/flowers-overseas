@@ -13,6 +13,8 @@
       "AUTH_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "SIGNED_LINK_SECRET": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
       "RESEND_API_KEY": "re_placeholder",
+      "STRIPE_SECRET_KEY": "",
+      "STRIPE_WEBHOOK_SECRET": "",
       "EMAIL_FROM": "Flowers Overseas <sign-in@example.test>",
       "MAILER": "resend",
       "LOG_LEVEL": "SENTINEL-VALUE",
