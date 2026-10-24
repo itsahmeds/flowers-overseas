@@ -53,7 +53,7 @@ export function ConfirmationRecap({
   note,
 }: ConfirmationRecapProps): ReactElement {
   const titleId = `${id}-title`;
-  const row = "text-ui grid grid-cols-[96px_minmax(0,1fr)] gap-[12px]";
+  const row = "text-ui grid grid-cols-[70px_minmax(0,1fr)] gap-[12px]";
   const term =
     "text-ink-3 pt-[3px] text-xs font-bold tracking-[0.1em] uppercase";
   return (
@@ -63,7 +63,7 @@ export function ConfirmationRecap({
       data-fo-confirmation-recap=""
       id={id}
     >
-      <h2 className="text-ink m-0 text-xl" id={titleId}>
+      <h2 className="display text-ink m-0 text-xl" id={titleId}>
         {title}
       </h2>
       <div className="mt-[18px] grid grid-cols-[84px_minmax(0,1fr)] items-start gap-[16px]">
