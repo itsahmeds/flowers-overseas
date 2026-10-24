@@ -94,7 +94,7 @@ PR 388. On a fine pointer the home sentence's three choices open our own listbox
 `src/app/globals.css`), loaded in the sentence's existing on-input chunk (2,305 B Brotli with
 esbuild for island plus listbox; the CI `deferred-chunks` spec asserts at most 3,072 B on the four
 homes); the A1 budget is not touched. Tests: unit 18 (model) + 34 (controller, jsdom) + 9 (CSS) +
-2 (deferred set); e2e 31 cases in `tests/e2e/home-sentence-listbox.spec.ts` plus the chunk size in
+2 (deferred set); e2e 36 cases in `tests/e2e/home-sentence-listbox.spec.ts` plus the chunk size in
 `deferred-chunks.spec.ts` and the home specs moved to `chooseSentence`; a11y 2; visual 1 test with
 2 new baselines; pseudo-RTL 1. No local `next build`: the browser checks ran in a static harness
 inside the build slot (real server HTML, compiled CSS and fonts) and on CI.
