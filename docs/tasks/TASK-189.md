@@ -154,6 +154,11 @@ One line per coherent step, newest last.
   0.011 %), all sub-pixel anti-aliasing of chip text and a photo edge, same geometry. The branch's
   other four baselines (`laptop-guide`, `corridor-country-desktop-hero`, both `-facts`) came back
   byte-identical. Manifest copied in; `visual:baselines --verify` matches all 116, `--check` ok.
+- 2026-10-24 (finisher): CI went green on 5135e023, then main moved (PRs 375, 377, 382, 321,
+  348), so a second rebase onto 17381d90. Conflicts: `tests/unit/i18n-messages-schema.test.ts`
+  (both sides kept: TASK-183's two legal keys and this task's three rule keys in the founder
+  queue) and `docs/codebase-map.md` (regenerated). PR 375's re-rendered baselines touch none of
+  this PR's pictures; the manifest merged line by line and `--verify` matches all 116.
 
 ## Result
 
