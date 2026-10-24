@@ -331,13 +331,15 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           else expect(href, href).toMatch(/^(?:tel:|https:\/\/)[^\s]+$/u);
         }
       }
-      // Exactly: the header's eight (the footer's two are among them), five products, the
-      // lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
+      // Exactly: the header's eight (the footer's two are among them), the header's Basket link
+      // (TASK-349), five products, the lockup's home, the switcher's sibling shown homes (one on a shown locale, both English
       // homes on a hidden one; spec 003 §14 A-founder-2026-10-14c) and, in English, the footer's
       // four trust pages and two legal pages. A further control is a diff here.
       const siblings = SHOWN_LOCALES.filter((shown) => shown !== locale).length;
       expect(siblings).toBe(SHOWN_LOCALES.includes(locale) ? 1 : 2);
-      expect(hrefs.size).toBe(8 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0));
+      expect(hrefs.size).toBe(
+        8 + 1 + 5 + 1 + siblings + (hasTrustPages ? 6 : 0),
+      );
       for (const href of hrefs) {
         expect(await statusOf(request, href), href).toBe(200);
       }
