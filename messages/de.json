@@ -532,13 +532,13 @@
     },
     "state": {
       "deliveringNow": "Delivering now",
-      "guideNotDelivering": "Guide · not delivering yet"
+      "guideNotDelivering": "Ordering opens soon"
     }
   },
   "destinationsHub": {
     "emptyBody": "We have not written a guide in this language yet, so every destination on this page is text. These are the countries we write about: {destinations}. Each guide is written by a person in the language you are reading, which is why this page waits rather than showing you a translation nobody checked.",
     "h1": "Where we can <em>send flowers</em>",
-    "intro": "Sieben Länder in Europa, und zu jedem haben wir einen Ratgeber geschrieben: was man schenkt, was man nie schenkt, wie eine Adresse geschrieben wird und welche Daten dort im Jahr zählen. Wir schreiben zuerst den Ratgeber und öffnen danach die Lieferung. Wo wir noch nicht liefern, sagt diese Seite das in jeder Zeile mit denselben Worten.",
+    "intro": "Sieben Länder in Europa, und zu jedem haben wir einen Ratgeber geschrieben: was man schenkt, was man nie schenkt, wie eine Adresse geschrieben wird und welche Daten dort im Jahr zählen. Wir schreiben zuerst den Ratgeber und öffnen danach die Lieferung. Wo die Bestellung noch nicht geöffnet ist, sagt diese Seite das in jeder Zeile mit denselben Worten.",
     "noGuide": "We have not written a guide to {country} in this language yet. When we have, this line becomes a link.",
     "phoneIntro": "Seven countries in Europe, each with a guide we wrote ourselves.",
     "readGuide": "Read the guide →",
@@ -686,7 +686,7 @@
     "sentence": {
       "frame": "Einen Strauß an <who></who> in <country></country> <occasion></occasion> schicken.",
       "heading": "Für wen ist der Strauß?",
-      "notYet": "{country} (not yet)",
+      "notYet": "{country} (soon)",
       "occasion": "{occasion, select, birthday {{pronoun, select, other {zum Geburtstag}}} nameDay {zum Namenstag} anniversary {zum Jahrestag} sympathy {zum Trost} justBecause {einfach so} newBaby {zur Geburt} other {zu einem Anlass}}",
       "who": "{who, select, mum {meine Mama} dad {meinen Papa} grandma {meine Oma} grandad {meinen Opa} friend {jemanden aus dem Freundeskreis} someoneILove {einen lieben Menschen} other {meinen Schatz}}"
     },
@@ -927,7 +927,7 @@
     },
     "demo": {
       "body": "When ordering opens, this is the price you will pay. Nothing is added at a later step.",
-      "heading": "Ordering is not open yet"
+      "heading": "Ordering opens soon"
     },
     "destination": {
       "change": "change destination",

@@ -1707,7 +1707,7 @@
   "destinations.state.guideNotDelivering": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "9687cc0b20837784ae1ed2996a99bfd7dcd36d78695d97557cbef4fb58e1f8bf"
+    "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "destinationsHub.emptyBody": {
     "source": "machine",
@@ -1722,7 +1722,7 @@
   "destinationsHub.intro": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "359d44d09dfeadd1c76b748e58d458f2d01a0cec8418607920fc7dee767a121a"
+    "sourceHash": "f886b0aefdff9227ade54619c03c41ec558b60e8e82f077c56ab4c14d4969b37"
   },
   "destinationsHub.noGuide": {
     "source": "machine",
@@ -2157,7 +2157,7 @@
   "home.sentence.notYet": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "5c2509052b7380caea5338f54a20cde12d3eec84fc2616dcbca52df28a8f6622"
+    "sourceHash": "3d62739fb297609ec1d7dff643dcfcde609fbff7975feb08f0b410a363629a83"
   },
   "home.sentence.occasion": {
     "source": "human",
@@ -2852,7 +2852,7 @@
   "product.demo.heading": {
     "source": "machine",
     "reviewed": false,
-    "sourceHash": "7a4118b7ef54d87a36944c940584cce0cf2b677659a01324742828fa853ca9ef"
+    "sourceHash": "c733f3bfac172c930195a4b2731145222a1de3709f8f3fc7876c7347ff677009"
   },
   "product.destination.change": {
     "source": "machine",

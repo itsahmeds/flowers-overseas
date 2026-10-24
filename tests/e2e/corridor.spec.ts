@@ -143,7 +143,9 @@ test.describe("the guide state, rendered (AC-8, AC-19, T-09)", () => {
       /\s+/g,
       " ",
     );
-    expect(body).toContain("None yet.");
+    // The "Order by" row is hidden while ordering is not open (founder, 2026-10-20; TASK-239).
+    expect(body).not.toContain("None yet.");
+    expect(body).not.toMatch(/\border by\b/iu);
     expect(body).not.toMatch(/\b\d{1,2}:\d{2}\b/u);
     expect(body).not.toMatch(/\d[\d\s.,]*\s?(?:zł|€|£|EUR|PLN|GBP)/u);
     expect(body).not.toMatch(/same[- ]day/iu);

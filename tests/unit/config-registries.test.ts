@@ -188,7 +188,7 @@ describe("§7: every registry key resolves in every launch locale", () => {
       ([, sources]) =>
         sources.length > 1 &&
         // The two state keys are shared **by design**: every guide destination prints the same
-        // "Guide · not delivering yet" line, which is the point of `destinationStateKey()`.
+        // "Ordering opens soon" line, which is the point of `destinationStateKey()`.
         !sources.every((source) => source.startsWith("destinationStateKey(")) &&
         // A corridor link's label **is** the country's name (spec 007 AC-20): `site-links.ts`
         // says which destination may be linked, `countries.ts` owns what it is called, and

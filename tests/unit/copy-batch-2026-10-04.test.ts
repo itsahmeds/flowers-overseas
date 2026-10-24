@@ -37,13 +37,14 @@ const APPROVED: Readonly<Record<string, string>> = {
   "footer.signoff": "With love, from wherever you are.",
   // TASK-177 (PR 174): the home strings of the same batch, attested on `main`.
   // `home.destinations.body` left this batch: the founder replaced it on 2026-10-14 (TASK-226, R3).
+  // `home.sentence.notYet` left it too: spec 007 §14 A-founder-2026-10-14c clause 3 (D2 A) made it
+  // "{country} (soon)", unreviewed until the founder's own record run (TASK-239).
   "home.proof.guarantee.body":
     "If your flowers don't arrive fresh and in good condition, send us a photo within 72 hours of delivery and we'll replace them or refund you in full.",
   "home.proof.guarantee.title": "Fresh-flower promise",
   "home.sentence.frame":
     "Send flowers to <who></who> in <country></country> for <occasion></occasion>.",
   "home.sentence.heading": "Start with who it's for",
-  "home.sentence.notYet": "{country} (not yet)",
   "home.sentence.who":
     "{who, select, mum {my mum} dad {my dad} grandma {my grandma} grandad {my grandad} partner {my partner} friend {a friend} other {someone I love}}",
   "nav.send": "Send flowers",

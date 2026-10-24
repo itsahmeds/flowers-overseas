@@ -115,12 +115,12 @@
       "locale": "pl",
       "name": "Przeprosiny",
       "slug": "przeprosiny",
-      "descriptionMd": "Gdy przepraszasz, cisza wygrywa z przepychem, a wcześnie z późno. Jasne róże, białe tulipany i frezje trafiają we właściwy ton, a bilecik znaczy więcej niż kwiaty: napisz go sam, a my wydrukujemy go na naszym bileciku. Zamów przed terminem podanym dla kraju docelowego, a kwiaty dotrą w wybranym dniu. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Gdy przepraszasz, cisza wygrywa z przepychem, a wcześnie z późno. Jasne róże, białe tulipany i frezje trafiają we właściwy ton, a bilecik znaczy więcej niż kwiaty: napisz go sam, a my wydrukujemy go na naszym bileciku. Wybierz, dokąd trafią kwiaty i w jaki dzień, a resztą zajmiemy się my. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Przeprosiny: wysyłka kwiatów w całej Europie",
       "seoDescription": "Jasne róże, białe tulipany i frezje z Twoimi słowami na drukowanym bileciku. Ciche, nie okazałe, dostarczone w wybranym dniu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f3fd54ab230cdb93ff2c70c68bdd79a09d42f3962bd497714786e504b635dbc4"
+      "sourceHash": "434baf64b8517b1702ddb3092911116d5e34a734f35dddfe7ced45734f6d7deb"
     },
     {
       "entity": "occasion",
@@ -258,12 +258,12 @@
       "locale": "pl",
       "name": "Wielkanoc",
       "slug": "wielkanoc",
-      "descriptionMd": "Wielkanoc co roku wypada w innym terminie i zabiera ze sobą cały tydzień: terminy zamówień się przesuwają, giełdy zamykają się w Wielki Piątek i Poniedziałek Wielkanocny, a sobota zapełnia się pierwsza. Liczą się wiosenne kwiaty, kolorowe i żółte tulipany, narcyzy, ogrodowa skrzynka. Strona kraju docelowego pokazuje tegoroczną datę i termin zamówień. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
+      "descriptionMd": "Wielkanoc co roku wypada w innym terminie i zabiera ze sobą cały tydzień: terminy zamówień się przesuwają, giełdy zamykają się w Wielki Piątek i Poniedziałek Wielkanocny, a sobota zapełnia się pierwsza. Liczą się wiosenne kwiaty, kolorowe i żółte tulipany, narcyzy, ogrodowa skrzynka. Strona kraju docelowego pokazuje tegoroczną datę w tym kraju. Każde zamówienie jest wykonywane ręcznie i doręczane osobiście przez naszego florystę w mieście odbiorcy.",
       "seoTitle": "Wielkanoc: wysyłka kwiatów w całej Europie",
       "seoDescription": "Kolorowe i żółte tulipany, narcyzy i ogrodowe skrzynki na Wielkanoc. Data się zmienia; strona kraju docelowego pokazuje datę i termin.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "362884002463d20ae2ac61481fed9f662c0b13bed13b4e6aadc71e483dfc6d14"
+      "sourceHash": "72afb2b604bd34db461330a52f61fa6a63d55952ed704d94d46b0529e3e76b49"
     },
     {
       "entity": "occasion",
