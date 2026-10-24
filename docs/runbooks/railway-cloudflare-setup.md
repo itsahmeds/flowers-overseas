@@ -65,6 +65,7 @@ DATABASE_URL=<Neon → branch `staging` → pooled connection string>
 DATABASE_URL_UNPOOLED=<the same dialog, direct connection string>
 INTERNAL_CRON_SECRET=<openssl rand -hex 32>
 QUOTE_SIGNING_SECRET=<openssl rand -hex 32, a different value per environment>
+SIGNED_LINK_SECRET=<openssl rand -hex 32, a different value per environment (spec 018 §12)>
 LOG_LEVEL=info
 CSP_REPORT_ONLY=true
 ENABLE_PSEUDO_LOCALES=false

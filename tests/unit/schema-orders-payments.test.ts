@@ -5,6 +5,8 @@
  * The connected half — the same seed read back out of a migrated database, and the constraints
  * refusing what they exist to refuse — is `tests/integration/schema-orders-payments.test.ts`.
  */
+import { readdirSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -29,6 +31,7 @@ import {
   derivedTerminal,
 } from "../fixtures/order-machine.ts";
 import {
+  MIGRATIONS_DIR,
   checkList,
   createdTables,
   droppedTables,
@@ -62,17 +65,29 @@ const TABLES = [
   "webhook_inbox",
 ] as const;
 
-/** The `INSERT … VALUES` rows of one table, as arrays of SQL literals. */
+/**
+ * Spec 002 §14 A8.1's two `order_transition` rows ship in `NNNN_post_purchase` (TASK-337), found by
+ * name so a renumbering at rebase changes nothing here.
+ */
+const a8 = readMigration(
+  readdirSync(MIGRATIONS_DIR).find((name) =>
+    /^\d{4}_post_purchase\.sql$/.test(name),
+  ) ?? "NNNN_post_purchase.sql",
+);
+
+/** The `INSERT … VALUES` rows of one table, as arrays of SQL literals, from `0007` and A8's file. */
 function seededRows(table: string): string[][] {
-  const match = new RegExp(
-    String.raw`INSERT INTO public\.${table} \([^)]*\) VALUES\s*([\s\S]*?);`,
-  ).exec(up);
-  if (match?.[1] === undefined) return [];
-  return [...match[1].matchAll(/^\s*\((.*)\),?\s*$/gm)].map((m) =>
-    [...(m[1] ?? "").matchAll(/ARRAY\[[^\]]*\]|'[^']*'|true|false/g)].map(
-      (v) => v[0],
-    ),
-  );
+  return [up, a8].flatMap((file) => {
+    const match = new RegExp(
+      String.raw`INSERT INTO public\.${table} \([^)]*\) VALUES\s*([\s\S]*?);`,
+    ).exec(file);
+    if (match?.[1] === undefined) return [];
+    return [...match[1].matchAll(/^\s*\((.*)\),?\s*$/gm)].map((m) =>
+      [...(m[1] ?? "").matchAll(/ARRAY\[[^\]]*\]|'[^']*'|true|false/g)].map(
+        (v) => v[0],
+      ),
+    );
+  });
 }
 
 const unquote = (value: string): string => value.replace(/^'|'$/g, "");
@@ -187,8 +202,8 @@ describe("AC-14 / T-14 (unit) — the seed is A6, both ways", () => {
     );
   });
 
-  it("order_transition holds exactly A6.3's 73 rows (sets expanded)", () => {
-    expect(transitionRows).toHaveLength(73);
+  it("order_transition holds exactly A6.3's 73 rows plus A8.1's two (sets expanded)", () => {
+    expect(transitionRows).toHaveLength(75);
     expect(new Set(transitionRows)).toEqual(
       new Set(
         TRANSITIONS.map((t) =>
