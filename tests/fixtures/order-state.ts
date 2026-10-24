@@ -124,9 +124,9 @@ export interface PlacedOrder {
 
 /**
  * Inserts one `placed` order the way `orderService.place` does, with `order.placed` at seq 1. The
- * token is 16 random bytes as base64url (22 characters), the shape `0019`'s exact check and its
+ * token is 16 random bytes as base64url (22 characters), the shape `0021`'s exact check and its
  * column default give (spec 018 AC-2). It is named here, unlike in `place`, because the rollback
- * suites also insert orders into schemas from before `0019`, where the column has no default.
+ * suites also insert orders into schemas from before `0021`, where the column has no default.
  */
 export async function insertPlacedOrder(
   tx: Tx,

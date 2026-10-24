@@ -7,7 +7,7 @@
  * The typed mirror of the migration. What to read off this file:
  *
  *  - **the machine is data** — `orderStatus` and `orderTransition` hold A6.4's 26 states and A6.3's
- *    73 rows plus A8.1's two (`0019`), seeded by the migrations and compared with `tests/fixtures/order-machine.ts`. Nothing
+ *    73 rows plus A8.1's two (`0021`), seeded by the migrations and compared with `tests/fixtures/order-machine.ts`. Nothing
  *    here encodes a transition: spec 010's `orderService.transition` reads the rows;
  *  - **status is written by the engine only** (ADR-0009) — `0008`'s triggers refuse an insert or a
  *    status update made without the transaction-local switch `app.allow_status_write` and the
@@ -195,7 +195,7 @@ export const purchase = pgTable(
 /* -------------------------------------------------------------------------- */
 
 /**
- * `"order".public_token`'s default (`0019`, spec 018 §5.1, TASK-337): the first 16 bytes of a
+ * `"order".public_token`'s default (`0021`, spec 018 §5.1, TASK-337): the first 16 bytes of a
  * SHA-256 over two `gen_random_uuid()` values, base64url without padding. Core functions only
  * (spec 002 AC-7: no extension, so not pgcrypto's `gen_random_bytes`).
  */
@@ -207,7 +207,7 @@ export const order = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     /**
-     * 16 CSPRNG bytes as base64url, 22 characters, from the column default (`0019`, spec 018
+     * 16 CSPRNG bytes as base64url, 22 characters, from the column default (`0021`, spec 018
      * §5.1): `orderService.place` names no token.
      */
     publicToken: text("public_token")
@@ -266,7 +266,7 @@ export const order = pgTable(
      */
     purchaseId: uuid("purchase_id").notNull(),
     /**
-     * Spec 018 §5.1 (`0019`, TASK-337): the tracking token's version. `rotateTrackingToken` bumps
+     * Spec 018 §5.1 (`0021`, TASK-337): the tracking token's version. `rotateTrackingToken` bumps
      * it, so every token signed for an older version stops verifying.
      */
     trackingTokenVersion: smallint("tracking_token_version")

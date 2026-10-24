@@ -5,7 +5,7 @@
  *
  * The set rows of A6.3 (13, 30, 31, 32, 34 and 27) are written here as A6 writes them, as a set in
  * the `from` column, and expanded by `TRANSITIONS`. Migration `0007_orders_payments.sql` seeds the
- * same rows one by one (A8.1's two are seeded by `0019_post_purchase.sql`), and the test compares
+ * same rows one by one (A8.1's two are seeded by `0021_post_purchase.sql`), and the test compares
  * the two in both directions. Changing a row means changing this file and the migration, and a
  * reviewer sees both.
  */
@@ -243,7 +243,7 @@ const ROWS: readonly (readonly [
     "chargeback_lost",
     ["system"],
   ],
-  // Spec 002 §14 A8.1 (spec 016 §13 Q9; shipped by `0019_post_purchase`, TASK-337): no candidate
+  // Spec 002 §14 A8.1 (spec 016 §13 Q9; shipped by `0021_post_purchase`, TASK-337): no candidate
   // at the first attempt sends the order to `no_partner_available` without passing `routed`.
   [
     37,

@@ -5,7 +5,7 @@
  * A tracking token is `signed-link`'s `track` purpose over exactly `{ publicToken, version }`
  * (`TrackingToken`, `.strict()`): no order id, no reference, no date and nothing personal, so a
  * link pasted into a chat or a log says nothing about the order it opens. `"order".public_token`
- * is 16 CSPRNG bytes from the column default (`0019`), never written by application code, and
+ * is 16 CSPRNG bytes from the column default (`0021`), never written by application code, and
  * `"order".tracking_token_version` is what a rotation bumps.
  *
  * `resolve` answers `TRACKING_FAILURE` (one frozen value) for every cause: a bad MAC or another

@@ -22,7 +22,7 @@
  *
  * Spec 013 adds `payments.stripe` and `payments.mollie` here, high-risk, when it lands.
  *
- * Spec 018 (TASK-337, migration `0019_post_purchase`) adds two, neither dirtying a public page
+ * Spec 018 (TASK-337, migration `0021_post_purchase`) adds two, neither dirtying a public page
  * (every route they gate is `noindex`, `no-store`):
  *
  *  - `account.open`, global or per locale: the account and privacy surfaces (tasks 4 and 5). Spec

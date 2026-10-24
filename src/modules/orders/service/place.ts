@@ -335,7 +335,7 @@ export async function placeWith(
       const purchaseId =
         input.purchaseId ?? (await insertOwnPurchase(executor, input));
       // `public_token` is not named: the column default draws it (16 CSPRNG bytes, base64url;
-      // `0019`, spec 018 §5.1 and AC-2), so no token is ever made or held in application code.
+      // `0021`, spec 018 §5.1 and AC-2), so no token is ever made or held in application code.
       const [inserted] = await withSwitch(executor, () =>
         executor.execute(sql`
         INSERT INTO "order" (id, mode, customer_id, recipient_id,

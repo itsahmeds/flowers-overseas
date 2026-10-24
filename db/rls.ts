@@ -110,7 +110,7 @@ export const CUSTOMER_SCOPED_TABLES = {
   substitution_note: "read",
   payment: "read",
   refund: "read",
-  // spec 018 §5.1 (migration `0019_post_purchase`, TASK-337): the buyer's own invoices and
+  // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the buyer's own invoices and
   // credit notes, read-only (an invoice never changes).
   invoice: "read",
 } as const;
@@ -189,7 +189,7 @@ export const STAFF_ONLY_TABLES = [
   "db_usage_sample",
   "feature_flag",
   "feature_flag_scope",
-  // spec 018 §5.1 (migration `0019_post_purchase`, TASK-337): the issuer's VAT registrations,
+  // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the issuer's VAT registrations,
   // the invoice profiles and the numbering series are admin and system only; `public` reads none.
   "invoice_profile",
   "invoice_series",
