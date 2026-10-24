@@ -79,10 +79,25 @@ here.
 - 2026-10-24: e2e (`tests/e2e/home-sentence-listbox.spec.ts`), a11y, visual and pseudo-RTL cases,
   `chooseSentence` in `tests/support/sentence.ts`; home specs moved to it. Next: CI on the head SHA,
   Linux baselines through the `visual:baselines` label.
+- 2026-10-24: first CI run (74edf0a4): a11y, build, unit green; e2e found a real defect (a scroll
+  event landing a frame after the opening press closed the panel; now closes only if the page
+  moved) and three test faults (`/pl` field order, minified easing, pixel parity held to the
+  visual threshold). Linux baselines committed from run 40079739301.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 388. On a fine pointer the home sentence's three choices open our own listbox
+(`src/modules/ui/home/sentence-listbox.ts`, model in `sentence-listbox-model.ts`, CSS in
+`src/app/globals.css`), loaded in the sentence's existing on-input chunk (2,305 B Brotli with
+esbuild for island plus listbox; the CI `deferred-chunks` spec asserts at most 3,072 B on the four
+homes); the A1 budget is not touched. Tests: unit 18 (model) + 34 (controller, jsdom) + 9 (CSS) +
+2 (deferred set); e2e 31 cases in `tests/e2e/home-sentence-listbox.spec.ts` plus the chunk size in
+`deferred-chunks.spec.ts` and the home specs moved to `chooseSentence`; a11y 2; visual 1 test with
+2 new baselines; pseudo-RTL 1. No local `next build`: the browser checks ran in a static harness
+inside the build slot (real server HTML, compiled CSS and fonts) and on CI.
+
+Carry-forwards: none owed by this task. For the founder, outside it: the site's Fraunces is the
+static opsz-144 subset, so the artboards' option rows look wider than the page's.
