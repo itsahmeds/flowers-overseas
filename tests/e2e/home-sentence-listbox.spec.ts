@@ -888,6 +888,52 @@ test.describe("AC-67 / T-73: the panel, in the design system and never clipped",
     });
   }
 
+  test("opened downward past the hero card's bottom edge, every option still answers elementFromPoint (the top layer, not the card's overflow: hidden)", async ({
+    page,
+  }) => {
+    // Upward, at these sizes, the panel fits inside the card, so it is the downward case that
+    // shows a panel left in the card: there the card's `overflow: hidden` cuts every row below
+    // its edge (6 of 7 rows, measured with the panel moved into the card).
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await home(page);
+    await enhanceSentence(page);
+    await page.evaluate(() => {
+      const box = document
+        .getElementById("send-country")
+        ?.getBoundingClientRect();
+      window.scrollBy(0, (box?.top ?? 0) - 150);
+    });
+    await sentenceTrigger(page, "country").click();
+    await page.waitForTimeout(400);
+
+    const geometry = await page.evaluate(() => {
+      const list = document.getElementById("send-country-listbox");
+      const button = document.querySelector(
+        '[aria-controls="send-country-listbox"]',
+      );
+      const card = document.querySelector("[data-fo-hero-card]");
+      if (list === null || button === null || card === null)
+        throw new Error("no listbox or card");
+      const box = list.getBoundingClientRect();
+      return {
+        below: box.top > button.getBoundingClientRect().bottom,
+        pastCard: box.bottom > card.getBoundingClientRect().bottom,
+        hits: [...list.querySelectorAll('[role="option"]')].map((option) => {
+          const rect = option.getBoundingClientRect();
+          return (
+            document.elementFromPoint(
+              rect.left + rect.width / 2,
+              rect.top + rect.height / 2,
+            ) === option
+          );
+        }),
+      };
+    });
+    expect(geometry.below, "opened downward").toBe(true);
+    expect(geometry.pastCard, "reaches past the card's bottom edge").toBe(true);
+    expect(geometry.hits).toEqual([true, true, true, true, true, true, true]);
+  });
+
   test("with the trigger 100 px above the viewport's bottom edge, the panel still lies inside it", async ({
     page,
   }) => {
