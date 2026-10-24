@@ -497,6 +497,8 @@ export {
 } from "./shop/gridProvenanceMode.ts";
 export type { GridProvenanceMode } from "./shop/gridProvenanceMode.ts";
 export { GridProvenance } from "./shop/GridProvenance.tsx";
+// Photographed products first, stable within each group (spec 043 §5.2, AC-13; TASK-290).
+export { photoFirst } from "./shop/photoFirst.ts";
 export type { GridProvenanceProps } from "./shop/GridProvenance.tsx";
 export {
   ListingSortForm,

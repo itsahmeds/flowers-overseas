@@ -92,10 +92,12 @@ import {
   altFor,
   assetsForProduct,
   isDisplayable,
+  photoFirst,
 } from "@/modules/ui";
 
 import { copyRow } from "./copy";
 import {
+  photoFor,
   ListingCrumbSchema,
   isPublishedCountry,
   listingLocales,
@@ -1372,8 +1374,16 @@ async function relatedFor(
     locale,
     deliverable.length,
   );
+  // Photographed products first (spec 043 §5.3 F, AC-13; TASK-290), before the six are picked, so
+  // the row fills with photographs while there are any; each group keeps spec 005's order.
+  const photographedFirst = photoFirst(
+    ordered.map((product) => ({
+      product,
+      photo: photoFor(product.sku, locale).photo,
+    })),
+  ).map(({ product }) => product);
   const picked: Product[] = [];
-  for (const candidate of ordered) {
+  for (const candidate of photographedFirst) {
     if (picked.length === RELATED_PRODUCTS_MAX) break;
     if (candidate.sku === sku) continue;
     if (!(await pageExists(candidate.sku, iso2, locale, memo))) continue;

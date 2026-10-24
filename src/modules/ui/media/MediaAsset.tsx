@@ -26,10 +26,11 @@
  * negotiation is the browser's, the lazy loading is the platform's, and the loader seam (AC-2)
  * still owns every URL.
  *
- * The placeholder's caption comes from `media.placeholder.*` per box, not from a prop: a caption a
- * call site could forget is a placeholder that looks broken instead of honest (`plan/10` §3).
+ * The placeholder is the `--color-photo` box with **no words** and `aria-hidden="true"` on every
+ * slot (spec 043 §5.3 F, AC-14; TASK-290): it shows no image we do not have, and it no longer
+ * tells a buyer about the photograph we have still to take. The name and price beside it are the
+ * content; a call site cannot add a caption, because there is no prop for one.
  */
-import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 import { preload } from "react-dom";
 
@@ -45,30 +46,6 @@ import {
 } from "./preload.ts";
 import { type ResolvedImage, resolveMedia } from "./resolve.ts";
 import { type MediaSlot, mediaSlot } from "./slots.ts";
-
-/**
- * The `media.placeholder.*` key each box falls back to (`messages/*.json`, TASK-073). Typed as
- * the literal union rather than `string` so a key that leaves the catalogue is a type error here
- * rather than a `media.placeholder.…` string rendered to a buyer.
- */
-const PLACEHOLDER_KEY: Readonly<
-  Record<
-    MediaSlot,
-    | "placeholder.hero"
-    | "placeholder.occasion"
-    | "placeholder.product"
-    | "placeholder.delivery"
-  >
-> = {
-  hero: "placeholder.hero",
-  // The editorial band of the home's explainer (TASK-053): the photograph it will hold is the
-  // one taken at the recipient's door, which is what `media.placeholder.delivery` describes.
-  band: "placeholder.delivery",
-  tile: "placeholder.occasion",
-  grid: "placeholder.product",
-  thumb: "placeholder.product",
-  trending: "placeholder.product",
-};
 
 export interface MediaAssetProps {
   /** The manifest's asset id (`seed/data/media.json`). */
@@ -132,7 +109,6 @@ export function MediaAsset({
   displayedAt,
   sizes,
 }: MediaAssetProps): ReactElement {
-  const t = useTranslations("media");
   const lookedUp = resolveMedia({
     assetId,
     locale,
@@ -154,8 +130,10 @@ export function MediaAsset({
 
   if (resolved.kind === "placeholder") {
     return (
+      // Wordless and `aria-hidden` (spec 043 §5.3 F, AC-14; TASK-290): a box with no photograph
+      // in it says nothing, on every slot; the name and price around it are the content.
       <Photo
-        caption={t(PLACEHOLDER_KEY[box])}
+        decorative
         ratio={ratio ?? mediaSlot(box).ratio}
         {...(className === undefined ? {} : { className })}
         // Why this box is a box and not a photograph, on the box itself: a reviewer, an e2e

@@ -128,7 +128,7 @@ describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18
     expect(html).not.toContain("Photography to supply");
   });
 
-  it("renders the captioned placeholder and no `<img>` when the asset is unapproved", () => {
+  it("renders the wordless placeholder and no `<img>` when the asset is unapproved", () => {
     const html = withManifest(
       <MediaAsset assetId={PRODUCT_ASSET} locale="en" />,
       {
@@ -139,7 +139,7 @@ describe("AC-18: an `<img>` only when approved, with variants and with alt (T-18
     expect(html).not.toContain("<img");
     expect(html).not.toContain("srcset");
     expect(html).toContain('data-fo-media-placeholder="unapproved"');
-    expect(html).toContain("Photography to supply");
+    expect(html).not.toContain("Photography to supply");
   });
 
   it("renders the placeholder and no `<img>` when no variant has been derived", () => {
@@ -436,16 +436,20 @@ describe("AC-19: one `priority` image and its matching preload (T-19)", () => {
   });
 });
 
-describe("the placeholder caption is real copy in every locale", () => {
+describe("the placeholder box is wordless and `aria-hidden` in every locale (spec 043 AC-14)", () => {
   for (const locale of LOCALES) {
-    it(`captions the empty box in \`${locale}\``, () => {
+    it(`an empty box with no text in \`${locale}\``, () => {
       const html = withManifest(
         <MediaAsset assetId={PRODUCT_ASSET} locale={locale} />,
         { withoutVariants: true },
         locale,
       );
       expect(html).not.toContain("media.placeholder");
-      expect(html).toMatch(/photography to supply/i);
+      expect(html).not.toMatch(/photography to supply/iu);
+      // The whole element: one box, `aria-hidden="true"`, no child, no text.
+      expect(html).toMatch(
+        /^<div[^>]*data-fo-media-placeholder="noVariants"[^>]*aria-hidden="true"[^>]*><\/div>$/u,
+      );
     });
   }
 });

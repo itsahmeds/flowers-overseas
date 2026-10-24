@@ -211,6 +211,47 @@ describe("A24 clause 9 (g): motion 11 and 12 hide nothing without the module", (
   });
 });
 
+/** Every resting `opacity: 0` on motions 11 and 12 and the card's shadow layer, with its at-rules. */
+function restingHidden(css: string): string[] {
+  return walk(css)
+    .filter(
+      (rule) =>
+        rule.declarations.get("opacity") === "0" &&
+        !rule.context.some(
+          (at) =>
+            at.startsWith("@keyframes") || at.startsWith("@starting-style"),
+        ) &&
+        /data-fo-(reveal|fade|card-shadow)/.test(rule.selector),
+    )
+    .map((rule) => `${rule.context.join(" ")} | ${rule.selector}`)
+    .sort();
+}
+
+describe("spec 043 AC-15: a printed page hides nothing (TASK-290)", () => {
+  it("rests motions 11 and 12 and the card's shadow layer at opacity 0 on a screen only", () => {
+    expect(restingHidden(shipped)).toEqual([
+      "@layer components @media screen | [data-fo-card-shadow]",
+      '@media (prefers-reduced-motion: no-preference) @media screen | html[data-fo-motion] [data-fo-reveal="pending"] > *',
+      '@media (prefers-reduced-motion: no-preference) @media screen | html[data-fo-motion] img[data-fo-fade="pending"]',
+    ]);
+  });
+
+  it("fades the card's shadow layer on a screen only, so print shows it at full opacity at once", () => {
+    // A transition left on in print would start at the switch to print and read 0 for 500 ms.
+    expect(
+      walk(shipped)
+        .filter(
+          (rule) =>
+            rule.selector.includes("[data-fo-card-shadow]") &&
+            rule.declarations.has("transition-property"),
+        )
+        .map((rule) => `${rule.context.join(" ")} | ${rule.selector}`),
+    ).toEqual([
+      "@media (prefers-reduced-motion: no-preference) @media (hover: hover) and (pointer: fine) @media screen | a[data-fo-card-motion] [data-fo-card-shadow]",
+    ]);
+  });
+});
+
 describe("AC-6 as A24 clause 9 (c): reduced motion", () => {
   const rules = walk(shipped);
   const MOTION_SELECTOR =

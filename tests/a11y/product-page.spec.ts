@@ -45,6 +45,22 @@ for (const path of AUDITED) {
   });
 }
 
+// Spec 043 T-14 (TASK-290): Peace Lily has no approved photograph, so its gallery is the
+// wordless, `aria-hidden` box; audited at both widths.
+for (const size of [
+  { width: 1440, height: 900 },
+  { width: 390, height: 844 },
+]) {
+  test(`/en/poland/product/peace-lily at ${String(size.width)} has no serious or critical violations`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(size);
+    const response = await page.goto("/en/poland/product/peace-lily");
+    expect(response?.status()).toBe(200);
+    expect(await audit(page)).toEqual([]);
+  });
+}
+
 test("one <h1>, and the tier and date groups are fieldsets with legends", async ({
   page,
 }) => {

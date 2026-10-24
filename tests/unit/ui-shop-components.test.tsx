@@ -93,8 +93,11 @@ describe("ProductCard: the four states of the sheet's first row", () => {
     expect(html).not.toContain("<img");
     expect(html).not.toContain("<a ");
     expect(html).toContain('data-fo-product-card-kind="tile"');
-    // The captioned box, from `media.placeholder.product` — never a broken image (§5.3).
-    expect(html).toContain("Photography to supply");
+    // The wordless, `aria-hidden` box, never a broken image (§5.3; spec 043 AC-14, TASK-290).
+    expect(html).not.toContain("Photography to supply");
+    expect(html).toMatch(
+      /<div[^>]*data-fo-media-placeholder="no-asset"[^>]*aria-hidden="true"[^>]*><\/div>/u,
+    );
   });
 
   it("renders the image state through MediaAsset, in the card's 4∶5 box", () => {

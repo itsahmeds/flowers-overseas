@@ -229,12 +229,12 @@ describe("the trending row is gated on real orders", () => {
     expect(html).not.toContain("<img");
     expect(html).toContain('data-fo-media-slot="trending"');
     expect(html).toContain('data-fo-media-placeholder="unknownAsset"');
-    expect(text(html)).toContain(
-      "Photography to supply · this bouquet as our florist makes it",
+    // The wordless, `aria-hidden` box (spec 043 AC-14; TASK-290); the pick's name stays.
+    expect(text(html)).not.toContain("Photography to supply");
+    expect(html).toMatch(
+      /<div[^>]*data-fo-media-placeholder="unknownAsset"[^>]*aria-hidden="true"[^>]*><\/div>/u,
     );
-    expect(text(html)).not.toContain(
-      "Photography to supply · flowers sent for this occasion",
-    );
+    expect(text(html)).toContain("Quiet Blush");
   });
 
   it("tells the browser the card's rendered width, not the listing grid's (TASK-168, AC-15)", () => {

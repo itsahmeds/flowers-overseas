@@ -3142,38 +3142,6 @@
     "reviewedBy": "founder, 2026-10-05: ran record-approval-119.py after reading the exact text it printed (chat: 'go, approve copy' 2026-10-04; '3 yes' 2026-10-05)",
     "reviewedAt": "2026-10-05T11:15:46Z"
   },
-  "media.placeholder.delivery": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "frontend-implementer (spec 004 §2 trust strip, §14 A4 unpublished-target copy, /review 41 caption; TASK-053)",
-    "reviewedAt": "2026-09-11T00:00:00Z",
-    "sourceHash": "e66590d3bf3a2144c2a669457446ad307f329ed4cf6195de5417f8885081f709",
-    "retained": true
-  },
-  "media.placeholder.hero": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (spec 006 §7 media/catalogue namespaces; TASK-073)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "2bf529ee867b9fba13dd739e826e91bfdec0a9ee714c2c29129c9ab6d0ccc7a9",
-    "retained": true
-  },
-  "media.placeholder.occasion": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (spec 006 §7 media/catalogue namespaces; TASK-073)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "85e41a0e0c440a54f218e23f2e382ea66608eb6ec8a7eaecc868ef3653f17d46",
-    "retained": true
-  },
-  "media.placeholder.product": {
-    "source": "human",
-    "reviewed": true,
-    "reviewedBy": "backend-implementer (spec 006 §7 media/catalogue namespaces; TASK-073)",
-    "reviewedAt": "2026-09-09T00:00:00Z",
-    "sourceHash": "116724b0f37ac066fa19fc317aa1df9d3af1e8d470f199f31e90815cd32e666f",
-    "retained": true
-  },
   "media.provenance.aiExample": {
     "source": "human",
     "reviewed": true,

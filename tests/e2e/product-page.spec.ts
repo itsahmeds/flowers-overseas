@@ -366,7 +366,11 @@ test.describe("one priority image with its preload, and none without a photograp
     await expect(gallery.locator("img")).toHaveCount(0);
     await expect(gallery.locator("picture, source")).toHaveCount(0);
     await expect(gallery).not.toContainText("Example arrangement");
-    await expect(gallery).toContainText("Photography to supply");
+    // The wordless, `aria-hidden` box (spec 043 AC-14; TASK-290).
+    await expect(gallery).not.toContainText("Photography to supply");
+    await expect(
+      gallery.locator('[data-fo-media-placeholder][aria-hidden="true"]'),
+    ).toHaveCount(1);
   });
 });
 
