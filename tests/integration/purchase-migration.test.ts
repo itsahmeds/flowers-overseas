@@ -33,10 +33,15 @@ import { runnerOf } from "./support/sql-runner.ts";
 
 const server = await probeLocalServer();
 
-/** Every column of every order except `purchase_id`, as JSON text, by id. */
+/**
+ * Every column of every order except `purchase_id`, as JSON text, by id. A forward run also applies
+ * the migrations after `0019`, so `0021_post_purchase`'s `tracking_token_version` (TASK-337) is left
+ * out with it: it is not this migration's column.
+ */
 async function ordersWithout(sql: Sql): Promise<Map<string, string>> {
   const rows = await sql<{ id: string; row: string }[]>`
-    SELECT o.id, (to_jsonb(o) - 'purchase_id')::text AS row FROM "order" o ORDER BY o.id`;
+    SELECT o.id, (to_jsonb(o) - 'purchase_id' - 'tracking_token_version')::text AS row
+    FROM "order" o ORDER BY o.id`;
   return new Map(rows.map((r) => [r.id, r.row]));
 }
 
@@ -66,7 +71,10 @@ async function objects(sql: Sql): Promise<{
   return row ?? { table: -1, column: -1, fn: -1, triggers: -1, key: -1 };
 }
 
-/** An order as `place` wrote one before `0019`: no purchase. */
+/**
+ * An order as `place` wrote one before `0019`: no purchase. Its token is 22 characters, the exact
+ * shape `0021_post_purchase` keeps, so the forward run past `0019` leaves it alone.
+ */
 async function legacyOrder(
   tx: Tx,
   parents: { countryId: string; customerId: string; recipientId: string },
@@ -80,7 +88,7 @@ async function legacyOrder(
                          delivery_date, buyer_currency_code, buyer_total_minor,
                          base_currency_code, base_total_minor, terms_version, buyer_snapshot,
                          recipient_snapshot, locale_code, created_at)
-    VALUES (${unique("legacy").padEnd(24, "x")}, ${mode}, ${parents.customerId},
+    VALUES (${unique("legacy").padEnd(22, "x")}, ${mode}, ${parents.customerId},
             ${parents.recipientId}, ${parents.countryId}, DATE '2027-02-14', 'PLN',
             ${totalMinor}, 'PLN', ${totalMinor}, ${mode === "live" ? "2026-10" : null},
             '{"name": "Test Buyer"}'::jsonb, '{"city": "Warszawa"}'::jsonb, ${localeCode},
