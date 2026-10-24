@@ -317,7 +317,8 @@ test.describe("the site header (AC-7)", () => {
 
     // Every keyed entry is a link (spec 004 §14 A20; TASK-173): not one `<span>` dressed as one.
     const items = page.locator("[data-fo-header-item]");
-    await expect(items).toHaveCount(8);
+    // Eight category entries and `For florists` (spec 011, TASK-210).
+    await expect(items).toHaveCount(9);
     for (const handle of await items.all()) {
       expect(await handle.evaluate((node) => node.tagName)).toBe("A");
     }
@@ -326,7 +327,6 @@ test.describe("the site header (AC-7)", () => {
       "sign-in",
       "my-orders",
       "basket",
-      "for-florists",
       "add-ons",
       "same-day-delivery",
     ]) {
@@ -335,13 +335,7 @@ test.describe("the site header (AC-7)", () => {
         id,
       ).toHaveCount(0);
     }
-    for (const word of [
-      "Sign in",
-      "My orders",
-      "Basket",
-      "For florists",
-      "Add-ons",
-    ]) {
+    for (const word of ["Sign in", "My orders", "Basket", "Add-ons"]) {
       await expect(page.locator(HEADER), word).not.toContainText(word);
     }
 
@@ -401,11 +395,11 @@ test.describe("the site header (AC-7)", () => {
         )
       ).filter((link) => link.rendered);
 
-      // At 1 440 px the logo, the eight category links, the Send pill, the help line and the
+      // At 1 440 px the logo, the eight category links, For florists (spec 011), the Send pill, the help line and the
       // switcher's one sibling shown locale (§14 A4; spec 003 §14 A-founder-2026-10-14c). At 390 px only the logo is a rendered link: the Menu
       // is closed, and its summary is measured below (§14 A24 clause 3).
       expect(measured.length, String(viewport.width)).toBe(
-        viewport.width >= XL_BREAKPOINT ? 12 : 1,
+        viewport.width >= XL_BREAKPOINT ? 13 : 1,
       );
       if (viewport.width < MD_BREAKPOINT) {
         const summary = await page.locator(MENU_SUMMARY).boundingBox();

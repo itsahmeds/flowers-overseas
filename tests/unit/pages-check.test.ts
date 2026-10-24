@@ -183,6 +183,40 @@ const CASES: readonly {
       ),
     file: "content/pages/en/guarantee.md",
   },
+  // Spec 011 AC-7 / T-07 (TASK-210): the florists family's three rules of its own.
+  {
+    rule: "florist-faq-count",
+    what: "a florists' landing with seven questions",
+    files: () =>
+      withFile("pages/en/for-florists.md", (s) =>
+        s.replace(
+          /  - q: "In which language do orders arrive\?"\n    a: "[^"]*"\n  - q: "Do I need a registered business\?"\n    a: "[^"]*"\n/u,
+          "",
+        ),
+      ),
+    file: "content/pages/en/for-florists.md",
+    field: "faq",
+  },
+  {
+    rule: "florist-landing-blocks",
+    what: "a florists' landing with the questions before the steps",
+    files: () =>
+      withFile("pages/en/for-florists.md", (s) =>
+        s.replace("  - id: steps\n", "  - id: questions-first\n"),
+      ),
+    file: "content/pages/en/for-florists.md",
+    field: "sections",
+  },
+  {
+    rule: "walkthrough-words",
+    what: "a walkthrough under 350 words of prose",
+    files: () =>
+      withFile("pages/en/how-orders-work.md", (s) =>
+        s.replaceAll(/\\n\\n[^"]*"\n    screen:/gu, '"\n    screen:'),
+      ),
+    file: "content/pages/en/how-orders-work.md",
+    field: "sections",
+  },
 ];
 
 describe("pages:check (T-05 / AC-5)", () => {
@@ -571,6 +605,124 @@ describe("pages:check, continued", () => {
       encoding: "utf8",
     });
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain("all 13 rules clean");
+    expect(result.stdout).toContain("all 16 rules clean");
+  });
+});
+
+/**
+ * Spec 011 AC-7 / T-07 (TASK-210): `pages:check` covers both florists files and fails one fixture
+ * each of the four §6 and §13 Q11 cases, naming file, field and rule; the merged tree is clean
+ * (the `is clean on the committed tree` case above reads the same corpus, florists included).
+ */
+describe("pages:check over the florists family (spec 011 AC-7, T-07)", () => {
+  function problemsOf(
+    files: ReturnType<typeof withFile>,
+    rule: PagesCheckRule,
+  ) {
+    return checkInfoCorpus(files).filter((problem) => problem.rule === rule);
+  }
+
+  it("reads both florists files in every locale that has them", () => {
+    const paths = FILES.map((file) => file.path);
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      expect(paths).toContain(`pages/${locale}/for-florists.md`);
+      expect(paths).toContain(`pages/${locale}/how-orders-work.md`);
+    }
+  });
+
+  it('fails banned-words on "partner" in the landing\'s prose (§13 Q11 keeps the ban)', () => {
+    const problems = problemsOf(
+      sectionBody(
+        "pages/en/for-florists.md",
+        "We find the buyer and talk to them in their language.",
+        "We are your partner and talk to the buyer in their language.",
+      ),
+      "banned-words",
+    );
+    expect(problems).toEqual([
+      expect.objectContaining({
+        file: "content/pages/en/for-florists.md",
+        field: "sections.0.bullets.0",
+        rule: "banned-words",
+      }),
+    ]);
+  });
+
+  it("fails scale-claim on a digit-bearing claim in the walkthrough", () => {
+    const problems = problemsOf(
+      sectionBody(
+        "pages/en/how-orders-work.md",
+        "Tell us before you deliver and say what you used instead.",
+        "Like our 40 florists, tell us before you deliver and say what you used instead.",
+      ),
+      "scale-claim",
+    );
+    expect(problems).toEqual([
+      expect.objectContaining({
+        file: "content/pages/en/how-orders-work.md",
+        field: "sections.4.body",
+        rule: "scale-claim",
+      }),
+    ]);
+  });
+
+  it("fails trust-claims on a delivery-photo sentence the file's honestyAllow does not list", () => {
+    const problems = problemsOf(
+      sectionBody(
+        "pages/en/for-florists.md",
+        "You add one photo of the delivered bouquet.",
+        "You add the delivery photo for the buyer.",
+      ),
+      "trust-claims",
+    );
+    expect(problems).toEqual([
+      expect.objectContaining({
+        file: "content/pages/en/for-florists.md",
+        field: "sections.1.bullets.3",
+        rule: "trust-claims",
+      }),
+    ]);
+  });
+
+  it("fails walkthrough-words on a walkthrough one word under 350, and passes it at 350", () => {
+    const source = FILES.find(
+      (file) => file.path === "pages/en/how-orders-work.md",
+    )?.source;
+    expect(source).toBeDefined();
+    // The committed English walkthrough carries 385 words of prose (intro and section bodies).
+    const words = (n: number) =>
+      Array.from({ length: n }, () => "word").join(" ");
+    const trimmed = (target: number) =>
+      withFile("pages/en/how-orders-work.md", (s) => {
+        // Replace the photo step's second paragraph so the file holds exactly `target` words.
+        const paragraph =
+          "One clear photo of the bouquet is enough. Your phone's camera opens from the page, and the photo is sent without its location or any other details stored in the file. Once the photo is in, the recipient's details leave your screen, because you no longer need them.";
+        expect(s).toContain(paragraph);
+        const others = 385 - paragraph.split(" ").length;
+        return s.replace(paragraph, words(target - others));
+      });
+    expect(problemsOf(trimmed(349), "walkthrough-words")).toEqual([
+      expect.objectContaining({
+        file: "content/pages/en/how-orders-work.md",
+        field: "sections",
+        rule: "walkthrough-words",
+      }),
+    ]);
+    expect(problemsOf(trimmed(350), "walkthrough-words")).toEqual([]);
+  });
+
+  it("does not run the buyer relay rule on florist-facing prose, and still runs it on a trust page", () => {
+    const florist = sectionBody(
+      "pages/en/for-florists.md",
+      "You make the bouquet from what is fresh that morning.",
+      "You accept the order and make the bouquet from what is fresh that morning.",
+    );
+    expect(problemsOf(florist, "relay-language")).toEqual([]);
+    const trust = sectionBody(
+      "pages/en/guarantee.md",
+      "until we start preparing your order",
+      "until a florist accepts your order",
+    );
+    expect(problemsOf(trust, "relay-language").length).toBeGreaterThan(0);
   });
 });
