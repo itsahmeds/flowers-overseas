@@ -30,8 +30,8 @@ One dated bullet per `/review`, newest last.
 
 ## Decisions recorded here (clause 10, clause 11, the brief's own asks)
 
-- **Numbering.** PR 317 renumbered this amendment: AC-60 to AC-71, T-65 to T-77 (the row above
-  still reads AC-58 to AC-69 until PR 317 merges). Code, tests and the PR use the new numbers.
+- **Numbering.** PR 317 renumbered this amendment: AC-60 to AC-71, T-65 to T-77 (the `## Binding`
+  list above still says AC-58 to AC-69). Code, tests and the PR use the new numbers.
 - **The panel escapes the hero card through the top layer** (clause 10's choice): a
   `popover="manual"` element placed from the trigger's rectangle with `inset-inline-start` and
   `inset-block-start` through the CSSOM. Manual, not auto: an auto popover's light dismiss closes
