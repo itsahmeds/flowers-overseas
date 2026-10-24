@@ -622,6 +622,9 @@ describe.skipIf(server.url === undefined)(
           verifyAndParseWebhook: (body, headers) =>
             paid.fake.verifyAndParseWebhook(body, headers),
           listEventsSince: (since) => paid.fake.listEventsSince(since),
+          retrieveRefund: (ref) => paid.fake.retrieveRefund(ref),
+          listChargeRefunds: (ref) => paid.fake.listChargeRefunds(ref),
+          retrieveDispute: (ref) => paid.fake.retrieveDispute(ref),
         };
         await cancel(orderId, "buyer", "buyer_cancel");
         await deliver(orderId, depsOf(flaky));
