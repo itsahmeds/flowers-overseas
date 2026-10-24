@@ -27,6 +27,14 @@ import {
 } from "../../src/modules/catalog/availability.ts";
 import { catalogAvailabilityKeys } from "../../src/modules/catalog/types.ts";
 
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
+
 const STATIC_MODULE = "../../src/modules/catalog/static/index.ts";
 const LIVE = "PL" as const;
 const DEMO = "DE" as const;
@@ -119,7 +127,12 @@ describe("availability() is derived from data (AC-20, T-18)", () => {
       reasonKey: catalogAvailabilityKeys.countryDemo,
       saleable: false,
     });
-    vi.doUnmock("../../src/config/countries.ts");
+    // Back to the file's registry-live fixture (a `doUnmock` would drop it too).
+    vi.doMock("../../src/config/countries.ts", async (importOriginal) =>
+      (await import("../fixtures/poland-registry.ts")).withPolandLive(
+        await importOriginal(),
+      ),
+    );
   });
 
   it("is `OutOfStock`/`noPartner` when no florist covers the destination", async () => {

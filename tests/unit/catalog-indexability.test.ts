@@ -22,7 +22,7 @@ import { readFileSync } from "node:fs";
 import { readdirSync } from "node:fs";
 import { join, resolve as resolvePath } from "node:path";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { COUNTRIES } from "../../src/config/countries.ts";
 import type { LocaleCode } from "../../src/config/locales.ts";
@@ -34,6 +34,14 @@ import {
   productIndexability,
 } from "../../src/modules/catalog/read.ts";
 import type { ProductIndexability } from "../../src/modules/catalog/types.ts";
+
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), and
+// this suite's subject is the `live` path, so it runs against the registry-live fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
 
 const LIVE = "PL" as const;
 const DEMO = "DE" as const;

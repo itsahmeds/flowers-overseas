@@ -96,7 +96,7 @@ describe("the committed tree is clean (AC-5)", () => {
     for (const iso2 of clean.destinationIso2) {
       expect(table).toContain(`| ${iso2} | `);
     }
-    expect(table).toContain("| PL | live | PLN |");
+    expect(table).toContain("| PL | demo | PLN |");
     expect(table).toContain("FX snapshot: 2026-09-08");
     expect(table).not.toContain("**stale**");
   });

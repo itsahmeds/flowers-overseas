@@ -76,12 +76,12 @@
       "locale": "de",
       "name": "Geburtstagsblumen",
       "slug": "geburtstagsblumen",
-      "descriptionMd": "Sträuße, Gestecke und Pflanzen, die zum Geburtstag wirklich verschickt werden: leuchtende Tulpen und Gerbera, rosa und orange Rosen, ein am Tag ausgesuchter bunter Strauß oder eine Orchidee für alle, die Pflanzen mögen. Die meisten gibt es in drei Größen, und eine gedruckte Karte kann dazukommen. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommt der Strauß an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Sträuße, Gestecke und Pflanzen, die zum Geburtstag wirklich verschickt werden: leuchtende Tulpen und Gerbera, rosa und orange Rosen, ein am Tag ausgesuchter bunter Strauß oder eine Orchidee für alle, die Pflanzen mögen. Die meisten gibt es in drei Größen, und eine gedruckte Karte kann dazukommen. Wählen Sie, wohin die Blumen gehen und an welchem Tag, um den Rest kümmern wir uns. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Geburtstagsblumen: europaweit geliefert",
       "seoDescription": "Leuchtende Tulpen, Gerbera, Rosen, bunte Sträuße und Orchideen zum Geburtstag, in drei Größen. Datum wählen, Karte dazu.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "d0dfe7ebc1d4361215cc8624a7b8847af9c74b11fdfb22a1ff874a19a54daaab"
+      "sourceHash": "35e033d58e8855e28ae2742ad4e3353159ef163a388af0b11beef9c020480eb6"
     },
     {
       "entity": "category",
@@ -180,12 +180,12 @@
       "locale": "de",
       "name": "Blumen zur Entschuldigung",
       "slug": "blumen-zur-entschuldigung",
-      "descriptionMd": "Zarte Rosen, weiße Tulpen, Freesien und eine kleine Box mit Pastellblumen: eher leise als groß, was beim Entschuldigen meistens der richtige Ton ist. Eine gedruckte Karte ist kostenlos und lohnt sich hier. Bestellen Sie vor dem Bestellschluss, der für das Zielland angezeigt wird, dann kommen die Blumen an dem Tag, den Sie wählen. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
+      "descriptionMd": "Zarte Rosen, weiße Tulpen, Freesien und eine kleine Box mit Pastellblumen: eher leise als groß, was beim Entschuldigen meistens der richtige Ton ist. Eine gedruckte Karte ist kostenlos und lohnt sich hier. Wählen Sie, wohin die Blumen gehen und an welchem Tag, um den Rest kümmern wir uns. Jede Bestellung wird von Hand gefertigt und von unserem Floristen in der Stadt des Empfängers persönlich zugestellt.",
       "seoTitle": "Blumen zur Entschuldigung: europaweit geliefert",
       "seoDescription": "Zarte Rosen, weiße Tulpen, Freesien und kleine Pastellboxen: leise statt groß. Mit kostenloser gedruckter Karte, am gewählten Tag geliefert.",
       "translationStatus": "human",
       "reviewed": false,
-      "sourceHash": "f110c4c15353e1ec86b620e4db5d069b167b9c2d660463d081d1416c9c5bac37"
+      "sourceHash": "4e2d130f7874fe37437c6aaf2e98969eadfbcecee72ac9cb2410a91c68e5d751"
     },
     {
       "entity": "category",

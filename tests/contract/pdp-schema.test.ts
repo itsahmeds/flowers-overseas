@@ -53,6 +53,15 @@ vi.mock("../../src/modules/geo/corridor.ts", async (importOriginal) => {
   };
 });
 
+// Poland is `demo` on committed data (spec 007 §14 A-founder-2026-10-14c clause 5; TASK-239), so
+// the live fixture takes the registry-live row as well: with the florist and the corridor switch
+// below, it is spec 007's Poland-open fixture.
+vi.mock("../../src/config/countries.ts", async (importOriginal) =>
+  (await import("../fixtures/poland-registry.ts")).withPolandLive(
+    await importOriginal(),
+  ),
+);
+
 const { DEFAULT_DIR, collectTypedNodes, typeProblem } =
   await import("../../scripts/seo/validate-schema.ts");
 const { localeConfig } = await import("../../src/config/locales.ts");
