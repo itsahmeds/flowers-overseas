@@ -166,3 +166,20 @@ export function hasNumberingPlan(countryIso: string): boolean {
 export function residenceCountryCodes(): readonly string[] {
   return [...getCountries()].filter((code) => /^[A-Z]{2}$/u.test(code)).sort();
 }
+
+/**
+ * The destination's calling code without the plus ("48"), for the recipient phone's placeholder
+ * (`+48`, the artboard), or `null` for a region the numbering-plan library does not know.
+ */
+export function callingCodeOf(countryIso: string): string | null {
+  const region = getCountries().find((code) => code === countryIso);
+  return region === undefined ? null : getCountryCallingCode(region);
+}
+
+/**
+ * A stored E.164 number in its international display form (`+48 500 000 000`, the step 3
+ * artboard), or the E.164 text itself when the library cannot read it.
+ */
+export function internationalPhone(e164: string): string {
+  return parsePhoneNumberFromString(e164)?.formatInternational() ?? e164;
+}

@@ -204,8 +204,7 @@
   "checkout": {
     "action": {
       "toCard": "Continue to your details",
-      "toReview": "Continue to check",
-      "back": "Back to {product}"
+      "toReview": "Continue to check"
     },
     "address": {
       "city": "Town or city",
@@ -255,7 +254,8 @@
     "date": {
       "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}.",
       "legend": "Delivery date",
-      "useNext": "Use {next}"
+      "useNext": "Use {next}",
+      "offNote": "{date}: {reason}"
     },
     "demo": {
       "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
@@ -282,7 +282,8 @@
       "unable": "We could not place this order. Please check the details and try again."
     },
     "field": {
-      "optional": "optional"
+      "optional": "optional",
+      "namePlaceholder": "First and last name"
     },
     "placeKind": {
       "cemetery": "A cemetery",
@@ -322,7 +323,8 @@
       "title": "Your order",
       "total": "You pay",
       "vat": "VAT {rate}",
-      "vatOf": "Of which VAT {rate}"
+      "vatOf": "Of which VAT {rate}",
+      "guaranteeLink": "Our guarantee"
     },
     "addons": {
       "add": "Add",
@@ -352,10 +354,10 @@
       "recipient": "Recipient"
     },
     "step": {
-      "card": "Your card and your details",
+      "card": "Your card and <em>your details</em>",
       "deliveryOf": "Delivery {n} of {total}",
-      "recipient": "Who are the flowers for?",
-      "review": "Check and place your order"
+      "recipient": "Who are the flowers <em>for?</em>",
+      "review": "Check and place <em>your order</em>"
     }
   },
   "common": {
@@ -384,12 +386,12 @@
       "body": "Nothing was charged and nothing will be delivered.",
       "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person.",
       "reference": "Order {reference}",
-      "title": "Your demo order is in."
+      "title": "Your demo order <em>is in.</em>",
+      "referenceSentence": "Order <b>{reference}</b>."
     },
     "page": {
       "gone": "This confirmation is no longer available.",
-      "promise": "Our fresh-flower promise covers the flowers when they arrive.",
-      "total": "Total"
+      "promise": "Our fresh-flower promise covers the flowers when they arrive."
     }
   },
   "consent": {

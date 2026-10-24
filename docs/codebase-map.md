@@ -15,7 +15,7 @@ task actually touches.
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
 | `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +93 |
-| `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +7 |
+| `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +8 |
 | `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
@@ -85,6 +85,7 @@ task actually touches.
 | `(dev)/layout.tsx` | Document layout for the `(dev)` route group — today… | 004 |
 | `[locale]/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/_query/{segment}/{child}/{grandchild}` — the… | 008 |
 | `[locale]/%5Fquery/[segment]/[child]/page.tsx` | `/{locale}/_query/{segment}/{child}` — the parameter… | 008 |
+| `[locale]/(checkout)/_views/CheckoutHeader.tsx` | The checkout's header | 010 |
 | `[locale]/(checkout)/_views/CheckoutView.tsx` | `/{locale}/checkout`, drawn (spec 010 §2 "The checkout:… | 010 |
 | `[locale]/(checkout)/_views/ConfirmationView.tsx` | `/{locale}/checkout/done`, drawn (spec 010 §2… | 010 |
 | `[locale]/(checkout)/checkout/actions.ts` | The checkout page's one server action. Thin glue | 010 |
@@ -93,8 +94,8 @@ task actually touches.
 | `[locale]/-product/[segment]/[child]/[grandchild]/page.tsx` | `/{locale}/-product/{segment}/{child}/{grandchild}` —… | 009 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/[grandchild]/page.tsx` | The header of the depth-4 parameter route,… | 043 |
 | `[locale]/@header/%5Fquery/[segment]/[child]/page.tsx` | The header of the shop root's parameter route,… | 043 |
-| `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header: the site header with no… | 010 |
-| `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header: the site header with no… | 010 |
+| `[locale]/@header/(checkout)/checkout/done/page.tsx` | The checkout's header: the logo and the help line only,… | 010 |
+| `[locale]/@header/(checkout)/checkout/page.tsx` | The checkout's header: the logo and the help line only,… | 010 |
 | `[locale]/@header/-product/[segment]/[child]/[grandchild]/page.tsx` | The product page's header. Next fills a slot from the… | 043 |
 | `[locale]/@header/[segment]/[child]/[grandchild]/page.tsx` | The header at depth 4, `/{locale}/{segment}/{child}/{gra… | 043 |
 | `[locale]/@header/[segment]/[child]/page.tsx` | The header at depth 3, `/{locale}/{segment}/{child}`: a | 043 |
@@ -222,7 +223,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 367 |
+| `tests/unit/` | 368 |
 | `tests/integration/` | 47 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |

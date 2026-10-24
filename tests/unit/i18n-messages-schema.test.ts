@@ -262,7 +262,6 @@ describe("the shipped catalogues and manifests", () => {
     // TASK-204..206 (spec 010): the checkout page, its states and the confirmation, and the
     // product page's two entry buttons (`product.entry.*`), the implementer's wording until the
     // founder's record run attests them.
-    "checkout.action.back",
     "checkout.addons.add",
     "checkout.addons.addLabel",
     "checkout.addons.legend",
@@ -275,12 +274,14 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.closed.title",
     "checkout.date.gone",
     "checkout.date.legend",
+    "checkout.date.offNote",
     "checkout.date.useNext",
     "checkout.demo.cap",
     "checkout.demo.dateHeading",
     "checkout.error.unable",
     "checkout.expired.link",
     "checkout.expired.title",
+    "checkout.field.namePlaceholder",
     "checkout.recipient.deliveryNote",
     "checkout.recipient.deliveryNoteHint",
     "checkout.review.addons",
@@ -296,6 +297,7 @@ describe("the shipped catalogues and manifests", () => {
     "checkout.step.deliveryOf",
     "checkout.step.recipient",
     "checkout.step.review",
+    "checkout.summary.guaranteeLink",
     // TASK-242/243 (spec 003 §14 A-founder-2026-10-15a): head copy without a dash. The approved
     // targets ("specs ok", 2026-10-15; the home title and description by the founder's own words,
     // 2026-10-18) ship `reviewed: false` until the founder's record run attests the exact values.
@@ -378,10 +380,10 @@ describe("the shipped catalogues and manifests", () => {
     "confirmation.demo.body",
     "confirmation.demo.next",
     "confirmation.demo.reference",
+    "confirmation.demo.referenceSentence",
     "confirmation.demo.title",
     "confirmation.page.gone",
     "confirmation.page.promise",
-    "confirmation.page.total",
     "consent.privacyLink",
     // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
     // calendar's Rule column in words, approved in the 2026-10-04 batch ("approve copy") and

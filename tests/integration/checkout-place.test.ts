@@ -22,6 +22,8 @@ import {
   type DraftConnection,
   type StepOutcome,
   assessBasket,
+  checkoutScreen,
+  confirmationFor,
   draftTokenFromCookieHeader,
   loadDraft,
   nextDeliveryDate,
@@ -416,6 +418,57 @@ describeDb(`placing a basket (${server.reason})`, () => {
         SELECT count(*)::int AS n FROM order_assignment a JOIN "order" o ON o.id = a.order_id
          WHERE o.purchase_id = ${outcome.purchaseId}`;
       expect(assignments?.n).toBe(2);
+
+      // T-29, T-68 (data half): the confirmation the cookie leads to lists every delivery in
+      // basket order with its own reference and amount, and the purchase total.
+      await asApp(tx, { role: "system" });
+      const confirmation = await confirmationFor(token, at(3), connection);
+      if (confirmation.kind !== "placed") throw new Error(confirmation.kind);
+      expect(confirmation.mode).toBe("demo");
+      expect(
+        confirmation.deliveries.map((delivery) => delivery.recipientName),
+      ).toEqual(["Anna Przykładowa 1", "Anna Przykładowa 2"]);
+      expect(confirmation.deliveries.map((delivery) => delivery.sku)).toEqual([
+        PRODUCT.sku,
+        SECOND.sku,
+      ]);
+      for (const delivery of confirmation.deliveries) {
+        expect(delivery.reference).toMatch(/^FO-[0-9A-Z]{4}-[0-9A-Z]{4}$/u);
+        expect(delivery.addonNameKeys).toEqual([]);
+      }
+      expect(confirmation.total.amountMinor).toBe(seen.amountMinor);
+      expect(
+        confirmation.deliveries.reduce(
+          (sum, delivery) => sum + delivery.amount.amountMinor,
+          0,
+        ),
+      ).toBe(seen.amountMinor);
+    });
+  });
+
+  it("step 2 offers the add-ons but never the free printed card (the step 2 board)", async () => {
+    await rolledBack(sql(), async (tx) => {
+      const connection = await seeded(tx);
+      const token = await add(connection, PRODUCT.sku, TIER.tierKey);
+      await fill(connection, token, 1);
+      const { listAddons } = await import("@/modules/catalog");
+      const dataset = (await listAddons("PL")).map((addon) => addon.key);
+      // The dataset does carry the card for PL, so its absence below is the filter's doing.
+      expect(dataset).toContain("card");
+      const screen = await checkoutScreen({
+        locale: "pl",
+        token,
+        step: "card",
+        line: "1",
+        now: () => at(2),
+        connection,
+        flags: OPEN,
+      });
+      if (!("step" in screen)) throw new Error(screen.kind);
+      expect(screen.step).toBe("card");
+      expect(screen.addons.map((addon) => addon.key)).toEqual(
+        dataset.filter((key) => key !== "card"),
+      );
     });
   });
 

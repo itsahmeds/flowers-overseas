@@ -18,7 +18,6 @@ import {
   isDraftToken,
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
-import { PAGE_FRAME } from "@/modules/ui";
 
 import { ConfirmationPage } from "../../_views/ConfirmationView";
 
@@ -49,7 +48,7 @@ export default async function CheckoutDonePage({
     isDraftToken(value) ? value : null,
   );
   return (
-    <main className={PAGE_FRAME} id="main">
+    <main id="main">
       <ConfirmationPage confirmation={confirmation} locale={locale} />
     </main>
   );

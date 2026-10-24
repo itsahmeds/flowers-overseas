@@ -936,7 +936,8 @@
       "phone": "Recipient's phone"
     },
     "field": {
-      "optional": "optional"
+      "optional": "optional",
+      "namePlaceholder": "First and last name"
     },
     "placeKind": {
       "legend": "Where is it going?",
@@ -976,12 +977,12 @@
       "delivery": "Delivery",
       "vat": "VAT {rate}",
       "vatOf": "Of which VAT {rate}",
-      "mini": "Your order · {product}"
+      "mini": "Your order · {product}",
+      "guaranteeLink": "Our guarantee"
     },
     "action": {
       "toCard": "Continue to your details",
-      "toReview": "Continue to check",
-      "back": "Back to {product}"
+      "toReview": "Continue to check"
     },
     "error": {
       "summaryTitle": "Please check these details",
@@ -1023,12 +1024,13 @@
     "date": {
       "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}.",
       "legend": "Delivery date",
-      "useNext": "Use {next}"
+      "useNext": "Use {next}",
+      "offNote": "{date}: {reason}"
     },
     "step": {
-      "recipient": "Who are the flowers for?",
-      "card": "Your card and your details",
-      "review": "Check and place your order",
+      "recipient": "Who are the flowers <em>for?</em>",
+      "card": "Your card and <em>your details</em>",
+      "review": "Check and place <em>your order</em>",
       "deliveryOf": "Delivery {n} of {total}"
     },
     "closed": {
@@ -1067,15 +1069,15 @@
       "nothingCharged": "Nothing was charged."
     },
     "demo": {
-      "title": "Your demo order is in.",
+      "title": "Your demo order <em>is in.</em>",
       "body": "Nothing was charged and nothing will be delivered.",
       "reference": "Order {reference}",
-      "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person."
+      "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person.",
+      "referenceSentence": "Order <b>{reference}</b>."
     },
     "page": {
       "gone": "This confirmation is no longer available.",
-      "promise": "Our fresh-flower promise covers the flowers when they arrive.",
-      "total": "Total"
+      "promise": "Our fresh-flower promise covers the flowers when they arrive."
     }
   },
   "infoPages": {

@@ -31,15 +31,18 @@ import {
 import { localeConfig, type LocaleCode } from "@/config/locales";
 import { COMPANY, controllerName } from "@/config/company";
 import {
-  type CalendarDay,
   type CheckoutScreen,
   type ScreenLine,
   type StepScreen,
+  callingCodeOf,
+  internationalPhone,
   residenceCountryCodes,
 } from "@/modules/checkout";
+import { infoPageExists, infoPagePath } from "@/modules/content";
 import {
   countGraphemes,
   formatDate,
+  formatDateParts,
   formatMoney,
   formatNumber,
   formatPercentFromBasisPoints,
@@ -48,12 +51,20 @@ import {
   sortBy,
 } from "@/modules/i18n";
 import {
-  checkoutButtonClass as buttonClass,
+  altFor,
+  assetsForProduct,
+  isDisplayable,
+  MediaAsset,
+  PAGE_FRAME,
+} from "@/modules/ui";
+import {
+  checkoutButtonClass,
   DemoBanner,
   ErrorSummary,
   type ErrorSummaryItem,
   InlinePrivacyNotice,
   PriceChangedNotice,
+  OrderSummaryMini,
   OrderSummaryPanel,
   type SummaryLine,
   type VatLine,
@@ -130,6 +141,39 @@ const STEP_TITLES = {
   review: "step.review",
 } as const;
 
+/** The form card's heading: Fraunces with its one italic phrase (`.form-letter h1`). */
+const TITLE =
+  "display text-ink m-0 text-(length:--text-2xl-fluid) leading-[1.08]";
+
+/** The `<em>` of a rich title. */
+function emphasis(chunks: ReactNode): ReactElement {
+  return <em>{chunks}</em>;
+}
+
+/**
+ * The line's photograph for the summary (the listing card's rule, spec 006 AC-18): the first
+ * displayable asset with alt text in this locale, or nothing (the panel draws its placeholder).
+ */
+function linePhoto(line: ScreenLine, locale: LocaleCode): ReactElement | null {
+  for (const asset of assetsForProduct(line.sku)) {
+    if (
+      altFor(asset.id, locale) !== undefined &&
+      isDisplayable(asset.id, locale)
+    ) {
+      return (
+        <MediaAsset
+          assetId={asset.id}
+          locale={locale}
+          productName={line.productName}
+          ratio="card"
+          slot="thumb"
+        />
+      );
+    }
+  }
+  return null;
+}
+
 function fieldId(name: string): string {
   return `co-${name}`;
 }
@@ -194,11 +238,149 @@ function residenceDefault(locale: LocaleCode): string {
 /* Step 1                                                                       */
 /* -------------------------------------------------------------------------- */
 
-function calendarLabel(dayOf: CalendarDay, locale: LocaleCode): string {
-  const date = formatDate(day(dayOf.date), locale, "deliveryDate", ZONE);
-  return dayOf.surcharge === null
-    ? date
-    : `${date} · ${formatMoney(dayOf.surcharge, locale, { signDisplay: "always" })}`;
+/** Reasons a day tile's note can state without a time or a city (the rest stay unstated). */
+const NOTED_REASONS = new Set([
+  "delivery.reason.publicHoliday",
+  "delivery.reason.sundayClosed",
+  "delivery.reason.notDeliveryDay",
+]);
+
+/** The legend and day tiles of step 1 (`.s10-cal`, `.s10-day`; AC-19 render half, AC-32). */
+function CalendarTiles({
+  screen,
+  line,
+  selected,
+  error,
+  t,
+  all,
+}: {
+  readonly screen: StepScreen;
+  readonly line: ScreenLine;
+  readonly selected: string;
+  readonly error: string | undefined;
+  readonly t: Translate;
+  readonly all: Translate;
+}): ReactElement {
+  const locale = screen.locale;
+  const country = countryName(all, line.countryIso);
+  const errorId = `${fieldId("deliveryDate")}-error`;
+  const notes = screen.calendar.filter(
+    (entry) =>
+      !entry.selectable &&
+      entry.reasonKey !== null &&
+      NOTED_REASONS.has(entry.reasonKey),
+  );
+  return (
+    <fieldset
+      className="m-0 grid min-w-0 border-0 p-0"
+      id={fieldId("deliveryDate")}
+      {...(error === undefined
+        ? {}
+        : { "aria-describedby": errorId, "aria-invalid": true })}
+    >
+      <legend className="text-ink mb-[10px] p-0 text-sm font-bold">
+        {screen.mode === "live" ? t("date.legend") : t("demo.dateHeading")}
+      </legend>
+      {error === undefined ? null : (
+        <p className="text-danger m-0 mb-[8px] text-sm font-bold" id={errorId}>
+          {error}
+        </p>
+      )}
+      <div
+        className="grid grid-cols-7 gap-[8px] max-md:-mx-[18px] max-md:auto-cols-[74px] max-md:grid-flow-col max-md:grid-cols-none max-md:overflow-x-auto max-md:px-[18px] max-md:pb-[4px]"
+        data-fo-calendar=""
+      >
+        {screen.calendar.map((entry) => {
+          const parts = formatDateParts(
+            day(entry.date),
+            locale,
+            ZONE,
+            "deliveryDate",
+          );
+          const price =
+            entry.surcharge === null
+              ? t("summary.included")
+              : formatMoney(entry.surcharge, locale, { signDisplay: "always" });
+          return (
+            <label
+              className={`group rounded-field text-ink-2 relative grid min-h-[76px] justify-items-center gap-[2px] px-[4px] pt-[8px] pb-[9px] text-center text-xs ${
+                entry.selectable
+                  ? "bg-card has-checked:bg-selected has-checked:text-on-selected cursor-pointer shadow-[inset_0_0_0_1.5px_var(--color-rule)] has-checked:shadow-none has-focus-visible:outline-[2.5px] has-focus-visible:outline-offset-[3px] has-focus-visible:outline-solid"
+                  : "bg-paper-2 text-ink-3 shadow-[inset_0_0_0_1px_var(--color-rule)]"
+              }`}
+              data-fo-day={entry.date}
+              key={entry.date}
+            >
+              <input
+                className="absolute size-px opacity-0"
+                defaultChecked={entry.date === selected}
+                disabled={!entry.selectable}
+                name="deliveryDate"
+                required
+                type="radio"
+                value={entry.date}
+              />
+              <span className="sr-only">
+                {formatDate(day(entry.date), locale, "calendarDate", ZONE)}
+                {entry.selectable ? `, ${price}` : ""}
+              </span>
+              <span aria-hidden="true">{parts.weekday}</span>
+              <b
+                aria-hidden="true"
+                className={`font-display text-[20px] leading-[1.15] font-(--font-weight-display) ${
+                  entry.selectable
+                    ? "text-ink group-has-checked:text-on-selected"
+                    : "text-ink-3 line-through"
+                }`}
+              >
+                {parts.day}
+              </b>
+              <i
+                aria-hidden="true"
+                className={`text-[12px] not-italic ${
+                  !entry.selectable
+                    ? "invisible"
+                    : entry.surcharge === null
+                      ? "text-included group-has-checked:text-on-selected font-bold"
+                      : "text-ink-2 group-has-checked:text-on-selected font-bold"
+                }`}
+              >
+                {entry.selectable ? price : t("summary.included")}
+              </i>
+            </label>
+          );
+        })}
+      </div>
+      {notes.map((entry) => (
+        <p
+          className="text-ink-2 m-0 mt-[8px] text-sm leading-(--line-height-tight)"
+          key={entry.date}
+        >
+          {t("date.offNote", {
+            date: formatDate(day(entry.date), locale, "deliveryDate", ZONE),
+            reason: all(entry.reasonKey ?? "", { country }),
+          })}
+        </p>
+      ))}
+    </fieldset>
+  );
+}
+
+/** Address fields, with postcode and town side by side from `md` (`.f2`). */
+function pairedFields<T extends { readonly field: string }>(
+  fields: readonly T[],
+): (T | readonly [T, T])[] {
+  const out: (T | readonly [T, T])[] = [];
+  for (let index = 0; index < fields.length; index += 1) {
+    const field = fields[index];
+    const next = fields[index + 1];
+    if (field === undefined) continue;
+    if (field.field === "postcode" && next?.field === "city") {
+      out.push([field, next] as const);
+      index += 1;
+    } else out.push(field);
+  }
+  return out;
 }
 
 async function RecipientFields({
@@ -222,88 +404,111 @@ async function RecipientFields({
       ? line.deliveryDate
       : undefined;
   const date = valueOf(echo, "deliveryDate", savedDate);
-  const placeKind = valueOf(echo, "placeKind", saved?.placeKind);
+  // "A home" is preselected (the artboard's state): most flowers go to a home, and the choice
+  // stays one tap away.
+  const placeKind = valueOf(echo, "placeKind", saved?.placeKind ?? "home");
   const fields = screen.address?.fields ?? [];
+  const example = screen.address?.example;
+  const callingCode = callingCodeOf(line.countryIso);
+  const placeholderOf = (name: string): string | undefined =>
+    name === "fullName"
+      ? t("field.namePlaceholder")
+      : name === "street"
+        ? example?.street
+        : name === "postcode"
+          ? example?.postcode
+          : name === "phone" && callingCode !== null
+            ? `+${callingCode}`
+            : undefined;
+  const fieldOf = (field: (typeof fields)[number]): ReactElement => {
+    const name = field.field;
+    const savedValue =
+      name === "fullName"
+        ? saved?.fullName
+        : name === "phone"
+          ? saved?.phone.national
+          : saved?.address[name];
+    const error = errorOf(echo, all, name);
+    const warning =
+      name === "phone" &&
+      error === undefined &&
+      echo === undefined &&
+      saved?.phone.nonLocal === true
+        ? t("recipient.phoneNonLocal", { country })
+        : undefined;
+    const placeholder = placeholderOf(name);
+    return (
+      <TextField
+        autoComplete={field.autocomplete ?? "off"}
+        bidiIsolate={name !== "phone" && name !== "postcode"}
+        clientMessages={{ required: t("error.required") }}
+        defaultValue={valueOf(echo, name, savedValue)}
+        id={fieldId(name)}
+        inputMode={field.inputMode}
+        key={name}
+        label={all(field.labelKey)}
+        name={name}
+        required={field.required}
+        type={name === "phone" ? "tel" : "text"}
+        {...(placeholder === undefined ? {} : { placeholder })}
+        {...(field.required ? {} : { optionalLabel: optional })}
+        {...(name === "phone" ? { hint: t("recipient.phoneReason") } : {})}
+        {...(error === undefined ? {} : { error })}
+        {...(warning === undefined ? {} : { warning })}
+      />
+    );
+  };
   return (
     <>
-      <RadioChipGroup
-        id={fieldId("deliveryDate")}
-        legend={
-          screen.mode === "live" ? t("date.legend") : t("demo.dateHeading")
-        }
-        name="deliveryDate"
-        options={selectable.map((entry) => ({
-          value: entry.date,
-          label: calendarLabel(entry, locale),
-        }))}
-        required
-        {...(date === "" ? {} : { defaultValue: date })}
-        {...(errorOf(echo, all, "deliveryDate") === undefined
-          ? {}
-          : { error: errorOf(echo, all, "deliveryDate") })}
-      />
-      {fields.map((field) => {
-        const name = field.field;
-        const savedValue =
-          name === "fullName"
-            ? saved?.fullName
-            : name === "phone"
-              ? saved?.phone.national
-              : saved?.address[name];
-        const error = errorOf(echo, all, name);
-        const warning =
-          name === "phone" &&
-          error === undefined &&
-          echo === undefined &&
-          saved?.phone.nonLocal === true
-            ? t("recipient.phoneNonLocal", { country })
-            : undefined;
-        return (
-          <TextField
-            autoComplete={field.autocomplete ?? "off"}
-            bidiIsolate={name !== "phone" && name !== "postcode"}
-            clientMessages={{ required: t("error.required") }}
-            defaultValue={valueOf(echo, name, savedValue)}
-            id={fieldId(name)}
-            inputMode={field.inputMode}
-            key={name}
-            label={all(field.labelKey)}
-            name={name}
-            required={field.required}
-            type={name === "phone" ? "tel" : "text"}
-            {...(field.required ? {} : { optionalLabel: optional })}
-            {...(name === "phone" ? { hint: t("recipient.phoneReason") } : {})}
-            {...(error === undefined ? {} : { error })}
-            {...(warning === undefined ? {} : { warning })}
-          />
-        );
-      })}
-      <RadioChipGroup
-        id={fieldId("placeKind")}
-        legend={t("placeKind.legend")}
-        name="placeKind"
-        options={PLACE_KINDS.map((kind) => ({
-          value: kind,
-          label: all(PLACE_KIND_LABEL_KEYS[kind]),
-        }))}
-        required
-        {...(placeKind === "" ? {} : { defaultValue: placeKind })}
-        {...(errorOf(echo, all, "placeKind") === undefined
-          ? {}
-          : { error: errorOf(echo, all, "placeKind") })}
-      />
-      <TextField
-        defaultValue={valueOf(echo, "deliveryNote", saved?.deliveryNote)}
-        hint={t("recipient.deliveryNoteHint", {
-          max: formatNumber(CHECKOUT_LIMITS.deliveryNote, locale),
-        })}
-        id={fieldId("deliveryNote")}
-        label={t("recipient.deliveryNote")}
-        name="deliveryNote"
-        optionalLabel={optional}
-        {...(errorOf(echo, all, "deliveryNote") === undefined
-          ? {}
-          : { error: errorOf(echo, all, "deliveryNote") })}
+      <div className="grid gap-[14px]">
+        {pairedFields(fields).map((entry) =>
+          "field" in entry ? (
+            fieldOf(entry)
+          ) : (
+            <div
+              className="grid items-start gap-[12px] md:grid-cols-2 md:gap-x-[16px] md:gap-y-[14px]"
+              key={`${entry[0].field}-${entry[1].field}`}
+            >
+              {fieldOf(entry[0])}
+              {fieldOf(entry[1])}
+            </div>
+          ),
+        )}
+        <RadioChipGroup
+          id={fieldId("placeKind")}
+          legend={t("placeKind.legend")}
+          name="placeKind"
+          options={PLACE_KINDS.map((kind) => ({
+            value: kind,
+            label: all(PLACE_KIND_LABEL_KEYS[kind]),
+          }))}
+          required
+          {...(placeKind === "" ? {} : { defaultValue: placeKind })}
+          {...(errorOf(echo, all, "placeKind") === undefined
+            ? {}
+            : { error: errorOf(echo, all, "placeKind") })}
+        />
+        <TextField
+          defaultValue={valueOf(echo, "deliveryNote", saved?.deliveryNote)}
+          hint={t("recipient.deliveryNoteHint", {
+            max: formatNumber(CHECKOUT_LIMITS.deliveryNote, locale),
+          })}
+          id={fieldId("deliveryNote")}
+          label={t("recipient.deliveryNote")}
+          name="deliveryNote"
+          optionalLabel={optional}
+          {...(errorOf(echo, all, "deliveryNote") === undefined
+            ? {}
+            : { error: errorOf(echo, all, "deliveryNote") })}
+        />
+      </div>
+      <CalendarTiles
+        all={all}
+        error={errorOf(echo, all, "deliveryDate")}
+        line={line}
+        screen={screen}
+        selected={date}
+        t={t}
       />
     </>
   );
@@ -376,7 +581,6 @@ async function CardAndBuyerFields({
         label={t("card.signAs")}
         maxLength={CHECKOUT_LIMITS.signAs}
         name="signAs"
-        optionalLabel={optional}
         bidiIsolate
         {...error("signAs")}
       />
@@ -389,23 +593,29 @@ async function CardAndBuyerFields({
           className="m-0 grid gap-[10px] border-0 p-0"
           data-fo-checkout-addons=""
         >
-          <legend className="text-ink mb-[6px] p-0 text-sm font-bold">
+          <legend className="text-ink mb-[8px] p-0 text-sm font-bold">
             {t("addons.legend")}
           </legend>
-          <ul className="m-0 grid list-none gap-[8px] p-0">
+          <ul className="border-rule m-0 grid list-none border-t p-0">
             {screen.addons.map((addon) => {
               const name = all(addon.nameKey);
               const price = formatMoney(addon.price, locale);
               const chosen = line.addonKeys.includes(addon.key);
               return (
                 <li
-                  className="border-rule flex min-h-[44px] items-center justify-between gap-[12px] border-b py-[6px]"
+                  className="border-rule text-ui grid min-h-[60px] grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-[16px] border-b py-[8px]"
                   data-fo-addon={addon.key}
                   key={addon.key}
                 >
-                  <span className="text-ui">
-                    {name} <span className="text-ink-muted num">{price}</span>
+                  <span>
+                    {name}
+                    <small className="text-ink-3 block text-xs">
+                      {addon.allergenNoteRequired
+                        ? all("catalog.addon.allergen")
+                        : all(addon.descriptionKey)}
+                    </small>
                   </span>
+                  <bdi className="num">{price}</bdi>
                   <button
                     aria-label={
                       chosen
@@ -413,7 +623,11 @@ async function CardAndBuyerFields({
                         : t("addons.addLabel", { name, price })
                     }
                     aria-pressed={chosen}
-                    className={buttonClass(chosen ? "primary" : "ghost", "sm")}
+                    className={`inline-grid min-h-[var(--target-min)] min-w-[76px] cursor-pointer place-items-center rounded-full border-0 px-[14px] text-sm font-bold ${
+                      chosen
+                        ? "bg-selected text-on-selected"
+                        : "text-ink bg-transparent shadow-[inset_0_0_0_1.5px_var(--color-ink)]"
+                    }`}
                     form={CHECKOUT_FORM_IDS.addons}
                     name={chosen ? "removeAddon" : "addAddon"}
                     type="submit"
@@ -432,7 +646,7 @@ async function CardAndBuyerFields({
           className="m-0 grid gap-[14px] border-0 p-0"
           data-fo-checkout-buyer=""
         >
-          <legend className="text-ink mb-[6px] p-0 text-sm font-bold">
+          <legend className="text-ink mb-[4px] p-0 text-sm font-bold">
             {t("buyer.legend")}
           </legend>
           <TextField
@@ -450,28 +664,34 @@ async function CardAndBuyerFields({
             type="email"
             {...error("email")}
           />
-          <TextField
-            autoComplete="name"
-            bidiIsolate
-            clientMessages={{ required: t("error.required") }}
-            defaultValue={valueOf(echo, "buyerName", buyer?.buyerName)}
-            id={fieldId("buyerName")}
-            label={t("buyer.fullName")}
-            name="buyerName"
-            required
-            {...error("buyerName")}
-          />
-          <TextField
-            autoComplete="tel"
-            defaultValue={valueOf(echo, "buyerPhone", buyer?.buyerPhone ?? "")}
-            id={fieldId("buyerPhone")}
-            inputMode="tel"
-            label={t("buyer.phone")}
-            name="buyerPhone"
-            optionalLabel={optional}
-            type="tel"
-            {...error("buyerPhone")}
-          />
+          <div className="grid items-start gap-[12px] md:grid-cols-2 md:gap-x-[16px] md:gap-y-[14px]">
+            <TextField
+              autoComplete="name"
+              bidiIsolate
+              clientMessages={{ required: t("error.required") }}
+              defaultValue={valueOf(echo, "buyerName", buyer?.buyerName)}
+              id={fieldId("buyerName")}
+              label={t("buyer.fullName")}
+              name="buyerName"
+              required
+              {...error("buyerName")}
+            />
+            <TextField
+              autoComplete="tel"
+              defaultValue={valueOf(
+                echo,
+                "buyerPhone",
+                buyer?.buyerPhone ?? "",
+              )}
+              id={fieldId("buyerPhone")}
+              inputMode="tel"
+              label={t("buyer.phone")}
+              name="buyerPhone"
+              optionalLabel={optional}
+              type="tel"
+              {...error("buyerPhone")}
+            />
+          </div>
           <SelectField
             autoComplete="country"
             id={fieldId("residenceCountry")}
@@ -506,10 +726,13 @@ async function ReviewList({
   const many = screen.lines.length > 1;
   const change = (step: "recipient" | "card", line: number): string =>
     line === 1 ? `?step=${step}` : `?step=${step}&line=${String(line)}`;
+  // The board's `.s10-sum`: caps term, value, a quiet "Change"; on a phone the term sits above.
   const row =
-    "grid gap-[4px] border-rule border-b py-[12px] md:grid-cols-[160px_minmax(0,1fr)_auto] md:gap-x-[16px]";
+    "text-ui grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-[12px] gap-y-[2px] border-rule border-b border-solid py-[11px] md:grid-cols-[150px_minmax(0,1fr)_auto] md:gap-x-[16px]";
+  const term =
+    "text-ink-3 col-span-full text-xs font-bold tracking-[0.1em] uppercase md:col-span-1";
   const link =
-    "text-link hover:text-link-strong inline-flex min-h-[44px] items-center font-bold underline underline-offset-4";
+    "text-link hover:text-link-strong inline-flex min-h-(--target-min) items-center text-sm underline underline-offset-4 -my-[12px]";
   return (
     <div className="grid gap-[24px]" data-fo-review="">
       {screen.lines.map((line) => {
@@ -545,18 +768,16 @@ async function ReviewList({
                 total: formatNumber(screen.lines.length, locale),
               })}
             </h2>
-            <dl className="m-0">
+            <dl className="border-rule m-0 border-t border-solid">
               <div className={row}>
-                <dt className="text-ink-muted text-sm">
-                  {t("review.bouquet")}
-                </dt>
+                <dt className={term}>{t("review.bouquet")}</dt>
                 <dd className="m-0">
                   <bdi>{line.productName}</bdi> · {tierText(all, line)}
                 </dd>
                 <dd className="m-0" />
               </div>
               <div className={row}>
-                <dt className="text-ink-muted text-sm">{t("review.date")}</dt>
+                <dt className={term}>{t("review.date")}</dt>
                 <dd className="m-0">
                   {line.deliveryDate === null
                     ? ""
@@ -574,14 +795,16 @@ async function ReviewList({
                 </dd>
               </div>
               <div className={row}>
-                <dt className="text-ink-muted text-sm">
-                  {t("review.recipient")}
-                </dt>
+                <dt className={term}>{t("review.recipient")}</dt>
                 <dd className="m-0 grid">
                   <bdi>{recipient?.fullName ?? ""}</bdi>
                   <bdi>{address}</bdi>
                   <span>
-                    <bdi>{recipient?.phone.national ?? ""}</bdi>
+                    <bdi>
+                      {recipient === null
+                        ? ""
+                        : internationalPhone(recipient.phone.e164)}
+                    </bdi>
                     {recipient === null
                       ? ""
                       : ` · ${all(PLACE_KIND_LABEL_KEYS[recipient.placeKind])}`}
@@ -594,8 +817,8 @@ async function ReviewList({
                 </dd>
               </div>
               <div className={row}>
-                <dt className="text-ink-muted text-sm">{t("review.card")}</dt>
-                <dd className="m-0 grid">
+                <dt className={term}>{t("review.card")}</dt>
+                <dd className="m-0">
                   {line.card === null || line.card.cardMessage === "" ? (
                     t("review.noCard")
                   ) : (
@@ -604,7 +827,10 @@ async function ReviewList({
                         {line.card.cardMessage}
                       </bdi>
                       {line.card.signAs === "" ? null : (
-                        <bdi>{line.card.signAs}</bdi>
+                        <>
+                          {" "}
+                          <bdi>{line.card.signAs}</bdi>
+                        </>
                       )}
                     </>
                   )}
@@ -616,7 +842,7 @@ async function ReviewList({
                 </dd>
               </div>
               <div className={row}>
-                <dt className="text-ink-muted text-sm">{t("review.addons")}</dt>
+                <dt className={term}>{t("review.addons")}</dt>
                 <dd className="m-0">
                   {addons.length === 0
                     ? t("review.none")
@@ -635,9 +861,7 @@ async function ReviewList({
               </div>
               {many && line.amount !== null ? (
                 <div className={row}>
-                  <dt className="text-ink-muted text-sm">
-                    {t("review.amount")}
-                  </dt>
+                  <dt className={term}>{t("review.amount")}</dt>
                   <dd className="num m-0 font-bold">
                     {formatMoney(line.amount, locale)}
                   </dd>
@@ -713,6 +937,8 @@ export async function CheckoutStepBody({
     });
   const intent: CheckoutFormIntent =
     screen.step === "recipient" ? "recipient" : "card";
+  const continueLabel =
+    screen.step === "recipient" ? t("action.toCard") : t("action.toReview");
   const privacy = rich("privacy.demoNotice", {
     period: process.env["APP_ENV"] === "production" ? "hours24" : "days7",
     controllerLine: all("company.controller", {
@@ -724,8 +950,21 @@ export async function CheckoutStepBody({
 
   return (
     <div className="grid gap-[18px]">
+      <h1 className={TITLE}>
+        {rich(STEP_TITLES[screen.step], { em: emphasis })}
+      </h1>
       {routing(intent, screen)}
       {hidden("line", String(line.position))}
+      {/* The form's default button, first in tree order, so Enter in a field continues rather
+          than pressing "Use sample details" (HTML implicit submission). */}
+      <button
+        aria-hidden="true"
+        className="sr-only"
+        tabIndex={-1}
+        type="submit"
+      >
+        {continueLabel}
+      </button>
       {errorItems.length === 0 ? null : (
         <ErrorSummary
           attempt={echo?.attempt ?? 0}
@@ -755,10 +994,9 @@ export async function CheckoutStepBody({
       ) : (
         <CardAndBuyerFields echo={echo} line={line} screen={screen} />
       )}
-      <SubmitButton className="max-md:hidden md:justify-self-start">
-        {screen.step === "recipient"
-          ? t("action.toCard")
-          : t("action.toReview")}
+      {/* On a phone the sticky bar carries Continue (the mobile boards draw none in the form). */}
+      <SubmitButton className="justify-self-start after:content-['_→'] max-lg:hidden">
+        {continueLabel}
       </SubmitButton>
     </div>
   );
@@ -831,10 +1069,13 @@ export async function PlaceArea({
         </p>
       )}
       {refused === "cap" ? null : (
-        <PlaceOrderButton
-          label={t("demo.place")}
-          pendingLabel={t("demo.placing")}
-        />
+        // On a phone the sticky bar carries the place button (the mobile step 3 board).
+        <div className="max-lg:hidden">
+          <PlaceOrderButton
+            label={t("demo.place")}
+            pendingLabel={t("demo.placing")}
+          />
+        </div>
       )}
     </div>
   );
@@ -977,148 +1218,181 @@ export async function CheckoutStepPage({
       : "delivery.reason.beforeEarliest";
   const others = screen.lines.length - 1;
   const formFrame =
-    "bg-card shadow-letter rounded-letter grid gap-[18px] px-[34px] pt-[30px] pb-[32px] max-md:px-[18px]";
+    "bg-card shadow-letter rounded-letter grid gap-[18px] px-[34px] pt-[30px] pb-[32px] max-md:gap-[14px] max-md:px-[18px] max-md:pt-[22px] max-md:pb-[24px]";
+
+  const photo = line === undefined ? null : linePhoto(line, locale);
+  const guaranteeHref = infoPageExists("guarantee", locale)
+    ? infoPagePath("guarantee", locale)
+    : null;
+  const promise = (
+    <>
+      {all("nav.utility.guarantee")}
+      {guaranteeHref === null ? null : (
+        <>
+          {" · "}
+          <a
+            className="text-link hover:text-link-strong underline underline-offset-4"
+            href={guaranteeHref}
+          >
+            {t("summary.guaranteeLink")}
+          </a>
+        </>
+      )}
+    </>
+  );
 
   return (
     <>
       {screen.mode === "demo" ? (
-        <DemoBanner body={t("demo.bannerBody")} title={t("demo.bannerTitle")} />
-      ) : null}
-      <div className="grid gap-[24px] py-[24px]" data-fo-checkout={screen.step}>
-        <StepProgress
-          compactLabel={t("progress.compact", {
-            current: formatNumber(current + 1, locale),
-            total: formatNumber(3, locale),
-            name: t(STEP_NAMES[screen.step]),
-          })}
-          current={current}
-          label={t("progress.label")}
-          locale={locale}
-          steps={steps}
+        <DemoBanner
+          body={t("demo.bannerBody")}
+          innerClassName={PAGE_FRAME}
+          title={t("demo.bannerTitle")}
         />
-        <div className="grid items-start gap-[32px] lg:grid-cols-[minmax(0,1fr)_380px]">
-          <div className="grid min-w-0 gap-[18px]">
-            <h1 className="display text-ink m-0 text-[30px] leading-[1.1] md:text-[38px]">
-              {t(STEP_TITLES[screen.step])}
-            </h1>
-            {screen.step === "recipient" && screen.line === 1 && others > 0 ? (
-              <p
-                className="bg-paper-3 rounded-field text-ui m-0 px-[14px] py-[12px]"
-                data-fo-also-in-basket=""
-                role="note"
-              >
-                {t("basket.alsoInBasket", { count: others })}
-              </p>
-            ) : null}
-            {screen.notice === null ? null : (
-              <StepForm action={action} id={CHECKOUT_FORM_IDS.price}>
-                {routing("selection", screen)}
-                {hidden("intent", "confirmPrice")}
-                {hidden("seenCurrency", screen.notice.current.currency)}
-                {hidden("returnStep", screen.step)}
-                {hidden("line", String(screen.line))}
-                <PriceChangedNotice
-                  confirmLabel={(amount) => t("price.confirm", { new: amount })}
-                  current={screen.notice.current}
-                  locale={locale}
-                  message={(amounts) =>
-                    rich("price.changed", {
-                      old: amounts.previous,
-                      new: amounts.current,
-                      b: (chunks: ReactNode) => <b>{chunks}</b>,
-                    })
-                  }
-                  previous={screen.notice.previous}
-                />
-              </StepForm>
+      ) : null}
+      <div className={`${PAGE_FRAME} pb-[56px]`} data-fo-checkout={screen.step}>
+        <div className="grid items-start gap-[28px] pt-[16px] lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-[56px] lg:pt-[28px]">
+          <div className="min-w-0">
+            <StepProgress
+              compactLabel={t("progress.compact", {
+                current: formatNumber(current + 1, locale),
+                total: formatNumber(3, locale),
+                name: t(STEP_NAMES[screen.step]),
+              })}
+              current={current}
+              label={t("progress.label")}
+              locale={locale}
+              steps={steps}
+            />
+            {total === null || line === undefined ? null : (
+              <OrderSummaryMini
+                label={t("summary.mini", { product: line.productName })}
+                locale={locale}
+                total={total}
+              />
             )}
-            {gone === null || line === undefined ? null : (
-              <StepForm action={action} id={CHECKOUT_FORM_IDS.nextDate}>
-                {routing("useNextDate", screen)}
-                {hidden("line", String(line.position))}
-                {hidden("returnTo", "checkout")}
-                <div
-                  className="bg-blush text-ink rounded-field grid gap-[10px] px-[14px] py-[12px]"
-                  data-fo-date-gone=""
-                  role="alert"
+            <div className="grid gap-[18px]">
+              {screen.step === "recipient" &&
+              screen.line === 1 &&
+              others > 0 ? (
+                <p
+                  className="bg-paper-3 rounded-field text-ui m-0 px-[14px] py-[12px]"
+                  data-fo-also-in-basket=""
+                  role="note"
                 >
-                  <p className="m-0">
-                    {t("date.gone", {
-                      date:
-                        line.deliveryDate === null
-                          ? ""
-                          : formatDate(
-                              day(line.deliveryDate),
-                              locale,
-                              "calendarDate",
-                              ZONE,
-                            ),
-                      country: countryName(all, line.countryIso),
-                      reason: all(reasonKey, {
+                  {t("basket.alsoInBasket", { count: others })}
+                </p>
+              ) : null}
+              {screen.notice === null ? null : (
+                <StepForm action={action} id={CHECKOUT_FORM_IDS.price}>
+                  {routing("selection", screen)}
+                  {hidden("intent", "confirmPrice")}
+                  {hidden("seenCurrency", screen.notice.current.currency)}
+                  {hidden("returnStep", screen.step)}
+                  {hidden("line", String(screen.line))}
+                  <PriceChangedNotice
+                    confirmLabel={(amount) =>
+                      t("price.confirm", { new: amount })
+                    }
+                    current={screen.notice.current}
+                    locale={locale}
+                    message={(amounts) =>
+                      rich("price.changed", {
+                        old: amounts.previous,
+                        new: amounts.current,
+                        b: (chunks: ReactNode) => <b>{chunks}</b>,
+                      })
+                    }
+                    previous={screen.notice.previous}
+                  />
+                </StepForm>
+              )}
+              {gone === null || line === undefined ? null : (
+                <StepForm action={action} id={CHECKOUT_FORM_IDS.nextDate}>
+                  {routing("useNextDate", screen)}
+                  {hidden("line", String(line.position))}
+                  {hidden("returnTo", "checkout")}
+                  <div
+                    className="bg-blush text-ink rounded-field grid gap-[10px] px-[14px] py-[12px]"
+                    data-fo-date-gone=""
+                    role="alert"
+                  >
+                    <p className="m-0">
+                      {t("date.gone", {
+                        date:
+                          line.deliveryDate === null
+                            ? ""
+                            : formatDate(
+                                day(line.deliveryDate),
+                                locale,
+                                "calendarDate",
+                                ZONE,
+                              ),
                         country: countryName(all, line.countryIso),
-                      }),
-                      next:
-                        gone.next === null
-                          ? ""
-                          : formatDate(
+                        reason: all(reasonKey, {
+                          country: countryName(all, line.countryIso),
+                        }),
+                        next:
+                          gone.next === null
+                            ? ""
+                            : formatDate(
+                                day(gone.next),
+                                locale,
+                                "calendarDate",
+                                ZONE,
+                              ),
+                      })}
+                    </p>
+                    {gone.next === null ? null : (
+                      <>
+                        {hidden("deliveryDate", gone.next)}
+                        <SubmitButton
+                          className="md:justify-self-start"
+                          size="sm"
+                        >
+                          {t("date.useNext", {
+                            next: formatDate(
                               day(gone.next),
                               locale,
-                              "calendarDate",
+                              "deliveryDate",
                               ZONE,
                             ),
-                    })}
-                  </p>
-                  {gone.next === null ? null : (
-                    <>
-                      {hidden("deliveryDate", gone.next)}
-                      <SubmitButton className="md:justify-self-start" size="sm">
-                        {t("date.useNext", {
-                          next: formatDate(
-                            day(gone.next),
-                            locale,
-                            "deliveryDate",
-                            ZONE,
-                          ),
-                        })}
-                      </SubmitButton>
-                    </>
-                  )}
-                </div>
-              </StepForm>
-            )}
-            {screen.step === "review" ? (
-              <div className={formFrame}>
-                <ReviewList screen={screen} />
-              </div>
-            ) : (
-              <StepForm
-                action={action}
-                className={formFrame}
-                id={CHECKOUT_FORM_IDS.step}
-              >
-                <CheckoutStepBody
-                  screen={screen}
-                  {...(echo === undefined ? {} : { echo })}
-                />
-              </StepForm>
-            )}
-            {screen.step === "card" && line !== undefined ? (
-              <StepForm action={action} id={CHECKOUT_FORM_IDS.addons}>
-                {routing("selection", screen)}
-                {hidden("returnStep", "card")}
-                {hidden("line", String(line.position))}
-              </StepForm>
-            ) : null}
-            {screen.productPath === null || line === undefined ? null : (
-              <p className="m-0">
-                <a
-                  className="text-link hover:text-link-strong inline-flex min-h-[44px] items-center font-bold underline underline-offset-4"
-                  href={screen.productPath}
+                          })}
+                        </SubmitButton>
+                      </>
+                    )}
+                  </div>
+                </StepForm>
+              )}
+              {screen.step === "review" ? (
+                <div
+                  className={`${formFrame} max-lg:rounded-b-none max-lg:pb-[8px]!`}
                 >
-                  {t("action.back", { product: line.productName })}
-                </a>
-              </p>
-            )}
+                  <h1 className={TITLE}>
+                    {rich(STEP_TITLES.review, { em: emphasis })}
+                  </h1>
+                  <ReviewList screen={screen} />
+                </div>
+              ) : (
+                <StepForm
+                  action={action}
+                  className={formFrame}
+                  id={CHECKOUT_FORM_IDS.step}
+                >
+                  <CheckoutStepBody
+                    screen={screen}
+                    {...(echo === undefined ? {} : { echo })}
+                  />
+                </StepForm>
+              )}
+              {screen.step === "card" && line !== undefined ? (
+                <StepForm action={action} id={CHECKOUT_FORM_IDS.addons}>
+                  {routing("selection", screen)}
+                  {hidden("returnStep", "card")}
+                  {hidden("line", String(line.position))}
+                </StepForm>
+              ) : null}
+            </div>
           </div>
           {total === null || line === undefined ? null : (
             <OrderSummaryPanel
@@ -1131,21 +1405,41 @@ export async function CheckoutStepPage({
                   ...(line.deliveryDate === null
                     ? []
                     : [
-                        formatDate(
-                          day(line.deliveryDate),
-                          locale,
-                          "deliveryDate",
-                          ZONE,
-                        ),
+                        [
+                          formatDate(
+                            day(line.deliveryDate),
+                            locale,
+                            "deliveryDate",
+                            ZONE,
+                          ),
+                          line.recipient?.address["city"],
+                        ]
+                          .filter((part) => part !== undefined && part !== "")
+                          .join(" · "),
                       ]),
                 ],
+                ...(photo === null ? {} : { image: photo }),
               }}
+              lineLabels={screen.step === "review" ? "plain" : "caps"}
+              // On a phone steps 1 and 2 show only the mini summary; step 3 continues the review
+              // card with the lines and the total, no title or photo (the mobile boards).
+              className={
+                screen.step === "review"
+                  ? "max-lg:shadow-letter max-lg:z-1 max-lg:-mt-[28px] max-lg:rounded-t-none max-lg:bg-none max-lg:px-[18px] max-lg:pt-0"
+                  : "max-lg:hidden"
+              }
+              {...(screen.step === "review"
+                ? { headClassName: "max-lg:hidden" }
+                : {})}
+              // Step 3's panel ends with the place control (the board draws no promise line).
+              {...(screen.step === "review" ? {} : { footer: promise })}
               lines={summary.lines}
               locale={locale}
               title={t("summary.title")}
               total={total}
               totalLabel={t("summary.total")}
-              {...(screen.step !== "recipient" &&
+              // Step 2 echoes the card; step 3's review list already shows it (the boards).
+              {...(screen.step === "card" &&
               line.card !== null &&
               line.card.cardMessage !== ""
                 ? {
@@ -1184,22 +1478,27 @@ export async function CheckoutStepPage({
           locale={locale}
           total={total}
           totalLabel={t("summary.total")}
-          action={
-            <SubmitButton
-              form={
-                screen.step === "review"
-                  ? CHECKOUT_FORM_IDS.place
-                  : CHECKOUT_FORM_IDS.step
-              }
-              size="bar"
-            >
-              {screen.step === "recipient"
-                ? t("action.toCard")
-                : screen.step === "card"
-                  ? t("action.toReview")
-                  : t("demo.place")}
-            </SubmitButton>
-          }
+          // The daily cap leaves no place control, in the panel or here (AC-27).
+          {...(screen.step === "review" && echo?.refused === "cap"
+            ? {}
+            : {
+                action: (
+                  <SubmitButton
+                    form={
+                      screen.step === "review"
+                        ? CHECKOUT_FORM_IDS.place
+                        : CHECKOUT_FORM_IDS.step
+                    }
+                    size="bar"
+                  >
+                    {screen.step === "recipient"
+                      ? t("action.toCard")
+                      : screen.step === "card"
+                        ? t("action.toReview")
+                        : t("demo.place")}
+                  </SubmitButton>
+                ),
+              })}
         />
       )}
     </>
@@ -1215,42 +1514,39 @@ export async function CheckoutStatePage({
   readonly locale: LocaleCode;
 }): Promise<ReactElement> {
   const { t, all } = await translators(locale);
-  const link =
-    "text-link hover:text-link-strong inline-flex min-h-[44px] items-center font-bold underline underline-offset-4";
+  // The board's `.s10-msg`: the sentence, then one ghost button back.
+  const h1 =
+    "display text-ink m-0 text-[30px] leading-[1.12] md:text-(length:--text-3xl-fluid)";
+  const back = checkoutButtonClass("ghost", "sm", "max-md:w-full");
   return (
-    <div
-      className="grid max-w-[640px] gap-[16px] py-[48px]"
-      data-fo-checkout={screen.kind}
-    >
-      {screen.kind === "closed" ? (
-        <>
-          <h1 className="display text-ink m-0 text-[30px] leading-[1.1]">
-            {t("closed.title", {
-              country:
-                screen.countryIso === null
-                  ? ""
-                  : countryName(all, screen.countryIso),
-            })}
-          </h1>
-          <p className="text-ui m-0">{t("closed.opensSoon")}</p>
-          <p className="m-0">
-            <a className={link} href={screen.productPath ?? `/${locale}`}>
+    <div className={PAGE_FRAME} data-fo-checkout={screen.kind}>
+      <div className="grid max-w-[640px] justify-items-start gap-[18px] py-[40px] md:pt-[72px] md:pb-[32px]">
+        {screen.kind === "closed" ? (
+          <>
+            <h1 className={h1}>
+              {t("closed.title", {
+                country:
+                  screen.countryIso === null
+                    ? ""
+                    : countryName(all, screen.countryIso),
+              })}
+            </h1>
+            <p className="text-ink-2 m-0 max-w-[52ch]">
+              {t("closed.opensSoon")}
+            </p>
+            <a className={back} href={screen.productPath ?? `/${locale}`}>
               {t("closed.back")}
             </a>
-          </p>
-        </>
-      ) : (
-        <>
-          <h1 className="display text-ink m-0 text-[30px] leading-[1.1]">
-            {t("expired.title")}
-          </h1>
-          <p className="m-0">
-            <a className={link} href={`/${locale}`}>
+          </>
+        ) : (
+          <>
+            <h1 className={h1}>{t("expired.title")}</h1>
+            <a className={back} href={`/${locale}`}>
               {t("expired.link")}
             </a>
-          </p>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -15,6 +15,7 @@
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { ADDONS } from "@/config/catalogue/addons.data";
 import { type CountryIso2 } from "@/config/countries";
 import {
   type IntegerMoney,
@@ -29,6 +30,8 @@ import { type DraftConnection, loadDraft, withDraftConnection } from "./draft";
 /** One delivery of a placed purchase, as the confirmation recaps it. */
 export interface ConfirmedDelivery {
   readonly reference: string;
+  /** The bouquet's SKU (its photo); `null` when the line has no product. */
+  readonly sku: string | null;
   readonly productName: string;
   readonly tier: {
     readonly labelKey: string;
@@ -43,6 +46,8 @@ export interface ConfirmedDelivery {
     readonly message: string;
     readonly signature: string;
   } | null;
+  /** The add-ons' name keys, in the catalogue's order. */
+  readonly addonNameKeys: readonly string[];
   readonly amount: IntegerMoney;
 }
 
@@ -54,6 +59,8 @@ export type Confirmation =
       readonly total: IntegerMoney;
       readonly deliveries: readonly ConfirmedDelivery[];
     };
+
+const AddonRow = z.object({ order_id: z.uuid(), key: z.string() });
 
 const OrderRow = z.object({
   id: z.uuid(),
@@ -73,6 +80,17 @@ const OrderRow = z.object({
   sku: z.string().nullable(),
   tier_key: z.string().nullable(),
 });
+
+/**
+ * The name keys of the add-ons an order carries, in the catalogue's order. The free printed card
+ * (`stationery`) is part of every bouquet, not an add-on the buyer chose, so it is never listed
+ * (the confirmation and step 3 boards).
+ */
+export function chosenAddonNameKeys(keys: ReadonlySet<string>): string[] {
+  return ADDONS.filter(
+    (addon) => addon.kind !== "stationery" && keys.has(addon.key),
+  ).map((addon) => addon.nameKey);
+}
 
 /** The confirmation the cookie leads to (the file header). */
 export async function confirmationFor(
@@ -99,6 +117,20 @@ export async function confirmationFor(
        ORDER BY l.position`),
   );
   const orders = rows.map((row) => OrderRow.parse(row));
+  const addonRows = await withDraftConnection(connection, (executor) =>
+    executor.execute(sql`
+      SELECT ol.order_id, a.key
+        FROM order_line ol
+        JOIN addon a ON a.id = ol.addon_id
+        JOIN "order" o ON o.id = ol.order_id
+       WHERE o.purchase_id = ${purchaseId} AND ol.kind = 'addon'`),
+  );
+  const addonKeysByOrder = new Map<string, Set<string>>();
+  for (const row of addonRows.map((raw) => AddonRow.parse(raw))) {
+    const keys = addonKeysByOrder.get(row.order_id) ?? new Set<string>();
+    keys.add(row.key);
+    addonKeysByOrder.set(row.order_id, keys);
+  }
   const first = orders[0];
   if (first === undefined) return { kind: "gone" };
   const deliveries: ConfirmedDelivery[] = [];
@@ -115,6 +147,7 @@ export async function confirmationFor(
     total += order.buyer_total_minor;
     deliveries.push({
       reference: orderReference(order.id),
+      sku: order.sku,
       productName: product?.name ?? order.sku ?? "",
       tier:
         tier === undefined
@@ -132,6 +165,9 @@ export async function confirmationFor(
         snapshot.cardMessage === undefined
           ? null
           : { message: snapshot.cardMessage, signature: snapshot.signAs ?? "" },
+      addonNameKeys: chosenAddonNameKeys(
+        addonKeysByOrder.get(order.id) ?? new Set<string>(),
+      ),
       amount: IntegerMoneySchema.parse({
         amountMinor: order.buyer_total_minor,
         currency: order.buyer_currency_code,

@@ -81,10 +81,16 @@ export interface CalendarDay {
   readonly occasionKeys: readonly string[];
 }
 
-/** An add-on step 2 offers for the line's destination (AC-11): only priced ones. */
+/**
+ * An add-on step 2 offers for the line's destination (AC-11): only priced ones, and never the
+ * printed card, which every bouquet already carries (the card field above it, "Printed on our card
+ * · included"). The line under the name is the allergen sentence for food, else the description.
+ */
 export interface OfferedAddon {
   readonly key: string;
   readonly nameKey: string;
+  readonly descriptionKey: string;
+  readonly allergenNoteRequired: boolean;
   readonly price: IntegerMoney;
 }
 
@@ -250,6 +256,8 @@ async function offeredAddons(
 ): Promise<OfferedAddon[]> {
   const offered: OfferedAddon[] = [];
   for (const addon of await listAddons(line.countryIso)) {
+    // The printed card is included with every bouquet; it is never an add-on to choose.
+    if (addon.kind === "stationery") continue;
     let price: IntegerMoney | null = null;
     if (currency !== null) {
       // The add-on's own price in the basket's currency: the quote with it minus without it.
@@ -283,7 +291,13 @@ async function offeredAddons(
       price = projection?.displayPrice ?? null;
     }
     if (price !== null) {
-      offered.push({ key: addon.key, nameKey: addon.nameKey, price });
+      offered.push({
+        key: addon.key,
+        nameKey: addon.nameKey,
+        descriptionKey: addon.descriptionKey,
+        allergenNoteRequired: addon.allergenNoteRequired,
+        price,
+      });
     }
   }
   return offered;
