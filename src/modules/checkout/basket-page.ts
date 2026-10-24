@@ -5,7 +5,7 @@
  * `loadBasketPage()` is everything `/{locale}/basket` decides before it renders: which state
  * (empty, or lines), what each line shows, which lines are left out of the total, the one total,
  * the start route's notice, the price-changed notice, and where "Continue shopping" goes. The
- * page (`./ui/BasketView.tsx`) only resolves message keys and formats.
+ * page (`src/app/[locale]/(checkout)/basket/BasketView.tsx`) only resolves message keys and formats.
  *
  * - **Empty** (item 6): no cookie, a token with no row, an expired draft, a placed one, or a draft
  *   with no unplaced line. One state, one sentence and one link; the page does not say which.
