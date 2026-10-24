@@ -1,5 +1,5 @@
 {
-  "_fixture": "The same environment carrying a key the contract does not declare (`STRIPE_SECRET_KEY`, pasted into the wrong environment): `railway:check --env staging` must exit non-zero naming it — and still print no value (spec 040 AC-11, T-11).",
+  "_fixture": "The same environment carrying a key the contract does not declare (`MOLLIE_API_KEY`, pasted into the wrong environment): `railway:check --env staging` must exit non-zero naming it — and still print no value (spec 040 AC-11, T-11).",
   "data": {
     "variables": {
       "APP_ENV": "SENTINEL-VALUE",
@@ -13,6 +13,8 @@
       "AUTH_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "SIGNED_LINK_SECRET": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
       "RESEND_API_KEY": "re_placeholder",
+      "STRIPE_SECRET_KEY": "",
+      "STRIPE_WEBHOOK_SECRET": "",
       "EMAIL_FROM": "Flowers Overseas <sign-in@example.test>",
       "MAILER": "resend",
       "LOG_LEVEL": "SENTINEL-VALUE",
@@ -37,7 +39,7 @@
       "RAILWAY_GIT_COMMIT_SHA": "SENTINEL-VALUE",
       "RAILWAY_REPLICA_REGION": "SENTINEL-VALUE",
       "PORT": "SENTINEL-VALUE",
-      "STRIPE_SECRET_KEY": "SENTINEL-VALUE"
+      "MOLLIE_API_KEY": "SENTINEL-VALUE"
     }
   }
 }
