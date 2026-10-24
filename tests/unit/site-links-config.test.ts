@@ -189,12 +189,12 @@ describe("src/config/site-links.ts", () => {
       // Spec 041's five legal links (TASK-183). Published is permission, not existence: the
       // imprint, terms and privacy are drawn nowhere until `infoPageExists()` says so (AC-21).
       "imprint",
+      // Spec 044 §2.8 (TASK-322): permission, not existence; drawn only where a post exists.
+      "blog",
       "terms",
       "privacy",
       "cookies",
       "withdrawal-and-refunds",
-      // Spec 044 §2.8 (TASK-322): permission, not existence; drawn only where a post exists.
-      "blog",
       "corridor-pl",
       "corridor-de",
       "corridor-fr",

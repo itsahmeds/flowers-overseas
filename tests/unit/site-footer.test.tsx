@@ -247,12 +247,12 @@ describe("AC-14 (spec 004 §14 A20): an unpublished target is not drawn at all",
       // Spec 041's five legal links (TASK-183). Published is permission: imprint, terms and
       // privacy are still drawn nowhere while their page does not exist (AC-21).
       "imprint",
+      // Spec 044 §2.8 (TASK-322): permission, not existence; drawn only where a post exists.
+      "blog",
       "terms",
       "privacy",
       "cookies",
       "withdrawal-and-refunds",
-      // Spec 044 §2.8 (TASK-322): permission, not existence; drawn only where a post exists.
-      "blog",
     ]);
   });
 

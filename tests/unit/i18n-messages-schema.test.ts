@@ -314,6 +314,18 @@ describe("the shipped catalogues and manifests", () => {
     // record-approval-119 run, 2026-10-05.
     // Copy batch 4 (28 keys) left this queue on the founder's record-approval-batch4.py run, 2026-10-18.
     // Copy batch 5 (79 keys) left this queue on the founder's record-approval-batch5.py run, 2026-10-19.
+    // TASK-322, spec 044 Appendix A: the blog's public strings, approved by the founder
+    // ("blog ok", 2026-10-21) and shipped `reviewed: false` until the founder's own
+    // record-approval-322 run attests the exact values.
+    "blog.index.h1",
+    "blog.index.intro",
+    "blog.index.seoDescription",
+    "blog.index.seoTitle",
+    "blog.post.byline",
+    "blog.post.nextCorridor",
+    "blog.post.published",
+    "blog.post.updated",
+    "breadcrumb.blog",
     // TASK-183, spec 041's legal set: the controller sentence and the privacy link (Appendix A.1,
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     "company.controller",
@@ -344,6 +356,8 @@ describe("the shipped catalogues and manifests", () => {
     "floristInbox.menu",
     "floristInbox.orders",
     "floristInbox.signOut",
+    // TASK-322 (spec 044 Appendix A), with the blog keys above.
+    "footer.link.blog",
     "footer.link.deliveryAndPayment",
     // TASK-182 and TASK-183 (spec 041): the trust pages' and the legal set's `infoPages.*` chrome.
     "infoPages.company.notRegistered",
