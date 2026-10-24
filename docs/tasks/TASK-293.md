@@ -39,7 +39,7 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-21: migration `0019_review_attestation` + rollback, `attest()` (`src/modules/i18n/db/ledger.ts`), the pure half (`attestation.ts`), `fo/no-direct-review-write`, `admin:grant --locale/--revoke-locale`, `pnpm attestations:import`, `seed/data/attestations.json` (171 photo approvals, 0 copy) and the seed replay, the retention handler; tests T-10–T-14, T-28 written. Draft PR 320. Next: run the touched suites (machine load permitting), mutation checks, gates, ready.
-- 2026-10-24 finisher (renumber): rebased onto PR 326's head `a4aa02a3` (main + 383 `0019`/`0020` + 384 `0021` + 326 `0022`), renumbered to `0023_review_attestation`, retention handlers and rows merged with 326's, snapshot regenerated; full integration (46 files, 518 tests) and all 364 unit/contract files green on a throwaway PG16.
+- 2026-10-24 finisher (renumber): rebased onto PR 326's head `adcd4074` (main + 383 `0019`/`0020` + 384 `0021` + 326 `0022`), renumbered to `0023_review_attestation`, retention handlers and rows merged with 326's, snapshot regenerated; full integration (46 files, 518 tests) and all 364 unit/contract files green on a throwaway PG16.
 
 ## Result
 
@@ -51,8 +51,8 @@ PR 320. Migration `0023_review_attestation` (renumbered from `0019` on 2026-10-2
 **Renumber and rebase (finisher, 2026-10-24).** The orchestrator's migration order puts this
 PR's ledger at **`0023_review_attestation`**, after PR 383 (`0019`, `0020`), PR 384 (`0021`) and
 PR 326 (`0022`). A version gap fails `db:check` and the runner, so the branch is **stacked on PR
-326's head `a4aa02a3`** and merges only after 383, 384 and 326; then
-`git rebase --onto origin/main a4aa02a3` and re-fire `ci:full`. Conflicts merged by hand:
+326's head `adcd4074`** and merges only after 383, 384 and 326; then
+`git rebase --onto origin/main adcd4074` and re-fire `ci:full`. Conflicts merged by hand:
 `src/jobs/retention.ts` (326's `partner_application`, `auth_session`, `auth_verification_token`
 handlers beside this PR's `review_attestation`), `schema-notifications-ops.test.ts` (thirteen
 retention rows), `migrations-round-trip.test.ts` (383's `purchase_total_check` beside the five
@@ -61,7 +61,7 @@ review functions), `db/schema/index.ts`, `tests/unit/db-migrate.test.ts` (pins `
 the ledger's 38 objects; RLS 81 of 81).
 
 **Self-review of the renumber.** Full integration project on that PG16: 46 files, 518 tests
-green. `vitest --changed a4aa02a3` (unit and contract, two workers): 364 files, 10925 tests green.
+green. `vitest --changed adcd4074` (unit and contract, two workers): 364 files, 10925 tests green.
 typecheck, lint, format, i18n, no-db and map checks exit 0. Nothing in the ledger's logic changed;
 the renumber touches file names, comments and the lists that pin them.
 CI on `33c47970`: `test-integration` timed out (5 s default) in PR 383's
