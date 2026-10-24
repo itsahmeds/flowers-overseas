@@ -1319,6 +1319,22 @@
       "y": 788461,
       "w": 390,
       "h": 15097
+    },
+    {
+      "file": "search-results-desktop.dc.html",
+      "title": "Search results · spec 045 · every state · desktop 1440",
+      "x": 0,
+      "y": 803738,
+      "w": 1440,
+      "h": 7583
+    },
+    {
+      "file": "search-results-mobile.dc.html",
+      "title": "Search results · spec 045 · every state · mobile 390",
+      "x": 1520,
+      "y": 803738,
+      "w": 390,
+      "h": 10823
     }
   ],
   "annotations": [
@@ -1818,6 +1834,13 @@
       "y": 788415,
       "w": 1400,
       "text": "Spec 012b · Admin · Catalogue import: upload, check with errors (Apply absent), ready with reasons, applied report, photo step; refused files, changed since the check, expired, applied twice."
+    },
+    {
+      "id": "s045-search",
+      "x": 0,
+      "y": 803678,
+      "w": 1400,
+      "text": "Spec 045 · Site search: the results page (results, Pages links, no results with Did you mean, too short, empty, rate limited, date hides some, destination not chosen) in the PR 372 header and the PR 347 listing head. The search field and its suggestions combobox are on system/components.dc.html."
     }
   ],
   "launch": {
