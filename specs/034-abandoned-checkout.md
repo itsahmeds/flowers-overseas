@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 3 in `plan/09` (reserved `034`: "server-side drafts, email after 2 h, consented buyers only"). Brought forward by the founder on 2026-10-24 ("Idea G: abandoned-basket email (consent only)", `.claude/state/founder-requests.md`), to build after spec 010's basket amendment (A-founder-2026-10-22) and spec 018's accounts amendment (A-founder-2026-10-22) |
 | Plan refs | plan/01 §3 §5 §8 · plan/02 §4.1 §7 · plan/03 §5 §6 §7 §10 · plan/07 §1.2 §1.4 §1.5 §2.1 §4 §5 §8 §10 · plan/09 Phase 3 (`034`) · plan/11 §5 and the automation list ("abandoned checkout (2 h, 24 h)") |
 | ADRs | ADR-0006 (no IP logic) · ADR-0009 (no order status write here) · ADR-0013 (Resend for transactional mail, marketing in the CRM: **narrowed by a proposed new ADR**, §13 Q8) · ADR-0015 (Postgres, Auth.js) · ADR-0018 (Railway, single replica, Cloudflare) |
 | Depends on | spec 010 §14 A-founder-2026-10-22 (basket: `checkout_draft` with lines, `buyer_saved`, `pending_notice`, `purchase`, lines kept 30 days, personal fields cleared at 24 h) · spec 018 §14 A-founder-2026-10-22 (buyer accounts, `Mailer` `headers` field) · spec 016 (React Email layout, Resend webhooks) · spec 013 (`live` mode exists) · spec 012 (admin shell, `Mailer`, feature flags) · spec 002 (`consent_log`, `retention_policy`, pg-boss) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | pending (founder) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
