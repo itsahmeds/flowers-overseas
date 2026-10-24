@@ -71,9 +71,9 @@ PR [#384](https://github.com/itsahmeds/flowers-overseas/pull/384), migration **0
 (`0019_purchase`, `0020_checkout_draft_lines`), then this PR at **`0021_post_purchase`**, then PR
 326 (`0022`) and PR 320 (`0023`). PR 383 was not on `main` yet, and a gap fails both `db:check`
 and the runner itself (`readMigrations` refuses an inconsistent set), so this branch is **stacked
-on PR 383** (its head `07eb165c`, replayed onto `main` at `692a24b5` when TASK-115 merged; the
-last 383 commit in this branch is `9943d94a`): until 383 merges, this PR's diff shows 383's
-commits too, and it must merge after 383 (then `git rebase --onto origin/main 9943d94a` drops
+on PR 383** (its head `07eb165c`, replayed onto `main` `c81edd9e` (after TASK-115, the spec batch and TASK-285 merged); the
+last 383 commit in this branch is `d77f1383`): until 383 merges, this PR's diff shows 383's
+commits too, and it must merge after 383 (then `git rebase --onto origin/main d77f1383` drops
 them). Conflicts merged
 by hand: `db/schema/orders.ts` (`purchaseId` then `trackingTokenVersion`), `place.ts` (383's
 `insertOwnPurchase` kept; 383's `publicToken()` dropped, since 0021's column default draws the
@@ -90,5 +90,5 @@ restored, green. `db:check`: 21 migrations, each with a rollback. Full integrati
 throwaway PG16: 41 files, 473 tests green. Unit: `db-migrate`, `db-check`,
 `db-check-recipient-email`, `schema-orders-payments` and the files that timed out under another
 agent's load (load 22) re-run green (11 files, 432 tests). Carry-forward: after PR 383 merges,
-rebase `--onto origin/main 9943d94a`, re-fire `ci:full`.
+rebase `--onto origin/main d77f1383`, re-fire `ci:full`.
 
