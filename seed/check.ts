@@ -106,6 +106,7 @@ import {
 } from "../scripts/corridor-check.ts";
 import { floristSentenceFor } from "../scripts/i18n-draft.ts";
 import { CORE_RANGE_SIZE } from "../src/config/commerce.ts";
+import { COMPETITOR_MARKS } from "../src/config/competitors.ts";
 import { COUNTRIES, COUNTRY_CODES } from "../src/config/countries.ts";
 import {
   describeHeadDashes,
@@ -2257,37 +2258,10 @@ export const ALLOWED_PERSON_REFERENCES: readonly string[] = [
 ];
 
 /**
- * Competitor and third-party marks, every one of them traceable to `docs/research/competitors-*.md`
- * (spec 006 §2.3 rule 8) and asserted so by `tests/unit/seed-check.test.ts`.
- *
- * Common nouns the studies happen to contain — `Blumen`, `kwiaty`, `blumenversand` — are
- * deliberately **not** here: they are German and Polish for "flowers" and banning them would ban
- * the `de` and `pl` copy. What is banned is a *brand*: naming one in our own catalogue is the
- * competitor wording `plan/10` §2.2 forbids and, on a page, a third-party mark we have no right
- * to use.
+ * Competitor and third-party marks: the one list lives in `src/config/competitors.ts`, read here and
+ * by the blog's `blog/competitor` rule (spec 044 §2.3 rule 5; TASK-321).
  */
-export const COMPETITOR_MARKS: readonly string[] = [
-  "interflora",
-  "floraqueen",
-  "euroflorist",
-  "fleurop",
-  "bloom & wild",
-  "bloomandwild",
-  "internetflorist",
-  "1800flowers",
-  "1-800-flowers",
-  "netflorist",
-  "floristsonline",
-  "giftbasketsoverseas",
-  "colvin",
-  "bergamotte",
-  "blume2000",
-  "bonita blomster",
-  "flora nordica",
-  "delejos",
-  "aquarelle",
-  "universal flower",
-];
+export { COMPETITOR_MARKS };
 
 /** Every string in a JSON value, with the JSON path that reaches it (AC-9's "and JSON path"). */
 export function stringsWithPaths(
