@@ -9,8 +9,8 @@
  *
  *  - no `[data-fo-language-popup]` element exists;
  *  - no request is made for the popup island's chunk — resolved first from the build output
- *    (clause 9: the locale page's `react-loadable-manifest.json` entry carrying the island's
- *    marker, asserted to exist and be non-empty) — and none to `/api/geo`;
+ *    (clause 9: the lazy chunk a Turbopack loader stub requests that carries the island's marker,
+ *    `lazyChunksCarrying`, asserted to exist and be non-empty) — and none to `/api/geo`;
  *  - `<html>` carries no `data-fo-locale-gate`;
  *  - no `fo_locale` cookie exists, the URL is unchanged and no main-frame navigation fired.
  *
@@ -19,11 +19,12 @@
  * `tests/unit/i18n-language-popup.test.tsx`). The dialog's shape, closing and choosing in a browser
  * move to the task that shows `de` or `pl` again and builds the slim bar (clause 4).
  */
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { type Page, expect, test } from "@playwright/test";
 
+import { lazyChunksCarrying } from "../support/consent.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
 import { DEFERRED_ISLANDS } from "../../src/modules/ui/deferred/deferredSet.ts";
@@ -42,23 +43,7 @@ const MARKER =
 
 /** Clause 9: the popup island's chunk, by the file the build output records for it. */
 function popupChunk(): string {
-  const manifest = join(
-    DIST,
-    "server/app/[locale]/page/react-loadable-manifest.json",
-  );
-  if (!existsSync(manifest)) throw new Error(`no ${manifest}`);
-  const entries = JSON.parse(readFileSync(manifest, "utf8")) as Record<
-    string,
-    { files?: readonly string[] }
-  >;
-  const carrying = [
-    ...new Set(Object.values(entries).flatMap((entry) => entry.files ?? [])),
-  ].filter(
-    (file) =>
-      file.endsWith(".js") &&
-      existsSync(join(DIST, file)) &&
-      readFileSync(join(DIST, file), "utf8").includes(MARKER),
-  );
+  const carrying = lazyChunksCarrying(MARKER, DIST);
   if (carrying.length !== 1) {
     throw new Error(
       `expected one chunk carrying ${MARKER}, found ${String(carrying.length)}`,

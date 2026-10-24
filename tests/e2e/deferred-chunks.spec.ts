@@ -69,27 +69,14 @@ const SCRIPT = /\/_next\/static\/.+\.js(?:\?|$)/u;
 
 /**
  * Clause 9 (spec 004 §14 A-founder-2026-10-19d): the language popup island's chunk, named by the
- * file the build output records for it — the locale page's `react-loadable-manifest.json` entry
- * whose bytes carry the island's marker — after asserting exactly one exists and is non-empty, so a
- * wrong marker cannot pass as "never requested".
+ * file the build output records for it — the lazy chunk a Turbopack loader stub requests whose
+ * bytes carry the island's marker (`lazyChunksCarrying`; `React.lazy` writes no
+ * `react-loadable-manifest.json` since TASK-376) — after asserting exactly one exists and is
+ * non-empty, so a wrong marker cannot pass as "never requested".
  */
 function popupChunkFile(): string {
   const dist = resolve(import.meta.dirname, "../../.next");
-  const manifest = JSON.parse(
-    readFileSync(
-      resolve(dist, "server/app/[locale]/page/react-loadable-manifest.json"),
-      "utf8",
-    ),
-  ) as Record<string, { files?: readonly string[] }>;
-  const carrying = [
-    ...new Set(Object.values(manifest).flatMap((entry) => entry.files ?? [])),
-  ].filter(
-    (asset) =>
-      asset.endsWith(".js") &&
-      readFileSync(resolve(dist, asset), "utf8").includes(
-        markerOf("language-popup"),
-      ),
-  );
+  const carrying = lazyChunksCarrying(markerOf("language-popup"), dist);
   expect(carrying).toHaveLength(1);
   expect(statSync(resolve(dist, carrying[0]!)).size).toBeGreaterThan(0);
   return carrying[0]!;
