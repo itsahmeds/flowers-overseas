@@ -27,6 +27,8 @@ One dated bullet per `/review`, newest last.
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** the design review (PR 295) noted stale pre-043 note text in `country-shop-desktop`'s First screen row ("beside the P.S. (shop.root.demoNotice)"). The "Spec 043" band binds; ignore the stale note.
 - **From `/plan-tasks` (orchestrator, 2026-10-20):** PR 295 escalation 3: `system/components.dc.html` still draws the shop note's "P.S.". The system sheet must follow `src/modules/ui`; say in `## Result` which components changed so the orchestrator sends the designer a follow-up.
 
+- 2026-10-21 (orchestrator ruling on TASK-288 escalation 1, PR 308): spec 043 AC-6 is false on main: 20 of the 23 category hubs (tulips, lilies, orchids and others) are linked by no page, only by their language alternates. This task's grouped chips and opened "Categories" panel must link every category hub, so the TASK-288 e2e's pinned orphan list becomes empty. Ranking is priority 1: orphan hubs are not crawled from internal links.
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
