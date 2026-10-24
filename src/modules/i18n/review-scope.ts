@@ -84,6 +84,8 @@ const ScopeSchema = z.array(ScopeEntrySchema);
  */
 const CHECKOUT_PATHS = [
   "src/app/[locale]/(checkout)/**",
+  // The checkout's own header slot (TASK-204): it renders on the checkout and done pages only.
+  "src/app/[locale]/@header/(checkout)/**",
   // The start route (TASK-203): a POST handler that answers 303 or an error status and renders
   // nothing, so no checkout key can reach an indexable page through it.
   "src/app/api/checkout/**",

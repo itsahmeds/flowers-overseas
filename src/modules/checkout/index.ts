@@ -65,6 +65,8 @@ export {
 export {
   parseBuyerPhone,
   parseRecipientPhone,
+  callingCodeOf,
+  internationalPhone,
   residenceCountryCodes,
   phoneRejections,
   type ParsedPhone,

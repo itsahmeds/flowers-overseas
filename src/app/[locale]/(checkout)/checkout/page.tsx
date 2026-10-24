@@ -25,7 +25,6 @@ import {
   isDraftToken,
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
-import { PAGE_FRAME } from "@/modules/ui";
 import { CheckoutStatePage, CheckoutStepPage } from "../_views/CheckoutView";
 import { checkoutAction } from "./actions";
 
@@ -80,7 +79,7 @@ export default async function CheckoutPage({
       ? echo
       : undefined;
   return (
-    <main className={PAGE_FRAME} id="main">
+    <main id="main">
       {screen.kind === "step" ? (
         <CheckoutStepPage
           action={checkoutAction}

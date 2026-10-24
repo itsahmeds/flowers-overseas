@@ -233,6 +233,7 @@ describe("the registry (AC-41's module-load half, A17 clause 2)", () => {
   it("parses at load, and holds spec 010's checkout and confirmation entries (TASK-201, TASK-203)", () => {
     const paths = [
       "src/app/[locale]/(checkout)/**",
+      "src/app/[locale]/@header/(checkout)/**",
       "src/app/api/checkout/**",
       "src/app/(dev)/dev/components/**",
       "src/modules/checkout/**",
