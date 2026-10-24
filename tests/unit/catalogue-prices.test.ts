@@ -17,6 +17,7 @@ import { describe, expect, it } from "vitest";
 import {
   PLAN_10_BANDS,
   PLAN_10_COLUMN,
+  RECORDED_BAND_CHANGES,
 } from "../../scripts/catalogue-check.ts";
 import { COUNTRIES } from "../../src/config/countries.ts";
 import { currencyConfig } from "../../src/config/currencies.ts";
@@ -65,9 +66,19 @@ import { PRODUCT_TIERS } from "../../src/config/catalogue/tiers.data.ts";
  * of their own, so they take the EUR base row and the ×5 reading of it respectively.
  */
 function plan10BandFor(
-  product: { readonly productType: string; readonly priceTier: string },
+  product: {
+    readonly sku: string;
+    readonly productType: string;
+    readonly priceTier: string;
+  },
   iso2: string,
 ): readonly [number, number] {
+  // A SKU the founder priced apart from its band carries the recorded band change instead (spec
+  // 005 §14 A-founder-2026-10-15a point 3), transcribed in the gate, not read from the dataset.
+  const recorded = RECORDED_BAND_CHANGES.find(
+    (change) => change.countryIso2 === iso2 && change.skus.includes(product.sku),
+  );
+  if (recorded !== undefined) return recorded.band;
   const column = PLAN_10_COLUMN[iso2];
   if (column === undefined) throw new Error(`no plan/10 column for ${iso2}`);
   const table: Record<string, readonly number[]> = PLAN_10_BANDS[column];
@@ -161,7 +172,10 @@ describe("the authored price dataset (AC-6 / T-04's price half)", () => {
     const outside = retail.filter((row) => {
       const bandKey = bandKeyOf.get(row.sku);
       if (bandKey === undefined) return true;
-      const band = priceBandFor(row.countryIso2, bandKey);
+      const band =
+        destinationPricingFor(row.countryIso2).ladderOverrides.find(
+          (override) => override.sku === row.sku,
+        )?.band ?? priceBandFor(row.countryIso2, bandKey);
       return row.retailMinor < band.fromMinor || row.retailMinor > band.toMinor;
     });
 

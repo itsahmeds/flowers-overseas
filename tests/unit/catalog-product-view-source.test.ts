@@ -9,7 +9,7 @@
  *     the summary total and the tier row the page prints, and the `Offer.price` spec 005's
  *     `offerProjection()` derives from the view's own projection for the JSON-LD (TASK-130) — moves
  *     by exactly that amount, and nothing else moves. A consumer holding its own copy of the price
- *     would stay at 229 zł and fail here.
+ *     would stay at 239 zł and fail here.
  *  2. **No second derivation exists in `src/`.** The derivations only `productView()` may make —
  *     the price projection, the date surcharges, the delivery grid, the PDP's indexability
  *     verdict, the totals table and the tier ladder — are called from `catalog/product.ts` (and,
@@ -116,11 +116,11 @@ async function consumers() {
 describe("a fake provider moves every consumer together (T-32)", () => {
   it("reads the committed price through every consumer", async () => {
     await expect(consumers()).resolves.toEqual({
-      pageSummary: 22_900,
-      pageTierRow: 22_900,
+      pageSummary: 23_900,
+      pageTierRow: 23_900,
       pageOtherTier: 19_900,
-      jsonLdOfferPrice: "229.00",
-      jsonLdServedOfferPrice: "229.00",
+      jsonLdOfferPrice: "239.00",
+      jsonLdServedOfferPrice: "239.00",
       sitemapRow: { loc: "/pl/polska/produkt/amber-hour", indexable: false },
     });
   });
@@ -128,12 +128,12 @@ describe("a fake provider moves every consumer together (T-32)", () => {
   it("moves the page's summary, its tier row and the Offer by exactly the provider's change", async () => {
     bumpMinor = 10_000;
     await expect(consumers()).resolves.toEqual({
-      pageSummary: 32_900,
-      pageTierRow: 32_900,
+      pageSummary: 33_900,
+      pageTierRow: 33_900,
       // The other tiers are other rows: a consumer that moved them would be computing, not reading.
       pageOtherTier: 19_900,
-      jsonLdOfferPrice: "329.00",
-      jsonLdServedOfferPrice: "329.00",
+      jsonLdOfferPrice: "339.00",
+      jsonLdServedOfferPrice: "339.00",
       sitemapRow: { loc: "/pl/polska/produkt/amber-hour", indexable: false },
     });
   });

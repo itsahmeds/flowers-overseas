@@ -215,7 +215,7 @@ const FIXTURES = {
   "pdp-phase0.json": { jsonld: documentOf(phase0) },
   "pdp-live.json": {
     jsonld: documentOf(live),
-    // The amount and currency as the buy section prints them: `€54.90` -> `54.90`, EUR.
+    // The amount and currency as the buy section prints them: `€56.90` -> `56.90`, EUR.
     visiblePrice: renderedPrice(liveHtml).replace(/[^0-9.,]/gu, ""),
     visibleCurrency: localeConfig(LOCALE).currencyDefault,
   },
