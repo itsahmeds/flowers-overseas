@@ -29,6 +29,7 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 One dated bullet per `/review`, newest last.
 
 _None yet._
+- **From TASK-258 (2026-10-24, PR 405):** `paymentsOutboxHandler(deps)` in `src/modules/payments/cancel.ts` handles `order.cancelled` / `order.cancelled_refunded` (refund on cancel) and throws `PAYMENTS_NOT_CONFIGURED` for `assignment.accepted`. Add the acceptance branch there (row 14, and row 16 when `productionStartAt` has passed; `PAYMENT_NOT_CAPTURED` if the payment is not captured) and register it with `registerOutboxHandler('payments', …)` with the production provider; nothing registers it yet. `startProduction(orderId, PRODUCTION_START_ACTOR, { executor })` is the call for spec 011's dispatch. `payments.production_start` is registered in `src/jobs/index.ts` and `handlers.ts`; like `outbox.dispatch`, nothing enqueues it every minute yet.
 
 ## Escalations
 

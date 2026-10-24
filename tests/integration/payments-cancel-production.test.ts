@@ -380,7 +380,13 @@ describe.skipIf(server.url === undefined)(
                 "cancelled",
                 { mode: "test", reason },
               ],
-              ["order.refund_requested", "system:payments", null, null, money],
+              [
+                "order.refund_requested",
+                "system:payments",
+                "cancelled",
+                "cancelled",
+                money,
+              ],
               [
                 "order.refunded_full",
                 "system:payments",
@@ -796,8 +802,14 @@ describe.skipIf(server.url === undefined)(
               zone: "Europe/Warsaw",
             }).getTime() + 1_000,
           );
+          // Every other run gives the tick a head start of a few milliseconds, so both orders of
+          // arrival happen: the cancel waiting on the tick's lock, and the tick skipping the
+          // cancel's.
+          const headStart = run % 2 === 0 ? 0 : 5 + (run % 7) * 3;
           const [cancelled] = await Promise.all([
-            cancel(orderId, "buyer", "buyer_cancel"),
+            new Promise((resolve) => setTimeout(resolve, headStart)).then(() =>
+              cancel(orderId, "buyer", "buyer_cancel"),
+            ),
             runProductionStart({
               transaction: transactionOf(),
               now: () => at,
