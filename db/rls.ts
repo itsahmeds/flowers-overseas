@@ -224,7 +224,7 @@ export const STAFF_ONLY_TABLES = [
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
   "retention_policy",
-  // spec 012b (migration `0019_review_attestation`, TASK-293): the review ledger and the reviewer
+  // spec 012b (migration `0023_review_attestation`, TASK-293): the review ledger and the reviewer
   // locales. Runtime review lookups run in `withSystemContext('attestations.read')`; the ledger
   // is append-only by trigger, so the staff policy never means update or delete.
   "review_attestation",
