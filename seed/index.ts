@@ -58,6 +58,7 @@ import {
 } from "../src/modules/i18n/attestation.ts";
 import { attest, executorOf } from "../src/modules/i18n/db/ledger.ts";
 
+import { seedBlogFixtures } from "./blog.ts";
 import { readSeedTree } from "./check.ts";
 import {
   SEED_GROUPS,
@@ -74,6 +75,8 @@ export const CLI_NAME = "db:seed";
 
 export type Sql = postgres.Sql;
 type Tx = postgres.TransactionSql;
+/** One seed transaction, for the seed modules that write inside it (`seed/blog.ts`). */
+export type SeedTx = Tx;
 
 /** What one table's upsert did. */
 export interface SeedTableReport {
@@ -505,6 +508,11 @@ export async function runSeed(
         reports.push(
           await replayAttestations(tx, options.attestations, insertOnly),
         );
+      }
+      // Spec 044 §5.1 (TASK-322): the blog fixtures, after the countries and occasions they tag;
+      // never in `--insert-only`, production's only mode.
+      if (groups.includes("catalog")) {
+        reports.push(await seedBlogFixtures(tx, insertOnly));
       }
       if (dryRun) throw new DryRunRollback();
     });

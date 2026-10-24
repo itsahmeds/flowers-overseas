@@ -9,7 +9,22 @@
     },
     "skipToContent": "Skip to content"
   },
+  "blog": {
+    "index": {
+      "h1": "The Flowers Overseas blog",
+      "intro": "Customs, occasions and practical advice for sending flowers to someone in another country.",
+      "seoDescription": "Customs, occasions and practical advice for sending flowers to someone in another European country, from Flowers Overseas.",
+      "seoTitle": "Blog: sending flowers across Europe | Flowers Overseas"
+    },
+    "post": {
+      "byline": "By {name}",
+      "nextCorridor": "Read our guide to sending flowers to {country}",
+      "published": "Published {date}",
+      "updated": "Updated {date}"
+    }
+  },
   "breadcrumb": {
+    "blog": "Blog",
     "destinations": "Send flowers to",
     "entity": "{name}",
     "occasions": "Occasions",
@@ -617,6 +632,7 @@
       "sending": "Wysyłka"
     },
     "link": {
+      "blog": "Blog",
       "cookies": "Pliki cookie",
       "deliveryAndPayment": "Delivery and payment",
       "destinations": "Kierunki",

@@ -180,6 +180,14 @@ export const SiteLinkTargetSchema = z.discriminatedUnion("kind", [
    * `src/modules/content` and hands the missing ones to the footer.
    */
   z.object({ kind: z.literal("infoPage"), page: InfoPageIdSchema }).strict(),
+  /**
+   * **The blog index** of spec 044 (§2.8; TASK-322), `/{locale}/blog`. Its own kind because its
+   * existence per locale is `blogIndexExists()`'s answer (a published post in that locale, in this
+   * build), which only the content module can give: permission here, existence there, the
+   * `infoPage` kind's rule. The document layout asks and hands a missing index to the footer, so
+   * a locale with no post has no Blog link (spec 004 AC-14).
+   */
+  z.object({ kind: z.literal("blogIndex") }).strict(),
   z.object({ kind: z.literal("pending") }).strict(),
 ]);
 
@@ -555,6 +563,15 @@ const siteLinks = [
     surfaces: ["footer"],
   },
   {
+    // Spec 044 §2.8 (TASK-322): last in Company, drawn only where the index exists.
+    id: "blog",
+    labelKey: "footer.link.blog",
+    target: { kind: "blogIndex" },
+    published: true,
+    owningSpec: "044",
+    surfaces: ["footer"],
+  },
+  {
     id: "terms",
     labelKey: "footer.link.terms",
     target: { kind: "infoPage", page: "terms" },
@@ -908,7 +925,13 @@ const siteLinkGroups = [
     id: "company",
     headingKey: "footer.group.company",
     surface: "footer",
-    linkIds: ["how-it-works", "for-florists", "help-and-contact", "imprint"],
+    linkIds: [
+      "how-it-works",
+      "for-florists",
+      "help-and-contact",
+      "imprint",
+      "blog",
+    ],
   },
   {
     id: "legal",

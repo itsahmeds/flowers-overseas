@@ -67,6 +67,9 @@ import {
 } from "@/modules/geo";
 import type { InfoPageId } from "@/config/info-pages";
 import {
+  blogIndexExists,
+  blogPostExists,
+  blogSource,
   infoPageExists,
   infoPageForLeaf,
   infoPageForSegment,
@@ -181,6 +184,22 @@ export type LocalePathResolution =
       readonly kind: "infoPage";
       readonly locale: LocaleCode;
       readonly pageId: InfoPageId;
+    }
+  /**
+   * Spec 044's blog index `/{locale}/blog` (§2.7, AC-8; TASK-322): disjoint from every other
+   * depth-2 page by its segment, and existing only where `blogIndexExists()` says a post exists
+   * in that locale now (database AND the running build's manifest).
+   */
+  | { readonly kind: "blogIndex"; readonly locale: LocaleCode }
+  /**
+   * Spec 044's blog post `/{locale}/blog/{slug}` (§2.7, AC-8; TASK-322). It carries the slug the
+   * URL spells; the route asks the blog for the view model. A draft, an unpublished post, a
+   * reserved or unknown slug and any casing variant are misses here.
+   */
+  | {
+      readonly kind: "blogPost";
+      readonly locale: LocaleCode;
+      readonly slug: string;
     };
 
 const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
@@ -188,7 +207,7 @@ const NOT_FOUND: LocalePathResolution = { kind: "notFound" };
 /** Whether `segment` is **this** locale's own segment for a page type (`plan/02` §4). */
 function isOwnSegment(
   locale: LocaleCode,
-  pageType: "destinations" | "shopCategory" | "occasions" | "product",
+  pageType: "destinations" | "shopCategory" | "occasions" | "product" | "blog",
   segment: string,
 ): boolean {
   return localePath(locale, pageType) === `/${locale}/${segment}`;
@@ -238,6 +257,13 @@ export async function resolveLocalePath(
     if (pageId !== undefined && infoPageExists(pageId, code)) {
       return { kind: "infoPage", locale: code, pageId };
     }
+    // `/{locale}/blog` — spec 044's index (TASK-322): a hard 404 while no post exists in this
+    // locale, which is every locale but `en` and `en-gb` in slice A. `blogIndexExists()`'s rule.
+    if (isOwnSegment(code, "blog", segment)) {
+      return (await blogIndexExists(code))
+        ? { kind: "blogIndex", locale: code }
+        : NOT_FOUND;
+    }
     // `/{locale}/{shopCategory}` is a 404 by §13 Q4: no country-less categories index ships.
     return NOT_FOUND;
   }
@@ -253,6 +279,15 @@ export async function resolveLocalePath(
         return NOT_FOUND;
       }
       return { kind: "corridor", locale: code, iso2, countrySlug: child };
+    }
+
+    // `/{locale}/blog/{slug}` — spec 044's post (TASK-322). `blogPostExists()` is the one answer:
+    // a draft, an unpublished post, a slug never published in this locale (a reserved one
+    // included) and an upper-case variant are all misses, and never a redirect.
+    if (isOwnSegment(code, "blog", segment)) {
+      return (await blogPostExists(code, child))
+        ? { kind: "blogPost", locale: code, slug: child }
+        : NOT_FOUND;
     }
 
     // `/{locale}/{legal}/{leaf}` — spec 041's four legal documents (TASK-183): leaves under the
@@ -473,6 +508,15 @@ export async function localeSegmentParams(): Promise<
     if (segments.length !== 1) continue;
     params.push({ locale: page.locale, segment: segments[0] ?? "" });
   }
+  // Spec 044's blog index (TASK-322): exactly where `blogIndexExists()` says a post exists.
+  for (const locale of listingLocales()) {
+    if (await blogIndexExists(locale)) {
+      params.push({
+        locale,
+        segment: localePath(locale, "blog").split("/")[2] ?? "",
+      });
+    }
+  }
   return params;
 }
 
@@ -531,6 +575,17 @@ export async function localeChildParams(): Promise<
       continue;
     }
     params.push({ locale: page.locale, segment, child });
+  }
+
+  // Spec 044's posts (TASK-322): `blogStaticParams()`, the published posts in every route locale
+  // that serves their content locale (`en` at `/en` and `/en-gb`, §2.2).
+  for (const { locale, slug } of await blogSource().blogStaticParams()) {
+    if (!listed.has(locale)) continue;
+    params.push({
+      locale,
+      segment: localePath(locale, "blog").split("/")[2] ?? "",
+      child: slug,
+    });
   }
 
   return params;

@@ -47,7 +47,8 @@ export const PUBLISHED_POSTS_QUERY = sql`
                      JOIN public.occasion o ON o.id = po.occasion_id
                     WHERE po.post_id = p.id), '{}') AS occasions,
          to_char(p.first_published_at AT TIME ZONE 'UTC', ${sql.raw(ISO)}) AS first_published_at,
-         to_char(coalesce(r.published_at, p.first_published_at) AT TIME ZONE 'UTC', ${sql.raw(ISO)}) AS revision_published_at
+         to_char(coalesce(r.published_at, p.first_published_at) AT TIME ZONE 'UTC', ${sql.raw(ISO)}) AS revision_published_at,
+         coalesce(r.value_hash = public.review_blog_revision_current_hash(r.id), false) AS reviewed
     FROM public.blog_post p
     JOIN public.blog_post_revision r ON r.id = p.published_revision_id AND r.post_id = p.id
     JOIN public.blog_author_public a ON a.id = p.author_id
@@ -72,6 +73,7 @@ interface Row {
   occasions: string[];
   first_published_at: string;
   revision_published_at: string;
+  reviewed: boolean;
 }
 
 /** The published records, as the public role sees them. */
@@ -100,6 +102,7 @@ export async function readPublishedPosts(
     occasions: row.occasions,
     firstPublishedAt: row.first_published_at,
     revisionPublishedAt: row.revision_published_at,
+    reviewed: row.reviewed,
   }));
 }
 

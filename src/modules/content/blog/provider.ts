@@ -44,6 +44,12 @@ export interface BlogPostRecord {
   readonly firstPublishedAt: string;
   /** ISO 8601: when the served revision was published (`dateModified`, `<lastmod>`). */
   readonly revisionPublishedAt: string;
+  /**
+   * §6's `reviewed` term: the served revision's stored hash (the one its approval was given for,
+   * frozen with it) still equals the hash of what it would serve now. False after a reassignment
+   * to another author until a new revision is approved and published (TASK-321's carry-forward).
+   */
+  readonly reviewed: boolean;
 }
 
 /** One row of a blog index: newest first. */
@@ -56,6 +62,8 @@ export interface BlogIndexEntry {
   readonly coverAlt: string | null;
   readonly firstPublishedAt: string;
   readonly revisionPublishedAt: string;
+  /** The record's `reviewed` term (§6). */
+  readonly reviewed: boolean;
 }
 
 /** The index lists at most this many posts per locale (§2.7). */
@@ -115,6 +123,7 @@ export function recordsBlogProvider(
             coverAlt: record.coverAlt,
             firstPublishedAt: record.firstPublishedAt,
             revisionPublishedAt: record.revisionPublishedAt,
+            reviewed: record.reviewed,
           })),
       ),
     blogPostExists: (locale, slug) =>
