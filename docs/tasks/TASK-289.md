@@ -5,6 +5,20 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34).
 
 ## Binding
 
+**Redrawn 2026-10-24: the spec revision and the artboards win where they differ from the rest of
+this section.** The founder, on the Poland Birthday listing: "This design feels so cluttered and
+so shit"; on the redraw (design PR 347): "head ok, short H1". This task now builds the redrawn
+listing head on the three country listings (shop root, country category, country occasion; hubs
+unchanged): spec 043 §14 A-founder-2026-10-22 **as revised 2026-10-24** (spec PR 346), items 1, 2,
+3, 5, 6 and 7; **AC-5, AC-7, AC-19, AC-35, AC-36, AC-37, AC-40, AC-41, AC-43, AC-51, AC-52,
+AC-53, AC-54** with the defaults Q-22d (the quiet line reuses `nav.utility.pricesInclude`,
+"Prices include delivery and VAT"), Q-22e (`shop.root.demoNotice` keeps its value) and Q-22f
+(the example note under the grid). The drawing is the `lh:2026-10-24b` block at the top of
+`docs/design/wireframes/country-{shop,category,occasion}-{desktop,mobile}.dc.html`, option B's
+H1. Item 4 (the merge of combination products) is not this task's. The older bullets below
+(AC-11, AC-12, AC-16 to AC-18, the P.S. and the chips) stand only where the revision does not
+replace them.
+
 Spec 043 §5.3 B, D, E and §7 (the copy table, §13 Q4 and Q5 answered by default) and §12 task 2.
 - **ACs owned:** AC-5, AC-7, AC-11, AC-12, AC-16, AC-17, AC-18, AC-19 (count-line half); tests T-05, T-07, T-11, T-12, T-16, T-17, T-18, T-19 (count-line half).
 - After TASK-239 (the "Ordering opens soon" words) and TASK-241 (PR 235, the toolbar above the grid) (§12 item 1), and after TASK-285's PR, which puts the example label on the count line's row (spec 004 19b clause 3): never beside it.
