@@ -28,6 +28,14 @@ One dated bullet per `/review`, newest last.
 
 - **From the site test (2026-10-18, QA-1 and QA-2 on `c8d3b334`; screenshots in `.claude/state/qa-2026-10-18/`):**
   - Q18-09 (P2): QA-1 found no `BreadcrumbList` on any shop, category or occasion page on `c8d3b334` (only the guides carry `BreadcrumbList` and `FAQPage`). That is this task's scope, not a defect to fix elsewhere; flag it in the ranking plan before TASK-096's indexing flip.
+- **From the implementation (2026-10-24, PR 387, self-review):**
+  - Q18-09 closed: every listing route mounts `ListingJsonLd` (`BreadcrumbList` + `ItemList`).
+  - `plan/02` §9 has no listing row. `ItemList` is admitted in `validate-schema.ts` on spec 008 §2/§6's authority;
+    the orchestrator may add the row ("Listings, occasions index | `ItemList` + `BreadcrumbList`").
+  - Hub `ListItem`s carry no `url`: hub cards are tiles (no destination, no product page). Valid schema.org and
+    honest, but not eligible for Google's ItemList carousel. Revisit if hub cards ever link.
+  - Occasions index: the `ItemList` is the hub entries once each (dated, undated, everyday); the "next six" cards
+    at the top repeat six of them and are not elements (the hub-lead rule). Reading of AC-17's "rendered cards".
 
 ## Escalations
 
@@ -41,7 +49,22 @@ _None recorded._
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
+PR [#387](https://github.com/itsahmeds/flowers-overseas/pull/387). `itemList()` (`src/modules/seo/schema/itemList.ts`)
+and `listingJsonLd()` (`src/modules/catalog/listingSchema.ts`) build `BreadcrumbList` + `ItemList` from the one
+`ListingView`; `src/app/[locale]/listing-json-ld.tsx` mounts them beside all six listing pages. `validate-schema`
+admits `ItemList` as an order (no price, image, offer, rating; positions 1..n). Tests: unit 72 new
+(`catalog-listing-schema.test.tsx`) + 7 (`seo-validate-schema.test.ts`), contract 11
+(`listing-schema-fixtures.test.ts`, eight committed fixtures), e2e scan over all 1 032 listings in four locales plus
+four paginated/sorted URLs (`schema.spec.ts`). 14 mutations, each red. No local build or browser run (CI's).
 
-_Pending._
+```
+gates:cheap · f2f4dd938995c79794cfff301426ccdea79d16f2 · base origin/main
+typecheck             exit 0 · 2.4 s
+lint                  exit 0 · 22.2 s
+format:check          exit 0 · 12.8 s
+i18n:check            exit 0 · 0.9 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 97.4 s · changed 99 + map 0 + always 3
+RESULT: PASS
+```
