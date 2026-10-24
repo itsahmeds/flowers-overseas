@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 |
 | Plan refs | plan/00 §2 (priority 4, operational simplicity) · plan/01 §3 (admin rendering) §5 (module boundaries) §8 (jobs) §9 (security, webhooks, secrets) · plan/02 §4, §9 (no public URL added; sitemap probe) · plan/03 §7 (message keys) · plan/06 §5.2 (routing SLA, "admin alert"), §7 (peak-day on-call) · plan/07 §1.4 (processors, RoPA), §9 (logs and PII) · plan/08 §7 (observability table: `sla.watch`, payment failures, uptime, cost) · plan/09 Phase 1 (`025` runbooks top 10 + alerts; acceptance 7) · plan/11 §5.2 T10 (admin alert), §7 (incident console, later) · plan/12 §4 (test layers) |
 | Specs read | 002 (`neon.usage_probe`, `db.backup_verify`, retention, jobs registry, §11 "order-lifecycle alerts belong to spec 025") · 005 (`catalog.fx_stale`, `fxRateStaleAfter`) · 010 (order reference `FO-XXXX-XXXX`) · 012 (admin shell, `ADMIN_PERMISSIONS`, audit, flags, mailer) · 013 (§11 alert table, `payments.monitor`, webhook inbox statuses, "spec 025 keeps the webhook error-rate monitor") · 016 (routing alerts, `graceEnd`, routing deadline, `expectedFirstOfferAt`, Resend webhooks, `OPS_ALERT_EMAIL`, "spec 025 keeps the runbook set and any later alerts") · 040 (Railway `web` + `worker`, `/api/health`, uptime, cost alert) |
 | ADRs | ADR-0009 (events) · ADR-0013 (Resend) · ADR-0015 (Neon, R2) · ADR-0018 (Railway behind Cloudflare) · **proposes a new ADR (alert channel; number assigned when written, ADR-0021 is taken by the Wyoming LLC)** "Founder alert channel: Pushover push plus Resend email; the app, not Sentry, decides who is paged" (§12) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (founder) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
