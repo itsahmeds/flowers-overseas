@@ -32,6 +32,7 @@ task actually touches.
 | File | Purpose | Spec |
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country | 003 |
+| `basket.ts` | The basket's two numbers | 010 |
 | `card-message.ts` | The printed card's one limit (spec 004 §14… | 004 |
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates,… | 005 |
 | `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product… | 005 |
