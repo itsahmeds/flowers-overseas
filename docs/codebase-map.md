@@ -211,7 +211,7 @@ task actually touches.
 | `tests/unit/` | 360 |
 | `tests/integration/` | 41 |
 | `tests/contract/` | 25 |
-| `tests/e2e/` | 70 |
+| `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 24 |
 | `tests/dev-os/` | 1 |
