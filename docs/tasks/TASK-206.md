@@ -50,9 +50,11 @@ here.
 
 - 2026-10-24: done on PR 400: `/{locale}/checkout/done` (`confirmationFor`, renderer per order mode, `gone` state), the demo banner and sample details, the product page's two entry buttons (`product.entry.demo`, `product.entry.addToBasket`; the entry decision moved to `modules/geo` so the indexable PDP imports nothing under the checkout paths). JS-off walk proved by hand to the `FO-` reference. Next: confirmation recap does not list add-ons (carry-forward); design compare.
 
+- 2026-10-24 (2): both carry-forwards fixed in this PR: the confirmation lists the chosen add-ons by name and never the free printed card (`chosenAddonNameKeys`, unit-tested; step 2 no longer offers the card either), and the confirmation is drawn as the boards draw it: one delivery beside its recap card, a basket as delivery cards with one total, the gone state as the message block. The `<em>` accents of the step titles and the confirmation title are named in `home-round2.test.tsx` per spec 004 clause 1.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 400 (https://github.com/itsahmeds/flowers-overseas/pull/400). `/{locale}/checkout/done` with a renderer per order mode and the gone state, the demo banner and sample details, the PDP's two entry submits; the confirmation lists chosen add-ons and never the printed card. Tests: `checkout-confirmation.test.ts` (unit), the confirmation half of `checkout-place.test.ts` (integration), `checkout-journey.spec.ts` (e2e).

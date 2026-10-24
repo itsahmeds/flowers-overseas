@@ -52,9 +52,11 @@ here.
 
 - 2026-10-24: done on PR 400 (feature PR of TASK-204): `placeBasket`/`runPlaceOrder` in one transaction under the draft row lock, the payment-step seam (`demoPaymentStep`), the daily cap under an advisory lock, `markDraftPlaced`; 9 integration tests on PG16 (`tests/integration/checkout-place.test.ts`), mutations seen red (FOR UPDATE removed, cap `>=`, seen-total check removed, buyer not cleared, authorise skipped). Next: nothing beyond the PR's CI.
 
+- 2026-10-24 (2): `checkout-place.test.ts` gains the confirmation read after a two-delivery placement (order, references, amounts, total) and step 2's offered add-ons without the printed card (seen red with the filter removed). 15 integration tests on PG16.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 400 (https://github.com/itsahmeds/flowers-overseas/pull/400). Placement in one transaction under the draft row lock with the date, quote and daily-cap re-checks; 15 integration tests in `tests/integration/checkout-place.test.ts` on PG16.

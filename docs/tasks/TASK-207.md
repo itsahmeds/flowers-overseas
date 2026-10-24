@@ -37,9 +37,11 @@ here.
 
 - 2026-10-24: on PR 400: `retention.sweep` handlers `checkout_draft_personal`, `checkout_draft`, `demo_order_personal` (5 integration cases in `checkout-place.test.ts`, mutations seen red: mode filter dropped, `<=` to `<`), RoPA rows 8 to 10, `docs/runbooks/checkout.md`, the architecture row, `tests/unit/checkout-records.test.ts`. **Not done: the cookie-register half of AC-36/AC-75** (`fo_checkout`, `fo_checkout_echo` rows, `fo_basket` set, `fo_csrf` removed): it needs purpose copy, and two more unreviewed counted keys push `en-gb` past the 5 % share and deindex it, so it waits for the founder's approval of that copy (the change was built and reverted; see PR 400). `consent.cookies.basket.purpose` still says "Not set yet" although `fo_basket` is set on main.
 
+- 2026-10-24 (2): orchestrator ruling: the cookie-register rows stay out of this PR; their exact proposed text is in PR 400's "Copy for the founder" for the founder's approval and record run.
+
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 400 (https://github.com/itsahmeds/flowers-overseas/pull/400). Retention handlers `checkout_draft_personal`, `checkout_draft`, `demo_order_personal` (5 integration cases), RoPA rows 8 to 10, `docs/runbooks/checkout.md`, the architecture row, `checkout-records.test.ts`. Handed on: the cookie-register half of AC-36 and AC-75 waits for the founder's approval of the purpose copy (PR 400 "Copy for the founder").
