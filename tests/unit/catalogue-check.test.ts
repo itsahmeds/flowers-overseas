@@ -215,12 +215,14 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
   });
 
   it("band: a smallest-tier price outside its plan/10 §2.3 band", () => {
+    // FO-BQ-011 (classic tulips, 15 / 25 / 35 stems), not FO-BQ-001: in PL the classic roses are
+    // held to their ladder override's band instead (spec 005 §14 A-founder-2026-10-15a, T-39).
     const problems = problemsFor(
       {
         countryPrices: clean.countryPrices.map((row) =>
-          row.sku === "FO-BQ-001" &&
+          row.sku === "FO-BQ-011" &&
           row.countryIso2 === "PL" &&
-          row.tierKey === "stems_11"
+          row.tierKey === "stems_15"
             ? { ...row, retailMinor: 9900 }
             : row,
         ),
@@ -230,7 +232,7 @@ describe("every failure mode has a fixture (AC-5 / T-03)", () => {
 
     expect(problems.length).toBeGreaterThanOrEqual(1);
     expect(problems[0]).toContain("outside the plan/10 §2.3");
-    expect(problems.join("\n")).toContain("FO-BQ-001");
+    expect(problems.join("\n")).toContain("FO-BQ-011");
   });
 
   it("band: a *top*-tier price outside its band (spec 005 §14 A1)", () => {

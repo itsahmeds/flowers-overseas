@@ -369,7 +369,8 @@ describe("spec 006 AC-6: one fixture per failure shape (T-06)", () => {
     const { modes, report } = problemsWithFixture("bad-out-of-band.json");
     expect(modes).toContain("band");
     expect(report).toContain("FO-BQ-001");
-    expect(report).toContain("outside the plan/10 §2.3");
+    // FO-BQ-001 in PL is held to its ladder override's band (spec 005 §14 A-founder-2026-10-15a).
+    expect(report).toContain("outside its PL ladder override's band 19900…32900");
   });
 
   it("catches a wrong psychological ending with the currency's style in the message", () => {

@@ -163,7 +163,7 @@ describe('A21 clause 6 as spec 009 §14 A12 move 2 reads it: one line, in "The p
     expect(view.fx.state).toBe("converted");
     const html = render(view);
     const expected =
-      "about 47.07 £, 237.05 PLN or 63.76 US$ at the rate of 8 September";
+      "about 48.79 £, 245.68 PLN or 66.08 US$ at the rate of 8 September";
     expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
     expect(pageLines(html)).toEqual([expected]);
@@ -177,12 +177,12 @@ describe('A21 clause 6 as spec 009 §14 A12 move 2 reads it: one line, in "The p
     const view = await viewOf("pl", { now: FRESH });
     expect(view.fx.state).toBe("native");
     expect(view.price.displayPrice).toEqual({
-      amountMinor: 22_900,
+      amountMinor: 23_900,
       currency: "PLN",
     });
     expect(view.price.fxAsOf).toBe(undefined);
     const expected =
-      "ok. 53,04 €, 45,47 GBP lub 61,60 USD po kursie z 8 września";
+      "ok. 55,35 €, 47,46 GBP lub 64,29 USD po kursie z 8 września";
     const html = render(view);
     expect(lines(block(html, "data-fo-pdp-price"))).toEqual([]);
     expect(lines(block(html, "data-fo-price-summary"))).toEqual([expected]);
