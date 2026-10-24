@@ -399,3 +399,14 @@ export function blogBodyRefs(bodyMd: string): readonly string[] {
     ),
   ];
 }
+
+/**
+ * The admin message a result is shown with: `blog/slug-shape` reads `admin.blog.rule.slugShape`
+ * in `messages/admin/en.json`, formatted with the result's `params` (spec 044 §5.3).
+ */
+export function blogRuleMessageKey(id: BlogRuleId): string {
+  const name = id
+    .slice("blog/".length)
+    .replaceAll(/-([a-z0-9])/gu, (_, letter: string) => letter.toUpperCase());
+  return `admin.blog.rule.${name}`;
+}
