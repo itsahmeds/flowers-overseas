@@ -146,12 +146,18 @@ describe("idea 6: the route line on the corridor page (AC-19)", () => {
     const h1 = /<h1[\s\S]*?<\/h1>/.exec(html)?.[0] ?? "";
     expect(h1).not.toBe("");
     expect(h1).not.toContain("data-fo-route-line");
-    // The hero grid is its containing block: positioned, and the route its last child.
-    const hero = /<div[^>]*data-fo-corridor-hero[^>]*>/.exec(html)?.[0] ?? "";
-    expect(hero).toMatch(/\bclass="[^"]*\brelative\b/);
+    // The first-screen grid is its containing block: positioned, and the route its last child,
+    // after the H1, the dates and the intro.
+    const hero =
+      /<div[^>]*data-fo-corridor-first-screen[^>]*>/.exec(html)?.[0] ?? "";
+    expect(hero).toMatch(/\bclass="relative /);
     expect(html.indexOf("data-fo-route-line")).toBeGreaterThan(
-      html.indexOf("data-fo-lead-photo"),
+      html.indexOf("data-fo-corridor-first-dates"),
     );
+    const at = html.indexOf("data-fo-route-line");
+    expect(
+      html.slice(html.indexOf("</svg>", at), html.indexOf("</svg>", at) + 12),
+    ).toBe("</svg></div>");
     expect(html.indexOf("data-fo-route-line")).toBeLessThan(
       html.indexOf("data-fo-corridor-facts"),
     );

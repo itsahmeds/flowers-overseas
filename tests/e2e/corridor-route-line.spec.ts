@@ -29,7 +29,10 @@ interface Box {
 interface Geometry {
   readonly route: Box | null;
   readonly h1: Box;
-  readonly photo: Box;
+  /** The H1's column, columns 1 to 6 of the first screen. */
+  readonly copy: Box;
+  /** The first screen's three dates, the block across the gap. */
+  readonly dates: Box;
   readonly hero: Box;
   readonly count: number;
   readonly bytes: number;
@@ -63,10 +66,15 @@ async function geometry(page: Page): Promise<Geometry> {
           ? null
           : box(route),
       h1: must(document.querySelector("[data-fo-corridor] h1")),
-      photo: must(
-        document.querySelector("[data-fo-corridor] [data-fo-lead-photo]"),
+      copy: must(
+        document.querySelector("[data-fo-corridor] h1")?.parentElement ?? null,
       ),
-      hero: must(document.querySelector("[data-fo-corridor-hero]")),
+      dates: must(
+        document.querySelector(
+          "[data-fo-corridor-first-screen] > section[aria-labelledby]",
+        ),
+      ),
+      hero: must(document.querySelector("[data-fo-corridor-first-screen]")),
       bytes: new TextEncoder().encode(route?.outerHTML ?? "").length,
       forbidden:
         route?.querySelectorAll("text, image, a, foreignObject").length ?? -1,
@@ -110,9 +118,10 @@ test.describe("the route line at 1,440 × 900 (AC-19)", () => {
     expect(route.y + route.height).toBeLessThanOrEqual(900);
     expect(route.x).toBeGreaterThanOrEqual(0);
     expect(route.x + route.width).toBeLessThanOrEqual(1440);
-    // Never on the H1's box, nor on the lead slot's.
+    // Never on the H1's box, its column's, nor the dates'.
     expect(intersects(route, found.h1)).toBe(false);
-    expect(intersects(route, found.photo)).toBe(false);
+    expect(intersects(route, found.copy)).toBe(false);
+    expect(intersects(route, found.dates)).toBe(false);
   });
 
   test("the mask's draw runs once, 0.6 s after 0.5 s, and ends drawn; then the dot is in", async ({
@@ -215,8 +224,9 @@ test.describe("as wide as the hero's gap, up to 180 px (the PR 297 carry-forward
       const route = found.route;
       expect(route).not.toBeNull();
       if (route === null) return;
-      const gapStart = found.h1.x + found.h1.width;
-      const gapEnd = found.photo.x;
+      // The artboard's gap: from the end of column 6 (the H1's column) to the dates.
+      const gapStart = found.copy.x + found.copy.width;
+      const gapEnd = found.dates.x;
       const gap = gapEnd - gapStart;
       expect(gap).toBeGreaterThan(40);
       expect(route.width).toBeCloseTo(Math.min(180, gap), 0);
@@ -227,7 +237,7 @@ test.describe("as wide as the hero's gap, up to 180 px (the PR 297 carry-forward
       );
       expect(route.y - found.hero.y).toBeCloseTo(74, 0);
       expect(intersects(route, found.h1)).toBe(false);
-      expect(intersects(route, found.photo)).toBe(false);
+      expect(intersects(route, found.dates)).toBe(false);
     });
   }
 });
@@ -294,7 +304,7 @@ test("on /ar-XB the 'you' dot is at the inline-start, the right, with no sideway
   expect(found.route).not.toBeNull();
   if (found.route !== null) {
     expect(intersects(found.route, found.h1)).toBe(false);
-    expect(intersects(found.route, found.photo)).toBe(false);
+    expect(intersects(found.route, found.dates)).toBe(false);
   }
 });
 
