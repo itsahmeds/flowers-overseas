@@ -489,6 +489,15 @@ export { ProductCard } from "./shop/ProductCard.tsx";
 export type { ProductCardProps } from "./shop/ProductCard.tsx";
 export { ListingGrid } from "./shop/ListingGrid.tsx";
 export type { ListingGridProps } from "./shop/ListingGrid.tsx";
+// Where a grid's example label is displayed: once for the grid, or per card from `md` up
+// (spec 004 §14 A-founder-2026-10-19b clause 3; TASK-285). The grid and the page ask it alike.
+export {
+  GRID_PROVENANCE_MODES,
+  gridProvenanceMode,
+} from "./shop/gridProvenanceMode.ts";
+export type { GridProvenanceMode } from "./shop/gridProvenanceMode.ts";
+export { GridProvenance } from "./shop/GridProvenance.tsx";
+export type { GridProvenanceProps } from "./shop/GridProvenance.tsx";
 export {
   ListingSortForm,
   ListingToolbar,
@@ -508,8 +517,8 @@ export type {
 export { FromPriceChip } from "./shop/FromPriceChip.tsx";
 export type { FromPriceChipProps } from "./shop/FromPriceChip.tsx";
 export { CategoryChipRow } from "./shop/CategoryChipRow.tsx";
-// The approximate-equivalents line's message values (spec 004 §14 A21 clause 6; TASK-178),
-// shared by the product card and the product page (TASK-179).
+// The approximate-equivalents line's message values (spec 004 §14 A21 clause 6; TASK-178), for
+// the product page (TASK-179); no card prints the line (A-founder-2026-10-19b clause 2).
 export { equivalentsMessageValues } from "./shop/equivalents.ts";
 export type { EquivalentsMessageValues } from "./shop/equivalents.ts";
 export type { CategoryChipRowProps } from "./shop/CategoryChipRow.tsx";

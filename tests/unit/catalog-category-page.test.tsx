@@ -120,9 +120,12 @@ describe("the populated country category (§5.3 row 2)", () => {
     const prices =
       html.match(/(?:[€£]\s?[\d ,.]+|[\d ,.]+\s?(?:PLN|zł))/gu) ?? [];
     expect(prices.length).toBeGreaterThanOrEqual(cards.length);
-    // The card's qualifier is "all in" (founder copy batch, 2026-10-04); the lede keeps the full words.
-    expect(text).toContain("all in");
-    expect(text).toMatch(/VAT and delivery/u);
+    // Each card says "Includes VAT and delivery" beside its one price (spec 004 §14
+    // A-founder-2026-10-19b clause 1; TASK-285); "all in" is retired.
+    expect(
+      text.split("Includes VAT and delivery").length - 1,
+    ).toBeGreaterThanOrEqual(cards.length);
+    expect(text).not.toMatch(/\ball in\b/u);
     // The committed FX snapshot is older than spec 005's ceiling, so every projection falls back
     // to the destination's own currency — and the page says so, once (spec 005 §14 A3).
     expect(roses.fxFallback).toBe(true);

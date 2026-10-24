@@ -59,7 +59,6 @@ import { ListingBreadcrumb } from "./ListingBreadcrumb";
 import {
   CountryListingHead,
   CountryListingResults,
-  GridProvenance,
   ListingCategoriesToggle,
   ListingPageHead,
   ListingProse,
@@ -161,13 +160,13 @@ export function CountryCategoryPage({
                 label={t("nav.categories.label")}
               />
             }
-            gridLabel={<GridProvenance cards={view.items} locale={code} />}
+            gridProvenance={{ cards: view.items, locale: code }}
             grid={
               <ListingGrid
                 cards={view.items}
                 locale={code}
                 priority
-                provenance="md"
+                provenance="grid"
               />
             }
             fx={

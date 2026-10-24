@@ -122,8 +122,8 @@ const FIRST_SCREEN: Readonly<
     h1: "title",
     action: "main [data-fo-sentence] button[type='submit']",
   },
-  // The first price line: the amount with its "all in". The approximate-equivalents line under
-  // it (spec 004 §14 A21 clause 6) is not the price (TASK-187, D-1 in its brief).
+  // The first price line: the amount with "Includes VAT and delivery" beside it from `md` up
+  // (spec 004 §14 A-founder-2026-10-19b clause 1; no card carries an equivalents line).
   // Spec 004 §14 A-founder-2026-10-18b (AC-41 and T-43 amended): the shop root's and the country
   // category's H1 take the title step, the PR 236 artboards' size, so the first row's prices
   // stay on the first screen with the toolbar above the grid (rebound AC-34).

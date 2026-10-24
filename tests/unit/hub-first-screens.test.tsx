@@ -158,7 +158,8 @@ describe("T-40: the approved hub strings, byte for byte (AC-38: A1–A5, A8; A24
     // A24 clause 10 (proposed, the founder's to approve)
     "destinationsHub.phoneIntro":
       "Seven countries in Europe, each with a guide we wrote ourselves.",
-    "shop.card.noPrice": "No price here. The price depends on the destination.",
+    // `shop.card.noPrice` was deleted with the hubs' per-card line (spec 004 §14
+    // A-founder-2026-10-19b clause 4; TASK-285).
     // A3's exception (open item (iii)): the shipped wording, under its own key
     "occasionHub.productsHeadingPlain": "Flowers for {entity}",
   };

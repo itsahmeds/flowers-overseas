@@ -469,7 +469,12 @@ export function ProductPage({
             <ul className="m-0 grid list-none grid-cols-2 gap-x-[14px] gap-y-[32px] p-0 md:grid-cols-3 lg:grid-cols-6 lg:gap-x-[24px] lg:gap-y-[40px]">
               {view.related.map((card) => (
                 <li key={card.productId}>
-                  <ProductCard card={card} headingLevel="h3" locale={code} />
+                  <ProductCard
+                    card={card}
+                    headingLevel="h3"
+                    locale={code}
+                    qualifierBelow
+                  />
                 </li>
               ))}
             </ul>

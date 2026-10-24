@@ -345,10 +345,10 @@ test.describe("/dev/components", () => {
     // `tests/unit/listing-honesty-scan.test.ts`, which proves the patterns fire on markup that
     // does make a forbidden claim.
     expect(html.length).toBeGreaterThan(1000);
-    // The card's qualifier is "all in" (founder copy batch, 2026-10-04). The full words ("with VAT
-    // and delivery") live in the page ledes and on the product page, neither of which this gallery
-    // section renders, so they are not asserted here.
-    expect(text).toContain("all in");
+    // The card's qualifier is `catalog.price.inclusive` (spec 004 §14 A-founder-2026-10-19b
+    // clause 1; TASK-285); "all in" is retired.
+    expect(text).toContain("Includes VAT and delivery");
+    expect(text).not.toMatch(/\ball in\b/u);
     expect(listingHonestyViolations({ html, text })).toEqual([]);
   });
 

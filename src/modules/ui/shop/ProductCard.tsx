@@ -3,11 +3,12 @@
  * contract", §5.2, §5.3, **AC-6**, §13 Q8, T-06; TASK-108;
  * `docs/design/system/components.dc.html`, "Listing and card blocks", rows 1–4).
  *
- * **What it renders, and it is the whole list** (AC-6): the photograph or spec 006's captioned
- * placeholder in a fixed 4∶5 box, the product name as the card's heading, **one** all-in price
- * through `formatMoney` with "all in" (`catalog.price.allIn`; the legal VAT-and-delivery formula
- * in `de` and `pl`) beside it — the page lede carries the full words — and the honesty
- * label wherever the asset it displayed is `ai`.
+ * **What it renders, and it is the whole list** (AC-6 as amended by spec 004 §14
+ * A-founder-2026-10-19b; TASK-285): the photograph or spec 006's placeholder in a fixed 4∶5 box,
+ * the product name as the card's heading, **one** all-in price through `formatMoney` with
+ * `catalog.price.inclusive` ("Includes VAT and delivery"; the authored legal formula in `de` and
+ * `pl`) beside it, and the honesty label wherever the asset it displayed is `ai`, displayed or
+ * hidden as the grid's rule says (`provenance`).
  *
  * **What it cannot render**, and the mechanism rather than the promise: `ProductCardViewSchema`
  * has no field for a rating, a star, a review count, a badge, a delivery-timing claim, a
@@ -25,16 +26,15 @@
  * are wrapped in `<bdi>` so a Latin product name inside an RTL run — `/ar-XB`, and Arabic when it
  * ships — cannot reorder the digits of the price beside it (T-30).
  *
- * **Approximate equivalents** (spec 004 §14 A21 clause 6; TASK-178): when the view model carries
- * `equivalents`, the price primitive's slot prints "about … at the rate of …" under the amount —
- * the other currencies of {EUR, GBP, PLN, USD}, never the charged one. Absent (a stale rate, the
- * destination-currency fallback), nothing is printed. The line is never in JSON-LD: the `ItemList`
- * builder reads `price` only.
+ * **No approximate equivalents** (spec 004 §14 A-founder-2026-10-19b clause 2): the other
+ * currencies are the product page's alone. The view model has no field for them, so there is
+ * nothing here to print a second price line from. The `ItemList` builder reads the same `price`.
  *
  * **Or no price at all** (spec 008 §14 **A3**, **AC-7**; TASK-112). A destination-less hub shows
  * the same card with the money removed: it takes a `HubCardView`, which is this schema without
- * `price` and `priceLabelKey`, and prints the one line that says why there is none instead of an
- * amount. There is no second card component — the geometry, the heading level, the photo box and
+ * `price` and `priceLabelKey`, and prints the photograph and the name only (A-founder-2026-10-19b
+ * clause 4: the page says once, above the grid, why there is no price). There is no second card
+ * component — the geometry, the heading level, the photo box and
  * the provenance note are the same objects on both hubs and every country-scoped listing, which is
  * what keeps a card lifted from one surface to another from changing its claims. Which branch is
  * taken is decided by the **shape**, through `hasCardPrice()`: a country-scoped card cannot reach
@@ -63,9 +63,8 @@ import {
 import { Photo } from "../primitives/Photo.tsx";
 import { Price } from "../primitives/Price.tsx";
 import { Stack } from "../primitives/layout.tsx";
-import { Display, Text } from "../primitives/typography.tsx";
+import { Display } from "../primitives/typography.tsx";
 
-import { equivalentsMessageValues } from "./equivalents.ts";
 import { type ListingCardView, hasCardPrice } from "./viewModel.ts";
 
 export interface ProductCardProps {
@@ -85,11 +84,14 @@ export interface ProductCardProps {
    */
   readonly manifest?: MediaManifest;
   /**
-   * Where the "Example arrangement" label shows (spec 008 §14 **A16 (a)**). `card` (the default):
-   * under every card at every width, as A2 rules. `md`: under the card from `md` up only; below
-   * `md` it stays in the HTML, hidden by CSS, because the grid then prints it once, above itself.
+   * Where the "Example arrangement" label is displayed (spec 004 §14 A-founder-2026-10-19b
+   * clause 3; `gridProvenanceMode()`). It is in the server HTML in every mode (spec 006 AC-17);
+   * only CSS differs. `card` (the default, outside a listing grid): under the card at every width.
+   * `md`: under the card from `md` up only, because below `md` the grid prints it once, above
+   * itself (a mixed grid, and the country occasion's lead figure). `hidden`: at no width, because
+   * the grid prints it once at every width (an all-example grid).
    */
-  readonly provenance?: "card" | "md";
+  readonly provenance?: CardProvenance;
   /**
    * The country occasion's lead (spec 008 §14 **A16 (b)**; spec 004 §14 A24 clause 2 (b)): from
    * `md` up the name, the price and the label sit on a white card over the foot of the photograph,
@@ -104,7 +106,24 @@ export interface ProductCardProps {
    * downloaded from `md` up) and a lazy copy from `md` up. One card, one link, one heading.
    */
   readonly priorityAt?: "below-md";
+  /**
+   * Keep "Includes VAT and delivery" on its own line under the amount at every width, for a grid
+   * whose cards are too narrow to hold both on one line from `md` (the product page's six-up
+   * related row at `lg`).
+   */
+  readonly qualifierBelow?: boolean;
 }
+
+/** Where a card's own example label is displayed (`ProductCardProps.provenance`). */
+export type CardProvenance = "card" | "md" | "hidden";
+
+/** The CSS each mode puts on the label's wrapper. `display: none` only, never removal. */
+const CARD_PROVENANCE_CLASS: Readonly<
+  Record<Exclude<CardProvenance, "card">, string>
+> = {
+  md: "max-md:hidden",
+  hidden: "hidden",
+};
 
 /** The 4∶5 box, in every state. Named once so the four states cannot drift apart. */
 const CARD_RATIO = "card" as const;
@@ -118,10 +137,10 @@ export function ProductCard({
   provenance = "card",
   lead = false,
   priorityAt,
+  qualifierBelow = false,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
   const media = useTranslations("media");
-  const shop = useTranslations("shop");
   // Motion 6 moves a card that links to its page and is not the priority card (AC-44): the LCP
   // photograph and its ancestors carry no transition, no shadow layer and no line.
   const moving = card.href !== undefined && !priority;
@@ -189,13 +208,16 @@ export function ProductCard({
         {...(manifest === undefined ? {} : { manifest })}
       />
     ) : null;
-  // Below `md` on a page that prints the label once per grid, this one stays in the HTML and is
-  // hidden by CSS (spec 008 §14 A16 (a)); the default keeps the shipped markup exactly.
+  // Where the grid prints the label once, this one stays in the HTML and is hidden by CSS (spec 004
+  // §14 A-founder-2026-10-19b clause 3's mechanism); the default keeps the shipped markup exactly.
   const note =
     provenanceNote === null || provenance === "card" ? (
       provenanceNote
     ) : (
-      <div className="max-md:hidden" data-fo-card-provenance="md">
+      <div
+        className={CARD_PROVENANCE_CLASS[provenance]}
+        data-fo-card-provenance={provenance}
+      >
         {provenanceNote}
       </div>
     );
@@ -218,34 +240,17 @@ export function ProductCard({
         <bdi>{card.name}</bdi>
         {moving ? <CardMotionLine /> : null}
       </Display>
+      {/* One price line: the amount and "Includes VAT and delivery" (`catalog.price.inclusive`,
+          spec 003's price-display text). A hub card prints nothing here: the page says once why
+          there is no price (spec 004 §14 A-founder-2026-10-19b clauses 1 and 4). */}
       {hasCardPrice(card) ? (
         <Price
-          className="mt-[6px]"
+          className="mt-[2px] md:mt-[6px]"
           amount={formatMoney(card.price, locale)}
-          qualifier={catalog("price.allIn")}
-          equivalents={
-            card.equivalents === undefined
-              ? undefined
-              : catalog(
-                  "price.equivalents",
-                  equivalentsMessageValues(card.equivalents, locale),
-                )
-          }
+          qualifier={catalog("price.inclusive")}
+          {...(qualifierBelow ? { qualifierBelow: true } : {})}
         />
-      ) : (
-        /* The hub card's one line, in the place the price would be and drawn there on both hub
-           artboards: the claim stands beside the thing it is about (spec 008 §14 A2's reasoning,
-           applied to the absence of a price). The page also carries the fuller sentence once,
-           above the grid (AC-7). */
-        <Text
-          as="span"
-          size="sm"
-          tone="muted"
-          className="mt-[6px] leading-(--line-height-tight)"
-        >
-          {shop("card.noPrice")}
-        </Text>
-      )}
+      ) : null}
     </>
   );
 

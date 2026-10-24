@@ -25,7 +25,11 @@ import { type LocaleCode } from "@/config/locales";
 import type { MediaManifest } from "../media/manifest.ts";
 import { Grid } from "../primitives/layout.tsx";
 
-import { ProductCard } from "./ProductCard.tsx";
+import { type CardProvenance, ProductCard } from "./ProductCard.tsx";
+import {
+  type GridProvenanceMode,
+  gridProvenanceMode,
+} from "./gridProvenanceMode.ts";
 import type { ListingCardView } from "./viewModel.ts";
 
 export interface ListingGridProps {
@@ -50,8 +54,15 @@ export interface ListingGridProps {
    * so the list holds what it says it holds; the grid's accessible name still counts cards.
    */
   readonly interlude?: ReactNode;
-  /** Where each card's "Example arrangement" label shows (`ProductCard`'s `provenance`). */
-  readonly provenance?: "card" | "md";
+  /**
+   * Who displays the "Example arrangement" label (spec 004 §14 A-founder-2026-10-19b clause 3).
+   * `card` (the default, the dev gallery's sample): each card, at every width. `grid`: the page
+   * prints the grid's one label above it (`GridProvenance` / the hubs' heading row, asking
+   * `gridProvenanceMode()` with these same cards), and each card's own label stays in the HTML,
+   * hidden by CSS where the grid's shows: at every width in an all-example grid, below `md` in a
+   * mixed one. The country occasion's lead figure keeps its own from `md` up in either.
+   */
+  readonly provenance?: "card" | "grid";
   /**
    * The country occasion's lead (spec 008 §14 A16 (b)): the first card is drawn as the lead
    * figure from `md` up, and `leadItemClassName` places its `<li>` there (the page owns the
@@ -62,6 +73,15 @@ export interface ListingGridProps {
   readonly leadItemClassName?: string;
   /** Where the first card's `priority` holds (`ProductCard`'s `priorityAt`; the hubs). */
   readonly priorityAt?: "below-md";
+}
+
+/** What each card does with its own label, given the grid's mode (`provenance="grid"`). */
+function cardProvenance(
+  mode: GridProvenanceMode,
+  lead: boolean,
+): CardProvenance {
+  if (lead) return "md";
+  return mode === "all" ? "hidden" : "md";
 }
 
 /** The card after which the interlude band sits (the artboard: after the eighth). */
@@ -85,6 +105,11 @@ export function ListingGrid({
   // with no cards renders **nothing at all** — no heading, no skeleton, no "0 results"
   // (§2's states, AC-8, spec 004 §5.3's rule applied to a grid).
   if (cards.length === 0) return null;
+
+  const mode =
+    provenance === "grid"
+      ? gridProvenanceMode(cards, locale, manifest)
+      : undefined;
 
   return (
     // v2 `.grid4` (spec 004 §14 A21): two columns 32/14 apart on a phone, four columns 52/28
@@ -116,7 +141,11 @@ export function ListingGrid({
             locale={locale}
             priority={priority && index === 0}
             {...(priorityAt === undefined || index !== 0 ? {} : { priorityAt })}
-            provenance={provenance}
+            provenance={
+              mode === undefined
+                ? "card"
+                : cardProvenance(mode, lead && index === 0)
+            }
             {...(manifest === undefined ? {} : { manifest })}
           />
         </li>,

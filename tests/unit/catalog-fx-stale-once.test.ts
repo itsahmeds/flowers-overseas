@@ -5,8 +5,10 @@
  * Before A7 the signal fired on every refused conversion: three equivalents legs per product card
  * on `/pl`, once per prebuilt page in a build, and the production build log hit Vercel's 4 MB cap
  * on 2026-10-02. The dedupe lives in `observability.ts`; this file drives the real listing of the
- * `/pl` shop root (every card, every equivalent currency) through a capturing logger and a Sentry
- * spy, in **one** module graph, so the process-local memory is what is under test:
+ * `/en` shop root over Poland (every card's złoty price converted to euros; since spec 004 §14
+ * A-founder-2026-10-19b clause 2 a card carries no equivalents, so the native `/pl` root converts
+ * nothing, TASK-285) through a capturing logger and a Sentry spy, in **one** module graph, so the
+ * process-local memory is what is under test:
  *
  *  1. stale snapshot: exactly one `warn` line and one `captureWarning`, however many cards;
  *  2. a second, different stale `fx_as_of` (the rows swapped in place, as after a redeploy that
@@ -73,13 +75,13 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** Every card of the `/pl` shop root, with its price and its equivalents line, at `now`. */
+/** Every card of the `/en` shop root over Poland, each price converted from złoty, at `now`. */
 async function renderPolishShopRoot(now: Date): Promise<number> {
   const view = await listingView(
-    { locale: "pl", pageType: "countryShopRoot", country: "polska" },
+    { locale: "en", pageType: "countryShopRoot", country: "poland" },
     { from: "2026-09-09", now },
   );
-  if (view === undefined) throw new Error("the /pl shop root exists");
+  if (view === undefined) throw new Error("the /en Poland shop root exists");
   return view.items.length;
 }
 
@@ -90,7 +92,7 @@ function staleCaptures(): number {
 }
 
 describe("catalog.fx_stale, once per process per stale fx_as_of (AC-32, T-32)", () => {
-  it("emits exactly one line and one Sentry warning for every card on /pl", async () => {
+  it("emits exactly one line and one Sentry warning for every card on /en over Poland", async () => {
     const cards = await renderPolishShopRoot(STALE);
     // The control: enough cards that a per-refusal signal would be many lines, not one.
     expect(cards).toBeGreaterThanOrEqual(6);
@@ -134,11 +136,12 @@ describe("catalog.fx_stale, once per process per stale fx_as_of (AC-32, T-32)", 
       },
     );
     const view = await fresh.listingView(
-      { locale: "pl", pageType: "countryShopRoot", country: "polska" },
+      { locale: "en", pageType: "countryShopRoot", country: "poland" },
       { from: "2026-09-09", now: FRESH },
     );
-    // The control: the fresh render converted (every card carries its equivalents line).
-    expect(view?.items.every((card) => card.equivalents !== undefined)).toBe(
+    // The control: the fresh render converted (every card is charged in euros, not złoty).
+    expect(view?.items.length).toBeGreaterThan(0);
+    expect(view?.items.every((card) => card.price.currency === "EUR")).toBe(
       true,
     );
     expect(lines).toEqual([]);

@@ -795,7 +795,6 @@ describe("the home says nothing about VAT or delivery being included (founder, 2
       const claims = [
         messages.nav.utility.pricesInclude ?? "",
         messages.catalog.price.inclusive ?? "",
-        messages.catalog.price.allIn ?? "",
       ];
       for (const claim of claims) {
         expect(claim, locale).not.toBe("");
