@@ -1,5 +1,5 @@
 /**
- * T-14 and the schema half of spec 011 (`0020_florists_v0`, §5.1, AC-14; TASK-211).
+ * T-14 and the schema half of spec 011 (`0022_florists_v0`, §5.1, AC-14; TASK-211).
  *
  *  - AC-14: under `app.role = 'public'` an application can be inserted and nothing read, changed
  *    or deleted; the four forbidden inserts (a status other than `new`, a converted partner, a
@@ -34,9 +34,9 @@ import {
 
 const server = await probeLocalServer();
 
-const MIGRATION = "0020_florists_v0";
+const MIGRATION = "0022_florists_v0";
 
-/** The version just before `0020`, read from the tree so a renumbering cannot strand the test. */
+/** The version just before `0022`, read from the tree so a renumbering cannot strand the test. */
 const PREVIOUS_VERSION = (() => {
   const versions = readdirSync(
     resolve(import.meta.dirname, "../../db/migrations"),
