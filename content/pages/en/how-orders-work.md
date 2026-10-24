@@ -37,6 +37,8 @@ links:
     label: "For florists"
 honestyAllow: []
 source: human
-reviewed: false
+reviewed: true
+reviewedBy: "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed"
+reviewedAt: "2026-10-24"
 updatedAt: "2026-10-23"
 ---
