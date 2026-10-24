@@ -23,7 +23,13 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 One dated bullet per `/review`, newest last.
 
-_None recorded._
+- 2026-10-21, `/review` of PR 307 (breaker holes accepted, [ruling](https://github.com/itsahmeds/flowers-overseas/pull/307#issuecomment-6316971581)). Each item below is a test to add; the code is already correct at 3921a3c1:
+  - hole 3: a `createdTo` case at the upper local-midnight edge in a non-UTC zone;
+  - hole 4: an order placed exactly at local 00:00:00.000 for `createdFrom`;
+  - hole 5: extend "drops the rest" with the To keys, `page=2.5` and `page=10001`;
+  - hole 6: `stop()` while a read is pending, then no `onArrival` and no new timer;
+  - hole 7: the empty state and the filter count for a `deliveryTo`-only view.
+  Holes 1 (payments filtered by order id) and 2 (the page fails closed when `logAdminRead` rejects) are closed by tests in this PR, each watched red under its mutation.
 
 ## Escalations
 
@@ -37,11 +43,42 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-21: queries (`orderQueueHead`, `countOrdersForAdmin`, `orderQueueFilterOptions`, `orderDetail`), `/admin/orders`, `/admin/orders/[id]`, `GET /admin/api/orders/head`, the poll island, `admin.orders.*` copy; draft [PR 307](https://github.com/itsahmeds/flowers-overseas/pull/307).
+- 2026-10-21: unit (poll, pages, head, scan, detail query) and integration (PG16, real `place()`) tests green; 21 mutations each watched red; gates:cheap PASS. Next: ready, CI.
+- 2026-10-21: CI's `client-message-graph` refused zod in the island; the poll now compares the head endpoint's `ETag` and reads no body (24 mutations red). CI's other red, `design-docs` "leaves room between artboards", is main's (fix PR 304).
+- 2026-10-21: rebased on main after PR 304 merged (head 93b6d611). The `ci:full` run 39490026324 ended `failure` with **only `lighthouse` red**; every other job was green. I could not read the assertion before the 180-minute limit stopped me. The diff touches no public page and adds no public JavaScript (`client-message-graph` and the admin-only island), so this is probably the known LCP flake on `/en`/`/en-gb` (TASK-244/235). That is unconfirmed. **A finisher reads the lighthouse log on 93b6d611**: if it is LCP within 2200 ms, it is not this PR's; any other assertion (bytes, CLS) is.
+- 2026-10-24 finisher: rebased onto `main` `c81edd9e` (only `docs/codebase-map.md` conflicted, regenerated). No migration, so no number and no stack; `admin-orders` integration green on main and on a trial merge with the 383 to 320 stack.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+[PR 307](https://github.com/itsahmeds/flowers-overseas/pull/307). `src/modules/orders/queries.ts` gains, beside TASK-202's projections and with no second list schema, `orderQueueHead()` (`OrderQueueHeadSchema`), `countOrdersForAdmin()`, `orderQueueFilterOptions()` and `orderDetail(id, { includeRecipient })` (`AdminOrderDetailSchema`; the recipient snapshot is selected only when asked, the `public_token` and buyer snapshot never), plus range filters on `OrderQueueFilterSchema` (`deliveryFrom/To`, `createdFrom/To` in a `timeZone`; additive). `/admin/orders` renders `listOrdersForAdmin` (head read first, then the list), filters as a GET form, the demo marker from `order.mode`, the 390 cards; `OrderQueuePoll` polls `GET /admin/api/orders/head` every 3 s while visible and compares its `ETag` (`orderQueueHeadTag`; no body is parsed in the browser, so no schema ships), re-renders the server list with `since` (rows after it say "New", the polite region counts them) and pauses after 15 idle minutes with a Resume link. `/admin/orders/[id]` shows lines, VAT, totals, recipient for `orders.view_pii` only, the timeline with raw payloads, assignments, payments, no action control, and calls `logAdminRead` on every open. Admin nav's Orders entry is built. `admin.orders.*`: 120 keys, all `reviewed: false` (admin catalogue, outside every public share). Three admin-only `DateStyle`s in `format.ts`. Primitives: `AdminRecord.tsx` (new), `AdminData.tsx` (chip tones, end cells, table foot, filter label/action/clear), `OrderQueuePoll.tsx` + `queue-poll.ts`; `components.dc.html` names them.
+
+Tests: unit `admin-orders` 57 (query string, pages, head endpoint, detail query's recipient gate, T-22 source scan), `admin-order-poll` 13 (3 s, hidden, 15-minute pause, no overlap, the head tag, live region), `admin-permission-binding` +12 (orders.view on list, detail, head), `i18n-format` +1, `url-pii` and `admin-scans` updated; integration `admin-orders` 5 on a throwaway PG16 with real `place()` (T-21 service half, filters, detail, T-22 over real rows, AC-13 rows). 24 mutations, each watched red (list in the PR).
+
+Decisions, none a deviation from a binding clause: (1) the artboard's range filters are additive keys on TASK-202's filter schema; (2) the florist shows as its partner code (the table has no display name; `legal_name` is masked personal data); (3) the buyer projection shows the data's value (`confirmed` for `no_partner_available`), not the drawn "we're finding a florist" (decision 9, founder copy pending, spec 015); (4) money and dates are `Intl`'s ("199.00 PLN", "Thu, 8 Oct") through `formatMoney`/`formatDate`; (5) the tier shows as its key (`stems_18`); (6) a VAT split reads "of which VAT 8%" (`vat_breakdown` carries no category). **Owed, as TASK-217 and TASK-218:** T-21's browser run, T-24 (axe) and T-25 (visual) for the signed-in order pages wait for the CI-database task; no build slot taken and no browser run locally.
+
+`pnpm gates:cheap` at e1665dd4 (the tree before this note):
+
+```
+typecheck             exit 0 · 2.5 s
+lint                  exit 0 · 22.8 s
+format:check          exit 0 · 12.8 s
+i18n:check            exit 0 · 0.8 s
+check:no-db           exit 0 · 0.2 s
+codebase:map --check  exit 0 · 0.2 s
+tests                 exit 0 · 64.5 s · changed 160 + map 0 + always 2 · always run: zod-boundaries, lint-coverage, url-pii
+RESULT: PASS
+```
+
+**Rebase (finisher, 2026-10-24).** Rebased onto `main` `c81edd9e`; this PR adds **no migration**,
+so it takes no number and is not stacked. Gates: typecheck, lint, format, i18n, no-db and map
+exit 0; `vitest --changed origin/main` (unit and contract, two workers) 185 files, 5110 tests
+green; `admin-orders.test.ts` on a throwaway PG16 green (6 of 6) on `main`, and green again on a
+local trial merge with the migration stack (PRs 383, 384, 326, 320: `place()` makes each order's
+purchase, so no direct order insert needs one). Carry-forward: when PR 326 is on `main`, this
+branch's rebase conflicts in `tests/unit/url-pii.test.ts` (both add `EXTERNAL_QUERY_KEYS` entries
+at the same place: keep both blocks) and in the generated map.
+

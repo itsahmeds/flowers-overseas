@@ -12,7 +12,7 @@ task actually touches.
 
 | Module | Purpose | Spec | Tests |
 |---|---|---|---|
-| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +6 |
+| `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +7 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/app-shell.test.tsx`, `unit/consent-bootstrap.test.tsx` +1 |
 | `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +91 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
@@ -21,11 +21,11 @@ task actually touches.
 | `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
 | `i18n` | The only import path for the i18n module | 003 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +104 |
 | `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
-| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
+| `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | `unit/admin-order-poll.test.ts`, `unit/admin-orders.test.tsx` |
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +30 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +55 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +56 |
 
 ## Config (`src/config/`)
 
@@ -116,6 +116,9 @@ task actually touches.
 | `admin/(signed-in)/flags/page.tsx` | GET /admin/flags: registry flags, toggles, orphans | 012 |
 | `admin/(signed-in)/frame.tsx` | Signed-in admin shell: nav, person, sign-out | 012 |
 | `admin/(signed-in)/layout.tsx` | Signed-in admin group: no session goes to sign-in (AC-1) | 012 |
+| `admin/(signed-in)/orders/[id]/page.tsx` | GET /admin/orders/[id]: one order, read only, every… | 012 |
+| `admin/(signed-in)/orders/page.tsx` | GET /admin/orders: the read-only order queue (AC-18,… | 012 |
+| `admin/(signed-in)/orders/view.tsx` | The order queue's shared view pieces: chips, money,… | 012 |
 | `admin/(signed-in)/page.tsx` | GET /admin: three counters | 012 |
 | `admin/(signed-in)/users/actions.ts` | /admin/users actions, each guarded first (AC-3, AC-4) | 012 |
 | `admin/(signed-in)/users/page.tsx` | GET /admin/users: grant, revoke, deactivate | 012 |
@@ -123,6 +126,7 @@ task actually touches.
 | `admin/api/auth/confirm/route.ts` | POST: confirm sign-in, use the token (AC-9) | 012 |
 | `admin/api/auth/request/route.ts` | POST: ask for a link, one 303 for all (AC-2) | 012 |
 | `admin/api/auth/sign-out/route.ts` | POST: admin sign-out | 012 |
+| `admin/api/orders/head/route.ts` | GET: the order queue's head, for the 3 s poll (AC-18) | 012 |
 | `admin/environment.ts` | The admin environment chip | 012 |
 | `admin/forbidden.tsx` | Admin 403, noindex | 012 |
 | `admin/layout.tsx` | Admin document: English, noindex | 012 |
@@ -209,8 +213,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 360 |
-| `tests/integration/` | 45 |
+| `tests/unit/` | 362 |
+| `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 71 |
 | `tests/a11y/` | 15 |
