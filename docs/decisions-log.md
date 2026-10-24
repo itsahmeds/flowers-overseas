@@ -190,3 +190,4 @@ Running, append-only log of decisions. Each entry links its ADR. Summary table l
 | 2026-10-21 | Hub cards link to their product (spec 008 §14 A-founder-2026-10-21a) | Every card on a destination-less hub opens that product's page in the one open or opening country (Poland today); with two or more countries open, the click asks the destination first. Task TASK-315. | Founder in chat, 2026-10-21: "why aren't flowers clickable?", "shouldnt it?", then to the proposal "yes good. thanks" |
 | 2026-10-24 | none | Spec 046 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
 | 2026-10-24 | none | Spec 034 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |
+| 2026-10-24 | none | Spec 047 approved. Founder, verbatim, 2026-10-24: "specs ok", on every open-question default as written. |

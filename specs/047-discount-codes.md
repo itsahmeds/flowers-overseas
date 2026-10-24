@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 (outside the roadmap's reserved ranges, like 040 to 044) |
 | Plan refs | plan/01 §3 §4.1 §4.3 §5 · plan/02 §4.1 §7 §9 §15 · plan/03 §7 §8 · plan/04 §9 §14 · plan/06 §2.2 §3 §4 §6 · plan/07 §1.2 §1.4 §2.1 §2.2 §3 §4 §5 · plan/11 §1 §2 · plan/12 §2 §4 |
 | ADRs | ADR-0005 (Stripe primary) · ADR-0006 (no IP-derived behaviour) · ADR-0009 (order status only through `orderService.transition`) · ADR-0015 (portable Postgres) · the operating-entity ADR of PR 348 (Wyoming LLC; numbered ADR-0021 there, not yet on main), whose open VAT position governs §8's VAT item. Proposes no new ADR |
 | Builds on | spec 005 (`priceProjection`, `quote`, `vatBreakdown`, `lowestPriceInLast30Days`) · spec 010 (checkout, draft, `placeOrderAction`, order engine) · spec 012 (admin auth, `requirePermission`, `withAdminContext`, audit trigger) · spec 012b (margin view, payout figures) · spec 013 (charge, refunds) · spec 030b (admin finance view; being written, not on main at the time of writing) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | not approved. Founder approved the idea on 2026-10-24 ("Idea F, discount codes, yes add it"; `PRODUCT-PLAN-2026-10-24.md` row F: "Approved. Spec now"). The details below need the founder's answers to §13 |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
