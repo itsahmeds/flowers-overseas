@@ -533,18 +533,26 @@ export interface UploadArgs {
   readonly force: boolean;
   readonly verify: boolean;
   readonly only?: readonly string[];
+  /** `--originals`: the private originals and their derive jobs (`./media-originals.ts`, TASK-082). */
+  readonly originals?: true;
+  /** `--backfill`, with `--originals` only: enqueue unchanged originals too. */
+  readonly backfill?: true;
 }
 
 export function parseArgs(argv: readonly string[]): UploadArgs {
   let dryRun = false;
   let force = false;
   let verify = false;
+  let originals = false;
+  let backfill = false;
   const only: string[] = [];
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index] ?? "";
     if (arg === "--dry-run") dryRun = true;
     else if (arg === "--force") force = true;
     else if (arg === "--verify") verify = true;
+    else if (arg === "--originals") originals = true;
+    else if (arg === "--backfill") backfill = true;
     else if (arg === "--only" || arg.startsWith("--only=")) {
       const value = arg.startsWith("--only=")
         ? arg.slice("--only=".length)
@@ -554,11 +562,28 @@ export function parseArgs(argv: readonly string[]): UploadArgs {
       only.push(value);
     } else {
       throw new Error(
-        `unknown flag \`${arg}\` — \`pnpm media:upload [--dry-run] [--only <assetId>] [--force] [--verify]\``,
+        `unknown flag \`${arg}\` — \`pnpm media:upload [--dry-run] [--only <assetId>] [--force] [--verify] [--originals [--backfill]]\``,
       );
     }
   }
-  return { dryRun, force, verify, ...(only.length > 0 ? { only } : {}) };
+  if (originals && verify) {
+    throw new Error(
+      "`--originals` and `--verify` are two different runs: `--verify` reads the public origin, and originals are never published there",
+    );
+  }
+  if (backfill && !originals) {
+    throw new Error(
+      "`--backfill` enqueues derive jobs and needs `--originals`",
+    );
+  }
+  return {
+    dryRun,
+    force,
+    verify,
+    ...(only.length > 0 ? { only } : {}),
+    ...(originals ? { originals: true as const } : {}),
+    ...(backfill ? { backfill: true as const } : {}),
+  };
 }
 
 export interface UploadRunSummary {
@@ -681,6 +706,36 @@ async function main(): Promise<void> {
       root,
       ...(args.only === undefined ? {} : { only: args.only }),
       fetcher,
+      write: (text) => {
+        process.stdout.write(text);
+      },
+    });
+    return;
+  }
+
+  // `--originals` (TASK-082): the private originals and their derive jobs, which need the
+  // database's unpooled URL for the `media_asset` lookup and the queue.
+  if (args.originals === true) {
+    const { pgBossEnqueuer, runOriginals } =
+      await import("./media-originals.ts");
+    const unpooled = process.env["DATABASE_URL_UNPOOLED"] ?? "";
+    await runOriginals({
+      root,
+      env: process.env,
+      args: {
+        dryRun: args.dryRun,
+        force: args.force,
+        backfill: args.backfill === true,
+        ...(args.only === undefined ? {} : { only: args.only }),
+      },
+      enqueue: async (jobs) => {
+        if (unpooled === "") {
+          throw new Error(
+            "DATABASE_URL_UNPOOLED is not set: the derive jobs are enqueued in the database (values are never printed)",
+          );
+        }
+        return await pgBossEnqueuer(unpooled)(jobs);
+      },
       write: (text) => {
         process.stdout.write(text);
       },
