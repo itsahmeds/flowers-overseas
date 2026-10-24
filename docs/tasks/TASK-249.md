@@ -70,22 +70,9 @@ _None recorded._
 - 2026-10-24: trail moved first in the DOM (phone placement by grid row 3, `reading-flow` on the
   phone grid); separator moved after its crumb as generated content; unit and e2e cases written,
   e2e watched red against the live site (`770c63a4`, the pre-fix code); draft PR opened.
-
-## Result
-
-**What changed.** `src/modules/ui/product/ProductPage.tsx` L186-L199: the trail's wrapper is the
-first child of the first block. From `md` it keeps `md:row-start-1` (on top, 20 px under the
-header) and is now the first tab stop in `<main>`; below `md` it is `max-md:row-start-3`, under the
-buy section (AC-50 unchanged), and the phone grid carries `reading-flow: grid-rows` so the keyboard
-follows the rows (gallery, buy section, trail) where the browser supports it.
-`src/modules/ui/primitives/Breadcrumbs.tsx` L46-L58: the `/` is now generated content **after**
-each crumb but the last (`content: "/" / ""`, silent to assistive technology, like the
-`aria-hidden` span it replaces), so a wrapped trail ends a line with `/` and never starts one. On one
-line the pixels are the old ones (6 px inside the `<li>`, 6 px across the `<ol>`). One `<nav>`, one
-trail in the server HTML, `BreadcrumbList` untouched (its equality tests pass unchanged).
-
-**No local build, e2e or visual run of the new code**: the e2e cases ran once inside the build slot
-against the live site (the pre-fix code) to watch them red; green is CI's on the head SHA.
+- 2026-10-24: CI on `5c7d7291`: e2e (the five new cases green in `e2e-desktop`), visual, a11y,
+  preview green; `tasks:check` (Self-review below Result) and commitlint (first commit's subject)
+  red, both fixed.
 
 ## Self-review
 
@@ -122,3 +109,18 @@ against the live site (the pre-fix code) to watch them red; green is CI's on the
    to `reading-flow: grid-rows` (checked with the Tailwind CLI).
 4. **Left, as carry-forwards** (below).
 
+## Result
+
+**What changed.** `src/modules/ui/product/ProductPage.tsx` L186-L199: the trail's wrapper is the
+first child of the first block. From `md` it keeps `md:row-start-1` (on top, 20 px under the
+header) and is now the first tab stop in `<main>`; below `md` it is `max-md:row-start-3`, under the
+buy section (AC-50 unchanged), and the phone grid carries `reading-flow: grid-rows` so the keyboard
+follows the rows (gallery, buy section, trail) where the browser supports it.
+`src/modules/ui/primitives/Breadcrumbs.tsx` L46-L58: the `/` is now generated content **after**
+each crumb but the last (`content: "/" / ""`, silent to assistive technology, like the
+`aria-hidden` span it replaces), so a wrapped trail ends a line with `/` and never starts one. On one
+line the pixels are the old ones (6 px inside the `<li>`, 6 px across the `<ol>`). One `<nav>`, one
+trail in the server HTML, `BreadcrumbList` untouched (its equality tests pass unchanged).
+
+**No local build, e2e or visual run of the new code**: the e2e cases ran once inside the build slot
+against the live site (the pre-fix code) to watch them red; green is CI's on the head SHA.
