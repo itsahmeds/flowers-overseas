@@ -1072,6 +1072,48 @@ export const PriceLadderSchema = z
 export type PriceLadder = z.infer<typeof PriceLadderSchema>;
 
 /**
+ * One product's own ladder in one destination, replacing the band ladder for that SKU there
+ * (spec 005 §14 A-founder-2026-10-15a point 2, AC-38).
+ *
+ * The band ladder prices every product in a band by **position**; a product the founder priced
+ * by the market (three classic roses in PL at the Polish median for 11 / 15 / 21 stems) cannot be
+ * expressed that way, so its amounts are authored here **by `tierKey`**, as integers, with no
+ * arithmetic. It carries its own `band`, because the founder's ruling moved the band for those
+ * SKUs only (point 3): the band is still exact and still a founder decision, transcribed a second
+ * time in `catalogue:check` (`RECORDED_BAND_CHANGES`), so widening it here alone fails the gate.
+ *
+ * Which tier keys are valid is the tier dataset's to say, not this schema's: the expansion in
+ * `prices.data.ts` refuses, at module load and naming the key, an override key the SKU does not
+ * carry and a SKU tier the override does not price.
+ */
+export const SkuLadderOverrideSchema = z
+  .object({
+    sku: SkuSchema,
+    band: PriceBandSchema,
+    tiers: z.record(
+      z
+        .string()
+        .regex(
+          /^(?:stems_\d{1,3}|size_[sml]|single)$/,
+          "must be `stems_{n}`, `size_{s|m|l}` or `single` (spec 005 §13 Q4)",
+        ),
+      MinorUnitsSchema.positive(),
+    ),
+  })
+  .strict()
+  .superRefine((override, ctx) => {
+    if (Object.keys(override.tiers).length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["tiers"],
+        message: `the ladder override of \`${override.sku}\` prices no tier`,
+      });
+    }
+  });
+
+export type SkuLadderOverride = z.infer<typeof SkuLadderOverrideSchema>;
+
+/**
  * Everything authored about money in one destination country (spec 005 §2 "Pricing", §13 Q1/Q3/Q7;
  * `plan/10` §2.3).
  *
@@ -1092,6 +1134,11 @@ export const DestinationPricingSchema = z
     standardVatRateBp: BasisPointsSchema,
     bands: z.record(z.enum(priceBandKeys), PriceBandSchema),
     ladders: z.record(z.enum(priceBandKeys), PriceLadderSchema),
+    /**
+     * Per-SKU ladders that replace the band ladder for one product in this destination (spec 005
+     * §14 A-founder-2026-10-15a). Empty for a destination that prices every product by position.
+     */
+    ladderOverrides: z.array(SkuLadderOverrideSchema),
     /** `plan/10` §2.3's Sunday surcharge, +EUR 4 equivalent, as a dated row's amount. */
     sundaySurchargeMinor: MinorUnitsSchema.positive(),
     /** `plan/10` §2.3's Valentine's / Women's Day surcharge, +EUR 6 equivalent. */
@@ -1126,6 +1173,37 @@ export const DestinationPricingSchema = z
             code: "custom",
             path: ["ladders", bandKey, index],
             message: `${String(step)} does not end on \`${destination.currency}\`'s \`${currencyConfig(destination.currency).roundingStyle}\` ending (spec 005 §13 Q1)`,
+          });
+        }
+      }
+    }
+    const overridden = new Set<string>();
+    for (const [index, override] of destination.ladderOverrides.entries()) {
+      if (overridden.has(override.sku)) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["ladderOverrides", index, "sku"],
+          message: `\`${destination.countryIso2}\` overrides the ladder of \`${override.sku}\` twice`,
+        });
+      }
+      overridden.add(override.sku);
+      for (const [tierKey, amount] of Object.entries(override.tiers)) {
+        // Point 3: the override's own band holds for every tier, exactly as a band ladder's does.
+        if (
+          amount < override.band.fromMinor ||
+          amount > override.band.toMinor
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["ladderOverrides", index, "tiers", tierKey],
+            message: `\`${destination.countryIso2}\` prices \`${override.sku}\` \`${tierKey}\` at ${String(amount)}, outside its override band ${String(override.band.fromMinor)}…${String(override.band.toMinor)} (spec 005 §14 A-founder-2026-10-15a)`,
+          });
+        }
+        if (!endsInRoundingStyle(amount, destination.currency)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["ladderOverrides", index, "tiers", tierKey],
+            message: `${String(amount)} (\`${override.sku}\` \`${tierKey}\`) does not end on \`${destination.currency}\`'s \`${currencyConfig(destination.currency).roundingStyle}\` ending (spec 005 §13 Q1)`,
           });
         }
       }

@@ -46392,7 +46392,7 @@
       },
       "values": {
         "tier_key": "stems_15",
-        "retail_minor": 22900,
+        "retail_minor": 23900,
         "currency_code": "PLN",
         "vat_rate_bp": 800,
         "surcharge_kind": null,
@@ -46411,7 +46411,7 @@
       },
       "values": {
         "tier_key": "stems_21",
-        "retail_minor": 25900,
+        "retail_minor": 32900,
         "currency_code": "PLN",
         "vat_rate_bp": 800,
         "surcharge_kind": null,
@@ -46506,7 +46506,7 @@
       },
       "values": {
         "tier_key": "stems_15",
-        "retail_minor": 22900,
+        "retail_minor": 23900,
         "currency_code": "PLN",
         "vat_rate_bp": 800,
         "surcharge_kind": null,
@@ -46525,7 +46525,7 @@
       },
       "values": {
         "tier_key": "stems_21",
-        "retail_minor": 25900,
+        "retail_minor": 32900,
         "currency_code": "PLN",
         "vat_rate_bp": 800,
         "surcharge_kind": null,
@@ -46734,7 +46734,7 @@
       },
       "values": {
         "tier_key": "stems_15",
-        "retail_minor": 22900,
+        "retail_minor": 23900,
         "currency_code": "PLN",
         "vat_rate_bp": 800,
         "surcharge_kind": null,
@@ -46753,7 +46753,7 @@
       },
       "values": {
         "tier_key": "stems_21",
-        "retail_minor": 25900,
+        "retail_minor": 32900,
         "currency_code": "PLN",
         "vat_rate_bp": 800,
         "surcharge_kind": null,
