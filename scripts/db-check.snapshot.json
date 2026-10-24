@@ -972,7 +972,7 @@
     "payout_currency_check()": "security_definer=true config=search_path=pg_catalog, public md5=e8dfa73a86730ca5ecf969a6745b6b6b",
     "purchase_total_check()": "security_definer=true config=search_path=pg_catalog, public md5=7eb8717db8656b0a380bb2cec639c468",
     "review_attestation_append_only()": "security_definer=false config=search_path=pg_catalog, public md5=1111d6cc2c7785530414ba6ccbd78b48",
-    "review_blog_revision_current_hash(p_revision_id uuid)": "security_definer=true config=search_path=pg_catalog, public md5=e07775b3fd8bf8a0fb796514792a03d9",
+    "review_blog_revision_current_hash(p_revision_id uuid)": "security_definer=false config=search_path=pg_catalog, public md5=05820965746ce6367bb6db0380bdab00",
     "review_blog_revision_hash(p_title text, p_slug text, p_excerpt text, p_seo_title text, p_seo_description text, p_body_md text, p_cover_media_id uuid, p_cover_alt text, p_honesty_allow jsonb, p_author_id uuid)": "security_definer=false config=search_path=pg_catalog, public md5=9f4ef55d6fa28f8fe3c53310bfd5fb81",
     "review_hash_part(p_value text)": "security_definer=false config=search_path=pg_catalog md5=12914233ab0a889f9cd290c2e7a68471",
     "review_product_copy_hash(p_product_id uuid, p_locale_code text, p_name text, p_slug text, p_description_md text, p_seo_title text, p_seo_description text)": "security_definer=false config=search_path=pg_catalog, public md5=453fe3a0432f4b284e654b6152b9220c",
