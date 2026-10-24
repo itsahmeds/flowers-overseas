@@ -21,7 +21,8 @@
  *  - `sweepPayments()` (`payments.sweep`): (b) a purchase still `placed` two hours after it was
  *    created is reconciled first, then closed at the provider, and only once the provider
  *    confirms the cancel are its orders closed (row 4, or row 3 after a failed attempt), in one
- *    transaction; (c) a `pending` payment that never reached the provider is set `failed`; there
+ *    transaction; (c) a `pending` payment that never reached the provider is set `failed`; (d) a
+ *    `requested` refund five minutes old is sent again with its own key (`refunds.ts`); there
  *    is no hold branch (the founder's ruling of 2026-10-14, §14; AC-18).
  *
  * Charge at once: no intent asks for a hold, so row 1 (`authorised`) and row 15 are never written
@@ -37,6 +38,7 @@ import { z } from "zod";
 import { isCurrencyCode } from "@/config/currencies";
 import {
   PENDING_PAYMENT_TIMEOUT_MINUTES,
+  REQUESTED_REFUND_RETRY_MINUTES,
   UNPAID_PURCHASE_TIMEOUT_MINUTES,
 } from "@/config/payments";
 import { captureAlert } from "@/lib/sentry";
@@ -50,6 +52,7 @@ import {
   type OrderExecutor,
 } from "@/modules/orders";
 
+import { PAYMENTS_ACTOR, type PaymentTransaction } from "./context.ts";
 import "./events";
 import { paymentMethodTypesFor, type MethodSources } from "./methods.ts";
 import {
@@ -59,16 +62,11 @@ import {
   type ProviderIntent,
   type ProviderMethodType,
 } from "./provider.ts";
+import { staleRequestedRefunds, submitRefund } from "./refunds.ts";
 
-/** Every lifecycle write is by this actor (A6.2: money rows are `system` only). */
-export const PAYMENTS_ACTOR = "system:payments";
+export { PAYMENTS_ACTOR, type PaymentTransaction } from "./context.ts";
 /** The sweep's actor (§5.2 "Jobs"). */
 export const SWEEP_ACTOR = "system:payments.sweep";
-
-/** Runs `fn` in one transaction and commits it (or rolls it back on a throw). */
-export type PaymentTransaction = <T>(
-  fn: (executor: OrderExecutor) => Promise<T>,
-) => Promise<T>;
 
 /** What the lifecycle needs from outside: the provider, a transaction, a clock, an alert. */
 export interface LifecycleDeps {
@@ -432,6 +430,8 @@ export interface ReconcileResult {
 interface Decision {
   readonly result: ReconcileResult;
   readonly after?: "cancel_intent";
+  /** `captured_after_close`: the refunds to send once the transaction has committed. */
+  readonly refundIds?: readonly string[];
 }
 
 /** An intent state the order has not passed: decide nothing, wait. */
@@ -574,18 +574,37 @@ export async function reconcile(
       }
       if (allClosedUnpaid && payment.status !== "captured") {
         await setCaptured(executor, payment, intent, d.now());
+        const refundIds: string[] = [];
         for (const order of orders) {
-          await executor.execute(sql`
+          const [row] = await executor.execute(sql`
             INSERT INTO refund (payment_id, order_id, purchase_id, amount_minor, currency_code,
                                 reason, status, requested_by)
             VALUES (${id}, ${order.id}, ${payment.purchase_id}, ${order.buyer_total_minor},
-                    ${purchase.buyer_currency_code}, 'other', 'requested', ${PAYMENTS_ACTOR})`);
+                    ${purchase.buyer_currency_code}, 'other', 'requested', ${PAYMENTS_ACTOR})
+            RETURNING id`);
+          const refundId = z.uuid().parse(row?.["id"]);
+          refundIds.push(refundId);
+          await appendEvent(
+            order.id,
+            "order.refund_requested",
+            PAYMENTS_ACTOR,
+            payloadOf(purchase.mode, {
+              refund_id: refundId,
+              amount_minor: order.buyer_total_minor,
+              currency_code: purchase.buyer_currency_code,
+              reason: "other",
+            }),
+            { executor },
+          );
         }
         d.alert("payment.captured_after_close", {
           payment_id: id,
           purchase_id: payment.purchase_id,
         });
-        return { result: { outcome: "captured_after_close", ...base } };
+        return {
+          result: { outcome: "captured_after_close", ...base },
+          refundIds,
+        };
       }
       return { result: { outcome: "stale", ...base } };
     }
@@ -628,6 +647,11 @@ export async function reconcile(
     return { result: { outcome: "unchanged", ...base } };
   });
 
+  // Refunded at once (§5.2 reconcile table): each row is committed before its provider call,
+  // keyed by its own id; one the provider does not answer is retried by the sweep's (d).
+  for (const refundId of decision.refundIds ?? []) {
+    await submitRefund(refundId, deps);
+  }
   if (decision.after === "cancel_intent") {
     const cancelled = await d.provider.cancel(intent.ref, `void:${id}`);
     if (isProviderFailure(cancelled)) {
@@ -692,6 +716,8 @@ export interface SweepCounts {
   readonly kept: number;
   /** `pending` payments that never reached the provider, set `failed`. */
   readonly failedPending: number;
+  /** `requested` refunds sent to the provider again with their own key ((d), TASK-258). */
+  readonly refundsRetried: number;
 }
 
 /** Closes every order of the purchase (row 3 after a failed attempt, else row 4) in one go. */
@@ -826,9 +852,28 @@ export async function sweepPayments(deps: LifecycleDeps): Promise<SweepCounts> {
     else kept += 1;
   }
 
+  // (d) a `requested` refund older than five minutes never got its answer: the same key again.
+  const refundCutoff = new Date(
+    now.getTime() - REQUESTED_REFUND_RETRY_MINUTES * 60_000,
+  );
+  const stale = await d.transaction((executor) =>
+    staleRequestedRefunds(executor, refundCutoff),
+  );
+  let refundsRetried = 0;
+  for (const refundId of stale) {
+    await submitRefund(refundId, deps);
+    refundsRetried += 1;
+  }
+
   logger.info(
-    { closed, paid, kept, failed_pending: failedPending },
+    {
+      closed,
+      paid,
+      kept,
+      failed_pending: failedPending,
+      refunds_retried: refundsRetried,
+    },
     "payments.sweep",
   );
-  return { closed, paid, kept, failedPending };
+  return { closed, paid, kept, failedPending, refundsRetried };
 }

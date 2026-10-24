@@ -45,7 +45,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: done and green locally (22 integration cases, mutations M1 to M7 red): `startPayment(purchaseId)`, `reconcile`, `syncFromProvider`, `sweepPayments` (b), (c), and (d) (requested refunds resent with their own key, added with TASK-258), `payments.stripe` flag, events `order.captured`/`order.in_production` registered ahead of TASK-215. Stacked on TASK-350 (PR 403); ships in one feature PR with TASK-258. Next: carry-forwards into TASK-215 (import, do not re-register, the two schemas) and a note that `payments.method.*` flags are not seeded, so `startPayment` fails closed.
 
 ## Result
 

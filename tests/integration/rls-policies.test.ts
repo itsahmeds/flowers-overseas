@@ -150,6 +150,8 @@ async function partnerWorld(
     VALUES (${partnerId}, DATE '2027-02-01', DATE '2027-02-07', 9000, 'PLN') RETURNING id`;
   await tx`INSERT INTO payout_line (payout_id, order_id, amount_minor, currency_code, kind)
            VALUES (${payout?.id ?? ""}, ${orderId}, 9000, 'PLN', 'order')`;
+  await tx`INSERT INTO payout_adjustment (order_id, partner_id, assignment_id, kind)
+           VALUES (${orderId}, ${partnerId}, ${assignment?.id ?? ""}, 'withdrawn_by_buyer_after_acceptance')`;
   return { partnerId, userId, orderId, assignmentId: assignment?.id ?? "" };
 }
 
@@ -166,6 +168,7 @@ const OWNER: Record<PartnerTable, string> = {
   payout: "t.partner_id",
   payout_line:
     "(SELECT p.partner_id FROM public.payout p WHERE p.id = t.payout_id)",
+  payout_adjustment: "t.partner_id",
   order_assignment: "t.partner_id",
   delivery_proof:
     "(SELECT a.partner_id FROM public.order_assignment a WHERE a.order_id = t.order_id)",
@@ -183,6 +186,7 @@ const KEY: Record<PartnerTable, string> = {
   partner_catalog_mapping: "t.id::text",
   payout: "t.id::text",
   payout_line: "t.id::text",
+  payout_adjustment: "t.id::text",
   order_assignment: "t.id::text",
   delivery_proof: "t.id::text",
   substitution_note: "t.id::text",
@@ -198,6 +202,7 @@ const TOUCH: Record<PartnerTable, string> = {
   partner_catalog_mapping: "can_fulfil = can_fulfil",
   payout: "total_minor = total_minor",
   payout_line: "note = note",
+  payout_adjustment: "status = status",
   order_assignment: "reason = reason",
   delivery_proof: "approved = approved",
   substitution_note: "proposal_md = proposal_md",

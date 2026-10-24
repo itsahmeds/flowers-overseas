@@ -26,7 +26,7 @@ import {
 import {
   STATES,
   STATUS_PRESERVING_EVENTS,
-  TRANSITIONS,
+  A6_TRANSITIONS,
   TRANSITION_EVENTS,
   derivedTerminal,
 } from "../fixtures/order-machine.ts";
@@ -213,7 +213,7 @@ describe("AC-14 / T-14 (unit) — the seed is A6, both ways", () => {
     expect(transitionRows).toHaveLength(75);
     expect(new Set(transitionRows)).toEqual(
       new Set(
-        TRANSITIONS.map((t) =>
+        A6_TRANSITIONS.map((t) =>
           [t.from, t.event, t.to, t.allowedActors.join(",")].join("|"),
         ),
       ),
@@ -221,7 +221,7 @@ describe("AC-14 / T-14 (unit) — the seed is A6, both ways", () => {
   });
 
   it("is_terminal is true exactly for the states with no row to a different state (A6.1)", () => {
-    const derived = derivedTerminal(STATES, TRANSITIONS);
+    const derived = derivedTerminal(STATES, A6_TRANSITIONS);
     for (const state of STATES) {
       expect(state.isTerminal, state.key).toBe(derived.get(state.key));
     }
