@@ -222,8 +222,8 @@ export { AfterPaint } from "./deferred/AfterPaint.tsx";
 export type { AfterPaintProps } from "./deferred/AfterPaint.tsx";
 
 // The consent sheet (AC-17, AC-19, AC-20; TASK-051). `ConsentBanner` is a synchronous Server
-// Component; the island and the settings panel are two `next/dynamic({ ssr: false })` chunks
-// behind it, and every string they render is resolved here and passed as props, so no message
+// Component; the island and the settings panel are two client-only `React.lazy` chunks
+// behind it (TASK-376), and every string they render is resolved here and passed as props, so no message
 // catalogue, no cookie register and no zod reaches the browser (§13 Q13 option (b), §14 A1).
 // `consentView` and the cookie helpers are exported because the projection and the `fo_consent`
 // value are what the tests and spec 007's cookie policy read.

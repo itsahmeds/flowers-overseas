@@ -63,7 +63,8 @@ database (`pnpm check:no-db` covers the whole module).
 ## 3. Read the bundle table
 
 `pnpm build && pnpm budget:client-js` prints spec 004 §11's table: per route, the Brotli
-first-load JS, the `next/dynamic` chunks the route actually fetches, the delta against
+first-load JS, the lazy chunks the route actually fetches on a page load (every chunk a loaded
+chunk's loader stub names, less the on-input chunks of `ON_INPUT_CHUNK_MARKERS`), the delta against
 `tests/fixtures/seo/bundle-baseline.json`, and the font transfer.
 
 - **128 KB Brotli** per public route (`plan/01` §7 as restated by spec 004 §13 Q13 and corrected by
@@ -71,7 +72,11 @@ first-load JS, the `next/dynamic` chunks the route actually fetches, the delta a
   headroom is not yours to spend.
 - **5 KB** is the most any route may grow against the committed baseline. When the growth is
   intended, re-run with `--update-baseline`, commit the diff and **name the import in the PR**.
-- **`/` ships zero application JavaScript** and no `next/dynamic` chunk. The check reads chunk
+- **Lazy islands use `React.lazy`, never `next/dynamic`**: `next/dynamic`'s runtime cost every page
+  ~1.3 KB Brotli (TASK-376), and `tests/unit/deferred-set.test.tsx` fails on an import of it. A new
+  lazy chunk fetched only on input needs its marker in `ON_INPUT_CHUNK_MARKERS`, or the table
+  charges it to the page load (and the e2e says so).
+- **`/` ships zero application JavaScript** and no lazy chunk. The check reads chunk
   *contents* for `data-fo-*` markup, because a module name in a loader stub proves nothing.
 - **No `zod` and no `@sentry/`** in any public route's client bundle, and no `home.*`/`finder.*`/
   `catalog.*`/`media.*` catalogue copy in any fetched chunk.

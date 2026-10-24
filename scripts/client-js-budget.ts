@@ -26,7 +26,8 @@
  *
  * The script set of a URL is **what a browser fetches for that URL**: the prerendered document's
  * own `<script src>` list, the chunks of the client references the document actually mounts, and
- * the `next/dynamic` chunks those chunks then request. It took two reviews to get there.
+ * the lazy chunks those chunks then request on a page load. It took two reviews to get there, and
+ * TASK-376 changed where the lazy candidates come from (step 3).
  *
  * `/review 26` fixed the first half. Reading only the document in `.next/server/app/*.html` misses
  * everything `next/dynamic` defers: the suggestion-banner island is rendered on every locale
@@ -52,7 +53,10 @@
  *  3. every candidate lazy chunk whose asset path appears **as a string** inside a chunk already
  *     loaded, transitively. Turbopack writes the path verbatim
  *     (`Promise.all(["static/chunks/2-kq9….js"].map(…))`), so this follows the same edge the
- *     runtime does rather than inferring one.
+ *     runtime does rather than inferring one. Since TASK-376 the candidates are every chunk such
+ *     a loader stub names anywhere in the build, less the on-input chunks of
+ *     `ON_INPUT_CHUNK_MARKERS` (`lazyCandidatesFor()`): the loaders use `React.lazy`, which writes
+ *     no loadable manifest, because `next/dynamic`'s runtime cost every page ~1.3 KB Brotli.
  *
  * The closure starts from the **mounted** references rather than from every script the document
  * lists, and that is the whole of the fix: `/`'s HTML does list the banner loader's chunk, because
@@ -91,7 +95,7 @@
  *
  * Usage: `node scripts/client-js-budget.ts [--dist .next] [--url /en]…`
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { brotliCompressSync, constants, gzipSync } from "node:zlib";
@@ -100,6 +104,7 @@ import { LAUNCH_LOCALE_DATA } from "../src/config/locales.data.ts";
 import { launchLocales } from "../src/config/locales.ts";
 import { productRoutePathFor } from "../src/lib/product-rewrites.ts";
 import { loadMessages, namespacesFor } from "../src/modules/i18n/messages.ts";
+import { DEFERRED_ISLANDS } from "../src/modules/ui/deferred/deferredSet.ts";
 
 import {
   FONT_BUDGETS,
@@ -116,7 +121,7 @@ import {
  * transfer on an indexable page. The same number `lighthouserc.json` asserts as
  * `resource-summary:script:size`, now against the same encoding.
  */
-export const CLIENT_JS_BUDGET_BYTES = 129 * 1024; // temporary 129 KiB: spec 004 A-founder-2026-10-23; TASK-376 restores 128 KiB
+export const CLIENT_JS_BUDGET_BYTES = 128 * 1024;
 
 /**
  * The product page's budget: 131 072 + 2 048 = **133 120 B** Brotli first-load, the island
@@ -213,7 +218,7 @@ export interface ScriptTag {
   /**
    * How the browser gets it: `document` for a `<script src>` of the prerendered HTML, `lazy` for
    * a chunk fetched during or after hydration — a client reference the document mounts whose
-   * chunk the HTML does not list, or a `next/dynamic` chunk one of those chunks then requests.
+   * chunk the HTML does not list, or a lazy chunk one of those chunks then requests.
    * Both count; the distinction is printed so a growth is attributable.
    */
   readonly kind: "document" | "lazy";
@@ -257,7 +262,7 @@ export interface PageMeasurement {
   readonly fetchedBrotliBytes: number;
   /** Brotli total of the document's own `<script src>` list — the lower bound of the two. */
   readonly documentBrotliBytes: number;
-  /** Brotli total of the route's `next/dynamic` chunks, printed so the delta is never hidden. */
+  /** Brotli total of the route's lazy chunks, printed so the delta is never hidden. */
   readonly lazyBrotliBytes: number;
   /** This URL's budget: `budgetFor(url)`, 133 120 B on a product address, 131 072 B elsewhere. */
   readonly budgetBytes: number;
@@ -382,7 +387,7 @@ export function routeEntryFor(dist: string, url: string): string | null {
     >;
   } catch {
     throw new Error(
-      `no ${manifestPath} — run \`pnpm build\` first (without it a next/dynamic chunk would go uncounted, which is what /review 26 caught)`,
+      `no ${manifestPath} — run \`pnpm build\` first (without it a lazy chunk would go uncounted, which is what /review 26 caught)`,
     );
   }
   const wanted = url.replace(/\/+$/, "").split("/").filter(Boolean);
@@ -419,40 +424,104 @@ function matchSegment(segment: string, actual: string | undefined): boolean {
 }
 
 /**
- * The `next/dynamic` chunks a URL's route **may** fetch: every file of every entry in the route's
- * `react-loadable-manifest.json`, de-duplicated. A candidate list, not a bill — see
- * `reachableAssets()` for what turns it into one.
+ * A lazy chunk a browser fetches **only on input**, never on a page load, found by a string
+ * literal its module carries (TASK-376). A loader stub that names such a chunk is not a page-load
+ * edge, so `lazyCandidatesFor()` leaves the chunk out, and nothing it names is followed either:
  *
- * A route with no dynamic import has an empty manifest or none at all, which is `[]` — but a URL
- * with no entry in the routes manifest throws, because "this URL has no lazy chunks" and "this
- * script cannot tell" must not be the same answer (that equivalence is the `/review 26` bug).
+ *  - the interaction islands of the deferred set (spec 004 §14 A-founder-2026-10-15b clause 1),
+ *    by the `marker` each entry already declares for `tests/e2e/deferred-chunks.spec.ts`;
+ *  - the consent settings panel (§5.3, "the default path pays for the banner only"), imported the
+ *    first time the sheet's "Settings" is pressed, by the `data-fo-consent-panel` it renders.
+ *
+ * A lazy chunk missing from this list is charged to every page whose chunks name it: an over-count,
+ * which `tests/e2e/client-js-budget.spec.ts` reports as "charged by budget:client-js and not
+ * fetched by the browser", never a silent under-count.
  */
-export function loadableAssetsFor(dist: string, url: string): ScriptTag[] {
-  const entry = routeEntryFor(dist, url);
-  if (entry === null) {
+export const ON_INPUT_CHUNK_MARKERS: readonly string[] = [
+  ...DEFERRED_ISLANDS.filter((island) => island.trigger === "interaction").map(
+    (island) => island.marker,
+  ),
+  "data-fo-consent-panel",
+];
+
+/**
+ * Turbopack's loader stub for a dynamic import, `next/dynamic` and `React.lazy` alike: the chunk
+ * paths it requests, verbatim, before `.map(t => e.l(t))`
+ * (`e.v(t=>Promise.all(["static/chunks/1eg8….js"].map(t=>e.l(t))).then(()=>t(231253)))`).
+ */
+const LAZY_LOADER = /Promise\.all\(\[((?:"static\/[^"]+?\.js",?)+)\]\.map\(/g;
+const LAZY_LOADER_CHUNK = /"(static\/[^"]+?\.js)"/g;
+
+/** Every chunk path the loader stubs in `source` request. */
+export function lazyChunksNamedIn(source: string): string[] {
+  return [...source.matchAll(LAZY_LOADER)].flatMap(([, list]) =>
+    [...(list ?? "").matchAll(LAZY_LOADER_CHUNK)].flatMap(([, asset]) =>
+      asset === undefined ? [] : [asset],
+    ),
+  );
+}
+
+/**
+ * The lazy chunks a URL **may** fetch on a page load: every chunk a loader stub anywhere in the
+ * build's `static/chunks` names, except the on-input chunks of `ON_INPUT_CHUNK_MARKERS`. An
+ * app-level candidate list, not a bill — `reachableAssets()` keeps the ones this URL's mounted
+ * chunks actually lead to.
+ *
+ * Until TASK-376 this list was the route's `react-loadable-manifest.json`, which only `next/dynamic`
+ * writes. Every loader now uses `React.lazy` (`next/dynamic`'s runtime was ~1.3 KB Brotli of every
+ * page), so the list is read from the edge the runtime itself follows. The convention it replaces
+ * ("`next/dynamic` is page-load, `React.lazy` is on input") is now the explicit marker list.
+ *
+ * A URL with no entry in the routes manifest throws, and so does a build with no chunk directory:
+ * "this URL has no lazy chunks" and "this script cannot tell" must not be the same answer (that
+ * equivalence is the `/review 26` bug).
+ */
+export function lazyCandidatesFor(dist: string, url: string): ScriptTag[] {
+  assertRouteEntry(dist, url);
+  return lazyCandidatesIn(dist);
+}
+
+function assertRouteEntry(dist: string, url: string): void {
+  if (routeEntryFor(dist, url) === null) {
     throw new Error(
       `no app-router entry for ${url} in ${join(dist, "app-path-routes-manifest.json")}`,
     );
   }
-  let manifest: Record<string, { files?: readonly string[] }>;
+}
+
+/** The app-level half of `lazyCandidatesFor()`: read once per `measurePages()` call. */
+function lazyCandidatesIn(dist: string): ScriptTag[] {
+  const chunks = join(dist, "static/chunks");
+  let files: string[];
   try {
-    manifest = JSON.parse(
-      readFileSync(
-        join(dist, "server/app", entry, "react-loadable-manifest.json"),
-        "utf8",
-      ),
-    ) as Record<string, { files?: readonly string[] }>;
+    files = readdirSync(chunks, { recursive: true, encoding: "utf8" });
   } catch {
-    return [];
+    throw new Error(
+      `no ${chunks} — run \`pnpm build\` first (without it a lazy chunk would go uncounted, which is what /review 26 caught)`,
+    );
   }
-  const seen = new Set<string>();
-  const tags: ScriptTag[] = [];
-  for (const { files = [] } of Object.values(manifest)) {
-    for (const file of files) {
-      if (!file.endsWith(".js") || seen.has(file)) continue;
-      seen.add(file);
-      tags.push({ asset: file, noModule: false, kind: "lazy" });
+  const named = new Set<string>();
+  for (const file of files) {
+    if (!file.endsWith(".js")) continue;
+    for (const asset of lazyChunksNamedIn(
+      readFileSync(join(chunks, file), "utf8"),
+    )) {
+      named.add(asset);
     }
+  }
+  const tags: ScriptTag[] = [];
+  for (const asset of [...named].sort()) {
+    let source: string;
+    try {
+      source = readFileSync(join(dist, asset), "utf8");
+    } catch {
+      // Named but not emitted: no browser can fetch it, so no page is charged for it.
+      continue;
+    }
+    if (ON_INPUT_CHUNK_MARKERS.some((marker) => source.includes(marker))) {
+      continue;
+    }
+    tags.push({ asset, noModule: false, kind: "lazy" });
   }
   return tags;
 }
@@ -610,6 +679,7 @@ export function measurePages(
   dist: string,
   urls: readonly string[],
 ): PageMeasurement[] {
+  let candidates: ScriptTag[] | undefined;
   return urls.map((url) => {
     // A product address is rewritten to the product route (`src/lib/product-rewrites.ts`), so its
     // document and its route entry live under that path; the row keeps the address a visitor asks.
@@ -621,7 +691,7 @@ export function measurePages(
     const references = parseClientReferences(html);
     // A chunk the document already lists is fetched once, so it is counted once — as a document
     // script, which is the honest label for it. What is left is fetched during hydration: the
-    // chunks of the Client Components this document mounts, then the `next/dynamic` chunks those
+    // chunks of the Client Components this document mounts, then the lazy chunks those
     // go on to request.
     const referenced = new Set<string>();
     for (const reference of references) {
@@ -639,13 +709,17 @@ export function measurePages(
     // list the banner loader's 1 434 B chunk (Turbopack puts an entry's client modules in the
     // entry's script set), and that chunk names the island chunks — but a document that never mounts
     // the loader (the then `/`, since deleted), so the dynamic import never runs and the browser fetches none of them. A
-    // `next/dynamic` chunk is requested by the component that mounts, so the mounted set is the
+    // lazy chunk is requested by the component that mounts, so the mounted set is the
     // honest seed.
     const loaded = references.flatMap((reference) => [...reference.chunks]);
+    // Every URL must have a route entry ("cannot tell" is not "none"); the app-level candidate
+    // list is read once per call.
+    assertRouteEntry(dist, served);
+    candidates ??= lazyCandidatesIn(dist);
     const lazyTags = reachableAssets(
       dist,
       loaded,
-      loadableAssetsFor(dist, served).filter(
+      candidates.filter(
         (tag) => !documented.has(tag.asset) && !referenced.has(tag.asset),
       ),
     );
@@ -709,7 +783,7 @@ export interface ForbiddenModuleHit {
 
 /**
  * Every forbidden module found in the scripts a modern browser fetches for these URLs — the lazy
- * `next/dynamic` chunks included, which is where zod actually was when `/review 26` looked.
+ * chunks included, which is where zod actually was when `/review 26` looked.
  * `noModule` assets are skipped for the same reason they are not counted: nobody downloads them.
  */
 export function forbiddenModuleHits(
@@ -1202,7 +1276,7 @@ export function formatMarkdownTable(
   baseline: BundleBaseline | null,
 ): string {
   const lines = [
-    "| Route | first-load JS (br) | + `next/dynamic` (br) | total (br) | total (gz) | vs baseline | fonts | budget |",
+    "| Route | first-load JS (br) | + lazy (br) | total (br) | total (gz) | vs baseline | fonts | budget |",
     "|---|---|---|---|---|---|---|---|",
   ];
   for (const page of pages) {
@@ -1268,7 +1342,7 @@ export function formatChunkList(pages: readonly PageMeasurement[]): string {
           asset.noModule
             ? "[noModule, not fetched] "
             : asset.kind === "lazy"
-              ? "[next/dynamic, fetched after hydration] "
+              ? "[lazy, fetched after hydration] "
               : ""
         }${asset.asset}`,
       );

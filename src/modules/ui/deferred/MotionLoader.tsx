@@ -13,23 +13,24 @@
  * (motion 3's pending state is only a mark), the Menu is a `<details>`; and the press or focus
  * that reaches the Menu first is what loads its `Esc`, before an `Esc` can follow.
  *
- * `next/dynamic` with `ssr: false`: this chunk is part of every page load, so `budget:client-js`
- * charges it there (`./deferredSet.ts`). The User Timing mark is written here, when the chunk has
- * arrived, so the motion module itself is unchanged; `tests/e2e/deferred-chunks.spec.ts` reads it.
+ * `React.lazy`, not `next/dynamic` (TASK-376): `AfterPaint` already renders this only on the client
+ * and inside a `Suspense`, which is all `ssr: false` added, and dropping `next/dynamic` from every
+ * loader took its runtime (~1.3 KB Brotli) out of every page. This chunk is part of every page
+ * load, so `budget:client-js` charges it there: it is a paint island of `./deferredSet.ts`. The
+ * User Timing mark is written here, when the chunk has arrived, so the motion module itself is
+ * unchanged; `tests/e2e/deferred-chunks.spec.ts` reads it.
  */
-import dynamic from "next/dynamic";
+import { lazy } from "react";
 
-const Motion = dynamic(
-  async () =>
-    import("../motion/MotionIsland.tsx").then((module) => {
-      try {
-        performance.mark("fo:deferred:motions");
-      } catch {
-        // No User Timing is no reason to lose the motions.
-      }
-      return module.MotionIsland;
-    }),
-  { ssr: false },
+const Motion = lazy(async () =>
+  import("../motion/MotionIsland.tsx").then((module) => {
+    try {
+      performance.mark("fo:deferred:motions");
+    } catch {
+      // No User Timing is no reason to lose the motions.
+    }
+    return { default: module.MotionIsland };
+  }),
 );
 
 export function MotionLoader() {

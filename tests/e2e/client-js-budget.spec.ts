@@ -101,7 +101,7 @@ test.describe("the script set a browser fetches (AC-24, §14 A1)", () => {
 
       await page.goto(url);
       await page.waitForLoadState("networkidle");
-      // The islands are `next/dynamic({ ssr: false })`: their import starts on mount, i.e. after
+      // The islands' imports (`React.lazy` behind `AfterPaint` or the hydration gate) start after
       // hydration, which `networkidle` can win the race against on a warm cache-less run.
       await page.waitForTimeout(1_000);
 

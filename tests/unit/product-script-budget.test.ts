@@ -3,9 +3,9 @@
  * A-founder-2026-10-18a, AC-56, T-61; spec 009 §14 A-founder-2026-10-18a, AC-37, T-41's unit half;
  * TASK-228).
  *
- *  - **AC-56 / T-61:** `pnpm budget:client-js` measures the two product URLs against 134 144 B and
- *    every other URL against 132 096 B, and `lighthouserc.json` asserts the same split by URL
- *    pattern. Red with a product route at 133 121 B, red with a listing given 134 144 B, red with
+ *  - **AC-56 / T-61:** `pnpm budget:client-js` measures the two product URLs against 133 120 B and
+ *    every other URL against 131 072 B, and `lighthouserc.json` asserts the same split by URL
+ *    pattern. Red with a product route at 133 121 B, red with a listing given 133 120 B, red with
  *    the product pattern widened to match `/poland/flowers/roses`.
  *  - **AC-37:** the route file the country category and occasion share no longer reaches the
  *    product island, because every product address is rewritten to the product route; the build
@@ -66,10 +66,10 @@ const LISTINGS = [
   "/en-gb/poland/occasions/mothers-day",
 ] as const;
 
-describe("AC-56: the product page's budget is 134 144 B, every other URL's 132 096 B", () => {
+describe("AC-56: the product page's budget is 133 120 B, every other URL's 131 072 B", () => {
   it("names the two numbers", () => {
-    expect(CLIENT_JS_BUDGET_BYTES).toBe(132_096);
-    expect(PRODUCT_CLIENT_JS_BUDGET_BYTES).toBe(134_144);
+    expect(CLIENT_JS_BUDGET_BYTES).toBe(131_072);
+    expect(PRODUCT_CLIENT_JS_BUDGET_BYTES).toBe(133_120);
   });
 
   it("measures both product URLs and the three listings that share their depth", () => {
@@ -78,20 +78,20 @@ describe("AC-56: the product page's budget is 134 144 B, every other URL's 132 0
     }
   });
 
-  it("gives a product URL 134 144 B and refuses 134 145 B", () => {
+  it("gives a product URL 133 120 B and refuses 133 121 B", () => {
     for (const url of [PRODUCT, PRODUCT_GB]) {
-      expect(budgetFor(url)).toBe(134_144);
-      expect(withinBudgetFor(url, 134_144)).toBe(true);
-      expect(withinBudgetFor(url, 134_145)).toBe(false);
+      expect(budgetFor(url)).toBe(133_120);
+      expect(withinBudgetFor(url, 133_120)).toBe(true);
+      expect(withinBudgetFor(url, 133_121)).toBe(false);
     }
   });
 
-  it("refuses a listing at 134 144 B: every other measured URL keeps 132 096 B", () => {
+  it("refuses a listing at 133 120 B: every other measured URL keeps 131 072 B", () => {
     for (const url of DEFAULT_URLS) {
       if (url === PRODUCT || url === PRODUCT_GB) continue;
-      expect(budgetFor(url), url).toBe(132_096);
-      expect(withinBudgetFor(url, 132_096), url).toBe(true);
-      expect(withinBudgetFor(url, 134_144), url).toBe(false);
+      expect(budgetFor(url), url).toBe(131_072);
+      expect(withinBudgetFor(url, 131_072), url).toBe(true);
+      expect(withinBudgetFor(url, 133_120), url).toBe(false);
     }
   });
 });
@@ -126,14 +126,14 @@ function scriptBudgetsOn(url: string): number[] {
 describe("AC-56: lighthouserc.json asserts the same split by URL", () => {
   const origin = "http://127.0.0.1:3100";
 
-  it("asserts 134 144 B and nothing else on a product URL, in every locale's product segment", () => {
+  it("asserts 133 120 B and nothing else on a product URL, in every locale's product segment", () => {
     for (const locale of LOCALES) {
       const url = `${origin}/${locale.code}/poland/${locale.pathSegments.product}/amber-hour`;
-      expect(scriptBudgetsOn(url), url).toEqual([134_144]);
+      expect(scriptBudgetsOn(url), url).toEqual([133_120]);
     }
   });
 
-  it("asserts 132 096 B and nothing else on the listings, the homes and the hubs", () => {
+  it("asserts 131 072 B and nothing else on the listings, the homes and the hubs", () => {
     for (const path of [
       ...LISTINGS,
       "/en",
@@ -142,7 +142,7 @@ describe("AC-56: lighthouserc.json asserts the same split by URL", () => {
       "/en/flowers/roses",
       "/en/send-flowers-to/poland",
     ]) {
-      expect(scriptBudgetsOn(`${origin}${path}`), path).toEqual([132_096]);
+      expect(scriptBudgetsOn(`${origin}${path}`), path).toEqual([131_072]);
     }
   });
 
@@ -150,7 +150,7 @@ describe("AC-56: lighthouserc.json asserts the same split by URL", () => {
     const product = matrix.find(
       (entry) =>
         entry.assertions["resource-summary:script:size"]?.[1]
-          .maxNumericValue === 134_144,
+          .maxNumericValue === 133_120,
     )?.matchingUrlPattern;
     const named = /\(\?:([^)]+)\)/u.exec(product ?? "")?.[1]?.split("|");
     expect(new Set(named)).toEqual(
@@ -396,8 +396,8 @@ describe("AC-56 and AC-37 through `measurePages()` and `main()` (breaker H1, H2)
       join(dist, "static/chunks/island.js"),
       PRODUCT_ISLAND_MARKERS.map((marker) => `q("${marker}");`).join(""),
     );
-    // Between the two budgets: over 132 096 B, under 134 144 B, with the other chunks.
-    writeFileSync(join(dist, "static/chunks/big.js"), incompressible(133_000));
+    // Between the two budgets: over 131 072 B, under 133 120 B, with the other chunks.
+    writeFileSync(join(dist, "static/chunks/big.js"), incompressible(132_000));
     // The product page's own document, under the product route; and a decoy at the bare address,
     // which a measurement that forgot the rewrite would read instead.
     doc(PRODUCT_SERVED, ["shared.js", "island.js", "big.js"]);
@@ -414,23 +414,23 @@ describe("AC-56 and AC-37 through `measurePages()` and `main()` (breaker H1, H2)
     rmSync(dist, { recursive: true, force: true });
   });
 
-  it("measures a product URL from the product route's document, against 134 144 B", () => {
+  it("measures a product URL from the product route's document, against 133 120 B", () => {
     const [product] = measurePages(dist, [PRODUCT]);
     expect(product?.assets.map((asset) => asset.asset).sort()).toEqual([
       "static/chunks/big.js",
       "static/chunks/island.js",
       "static/chunks/shared.js",
     ]);
-    expect(product?.budgetBytes).toBe(134_144);
-    expect(product?.fetchedBrotliBytes).toBeGreaterThan(132_096);
-    expect(product?.fetchedBrotliBytes).toBeLessThanOrEqual(134_144);
+    expect(product?.budgetBytes).toBe(133_120);
+    expect(product?.fetchedBrotliBytes).toBeGreaterThan(131_072);
+    expect(product?.fetchedBrotliBytes).toBeLessThanOrEqual(133_120);
     expect(product?.withinBudget).toBe(true);
   });
 
-  it("holds a listing of the same size to 132 096 B", () => {
+  it("holds a listing of the same size to 131 072 B", () => {
     const [listing] = measurePages(dist, [LISTINGS[0]]);
-    expect(listing?.budgetBytes).toBe(132_096);
-    expect(listing?.fetchedBrotliBytes).toBeGreaterThan(132_096);
+    expect(listing?.budgetBytes).toBe(131_072);
+    expect(listing?.fetchedBrotliBytes).toBeGreaterThan(131_072);
     expect(listing?.withinBudget).toBe(false);
   });
 

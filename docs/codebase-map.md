@@ -25,7 +25,7 @@ task actually touches.
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +28 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +52 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +53 |
 
 ## Config (`src/config/`)
 
@@ -207,7 +207,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 354 |
+| `tests/unit/` | 355 |
 | `tests/integration/` | 41 |
 | `tests/contract/` | 24 |
 | `tests/e2e/` | 68 |

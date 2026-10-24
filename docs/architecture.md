@@ -450,6 +450,19 @@ part `/review 26` had to add:
    pinned to `locales.data.ts` by `tests/unit/locales-data.test.ts`;
    `tests/unit/client-message-graph.test.ts` forbids `locales.data.ts` in every client graph, and
    `pnpm budget:client-js` fails when a German or Polish path segment appears in a fetched chunk.
+6. TASK-376 took **`next/dynamic`'s runtime** out (spec 004 §14 A-founder-2026-10-23). Next 16.4.2
+   put every audited URL at 131 428 B of Lighthouse script transfer, 356 B over 131 072 B, so the
+   budget was raised 1 KiB for the bump only. Split by module, the layout's loader chunk was 2 331 B
+   Brotli, 1 272 B of it `next/dynamic`'s own modules (app-dynamic, loadable, PreloadChunks, the
+   client-side-rendering bailout and the async-storage shims) used by nothing but the four island
+   loaders. They now use `React.lazy`: the motion and language-popup loaders already render inside
+   `AfterPaint`, the consent loader renders behind `useHydrated()` and the settings panel inside a
+   `Suspense`. Lighthouse measured **130 060 B** on all 16 URLs (CI run 40014204409, 1 012 B
+   inside the restored 131 072 B), and `tests/unit/deferred-set.test.tsx` fails on any import of
+   `next/dynamic` under `src/`. `pnpm budget:client-js` now reads its lazy candidates from the
+   Turbopack loader stubs, less the on-input chunks of `ON_INPUT_CHUNK_MARKERS`, because only
+   `next/dynamic` writes `react-loadable-manifest.json`; `tests/e2e/client-js-budget.spec.ts`
+   confirmed the new model against Chromium on every URL in the same run.
 
 The boundary rule that matters is preserved (`app/` → `modules/` is the permitted direction, and no
 module reaches into another module's internals), and the barrel stays the import path for every
