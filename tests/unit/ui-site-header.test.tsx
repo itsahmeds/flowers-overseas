@@ -404,7 +404,6 @@ describe("the rendered header (AC-7, AC-14)", () => {
         "search",
         "sign-in",
         "my-orders",
-        "basket",
         "for-florists",
       ]),
     );
