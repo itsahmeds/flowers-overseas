@@ -53,4 +53,4 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 326 (feature PR with TASK-211). The florist instance on the core, `src/config/florists.ts`, the route tree under `/demo/vendor-inbox`, the proxy's production 404, `?hl=` and rolling cookie, header rules, `/demo/` in robots, en/pl/de copy. Core: async localised `renderEmail`, rolling in `sessionUserId()`, surface-bound session tokens (existing admin sessions end once). Tests: unit `florist-surface.test.ts` (32), integration `florist-auth.test.ts` (10: T-18 table of 50 cells, T-19 ×3, AC-9 both ways, T-20 ×2, T-32, rolling, logs), e2e `florist-surface.spec.ts` (T-21 over six public pages, T-22, T-32 `lang`). Carry-forwards above (cookie register, Cloudflare `/demo`, notice slot).
