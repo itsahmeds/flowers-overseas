@@ -1303,6 +1303,22 @@
       "y": 764922,
       "w": 390,
       "h": 6920
+    },
+    {
+      "file": "admin-catalogue-import-desktop.dc.html",
+      "title": "admin catalogue import · desktop · spec 012b slice A.2",
+      "x": 0,
+      "y": 772142,
+      "w": 1440,
+      "h": 12506
+    },
+    {
+      "file": "admin-catalogue-import-mobile.dc.html",
+      "title": "admin catalogue import · mobile · spec 012b slice A.2",
+      "x": 1520,
+      "y": 772142,
+      "w": 390,
+      "h": 15097
     }
   ],
   "annotations": [
@@ -1788,6 +1804,20 @@
       "y": 764876,
       "w": 1400,
       "text": "Spec 030b amendment (awaiting approval of its defaults) · Florist · My bouquets: the florist's own bouquets, the amount they receive and each state, in Polish; read only."
+    },
+    {
+      "id": "s012b-a2-head",
+      "x": 0,
+      "y": 771976,
+      "w": 1400,
+      "text": "Spec 012b · slice A.2, bulk upload (2026-10-21, founder “bulk defaults”). One florist's bouquets, sizes, text and prices from one CSV or Excel file: template or their current list, upload, check every row, a reason per warning, Apply all or nothing, photos by file name."
+    },
+    {
+      "id": "s012b-admin-catalogue-import",
+      "x": 0,
+      "y": 772096,
+      "w": 1400,
+      "text": "Spec 012b · Admin · Catalogue import: upload, check with errors (Apply absent), ready with reasons, applied report, photo step; refused files, changed since the check, expired, applied twice."
     }
   ],
   "launch": {
