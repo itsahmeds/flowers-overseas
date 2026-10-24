@@ -585,9 +585,6 @@
     "occasions": "Occasions"
   },
   "corridor": {
-    "photo": {
-      "caption": "Photo slot · {country}"
-    },
     "facts": {
       "eyebrow": "Delivery facts",
       "headingGuide": "What we can say about delivering here today",
@@ -656,6 +653,9 @@
       "occasion": "Occasion",
       "date": "Date",
       "rule": "Rule",
+      "ruleFixed": "Same date every year",
+      "ruleEaster": "Moves with Easter",
+      "ruleWeekday": "A set weekday of the month",
       "undated": "Also kept here, with no date of its own: {occasions}."
     },
     "flowers": {

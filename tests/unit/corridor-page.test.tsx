@@ -165,7 +165,9 @@ describe("the guide state (AC-8, AC-19)", () => {
     expect(html).toContain('scope="row"');
     // `formatDate(..., "calendarDate")` in `en`: weekday, day, month name and year.
     expect(body).toMatch(/Sunday, 1 November 2026/u);
-    expect(body).toContain("easter_offset");
+    // The Rule column in words (spec 007 §14 A11 (a), TASK-189), never the identifier.
+    expect(body).toContain("Moves with Easter");
+    expect(body).not.toContain("easter_offset");
     // The undated line, never a row with a guessed date.
     expect(body).toContain("Also kept here, with no date of its own");
   });

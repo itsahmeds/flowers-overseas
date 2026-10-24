@@ -20,7 +20,9 @@
  * that prints the date — the note under it stays. On a date card (the occasion hub's first-screen
  * dates and the occasions index's "next six", TASK-188) only the date face leaves
  * (`data-fo-date-face`: the day, the month and weekday, or the unknown-date line); the card, its
- * country or occasion name and its call to action stay.
+ * country or occasion name and its call to action stay. The guide's first-screen dates (TASK-189)
+ * leave whole (`data-fo-corridor-first-dates`): they are the calendar's next three rows, so the
+ * occasion names change with the date as well; the eyebrow over them and the link under them stay.
  *
  * The rows themselves are pinned elsewhere, not by a picture:
  *  - the country occasion's dated sentence: `tests/e2e/country-occasion.spec.ts` and
@@ -36,6 +38,7 @@
 [data-fo-hub-dates] tbody,
 [data-fo-shop-occasions] tbody,
 [data-fo-occasion-dates] > ul,
-[data-fo-date-face] {
+[data-fo-date-face],
+[data-fo-corridor-first-dates] {
   display: none !important;
 }
