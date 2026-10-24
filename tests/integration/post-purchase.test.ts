@@ -1234,6 +1234,9 @@ describe.skipIf(server.url === undefined)(
           );
           return id;
         });
+        // A later migration (`0022_florists_v0`, TASK-211) rolls back cleanly before this one is
+        // reached, so the catalogue compared is the one with this file the newest applied.
+        await locked(() => runner(guarded.url, ["--down", "--to", VERSION]));
         const catalogue = await introspect(guarded.sql);
         let a8 = "";
         try {
@@ -1260,6 +1263,7 @@ describe.skipIf(server.url === undefined)(
                      VALUES ('invoice', ${id}, 'fo-pl-2026', 'FO-PL/2026/000001', now(), DATE '2027-02-14',
                              'PLN', 18900, 'guard-profile', '{}'::jsonb, 1)`;
           });
+          await locked(() => runner(invoiced.url, ["--down", "--to", VERSION]));
           const invoicedCatalogue = await introspect(invoiced.sql);
           let invoice = "";
           try {
