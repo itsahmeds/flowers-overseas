@@ -318,6 +318,12 @@ describe("the shipped catalogues and manifests", () => {
     // batch 1) ship `reviewed: false` until the founder's own record-approval run.
     "company.controller",
     "consent.privacyLink",
+    // TASK-189 (spec 007 §14 A11 (a), spec 004 §14 A23 clause 6, Appendix A A11): the guide
+    // calendar's Rule column in words, approved in the 2026-10-04 batch ("approve copy") and
+    // shipped `reviewed: false` until the founder's own record run attests the exact values.
+    "corridor.calendar.ruleEaster",
+    "corridor.calendar.ruleFixed",
+    "corridor.calendar.ruleWeekday",
     // TASK-182, spec 041's trust pages: Appendix A.1's chrome lines and the destination table's
     // "Status" label ship `reviewed: false` until the founder's own record-approval run.
     "footer.link.deliveryAndPayment",

@@ -3,9 +3,10 @@
  * guide state at both artboard widths; the live state, the hub and `/ar-XB` join the matrix with
  * TASK-092/TASK-095).
  *
- * Four PNGs: the two blocks whose geometry the artboards actually fix — the hero band with the
- * `h1`, the status chip, the intro and the reserved photo slot, and the delivery-facts list with
- * its labels and its honest blanks — at 1440 px and at 390 px. `tests/visual/home.spec.ts`'s
+ * Four PNGs: the two blocks whose geometry the artboards actually fix — the first screen's `h1`
+ * (the photo slot beside it left with TASK-189; the dates that replaced it move with the build
+ * date, so they are pinned by `tests/e2e/corridor-first-screen.spec.ts`, not by a picture), and
+ * the delivery-facts list with its labels and its honest blanks — at 1440 px and at 390 px. `tests/visual/home.spec.ts`'s
  * reasoning applies unchanged: a full-page shot at the project's 1280 px would show neither at
  * the width it was drawn at, and on a page this long it would hide a four-pixel change inside a
  * five-thousand-pixel image.
