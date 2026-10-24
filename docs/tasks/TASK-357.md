@@ -33,7 +33,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: spec 020a §12 needs TASK-258 (`cancelOrder`), TASK-261 (`refund`, `adminRefund`, `adminCancel`) and TASK-327 (`notification_delivery`, which this task's migration references and alters) merged first; none exists on any branch, and TASK-258 is `blocked` on the founder's Stripe keys. `runOrderAction`, the migration (AC-7, AC-32) and AC-2, AC-4 to AC-6 cannot be built without writing those tasks' scope. Which order? `open`.
 
 ## Progress
 
@@ -41,7 +41,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: built the dependency-free layer in PR 398 (stacked on PR 307): the four permissions (T-01), `ORDER_ACTION_AVAILABILITY` and `availableActions` over the 26 statuses, the action schemas and result codes, the AC-8 source scan (T-09); 20 mutations each went red. Next, once TASK-258/261/327 merge: the migration `0027_admin_order_actions` + down, `runOrderAction`, `orderActionHistory`, request 1.
 
 ## Result
 

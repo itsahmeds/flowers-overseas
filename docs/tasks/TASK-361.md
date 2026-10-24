@@ -31,7 +31,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, backend implementer (feature PR 398) to the orchestrator: the panel calls the four server actions of TASK-357 to TASK-360, which wait on specs 013 and 016 (see TASK-357's escalation); the design boards (PR 337) are not merged. Only `availableActions`, the data the panel reads, is built (PR 398). `open`.
 
 ## Progress
 
