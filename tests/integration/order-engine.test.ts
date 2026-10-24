@@ -514,7 +514,7 @@ describe.skipIf(server.url === undefined)(
         }
         return { rows: rows.length, seen };
       });
-      // A6.3's 73 plus spec 002 §14 A8.1's two (`0019`, TASK-337).
+      // A6.3's 73 plus spec 002 §14 A8.1's two (`0021`, TASK-337).
       expect(outcomes.rows).toBe(75);
       expect(outcomes.seen).toHaveLength(75 * ACTOR_CLASSES.length);
       const expected = TRANSITIONS.flatMap((row) =>

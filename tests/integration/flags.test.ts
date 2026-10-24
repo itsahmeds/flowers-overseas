@@ -43,7 +43,7 @@ describe.skipIf(server.url === undefined)(
       });
     }
 
-    it("reads the four registered flags as migrations 0009 and 0019 seed them, and nothing else", async () => {
+    it("reads the four registered flags as migrations 0009 and 0021 seed them, and nothing else", async () => {
       const snapshot = await snapshotAs("system");
       expect(
         [...snapshot.flags].sort((a, b) => a.key.localeCompare(b.key)),
