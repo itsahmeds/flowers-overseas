@@ -676,3 +676,127 @@ describe("the required-shape gate fails the CLI, not just the unit test (AC-15)"
     }
   });
 });
+
+/**
+ * Spec 008 §2 "Schema", §6, AC-17, AC-18 (TASK-115): the listings' `ItemList`. The type is admitted
+ * because the approved spec adds it; its shape is held to "an order, not an offer" here, in the gate
+ * that does not take the builder's word for it.
+ */
+describe("ItemList: admitted for spec 008's listings, as an order and nothing else (AC-17, AC-18)", () => {
+  const shapeOf = (jsonld: unknown): string[] =>
+    collectTypedNodes(jsonld).flatMap((node) => shapeProblems(node));
+  const entry = (position: number, extra: Record<string, unknown> = {}) => ({
+    "@type": "ListItem",
+    position,
+    name: `Card ${String(position)}`,
+    url: `https://flowersoverseas.com/en/poland/product/card-${String(position)}`,
+    ...extra,
+  });
+
+  it("admits ItemList and nothing new besides it", () => {
+    expect(typeProblem("ItemList")).toBeNull();
+    expect(typeProblem("AggregateOffer")).toContain(
+      "not in the plan/02 §9 allow-list",
+    );
+    expect(typeProblem("Event")).toContain("not in the plan/02 §9 allow-list");
+  });
+
+  it("accepts the list the builder emits: positions 1..n, a name each, a url where linked", () => {
+    expect(
+      shapeOf({
+        "@type": "ItemList",
+        numberOfItems: 3,
+        itemListElement: [
+          entry(1),
+          entry(2),
+          { "@type": "ListItem", position: 3, name: "A tile" },
+        ],
+      }),
+    ).toStrictEqual([]);
+  });
+
+  it("rejects an empty list", () => {
+    expect(
+      shapeOf({ "@type": "ItemList", itemListElement: [] }).join(" "),
+    ).toContain("non-empty array of ListItem");
+  });
+
+  it("rejects positions out of rendered order, and a count that is not the length", () => {
+    expect(
+      shapeOf({
+        "@type": "ItemList",
+        numberOfItems: 3,
+        itemListElement: [entry(2), entry(1)],
+      }),
+    ).toStrictEqual([
+      "ItemList.numberOfItems is 3, but itemListElement has 2 entries",
+      "ItemList.itemListElement[0].position is 2, expected 1 (positions must run 1..n in the order the cards are shown)",
+      "ItemList.itemListElement[1].position is 1, expected 2 (positions must run 1..n in the order the cards are shown)",
+    ]);
+  });
+
+  it("rejects a price, an offer, an image or a rating on the list or an entry", () => {
+    for (const key of [
+      "offers",
+      "price",
+      "priceCurrency",
+      "image",
+      "aggregateRating",
+      "review",
+    ]) {
+      expect(
+        shapeOf({
+          "@type": "ItemList",
+          itemListElement: [entry(1, { [key]: "x" })],
+        }),
+        key,
+      ).toStrictEqual([
+        `ItemList.itemListElement[0] carries ${key}: a listing's ItemList describes an order, not an offer (spec 008 §2)`,
+      ]);
+      expect(
+        shapeOf({
+          "@type": "ItemList",
+          [key]: "x",
+          itemListElement: [entry(1)],
+        }),
+        key,
+      ).toStrictEqual([
+        `ItemList carries ${key}: a listing's ItemList describes an order, not an offer (spec 008 §2)`,
+      ]);
+    }
+  });
+
+  it("rejects a nested node, an unnamed entry and a relative url", () => {
+    const problems = shapeOf({
+      "@type": "ItemList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, item: { name: "Baltic Dawn" } },
+        { "@type": "ListItem", position: 2, name: "x", url: "/en/poland" },
+      ],
+    });
+    expect(problems).toStrictEqual([
+      "ItemList.itemListElement[0].item is a nested node: a list entry names a card (name, url), it does not describe a second thing (spec 008 §2)",
+      "ListItem requires a non-empty name (plan/02 §9), and has undefined",
+      'url "/en/poland" is not an absolute http(s) URL (a relative URL in JSON-LD resolves against the @context, not the page, so it names nothing)',
+    ]);
+  });
+
+  it("fails the CLI on a hand-written ItemList with every one of those defects", () => {
+    const result = withFixtureDir(
+      { "bad-itemlist-shape.json": "bad-itemlist-shape.json" },
+      (dir) => runSeoCli(CLI, dir),
+    );
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain("bad-itemlist-shape.json");
+    for (const problem of [
+      "numberOfItems is 3",
+      "position is 2, expected 1",
+      "carries price",
+      "is a nested node",
+      "@type Thing is not in the plan/02 §9 allow-list",
+      "is not an absolute http(s) URL",
+    ]) {
+      expect(result.stderr, problem).toContain(problem);
+    }
+  });
+});

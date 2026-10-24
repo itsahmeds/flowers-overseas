@@ -38,6 +38,7 @@ import {
   windowStart,
 } from "../../country-shop-root";
 import { InfoPageRoute, infoPageRouteMetadata } from "../../info-page-route";
+import { ListingJsonLd } from "../../listing-json-ld";
 
 /**
  * `/{locale}/{segment}/{child}` — **one route file for one URL depth** (spec 008 §14 **A5**, spec
@@ -94,9 +95,10 @@ import { InfoPageRoute, infoPageRouteMetadata } from "../../info-page-route";
  * from **the same `corridorView` the page renders** — the trail is `view.breadcrumb`, the array
  * `CorridorBreadcrumb` renders, and the Q&A is `view.faq`, the array `CorridorFaq` renders, so
  * markup and visible text cannot diverge (spec 007 AC-15, TASK-093). A guide whose FAQ left the
- * 8–12 band emits no `FAQPage` at all rather than a partial one. The **shop-root branch emits
- * none**: its `BreadcrumbList` and `ItemList` are spec 008's and TASK-115's, and this file gains
- * one composition line there, not a second description of the page.
+ * 8–12 band emits no `FAQPage` at all rather than a partial one. The shop root and the two hubs
+ * mount `ListingJsonLd` with the view their page renders: `BreadcrumbList` + `ItemList` from
+ * `listingJsonLd()` (spec 008 AC-17, AC-18; TASK-115), one composition line, not a second
+ * description of the page.
  *
  * **This file reads no query string** (spec 003 AC-8, spec 008 §5.4; TASK-170, after TASK-114).
  * A route file that awaits `searchParams` is rendered per request, a per-request route gets no
@@ -325,11 +327,13 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
     return match.kind === "categoryHub" ? (
       <>
         <CategoryHubPage view={view} />
+        <ListingJsonLd view={view} />
         {alternates}
       </>
     ) : (
       <>
         <OccasionHubPage view={view} />
+        <ListingJsonLd view={view} />
         {alternates}
       </>
     );

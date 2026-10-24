@@ -36,8 +36,8 @@
  * `CorridorView`, and §5.2 makes `listingView()` the **only** source for this page. §5.3 row 2's
  * block list does not name it. That is exactly spec 008 §14 **A9**'s ruling for the shop root,
  * applied to the artboard that shares the panel; the dated row is in `docs/design/README.md`.
- * `BreadcrumbList` and `ItemList` are TASK-115's; the slot is here and empty. No client island, no
- * `useState`, no fetch (§5.4).
+ * `BreadcrumbList` and `ItemList` are `listingJsonLd()`'s (TASK-115), from this same view. No
+ * client island, no `useState`, no fetch (§5.4).
  */
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";

@@ -147,6 +147,8 @@ export {
   faqPage,
 } from "./schema/faqPage.ts";
 
+export { type ItemListEntry, itemList } from "./schema/itemList.ts";
+
 export {
   ORGANIZATION_LOGO_PATH,
   type OrganizationOptions,

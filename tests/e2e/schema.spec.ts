@@ -29,6 +29,7 @@ import {
   type Page,
 } from "@playwright/test";
 
+import { listingJsonLdProblems } from "../support/listing-jsonld-scan.ts";
 import { pdpJsonLdProblems } from "../support/pdp-jsonld-scan.ts";
 
 const LOCALES = ["en", "en-gb", "de", "pl"] as const;
@@ -398,6 +399,103 @@ test.describe("AC-18: the served PDP BreadcrumbList is the visible trail (T-18)"
       await expect(page.locator("#pdp-h1 bdi").first()).toHaveText(
         String(items.at(-1)?.["name"]),
       );
+    });
+  }
+});
+
+/* -------------------------------------------------------------------------- */
+/* The listing pages (spec 008 AC-17, AC-18, T-17, T-18; TASK-115).          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Every listing page, per locale: the existence set, read from the committed fixture that
+ * `tests/unit/listing-url-fixture.test.ts` regenerates from `listingPages()` (Playwright cannot
+ * import `modules/catalog`). Six page types, four locales.
+ */
+const LISTINGS = JSON.parse(
+  readFileSync(
+    resolve(import.meta.dirname, "../fixtures/shop/listing-urls.json"),
+    "utf8",
+  ),
+) as Readonly<
+  Record<
+    string,
+    readonly { readonly pageType: string; readonly path: string }[]
+  >
+>;
+
+/**
+ * T-17's paginated and sorted fixtures, served: page 2 and both sorts of the shop root and of a
+ * country category over twelve products. Their `ItemList` must follow the slice and the order.
+ */
+const PARAMETERISED_LISTINGS = [
+  "/en/poland/flowers?page=2",
+  "/en/poland/flowers?sort=price-asc",
+  "/en-gb/poland/flowers/roses?page=2",
+  "/en-gb/poland/flowers/roses?sort=price-desc",
+] as const;
+
+/** One served listing's problems under AC-17 and AC-18: its status, then the shared scan. */
+async function listingProblems(
+  request: APIRequestContext,
+  path: string,
+  pageType: string,
+): Promise<string[]> {
+  const response = await request.get(path, { maxRedirects: 0 });
+  if (response.status() !== 200) {
+    return [`${path}: ${String(response.status())}`];
+  }
+  return listingJsonLdProblems(
+    await response.text(),
+    path,
+    pageType === "occasionsIndex" ? "occasions" : "cards",
+  );
+}
+
+test.describe("AC-18 + AC-17: every listing in every locale, scanned (T-17, T-18)", () => {
+  for (const [locale, pages] of Object.entries(LISTINGS)) {
+    test(`every ${locale} listing: one BreadcrumbList equal to the trail, an ItemList equal to the cards, none of the eight`, async ({
+      request,
+    }, testInfo) => {
+      // Raw HTML, so one viewport says everything; the phone project would repeat every request.
+      test.skip(
+        testInfo.project.name !== "e2e-desktop",
+        "a request-level scan: one project",
+      );
+      test.setTimeout(300_000);
+      expect(pages.length, `${locale} has listings`).toBeGreaterThan(0);
+      // All six types are in the set, so "every rendered page" includes each of them.
+      expect(new Set(pages.map((page) => page.pageType)).size).toBe(6);
+
+      const problems: string[] = [];
+      for (let start = 0; start < pages.length; start += PDP_CONCURRENCY) {
+        const batch = pages.slice(start, start + PDP_CONCURRENCY);
+        for (const found of await Promise.all(
+          batch.map((page) =>
+            listingProblems(request, page.path, page.pageType),
+          ),
+        )) {
+          problems.push(...found);
+        }
+      }
+      expect(
+        problems,
+        `${String(pages.length)} listings scanned`,
+      ).toStrictEqual([]);
+    });
+  }
+
+  for (const path of PARAMETERISED_LISTINGS) {
+    test(`${path}: the ItemList is this page's slice in this page's order`, async ({
+      request,
+    }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== "e2e-desktop",
+        "a request-level scan: one project",
+      );
+      expect(
+        await listingProblems(request, path, "countryShopRoot"),
+      ).toStrictEqual([]);
     });
   }
 });

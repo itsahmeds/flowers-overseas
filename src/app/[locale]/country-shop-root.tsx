@@ -18,6 +18,8 @@ import {
   pageMetadata,
 } from "@/modules/seo";
 
+import { ListingJsonLd } from "./listing-json-ld";
+
 /**
  * The country shop root's head and body, **once**, for the two route files that render it (spec
  * 008 §2, §5.4, AC-9/AC-10/AC-15/AC-16; TASK-114, split by TASK-170).
@@ -181,6 +183,7 @@ export async function CountryShopRoot({
   return (
     <>
       <CountryShopRootPage view={view} />
+      <ListingJsonLd view={view} />
       <LanguageAlternates
         paths={await listingAlternatePaths({
           pageType: "countryShopRoot",

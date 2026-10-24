@@ -58,6 +58,7 @@ export const DEFAULT_DIR = "tests/fixtures/seo/schema";
  * | Corridor / occasion / FAQ | `FAQPage` (+ `Question`, `Answer`) |
  * | Blog | `BlogPosting` (+ `Person` author, `ImageObject`) |
  * | For florists | `WebPage`, `FAQPage` |
+ * | Listings and the occasions index (spec 008 §2, §6, §13 Q5) | `ItemList` (+ `ListItem`) |
  */
 export const ALLOWED_TYPES: readonly string[] = [
   "AggregateRating",
@@ -70,6 +71,11 @@ export const ALLOWED_TYPES: readonly string[] = [
   "EntryPoint",
   "FAQPage",
   "ImageObject",
+  // Spec 008 §2 "Schema" and §6 "Schema types" (approved 2026-09-16; TASK-115): every listing and
+  // the occasions index carry an `ItemList` of the rendered cards, `ListItem { position, name,
+  // url }` only. The `plan/02` §9 table predates spec 008 and has no listing row; the spec is the
+  // authority that adds it, and `itemListProblems()` below holds it to "an order, not an offer".
+  "ItemList",
   "ListItem",
   "MerchantReturnPolicy",
   "MonetaryAmount",
@@ -328,6 +334,77 @@ function breadcrumbProblems(node: Readonly<Record<string, unknown>>): string[] {
   return problems;
 }
 
+/**
+ * Keys an `ItemList` and its `ListItem`s may not carry (spec 008 §2: "no price, no image, no
+ * rating inside it — an `ItemList` describes an order, not an offer"). A listing advertises no
+ * transaction (§13 Q5), so a price or an offer hung off a list entry is the claim the rule exists
+ * to keep out, whatever its `@type`.
+ */
+export const ITEM_LIST_FORBIDDEN_KEYS: readonly string[] = [
+  "offers",
+  "price",
+  "priceCurrency",
+  "image",
+  "aggregateRating",
+  "review",
+];
+
+/**
+ * `ItemList` problems: a non-empty list of `ListItem`s at positions 1..n, `numberOfItems` equal to
+ * the count where stated, and nothing inside it but an order (spec 008 §2, AC-17).
+ */
+function itemListProblems(node: Readonly<Record<string, unknown>>): string[] {
+  const items = node["itemListElement"];
+  if (!Array.isArray(items) || items.length === 0) {
+    return [
+      "ItemList.itemListElement must be a non-empty array of ListItem (a list of nothing describes no card the page shows)",
+    ];
+  }
+  const problems: string[] = [];
+  const count = node["numberOfItems"];
+  if (count !== undefined && count !== items.length) {
+    problems.push(
+      `ItemList.numberOfItems is ${JSON.stringify(count)}, but itemListElement has ${String(items.length)} entries`,
+    );
+  }
+  for (const key of ITEM_LIST_FORBIDDEN_KEYS) {
+    if (key in node) {
+      problems.push(
+        `ItemList carries ${key}: a listing's ItemList describes an order, not an offer (spec 008 §2)`,
+      );
+    }
+  }
+  items.forEach((entry, index) => {
+    const at = `ItemList.itemListElement[${String(index)}]`;
+    if (!isRecord(entry)) {
+      problems.push(`${at} is not a ListItem object`);
+      return;
+    }
+    if (!typesOf(entry["@type"]).includes("ListItem")) {
+      problems.push(`${at} has no @type ListItem`);
+    }
+    const position = entry["position"];
+    if (position !== index + 1) {
+      problems.push(
+        `${at}.position is ${JSON.stringify(position)}, expected ${String(index + 1)} (positions must run 1..n in the order the cards are shown)`,
+      );
+    }
+    for (const key of ITEM_LIST_FORBIDDEN_KEYS) {
+      if (key in entry) {
+        problems.push(
+          `${at} carries ${key}: a listing's ItemList describes an order, not an offer (spec 008 §2)`,
+        );
+      }
+    }
+    if (isRecord(entry["item"])) {
+      problems.push(
+        `${at}.item is a nested node: a list entry names a card (name, url), it does not describe a second thing (spec 008 §2)`,
+      );
+    }
+  });
+  return problems;
+}
+
 /** `FAQPage` problems: at least one `Question`, each of them a real question. */
 function faqPageProblems(node: Readonly<Record<string, unknown>>): string[] {
   const entities = node["mainEntity"];
@@ -369,6 +446,7 @@ export function shapeProblems(node: TypedNode): string[] {
     if (type === "BreadcrumbList")
       problems.push(...breadcrumbProblems(node.node));
     if (type === "FAQPage") problems.push(...faqPageProblems(node.node));
+    if (type === "ItemList") problems.push(...itemListProblems(node.node));
     if (type === "Product") problems.push(...productProblems(node.node));
   }
 
