@@ -76,3 +76,17 @@ export type {
   OrderQueueFilterOptions,
   OrderQueueHead,
 } from "./queries";
+// Spec 018 §5.2 (TASK-337): the tracking token, its resolver and its rotation.
+export {
+  RotationChannelSchema,
+  rotateTrackingToken,
+  tracking,
+  TRACKING_FAILURE,
+  TRACKING_LINK_DAYS,
+  TrackingToken,
+} from "./tracking";
+export type {
+  RotationChannel,
+  TrackingOptions,
+  TrackingResolution,
+} from "./tracking";

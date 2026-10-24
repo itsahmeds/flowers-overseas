@@ -313,6 +313,12 @@
         "checkout": {
           "open": "Lets the product page's demo button lead to the checkout, per country.",
           "demo_guard": "Keeps every checkout in demo mode: nothing is charged."
+        },
+        "account": {
+          "open": "Opens the customer account and its privacy requests, everywhere or per language."
+        },
+        "invoice": {
+          "issue": "Issues an invoice for every paid live order to this country. Turn on only after the accountant has signed off the VAT setup."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",

@@ -1,11 +1,13 @@
 /**
- * The order machine, transcribed from spec 002 §14 A6 (A6.3's 73 rows, A6.4's 26 states and
- * A6.6's catalogue), never from the `plan/11` §2 diagram (AC-14 as restated by A6.8; T-14).
+ * The order machine, transcribed from spec 002 §14 A6 (A6.3's 73 rows plus A8.1's two, so 75;
+ * A6.4's 26 states and A6.6's catalogue), never from the `plan/11` §2 diagram (AC-14 as restated
+ * by A6.8 and A8.4; T-14).
  *
  * The set rows of A6.3 (13, 30, 31, 32, 34 and 27) are written here as A6 writes them, as a set in
  * the `from` column, and expanded by `TRANSITIONS`. Migration `0007_orders_payments.sql` seeds the
- * same rows one by one, and the test compares the two in both directions. Changing a row means
- * changing this file and the migration, and a reviewer sees both.
+ * same rows one by one (A8.1's two are seeded by `0019_post_purchase.sql`), and the test compares
+ * the two in both directions. Changing a row means changing this file and the migration, and a
+ * reviewer sees both.
  */
 
 export type Actor = "buyer" | "partner" | "admin" | "system";
@@ -107,7 +109,7 @@ export const SET_C = [
 /** `"same"` marks A6.3's "the same state" (a self-loop on each member of the set). */
 type Target = string | "same";
 
-/** A6.3, rows 1–36, as written. */
+/** A6.3, rows 1–36, and A8.1, rows 37–38, as written. */
 const ROWS: readonly (readonly [
   number,
   readonly string[],
@@ -241,9 +243,25 @@ const ROWS: readonly (readonly [
     "chargeback_lost",
     ["system"],
   ],
+  // Spec 002 §14 A8.1 (spec 016 §13 Q9; shipped by `0019_post_purchase`, TASK-337): no candidate
+  // at the first attempt sends the order to `no_partner_available` without passing `routed`.
+  [
+    37,
+    ["authorised"],
+    "order.no_partner_available",
+    "no_partner_available",
+    ["system"],
+  ],
+  [
+    38,
+    ["paid_unrouted"],
+    "order.no_partner_available",
+    "no_partner_available",
+    ["system"],
+  ],
 ];
 
-/** A6.3 with its sets expanded: one row per `(from_status, event)`, 73 in all. */
+/** A6.3 plus A8.1 with their sets expanded: one row per `(from_status, event)`, 75 in all. */
 export const TRANSITIONS: readonly TransitionRow[] = ROWS.flatMap(
   ([, froms, event, to, allowedActors]) =>
     froms.map((from) => ({
