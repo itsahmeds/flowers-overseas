@@ -1343,9 +1343,17 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-panel],
     position: absolute;
     inset: 0;
     border-radius: var(--radius-photo-s);
-    box-shadow: var(--shadow-letter);
-    opacity: 0;
     pointer-events: none;
+  }
+
+  /* Its paint and its resting opacity 0 on a screen only: printed, it is a transparent box at full
+     opacity that paints nothing, so no element in `<main>` sits under full opacity (spec 043 §5.3
+     F, AC-15; TASK-290). */
+  @media screen {
+    [data-fo-card-shadow] {
+      box-shadow: var(--shadow-letter);
+      opacity: 0;
+    }
   }
 
   @media (min-width: 48rem) {
