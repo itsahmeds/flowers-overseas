@@ -43,6 +43,7 @@ here.
 - 2026-10-23, implementer: Linux baselines showed the card's words in a serif; a local build proved Caveat never rendered (root-scoped `--font-hand`). Fixed in the idea 2 section, e2e face checks tightened, touched e2e specs green locally (26). Next: fresh `visual:baselines` run for `dev-components-desktop`, then ready and `ci:full`.
 - 2026-10-23, implementer: `dev-components-desktop` Linux baseline from run 39843386160 committed after looking at it (Caveat on both checkout cards); PR ready with `ci:full`. Next: CI on head.
 - 2026-10-24, finisher: rebased on `origin/main`; main's `dev-components-desktop` baseline had moved, so the old one was dropped and re-rendered (visual-baselines run 40088159402, only that image taken after looking: Caveat on both checkout cards; `laptop-country-category` decode noise not taken). `pnpm gates:cheap` PASS on `0b8b98bd`. Note: PR 316 (TASK-311) also creates `src/config/interactions.ts`, `interactions-css.test.ts` and `interactions-budget.test.ts`; whichever merges second must be rebased and merge both ideas' rows.
+- 2026-10-24 evening (finisher 2): rebased onto `5a2e9f02` (map regenerated). Took only `dev-components-desktop.png` from visual-baselines run 40108714129 (Caveat card previews, page below +112 px); the nine other re-renders were within CI's tolerance on the old head and are not taken.
 
 ## Result
 
