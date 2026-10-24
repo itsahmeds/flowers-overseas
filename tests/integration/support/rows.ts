@@ -105,7 +105,7 @@ export async function orderParents(
 }
 
 /**
- * The columns a `partner_application` row needs since `0020_florists_v0` (spec 011 §5.1;
+ * The columns a `partner_application` row needs since `0022_florists_v0` (spec 011 §5.1;
  * TASK-211), as a SQL fragment's values. Fictional applicant, reserved phone range.
  */
 export const APPLICATION_REQUIRED = {
