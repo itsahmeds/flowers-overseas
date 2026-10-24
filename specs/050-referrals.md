@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed (draft until the founder answers §13 and marks it approved) |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 (growth channel named in `plan/09` "Acquisition note"; switched on by the founder after about 20 real orders) |
 | Plan refs | plan/00 §2 ("Acquisition in Phase 1: community-led ... referral") · plan/09 Phase 1 window 19 Dec to 15 Jan ("referral offer") and "Acquisition note" ("a referral code on every confirmation") · plan/01 §3 (rendering per page type) §5 (module boundaries) §9 (outbox) · plan/02 §4 (URL patterns; "Cart, checkout, confirmation: noindex + robots disallow") §7 (canonical parameter-free; tracking parameters stripped) · plan/03 §8 (formatting) · plan/06 §3 (unit economics) §4 (VAT questions) · plan/07 §1 (lawful bases, minimisation, retention) §2.1 (CRD, Omnibus) §4 (price display) §5 (cookies, essential list) · plan/11 §2 (events additive) · plan/12 §4 (test layers) |
 | ADRs | ADR-0006 (no IP redirects; amounts never vary by location) · ADR-0009 (no order status write; events consumed through the outbox) · ADR-0013 (Resend; no email to friends) · ADR-0015 (Neon) · ADR-0021 (seller is Flowers Overseas LLC, Wyoming; draft in `spec-company-us`, not yet on main). Proposes no new ADR: no non-negotiable rule is bent (§8 "Rules check") |
 | Builds on | spec 002 (`customer`, `order`, `order_line`, `feature_flag`, `retention_policy`, `audit_log`, RLS) · spec 010 and its §14 A-founder-2026-10-22 (basket, `purchase`, `placePurchase`, price-changed notice AC-17 and AC-61, `checkoutMode()`) · spec 013 and its §14 A-founder-2026-10-22 (one payment per purchase, `refund.order_id`, `outboxTargets`, `reconcile`, `cancelOrder`, the confirmation's paid states) · spec 016 (B1 confirmation email) · spec 018 and its accounts amendment (confirmation block, quiet cancel line last, `/{locale}/account`, sign-in, erasure) · spec 012 (flags, permissions, audit) · spec 030b (finance view, `allocateByWeight`, `orderMargin`) · spec 041 (legal documents, cookies page, `company`) · **spec 047 discount codes (being drafted in parallel; not readable when this was written: §5.2 "Requirements on spec 047")** |
 | Founder request | 2026-10-24, approved model (relayed by the orchestrator's work order): fixed amount off the friend's first order above a minimum, never a percentage; the same amount as store credit for the referrer after the friend's order is delivered, usable on the next order, expiring after 6 months, capped per referrer; off by default, switched on in admin; shown on the confirmation page, the confirmation email and the account; shared by copy link, WhatsApp and the share sheet; we never email the friend; designed "to cost money only when it brings a paying customer" |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (pending founder) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
