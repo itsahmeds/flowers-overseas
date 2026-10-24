@@ -23,6 +23,7 @@ import {
   localeSegmentParams,
   resolveLocalePath,
 } from "../../src/modules/catalog";
+import { infoPage } from "../../src/config/info-pages";
 import { infoPagePath, listInfoPages } from "../../src/modules/content";
 import { listCorridorPages } from "../../src/modules/geo";
 import { localePath } from "../../src/modules/i18n/routing";
@@ -292,10 +293,11 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
     );
     // Spec 041's legal documents at this depth (TASK-183): the ones that exist, from the one
     // existence predicate (the imprint is a depth-2 page). Spec 011's walkthrough (TASK-210)
-    // shares this depth: one per locale its file exists in.
+    // shares this depth: one per locale its file exists in. The florists' apply page sits at this
+    // depth too, but has a route file of its own and so is no param here.
     const legal = listInfoPages().filter(
       (page) =>
-        page.pageId !== "how-orders-work" &&
+        infoPage(page.pageId).family === "legal" &&
         infoPagePath(page.pageId, page.locale).split("/").length === 4,
     );
     expect(legal.length).toBeGreaterThan(0);
