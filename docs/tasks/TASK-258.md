@@ -45,10 +45,11 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-24: WIP pushed. Written: `0029_cancel_window_a10` + down (rows 39, 40, `payout_adjustment` with RLS, guard `A10_ROLLBACK_ROWS_IN_USE`), Drizzle mirror and RLS class, transition fixture split (`A6_TRANSITIONS` 73 + `A10_TRANSITIONS` 2), `src/config/orders.ts`, `production.ts` (`productionStartAt`, `runProductionStart`, `startProduction`), `cancel.ts` (`cancelOrder`, `paymentsOutboxHandler` cancel branch), `refunds.ts` (request, submit keyed by refund id, settle with row 32; the seam TASK-261 extends). Unit `production-start.test.ts` green (DST table under TZ=Pacific/Auckland). Next: run `tests/integration/payments-cancel-production.test.ts` (T-15, T-44, T-45, T-52 to T-54) with the local 0021..0027 placeholders, fix, mutations, regenerate `scripts/db-check.snapshot.json`, codebase map, open the 257+258 feature PR. Spec 002 A10 says 80/78 transition rows; this base has 73+2 because A8/A9 rows live in unmerged migrations, so tests count from the fixture, not a literal.
+- 2026-10-24: integration suite green locally (36 cases, PG16, with uncommitted 0021..0027 placeholders); mutations M1 to M13 red (M12/M13 only together, two layers of the demo filter); `db:check` exit 0, snapshot regenerated; `payments.production_start` registered as a job. PR 405 ready for CI.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 405. Migration `0029_cancel_window_a10` + guarded down; `payout_adjustment` (Drizzle mirror, partner-scoped read RLS); `cancelOrder`, `paymentsOutboxHandler` (cancel branch), `refunds.ts` (request, submit, settle), `productionStartAt`, `runProductionStart` (+ job registration), `startProduction`. Tests: unit `production-start.test.ts` (11-row DST table, Warsaw and London, 25 Oct 2026 and 28 Mar 2027); integration `payments-cancel-production.test.ts` 36 cases: T-15 (4 captured E states x 3 actors, authorised, 3-order purchase x 3 actors with a prior partial refund, accepted/paid refusals and applies, in_production and later, rollback inside a caller transaction, idempotent redelivery and sweep (d)), T-44, T-45 (50 runs, both orders of arrival observed: 20 cancel, 30 start), spec 002 T-52, T-53, T-54. Count note: spec 002 A10 says 80 rows (78 after rollback); this base has 73 + 2 because A8/A9's rows live in unmerged migrations; the tests count from the fixture, so they follow once those land.

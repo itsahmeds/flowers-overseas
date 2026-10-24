@@ -881,6 +881,9 @@ describe.skipIf(server.url === undefined)(
           const purchase = await purchaseOf(tx, [5_000], { mode: "live" });
           return pay(tx, purchase, 5_000, { livemode: true });
         });
+        // Every later migration first (each rolls back in its own transaction), so the
+        // catalogue below is this migration's own state and the guard alone decides.
+        await locked(() => runner(rb.url, ["--down", "--to", THIS_VERSION]));
         const catalogue = await introspect(rb.sql);
         const counts = await rowCounts(rb.sql);
         const withLive = await down();

@@ -162,7 +162,7 @@ describe("the committed migration set", () => {
   // TASK-017 added 0004, TASK-018 added 0005 and 0006, the TASK-019…023 feature 0007–0011,
   // TASK-024 0012, TASK-245 0013, TASK-217 0014, TASK-203 0015, TASK-218 0016, TASK-254 0017,
   // TASK-292 0018, TASK-347 0019, TASK-348 0020, TASK-337 0021, TASK-211 0022, TASK-293 0023, TASK-321 0024,
-  // TASK-070 0025, TASK-350 0026).
+  // TASK-070 0025, TASK-350 0026, TASK-258 0029).
   it("reads each committed migration and its rollback from db/migrations", () => {
     expect(readMigrations(migrationsDir).map((m) => m.file)).toEqual([
       "0001_roles_grants_updated_at.sql",
@@ -191,6 +191,7 @@ describe("the committed migration set", () => {
       "0024_blog.sql",
       "0025_product_facets.sql",
       "0026_payment_purchase.sql",
+      "0029_cancel_window_a10.sql",
     ]);
   });
 });

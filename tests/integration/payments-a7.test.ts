@@ -48,6 +48,7 @@ import {
   STATUS_PRESERVING_EVENTS,
   TRANSITION_EVENTS,
   A6_TRANSITIONS,
+  A10_TRANSITIONS,
   TRANSITIONS,
 } from "../fixtures/order-machine.ts";
 import { insertPlacedOrder, walkOrderTo } from "../fixtures/order-state.ts";
@@ -895,8 +896,10 @@ describe.skipIf(server.url === undefined)(
       const [count] = await first.sql<
         { n: number }[]
       >`SELECT count(*)::int AS n FROM order_transition`;
-      expect(count?.n).toBe(transitionsBefore);
+      // A7 adds no row; the only rows after it are spec 002 §14 A10's two (`0029`, TASK-258).
+      expect(count?.n).toBe(transitionsBefore + A10_TRANSITIONS.length);
       expect(transitionsBefore).toBe(A6_TRANSITIONS.length);
+      expect(count?.n).toBe(TRANSITIONS.length);
     });
 
     it("db:check's connected half passes after the forward migration: column drift, RLS coverage, the money pair, the snapshot", async () => {

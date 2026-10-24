@@ -26,6 +26,7 @@ One dated bullet per `/review`, newest last.
 
 - **From `/plan-tasks` (2026-10-05):** TASK-082 is `blocked`; the founder creates the private R2 bucket in the EU jurisdiction with a scoped credential and sets `R2_PRIVATE_BUCKET` (§12 prerequisite 4). Same agent as TASK-214.
 - **From `/review` round 2 and `/break` round 2 of PR 210 (2026-10-14).** For this task, `respondToOffer`: record `timeout` at `sla_expires_at`, because until it does a florist reads an open offer (`response IS NULL`) through `partner_order` and `partner_order_line`; and close partner visibility of a cancelled order whose offer is still open. An answer after `sla_expires_at` and before the engine's `timeout` is a case to settle against spec 011 and test; read what it says before writing the handler.
+- **From TASK-257/258 (2026-10-24, PR 405):** `OrderCapturedV1` and `OrderInProductionV1` are already registered in `src/modules/payments/events.ts`, because spec 013 writes rows 2 and 16 first. The registry refuses a second registration: import these two schemas from there, do not register your own.
 
 ## Escalations
 
