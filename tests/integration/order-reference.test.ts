@@ -124,12 +124,12 @@ async function rawCopy(
     INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id, destination_country_id,
                          destination_postcode, delivery_date, status, buyer_currency_code,
                          buyer_total_minor, base_currency_code, base_total_minor, vat_breakdown,
-                         buyer_snapshot, recipient_snapshot, locale_code)
+                         buyer_snapshot, recipient_snapshot, locale_code, purchase_id)
     SELECT ${id}, ${`${randomUUID().replaceAll("-", "")}abcdefgh`}, mode, customer_id,
            recipient_id, destination_country_id, destination_postcode, delivery_date, 'placed',
            buyer_currency_code, buyer_total_minor, base_currency_code, base_total_minor,
            vat_breakdown, buyer_snapshot, recipient_snapshot,
-           coalesce(${localeCode ?? null}::text, locale_code)
+           coalesce(${localeCode ?? null}::text, locale_code), purchase_id
     FROM "order" WHERE id = ${from}`;
 }
 
@@ -296,9 +296,13 @@ describe.skipIf(server.url === undefined)(
       const result = await rolledBack(scratch.sql, async (tx) => {
         const p = await parents(tx);
         await place(placeInput(p), db(tx));
+        // `0019`'s deferred purchase check has queued events, and Postgres refuses DDL on a table
+        // with pending trigger events: run them now (the purchase totals its one order).
+        await tx`SET CONSTRAINTS ALL IMMEDIATE`;
         // A second unique index on "order", for this transaction only: a second order for the
         // same customer violates it, with a fresh id whose reference is free.
         await tx`CREATE UNIQUE INDEX fixture_one_order_per_customer ON "order" (customer_id)`;
+        await tx`SET CONSTRAINTS ALL DEFERRED`;
         const ids = scriptedIds([]);
         const failure = await pgFailure(tx, (sp) =>
           place(placeInput(p), { ...db(sp), newId: ids.next }),
@@ -344,16 +348,34 @@ describe.skipIf(server.url === undefined)(
     it("AC-47: an order naming a locale absent from locale raises the foreign-key error, through place and through a raw insert", async () => {
       const result = await rolledBack(scratch.sql, async (tx) => {
         const p = await parents(tx);
+        // A lone order's own purchase (`0019`) is written first, in the same locale, so its key
+        // is the one that refuses.
         const throughPlace = await pgFailure(tx, (sp) =>
           place(placeInput(p, { localeCode: "zz" }), db(sp)),
         );
         const { orderId } = await place(placeInput(p), db(tx));
+        const [purchase] = await tx<{ purchase_id: string }[]>`
+          SELECT purchase_id FROM "order" WHERE id = ${orderId}`;
+        // Into an existing purchase, the order's own key refuses.
+        const intoPurchase = await pgFailure(tx, (sp) =>
+          place(
+            placeInput(p, {
+              localeCode: "zz",
+              purchaseId: purchase?.purchase_id ?? "",
+            }),
+            db(sp),
+          ),
+        );
         const raw = await pgFailure(tx, (sp) =>
           rawCopy(sp, orderId, randomUUID(), "zz"),
         );
-        return { throughPlace, raw };
+        return { throughPlace, intoPurchase, raw };
       });
-      for (const failure of [result.throughPlace, result.raw]) {
+      expect(result.throughPlace).toMatchObject({
+        code: "23503",
+        constraint: "purchase_locale_code_locale_code_fk",
+      });
+      for (const failure of [result.intoPurchase, result.raw]) {
         expect(failure).toMatchObject({
           code: "23503",
           constraint: "order_locale_code_locale_code_fk",
