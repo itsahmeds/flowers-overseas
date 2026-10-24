@@ -494,7 +494,7 @@ describe.skipIf(sql === undefined)("migration 0004 applied — media", () => {
             )
           `;
           accepted.push("media_asset a PDF with no pixel size");
-          // Since `0019` (spec 012b, TASK-293) an approval also needs the review ledger: the
+          // Since `0023` (spec 012b, TASK-293) an approval also needs the review ledger: the
           // flag `attest()` sets and an approved row for the asset's checksum in this
           // transaction. With both in place, the check below is what refuses.
           await tx`SELECT set_config('app.allow_review_write', 'on', true)`;

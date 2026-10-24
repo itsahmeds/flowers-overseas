@@ -1,8 +1,8 @@
--- Rollback of 0019_review_attestation (spec 012b §5.1 item 2; TASK-293): the guard triggers, the
+-- Rollback of 0023_review_attestation (spec 012b §5.1 item 2; TASK-293): the guard triggers, the
 -- retention row, then the tables and the functions.
 --
 -- The review columns of `product_translation` and `media_asset` keep whatever `attest()` wrote:
--- after the rollback they are plain columns again, which is what they were before `0019`.
+-- after the rollback they are plain columns again, which is what they were before `0023`.
 
 SET LOCAL ROLE app_owner;
 
