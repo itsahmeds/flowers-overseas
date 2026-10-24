@@ -76,19 +76,6 @@ async function answer(
   redirect(outcome.location);
 }
 
-type Runner = (context: StepContext, form: FormData) => Promise<StepOutcome>;
-
-async function run(
-  runner: Runner,
-  locale: unknown,
-  form: FormData,
-): Promise<StepState> {
-  const bound = BoundLocaleSchema.safeParse(locale);
-  if (!bound.success) return { status: "expired" };
-  const ctx = await context(bound.data);
-  return answer(await runner(ctx, form), ctx.token);
-}
-
 /** Step 1, "Who are the flowers for?" */
 export async function saveRecipientStep(
   locale: unknown,
@@ -131,7 +118,10 @@ export async function removeLineAction(
   _previous: StepState,
   form: FormData,
 ): Promise<StepState> {
-  return run(runRemoveLine, locale, form);
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runRemoveLine(ctx, form), ctx.token);
 }
 
 /** Change one line's size and add-ons from the basket (item 4). */
@@ -140,7 +130,10 @@ export async function updateLineAction(
   _previous: StepState,
   form: FormData,
 ): Promise<StepState> {
-  return run(runUpdateLine, locale, form);
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runUpdateLine(ctx, form), ctx.token);
 }
 
 /** "Use {next}" for one line whose date has gone (D8, AC-60). */
@@ -149,5 +142,8 @@ export async function useNextDateAction(
   _previous: StepState,
   form: FormData,
 ): Promise<StepState> {
-  return run(runUseNextDate, locale, form);
+  const bound = BoundLocaleSchema.safeParse(locale);
+  if (!bound.success) return { status: "expired" };
+  const ctx = await context(bound.data);
+  return answer(await runUseNextDate(ctx, form), ctx.token);
 }

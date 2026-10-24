@@ -44,7 +44,8 @@ const down = readMigration("0007_orders_payments.down.sql");
  * §14 A7, TASK-254) the payment, refund and webhook-inbox columns, checks and index.
  */
 const a7 = readMigration("0017_payments_a7.sql");
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}`;
+/** `0019` (spec 010 §14 A-founder-2026-10-22, TASK-347) adds `"order".purchase_id`, its key and index. */
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${readMigration("0019_purchase.sql")}`;
 
 const TABLES = [
   "order_status",

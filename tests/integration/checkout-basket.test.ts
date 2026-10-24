@@ -19,6 +19,7 @@ import {
   listProducts,
   listTiers,
   priceProjection,
+  productAlternatePaths,
   quote,
 } from "@/modules/catalog";
 import {
@@ -26,6 +27,7 @@ import {
   type Draft,
   type DraftConnection,
   type StepOutcome,
+  appendLine,
   assessBasket,
   createDraft,
   deriveQuote,
@@ -70,6 +72,17 @@ const [SECOND_TIER] = await listTiers(SECOND.sku);
 if (TIER === undefined || SECOND_TIER === undefined) {
   throw new Error("each product needs a tier");
 }
+
+const PL_SELECTION = {
+  locale: "pl" as const,
+  countryIso: "PL" as const,
+  sku: SKU,
+  tierKey: TIER.tierKey,
+  deliveryDate: null,
+  addonKeys: [] as string[],
+};
+const PDP_PATH =
+  (await productAlternatePaths({ sku: SKU, countryIso: "PL" }))["pl"] ?? "";
 
 const OPEN: CheckoutFlagReader = () => Promise.resolve(true);
 const CLOSED: CheckoutFlagReader = (key) =>
@@ -490,6 +503,22 @@ describe.skipIf(server.url === undefined)(
           expect((await basket(connection, fresh, at(6))).lines).toHaveLength(
             1,
           );
+          // The lock layer alone refuses it too: the draft service never appends to it.
+          const direct = await appendLine(
+            draft.id,
+            {
+              countryIso: "PL",
+              sku: SKU,
+              tierKey: TIER?.tierKey ?? "",
+              deliveryDate: null,
+              quote: await deriveQuote(PL_SELECTION, T0),
+              lastSeen: { amountMinor: 1, currency: "PLN" },
+            },
+            at(7),
+            connection,
+          );
+          expect(direct).toEqual({ status: "placed" });
+          expect(await snapshot()).toEqual(before);
         });
       });
     });
@@ -514,6 +543,22 @@ describe.skipIf(server.url === undefined)(
           expect(await lineCount(tx)).toBe(BASKET_MAX_LINES);
           const draft = await basket(connection, token, at(11));
           expect(draft.pendingNotice).toBe("full");
+          // The lock layer alone refuses the sixth too (two requests that both read four lines).
+          const direct = await appendLine(
+            draft.id,
+            {
+              countryIso: "PL",
+              sku: SKU,
+              tierKey: TIER?.tierKey ?? "",
+              deliveryDate: null,
+              quote: await deriveQuote(PL_SELECTION, T0),
+              lastSeen: { amountMinor: 1, currency: "PLN" },
+            },
+            at(12),
+            connection,
+          );
+          expect(direct).toEqual({ status: "full" });
+          expect(await lineCount(tx)).toBe(BASKET_MAX_LINES);
           const raw = await pgFailure(
             tx,
             (sp) => sp`
@@ -634,10 +679,11 @@ describe.skipIf(server.url === undefined)(
           const fresh = await post(connection, await fields(), {
             flags: CLOSED,
           });
-          expect(fresh.response.headers.get("location")).not.toBe("/pl/basket");
+          expect(fresh.response.headers.get("location")).toBe(PDP_PATH);
           expect(fresh.cookies).toEqual([]);
           expect(await lineCount(tx)).toBe(0);
           const token = tokenOf(await post(connection, await fields()));
+          await tx`UPDATE checkout_draft SET pending_notice = NULL`;
           const into = await post(connection, await fields(), {
             token,
             now: at(1),
@@ -646,6 +692,10 @@ describe.skipIf(server.url === undefined)(
           expect(into.response.headers.get("location")).toBe("/pl/basket");
           expect(into.cookies).toEqual([]);
           expect(await lineCount(tx)).toBe(1);
+          // No notice exists for a closed destination: the basket is not told "other mode".
+          expect(
+            (await basket(connection, token, at(2))).pendingNotice,
+          ).toBeNull();
         });
       });
     });
@@ -785,6 +835,20 @@ describe.skipIf(server.url === undefined)(
               now: new Date(iso),
               flags: OPEN,
             });
+            const [one, two] = assessed.lines;
+            // A date-gone line is excluded from the total (D8): only line 1's amount, or both.
+            expect(assessed.total?.amountMinor).toBe(
+              (one?.amount?.amountMinor ?? 0) +
+                (two?.date.status === "gone"
+                  ? 0
+                  : (two?.amount?.amountMinor ?? 0)),
+            );
+            if (two?.date.status === "gone") {
+              expect(two.availability).toEqual({
+                status: "date_gone",
+                next: two.date.next,
+              });
+            }
             return assessed.lines.map((line) => line.date);
           };
           const ok = { status: "ok" };

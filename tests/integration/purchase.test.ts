@@ -202,9 +202,7 @@ async function refusal(promise: Promise<unknown>): Promise<OrderErrorCode> {
   throw new Error("expected a refusal, and the call succeeded");
 }
 
-async function counts(
-  tx: Tx,
-): Promise<{
+async function counts(tx: Tx): Promise<{
   purchases: number;
   orders: number;
   lines: number;

@@ -150,13 +150,12 @@ export function stepPath(
   step: CheckoutStep,
   line = 1,
 ): string {
-  const query = [
-    ...(step === "recipient" && line === 1 ? [] : [`step=${step}`]),
-    ...(line === 1 ? [] : [`line=${String(line)}`]),
-  ];
-  return query.length === 0
-    ? `/${locale}/checkout`
-    : `/${locale}/checkout?${query.join("&")}`;
+  if (line === 1) {
+    return step === "recipient"
+      ? `/${locale}/checkout`
+      : `/${locale}/checkout?step=${step}`;
+  }
+  return `/${locale}/checkout?step=${step}&line=${String(line)}`;
 }
 
 /** The basket page. Never a query string: notices travel in `pending_notice`. */

@@ -89,6 +89,13 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "the checkout's step selector (spec 010 §2: `?step=` is the only query; no personal data)",
   },
+  // Spec 010 §14 A-founder-2026-10-22 item 5 (TASK-348): `&line={n}` beside `step`, an integer
+  // position from 1 to BASKET_MAX_LINES, never personal data (AC-34).
+  {
+    entry: "src/modules/checkout/steps.ts#line",
+    reason:
+      "the basket line a checkout screen is for (spec 010 §14 A-founder-2026-10-22: `&line=` is an integer position)",
+  },
   {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
@@ -551,6 +558,7 @@ describe("the real tree (T-59)", () => {
       "src/lib/auth/surface.ts#token",
       "src/lib/auth/surface.ts#callbackUrl",
       "src/modules/checkout/steps.ts#step",
+      "src/modules/checkout/steps.ts#line",
       "src/app/admin/(signed-in)/users/actions.ts#result",
       "src/app/admin/(signed-in)/audit/page.tsx#entity",
       "src/app/admin/(signed-in)/audit/page.tsx#actor",

@@ -27,7 +27,23 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (self-review, PR 383; no reviewer agent, founder 2026-10-22):
+  - **For every open PR that writes `"order"` rows in tests** (TASK-337 and the spec 011/013/016/018
+    builders): `"order".purchase_id` is `NOT NULL` from `0019`, so a raw insert names a purchase of
+    the same currency and mode (`tests/fixtures/order-state.ts` `insertPlacedOrder` does it, and
+    skips it on a database rolled back below `0019`); `orderService.place` without `purchaseId`
+    writes its own one-order purchase. A test that runs DDL on `"order"` after `place` in one
+    transaction must `SET CONSTRAINTS ALL IMMEDIATE` first (pending deferred trigger events block
+    DDL), then `DEFERRED` again. Their migrations renumber after `0020`.
+  - **TASK-205** places through `placePurchase` with `totalMinor` = the basket's confirmed total,
+    then `transition('order.authorised')` and `demoRoute` per order, in the same transaction; the
+    deferred `purchase_total_check` runs at its commit.
+  - **TASK-350** (`payment_purchase`) keys `payment.purchase_id` to `purchase (id,
+    buyer_currency_code)`; the target `UNIQUE (id, buyer_currency_code, mode)` exists, a
+    two-column one does not yet (add it there or key on the three).
+  - Deviation, recorded: `purchase.buyer_currency_code` is `text` with the `^[A-Z]{3}$` check
+    rather than `char(3)`, so the composite key compares like types with `currency.code` and
+    `"order".buyer_currency_code` (both `text`).
 
 ## Escalations
 
@@ -41,11 +57,26 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: worktree `../fo-wt-347`, branch `task/TASK-347-basket-engine`, draft PR 383. Migration
+  `0019_purchase` + down, Drizzle mirror, `db/rls.ts` class `SYSTEM_WRITE_ADMIN_READ_TABLES`,
+  `placePurchase`, `PlaceOrderInput.purchaseId`, admin `purchaseId`; `tests/integration/purchase.test.ts`
+  and `purchase-migration.test.ts` green on a local PG16; `db:check` snapshot regenerated. Mutations
+  M1 to M8 each red (PR `## Self-review`). Next: TASK-348 in the same PR.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 383 (feature PR with TASK-348). Migration **`0019_purchase`** + down: `purchase`, `"order".purchase_id`
+`NOT NULL` with the composite key to `purchase (id, buyer_currency_code, mode)`, the backfill (one
+purchase per existing order, `updated_at` untouched, proved by a DO block), the deferred constraint
+trigger `purchase_total_check` (`PURCHASE_TOTAL_MISMATCH` at commit, empty purchase refused), RLS
+`purchase_system` (all) and `purchase_admin` (select). `placePurchase` in
+`src/modules/orders/service/purchase.ts`; `place` takes `purchaseId` (absent: a one-order purchase
+of its own, inside its savepoint); `AdminOrderListItemSchema.purchaseId`; `purchase_id` added to
+`PARTNER_FORBIDDEN_COLUMNS`. Tests: integration `purchase.test.ts` (12: T-63 N = 1, 2, 5 across two
+destinations, a real COMMIT, the refusals, the lone `place`; T-66 key, commit-time mismatch, empty
+purchase, later updates, concurrency; T-69) and `purchase-migration.test.ts` (1: backfill over demo,
+test and live with a refund, down with purchases present, up again); unit `rls-policies.test.ts`
+(the new class); existing order suites adapted. 12 mutations, each red.
