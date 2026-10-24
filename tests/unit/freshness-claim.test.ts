@@ -15,6 +15,12 @@
  *     contains no "7-day", no freshness claim and no ICU argument naming days. The same scan run
  *     over the catalogue with "7-day", `{days}` or `{freshnessDays}` restored in any of the named
  *     keys, in any locale, reports it.
+ *  3. **The catalogue copy and message scan (TASK-374).** No seed copy row (every locale, every
+ *     entity, every text field), no seed snapshot value and no message value in any catalogue
+ *     under `messages/` states a number of days or weeks of freshness ("carnations often last two
+ *     weeks in water"). Product copy renders on indexable product pages, so spec 009 §14 A11's
+ *     "never a number of days" reaches it too. Putting the withdrawn sentence back into a copy of
+ *     the real dataset turns the reader red.
  */
 import {
   existsSync,
@@ -727,5 +733,115 @@ describe("A11: no guarantee value promises a number of days, in any locale", () 
     expect(
       violations("# Guarantee\n\nYour flowers stay fresh for 7 days."),
     ).not.toEqual([]);
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* 3. The catalogue copy and message scan (TASK-374)                           */
+/* -------------------------------------------------------------------------- */
+
+/** Every string leaf of a JSON file under `dir` (recursively), as `[file#path, value]`. */
+function jsonStrings(
+  dir: string,
+  keep: (file: string) => boolean = () => true,
+): readonly (readonly [string, string])[] {
+  return readdirSync(dir, { withFileTypes: true, recursive: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => join(entry.parentPath, entry.name))
+    .filter(keep)
+    .sort()
+    .flatMap((file) =>
+      leaves(JSON.parse(readFileSync(file, "utf8"))).map(
+        ([path, value]) =>
+          [`${file.slice(repoRoot.length + 1)}#${path}`, value] as const,
+      ),
+    );
+}
+
+/** Every freshness claim among `[where, text]` pairs, as `where: claim beside word`. */
+function copyClaims(
+  values: readonly (readonly [string, string])[],
+): readonly string[] {
+  return values.flatMap(([where, text]) =>
+    freshnessClaims(text).map(
+      (claim) => `${where}: "${claim.claim}" beside "${claim.freshness}"`,
+    ),
+  );
+}
+
+const SEED_COPY_DIR = join(repoRoot, "seed/data/copy");
+const SEED_SNAPSHOT_DIR = join(repoRoot, "seed/snapshot");
+const MESSAGES_DIR = join(repoRoot, "messages");
+
+/** The message catalogues, not their `.meta.json` review records. */
+const isCatalogue = (file: string): boolean => !file.endsWith(".meta.json");
+
+describe("A11 (TASK-374): no catalogue copy or message states a number of days of freshness", () => {
+  it("reads every copy locale, the snapshot and every message catalogue (positive control)", () => {
+    const copy = jsonStrings(SEED_COPY_DIR);
+    for (const locale of LOCALES) {
+      expect(
+        copy.some(([where]) =>
+          where.startsWith(`seed/data/copy/${locale}/products.json#`),
+        ),
+        locale,
+      ).toBe(true);
+    }
+    expect(
+      jsonStrings(SEED_SNAPSHOT_DIR).some(([where]) =>
+        where.startsWith("seed/snapshot/product_translation.json#"),
+      ),
+    ).toBe(true);
+    const messages = jsonStrings(MESSAGES_DIR, isCatalogue).map(
+      ([where]) => where.split("#")[0],
+    );
+    expect([...new Set(messages)]).toEqual(
+      expect.arrayContaining([
+        "messages/admin/en.json",
+        "messages/de.json",
+        "messages/en-gb.json",
+        "messages/en.json",
+        "messages/pl.json",
+      ]),
+    );
+    expect(messages.some((file) => file?.endsWith(".meta.json"))).toBe(false);
+  });
+
+  it("no seed copy row, in any locale or entity, makes a freshness claim", () => {
+    expect(copyClaims(jsonStrings(SEED_COPY_DIR))).toStrictEqual([]);
+  });
+
+  it("no seed snapshot value makes a freshness claim", () => {
+    expect(copyClaims(jsonStrings(SEED_SNAPSHOT_DIR))).toStrictEqual([]);
+  });
+
+  it("no message value, in any catalogue, makes a freshness claim", () => {
+    expect(copyClaims(jsonStrings(MESSAGES_DIR, isCatalogue))).toStrictEqual(
+      [],
+    );
+  });
+
+  it("putting a withdrawn sentence back into the real copy turns the reader red", () => {
+    const copy = jsonStrings(SEED_COPY_DIR);
+    const target = "seed/data/copy/en/products.json#rows.";
+    const index = copy.findIndex(
+      ([where]) => where.startsWith(target) && where.endsWith(".descriptionMd"),
+    );
+    expect(index).toBeGreaterThanOrEqual(0);
+    for (const withdrawn of [
+      "Carnations often last two weeks in water.",
+      "Alstroemeria often lasts two weeks.",
+      "Sie halten oft zwei Wochen.",
+      "Goździki często wytrzymują dwa tygodnie.",
+    ]) {
+      const restored = copy.map(([where, text], at) =>
+        at === index
+          ? ([where, `${text} ${withdrawn}`] as const)
+          : ([where, text] as const),
+      );
+      const claims = copyClaims(restored);
+      expect(claims, withdrawn).toHaveLength(1);
+      expect(claims[0], withdrawn).toContain(copy[index]?.[0] ?? "-");
+    }
   });
 });
