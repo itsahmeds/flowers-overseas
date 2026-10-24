@@ -24,7 +24,12 @@ sentence, everything else lives here (spec 001 §14 A15, AC-34). Scaffold it wit
 
 ## Carry-forwards
 
-_None recorded._
+- **To TASK-389 (cards in a country):** `ProductCardViewSchema` now carries `equivalents` (nullable), `slots` (nullable) and `localSpecial` (boolean); `productCardView()` sets them `null`, `null`, `false` and no card renders them. TASK-389 fills `equivalents` (with `displayRateFor()`) and computes `localSpecial` (a non-core product saleable in exactly one shop country, over `shopSet()`); the countdown's task fills `slots`. `tests/unit/catalog-listing-no-card-equivalents.test.ts` pins `equivalents === null` until then and is that task's to flip.
+- **To TASK-388 / TASK-386 / TASK-383 (country-less cards):** `CountryLessCardViewSchema` (alias `HubCardViewSchema`) keeps `href` optional, because today's hub cards still link one country's product page (TASK-315). AC-6's country-less form links the chooser (`chooserPath(locale, chooserNextPath({ locale, kind: "product", sku }))`); the task that moves the hubs onto the chooser may make `href` required.
+- **To TASK-390 (bands and facets):** the band keys are `PRICE_BAND_KEYS` and the parameter `PRICE_BAND_PARAMETER = "price"` in `src/config/commerce.ts`; spec 008's `FACET_PARAMETERS.priceBand` and the listing parameter route's honouring of `?price=` are TASK-390's (`countryVersionOf` already answers `/{shop root}?price={band}`).
+- **To spec 045's task (search):** `countryVersionOf` answers the `search` shape with the shop root while spec 045's results page is unpublished; its task gives the shape its results URL with the form's `q`.
+- **To TASK-395 (migration):** `country.sortWeight` and `product.coreRank` live in the seed; `countryRegistryFromRows()` carries the file's `sortWeight` until `country.sort_weight` exists, and `toProductRow()` does not project `core_rank` yet.
+- **Reading, for the orchestrator:** item 3's table says an occasion hub's `next` lands on "the country occasion of the same key, else the shop root". Every evergreen occasion (birthday, sympathy, ...) has no country occasion page (spec 008 §14 A1), and the hub's own destination row for that country links the same-key **category** (design ruling, `docs/design/README.md` TASK-188 row (3)). `countryVersionOf` uses the hub's own rule (`hubDestinationHref()`), so the chooser lands exactly where the hub's row for that country links, and the shop root only where that row is text. If the founder wants the literal reading, it is one line in `src/modules/catalog/chooser.ts`.
 
 ## Escalations
 
@@ -36,11 +41,22 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-25: config (`src/config/commerce.ts`), seed (`sortWeight` on 7 countries, `coreRank` on the founder's 10, `seed:check` rule `counts/core-range-size`), `chooseSegment` in `locales.data.ts`, `src/modules/catalog/{shop,country-order,chooser}.ts`, the one country order in `publishedCountries(locale)`, the card's two forms. Tests: `tests/unit/catalog-shop.test.ts`, `tests/unit/catalog-chooser.test.ts`, 2 seed-check fixtures; 16 mutations each red. PR 412. Next: TASK-385 stacked on this branch.
 
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR https://github.com/itsahmeds/flowers-overseas/pull/412. The commerce foundation, pure and
+data-only (renders nothing new): `shopCountries`, `shopSet`, `coreRange`, `isCore`,
+`isCoreRangeSize` over a `ShopData` seam (`src/modules/catalog/shop.ts`); the one country order
+(`orderCountries`, `orderedCountryCodes`, `countryDisplayName`: `sortWeight`, then the name in the
+locale's collation, then ISO) now behind `publishedCountries(locale)` and the product page set, so
+"Poland first" is gone (today's `en` order: FR, DE, IT, NL, PL, RO, ES, as the chooser board
+draws it); the chooser helpers (`chooseSegment`, `chooserPath`, `chooserNextPath`,
+`parseChooserNext`, `parseChooserPath`, `countryVersionOf`); `ProductCardViewSchema`'s two forms
+(`CountryLessCardViewSchema`, `ListingCardViewSchema`, `DeliverySlotsViewSchema`); config
+`CORE_RANGE_SIZE` 8 to 12, `CORE_MIN_FLORISTS` 2, `PICKER_CHIPS` 6. Tests: unit
+`catalog-shop.test.ts` (96, including the source scan over 40-odd reachable files),
+`catalog-chooser.test.ts` (63), two `seed-check` fixtures (7 and 13 core products); 12 existing
+test files updated for the new order and fields; URL fixtures regenerated (reordered only). No
+i18n key added (en-gb share unchanged). No local build: nothing renders differently except the
+order of country lists, which CI's e2e and visual runs judge.
