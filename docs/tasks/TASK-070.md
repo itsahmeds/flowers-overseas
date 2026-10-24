@@ -39,7 +39,7 @@ Branch `task/TASK-070-db-catalogue-providers`. **Blocked on TASK-013** (spec 002
   provider until TASK-071 writes `fx_rate` rows.
 - **TASK-297:** the product editor writes the `en` `product_translation` in the same transaction as
   the product: a product without it makes the database catalogue read fail closed.
-- **Orchestrator:** a spec 002 §5.1 amendment naming `0020`'s four columns (E1).
+- **Orchestrator:** a spec 002 §5.1 amendment naming `0026`'s four columns (E1).
 - **Later:** a price read scoped to one (product, country) needs an interface change; reconsider
   if `country_price` grows past a few tens of thousands of rows.
 - From `/review 56`: the `catalog.price_ambiguous` emit test is added here
@@ -59,7 +59,8 @@ text and record the ruling, then continue"); none is about money, so none blocks
   colours (14), the allergen attribute (4 gift sets) and the order of a product's occasions had no
   column, and the seed never wrote `product_occasion` at all. Neither spec 005 nor spec 012b's
   slice A migrations list the change. Ruling: `0020_product_facets` (number after PR 320's `0019`,
-  as the work order allows) adds `product.other_flowers text[]`, `product.other_colours text[]`,
+  as the work order allows; renumbered `0026_product_facets` on 2026-10-24 by the finisher's work
+  order, since `0019`..`0025` are claimed by PRs 383, 384, 326, 320, 307 and TASK-321) adds `product.other_flowers text[]`, `product.other_colours text[]`,
   `product.allergen_note boolean` (defaults `'{}'`, `'{}'`, `false`; a check refuses the primary
   among the others) and `product_occasion.sort`; the seed writes them and the `product_occasion`
   edges; a one-time backfill fills rows the seed already wrote (`source = 'seed'` and all three
@@ -112,6 +113,15 @@ text and record the ruling, then continue"); none is about money, so none blocks
      four defaults; `db-check-live` fails without it).
   3. `pnpm gates:cheap`, push, `gh pr ready 324`, `gh pr edit 324 --add-label ci:full`; set the
      TASKS.md row to `in_review` with the PR link.
+- 2026-10-24 (finisher): rebased on `origin/main` (`692a24b5`), codebase map regenerated at each
+  conflict; migration renumbered `0026_product_facets` per the work order; `db-check.snapshot.json`
+  regenerated (+7 lines: three checks, four defaults) on a scratch PG16; the carry-forwards heading
+  fix clears CI's `tasks-open-decisions` lint failure. On a scratch PG16 with uncommitted empty
+  `0019`..`0025` placeholders: integration 138/138 (eight files), mutations M1-M7 each red again.
+  **Until `0019`..`0025` are on `main`, `db:check` reports a version gap**, so CI's `db-check`, and
+  every job that runs `db:migrate`, plus 11 unit cases (`db-check`, `db-check-recipient-email`,
+  `db-migrate`'s list) stay red on this branch alone; after they merge: rebase, regenerate the
+  snapshot, add the seven predecessors to `db-migrate.test.ts`'s list, re-fire `ci:full`.
 
 ## Result
 
@@ -120,7 +130,7 @@ PR [#324](https://github.com/itsahmeds/flowers-overseas/pull/324). AC-27 and AC-
 
 - **Delivered:** `src/modules/catalog/db/{read,catalogue,price,fx,index}.ts`;
   `src/modules/catalog/frozen.ts` (shared deep freeze); `withCatalogProviders()` in `providers.ts`;
-  migration `0020_product_facets` (+ down) and its Drizzle mirror; the seed writes the facet columns
+  migration `0026_product_facets` (+ down) and its Drizzle mirror; the seed writes the facet columns
   and `product_occasion`; `check:no-db` leaves `src/modules/catalog/db` out; the contract's
   `emptyInPlace` fix; the pricing runbook §3.1.
 - **Tests:** integration `catalog-db-providers` (65: the shared contract with exact seeded counts,
