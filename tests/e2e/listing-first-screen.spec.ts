@@ -394,7 +394,7 @@ test.describe("T-35, T-05: the head holds the H1, the quiet line and the toolbar
           const between: string[] = [];
           for (const element of Array.from(main.querySelectorAll("*"))) {
             if (!follows(h1, element) || !follows(element, toolbar)) continue;
-            if (element.contains(toolbar)) continue;
+            if (h1.contains(element) || element.contains(toolbar)) continue;
             const parent = element.parentElement;
             if (
               parent !== null &&
