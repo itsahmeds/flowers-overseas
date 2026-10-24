@@ -1,59 +1,66 @@
 /**
- * The language popup in a browser (spec 003 §14 A14 Shape as amended by A16; AC-12 and AC-28 as
- * A16 clause 6 restates them, T-12 and T-28; spec 004 §14 A23 AC-39, T-41; TASK-119).
+ * The language popup on the committed registry (spec 003 §14 A-founder-2026-10-19d; AC-28 (a) and
+ * (h)'s repo checks, AC-46's popup half, spec 004 AC-39 and T-41's e2e half; TASK-280).
  *
- * Every test starts from a **first visit** (`NO_LOCALE_CHOICE`; the config seeds `fo_locale` for
- * every other suite) and enters through `/`, which is one 308 to `/en`.
+ * `en` and `en-gb` are the shown locales and share one primary language, so `languageOffer()` is
+ * empty on every page: the popup never opens. On `/en`, `/en-gb`, `/de` and `/pl`, at 390 × 844 and
+ * 1280 × 800, with no `fo_locale` and each of the four browser-language sets (and once with
+ * `cf-ipcountry: DE` on the document request), after hydration and network idle:
  *
- *  (a) the popup opens after hydration: the heading, the shown locales' native names once each in
- *      registry order (English and English (UK); spec 003 §14 A-founder-2026-10-14c), English
- *      marked as the default;
- *  (b) the hint only highlights: `["en-GB"]` marks English (UK) and nothing navigates;
- *      `["de-DE","de"]` marks nothing, because `de` is hidden (AC-46); with `cf-ipcountry: PL`
- *      and `["en-US"]` nothing carries a hint and nothing asks `/api/geo`;
- *  (c) the close button, `Esc` and a tap outside each close it at `/en` and set `fo_locale=en`,
- *      with the §13 Q4 attributes, and it does not reopen on reload;
- *  (d) choosing English (UK) follows its link to `/en-gb` with `fo_locale=en-gb`;
- *  (e) a valid cookie means it never renders; a forged `fo_locale=zz` means it opens, and the next
- *      act rewrites the value;
- *  (f) the consent sheet is never on screen with it (also `consent-banner.spec.ts`);
- *  (g) a top sheet at 360 × 640 and 390 × 844 (top edge y 0, ≤ 260 px, clear of the sentence card
- *      at 390), the page still scrolls under it, a centred card at 1280 × 800 and 1440 × 900, and
- *      no layout shift at any size;
- *  (h) a close button of at least 44 × 44 CSS px, and nothing left of the old strip.
+ *  - no `[data-fo-language-popup]` element exists;
+ *  - no request is made for the popup island's chunk — resolved first from the build output
+ *    (clause 9: the lazy chunk a Turbopack loader stub requests that carries the island's marker,
+ *    `lazyChunksCarrying`, asserted to exist and be non-empty) — and none to `/api/geo`;
+ *  - `<html>` carries no `data-fo-locale-gate`;
+ *  - no `fo_locale` cookie exists, the URL is unchanged and no main-frame navigation fired.
  *
- * "Mark" in (b) means the popup's own marks (current, default, browser match). The "Beta" tag is
- * the registry's machine-draft tag the header switcher shows too, and it is not a hint; with `de`
- * and `pl` hidden, no option carries it today.
+ * The rule itself, the opening cases and the props are unit and integration tests under a fixture
+ * registry with `de` shown (`tests/unit/i18n-hints.test.ts`, `tests/unit/i18n-language-offer.test.tsx`,
+ * `tests/unit/i18n-language-popup.test.tsx`). The dialog's shape, closing and choosing in a browser
+ * move to the task that shows `de` or `pl` again and builds the slim bar (clause 4).
  */
-import { type BrowserContext, type Page, expect, test } from "@playwright/test";
+import { readdirSync, statSync } from "node:fs";
+import { join, resolve } from "node:path";
 
-import {
-  SENTENCE_REGION,
-  recordLayoutShifts,
-  shiftOutside,
-} from "../support/layout-shift.ts";
-import { motionsSettled } from "../support/at-rest.ts";
+import { type Page, expect, test } from "@playwright/test";
+
+import { lazyChunksCarrying } from "../support/consent.ts";
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
 
-test.use({ storageState: NO_LOCALE_CHOICE });
+import { DEFERRED_ISLANDS } from "../../src/modules/ui/deferred/deferredSet.ts";
 
-const POPUP = "dialog[data-fo-language-popup]";
-const OPEN = `${POPUP}[open]`;
-const CLOSE = "[data-fo-language-popup-close]";
-const option = (code: string): string => `[data-fo-language-option="${code}"]`;
-const CONSENT_SHOWN = '[data-fo-consent="shown"]';
-const SENTENCE = "[data-fo-sentence]";
+const PAGES = ["/en", "/en-gb", "/de", "/pl"] as const;
+const SIZES = [
+  { width: 390, height: 844 },
+  { width: 1280, height: 800 },
+] as const;
+const LANGUAGES = [["de-DE", "de"], ["pl-PL"], ["en-GB"], ["en-US"]] as const;
 
-/** 365 days, `plan/03` §1 / §13 Q4. */
-const YEAR_IN_SECONDS = 31_536_000;
+const DIST = resolve(import.meta.dirname, "../../.next");
+const MARKER =
+  DEFERRED_ISLANDS.find((island) => island.id === "language-popup")?.marker ??
+  "missing:language-popup";
 
-/** `navigator.languages` as the test needs it, before any script of the page runs. */
+/** Clause 9: the popup island's chunk, by the file the build output records for it. */
+function popupChunk(): string {
+  const carrying = lazyChunksCarrying(MARKER, DIST);
+  if (carrying.length !== 1) {
+    throw new Error(
+      `expected one chunk carrying ${MARKER}, found ${String(carrying.length)}`,
+    );
+  }
+  const chunk = carrying[0]!;
+  if (statSync(join(DIST, chunk)).size === 0) {
+    throw new Error(`${chunk} is empty`);
+  }
+  return chunk;
+}
+
 async function forceLanguages(
-  target: Page | BrowserContext,
+  page: Page,
   languages: readonly string[],
 ): Promise<void> {
-  await target.addInitScript((values: readonly string[]) => {
+  await page.addInitScript((values: readonly string[]) => {
     Object.defineProperty(navigator, "languages", {
       configurable: true,
       get: () => values,
@@ -65,514 +72,128 @@ async function forceLanguages(
   }, languages);
 }
 
-/** The §13 Q4 attribute set, read from the browser's own jar. */
-async function expectLocaleCookie(
-  context: BrowserContext,
-  value: string,
-  baseURL: string | undefined,
-): Promise<void> {
-  const cookie = (await context.cookies()).find(
-    (candidate) => candidate.name === "fo_locale",
-  );
-  expect(cookie, "fo_locale is in the browser cookie jar").toBeDefined();
-  // One value, rewritten in place: a second `fo_locale` beside a forged one would not be a rewrite.
-  expect(
-    (await context.cookies()).filter(
-      (candidate) => candidate.name === "fo_locale",
-    ),
-  ).toHaveLength(1);
-  expect(cookie!.value).toBe(value);
-  expect(cookie!.path).toBe("/");
-  expect(cookie!.sameSite).toBe("Lax");
-  expect(cookie!.httpOnly).toBe(false);
-  expect(cookie!.secure).toBe(
-    new URL(baseURL ?? "http://localhost:3000").protocol === "https:",
-  );
-  expect(cookie!.expires - Date.now() / 1000).toBeGreaterThanOrEqual(
-    YEAR_IN_SECONDS - 600,
-  );
-}
-
-/** The popup's marks on one option, by kind. */
-async function marksOn(page: Page, code: string): Promise<string[]> {
-  return page
-    .locator(`${option(code)} [data-fo-mark]`)
-    .evaluateAll((nodes) =>
-      nodes.map((node) => node.getAttribute("data-fo-mark") ?? ""),
-    );
-}
-
-/** The layout shifts recorded since the last `clearShifts()`. */
-async function sumOfShifts(page: Page): Promise<number> {
-  return page.evaluate(() =>
-    (
-      (window as unknown as { __foShifts?: { value: number }[] }).__foShifts ??
-      []
-    ).reduce((total, entry) => total + entry.value, 0),
-  );
-}
-
-async function clearShifts(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const store = window as unknown as { __foShifts?: unknown[] };
-    if (store.__foShifts !== undefined) store.__foShifts.length = 0;
+/** Everything the visit did that AC-28 (a) forbids, in one record. */
+async function visit(
+  page: Page,
+  path: string,
+  languages: readonly string[],
+  headers: Record<string, string> = {},
+) {
+  const chunk = popupChunk();
+  const requests: string[] = [];
+  const navigations: string[] = [];
+  page.on("request", (request) => {
+    requests.push(request.url());
+    // A document request of the main frame: a navigation that loads a page. Next's own
+    // same-document history updates are not navigations and do not appear here.
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) {
+      navigations.push(request.url());
+    }
   });
+  await forceLanguages(page, languages);
+  if (Object.keys(headers).length > 0) {
+    await page.route(`**${path}`, async (route) =>
+      route.continue({ headers: { ...route.request().headers(), ...headers } }),
+    );
+  }
+  const response = await page.goto(path);
+  expect(response?.status()).toBe(200);
+  await page.waitForLoadState("networkidle");
+  return {
+    chunk,
+    popups: await page.locator("[data-fo-language-popup]").count(),
+    chunkRequested: requests.some(
+      (url) => new URL(url).pathname === `/_next/${chunk}`,
+    ),
+    geo: requests.filter((url) => new URL(url).pathname.startsWith("/api/geo")),
+    gate: await page.evaluate(() =>
+      document.documentElement.getAttribute("data-fo-locale-gate"),
+    ),
+    localeCookie: (await page.context().cookies()).find(
+      (cookie) => cookie.name === "fo_locale",
+    ),
+    pathname: new URL(page.url()).pathname,
+    navigations: navigations.length,
+  };
 }
 
-async function openFromRoot(page: Page): Promise<void> {
-  await page.goto("/");
-  await expect(page.locator(OPEN)).toBeVisible();
-  // Its shape is read at rest, once motion 10's opening has ended (TASK-194).
-  await motionsSettled(page);
-  expect(new URL(page.url()).pathname).toBe("/en");
-}
+test.use({ storageState: NO_LOCALE_CHOICE });
 
-test.describe("(a) it opens on the first view of /en", () => {
-  test("with L1, the shown native names in registry order, and English the default", async ({
+test.describe("AC-28 (a): the committed registry offers nothing, so nothing opens", () => {
+  test.beforeEach(({}, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "e2e-desktop",
+      "sizes and languages are set per case; one project runs them",
+    );
+  });
+
+  test("the popup's chunk is in the build output (clause 9's existence check)", () => {
+    expect(popupChunk()).toMatch(/^static\/chunks\/.+\.js$/u);
+  });
+
+  for (const path of PAGES) {
+    for (const size of SIZES) {
+      test(`${path} at ${String(size.width)} × ${String(size.height)}: no popup, no chunk, no gate, no cookie, no navigation for any browser language`, async ({
+        browser,
+      }) => {
+        test.setTimeout(90_000);
+        for (const languages of LANGUAGES) {
+          const context = await browser.newContext({
+            viewport: size,
+            storageState: NO_LOCALE_CHOICE,
+          });
+          try {
+            const page = await context.newPage();
+            const seen = await visit(page, path, languages);
+            const label = `${path} ${languages.join(",")}`;
+            expect(seen.popups, label).toBe(0);
+            expect(seen.chunkRequested, `${label}: ${seen.chunk}`).toBe(false);
+            expect(seen.geo, label).toEqual([]);
+            expect(seen.gate, label).toBeNull();
+            expect(seen.localeCookie, label).toBeUndefined();
+            expect(seen.pathname, label).toBe(path);
+            expect(seen.navigations, label).toBe(1);
+          } finally {
+            await context.close();
+          }
+        }
+      });
+    }
+  }
+
+  test("a country header on the document request changes nothing (browser language only)", async ({
     page,
   }) => {
-    await forceLanguages(page, ["en-US"]);
-    await openFromRoot(page);
-
-    await expect(page.locator(`${OPEN} h2`)).toHaveText(
-      "Choose your preferred language",
-    );
-    const names = await page
-      .locator(`${OPEN} a[data-fo-language-option] > span:first-child`)
-      .allTextContents();
-    expect(names).toEqual(["English", "English (UK)"]);
-    expect(await marksOn(page, "en")).toEqual(["current", "default"]);
-    await expect(
-      page.locator(`${option("en")} [data-fo-mark="default"]`),
-    ).toHaveText("Default");
-    // It is a modal native dialog labelled by its heading.
-    expect(
-      await page.locator(POPUP).evaluate((node) => node.matches(":modal")),
-    ).toBe(true);
-    const labelledBy = await page
-      .locator(POPUP)
-      .getAttribute("aria-labelledby");
-    await expect(page.locator(`[id="${labelledBy}"]`)).toHaveText(
-      "Choose your preferred language",
-    );
-    // Focus moved in on open.
-    expect(
-      await page.evaluate(
-        () =>
-          document.activeElement?.closest("dialog[data-fo-language-popup]") !=
-          null,
-      ),
-    ).toBe(true);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const seen = await visit(page, "/en", ["de-DE", "de"], {
+      "cf-ipcountry": "DE",
+    });
+    expect(seen.popups).toBe(0);
+    expect(seen.chunkRequested).toBe(false);
+    expect(seen.geo).toEqual([]);
+    expect(seen.gate).toBeNull();
+    expect(seen.localeCookie).toBeUndefined();
   });
 });
 
-test.describe("(b) the hint only highlights", () => {
-  test("a British browser gets English (UK) highlighted, and nothing navigates", async ({
-    page,
-  }) => {
-    await forceLanguages(page, ["en-GB"]);
-    await page.goto("/");
-    await expect(page.locator(OPEN)).toBeVisible();
-
-    const navigations: string[] = [];
-    page.on("framenavigated", (frame) => {
-      if (frame === page.mainFrame()) navigations.push(frame.url());
-    });
-    await page.waitForTimeout(1500);
-
-    expect(navigations).toEqual([]);
-    expect(new URL(page.url()).pathname).toBe("/en");
-    expect(await marksOn(page, "en-gb")).toEqual(["hint"]);
-    await expect(page.locator(`${OPEN} [data-fo-mark="hint"]`)).toHaveCount(1);
-    // The list is not reordered.
-    const order = await page
-      .locator(`${OPEN} [data-fo-language-option]`)
-      .evaluateAll((nodes) =>
-        nodes.map((node) => node.getAttribute("data-fo-language-option")),
+test.describe("AC-28 (h)'s repo checks: the old strip is gone", () => {
+  test("no `LocaleSuggestionBanner*` file exists under src/", () => {
+    const walk = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
+        entry.isDirectory()
+          ? walk(join(dir, entry.name))
+          : [join(dir, entry.name)],
       );
-    expect(order).toEqual(["en", "en-gb"]);
-    // And no cookie was written by highlighting.
     expect(
-      (await page.context().cookies()).filter((c) => c.name === "fo_locale"),
+      walk(resolve(import.meta.dirname, "../../src")).filter((file) =>
+        /LocaleSuggestionBanner/u.test(file),
+      ),
     ).toEqual([]);
   });
 
-  test("a German browser on /en gets two options and no highlight beyond English's default mark (AC-46)", async ({
-    page,
-  }) => {
-    await forceLanguages(page, ["de-DE", "de"]);
-    await openFromRoot(page);
-
-    const order = await page
-      .locator(`${OPEN} [data-fo-language-option]`)
-      .evaluateAll((nodes) =>
-        nodes.map((node) => [
-          node.getAttribute("data-fo-language-option"),
-          node.getAttribute("hreflang"),
-        ]),
-      );
-    expect(order).toEqual([
-      ["en", "en"],
-      ["en-gb", "en-GB"],
-    ]);
-    expect(await marksOn(page, "en")).toEqual(["current", "default"]);
-    expect(await marksOn(page, "en-gb")).toEqual([]);
-    await expect(page.locator(`${OPEN} [data-fo-mark="hint"]`)).toHaveCount(0);
-    await expect(
-      page.locator(`${OPEN} [lang="de"], ${OPEN} [lang="pl"]`),
-    ).toHaveCount(0);
-  });
-
-  test("a country header picks nothing, and nothing asks /api/geo", async ({
-    page,
-  }) => {
-    await forceLanguages(page, ["en-US"]);
-    await page.setExtraHTTPHeaders({ "cf-ipcountry": "PL" });
-    const requested: string[] = [];
-    page.on("request", (request) => requested.push(request.url()));
-
-    await openFromRoot(page);
-    await page.waitForLoadState("networkidle");
-
-    expect(await marksOn(page, "en-gb")).toEqual([]);
-    await expect(page.locator(option("pl"))).toHaveCount(0);
-    await expect(page.locator(`${OPEN} [data-fo-mark="hint"]`)).toHaveCount(0);
-    expect(requested.filter((url) => url.includes("/api/geo"))).toEqual([]);
-  });
-});
-
-test.describe("(c) T-12: each way to close sets fo_locale=en and it never reopens", () => {
-  const closers: readonly {
-    readonly name: string;
-    readonly close: (page: Page) => Promise<void>;
-  }[] = [
-    {
-      name: "the close button",
-      close: async (page) => page.locator(CLOSE).click(),
-    },
-    { name: "Esc", close: async (page) => page.keyboard.press("Escape") },
-    {
-      name: "a tap outside",
-      close: async (page) => {
-        const box = await page.locator(OPEN).boundingBox();
-        const viewport = page.viewportSize();
-        if (box === null || viewport === null) throw new Error("no box");
-        // Below the sheet on a phone, beside the card on a desktop.
-        const y = Math.min(viewport.height - 5, box.y + box.height + 40);
-        await page.mouse.click(5, y);
-      },
-    },
-  ];
-
-  for (const { name, close } of closers) {
-    test(`by ${name}`, async ({ page, context, baseURL }) => {
-      await forceLanguages(page, ["de-DE"]);
-      await openFromRoot(page);
-
-      await close(page);
-
-      await expect(page.locator(POPUP)).toHaveCount(0);
-      expect(new URL(page.url()).pathname).toBe("/en");
-      await expectLocaleCookie(context, "en", baseURL);
-
-      await page.reload();
-      await page.waitForLoadState("networkidle");
-      await expect(page.locator(POPUP)).toHaveCount(0);
-      expect(new URL(page.url()).pathname).toBe("/en");
-    });
-  }
-
-  test("closing returns focus to where it was", async ({ page }) => {
-    await forceLanguages(page, ["en-US"]);
-    await openFromRoot(page);
-    await page.keyboard.press("Escape");
-    await expect(page.locator(POPUP)).toHaveCount(0);
-    expect(
-      await page.evaluate(
-        () => document.activeElement?.closest("dialog") == null,
-      ),
-    ).toBe(true);
-  });
-});
-
-test.describe("(d) choosing follows a link", () => {
-  test("English (UK) goes to /en-gb with fo_locale=en-gb, and nothing redirects on reload", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await forceLanguages(page, ["de-DE"]);
-    await openFromRoot(page);
-
-    await Promise.all([
-      page.waitForURL(/\/en-gb$/u),
-      page.locator(option("en-gb")).click(),
-    ]);
-    await expectLocaleCookie(context, "en-gb", baseURL);
-
-    const response = await page.reload();
-    expect(response?.status()).toBe(200);
-    expect(new URL(page.url()).pathname).toBe("/en-gb");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator(POPUP)).toHaveCount(0);
-  });
-
-  test("choosing the page's own language only closes it", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await forceLanguages(page, ["en-US"]);
-    await openFromRoot(page);
-    await page.locator(option("en")).click();
-    await expect(page.locator(POPUP)).toHaveCount(0);
-    expect(new URL(page.url()).pathname).toBe("/en");
-    await expectLocaleCookie(context, "en", baseURL);
-  });
-});
-
-test.describe("(e) the cookie decides whether it opens", () => {
-  test("a valid fo_locale means it never renders", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await context.addCookies([
-      {
-        name: "fo_locale",
-        value: "pl",
-        url: baseURL ?? "http://localhost:3000",
-      },
-    ]);
+  test("no element of the old strip is in the DOM", async ({ page }) => {
     await page.goto("/en");
-    // The island has run once the gate is released.
-    await expect
-      .poll(() =>
-        page.evaluate(() =>
-          document.documentElement.getAttribute("data-fo-locale-gate"),
-        ),
-      )
-      .toBeNull();
     await page.waitForLoadState("networkidle");
-    await expect(page.locator(POPUP)).toHaveCount(0);
-  });
-
-  test("a forged fo_locale=zz opens it, and closing rewrites the value", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    // Forged the way any script on the page can, before the island reads it: once, on the first
-    // document only, so the rewrite is what the jar holds afterwards.
-    await page.addInitScript(() => {
-      if (window.sessionStorage.getItem("forged") !== null) return;
-      window.sessionStorage.setItem("forged", "1");
-      document.cookie = "fo_locale=zz; Path=/; SameSite=Lax";
-    });
-    await openFromRoot(page);
-    await page.locator(CLOSE).click();
-    // The cookie is written in the dialog's `close` event, which the browser fires after the click.
-    await expect(page.locator(POPUP)).toHaveCount(0);
-    await expectLocaleCookie(context, "en", baseURL);
-  });
-});
-
-// (f), "never on screen with the consent sheet", runs where a sheet can show: the
-// `consent-active` project (`tests/consent-active/language-popup-order.spec.ts`), since the
-// committed build asks nothing (spec 004 §14 A-founder-2026-10-19d; TASK-279).
-test.describe("(g) the shape, the scroll and CLS (AC-39)", () => {
-  // Each case sets its own viewport; the mobile project's device emulation would fight it.
-  test.skip(
-    ({ isMobile }) => isMobile,
-    "viewport-specific: runs in e2e-desktop",
-  );
-  for (const viewport of [
-    { width: 360, height: 640 },
-    { width: 390, height: 844 },
-  ]) {
-    test(`a top sheet at ${viewport.width} × ${viewport.height}`, async ({
-      page,
-    }) => {
-      await page.setViewportSize(viewport);
-      await recordLayoutShifts(page);
-      await openFromRoot(page);
-
-      const box = await page.locator(OPEN).boundingBox();
-      expect(box).not.toBeNull();
-      expect(box!.y).toBe(0);
-      expect(box!.height).toBeLessThanOrEqual(260);
-      expect(box!.width).toBe(viewport.width);
-
-      if (viewport.width === 390) {
-        const card = await page.locator(SENTENCE).first().boundingBox();
-        expect(card, "the sentence card is on the page").not.toBeNull();
-        expect(card!.y).toBeGreaterThanOrEqual(box!.y + box!.height);
-      }
-
-      // Not scroll-locked: nothing hides the overflow, and a wheel over the page moves it.
-      const overflow = await page.evaluate(() => [
-        getComputedStyle(document.documentElement).overflow,
-        getComputedStyle(document.body).overflow,
-      ]);
-      expect(overflow).not.toContain("hidden");
-      await page.mouse.move(viewport.width / 2, viewport.height - 40);
-      await page.mouse.wheel(0, 400);
-      await expect
-        .poll(() => page.evaluate(() => window.scrollY))
-        .toBeGreaterThan(0);
-      const after = await page.locator(OPEN).boundingBox();
-      expect(after!.y).toBe(0);
-
-      // Opening: nothing moved but the home's own sentence island, which every overlay test of
-      // this repo excludes (`SENTENCE_REGION`) under the same 0.001 the consent sheet's AC-17
-      // uses. Closing: exactly zero, measured from a cleared record.
-      expect(await shiftOutside(page, SENTENCE_REGION)).toBeLessThanOrEqual(
-        0.001,
-      );
-      await clearShifts(page);
-      await page.locator(CLOSE).click();
-      await expect(page.locator(POPUP)).toHaveCount(0);
-      expect(await sumOfShifts(page), "shifts while closing").toBe(0);
-    });
-  }
-
-  for (const viewport of [
-    { width: 1280, height: 800 },
-    { width: 1440, height: 900 },
-  ]) {
-    test(`a centred card at ${viewport.width} × ${viewport.height}`, async ({
-      page,
-    }) => {
-      await page.setViewportSize(viewport);
-      await recordLayoutShifts(page);
-      await openFromRoot(page);
-
-      const box = await page.locator(OPEN).boundingBox();
-      expect(box).not.toBeNull();
-      expect(
-        Math.abs(box!.x + box!.width / 2 - viewport.width / 2),
-      ).toBeLessThanOrEqual(2);
-      expect(
-        Math.abs(box!.y + box!.height / 2 - viewport.height / 2),
-      ).toBeLessThanOrEqual(2);
-      expect(box!.width).toBe(620);
-
-      // Opening: nothing moved but the home's own sentence island, which every overlay test of
-      // this repo excludes (`SENTENCE_REGION`) under the same 0.001 the consent sheet's AC-17
-      // uses. Closing: exactly zero, measured from a cleared record.
-      expect(await shiftOutside(page, SENTENCE_REGION)).toBeLessThanOrEqual(
-        0.001,
-      );
-      await clearShifts(page);
-      await page.keyboard.press("Escape");
-      await expect(page.locator(POPUP)).toHaveCount(0);
-      expect(await sumOfShifts(page), "shifts while closing").toBe(0);
-    });
-  }
-});
-
-test.describe("(h) the close button and the old strip", () => {
-  test("the close button is at least 44 × 44 CSS px and is named L5", async ({
-    page,
-  }) => {
-    await openFromRoot(page);
-    const box = await page.locator(CLOSE).boundingBox();
-    expect(box!.width).toBeGreaterThanOrEqual(44);
-    expect(box!.height).toBeGreaterThanOrEqual(44);
-    await expect(page.locator(CLOSE)).toHaveAttribute("aria-label", "Close");
     await expect(page.locator("[data-fo-banner]")).toHaveCount(0);
-    await expect(
-      page.locator('[data-fo-live-region="locale-suggestion"]'),
-    ).toHaveCount(0);
-  });
-});
-
-test.describe("T-41: AC-39's boxes, links and strings", () => {
-  // Each case sets its own viewport; the mobile project's device emulation would fight it.
-  test.skip(
-    ({ isMobile }) => isMobile,
-    "viewport-specific: runs in e2e-desktop",
-  );
-  test("1440 × 900: a centred native dialog card with two real links and L1, L3, L4, L6", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await forceLanguages(page, ["en-GB"]);
-    await openFromRoot(page);
-
-    expect(await page.locator(OPEN).evaluate((node) => node.tagName)).toBe(
-      "DIALOG",
-    );
-    const links = await page
-      .locator(`${OPEN} a[data-fo-language-option]`)
-      .evaluateAll((nodes) =>
-        nodes.map((node) => [
-          node.getAttribute("href"),
-          node.getAttribute("lang"),
-          node.getAttribute("hreflang"),
-        ]),
-      );
-    expect(links).toEqual([
-      ["/en", "en", "en"],
-      ["/en-gb", "en-GB", "en-GB"],
-    ]);
-    await expect(
-      page.locator(`${option("en")} [data-fo-mark="current"]`),
-    ).toHaveText("Current");
-    // Both L4 wordings are in the DOM and CSS shows one: assert the visible one's text (the
-    // marks are `text-transform: uppercase`, so `innerText` would read capitals).
-    await expect(
-      page.locator(`${option("en-gb")} [data-fo-mark="hint"] > span:visible`),
-    ).toHaveText("Matches your browser");
-    await expect(page.locator(`${OPEN} p`).last()).toHaveText(
-      "You can change it any time at the top of every page.",
-    );
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator(CONSENT_SHOWN)).toHaveCount(0);
-  });
-
-  test("390 × 844: a top sheet with the short L4", async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await forceLanguages(page, ["en-GB"]);
-    await openFromRoot(page);
-    const box = await page.locator(OPEN).boundingBox();
-    expect(box!.y).toBe(0);
-    expect(box!.height).toBeLessThanOrEqual(260);
-    await expect(
-      page.locator(`${option("en-gb")} [data-fo-mark="hint"] > span:visible`),
-    ).toHaveText("Your browser");
-    await page.waitForLoadState("networkidle");
-    await expect(page.locator(CONSENT_SHOWN)).toHaveCount(0);
-  });
-});
-
-test.describe("each option is the same page in that locale (A14 Shape)", () => {
-  test("on the Poland corridor, the options point at its own path, and English (UK) follows there", async ({
-    page,
-    context,
-    baseURL,
-  }) => {
-    await forceLanguages(page, ["en-US"]);
-    await page.goto("/en/send-flowers-to/poland");
-    await expect(page.locator(OPEN)).toBeVisible();
-
-    await expect(page.locator(option("en"))).toHaveAttribute(
-      "href",
-      "/en/send-flowers-to/poland",
-    );
-    await expect(page.locator(option("en-gb"))).toHaveAttribute(
-      "href",
-      "/en-gb/send-flowers-to/poland",
-    );
-    // `de` and `pl` are hidden (spec 003 §14 A-founder-2026-10-14c): no option for either.
-    await expect(page.locator(option("de"))).toHaveCount(0);
-    await expect(page.locator(option("pl"))).toHaveCount(0);
-
-    await Promise.all([
-      page.waitForURL(/\/en-gb\/send-flowers-to\/poland$/u),
-      page.locator(option("en-gb")).click(),
-    ]);
-    await expectLocaleCookie(context, "en-gb", baseURL);
-    await expect(page.locator("html")).toHaveAttribute("lang", "en-GB");
   });
 });

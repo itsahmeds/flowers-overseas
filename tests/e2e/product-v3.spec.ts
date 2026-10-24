@@ -27,8 +27,6 @@
  */
 import { type Page, expect, test } from "@playwright/test";
 
-import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
-
 const PDP = "/en-gb/poland/product/amber-hour";
 const PHONE = { width: 390, height: 844 } as const;
 const BAR = "[data-fo-action-bar]";
@@ -70,9 +68,6 @@ const inside = (
   box.left >= 0 &&
   box.bottom <= viewport.height &&
   box.right <= viewport.width;
-
-const intersects = (a: Box, b: Box): boolean =>
-  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
 async function open(page: Page): Promise<void> {
   const response = await page.goto(PDP);
@@ -342,43 +337,9 @@ test.describe("T-53: the docked bar on the product page (AC-48)", () => {
     expect(under).toEqual([]);
   });
 
-  for (const height of [844, 600] as const) {
-    test(`the language popup never intersects its action at 390 × ${String(height)}`, async ({
-      browser,
-    }) => {
-      const context = await browser.newContext({
-        storageState: NO_LOCALE_CHOICE,
-        viewport: { width: 390, height },
-        locale: "de-DE",
-      });
-      const page = await context.newPage();
-      try {
-        await page.goto(PDP);
-        const popup = page.locator("dialog[data-fo-language-popup][open]");
-        await expect(popup, "the popup opens on a first visit").toBeVisible();
-        await scrollPastBuy(page);
-        await expect(popup).toBeVisible();
-        expect(
-          intersects(
-            await popup.evaluate((node) => {
-              const b = node.getBoundingClientRect();
-              return {
-                left: b.left,
-                top: b.top,
-                right: b.right,
-                bottom: b.bottom,
-                width: b.width,
-                height: b.height,
-              };
-            }),
-            await boxOf(page, `${BAR} a`),
-          ),
-        ).toBe(false);
-      } finally {
-        await context.close();
-      }
-    });
-  }
+  // The language overlay's half of AC-48 moves to spec 003's bar task (spec 004 §14
+  // A-founder-2026-10-19d, AC-48 as amended; TASK-280): the popup never opens on the committed
+  // registry.
 });
 
 test.describe("T-54: the sizes, the dates and the gallery on the phone (AC-49)", () => {

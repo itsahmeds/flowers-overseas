@@ -237,11 +237,27 @@ describe("the `[locale]` document (AC-6)", () => {
     expect(pl).toContain('dir="ltr"');
   });
 
-  it("serves the language popup's gate pending on `<html>`, so the consent sheet waits from the first byte (/break 205 hole 3)", async () => {
+  it("serves no language gate where no other language can be offered: every page of the committed registry (spec 003 §14 A-founder-2026-10-19d)", async () => {
+    for (const locale of ["en", "en-gb", "de", "pl"]) {
+      const html = await renderLocaleDocument(locale);
+      expect(html, locale).toMatch(/<html [^>]*>/u);
+      expect(html, locale).not.toContain("data-fo-locale-gate");
+    }
+  });
+
+  it("serves the gate pending on `<html>` where an offer exists, so the consent sheet waits from the first byte (/break 205 hole 3)", async () => {
+    const deShown = localeRegistryOf(
+      staticLocaleRegistry
+        .list()
+        .map((locale) =>
+          locale.code === "de" ? { ...locale, shown: true } : locale,
+        ),
+    );
     for (const locale of ["en", "de"]) {
-      expect(await renderLocaleDocument(locale)).toMatch(
-        /<html [^>]*data-fo-locale-gate="pending"[^>]*>/u,
-      );
+      expect(
+        await withLocaleRegistry(deShown, () => renderLocaleDocument(locale)),
+        locale,
+      ).toMatch(/<html [^>]*data-fo-locale-gate="pending"[^>]*>/u);
     }
   });
 

@@ -74,6 +74,7 @@ export {
 export {
   type PageType,
   isLaunchLocale,
+  languageOffer,
   launchLocale,
   launchLocaleCodes,
   launchLocales,

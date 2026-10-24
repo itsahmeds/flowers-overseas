@@ -11,6 +11,7 @@ import {
 import { missingInfoPageLinkIds } from "@/modules/content";
 import {
   LanguagePopup,
+  languageOffer,
   localeGateDocumentAttributes,
   documentFallbackLocale,
   routableLocale,
@@ -130,13 +131,18 @@ export default async function LocaleLayout({
   return (
     // `fontVariables`: the two self-hosted families and their preload links (spec 004 AC-4).
     // `localeGateDocumentAttributes()`: the language popup's gate, pending from the first byte, so
-    // the consent sheet waits for the popup whichever chunk arrives first (spec 003 §14 A16). The
-    // same value for every visitor: the document stays one cache entry.
+    // the consent sheet waits for the popup whichever chunk arrives first (spec 003 §14 A16) —
+    // served only where the popup can open at all, i.e. where `languageOffer()` is not empty (spec
+    // 003 §14 A-founder-2026-10-19d clause 1; TASK-280). On today's registry no page offers another
+    // language, so no document carries it and nothing waits on a popup that cannot open. Decided
+    // from the registry: the same value for every visitor, and the document stays one cache entry.
     <html
       lang={locale.bcp47}
       dir={locale.dir}
       className={fontVariables}
-      {...localeGateDocumentAttributes()}
+      {...(languageOffer(locale.code).length > 0
+        ? localeGateDocumentAttributes()
+        : {})}
     >
       <head>
         {/* The only inline script in the application and the first thing in the document: the

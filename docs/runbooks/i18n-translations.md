@@ -227,6 +227,22 @@ wants a "site time zone", it is wrong.
 
 ## 10. Common failures
 
+**Before showing a locale again** (`shown: true` in `src/config/locales.ts`, or the `locale` flag in
+admin once spec 012 owns it; spec 003 §14 A-founder-2026-10-14c clause 4, with the third guard of
+A-founder-2026-10-19d clause 4). The flip is data, never a code change, and three guards stand in
+front of it; the flip's PR names each:
+
+1. **Its catalogue is reviewed**: `pnpm i18n:check` fails, naming the locale, while a shown
+   non-English locale's unreviewed share is above 5 %.
+2. **A15's gate**: a person writes every excluded key and a native reviewer attests every
+   `reviewBeforeOrders` key and row first (procedural).
+3. **The slim bar is built** (spec 003 §14 A-founder-2026-10-19d clause 4): showing `de` or `pl`
+   makes `languageOffer()` non-empty, so the language popup can open again for a visitor whose
+   browser asks for that language. The task that shows the locale builds the slim one-line bar and
+   takes the modal dialog off the visitor's path in the same PR as the flip, or before it, so the
+   dialog never returns to visitors (procedural; TASK-280 added this guard).
+
+
 | Symptom | Cause and fix |
 |---|---|
 | `i18n:check` reports a key `missing after fallback` | the key exists in a translation but not in `messages/en.json`. English is the source of truth: add it there (§1) or delete the orphan |

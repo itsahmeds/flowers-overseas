@@ -58,6 +58,8 @@ export interface LanguagePopupIslandProps {
   defaultLocale: string;
   /** The launch locales in registry order, projected and linked by the Server Component parent. */
   candidates: readonly PopupCandidate[];
+  /** `languageOffer(locale)`: the codes this page can offer (spec 003 §14 A-founder-2026-10-19d). */
+  offer: readonly string[];
   /** Every string this island renders, resolved on the server. */
   copy: LanguagePopupCopy;
 }
@@ -140,6 +142,7 @@ export function LanguagePopupIsland({
   pageLang,
   defaultLocale,
   candidates,
+  offer,
   copy,
 }: LanguagePopupIslandProps) {
   // The decision is the **initial** state, read on mount: the loader's import is `ssr: false`, so
@@ -152,6 +155,7 @@ export function LanguagePopupIsland({
         languages: window.navigator.languages,
         cookie: document.cookie,
         candidates,
+        offer,
       });
     } catch {
       return { open: false, reason: "error" };
