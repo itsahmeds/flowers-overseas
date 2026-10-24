@@ -26,9 +26,12 @@
  *    from Newsreader 500; nothing loads the font.
  *
  * Every face is split into a **Latin** and a **Latin-Ext** file with a matching `unicode-range`
- * (A21 clause 3 "as separate `unicode-range` files"), so an `en`, `en-gb` or `de` page never
- * downloads the Polish, Romanian and Turkish glyphs and a `pl` page downloads them only for the
- * faces it renders. The ranges are disjoint: a character belongs to exactly one file.
+ * (A21 clause 3 "as separate `unicode-range` files"). The Latin file carries Basic Latin, Latin-1
+ * and the Polish letters (`ą ć ę ł ń ś ź ż` and their capitals; `ó` is Latin-1), so Polish chrome
+ * renders from the same preloaded files as English and never waits for a late Latin-Ext file
+ * (spec 004 §14 A-orchestrator-2026-10-23, AC-58, AC-59). The Latin-Ext file carries the rest of
+ * Latin Extended, of the repertoire only the Phase-4 Romanian and Turkish letters, which no launch
+ * locale renders. The ranges are disjoint: a character belongs to exactly one file.
  *
  * Each file drops TrueType hinting and every OpenType layout feature except `kern`, `lnum` and
  * `tnum` (Caveat keeps `kern` alone; see its entry): kerning because the
@@ -52,9 +55,10 @@ export const MANIFEST_FILE = `${FONT_DIR}/subset.json`;
  * The character repertoire the committed subsets cover, built from named blocks so a future locale
  * is one line rather than a mystery string.
  *
- * Latin-Ext is non-negotiable (spec 004 §2, AC-4): `ą ć ę ł ń ó ś ź ż` for `pl`, `ă â î ș ț` and
- * `ç ğ ı ş` for the Phase-4 `ro`/`tr` locales, plus the Latin-1 accents the localised country and
- * place names need.
+ * Latin-Ext coverage is non-negotiable (spec 004 §2, AC-4): `ą ć ę ł ń ó ś ź ż` for `pl` (served
+ * from the Latin file since A-orchestrator-2026-10-23), `ă â î ș ț` and `ç ğ ı ş` for the Phase-4
+ * `ro`/`tr` locales (the Latin-Ext file), plus the Latin-1 accents the localised country and place
+ * names need.
  */
 const BLOCKS = {
   /** Printable ASCII: U+0020–U+007E. */
@@ -87,24 +91,35 @@ export type SubsetName = (typeof SUBSETS)[number];
 export const SUBSET_RANGES: Readonly<
   Record<SubsetName, readonly (readonly [number, number])[]>
 > = {
-  // Basic Latin, Latin-1, the dotless i and the œ ligature, general punctuation (quotes, dashes,
-  // the non-breaking hyphen, the ellipsis), €, ™, the arrows, the minus sign.
+  // Basic Latin, Latin-1, the Polish letters (Ą ą Ć ć, Ę ę, Ł ł Ń ń, Ś ś, Ź ź Ż ż; spec 004 §14
+  // A-orchestrator-2026-10-23 clause 2), the dotless i and the œ ligature, general punctuation
+  // (quotes, dashes, the non-breaking hyphen, the ellipsis), €, ™, the arrows, the minus sign.
   latin: [
     [0x0000, 0x00ff],
+    [0x0104, 0x0107],
+    [0x0118, 0x0119],
     [0x0131, 0x0131],
+    [0x0141, 0x0144],
     [0x0152, 0x0153],
+    [0x015a, 0x015b],
+    [0x0179, 0x017c],
     [0x2000, 0x206f],
     [0x20ac, 0x20ac],
     [0x2122, 0x2122],
     [0x2190, 0x2193],
     [0x2212, 0x2212],
   ],
-  // Latin Extended-A and -B less the three code points the Latin file already holds, Latin
-  // Extended Additional, Latin Extended-C and -D.
+  // Latin Extended-A and -B less the code points the Latin file already holds (the Polish letters,
+  // ı, Œ œ), Latin Extended Additional, Latin Extended-C and -D.
   "latin-ext": [
-    [0x0100, 0x0130],
-    [0x0132, 0x0151],
-    [0x0154, 0x024f],
+    [0x0100, 0x0103],
+    [0x0108, 0x0117],
+    [0x011a, 0x0130],
+    [0x0132, 0x0140],
+    [0x0145, 0x0151],
+    [0x0154, 0x0159],
+    [0x015c, 0x0178],
+    [0x017d, 0x024f],
     [0x1e00, 0x1eff],
     [0x2c60, 0x2c7f],
     [0xa720, 0xa7ff],
@@ -247,10 +262,15 @@ export const FONT_BUDGETS = {
   preloadBytes: 50 * 1024,
   /**
    * Font transfer on an `en`, `en-gb` or `de` page: the four page faces' Latin files, plus their
-   * Latin-Ext files where the page names a Polish place or date (the home does), so the worst case.
+   * Latin-Ext files, charged as the worst case. Since A-orchestrator-2026-10-23 a Polish place or
+   * date (the home names some) renders from the Latin files; only a Romanian or Turkish letter
+   * would still reach a Latin-Ext file.
    */
   latinPageBytes: 90 * 1024,
-  /** Font transfer on a `pl` page (Latin and Latin-Ext files of the four page faces). */
+  /**
+   * Font transfer on a `pl` page (Latin and Latin-Ext files of the four page faces, the worst case;
+   * since A-orchestrator-2026-10-23 a `pl` page renders from the Latin files alone).
+   */
   latinExtPageBytes: 120 * 1024,
   /** Caveat on top of the above, product page only (both of its files). */
   handBytes: 30 * 1024,
@@ -403,7 +423,7 @@ async function main(root: string, sourcesDir: string | undefined) {
   for (const face of faces) {
     process.stdout.write(`${face.file}  ${String(face.bytes)} B\n`);
   }
-  // An `en` page can name Polish places too, so both lines are charged the worst case.
+  // Both lines are charged the worst case, Latin plus Latin-Ext, whatever the page renders.
   const latin = pageFontBytes(manifest, ["latin", "latin-ext"]);
   const ext = latin;
   const hand = handFontBytes(manifest, ["latin", "latin-ext"]);
