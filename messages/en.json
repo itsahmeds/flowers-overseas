@@ -1080,7 +1080,7 @@
       },
       "notice": {
         "heading": "What we do with your details",
-        "controller": "This website is run by {representativeName}. For questions about your personal data, call or message us on {phoneDisplay}.",
+        "controller": "This website is run by {name}. For questions about your personal data, call or message us on {phoneDisplay}.",
         "privacyLink": "Our privacy notice",
         "body": "We use these details to consider your application and to contact you about working together. The legal basis is taking steps you asked for before a contract (GDPR Art. 6(1)(b)). We keep them for 12 months after our last contact and then delete them, unless we start working together. They are stored by our hosting, database and email providers, some of which are US companies working under EU data-transfer safeguards. We do not sell them or show them to buyers. To see, correct or delete them, call or message us on {phoneDisplay}."
       },
