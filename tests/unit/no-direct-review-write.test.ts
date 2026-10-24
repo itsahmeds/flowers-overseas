@@ -229,3 +229,72 @@ describe("fo/no-direct-review-write (T-14)", () => {
     expect(Object.keys(plugin.rules ?? {})).toContain("no-direct-review-write");
   });
 });
+
+/**
+ * T-03, lint half (spec 044 AC-3; TASK-321): the rule gains the blog publish pointer
+ * (`blog_post.published_revision_id`, written only inside `publishPost` and `publishChanges`) and
+ * the approval freeze (`blog_post_revision.frozen_at`, written only inside `attest`).
+ */
+describe("fo/no-direct-review-write — the blog publish pointer and freeze (spec 044 T-03)", () => {
+  const BLOG_FILE = "src/modules/content/blog/db/commands.ts";
+  const RAW_POINTER =
+    "await db.execute(sql`UPDATE public.blog_post SET published_revision_id = ${id}::uuid WHERE id = ${post}::uuid`);";
+  const DRIZZLE_POINTER =
+    "await db.update(blogPost).set({ publishedRevisionId: id }).where(x);";
+
+  it("reports a raw pointer write and a Drizzle pointer patch outside the publish commands", () => {
+    expect(() => {
+      ruleTester.run("no-direct-review-write", rule, {
+        valid: [],
+        invalid: [
+          {
+            code: `export async function saveRevision(db, id, post) {\n${RAW_POINTER}\n}`,
+            filename: BLOG_FILE,
+            errors: [{ messageId: "publish" }],
+          },
+          {
+            code: `export async function attest(db, id) {\n${DRIZZLE_POINTER}\n}`,
+            filename: BLOG_FILE,
+            errors: [{ messageId: "publish" }],
+          },
+          {
+            code: "await sql.unsafe('INSERT INTO blog_post (id, slug, published_revision_id) VALUES ($1, $2, $3)', v);",
+            filename: BLOG_FILE,
+            errors: [{ messageId: "publish" }],
+          },
+          {
+            code: "export async function publishPost(db, id) {\nawait db.execute(sql`UPDATE public.blog_post_revision SET frozen_at = now() WHERE id = ${id}`);\n}",
+            filename: BLOG_FILE,
+            errors: [{ messageId: "sql" }],
+          },
+        ],
+      });
+    }).not.toThrow();
+  });
+
+  it("allows the pointer inside publishPost and publishChanges, and the freeze inside attest", () => {
+    expect(() => {
+      ruleTester.run("no-direct-review-write", rule, {
+        valid: [
+          {
+            code: `export async function publishPost(db, id, post) {\n${RAW_POINTER}\n}`,
+            filename: BLOG_FILE,
+          },
+          {
+            code: `const publishChanges = async (db, id) => {\n${DRIZZLE_POINTER}\n};`,
+            filename: BLOG_FILE,
+          },
+          {
+            code: "export async function attest(db, id) {\nawait db.execute(sql`UPDATE public.blog_post_revision SET frozen_at = now() WHERE id = ${id}`);\n}",
+            filename: BLOG_FILE,
+          },
+          {
+            code: "await db.execute(sql`SELECT published_revision_id FROM blog_post WHERE published_revision_id = ${id}`);",
+            filename: BLOG_FILE,
+          },
+        ],
+        invalid: [],
+      });
+    }).not.toThrow();
+  });
+});
