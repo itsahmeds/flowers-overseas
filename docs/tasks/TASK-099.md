@@ -75,6 +75,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 - 2026-10-18 21:30 `scripts/railway-preview.ts` (resolve, provision, `--assert`, `--sweep`) with contract tests.
 - 2026-10-18 21:40 `ci.yml`: `preview` rewritten, browser suites and `lighthouse` repointed, interim retired; nightly sweep.
 - 2026-10-18 21:50 worker seat, case (b) retired, runbooks; wall key required on staging/preview.
+- 2026-10-24: finisher rebased onto `origin/main` (692a24b5); `lighthouserc.json` merged with main's `assertMatrix` (all 8 assertions `aggregationMethod: "median"`, test red when one is dropped). The 2026-10-18 `preview` and `lighthouse` failures were `missing RAILWAY_API_TOKEN, RAILWAY_PROJECT_ID` and `STAGING_BASIC_AUTH is not a repository secret`: founder step P2, not code. The new `RAILWAY_TOKEN_STAGING`/`_PRODUCTION` secrets are `fx-refresh.yml`'s, not P2's.
 
 ## Result
 
