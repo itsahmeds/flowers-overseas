@@ -58,10 +58,35 @@ the commit: what is done, what is next, anything a replacement agent must know. 
 here.
 
 - 2026-10-24 implementer: worktree `../fo-wt-337`, draft PR #384. Migration `0019_post_purchase` + down, `src/lib/signed-link.ts`, `SIGNED_LINK_SECRET`, `tracking.linkFor` / `tracking.resolve` / `rotateTrackingToken`, robots lines, `scripts/check-relay-language.ts` (also `i18n:check` check 14), flags, seed profiles, DSAR runbook and log. Integration on a throwaway PG16 green; mutations all red. Next: rebase, ready, `ci:full`.
+- 2026-10-24 finisher (renumber): rebased onto PR 383's head `07eb165c` (main plus `0019`/`0020`), renumbered to `0021`, merged `purchase_id` into `place` and three suites; full integration (41 files, 473 tests) green on a throwaway PG16.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-PR [#384](https://github.com/itsahmeds/flowers-overseas/pull/384), migration **0019_post_purchase** (renumber at rebase if PR 320's `0019_review_attestation` lands first; the tests find the file by name). Ships spec 018 task 1 and spec 002 §14 A8: the migration and its guarded rollback (`POST_PURCHASE_ROLLBACK_INVOICES_EXIST`, `A8_ROLLBACK_ROWS_IN_USE`), `order_transition` at 75 rows with the fixture, `src/lib/signed-link.ts` with `SIGNED_LINK_SECRET` (env schema, `.env.example`, Railway runbook, contract 34 keys / 30 required), `tracking.linkFor`, `tracking.resolve` and `rotateTrackingToken` in `@/modules/orders`, `place` leaving `public_token` to the column default, `/*/track/` and `/*/account/` in `robots.txt`, `scripts/check-relay-language.ts` (`pnpm check:relay-language`, and check 14 of `i18n:check`), the `account.open` and `invoice.issue` flags (DB rows, registry, admin copy `reviewed: false`), the two seeded invoice profiles, the regenerated `db:check` snapshot, and the by-hand DSAR runbook with its dated log `docs/compliance/dsar-log.md`. Tests: unit `signed-link.test.ts` (T-01, 32 cases), `check-relay-language.test.ts` (T-38, 14), `seo-robots.test.ts` (+5, T-13 track half), `feature-flags.test.ts` (+1); integration `post-purchase.test.ts` (26: T-02, T-16 trigger half, T-36 schema half, RLS, A8 AC-14/44/45/46/47, rollback round trip); 17 existing suites adjusted for 75 rows, two flags, 22-character tokens and the new function. 31 named mutations, every one red (listed in the PR). No local build, Playwright or Lighthouse was run: nothing here renders a page. Handed on: see Carry-forwards.
+PR [#384](https://github.com/itsahmeds/flowers-overseas/pull/384), migration **0021_post_purchase** (renumbered from `0019` on 2026-10-24 to the orchestrator's order: PR 383's `0019_purchase` and `0020_checkout_draft_lines` first; the tests find the file by name). Ships spec 018 task 1 and spec 002 §14 A8: the migration and its guarded rollback (`POST_PURCHASE_ROLLBACK_INVOICES_EXIST`, `A8_ROLLBACK_ROWS_IN_USE`), `order_transition` at 75 rows with the fixture, `src/lib/signed-link.ts` with `SIGNED_LINK_SECRET` (env schema, `.env.example`, Railway runbook, contract 34 keys / 30 required), `tracking.linkFor`, `tracking.resolve` and `rotateTrackingToken` in `@/modules/orders`, `place` leaving `public_token` to the column default, `/*/track/` and `/*/account/` in `robots.txt`, `scripts/check-relay-language.ts` (`pnpm check:relay-language`, and check 14 of `i18n:check`), the `account.open` and `invoice.issue` flags (DB rows, registry, admin copy `reviewed: false`), the two seeded invoice profiles, the regenerated `db:check` snapshot, and the by-hand DSAR runbook with its dated log `docs/compliance/dsar-log.md`. Tests: unit `signed-link.test.ts` (T-01, 32 cases), `check-relay-language.test.ts` (T-38, 14), `seo-robots.test.ts` (+5, T-13 track half), `feature-flags.test.ts` (+1); integration `post-purchase.test.ts` (26: T-02, T-16 trigger half, T-36 schema half, RLS, A8 AC-14/44/45/46/47, rollback round trip); 17 existing suites adjusted for 75 rows, two flags, 22-character tokens and the new function. 31 named mutations, every one red (listed in the PR). No local build, Playwright or Lighthouse was run: nothing here renders a page. Handed on: see Carry-forwards.
+
+**Renumber and rebase (finisher, 2026-10-24).** The orchestrator fixed the migration order: PR 383
+(`0019_purchase`, `0020_checkout_draft_lines`), then this PR at **`0021_post_purchase`**, then PR
+326 (`0022`) and PR 320 (`0023`). PR 383 was not on `main` yet, and a gap fails both `db:check`
+and the runner itself (`readMigrations` refuses an inconsistent set), so this branch is **stacked
+on PR 383's head `07eb165c`**: until 383 merges, this PR's diff shows 383's commits too, and it
+must merge after 383 (then `git rebase --onto origin/main 07eb165c` drops them). Conflicts merged
+by hand: `db/schema/orders.ts` (`purchaseId` then `trackingTokenVersion`), `place.ts` (383's
+`insertOwnPurchase` kept; 383's `publicToken()` dropped, since 0021's column default draws the
+token), and the two order inserts in `order-reference` / `schema-orders-payments` (no
+`public_token`, with `purchase_id`). Tests adjusted for sitting on 383: `post-purchase.test.ts`
+(the exact-check insert names a `purchase_id` so the row reaches the check; the backfill test
+inserts its own purchase), `purchase.test.ts` (the raw insert's token is 22 characters, so the
+foreign key is what fails), `purchase-migration.test.ts` (legacy tokens of 22 characters and
+`tracking_token_version` left out of the compare, since a forward run now also applies `0021`).
+
+**Self-review of the renumber.** Mutation: `0021`'s check widened to `{21,23}` makes the
+exact-check case red (`order_purchase_id_…_fk` received instead of `order_public_token_check`);
+restored, green. `db:check`: 21 migrations, each with a rollback. Full integration project on a
+throwaway PG16: 41 files, 473 tests green. Unit: `db-migrate`, `db-check`,
+`db-check-recipient-email`, `schema-orders-payments` and the files that timed out under another
+agent's load (load 22) re-run green (11 files, 432 tests). Carry-forward: after PR 383 merges,
+rebase `--onto origin/main 07eb165c`, re-fire `ci:full`.
+
