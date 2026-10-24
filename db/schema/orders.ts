@@ -35,6 +35,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { users } from "./auth.ts";
 import { addon, product } from "./catalog.ts";
 import { customer, recipient } from "./customers.ts";
 import { city, country, currency, rowSources, supplyModels } from "./geo.ts";
@@ -80,6 +81,33 @@ export const reviewModerationStatuses = [
   "pending",
   "published",
   "hidden",
+] as const;
+
+/**
+ * Spec 022a §5.1 (migration `0031_reviews_close`): the closed moderation reasons. The first three
+ * withhold a published review's text (its stars stay public and counted); the last three remove a
+ * review that is not genuine. None concerns the rating or the tone.
+ */
+export const reviewWithholdReasons = [
+  "personal_data",
+  "abuse",
+  "illegal",
+] as const;
+export const reviewRemovalReasons = [
+  "not_genuine",
+  "duplicate",
+  "test_order",
+] as const;
+export const reviewModerationReasons = [
+  ...reviewWithholdReasons,
+  ...reviewRemovalReasons,
+] as const;
+
+/** Why an invite was not sent (spec 022a §5.1). */
+export const reviewInviteSkipReasons = [
+  "opted_out",
+  "redacted",
+  "expired",
 ] as const;
 
 /** `('a', 'b')` for a `CHECK … IN` list, from the tuples above. */
@@ -557,9 +585,56 @@ export const review = pgTable(
     }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
     ...timestamps,
+    // Spec 022a §5.1 (migration `0031_reviews_close`, TASK-368): display, moderation, reply,
+    // routing and erasure, after the timestamps because `0031` adds them. The four denormalised
+    // columns let display and routing read a review without joining the private `order`.
+    /** First name only, and only when the buyer chose to show it. */
+    displayName: text("display_name"),
+    textVisible: boolean("text_visible").notNull().default(true),
+    moderationReason: text("moderation_reason"),
+    moderationNote: text("moderation_note"),
+    moderatedBy: uuid("moderated_by").references(() => users.id, {
+      onDelete: "restrict",
+    }),
+    moderatedAt: timestamp("moderated_at", { withTimezone: true }),
+    responseText: text("response_text"),
+    responseAt: timestamp("response_at", { withTimezone: true }),
+    destinationCountryId: uuid("destination_country_id").references(
+      () => country.id,
+      { onDelete: "restrict" },
+    ),
+    productId: uuid("product_id").references(() => product.id, {
+      onDelete: "restrict",
+    }),
+    partnerId: uuid("partner_id").references(() => fulfillmentPartner.id, {
+      onDelete: "restrict",
+    }),
+    deliveredOn: date("delivered_on"),
+    redactedAt: timestamp("redacted_at", { withTimezone: true }),
   },
   (table) => [
     unique("review_order_id_key").on(table.orderId),
+    check(
+      "review_moderation_reason_check",
+      sql.raw(`moderation_reason in ${valueList(reviewModerationReasons)}`),
+    ),
+    check(
+      "review_internal_verified_check",
+      sql`${table.source} <> 'internal' or (${table.verifiedOrder} and ${table.orderId} is not null)`,
+    ),
+    check(
+      "review_hidden_reason_check",
+      sql.raw(
+        `(moderation_status = 'hidden') = coalesce(moderation_reason in ${valueList(reviewRemovalReasons)}, false)`,
+      ),
+    ),
+    check(
+      "review_text_withheld_check",
+      sql.raw(
+        `text_visible or (moderation_status = 'published' and coalesce(moderation_reason in ${valueList(reviewWithholdReasons)}, false))`,
+      ),
+    ),
+    check("review_text_length_check", sql`char_length(${table.text}) <= 2000`),
     check(
       "review_source_check",
       sql.raw(`source in ${valueList(reviewSources)}`),
@@ -577,5 +652,48 @@ export const review = pgTable(
       "review_published_check",
       sql`${table.moderationStatus} <> 'published' or ${table.publishedAt} is not null`,
     ),
+  ],
+);
+
+/**
+ * One review invitation per delivered `live` order (spec 022a §5.1, §5.2; migration
+ * `0031_reviews_close`; TASK-368). No address is stored: the `review.request` job resolves it from
+ * `order.buyer_snapshot` at send time. `token_hash` is the lower-case hex SHA-256 of the link's
+ * token (the token itself is never stored), as `text` because `bytea` is refused in `public`
+ * (spec 002 AC-22, ADR-0015; `checkout_draft.token_sha256` is the precedent). Staff only (RLS).
+ */
+export const reviewInvite = pgTable(
+  "review_invite",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orderId: uuid("order_id")
+      .notNull()
+      .references(() => order.id, { onDelete: "restrict" }),
+    customerId: uuid("customer_id")
+      .notNull()
+      .references(() => customer.id, { onDelete: "restrict" }),
+    tokenHash: text("token_hash").notNull(),
+    sendAfter: timestamp("send_after", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    trustpilotBcc: boolean("trustpilot_bcc").notNull().default(false),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    skippedReason: text("skipped_reason"),
+    ...timestamps,
+  },
+  (table) => [
+    unique("review_invite_order_id_key").on(table.orderId),
+    unique("review_invite_token_hash_key").on(table.tokenHash),
+    check(
+      "review_invite_token_hash_check",
+      sql.raw(`token_hash ~ '^[0-9a-f]{64}$'`),
+    ),
+    check(
+      "review_invite_skipped_reason_check",
+      sql.raw(`skipped_reason in ${valueList(reviewInviteSkipReasons)}`),
+    ),
+    index("review_invite_due_idx")
+      .on(table.sendAfter)
+      .where(sql`sent_at is null and skipped_reason is null`),
   ],
 );

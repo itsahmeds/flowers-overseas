@@ -52,6 +52,8 @@ const partnersDown = read("0005_partners.down.sql");
 const customers = read("0006_customers.sql");
 const customersDown = read("0006_customers.down.sql");
 const both = `${partners}\n${customers}`;
+/** `0031` (spec 022a §5.1, TASK-368) adds `customer.review_invite_opt_out_at`. */
+const later = read("0031_reviews_close.sql");
 
 const PARTNER_TABLES = [
   "fulfillment_partner",
@@ -94,6 +96,15 @@ function columnsOf(table: string): [string, string][] {
     if (match?.[1] !== undefined && match[2] !== undefined) {
       columns.push([match[1], match[2]]);
     }
+  }
+  // Columns a later migration adds land after the created ones, in the order it adds them.
+  for (const added of later.matchAll(
+    new RegExp(
+      `^ALTER TABLE public\\.${table} ADD COLUMN ([a-z_0-9]+) ([a-z[\\]0-9]+)`,
+      "gm",
+    ),
+  )) {
+    columns.push([added[1] ?? "", added[2] ?? ""]);
   }
   return columns;
 }
@@ -148,7 +159,15 @@ describe("migrations 0005 and 0006 — shape", () => {
       expect(columnsOf(table).map(([name]) => name)).toEqual(
         config.columns.map((column) => column.name),
       );
-      const body = tableBody(table);
+      const body = `${tableBody(table)}\n${later
+        .split(/\r?\n/)
+        .filter((line) =>
+          line.startsWith(`ALTER TABLE public.${table} ADD COLUMN `),
+        )
+        .map((line) =>
+          line.replace(/^ALTER TABLE public\.\w+ ADD COLUMN /, "  "),
+        )
+        .join("\n")}`;
       for (const column of config.columns) {
         const line =
           new RegExp(`^\\s*${column.name}\\s.*$`, "m").exec(body)?.[0] ?? "";

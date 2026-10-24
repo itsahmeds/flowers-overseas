@@ -129,16 +129,17 @@ describe("service drift (AC-9, T-10)", () => {
 });
 
 describe("the declared key set (AC-11)", () => {
-  it("is AC-11's 33: the 31 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
+  it("is AC-11's 35: the 33 of the env contract plus APP_ENV and NEXT_PUBLIC_APP_ENV", () => {
     // 29 since TASK-200 added QUOTE_SIGNING_SECRET (spec 005 §13 Q5, spec 010 §8); 33 since TASK-217
-    // added the sign-in core's AUTH_SECRET, RESEND_API_KEY, EMAIL_FROM and MAILER (spec 012 §2.2).
-    expect(CONTRACT_VARIABLE_KEYS).toHaveLength(33);
+    // added the sign-in core's AUTH_SECRET, RESEND_API_KEY, EMAIL_FROM and MAILER (spec 012 §2.2);
+    // 35 since TASK-368 added REVIEW_TOKEN_SECRET and TRUSTPILOT_AFS_ADDRESS (spec 022a AC-33).
+    expect(CONTRACT_VARIABLE_KEYS).toHaveLength(35);
     expect(CONTRACT_VARIABLE_KEYS).toContain("APP_ENV");
     expect(CONTRACT_VARIABLE_KEYS).toContain("NEXT_PUBLIC_APP_ENV");
   });
 
-  it("requires 29 of them: the four Vercel keys are injected, never pasted", () => {
-    expect(REQUIRED_VARIABLE_KEYS).toHaveLength(29);
+  it("requires 31 of them: the four Vercel keys are injected, never pasted", () => {
+    expect(REQUIRED_VARIABLE_KEYS).toHaveLength(31);
     for (const key of PLATFORM_INJECTED_CONTRACT_KEYS) {
       expect(CONTRACT_VARIABLE_KEYS, key).toContain(key);
       expect(REQUIRED_VARIABLE_KEYS, key).not.toContain(key);
@@ -147,7 +148,7 @@ describe("the declared key set (AC-11)", () => {
 });
 
 describe("variable key sets (AC-11, T-11)", () => {
-  it("passes on the 33 contract keys plus the staging access switch", () => {
+  it("passes on the 35 contract keys plus the staging access switch", () => {
     const report = runRailwayCheck({
       declared,
       environmentName: "staging",

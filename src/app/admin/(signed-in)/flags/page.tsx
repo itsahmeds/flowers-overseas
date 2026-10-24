@@ -81,6 +81,15 @@ const CONFIRM_BODY = {
     on: "admin.flags.confirmBody.checkout.demo_guard.on",
     off: "admin.flags.confirmBody.checkout.demo_guard.off",
   },
+  // Spec 022a §12 (TASK-368): the two review switches.
+  "reviews.invite": {
+    on: "admin.flags.confirmBody.reviews.invite.on",
+    off: "admin.flags.confirmBody.reviews.invite.off",
+  },
+  "reviews.trustpilot": {
+    on: "admin.flags.confirmBody.reviews.trustpilot.on",
+    off: "admin.flags.confirmBody.reviews.trustpilot.off",
+  },
 } as const satisfies Partial<
   Record<FlagKey, { readonly on: string; readonly off: string }>
 >;

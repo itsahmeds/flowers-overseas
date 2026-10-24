@@ -35,7 +35,8 @@ describe.skipIf(server.url === undefined)(
       expect(on.map((row) => row.key)).toEqual(["checkout.demo_guard"]);
       const [count] = await scratch.sql<{ n: number }[]>`
         SELECT count(*)::int AS n FROM feature_flag`;
-      expect(count?.n).toBe(16);
+      // 16 from `0009`, and spec 022a's `reviews.invite` and `reviews.trustpilot` (`0031`).
+      expect(count?.n).toBe(18);
       const scopes = await scratch.sql`
         SELECT flag_key, scope, scope_ref, enabled FROM feature_flag_scope`;
       expect([...scopes]).toEqual([

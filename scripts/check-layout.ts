@@ -37,6 +37,10 @@ export const MODULES = [
   // its view model. A recorded `plan/01` §5 deviation: no listed module owns company and legal
   // content; registered here and in `docs/architecture.md` §3 in the same PR.
   "content",
+  // spec 022a §2, §5.2 (TASK-368): reviews. Invitations, the form's commands, moderation and the
+  // florist rating belong to no listed module (`plan/01` §5 names none for reviews); registered
+  // here and in `docs/architecture.md` §3 in the same PR, as the rule above requires.
+  "reviews",
 ] as const;
 
 export const REQUIRED_DIRS = [

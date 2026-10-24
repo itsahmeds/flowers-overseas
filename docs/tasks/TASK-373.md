@@ -26,7 +26,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (from TASK-368, PR 408): `0031` dropped the public `review_read` but left `0018`\'s `review_build_read` for `app_build`; when the reviews page and blocks are built, grant `app_build` `SELECT` on `public_review` and drop `review_build_read` (and its row in `BUILD_ROLE_FILTERED_TABLES`), so the build reads no private column either.
 
 ## Escalations
 

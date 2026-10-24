@@ -603,8 +603,9 @@ describe("the APP_ENV contract (spec 040 AC-3, T-03)", () => {
     // PR #62's 26-key contract plus the two spec 040 adds. The number is spelled out because
     // AC-3 is about the count agreeing from both sides, and `.env.example` is checked against
     // this same list above (T-03). Spec 012 (TASK-217) adds the sign-in core's four:
-    // `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `MAILER`.
-    expect(ENV_KEYS).toHaveLength(33);
+    // `AUTH_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`, `MAILER`; spec 022a (TASK-368) the two
+    // review keys: `REVIEW_TOKEN_SECRET`, `TRUSTPILOT_AFS_ADDRESS`.
+    expect(ENV_KEYS).toHaveLength(35);
     expect(new Set(ENV_KEYS).size).toBe(ENV_KEYS.length);
   });
 

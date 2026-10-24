@@ -171,6 +171,10 @@
         "checkout": {
           "open": "Lets the product page's demo button lead to the checkout, per country.",
           "demo_guard": "Keeps every checkout in demo mode: nothing is charged."
+        },
+        "reviews": {
+          "invite": "Sends one review email to every delivered order, a day after the photo.",
+          "trustpilot": "Copies each review email to Trustpilot, which then invites the buyer too."
         }
       },
       "orphanLine": "Not in the registry. It cannot be changed here.",
@@ -193,6 +197,16 @@
           "demo_guard": {
             "off": "Checkouts will stop being demonstrations wherever checkout is open. Type the flag's name to confirm.",
             "on": "Every checkout will be a demonstration again: nothing is charged. Type the flag's name to confirm."
+          }
+        },
+        "reviews": {
+          "invite": {
+            "on": "Every delivered order will get one review email a day after its photo. Type the flag's name to confirm.",
+            "off": "No more review emails will be sent; waiting invitations expire after 30 days. Type the flag's name to confirm."
+          },
+          "trustpilot": {
+            "on": "Each review email will be copied to Trustpilot's invitation address. Type the flag's name to confirm.",
+            "off": "Review emails will no longer be copied to Trustpilot. Type the flag's name to confirm."
           }
         }
       },

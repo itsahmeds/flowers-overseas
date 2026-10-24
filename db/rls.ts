@@ -44,11 +44,14 @@ export const PUBLIC_REFERENCE_TABLES = [
   "region",
 ] as const;
 
-/** Read by anyone, but only some rows: the condition is the migration's. */
+/**
+ * Read by anyone, but only some rows: the condition is the migration's. `review` left this set in
+ * spec 022a §5.1 (migration `0031_reviews_close`, TASK-368): the public reads published reviews
+ * through the `public_review` view (`PUBLIC_VIEWS`), and the table itself is staff only.
+ */
 export const PUBLIC_FILTERED_TABLES = {
   media_asset: "visibility = 'public'",
   media_variant: "its media_asset is readable (public)",
-  review: "moderation_status = 'published'",
 } as const;
 
 /**
@@ -68,8 +71,15 @@ export const BUILD_ROLE_READ_TABLES = [
   "feature_flag_scope",
 ].sort();
 
-/** The build role's filtered reads: the same rows a public render sees (`PUBLIC_FILTERED_TABLES`). */
-export const BUILD_ROLE_FILTERED_TABLES = PUBLIC_FILTERED_TABLES;
+/**
+ * The build role's filtered reads: the same rows a public render sees (`PUBLIC_FILTERED_TABLES`),
+ * and `0018`'s `review_build_read` on published reviews, which `0031` leaves in place (moving the
+ * build to `public_review` is spec 022a's display task, TASK-373).
+ */
+export const BUILD_ROLE_FILTERED_TABLES = {
+  ...PUBLIC_FILTERED_TABLES,
+  review: "moderation_status = 'published'",
+} as const;
 
 /**
  * Partner-scoped (`app.role = 'partner'`, the row's partner in `app.partner_ids`). `write` tables
@@ -143,6 +153,28 @@ export const PARTNER_VIEWS = {
   ],
 } as const;
 
+/**
+ * Spec 022a §5.1 (migration `0031_reviews_close`, TASK-368, AC-19): the published reviews, for
+ * everyone, with the text `NULL` when withheld and no private column (no order, partner,
+ * moderation note or moderator). Filtered by `moderation_status = 'published'` rather than a
+ * lookup: every role sees the same published set.
+ */
+export const PUBLIC_VIEWS = {
+  public_review: [
+    "id",
+    "rating",
+    "text",
+    "display_name",
+    "locale_code",
+    "published_at",
+    "delivered_month",
+    "destination_country_id",
+    "product_id",
+    "response_text",
+    "response_at",
+  ],
+} as const;
+
 /** The buyer's order timeline without the internal payload and actor (review round 1, nit 3). */
 export const CUSTOMER_VIEWS = {
   customer_order_event: [
@@ -195,6 +227,10 @@ export const STAFF_ONLY_TABLES = [
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
   "retention_policy",
+  // spec 022a §5.1 (migration `0031_reviews_close`, TASK-368): a review is staff only once its
+  // public read moved to `public_review`; an invite (one per order, a token hash) never was public.
+  "review",
+  "review_invite",
   "sessions",
   "verification_tokens",
   "webhook_inbox",
