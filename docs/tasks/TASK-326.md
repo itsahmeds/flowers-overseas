@@ -28,6 +28,38 @@ One dated bullet per `/review`, newest last.
 - **From `/plan-tasks` (orchestrator, 2026-10-21):** focusing an option must not scroll the page: open the listbox and move focus with `focus({ preventScroll: true })`, because a page scroll closes the listbox (clause 7, AC-64). Test it: `window.scrollY` unchanged after open and after every arrow key (AC-63).
 - **From `/plan-tasks` (orchestrator, 2026-10-21):** the e2e helper `chooseSentence(page, field, value)` in `tests/support/` replaces `selectOption` in `tests/e2e/home.spec.ts` and `tests/e2e/home-round2.spec.ts` (and the a11y case); it drives the listbox when the trigger exists and the native `selectOption` when it does not (the `e2e-mobile` project, JavaScript off). No assertion in the moved cases is weakened.
 
+## Decisions recorded here (clause 10, clause 11, the brief's own asks)
+
+- **Numbering.** PR 317 renumbered this amendment: AC-60 to AC-71, T-65 to T-77 (the `## Binding`
+  list above still says AC-58 to AC-69). Code, tests and the PR use the new numbers.
+- **The panel escapes the hero card through the top layer** (clause 10's choice): a
+  `popover="manual"` element placed from the trigger's rectangle with `inset-inline-start` and
+  `inset-block-start` through the CSSOM. Manual, not auto: an auto popover's light dismiss closes
+  on the trigger's own press and the click then reopens it, so every dismissal of clause 7 is
+  handled in `sentence-listbox.ts`. Without the popover API the native selects stay.
+- **When the chunk loads** (clause 11, §13 Q2). The sentence's chunk was already an interaction
+  island (TASK-244: first pointer press, focus or input on `#send`). A mouse needs the listbox on its
+  **first** click, so the control-bound wait also starts on `pointerover` (`CONTROL_INTERACTION_EVENTS`
+  in `paintSignal.ts`): §13 Q2's "first pointer movement over the sentence". It stays out of every
+  page load nobody touches, so `ON_INPUT_CHUNK_MARKERS` (PR 363) already excludes it by the
+  existing `fo:deferred:home-sentence` marker, and the A1 budget is not touched. Paint islands do
+  not listen for it. Bundled size: 2,305 B Brotli with esbuild's minifier for the island plus the
+  listbox (cap 3,072 B); CI's `deferred-chunks` spec measures the real chunk.
+- **The type-ahead's collator.** `fo/no-adhoc-intl` allows `Intl.*` only in
+  `src/modules/i18n/format.ts` and `collate.ts`, and `collate.ts` reads the locale registry (zod and
+  the locale tables), which must not reach a 3 KB client chunk. ECMA-402 defines
+  `String.prototype.localeCompare(that, locales, options)` as `new Intl.Collator(locales,
+  options).compare`, so `collatorCompare(locale)` uses it with `sensitivity: "base"`;
+  `tests/unit/sentence-listbox-model.test.ts` holds it equal to `Intl.Collator` for en, pl and de.
+- **A chunk that fails** renders nothing (the loader catches the import), so the native selects
+  serve the reader (AC-69) instead of a rejected import reaching the route's error boundary.
+- **Artboard over spec text.** The trigger's focus ring takes `outline-offset: 2px` and
+  `--radius-md` (components sheet, "The trigger"); the panel takes the artboard's normal tracking
+  (`letter-spacing: normal`), not the sentence's `-0.015em`. The artboard's options look wider
+  than the page's: its Fraunces is the variable font at automatic optical size, the site ships the
+  static opsz-144 subsets (fonts are outside this task).
+- **New dev dependency:** `jsdom` (T-66 asks for a jsdom unit test; the repo had none).
+
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
@@ -40,11 +72,32 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: model, controller, island wiring, CSS and unit tests (T-66, T-68, T-72/T-73 unit
+  halves) green; 22 unit mutations each red. Checked in a static Chromium harness (real server
+  HTML, compiled CSS, real fonts): closed state 0 differing pixels at 1440 and 1280, boxes equal,
+  motion 10 exact, keyboard and RTL as specified.
+- 2026-10-24: e2e (`tests/e2e/home-sentence-listbox.spec.ts`), a11y, visual and pseudo-RTL cases,
+  `chooseSentence` in `tests/support/sentence.ts`; home specs moved to it. Next: CI on the head SHA,
+  Linux baselines through the `visual:baselines` label.
+- 2026-10-24: first CI run (74edf0a4): a11y, build, unit green; e2e found a real defect (a scroll
+  event landing a frame after the opening press closed the panel; now closes only if the page
+  moved) and three test faults (`/pl` field order, minified easing, pixel parity held to the
+  visual threshold). Linux baselines committed from run 40079739301.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 388. On a fine pointer the home sentence's three choices open our own listbox
+(`src/modules/ui/home/sentence-listbox.ts`, model in `sentence-listbox-model.ts`, CSS in
+`src/app/globals.css`), loaded in the sentence's existing on-input chunk (2,305 B Brotli with
+esbuild for island plus listbox; the CI `deferred-chunks` spec asserts at most 3,072 B on the four
+homes); the A1 budget is not touched. Tests: unit 18 (model) + 34 (controller, jsdom) + 9 (CSS) +
+2 (deferred set); e2e 36 cases in `tests/e2e/home-sentence-listbox.spec.ts` plus the chunk size in
+`deferred-chunks.spec.ts` and the home specs moved to `chooseSentence`; a11y 2; visual 1 test with
+2 new baselines; pseudo-RTL 1. No local `next build`: the browser checks ran in a static harness
+inside the build slot (real server HTML, compiled CSS and fonts) and on CI.
+
+Carry-forwards: none owed by this task. For the founder, outside it: the site's Fraunces is the
+static opsz-144 subset, so the artboards' option rows look wider than the page's.

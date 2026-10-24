@@ -26,6 +26,7 @@
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { brotliCompressSync, constants } from "node:zlib";
 
 import { type Page, type Route, expect, test } from "@playwright/test";
 
@@ -221,6 +222,25 @@ test.describe("no deferred chunk starts before the LCP (AC-55, T-60)", () => {
               `${url}: ${id}'s chunk ${chunk} started at ${String(timing?.startTime)} ms, the LCP (${String(atRest.lcp?.tag)}) rendered at ${String(lcpAt)} ms`,
             )
             .toBeGreaterThan(lcpAt);
+        }
+      }
+
+      // The sentence's chunk, with its listbox (spec 004 §14 A-founder-2026-10-21d, AC-69): at
+      // most 3,072 B Brotli, measured as `budget:client-js` measures (quality 11).
+      for (const id of interaction) {
+        for (const script of scripts.filter((each) =>
+          each.body.includes(markerOf(id)),
+        )) {
+          const brotli = brotliCompressSync(Buffer.from(script.body), {
+            params: { [constants.BROTLI_PARAM_QUALITY]: 11 },
+          }).length;
+          testInfo.annotations.push({
+            type: "AC-69",
+            description: `${id}: ${script.url} ${String(brotli)} B Brotli`,
+          });
+          expect
+            .soft(brotli, `${url}: ${id}'s chunk`)
+            .toBeLessThanOrEqual(3_072);
         }
       }
     });

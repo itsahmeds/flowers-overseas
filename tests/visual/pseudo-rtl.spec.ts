@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 import { type BrowserContext, expect, test } from "@playwright/test";
 
 import { NO_LOCALE_CHOICE } from "../support/locale-choice.ts";
+import { enhanceSentence, sentenceTrigger } from "../support/sentence.ts";
 
 /**
  * The home's occasion-dates band leaves the layout in every home shot here (`./home-dates.css`
@@ -113,4 +114,44 @@ test.describe(`${PSEUDO_RTL_PATH} with the language popup open`, () => {
 
     await expect(page).toHaveScreenshot("ar-XB-language-popup.png");
   });
+});
+
+/**
+ * AC-67's right-to-left half (spec 004 §14 A-founder-2026-10-21d clause 10; TASK-326): on a mouse
+ * the sentence's country listbox opens with its inline-start edge, the right under `dir="rtl"`, on
+ * its trigger's. Logical offsets only, so this needs no RTL code of its own; a panel placed with
+ * `left` would align the wrong edges and go red here.
+ */
+test(`${PSEUDO_RTL_PATH}: the sentence listbox's inline-start edge sits on its trigger's`, async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  await recordConsentRefusal(context, baseURL);
+  expect((await page.goto(PSEUDO_RTL_PATH))?.status()).toBe(200);
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await enhanceSentence(page);
+  const trigger = sentenceTrigger(page, "country");
+  await trigger.click();
+  await expect(trigger).toHaveAttribute("aria-expanded", "true");
+  await page.waitForTimeout(300);
+
+  const edges = await page.evaluate(() => {
+    const button = document.querySelector(
+      '[aria-controls="send-country-listbox"]',
+    );
+    const panel = document.getElementById("send-country-listbox");
+    if (button === null || panel === null) throw new Error("no listbox");
+    const a = button.getBoundingClientRect();
+    const b = panel.getBoundingClientRect();
+    return {
+      trigger: a.right,
+      panel: b.right,
+      panelLeft: b.left,
+      triggerLeft: a.left,
+    };
+  });
+  expect(Math.abs(edges.panel - edges.trigger)).toBeLessThanOrEqual(0.5);
+  // Not vacuous: the panel is wider than its trigger, so its left edge is not the trigger's.
+  expect(edges.panelLeft).toBeLessThan(edges.triggerLeft);
 });

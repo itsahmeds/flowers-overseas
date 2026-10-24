@@ -44,6 +44,18 @@ export const FIRST_INTERACTION_EVENTS = [
   "input",
 ] as const;
 
+/**
+ * A control's island also starts when a pointer reaches the control (`pointerover`): a mouse
+ * reaches the home sentence before it clicks, so its listbox (spec 004 §14 A-founder-2026-10-21d;
+ * TASK-326) is there for the first click, which a `pointerdown` would only catch for the second
+ * (§13 Q2's "first pointer movement over the sentence"). A page load nobody touches never fires it,
+ * and the window-wide wait of a paint island does not listen for it.
+ */
+export const CONTROL_INTERACTION_EVENTS = [
+  ...FIRST_INTERACTION_EVENTS,
+  "pointerover",
+] as const;
+
 /** The longest an idle callback may wait once the page has painted (ms). */
 export const IDLE_TIMEOUT_MS = 2000;
 
@@ -72,7 +84,7 @@ export interface ReadyEnvironment extends InteractionTarget {
 /**
  * With no `control`: after the paint, on idle, or at the first interaction anywhere (the popup).
  * With a `control`: at the first interaction with that control alone (clause 1: "the first
- * interaction with its control"); a control that is not in the document never loads its island.
+ * interaction with its control"), a pointer reaching it included (`CONTROL_INTERACTION_EVENTS`); a control that is not in the document never loads its island.
  * One `AbortController` removes every interaction listener at once, and is the "done" flag that a
  * frame or idle callback still queued reads.
  */
@@ -97,7 +109,9 @@ export function whenReady(
     });
   };
 
-  for (const type of FIRST_INTERACTION_EVENTS) {
+  for (const type of control === undefined
+    ? FIRST_INTERACTION_EVENTS
+    : CONTROL_INTERACTION_EVENTS) {
     target?.addEventListener(type, fire, {
       capture: true,
       signal: listening.signal,
