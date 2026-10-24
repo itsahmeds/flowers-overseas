@@ -45,7 +45,9 @@ here.
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 326 (feature PR with TASK-212). Migration `0020_florists_v0` + rollback; Drizzle mirror; `db/rls.ts` classes `PUBLIC_INSERT_ONLY_TABLES`, `PARTNER_FILTERED_TABLES`; three retention rows and handlers (`partner_application`, `auth_session`, `auth_verification_token`); the `demo_order` row escalated. Tests: integration `florists-schema.test.ts` (7: AC-14 ×3, constraints, `locale_code`, partner photo policy, rollback on a seeded database), `retention-sweep.test.ts` +2 (T-17, sessions/tokens); unit `rls-policies.test.ts` +3 (0020 block) and the 0005 suites folded over 0020; existing integration fixtures updated for the new `NOT NULL` columns. Mutations in the PR's Self-review.
+
+(Numbers in the paragraph above are as first shipped; the migration is now `0022`, below.)
 
 **Renumber and rebase (finisher, 2026-10-24).** PR 326 now carries migration
 **`0022_florists_v0`** (orchestrator's order: PR 383 `0019`/`0020`, PR 384 `0021`, this `0022`,

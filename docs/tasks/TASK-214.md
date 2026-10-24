@@ -40,7 +40,7 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-22: **not started** (dispatched with TASK-211 and TASK-212 as one feature, PR 326). This task's pages render TASK-210's presentational inbox components (`src/modules/partners/ui/inbox/*`, `exampleFloristOrderView`), which do not exist yet: TASK-210 is `todo`. What PR 326 leaves ready for it: `requireFloristContext()`/`toDbContext()` (`src/lib/auth/florist.ts`), the signed-in shell at `{base}` (`src/app/demo/vendor-inbox/page.tsx`, the `Orders` heading where the list goes), `floristsConfig.inboxRefresh`, the `floristInbox` namespace (chrome keys only), the partner read policy on delivery photos (`0022`). The read models, `placeDemoOrder` and `pnpm florists:demo-member` need nothing from TASK-210 and could be split into their own task.
 
 ## Result
 
