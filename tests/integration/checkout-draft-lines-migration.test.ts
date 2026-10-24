@@ -30,6 +30,12 @@ import {
 
 const server = await probeLocalServer();
 
+/**
+ * The runner's rollbacks walk every migration above the target: with `0021` to `0023` stacked on
+ * this one (TASKS 337, 211, 293), a down-and-up takes longer than Vitest's 5 s default on CI.
+ */
+const RUNNER_TIMEOUT_MS = 120_000;
+
 const QUOTE = {
   currency: "PLN",
   totalMinor: 18_900,
@@ -90,81 +96,83 @@ describe.skipIf(server.url === undefined)(
       await scratch.drop();
     });
 
-    it("refuses a placed draft, copies every draft into line 1, and the down file keeps one-line drafts only, printing the counts", async () => {
-      await runner(scratch.url, ["--down", "--to", "0019"]);
-      expect(await lineTable(scratch.sql)).toBe(false);
-      expect(await retention(scratch.sql)).toEqual({
-        checkout_draft: { days: 1, action: "delete" },
-      });
+    it(
+      "refuses a placed draft, copies every draft into line 1, and the down file keeps one-line drafts only, printing the counts",
+      async () => {
+        await runner(scratch.url, ["--down", "--to", "0019"]);
+        expect(await lineTable(scratch.sql)).toBe(false);
+        expect(await retention(scratch.sql)).toEqual({
+          checkout_draft: { days: 1, action: "delete" },
+        });
 
-      const ids = await scratch.sql.begin(async (tx) => {
-        const countryId = await country(tx, "PL");
-        const [product] = await tx<{ id: string }[]>`
+        const ids = await scratch.sql.begin(async (tx) => {
+          const countryId = await country(tx, "PL");
+          const [product] = await tx<{ id: string }[]>`
           INSERT INTO product (sku, product_type, primary_flower, colour_primary, style,
                                price_tier, substitution_class, freshness_days)
           VALUES (${unique("SKU-")}, 'bouquet', 'roses', 'red', 'classic', 'classic',
                   'main_flower', 5)
           RETURNING id`;
-        const productId = product?.id ?? "";
-        const buyer = await customer(tx);
-        const orderId = await insertPlacedOrder(tx, {
-          customerId: buyer,
-          recipientId: await recipient(tx, buyer),
-          countryId,
+          const productId = product?.id ?? "";
+          const buyer = await customer(tx);
+          const orderId = await insertPlacedOrder(tx, {
+            customerId: buyer,
+            recipientId: await recipient(tx, buyer),
+            countryId,
+          });
+          const saved = await legacyDraft(tx, {
+            steps: 2,
+            quote: true,
+            productId,
+            countryId,
+          });
+          const fresh = await legacyDraft(tx, {
+            steps: 0,
+            quote: false,
+            productId,
+            countryId,
+          });
+          const placed = await legacyDraft(tx, {
+            steps: 3,
+            quote: true,
+            productId,
+            countryId,
+          });
+          await tx`UPDATE checkout_draft SET order_id = ${orderId} WHERE id = ${placed}`;
+          return { saved, fresh, placed, orderId, productId, countryId, buyer };
         });
-        const saved = await legacyDraft(tx, {
-          steps: 2,
-          quote: true,
-          productId,
-          countryId,
-        });
-        const fresh = await legacyDraft(tx, {
-          steps: 0,
-          quote: false,
-          productId,
-          countryId,
-        });
-        const placed = await legacyDraft(tx, {
-          steps: 3,
-          quote: true,
-          productId,
-          countryId,
-        });
-        await tx`UPDATE checkout_draft SET order_id = ${orderId} WHERE id = ${placed}`;
-        return { saved, fresh, placed, orderId, productId, countryId, buyer };
-      });
 
-      // A placed draft: the up migration refuses and changes nothing.
-      const refused = await runner(scratch.url).then(
-        () => "applied",
-        (error: unknown) => String(error),
-      );
-      expect(refused).toContain("DRAFT_LINES_PLACED_DRAFT");
-      expect(await lineTable(scratch.sql)).toBe(false);
+        // A placed draft: the up migration refuses and changes nothing.
+        const refused = await runner(scratch.url).then(
+          () => "applied",
+          (error: unknown) => String(error),
+        );
+        expect(refused).toContain("DRAFT_LINES_PLACED_DRAFT");
+        expect(await lineTable(scratch.sql)).toBe(false);
 
-      await scratch.sql`DELETE FROM checkout_draft WHERE id = ${ids.placed}`;
-      await runner(scratch.url);
-      expect(await lineTable(scratch.sql)).toBe(true);
-      expect(await retention(scratch.sql)).toEqual({
-        checkout_draft: { days: 30, action: "delete" },
-        checkout_draft_personal: { days: 1, action: "pseudonymise" },
-      });
-      const migrated = await scratch.sql<
-        {
-          id: string;
-          currency_code: string | null;
-          buyer_saved: boolean;
-          lifetime: string;
-          lines: number;
-          position: number;
-          tier_key: string;
-          addon_keys: string[];
-          recipient: string | null;
-          card: string | null;
-          last_seen: string | null;
-          steps: number;
-        }[]
-      >`
+        await scratch.sql`DELETE FROM checkout_draft WHERE id = ${ids.placed}`;
+        await runner(scratch.url);
+        expect(await lineTable(scratch.sql)).toBe(true);
+        expect(await retention(scratch.sql)).toEqual({
+          checkout_draft: { days: 30, action: "delete" },
+          checkout_draft_personal: { days: 1, action: "pseudonymise" },
+        });
+        const migrated = await scratch.sql<
+          {
+            id: string;
+            currency_code: string | null;
+            buyer_saved: boolean;
+            lifetime: string;
+            lines: number;
+            position: number;
+            tier_key: string;
+            addon_keys: string[];
+            recipient: string | null;
+            card: string | null;
+            last_seen: string | null;
+            steps: number;
+          }[]
+        >`
         SELECT d.id, d.currency_code, d.buyer_saved,
                (d.expires_at - d.last_activity_at)::text AS lifetime,
                (SELECT count(*)::int FROM checkout_draft_line c WHERE c.draft_id = d.id) AS lines,
@@ -173,103 +181,105 @@ describe.skipIf(server.url === undefined)(
                l.steps_completed AS steps
         FROM checkout_draft d JOIN checkout_draft_line l ON l.draft_id = d.id
         ORDER BY d.buyer_saved DESC`;
-      expect(migrated).toEqual([
-        {
-          id: ids.saved,
-          currency_code: "PLN",
-          buyer_saved: true,
-          lifetime: "30 days",
-          lines: 1,
-          position: 1,
-          tier_key: "stems_15",
-          addon_keys: ["chocolates"],
-          recipient: "Test Recipient",
-          card: "Hi",
-          last_seen: "18900",
-          steps: 2,
-        },
-        {
-          id: ids.fresh,
-          currency_code: null,
-          buyer_saved: false,
-          lifetime: "30 days",
-          lines: 1,
-          position: 1,
-          tier_key: "stems_15",
-          addon_keys: ["chocolates"],
-          recipient: "Test Recipient",
-          card: "Hi",
-          last_seen: "18900",
-          steps: 0,
-        },
-      ]);
+        expect(migrated).toEqual([
+          {
+            id: ids.saved,
+            currency_code: "PLN",
+            buyer_saved: true,
+            lifetime: "30 days",
+            lines: 1,
+            position: 1,
+            tier_key: "stems_15",
+            addon_keys: ["chocolates"],
+            recipient: "Test Recipient",
+            card: "Hi",
+            last_seen: "18900",
+            steps: 2,
+          },
+          {
+            id: ids.fresh,
+            currency_code: null,
+            buyer_saved: false,
+            lifetime: "30 days",
+            lines: 1,
+            position: 1,
+            tier_key: "stems_15",
+            addon_keys: ["chocolates"],
+            recipient: "Test Recipient",
+            card: "Hi",
+            last_seen: "18900",
+            steps: 0,
+          },
+        ]);
 
-      // Baskets for the down file: three lines (saved), one line (fresh), placed, empty.
-      await scratch.sql.begin(async (tx) => {
-        for (const position of [2, 3]) {
-          await tx`
+        // Baskets for the down file: three lines (saved), one line (fresh), placed, empty.
+        await scratch.sql.begin(async (tx) => {
+          for (const position of [2, 3]) {
+            await tx`
             INSERT INTO checkout_draft_line (draft_id, position, destination_country_id,
                                              product_id, tier_key)
             VALUES (${ids.saved}, ${position}, ${ids.countryId}, ${ids.productId}, 'stems_15')`;
-        }
-        const [purchase] = await tx<{ purchase_id: string }[]>`
+          }
+          const [purchase] = await tx<{ purchase_id: string }[]>`
           SELECT purchase_id FROM "order" WHERE id = ${ids.orderId}`;
-        const [placed] = await tx<{ id: string }[]>`
+          const [placed] = await tx<{ id: string }[]>`
           INSERT INTO checkout_draft (token_sha256, locale_code, mode, purchase_id, expires_at)
           VALUES (${"b".repeat(64)}, 'pl', 'demo', ${purchase?.purchase_id ?? ""},
                   now() + interval '30 days')
           RETURNING id`;
-        await tx`
+          await tx`
           INSERT INTO checkout_draft_line (draft_id, position, destination_country_id,
                                            product_id, tier_key, order_id)
           VALUES (${placed?.id ?? ""}, 1, ${ids.countryId}, ${ids.productId}, 'stems_15',
                   ${ids.orderId})`;
-        await tx`
+          await tx`
           INSERT INTO checkout_draft (token_sha256, locale_code, mode, expires_at)
           VALUES (${"c".repeat(64)}, 'pl', 'demo', now() + interval '30 days')`;
-      });
+        });
 
-      const printed = await runner(scratch.url, ["--down", "--to", "0019"]);
-      expect(printed).toContain(
-        "DRAFT_LINES_DOWN: kept 1 one-line drafts, deleted 3 drafts (multi-line, empty or placed)",
-      );
-      expect(await lineTable(scratch.sql)).toBe(false);
-      expect(await retention(scratch.sql)).toEqual({
-        checkout_draft: { days: 1, action: "delete" },
-      });
-      const kept = await scratch.sql<
-        {
-          id: string;
-          tier_key: string;
-          addon_keys: string[];
-          recipient: string | null;
-          steps: number;
-          confirmed: string | null;
-          lifetime: string;
-        }[]
-      >`
+        const printed = await runner(scratch.url, ["--down", "--to", "0019"]);
+        expect(printed).toContain(
+          "DRAFT_LINES_DOWN: kept 1 one-line drafts, deleted 3 drafts (multi-line, empty or placed)",
+        );
+        expect(await lineTable(scratch.sql)).toBe(false);
+        expect(await retention(scratch.sql)).toEqual({
+          checkout_draft: { days: 1, action: "delete" },
+        });
+        const kept = await scratch.sql<
+          {
+            id: string;
+            tier_key: string;
+            addon_keys: string[];
+            recipient: string | null;
+            steps: number;
+            confirmed: string | null;
+            lifetime: string;
+          }[]
+        >`
         SELECT id, tier_key, addon_keys, recipient ->> 'fullName' AS recipient,
                steps_completed AS steps, confirmed_total_minor::text AS confirmed,
                (expires_at - last_activity_at)::text AS lifetime
         FROM checkout_draft`;
-      expect(kept).toEqual([
-        {
-          id: ids.fresh,
-          tier_key: "stems_15",
-          addon_keys: ["chocolates"],
-          recipient: "Test Recipient",
-          steps: 0,
-          confirmed: "18900",
-          lifetime: "1 day",
-        },
-      ]);
+        expect(kept).toEqual([
+          {
+            id: ids.fresh,
+            tier_key: "stems_15",
+            addon_keys: ["chocolates"],
+            recipient: "Test Recipient",
+            steps: 0,
+            confirmed: "18900",
+            lifetime: "1 day",
+          },
+        ]);
 
-      await runner(scratch.url);
-      expect(await lineTable(scratch.sql)).toBe(true);
-      const [again] = await scratch.sql<{ drafts: number; lines: number }[]>`
+        await runner(scratch.url);
+        expect(await lineTable(scratch.sql)).toBe(true);
+        const [again] = await scratch.sql<{ drafts: number; lines: number }[]>`
         SELECT (SELECT count(*)::int FROM checkout_draft) AS drafts,
                (SELECT count(*)::int FROM checkout_draft_line) AS lines`;
-      expect(again).toEqual({ drafts: 1, lines: 1 });
-    });
+        expect(again).toEqual({ drafts: 1, lines: 1 });
+      },
+      RUNNER_TIMEOUT_MS,
+    );
   },
 );
