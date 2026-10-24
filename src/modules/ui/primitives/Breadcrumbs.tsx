@@ -25,7 +25,11 @@ import type { ReactElement, ReactNode } from "react";
 import { Icon } from "../icons/Icon.tsx";
 
 export interface Crumb {
-  /** Stable React key (the crumb's message key). */
+  /**
+   * The crumb's message key. **Not** its React key: two crumbs of one trail may share a message
+   * key (a category and a product both label themselves with `breadcrumb.entity`), so the trail
+   * keys each `li` by its position and its href instead (`crumbKey`; TASK-380).
+   */
   readonly key: string;
   readonly label: ReactNode;
   /** Absent when the crumb's page does not exist yet: rendered as text. */
@@ -56,6 +60,15 @@ const BACK_LINK_OFFSET = "mt-[14px] md:mt-(--space-md2)";
  */
 const CRUMB =
   "flex items-center gap-[6px] after:text-rule after:content-['/'_/_''] last:after:content-none";
+
+/**
+ * The React key of the crumb at `index`: its position, which no other crumb of the trail shares,
+ * with its href (or its message key when it has no page) for a readable key. Never the message
+ * key alone: React drops or reorders siblings that share a key (TASK-380).
+ */
+function crumbKey(crumb: Crumb, index: number): string {
+  return `${index}:${crumb.href ?? crumb.key}`;
+}
 
 /**
  * What the breadcrumb displays below `md` (A24 clause 4 (e)): the back link on every page type but
@@ -108,8 +121,8 @@ export function Breadcrumbs({
         className={`text-ink-subtle m-0 flex list-none flex-wrap items-center gap-[6px] p-0 text-sm ${back ? "max-md:hidden" : ""}`.trim()}
         data-fo-breadcrumb-trail
       >
-        {crumbs.map((crumb) => (
-          <li className={CRUMB} key={crumb.key}>
+        {crumbs.map((crumb, index) => (
+          <li className={CRUMB} key={crumbKey(crumb, index)}>
             {crumb.current === true || crumb.href === undefined ? (
               <span
                 {...(crumb.current === true
