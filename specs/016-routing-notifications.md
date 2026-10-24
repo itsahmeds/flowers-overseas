@@ -553,7 +553,7 @@ Raised by: spec 010 §14 A-founder-2026-10-22 item 13 and §13 Q25 (approved by 
 
 ### A-founder-2026-10-23: the bouquet's own florist is offered first
 
-**Status: approved on the founder's instruction of 2026-10-23 for the routing rule** (relayed by the orchestrator's work order of 2026-10-23); the spec stays approved. O-8 and O-9 (§13) are open, not blocking, and this entry is written against their defaults. No advisor ran (work order 2026-10-22: no advisor or reviewer agents). The founder's words, 2026-10-23, verbatim: "also build a feature. Where Whenever we get an order, the relevant florist gets the email when we forward the order to them, or when their product gets ordered, you know? Understand?"
+**Status: approved.** The founder's instruction of 2026-10-23 set the routing rule (relayed by the orchestrator's work order of 2026-10-23); the founder approved this amendment on 2026-10-25, verbatim: **"354 ok"**, so O-8 and O-9 (§13) bind on their defaults. Before that approval they were open, not blocking, and this entry is written against their defaults. No advisor ran (work order 2026-10-22: no advisor or reviewer agents). The founder's words, 2026-10-23, verbatim: "also build a feature. Where Whenever we get an order, the relevant florist gets the email when we forward the order to them, or when their product gets ordered, you know? Understand?"
 
 **What already exists (cited, not restated).**
 
