@@ -35,6 +35,7 @@ One dated bullet per `/review`, newest last.
     pinned only together with the others. Add one race case per clause (only the date, only the tier, only the add-ons,
     only the digest, only the confirmed pair; for example a `confirmPrice` landing between another step's load and its
     write), each watched red with its clause removed.
+- **From `/plan-tasks` (2026-10-22):** spec 010 §14 A3.2 left AC-49 with no owner; it is this task's: `placeOrderAction` calls `canServe` again with the final lines in `test` and `live`; a refusal, a thrown error or coverage lost since step 1 returns to step 1 with the matching error and writes no order, line, event or outbox row.
 
 ## Escalations
 
