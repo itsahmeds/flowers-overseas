@@ -65,6 +65,14 @@ export const CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME = 4;
 /** The raw ceiling of a short, machine-shaped field: a phone, a postcode, a country code. */
 export const CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS = 64;
 
+/**
+ * At most this many lines in one basket (spec 010 §14 A-founder-2026-10-22 D3, Q21). A sixth add
+ * is refused and writes nothing. Migration `checkout_draft_lines` checks `position BETWEEN 1 AND
+ * 5` with the same number, so changing it is a migration; `tests/unit/checkout-config.test.ts`
+ * pins the two equal.
+ */
+export const BASKET_MAX_LINES = 5;
+
 /** At most this many demo orders per UTC calendar day, across the whole deployment (§2, §13 Q1). */
 export const DEMO_DAILY_ORDER_CAP = 200;
 
