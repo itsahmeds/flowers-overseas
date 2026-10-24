@@ -1385,6 +1385,83 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
 }
 
 /*
+ * 14. The photo morph (spec 042 §5.3.1, AC-7, AC-8; spec 004 §14 A-founder-2026-10-20a; TASK-307;
+ * `docs/design/system/motion-interactions.dc.html`, motion 14). From `lg` up, under
+ * `no-preference` only: a product card's photograph glides into the product page's hero.
+ *
+ *  - No `@view-transition` rule here: a page with cards opts in only when the motion module sees a
+ *    card link activated, and the product page opts in from its own `<style data-fo-morph>`
+ *    (`src/modules/ui/motion/morph.ts`). So no other navigation starts a transition (AC-8).
+ *  - The root is not captured: only the photograph moves, the rest of the page swaps at once.
+ *  - Transform only (clause 2): `pageswap` gives the card's box the hero's width
+ *    (`--fo-morph-hero`, the product page's frame and grid: half of the frame's content width less
+ *    one gap is columns 2 to 7) and scales it back to its own (`--fo-morph-k`), giving the height
+ *    back with a negative margin, so it looks and lays out as before. Both ends of the group are one
+ *    size, and the group's animation changes `transform` alone, over `--duration-slow` on
+ *    `--ease-emphasised`.
+ *  - The hero fades in over the card's photograph over `--duration-base`; the card's stays under.
+ *    A photograph with no partner (a pair that does not match) shows at rest, with no animation.
+ */
+@keyframes fo-morph-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 64rem) {
+  :root {
+    view-transition-name: none;
+  }
+
+  [data-fo-morph-from] {
+    --fo-morph-hero: calc(
+      (
+          min(var(--fo-morph-vw) - 2 * var(--gutter), var(--container-page)) -
+            clamp(24px, 2.22vw, 32px)
+        ) /
+        2
+    );
+
+    inline-size: var(--fo-morph-hero);
+    max-inline-size: none;
+    margin-block-end: calc(
+      1.25 * var(--fo-morph-hero) * (var(--fo-morph-k) - 1)
+    );
+    transform: scale(var(--fo-morph-k));
+    transform-origin: 0 0;
+  }
+
+  [dir="rtl"] [data-fo-morph-from] {
+    transform-origin: 100% 0;
+  }
+
+  ::view-transition-group(*) {
+    animation-duration: var(--duration-slow);
+    animation-timing-function: var(--ease-emphasised);
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  ::view-transition-old(*) {
+    animation: none;
+  }
+
+  ::view-transition-new(*) {
+    animation: fo-morph-in var(--duration-base) var(--ease-standard) both;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(*):only-child,
+  ::view-transition-new(*):only-child {
+    animation: none;
+  }
+}
+
+/*
  * Reduced motion (AC-6 as A24 clause 9 (c) reads it): the base layer's rule collapses every
  * transition and animation to 0.01 ms, and the rules above do not apply at all. The one change over
  * time left is motion 10's fade, `--duration-fast` (120 ms), opacity only. It has to be

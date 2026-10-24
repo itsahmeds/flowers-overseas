@@ -20,11 +20,13 @@
 import { useTranslations } from "next-intl";
 import type { ReactElement } from "react";
 
+import { INTERACTIONS } from "@/config/interactions";
 import type { ProductGallery } from "@/modules/catalog";
 
 import { MediaAsset } from "../media/MediaAsset.tsx";
 import type { MediaManifest } from "../media/manifest.ts";
 import { MediaProvenanceNote } from "../media/MediaProvenanceNote.tsx";
+import { morphHeroRule } from "../motion/morph.ts";
 import {
   GalleryDots,
   HorizontalScroller,
@@ -95,6 +97,14 @@ export function Gallery({
   // back out as the phone's row at a desktop width, and it clips (`overflow: clip`, not a scroll
   // container) so even then no photograph paints beside the hero or under the buy column.
   const images = [gallery.hero, ...gallery.thumbs];
+  // Motion 14, the photo morph's product half (spec 042 §5.3.1; TASK-307): from `lg` up, under
+  // `no-preference`, this document opts in to a cross-document view transition and names its
+  // hero's photograph, so a card's photograph that a click named the same flies into it. Plain
+  // CSS in the server HTML, no client byte; without the switch, or with an asset id outside the
+  // name's alphabet, nothing is emitted and every arrival is as before.
+  const morph = INTERACTIONS.morph
+    ? morphHeroRule(gallery.hero.assetId)
+    : undefined;
   const anchor = (index: number): `#${string}` =>
     `#pdp-photo-${String(index + 1)}`;
   return (
@@ -102,6 +112,7 @@ export function Gallery({
       className="relative lg:col-span-full lg:grid lg:grid-cols-subgrid"
       data-fo-gallery="photos"
     >
+      {morph === undefined ? null : <style data-fo-morph="">{morph}</style>}
       <HorizontalScroller
         bleed={false}
         className="max-lg:gap-0 lg:col-span-full lg:grid! lg:grid-cols-subgrid lg:grid-rows-[repeat(4,auto)_1fr] lg:[column-gap:normal] lg:gap-y-[12px] lg:overflow-clip [&>li]:w-full lg:[&>li]:col-start-1 lg:[&>li:first-child]:col-[2/8] lg:[&>li:first-child]:row-[1/6]"

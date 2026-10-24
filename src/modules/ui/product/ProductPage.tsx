@@ -98,8 +98,11 @@ const H2 = STEP_HEADING;
 /** The related row's heading voice. */
 const H2S = "display text-2xl-s md:text-2xl leading-[1.08] m-0";
 
-/** The 12-column grid's gutter on the product artboard (`.g12`). */
-const G12 = "lg:grid-cols-12 lg:gap-x-[clamp(24px,2.22vw,32px)]";
+/**
+ * The 12-column grid's gutter on the product artboard (`.g12`). Exported for motion 14, whose card
+ * box takes the hero's width from the same frame and gap (`tests/unit/interactions-css.test.ts`).
+ */
+export const G12 = "lg:grid-cols-12 lg:gap-x-[clamp(24px,2.22vw,32px)]";
 
 /** A section's place below the action on desktop: the wide column 1–7 or the narrow 9–12. */
 const LEFT = "lg:col-[1/8]";
