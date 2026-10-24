@@ -77,6 +77,31 @@ default currency (never a cookie, never a header — that is what keeps cached H
 everyone) and stamps `fxAsOf` and `ratePpm` on the result. `offerProjection()` reads that same
 projection, which is why the JSON-LD and the HTML cannot disagree.
 
+### 3.1 Where the rows come from: the repository or the database
+
+The pricing code reads rows through three providers and never knows which implementation it got
+(spec 005 AC-27). The static ones read `src/config/catalogue/`; the database ones
+(`src/modules/catalog/db/`, TASK-070) read `product`, `product_tier`, `country_price`,
+`addon_country_price` and `fx_rate`. Category, occasion and add-on definitions stay in the
+repository either way (spec 012b §2.2). Until spec 012b's cutover (TASK-294) changes the
+composition root in `src/modules/catalog/providers.ts`, every page reads the static ones.
+
+What to know once the database is the source:
+
+- **A price edit shows on the next render, not the next request.** Each read is one query over its
+  table, kept for the rest of that server request only, so a cached ISR page costs no query and a
+  re-render reads the current rows. There is no process-wide cache to clear after an admin edit;
+  purge the page's tags (§6) as for any price change.
+- **A row the dataset's schema refuses stops the read.** A product with no `en` name, a facet value
+  outside the taxonomy, a `retail_minor` beyond what a number holds exactly: the whole read throws
+  and the page fails rather than showing part of a catalogue. Fix the row.
+- **`fx_rate` is empty until `fx.refresh` (TASK-071) writes it.** With no fresh rate every page
+  quotes in the destination's own currency (§4). Do not select the database FX provider before the
+  job runs.
+- **The facets live in `product.other_flowers`, `product.other_colours`, `product.allergen_note`
+  and `product_occasion.sort`** (migration `0025_product_facets`), beside `primary_flower` and
+  `colour_primary`. The migration filled them once on seeded rows; the seed writes them from then on.
+
 ## 4. What happens when FX is stale
 
 - The committed snapshot in `src/config/catalogue/fx.data.ts` is dated, euro-base and integer
