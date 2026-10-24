@@ -32,3 +32,21 @@ export {
   PaymentRecordSchema,
 } from "./queries.ts";
 export type { PaymentRecord } from "./queries.ts";
+
+// Spec 013 §5.2 (TASK-257): the payment half of the lifecycle. Each takes a purchase id and its
+// dependencies, never an amount (AC-9): the amount is read from the purchase.
+export {
+  PAYMENTS_ACTOR,
+  startPayment,
+  sweepPayments,
+  SWEEP_ACTOR,
+  syncFromProvider,
+} from "./lifecycle.ts";
+export type {
+  LifecycleDeps,
+  PaymentTransaction,
+  ReconcileOutcome,
+  ReconcileResult,
+  StartPaymentResult,
+  SweepCounts,
+} from "./lifecycle.ts";

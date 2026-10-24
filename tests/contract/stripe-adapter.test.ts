@@ -53,9 +53,10 @@ function input(overrides: Partial<CreateIntentInput> = {}): CreateIntentInput {
     captureMethod: "automatic",
     methodTypes: ["card"],
     metadata: {
-      orderId: ORDER_ID,
+      purchaseId: ORDER_ID,
       paymentId: PAYMENT_ID,
-      destinationCountry: "PL",
+      orderCount: 2,
+      destinationCountries: ["PL", "DE"],
       buyerCountryDeclared: "GB",
       isFirstOrder: false,
       orderMode: "test",
@@ -128,16 +129,17 @@ describe("createIntent: the wire parameters (AC-7, AC-1 metadata, T-07)", () => 
     expect(params).not.toHaveProperty("automatic_payment_methods");
   });
 
-  it("sends the order's amount and currency, the order reference, and exactly the six metadata keys", async () => {
+  it("sends the purchase's amount and currency, the references, and exactly the seven metadata keys", async () => {
     await provider().createIntent(input());
     const { params } = createRequest();
     expect(params["amount"]).toBe("5490");
     expect(params["currency"]).toBe("gbp");
     expect(params["description"]).toBe("FO-3H7Q-K2ZD");
     expect(params["metadata"]).toEqual({
-      order_id: ORDER_ID,
+      purchase_id: ORDER_ID,
       payment_id: PAYMENT_ID,
-      destination_country: "PL",
+      order_count: "2",
+      destination_countries: "PL,DE",
       buyer_country_declared: "GB",
       is_first_order: "false",
       order_mode: "test",
