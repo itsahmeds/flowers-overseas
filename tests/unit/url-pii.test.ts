@@ -89,6 +89,13 @@ const EXTERNAL_QUERY_KEYS: readonly {
     reason:
       "the checkout's step selector (spec 010 §2: `?step=` is the only query; no personal data)",
   },
+  // Spec 010 §14 A-founder-2026-10-22 item 5 (TASK-348): `&line={n}` beside `step`, an integer
+  // position from 1 to BASKET_MAX_LINES, never personal data (AC-34).
+  {
+    entry: "src/modules/checkout/steps.ts#line",
+    reason:
+      "the basket line a checkout screen is for (spec 010 §14 A-founder-2026-10-22: `&line=` is an integer position)",
+  },
   {
     entry: "src/app/admin/(signed-in)/users/actions.ts#result",
     reason:
@@ -144,6 +151,34 @@ const EXTERNAL_QUERY_KEYS: readonly {
   {
     entry: "src/app/admin/(signed-in)/flags/actions.ts#ref",
     reason: "/admin/flags's toggled scope: an ISO 3166 destination code or `*`",
+  },
+  // Spec 011 §2, §7 (TASK-212): the florist sign-in pages under `FLORIST_BASE_PATH` (`noindex`,
+  // `private, no-store`, 404 in production). `hl` is the language before sign-in (en, pl, de);
+  // `state` and `t` are the shared core's (above). None carries personal data, and none may become
+  // a listing key: `QUERY_KEYS` feeds the listing rewrites, so `?hl=` there would send a public
+  // page to the parameter route.
+  {
+    entry: "src/lib/auth/florist.ts#hl",
+    reason:
+      "the next florist page's language after a sign-in request or a failed confirm (spec 011 §7)",
+  },
+  {
+    entry: "src/app/demo/vendor-inbox/sign-in/page.tsx#state",
+    reason:
+      "the florist sign-in page's language links keep its state (`sent`, `expired`, `signed-out`)",
+  },
+  {
+    entry: "src/app/demo/vendor-inbox/sign-in/page.tsx#hl",
+    reason: "the florist sign-in page's language links (spec 011 §7)",
+  },
+  {
+    entry: "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#t",
+    reason:
+      "the confirm page's language links keep the emailed token on the same page (no address, spec 011 AC-19)",
+  },
+  {
+    entry: "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#hl",
+    reason: "the florist confirm page's language links (spec 011 §7)",
   },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
@@ -551,6 +586,7 @@ describe("the real tree (T-59)", () => {
       "src/lib/auth/surface.ts#token",
       "src/lib/auth/surface.ts#callbackUrl",
       "src/modules/checkout/steps.ts#step",
+      "src/modules/checkout/steps.ts#line",
       "src/app/admin/(signed-in)/users/actions.ts#result",
       "src/app/admin/(signed-in)/audit/page.tsx#entity",
       "src/app/admin/(signed-in)/audit/page.tsx#actor",
@@ -565,6 +601,11 @@ describe("the real tree (T-59)", () => {
       "src/app/admin/(signed-in)/flags/actions.ts#result",
       "src/app/admin/(signed-in)/flags/actions.ts#key",
       "src/app/admin/(signed-in)/flags/actions.ts#ref",
+      "src/lib/auth/florist.ts#hl",
+      "src/app/demo/vendor-inbox/sign-in/page.tsx#state",
+      "src/app/demo/vendor-inbox/sign-in/page.tsx#hl",
+      "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#t",
+      "src/app/demo/vendor-inbox/sign-in/confirm/page.tsx#hl",
     ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);
   });

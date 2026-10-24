@@ -139,10 +139,14 @@ export const SCANNED_PATHS = [
  * A scanned module's database adapter directory, left out of the walk (spec 012b §5.2, §12:
  * "`check:no-db` keeps covering `src/modules/catalog` outside `db/`"; TASK-292). The database
  * implementation of a provider seam lives there and nowhere else in the module, so everything else
- * in the module stays provably database-free. `src/modules/geo/db` holds `dbCountryRegistry`;
- * TASK-070 adds `src/modules/catalog/db` for the catalogue providers.
+ * in the module stays provably database-free. `src/modules/geo/db` holds `dbCountryRegistry`,
+ * `src/modules/i18n/db` the review ledger's `attest()` (TASK-293); TASK-070 adds `src/modules/catalog/db` for the catalogue providers.
  */
-export const DATABASE_ADAPTER_DIRS = ["src/modules/geo/db"] as const;
+export const DATABASE_ADAPTER_DIRS = [
+  "src/modules/geo/db",
+  // spec 012b §2.4 (TASK-293): the review ledger's writer and reads (`attest()`).
+  "src/modules/i18n/db",
+] as const;
 
 const SCANNED_EXTENSIONS = [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx"];
 

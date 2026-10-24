@@ -11,7 +11,7 @@
  * the database holds and this file does not name is an orphan: `src/lib/flags.ts` refuses to read
  * it and spec 012's flags page (TASK-220) shows it without a toggle.
  *
- * In v0 it registers exactly the two flags spec 010's checkout reads:
+ * In v0 it registered exactly the two flags spec 010's checkout reads:
  *
  *  - `checkout.open`, country scope: the demo checkout is open for a destination. A toggle dirties
  *    the destination's `catalog` cache entity (the tag `catalog:{iso2}`, built only by spec 005's
@@ -21,6 +21,13 @@
  *    confirm (TASK-220).
  *
  * Spec 013 adds `payments.stripe` and `payments.mollie` here, high-risk, when it lands.
+ *
+ * Spec 018 (TASK-337, migration `0021_post_purchase`) adds two, neither dirtying a public page
+ * (every route they gate is `noindex`, `no-store`):
+ *
+ *  - `account.open`, global or per locale: the account and privacy surfaces (tasks 4 and 5). Spec
+ *    018 §12 calls it `account`; `0009`'s key check needs a dotted key, so it is `account.open`.
+ *  - `invoice.issue`, country scope: invoices for live orders to that destination.
  *
  * No database here (`pnpm check:no-db` scans `src/config`): the reader is `src/lib/flags.ts`.
  */
@@ -130,6 +137,22 @@ const REGISTRY = [
     description:
       "Every checkout is a demo while this is on: no card is charged and no florist is paid (spec 010). Admin only; type the key to confirm.",
     risk: "high",
+    dirties: [],
+  },
+  {
+    key: "account.open",
+    scopeKinds: ["global", "locale"],
+    description:
+      "The customer account and self-service privacy (spec 018 tasks 4 and 5): on in preview, then per locale once its strings are reviewed. Off at launch.",
+    risk: "standard",
+    dirties: [],
+  },
+  {
+    key: "invoice.issue",
+    scopeKinds: ["country"],
+    description:
+      "Issue invoices and credit notes for live orders to a destination (spec 018). On for a country only after docs/compliance/vat-signoff.md records the accountant's answers.",
+    risk: "standard",
     dirties: [],
   },
 ] as const satisfies readonly FeatureFlagDefinition[];

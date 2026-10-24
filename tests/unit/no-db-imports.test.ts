@@ -228,7 +228,11 @@ describe("AC-2: no database import in the spec 003 file set (T-02)", () => {
   });
 
   it("leaves a module's db/ adapter directory out, and only that directory (spec 012b §12; TASK-292)", () => {
-    expect([...DATABASE_ADAPTER_DIRS]).toEqual(["src/modules/geo/db"]);
+    // TASK-293 adds the review ledger's adapter directory (spec 012b §2.4).
+    expect([...DATABASE_ADAPTER_DIRS]).toEqual([
+      "src/modules/geo/db",
+      "src/modules/i18n/db",
+    ]);
     const adapter = tempTree(
       'import { withDbContext } from "@/lib/db";\nexport const a = withDbContext;\n',
       "src/modules/geo/db/registry.ts",

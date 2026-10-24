@@ -56,6 +56,7 @@ registerFixtureEventSchemas();
 const dialect = new PgDialect();
 const ORDER_ID = "3f0a6f8e-2c1b-4d5e-9f7a-8b6c5d4e3f21";
 const EVENT_ID = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
+const FIXTURE_PURCHASE_ID = "3c2b1a09-8f7e-4d6c-9b5a-4e3d2c1b0a9f";
 
 interface Recorded {
   readonly sql: string;
@@ -107,6 +108,8 @@ function recorder(script: Script = {}): {
       if (/INSERT INTO order_event/.test(sql)) return [{ id: EVENT_ID }];
       if (/SELECT supply_model FROM country/.test(sql))
         return [{ supply_model: null }];
+      if (/INSERT INTO purchase/.test(sql))
+        return [{ id: FIXTURE_PURCHASE_ID }];
       if (/INSERT INTO "order"/.test(sql)) return [{ id: params[0] }];
       return [];
     },
