@@ -1816,9 +1816,398 @@ main > .th + .sec, main > .th + section { padding-block-start: 32px !important; 
 .glabel.above { margin-block-end: 12px; }
 .sh .glabel { align-self: end; }
 .all-ex .prov { display: none; }
+
+/* ===== Spec 004 §14 A-founder-2026-10-24a: commerce structure (cm-, 2026-10-24) ===== */
+.cm-wrap { padding-inline: var(--gutter); }
+.M .cm-wrap { padding-inline: var(--gutter-s); }
+.cm-sec { padding-block: 44px; }
+.M .cm-sec { padding-block: 32px; }
+.cm-sec.band { background: var(--color-paper-2); }
+.cm-h { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 10px 32px; margin-block-end: 22px; }
+.M .cm-h { margin-block-end: 16px; }
+.cm-h2 { font-size: var(--text-2xl-fluid); line-height: 1.08; letter-spacing: var(--tracking-display); }
+.cm-eb { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-eyebrow); margin-block-end: 8px; }
+.cm-sub { font-size: var(--text-sm); color: var(--color-ink-2); margin-block-start: 6px; max-inline-size: 70ch; }
+.cm-glabel { font-size: var(--text-xs); color: var(--color-ink-3); }
+.cm-slot { font-style: italic; color: var(--color-ink-2); background: var(--color-butter); box-shadow: inset 0 0 0 1px var(--color-warning); border-radius: var(--radius-sm); padding-inline: 4px; }
+.cm-key { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; color: var(--color-ink-3); font-style: normal; }
+.cm-link { color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; }
+.cm-lbtn { border: 0; background: none; padding: 0; min-block-size: var(--target-min); color: var(--color-link); font-weight: var(--font-weight-bold); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 5px; font-size: var(--text-ui); font-family: var(--font-body); }
+.cm-gbtn { display: inline-flex; align-items: center; min-block-size: var(--control-sm); padding-inline: 20px; border-radius: var(--radius-full); border: 0; background: transparent; box-shadow: inset 0 0 0 1.5px var(--color-ink); color: var(--color-ink); font-weight: var(--font-weight-bold); font-size: var(--text-ui); font-family: var(--font-body); white-space: nowrap; }
+.cm-pbtn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 46px; padding-inline: 24px; border-radius: var(--radius-full); border: 0; background: var(--color-accent); color: var(--color-accent-ink); font-weight: var(--font-weight-bold); font-size: var(--text-ui); font-family: var(--font-body); white-space: nowrap; }
+
+/* header: the six menu items, the selector, then search · account · basket where published */
+.cm-hdr { position: relative; background: var(--color-paper); border-block-end: var(--rule); }
+.cm-row { display: flex; align-items: center; gap: 18px; min-block-size: 76px; }
+.M .cm-row { min-block-size: 64px; gap: 4px; }
+.cm-row .logo svg { inline-size: 34px; block-size: 34px; }
+.cm-row .wordmark { font-size: 22px; }
+.M .cm-row .logo svg { inline-size: 28px; block-size: 28px; }
+.M .cm-row .wordmark { font-size: 19px; }
+.cm-nav { display: flex; align-items: center; gap: 0; margin-inline-start: 6px; }
+.cm-nav details { position: static; }
+.cm-sum { list-style: none; display: inline-flex; align-items: center; gap: 7px; min-block-size: var(--target-min); padding-inline: 11px; border-radius: var(--radius-full); font-size: var(--text-ui); color: var(--color-ink-2); white-space: nowrap; cursor: pointer; }
+.cm-sum::-webkit-details-marker { display: none; }
+.cm-sum::after { content: ""; inline-size: 6px; block-size: 6px; border-inline-end: 1.5px solid currentColor; border-block-end: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); opacity: 0.7; }
+.cm-sum.on { background: var(--color-sage-wash); color: var(--color-ink); }
+.cm-sum.on::after { transform: translateY(2px) rotate(-135deg); }
+.cm-sum.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.cm-sel { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px; inline-size: 232px; min-block-size: var(--target-min); padding-inline: 14px 12px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-sm); color: var(--color-ink); white-space: nowrap; }
+.cm-sel.ctx { box-shadow: inset 0 0 0 1.5px var(--color-sky); }
+.cm-sel svg { flex: none; inline-size: 18px; block-size: 18px; color: var(--color-sky); }
+.cm-sel .t { overflow: hidden; text-overflow: ellipsis; flex: 1; }
+.cm-sel::after { content: ""; flex: none; inline-size: 6px; block-size: 6px; border-inline-end: 1.5px solid var(--color-ink-2); border-block-end: 1.5px solid var(--color-ink-2); transform: translateY(-2px) rotate(45deg); }
+.cm-ico { flex: none; inline-size: var(--target-min); block-size: var(--target-min); display: inline-grid; place-items: center; border-radius: 50%; color: var(--color-ink); text-decoration: none; position: relative; }
+.cm-ico svg { inline-size: 22px; block-size: 22px; }
+.cm-ico .n { position: absolute; inset-block-start: 4px; inset-inline-end: 2px; min-inline-size: 18px; block-size: 18px; padding-inline: 4px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--color-accent-ink); font-size: 11px; font-weight: var(--font-weight-bold); display: grid; place-items: center; }
+.cm-menu { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px; min-block-size: var(--target-min); padding-inline: 14px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1.5px var(--color-ink); font-weight: var(--font-weight-bold); font-size: var(--text-sm); color: var(--color-ink); white-space: nowrap; }
+.cm-menu .bars { inline-size: 16px; block-size: 10px; border-block: 1.5px solid currentColor; position: relative; }
+.cm-menu .bars::after { content: ""; position: absolute; inset-inline: 0; inset-block-start: 3px; border-block-start: 1.5px solid currentColor; }
+.cm-row2 { display: flex; align-items: center; gap: 0; min-block-size: 48px; border-block-start: var(--rule); }
+
+/* mega panel (drawn in flow under its header; in the build it is absolute inside the header frame) */
+.cm-panel { background: var(--color-card); border-block-end: var(--rule); box-shadow: var(--shadow-md); padding-block: 30px 34px; }
+.cm-pg { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; }
+.cm-cols { grid-column: 1 / span 9; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 28px; align-content: start; }
+.cm-cols.full { grid-column: 1 / -1; }
+.cm-col h3 { font-family: var(--font-body); font-variation-settings: normal; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); margin-block-end: 6px; }
+.cm-col ul { display: grid; }
+.cm-col.two { grid-column: span 2; }
+.cm-col.two ul { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
+.cm-col li > a, .cm-col li > form > button, .cm-col li > span { display: flex; align-items: center; gap: 10px; min-block-size: 36px; text-decoration: none; color: var(--color-ink); font-size: var(--text-ui); border: 0; background: none; padding: 0; font-family: var(--font-body); inline-size: 100%; text-align: start; }
+.cm-col li small { margin-inline-start: auto; color: var(--color-ink-3); font-size: var(--text-fine); font-variant-numeric: lining-nums tabular-nums; }
+.cm-col li > a.focus { outline: var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-md); }
+.cm-col .plain { color: var(--color-ink-2); font-size: var(--text-sm); line-height: 1.5; padding-block: 6px; }
+.cm-all { margin-block-start: 10px; }
+.cm-feat { grid-column: 10 / span 3; border-inline-start: var(--rule); padding-inline-start: 32px; }
+.cm-feat .cm-card { max-inline-size: 208px; }
+.cm-dim { block-size: 90px; background: var(--color-paper-2); position: relative; }
+.cm-dim::after { content: ""; position: absolute; inset: 0; background: var(--color-scrim); opacity: 0.25; }
+
+/* product card */
+.cm-g4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 44px 28px; }
+.cm-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 20px; }
+.M .cm-g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
+.M .cm-g2 { gap: 28px 14px; }
+.cm-card { display: grid; align-content: start; }
+.cm-card > a { display: block; text-decoration: none; color: inherit; }
+.cm-ph { aspect-ratio: 4 / 5; border-radius: var(--radius-photo); overflow: hidden; background-color: var(--color-paper-2); background-size: cover; background-position: center; }
+.M .cm-ph { border-radius: var(--radius-photo-s); }
+.cm-ph.none { background: var(--color-photo); display: flex; align-items: end; padding: 12px; color: var(--color-photo-ink); font-size: var(--text-xs); line-height: 1.4; }
+.cm-card h3 { font-size: var(--text-h3); line-height: var(--line-height-title); margin-block-start: 12px; }
+.M .cm-card h3 { font-size: var(--text-h3-s); margin-block-start: 9px; }
+.cm-pr { margin-block-start: 5px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; }
+.cm-pr b { font-weight: var(--font-weight-bold); font-size: var(--text-ui); font-variant-numeric: lining-nums tabular-nums; }
+.cm-pr small { font-size: var(--text-xs); color: var(--color-ink-3); }
+.cm-eq { margin-block-start: 3px; font-size: 12.5px; line-height: 1.35; color: var(--color-ink-3); font-variant-numeric: lining-nums tabular-nums; }
+.M .cm-eq { font-size: 12px; }
+.cm-ask { margin-block-start: 5px; font-size: var(--text-sm); line-height: 1.35; color: var(--color-ink-2); }
+.cm-cd { margin-block-start: 6px; min-block-size: 18px; display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-included); }
+.cm-cd svg { flex: none; inline-size: 14px; block-size: 14px; }
+.cm-cd.hold { visibility: hidden; }
+.cm-cd.show-hold { visibility: visible; color: var(--color-ink-3); font-weight: var(--font-weight-body); box-shadow: inset 0 0 0 1px var(--color-rule); border-radius: var(--radius-sm); padding-inline: 6px; border: 1px dashed var(--color-ink-3); box-shadow: none; }
+.cm-loc { justify-self: start; margin-block-start: 6px; display: inline-flex; align-items: center; min-block-size: 22px; padding-inline: 9px; border-radius: var(--radius-full); background: var(--color-leaf-wash); color: var(--color-ink); font-size: var(--text-xs); font-weight: var(--font-weight-bold); }
+.cm-prov { margin-block-start: 6px; font-size: var(--text-xs); color: var(--color-ink-3); display: none; }
+
+/* the picker */
+.cm-picker { position: relative; overflow: hidden; background: var(--color-card); border-radius: var(--radius-letter); box-shadow: var(--shadow-letter); padding: 24px 26px 22px; }
+.M .cm-picker { padding: 20px 18px 18px; }
+.cm-picker.flat { box-shadow: inset 0 0 0 1px var(--color-rule); }
+.cm-picker::before { content: ""; position: absolute; inset-inline: 0; inset-block-start: 0; block-size: var(--airmail-edge-size); background: var(--airmail-edge); }
+.cm-picker.flat::before { content: none; }
+.cm-pl { display: block; font-family: var(--font-display); font-variation-settings: var(--font-variation-display); font-size: 25px; line-height: 1.2; margin-block-end: 12px; }
+.M .cm-pl { font-size: 22px; margin-block-end: 10px; }
+.cm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.M .cm-chips { flex-wrap: nowrap; overflow: hidden; margin-inline: -18px; padding-inline: 18px; }
+.cm-chip { flex: none; display: inline-flex; align-items: center; min-block-size: var(--target-min); padding-inline: 16px; border-radius: var(--radius-full); background: var(--color-paper); box-shadow: inset 0 0 0 1px var(--color-rule); color: var(--color-ink); font-weight: var(--font-weight-bold); font-size: var(--text-ui); text-decoration: none; white-space: nowrap; }
+.cm-chip.on { background: var(--color-selected); color: var(--color-on-selected); box-shadow: none; }
+.cm-chip.focus { outline: var(--focus-ring); outline-offset: 2px; }
+.cm-find { display: flex; gap: 10px; margin-block-start: 12px; }
+.cm-field { flex: 1; min-inline-size: 0; display: flex; align-items: center; gap: 10px; min-block-size: var(--field-height); padding-inline: 14px; border-radius: var(--radius-field); border: var(--rule-field); background: var(--color-card); color: var(--color-ink-3); font-size: var(--text-ui); }
+.cm-field.typed { color: var(--color-ink); }
+.cm-field span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cm-field.err { border-color: var(--color-danger); }
+.cm-field svg { flex: none; inline-size: 18px; block-size: 18px; color: var(--color-ink-2); }
+.cm-sugg { margin-block-start: 6px; background: var(--color-card); border-radius: var(--radius-field); box-shadow: var(--shadow-md); padding: 6px; display: grid; font-size: var(--text-ui); max-inline-size: 360px; }
+.cm-sugg span { padding: 8px 12px; border-radius: var(--radius-md); }
+.cm-sugg .on { background: var(--color-sage-wash); font-weight: var(--font-weight-bold); }
+.cm-state { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.45; }
+.cm-explain { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.45; max-inline-size: 64ch; }
+.cm-chosen { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 12px 18px; border-radius: var(--radius-field); background: var(--color-sage-wash); font-size: var(--text-ui); }
+.cm-chosen b { font-weight: var(--font-weight-bold); }
+
+/* home first screen */
+.cm-hero { padding-block: 26px 0; }
+.cm-hero .g { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 32px; align-items: start; }
+.cm-hero .copy { grid-column: 1 / span 7; display: grid; gap: 14px; }
+.cm-hero .pic { grid-column: 8 / span 5; block-size: 405px; border-radius: var(--radius-hero); overflow: hidden; background-size: cover; background-position: 60% 50%; }
+.cm-hero h1 { font-size: 56px; line-height: 1; letter-spacing: -0.025em; font-weight: var(--font-weight-display-hero) !important; font-variation-settings: var(--font-variation-display-hero) !important; }
+.M .cm-hero h1 { font-size: 32px; line-height: 1.04; }
+.cm-hero .lede2 { font-size: 19px; line-height: 1.45; color: var(--color-ink-2); max-inline-size: 48ch; }
+.M .cm-hero .lede2 { font-size: var(--text-sm); }
+.M .cm-hero { padding-block: 14px 0; }
+.M .cm-hero .copy { gap: 10px; }
+
+.pop-h { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 6px 22px; }
+.M .pop-h { grid-template-columns: minmax(0, 1fr) auto; }
+.M .pop-h .cm-glabel { grid-column: 1 / -1; }
+.M .pop-h .cm-key { display: none; }
+.M .cm-sec.pop { padding-block-start: 16px; }
+.M .pop-h { margin-block-end: 12px; }
+.M .cm-explain, .M .cm-state { line-height: 1.4; }
+.M .cm-hero { padding-block: 8px 0; }
+.M .cm-hero .copy { gap: 6px; }
+.M .cm-pl { font-size: 20px; margin-block-end: 8px; }
+.M .cm-find { margin-block-start: 10px; }
+.M .cm-picker { padding: 18px 16px 16px; }
+/* phone round links (home only) */
+.cm-round { display: flex; gap: 14px; overflow: hidden; padding: 10px 20px 2px; }
+.cm-round a { flex: none; inline-size: 72px; display: grid; justify-items: center; gap: 6px; text-decoration: none; color: var(--color-ink); font-size: var(--text-xs); font-weight: var(--font-weight-bold); text-align: center; line-height: 1.2; }
+.cm-round .r { inline-size: 72px; block-size: 72px; border-radius: 50%; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1px var(--color-rule); }
+
+/* occasion tabs: one native radio group drawn as chips */
+.cm-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-block-end: 22px; }
+.M .cm-tabs { flex-wrap: nowrap; overflow: hidden; margin-inline: -20px; padding-inline: 20px; margin-block-end: 16px; }
+.cm-tab { flex: none; display: inline-flex; align-items: center; gap: 8px; min-block-size: var(--target-min); padding-inline: 18px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-weight: var(--font-weight-bold); font-size: var(--text-ui); color: var(--color-ink); }
+.cm-tab.on { background: var(--color-selected); color: var(--color-on-selected); box-shadow: none; }
+.cm-tab.off { color: var(--color-ink-3); box-shadow: inset 0 0 0 1px var(--color-rule); background: var(--color-paper-2); text-decoration: line-through; text-decoration-color: transparent; }
+
+/* price bands */
+.cm-bands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.M .cm-bands { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.cm-band { background: var(--color-card); border-radius: var(--radius-photo); box-shadow: inset 0 0 0 1px var(--color-rule); padding: 24px; display: grid; gap: 18px; align-content: start; }
+.M .cm-band { padding: 18px; }
+.cm-band-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.cm-band-h b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-variation-settings: var(--font-variation-display); font-size: 30px; line-height: 1.1; }
+.M .cm-band-h b { font-size: 24px; }
+.cm-band-h span { font-size: var(--text-sm); color: var(--color-ink-3); }
+
+/* the "A or B" decision and page labels (annotation surfaces, not page) */
+.cm-decide { margin: 0 var(--gutter) var(--space-lg); padding: 24px; border: 2px dashed var(--color-sky); border-radius: var(--radius-field); background: var(--color-paper); display: grid; gap: 20px; }
+.M .cm-decide { margin-inline: var(--space-sm2); padding: 16px; }
+.cm-decide > h2 { font-size: 30px; line-height: 1.1; }
+.M .cm-decide > h2 { font-size: 24px; }
+.cm-ab { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.M .cm-ab { grid-template-columns: minmax(0, 1fr); }
+.cm-ab > div { display: grid; gap: 14px; align-content: start; padding: 20px; border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule); background: var(--color-card); }
+.M .cm-ab > div { padding: 14px; }
+.cm-tag { justify-self: start; display: inline-block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink); background: var(--color-butter); border-radius: var(--radius-full); padding: 4px 12px; }
+.cm-tag.rec { background: var(--color-leaf-wash); }
+.cm-tag.same { background: var(--color-sage-wash); }
+.cm-why { font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; display: grid; gap: 4px; }
+.cm-why li::before { content: "· "; color: var(--color-ink-3); }
+.cm-pagelabel { margin: 0 var(--gutter) 10px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-2); }
+.M .cm-pagelabel { margin-inline: var(--space-sm2); }
+.cm-marker { margin-block: 8px; padding: 12px 16px; border: 1.5px dashed var(--color-ink-3); border-radius: var(--radius-field); background: var(--color-paper-3); font-size: var(--text-fine); color: var(--color-ink-2); line-height: 1.5; }
+.cm-marker b { color: var(--color-ink); }
+.cm-frame { border-radius: var(--radius-field); box-shadow: inset 0 0 0 1px var(--color-rule), var(--shadow-sm); overflow: hidden; background: var(--color-paper); }
+.cm-cap { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-2); margin-block: 26px 10px; }
+.cm-measure { display: inline-block; font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-sky-strong); background: var(--color-card); border: 1.5px solid var(--color-sky); border-radius: var(--radius-full); padding: 2px 10px; }
+.cm-y { position: absolute; z-index: 40; inset-inline: 0; border-block-start: 1.5px dashed var(--color-sky); }
+.cm-y span { position: absolute; inset-inline-end: 8px; inset-block-start: 4px; font-size: var(--text-xs); font-weight: var(--font-weight-bold); color: var(--color-sky-strong); background: var(--color-card); padding: 2px 8px; border-radius: var(--radius-full); }
+
+/* small blocks */
+.cm-how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; counter-reset: s; }
+.M .cm-how { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.cm-how li { counter-increment: s; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 14px; align-items: start; font-family: var(--font-display); font-size: 21px; line-height: 1.25; }
+.M .cm-how li { font-size: 18px; }
+.cm-how li::before { content: counter(s); inline-size: 40px; block-size: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; color: var(--color-mark); box-shadow: inset 0 0 0 1.5px var(--color-mark); }
+.cm-trust { padding: 22px; border: 2px dashed var(--color-warning); border-radius: var(--radius-field); background: var(--color-butter); font-size: var(--text-fine); color: var(--color-ink-2); }
+.cm-tbl { inline-size: 100%; border-collapse: collapse; font-size: var(--text-ui); }
+.cm-tbl th, .cm-tbl td { text-align: start; padding: 12px 12px 12px 0; border-block-end: var(--rule); vertical-align: baseline; }
+.cm-tbl thead th { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); }
+.cm-tbl tbody th { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 19px; }
+.cm-tbl td.d { font-variant-numeric: lining-nums tabular-nums; color: var(--color-ink-2); }
+.cm-err { display: grid; gap: 6px; padding: 14px 16px; border-radius: var(--radius-field); border-inline-start: 4px solid var(--color-danger); background: var(--color-blush); font-size: var(--text-sm); color: var(--color-ink); }
+.cm-ok { display: grid; gap: 6px; padding: 16px 18px; border-radius: var(--radius-field); border-inline-start: 4px solid var(--color-stem); background: var(--color-leaf-wash); font-size: var(--text-ui); color: var(--color-ink); }
+.cm-check { display: flex; gap: 12px; align-items: start; font-size: var(--text-sm); color: var(--color-ink); line-height: 1.45; }
+.cm-check .cm-box { flex: none; inline-size: 22px; block-size: 22px; border-radius: var(--radius-md); border: var(--rule-field); background: var(--color-card); margin-block-start: 1px; }
+.cm-check .cm-box.err { border-color: var(--color-danger); }
+.cm-flabel { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-3); margin-block-end: 4px; display: block; }
+.cm-crumbs { font-size: var(--text-sm); color: var(--color-ink-3); padding-block: 18px 0; }
+.cm-crumbs ol { display: flex; flex-wrap: wrap; gap: 6px; }
+.cm-crumbs li + li::before { content: "/"; margin-inline-end: 6px; color: var(--color-rule); }
+.cm-crumbs a { color: var(--color-ink-2); text-underline-offset: 4px; }
+.cm-h1 { font-size: var(--text-3xl-fluid); line-height: 1.04; letter-spacing: var(--tracking-display); margin-block-start: 14px; }
+.cm-tool { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; padding-block: 16px; border-block: var(--rule); margin-block: 20px 22px; }
+.cm-count { font-family: var(--font-display); font-size: var(--text-md); }
+.M .cm-count { font-size: 19px; }
+.cm-pager ol { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cm-pager a, .cm-pager span { display: inline-grid; place-items: center; min-inline-size: var(--target-min); min-block-size: var(--target-min); padding-inline: 12px; border-radius: var(--radius-full); text-decoration: none; font-weight: var(--font-weight-bold); box-shadow: inset 0 0 0 1px var(--color-rule); background: var(--color-card); }
+.cm-pager [aria-current] { background: var(--color-ink); color: var(--color-paper); box-shadow: none; }
+.cm-facet { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 16px; border-radius: var(--radius-field); background: var(--color-sage-wash); font-size: var(--text-ui); }
+.cm-list { display: grid; gap: 2px; }
+.cm-list a { display: flex; align-items: center; min-block-size: var(--target-min); text-decoration: none; color: var(--color-ink); font-size: var(--text-ui); border-block-end: var(--rule); }
+.cm-cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.M .cm-cols3 { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.cm-sheet { background: var(--color-card); }
+.cm-acc { border-block-end: var(--rule); }
+.cm-acc > .s { display: flex; align-items: center; justify-content: space-between; min-block-size: 56px; font-family: var(--font-display); font-size: 21px; }
+.cm-acc > .s::after { content: "+"; font-family: var(--font-body); font-size: 22px; color: var(--color-link); font-weight: var(--font-weight-bold); }
+.cm-acc.open > .s::after { content: "−"; }
+.cm-acc .in { padding-block: 0 16px; display: grid; gap: 14px; }
+.cm-acc .in h4 { margin: 0; font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); }
+.cm-acc .in a, .cm-acc .in button { display: flex; align-items: center; min-block-size: 40px; text-decoration: none; color: var(--color-ink); font-size: var(--text-ui); border: 0; background: none; padding: 0; font-family: var(--font-body); }
+.cm-acc .in small { margin-inline-start: auto; color: var(--color-ink-3); font-size: var(--text-fine); }
+.cm-mini { display: grid; gap: 12px; }
+
+.cm-g5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 40px 24px; }
+.cm-hero .side { grid-column: 8 / span 5; display: grid; gap: 16px; align-content: start; }
+.cm-hero .side .pic { grid-column: auto; block-size: 370px; }
+.cm-hero .tbrow.in-card { margin-block-start: 10px; padding-block-start: 8px; }
+.M .cm-hero .tbrow.in-card { margin-block-start: 8px; padding-block-start: 6px; }
+.M .cm-hero .tbrow.in-card li, .M .cm-hero .tbrow.in-card a { min-block-size: 28px; }
+.M .cm-hero .cm-remember { margin-block-start: 8px; font-size: 11.5px; }
+.M .cm-hero .cm-find .cm-field, .M .cm-hero .cm-find .cm-pbtn { min-block-size: 44px; }
+.M .cm-hero .cm-chips .cm-chip { min-block-size: 40px; }
+.M .cm-hero .cm-explain, .M .cm-hero .cm-state { font-size: var(--text-xs); line-height: 1.35; }
+.M .cm-hero .lede2 { line-height: 1.35; }
+.M .cm-round { padding-block: 8px 0; }
+.M .cm-sec.pop { padding-block-start: 12px; }
+.M .pop-h { margin-block-end: 10px; gap: 2px 16px; }
+.cm-picker.page { background: none; box-shadow: none; padding: 0; overflow: visible; }
+.cm-picker.page::before { content: none; }
+.cm-picker.page .cm-pl { font-size: 48px; line-height: 1.05; letter-spacing: var(--tracking-display); margin-block-end: 22px; }
+.M .cm-picker.page .cm-pl { font-size: 32px; margin-block-end: 16px; }
+.M .cm-picker.page .cm-chips { flex-wrap: wrap; overflow: visible; margin-inline: 0; padding-inline: 0; }
+/* ---- 2026-10-24 founder picks: option B (no price before a country) and trust bar option 2 ---- */
+.cm-cta { margin-block-start: 6px; display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-link); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.cm-cta::after { content: "→"; text-decoration: none; display: inline-block; }
+.cm-remember { margin-block-start: 10px; font-size: var(--text-xs); line-height: 1.4; color: var(--color-ink-3); max-inline-size: 76ch; }
+.cm-cont { margin-block-end: 12px; }
+.cm-cont .cm-pbtn { min-block-size: 50px; padding-inline: 28px; }
+.cm-pbtn.sec { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+button.cm-chip { border: 0; font-family: var(--font-body); font-size: var(--text-ui); cursor: pointer; }
+.prop { text-decoration: underline dotted var(--color-warning); text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
+.tbrow { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; font-size: var(--text-sm); color: var(--color-ink-2); list-style: none; padding: 0; margin: 0; }
+.tbrow li { position: relative; display: inline-flex; align-items: center; gap: 7px; min-block-size: 32px; }
+.tbrow a { display: inline-flex; align-items: center; gap: 7px; color: var(--color-ink); text-underline-offset: 4px; text-decoration-color: var(--color-rule); }
+.tbrow svg { inline-size: 17px; block-size: 17px; flex: none; color: var(--color-mark); }
+.tbrow li.tb-lead svg { color: var(--color-stem); }
+.tbrow.in-card { margin-block-start: 14px; padding-block-start: 12px; border-block-start: var(--rule); }
+.M .tbrow.in-card { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; font-size: var(--text-xs); line-height: 1.2; }
+.M .tbrow.in-card li, .M .tbrow.in-card a { gap: 6px; min-block-size: var(--target-min); }
+.M .tbrow.in-card a { text-decoration: none; }
+.M .tbrow.in-card svg { inline-size: 16px; block-size: 16px; }
+.tb2 { position: relative; display: grid; gap: 14px; padding-block-start: 8px; list-style: none; padding-inline: 0; margin: 0; }
+.tb2 li { position: relative; display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; }
+.tb2 svg { grid-row: 1 / span 2; inline-size: 22px; block-size: 22px; color: var(--color-mark); margin-block-start: 1px; }
+.tb2 li.tb-lead svg { color: var(--color-stem); }
+.tb2 .t { font-size: var(--text-ui); font-weight: var(--font-weight-bold); color: var(--color-ink); line-height: 1.3; margin: 0; }
+.tb2 .t a { color: inherit; text-underline-offset: 4px; text-decoration-color: var(--color-rule); text-decoration-thickness: 1.5px; }
+.tb2 .d { font-size: var(--text-sm); color: var(--color-ink-2); line-height: var(--line-height-tight); margin: 0; }
+.cm-gated { outline: 1.5px dashed var(--color-sky); outline-offset: 4px; border-radius: var(--radius-sm); }
+.cm-gtag { position: absolute; z-index: 5; inset-inline-start: -2px; inset-block-start: -22px; white-space: nowrap; font-size: 10.5px; line-height: 1; font-weight: var(--font-weight-bold); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-sky-strong); background: var(--color-sage-wash); padding: 3px 6px; border-radius: var(--radius-sm); }
+.tb2 .cm-gtag { inset-block-start: auto; inset-block-end: -22px; }
+.M .tbrow.in-card .cm-gtag { inset-inline-start: auto; inset-inline-end: -4px; inset-block-start: auto; inset-block-end: -18px; font-size: 9.5px; }
+.cm-swap { outline: 1.5px dashed var(--color-sky); outline-offset: 3px; }
+.cm-flowmap { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.M .cm-flowmap { grid-template-columns: minmax(0, 1fr); }
+.cm-step { display: grid; gap: 10px; align-content: start; padding: 16px; border-radius: var(--radius-field); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.cm-step > b { font-family: var(--font-display); font-weight: var(--font-weight-display); font-size: 22px; line-height: 1.15; }
+.cm-step > span { font-size: var(--text-sm); color: var(--color-ink-2); line-height: 1.4; }
+.cm-step code { font-size: 12px; }
+.cm-arrow { font-size: 26px; color: var(--color-sky-strong); align-self: center; text-align: center; }
+
+
+
+
+
+/* ===== lh:2026-10-24b listing head, go further ===== */
+.lh-pg { position: relative; background: var(--color-paper); }
+.lh-head { padding-block: 16px 0; }
+.M .lh-head { padding-block: 14px 0; }
+.lh-crumbs { font-size: var(--text-fine); line-height: 20px; color: var(--color-ink-3); }
+.lh-crumbs ol { display: flex; flex-wrap: wrap; gap: 0 6px; }
+.lh-crumbs li + li::before { content: "/"; margin-inline-end: 6px; color: var(--color-border-strong); }
+.lh-crumbs a { color: var(--color-ink-3); text-decoration: none; }
+.lh-crumbs a.is-hover { color: var(--color-ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.lh-crumbs [aria-current] { color: var(--color-ink-2); }
+.lh-crumbs .back { display: inline-flex; align-items: center; gap: 6px; min-block-size: 32px; }
+.lh-crumbs .back::before { content: ""; inline-size: 6px; block-size: 6px; border-inline-start: 1.5px solid currentColor; border-block-end: 1.5px solid currentColor; transform: rotate(45deg); }
+.fo .lh-h1 { margin-block-start: 6px; font-size: var(--text-3xl-fluid); line-height: 1.06; letter-spacing: -0.02em; font-weight: var(--font-weight-display-hero); font-variation-settings: var(--font-variation-display-hero); text-wrap: balance; }
+.M .lh-head .lh-h1 { margin-block-start: 6px; }
+.lh-date { margin-block-start: 6px; font-family: var(--font-display); font-variation-settings: var(--font-variation-display-hero); font-size: var(--text-h3); line-height: 1.3; color: var(--color-ink-2); text-wrap: balance; }
+.M .lh-date { font-size: var(--text-h3-s); }
+.lh-meta { margin-block-start: 6px; font-size: var(--text-sm); line-height: 22px; color: var(--color-ink-2); }
+.M .lh-meta { font-size: var(--text-fine); line-height: 21px; margin-block-start: 6px; }
+.lh-meta > span + span::before { content: "·"; margin-inline: 7px; color: var(--color-ink-3); }
+.lh-meta b { font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.lh-meta .lh-hws { display: inline; }
+.lh-meta-m { display: grid; gap: 2px; }
+.lh-meta-m .r1 > span + span::before { content: "·"; margin-inline: 7px; color: var(--color-ink-3); }
+.lh-meta-m .r2 { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lh-meta-m .r2 .lh-hws summary { min-block-size: 22px; padding-block: 11px; margin-block: -11px; }
+.lh-tool { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-block: 14px 20px; padding-block-end: 10px; border-block-end: var(--rule); }
+.M .lh-tool { margin-block: 12px 16px; padding-block-end: 0; border-block-end: 0; gap: 8px; }
+.lh-end { display: flex; align-items: center; gap: 12px; margin-inline-start: auto; }
+.lh-cats summary, .lh-hws summary { list-style: none; cursor: pointer; white-space: nowrap; }
+.lh-cats summary::-webkit-details-marker, .lh-hws summary::-webkit-details-marker { display: none; }
+.lh-cats summary { display: inline-flex; align-items: center; gap: 10px; min-block-size: var(--target-min); padding-inline: 18px 16px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1.5px var(--color-ink); background: var(--color-card); font-size: var(--text-ui); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.M .lh-cats summary { padding-inline: 14px 12px; gap: 8px; font-size: var(--text-sm); }
+.lh-cats summary::after { content: "+"; font-size: 18px; line-height: 1; font-weight: var(--font-weight-body); }
+.lh-cats.is-open summary::after { content: "\2212"; }
+.lh-cats.is-open summary { background: var(--color-sage-wash); }
+.lh-hws summary { display: inline-flex; align-items: center; gap: 7px; min-block-size: var(--target-min); padding-inline: 4px; font-size: var(--text-sm); color: var(--color-ink-2); }
+.lh-meta .lh-hws summary { display: inline-flex; min-block-size: 22px; padding: 0; color: var(--color-ink-2); text-decoration: underline; text-decoration-color: var(--color-border-strong); text-underline-offset: 4px; }
+.lh-hws summary::after { content: ""; inline-size: 6px; block-size: 6px; border-inline-end: 1.5px solid currentColor; border-block-end: 1.5px solid currentColor; transform: translateY(-2px) rotate(45deg); }
+.lh-hws.is-open summary::after { transform: translateY(2px) rotate(-135deg); }
+.lh-hws.is-open summary { color: var(--color-ink); }
+.lh-focus { outline: var(--focus-ring); outline-offset: var(--focus-offset); border-radius: var(--radius-md); }
+.lh-sort { display: inline-flex; align-items: center; gap: 8px; min-block-size: var(--target-min); padding-inline: 16px 14px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1px var(--color-border-strong); background: var(--color-card); position: relative; margin: 0; }
+.M .lh-sort { padding-inline: 14px 12px; gap: 6px; }
+.lh-sort label { font-size: var(--text-sm); color: var(--color-ink-3); white-space: nowrap; }
+.M .lh-sort label { font-size: var(--text-fine); }
+.lh-sort select { appearance: none; -webkit-appearance: none; border: 0; background: transparent; padding-block: 0; padding-inline: 0 18px; font-family: var(--font-body); font-size: var(--text-ui); font-weight: var(--font-weight-bold); color: var(--color-ink); min-block-size: 40px; }
+.M .lh-sort select { font-size: var(--text-sm); }
+.lh-sort::after { content: ""; position: absolute; inset-inline-end: 16px; inset-block-start: 50%; inline-size: 6px; block-size: 6px; margin-block-start: -5px; border-inline-end: 1.5px solid var(--color-ink-2); border-block-end: 1.5px solid var(--color-ink-2); transform: rotate(45deg); pointer-events: none; }
+.lh-sort .lh-nojs { display: none; }
+.lh-sort.nojs .lh-nojs { display: inline-grid; place-items: center; min-block-size: 36px; padding-inline: 14px; margin-inline-start: 6px; border-radius: var(--radius-full); box-shadow: inset 0 0 0 1.5px var(--color-ink); background: var(--color-card); font-size: var(--text-sm); font-weight: var(--font-weight-bold); color: var(--color-ink); }
+.lh-sort.nojs::after { inset-inline-end: 100px; }
+.lh-sort.nojs select { padding-inline-end: 22px; }
+.lh-panel { flex-basis: 100%; margin: 0; padding: 14px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); font-size: var(--text-sm); line-height: 1.5; color: var(--color-ink-2); max-inline-size: none; }
+.lh-cpanel { flex-basis: 100%; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 12px 20px; padding: 16px 18px; border-radius: var(--radius-field); background: var(--color-paper-2); }
+.M .lh-cpanel { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 14px; }
+.lh-cpanel h3 { font-family: var(--font-body); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-3); padding-block-start: 10px; }
+.lh-cpanel ul { display: flex; flex-wrap: wrap; gap: 8px; }
+.lh-chip { display: inline-flex; align-items: center; min-block-size: var(--target-min); padding-inline: 14px; border-radius: var(--radius-full); background: var(--color-card); box-shadow: inset 0 0 0 1px var(--color-rule); font-size: var(--text-sm); color: var(--color-ink); text-decoration: none; white-space: nowrap; }
+.lh-chip[aria-current] { background: var(--color-sky); color: var(--color-on-selected); box-shadow: none; }
+.lh-also { display: flex; align-items: center; gap: 10px; }
+.lh-also > span { font-size: var(--text-sm); color: var(--color-ink-3); }
+.lh-also .lh-chip::after { content: ""; inline-size: 6px; block-size: 6px; margin-inline-start: 8px; border-inline-end: 1.5px solid currentColor; border-block-start: 1.5px solid currentColor; transform: rotate(45deg); }
+.lh-foot { margin-block-start: 32px; display: grid; gap: 4px; font-size: var(--text-xs); line-height: 1.5; color: var(--color-ink-3); }
+.M .lh-foot { margin-block-start: 24px; }
+.lh-pager { margin-block-start: 28px; }
+.lh-fold { position: absolute; z-index: 50; inset-inline: 0; block-size: 0; border-block-start: 2px dashed var(--color-accent); pointer-events: none; }
+.lh-fold.lap { border-block-start-color: var(--color-sky); }
+.lh-fold span { position: absolute; inset-inline-end: 12px; inset-block-start: -24px; padding: 2px 8px; border-radius: var(--radius-sm); background: var(--color-accent); color: var(--color-on-accent); font-size: 11px; font-weight: var(--font-weight-bold); letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.lh-fold.lap span { background: var(--color-sky); }
+.lh-label { padding: 14px var(--gutter); font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-ink-2); background: var(--color-paper-3); border-block: 1px dashed var(--color-ink-3); }
+.M .lh-label { padding-inline: var(--gutter-s); }
+.lh-label .cp { color: var(--color-accent-strong); }
+.lh-cp { outline: 1.5px dashed var(--color-accent); outline-offset: 3px; }
+.lh-cpk { margin-inline-start: 8px; font-family: var(--font-body); font-style: normal; font-size: 10.5px; font-weight: var(--font-weight-bold); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-accent-strong); vertical-align: middle; white-space: nowrap; }
+.lh-states { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.M .lh-states { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.lh-state { display: grid; gap: 12px; align-content: start; padding: 18px 20px 20px; border-radius: var(--radius-field); background: var(--color-paper); box-shadow: inset 0 0 0 1px var(--color-rule); }
+.M .lh-state { padding: 14px; }
+.lh-state > .lh-tag { font-size: var(--text-xs); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--color-sky-strong); }
+.lh-state > .why { font-size: var(--text-xs); line-height: 1.5; color: var(--color-ink-3); }
+.lh-state .lh-tool { margin: 0; }
+.lh-num { inline-size: 100%; border-collapse: collapse; font-size: var(--text-xs); }
+.lh-num th, .lh-num td { padding: 5px 10px 5px 0; text-align: start; border-block-end: 1px solid var(--color-rule); vertical-align: top; }
+.lh-num th { color: var(--color-ink-3); font-weight: var(--font-weight-bold); }
+.lh-num .ok { color: var(--color-included); font-weight: var(--font-weight-bold); }
+.lh-num .no { color: var(--color-danger); font-weight: var(--font-weight-bold); }
+/* ===== lh:2026-10-24b end ===== */
 </style>
 </helmet>
 <div class="fo D" style="inline-size: 1440px;">
+<!-- lh:2026-10-24b:begin --><section aria-label="Listing head, go further, 2026-10-24" id="lh24" style="border-block-end:4px double var(--color-ink-3);margin-block-end:24px"><section class="note"><span class="nl">Country occasion · listing head, go further · desktop 1440 · 2026-10-24 · [internal]</span><dl><dt>Go further, 2026-10-24</dt><dd>The founder, on a staging screenshot of the country category <code>/en/poland/flowers/birthday-flowers</code>, verbatim: “This design feels so cluttered and so shit.” The 043 trim of 2026-10-22 moved the products up by about 0 px on a laptop, so the orchestrator (product owner) set this direction. <b>This block supersedes the head of every drawing below it on this artboard</b> (the spec 004 A-founder-2026-10-24a block and the older rounds): breadcrumb, H1, one quiet line, one toolbar row, then the grid. The cards, the header and everything under the grid stay as the A-founder-2026-10-24a block draws them.</dd><dt>Purpose</dt><dd>Country occasion: show the bouquets. The first row of cards, price included, sits inside the first screen at 1440 × 900 and 1280 × 800; on the phone the first photograph starts inside 390 × 844.</dd><dt>URL</dt><dd><code>/en/poland/occasions/mothers-day</code> (Poland and the live site's cards of 2026-10-24 are example data; nothing here is per country). Index status unchanged.</dd><dt>Reads</dt><dd><code>listingView()</code>: the count, the page and page count, <code>deliveryDatesOpen(country)</code>, the items in “Our order”; <code>shop.h1.*</code>, <code>shop.toolbar.*</code>, <code>shop.sort.*</code>, <code>nav.categories.label</code>, <code>shop.occasion.datedLine</code>, <code>shop.occasion.dateNote</code>, <code>shop.occasion.siblingsHeading</code>, <code>shop.occasion.shopRootLink</code>, <code>media.provenance.aiExample</code>. Card names, photographs, prices and the equivalents line are the live page's, verbatim.</dd><dt>Layout</dt><dd><b>Desktop, top to bottom</b> (12-column frame, 56 px inline padding at 1440): <b>breadcrumb</b> <code>--text-fine</code> (14 px), <code>--color-ink-3</code>, 20 px line, no underline at rest, 16 px under the header · <b>H1</b> 6 px under it, Fraunces 400 with the hero variation, <code>--text-3xl-fluid</code> (46 px at 1440 × 900 and 1280 × 800, 32 px on the phone), line height 1.06, tracking −0.02em, the country in the poppy italic; one line at 1280 · <b>the date line</b> <code>shop.occasion.datedLine</code> 6 px under it, Fraunces 21 px with the hero variation, ink-2 (the reason this page exists: spec 008 AC-11, spec 004 A23 clause 5) · <b>one quiet line</b> 6 px under it, 15 px, 22 px line, <code>--color-ink-2</code>, the count in bold ink, parts joined by a middle dot: count · “Ordering opens soon” · “Prices include VAT and delivery” (COPY PROPOSAL, below) · <b>one toolbar row</b> 14 px under it, 44 px tall, one hairline (<code>--rule</code>) 10 px under it, then 20 px to the grid: at the start “Also in Poland” (<code>shop.occasion.siblingsHeading</code>, 15 px ink-3) and its chip “Flowers for Poland” (<code>shop.occasion.shopRootLink</code>), spec 008 A-founder-2026-10-14c keeps it above the grid; at the end “How we sort” (15 px ink-2 with a chevron, 44 px target) and then the sort control: one 44 px pill, 1 px <code>--color-border-strong</code> ring, holding the real <code>&lt;label for&gt;</code> “Sort by” (15 px ink-3) and the <code>&lt;select name="sort"&gt;</code> showing “Our order” in bold ink with a chevron. No eyebrow, no “Change the order”, no visible Sort button. <b>Grid</b> 4 columns, 28 px gutters, the A-founder-2026-10-24a card unchanged. <b>Under the grid</b> one 13 px note: <code>media.provenance.aiExample</code> and <code>shop.occasion.dateNote</code>.</dd><dt>States</dt><dd><b>Drawn below:</b> page 1 with ordering not open (the page), How we sort opened, ordering open, JavaScript off, the breadcrumb hover. <b>Option B:</b> the shorter H1, COPY PROPOSAL. <b>Loading:</b> none (ISR HTML; photographs load softly inside reserved boxes, spec 042). <b>Error:</b> spec 003's 500. <b>Empty:</b> no page (the existence rule).</dd><dt>First screen, measured</dt><dd><table class="lh-num"><thead><tr><th>Viewport</th><th>Before (live today)</th><th>After (this artboard)</th></tr></thead><tbody><tr><td>1440 × 900 · H1</td><td>1 line, y 247 to 328</td><td>1 line, y 157 to 205</td></tr><tr><td>1440 × 900 · first grid photo top</td><td>y 931 (below the screen; the lead photograph fills it)</td><td>y 356 (575 px higher)</td></tr><tr><td>1440 × 900 · first-row price bottom</td><td>y 1,428 <span class="no">out</span></td><td>y 811 <span class="ok">in</span>; equivalents line ends y 831</td></tr><tr><td>1280 × 800 · first grid photo top</td><td>y 891</td><td>y 356</td></tr><tr><td>1280 × 800 · first-row price bottom</td><td>y 1,338 <span class="no">out</span></td><td>y 761 <span class="ok">in</span>; equivalents line ends y 798</td></tr></tbody></table><p class="why" style="margin-block-start:6px">Before: <code>flowersoverseas.com</code> (production build <code>770c63a</code>) captured at that window on 2026-10-24 with the language popup dismissed; staging, which the founder looked at, adds the Categories, “Change the order” and Sort row and is lower still. After: this artboard rendered at that window. “Price bottom” is the lowest bottom edge of the first row's price lines; the window height is the limit.</p></dd><dt>Copy</dt><dd>Verbatim: every key named above. <b>COPY PROPOSAL 1</b>, the quiet line (new key, e.g. <code>shop.listing.status</code>): “{count} · Ordering opens soon · Prices include VAT and delivery”, and “{count} · Prices include VAT and delivery” once ordering is open. It replaces <code>shop.root.demoNotice</code> on listings. To spend no copy headroom, the last part can reuse the reviewed <code>nav.utility.pricesInclude</code> “Prices include delivery and VAT” instead. <b>COPY PROPOSAL 2</b>, the H1 option B: “Mother's Day flowers to Poland” (<code>shop.h1.countryOccasion</code> as “{occasion} flowers to {country}”). <b>From spec 043 A-founder-2026-10-22 (PR 346, not merged):</b> “How we sort” (<code>shop.toolbar.howWeSort</code>). Founder's words stay the founder's: nothing here is set <code>reviewed</code>.</dd><dt>Gone from the head</dt><dd>The “Guide · not delivering yet” dot line; the “P.S.” column and its sentence; the “Change the order” eyebrow; the visible Sort button (now <code>&lt;noscript&gt;</code> only); the ranking sentence (now behind How we sort); “page 1 of N” on page 1; the example label (now one note under the grid); the second divider. The lead photograph with its price tag (it repeated the first card).</dd><dt>Owning spec and AC</dt><dd>Spec 043 §14 A-founder-2026-10-22 items 1 to 3 (AC-35 to AC-43; PR 346), taken further by this order; spec 008 AC-9, AC-33, A-founder-2026-10-15c; spec 004 rebound AC-34 (first-row prices inside 1440 × 900, 1280 × 800, 390 × 844) and A-founder-2026-10-24a (header, “Sending to”, card). <b>Needs the spec writer:</b> the one quiet line (one key, the count inside it), the example label moving under the grid (spec 004 A-founder-2026-10-20 item 7A placed it above the grid, inside the first screen), the H1 size cut to <code>--text-3xl-fluid</code> (spec 004 A-founder-2026-10-18b), spec 043 AC-5's destination line, which this head leaves to the header's “Sending to Poland”, and the occasion page's lead photograph and its first-screen date card (spec 004 A23 clause 5).</dd></dl></section><p class="lh-label">Option A · page 1, ordering not open · today's H1 words, smaller</p><div class="pg lh-pg" data-page data-lh-page="a"><div class="lh-fold" style="inset-block-start:900px" aria-hidden="true"><span>1440 × 900 first screen ends</span></div><div class="lh-fold lap" style="inset-block-start:800px" aria-hidden="true"><span>800 px: the 1280 × 800 line (narrower cards there: see the numbers)</span></div><div class="notice wrap" role="note"><p>Prices include delivery and VAT <span class="sep">·</span> <a class="nlink" href="/en/guarantee"><svg class="leaf" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 31V15"/><path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z"/><path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z"/></svg>Fresh-flower promise</a></p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en" aria-current="true">English</a> <a href="/en-gb" lang="en">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in EUR">EUR</span></div></div><header class="cm-hdr"><div class="cm-wrap cm-row"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="cm-nav" aria-label="Main"><details name="fo-mega"><summary class="cm-sum">Flowers</summary></details><details name="fo-mega"><summary class="cm-sum">Occasions</summary></details><details name="fo-mega"><summary class="cm-sum">Sympathy</summary></details><details name="fo-mega"><summary class="cm-sum">Plants &amp; gifts</summary></details><details name="fo-mega"><summary class="cm-sum">By price</summary></details><details name="fo-mega"><summary class="cm-sum">Destinations</summary></details></nav><details class="cm-seld"><summary class="cm-sel ctx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="t">Sending to Poland</span></summary></details></div></header><main><div class="lh-head cm-wrap" data-fo-listing-head><nav class="lh-crumbs" aria-label="Breadcrumb"><ol><li><a href="/en">Home</a></li><li><a href="/en/send-flowers-to">Send flowers to</a></li><li><a href="/en/send-flowers-to/poland">Poland</a></li><li><a href="/en/poland/flowers">Flowers</a></li><li><a href="/en/occasions">Occasions</a></li><li><span aria-current="page">Mother's Day</span></li></ol></nav><h1 class="lh-h1" id="lh-h-d">Mother's Day flowers for <em>Poland</em></h1><p class="lh-date">Mother's Day in Poland is Wednesday, 26 May 2027.</p><div class="lh-meta lh-cp" data-fo-listing-status><span><b>7 bouquets</b></span><span>Ordering opens soon</span><span>Prices include VAT and delivery</span></div></div><section class="cm-wrap" aria-labelledby="lh-h-d"><div class="lh-tool" data-fo-listing-toolbar><nav class="lh-also" aria-labelledby="lh-also-h"><span id="lh-also-h">Also in Poland</span><a class="lh-chip" href="/en/poland/flowers">Flowers for Poland</a></nav><div class="lh-end"><details class="lh-hws" data-fo-ranking-disclosure><summary>How we sort</summary><p hidden>Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></details><form class="lh-sort" method="get" data-fo-sort-form><label for="lh-s1">Sort by</label><select id="lh-s1" name="sort"><option selected>Our order</option><option>Price: low to high</option><option>Price: high to low</option></select><noscript><button type="submit">Sort</button></noscript><span class="lh-nojs" aria-hidden="true">Sort</span></form></div></div><ul class="cm-g4" aria-label="Mother's Day flowers for Poland"><li><article class="cm-card" data-fs="first-card"><a href="/en/poland/product/azalea-pot"><div class="cm-ph" role="img" aria-label="A bushy azalea covered in pink flowers, in a plain white ceramic pot" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-008-hero/640.webp);"></div><h3>Azalea Pot</h3><p class="cm-pr"><b>€34.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 29.22 £, 153.37 PLN or 39.06 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/rose-harbour"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of soft pink roses with eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-007-hero/640.webp);"></div><h3>Rose Harbour</h3><p class="cm-pr"><b>€53.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 45.13 £, 236.86 PLN or 60.33 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/meadow-post"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of soft pink tulips, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-012-hero/640.webp);"></div><h3>Meadow Post</h3><p class="cm-pr"><b>€39.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 33.41 £, 175.34 PLN or 44.66 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/lily-terrace"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of pink lilies and buds with green foliage, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-018-hero/640.webp);"></div><h3>Lily Terrace</h3><p class="cm-pr"><b>€72.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 61.04 £, 320.36 PLN or 81.60 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/soft-june"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of round pale pink and cream peonies, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-020-hero/640.webp);"></div><h3>Soft June</h3><p class="cm-pr"><b>€72.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 61.04 £, 320.36 PLN or 81.60 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/spring-post"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of yellow sunflowers, roses and gerberas among small yellow flowers, wrapped in kraft paper" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-037-hero/640.webp);"></div><h3>Spring Post</h3><p class="cm-pr"><b>€39.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 33.41 £, 175.34 PLN or 44.66 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/moth-orchid-pink"><div class="cm-ph" role="img" aria-label="A pink moth orchid with arching flowering stems in a plain white ceramic pot" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-002-hero/640.webp);"></div><h3>Moth Orchid Pink</h3><p class="cm-pr"><b>€62.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 52.66 £, 276.41 PLN or 70.40 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li></ul><p class="lh-foot"><span>Example arrangement · our florist hand-makes each one</span><br><span>That is the date Poland keeps for it, worked out from that country's own rule. It can fall on a different day from the one you keep at home.</span></p></section></main></div><p class="lh-label">Option B · the shorter H1 <span class="cp">· copy proposal</span></p><div class="pg lh-pg" data-page data-lh-page="b"><div class="notice wrap" role="note"><p>Prices include delivery and VAT <span class="sep">·</span> <a class="nlink" href="/en/guarantee"><svg class="leaf" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 31V15"/><path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z"/><path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z"/></svg>Fresh-flower promise</a></p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en" aria-current="true">English</a> <a href="/en-gb" lang="en">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in EUR">EUR</span></div></div><header class="cm-hdr"><div class="cm-wrap cm-row"><a class="logo" href="/en" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="cm-nav" aria-label="Main"><details name="fo-mega"><summary class="cm-sum">Flowers</summary></details><details name="fo-mega"><summary class="cm-sum">Occasions</summary></details><details name="fo-mega"><summary class="cm-sum">Sympathy</summary></details><details name="fo-mega"><summary class="cm-sum">Plants &amp; gifts</summary></details><details name="fo-mega"><summary class="cm-sum">By price</summary></details><details name="fo-mega"><summary class="cm-sum">Destinations</summary></details></nav><details class="cm-seld"><summary class="cm-sel ctx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="t">Sending to Poland</span></summary></details></div></header><main><div class="lh-head cm-wrap" data-fo-listing-head><nav class="lh-crumbs" aria-label="Breadcrumb"><ol><li><a href="/en">Home</a></li><li><a href="/en/send-flowers-to">Send flowers to</a></li><li><a href="/en/send-flowers-to/poland">Poland</a></li><li><a href="/en/poland/flowers">Flowers</a></li><li><a href="/en/occasions">Occasions</a></li><li><span aria-current="page">Mother's Day</span></li></ol></nav><h1 class="lh-h1 lh-cp" id="lh-h-db">Mother's Day flowers to <em>Poland</em></h1><p class="lh-date">Mother's Day in Poland is Wednesday, 26 May 2027.</p><div class="lh-meta lh-cp" data-fo-listing-status><span><b>7 bouquets</b></span><span>Ordering opens soon</span><span>Prices include VAT and delivery</span></div></div><section class="cm-wrap" aria-labelledby="lh-h-db"><div class="lh-tool" data-fo-listing-toolbar><nav class="lh-also" aria-labelledby="lh-also-h"><span id="lh-also-h">Also in Poland</span><a class="lh-chip" href="/en/poland/flowers">Flowers for Poland</a></nav><div class="lh-end"><details class="lh-hws" data-fo-ranking-disclosure><summary>How we sort</summary><p hidden>Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></details><form class="lh-sort" method="get" data-fo-sort-form><label for="lh-s1b">Sort by</label><select id="lh-s1b" name="sort"><option selected>Our order</option><option>Price: low to high</option><option>Price: high to low</option></select><noscript><button type="submit">Sort</button></noscript><span class="lh-nojs" aria-hidden="true">Sort</span></form></div></div><ul class="cm-g4" aria-label="Mother's Day flowers for Poland"><li><article class="cm-card" data-fs="first-card"><a href="/en/poland/product/azalea-pot"><div class="cm-ph" role="img" aria-label="A bushy azalea covered in pink flowers, in a plain white ceramic pot" style="background-image:url(https://media.flowersoverseas.com/media/fo-pt-008-hero/640.webp);"></div><h3>Azalea Pot</h3><p class="cm-pr"><b>€34.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 29.22 £, 153.37 PLN or 39.06 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/rose-harbour"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of soft pink roses with eucalyptus, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-007-hero/640.webp);"></div><h3>Rose Harbour</h3><p class="cm-pr"><b>€53.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 45.13 £, 236.86 PLN or 60.33 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/meadow-post"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of soft pink tulips, wrapped in kraft paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-012-hero/640.webp);"></div><h3>Meadow Post</h3><p class="cm-pr"><b>€39.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 33.41 £, 175.34 PLN or 44.66 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li><li><article class="cm-card"><a href="/en/poland/product/lily-terrace"><div class="cm-ph" role="img" aria-label="A hand-tied bouquet of pink lilies and buds with green foliage, wrapped in white paper and tied with twine" style="background-image:url(https://media.flowersoverseas.com/media/fo-bq-018-hero/640.webp);"></div><h3>Lily Terrace</h3><p class="cm-pr"><b>€72.90</b><small>Includes VAT and delivery</small></p><p class="cm-eq">about 61.04 £, 320.36 PLN or 81.60 US$ at the rate of 23 October</p></a><p class="cm-cd hold" hidden></p><p class="cm-prov">Example arrangement · our florist hand-makes each one</p></article></li></ul></section></main></div><section class="state-band" aria-label="Listing head states"><span class="nl">Listing head, go further · every state</span><div class="lh-states"><div class="lh-state"><span class="lh-tag">How we sort · opened (click, tap, Enter or Space)</span><div class="lh-tool" data-fo-listing-toolbar><nav class="lh-also" aria-labelledby="lh-also-h"><span id="lh-also-h">Also in Poland</span><a class="lh-chip" href="/en/poland/flowers">Flowers for Poland</a></nav><div class="lh-end"><details class="lh-hws is-open" data-fo-ranking-disclosure><summary class="lh-focus">How we sort</summary><p hidden>Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></details><form class="lh-sort" method="get" data-fo-sort-form><label for="lh-s2">Sort by</label><select id="lh-s2" name="sort"><option selected>Our order</option><option>Price: low to high</option><option>Price: high to low</option></select><noscript><button type="submit">Sort</button></noscript><span class="lh-nojs" aria-hidden="true">Sort</span></form></div><p class="lh-panel">Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></div><p class="why">Native <code>&lt;details data-fo-ranking-disclosure&gt;</code>, closed in the server HTML. Opened, <code>shop.toolbar.disclosure</code> shows word for word in a panel in normal flow, full width under the row, and pushes the grid down. No overlay, no script, no focus trap. The sentence is in the server HTML open or closed.</p></div><div class="lh-state"><span class="lh-tag">Ordering open in the country</span><div class="lh-head cm-wrap" data-fo-listing-head><nav class="lh-crumbs" aria-label="Breadcrumb"><ol><li><a href="/en">Home</a></li><li><a href="/en/send-flowers-to">Send flowers to</a></li><li><a href="/en/send-flowers-to/poland">Poland</a></li><li><a href="/en/poland/flowers">Flowers</a></li><li><a href="/en/occasions">Occasions</a></li><li><span aria-current="page">Mother's Day</span></li></ol></nav><h1 class="lh-h1" id="lh-h-d">Mother's Day flowers for <em>Poland</em></h1><p class="lh-date">Mother's Day in Poland is Wednesday, 26 May 2027.</p><div class="lh-meta lh-cp" data-fo-listing-status><span><b>7 bouquets</b></span><span>Prices include VAT and delivery</span></div></div><p class="why">While <code>deliveryDatesOpen(country)</code> is true the middle part drops: count · Prices include VAT and delivery. No other line appears and nothing moves.</p></div><div class="lh-state"><span class="lh-tag">JavaScript off</span><div class="lh-tool" data-fo-listing-toolbar><nav class="lh-also" aria-labelledby="lh-also-h"><span id="lh-also-h">Also in Poland</span><a class="lh-chip" href="/en/poland/flowers">Flowers for Poland</a></nav><div class="lh-end"><details class="lh-hws" data-fo-ranking-disclosure><summary>How we sort</summary><p hidden>Our order is the order we chose ourselves. It is not a ranking by sales, by popularity or by payment, and it does not change with who you are.</p></details><form class="lh-sort nojs" method="get" data-fo-sort-form><label for="lh-s4">Sort by</label><select id="lh-s4" name="sort"><option selected>Our order</option><option>Price: low to high</option><option>Price: high to low</option></select><noscript><button type="submit">Sort</button></noscript><span class="lh-nojs" aria-hidden="true">Sort</span></form></div></div><p class="why">With JavaScript on, the select applies the order on change by client navigation (focus and scroll kept, spec 043 item 3). The <code>Sort</code> button (<code>shop.toolbar.submit</code>) exists only inside <code>&lt;noscript&gt;</code> in the same <code>GET</code> form, drawn here as it shows with scripting off.</p></div><div class="lh-state"><span class="lh-tag">Breadcrumb · hover on one crumb</span><nav class="lh-crumbs" aria-label="Breadcrumb"><ol><li><a href="/en">Home</a></li><li><a href="/en/send-flowers-to">Send flowers to</a></li><li><a class="is-hover" href="/en/send-flowers-to/poland">Poland</a></li><li><a href="/en/poland/flowers">Flowers</a></li><li><a href="/en/occasions">Occasions</a></li><li><span aria-current="page">Mother's Day</span></li></ol></nav><p class="why">At rest no crumb is underlined: muted ink, 14 px. Hover or focus underlines that crumb only and darkens it to ink. Still a <code>&lt;nav aria-label="Breadcrumb"&gt;&lt;ol&gt;</code>; the current page is <code>aria-current="page"</code>, not a link.</p></div></div></section></section><!-- lh:2026-10-24b:end -->
+
+
+
+
 <section class="note"><span class="nl">Country occasion · desktop 1440 · sweep 2026-10-04 · round 2, 2026-10-05 · [internal]</span><dl><dt>All A, 2026-10-20 (TASK-278)</dt><dd>Item 7A drawn 1:1 (spec 004 §14 A-founder-2026-10-19b; spec 008 AC-6, A2, A16 (a) as amended there). Every card and the lead tag show one price through <code>formatMoney</code> with <code>catalog.price.inclusive</code> (“Includes VAT and delivery”) beside it in leaf; <code>catalog.price.allIn</code> (“all in”) is gone. No card, tag or state draws the equivalents line: it lives on the product page only. Every photograph in this grid is an example, so <code>media.provenance.aiExample</code> is said <b>once</b>, on the count line's row, directly above the grid and inside the first screen; each card keeps its own label in the server HTML, hidden by CSS (<code>display: none</code>), so spec 006 AC-17 holds unchanged. A grid that mixes example and real photographs shows the label per card from <code>md</code> up (none today: every catalogue photograph is an example). The state band follows the same rule. No new copy. The lead photograph sits outside the grid's box and keeps its own label (clause 3). Its tag reads “Includes VAT and delivery” too (spec 008 A15 (c), A16 (b)).</dd><dt>Founder ruling C3, 2026-10-14</dt><dd><b>Sort and the chips sit above the grid</b> (spec 008 §14 A-founder-2026-10-14c, AC-33; supersedes A15 (d), A16 (c) and AC-32; redrawn 2026-10-15). The toolbar was already above the grid. What moves is the occasion chip row, “Also in Poland” (<code>shop.occasion.siblingsHeading</code>, the other occasions with a page and <code>shop.occasion.shopRootLink</code>): it leaves the foot of the page and sits in the toolbar after the disclosure and before the sort form, so no chip row follows the grid. The sort form is unchanged (“Sort by”, no “Change the order”: this page never had it).</dd><dt>Purpose</dt><dd>One occasion in one destination, on that destination's own date. Redrawn 2026-10-04: the date was a line of text; now the date is the hero — a large perforated stamp (26 · May · Wednesday · 2027) beside the dated line, with the first bouquet and its price, and the P.S., in the first screen.</dd><dt>URL</dt><dd><code>/en-gb/poland/occasions/mothers-day</code>.</dd><dt>Index</dt><dd>Unchanged.</dd><dt>Reads</dt><dd><code>listingView()</code>: <code>occasionDate(rule, year)</code> for (occasion, country) through <code>formatDate</code> — the stamp's day, month, weekday and year are parts of that one date (<code>Intl.DateTimeFormat#formatToParts</code>), never literals · <code>items[0]</code> the lead · <code>shop.occasion.*</code>.</dd><dt>First screen</dt><dd>Blush ground (the dated register). The stamp, the dated line (<code>shop.occasion.datedLine</code>) and <code>dateNote</code>; the lead with its price tag; the P.S.</dd><dt>States</dt><dd><b>Drawn:</b> dated. <b>Undated</b> (no rule): the stamp is not drawn and <code>shop.occasion.undatedLine</code> takes its place. <b>Below the floor:</b> no page (existence rule). Older states kept below.</dd><dt>Owning spec</dt><dd>008 §2 row 8, §5.3 · AC-11 (no date literal) · rulings R2, R3 (register).</dd><dt>Copy</dt><dd>Real throughout.</dd><dt>Round 2</dt><dd><b>Brought to the round-2 pattern, 2026-10-05</b> (founder picks: home A, phone home 1, phone product 2). Structure, copy, data and states are unchanged from the 2026-10-04 sweep; the presentation changes: the hero sits on the 12-column grid (copy on columns 1–6, the lead or the page's object on 8–12, left edges on column lines, gutter 32 at 1440 and 28 at 1280); nothing is tilted; the tape, the tucked card, the plant label and the stamp pinned on the lead photograph are removed (one decorative device per screen: the postmark where the spec needs it, else none); the P.S. is a flat note with a rule; <b>second pass, same day</b>: no postmark or perforated stamp on the page (the state is one quiet line, <code>destinations.state.guideNotDelivering</code>), destinations are pills, dates are clean cards, and a lede longer than two lines moves directly under the first screen; the H1 is <code>--text-display-fluid</code> and sections pad with <code>--section-fluid</code> (spec 004 §14 A23 clause 9); the lead photograph is capped at <code>--hero-photo-max</code>. Phone: logo and Menu, no utility bar, the lead photograph as a full-bleed cover under the breadcrumb, the copy on a paper sheet rising 24 px over it, chip rows as one horizontal scroller. What A23 binds on the first screen stays (H1, the state, P.S., lead with its price tag, the date, the R3–R6 blocks) except the form: the postmark becomes a text line and the stamps become pills and cards. That needs an A23 amendment (audit, escalation 7).</dd><dt>Laptop band</dt><dd><b>1280 × 800</b>: H1 64px at y 236, photograph y 196–676 · <b>1470 × 830</b>: H1 66.4px at y 236, photograph y 196–694 · <b>1512 × 860</b>: H1 68.8px at y 236, photograph y 196–712 · <b>1512 × 945</b>: H1 70px at y 236, photograph y 196–716. Measured on this artboard rendered at each window size (Playwright, 2026-10-05).</dd></dl></section>
 <div style="position:relative"><div class="fold" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:900px" aria-hidden="true"><span>First screen ends here · 1440 × 900</span></div><div class="fold lap" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:830px" aria-hidden="true"><span>13″ MacBook Air browser ≈ 1470 × 830 ends about here</span></div><div class="fold lap" style="position:absolute;z-index:50;inset-inline:0;inset-block-start:860px" aria-hidden="true"><span>14″ MacBook Pro browser ≈ 1512 × 860 ends about here</span></div>
 <div class="notice wrap" role="note"><p>Prices include delivery and VAT <span class="sep">·</span> <a class="nlink" href="/en-gb/guarantee"><svg class="leaf" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 31V15"/><path d="M17 15c0-6 4-10 11-11-1 7-5 11-11 11Z"/><path d="M17 20c0-5-3-8-9-9 1 5 4 9 9 9Z"/></svg>Fresh-flower promise</a></p><div class="util"><a href="tel:+12135925150">Help &amp; WhatsApp +1 (213) 592-5150</a><span class="sep">|</span><nav aria-label="Change language" style="display:flex;gap:14px;align-items:center"><a href="/en" lang="en">English</a> <a href="/en-gb" lang="en" aria-current="true">English (UK)</a> <a href="/de" lang="de">Deutsch</a> <span class="beta">Beta</span> <a href="/pl" lang="pl">Polski</a> <span class="beta">Beta</span></nav><span aria-label="Prices shown in GBP">GBP</span></div></div><header class="hdr"><div class="wrap hdr-in"><a class="logo" href="/en-gb" aria-label="Flowers Overseas, home"><svg viewBox="0 0 48 48" fill="none" focusable="false" aria-hidden="true"><circle cx="8" cy="40" r="3" style="fill:var(--color-logo-accent)"/><path d="M8 40 C 20 40, 26 34, 30 22" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.4" stroke-linecap="round"/><g transform="translate(31 16)" style="stroke:var(--color-logo-ink);fill:none" stroke-width="2.2"><circle cx="0" cy="-6" r="4"/><circle cx="5.7" cy="-1.9" r="4"/><circle cx="3.5" cy="4.9" r="4"/><circle cx="-3.5" cy="4.9" r="4"/><circle cx="-5.7" cy="-1.9" r="4"/><circle cx="0" cy="0" r="2" style="fill:var(--color-logo-accent);stroke:none"/></g></svg><span class="wordmark" aria-hidden="true">Flowers Overseas</span></a><nav class="nav" aria-label="Main"><ul><li><a href="/en-gb/poland/flowers">Our selection</a></li><li><a href="/en-gb/occasions/birthday">Birthday</a></li><li><a href="/en-gb/occasions/sympathy">Sympathy</a></li><li><a href="/en-gb/occasions">Occasions</a></li><li><a href="/en-gb/flowers/hand-tied-bouquets">Bouquets</a></li><li><a href="/en-gb/flowers/roses">Roses</a></li><li><a href="/en-gb/flowers/plants">Plants</a></li><li><a href="/en-gb/send-flowers-to">Destinations</a></li></ul></nav><a class="btn sm" href="/en-gb#send">Send flowers</a></div></header>
