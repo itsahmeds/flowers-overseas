@@ -65,13 +65,8 @@ export const CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME = 4;
 /** The raw ceiling of a short, machine-shaped field: a phone, a postcode, a country code. */
 export const CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS = 64;
 
-/**
- * At most this many lines in one basket (spec 010 §14 A-founder-2026-10-22 D3, Q21). A sixth add
- * is refused and writes nothing. Migration `checkout_draft_lines` checks `position BETWEEN 1 AND
- * 5` with the same number, so changing it is a migration; `tests/unit/checkout-config.test.ts`
- * pins the two equal.
- */
-export const BASKET_MAX_LINES = 5;
+/** The basket's cap and lifetime (§14 A-founder-2026-10-22 D3, D7): `src/config/basket.ts`. */
+export { BASKET_LIFETIME_DAYS, BASKET_MAX_LINES } from "./basket.ts";
 
 /** At most this many demo orders per UTC calendar day, across the whole deployment (§2, §13 Q1). */
 export const DEMO_DAILY_ORDER_CAP = 200;
@@ -89,13 +84,6 @@ export const QUOTE_LOCK_MINUTES = 30;
  * `checkout_draft_personal`). The basket's lines live `BASKET_LIFETIME_DAYS`.
  */
 export const DRAFT_LIFETIME_HOURS = 24;
-
-/**
- * A basket (the draft and its lines) is deleted this many days after its last change, and the
- * `fo_checkout` and `fo_basket` cookies live as long (§14 A-founder-2026-10-22 D7, item 7:
- * `Max-Age=2592000`).
- */
-export const BASKET_LIFETIME_DAYS = 30;
 
 /**
  * The kinds of place a bouquet can be delivered to: spec 002's
