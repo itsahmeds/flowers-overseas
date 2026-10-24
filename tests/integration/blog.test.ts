@@ -23,6 +23,7 @@
  */
 import { randomUUID } from "node:crypto";
 
+import { PgDialect } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import {
@@ -75,7 +76,9 @@ const existing = new Set<string>(BLOG_LINK_REFS);
 const targets: BlogLinkTargets = {
   pathOf: (ref) =>
     Promise.resolve(
-      existing.has(`fo:${ref.kind}/${ref.id}`) ? `/en/x/${ref.id.toLowerCase()}` : null,
+      existing.has(`fo:${ref.kind}/${ref.id}`)
+        ? `/en/x/${ref.id.toLowerCase()}`
+        : null,
     ),
 };
 const deps: Partial<BlogDeps> = { targets, guideText: () => undefined };
@@ -122,16 +125,20 @@ async function referenceData(sql: Sql): Promise<void> {
 }
 
 /** Hard results' rule ids, in order, once each. */
-const ruleIds = (result: { readonly results?: readonly { readonly id: string }[] }): string[] => [
-  ...new Set((result.results ?? []).map((r) => r.id)),
-];
+const ruleIds = (result: {
+  readonly results?: readonly { readonly id: string }[];
+}): string[] => [...new Set((result.results ?? []).map((r) => r.id))];
 
 /** The guard code a rejected command raised, read through Drizzle's error wrapping. */
 async function raisedBy(pending: Promise<unknown>): Promise<string> {
   try {
     await pending;
   } catch (error) {
-    for (let current: unknown = error; current instanceof Error; current = current.cause) {
+    for (
+      let current: unknown = error;
+      current instanceof Error;
+      current = current.cause
+    ) {
       const code = /^([A-Z][A-Z_]+):/u.exec(current.message)?.[1];
       if (code !== undefined) return code;
     }
@@ -141,7 +148,9 @@ async function raisedBy(pending: Promise<unknown>): Promise<string> {
 }
 
 async function count(sql: Sql | Tx, query: string): Promise<number> {
-  const [row] = await sql.unsafe<{ n: number }[]>(`SELECT count(*)::int AS n FROM ${query}`);
+  const [row] = await sql.unsafe<{ n: number }[]>(
+    `SELECT count(*)::int AS n FROM ${query}`,
+  );
   return row?.n ?? 0;
 }
 
@@ -164,15 +173,21 @@ async function livePost(
     },
     deps,
   );
-  if (!created.result.ok) throw new Error(`createPost: ${created.result.refusal}`);
+  if (!created.result.ok)
+    throw new Error(`createPost: ${created.result.refusal}`);
   const { postId, revisionId, valueHash } = created.result;
   const approved = await approveRevision(
     { userId: people.founder, revisionId, valueHash },
     deps,
   );
-  if (!approved.result.ok) throw new Error(`approve: ${approved.result.refusal}`);
-  const published = await publishPost({ userId: people.founder, postId, revisionId }, deps);
-  if (!published.result.ok) throw new Error(`publish: ${published.result.refusal}`);
+  if (!approved.result.ok)
+    throw new Error(`approve: ${approved.result.refusal}`);
+  const published = await publishPost(
+    { userId: people.founder, postId, revisionId },
+    deps,
+  );
+  if (!published.result.ok)
+    throw new Error(`publish: ${published.result.refusal}`);
   return { postId, revisionId };
 }
 
@@ -189,7 +204,12 @@ describe.skipIf(server.url === undefined)(
       target.url = scratch.url;
       await referenceData(scratch.sql);
       people = {
-        founder: await person(scratch.sql, "Founder Test", ["admin"], ["en", "en-gb"]),
+        founder: await person(
+          scratch.sql,
+          "Founder Test",
+          ["admin"],
+          ["en", "en-gb"],
+        ),
         writer: await person(scratch.sql, "Second Writer", ["content"], ["en"]),
         third: await person(scratch.sql, "Third Writer", ["content"], ["en"]),
         noGrant: await person(scratch.sql, "No Grant", ["content"], ["pl"]),
@@ -202,13 +222,21 @@ describe.skipIf(server.url === undefined)(
         import("@/modules/i18n"),
       ]);
       const own = await createAuthor(
-        { userId: people.founder, authorUserId: people.founder, consentedAt: "2026-10-21T09:00:00Z" },
+        {
+          userId: people.founder,
+          authorUserId: people.founder,
+          consentedAt: "2026-10-21T09:00:00Z",
+        },
         deps,
       );
       if (!own.result.ok) throw new Error("founder author");
       founderAuthor = own.result.authorId;
       const other = await createAuthor(
-        { userId: people.founder, authorUserId: people.writer, consentedAt: "2026-10-21T09:00:00Z" },
+        {
+          userId: people.founder,
+          authorUserId: people.writer,
+          consentedAt: "2026-10-21T09:00:00Z",
+        },
         deps,
       );
       if (!other.result.ok) throw new Error("writer author");
@@ -221,23 +249,39 @@ describe.skipIf(server.url === undefined)(
 
     describe("authors (§2.2)", () => {
       it("the byline is the admin display name, and only the person named confirms it", async () => {
-        const [row] = await scratch.sql<{ display_name: string; confirmed: boolean }[]>`
+        const [row] = await scratch.sql<
+          { display_name: string; confirmed: boolean }[]
+        >`
           SELECT display_name, own_name_confirmed_at IS NOT NULL AS confirmed
           FROM blog_author WHERE id = ${writerAuthor}`;
-        expect(row).toEqual({ display_name: "Second Writer", confirmed: false });
+        expect(row).toEqual({
+          display_name: "Second Writer",
+          confirmed: false,
+        });
         const byFounder = await confirmOwnName(
           { userId: people.founder, authorId: writerAuthor },
           deps,
         );
-        expect(byFounder.result).toEqual({ ok: false, refusal: "not_own_name" });
-        const bySelf = await confirmOwnName({ userId: people.writer, authorId: writerAuthor }, deps);
+        expect(byFounder.result).toEqual({
+          ok: false,
+          refusal: "not_own_name",
+        });
+        const bySelf = await confirmOwnName(
+          { userId: people.writer, authorId: writerAuthor },
+          deps,
+        );
         expect(bySelf.result).toEqual({ ok: true });
         await rolledBack(scratch.sql, async (tx) => {
           await tx`UPDATE admin_profile SET display_name = 'Second Writer Jr' WHERE user_id = ${people.writer}`;
-          const [after] = await tx<{ display_name: string; confirmed: boolean }[]>`
+          const [after] = await tx<
+            { display_name: string; confirmed: boolean }[]
+          >`
             SELECT display_name, own_name_confirmed_at IS NOT NULL AS confirmed
             FROM blog_author WHERE id = ${writerAuthor}`;
-          expect(after).toEqual({ display_name: "Second Writer Jr", confirmed: false });
+          expect(after).toEqual({
+            display_name: "Second Writer Jr",
+            confirmed: false,
+          });
         });
       });
     });
@@ -264,15 +308,27 @@ describe.skipIf(server.url === undefined)(
         if (!saved.result.ok) throw new Error(`save: ${saved.result.refusal}`);
         current = saved.result.revisionId;
         await approveRevision(
-          { userId: people.founder, revisionId: current, valueHash: saved.result.valueHash },
+          {
+            userId: people.founder,
+            revisionId: current,
+            valueHash: saved.result.valueHash,
+          },
           deps,
         );
         const changed = await publishChanges(
-          { userId: people.founder, postId: published.postId, revisionId: current },
+          {
+            userId: people.founder,
+            postId: published.postId,
+            revisionId: current,
+          },
           deps,
         );
         expect(changed.result).toEqual({ ok: true });
-        expect(changed.tags).toEqual([`blog:post:${published.postId}`, "blog:en", "sitemap"]);
+        expect(changed.tags).toEqual([
+          `blog:post:${published.postId}`,
+          "blog:en",
+          "sitemap",
+        ]);
         // An open draft on the live post.
         await saveRevision(
           {
@@ -301,7 +357,12 @@ describe.skipIf(server.url === undefined)(
         const gone = await livePost(people, founderAuthor, "rls-gone", 15);
         gonePost = gone.postId;
         const unpublished = await unpublishPost(
-          { userId: people.founder, postId: gonePost, reason: "test takedown", typedSlug: "rls-gone" },
+          {
+            userId: people.founder,
+            postId: gonePost,
+            reason: "test takedown",
+            typedSlug: "rls-gone",
+          },
           deps,
         );
         expect(unpublished.result).toEqual({ ok: true });
@@ -313,7 +374,11 @@ describe.skipIf(server.url === undefined)(
             if (role === "app_web") await asApp(tx, { role: "public" });
             else await tx.unsafe("SET LOCAL ROLE app_build");
             const posts = await tx<{ id: string }[]>`SELECT id FROM blog_post`;
-            const mine = posts.map((p) => p.id).filter((id) => [published.postId, draftPost, gonePost].includes(id));
+            const mine = posts
+              .map((p) => p.id)
+              .filter((id) =>
+                [published.postId, draftPost, gonePost].includes(id),
+              );
             expect(mine).toEqual([published.postId]);
             const revisions = await tx<{ id: string; post_id: string }[]>`
               SELECT id, post_id FROM blog_post_revision WHERE post_id IN (${published.postId}, ${draftPost}, ${gonePost})`;
@@ -323,8 +388,13 @@ describe.skipIf(server.url === undefined)(
             expect(tags.map((t) => t.post_id)).toEqual([published.postId]);
             const authors = await tx<{ id: string; display_name: string }[]>`
               SELECT id, display_name FROM blog_author_public WHERE id IN (${founderAuthor}, ${writerAuthor})`;
-            expect(authors).toEqual([{ id: founderAuthor, display_name: "Founder Test" }]);
-            expect(Object.keys(authors[0] ?? {}).sort()).toEqual(["display_name", "id"]);
+            expect(authors).toEqual([
+              { id: founderAuthor, display_name: "Founder Test" },
+            ]);
+            expect(Object.keys(authors[0] ?? {}).sort()).toEqual([
+              "display_name",
+              "id",
+            ]);
           });
         });
 
@@ -334,10 +404,14 @@ describe.skipIf(server.url === undefined)(
               if (role === "app_web") await asApp(tx, { role: "public" });
               else await tx.unsafe("SET LOCAL ROLE app_build");
               if (role === "app_web") {
-                const found = await tx.unsafe(`SELECT ${column} FROM blog_author`);
+                const found = await tx.unsafe(
+                  `SELECT ${column} FROM blog_author`,
+                );
                 expect(found.length, column).toBe(0);
               } else {
-                const failure = await pgFailure(tx, (sp) => sp.unsafe(`SELECT ${column} FROM blog_author`));
+                const failure = await pgFailure(tx, (sp) =>
+                  sp.unsafe(`SELECT ${column} FROM blog_author`),
+                );
                 expect(failure.code, column).toBe("42501");
               }
             });
@@ -379,7 +453,9 @@ describe.skipIf(server.url === undefined)(
                   touched = (await sp.unsafe(statement)).count;
                 });
               } catch (error) {
-                expect((error as { code?: string }).code, statement).toBe("42501");
+                expect((error as { code?: string }).code, statement).toBe(
+                  "42501",
+                );
               }
               expect(touched, statement).toBe(0);
             }
@@ -389,7 +465,11 @@ describe.skipIf(server.url === undefined)(
     });
 
     describe("T-03 — the publish guard, the freeze and the slug lock (AC-3)", () => {
-      async function draftOf(slug: string, seed: number, authorId = founderAuthor) {
+      async function draftOf(
+        slug: string,
+        seed: number,
+        authorId = founderAuthor,
+      ) {
         const created = await createPost(
           {
             userId: people.founder,
@@ -402,7 +482,8 @@ describe.skipIf(server.url === undefined)(
           },
           deps,
         );
-        if (!created.result.ok) throw new Error(`createPost: ${created.result.refusal}`);
+        if (!created.result.ok)
+          throw new Error(`createPost: ${created.result.refusal}`);
         return created.result;
       }
 
@@ -411,7 +492,8 @@ describe.skipIf(server.url === undefined)(
         await rolledBack(scratch.sql, async (tx) => {
           const failure = await pgFailure(
             tx,
-            (sp) => sp`UPDATE blog_post SET published_revision_id = ${draft.revisionId}, status = 'published' WHERE id = ${draft.postId}`,
+            (sp) =>
+              sp`UPDATE blog_post SET published_revision_id = ${draft.revisionId}, status = 'published' WHERE id = ${draft.postId}`,
           );
           expect(failure.raised).toBe("BLOG_PUBLISH_WITHOUT_ATTESTATION");
         });
@@ -420,7 +502,11 @@ describe.skipIf(server.url === undefined)(
       it("a raw pointer whose ledger row is for an older hash raises BLOG_PUBLISH_WITHOUT_ATTESTATION", async () => {
         const draft = await draftOf("guard-stale", 22);
         const approved = await approveRevision(
-          { userId: people.founder, revisionId: draft.revisionId, valueHash: draft.valueHash },
+          {
+            userId: people.founder,
+            revisionId: draft.revisionId,
+            valueHash: draft.valueHash,
+          },
           deps,
         );
         expect(approved.result.ok).toBe(true);
@@ -429,7 +515,8 @@ describe.skipIf(server.url === undefined)(
           await tx`UPDATE blog_post SET slug = 'guard-stale-renamed' WHERE id = ${draft.postId}`;
           const failure = await pgFailure(
             tx,
-            (sp) => sp`UPDATE blog_post SET published_revision_id = ${draft.revisionId}, status = 'published' WHERE id = ${draft.postId}`,
+            (sp) =>
+              sp`UPDATE blog_post SET published_revision_id = ${draft.revisionId}, status = 'published' WHERE id = ${draft.postId}`,
           );
           expect(failure.raised).toBe("BLOG_PUBLISH_WITHOUT_ATTESTATION");
         });
@@ -443,13 +530,18 @@ describe.skipIf(server.url === undefined)(
         const one = await draftOf("guard-one", 23);
         const two = await draftOf("guard-two", 24);
         await approveRevision(
-          { userId: people.founder, revisionId: one.revisionId, valueHash: one.valueHash },
+          {
+            userId: people.founder,
+            revisionId: one.revisionId,
+            valueHash: one.valueHash,
+          },
           deps,
         );
         await rolledBack(scratch.sql, async (tx) => {
           const failure = await pgFailure(
             tx,
-            (sp) => sp`UPDATE blog_post SET published_revision_id = ${one.revisionId}, status = 'published' WHERE id = ${two.postId}`,
+            (sp) =>
+              sp`UPDATE blog_post SET published_revision_id = ${one.revisionId}, status = 'published' WHERE id = ${two.postId}`,
           );
           expect(failure.raised).toBe("BLOG_PUBLISH_FOREIGN_REVISION");
         });
@@ -466,33 +558,72 @@ describe.skipIf(server.url === undefined)(
         });
         const draft = await draftOf("guard-withdrawn", 25, authorId);
         await approveRevision(
-          { userId: people.founder, revisionId: draft.revisionId, valueHash: draft.valueHash },
+          {
+            userId: people.founder,
+            revisionId: draft.revisionId,
+            valueHash: draft.valueHash,
+          },
           deps,
         );
         await scratch.sql`UPDATE blog_author SET withdrawn_at = now() WHERE id = ${authorId}`;
         expect(
           await raisedBy(
-            publishPost({ userId: people.founder, postId: draft.postId, revisionId: draft.revisionId }, deps),
+            publishPost(
+              {
+                userId: people.founder,
+                postId: draft.postId,
+                revisionId: draft.revisionId,
+              },
+              deps,
+            ),
           ),
         ).toBe("BLOG_AUTHOR_WITHDRAWN");
-        const [post] = await scratch.sql<{ status: string }[]>`SELECT status FROM blog_post WHERE id = ${draft.postId}`;
+        const [post] = await scratch.sql<
+          { status: string }[]
+        >`SELECT status FROM blog_post WHERE id = ${draft.postId}`;
         expect(post?.status).toBe("draft");
       });
 
       it("through attest() and publishPost it succeeds; then the frozen revision and the slug refuse changes", async () => {
         const live = await livePost(people, founderAuthor, "guard-live", 26);
-        const [row] = await scratch.sql<{ status: string; published_revision_id: string; first: boolean; frozen: boolean; published_at: boolean }[]>`
+        const [row] = await scratch.sql<
+          {
+            status: string;
+            published_revision_id: string;
+            first: boolean;
+            frozen: boolean;
+            published_at: boolean;
+          }[]
+        >`
           SELECT p.status, p.published_revision_id, p.first_published_at IS NOT NULL AS first,
                  r.frozen_at IS NOT NULL AS frozen, r.published_at IS NOT NULL AS published_at
           FROM blog_post p JOIN blog_post_revision r ON r.id = p.published_revision_id
           WHERE p.id = ${live.postId}`;
-        expect(row).toEqual({ status: "published", published_revision_id: live.revisionId, first: true, frozen: true, published_at: true });
+        expect(row).toEqual({
+          status: "published",
+          published_revision_id: live.revisionId,
+          first: true,
+          frozen: true,
+          published_at: true,
+        });
         await rolledBack(scratch.sql, async (tx) => {
-          const frozen = await pgFailure(tx, (sp) => sp`UPDATE blog_post_revision SET title = 'Changed after approval' WHERE id = ${live.revisionId}`);
+          const frozen = await pgFailure(
+            tx,
+            (sp) =>
+              sp`UPDATE blog_post_revision SET title = 'Changed after approval' WHERE id = ${live.revisionId}`,
+          );
           expect(frozen.raised).toBe("BLOG_REVISION_FROZEN");
-          const deleted = await pgFailure(tx, (sp) => sp`DELETE FROM blog_post_revision WHERE id = ${live.revisionId}`);
+          const deleted = await pgFailure(
+            tx,
+            (sp) =>
+              sp`DELETE FROM blog_post_revision WHERE id = ${live.revisionId}`,
+          );
           expect(deleted.raised).toBe("BLOG_REVISION_FROZEN");
-          const locked = await pgFailure(tx, (sp) => sp`UPDATE blog_post SET slug = 'guard-live-2' WHERE id = ${live.postId}`);
+          const locked = await pgFailure(
+            tx,
+            (sp) =>
+              sp`UPDATE blog_post SET slug = 'guard-live-2' WHERE id = ${live.postId}`,
+          );
           expect(locked.raised).toBe("BLOG_SLUG_LOCKED");
         });
       });
@@ -500,10 +631,18 @@ describe.skipIf(server.url === undefined)(
       it("a revision freezes only through attest(): no flag, then the flag without its ledger row", async () => {
         const draft = await draftOf("guard-freeze", 27);
         await rolledBack(scratch.sql, async (tx) => {
-          const direct = await pgFailure(tx, (sp) => sp`UPDATE blog_post_revision SET frozen_at = now() WHERE id = ${draft.revisionId}`);
+          const direct = await pgFailure(
+            tx,
+            (sp) =>
+              sp`UPDATE blog_post_revision SET frozen_at = now() WHERE id = ${draft.revisionId}`,
+          );
           expect(direct.raised).toBe("REVIEW_DIRECT_WRITE");
           await tx`SELECT set_config('app.allow_review_write', 'on', true)`;
-          const flagged = await pgFailure(tx, (sp) => sp`UPDATE blog_post_revision SET frozen_at = now() WHERE id = ${draft.revisionId}`);
+          const flagged = await pgFailure(
+            tx,
+            (sp) =>
+              sp`UPDATE blog_post_revision SET frozen_at = now() WHERE id = ${draft.revisionId}`,
+          );
           expect(flagged.raised).toBe("REVIEW_WITHOUT_ATTESTATION");
         });
       });
@@ -537,8 +676,12 @@ describe.skipIf(server.url === undefined)(
           expect(subject?.hash).toBe(blogRevisionHash(HASH_FIXTURE));
           // Changing a post-level hashed field re-hashes the open draft.
           await tx`UPDATE blog_post SET slug = 'another-slug' WHERE id = ${post?.id ?? ""}`;
-          const [after] = await tx<{ value_hash: string }[]>`SELECT value_hash FROM blog_post_revision WHERE id = ${revision?.id ?? ""}`;
-          expect(after?.value_hash).toBe(blogRevisionHash({ ...HASH_FIXTURE, slug: "another-slug" }));
+          const [after] = await tx<
+            { value_hash: string }[]
+          >`SELECT value_hash FROM blog_post_revision WHERE id = ${revision?.id ?? ""}`;
+          expect(after?.value_hash).toBe(
+            blogRevisionHash({ ...HASH_FIXTURE, slug: "another-slug" }),
+          );
         });
       });
 
@@ -557,7 +700,11 @@ describe.skipIf(server.url === undefined)(
         );
         if (!created.result.ok) throw new Error("createPost");
         const { revisionId, valueHash } = created.result;
-        const subject = { kind: "blog_post_revision" as const, ref: revisionId, locale: "en" };
+        const subject = {
+          kind: "blog_post_revision" as const,
+          ref: revisionId,
+          locale: "en",
+        };
         const before = await count(scratch.sql, "review_attestation");
         const cases: readonly [string, string, string][] = [
           [people.noGrant, valueHash, "locale_not_granted"],
@@ -595,23 +742,37 @@ describe.skipIf(server.url === undefined)(
         );
         expect(refused.result.ok).toBe(false);
         expect(!refused.result.ok && refused.result.refusal).toBe("rules");
-        expect(ruleIds(refused.result as { results?: readonly { id: string }[] })).toEqual(["blog/length"]);
+        expect(
+          ruleIds(refused.result as { results?: readonly { id: string }[] }),
+        ).toEqual(["blog/length"]);
         expect(await count(scratch.sql, "blog_post")).toBe(posts);
 
         const live = await livePost(people, founderAuthor, "refused-edit", 41);
-        const revisions = await count(scratch.sql, `blog_post_revision WHERE post_id = '${live.postId}'`);
+        const revisions = await count(
+          scratch.sql,
+          `blog_post_revision WHERE post_id = '${live.postId}'`,
+        );
         const edit = await saveRevision(
           {
             userId: people.founder,
             postId: live.postId,
             slug: "refused-edit",
-            revision: blogRevisionFields({ bodyMd: `${blogBody(41)}\n\nYour order is on hold.` }),
+            revision: blogRevisionFields({
+              bodyMd: `${blogBody(41)}\n\nYour order is on hold.`,
+            }),
             expectedUpdatedAt: null,
           },
           deps,
         );
-        expect(ruleIds(edit.result as { results?: readonly { id: string }[] })).toEqual(["blog/relay"]);
-        expect(await count(scratch.sql, `blog_post_revision WHERE post_id = '${live.postId}'`)).toBe(revisions);
+        expect(
+          ruleIds(edit.result as { results?: readonly { id: string }[] }),
+        ).toEqual(["blog/relay"]);
+        expect(
+          await count(
+            scratch.sql,
+            `blog_post_revision WHERE post_id = '${live.postId}'`,
+          ),
+        ).toBe(revisions);
       });
 
       it("the vanished corridor is refused at approval and at publish with blog/link-corridor", async () => {
@@ -632,19 +793,38 @@ describe.skipIf(server.url === undefined)(
         const ledger = await count(scratch.sql, "review_attestation");
         existing.delete("fo:corridor/PL");
         try {
-          const atApproval = await approveRevision({ userId: people.founder, revisionId, valueHash }, deps);
-          expect(ruleIds(atApproval.result as { results?: readonly { id: string }[] })).toEqual(["blog/link-corridor"]);
+          const atApproval = await approveRevision(
+            { userId: people.founder, revisionId, valueHash },
+            deps,
+          );
+          expect(
+            ruleIds(
+              atApproval.result as { results?: readonly { id: string }[] },
+            ),
+          ).toEqual(["blog/link-corridor"]);
           expect(await count(scratch.sql, "review_attestation")).toBe(ledger);
         } finally {
           existing.add("fo:corridor/PL");
         }
-        const approved = await approveRevision({ userId: people.founder, revisionId, valueHash }, deps);
+        const approved = await approveRevision(
+          { userId: people.founder, revisionId, valueHash },
+          deps,
+        );
         expect(approved.result.ok).toBe(true);
         existing.delete("fo:corridor/PL");
         try {
-          const atPublish = await publishPost({ userId: people.founder, postId, revisionId }, deps);
-          expect(ruleIds(atPublish.result as { results?: readonly { id: string }[] })).toEqual(["blog/link-corridor"]);
-          const [post] = await scratch.sql<{ status: string }[]>`SELECT status FROM blog_post WHERE id = ${postId}`;
+          const atPublish = await publishPost(
+            { userId: people.founder, postId, revisionId },
+            deps,
+          );
+          expect(
+            ruleIds(
+              atPublish.result as { results?: readonly { id: string }[] },
+            ),
+          ).toEqual(["blog/link-corridor"]);
+          const [post] = await scratch.sql<
+            { status: string }[]
+          >`SELECT status FROM blog_post WHERE id = ${postId}`;
           expect(post?.status).toBe("draft");
         } finally {
           existing.add("fo:corridor/PL");
@@ -659,7 +839,11 @@ describe.skipIf(server.url === undefined)(
         const leavingUser = row?.id ?? "";
         await scratch.sql`INSERT INTO admin_profile (user_id, display_name) VALUES (${leavingUser}, 'Leaving Writer')`;
         const author = await createAuthor(
-          { userId: leavingUser, authorUserId: leavingUser, consentedAt: "2026-10-21T09:00:00Z" },
+          {
+            userId: leavingUser,
+            authorUserId: leavingUser,
+            consentedAt: "2026-10-21T09:00:00Z",
+          },
           deps,
         );
         if (!author.result.ok) throw new Error("author");
@@ -668,53 +852,109 @@ describe.skipIf(server.url === undefined)(
         const moves = await livePost(people, leaving, "leaving-moves", 62);
 
         const reassigned = await reassignAuthor(
-          { userId: people.founder, postId: moves.postId, authorId: writerAuthor },
+          {
+            userId: people.founder,
+            postId: moves.postId,
+            authorId: writerAuthor,
+          },
           deps,
         );
-        if (!reassigned.result.ok) throw new Error(`reassign: ${reassigned.result.refusal}`);
+        if (!reassigned.result.ok)
+          throw new Error(`reassign: ${reassigned.result.refusal}`);
         const draftId = reassigned.result.draftRevisionId;
 
-        // A forced failure in the middle of the withdrawal leaves both rows as they were.
-        await scratch.sql.unsafe(`
-          CREATE FUNCTION pg_temp_fail_withdraw() RETURNS trigger LANGUAGE plpgsql AS $$
-          BEGIN RAISE EXCEPTION 'FORCED_FAILURE: the second statement of the withdrawal'; END $$`);
-        await scratch.sql.unsafe(`
-          CREATE TRIGGER zz_fail_withdraw BEFORE UPDATE ON blog_post FOR EACH ROW
-          WHEN (NEW.unpublish_reason = 'author withdrawn') EXECUTE FUNCTION pg_temp_fail_withdraw()`);
-        try {
-          expect(await raisedBy(withdrawAuthor({ userId: people.founder, authorId: leaving }, deps))).toBe(
-            "FORCED_FAILURE",
-          );
-        } finally {
-          await scratch.sql.unsafe("DROP TRIGGER zz_fail_withdraw ON blog_post");
-          await scratch.sql.unsafe("DROP FUNCTION pg_temp_fail_withdraw()");
-        }
-        const [untouched] = await scratch.sql<{ withdrawn: boolean; status: string }[]>`
+        // A forced failure after the posts are unpublished, inside the same transaction, leaves
+        // both the author and the post as they were.
+        const { withAdminContext } = await import("@/lib/db");
+        const dialect = new PgDialect();
+        const failing: Partial<BlogDeps> = {
+          ...deps,
+          runAdmin: (context, fn) =>
+            withAdminContext(context, (db) =>
+              fn({
+                async execute(query) {
+                  const result = await db.execute(query);
+                  if (
+                    dialect.sqlToQuery(query).sql.includes("unpublish_reason")
+                  ) {
+                    throw new Error("FORCED_FAILURE: after the posts' update");
+                  }
+                  return result;
+                },
+              }),
+            ),
+        };
+        expect(
+          await raisedBy(
+            withdrawAuthor(
+              { userId: people.founder, authorId: leaving },
+              failing,
+            ),
+          ),
+        ).toBe("FORCED_FAILURE");
+        const [untouched] = await scratch.sql<
+          { withdrawn: boolean; status: string }[]
+        >`
           SELECT a.withdrawn_at IS NOT NULL AS withdrawn, p.status
           FROM blog_author a JOIN blog_post p ON p.author_id = a.id WHERE a.id = ${leaving}`;
         expect(untouched).toEqual({ withdrawn: false, status: "published" });
 
-        const withdrawn = await withdrawAuthor({ userId: people.founder, authorId: leaving }, deps);
-        expect(withdrawn.result).toEqual({ ok: true, unpublished: [stays.postId] });
-        expect(withdrawn.tags).toEqual([`blog:post:${stays.postId}`, "blog:en", "sitemap"]);
-        const states = await scratch.sql<{ id: string; status: string; unpublish_reason: string | null }[]>`
+        const withdrawn = await withdrawAuthor(
+          { userId: people.founder, authorId: leaving },
+          deps,
+        );
+        expect(withdrawn.result).toEqual({
+          ok: true,
+          unpublished: [stays.postId],
+        });
+        expect(withdrawn.tags).toEqual([
+          `blog:post:${stays.postId}`,
+          "blog:en",
+          "sitemap",
+        ]);
+        const states = await scratch.sql<
+          { id: string; status: string; unpublish_reason: string | null }[]
+        >`
           SELECT id, status, unpublish_reason FROM blog_post WHERE id IN (${stays.postId}, ${moves.postId}) ORDER BY slug`;
         expect(states).toEqual([
           { id: moves.postId, status: "published", unpublish_reason: null },
-          { id: stays.postId, status: "unpublished", unpublish_reason: "author withdrawn" },
+          {
+            id: stays.postId,
+            status: "unpublished",
+            unpublish_reason: "author withdrawn",
+          },
         ]);
 
         // The reassigned post's new draft is not publishable before its approval.
-        const early = await publishChanges({ userId: people.founder, postId: moves.postId, revisionId: draftId }, deps);
+        const early = await publishChanges(
+          { userId: people.founder, postId: moves.postId, revisionId: draftId },
+          deps,
+        );
         expect(early.result).toEqual({ ok: false, refusal: "not_approved" });
         await rolledBack(scratch.sql, async (tx) => {
-          const raw = await pgFailure(tx, (sp) => sp`UPDATE blog_post SET published_revision_id = ${draftId} WHERE id = ${moves.postId}`);
+          const raw = await pgFailure(
+            tx,
+            (sp) =>
+              sp`UPDATE blog_post SET published_revision_id = ${draftId} WHERE id = ${moves.postId}`,
+          );
           expect(raw.raised).toBe("BLOG_PUBLISH_WITHOUT_ATTESTATION");
         });
-        const [draft] = await scratch.sql<{ value_hash: string }[]>`SELECT value_hash FROM blog_post_revision WHERE id = ${draftId}`;
-        const approved = await approveRevision({ userId: people.founder, revisionId: draftId, valueHash: draft?.value_hash ?? "" }, deps);
+        const [draft] = await scratch.sql<
+          { value_hash: string }[]
+        >`SELECT value_hash FROM blog_post_revision WHERE id = ${draftId}`;
+        const approved = await approveRevision(
+          {
+            userId: people.founder,
+            revisionId: draftId,
+            valueHash: draft?.value_hash ?? "",
+          },
+          deps,
+        );
         expect(approved.result.ok).toBe(true);
-        const after = await publishChanges({ userId: people.founder, postId: moves.postId, revisionId: draftId }, deps);
+        const after = await publishChanges(
+          { userId: people.founder, postId: moves.postId, revisionId: draftId },
+          deps,
+        );
         expect(after.result).toEqual({ ok: true });
       });
     });
@@ -746,7 +986,12 @@ describe.skipIf(server.url === undefined)(
             ]) AS name`
         ).map((row) => row.t);
       expect(await tables()).toEqual([
-        "blog_author", "blog_post", "blog_post_revision", "blog_post_country", "blog_post_occasion", "blog_author_public",
+        "blog_author",
+        "blog_post",
+        "blog_post_revision",
+        "blog_post_country",
+        "blog_post_occasion",
+        "blog_author_public",
       ]);
       await scratch.sql`INSERT INTO locale (code, bcp47, name) VALUES ('en', 'en', 'English') ON CONFLICT DO NOTHING`;
       const ref = randomUUID();
@@ -767,7 +1012,12 @@ describe.skipIf(server.url === undefined)(
 
       await runner(scratch.url);
       expect(await tables()).toEqual([
-        "blog_author", "blog_post", "blog_post_revision", "blog_post_country", "blog_post_occasion", "blog_author_public",
+        "blog_author",
+        "blog_post",
+        "blog_post_revision",
+        "blog_post_country",
+        "blog_post_occasion",
+        "blog_author_public",
       ]);
       const [again] = await scratch.sql<{ validated: boolean }[]>`
         SELECT convalidated AS validated FROM pg_constraint WHERE conname = 'review_attestation_subject_kind_check'`;
