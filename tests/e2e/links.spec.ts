@@ -271,7 +271,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
       // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and
       // the guarantee under Sending, and How it works and Help and contact under Company; `de`
-      // and `pl` have no content file, so those entries and the Company heading are not drawn.
+      // and `pl` have no content file, so those entries are not drawn.
       const hasTrustPages = locale === "en" || locale === "en-gb";
       const sending = await page
         .locator('footer nav[aria-labelledby$="-group-sending"] a')
@@ -290,10 +290,16 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         .evaluateAll((nodes) =>
           nodes.map((node) => node.getAttribute("href") ?? ""),
         );
+      // For florists (spec 011, TASK-210) has a landing in every locale, between How it works and
+      // Help and contact in registry order.
       expect(company).toEqual(
         hasTrustPages
-          ? [localePath(locale, "howItWorks"), localePath(locale, "help")]
-          : [],
+          ? [
+              localePath(locale, "howItWorks"),
+              localePath(locale, "forFlorists"),
+              localePath(locale, "help"),
+            ]
+          : [localePath(locale, "forFlorists")],
       );
       // Spec 041's legal row (TASK-183): cookies and withdrawal and refunds exist in English;
       // imprint, terms and privacy wait for the company, so no locale draws them.
