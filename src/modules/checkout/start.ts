@@ -119,8 +119,8 @@ export function isSameOrigin(request: Request): boolean {
   }
 }
 
-/** Where the product page's two submits post (`formaction`, AC-5). */
-export const CHECKOUT_START_PATH = "/api/checkout/start";
+/** Where the product page's two submits post (`formaction`, AC-5): `config/checkout-entry.ts`. */
+export { CHECKOUT_START_PATH } from "@/config/checkout-entry";
 
 /**
  * The product page's form as `CheckoutStartSchema` reads it (AC-5, TASK-206): the size radio is

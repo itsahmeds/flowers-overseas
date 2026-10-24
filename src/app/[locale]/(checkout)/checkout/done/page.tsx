@@ -19,7 +19,8 @@ import {
 } from "@/modules/checkout";
 import { TRANSACTIONAL_ROBOTS_META } from "@/modules/seo";
 import { PAGE_FRAME } from "@/modules/ui";
-import { ConfirmationPage } from "@/modules/ui/checkout";
+
+import { ConfirmationPage } from "../../_views/ConfirmationView";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

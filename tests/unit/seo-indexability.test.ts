@@ -177,6 +177,9 @@ describe("page-type policy (plan/02 §7, spec 004 AC-28)", () => {
     expect(PAGE_TYPE_POLICY).toStrictEqual({
       // spec 004 AC-28 / spec 007 §6: "`/dev/components` … stay `noindex`".
       devGallery: "never",
+      // spec 010 §6, AC-30 (TASK-204): the checkout and its confirmation are never indexed.
+      checkout: "never",
+      checkoutDone: "never",
       // spec 007 §6: "The locale home lifts to `index,follow` under the same engine".
       localeHome: "byRule",
       // spec 007 §6: "The hub is indexable when at least one corridor in that locale is".

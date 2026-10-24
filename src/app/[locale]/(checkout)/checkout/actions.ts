@@ -3,23 +3,28 @@
  * every form on `/{locale}/checkout` posts here with its routing fields
  * (`CHECKOUT_FORM_FIELDS`); this strips them, maps the side forms' buttons onto the step
  * schemas, and calls the module's action (`saveRecipientStep`, `saveCardAndBuyerStep`,
- * `updateSelection`, `useNextDateAction`, `placeOrderAction`). A saved post answers with a 303
- * from inside that call. A refused one comes back here as a state, and the answer is the form's
- * body rendered again on the server with the posted values, each field's message, the sample
- * details or the cap notice (`CheckoutStepBody`, `PlaceArea`), which `StepForm` draws in place:
- * with JavaScript off, in the same POST round trip.
+ * `updateSelection`, `useNextDateAction`, `placeOrderAction`).
+ *
+ * Every post answers with a 303. A saved one goes where the module sends it. A refused one goes
+ * back to the screen it came from with its echo in the `fo_checkout_echo` cookie
+ * (`modules/checkout/echo.ts`): the posted values, each field's message, the sample details or
+ * the cap notice, which the page draws on that screen. The same path serves JavaScript on and off,
+ * and the form holds no client state. Each post first deletes the previous echo.
  */
 "use server";
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import type { ReactNode } from "react";
 
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import {
   CHECKOUT_COOKIE_NAME,
+  CHECKOUT_ECHO_COOKIE_NAME,
+  type CheckoutEchoInput,
+  checkoutEchoCookieAttributes,
   checkoutScreen,
+  encodeCheckoutEcho,
   isDraftToken,
   placeOrderAction,
   saveCardAndBuyerStep,
@@ -30,11 +35,10 @@ import {
 import {
   CHECKOUT_FORM_FIELDS,
   CHECKOUT_FORM_INTENTS,
-  CheckoutStepBody,
-  PlaceArea,
   SAMPLE_INTENT,
-  sampleValues,
 } from "@/modules/ui/checkout";
+
+import { sampleValues } from "../_views/CheckoutView";
 
 const ROUTING = new Set<string>(Object.values(CHECKOUT_FORM_FIELDS));
 const IDLE = { status: "idle" } as const;
@@ -84,10 +88,30 @@ async function screenFor(
   return checkoutScreen({ locale, token: await token(), step, line });
 }
 
-export async function checkoutAction(
-  _previous: ReactNode,
-  form: FormData,
-): Promise<ReactNode> {
+function screenPath(
+  locale: LocaleCode,
+  screen: { readonly step: string; readonly line: number },
+): string {
+  return `/${locale}/checkout?step=${screen.step}&line=${String(screen.line)}`;
+}
+
+/** Writes the echo and answers with a 303 to the screen it names. */
+async function echoTo(
+  locale: LocaleCode,
+  echo: CheckoutEchoInput,
+): Promise<never> {
+  const encoded = encodeCheckoutEcho(echo);
+  if (encoded !== null) {
+    (await cookies()).set(
+      CHECKOUT_ECHO_COOKIE_NAME,
+      encoded,
+      checkoutEchoCookieAttributes(locale),
+    );
+  }
+  redirect(screenPath(locale, echo));
+}
+
+export async function checkoutAction(form: FormData): Promise<void> {
   const locale = text(form, CHECKOUT_FORM_FIELDS.locale);
   const intent = text(form, CHECKOUT_FORM_FIELDS.intent);
   if (
@@ -96,9 +120,13 @@ export async function checkoutAction(
     intent === undefined ||
     !(CHECKOUT_FORM_INTENTS as readonly string[]).includes(intent)
   ) {
-    return null;
+    return;
   }
   setRequestLocale(locale);
+  (await cookies()).delete({
+    name: CHECKOUT_ECHO_COOKIE_NAME,
+    path: checkoutEchoCookieAttributes(locale).path,
+  });
   const step = text(form, CHECKOUT_FORM_FIELDS.step);
   const line = text(form, CHECKOUT_FORM_FIELDS.line);
   const posted = stripped(form);
@@ -117,16 +145,13 @@ export async function checkoutAction(
         values[key] = value;
       }
     }
-    return (
-      <CheckoutStepBody
-        echo={{
-          values: { ...values, ...sampleValues(screen) },
-          errors: {},
-          attempt: 0,
-        }}
-        screen={screen}
-      />
-    );
+    await echoTo(locale, {
+      step: screen.step,
+      line: screen.line,
+      values: { ...values, ...sampleValues(screen) },
+      errors: {},
+      attempt: 0,
+    });
   }
 
   const state =
@@ -146,23 +171,27 @@ export async function checkoutAction(
       if (intent === "selection" || intent === "useNextDate") {
         redirect(`/${locale}/checkout`);
       }
-      const screen = await screenFor(locale, state.step, String(state.line));
-      if (screen.kind !== "step") redirect(`/${locale}/checkout`);
-      return (
-        <CheckoutStepBody
-          echo={{
-            values: state.values,
-            errors: state.errors,
-            attempt: Date.now(),
-          }}
-          screen={screen}
-        />
-      );
+      await echoTo(locale, {
+        step: state.step,
+        line: state.line,
+        values: state.values,
+        errors: state.errors,
+        attempt: Date.now(),
+      });
+      return;
     }
     case "refused": {
-      const screen = await screenFor(locale, "review", "1");
+      const screen = await screenFor(locale, "review", undefined);
       if (screen.kind !== "step") redirect(`/${locale}/checkout`);
-      return <PlaceArea refused={state.reason} screen={screen} />;
+      await echoTo(locale, {
+        step: screen.step,
+        line: screen.line,
+        values: {},
+        errors: {},
+        attempt: Date.now(),
+        refused: state.reason,
+      });
+      return;
     }
     default:
       // Expired, closed or idle: the page itself draws that state.

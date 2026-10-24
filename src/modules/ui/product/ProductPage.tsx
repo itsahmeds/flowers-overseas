@@ -135,7 +135,6 @@ export function ProductPage({
   const t = useTranslations();
   const product = useTranslations("product");
   const catalog = useTranslations("catalog");
-  const checkoutCopy = useTranslations("checkout");
   const code = localeOf(view.locale);
   const country = messageFor(t, view.country.nameKey);
   const entryOpen = checkout !== undefined && checkout.entry !== "none";
@@ -351,10 +350,10 @@ export function ProductPage({
                       value="checkout"
                     >
                       {checkout?.entry === "continue"
-                        ? checkoutCopy("entry.continue", {
+                        ? product("entry.continue", {
                             total: selectedPrice ?? "",
                           })
-                        : checkoutCopy("demo.try")}
+                        : product("entry.demo")}
                     </button>
                     <button
                       className={`${ENTRY_BUTTON} ${ENTRY_GHOST}`}
@@ -364,7 +363,7 @@ export function ProductPage({
                       type="submit"
                       value="basket"
                     >
-                      {checkoutCopy("basket.add")}
+                      {product("entry.addToBasket")}
                     </button>
                   </div>
                 ) : (

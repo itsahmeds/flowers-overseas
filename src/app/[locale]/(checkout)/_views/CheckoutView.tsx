@@ -5,10 +5,11 @@
  * TASK-206; artboards `docs/design/wireframes/checkout-{desktop,mobile}.dc.html`).
  *
  * Server components only. The page hands in the screen `checkoutScreen()` decided and the page's
- * one server action; every form is a `StepForm` (the one small client wrapper) posting to it, so
- * every step works with JavaScript off. `CheckoutStepBody` is also what the action renders again
- * when it refuses a post: the same body, with the posted values kept and each field's message
- * (AC-14), the sample details filled ("Use sample details", AC-33), or the cap notice (AC-27).
+ * one server action; every form is a `StepForm` posting to it, so every step works with
+ * JavaScript off. A refused post comes back as a 303 to the same screen with its echo (the
+ * `fo_checkout_echo` cookie, `modules/checkout/echo.ts`), which the page hands in here: the same
+ * body with the posted values kept and each field's message (AC-14), the sample details filled
+ * ("Use sample details", AC-33), or the cap notice (AC-27).
  *
  * The primitives take strings and `Money`; this file resolves every key and formats every value:
  * amounts through `formatMoney`, dates with weekday and month name through `formatDate` (AC-32),
@@ -46,32 +47,32 @@ import {
   MoneySchema,
   sortBy,
 } from "@/modules/i18n";
-
-import { buttonClass } from "./styles.ts";
-import { DemoBanner } from "./DemoBanner.tsx";
-import { ErrorSummary, type ErrorSummaryItem } from "./ErrorSummary.tsx";
-import { InlinePrivacyNotice, PriceChangedNotice } from "./Notices.tsx";
 import {
+  checkoutButtonClass as buttonClass,
+  DemoBanner,
+  ErrorSummary,
+  type ErrorSummaryItem,
+  InlinePrivacyNotice,
+  PriceChangedNotice,
   OrderSummaryPanel,
   type SummaryLine,
   type VatLine,
-} from "./OrderSummaryPanel.tsx";
-import { PlaceOrderButton } from "./PlaceOrderButton.tsx";
-import { RadioChipGroup } from "./RadioChipGroup.tsx";
-import { SelectField } from "./SelectField.tsx";
-import { StepForm } from "./StepForm.tsx";
-import { StepProgress } from "./StepProgress.tsx";
-import { StickyTotalBar } from "./StickyTotalBar.tsx";
-import { SampleDetailsButton, SubmitButton } from "./SubmitButton.tsx";
-import { TextAreaWithCounter } from "./TextAreaWithCounter.tsx";
-import { TextField } from "./TextField.tsx";
-import { COUNT_SLOT } from "./counter-slot.ts";
-import {
+  PlaceOrderButton,
+  RadioChipGroup,
+  SelectField,
+  StepForm,
+  StepProgress,
+  StickyTotalBar,
+  SampleDetailsButton,
+  SubmitButton,
+  TextAreaWithCounter,
+  TextField,
+  COUNT_SLOT,
   CHECKOUT_FORM_FIELDS,
   CHECKOUT_FORM_IDS,
   type CheckoutAction,
   type CheckoutFormIntent,
-} from "./form-fields.ts";
+} from "@/modules/ui/checkout";
 
 /** What a refused post is drawn again with. */
 export interface CheckoutEcho {
@@ -81,14 +82,14 @@ export interface CheckoutEcho {
       string,
       readonly {
         readonly key: string;
-        readonly params?: Readonly<Record<string, unknown>>;
+        readonly params?: Readonly<Record<string, unknown>> | undefined;
       }[]
     >
   >;
   /** Counts refused submits, so the error summary takes focus again on each (AC-14). */
   readonly attempt: number;
   /** Step 3's refusal where the buyer stands. */
-  readonly refused?: "cap" | "unable";
+  readonly refused?: "cap" | "unable" | undefined;
 }
 
 type Translate = (key: string, values?: Record<string, unknown>) => string;
@@ -655,7 +656,7 @@ async function ReviewList({
 /* The step form's body                                                         */
 /* -------------------------------------------------------------------------- */
 
-/** The step form's content: what the page draws and what a refused post draws again. */
+/** The step form's content, with a refused post's echo when there is one. */
 export async function CheckoutStepBody({
   screen,
   echo,
@@ -826,7 +827,7 @@ export async function PlaceArea({
           data-fo-place-refused={refused}
           role="alert"
         >
-          {refused === "cap" ? t("demo.cap") : t("unable")}
+          {refused === "cap" ? t("demo.cap") : t("error.unable")}
         </p>
       )}
       {refused === "cap" ? null : (
@@ -939,9 +940,12 @@ function vatLines(screen: StepScreen, t: Translate): VatLine[] {
 export async function CheckoutStepPage({
   screen,
   action,
+  echo,
 }: {
   readonly screen: StepScreen;
   readonly action: CheckoutAction;
+  /** A refused post's echo, already matched to this screen by the page. */
+  readonly echo?: CheckoutEcho;
 }): Promise<ReactElement> {
   const { t, all, rich } = await translators(screen.locale);
   const locale = screen.locale;
@@ -1092,7 +1096,10 @@ export async function CheckoutStepPage({
                 className={formFrame}
                 id={CHECKOUT_FORM_IDS.step}
               >
-                <CheckoutStepBody screen={screen} />
+                <CheckoutStepBody
+                  screen={screen}
+                  {...(echo === undefined ? {} : { echo })}
+                />
               </StepForm>
             )}
             {screen.step === "card" && line !== undefined ? (
@@ -1158,7 +1165,12 @@ export async function CheckoutStepPage({
                     }),
                     action: (
                       <StepForm action={action} id={CHECKOUT_FORM_IDS.place}>
-                        <PlaceArea screen={screen} />
+                        <PlaceArea
+                          screen={screen}
+                          {...(echo?.refused === undefined
+                            ? {}
+                            : { refused: echo.refused })}
+                        />
                       </StepForm>
                     ),
                   }

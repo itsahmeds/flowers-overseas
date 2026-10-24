@@ -896,7 +896,12 @@
     },
     "eyebrow": "{descriptor} · for {country}",
     "readMore": "Read more",
-    "eyebrowPhone": "{category} · {country}"
+    "eyebrowPhone": "{category} · {country}",
+    "entry": {
+      "demo": "Try a demo order",
+      "continue": "Continue, {total}",
+      "addToBasket": "Add to basket"
+    }
   },
   "checkout": {
     "demo": {
@@ -906,8 +911,7 @@
       "place": "Place demo order. Nothing is charged.",
       "placing": "Placing your demo order…",
       "dateHeading": "Pick any date to see how it works. In the demo, nothing is delivered.",
-      "cap": "The demo has had a lot of orders today. Please try again tomorrow.",
-      "try": "Try a demo order"
+      "cap": "The demo has had a lot of orders today. Please try again tomorrow."
     },
     "privacy": {
       "demoNotice": "<b>Please use sample details, not a real person's.</b> We keep what you type here for {period, select, hours24 {24 hours} other {7 days}} to show how ordering works, then we delete the personal details. {controllerLine}"
@@ -930,13 +934,7 @@
       "street": "Street and number",
       "postcode": "Postal code",
       "city": "Town or city",
-      "phone": "Recipient's phone",
-      "houseNumber": "House number",
-      "addressLine1": "Address",
-      "addressLine2": "Address line 2",
-      "careOf": "c/o, floor or company",
-      "apartment": "Flat or apartment",
-      "region": "County"
+      "phone": "Recipient's phone"
     },
     "field": {
       "optional": "optional"
@@ -998,7 +996,8 @@
       "placeKindInvalid": "Please choose where the flowers are going.",
       "addonUnavailable": "This extra is not available for this delivery. Please remove it.",
       "countryInvalid": "Please choose a country from the list.",
-      "invalidCharacters": "Please remove the special characters from this text."
+      "invalidCharacters": "Please remove the special characters from this text.",
+      "unable": "We could not place this order. Please check the details and try again."
     },
     "basket": {
       "title": "Your <em>basket</em>",
@@ -1020,8 +1019,7 @@
       "unavailableSummary": "{count, plural, one {One bouquet in your basket is no longer available.} other {# bouquets in your basket are no longer available.}} Please remove {count, plural, one {it} other {them}} to continue.",
       "useNext": "Use {next}",
       "addOns": "Add-ons · {list}",
-      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order.",
-      "add": "Add to basket"
+      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order."
     },
     "date": {
       "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}.",
@@ -1034,7 +1032,6 @@
       "review": "Check and place your order",
       "deliveryOf": "Delivery {n} of {total}"
     },
-    "unable": "We could not place this order. Please check the details and try again.",
     "closed": {
       "title": "We are not taking orders for {country} yet.",
       "opensSoon": "Ordering opens soon.",
@@ -1061,9 +1058,6 @@
       "noCard": "No card",
       "change": "Change",
       "amount": "Price"
-    },
-    "entry": {
-      "continue": "Continue, {total}"
     }
   },
   "confirmation": {
@@ -1079,9 +1073,11 @@
       "reference": "Order {reference}",
       "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person."
     },
-    "promise": "Our fresh-flower promise covers the flowers when they arrive.",
-    "gone": "This confirmation is no longer available.",
-    "total": "Total"
+    "page": {
+      "gone": "This confirmation is no longer available.",
+      "promise": "Our fresh-flower promise covers the flowers when they arrive.",
+      "total": "Total"
+    }
   },
   "infoPages": {
     "status": {
