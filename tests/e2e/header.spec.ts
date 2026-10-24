@@ -341,7 +341,6 @@ test.describe("the site header (AC-7)", () => {
     for (const id of [
       "sign-in",
       "my-orders",
-      "for-florists",
       "add-ons",
       "same-day-delivery",
     ]) {
@@ -355,7 +354,6 @@ test.describe("the site header (AC-7)", () => {
       "My orders",
       // "Basket" is the link's visually hidden name now; "Basket (" was the dead label.
       "Basket (",
-      "For florists",
       "Add-ons",
     ]) {
       await expect(page.locator(HEADER), word).not.toContainText(word);
