@@ -342,27 +342,12 @@ describe("the shipped catalogues and manifests", () => {
     // founder. The apply and sent keys are not counted in the unreviewed share (`review-scope.ts`);
     // `forFlorists.status.choosingFirst`, `infoPages.status.untranslated` and the 16
     // `floristInbox.*` labels are.
+    // TASK-210: 16 keys left this queue on the founder's record-approval-210.py run, 2026-10-24.
     "company.controller",
     "consent.privacyLink",
     "corridor.calendar.ruleEaster",
     "corridor.calendar.ruleFixed",
     "corridor.calendar.ruleWeekday",
-    "floristInbox.accept",
-    "floristInbox.address",
-    "floristInbox.answerBy",
-    "floristInbox.cardMessage",
-    "floristInbox.decline",
-    "floristInbox.deliveryDate",
-    "floristInbox.deliveryNote",
-    "floristInbox.forDate",
-    "floristInbox.orders",
-    "floristInbox.outForDelivery",
-    "floristInbox.photo.choose",
-    "floristInbox.photo.send",
-    "floristInbox.recipient",
-    "floristInbox.stage.inProgress",
-    "floristInbox.stage.waiting",
-    "floristInbox.youReceive",
     "footer.link.deliveryAndPayment",
     "forFlorists.apply.crumb",
     "forFlorists.apply.error.area",
