@@ -15,8 +15,14 @@
  * (`SentenceLoader` inside `<AfterPaint island="home-sentence" on="interaction">`, spec 004 §14
  * A-founder-2026-10-15b; TASK-244), and nothing may import this module statically but
  * `../deferred/lazyIslands.ts` (`tests/unit/deferred-set.test.tsx`).
+ *
+ * On a mouse it also lays our own listbox over each of the three selects (`./sentence-listbox.ts`,
+ * spec 004 §14 A-founder-2026-10-21d; TASK-326), in the same lazy chunk: the native selects are
+ * the first paint and serve any choice made before it lands.
  */
 import { useEffect } from "react";
+
+import { enhanceSentence } from "./sentence-listbox.ts";
 
 export interface SentenceIslandProps {
   /** The form's id (`SENTENCE_IDS.form`). */
@@ -54,8 +60,12 @@ export function SentenceIsland({ formId }: SentenceIslandProps): null {
     };
     sync();
     who.addEventListener("change", sync);
+    // On a mouse, our own listbox over each select (spec 004 §14 A-founder-2026-10-21d; TASK-326).
+    // After the first sync, so the occasion trigger reads the possessive this mount wrote.
+    const stop = enhanceSentence(form);
     return () => {
       who.removeEventListener("change", sync);
+      stop();
     };
   }, [formId]);
   return null;
