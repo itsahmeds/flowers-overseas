@@ -102,6 +102,9 @@ const FUNCTIONS = [
   // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
   // A-founder-2026-10-22 item 2 A).
   "purchase_total_check",
+  // 0028 (TASK-350): an order's refunds never exceed its total, under the payment lock (spec 013
+  // §14 A-founder-2026-10-22 item 2).
+  "refund_order_ceiling",
   // 0023 (TASK-293): the review ledger (spec 012b §5.1 item 2).
   "review_attestation_append_only",
   "review_blog_revision_current_hash",

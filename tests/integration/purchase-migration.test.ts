@@ -232,6 +232,24 @@ describe.skipIf(server.url === undefined)(
         const withBasket = await ordersWithout(scratch.sql);
         expect(withBasket.size).toBe(5);
 
+        // `0028_payment_purchase` (TASK-350) sits above `0019` and refuses to roll back while a
+        // live payment exists (`PAYMENT_PURCHASE_ROLLBACK_BLOCKED`, spec 013 §8): the walk down
+        // to `0018` stops there and changes nothing. The live payment and its refund are then
+        // removed by hand, so `0019`'s own down still runs with a paid test order and a
+        // multi-order purchase present.
+        let blocked = "";
+        try {
+          await runner(scratch.url, ["--down", "--to", "0018"]);
+        } catch (error) {
+          blocked = error instanceof Error ? error.message : String(error);
+        }
+        expect(blocked).toContain("PAYMENT_PURCHASE_ROLLBACK_BLOCKED");
+        expect(await ordersWithout(scratch.sql)).toEqual(withBasket);
+        await scratch.sql.begin(async (tx) => {
+          await tx`DELETE FROM refund`;
+          await tx`DELETE FROM payment WHERE livemode`;
+        });
+
         await runner(scratch.url, ["--down", "--to", "0018"]);
         expect(await objects(scratch.sql)).toEqual({
           table: 0,
@@ -246,7 +264,7 @@ describe.skipIf(server.url === undefined)(
         >`
         SELECT (SELECT count(*)::int FROM payment) AS payments,
                (SELECT count(*)::int FROM refund) AS refunds`;
-        expect(paid).toEqual({ payments: 2, refunds: 1 });
+        expect(paid).toEqual({ payments: 1, refunds: 0 });
 
         await runner(scratch.url);
         expect(await objects(scratch.sql)).toEqual({

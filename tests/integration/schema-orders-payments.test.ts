@@ -194,20 +194,21 @@ describe.skipIf(server.url === undefined)(
              VALUES (${orderId}, 2, 'order.placed', 'florist:x', 1)`,
         );
         const [payment] = await tx<{ id: string }[]>`
-          INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
-          VALUES (${orderId}, 'stripe', 'pi_test_1', 'authorised', 'card', 18900, 'PLN', false) RETURNING id`;
-        // `failed`, so A7's one-live-payment-per-order index (0017) cannot be what refuses it.
+          INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+          VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe', 'pi_test_1', 'authorised', 'card', 18900, 'PLN', false) RETURNING id`;
+        // `failed`, so the one-live-payment-per-purchase index (0028) cannot be what refuses it.
         await by(
           "payment in another currency",
           () =>
-            tx`INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
-             VALUES (${orderId}, 'stripe', 'pi_test_2', 'failed', 'card', 100, 'EUR', false)`,
+            tx`INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor, currency_code, livemode)
+             VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe', 'pi_test_2', 'failed', 'card', 100, 'EUR', false)`,
         );
         await by(
           "refund in another currency",
           () =>
-            tx`INSERT INTO refund (payment_id, provider_ref, amount_minor, currency_code, reason, status, requested_by)
-             VALUES (${payment?.id ?? ""}, 're_test_1', 100, 'EUR', 'addon_missing', 'pending', 'system:payments')`,
+            tx`INSERT INTO refund (payment_id, order_id, purchase_id, provider_ref, amount_minor, currency_code, reason, status, requested_by)
+             VALUES (${payment?.id ?? ""}, ${orderId}, (SELECT purchase_id FROM "order" WHERE id = ${orderId}),
+                     're_test_1', 100, 'EUR', 'addon_missing', 'pending', 'system:payments')`,
         );
         await by(
           "captured without captured_at",
@@ -241,7 +242,7 @@ describe.skipIf(server.url === undefined)(
         "product line without product": "order_line_subject_check",
         "duplicate seq": "order_event_order_id_seq_key",
         "hyphen-free actor class": "order_event_actor_check",
-        "payment in another currency": "payment_order_fkey",
+        "payment in another currency": "payment_purchase_fkey",
         "refund in another currency": "refund_payment_fkey",
         "captured without captured_at": "payment_captured_check",
         "webhook retry": "webhook_inbox_provider_event_id_key",

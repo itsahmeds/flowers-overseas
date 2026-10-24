@@ -22,3 +22,13 @@ export {
   PAYMENT_ERROR_KEYS,
   type PaymentErrorKey,
 } from "./decline.ts";
+
+// Spec 013 §14 A-founder-2026-10-22 item 2 (TASK-350): the payment belongs to the purchase; an
+// order reaches it through `paymentForOrder`. Reads only, no amount parameter (AC-9).
+export {
+  PAYMENT_RECORD_STATUSES,
+  paymentForOrder,
+  paymentForPurchase,
+  PaymentRecordSchema,
+} from "./queries.ts";
+export type { PaymentRecord } from "./queries.ts";

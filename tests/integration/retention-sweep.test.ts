@@ -160,9 +160,9 @@ async function deliveredOrder(
     INSERT INTO order_line (order_id, kind, qty, unit_retail_minor, currency_code, vat_rate_bp)
     VALUES (${orderId}, 'surcharge', 1, 18900, 'PLN', 800)`;
   const [payment] = await tx<{ id: string }[]>`
-    INSERT INTO payment (order_id, provider, provider_ref, status, method, amount_minor,
+    INSERT INTO payment (purchase_id, provider, provider_ref, status, method, amount_minor,
                          currency_code, captured_at, livemode)
-    VALUES (${orderId}, 'stripe', ${make.unique("pi_")}, 'captured', 'card', 18900, 'PLN', now(),
+    VALUES ((SELECT purchase_id FROM "order" WHERE id = ${orderId}), 'stripe', ${make.unique("pi_")}, 'captured', 'card', 18900, 'PLN', now(),
             false)
     RETURNING id`;
   if (options.exactDelivery === true) {

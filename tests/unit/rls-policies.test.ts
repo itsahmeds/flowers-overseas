@@ -106,8 +106,16 @@ const BUILD_POLICIES: Policy[] = [
   check: "",
 }));
 
+/**
+ * The policies in force after every migration: a later migration that drops and re-creates a
+ * policy (`0028_payment_purchase`'s `payment_customer`, TASK-350) replaces the earlier text.
+ */
+const EFFECTIVE_POLICIES: Policy[] = [
+  ...new Map(POLICIES.map((p) => [`${p.table}.${p.name}`, p])).values(),
+];
+
 const policiesOf = (table: string): Policy[] =>
-  POLICIES.filter((p) => p.table === table);
+  EFFECTIVE_POLICIES.filter((p) => p.table === table);
 
 /** Every `CREATE POLICY … ON <table>` name, whatever its shape (`FOR INSERT … WITH CHECK` too). */
 const anyPolicyNamesOf = (table: string): string[] =>
