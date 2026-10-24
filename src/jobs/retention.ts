@@ -38,8 +38,19 @@
  *    later record for the same subject supersedes it; it is deleted once that later record is
  *    older than the cut-off. The latest record per subject is never deleted (it is the proof).
  *  - `invoice_archive` (`keep`): nothing.
- *  - `checkout_draft`, `demo_order_personal`: their handlers are spec 010's (TASK-207). Until a key
- *    has a handler here it is reported `no_handler` and nothing is written for it.
+ *  - `checkout_draft_personal` (1 day after the draft's last activity, pseudonymise; spec 010
+ *    §14 A-founder-2026-10-22 item 2 C, AC-35; TASK-207): `checkout_draft.buyer` and every
+ *    line's `recipient` and `card` become null; the lines keep product, tier, destination, date
+ *    and add-ons.
+ *  - `checkout_draft` (30 days after the last activity, delete): the draft, and its lines by
+ *    cascade. A placed line's order is untouched (the line points at it, not the reverse).
+ *  - `demo_order_personal` (1 day after placement on the production seed, 7 on staging and PR
+ *    environments, pseudonymise; spec 010 §5.1 A, AC-35): for orders with `mode` `demo` or
+ *    `test`, both snapshots as the 90-day and 3-year rules leave them; a `recipient` whose every
+ *    order is such an order, as `recipient_contact` leaves one; a `customer` with no account
+ *    whose every order is such an order, as `buyer_personal` leaves one. The order, its lines,
+ *    its events and its purchase are kept; a `live` order, and anyone with one, is never touched.
+ *  A key with no handler here is reported `no_handler` and nothing is written for it.
  *
  * `dryRun` writes nothing — no row, no object — and reports the same counts, because every count
  * comes from the selection a real run would then act on.
@@ -499,6 +510,170 @@ const consentRecords: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   };
 };
 
+/** The draft's last activity is at or before `cutoff`. */
+function draftIdleSince(cutoff: Date): SQL {
+  return sql`d.last_activity_at <= ${ts(cutoff)}`;
+}
+
+const checkoutDraftPersonal: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ drafts: number; lines: number }>(
+    db,
+    sql`SELECT
+          (SELECT count(*)::int FROM public.checkout_draft d
+            WHERE ${draftIdleSince(cutoff)}
+              AND (d.buyer IS NOT NULL OR EXISTS (
+                SELECT 1 FROM public.checkout_draft_line l
+                 WHERE l.draft_id = d.id AND (l.recipient IS NOT NULL OR l.card IS NOT NULL)))) AS drafts,
+          (SELECT count(*)::int FROM public.checkout_draft_line l
+             JOIN public.checkout_draft d ON d.id = l.draft_id
+            WHERE ${draftIdleSince(cutoff)}
+              AND (l.recipient IS NOT NULL OR l.card IS NOT NULL)) AS lines`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`UPDATE public.checkout_draft_line l SET recipient = NULL, card = NULL
+            FROM public.checkout_draft d
+           WHERE d.id = l.draft_id AND ${draftIdleSince(cutoff)}
+             AND (l.recipient IS NOT NULL OR l.card IS NOT NULL)`,
+    );
+    await db.execute(
+      sql`UPDATE public.checkout_draft d SET buyer = NULL
+           WHERE ${draftIdleSince(cutoff)} AND d.buyer IS NOT NULL`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: {
+      drafts: due[0]?.drafts ?? 0,
+      draft_lines: due[0]?.lines ?? 0,
+    },
+    skipped: {},
+  };
+};
+
+const checkoutDraft: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ drafts: number; lines: number }>(
+    db,
+    sql`SELECT count(DISTINCT d.id)::int AS drafts, count(l.id)::int AS lines
+          FROM public.checkout_draft d
+          LEFT JOIN public.checkout_draft_line l ON l.draft_id = d.id
+         WHERE ${draftIdleSince(cutoff)}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`DELETE FROM public.checkout_draft d WHERE ${draftIdleSince(cutoff)}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: {
+      drafts: due[0]?.drafts ?? 0,
+      draft_lines: due[0]?.lines ?? 0,
+    },
+    skipped: {},
+  };
+};
+
+/** `o` is a demo or test order placed at or before `cutoff`. */
+function demoPlacedBy(cutoff: Date): SQL {
+  return sql`o.mode IN ('demo', 'test') AND o.created_at <= ${ts(cutoff)}`;
+}
+
+const demoOrderPersonal: PolicyHandler = async ({
+  db,
+  now,
+  cutoff,
+  dryRun,
+}) => {
+  const orders = await rows<{
+    id: string;
+    recipient: Snapshot;
+    buyer: Snapshot;
+  }>(
+    db,
+    sql`SELECT o.id, o.recipient_snapshot AS recipient, o.buyer_snapshot AS buyer
+          FROM public."order" o
+         WHERE ${demoPlacedBy(cutoff)}
+           AND (COALESCE(o.recipient_snapshot -> 'redacted', 'false'::jsonb) <> 'true'::jsonb
+             OR COALESCE(o.buyer_snapshot -> 'redacted', 'false'::jsonb) <> 'true'::jsonb)
+         ORDER BY o.id`,
+  );
+  const recipients = await rows<{ id: string; full_name: string }>(
+    db,
+    sql`SELECT r.id, r.full_name FROM public.recipient r
+         WHERE NOT r.contact_redacted
+           AND EXISTS (SELECT 1 FROM public."order" o WHERE o.recipient_id = r.id)
+           AND NOT EXISTS (SELECT 1 FROM public."order" o
+                            WHERE o.recipient_id = r.id AND NOT (${demoPlacedBy(cutoff)}))
+         ORDER BY r.id`,
+  );
+  const customers = await rows<{ id: string }>(
+    db,
+    sql`SELECT c.id FROM public.customer c
+         WHERE NOT c.redacted AND c.user_id IS NULL
+           AND EXISTS (SELECT 1 FROM public."order" o WHERE o.customer_id = c.id)
+           AND NOT EXISTS (SELECT 1 FROM public."order" o
+                            WHERE o.customer_id = c.id AND NOT (${demoPlacedBy(cutoff)}))
+         ORDER BY c.id`,
+  );
+  const recipientIds = recipients.map((row) => row.id);
+  const customerIds = customers.map((row) => row.id);
+  if (!dryRun) {
+    for (const order of orders) {
+      const recipient = isRedactedSnapshot(order.recipient)
+        ? order.recipient
+        : pseudonymiseRecipientSnapshot(order.recipient, now);
+      const buyer = isRedactedSnapshot(order.buyer)
+        ? order.buyer
+        : pseudonymiseBuyerSnapshot(order.buyer, now);
+      await db.execute(
+        sql`UPDATE public."order"
+               SET recipient_snapshot = ${JSON.stringify(recipient)}::text::jsonb,
+                   buyer_snapshot = ${JSON.stringify(buyer)}::text::jsonb
+             WHERE id = ${order.id}::uuid`,
+      );
+    }
+    for (const recipient of recipients) {
+      await db.execute(
+        sql`UPDATE public.recipient
+               SET full_name = ${initialsOf(recipient.full_name)}, phone_e164 = NULL,
+                   contact_redacted = true, contact_redacted_at = ${ts(now)}
+             WHERE id = ${recipient.id}::uuid`,
+      );
+    }
+    if (recipientIds.length > 0) {
+      await db.execute(
+        sql`UPDATE public.recipient_address
+               SET lines = '{}'::text[], postal_code = NULL, delivery_note = NULL
+             WHERE recipient_id = ANY(${uuidArray(recipientIds)})`,
+      );
+    }
+    for (const id of customerIds) {
+      await db.execute(
+        sql`UPDATE public.customer
+               SET name = NULL, phone_e164 = NULL, email_normalised = ${redactedEmail(id)},
+                   marketing_consent = false, redacted = true, redacted_at = ${ts(now)}
+             WHERE id = ${id}::uuid`,
+      );
+    }
+    if (customerIds.length > 0) {
+      await db.execute(
+        sql`UPDATE public.address SET lines = '{}'::text[], postal_code = NULL
+             WHERE customer_id = ANY(${uuidArray(customerIds)})`,
+      );
+    }
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: {
+      order_snapshots: orders.length,
+      recipients: recipients.length,
+      customers: customers.length,
+    },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -506,6 +681,9 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   buyer_personal: buyerPersonal,
   fraud_signals: fraudSignals,
   consent_records: consentRecords,
+  checkout_draft_personal: checkoutDraftPersonal,
+  checkout_draft: checkoutDraft,
+  demo_order_personal: demoOrderPersonal,
 };
 
 /**
