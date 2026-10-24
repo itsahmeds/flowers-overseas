@@ -57,10 +57,18 @@ export const SITEMAP_PATH = "/sitemap.xml";
 export const DISALLOWED_PATHS: readonly string[] = [
   "/api/",
   "/admin/",
+  // Spec 011 §6 (TASK-212): the Phase 0 florist inbox mounts at `/demo/vendor-inbox`; `/vendor/`
+  // is spec 026's mount point, disallowed already so it cannot be forgotten.
+  "/demo/",
   "/vendor/",
   "/account/",
   "/checkout/",
   "/track/",
+  // Spec 018 §2 "Cross-cutting", AC-13 (TASK-337): the locale-prefixed token and account pages.
+  // The trailing slash is the point: `/{locale}/track` (the lookup) and `/{locale}/account` (its
+  // 303 to sign-in) stay fetchable, so a crawler sees their `noindex`.
+  "/*/track/",
+  "/*/account/",
   "/search",
   "/dev/",
   "/*?*sort=",

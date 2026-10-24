@@ -326,7 +326,11 @@ describe.skipIf(server.url === undefined)(
       );
       expect(real.tables.find((t) => t.table === "product")?.updated).toBe(1);
       const only = await runSeed(scratch.sql, plan, { only: ["reference"] });
-      expect(only.tables.map((t) => t.table)).toEqual(["locale", "currency"]);
+      expect(only.tables.map((t) => t.table)).toEqual([
+        "locale",
+        "currency",
+        "invoice_profile",
+      ]);
     }, 120_000);
 
     it("the CLI prints one line per table and exits 0 on a rerun", async () => {

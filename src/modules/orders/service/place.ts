@@ -11,7 +11,9 @@
  *      switch and **no event** (A1.3: `order.placed` has no row, an insert has no `from_status`),
  *      so `app.transition_event` is never touched here. It is set after each savepoint, because a
  *      rollback to the savepoint undoes it;
- *   5. one `INSERT INTO "order"` at status `placed`, with an id `place` draws itself
+ *   5. without the input's `purchaseId`, one `INSERT INTO purchase` of this order alone (spec 010
+ *      §14 A-founder-2026-10-22, `0019`), inside the savepoint so a clash or a refusal undoes it;
+ *      then one `INSERT INTO "order"` at status `placed`, with an id `place` draws itself
  *      (`crypto.randomUUID()`, A2.1) and the input's `localeCode` (A3.1: the draft's, never the
  *      column default);
  *   6. reset the switch to `''` straight away — the insert trigger does not clear it, and a switch
@@ -29,7 +31,7 @@
  * `terms_version` is written only for a `live` order (the schema refuses one without it, and
  * refuses one on a demo or test order: no contract is formed there, §5.1 A).
  */
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -209,6 +211,14 @@ export const PlaceOrderInputSchema = z
     lines: z.array(OrderLineInputSchema).min(1),
     /** `order.placed`'s actor: `buyer` from the checkout; spec 011's demo control may differ. */
     actor: ActorSchema.default(BUYER_ACTOR),
+    /**
+     * Spec 010 §14 A-founder-2026-10-22 item 3: the purchase this order belongs to, written by
+     * `placePurchase` (`0019`'s composite key holds its currency and mode equal to the order's;
+     * its deferred `purchase_total_check` holds the sum at commit). Absent, `place` writes a
+     * purchase of this one order itself, inside the attempt's savepoint, so a lone order (spec
+     * 011's demo control) is still a purchase of one and a refusal still writes nothing.
+     */
+    purchaseId: z.uuid().optional(),
   })
   .strict()
   .refine(
@@ -274,9 +284,17 @@ const CountryRow = z.object({
 });
 const IdRow = z.object({ id: z.uuid() });
 
-/** 128 random bits as base64url: 22 characters, `0007`'s `public_token` pattern. */
-function publicToken(): string {
-  return randomBytes(16).toString("base64url");
+/** The purchase of a lone order: its mode, currency, total, locale and customer (`0019`). */
+async function insertOwnPurchase(
+  executor: OrderExecutor,
+  input: z.output<typeof PlaceOrderInputSchema>,
+): Promise<string> {
+  const [row] = await executor.execute(sql`
+    INSERT INTO purchase (mode, buyer_currency_code, total_minor, locale_code, customer_id)
+    VALUES (${input.mode}, ${input.buyerCurrency}, ${input.buyerTotalMinor}, ${input.localeCode},
+            ${input.customerId})
+    RETURNING id`);
+  return IdRow.parse(row).id;
 }
 
 export async function placeWith(
@@ -314,22 +332,26 @@ export async function placeWith(
     const candidate = newId();
     await executor.execute(sql.raw(`SAVEPOINT ${SAVEPOINT}`));
     try {
+      const purchaseId =
+        input.purchaseId ?? (await insertOwnPurchase(executor, input));
+      // `public_token` is not named: the column default draws it (16 CSPRNG bytes, base64url;
+      // `0021`, spec 018 §5.1 and AC-2), so no token is ever made or held in application code.
       const [inserted] = await withSwitch(executor, () =>
         executor.execute(sql`
-        INSERT INTO "order" (id, public_token, mode, customer_id, recipient_id,
+        INSERT INTO "order" (id, mode, customer_id, recipient_id,
                              destination_country_id, destination_city_id, destination_postcode,
                              delivery_date, delivery_window, status, buyer_currency_code,
                              buyer_total_minor, fx_rate_ppm, base_currency_code, base_total_minor,
                              vat_breakdown, supply_model, terms_version, buyer_snapshot,
-                             recipient_snapshot, locale_code)
-        VALUES (${candidate}, ${publicToken()}, ${input.mode}, ${input.customerId},
+                             recipient_snapshot, locale_code, purchase_id)
+        VALUES (${candidate}, ${input.mode}, ${input.customerId},
                 ${input.recipientId}, ${input.destinationCountryId},
                 ${input.destinationCityId ?? null}, ${input.destinationPostcode ?? null},
                 ${input.deliveryDate}::date, ${input.deliveryWindow ?? null}, 'placed',
                 ${input.buyerCurrency}, ${input.buyerTotalMinor}, ${input.fxRatePpm ?? null},
                 ${input.baseCurrency}, ${input.baseTotalMinor}, ${jsonb(input.vatBreakdown)},
                 ${supplyModel}, ${input.termsVersion ?? null}, ${jsonb(input.buyerSnapshot)},
-                ${jsonb(input.recipientSnapshot)}, ${input.localeCode})
+                ${jsonb(input.recipientSnapshot)}, ${input.localeCode}, ${purchaseId})
         RETURNING id`),
       );
       IdRow.parse(inserted);

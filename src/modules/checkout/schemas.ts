@@ -26,6 +26,7 @@ import { z } from "zod";
 import { isCountryIso2 } from "@/config/countries";
 import { SkuSchema } from "@/config/catalogue/schemas";
 import {
+  BASKET_MAX_LINES,
   CHECKOUT_LIMITS,
   CHECKOUT_MAX_CODE_UNITS_PER_GRAPHEME,
   CHECKOUT_SHORT_FIELD_MAX_CODE_UNITS,
@@ -283,9 +284,27 @@ export const CheckoutStartSchema = z
     date: z.iso.date().optional(),
     expectedTotalMinor: MinorUnitsInputSchema,
     expectedCurrency: CurrencySchema,
+    /**
+     * The submit button's `name="then"` and `value` (§14 A-founder-2026-10-22 item 4, AC-5):
+     * "Add to basket" posts `basket`, "Try a demo order" and the live continue label post
+     * `checkout`. A post without one (a product page cached before the basket shipped) is
+     * `checkout`, today's behaviour.
+     */
+    then: z.enum(["basket", "checkout"]).default("checkout"),
   })
   .strict();
 export type CheckoutStart = z.infer<typeof CheckoutStartSchema>;
+
+/**
+ * A basket line's position as a form posts it (§14 A-founder-2026-10-22 item 4): an integer from
+ * 1 to `BASKET_MAX_LINES`, coerced from the form's string, and never trusted beyond the draft's
+ * own lines (the runner looks the position up in the loaded draft).
+ */
+export const LinePositionSchema = z.coerce
+  .number()
+  .int()
+  .min(1)
+  .max(BASKET_MAX_LINES);
 
 /* -------------------------------------------------------------------------- */
 /* Step 1: RecipientStepSchema                                                 */
@@ -453,6 +472,55 @@ function postcodeField(model: AddressFormModel, required: boolean) {
  * @param context.offeredAddonKeys the add-ons with an active price for the destination
  *   (`listAddons()`), which TASK-205 passes; an add-on outside it is refused.
  */
+/** The card half of step 2: the card, "sign as" and the line's add-ons. */
+function cardFields(context: {
+  readonly locale: LocaleCode;
+  readonly offeredAddonKeys: readonly string[];
+}) {
+  const offered = new Set(context.offeredAddonKeys);
+  return {
+    cardMessage: textField({
+      required: false,
+      max: CHECKOUT_LIMITS.cardMessage,
+      locale: context.locale,
+      multiline: true,
+    }),
+    signAs: textField({
+      required: false,
+      max: CHECKOUT_LIMITS.signAs,
+      locale: context.locale,
+    }),
+    addonKeys: z
+      .array(z.string())
+      .optional()
+      .transform((keys, ctx) => {
+        const list = keys ?? [];
+        if (
+          list.some((key) => !offered.has(key)) ||
+          new Set(list).size !== list.length
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            message: CHECKOUT_ERROR_KEYS.addonUnavailable,
+          });
+          return z.NEVER;
+        }
+        return list;
+      }),
+  };
+}
+
+/**
+ * Step 2 of a basket line that is not the last (§14 A-founder-2026-10-22 item 5): the card and
+ * the line's add-ons only; the buyer's fields render on the last line's step 2.
+ */
+export function CardStepSchema(context: {
+  readonly locale: LocaleCode;
+  readonly offeredAddonKeys: readonly string[];
+}) {
+  return z.object(cardFields(context)).strict();
+}
+
 export function CardAndBuyerStepSchema(context: {
   readonly locale: LocaleCode;
   readonly offeredAddonKeys: readonly string[];

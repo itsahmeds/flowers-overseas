@@ -10,6 +10,7 @@
       "INTERNAL_CRON_SECRET": "SENTINEL-VALUE",
       "QUOTE_SIGNING_SECRET": "SENTINEL-VALUE",
       "AUTH_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "SIGNED_LINK_SECRET": "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
       "RESEND_API_KEY": "re_placeholder",
       "EMAIL_FROM": "Flowers Overseas <sign-in@example.test>",
       "MAILER": "resend",

@@ -59,8 +59,14 @@ export const OrderListItemSchema = z
 
 export type OrderListItem = z.infer<typeof OrderListItemSchema>;
 
-/** Spec 012 §2.6: the list item plus the internal status, the total and the assigned florist. */
+/**
+ * Spec 012 §2.6: the list item plus the internal status, the total and the assigned florist; and
+ * the purchase the order was bought in (spec 010 §14 A-founder-2026-10-22 item 3, AC-69), so the
+ * queue can group a basket's orders. Never on a partner's item: `OrderListItemSchema` is strict
+ * and has no such key.
+ */
 export const AdminOrderListItemSchema = OrderListItemSchema.extend({
+  purchaseId: z.uuid(),
   status: z.string().min(1),
   totalMinor: z.number().int().nonnegative(),
   currency: z.string().regex(/^[A-Z]{3}$/),
@@ -118,6 +124,7 @@ const BaseRow = z.object({
 });
 
 const AdminRow = BaseRow.extend({
+  purchase_id: z.uuid(),
   status: z.string().min(1),
   total_minor: Minor,
   currency: z.string(),
@@ -209,7 +216,7 @@ export async function selectAdminOrders(
   }
   const offset = (parsed.page - 1) * ORDER_QUEUE_PAGE_SIZE;
   const rows = await executor.execute(sql`
-    SELECT o.id, o.mode, o.status, s.buyer_projection AS buyer_status,
+    SELECT o.id, o.purchase_id, o.mode, o.status, s.buyer_projection AS buyer_status,
            o.delivery_date::text AS delivery_date,
            ${cityName(sql`o.destination_city_id`, code)} AS city_name,
            ${productName(sql`l.product_id`, code)} AS product_name,
@@ -237,6 +244,7 @@ export async function selectAdminOrders(
     const row = AdminRow.parse(raw);
     return AdminOrderListItemSchema.parse({
       ...baseItem(row),
+      purchaseId: row.purchase_id,
       status: row.status,
       totalMinor: row.total_minor,
       currency: row.currency,

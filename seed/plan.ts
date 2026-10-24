@@ -86,8 +86,57 @@ export interface SeedTablePlan {
   readonly rows: readonly SeedDbRow[];
 }
 
+/**
+ * The invoice profiles (spec 018 §5.1, §7 "Invoice wording", AC-18; TASK-337). One **active**
+ * `principal/PL` profile: a VAT invoice labelled in Polish plus the order's locale (`{buyer}`),
+ * VAT on products, add-ons and surcharges, and a PLN VAT line at the NBP rate of the previous
+ * business day (§13 Q5). One **inactive** `agent/PL` fixture with no issuer statement, which only
+ * an SQL flip activates, and only after the founder's decision (§13 Q18). The numbering series
+ * they name are `0021_post_purchase`'s rows; the profiles are seeded here because they reference
+ * the seeded `currency` table. `active` is written on insert only.
+ */
+export const INVOICE_PROFILES: readonly SeedDbRow[] = [
+  {
+    key: "principal-pl",
+    supply_model: "principal",
+    destination_iso2: "PL",
+    document_kind: "vat_invoice",
+    title_key: "invoice.title.vatInvoice",
+    issuer_statement_key: null,
+    label_locales: ["pl", "{buyer}"],
+    vat_bearing_line_kinds: ["product", "addon", "surcharge"],
+    series_key: "fo-pl-2026",
+    credit_series_key: "fok-pl-2026",
+    vat_currency_code: "PLN",
+    vat_rate_source: "nbp_previous_business_day",
+    active: true,
+  },
+  {
+    key: "agent-pl",
+    supply_model: "agent",
+    destination_iso2: "PL",
+    document_kind: "receipt_on_behalf",
+    title_key: "invoice.title.receiptOnBehalf",
+    issuer_statement_key: null,
+    label_locales: ["pl", "{buyer}"],
+    vat_bearing_line_kinds: ["surcharge"],
+    series_key: "fo-pl-2026",
+    credit_series_key: "fok-pl-2026",
+    vat_currency_code: "PLN",
+    vat_rate_source: "nbp_previous_business_day",
+    active: false,
+  },
+];
+
 /** Locales whose product translations the seed writes; `de`/`pl` stay absent (§6). */
 export const SEEDED_TRANSLATION_LOCALES = ["en", "en-gb"] as const;
+
+/** `product_translation`'s review columns: written on insert only, and always unreviewed. */
+export const REVIEW_COLUMNS = [
+  "reviewed",
+  "reviewed_by",
+  "reviewed_at",
+] as const;
 
 /** The seeded partners per country (`plan/10` §2.4: 3–5). */
 export const DEMO_PARTNERS_PER_COUNTRY = 3;
@@ -234,6 +283,15 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
         };
       }),
     },
+    {
+      group: "reference",
+      table: "invoice_profile",
+      key: ["key"],
+      sourceGuarded: false,
+      // Which profile is active is a data flip (spec 018 AC-18, §13 Q18), never undone by a seed.
+      insertOnlyColumns: ["active"],
+      rows: INVOICE_PROFILES,
+    },
   ];
 
   const holidaysRaw = tree.raw.get("holidays.json");
@@ -325,11 +383,22 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
       table: "product_translation",
       key: ["product_id", "locale_code"],
       sourceGuarded: false,
+      // The review columns belong to the ledger (spec 012b §2.4; TASK-293): a translation goes in
+      // unreviewed and `attest()` — the replay of `seed/data/attestations.json` at the end of the
+      // run — is what may mark it reviewed. They are never updated here, so a rerun cannot
+      // un-review an attested row (`review_write_guard()` would refuse it anyway).
+      insertOnlyColumns: [...REVIEW_COLUMNS],
       rows: datasetTable(dataset, "product_translation", (row) =>
         (SEEDED_TRANSLATION_LOCALES as readonly string[]).includes(
           row.key["locale"] ?? "",
         )
-          ? { product_id: ref("product", row.key["sku"] ?? ""), ...values(row) }
+          ? {
+              product_id: ref("product", row.key["sku"] ?? ""),
+              ...values(row),
+              reviewed: false,
+              reviewed_by: null,
+              reviewed_at: null,
+            }
           : undefined,
       ),
     },

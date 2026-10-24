@@ -195,3 +195,29 @@ export {
   normalisePostcode,
   postcodeRegex,
 } from "./address.ts";
+
+// The review ledger for catalogue text and photos (spec 012b §2.4, §5.2; TASK-293): the one
+// writer `attest` (and `requestChange`, an attestation with a note), the review state of a
+// subject, and the subject hash. Functions and two input schemas only: the database provider and
+// the snapshot provider stay inside the module, like every other provider here, and the writer
+// is loaded on first call (`review-ledger.ts`), so nothing here reaches a database at import.
+export {
+  type AttestationProvider,
+  type AttestInput,
+  AttestInputSchema,
+  type AttestOutcome,
+  type AttestRefusal,
+  type BlogRevisionContent,
+  blogRevisionHash,
+  type LedgerHead,
+  type ProductCopyContent,
+  type RequestChangeInput,
+  RequestChangeInputSchema,
+  type ReviewDecision,
+  type ReviewState,
+  type Subject,
+  type SubjectContent,
+  subjectHash,
+} from "./attestation.ts";
+
+export { attest, requestChange, reviewState } from "./review-ledger.ts";

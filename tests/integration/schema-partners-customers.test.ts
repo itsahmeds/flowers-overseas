@@ -232,6 +232,8 @@ describe.skipIf(sql === undefined)(
           "payout_line_order_id_order_id_fk",
           "partner_member_user_id_users_id_fk",
           "customer_user_id_users_id_fk",
+          // `0022` keys `partner_member.locale_code` to `locale` (spec 011 §5.1, TASK-211).
+          "partner_member_locale_code_locale_code_fk",
         ]);
         expect(rows.filter((row) => !LATER.has(row.fk))).toEqual(
           FOREIGN_KEYS.map(([fk, , , , rule]) => ({
@@ -342,6 +344,15 @@ describe.skipIf(sql === undefined)(
       const setup = async (): Promise<string> => {
         await db`INSERT INTO locale (code, bcp47, name) VALUES ('zw', 'zw', 'Two sessions')
                  ON CONFLICT DO NOTHING`;
+        await db`INSERT INTO currency (code, minor_unit_exponent) VALUES ('EUR', 2)
+                 ON CONFLICT DO NOTHING`;
+        await db`INSERT INTO country (iso2, currency_code, vat_rate_bp, iana_zone)
+                 VALUES ('XW', 'EUR', 2000, 'Europe/Berlin') ON CONFLICT DO NOTHING`;
+        // `0022_florists_v0` keeps `media_asset_ids` empty in Phase 0 (spec 011 §13 Q5); these
+        // cases exercise `0005`'s guards, which stay for the spec that drops that check, so the
+        // check is lifted here and restored by `cleanup`.
+        await db`ALTER TABLE partner_application
+                 DROP CONSTRAINT IF EXISTS partner_application_media_asset_ids_empty_check`;
         const [row] = await db<{ id: string }[]>`
           INSERT INTO media_asset (
             kind, bucket, object_key, mime, bytes, checksum_sha256, visibility, source, depicts
@@ -358,13 +369,22 @@ describe.skipIf(sql === undefined)(
         await db`DELETE FROM partner_application WHERE business_name = ${KEY}`;
         await db`DELETE FROM media_asset WHERE object_key LIKE ${`originals/partner/${KEY}-%`}`;
         await db`DELETE FROM locale WHERE code = 'zw'`;
+        await db`DELETE FROM country WHERE iso2 = 'XW'`;
+        await db`ALTER TABLE partner_application
+                 DROP CONSTRAINT IF EXISTS partner_application_media_asset_ids_empty_check,
+                 ADD CONSTRAINT partner_application_media_asset_ids_empty_check
+                   CHECK (cardinality(media_asset_ids) = 0)`;
       };
       const listing = (
         sql: postgres.Sql | postgres.TransactionSql,
         asset: string,
       ) =>
-        sql`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids)
-            VALUES (${KEY}, 'Zed', 'zw', ${`{${asset}}`}::uuid[])`;
+        sql`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids,
+                                             country_id, contact_name, contact_email,
+                                             contact_phone, privacy_notice_version)
+            VALUES (${KEY}, 'Zed', 'zw', ${`{${asset}}`}::uuid[],
+                    (SELECT id FROM country WHERE iso2 = 'XW'), 'Test Applicant',
+                    'applicant@example.test', '+48 500 000 000', '2026-10-04')`;
 
       /** Session A lists the asset and holds its transaction open while session B runs `change`. */
       const changeWhileListed = async (
@@ -503,6 +523,9 @@ describe.skipIf(sql === undefined)(
             /* ------------------------------------------------------- parents */
 
             await tx`INSERT INTO locale (code, bcp47, name) VALUES ('zz', 'zz', 'Test locale')`;
+            // `partner_member.locale_code` defaults to `en` (`0022`, spec 011 §5.1).
+            await tx`INSERT INTO locale (code, bcp47, name) VALUES ('en', 'en', 'English')
+                     ON CONFLICT DO NOTHING`;
             await tx`INSERT INTO currency (code, minor_unit_exponent) VALUES ('ZZZ', 2)`;
             await tx`INSERT INTO currency (code, minor_unit_exponent) VALUES ('ZZY', 2)`;
             const countryA = await one(tx`
@@ -862,9 +885,25 @@ describe.skipIf(sql === undefined)(
 
             /* --------------------------------------------- application media */
 
+            // `0022` constrains the array empty (spec 011 §13 Q5); `0005`'s guards, tested here,
+            // stay for the spec that drops that check, so it is lifted inside this transaction.
+            await tx`ALTER TABLE partner_application
+                     DROP CONSTRAINT partner_application_media_asset_ids_empty_check`;
+            const applicant = {
+              country_id: countryA,
+              contact_name: "Test Applicant",
+              contact_email: "applicant@example.test",
+              contact_phone: "+48 500 000 000",
+              privacy_notice_version: "2026-10-04",
+            };
             const application = (ids: string) =>
-              tx`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids)
-                 VALUES ('Kwiaty', 'Zed', 'zz', ${ids}::uuid[]) RETURNING id`;
+              tx`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids,
+                                                  country_id, contact_name, contact_email,
+                                                  contact_phone, privacy_notice_version)
+                 VALUES ('Kwiaty', 'Zed', 'zz', ${ids}::uuid[], ${applicant.country_id},
+                         ${applicant.contact_name}, ${applicant.contact_email},
+                         ${applicant.contact_phone}, ${applicant.privacy_notice_version})
+                 RETURNING id`;
             const appId = await one(application(`{${shopPhoto}}`));
             accepted.push(
               "partner_application listing a private partner asset",
@@ -872,8 +911,13 @@ describe.skipIf(sql === undefined)(
             await refuse(
               "partner_application listing an unknown asset",
               (sp) =>
-                sp`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids)
-                 VALUES ('X', 'Zed', 'zz', ${"{00000000-0000-4000-8000-0000000000aa}"}::uuid[])`,
+                sp`INSERT INTO partner_application (business_name, city, language_code, media_asset_ids,
+                                                   country_id, contact_name, contact_email,
+                                                   contact_phone, privacy_notice_version)
+                 VALUES ('X', 'Zed', 'zz', ${"{00000000-0000-4000-8000-0000000000aa}"}::uuid[],
+                         ${applicant.country_id}, ${applicant.contact_name},
+                         ${applicant.contact_email}, ${applicant.contact_phone},
+                         ${applicant.privacy_notice_version})`,
             );
             await refuse(
               "partner_application listing a public asset",
@@ -907,6 +951,8 @@ describe.skipIf(sql === undefined)(
               (sp) =>
                 sp`UPDATE media_asset SET kind = 'brand' WHERE id = ${shopPhoto}`,
             );
+            // `0023` (spec 012b, TASK-293): review columns change under `attest()`'s flag.
+            await tx`SELECT set_config('app.allow_review_write', 'on', true)`;
             await accept(
               "media_asset a listed asset reviewed in place",
               () =>
