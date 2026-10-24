@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1, built after the first live paid order (`plan/09` Phase 1 AC 1). Slice A (this contract): the page and the enquiry form. Slice B (invoicing on account, bulk orders by CSV): scope boundary with defaults only, §5.5, no acceptance criteria until its own amendment round |
 | Plan refs | plan/01 §3 §4.1 §5 §9 · plan/02 §3 §4.1 §7 §8 §9 §10 §11 · plan/03 §5 §6 §7 · plan/04 §2 §3 §9 (form quality) §16 · plan/05 §2 · plan/06 §4 · plan/07 §1.2 §1.5 §1.6 §2.1 §3 §4 §6 §8 · plan/10 (corporate deferred, now brought forward) · plan/11 (HubSpot stays a notebook, never integrated) · plan/12 §4 |
 | ADRs | ADR-0006 (no IP redirects; no IP-derived behaviour on forms) · ADR-0007 (only true pages indexed) · ADR-0013 (Resend) · ADR-0015 (Neon, Auth.js) · ADR-0018 (Railway, single replica: the in-process rate limiter is global) · ADR-0019 (admin sign-in core) · ADR-0021 (operating entity is Flowers Overseas LLC, Wyoming; PR 348). Proposes no ADR |
 | Builds on | spec 041 (info-page content model, `pages:check`, honesty gate, `company.controller` line) · spec 011 (form pattern: honeypot, limiter, bounded body, sink seam, founder alert) · spec 012 (admin shell, audit log, flags registry, `Mailer`) · spec 007 (`corridorState()`) · spec 003 (message keys, `localePath()`) |
 | Source | Founder, 2026-10-24, answering `PRODUCT-PLAN-2026-10-24.md` §3 idea I ("Business / corporate gifting page"): "A, B, D, F, G, I, J approved" |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (empty until the founder approves) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 

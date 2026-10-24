@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1, built after the first live paid order (`plan/09` Phase 1 AC 1) and after specs 013, 016 and 018 are merged, because every delivery runs through their order, payment, routing and tracking code |
 | Plan refs | plan/00 §2 §3 · plan/01 §3 §4.1 §4.2 §4.3 §5 §8 §9 · plan/02 §4.1 §4.2 §7 §8 §9 §10 §11 · plan/03 §7 §8 §10 · plan/04 §2 §7 §9 §12 §13 §14 §16 · plan/06 §2.2 §3 §4 §5.2 · plan/07 §1.2 §1.3 §2.1 §2.2 §2.3 §3 §4 §5 §6 §8 · plan/10 (subscriptions deferred, now brought forward) · plan/11 §2 · plan/12 §4 · plan/13 (hampers, gift cards, subscriptions backlog row) |
 | ADRs | ADR-0005 (Stripe primary) · ADR-0006 (no IP redirects) · ADR-0007 (only true pages indexed) · ADR-0009 (order status only through `orderService.transition`) · ADR-0013 (Resend) · ADR-0015 (Neon, Auth.js) · ADR-0016 and ADR-0020 (CSP) · ADR-0018 (Railway `worker` runs pg-boss) · ADR-0021 (operating entity Flowers Overseas LLC, Wyoming; PR 348). Proposes no ADR. Requests amendments to specs 010, 013, 016 and 018 (§12) |
 | Builds on | spec 005 (price provider, `priceProjection()`, signed quote) · spec 009 (`deliveryWindow()`, `isDateAvailable`, `dateSurcharges()`) · spec 010 (checkout draft, `checkoutMode()`, `legalReadiness()`, `orderService.place/transition/appendEvent`) · spec 013 (Stripe pay step, automatic capture, webhook inbox, refund service, `cancelOrder`) · spec 016 (routing, `canServe`, buyer and florist emails) · spec 018 (tracking token scheme, lookup, invoices and credit notes) · spec 012 (admin shell, flags, audit) · spec 041 (content model, `pages:check`, `RELAY_PATTERNS`) |
 | Source | Founder, 2026-10-24, answering `PRODUCT-PLAN-2026-10-24.md` §3 idea J ("Gift subscriptions (monthly flowers)"): "A, B, D, F, G, I, J approved". The orchestrator's brief of 2026-10-24 asks for prepaid plans first, in line with the founder's rule "charge at once, never hold cards" (founder, 2026-10-14) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (empty until the founder approves) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
