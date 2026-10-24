@@ -796,3 +796,4 @@ The site header gains one static "Account" link to `/{locale}/account` beside th
 **Copy:** every string in C.15 is `proposed`; none is `reviewed: true` until the founder attests it.
 **Design:** the artboards listed with this amendment are drawn by `/design 018` before `/plan-tasks` splits the account tasks.
 
+**A-founder-2026-10-24a (pointer; spec 004 §14 A-founder-2026-10-24a item 5; no new AC or T id here).** The account link takes its place in spec 004 item 5's header row, after search and before the basket, the day its page is published (a site-link data flip). Order amounts on account and tracking pages are unchanged; they are the charged amounts of placed orders.
