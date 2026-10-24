@@ -134,6 +134,8 @@ const PINNED_EXPORTS = [
   "requestChange",
   "reviewState",
   "subjectHash",
+  // Added by TASK-321 (spec 044 §2.4): the blog revision's hash, `subjectHash`'s third kind.
+  "blogRevisionHash",
   "AttestInputSchema",
   "RequestChangeInputSchema",
 ].sort();
