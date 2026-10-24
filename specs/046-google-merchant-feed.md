@@ -2,14 +2,14 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 (built any time; serves items only after the indexing flip and a live, paying destination, §12) |
 | Plan refs | plan/01 §3 §4.3 §5 §8 §9 · plan/02 §4.1 §4.2 §7 §9 §10 §14 §15 §16 · plan/03 §1 §5 §6 §7 · plan/07 §1.4 §2.1 §3 §4 §9 · plan/12 §4 |
 | ADRs | ADR-0001 (one domain) · ADR-0006 (no IP redirects) · ADR-0007 (index only true pages) · ADR-0014 (AI seed imagery, labelled on the page) · ADR-0018 (Railway behind Cloudflare) · ADR-0020 (CSP on cached documents). Depends on the pending ADR that moves the seller of record from the Estonian OÜ (ADR-0004) to Flowers Overseas LLC (§12 gate G3, §13 Q7) |
 | Depends on | spec 005 (one price provider, `offerProjection`), spec 007 (indexability engine, `isIndexingEnvironment()`, robots, sitemaps), spec 009 (`productView`, `productOfferNode`), spec 010 and 013 (real checkout: `checkout.open`, `checkout.demo_guard`), spec 012 (flags, admin, audit), spec 012b (database as master copy, existence = database AND manifest, saleability, photo provenance, `invalidate()` tags), spec 040 (Cloudflare edge rules, crawler access), spec 041 (`relayMatches`, price-literal pattern) |
 | Source | Founder, 2026-10-24, `PRODUCT-PLAN-2026-10-24.md` row D: "Google Shopping free listings (product feed to Google Merchant Center) ... **Approved.** Spec now" |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | pending (founder) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
