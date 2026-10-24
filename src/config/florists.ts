@@ -12,12 +12,12 @@
  *    `production`, and nobody in `production` (§13 Q4), which is also what turns every florist
  *    route into a 404 there (`floristSurfaceOpen()`). Spec 026 widens production to `active`.
  *  - `languages` — the three languages the florist surface speaks (`partner_member.locale_code`,
- *    `0020_florists_v0`), with `en` the default before sign-in (§7: never `Accept-Language`,
+ *    `0022_florists_v0`), with `en` the default before sign-in (§7: never `Accept-Language`,
  *    never an IP).
  *  - `inboxRefresh` — the list's refresh island: every 5 s while visible, stopping after 10
  *    minutes without interaction (§2, AC-26; TASK-214 reads it).
  *  - `applicationForm` — the apply page's switch (§2 "The form switch"); `off` until the
- *    production database has `0020` and TASK-213 turns it on.
+ *    production database has `0022` and TASK-213 turns it on.
  *
  * The payout example and the photo limits of §5.2 join this file with the tasks that use them
  * (TASK-210, TASK-215).

@@ -20,7 +20,7 @@
  * `partnerMember.userId` references `users` (`0010`, TASK-022) and `payoutLine.orderId`
  * references `"order"` (`0007`, TASK-019): each key was deferred until its parent table existed.
  *
- * Migration `0020_florists_v0` (spec 011 §5.1; TASK-211) adds `partnerMember.localeCode` and the
+ * Migration `0022_florists_v0` (spec 011 §5.1; TASK-211) adds `partnerMember.localeCode` and the
  * application form's columns and constraints (`contactName`, `weekendDelivery`,
  * `privacyNoticeVersion`, `decidedAt`; `mediaAssetIds` constrained empty in Phase 0).
  */
@@ -80,21 +80,21 @@ export const partnerApplicationStatuses = [
   "converted",
 ] as const;
 
-/** `partner_application.preferred_channel` (`0020`). */
+/** `partner_application.preferred_channel` (`0022`). */
 export const partnerApplicationChannels = [
   "email",
   "whatsapp",
   "phone",
 ] as const;
 
-/** `partner_application.weekend_delivery` (`0020`; `plan/10` §6's weekend question). */
+/** `partner_application.weekend_delivery` (`0022`; `plan/10` §6's weekend question). */
 export const partnerApplicationWeekendAnswers = [
   "yes",
   "sometimes",
   "no",
 ] as const;
 
-/** `partner_member.locale_code` (`0020`): the languages the florist surface speaks (spec 011 §7). */
+/** `partner_member.locale_code` (`0022`): the languages the florist surface speaks (spec 011 §7). */
 export const partnerMemberLocales = ["en", "pl", "de"] as const;
 
 /** `payout.status`. */
@@ -255,7 +255,7 @@ export const partnerMember = pgTable(
     acceptedAt: timestamp("accepted_at", { withTimezone: true }),
     ...timestamps,
     /**
-     * The florist's language for the inbox and the sign-in email (`0020`, spec 011 §7). After the
+     * The florist's language for the inbox and the sign-in email (`0022`, spec 011 §7). After the
      * timestamps: `ADD COLUMN` appends, and the mirror keeps the database's column order.
      */
     localeCode: text("locale_code")
@@ -441,7 +441,7 @@ export const partnerApplication = pgTable(
     contactPhone: text("contact_phone").notNull(),
     /**
      * `media_asset` ids (private, `kind = 'partner'`), held honest by `0005`'s triggers, and
-     * constrained empty by `0020` until a spec adds an upload (spec 011 §13 Q5).
+     * constrained empty by `0022` until a spec adds an upload (spec 011 §13 Q5).
      */
     mediaAssetIds: uuid("media_asset_ids")
       .array()
@@ -450,7 +450,7 @@ export const partnerApplication = pgTable(
     status: text("status").notNull().default("new"),
     convertedPartnerId: uuid("converted_partner_id"),
     ...timestamps,
-    // `0020_florists_v0` (spec 011 §5.1), appended after the timestamps as `ADD COLUMN` does.
+    // `0022_florists_v0` (spec 011 §5.1), appended after the timestamps as `ADD COLUMN` does.
     /** The person we call. */
     contactName: text("contact_name").notNull(),
     /** `yes` | `sometimes` | `no`. */
