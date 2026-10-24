@@ -5,7 +5,7 @@
  * `attest()` is the only code that writes `review_attestation` and the only code that sets the
  * review columns it mirrors (`product_translation.reviewed` / `reviewed_by` / `reviewed_at`,
  * `media_asset.review_state` / `reviewed_by` / `reviewed_at`). Postgres holds it to that:
- * `review_write_guard()` (migration `0019`) refuses those columns without
+ * `review_write_guard()` (migration `0023`) refuses those columns without
  * `app.allow_review_write`, and refuses an approval without an `approved` ledger row for the
  * current hash written in the same transaction; `fo/no-direct-review-write` refuses the code
  * outside a function named `attest`. So every write below sits lexically inside it.

@@ -1,6 +1,6 @@
 /**
  * Drizzle definitions for the review ledger — `reviewer_locale` and `review_attestation` (spec
- * 012b §2.4, §5.1 item 2; migration `0019_review_attestation.sql`; TASK-293).
+ * 012b §2.4, §5.1 item 2; migration `0023_review_attestation.sql`; TASK-293).
  *
  * The typed mirror of the migration, not its source. The ledger's guarantees — append-only, the
  * one writer of the review columns, the subject hash — live in the migration's triggers and

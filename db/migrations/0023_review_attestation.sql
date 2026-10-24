@@ -1,4 +1,4 @@
--- 0019_review_attestation — the review ledger for catalogue text and photos (spec 012b §2.4,
+-- 0023_review_attestation — the review ledger for catalogue text and photos (spec 012b §2.4,
 -- §5.1 item 2 `NNNN_review_attestation`, AC-10, AC-11, AC-12, AC-13, AC-28; proposed ADR-0022,
 -- Appendix B; TASK-293).
 --
@@ -51,7 +51,7 @@
 -- review lookups run in `withSystemContext('attestations.read')` and select subject, hash, decision
 -- and channel only, never the attester's name. The build role (`0018`) reads neither table.
 --
--- Rollback: `0019_review_attestation.down.sql` (the guard triggers, the retention row, then the
+-- Rollback: `0023_review_attestation.down.sql` (the guard triggers, the retention row, then the
 -- tables and functions).
 
 SET LOCAL ROLE app_owner;

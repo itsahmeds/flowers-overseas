@@ -14,7 +14,7 @@
  *    bytes, so the reference is the same in every database the ledger is replayed into.
  *
  * `productCopyHash` is the TypeScript twin of `public.review_product_copy_hash()` (migration
- * `0019`): the same canonical text — a version tag, then each field as `|~` (absent) or
+ * `0023`): the same canonical text — a version tag, then each field as `|~` (absent) or
  * `|{UTF-8 byte length}:{value}`, then `|alts` and one `|alt|…|…` per image ordered by checksum
  * and alt in byte order — hashed with SHA-256 to 64 lower-case hex digits. The integration suite
  * holds the two equal; a change to either is a new version tag, never an edit.
