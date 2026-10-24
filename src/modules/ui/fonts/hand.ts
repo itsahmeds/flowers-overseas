@@ -1,11 +1,13 @@
 /**
- * Caveat 500 — the buyer's own words in the product page's printed-card preview, and nowhere else
- * (spec 004 §14 A21 clause 3; TASK-175).
+ * Caveat 500 — the buyer's own words in the card preview, and nowhere else (spec 004 §14 A21
+ * clause 3 as A-founder-2026-10-20c amends it: the product page and checkout step 2; TASK-175,
+ * TASK-308).
  *
  * Its own module, deliberately **not** re-exported from `./index.ts` or the `ui` barrel: Next
  * attaches a `localFont()` call's `@font-face` rules to every route whose module graph imports the
- * call, so Caveat must be reachable only from the product page's preview (TASK-179 imports
- * `handFontVariables` there and puts it on the preview's container). Never preloaded (A21 clause
+ * call, so Caveat must be reachable only from the card preview, `PrintedCardPreview`, which imports
+ * `handFontVariables` and puts it on the card (the product page, and checkout through
+ * `TextAreaWithCounter`). Never preloaded (A21 clause
  * 3), never a price, a button, a label or a heading. Latin and Latin-Ext as two calls for the same
  * reason as the page faces (`./index.ts`); the theme's `--font-hand` stacks them Latin-Ext first.
  * Its two files are 23,176 B against the 30 KB Caveat budget (`subset.json`).

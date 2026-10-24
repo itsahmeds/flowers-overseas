@@ -28,6 +28,7 @@ import {
 import { BlurValidation } from "../../src/modules/ui/checkout/BlurValidation.tsx";
 import { isOverLimit } from "../../src/modules/ui/checkout/counter-slot.ts";
 import { FocusOnMount } from "../../src/modules/ui/checkout/FocusOnMount.tsx";
+import { PrintedCardPreview } from "../../src/modules/ui/product/PrintedCardPreview.tsx";
 import {
   ConfirmationRecap,
   DemoBanner,
@@ -326,9 +327,145 @@ describe("TextAreaWithCounter", () => {
         }}
       />,
     );
-    expect(markup).toContain('<bdi data-fo-mirror="card">Hello</bdi>');
-    expect(markup).toContain('<bdi data-fo-mirror="sign">Love, Anna</bdi>');
+    expect(markup).toContain(
+      '<bdi data-fo-mirror="card" dir="auto">Hello</bdi>',
+    );
+    expect(markup).toContain(
+      '<bdi data-fo-mirror="sign" dir="auto">Love, Anna</bdi>',
+    );
     expect(markup).toContain("Printed on our card · included</figcaption>");
+  });
+});
+
+/**
+ * Spec 042 AC-11 / T-11 (unit half; TASK-308): checkout step 2's preview is the product page's
+ * component, `PrintedCardPreview`, so the root attribute, the card and the message line's face are
+ * the product page's by construction; these cases pin that the primitive renders it, with the
+ * kept values, the signature and `card.preview` as its caption, and no sample. The page half (the
+ * e2e at `/{locale}/checkout` step 2 with JavaScript off) is TASK-204's.
+ */
+describe("TextAreaWithCounter's card preview is the product page's (spec 042 AC-11)", () => {
+  const props = {
+    counterTemplate: "{count} of 200 characters",
+    id: "card",
+    label: "Card message",
+    max: 200,
+    name: "cardMessage",
+  } as const;
+  const checkoutEn = JSON.parse(
+    readFileSync(
+      fileURLToPath(new URL("../../messages/en.json", import.meta.url)),
+      "utf8",
+    ),
+  ) as {
+    checkout: { card: { preview: string; previewLabel: string } };
+    product: { card: { printed: string } };
+  };
+  const preview = {
+    label: checkoutEn.checkout.card.previewLabel,
+    printed: checkoutEn.checkout.card.preview,
+    signatureFieldId: "sign",
+  };
+
+  /** The `<figure>` the primitive draws. */
+  const figureOf = (markup: string): string =>
+    /<figure[^>]*>[\s\S]*<\/figure>/u.exec(markup)?.[0] ?? "";
+  /** The class of the first element carrying `attribute`. */
+  const classOf = (markup: string, attribute: string): string =>
+    new RegExp(`<\\w+[^>]*? class="([^"]*)"[^>]*${attribute}`, "u").exec(
+      markup,
+    )?.[1] ?? "";
+
+  const checkout = html(
+    <TextAreaWithCounter
+      {...props}
+      count={20}
+      defaultValue="Happy birthday Mama!"
+      formattedCount="20"
+      preview={{ ...preview, signature: "Love, Anna" }}
+    />,
+  );
+  const product = html(
+    <PrintedCardPreview
+      caption={checkoutEn.product.card.printed}
+      messageFieldId="pdp-card-message"
+      sample="Your message, printed on our card and tucked into the bouquet."
+    />,
+  );
+
+  it("renders the one card component: the same root, card and words line as the product page", () => {
+    const figure = figureOf(checkout);
+    expect(figure).toMatch(
+      /^<figure aria-label="Preview of the printed card"/u,
+    );
+    expect(figure).toContain('data-fo-card-preview="true"');
+    // The card's classes are the product page's, plus the phone's order (above the field).
+    expect(classOf(checkout, "data-fo-card-preview")).toBe(
+      `${classOf(product, "data-fo-card-preview")} max-md:order-first`,
+    );
+    // The words line carries the same classes on both pages, so the same computed face: Caveat
+    // (`font-hand`), not checkout's old display face.
+    const line = classOf(checkout, "data-fo-card-text");
+    expect(line).toBe(classOf(product, "data-fo-card-text"));
+    expect(line.split(" ")).toContain("font-hand");
+    expect(figure).not.toMatch(/font-display/u);
+    // The Caveat variables are in scope on the card itself (`handFontVariables`).
+    expect(classOf(checkout, "data-fo-card-preview")).toMatch(
+      /^\S+ \S+ bg-card /u,
+    );
+  });
+
+  it("renders the server's kept message and signature, each isolated, and `card.preview` as the caption", () => {
+    const figure = figureOf(checkout);
+    expect(checkoutEn.checkout.card.preview).toBe(
+      "Printed on our card · included",
+    );
+    expect(figure).toContain(
+      '<p class="font-hand m-0 text-[22px] leading-[1.25] font-[500] wrap-anywhere whitespace-pre-line col-start-1 row-start-1 text-ink" data-fo-card-text="true"><bdi data-fo-mirror="card" dir="auto">Happy birthday Mama!</bdi></p>',
+    );
+    expect(figure).toContain(
+      '<p class="font-hand m-0 text-[22px] leading-[1.25] font-[500] wrap-anywhere whitespace-pre-line text-ink" data-fo-card-signature="true"><bdi data-fo-mirror="sign" dir="auto">Love, Anna</bdi></p>',
+    );
+    expect(figure).toMatch(
+      /<figcaption[^>]*>Printed on our card · included<\/figcaption><\/figure>$/u,
+    );
+  });
+
+  it("has no sample and no crossfade at checkout; an empty card is the mark and the caption (PR 297 escalation 1)", () => {
+    const empty = figureOf(
+      html(
+        <TextAreaWithCounter
+          {...props}
+          count={0}
+          formattedCount="0"
+          preview={preview}
+        />,
+      ),
+    );
+    expect(empty).not.toContain("data-fo-card-sample");
+    expect(empty).not.toContain("data-fo-card-swap");
+    expect(empty).toContain('<bdi data-fo-mirror="card" dir="auto"></bdi>');
+    expect(empty).toContain('<bdi data-fo-mirror="sign" dir="auto"></bdi>');
+    // No words anywhere on the card but the caption.
+    expect(empty.replaceAll(/<[^>]+>/gu, "")).toBe(
+      "Printed on our card · included",
+    );
+  });
+
+  it("draws the signature alone when the message is blank", () => {
+    const signatureOnly = figureOf(
+      html(
+        <TextAreaWithCounter
+          {...props}
+          count={0}
+          formattedCount="0"
+          preview={{ ...preview, signature: "Love, Anna" }}
+        />,
+      ),
+    );
+    expect(signatureOnly.replaceAll(/<[^>]+>/gu, "")).toBe(
+      "Love, AnnaPrinted on our card · included",
+    );
   });
 });
 

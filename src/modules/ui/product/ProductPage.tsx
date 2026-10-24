@@ -398,27 +398,32 @@ export function ProductPage({
             <StepLegend id="pdp-card-legend">
               {product("card.legend")}
             </StepLegend>
-            {/* The artboards' `.pv-card`: the field with its counter under it, end-aligned, and the
-                "printed" line, beside an upright card 200 px wide from `md` (under the field on
-                the phone) that grows with the message (TASK-229). */}
+            {/* The artboards' `.pv-card` as spec 042's band redraws it (motion 15; TASK-308): the
+                field with its counter under it, end-aligned, beside an upright card 200 px wide
+                from `md` that grows with the message. On the phone the card sits above the field,
+                so the keyboard never hides it, and where the browser sizes a field to its content the
+                field is one line (38 px) taller than its words and grows with them (elsewhere it
+                keeps its five rows). The printed label is the card's caption. */}
             <div
-              className="grid items-start gap-[16px] md:grid-cols-[minmax(0,1fr)_200px] md:gap-[24px]"
+              className="grid items-start gap-[12px] md:grid-cols-[minmax(0,1fr)_200px] md:gap-[24px]"
               data-fo-pdp-card-row
             >
               <div className="min-w-0" data-fo-pdp-card-field>
                 <CardMessageField
                   labelledBy="pdp-card-legend"
-                  className="bg-card text-ink text-body rounded-letter block min-h-[190px] w-full resize-y border-0 bg-[0_17px] bg-(image:--card-lines) px-[22px] py-[18px] leading-[38px] wrap-anywhere shadow-[inset_0_0_0_1.5px_var(--color-field-edge),0_14px_30px_-18px_var(--color-shade)]"
+                  className="bg-card text-ink text-body rounded-letter block w-full resize-y border-0 bg-[0_17px] bg-(image:--card-lines) px-[22px] py-[18px] leading-[38px] wrap-anywhere shadow-[inset_0_0_0_1.5px_var(--color-field-edge),0_14px_30px_-18px_var(--color-shade)] max-md:[field-sizing:content] max-md:supports-[field-sizing:content]:pb-[56px] md:min-h-[190px]"
                   counterClassName="text-ink-subtle num m-0 mt-[6px] text-end text-xs"
                   id="pdp-card-message"
                   limit={formatNumber(CARD_MESSAGE_MAX, code)}
                   max={CARD_MESSAGE_MAX}
                 />
-                <p className="text-ink-muted m-0 mt-[6px] text-sm">
-                  {product("card.printed")}
-                </p>
               </div>
-              <PrintedCardPreview sample={catalog("addon.card.description")} />
+              <PrintedCardPreview
+                caption={product("card.printed")}
+                className="max-md:order-first"
+                messageFieldId="pdp-card-message"
+                sample={catalog("addon.card.description")}
+              />
             </div>
           </fieldset>
 

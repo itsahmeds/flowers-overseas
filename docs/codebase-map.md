@@ -25,7 +25,7 @@ task actually touches.
 | `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
 | `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/listing-schema-fixtures.test.ts`, `contract/pdp-schema.test.ts` +30 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +53 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +54 |
 
 ## Config (`src/config/`)
 
@@ -55,6 +55,7 @@ task actually touches.
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
 | `info-pages.ts` | The info-page registry | 041 |
+| `interactions.ts` | Spec 042's build-time switches, one per idea | 042 |
 | `locales-client.data.ts` | The few locale values the browser needs, and nothing… | 003 |
 | `locales.data.ts` | Locale data as plain typed constants — the zod-free… | 004 |
 | `locales.ts` | Locale registry | 003 |
@@ -208,7 +209,7 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 357 |
+| `tests/unit/` | 360 |
 | `tests/integration/` | 41 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 70 |
