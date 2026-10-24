@@ -12,6 +12,7 @@ Spec 012b §12 slice A task 2. Founder approval 2026-10-20, "all defaults, keep 
 - **Review class: keeps the breaker** (CLAUDE.md DoD 4): a migration, review authority and retention.
 - New admin strings go in `messages/admin/en.json` only (the `admin` surface does not count toward spec 003 A17's share) and ship `reviewed: false`; the 012b artboards' `[slot]`s are proposed wording the founder approves as one batch. No public catalogue or meta file changes (AC-27).
 - Migrations are numbered at implementation after the last one merged, each with a `.down.sql` the round-trip test runs (§12). Integration tests run on a throwaway local Postgres 16 only, never `.env.local`'s `DATABASE_URL` (Neon production).
+- **Spec 044 clause (advisor fix 4, `specs/044-blog.md` §12):** Spec 044 §2.4 and AC-4: `review_attestation.subject_kind`'s check, `subjectHash()` and `attest()` are written so that spec 044's migration adds the kind `blog_post_revision` by replacing the check and registering one hash function and one locale lookup in `attest()`'s subject table, with no change to `attest()`'s body. `attest()` must also accept a per-kind hook run inside its transaction on an `approved` decision, which spec 044 uses to set `blog_post_revision.frozen_at`. A unit test registers a fake kind to prove both seams.
 
 ## Read
 
