@@ -24,6 +24,7 @@ import {
   refundStatuses,
 } from "../../db/schema/payments.ts";
 import {
+  A6_STATES,
   STATES,
   STATUS_PRESERVING_EVENTS,
   A6_TRANSITIONS,
@@ -205,7 +206,9 @@ describe("AC-14 / T-14 (unit) — the seed is A6, both ways", () => {
     expect(statusRows).toHaveLength(26);
     expect(new Set(statusRows)).toEqual(
       new Set(
-        STATES.map((s) => [s.key, s.isTerminal, s.buyerProjection].join("|")),
+        A6_STATES.map((s) =>
+          [s.key, s.isTerminal, s.buyerProjection].join("|"),
+        ),
       ),
     );
   });
