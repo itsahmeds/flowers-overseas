@@ -176,6 +176,10 @@ describe.skipIf(server.url === undefined)(
         // reviewer's locale grants go with the account.
         { fk: "review_attestation_attester_user_id_users_id_fk", rule: "r" },
         { fk: "reviewer_locale_user_id_users_id_fk", rule: "c" },
+        // `0024_blog` (spec 044, TASK-321): a withdrawn author and a revision's writer keep their
+        // account, so neither key lets a user row go.
+        { fk: "blog_author_user_id_users_id_fk", rule: "r" },
+        { fk: "blog_post_revision_created_by_users_id_fk", rule: "r" },
       ].sort((a, b) => (a.fk < b.fk ? -1 : 1));
       const rows = await scratch.sql<{ fk: string; rule: string }[]>`
         SELECT conname AS fk, confdeltype::text AS rule FROM pg_constraint
