@@ -85,11 +85,21 @@ Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the f
 3. **Hub copy promises a cutoff (AC-34).** The first CI crawl found two authored sentences in `seed/data/copy/en/` on four hubs (`/{en,en-gb}/flowers/birthday-flowers`, `/flowers/sorry-flowers`, `/occasions/easter`, `/occasions/i-am-sorry`): "Order by the cutoff shown for the destination and it arrives on the date you pick." and "The destination page shows this year's date and the cutoff to order by." Both promise a cutoff while no country is open. Catalogue copy is spec 006's and needs the founder's words, so the crawl names those two exact sentences (`ESCALATED_HUB_COPY`) and fails on anything else. Founder: give the replacement or approve deleting the sentences (a copy task).
 4. **Phone sentence measure (design).** "Poland (soon)" left the 390 px sentence 10 px of slack, so in CI the webfont swap re-broke it and moved the hero (CLS 0.0104 against spec 004 A21 clause 3's 0.001). Below `md` the sentence is now capped at 280 px: it breaks as it does at 360 ("…my mum / in Poland (soon) for / her birthday."), where the swap measures 0. Designer or founder to confirm the three-line phone sentence.
 
+- 2026-10-24, finisher, to the orchestrator: **PR 293 cannot go green until the founder records
+  the TASK-239 keys.** `en` may carry 28 unreviewed keys of 575 (5 %); main has 25, this PR adds
+  `destinations.state.guideNotDelivering`, `product.demo.heading`, `home.sentence.notYet` and
+  `destinationsHub.intro` (all four approved in words, 2026-10-14c and 2026-10-20), so `en` and
+  `en-gb` go `noindex` with a BETA tag. Not fixable in code without changing approved copy. Also
+  flagged against the founder's 2026-10-24 rule (countries are data): `HomeFaq`'s
+  `gatedCountry: "PL"`, and `featured` keyed on `DEMO_DESTINATION_ISO2` (a constant already on
+  main) instead of a data field. Answer: `open`.
+
 ## Progress
 
 - 2026-10-20: Poland `demo` with no `citiesKey`; `statusDisagreements()` (AC-35); the four `en` values changed (`reviewed: false`), `de`/`pl` redrafted; finder options all selectable with "(soon)"; the FAQ cutoff gated on Poland's own predicate. Ripples of the flip kept at today's output (see `## Result`). Commit `bbb01b8b`, draft PR 293.
 - 2026-10-20: first `ci:full` run: the hub-copy cutoff sentences (Escalation 3) and the phone sentence's swap CLS (Escalation 4) fixed; the crawl's `de`/`pl` hub check corrected.
 - 2026-10-20: `tests/unit/ordering-state.test.tsx` (T-34/T-35/T-36 unit halves), `tests/e2e/ordering-state.spec.ts` (the AC-34 crawl and AC-33 surfaces), `tests/fixtures/poland-registry.ts` for the suites whose subject is the live path; four mutations watched red. Rebased on `df4a48f9`.
+- 2026-10-24, finisher: rebased on `origin/main` (TASKS.md, the awaiting-review list merged with TASK-182/183/189's keys, baselines taken from main). **Blocked on copy headroom:** main's queue is now `en` 25 / 575 unreviewed (`en-gb` 26); this PR's four keys make it 29 and 30, over spec 003's 5 % (28 max), so `en` and `en-gb` turn `noindex` and get the BETA tag in the switcher (seen in visual-baselines run 40088168530), failing 24 unit/contract files. With the four keys recorded `reviewed: true` locally (not committed) every one of those files passes except the sitemap fixtures' `lastmod` (expected: regenerate after the record run). Needs the founder's record run for the four keys in `.claude/state/copy-batch-1020.md` (at least two), then fixtures and baselines re-rendered.
 
 ## Result
 
