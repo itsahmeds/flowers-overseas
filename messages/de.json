@@ -388,9 +388,9 @@
       "intro": "Das sind die Tage in {country}, und sie gelten, ob wir dorthin liefern oder nicht. Deshalb steht der Kalender in beiden Fällen auf dieser Seite.",
       "occasion": "Anlass",
       "rule": "Regel",
-      "ruleEaster": "Moves with Easter",
-      "ruleFixed": "Same date every year",
-      "ruleWeekday": "A set weekday of the month",
+      "ruleEaster": "Richtet sich nach Ostern",
+      "ruleFixed": "Jedes Jahr am selben Datum",
+      "ruleWeekday": "Ein fester Wochentag im Monat",
       "undated": "Ebenfalls hier, ohne eigenes Datum: {occasions}."
     },
     "coverage": {
