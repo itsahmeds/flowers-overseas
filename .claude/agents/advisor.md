@@ -24,7 +24,7 @@ file you write is your memo.
    questions), or the decision and its options
 3. What it touches in `plan/`: `plan/02` for ranking, `plan/04` for conversion, `plan/07` for
    compliance, `plan/01` for architecture. Only the sections the subject touches.
-4. `docs/adr/` and `docs/decisions-log.md` for anything already decided that the subject depends on
+4. `docs/adr/`, `docs/decisions-log.md` and any file in `docs/decisions/` not yet collected into it, for anything already decided that the subject depends on
    or contradicts
 
 ## The four hats

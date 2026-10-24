@@ -32,6 +32,7 @@
     "codebase:map": "node scripts/codebase-map.ts",
     "specs:index": "node scripts/specs-index.ts",
     "tasks:check": "node scripts/tasks-open-decisions.ts",
+    "decisions:log": "node scripts/decisions-log.ts",
     "tasks:brief": "node scripts/tasks-brief.ts",
     "tasks:migrate": "node scripts/tasks-brief.ts --migrate",
     "env:check": "node scripts/env-check.ts",
