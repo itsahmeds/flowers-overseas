@@ -1,11 +1,11 @@
 /**
  * Drizzle definitions for the invoice tables — `tax_registration`, `invoice_series`,
- * `invoice_profile` and `invoice` (spec 018 §5.1, AC-16; migration `0019_post_purchase.sql`;
+ * `invoice_profile` and `invoice` (spec 018 §5.1, AC-16; migration `0021_post_purchase.sql`;
  * TASK-337).
  *
  * The typed mirror of the migration. What to read off this file:
  *
- *  - **an invoice never changes** — `0019`'s `invoice_immutable()` refuses every `UPDATE` except
+ *  - **an invoice never changes** — `0021`'s `invoice_immutable()` refuses every `UPDATE` except
  *    the one `NULL → value` write of the three render columns, and every `DELETE` (AC-16); a wrong
  *    invoice is corrected by a credit note. Drizzle does not model triggers;
  *  - **an invoice is in its order's currency** — it references the order by

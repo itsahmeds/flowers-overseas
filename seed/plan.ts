@@ -92,7 +92,7 @@ export interface SeedTablePlan {
  * VAT on products, add-ons and surcharges, and a PLN VAT line at the NBP rate of the previous
  * business day (§13 Q5). One **inactive** `agent/PL` fixture with no issuer statement, which only
  * an SQL flip activates, and only after the founder's decision (§13 Q18). The numbering series
- * they name are `0019_post_purchase`'s rows; the profiles are seeded here because they reference
+ * they name are `0021_post_purchase`'s rows; the profiles are seeded here because they reference
  * the seeded `currency` table. `active` is written on insert only.
  */
 export const INVOICE_PROFILES: readonly SeedDbRow[] = [

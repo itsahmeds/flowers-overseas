@@ -89,7 +89,7 @@ export const sessions = pgTable(
       mode: "date",
     }).notNull(),
     /**
-     * Spec 002 §14 A8.2 (`0019`, TASK-337): when the session was signed in. The adapter never
+     * Spec 002 §14 A8.2 (`0021`, TASK-337): when the session was signed in. The adapter never
      * writes it (the default fills it, a rolling refresh moves only `expires`); spec 018's
      * erasure reads it.
      */
