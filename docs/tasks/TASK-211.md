@@ -51,9 +51,9 @@ PR 326 (feature PR with TASK-212). Migration `0020_florists_v0` + rollback; Driz
 
 **Renumber and rebase (finisher, 2026-10-24).** PR 326 now carries migration
 **`0022_florists_v0`** (orchestrator's order: PR 383 `0019`/`0020`, PR 384 `0021`, this `0022`,
-PR 320 `0023`). The branch is **stacked on PR 384's head `1df51dec`** (which carries PR 383's
-commits replayed onto `main` `692a24b5`): a version gap fails `db:check` and the runner, so it merges only after 384, then
-`git rebase --onto origin/main 1df51dec` and re-fire `ci:full`. `scripts/db-check.snapshot.json`
+PR 320 `0023`). The branch is **stacked on PR 384's head `937ac770`** (which carries PR 383's
+commits replayed onto `main` `c81edd9e`): a version gap fails `db:check` and the runner, so it merges only after 384, then
+`git rebase --onto origin/main 937ac770` and re-fire `ci:full`. `scripts/db-check.snapshot.json`
 regenerated from a migrated throwaway PG16 (only this migration's 11 objects were missing). Tests
 adjusted for sitting on 0019 to 0021: `schema-partners-customers.test.ts` (unit) merged with PR
 384's generic later-migration reader, plus `SET NOT NULL` columns and `\s+CHECK` names;
@@ -68,9 +68,9 @@ the old gap had hidden); `schema-notifications-ops.test.ts` lists twelve retenti
 went red on the round trip because a migrated database of mine (`fin_snap`, for the snapshot)
 sat in the same cluster; dropped, and the rerun's round trip is green. Live `db:check` against
 the migrated database: 22 migrations, RLS 79 of 79, no drift after the snapshot.
-After TASK-115 merged, the stack was replayed onto `main` `692a24b5` (only `docs/codebase-map.md`
-conflicted, regenerated); this branch moved from `a4688a7b` to `1df51dec` with its own commits unchanged.
+After TASK-115 merged, the stack was replayed onto `main` `c81edd9e` (only `docs/codebase-map.md`
+conflicted, regenerated); this branch moved from `a4688a7b` to `937ac770` with its own commits unchanged.
 The squash that made PR head `42fde07d` had dropped four 2026-10-22 commits (the gitleaks-safe
 placeholder secret in `florist-auth.test.ts`, the rolling-cookie note in `surface.ts`, the TASK-212
 and TASK-214 brief entries, the `TASKS.md` statuses); CI's `test-unit` caught the secret, and all
-four are restored in `a4aa02a3`. The old local tip is kept as branch `backup/211-local-1022`.
+four are restored in `7626d93a`. The old local tip is kept as branch `backup/211-local-1022`.
