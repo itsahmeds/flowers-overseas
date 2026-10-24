@@ -217,12 +217,16 @@ describe.skipIf(server.url === undefined)(
             { extname: string }[]
           >`SELECT extname FROM pg_extension`;
           const parents = await orderParents(tx);
+          // `purchase_id` is named so that `0019`'s NOT NULL passes and the row reaches the token
+          // check; the foreign key to `purchase` is checked only after it (spec 010 §14
+          // A-founder-2026-10-22, TASK-347).
           const insert = (sp: Tx, token: string) => sp`
             INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
                                  delivery_date, buyer_currency_code, buyer_total_minor,
-                                 base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
+                                 base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot,
+                                 purchase_id)
             VALUES (${token}, 'demo', ${parents.customerId}, ${parents.recipientId}, ${parents.countryId},
-                    DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}')`;
+                    DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}', gen_random_uuid())`;
           const short = await pgFailure(tx, async (sp) => {
             await sp`SELECT set_config('app.allow_status_write', 'on', true)`;
             await insert(sp, "a".repeat(21));
@@ -1182,13 +1186,20 @@ describe.skipIf(server.url === undefined)(
         await locked(() => runner(guarded.url, ["--down", "--to", BEFORE]));
         const ids = await guarded.sql.begin(async (tx) => {
           const parents = await orderParents(tx);
+          // Every order belongs to a purchase from `0019` (TASK-347); this one's holds it alone.
+          const [purchase] = await tx<{ id: string }[]>`
+            INSERT INTO purchase (mode, buyer_currency_code, total_minor, locale_code, customer_id)
+            VALUES ('demo', 'PLN', 100, 'en', ${parents.customerId})
+            RETURNING id`;
           await tx`SELECT set_config('app.allow_status_write', 'on', true)`;
           const [long] = await tx<{ id: string }[]>`
             INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
                                  delivery_date, buyer_currency_code, buyer_total_minor,
-                                 base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot)
+                                 base_currency_code, base_total_minor, buyer_snapshot, recipient_snapshot,
+                                 purchase_id)
             VALUES (${"L".repeat(30)}, 'demo', ${parents.customerId}, ${parents.recipientId},
-                    ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}')
+                    ${parents.countryId}, DATE '2027-02-14', 'PLN', 100, 'PLN', 100, '{}', '{}',
+                    ${purchase?.id ?? ""})
             RETURNING id`;
           const exact = await insertPlacedOrder(tx, parents);
           return { long: long?.id ?? "", exact };
