@@ -34,7 +34,7 @@ _None yet._
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-- 2026-10-22 (`/plan-tasks`, to the orchestrator; `open`). Spec 013 has no §14 entry carrying spec 010 item 13; dispatch `/spec 013` for a pointer amendment (no new decision: Q19 is approved) before this row and TASK-257 start.
+- 2026-10-22 (`/plan-tasks`, to the orchestrator; answered). Spec 013 has no §14 entry carrying spec 010 item 13; dispatch `/spec 013` for a pointer amendment (no new decision: Q19 is approved) before this row and TASK-257 start. Answered by spec 013 §14 A-founder-2026-10-22 (PR 341, merged): item 2 is this row, AC-48 / T-48.
 
 ## Progress
 
@@ -42,11 +42,12 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24: migration numbered `0028_payment_purchase` per the orchestrator (0019..0027 claimed by PRs 383 (merged), 384, 326, 320, 394, 324, 349, 398). On this branch alone `0028` is a gap after main's `0020`, so CI's `db-check`, every job that runs `db:migrate` and the gap-sensitive unit files are red until `0021`..`0027` merge; proven locally with uncommitted empty placeholders for `0021`..`0027`. When the predecessors land: rebase, re-run `pnpm db:check --write-snapshot` on a freshly migrated scratch database, re-fire `ci:full`.
+- 2026-10-24: migration, Drizzle mirror, `paymentForOrder`/`paymentForPurchase`, `tests/integration/payment-purchase.test.ts` (16 cases) and the existing suites moved to the purchase shape; pushed, draft PR open.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+Migration `0028_payment_purchase` + down (spec 013 §14 A-founder-2026-10-22 item 2, AC-48): `purchase UNIQUE (id, buyer_currency_code)`, `"order" UNIQUE (id, purchase_id)`; `payment.purchase_id` backfilled then `NOT NULL` with `payment_purchase_fkey (purchase_id, currency_code)`, `UNIQUE (id, purchase_id)`, index; `payment_one_live_per_purchase_idx` replaces A7's per-order index; `refund.order_id` and `refund.purchase_id` backfilled with `refund_payment_purchase_fkey` and `refund_order_purchase_fkey`; `payment.order_id` and its key and index dropped; the constraint trigger `refund_order_ceiling` (`FOR NO KEY UPDATE` on the payment row, then `REFUND_EXCEEDS_ORDER`); `app_customer_owns_payment` and `payment_customer` re-pointed through the purchase (forced by the dropped column; same read semantics); the guarded down (`PAYMENT_PURCHASE_ROLLBACK_BLOCKED`). `paymentForOrder` and `paymentForPurchase` in `src/modules/payments/queries.ts` (live payment first, then newest). Tests: integration `payment-purchase.test.ts` 16 cases (constraints, property test over 60 seeded sequences, two-connection races, read helpers, backfill and round trip, blocked rollbacks, `0017` byte check, `db:check` live half); eight existing suites moved to the purchase shape. Handed on: TASK-257 builds `startPayment(purchaseId)` on `payment.purchase_id`; TASK-261's service checks both ceilings before the trigger; TASK-341 and TASK-359 read `paymentForOrder`.
