@@ -25,10 +25,8 @@ _None recorded._
 
 ## Progress
 
-_Not started._
+- 2026-10-24: `Breadcrumbs` keys each `li` by `${index}:${href ?? messageKey}`; regression test `tests/unit/ui-breadcrumb-keys.test.tsx`; PR 402.
+
 ## Result
 
-What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
-(budgets, counts), and anything handed to a later task.
-
-_Pending._
+PR 402: `src/modules/ui/primitives/Breadcrumbs.tsx` keys each crumb by its position plus its href (message key when it has no page), never the message key alone; callers and `Crumb.key` unchanged, so the visible trail and the `BreadcrumbList` JSON-LD are the same. Unit layer: `tests/unit/ui-breadcrumb-keys.test.tsx`, 3 cases on a home / category / product trail with two `breadcrumb.entity` crumbs (3 distinct React keys read off the element tree, none equal to `breadcrumb.entity`, the HTML lists the three crumbs in order).
