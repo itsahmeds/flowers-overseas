@@ -244,10 +244,10 @@ AS $fn$
 $fn$;
 
 -- The hash of what a revision would serve now: its own fields with its post's slug and author.
+-- Invoker's rights: the caller's RLS decides which revisions it can hash (staff: all).
 CREATE FUNCTION public.review_blog_revision_current_hash(p_revision_id uuid) RETURNS text
   LANGUAGE sql
   STABLE
-  SECURITY DEFINER
   SET search_path = pg_catalog, public
 AS $fn$
   SELECT public.review_blog_revision_hash(
@@ -571,7 +571,6 @@ CREATE TRIGGER admin_profile_blog_author_follow
   AFTER UPDATE OF display_name ON public.admin_profile
   FOR EACH ROW EXECUTE FUNCTION public.blog_author_follow_profile();
 
-REVOKE EXECUTE ON FUNCTION public.review_blog_revision_current_hash(uuid) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.blog_revision_approved(uuid, text, text, boolean) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.blog_revision_hash() FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.blog_revision_freeze() FROM PUBLIC;
