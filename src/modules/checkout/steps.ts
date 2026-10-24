@@ -263,6 +263,10 @@ async function linePrelude(
     ? draft.lines.find((candidate) => candidate.position === position.data)
     : undefined;
   if (line === undefined) {
+    // An emptied basket has no screen to send the buyer to: its page is the basket's empty state.
+    if (draft.lines.length === 0) {
+      return { done: redirect(basketPath(locale), 0) };
+    }
     const first = firstIncompleteScreen(draft);
     return {
       done: redirect(
