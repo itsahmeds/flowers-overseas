@@ -117,6 +117,32 @@ export interface ProviderRefund {
   readonly status: ProviderRefundStatus;
   readonly amount: Money;
   readonly failureCode?: string;
+  /**
+   * Our `refund` row's id, read back from the refund's own metadata (`refund_id`), so a refund
+   * whose create response was lost is still matched to its row (spec 013 §5.2 "Refunds").
+   */
+  readonly refundId?: string;
+}
+
+/**
+ * The four dispute states this spec keeps (`payment_dispute.status`, spec 002 §14 A7.5): every
+ * provider state that still waits on a decision is `open`; a decision is `won` or `lost`; an
+ * inquiry closed without a chargeback is `closed`.
+ */
+export const providerDisputeStatuses = ["open", "won", "lost", "closed"] as const;
+export type ProviderDisputeStatus = (typeof providerDisputeStatuses)[number];
+
+/** A bank dispute on a charge, reduced to the fields spec 013 §5.2 "Disputes" reads. */
+export interface ProviderDispute {
+  readonly ref: string;
+  /** The intent the disputed charge paid: how the dispute finds its payment. */
+  readonly intentRef: string;
+  readonly status: ProviderDisputeStatus;
+  readonly amount: Money;
+  /** The provider's reason code (`fraudulent`, `general`), never free text. */
+  readonly reason: string;
+  readonly evidenceDueBy?: Date;
+  readonly openedAt: Date;
 }
 
 /** Refund metadata: ids and a reason, never personal data (spec 013 §5.2 "Refunds"). */
@@ -257,6 +283,14 @@ export interface PaymentProvider {
     idempotencyKey: string,
     metadata: RefundMetadataInput,
   ): Promise<ProviderRefund | ProviderFailure>;
+  /** One refund as the provider holds it now (`refund.*` webhooks; spec 013 §5.2). */
+  retrieveRefund(ref: string): Promise<ProviderRefund | ProviderFailure>;
+  /** Every refund of one charge (`charge.refunded`), oldest first. */
+  listChargeRefunds(
+    chargeRef: string,
+  ): Promise<readonly ProviderRefund[] | ProviderFailure>;
+  /** One dispute as the provider holds it now (`charge.dispute.*`; spec 013 §5.2). */
+  retrieveDispute(ref: string): Promise<ProviderDispute | ProviderFailure>;
   verifyAndParseWebhook(
     rawBody: string,
     headers: WebhookHeaders,
@@ -291,6 +325,12 @@ export interface PaymentProviderHarness {
   simulateHold(ref: string): Promise<void>;
   /** The bank declines with `code`; the intent returns to `requires_payment_method`. */
   simulateDecline(ref: string, code: string): Promise<void>;
+  /** The charge the provider made when `intentRef` was paid (what `charge.*` events name). */
+  chargeRefOf(intentRef: string): Promise<string>;
+  /** The bank opens a dispute on the paid intent's charge; returns the dispute's reference. */
+  simulateDispute(intentRef: string, reason: string): Promise<string>;
+  /** The bank decides an open dispute. */
+  simulateDisputeOutcome(ref: string, outcome: "won" | "lost"): Promise<void>;
   /** The provider emits an event of `type` about `objectRef` at `createdAt`. */
   simulateEvent(
     type: string,
@@ -674,6 +714,81 @@ export const PAYMENT_PROVIDER_CONTRACT: readonly PaymentProviderContractCase[] =
           "rejected",
           "refund an unpaid intent",
         );
+      },
+    },
+    {
+      name: "refund lookup: a refund reads back by its reference and by its charge, with our refund id; an unknown one is not_found",
+      async run(harness) {
+        const paid = await createdIntent(harness, {
+          amount: { amountMinor: 5000, currency: "PLN" },
+          idempotencyKey: freshKey("pi:create"),
+        });
+        await harness.simulateSuccess(paid.ref);
+        const refundId = "7a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d";
+        const made = await harness.provider.refund(
+          paid.ref,
+          { amountMinor: 1200, currency: "PLN" },
+          freshKey("refund"),
+          { orderId: CONTRACT_ORDER_ID, refundId, reason: "goodwill" },
+        );
+        check(!isProviderFailure(made), "refund: not a failure");
+        const read = await harness.provider.retrieveRefund(made.ref);
+        check(!isProviderFailure(read), "retrieveRefund: not a failure");
+        same(read.ref, made.ref, "retrieveRefund: ref");
+        same(read.intentRef, paid.ref, "retrieveRefund: intent");
+        same(read.refundId, refundId, "retrieveRefund: our refund id");
+        same(
+          read.amount,
+          { amountMinor: 1200, currency: "PLN" },
+          "retrieveRefund: amount",
+        );
+        const listed = await harness.provider.listChargeRefunds(
+          await harness.chargeRefOf(paid.ref),
+        );
+        check(!isProviderFailure(listed), "listChargeRefunds: not a failure");
+        same(
+          listed.map((refund) => [refund.ref, refund.refundId]),
+          [[made.ref, refundId]],
+          "listChargeRefunds: the one refund",
+        );
+        failureOf(
+          await harness.provider.retrieveRefund(`${made.ref}_missing`),
+          "not_found",
+          "retrieveRefund unknown",
+        );
+      },
+    },
+    {
+      name: "dispute lookup: a dispute reads back open with its intent, amount and reason, then won or lost; an unknown one is not_found",
+      async run(harness) {
+        for (const outcome of ["won", "lost"] as const) {
+          const paid = await createdIntent(harness, {
+            amount: { amountMinor: 8800, currency: "EUR" },
+            idempotencyKey: freshKey("pi:create"),
+          });
+          await harness.simulateSuccess(paid.ref);
+          const ref = await harness.simulateDispute(paid.ref, "fraudulent");
+          const open = await harness.provider.retrieveDispute(ref);
+          check(!isProviderFailure(open), "retrieveDispute: not a failure");
+          same(open.ref, ref, "retrieveDispute: ref");
+          same(open.intentRef, paid.ref, "retrieveDispute: intent");
+          same(open.status, "open", "retrieveDispute: open");
+          same(
+            open.amount,
+            { amountMinor: 8800, currency: "EUR" },
+            "retrieveDispute: amount",
+          );
+          same(open.reason, "fraudulent", "retrieveDispute: reason");
+          await harness.simulateDisputeOutcome(ref, outcome);
+          const decided = await harness.provider.retrieveDispute(ref);
+          check(!isProviderFailure(decided), "decided: not a failure");
+          same(decided.status, outcome, `retrieveDispute: ${outcome}`);
+          failureOf(
+            await harness.provider.retrieveDispute(`${ref}_missing`),
+            "not_found",
+            "retrieveDispute unknown",
+          );
+        }
       },
     },
     {

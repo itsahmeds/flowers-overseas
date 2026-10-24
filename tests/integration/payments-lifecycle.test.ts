@@ -242,6 +242,9 @@ describe.skipIf(server.url === undefined)(
           verifyAndParseWebhook: (body, headers) =>
             fake.verifyAndParseWebhook(body, headers),
           listEventsSince: (since) => fake.listEventsSince(since),
+          retrieveRefund: (ref) => fake.retrieveRefund(ref),
+          listChargeRefunds: (ref) => fake.listChargeRefunds(ref),
+          retrieveDispute: (ref) => fake.retrieveDispute(ref),
         };
         const first = await startPayment(purchase.purchaseId, depsOf(spy));
         const second = await startPayment(purchase.purchaseId, depsOf(spy));
