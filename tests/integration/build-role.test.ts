@@ -42,6 +42,7 @@ import {
   BUILD_ROLE_BLOG_TABLES,
   BUILD_ROLE_FILTERED_TABLES,
   BUILD_ROLE_READ_TABLES,
+  PUBLIC_VIEWS,
 } from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import { readSeedTree } from "../../seed/check.ts";
@@ -206,9 +207,11 @@ describe.skipIf(server.url === undefined)(
         WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p', 'v', 'm')
           AND relname <> 'schema_migrations'
         ORDER BY 1`;
+      // The column-limited public views the build also reads (spec 044 §5.1 item 7, `0024_blog`).
+      const readableViews: readonly string[] = Object.keys(PUBLIC_VIEWS);
       const outside = relations
         .map((r) => r.name)
-        .filter((name) => !BUILD_SET.includes(name));
+        .filter((name) => !BUILD_SET.includes(name) && !readableViews.includes(name));
       for (const table of NAMED_PRIVATE) expect(outside).toContain(table);
       expect(outside).toContain("partner_catalog_mapping");
       expect(outside).toContain("partner_coverage");
