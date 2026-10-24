@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 |
 | Plan refs | plan/01 §3 §5 §8 §9 §10 · plan/02 §4.1 §14 §15 · plan/03 §7 §11 · plan/04 §9 §10 · plan/06 §2.1 §2.2 §2.3 §9 · plan/07 §1.1 §1.2 §1.4 §3 §4 §5 §8 §9 §10 · plan/09 Phase 1 (`014`, acceptance 3; risk "Stripe rejects or reserves") · plan/11 §2 · plan/12 §4 |
 | ADRs | ADR-0005 (Stripe primary, Mollie fallback: **this spec departs from its fallback half and proposes a superseding ADR**, §1, §13 Q1) · ADR-0021 (Flowers Overseas LLC, Wyoming; open PR 348) · ADR-0006 (no IP-derived behaviour) · ADR-0009 (status only through `orderService.transition`) · ADR-0016 and ADR-0020 (CSP per document, nonces) · ADR-0018 (Railway, single replica) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | not approved (proposed; the founder approves) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
