@@ -6,8 +6,8 @@
  * register" check all read. Three properties are worth a test rather than a review:
  *
  *  1. the **schema refuses a bad row** — a non-essential entry that claims no consent is
- *     needed, a missing purpose message key, a duplicate name, a Phase 0 row that says the
- *     *server* sets it;
+ *     needed, a missing purpose message key, a duplicate name, a row that says the *server* sets
+ *     it unless it is one of the checkout's `no-store` cookies (spec 010 AC-36, AC-75);
  *  2. the **rows agree with the code that writes them** — `fo_locale`'s name and lifetime come
  *     from `src/modules/i18n/hints.ts`, and a register that disagreed with the writer would
  *     make the disclosure wrong rather than merely stale;
@@ -25,6 +25,7 @@ import {
   CONSENT_COOKIE_NAME,
   CONSENT_REJECT_MAX_AGE_SECONDS,
   COOKIE_REGISTRY,
+  NO_STORE_SERVER_COOKIES,
   CookieRegistryEntrySchema,
   CookieRegistrySchema,
   cookieRegistryEntry,
@@ -66,9 +67,10 @@ describe("the register itself (AC-22)", () => {
       "fo_locale",
       "fo_consent",
       "fo_session",
-      "fo_csrf",
       "fo_currency",
+      "fo_checkout",
       "fo_basket",
+      "fo_checkout_echo",
       "_ga",
       "_ga_*",
       "__stripe_mid",
@@ -100,12 +102,14 @@ describe("the register itself (AC-22)", () => {
     );
   });
 
-  it("sets nothing non-essential in Phase 0: every `set` row is essential and browser-written", () => {
+  it("sets nothing non-essential in Phase 0: every `set` row is essential, and browser-written unless it is a checkout no-store cookie", () => {
     for (const entry of COOKIE_REGISTRY.filter(
       (candidate) => candidate.status === "set",
     )) {
       expect(entry.category, entry.name).toBe("essential");
-      expect(entry.writer, entry.name).toBe("browser");
+      expect(entry.writer, entry.name).toBe(
+        NO_STORE_SERVER_COOKIES.includes(entry.name) ? "server" : "browser",
+      );
     }
     // The analytics and marketing rows exist so the disclosure is complete before the tag does
     // (spec 004 §2); none of them is set today.
@@ -187,7 +191,7 @@ describe("what the schema refuses (AC-22)", () => {
     ).toBe(false);
   });
 
-  it("refuses a row the *server* sets while it is already set", () => {
+  it("refuses a row the *server* sets while it is already set, unless it is a checkout no-store cookie", () => {
     expect(
       CookieRegistryEntrySchema.safeParse({
         ...validEntry,
@@ -195,6 +199,52 @@ describe("what the schema refuses (AC-22)", () => {
         writer: "server",
       }).success,
     ).toBe(false);
+    expect(
+      CookieRegistryEntrySchema.safeParse({
+        ...validEntry,
+        name: "fo_checkout",
+        status: "set",
+        writer: "server",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("T-36, T-75: fo_checkout and fo_basket are essential, server-written, set, 30 days; no fo_csrf (spec 010 AC-36, AC-75)", () => {
+    const pick = (name: string) => {
+      const entry = COOKIE_REGISTRY.find((row) => row.name === name);
+      return entry === undefined
+        ? undefined
+        : {
+            category: entry.category,
+            writer: entry.writer,
+            status: entry.status,
+            lifetime: entry.lifetime,
+            httpOnly: entry.scope.includes("HttpOnly"),
+          };
+    };
+    const thirtyDays = { kind: "maxAge", seconds: 2_592_000 };
+    expect(pick("fo_checkout")).toEqual({
+      category: "essential",
+      writer: "server",
+      status: "set",
+      lifetime: thirtyDays,
+      httpOnly: true,
+    });
+    expect(pick("fo_basket")).toEqual({
+      category: "essential",
+      writer: "server",
+      status: "set",
+      lifetime: thirtyDays,
+      httpOnly: false,
+    });
+    expect(pick("fo_checkout_echo")).toEqual({
+      category: "essential",
+      writer: "server",
+      status: "set",
+      lifetime: { kind: "maxAge", seconds: 300 },
+      httpOnly: true,
+    });
+    expect(pick("fo_csrf")).toBeUndefined();
   });
 
   it("refuses an unknown field, so a row cannot carry undeclared meaning", () => {
