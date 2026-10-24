@@ -381,7 +381,20 @@ test.describe("T-33: above the frame's maximum, at 1512 and 1920 px (AC-31)", ()
   }
 });
 
-test.describe("T-34: the breadcrumb is 20 px under the sticky header (AC-32, md and up)", () => {
+/**
+ * The three country listings draw the quiet trail (spec 043 §14 A-founder-2026-10-22 item 1, revised
+ * 2026-10-24, the `lh:2026-10-24b` artboards: 16 px under the header); every other page keeps
+ * AC-32's 20 px.
+ */
+const QUIET_TRAIL: readonly PageType[] = [
+  "countryShop",
+  "countryCategory",
+  "countryOccasion",
+];
+const trailGap = (type: PageType): number =>
+  QUIET_TRAIL.includes(type) ? 16 : 20;
+
+test.describe("T-34: the breadcrumb under the sticky header (AC-32, md and up; 16 px on the country listings)", () => {
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1024, height: 900 },
@@ -396,8 +409,8 @@ test.describe("T-34: the breadcrumb is 20 px under the sticky header (AC-32, md 
         const header = await boxOf(page, "[data-fo-header]");
         const trail = await boxOf(page, "main [data-fo-breadcrumb]");
         expect(
-          Math.abs(trail.top - header.bottom - 20),
-          `trail top ${String(trail.top)} − header bottom ${String(header.bottom)}`,
+          Math.abs(trail.top - header.bottom - trailGap(type)),
+          `trail top ${String(trail.top)} − header bottom ${String(header.bottom)}, want ${String(trailGap(type))}`,
         ).toBeLessThanOrEqual(1);
       });
     }
@@ -416,14 +429,14 @@ const inViewport = (
 /**
  * Spec 004 §14 A-founder-2026-10-18c (AC-43 and T-43 amended): below `md` the shop root's and the
  * country category's H1 take `--text-3xl-fluid` (its 32 px minimum, the phone artboards' size);
- * from `md` up `--text-title-fluid` (A-founder-2026-10-18b). The band-edge pair proves the switch
- * sits at `md` (768): red with the title step kept below `md` (44 ≠ 32 at 390 and 767), and red
- * with the 3xl step kept from `md` up (32 ≠ 44 at 768; 46 ≠ 53.8 at 1280, in the laptop block).
+ * spec 043 §14 A-founder-2026-10-22 item 2 (revised 2026-10-24, AC-51; TASK-289) keeps
+ * `--text-3xl-fluid` at every width for the short H1, so 768 reads 32 px too (red with the old title
+ * step, 44 ≠ 32), and the laptop block pins 46 px at 1280.
  */
 const PHONE_H1_CASES = [
   { width: 390, height: 844, step: "3xl", expected: 32 },
   { width: 767, height: 1024, step: "3xl", expected: 32 },
-  { width: 768, height: 1024, step: "title", expected: 44 },
+  { width: 768, height: 1024, step: "3xl", expected: 32 },
 ] as const satisfies readonly {
   width: number;
   height: number;

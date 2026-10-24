@@ -47,17 +47,24 @@ const BACK_LINK_OFFSET = "mt-[14px] md:mt-(--space-md2)";
  * The country listings' quiet trail (spec 043 §14 A-founder-2026-10-22 item 1, revised
  * 2026-10-24; `.lh-crumbs`): 16 px under the header from `md` up (14 below), `--text-fine` in
  * `--color-ink-3`, no underline at rest and one under the hovered or focused crumb, the current
- * crumb in ink-2, the separator in `--color-border-strong`; below `md` the parent crumb only, as
- * a 32 px back link at `--text-fine`.
+ * crumb in ink-2, the separator in `--color-border-strong`; below `md` the parent crumb only, as a
+ * back link at `--text-fine`.
+ *
+ * - The trail is one 20 px line, as drawn: each link keeps its 24 px target (WCAG 2.2 SC 2.5.8)
+ *   and gives 2 px back on each side, so the target overlaps the line's leading.
+ * - The artboards draw the back link in a 32 px row; spec 004 AC-50 wants its box 44 px tall. The
+ *   box is 44 px from the same top edge, its label centred in the upper 32 px, and its lower 12 px
+ *   lie over the H1's top margin and leading (`-mb-[12px]`, raised with `z-[1]` so that strip
+ *   still takes the tap): the page reads as drawn and the target is the full 44 px.
  */
 const QUIET = {
   offset: "mt-[14px] md:mt-[16px]",
   trail: "text-ink-subtle text-fine leading-[20px]",
   crumb:
     "flex items-center gap-[6px] after:text-border-strong after:content-['/'_/_''] last:after:content-none",
-  link: "text-ink-subtle hover:text-ink focus-visible:text-ink inline-flex min-h-[24px] items-center no-underline underline-offset-4 hover:underline focus-visible:underline",
+  link: "text-ink-subtle hover:text-ink focus-visible:text-ink -my-[2px] inline-flex min-h-[24px] items-center no-underline underline-offset-4 hover:underline focus-visible:underline",
   current: "text-ink-muted",
-  back: "text-ink-subtle hover:text-ink inline-flex min-h-[32px] items-center gap-[6px] text-fine md:hidden",
+  back: "text-ink-subtle hover:text-ink relative z-[1] -mb-[12px] flex w-fit min-h-(--target-min) items-center gap-[6px] pb-[12px] text-fine md:hidden",
 } as const;
 
 /**
