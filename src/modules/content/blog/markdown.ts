@@ -47,8 +47,7 @@ export interface BlogMarkdownWarning {
     | "link-target";
 }
 
-const INLINE =
-  /\[([^\]\n]+)\]\(([^)\s]+)\)|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/gu;
+const INLINE = /\[([^\]\n]+)\]\(([^)\s]+)\)|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/gu;
 
 /** The inline runs of one line of text, in order. Adjacent text runs are merged. */
 export function blogInlines(text: string): readonly BlogInline[] {

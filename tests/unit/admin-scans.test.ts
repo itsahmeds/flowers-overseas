@@ -445,6 +445,24 @@ describe("AC-7 — admin copy lives only in messages/admin/en.json", () => {
       status: "routed",
       window: "09:00–12:00",
       code: (chunks: string) => chunks,
+      // TASK-321's `admin.blog.rule.*`.
+      slug: "feed",
+      length: 12,
+      min: 120,
+      max: 300,
+      anchor: "here",
+      words: 420,
+      against: "post:1",
+      score: 0.5,
+      match: "on hold",
+      pattern: "hold",
+      sentence: "Your order is on hold.",
+      word: "network",
+      detail: "a number of days",
+      mark: "interflora",
+      label: "review",
+      line: 3,
+      construct: "quote",
     };
     for (const key of keys) {
       expect(meta[key]?.reviewed, key).toBe(false);
