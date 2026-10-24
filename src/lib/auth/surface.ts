@@ -22,11 +22,17 @@
  *     address no longer allowed, lands on `{signIn}?state=expired`.
  *  4. `signOut` — deletes the session row and expires the cookie.
  *
+ * Session tokens are surface-bound (`{surface}.{32 random bytes}`, TASK-212): the one `sessions`
+ * table serves admin and florists, and a token minted by one surface authenticates nothing on the
+ * other, even for a person who is both an admin and a florist member.
+ *
  * Cookies: `{prefix}.session-token`, `{prefix}.csrf-token`, `{prefix}.callback-url`, each
  * `Path={cookiePath}`, `Secure`, `HttpOnly`, `SameSite=Lax`, and **no `__Host-` name** (a
  * `__Host-` cookie must carry `Path=/`, which would contradict the surface's path). Sessions are
  * database sessions (TASK-022's `sessions`), `maxAge` from the surface, extended while used only
- * when the surface is `rolling`.
+ * when the surface is `rolling`: `sessionUserId()` pushes a rolling session's row back to a full
+ * `maxAge` once it has less than `maxAge − one day` left (TASK-212; the core never calls Auth.js's
+ * own session endpoint, so the extension lives here).
  *
  * Every write and read goes through `adapter.ts`'s runner, one `withSystemContext('auth', …)`
  * transaction each. Auth.js's logger is routed through `src/lib/logger.ts` (redaction applies).
@@ -53,7 +59,13 @@ import {
   type SignInState,
 } from "./schema";
 import { claimSend } from "./send-limit";
-import { hashIdentifier, hashSignInToken, newSignInToken } from "./tokens";
+import {
+  hashIdentifier,
+  hashSignInToken,
+  isSessionTokenOf,
+  newSessionToken,
+  newSignInToken,
+} from "./tokens";
 
 /** How long an emailed link is valid: one hour (spec 012 §2.2). */
 export const SIGN_IN_LINK_MAX_AGE_MS = 60 * 60 * 1000;
@@ -84,8 +96,15 @@ export interface AuthSurfaceDeps {
   readonly secret: () => string;
   /** The site origin links are built on (`NEXT_PUBLIC_SITE_URL`). */
   readonly siteOrigin: () => string;
-  /** The surface's sign-in message for a link. */
-  readonly renderEmail: (link: string) => SignInEmail;
+  /**
+   * The surface's sign-in message for a link. The address is passed so a surface can write in the
+   * member's language (spec 011 AC-32: the florist's `partner_member.locale_code`); it is never
+   * put into the link or the message.
+   */
+  readonly renderEmail: (
+    link: string,
+    email: string,
+  ) => SignInEmail | Promise<SignInEmail>;
   /** The clock. */
   readonly now?: () => Date;
   /** Runs a task after the response. Default: Next's `after()`. */
@@ -217,6 +236,10 @@ export function createAuthSurface(
       providers: [emailProvider],
       session: {
         strategy: "database",
+        // Surface-bound tokens (spec 011 §2: "A florist session never authenticates an admin
+        // request, and the reverse"): one `sessions` table serves both surfaces, so the token
+        // carries its surface and `sessionUserId()` accepts only its own.
+        generateSessionToken: () => newSessionToken(config.name),
         maxAge: config.sessionMaxAgeSeconds,
         // Not rolling: a session is never extended, so it ends `maxAge` after sign-in.
         updateAge: config.rolling
@@ -283,7 +306,7 @@ export function createAuthSurface(
           `${config.pages.confirm}?t=${token}`,
           deps.siteOrigin(),
         );
-        const message = deps.renderEmail(link.toString());
+        const message = await deps.renderEmail(link.toString(), email);
         const mailer = (deps.mailer ?? getMailer)();
         await mailer.send({ tag: config.mailTag, to: email, ...message });
         log.info({ identifier_hash }, `${config.name}.sign_in.sent`);
@@ -376,14 +399,21 @@ export function createAuthSurface(
     return seeOther(signInLocation("signed-out"), cleared);
   }
 
+  /** A rolling session is extended at most once a day (Auth.js's own `updateAge` rule). */
+  const rollAfterMs =
+    (config.sessionMaxAgeSeconds -
+      Math.min(24 * 60 * 60, config.sessionMaxAgeSeconds)) *
+    1000;
+
   async function sessionUserId(
     sessionToken: string | undefined,
   ): Promise<string | null> {
     if (sessionToken === undefined || sessionToken === "") return null;
+    if (!isSessionTokenOf(config.name, sessionToken)) return null;
     const at = now();
     return run(async (db) => {
       const [row] = await db
-        .select({ userId: sessions.userId })
+        .select({ userId: sessions.userId, expires: sessions.expires })
         .from(sessions)
         .where(
           and(
@@ -391,7 +421,25 @@ export function createAuthSurface(
             gt(sessions.expires, at),
           ),
         );
-      return row?.userId ?? null;
+      if (row === undefined) return null;
+      // Rolling (spec 011 §2: the florist's 30 days): a session used with less than `maxAge −
+      // one day` left is pushed back to a full `maxAge`. The row is what decides (database
+      // sessions); the florist cookie's `Max-Age` is renewed by the proxy on a page `GET`
+      // (`src/lib/florist-headers.ts`, `rollingCookie`).
+      if (
+        config.rolling &&
+        row.expires.getTime() - at.getTime() < rollAfterMs
+      ) {
+        await db
+          .update(sessions)
+          .set({
+            expires: new Date(
+              at.getTime() + config.sessionMaxAgeSeconds * 1000,
+            ),
+          })
+          .where(eq(sessions.sessionToken, sessionToken));
+      }
+      return row.userId;
     });
   }
 

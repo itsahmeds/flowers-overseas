@@ -16,6 +16,8 @@
  * writer of `"order"` rows, so a test sets the switch transaction-locally for its one insert and
  * appends `order.placed` at seq 1.
  */
+import { randomBytes } from "node:crypto";
+
 import type postgres from "postgres";
 
 type Tx = postgres.TransactionSql;
@@ -120,27 +122,44 @@ export interface PlacedOrder {
   readonly totalMinor?: number;
 }
 
-let tokenCounter = 0;
-
-/** Inserts one `placed` order the way `orderService.place` does, with `order.placed` at seq 1. */
+/**
+ * Inserts one `placed` order the way `orderService.place` does, with `order.placed` at seq 1. The
+ * token is 16 random bytes as base64url (22 characters), the shape `0021`'s exact check and its
+ * column default give (spec 018 AC-2). It is named here, unlike in `place`, because the rollback
+ * suites also insert orders into schemas from before `0021`, where the column has no default.
+ */
 export async function insertPlacedOrder(
   tx: Tx,
   input: PlacedOrder,
 ): Promise<string> {
-  tokenCounter += 1;
-  const token = `fixture${String(tokenCounter).padStart(4, "0")}${"x".repeat(16)}${Math.random().toString(36).slice(2, 8)}`;
+  const token = randomBytes(16).toString("base64url");
   const currency = input.currencyCode ?? "PLN";
   const mode = input.mode ?? "demo";
+  // Spec 010 §14 A-founder-2026-10-22 (`0019`): every order belongs to a purchase; this one's
+  // purchase holds it alone, at its total. A suite rolled back below `0019` has no such table,
+  // and its orders have no such column.
+  const [has] = await tx<{ purchase: boolean }[]>`
+    SELECT to_regclass('public.purchase') IS NOT NULL AS purchase`;
+  let purchaseId: string | null = null;
+  if (has?.purchase === true) {
+    const [purchase] = await tx<{ id: string }[]>`
+      INSERT INTO purchase (mode, buyer_currency_code, total_minor, locale_code, customer_id)
+      VALUES (${mode}, ${currency}, ${input.totalMinor ?? 18900}, 'en', ${input.customerId})
+      RETURNING id`;
+    purchaseId = purchase?.id ?? null;
+  }
   await tx`SELECT set_config('app.allow_status_write', 'on', true)`;
   const [row] = await tx<{ id: string }[]>`
     INSERT INTO "order" (public_token, mode, customer_id, recipient_id, destination_country_id,
                          delivery_date, buyer_currency_code, buyer_total_minor,
                          base_currency_code, base_total_minor, terms_version,
-                         buyer_snapshot, recipient_snapshot)
+                         buyer_snapshot, recipient_snapshot
+                         ${purchaseId === null ? tx`` : tx`, purchase_id`})
     VALUES (${token}, ${mode}, ${input.customerId}, ${input.recipientId}, ${input.countryId},
             DATE '2027-02-14', ${currency}, ${input.totalMinor ?? 18900}, ${currency},
             ${input.totalMinor ?? 18900}, ${mode === "live" ? "2026-10" : null},
-            '{"name": "Test Buyer"}'::jsonb, '{"city": "Warszawa"}'::jsonb)
+            '{"name": "Test Buyer"}'::jsonb, '{"city": "Warszawa"}'::jsonb
+            ${purchaseId === null ? tx`` : tx`, ${purchaseId}`})
     RETURNING id`;
   await tx`SELECT set_config('app.allow_status_write', '', true)`;
   const id = row?.id ?? "";

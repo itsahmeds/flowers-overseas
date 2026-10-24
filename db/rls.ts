@@ -52,6 +52,29 @@ export const PUBLIC_FILTERED_TABLES = {
 } as const;
 
 /**
+ * Partner-filtered (`app.role = 'partner'`): a table whose rows are otherwise hidden or public by
+ * condition, of which a partner also sees the rows tied to an order it holds an open or accepted
+ * offer for. Spec 011 §5.1 (migration `0022_florists_v0`, TASK-211): the delivery photo of such an
+ * order, so a florist can see their own photo and nothing else widens. The policy is
+ * `<table>_partner`, its correlation a `SECURITY DEFINER` lookup.
+ */
+export const PARTNER_FILTERED_TABLES = {
+  media_asset:
+    "kind = 'delivery_proof' and the photo of an order the partner sees (app_partner_sees_media)",
+} as const;
+
+/**
+ * Insert-only for the public (`app.role` unset or `public`): a visitor adds a row and reads,
+ * changes and deletes nothing, not even their own (spec 011 §5.1, AC-14; migration
+ * `0022_florists_v0`, TASK-211). One `<table>_public_insert` policy `FOR INSERT … WITH CHECK`
+ * beside the staff policy; no partner or customer policy.
+ */
+export const PUBLIC_INSERT_ONLY_TABLES = {
+  partner_application:
+    "status = 'new', no converted partner, no decision time (the WITH CHECK)",
+} as const;
+
+/**
  * The build role (spec 012b §5.1 item 1, AC-4; migration `0018_catalogue_build_role`, TASK-292).
  * `next build` connects as `app_build`, which may `SELECT` exactly these tables and write nothing:
  * the public reference set above without the order machine's two reference tables (no order
@@ -110,6 +133,9 @@ export const CUSTOMER_SCOPED_TABLES = {
   substitution_note: "read",
   payment: "read",
   refund: "read",
+  // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the buyer's own invoices and
+  // credit notes, read-only (an invoice never changes).
+  invoice: "read",
 } as const;
 
 /**
@@ -163,6 +189,8 @@ export const PARTNER_FORBIDDEN_COLUMNS = [
   "buyer_total_minor",
   "base_total_minor",
   "unit_retail_minor",
+  // spec 010 §14 A-founder-2026-10-22 (AC-69): the purchase would name a florist's sibling orders.
+  "purchase_id",
 ] as const;
 
 /** Readable by the signed-in person themself (`customer` or `partner` role, `app.user_id` matches). */
@@ -184,16 +212,20 @@ export const STAFF_ONLY_TABLES = [
   "db_usage_sample",
   "feature_flag",
   "feature_flag_scope",
+  // spec 018 §5.1 (migration `0021_post_purchase`, TASK-337): the issuer's VAT registrations,
+  // the invoice profiles and the numbering series are admin and system only; `public` reads none.
+  "invoice_profile",
+  "invoice_series",
   "message_catalog",
   "order_event",
   "outbox",
   "outbox_attempt",
-  "partner_application",
   // spec 013 / spec 002 §14 A7.5 (migration `0017_payments_a7`, TASK-254): a chargeback on a
   // payment. Partners, customers and the public read nothing.
   "payment_dispute",
   "retention_policy",
   "sessions",
+  "tax_registration",
   "verification_tokens",
   "webhook_inbox",
 ] as const;
@@ -206,10 +238,22 @@ export const STAFF_ONLY_TABLES = [
  */
 export const SYSTEM_ONLY_TABLES = [
   "checkout_draft",
+  // spec 010 §14 A-founder-2026-10-22 (migration `0020_checkout_draft_lines`, TASK-348): a
+  // basket's lines, with the same single policy as their draft.
+  "checkout_draft_line",
   // spec 002 §14 A7.7 (migration `0017_payments_a7`, TASK-254): one row per outbox target, read
   // and written only by the dispatcher's system transactions.
   "outbox_delivery",
 ] as const;
+
+/**
+ * The system role writes, an admin session reads, nobody else sees a row: one `<table>_system`
+ * policy (all, `app.role = 'system'`) and one `<table>_admin` policy (select, `app.role =
+ * 'admin'`), and no staff policy, so an admin cannot write one. Spec 010 §14 A-founder-2026-10-22
+ * item 2 A (migration `0019_purchase`, TASK-347): a purchase groups a buyer's orders, so no
+ * partner, customer or public policy exists and a florist never sees a sibling order through it.
+ */
+export const SYSTEM_WRITE_ADMIN_READ_TABLES = ["purchase"] as const;
 
 /**
  * Tables without RLS, and why. `schema_migrations` is the runner's bookkeeping: created and owned

@@ -88,6 +88,14 @@ export const sessions = pgTable(
       withTimezone: true,
       mode: "date",
     }).notNull(),
+    /**
+     * Spec 002 §14 A8.2 (`0021`, TASK-337): when the session was signed in. The adapter never
+     * writes it (the default fills it, a rolling refresh moves only `expires`); spec 018's
+     * erasure reads it.
+     */
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [index("sessions_user_id_idx").on(table.userId)],
 );

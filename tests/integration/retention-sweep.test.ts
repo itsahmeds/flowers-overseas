@@ -795,18 +795,110 @@ describe.skipIf(server.url === undefined)(
       });
     });
 
+    it("T-17 / spec 011 AC-17: deletes an application changed 366 days ago, keeps one changed 364 days ago and a converted one changed 366 days ago; --dry-run deletes none and reports 1", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const countryId = await make.country(tx);
+        const partnerId = await make.partner(tx, countryId);
+        const due = await make.application(tx, {
+          countryId,
+          changedDaysAgo: 366,
+        });
+        const young = await make.application(tx, {
+          countryId,
+          changedDaysAgo: 364,
+        });
+        const converted = await make.application(tx, {
+          countryId,
+          status: "converted",
+          convertedPartnerId: partnerId,
+          changedDaysAgo: 366,
+        });
+        const ids = [due, young, converted];
+        const left = async (): Promise<string[]> =>
+          (
+            await tx<{ id: string }[]>`
+              SELECT id FROM partner_application WHERE id IN ${tx(ids)} ORDER BY id`
+          ).map((row) => row.id);
+        const clock = new Date();
+
+        const dry = await sweep(tx, { now: clock, dryRun: true });
+        expect(policy(dry, "partner_application")).toEqual({
+          key: "partner_application",
+          status: "dry_run",
+          counts: { partner_application: 1 },
+          skipped: { converted: 1 },
+        });
+        expect(await left()).toEqual([...ids].sort());
+
+        const real = await sweep(tx, { now: clock });
+        expect(policy(real, "partner_application")).toEqual({
+          key: "partner_application",
+          status: "applied",
+          counts: { partner_application: 1 },
+          skipped: { converted: 1 },
+        });
+        expect(await left()).toEqual([young, converted].sort());
+      });
+    });
+
+    it("spec 011 §5.1: deletes sessions and sign-in tokens one day after they expire, and never a live one", async () => {
+      await rolledBack(scratch.sql, async (tx) => {
+        const [user] = await tx<{ id: string }[]>`
+          INSERT INTO users (email) VALUES (${`${make.unique("florist")}@example.test`})
+          RETURNING id`;
+        const userId = user?.id ?? "";
+        const sessions = {
+          stale: make.unique("s-stale-"),
+          justExpired: make.unique("s-just-"),
+          live: make.unique("s-live-"),
+        };
+        await tx`INSERT INTO sessions (session_token, user_id, expires) VALUES
+                   (${sessions.stale}, ${userId}, now() - interval '25 hours'),
+                   (${sessions.justExpired}, ${userId}, now() - interval '23 hours'),
+                   (${sessions.live}, ${userId}, now() + interval '29 days')`;
+        await tx`INSERT INTO verification_tokens (identifier, token, expires) VALUES
+                   ('florist@example.test', 'stale-hash', now() - interval '25 hours'),
+                   ('florist@example.test', 'just-hash', now() - interval '23 hours'),
+                   ('florist@example.test', 'live-hash', now() + interval '1 hour')`;
+
+        const result = await sweep(tx, { now: new Date() });
+
+        expect(policy(result, "auth_session").counts).toEqual({ sessions: 1 });
+        expect(policy(result, "auth_verification_token").counts).toEqual({
+          verification_tokens: 1,
+        });
+        const keptSessions = await tx<{ session_token: string }[]>`
+          SELECT session_token FROM sessions WHERE user_id = ${userId} ORDER BY session_token`;
+        expect(keptSessions.map((row) => row.session_token).sort()).toEqual(
+          [sessions.justExpired, sessions.live].sort(),
+        );
+        const keptTokens = await tx<{ token: string }[]>`
+          SELECT token FROM verification_tokens WHERE identifier = 'florist@example.test'
+          ORDER BY token`;
+        expect(keptTokens.map((row) => row.token)).toEqual([
+          "just-hash",
+          "live-hash",
+        ]);
+      });
+    });
+
     it("reports every retention_policy row: the keep row kept, the spec 010 rows without a handler yet", async () => {
       await rolledBack(scratch.sql, async (tx) => {
         const result = await sweep(tx, { now: new Date() });
         expect(result.policies.map(({ key, status }) => [key, status])).toEqual(
           [
+            ["auth_session", "applied"],
+            ["auth_verification_token", "applied"],
             ["buyer_personal", "applied"],
             ["checkout_draft", "no_handler"],
+            // spec 010 §14 A-founder-2026-10-22 item 2 C (`0020`); its handler is TASK-207's.
+            ["checkout_draft_personal", "no_handler"],
             ["consent_records", "applied"],
             ["delivery_photo", "storage_unavailable"],
             ["demo_order_personal", "no_handler"],
             ["fraud_signals", "applied"],
             ["invoice_archive", "kept"],
+            ["partner_application", "applied"],
             ["recipient_contact", "applied"],
           ],
         );

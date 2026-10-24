@@ -11,6 +11,10 @@
       "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
     },
     {
+      "path": "/demo/",
+      "because": "spec 011 §6: the Phase 0 florist inbox at /demo/vendor-inbox (noindex, no-store, 404 in production); no locale prefix"
+    },
+    {
       "path": "/vendor/",
       "because": "plan/02 §7, same row; plan/02 §4.1 'no locale prefix'"
     },
@@ -25,6 +29,14 @@
     {
       "path": "/track/",
       "because": "plan/02 §7, same row (locale-prefixed forms follow when spec 013 creates the segment)"
+    },
+    {
+      "path": "/*/track/",
+      "because": "plan/02 §7, same row; spec 018 §2 and AC-13: the locale-prefixed tracking-token pages (/{locale}/track/{token}), with the lookup /{locale}/track left fetchable"
+    },
+    {
+      "path": "/*/account/",
+      "because": "plan/02 §7, same row; spec 018 §2 and AC-13: the locale-prefixed account pages below /{locale}/account, which stays fetchable for its noindex"
     },
     {
       "path": "/search",
@@ -75,6 +87,14 @@
     {
       "url": "/en-gb",
       "because": "the locale home (plan/09 Phase 0 AC 1)"
+    },
+    {
+      "url": "/en-gb/track",
+      "because": "spec 018 AC-13: the tracking lookup must be fetched for its X-Robots-Tag noindex and robots meta to be seen"
+    },
+    {
+      "url": "/pl/account",
+      "because": "spec 018 AC-13: the account entry answers a crawler with a 303 to the sign-in page, which carries the noindex"
     },
     {
       "url": "/sitemap.xml",

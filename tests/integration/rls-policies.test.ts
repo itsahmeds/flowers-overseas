@@ -33,6 +33,7 @@ import {
 } from "../../db/rls.ts";
 import { insertPlacedOrder } from "../fixtures/order-state.ts";
 import {
+  application,
   country,
   customer,
   mediaAsset,
@@ -533,6 +534,12 @@ describe.skipIf(server.url === undefined)(
           recipientId: string;
           orderId: string;
         }[] = [];
+        // Spec 018 §5.1 (TASK-337): each buyer's order carries one invoice, under a test profile.
+        await tx`INSERT INTO invoice_profile (key, supply_model, destination_iso2, document_kind,
+                                             title_key, label_locales, vat_bearing_line_kinds,
+                                             series_key, credit_series_key, active)
+                 VALUES ('rls-profile', 'principal', 'PL', 'vat_invoice', 'invoice.title.vatInvoice',
+                         ARRAY['pl'], ARRAY['product'], 'fo-pl-2026', 'fok-pl-2026', true)`;
         for (const userId of [ua, ub]) {
           const customerId = await customer(tx, userId);
           const recipientId = await recipient(tx, customerId);
@@ -558,6 +565,11 @@ describe.skipIf(server.url === undefined)(
                                        requested_by, succeeded_at)
                    VALUES (${payment?.id ?? ""}, ${unique("re_")}, 500, 'PLN', 'addon_missing', 'succeeded',
                            'system:payments', now())`;
+          await tx`INSERT INTO invoice (kind, order_id, series_key, number, issued_at, supply_date,
+                                        currency_code, total_minor, profile_key, snapshot,
+                                        snapshot_version)
+                   VALUES ('invoice', ${orderId}, 'fo-pl-2026', ${unique("FO-PL/2026/")}, now(),
+                           DATE '2027-02-14', 'PLN', 18900, 'rls-profile', '{}'::jsonb, 1)`;
           worlds.push({ customerId, recipientId, orderId });
         }
         const [mine, theirs] = worlds as [
@@ -846,8 +858,7 @@ describe.skipIf(server.url === undefined)(
                  VALUES ('stripe', 'evt_t17', true, '{}', false, 'payment_intent.succeeded')`;
         await tx`INSERT INTO consent_log (subject_kind, subject_ref, choices, policy_version, occurred_at)
                  VALUES ('customer', gen_random_uuid(), '{"analytics": false}', 1, now())`;
-        await tx`INSERT INTO partner_application (business_name, city, language_code)
-                 VALUES ('Applicant Florist', 'Kraków', 'pl')`;
+        await application(tx, { countryId });
 
         const PRIVATE = [
           "customer",

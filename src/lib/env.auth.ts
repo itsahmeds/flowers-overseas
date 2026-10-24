@@ -20,7 +20,7 @@ import {
 export const DEVELOPMENT_EMAIL_FROM = "sign-in@localhost.invalid";
 
 /** The environment, and whether `APP_ENV` was present but did not parse. */
-function resolve(source: EnvSource): {
+export function resolve(source: EnvSource): {
   environment: DeploymentEnvironment;
   unparseable: boolean;
 } {
@@ -32,7 +32,7 @@ function resolve(source: EnvSource): {
 }
 
 /** Whether the environment is positively a laptop or a test run (`quoteSigningSecret()`'s rule). */
-function developmentFallbackAllowed(source: EnvSource): boolean {
+export function developmentFallbackAllowed(source: EnvSource): boolean {
   const { environment, unparseable } = resolve(source);
   return (
     (environment === "development" || environment === "test") &&

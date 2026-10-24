@@ -22,7 +22,7 @@ import { z } from "zod";
 import { type MailerConfig, mailerConfig } from "@/lib/env.auth";
 
 /** The tag registry: every kind of message the application sends. */
-export const mailTags = ["admin_sign_in"] as const;
+export const mailTags = ["admin_sign_in", "florist_sign_in"] as const;
 export type MailTag = (typeof mailTags)[number];
 
 export const MailMessageSchema = z

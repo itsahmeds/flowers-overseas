@@ -37,6 +37,14 @@
  *  - `consent_records` (5 years after withdrawal, delete): a `consent_log` row is withdrawn when a
  *    later record for the same subject supersedes it; it is deleted once that later record is
  *    older than the cut-off. The latest record per subject is never deleted (it is the proof).
+ *  - `partner_application` (365 days after its last change, delete; spec 011 §5.1, §13 Q9;
+ *    TASK-211): florist applications whose `updated_at` is at or before the cut-off, **unless
+ *    converted** (`status = 'converted'`: the applicant became a partner, and the row is the
+ *    record of how). The only copy of this rule; spec 012's admin list uses it and keeps none.
+ *  - `auth_session`, `auth_verification_token` (one day after `expires`, delete; spec 011 §8;
+ *    TASK-211): `sessions` and `verification_tokens` rows of both sign-in surfaces whose `expires`
+ *    is at or before the cut-off. A live session or an unexpired link is never touched. The only
+ *    copy of the session rule (spec 012 keeps none).
  *  - `invoice_archive` (`keep`): nothing.
  *  - `checkout_draft`, `demo_order_personal`: their handlers are spec 010's (TASK-207). Until a key
  *    has a handler here it is reported `no_handler` and nothing is written for it.
@@ -499,6 +507,53 @@ const consentRecords: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   };
 };
 
+/** The application status the 12-month rule never deletes: the applicant became a partner. */
+const CONVERTED = "converted";
+
+const partnerApplication: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ count: number; converted: number }>(
+    db,
+    sql`SELECT count(*) FILTER (WHERE status <> ${CONVERTED})::int AS count,
+               count(*) FILTER (WHERE status = ${CONVERTED})::int AS converted
+        FROM public.partner_application
+        WHERE updated_at <= ${ts(cutoff)}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`DELETE FROM public.partner_application
+          WHERE updated_at <= ${ts(cutoff)} AND status <> ${CONVERTED}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { partner_application: due[0]?.count ?? 0 },
+    skipped: { converted: due[0]?.converted ?? 0 },
+  };
+};
+
+/** Deletes the rows of an Auth.js table whose `expires` is at or before the cut-off. */
+function expiredAuthRows(
+  table: "sessions" | "verification_tokens",
+): PolicyHandler {
+  const target = sql.raw(`public.${table}`);
+  return async ({ db, cutoff, dryRun }) => {
+    const due = await rows<{ count: number }>(
+      db,
+      sql`SELECT count(*)::int AS count FROM ${target} WHERE expires <= ${ts(cutoff)}`,
+    );
+    if (!dryRun) {
+      await db.execute(
+        sql`DELETE FROM ${target} WHERE expires <= ${ts(cutoff)}`,
+      );
+    }
+    return {
+      status: dryRun ? "dry_run" : "applied",
+      counts: { [table]: due[0]?.count ?? 0 },
+      skipped: {},
+    };
+  };
+}
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -506,6 +561,9 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   buyer_personal: buyerPersonal,
   fraud_signals: fraudSignals,
   consent_records: consentRecords,
+  partner_application: partnerApplication,
+  auth_session: expiredAuthRows("sessions"),
+  auth_verification_token: expiredAuthRows("verification_tokens"),
 };
 
 /**
