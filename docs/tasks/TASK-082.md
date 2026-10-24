@@ -30,6 +30,7 @@ Branch `task/TASK-082-r2-storage-upload-derive-job`. **Blocked on TASK-013** (sp
 Decisions taken inside the task (fail-closed, nothing blocked on them), each needing a founder or orchestrator act:
 
 1. **Private bucket (founder action).** Originals are pre-strip files and delivery or partner objects are private, and the public bucket is served whole by `media.flowersoverseas.com`, so no prefix can make part of it private. `R2_PRIVATE_BUCKET` is added as an **absent-means-off switch** (like `CLOUDFLARE_API_TOKEN`: not one of the contract's keys, so no environment is made to require it; listed in `.env.example` commented and in `OPTIONAL_VARIABLE_KEYS` for `production`/`staging`). Founder: create `flowersoverseas-private` (R2, EU jurisdiction, no public access, no custom domain, no lifecycle rule), extend the scoped token to it, set `R2_PRIVATE_BUCKET` in `.env.local` and on Railway `production`. Until then `media:upload --originals` and any private derive are refused, never redirected to the public bucket.
+   - **2026-10-24:** the founder created `flowersoverseas-private` (EU, no public access) and set `R2_PRIVATE_BUCKET` on Railway `staging`; the code reads exactly that name (`R2_PRIVATE_BUCKET_KEY`, `src/lib/storage-r2.ts`). Still open: the same variable on `production` and in `.env.local` before the first `media:upload --originals` there.
 2. **Slot of a non-seed upload (open question for TASK-299 and TASK-215).** `media_asset` has no slot column; the worker reads the slot from `seed/data/media.json` by the id in the original's key, and refuses `slot_unknown` for anything else. Spec 012b's admin photos and spec 011's delivery photo must say how an uploaded asset names its ladder: a `media_asset.slot` column (a schema change, needs a spec amendment) or a v2 `media.derive_variants` payload carrying it. Not decided here.
 
 ## Progress
@@ -38,6 +39,7 @@ Decisions taken inside the task (fail-closed, nothing blocked on them), each nee
 - 2026-10-23: `R2Storage` (`src/lib/storage-r2.ts`) + in-process S3 endpoint (`tests/contract/support/fake-s3.ts`); the contract suite green against it, SigV4 pinned to AWS's published vectors and to the TASK-138 signer.
 - 2026-10-23: `deriveVariants` moved verbatim to `seed/derive.ts` (CLI re-exports it); worker `src/jobs/media-derive-variants.ts` + handler; T-25 green on a scratch PG16.
 - 2026-10-23: `pnpm media:upload --originals [--backfill]` (`scripts/media-originals.ts`); docs, `.env.example`, railway optional key, codebase map; 17 mutations each red; `gates:cheap` PASS. PR 349.
+- 2026-10-24: finisher rebased onto `origin/main` (692a24b5), map regenerated, deps reinstalled (zod 4.6.7), private bucket recorded in Escalations.
 
 ## Result
 
