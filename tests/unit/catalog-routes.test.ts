@@ -23,6 +23,7 @@ import {
   localeSegmentParams,
   resolveLocalePath,
 } from "../../src/modules/catalog";
+import { infoPagePath, listInfoPages } from "../../src/modules/content";
 import { listCorridorPages } from "../../src/modules/geo";
 import { localePath } from "../../src/modules/i18n/routing";
 
@@ -282,14 +283,22 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
     }
   });
 
-  it("emits every corridor page, country shop root and hub, and only those", async () => {
+  it("emits every corridor page, country shop root, hub and legal document, and only those", async () => {
     const params = await localeChildParams();
 
     const corridors = listCorridorPages();
     const listings = (await listingPages()).filter((page) =>
       ["countryShopRoot", "categoryHub", "occasionHub"].includes(page.pageType),
     );
-    expect(params).toHaveLength(corridors.length + listings.length);
+    // Spec 041's legal documents at this depth (TASK-183): the ones that exist, from the one
+    // existence predicate (the imprint is a depth-2 page).
+    const legal = listInfoPages().filter(
+      (page) => infoPagePath(page.pageId, page.locale).split("/").length === 4,
+    );
+    expect(legal.length).toBeGreaterThan(0);
+    expect(params).toHaveLength(
+      corridors.length + listings.length + legal.length,
+    );
 
     const kinds = await Promise.all(
       params.map(async (param) =>
@@ -302,6 +311,7 @@ describe("generateStaticParams is the union of both existence sets (AC-3)", () =
       [
         ...corridors.map(() => "corridor"),
         ...listings.map((page) => page.pageType),
+        ...legal.map(() => "infoPage"),
       ].sort(),
     );
   });

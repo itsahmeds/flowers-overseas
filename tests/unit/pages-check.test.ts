@@ -305,6 +305,43 @@ We deliver on the delivery date you choose. Our partner florist makes it.
           'heading: "Who runs 200+ florists"',
         ),
     },
+    // TASK-183 (`/break 270` hole 11, carried): the legal family's own prose fields.
+    {
+      field: "changeLog.0.summary",
+      path: "legal/en/cancellation.md",
+      edit: (s: string) =>
+        s.replace(
+          'summary: "First draft,',
+          'summary: "Written with 200+ florists. First draft,',
+        ),
+    },
+    {
+      field: "links.0.label",
+      path: "legal/en/cancellation.md",
+      edit: (s: string) =>
+        s.replace(
+          'label: "Our guarantee"',
+          'label: "Our guarantee, 200+ florists"',
+        ),
+    },
+    {
+      field: "labels.register.caption",
+      path: "legal/en/cookies.md",
+      edit: (s: string) =>
+        s.replace(
+          'caption: "Every cookie',
+          'caption: "Our 200+ florists see every cookie',
+        ),
+    },
+    {
+      field: "interim.heading",
+      path: "legal/en/cookies.md",
+      edit: (s: string) =>
+        s.replace(
+          'heading: "Your personal data"',
+          'heading: "Your data and our 200+ florists"',
+        ),
+    },
     {
       field: "links.0.label",
       path: "pages/en/about.md",

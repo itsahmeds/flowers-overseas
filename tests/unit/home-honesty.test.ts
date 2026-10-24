@@ -100,6 +100,18 @@ const GATED_UNRENDERED: readonly string[] = [
   "home.reviews.trustpilotPending",
 ];
 
+/**
+ * **The third exception: one exact sentence, never a key** (TASK-183). Spec 041 Appendix A.1's
+ * approved draft line for a legal document not in force says that "A lawyer will review them
+ * before our first order": the verb, done by a lawyer to our own terms, and no claim that anyone
+ * has reviewed us. The exemption is the key **and its exact text**, so any other wording under the
+ * key, or this wording under any other key, is scanned as before.
+ */
+const LEGAL_REVIEW_VERB: Readonly<Record<string, string>> = {
+  "infoPages.legal.notInForce":
+    "Draft, not in force. We are not taking orders yet, so these terms do not apply to anyone. A lawyer will review them before our first order, and the reviewed version will be published here with its date.",
+};
+
 function flat(
   tree: unknown,
   prefix = "",
@@ -129,6 +141,7 @@ describe("AC-15: the message catalogues carry no claim we cannot support", () =>
       for (const [key, value] of Object.entries(catalogue(locale))) {
         if (key === RETAINED_UNRENDERED) continue;
         if (GATED_UNRENDERED.includes(key)) continue;
+        if (LEGAL_REVIEW_VERB[key] === value) continue;
         for (const { name, pattern } of FORBIDDEN) {
           if (pattern.test(value)) offences.push(`${key}: ${name} — ${value}`);
         }
