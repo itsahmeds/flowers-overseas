@@ -86,7 +86,47 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/womens-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/poland/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/grandparents-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/new-year"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/name-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/poland/occasions/teachers-day"
     },
     {
       "pageType": "countryShopRoot",
@@ -174,7 +214,31 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/germany/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/germany/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/germany/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/germany/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/germany/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/germany/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/germany/occasions/new-year"
     },
     {
       "pageType": "countryShopRoot",
@@ -262,7 +326,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/france/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/france/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/new-year"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/grandmothers-day-in-france"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/france/occasions/may-day-lily-of-the-valley"
     },
     {
       "pageType": "countryShopRoot",
@@ -350,7 +446,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/spain/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/grandparents-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/new-year"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/spain/occasions/sant-jordi"
     },
     {
       "pageType": "countryShopRoot",
@@ -438,7 +566,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/womens-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/italy/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/grandparents-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/italy/occasions/new-year"
     },
     {
       "pageType": "countryShopRoot",
@@ -526,7 +686,35 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/womens-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/romania/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/romania/occasions/new-year"
     },
     {
       "pageType": "countryShopRoot",
@@ -614,7 +802,27 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en/netherlands/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en/netherlands/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/netherlands/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/netherlands/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/netherlands/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en/netherlands/occasions/new-year"
     },
     {
       "pageType": "categoryHub",
@@ -912,7 +1120,47 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/womens-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/poland/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/grandparents-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/new-year"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/name-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/poland/occasions/teachers-day"
     },
     {
       "pageType": "countryShopRoot",
@@ -1000,7 +1248,31 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/germany/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/germany/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/germany/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/germany/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/germany/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/germany/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/germany/occasions/new-year"
     },
     {
       "pageType": "countryShopRoot",
@@ -1088,7 +1360,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/france/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/new-year"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/grandmothers-day-in-france"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/france/occasions/may-day-lily-of-the-valley"
     },
     {
       "pageType": "countryShopRoot",
@@ -1176,7 +1480,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/spain/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/grandparents-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/new-year"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/spain/occasions/sant-jordi"
     },
     {
       "pageType": "countryShopRoot",
@@ -1264,7 +1600,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/womens-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/italy/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/grandparents-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/italy/occasions/new-year"
     },
     {
       "pageType": "countryShopRoot",
@@ -1352,7 +1720,35 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/womens-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/romania/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/all-saints-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/romania/occasions/new-year"
     },
     {
       "pageType": "countryShopRoot",
@@ -1440,7 +1836,27 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/en-gb/netherlands/occasions/valentines-day"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/en-gb/netherlands/occasions/mothers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/netherlands/occasions/fathers-day"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/netherlands/occasions/easter"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/netherlands/occasions/christmas"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/en-gb/netherlands/occasions/new-year"
     },
     {
       "pageType": "categoryHub",
@@ -1738,7 +2154,47 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/frauentag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/polen/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/grosselterntag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/neujahr"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/namenstag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/polen/anlaesse/lehrertag"
     },
     {
       "pageType": "countryShopRoot",
@@ -1826,7 +2282,31 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/deutschland/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/deutschland/anlaesse/neujahr"
     },
     {
       "pageType": "countryShopRoot",
@@ -1914,7 +2394,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/frankreich/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/neujahr"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/grossmuttertag-in-frankreich"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/frankreich/anlaesse/maigloeckchen-zum-1-mai"
     },
     {
       "pageType": "countryShopRoot",
@@ -2002,7 +2514,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/spanien/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/grosselterntag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/neujahr"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/spanien/anlaesse/sant-jordi"
     },
     {
       "pageType": "countryShopRoot",
@@ -2090,7 +2634,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/frauentag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/italien/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/grosselterntag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/italien/anlaesse/neujahr"
     },
     {
       "pageType": "countryShopRoot",
@@ -2178,7 +2754,35 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/frauentag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/rumaenien/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/allerheiligen"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/rumaenien/anlaesse/neujahr"
     },
     {
       "pageType": "countryShopRoot",
@@ -2266,7 +2870,27 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/de/niederlande/anlaesse/valentinstag"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/de/niederlande/anlaesse/muttertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/niederlande/anlaesse/vatertag"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/niederlande/anlaesse/ostern"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/niederlande/anlaesse/weihnachten"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/de/niederlande/anlaesse/neujahr"
     },
     {
       "pageType": "categoryHub",
@@ -2564,7 +3188,47 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/dzien-kobiet"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/polska/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/dzien-babci-i-dziadka"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/nowy-rok"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/imieniny"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/polska/okazje/dzien-nauczyciela"
     },
     {
       "pageType": "countryShopRoot",
@@ -2652,7 +3316,31 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/niemcy/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/niemcy/okazje/nowy-rok"
     },
     {
       "pageType": "countryShopRoot",
@@ -2740,7 +3428,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/francja/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/nowy-rok"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/dzien-babci-we-francji"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/francja/okazje/konwalie-na-1-maja"
     },
     {
       "pageType": "countryShopRoot",
@@ -2828,7 +3548,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/hiszpania/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/dzien-babci-i-dziadka"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/nowy-rok"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/hiszpania/okazje/sant-jordi"
     },
     {
       "pageType": "countryShopRoot",
@@ -2916,7 +3668,39 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/dzien-kobiet"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/wlochy/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/dzien-babci-i-dziadka"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/wlochy/okazje/nowy-rok"
     },
     {
       "pageType": "countryShopRoot",
@@ -3004,7 +3788,35 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/dzien-kobiet"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/rumunia/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/wszystkich-swietych"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/rumunia/okazje/nowy-rok"
     },
     {
       "pageType": "countryShopRoot",
@@ -3092,7 +3904,27 @@
     },
     {
       "pageType": "countryOccasion",
+      "path": "/pl/holandia/okazje/walentynki"
+    },
+    {
+      "pageType": "countryOccasion",
       "path": "/pl/holandia/okazje/dzien-matki"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/holandia/okazje/dzien-ojca"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/holandia/okazje/wielkanoc"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/holandia/okazje/boze-narodzenie"
+    },
+    {
+      "pageType": "countryOccasion",
+      "path": "/pl/holandia/okazje/nowy-rok"
     },
     {
       "pageType": "categoryHub",

@@ -481,7 +481,7 @@ test.describe("AC-21: the shop is reachable, and links at nothing that is not", 
         [...new Set(excluded.map((page) => page.pageType))],
         locale,
       ).toEqual(["categoryHub"]);
-      expect(expectedPages(locale).length, locale).toBe(186);
+      expect(expectedPages(locale).length, locale).toBe(238);
     }
   });
 });

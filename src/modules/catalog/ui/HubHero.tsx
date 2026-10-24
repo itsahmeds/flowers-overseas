@@ -24,6 +24,8 @@ import type { ReactElement, ReactNode } from "react";
 import type { ListingRegister } from "@/config/catalogue/listing-presentation";
 import type { LocaleCode } from "@/config/locales";
 import { formatDateParts } from "@/modules/i18n";
+
+import { formatOccasionDates } from "./ListingChrome";
 import {
   Display,
   Eyebrow,
@@ -367,6 +369,12 @@ export interface HubDateCard {
   readonly name: string;
   /** ISO `YYYY-MM-DD`, or `null` where the date cannot be computed (R3's honest blank). */
   readonly date: string | null;
+  /**
+   * The occurrence's other days, after `date` (spec 008 §14 A-founder-2026-10-21c, AC-76): the
+   * face then prints every day as one `formatList` of `dayMonth` values instead of one day's
+   * parts.
+   */
+  readonly alsoDates?: readonly string[] | undefined;
   readonly href?: string | undefined;
   readonly hook?: Readonly<Record<`data-${string}`, string>>;
 }
@@ -408,6 +416,17 @@ export function HubDateCards({
         {entry.date === null ? (
           <span className="text-ink-muted text-sm" data-fo-date-face>
             {unknownDate}
+          </span>
+        ) : entry.alsoDates !== undefined && entry.alsoDates.length > 0 ? (
+          <span
+            className="display text-ink text-[22px] leading-[1.1] md:text-[26px]"
+            data-fo-date-face
+          >
+            {formatOccasionDates(
+              [entry.date, ...entry.alsoDates],
+              locale,
+              "dayMonth",
+            )}
           </span>
         ) : (
           <DateFace

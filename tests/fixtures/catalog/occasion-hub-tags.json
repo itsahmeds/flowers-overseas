@@ -1,0 +1,186 @@
+{
+  "source": "specs/008-country-shop-category-occasion-pages.md §14 A-founder-2026-10-21c Appendix A",
+  "note": "The amendment's SKU list, verbatim. `existing: true` is the Appendix's `*`: a tag the product already had.",
+  "hubs": {
+    "grandparents_day": {
+      "count": 8,
+      "skus": [
+        { "sku": "FO-BQ-038", "existing": false },
+        { "sku": "FO-AR-013", "existing": false },
+        { "sku": "FO-AR-014", "existing": false },
+        { "sku": "FO-PT-001", "existing": false },
+        { "sku": "FO-PT-002", "existing": false },
+        { "sku": "FO-PT-003", "existing": false },
+        { "sku": "FO-PT-007", "existing": false },
+        { "sku": "FO-PT-008", "existing": false }
+      ]
+    },
+    "fathers_day": {
+      "count": 8,
+      "skus": [
+        { "sku": "FO-BQ-023", "existing": false },
+        { "sku": "FO-BQ-024", "existing": false },
+        { "sku": "FO-BQ-025", "existing": false },
+        { "sku": "FO-BQ-030", "existing": false },
+        { "sku": "FO-BQ-035", "existing": false },
+        { "sku": "FO-BQ-039", "existing": false },
+        { "sku": "FO-PT-005", "existing": false },
+        { "sku": "FO-GS-007", "existing": false }
+      ]
+    },
+    "teachers_day": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-010", "existing": false },
+        { "sku": "FO-BQ-029", "existing": false },
+        { "sku": "FO-BQ-031", "existing": false },
+        { "sku": "FO-BQ-033", "existing": false },
+        { "sku": "FO-BQ-034", "existing": false },
+        { "sku": "FO-AR-001", "existing": false },
+        { "sku": "FO-AR-005", "existing": false }
+      ]
+    },
+    "sant_jordi": {
+      "count": 6,
+      "skus": [
+        { "sku": "FO-BQ-002", "existing": false },
+        { "sku": "FO-BQ-006", "existing": false },
+        { "sku": "FO-AR-002", "existing": false },
+        { "sku": "FO-BQ-001", "existing": false },
+        { "sku": "FO-BQ-003", "existing": false },
+        { "sku": "FO-BQ-007", "existing": false }
+      ]
+    },
+    "fete_des_grands_meres": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-020", "existing": false },
+        { "sku": "FO-BQ-029", "existing": false },
+        { "sku": "FO-BQ-038", "existing": false },
+        { "sku": "FO-AR-014", "existing": false },
+        { "sku": "FO-PT-001", "existing": false },
+        { "sku": "FO-PT-002", "existing": false },
+        { "sku": "FO-PT-008", "existing": false }
+      ]
+    },
+    "muguet": {
+      "count": 6,
+      "skus": [
+        { "sku": "FO-BQ-005", "existing": false },
+        { "sku": "FO-BQ-011", "existing": false },
+        { "sku": "FO-BQ-022", "existing": false },
+        { "sku": "FO-BQ-040", "existing": false },
+        { "sku": "FO-PT-001", "existing": false },
+        { "sku": "FO-PT-007", "existing": false }
+      ]
+    },
+    "valentines": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-002", "existing": true },
+        { "sku": "FO-BQ-006", "existing": true },
+        { "sku": "FO-AR-002", "existing": false },
+        { "sku": "FO-BQ-003", "existing": false },
+        { "sku": "FO-BQ-007", "existing": false },
+        { "sku": "FO-GS-002", "existing": false },
+        { "sku": "FO-PT-005", "existing": false }
+      ]
+    },
+    "christmas": {
+      "count": 8,
+      "skus": [
+        { "sku": "FO-BQ-008", "existing": true },
+        { "sku": "FO-BQ-036", "existing": true },
+        { "sku": "FO-BQ-002", "existing": false },
+        { "sku": "FO-BQ-005", "existing": false },
+        { "sku": "FO-BQ-006", "existing": false },
+        { "sku": "FO-AR-002", "existing": false },
+        { "sku": "FO-PT-001", "existing": false },
+        { "sku": "FO-PT-005", "existing": false }
+      ]
+    },
+    "new_year": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-008", "existing": true },
+        { "sku": "FO-BQ-036", "existing": true },
+        { "sku": "FO-BQ-005", "existing": false },
+        { "sku": "FO-BQ-011", "existing": false },
+        { "sku": "FO-AR-008", "existing": false },
+        { "sku": "FO-PT-001", "existing": false },
+        { "sku": "FO-PT-003", "existing": false }
+      ]
+    },
+    "name_day": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-038", "existing": true },
+        { "sku": "FO-BQ-009", "existing": false },
+        { "sku": "FO-BQ-012", "existing": false },
+        { "sku": "FO-BQ-013", "existing": false },
+        { "sku": "FO-BQ-026", "existing": false },
+        { "sku": "FO-BQ-027", "existing": false },
+        { "sku": "FO-BQ-028", "existing": false }
+      ]
+    },
+    "graduation": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-014", "existing": true },
+        { "sku": "FO-BQ-027", "existing": true },
+        { "sku": "FO-BQ-032", "existing": true },
+        { "sku": "FO-GS-010", "existing": true },
+        { "sku": "FO-AR-004", "existing": false },
+        { "sku": "FO-BQ-026", "existing": false },
+        { "sku": "FO-GS-009", "existing": false }
+      ]
+    },
+    "retirement": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-025", "existing": true },
+        { "sku": "FO-BQ-030", "existing": true },
+        { "sku": "FO-AR-009", "existing": true },
+        { "sku": "FO-PT-003", "existing": true },
+        { "sku": "FO-PT-006", "existing": true },
+        { "sku": "FO-AR-011", "existing": false },
+        { "sku": "FO-AR-014", "existing": false }
+      ]
+    },
+    "easter": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-009", "existing": true },
+        { "sku": "FO-BQ-010", "existing": true },
+        { "sku": "FO-BQ-037", "existing": true },
+        { "sku": "FO-AR-011", "existing": true },
+        { "sku": "FO-GS-005", "existing": true },
+        { "sku": "FO-BQ-011", "existing": false },
+        { "sku": "FO-AR-005", "existing": false }
+      ]
+    },
+    "all_saints": {
+      "count": 6,
+      "skus": [
+        { "sku": "FO-AR-013", "existing": true },
+        { "sku": "FO-FN-001", "existing": true },
+        { "sku": "FO-FN-006", "existing": true },
+        { "sku": "FO-FN-007", "existing": true },
+        { "sku": "FO-FN-010", "existing": true },
+        { "sku": "FO-FN-008", "existing": false }
+      ]
+    },
+    "womens_day": {
+      "count": 7,
+      "skus": [
+        { "sku": "FO-BQ-012", "existing": true },
+        { "sku": "FO-BQ-013", "existing": true },
+        { "sku": "FO-BQ-037", "existing": true },
+        { "sku": "FO-AR-005", "existing": true },
+        { "sku": "FO-GS-005", "existing": true },
+        { "sku": "FO-BQ-009", "existing": false },
+        { "sku": "FO-BQ-010", "existing": false }
+      ]
+    }
+  }
+}

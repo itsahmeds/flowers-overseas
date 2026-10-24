@@ -42,9 +42,11 @@ describe("GET /api/send/{locale}", () => {
         "location",
       ),
     ).toBe("/en/poland/flowers/anniversary-flowers");
+    // Since spec 008 A-founder-2026-10-21c (TASK-316) Poland's Name Day clears the six-product
+    // floor, so the seasonal occasion lands on its own country occasion page.
     expect(
       (await send("en", "country=PL&occasion=nameDay")).headers.get("location"),
-    ).toBe("/en/poland/flowers");
+    ).toBe("/en/poland/occasions/name-day");
     expect((await send("de", "country=PL")).headers.get("location")).toBe(
       "/de/polen/blumen",
     );

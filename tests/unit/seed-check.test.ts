@@ -237,11 +237,24 @@ describe("spec 006 AC-10: the merged tree passes every rule family", () => {
     expect(SEED_CHECK_FAMILIES).toHaveLength(10);
   });
 
-  it("declares its cases from a table of 40 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
+  it("declares its cases from a table of 45 fixtures, and spec 009 AC-2's and spec 008 AC-2's rules have theirs (T-02)", () => {
     // The `describe.each` below declares its cases from this directory; an emptied or thinned
     // directory would otherwise just declare fewer cases and stay green. Spec 006 AC-33 added four
-    // (`copy/bad-dash-in-head-*`, `copy/bad-product-seo-title-shape`; TASK-242).
-    expect(cases).toHaveLength(40);
+    // (`copy/bad-dash-in-head-*`, `copy/bad-product-seo-title-shape`; TASK-242). Spec 008 AC-75
+    // added five (`schema/bad-also-*`: the `fixed` rule's `also` dates; TASK-317).
+    expect(cases).toHaveLength(45);
+    expect(
+      cases
+        .filter((testCase) => testCase.name.startsWith("bad-also-"))
+        .map((testCase) => testCase.name)
+        .sort(),
+    ).toEqual([
+      "bad-also-not-a-day.json",
+      "bad-also-on-nth-weekday.json",
+      "bad-also-repeats-also.json",
+      "bad-also-repeats-primary.json",
+      "bad-also-three-dates.json",
+    ]);
     // Spec 008 AC-2's eight cases are the `copy/bad-intro-*` and the three listing-slug files;
     // `copy/delivery-timing` also has spec 006's English product case, so it is counted by file.
     const spec008 = cases.filter(

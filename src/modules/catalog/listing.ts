@@ -88,6 +88,7 @@ import {
   corridorSlug,
   corridorState,
   destinationsHubHref,
+  nextOccurrenceDates,
   upcomingOccasions,
 } from "@/modules/geo";
 import {
@@ -282,6 +283,14 @@ export const ListingOccasionDateSchema = z
     iso2: z.string().length(2),
     nameKey: z.string().min(1),
     date: z.string().min(1).nullable(),
+    /**
+     * The **other days of the same occurrence**, after `date` and in the same year (spec 008 §14
+     * A-founder-2026-10-21c item 4, AC-76; TASK-317): Poland's Grandparents' Day is 21 January
+     * with 22 January here. Carried only by the occasion hub's rows and the country occasion's
+     * row, the three places that print every date; absent when the occurrence is one day, and
+     * never on the shop root's date-ordered rows, which list each occasion once by `date`.
+     */
+    alsoDates: z.array(z.string().min(1)).min(1).readonly().optional(),
     /**
      * The row's own listing page, **where one exists** (spec 008 §14 **A10**; TASK-111). The
      * shop root's table prints it as its third column — "which of these is a link" — and a row
@@ -1244,6 +1253,23 @@ function todayIso(now: Date): string {
   return now.toISOString().slice(0, 10);
 }
 
+/**
+ * The next occurrence's dates as a row carries them: `date` (the primary, or `null`, §14 Q6's
+ * honest blank) and, where the occurrence spans more than one day, `alsoDates` (spec 008 §14
+ * A-founder-2026-10-21c item 4; `nextOccurrenceDates()`, which takes them in the primary's year).
+ */
+function nextDatesIn(
+  occasionKey: string,
+  iso2: CountryIso2,
+  from: IsoDate,
+): Pick<ListingOccasionDate, "date" | "alsoDates"> {
+  const [date, ...alsoDates] = nextOccurrenceDates(occasionKey, iso2, from);
+  return {
+    date: date ?? null,
+    ...(alsoDates.length === 0 ? {} : { alsoDates }),
+  };
+}
+
 /** The next date of an occasion in a destination, or `null` — §14 Q6's honest blank. */
 function nextDateIn(
   occasionKey: string,
@@ -1290,9 +1316,9 @@ async function shopRootOccasionDates(
     const occasion = await getOccasion(dated.occasionKey);
     if (occasion === null) continue;
     // The third column of §14 **A10**: the row's own page, and only where the same predicate
-    // that gives it a URL says it has one. Mother's Day clears the floor in every destination
-    // today and nothing else does, so eight of the nine cells are empty — which is the honest
-    // shape of the rule and the reason the column waited for these pages (TASK-111).
+    // that gives it a URL says it has one; a row whose pair is below the floor is an empty cell
+    // (since spec 008 A-founder-2026-10-21c every observed occasion clears it). The row keeps
+    // the primary `date` alone: this is a date-ordered list, so an occasion is listed once.
     const slug = slugFor("occasion", dated.occasionKey, locale);
     const linked =
       familyPublished("countryOccasion") &&
@@ -1619,9 +1645,9 @@ export async function listingView(
               iso2: country2,
               nameKey: countryConfig(country2).nameKey,
               observed: isObservedIn(entityKey, country2),
-              date: isObservedIn(entityKey, country2)
-                ? nextDateIn(entityKey, country2, from)
-                : null,
+              ...(isObservedIn(entityKey, country2)
+                ? nextDatesIn(entityKey, country2, from)
+                : { date: null }),
               ...(href === undefined ? {} : { href }),
             };
           }),
@@ -1640,7 +1666,7 @@ export async function listingView(
               nameKey: countryConfig(iso2).nameKey,
               // The page exists only where the destination keeps the occasion (§2 row 8).
               observed: true,
-              date: nextDateIn(entityKey, iso2, from),
+              ...nextDatesIn(entityKey, iso2, from),
             },
           ],
         }

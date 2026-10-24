@@ -18,6 +18,10 @@ import { skipsOnCaseInsensitiveHost } from "../support/case-insensitive-host.ts"
 
 const SERVED = [
   "/en/poland/occasions/mothers-day",
+  // spec 008 A-founder-2026-10-21c (TASK-316): over the floor since the Appendix A tags
+  "/en/poland/occasions/all-saints-day",
+  "/en/poland/occasions/grandparents-day",
+  "/en/spain/occasions/sant-jordi",
   "/en-gb/poland/occasions/mothers-day",
   "/en/germany/occasions/mothers-day",
   "/en-gb/france/occasions/mothers-day",
@@ -31,6 +35,20 @@ async function status(
   return response.status();
 }
 
+test.describe("Poland's Grandparents' Day prints both days (spec 008 AC-76, T-76)", () => {
+  test("the dated line holds 21 and 22 January of one year, with JavaScript off", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    const response = await page.goto("/en/poland/occasions/grandparents-day");
+    expect(response?.status()).toBe(200);
+    const line = await page.locator("p[data-fo-occasion-date]").innerText();
+    expect(line).toMatch(/\b21 January (\d{4}) and \w+, 22 January \1\b/u);
+    await context.close();
+  });
+});
+
 test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
   for (const url of SERVED) {
     test(`${url} is served`, async ({ request }) => {
@@ -42,11 +60,13 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
     request,
   }) => {
     for (const url of [
-      // an occasion the destination observes that is below the six-product floor
-      "/en/poland/occasions/all-saints-day",
-      "/en/poland/occasions/womens-day",
-      // an occasion the destination does not observe
+      // an occasion the destination does not observe (since spec 008 A-founder-2026-10-21c no
+      // observed occasion sits below the six-product floor; that boundary is unit-tested in
+      // `tests/unit/catalog-listing.test.ts`)
       "/en/france/occasions/name-day",
+      "/en/netherlands/occasions/all-saints-day",
+      // an evergreen occasion, which no destination keeps as a dated day
+      "/en/poland/occasions/birthday",
       // an unknown slug, an unknown destination, a country we do not deliver to
       "/en/poland/occasions/arbor-day",
       "/en/atlantis/occasions/mothers-day",
@@ -160,11 +180,19 @@ test.describe("what the page renders (AC-6, AC-11, AC-23)", () => {
   }) => {
     await page.goto("/en/poland/flowers");
     const links = page.locator("[data-fo-occasion-page]");
-    await expect(links).toHaveCount(1);
-    await expect(links.first()).toHaveAttribute(
-      "href",
-      "/en/poland/occasions/mothers-day",
+    // Since spec 008 A-founder-2026-10-21c every occasion Poland keeps has a page, so every row
+    // of the table (the upcoming window moves with the date, so the count is not pinned) carries
+    // a link in its third column, and each link is that row's own Polish occasion page.
+    const rows = await page.locator("table tbody tr").count();
+    expect(rows).toBeGreaterThan(0);
+    await expect(links).toHaveCount(rows);
+    const hrefs = await links.evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute("href") ?? ""),
     );
+    for (const href of hrefs) {
+      expect(href).toMatch(/^\/en\/poland\/occasions\/[a-z-]+$/u);
+    }
+    expect(new Set(hrefs).size, "one link per occasion").toBe(rows);
     // The third column's header exists even where the cell is empty: the column is the table's,
     // not the row's.
     await expect(page.locator("table thead th")).toHaveCount(3);

@@ -9,7 +9,7 @@
     "`observed: false` with the `none` rule is a deliberate value, not a gap: it says the destination does not keep the occasion, which is what stops a country occasion page from existing for it (plan/02 §6, ADR-0007). konfirmation, student, omatag and 17_mai are market-specific to countries we do not deliver to yet and are unobserved everywhere.",
     "One observed occasion carries the `none` rule because it has no computable date: PL `name_day` (imieniny) is per name, so the occasion is a category rather than a dated event (plan/13 B15, spec 009 AC-12 — unchanged).",
     "RO `easter` carried the `none` rule until spec 009 AC-12 (TASK-122) added the seventh rule type. It now reads `orthodox_easter_offset(0)`: the Julian computus read on the Gregorian calendar. The 2026–2030 dates it produces — 12 Apr 2026, 2 May 2027, 16 Apr 2028, 8 Apr 2029, 28 Apr 2030 — were verified against the official calendar of the Romanian Patriarchate (calendar.patriarhia.ro, retrieved 2026-09-18, which publishes 2026 and gives 12 Apr 2026 as Învierea Domnului) and against two independent tables of the Julian computus; the verification and its sources are in the header of tests/fixtures/occasions.ts.",
-    "PL `grandparents_day` carries Dzień Babci (21 January); Dzień Dziadka (22 January) shares the same campaign window and would need a second occasion key to be its own row.",
+    "PL `grandparents_day` carries Dzień Babci (21 January) as its date and Dzień Dziadka (22 January) as its `also` date (spec 008 A-founder-2026-10-21c): one occasion over two days, one campaign window from the first, and the second day printed beside the first on the hub and the Poland occasion page only. 22 January is not a delivery closure, so it is not in holidays.json.",
     "`promoStartOffsetDays` is the number of days before the date that the campaign window opens: 21 for Christmas, 14 for Valentine's, Mother's Day, Easter and All Saints, 7 for the rest, 0 where there is no date."
   ],
   "rows": [
@@ -72,7 +72,13 @@
       "rule": {
         "kind": "fixed",
         "month": 1,
-        "day": 21
+        "day": 21,
+        "also": [
+          {
+            "month": 1,
+            "day": 22
+          }
+        ]
       },
       "observed": true,
       "indexableOverride": null,

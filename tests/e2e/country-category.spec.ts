@@ -80,8 +80,6 @@ test.describe("existence and the 404 shapes (AC-1, T-01)", () => {
       "/de/polen/blumen/roses",
       "/pl/polska/kwiaty/roses",
       "/de/polen/blumen/roze",
-      // TASK-111's occasion URL, which does not exist yet
-      "/en/poland/occasions/womens-day",
       // an unknown locale
       "/fr/poland/flowers/roses",
       // one segment too deep

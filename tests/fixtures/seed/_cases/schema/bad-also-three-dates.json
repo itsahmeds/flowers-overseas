@@ -1,0 +1,37 @@
+{
+  "family": "schema",
+  "rule": "schema",
+  "replaces": "occasion-country.json",
+  "expect": "at most 2 dates",
+  "why": "AC-75: a `fixed` rule's `also` holds at most two dates. An occasion with three or more extra days is not one occasion over a few days, and the cell that prints them would stop being one line.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "occasionKey": "grandparents_day",
+        "countryIso2": "PL"
+      },
+      "set": {
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 21,
+          "also": [
+            {
+              "month": 1,
+              "day": 22
+            },
+            {
+              "month": 1,
+              "day": 23
+            },
+            {
+              "month": 1,
+              "day": 24
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "family": "schema",
+  "rule": "schema",
+  "replaces": "occasion-country.json",
+  "expect": "Unrecognized key",
+  "why": "`also` is valid only on a `fixed` rule (spec 008 §14 A-founder-2026-10-21c item 4, AC-75). Every other rule kind is `.strict()`, so a second date on DE Muttertag's `nth_weekday` is an unrecognised key rather than a date the evaluator would silently ignore.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "occasionKey": "mothers_day",
+        "countryIso2": "DE"
+      },
+      "set": {
+        "rule": {
+          "kind": "nth_weekday",
+          "month": 5,
+          "weekday": 7,
+          "n": 2,
+          "also": [
+            {
+              "month": 5,
+              "day": 11
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

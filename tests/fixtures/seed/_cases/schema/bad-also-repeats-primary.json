@@ -1,0 +1,29 @@
+{
+  "family": "schema",
+  "rule": "schema",
+  "replaces": "occasion-country.json",
+  "expect": "repeats the primary date",
+  "why": "AC-75: an `also` date equal to the primary would print the same day twice in the hub's cell.",
+  "ops": [
+    {
+      "op": "setRow",
+      "match": {
+        "occasionKey": "grandparents_day",
+        "countryIso2": "PL"
+      },
+      "set": {
+        "rule": {
+          "kind": "fixed",
+          "month": 1,
+          "day": 21,
+          "also": [
+            {
+              "month": 1,
+              "day": 21
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

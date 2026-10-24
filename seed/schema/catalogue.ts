@@ -331,14 +331,80 @@ const MonthSchema = z.number().int().min(1).max(12);
  * ships the rule *data* and the shape that makes a malformed rule a parse error, and a second
  * date implementation living in the seed would be the way the two disagree.
  */
+/**
+ * The longest each month can be, in a leap year: an `also` pair must be a day that exists in some
+ * year (29 February does; 30 February and 31 April never do).
+ */
+const MONTH_LENGTH_IN_A_LEAP_YEAR = [
+  31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
+] as const;
+
+/** The most `also` dates one `fixed` rule may carry (spec 008 §14 A-founder-2026-10-21c item 4). */
+export const MAX_ALSO_DATES = 2;
+
+/** One extra `{ month, day }` of a `fixed` rule: a real calendar day. */
+const MonthDaySchema = z
+  .object({
+    month: MonthSchema,
+    day: z.number().int().min(1).max(31),
+  })
+  .strict()
+  .superRefine((pair, ctx) => {
+    const longest = MONTH_LENGTH_IN_A_LEAP_YEAR[pair.month - 1] ?? 0;
+    if (pair.day > longest) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["day"],
+        message: `\`also\` ${String(pair.month)}/${String(pair.day)} is not a real calendar day`,
+      });
+    }
+  });
+
 export const OccasionRuleSchema = z.discriminatedUnion("kind", [
+  /*
+   * `fixed` may carry `also`: one or two further days of the **same occasion in the same year**
+   * (spec 008 §14 A-founder-2026-10-21c item 4, Q-21c-1: Poland's Dzień Babci on 21 January and
+   * Dzień Dziadka on 22 January are one Grandparents' Day). Only `fixed` has it: every other
+   * variant is `.strict()`, so `also` there is an unrecognised key. `occasionDate()` still reads
+   * the primary `month`/`day` alone; `occasionDates()` adds the `also` days.
+   */
   z
     .object({
       kind: z.literal("fixed"),
       month: MonthSchema,
       day: z.number().int().min(1).max(31),
+      also: z
+        .array(MonthDaySchema)
+        .min(1, "a `fixed` rule's `also` holds at least one date when present")
+        .max(
+          MAX_ALSO_DATES,
+          `a \`fixed\` rule's \`also\` holds at most ${String(MAX_ALSO_DATES)} dates`,
+        )
+        .optional(),
     })
-    .strict(),
+    .strict()
+    .superRefine((rule, ctx) => {
+      const seen = new Set<string>([
+        `${String(rule.month)}/${String(rule.day)}`,
+      ]);
+      (rule.also ?? []).forEach((pair, index) => {
+        const key = `${String(pair.month)}/${String(pair.day)}`;
+        if (pair.month === rule.month && pair.day === rule.day) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["also", index],
+            message: `\`also\` ${key} repeats the primary date`,
+          });
+        } else if (seen.has(key)) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["also", index],
+            message: `\`also\` ${key} repeats another \`also\` date`,
+          });
+        }
+        seen.add(key);
+      });
+    }),
   z
     .object({
       kind: z.literal("nth_weekday"),

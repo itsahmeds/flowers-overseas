@@ -27,6 +27,7 @@ import {
   type IsoDate,
   type OccasionRuleKind,
   occasionDate,
+  occasionDates,
 } from "./evaluate.ts";
 
 /**
@@ -171,6 +172,38 @@ export function nextOccasions(
     NEXT_OCCASIONS_HORIZON_MONTHS,
     calendar,
   ).slice(0, n);
+}
+
+/**
+ * **Every date of the next occurrence** of one occasion in one destination, on or after `from`
+ * (spec 008 §14 A-founder-2026-10-21c item 4, AC-74; TASK-317): the primary date
+ * `upcomingOccasions()` finds in the `months` window, then the rule's `also` days **in the
+ * primary's year**. From 2027-01-22 Poland's Grandparents' Day is 2028-01-21 and 2028-01-22,
+ * never 2027-01-22 beside 2028-01-21: the occurrence is chosen by its primary date, and its other
+ * days come with it.
+ *
+ * `[]` when the destination has no dated occurrence in the window (unobserved, a `none` rule, or
+ * no row at all). Only the occasion hub's date table and first-screen cards and the country
+ * occasion page's dated line read this; every date-ordered list keeps `upcomingOccasions()`'s
+ * one primary date per occurrence.
+ */
+export function nextOccurrenceDates(
+  occasionKey: string,
+  countryIso2: string,
+  from: IsoDate,
+  months = 12,
+  calendar: readonly OccasionCalendarRow[] = committedOccasionCalendar,
+): readonly IsoDate[] {
+  const row = calendar.find(
+    (candidate) =>
+      candidate.occasionKey === occasionKey &&
+      candidate.countryIso2 === countryIso2,
+  );
+  if (row === undefined) return [];
+  // The same window read every date-ordered list makes, over this one row.
+  const [found] = upcomingOccasions(countryIso2, from, months, [row]);
+  if (found === undefined) return [];
+  return occasionDates(row.rule, Number(found.date.slice(0, 4)));
 }
 
 /**

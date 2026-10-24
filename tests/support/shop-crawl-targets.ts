@@ -113,7 +113,10 @@ export const PUBLISHED_DESTINATIONS = COUNTRIES.filter(
  *
  * `de` and `pl` carry `en`'s set since TASK-106 authored their category and occasion slugs
  * (spec 008 §13 Q10), and since TASK-173 the crawl must reach all of it there too: the header's
- * "Our selection" gave their shop roots and country categories an inbound edge.
+ * "Our selection" gave their shop roots and country categories an inbound edge. Spec 008
+ * A-founder-2026-10-21c (TASK-316) moved `countryOccasion` from 7 to 59: its Appendix A tags put
+ * every observed (occasion, destination) pair over the floor, and the shop root's date table and
+ * the chip rows link each one.
  */
 export const TARGETS: Readonly<
   Record<string, Readonly<Record<string, number>>>
@@ -122,7 +125,7 @@ export const TARGETS: Readonly<
   en: {
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
-    countryOccasion: 7,
+    countryOccasion: 59,
     categoryHub: 3,
     occasionHub: 28,
     occasionsIndex: 1,
@@ -130,7 +133,7 @@ export const TARGETS: Readonly<
   "en-gb": {
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
-    countryOccasion: 7,
+    countryOccasion: 59,
     categoryHub: 3,
     occasionHub: 28,
     occasionsIndex: 1,
@@ -138,7 +141,7 @@ export const TARGETS: Readonly<
   de: {
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
-    countryOccasion: 7,
+    countryOccasion: 59,
     categoryHub: 3,
     occasionHub: 28,
     occasionsIndex: 1,
@@ -146,7 +149,7 @@ export const TARGETS: Readonly<
   pl: {
     countryShopRoot: PUBLISHED_DESTINATIONS,
     countryCategory: 140,
-    countryOccasion: 7,
+    countryOccasion: 59,
     categoryHub: 3,
     occasionHub: 28,
     occasionsIndex: 1,
