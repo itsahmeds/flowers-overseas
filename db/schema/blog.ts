@@ -55,7 +55,10 @@ export const blogAuthor = pgTable(
       withTimezone: true,
       mode: "date",
     }),
-    withdrawnAt: timestamp("withdrawn_at", { withTimezone: true, mode: "date" }),
+    withdrawnAt: timestamp("withdrawn_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     source: text("source", { enum: blogSources }).notNull().default("real"),
     ...timestamps,
   },
@@ -130,10 +133,7 @@ export const blogPost = pgTable(
       "blog_post_unpublish_reason_check",
       sql.raw(`unpublish_reason IS NULL OR btrim(unpublish_reason) <> ''`),
     ),
-    check(
-      "blog_post_slug_check",
-      sql.raw(`slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`),
-    ),
+    check("blog_post_slug_check", sql.raw(`slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'`)),
     check("blog_post_source_check", sql.raw(`source IN ('seed', 'real')`)),
   ],
 );

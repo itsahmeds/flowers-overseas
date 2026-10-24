@@ -248,7 +248,8 @@ const rule = {
     /** @param {import("estree").Node} node @param {string} text */
     const checkSql = (node, text) => {
       for (const guarded of GUARDED_WRITES) {
-        if (writesColumnSql(text, guarded.columns)) report(node, guarded, "sql");
+        if (writesColumnSql(text, guarded.columns))
+          report(node, guarded, "sql");
       }
     };
 
