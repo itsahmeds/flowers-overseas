@@ -960,6 +960,14 @@ export const MASTHEAD_LINK_IDS = [
 /** The header's basket link (spec 010 D10): an icon, the `nav.basket` name and the badge slot. */
 export const BASKET_LINK_ID = "basket" satisfies SiteLinkId;
 
+/**
+ * The basket link's `rel` (spec 010 §14 A-founder-2026-10-22 item 12, AC-70): the page is
+ * `noindex, nofollow` and disallowed in `robots.txt`, and every page links to it, so the link
+ * passes no signal and is not a crawl target. Data here, so no module under `src/modules/` but
+ * `seo` spells a robots word (spec 009 AC-16's grep).
+ */
+export const BASKET_LINK_REL = "nofollow";
+
 /** The category row's end cluster: `For florists` (the locale switcher beside it is spec 003's). */
 export const CATEGORY_ROW_LINK_IDS = [
   "for-florists",

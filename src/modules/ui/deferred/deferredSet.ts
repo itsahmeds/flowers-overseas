@@ -179,7 +179,7 @@ export const NOT_DEFERRED: Readonly<Record<string, string>> = {
   "src/modules/ui/checkout/PlaceOrderButton.tsx":
     "a checkout island: mounted on no public page yet (spec 010; only /dev); clause 4 applies when a checkout page mounts it",
   "src/modules/ui/basket/BasketRefresh.tsx":
-    "the basket page's focus and count refresh after a Remove (spec 010 AC-79): mounted on /{locale}/basket only, a no-store noindex page outside the audited set, and it acts only after the buyer's own Remove",
+    "the basket page's focus and count refresh after a Remove (spec 010 AC-79): mounted on /{locale}/basket only, a no-store page that is never indexed and is outside the audited set, and it acts only after the buyer's own Remove",
   "src/modules/ui/admin/AdminConfirmSwitch.tsx":
     "the flags page's typed-key confirm switch (TASK-220): admin only, not a public page, no LCP budget",
   "src/modules/ui/admin/OrderQueuePoll.tsx":

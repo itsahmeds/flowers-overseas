@@ -54,6 +54,7 @@ import type { ReactElement, ReactNode } from "react";
 import { BASKET_MAX_LINES } from "../../../config/basket.ts";
 import { CATEGORY_NAV_LABEL_KEY } from "../../../config/categories.ts";
 import { COMPANY, whatsappHref } from "../../../config/company.ts";
+import { BASKET_LINK_REL } from "../../../config/site-links.ts";
 import { anyDeliveryDatesOpen } from "../../../config/countries.ts";
 import {
   type LocaleCode,
@@ -434,7 +435,7 @@ export function SiteHeader({
               )}
               data-fo-header-item="basket"
               href={basketHref}
-              rel="nofollow"
+              rel={BASKET_LINK_REL}
             >
               <Icon name="basket" size={24} strokeWidth={1.8} />
               <BasketCountBadge name={t("nav.basket")} />

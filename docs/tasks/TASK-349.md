@@ -29,13 +29,18 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size M
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- 2026-10-24 (self-review, PR 397): left for later, each named for its owner.
+  - `/dev/components` has no gallery entries for the six basket components yet; the system file `docs/design/system/components.dc.html` already draws them. Owner: TASK-204 (same components, same agent).
+  - The basket's date line uses `formatDate(…, "calendarDate")`, which prints the year ("Thursday 8 October 2026"); the board prints "Thursday 8 October". A yearless weekday style is an i18n-module change. Owner: TASK-204 (the checkout prints the same dates).
+  - The browser halves stay with TASK-208: the badge after the LCP mark, zero requests from the island, CLS 0, the 512 B Brotli measure, `/ar-XB` baselines, axe, the e2e JS-off Remove walk, `cf-cache-status` on staging.
+  - The language links on the basket point at each locale's home (`switcherSegments=[]`), not at `/{other}/basket`.
+  - The price-changed notice's "Continue at" posts `confirmPrice` with `returnStep=recipient`, so it lands on the checkout's first screen, not back on the basket (TASK-348's action takes a step, not the basket).
 
 ## Escalations
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24: copy for the founder's batch (Q28), not a blocker. (a) Appendix A's `checkout.basket.full` "Your basket holds up to {max} bouquets…" matches `RELAY_PATTERNS` `hold` (AC-74 would fail), so it ships as "Your basket has room for up to {max} bouquets. Please check out first, then start a new basket."; (b) `nav.basket` changes from the reviewed "Basket ({count, number})" to "Basket" (the chrome boards' gap note), so it is `reviewed: false` again; (c) one key not in Appendix A, `checkout.basket.addOns` "Add-ons · {list}". All `reviewed: false`. `nav.basket` and `nav.basketCount` render on indexable pages: the `en` unreviewed share is 4.70 % and `en-gb` 4.88 % (threshold 5 %), and spec 010 Q28 says the header island does not reach production before the founder approves these rows. Open, for the founder.
 
 ## Progress
 
@@ -43,11 +48,13 @@ One line per coherent step, newest last, written by the agent doing the work and
 the commit: what is done, what is next, anything a replacement agent must know. A finisher starts
 here.
 
-_Not started._
+- 2026-10-24 (resumed after a usage-limit cut-off): committed the previous agent's components, header link and count island; rebased onto main after PR 383 merged.
+- 2026-10-24: copy keys (en, pl plural forms, de/pl drafts), the basket route and view, the `basket` page type, `Disallow: /*/basket`, the basket header rules, the header slot page.
+- 2026-10-24: unit tests (count island, header link, SEO, view states), the integration test of `loadBasketPage` on a local PG16, the header baselines moved once; mutations run. Next: PR ready with `ci:full`.
 
 ## Result
 
 What shipped, in one paragraph: the PR, the tests added per layer, the numbers a reviewer needs
 (budgets, counts), and anything handed to a later task.
 
-_Pending._
+PR 397: `/{locale}/basket` (SSR per request, `noindex,nofollow` meta and header, `no-store`, no canonical, hreflang or JSON-LD) with every state of item 6 (empty, lines, demo banner, added, cap, mode, currency, unavailable, date gone with "Use {next}", price changed), built from the six components in `src/modules/ui/basket`; the header Basket link (`rel="nofollow"`, `nav.basket`, a 20 x 20 px empty slot) published in `site-links.ts`; the count filled after paint inside the motion module's existing chunk (no new request, no new chunk); `basket` registered as a `"never"` page type; `Disallow: /*/basket`. Tests: unit 4 new files (40 cases) plus 6 existing files moved for the new link; integration 1 new file (3 cases, local PG16). No build, e2e, visual or Lighthouse run locally: CI's. Browser halves are TASK-208's (see Carry-forwards).

@@ -42,6 +42,20 @@ interface BasketParams {
 /** The idle state a `useActionState` action starts from; a plain `<form>` never reads it back. */
 const IDLE: StepState = { status: "idle" };
 
+/**
+ * A step action bound to its locale and the idle state, as a plain `<form action>`. Each one
+ * answers a successful post with a 303 (`redirect()`); the `StepState` it returns for a refused
+ * post is what `useActionState` would re-render with, and a plain form, which this JavaScript-off
+ * page uses, discards it and re-renders the basket. React types a form action as returning
+ * `void`, so the returned state is dropped from the type here and nowhere else. The bound
+ * function stays the server reference itself, so the form posts to the action directly.
+ */
+function formAction(
+  action: (form: FormData) => Promise<StepState>,
+): (form: FormData) => Promise<void> {
+  return action as unknown as (form: FormData) => Promise<void>;
+}
+
 export async function generateMetadata({
   params,
 }: BasketParams): Promise<Metadata> {
@@ -79,18 +93,9 @@ export default async function BasketRoute({
   return (
     <BasketView
       actions={{
-        remove: async (form: FormData): Promise<void> => {
-          "use server";
-          await removeLineAction(locale, IDLE, form);
-        },
-        useNextDate: async (form: FormData): Promise<void> => {
-          "use server";
-          await nextDateAction(locale, IDLE, form);
-        },
-        confirmPrice: async (form: FormData): Promise<void> => {
-          "use server";
-          await updateSelection(locale, IDLE, form);
-        },
+        remove: formAction(removeLineAction.bind(null, locale, IDLE)),
+        useNextDate: formAction(nextDateAction.bind(null, locale, IDLE)),
+        confirmPrice: formAction(updateSelection.bind(null, locale, IDLE)),
       }}
       hrefs={{
         home,
