@@ -1497,7 +1497,9 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
  *  - Place: out of flow in the first-screen grid (its containing block), so the band's layout is
  *    the same with it or without it (CLS 0). It is centred in the gap between the end of column 6
  *    (the H1's column) and the start of the dates, 74 px from the grid's top, as wide as that gap
- *    up to 180 px, at the viewBox's 3∶2. The gap is the grid's own arithmetic, kept in step with
+ *    less 15 px each side, up to 180 px, at the viewBox's 3∶2 (the artboard's 1440 geometry: a
+ *    210 px gap, a 180 px SVG; the margin keeps its box off the H1's column box where the gap is
+ *    narrower, AC-19). The gap is the grid's own arithmetic, kept in step with
  *    `CorridorFirstScreen`'s `md:grid-cols-12 md:gap-x-[clamp(24px,2.22vw,32px)]`, the copy's
  *    `md:col-span-6` and the dates' `md:col-start-8 md:max-w-[470px] md:justify-self-end`; the
  *    e2e suite measures the boxes at 768, 1,024, 1,280 and 1,440. Not displayed below `md`
@@ -1540,7 +1542,7 @@ details[data-fo-menu][data-fo-closing] [data-fo-menu-scrim],
     100% - var(--fo-route-h1) -
       min(470px, var(--fo-route-col) * 5 + var(--fo-route-gutter) * 4)
   );
-  --fo-route-size: min(180px, var(--fo-route-gap));
+  --fo-route-size: min(180px, var(--fo-route-gap) - 30px);
   --fo-route-delay: calc(var(--duration-base) * 2.5);
 
   position: absolute;
