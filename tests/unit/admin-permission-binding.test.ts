@@ -144,6 +144,8 @@ describe("/admin/users is bound to users.manage (AC-4)", () => {
     expect(pages.sort()).toEqual([
       "src/app/admin/(signed-in)/audit/page.tsx",
       "src/app/admin/(signed-in)/flags/page.tsx",
+      "src/app/admin/(signed-in)/orders/[id]/page.tsx",
+      "src/app/admin/(signed-in)/orders/page.tsx",
       "src/app/admin/(signed-in)/page.tsx",
       "src/app/admin/(signed-in)/users/page.tsx",
     ]);
@@ -209,6 +211,40 @@ describe("/admin/flags is bound to flags.toggle (AC-4, AC-14; TASK-220)", () => 
     const digest = await digestOf(() =>
       page.default({ searchParams: Promise.resolve({}) }),
     );
+    expect(digest).not.toBe(FORBIDDEN);
+    expect(digest).not.toMatch(/;401$/u);
+  });
+});
+
+describe("/admin/orders, its detail and its head are bound to orders.view (AC-4; TASK-222)", () => {
+  const ORDER = "0b7e1c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d";
+  const views = {
+    list: async () =>
+      (await import("../../src/app/admin/(signed-in)/orders/page.tsx")).default(
+        { searchParams: Promise.resolve({}) },
+      ),
+    detail: async () =>
+      (
+        await import("../../src/app/admin/(signed-in)/orders/[id]/page.tsx")
+      ).default({ params: Promise.resolve({ id: ORDER }) }),
+    head: async () =>
+      (await import("../../src/app/admin/api/orders/head/route.ts")).GET(),
+  };
+
+  it.each(Object.keys(views))("%s answers 403 to content", async (view) => {
+    session.current = as("content");
+    expect(await digestOf(views[view as keyof typeof views])).toBe(FORBIDDEN);
+  });
+
+  it.each(
+    (["admin", "ops", "finance"] as const).flatMap((role) =>
+      (Object.keys(views) as (keyof typeof views)[]).map(
+        (view) => [role, view] as const,
+      ),
+    ),
+  )("lets %s past the guard of %s", async (role, view) => {
+    session.current = as(role);
+    const digest = await digestOf(views[view]);
     expect(digest).not.toBe(FORBIDDEN);
     expect(digest).not.toMatch(/;401$/u);
   });

@@ -145,6 +145,38 @@ const EXTERNAL_QUERY_KEYS: readonly {
     entry: "src/app/admin/(signed-in)/flags/actions.ts#ref",
     reason: "/admin/flags's toggled scope: an ISO 3166 destination code or `*`",
   },
+  // Spec 012 §2.6 (TASK-222): /admin/orders's GET filters and the poll's `since`, built by
+  // `orderQueueHref` on a `noindex`, `no-store`, admin-only page. Codes and dates only; not
+  // listing keys (`page` is already one).
+  {
+    entry: "src/modules/admin/orders.ts#status",
+    reason: "/admin/orders's status filter: an `order_status` key (`routed`)",
+  },
+  {
+    entry: "src/modules/admin/orders.ts#country",
+    reason: "/admin/orders's destination filter: an ISO 3166 alpha-2 code",
+  },
+  {
+    entry: "src/modules/admin/orders.ts#deliveryFrom",
+    reason: "/admin/orders's delivery-date filter, first day (an ISO date)",
+  },
+  {
+    entry: "src/modules/admin/orders.ts#deliveryTo",
+    reason: "/admin/orders's delivery-date filter, last day (an ISO date)",
+  },
+  {
+    entry: "src/modules/admin/orders.ts#placedFrom",
+    reason: "/admin/orders's placed-date filter, first day (an ISO date)",
+  },
+  {
+    entry: "src/modules/admin/orders.ts#placedTo",
+    reason: "/admin/orders's placed-date filter, last day (an ISO date)",
+  },
+  {
+    entry: "src/modules/admin/orders.ts#since",
+    reason:
+      "the queue's head instant the open tab started from (an ISO instant), which marks rows as New",
+  },
 ];
 const EXTERNAL = EXTERNAL_QUERY_KEYS.map(({ entry }) => entry);
 
@@ -565,6 +597,13 @@ describe("the real tree (T-59)", () => {
       "src/app/admin/(signed-in)/flags/actions.ts#result",
       "src/app/admin/(signed-in)/flags/actions.ts#key",
       "src/app/admin/(signed-in)/flags/actions.ts#ref",
+      "src/modules/admin/orders.ts#status",
+      "src/modules/admin/orders.ts#country",
+      "src/modules/admin/orders.ts#deliveryFrom",
+      "src/modules/admin/orders.ts#deliveryTo",
+      "src/modules/admin/orders.ts#placedFrom",
+      "src/modules/admin/orders.ts#placedTo",
+      "src/modules/admin/orders.ts#since",
     ]);
     expect(urlPiiViolations(repoRoot)).toEqual([]);
   });
@@ -579,7 +618,7 @@ describe("the real tree (T-59)", () => {
     expect(named.some((n) => n.key === "page")).toBe(true);
   });
 
-  it("keeps today's five dynamic segments, none a PII key", () => {
+  it("keeps today's six dynamic segments, none a PII key", () => {
     const names = dirsUnder(join(repoRoot, "src/app")).flatMap((dir) => {
       const name = SEGMENT.exec(dir.slice(dir.lastIndexOf(sep) + 1))?.[1];
       return name === undefined ? [] : [name];
@@ -587,6 +626,8 @@ describe("the real tree (T-59)", () => {
     expect([...new Set(names)].sort()).toEqual([
       "child",
       "grandchild",
+      // `/admin/orders/[id]` (TASK-222): an order's uuid.
+      "id",
       "locale",
       "nextauth",
       "segment",

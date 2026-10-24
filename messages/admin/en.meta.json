@@ -594,6 +594,606 @@
     "reviewed": false,
     "sourceHash": "6b0cc904d081a8c11cfdaec667f05132cbfa8a57f5040d27d5fc0f2fc50d0dc6"
   },
+  "admin.orders.buyerSees": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9fa8526167c6ea0e857b5746d5cb2c6715e368769fbd09a281e825c652a5305a"
+  },
+  "admin.orders.column.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8ad01a2ec4283aa8c2384fdb45881854f7598394e9f5ae51060497411f0f571f"
+  },
+  "admin.orders.column.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.orders.column.order": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6be090825c9971035aee21d9ac0fc9c32f279b921e956026460e4cc1eb611dd6"
+  },
+  "admin.orders.column.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0fba2f93bd1b57ba6ed05ea4ff8a7bce490e447eee1ecfe965e005f1ca17a7ff"
+  },
+  "admin.orders.column.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.orders.column.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "admin.orders.detail.addon": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1d36d78123e14173ec4f87a1eef380e88858676bf831b571fad7fe0f347ba28e"
+  },
+  "admin.orders.detail.address": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "56ef8f20955f256423d328f65b62106005252551db25d660031887e421cb4684"
+  },
+  "admin.orders.detail.amount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "49e96d7cdf58069cc793555324e2226642f2f7f8bfff4cebe0c11a61eecef60a"
+  },
+  "admin.orders.detail.answer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b2a3aa602762a782e47a4f8e93bb5ae1b8819d1b92b7e6ceb3ef46a3c7077eb0"
+  },
+  "admin.orders.detail.answerBy": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6dce23ebd5eb32862f3397bdc7fe6d344fc9be2e3d951b51b8926cb50dbc83d2"
+  },
+  "admin.orders.detail.answered.accept": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "aeda042acc711569c5dcd1226c7e4c2560c6fd2b88c103041bc861f9e9c692d7"
+  },
+  "admin.orders.detail.answered.decline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9b6e96e63cccf0aec479dba183b8a53ef6d7001e7fbb0cd22dd4f7a9c133eb8b"
+  },
+  "admin.orders.detail.answered.timeout": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7ea74c5c40712b383d8029fbe3a8934c54e1549d1e9ad0adbfb93213f0ca0098"
+  },
+  "admin.orders.detail.assignments": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2c7e21f63a475b9dfa5456ebbf90d4e9df5e89aedec821a05ba23312e640f4d9"
+  },
+  "admin.orders.detail.back": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "admin.orders.detail.captured": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a03fa9ad749bcce484582760843efbb983ea7ec92c3444cbabafe1517b3dac5"
+  },
+  "admin.orders.detail.cardMessage": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c0d6c80a4413b3c2e3ebd6ece9ea56d85d3898afacfbff5f9e152b5bc3ab9f14"
+  },
+  "admin.orders.detail.city": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fc33f73246f48295702f404001e74d56f14d2f82689b2816422dc1a4c2ec4fb2"
+  },
+  "admin.orders.detail.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52bfe584a5fc450539e2aa651b990fa2415060492a243816ab2994292089c6fd"
+  },
+  "admin.orders.detail.deliveryDate": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52bfe584a5fc450539e2aa651b990fa2415060492a243816ab2994292089c6fd"
+  },
+  "admin.orders.detail.deliveryNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "79cfb80448a908ff9d9cf3e4a150aab08acc28c44e774b15d88bb2fca988cce8"
+  },
+  "admin.orders.detail.deliveryValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3986ad5760243ee4e75c5a5133ab640619dc8286d3c773105b96952f6cb2726b"
+  },
+  "admin.orders.detail.deliveryWindowValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81b992cb15bd293f5adadd0d8f538aa0775f1a10805fdcf28c809e3b0e74a48"
+  },
+  "admin.orders.detail.destination": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "293d404a500f5f9a149916d810ff4f4231bd5d6ecd25eb0f55a867e2095eca48"
+  },
+  "admin.orders.detail.destinationValue": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "1c78a5a665ad11f3bac785799d93b6f8d9771c5846eba4a5f3e1a113945bc37a"
+  },
+  "admin.orders.detail.entered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "274b975d45b6878100044cda11281b9ad7c1d5a2f65c998d0b72efb752f14c33"
+  },
+  "admin.orders.detail.florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "bc73228122425f9fbfab87602198c7d77b556ce31b0a87c7dd592c1f180ee3f6"
+  },
+  "admin.orders.detail.hidePayload": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c670e14cb724faed0fbc6f911e56eebb9454d096e7d584b407e875055d181208"
+  },
+  "admin.orders.detail.included": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7f0f70e643bcb02dfc5f7e678cc06d692e53875ee9ead594e50bae7d3354b305"
+  },
+  "admin.orders.detail.item": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "652bcc3a478428893cc505ae19f847b49be52f861bedc64bb192ceed409fa733"
+  },
+  "admin.orders.detail.lineWithTier": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "433297aaf14ed5b8c7c57d685d4fa92f0e4719ac10ec28d322f82c4f8e6f09de"
+  },
+  "admin.orders.detail.lines": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "47b12f2b9c49f68a38059afd94ada432470f49fc622d0f89fbf826c959a85f40"
+  },
+  "admin.orders.detail.method": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "52a0f9b65b278850b53aad23136b5d574299e8fb92311304346d19736b7e9cce"
+  },
+  "admin.orders.detail.mode": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5e23ec6a300dc60a79641769017e16e9bf042cbd8fd0a54586a048ab9da972ff"
+  },
+  "admin.orders.detail.moved": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "0bcc686f9c37249ff9d645bbaf702c5d7e51f50e103effbcc3b3d62b776eef03"
+  },
+  "admin.orders.detail.name": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "admin.orders.detail.noActions": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "750205d80b5c7251c664106e7167967081b3e9d370039d1c505177dc6b1e6093"
+  },
+  "admin.orders.detail.noAssignments": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2ccb947c91f7ab80f9bfb818ddfeb53a9b8e29461febd93cb4e4ba75476bf67d"
+  },
+  "admin.orders.detail.noPayment": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "65cefa0aa7d50a7e51864af382ba4048e3509da47d914ced6602ee12a7fc760b"
+  },
+  "admin.orders.detail.noPaymentDemo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7bb223a04d55acc379325f2141b87289f6833d1c9b6272f6213286262d0ae8e7"
+  },
+  "admin.orders.detail.none": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "admin.orders.detail.notCaptured": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e6eedb5caa1cced91bdd0d4f4c9e2fe13e5510c643e6322e8b40474c4f3232e5"
+  },
+  "admin.orders.detail.offered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "95e7004b8df51143703395bb9667b8e0b4a31c9ce0184188c3a6ed1daf84c083"
+  },
+  "admin.orders.detail.paymentStatus": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.orders.detail.payments": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "632e1c5839411a1009ef268e992c4b183cb1d5381b198eac0f8323213a61ed82"
+  },
+  "admin.orders.detail.phone": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "63dceb8800b2dd4af9567a1f54f03b7c3dbdc27fac4799091ebfcc4928899ee5"
+  },
+  "admin.orders.detail.place": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e9463dccf0541a9778589691543fd69249759d5de6a97cd57d6420c3e5d92baa"
+  },
+  "admin.orders.detail.placeKind.cemetery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9d2c71072ee3c8483adc3ed641a25b68d5d5149cf92ad074fa607036d77da775"
+  },
+  "admin.orders.detail.placeKind.church": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "837aa0d985b27908439665fd776c4d61dc117e0efb1094fced706f2a11c1a4a1"
+  },
+  "admin.orders.detail.placeKind.funeral_home": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "2c3deaa55aecbfd47e4c8b0544fdae3edea7ed16b61a41311ff3e9f1bad395d6"
+  },
+  "admin.orders.detail.placeKind.home": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3a78695388b38b5cceefaf6796b0137877514593543b91af2752d5a17e3d736c"
+  },
+  "admin.orders.detail.placeKind.hospital": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "97e9623661f2970acb41495153876df0836f6894398e2c45bb5a29d109ba9a46"
+  },
+  "admin.orders.detail.placeKind.hotel": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "509b3c4e5dad347d7d5fa440fc03e800e196e15eed6f3aa884534b65e8da0c24"
+  },
+  "admin.orders.detail.placeKind.work": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "104ab9213e28e4ff5ba0b4086457503e8a4656815cfec7bcf2799d76a3db081d"
+  },
+  "admin.orders.detail.placedAt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "af27477fc4ee7bf2b235b703719078e03932c0f02cf1d0c6ed337a3c147cbe74"
+  },
+  "admin.orders.detail.product": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "admin.orders.detail.provider": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "472590ae974d4c1f44b3780df0b152d9119f076c61bfb3e8cb6affd7889ac0a8"
+  },
+  "admin.orders.detail.quantity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "63c205d2b4348e34b50222a374953393a8fce24e7fc838e1288ee4c76733e320"
+  },
+  "admin.orders.detail.reason": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "admin.orders.detail.recipient": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
+  },
+  "admin.orders.detail.recipientHidden": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "125b9bc29a05bfe1bf0031958d51354e54fe87debef85bca508115535979c9b6"
+  },
+  "admin.orders.detail.recipientLogged": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "74b26c6db3fca6dda88f1222f317e34dc9b25a82cff4902f3e31de8cec52041a"
+  },
+  "admin.orders.detail.showPayload": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d35b28ee84b760191b187319e5f8da27d9847a44ed9430d4d20dd5bf508661ba"
+  },
+  "admin.orders.detail.signAs": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "08251562b3407a16f7b71d43a4b305003a39986040eb2935e76e2b12b426d66c"
+  },
+  "admin.orders.detail.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.orders.detail.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8e76a94ac8320d515375e625bef1829238b097ecbd33611b59eeefd4ffefebfb"
+  },
+  "admin.orders.detail.surcharge": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4e22536b849a07f2cab45573ab6e989b4a80211445b79cdb67b32777c8ea54a8"
+  },
+  "admin.orders.detail.timeline": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9dcff98e275f0cb911f1523ef5c629c0aabe9e3b642a6b71ac7d2569e9717121"
+  },
+  "admin.orders.detail.timelineNote": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "e5d50d6fa37a98987784e91556c7ffc871d9acb0af0d1032f2dfc7784e31dedf"
+  },
+  "admin.orders.detail.total": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3bb4fe184a8f9adf612106f3edb7d8444c9c755ab31215e26f0a27399e44ebd8"
+  },
+  "admin.orders.detail.totalShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "admin.orders.detail.unchanged": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c646c7d42db6c37e3e6309bb948352a5d3c76e6d530decf624f5a1d002568326"
+  },
+  "admin.orders.detail.vat": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "4885a17383f949c7b45650abce6474987141080831e902c37623e8a09ec3188f"
+  },
+  "admin.orders.detail.vatOf": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f2697cc495d66b0be4b6787b6a9d64d7ff4eaf8581e138b979d692bef39dbe72"
+  },
+  "admin.orders.detail.waiting": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6e293a8c009e001103199768f7bcbea1729c59f9fc1ef2748958757f47ab99ed"
+  },
+  "admin.orders.empty.body": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "6e6acc7ce35bf8157c80b092d8d1a3b88f57ed02480fd78a79304ba73a16c6d6"
+  },
+  "admin.orders.empty.clear": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "admin.orders.empty.filteredTitle": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "398c277a2d51114a312793f37d7585fe318832ffe9da45d4ac5d2c00b6e97879"
+  },
+  "admin.orders.empty.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "104b6eb41be38459892a2c6580c52ebeeaad9fd15e3d392c55a7d2dfc8a61936"
+  },
+  "admin.orders.filter.apply": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "31e392d1c0378beca611de66c0f4c71cba29159905cc54242d9bddee5b23d851"
+  },
+  "admin.orders.filter.clear": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "83b12c2216efb4fdc924e1deb5182e905e4926ed0c1c324d467107f46d5a26a9"
+  },
+  "admin.orders.filter.delivery": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "admin.orders.filter.destination": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "293d404a500f5f9a149916d810ff4f4231bd5d6ecd25eb0f55a867e2095eca48"
+  },
+  "admin.orders.filter.destinationAny": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "3a14f8f687cb73427ece28c9f78b91cf5abb6f8bb5f61c9f15981a7c2ff6f50b"
+  },
+  "admin.orders.filter.from": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "admin.orders.filter.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "7e74a045d45ea8e9ed9a83c5e7ccd594a4b6ceb22bf4206dde50eae3758ad9de"
+  },
+  "admin.orders.filter.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "cfa70d64a48226d4b667f0a25442e3ab81b6195268ad85acec3f6e909669394f"
+  },
+  "admin.orders.filter.status": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "admin.orders.filter.statusAny": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "ac78229d6b822ce5ab1df22e38cd10c8d31d718c851f8b55a0899e82f9006b71"
+  },
+  "admin.orders.filter.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "admin.orders.filter.summaryCount": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "da897ba789733741a1b583e76b01219dc8028db2c461eebfddf61b5e6a02cf87"
+  },
+  "admin.orders.filter.to": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f4b06ef6d3c81436f60a318c81c42f8f7e2d774d45a22f3b9b5f3b6980d28146"
+  },
+  "admin.orders.live.arrived": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "5ea43b3a8e76ffe8d6923e6987e9ca835e64aa63ec0ce63ebfd6ff5c4ecdad45"
+  },
+  "admin.orders.live.checking": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9166a62d899b30d7b1d5d1dfb0b5ff95d2da189e0544ee29021539d84ee05d43"
+  },
+  "admin.orders.live.paused": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "97f029f1cdb1379de9420b288ea355f28aa43e702fd79741d19163eb63499001"
+  },
+  "admin.orders.live.resume": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "d640c7421da066618a39daf4266da5f61f66a9b1afcd626481b831a17064965d"
+  },
+  "admin.orders.mode.demo": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8a2cc0673b1c428315fe84c0138d95c3ddda30baf81e7d9aa821f1ca47098193"
+  },
+  "admin.orders.mode.live": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
+  },
+  "admin.orders.mode.test": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "532eaabd9574880dbf76b9b8cc00832c20a6ec113d682299550d7a6e0f345e25"
+  },
+  "admin.orders.new": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "admin.orders.noCity": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "172f291abf55f2b31daaa3f885db30c4bdd29fbec957505dea41c60d43c6401e"
+  },
+  "admin.orders.pager.label": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9046da16aea909ba75a36cec13b56cb2144dc2ede45cde361e99a8d79802eabf"
+  },
+  "admin.orders.pager.newer": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "718c45696575a3aae41c3701a734767de3f3d1d7658c292804a6e3e90b1ce3a5"
+  },
+  "admin.orders.pager.older": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "03281c889c2869e091390f9ad5dd13f0f0e46b42c9c4698f857902451deb3450"
+  },
+  "admin.orders.pager.summary": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "773d600ab136f90a401140cb41138771f965dfa313cf53c4a6610bc59b8ed66e"
+  },
+  "admin.orders.pager.summaryShort": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "14a95955d30bcba7fc7b32cd8d28f7f48c3e8e821d47abf2ec44a03d6cfbf595"
+  },
+  "admin.orders.placedAt": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "af27477fc4ee7bf2b235b703719078e03932c0f02cf1d0c6ed337a3c147cbe74"
+  },
+  "admin.orders.projection.being_made": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a11f47e379a1b37f2d6c1db4bd4212d6575857f2e167f538da40f23631b24d87"
+  },
+  "admin.orders.projection.cancelled": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "8b47045eb7b8ca42aa967f33ee1d014ba89f8d1ac207426b482d34b5c0d90935"
+  },
+  "admin.orders.projection.closed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "c3eefb58d7c42440a9d4abec51d629544d635a6d936ff3c4d3fca96d611b3cf3"
+  },
+  "admin.orders.projection.confirmed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "9599915bd8cd62b6b42e6c37b5b681a76991a7c5be1fde9971278ce65b99d550"
+  },
+  "admin.orders.projection.delivered": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "373e0712c83cffe15ff427b60e788b549f82496fe5fd5391f7921832b04c6b20"
+  },
+  "admin.orders.projection.on_its_way": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "a305100c59d5a82df7ead8934aecd2790289c4f7c69e71427a47661809618e2d"
+  },
+  "admin.orders.projection.placed": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "f41690bb3447338e9e155d152b8bd4ff2778cec0cad4d752feca22044c280c28"
+  },
+  "admin.orders.projection.with_florist": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "522b621c4b209b2c674ab07771cc3825f89e3d3a67aa87748772b50802468257"
+  },
+  "admin.orders.rowLine": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "48d5b8b8877b7da71e2c43ce85f764e251fbf3cf356ffb4acf06f46072f24d9c"
+  },
+  "admin.orders.title": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
+  },
+  "admin.orders.unassigned": {
+    "source": "human",
+    "reviewed": false,
+    "sourceHash": "14d33bd014e6b4e7c3590a8a12e1ec4951d777593d6d6aef9ebe5faac9c8dac0"
+  },
   "admin.roles.admin": {
     "source": "human",
     "reviewed": false,

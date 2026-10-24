@@ -18,14 +18,22 @@ import type { ReactElement, ReactNode } from "react";
 export function AdminFilterBar({
   children,
   stacked = false,
+  label,
+  action,
 }: {
   readonly children: ReactNode;
   /** One column, as inside the 390 disclosure. */
   readonly stacked?: boolean;
+  /** The form's accessible name ("Filter orders"). */
+  readonly label?: string;
+  /** The page the filters apply to; the current one when absent. */
+  readonly action?: string;
 }): ReactElement {
   return (
     <form
       method="get"
+      {...(label === undefined ? {} : { "aria-label": label })}
+      {...(action === undefined ? {} : { action })}
       className={`bg-card gap-x-[12px] gap-y-[10px] rounded-[12px] px-[14px] py-[12px] shadow-[inset_0_0_0_1px_var(--color-rule)] ${
         stacked ? "grid grid-cols-[minmax(0,1fr)]" : "flex flex-wrap items-end"
       }`}
@@ -89,6 +97,7 @@ export function AdminFilterSelect({
 /** A date range under one visible label; each input carries its own name (`.ad-range`). */
 export function AdminFilterDateRange({
   idPrefix,
+  names = ["from", "to"],
   label,
   fromLabel,
   toLabel,
@@ -97,6 +106,8 @@ export function AdminFilterDateRange({
   stacked = false,
 }: {
   readonly idPrefix: string;
+  /** The two inputs' query keys; `from` and `to` unless a page names its own. */
+  readonly names?: readonly [string, string];
   readonly label: string;
   readonly fromLabel: string;
   readonly toLabel: string;
@@ -115,7 +126,7 @@ export function AdminFilterDateRange({
       </label>
       <input
         id={`${idPrefix}-${key}`}
-        name={key}
+        name={key === "from" ? names[0] : names[1]}
         type="date"
         defaultValue={value ?? ""}
         className={`${FIELD_CONTROL} ${stacked ? "w-full min-w-0" : "min-w-[118px]"}`}
@@ -149,6 +160,24 @@ export function AdminFilterSubmit({
   );
 }
 
+/** The link beside the submit that clears every filter (`.ad-a`, centred on the row). */
+export function AdminFilterClear({
+  href,
+  children,
+}: {
+  readonly href: string;
+  readonly children: ReactNode;
+}): ReactElement {
+  return (
+    <a
+      href={href}
+      className="text-link inline-flex min-h-[36px] items-center self-center text-[14px] font-bold underline underline-offset-[3px]"
+    >
+      {children}
+    </a>
+  );
+}
+
 /** The 390 disclosure around the filter bar (`.ad-mfilters`). */
 export function AdminFilterDisclosure({
   summary,
@@ -174,15 +203,19 @@ export interface AdminColumn {
   readonly key: string;
   readonly label: string;
   readonly hidden?: boolean;
+  /** `end` for amounts and rates (`.ad-t .r`). */
+  readonly align?: "start" | "end";
 }
 
-/** The dense data table (`.ad-tw` + `.ad-t`). Rows are `AdminRow`s. */
+/** The dense data table (`.ad-tw` + `.ad-t`). Rows are `AdminRow`s; `foot` is one full-width cell. */
 export function AdminTable({
   columns,
   children,
+  foot,
 }: {
   readonly columns: readonly AdminColumn[];
   readonly children: ReactNode;
+  readonly foot?: ReactNode;
 }): ReactElement {
   return (
     <div className="bg-card overflow-hidden rounded-[12px] shadow-[inset_0_0_0_1px_var(--color-rule)]">
@@ -193,7 +226,9 @@ export function AdminTable({
               <th
                 key={column.key}
                 scope="col"
-                className="bg-paper-2 border-rule text-ink-3 border-b px-[14px] py-[9px] text-start text-[12px] font-bold tracking-[0.08em] whitespace-nowrap uppercase"
+                className={`bg-paper-2 border-rule text-ink-3 border-b px-[14px] py-[9px] text-[12px] font-bold tracking-[0.08em] whitespace-nowrap uppercase ${
+                  column.align === "end" ? "text-end" : "text-start"
+                }`}
               >
                 {column.hidden === true ? (
                   <span className="sr-only">{column.label}</span>
@@ -205,6 +240,18 @@ export function AdminTable({
           </tr>
         </thead>
         <tbody className="[&>tr:last-child>td]:border-b-0">{children}</tbody>
+        {foot === undefined ? null : (
+          <tfoot>
+            <tr>
+              <td
+                colSpan={columns.length}
+                className="bg-paper-2 border-rule border-t px-[14px] py-[10px]"
+              >
+                {foot}
+              </td>
+            </tr>
+          </tfoot>
+        )}
       </table>
     </div>
   );
@@ -234,7 +281,7 @@ export function AdminRow({
 
 /**
  * A table cell (`.ad-t td`); `nowrap` for times, `colSpan` for a detail row, `top` for a table
- * whose cells hold lists (`--va: top`, the flags page).
+ * whose cells hold lists (`--va: top`, the flags page), `end` for amounts.
  */
 export function AdminCell({
   children,
@@ -242,6 +289,7 @@ export function AdminCell({
   colSpan,
   plain = false,
   top = false,
+  align = "start",
 }: {
   readonly children: ReactNode;
   readonly nowrap?: boolean;
@@ -249,11 +297,17 @@ export function AdminCell({
   /** The detail row's paper background instead of the row's. */
   readonly plain?: boolean;
   readonly top?: boolean;
+  /** `end`: right-aligned tabular figures that do not wrap (`.ad-t .r`). */
+  readonly align?: "start" | "end";
 }): ReactElement {
   return (
     <td
       {...(colSpan === undefined ? {} : { colSpan })}
-      className={`border-rule border-b px-[14px] py-[10px] ${top ? "align-top" : "align-middle"} ${nowrap ? "whitespace-nowrap tabular-nums" : ""} ${plain ? "!bg-paper" : ""}`}
+      className={`border-rule border-b px-[14px] py-[10px] ${top ? "align-top" : "align-middle"} ${nowrap ? "whitespace-nowrap tabular-nums" : ""} ${plain ? "!bg-paper" : ""} ${
+        align === "end"
+          ? "text-end whitespace-nowrap [font-variant-numeric:lining-nums_tabular-nums]"
+          : ""
+      }`}
     >
       {children}
     </td>
@@ -317,16 +371,21 @@ export function AdminTableLink({
 }
 
 /**
- * The chip tones of the sheet in use: plain and ink (the audit log), bad and warn (the flags page:
- * a high-risk flag, an orphaned key) — `.ad-chip`, `.ad-chip.ink`, `.ad-chip.bad`, `.ad-chip.warn`.
+ * The chip tones of the sheet (`.ad-chip` and its variants): plain and ink (the audit log); bad
+ * and warn (the flags page: a high-risk flag, an orphaned key); sky for a moving order, ok for a
+ * done one, bad for one that needs a person, and the dashed demo marker (the order queue).
  */
-export type AdminChipTone = "plain" | "ink" | "bad" | "warn";
+export type AdminChipTone =
+  "plain" | "ink" | "sky" | "ok" | "bad" | "warn" | "demo";
 
 const CHIP_TONES: Readonly<Record<AdminChipTone, string>> = {
   plain: "bg-paper-3 text-ink-2",
   ink: "bg-ink text-paper",
+  sky: "bg-sage-wash text-sky-strong",
+  ok: "bg-leaf-wash text-stem",
   bad: "bg-blush text-accent-strong",
   warn: "bg-butter text-ink shadow-[inset_0_0_0_1px_var(--color-warning)]",
+  demo: "bg-card text-ink border border-dashed border-ink-3",
 };
 
 export function AdminChip({
@@ -338,7 +397,7 @@ export function AdminChip({
 }): ReactElement {
   return (
     <span
-      className={`inline-flex min-h-[22px] items-center gap-[5px] rounded-full px-[8px] align-middle text-[12px] font-bold whitespace-nowrap ${CHIP_TONES[tone]}`}
+      className={`inline-flex min-h-[22px] items-center gap-[5px] rounded-full px-[8px] align-middle text-[12px] font-bold whitespace-nowrap [&_code]:text-[12px] ${CHIP_TONES[tone]}`}
     >
       {children}
     </span>
@@ -448,6 +507,7 @@ export function AdminCardRows({
  */
 export function AdminCardRow({
   line1,
+  subline,
   line2,
   line3,
   href,
@@ -455,6 +515,8 @@ export function AdminCardRow({
   children,
 }: {
   readonly line1: ReactNode;
+  /** A second chip line under the first (the order queue's status). */
+  readonly subline?: ReactNode;
   readonly line2: ReactNode;
   readonly line3: ReactNode;
   readonly href?: string;
@@ -467,6 +529,9 @@ export function AdminCardRow({
   const body = (
     <>
       <span className="flex flex-wrap items-center gap-[6px]">{line1}</span>
+      {subline === undefined ? null : (
+        <span className="flex flex-wrap items-center gap-[6px]">{subline}</span>
+      )}
       <span className="text-ink-2">{line2}</span>
       <span className="text-ink-3 text-[13px]">{line3}</span>
       {children}
@@ -481,15 +546,18 @@ export function AdminCardRow({
   );
 }
 
-/** The empty state (`.ad-empty`). */
+/** The empty state (`.ad-empty`): a title, and a line or a link under it. */
 export function AdminEmpty({
   title,
+  children,
 }: {
   readonly title: string;
+  readonly children?: ReactNode;
 }): ReactElement {
   return (
     <div className="bg-card text-ink-2 grid justify-items-center gap-[8px] rounded-[12px] px-[24px] py-[40px] text-center shadow-[inset_0_0_0_1px_var(--color-rule)]">
       <p className="font-display text-h3 text-ink">{title}</p>
+      {children}
     </div>
   );
 }
