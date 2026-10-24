@@ -471,6 +471,43 @@ export function deliveryWindow(input: DeliveryWindowInput): DeliveryWindow {
   });
 }
 
+/**
+ * **The checkout's calendar** (spec 010 §2 "The date"; §14 A-founder-2026-10-22 D8, AC-60): the
+ * destination's grid computed **as if** its florists were active, for a country with an authored
+ * `operations` block, whatever its picker state. In `live` it is exactly `deliveryWindow()`'s
+ * grid; in `demo` and `test` it is the demo calendar spec 010 draws inside the checkout only
+ * ("Pick any date to see how it works"). The product page never reads it: a `preview` product
+ * page still offers no date (spec 009 AC-8). A country with no `operations` has no calendar and
+ * answers `unavailable`, as `deliveryWindow()` does.
+ */
+export function checkoutDeliveryWindow(
+  input: DeliveryWindowInput,
+): DeliveryWindow {
+  const operations = countryConfig(input.countryIso).operations;
+  if (operations === undefined) {
+    return {
+      state: "unavailable",
+      dates: [],
+      noticeKey: PICKER_NOTICE_KEYS.unavailable,
+    };
+  }
+  return deliveryGrid({
+    countryIso: input.countryIso,
+    operations,
+    state: "live",
+    at: input.from,
+    ...(input.days === undefined ? {} : { days: input.days }),
+    ...(input.surcharges === undefined ? {} : { surcharges: input.surcharges }),
+    ...(input.peakDates === undefined ? {} : { peakDates: input.peakDates }),
+    ...(input.holidayProvider === undefined
+      ? {}
+      : { holidayProvider: input.holidayProvider }),
+    ...(input.occasionCalendar === undefined
+      ? {}
+      : { occasionCalendar: input.occasionCalendar }),
+  });
+}
+
 /* -------------------------------------------------------------------------- */
 /* Spec 005's `CutoffEvaluator`, implemented.                                 */
 /* -------------------------------------------------------------------------- */

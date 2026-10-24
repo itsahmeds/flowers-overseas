@@ -1,10 +1,12 @@
 /**
  * `POST /api/checkout/start` (spec 010 §2 "The entry from the product page", §5.2, §8, AC-6;
- * TASK-203). The route file is one line; the contract is here, testable without a server.
+ * §14 A-founder-2026-10-22 items 1 D6, D7, D12, 4 and 7; AC-54, AC-55, AC-56, AC-62; TASK-203,
+ * TASK-348). The route file is one line; the contract is here, testable without a server.
  *
- * The product page's "Try a demo order" (or, live, "Continue") is a submit button inside its
- * existing form, so the body is a form post of `CheckoutStartSchema`: the selection and the total
- * and currency the page displayed. In order:
+ * The product page's two submits ("Try a demo order" or, live, "Continue", and "Add to basket")
+ * sit inside its existing form, so the body is a form post of `CheckoutStartSchema`: the
+ * selection, the total and currency the page displayed, and `then` (`checkout` or `basket`). In
+ * order:
  *
  *  1. **405** for anything but `POST` (the route exports `GET` only to say so);
  *  2. **403** unless `Origin` names this host (`x-forwarded-host`, else `Host`), the check Next's
@@ -13,32 +15,65 @@
  *     body, a price the provider cannot give or a product the database does not hold answers
  *     **303 to the product page with no query string** (or to the locale's home when there is no
  *     product page to go back to), and writes nothing;
- *  4. `currentCheckoutMode()`; `closed` writes nothing and goes back to the product page (see the
- *     escalation in `docs/tasks/TASK-203.md`: the closed state's URL is TASK-204's);
- *  5. the price through spec 005 (`deriveQuote`), one draft with the signed quote, the
- *     `fo_checkout` cookie, and **303 to `/{locale}/checkout`**. When the posted total differs from
- *     the server's, the draft records the posted one as the last total the buyer saw, so step 1
- *     opens with the notice naming both amounts (§2 "Money").
+ *  4. the basket the cookie names, when it is active and unplaced; with no cookie, an expired one
+ *     or one for a placed basket, a new basket is started instead and the placed one is left as
+ *     it was (AC-54);
+ *  5. `currentCheckoutMode()` for the destination; `closed` stores no line (AC-56): back to the
+ *     basket when there is one, else to the product page (TASK-203's escalation: the closed
+ *     state's URL is TASK-204's);
+ *  6. into an existing basket, **refusals write no line and 303 to `/{locale}/basket`**, which
+ *     renders the notice from `checkout_draft.pending_notice`, never a query string: a mode other
+ *     than the basket's (`other_mode`), a basket already at `BASKET_MAX_LINES` (`full`, also
+ *     re-checked under the row lock), a line the provider cannot price in the basket's currency
+ *     (`other_currency`);
+ *  7. the price through spec 005, **in the basket's currency** (a new basket's is the one the
+ *     product page showed for the locale); the line stores what the page displayed as its
+ *     last-seen amount, so the next screen's notice names both amounts when they differ (AC-6);
+ *  8. **append under the basket's row lock**, or a new basket with its first line and a fresh
+ *     token; then **303** to `/{locale}/checkout` (`then=checkout`) or `/{locale}/basket`
+ *     (`then=basket`, with the `added` notice).
  *
- * Every response is `no-store` and carries no body; `/api/` is disallowed to crawlers (spec 001),
- * and robots directives are `modules/seo`'s alone. Nothing personal is read or written: the body
- * carries none, and the logs name the draft by id (§8).
+ * Cookies (item 7, AC-62): a new basket sets `fo_checkout` (its token, 30 days); an append sets
+ * none (AC-6: no new token); every response that changes the number of lines sets `fo_basket` to
+ * that number. Every response is `no-store` and carries no body; `/api/` is disallowed to crawlers
+ * (spec 001), and robots directives are `modules/seo`'s alone. Nothing personal is read or written:
+ * the body carries none, and the logs name the draft by id with codes and counts only (§8,
+ * AC-78). Nothing reads the buyer's residence, `Accept-Language`, an IP or a geo header (AC-76).
  */
 import { z } from "zod";
 
+import { BASKET_MAX_LINES } from "@/config/checkout";
 import { isCountryIso2 } from "@/config/countries";
+import type { CurrencyCode } from "@/config/currencies";
 import { type LocaleCode, isLocaleCode } from "@/config/locales";
 import { logger } from "@/lib/logger";
 import {
+  type Quote,
   getProduct,
   listTiers,
   productAlternatePaths,
 } from "@/modules/catalog";
 
-import { checkoutCookieHeader } from "./cookie";
-import { type DraftConnection, createDraft } from "./draft";
+import {
+  basketCookieHeader,
+  checkoutCookieHeader,
+  draftTokenFromCookieHeader,
+} from "./cookie";
+import {
+  type Draft,
+  type DraftConnection,
+  type PendingNotice,
+  appendLine,
+  createDraft,
+  loadDraft,
+  saveDraft,
+} from "./draft";
 import { type CheckoutFlagReader, currentCheckoutMode } from "./mode";
-import { deriveQuote } from "./pricing";
+import {
+  BasketCurrencyUnavailable,
+  deriveLineQuote,
+  deriveQuote,
+} from "./pricing";
 import { CheckoutStartSchema } from "./schemas";
 
 /** What a test injects; production passes nothing. */
@@ -53,18 +88,15 @@ const BASE_HEADERS = { "Cache-Control": "no-store" } as const;
 function respond(
   status: number,
   headers: Record<string, string> = {},
+  cookies: readonly string[] = [],
 ): Response {
-  return new Response(null, {
-    status,
-    headers: { ...BASE_HEADERS, ...headers },
-  });
+  const all = new Headers({ ...BASE_HEADERS, ...headers });
+  for (const cookie of cookies) all.append("Set-Cookie", cookie);
+  return new Response(null, { status, headers: all });
 }
 
-function seeOther(
-  location: string,
-  headers: Record<string, string> = {},
-): Response {
-  return respond(303, { Location: location, ...headers });
+function seeOther(location: string, cookies: readonly string[] = []): Response {
+  return respond(303, { Location: location }, cookies);
 }
 
 /** `GET` and every other method: 405 with `Allow: POST`. */
@@ -135,6 +167,30 @@ function refused(code: string): void {
   logger.info({ code }, "checkout.refused");
 }
 
+/** A refusal into an existing basket (item 4): the notice is stored, no line is (AC-78 keys). */
+async function refuseIntoBasket(
+  draft: Draft,
+  locale: LocaleCode,
+  code: PendingNotice | "closed",
+  countryIso: string,
+  now: Date,
+  connection: DraftConnection | undefined,
+): Promise<Response> {
+  if (code !== "closed") {
+    await saveDraft(draft.id, { pendingNotice: code }, now, connection);
+  }
+  logger.info(
+    {
+      draft_id: draft.id,
+      code,
+      country_iso: countryIso,
+      mode: draft.mode,
+    },
+    "checkout.basket_refused",
+  );
+  return seeOther(`/${locale}/basket`);
+}
+
 /** `POST /api/checkout/start`. */
 export async function startCheckout(
   request: Request,
@@ -168,6 +224,19 @@ export async function startCheckout(
     return seeOther(await backTo(fields));
   }
 
+  const now = (dependencies.now ?? (() => new Date()))();
+  const connection = dependencies.connection;
+  const lookup = await loadDraft(
+    draftTokenFromCookieHeader(request.headers.get("cookie")),
+    now,
+    connection,
+  );
+  // A placed basket is read-only (AC-52): the next add starts a new one, with a new token.
+  const basket =
+    lookup.status === "active" && lookup.draft.purchaseId === null
+      ? lookup.draft
+      : null;
+
   const mode = await currentCheckoutMode({
     countryIso,
     locale,
@@ -178,76 +247,144 @@ export async function startCheckout(
       { reason: "mode_closed", country_iso: countryIso },
       "checkout.closed",
     );
-    return seeOther(await backTo(fields));
+    return basket === null
+      ? seeOther(await backTo(fields))
+      : refuseIntoBasket(basket, locale, "closed", countryIso, now, connection);
+  }
+  if (basket !== null && basket.mode !== mode) {
+    return refuseIntoBasket(
+      basket,
+      locale,
+      "other_mode",
+      countryIso,
+      now,
+      connection,
+    );
+  }
+  if (basket !== null && basket.lines.length >= BASKET_MAX_LINES) {
+    return refuseIntoBasket(
+      basket,
+      locale,
+      "full",
+      countryIso,
+      now,
+      connection,
+    );
   }
 
-  const now = (dependencies.now ?? (() => new Date()))();
   // The product page offers a date only when the destination is live (spec 009 AC-8); in `demo`
   // and `test` step 1 shows the demo calendar, so a posted date is not carried over.
   const deliveryDate = mode === "live" ? (start.date ?? null) : null;
-  let signed;
+  const selection = {
+    countryIso,
+    sku: start.sku,
+    tierKey: start.tierKey,
+    deliveryDate,
+    addonKeys: [] as string[],
+  };
+  const basketCurrency = (basket?.currency ?? null) as CurrencyCode | null;
+  let signed: Quote;
   try {
-    signed = await deriveQuote(
-      {
+    signed =
+      basket === null || basketCurrency === null
+        ? await deriveQuote({ locale, ...selection }, now)
+        : await deriveLineQuote(selection, basketCurrency, locale, now);
+  } catch (error) {
+    if (basket !== null && error instanceof BasketCurrencyUnavailable) {
+      return refuseIntoBasket(
+        basket,
         locale,
+        "other_currency",
         countryIso,
-        sku: start.sku,
-        tierKey: start.tierKey,
-        deliveryDate,
-        addonKeys: [],
-      },
-      now,
-    );
-  } catch {
+        now,
+        connection,
+      );
+    }
     refused("no_price");
     return seeOther(await backTo(fields));
   }
 
-  const expected = {
+  // What the product page displayed: the line's last-seen amount, in its own currency (AC-6).
+  const lastSeen = {
     amountMinor: z.number().int().nonnegative().parse(start.expectedTotalMinor),
     currency: start.expectedCurrency,
   };
+  const line = {
+    countryIso,
+    sku: start.sku,
+    tierKey: start.tierKey,
+    deliveryDate,
+    quote: signed,
+    lastSeen,
+  };
+  const destination =
+    start.then === "basket" ? `/${locale}/basket` : `/${locale}/checkout`;
+  const notice: PendingNotice | null = start.then === "basket" ? "added" : null;
+  const priceNotice = (draftId: string): void => {
+    if (
+      lastSeen.amountMinor !== signed.totalMinor ||
+      lastSeen.currency !== signed.currency
+    ) {
+      logger.info(
+        {
+          draft_id: draftId,
+          country_iso: countryIso,
+          mode,
+          code: "price_changed",
+        },
+        "checkout.price_changed",
+      );
+    }
+  };
+
+  if (basket !== null) {
+    const appended = await appendLine(basket.id, line, now, connection, notice);
+    if (appended.status === "full") {
+      return refuseIntoBasket(
+        basket,
+        locale,
+        "full",
+        countryIso,
+        now,
+        connection,
+      );
+    }
+    if (appended.status === "appended") {
+      logger.info(
+        {
+          draft_id: basket.id,
+          position: appended.position,
+          country_iso: countryIso,
+          mode,
+        },
+        "checkout.basket_line_added",
+      );
+      priceNotice(basket.id);
+      // Positions have no gap, so the new line's position is the number of lines.
+      return seeOther(destination, [basketCookieHeader(appended.position)]);
+    }
+    if (appended.status === "missing") {
+      refused("product_not_in_database");
+      return seeOther(await backTo(fields));
+    }
+    // `placed`: placed between the read and the lock; a new basket below.
+  }
+
   const created = await createDraft(
-    {
-      locale,
-      countryIso,
-      sku: start.sku,
-      tierKey: start.tierKey,
-      deliveryDate,
-      mode,
-      quote: signed,
-      expected,
-      // The total the buyer last saw is the one the product page displayed: when the server's
-      // differs, `priceChange()` names both and step 1 opens with the notice.
-      confirmed: expected,
-      now,
-    },
-    dependencies.connection,
+    { locale, mode, line, expected: lastSeen, pendingNotice: notice, now },
+    connection,
   );
   if (created === null) {
     refused("product_not_in_database");
     return seeOther(await backTo(fields));
   }
-
   logger.info(
-    { draft_id: created.draftId, mode, locale, country_iso: countryIso },
-    "checkout.draft_created",
+    { draft_id: created.draftId, position: 1, country_iso: countryIso, mode },
+    "checkout.basket_line_added",
   );
-  if (
-    expected.amountMinor !== signed.totalMinor ||
-    expected.currency !== signed.currency
-  ) {
-    logger.info(
-      {
-        draft_id: created.draftId,
-        from_minor: expected.amountMinor,
-        to_minor: signed.totalMinor,
-        currency: signed.currency,
-      },
-      "checkout.price_changed",
-    );
-  }
-  return seeOther(`/${locale}/checkout`, {
-    "Set-Cookie": checkoutCookieHeader(created.token),
-  });
+  priceNotice(created.draftId);
+  return seeOther(destination, [
+    checkoutCookieHeader(created.token),
+    basketCookieHeader(1),
+  ]);
 }

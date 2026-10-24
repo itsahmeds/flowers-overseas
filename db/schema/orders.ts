@@ -7,7 +7,7 @@
  * The typed mirror of the migration. What to read off this file:
  *
  *  - **the machine is data** — `orderStatus` and `orderTransition` hold A6.4's 26 states and A6.3's
- *    73 rows, seeded by the migration and compared with `tests/fixtures/order-machine.ts`. Nothing
+ *    73 rows plus A8.1's two (`0021`), seeded by the migrations and compared with `tests/fixtures/order-machine.ts`. Nothing
  *    here encodes a transition: spec 010's `orderService.transition` reads the rows;
  *  - **status is written by the engine only** (ADR-0009) — `0008`'s triggers refuse an insert or a
  *    status update made without the transaction-local switch `app.allow_status_write` and the
@@ -144,14 +144,75 @@ export const orderTransition = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
+/* purchase                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Spec 010 §14 A-founder-2026-10-22 item 2 A (`0019_purchase`; TASK-347): the orders of one
+ * basket, bought together in one payment. `(id, buyer_currency_code, mode)` is the target of
+ * `"order"`'s composite key, so one purchase has one currency and one mode. At commit the
+ * deferred constraint trigger `purchase_total_check` (Drizzle does not model triggers) holds
+ * `total_minor` equal to the sum of its orders' `buyer_total_minor`, with at least one order.
+ * RLS: system (all) and admin (select) only.
+ */
+export const purchase = pgTable(
+  "purchase",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    mode: text("mode").notNull(),
+    buyerCurrencyCode: text("buyer_currency_code")
+      .notNull()
+      .references(() => currency.code, { onDelete: "restrict" }),
+    totalMinor: bigint("total_minor", { mode: "bigint" }).notNull(),
+    localeCode: text("locale_code")
+      .notNull()
+      .references(() => locale.code, { onDelete: "restrict" }),
+    customerId: uuid("customer_id").references(() => customer.id, {
+      onDelete: "restrict",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("purchase_id_buyer_currency_code_mode_key").on(
+      table.id,
+      table.buyerCurrencyCode,
+      table.mode,
+    ),
+    check("purchase_mode_check", sql.raw(`mode in ${valueList(orderModes)}`)),
+    check(
+      "purchase_buyer_currency_code_check",
+      sql.raw(`buyer_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+    check("purchase_total_minor_check", sql`${table.totalMinor} >= 0`),
+    index("purchase_customer_id_idx").on(table.customerId),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
 /* "order"                                                                    */
 /* -------------------------------------------------------------------------- */
+
+/**
+ * `"order".public_token`'s default (`0021`, spec 018 §5.1, TASK-337): the first 16 bytes of a
+ * SHA-256 over two `gen_random_uuid()` values, base64url without padding. Core functions only
+ * (spec 002 AC-7: no extension, so not pgcrypto's `gen_random_bytes`).
+ */
+export const PUBLIC_TOKEN_DEFAULT =
+  "translate(rtrim(encode(substring(sha256(uuid_send(gen_random_uuid()) || uuid_send(gen_random_uuid())) FROM 1 FOR 16), 'base64'), '='), '+/', '-_')";
 
 export const order = pgTable(
   "order",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    publicToken: text("public_token").notNull(),
+    /**
+     * 16 CSPRNG bytes as base64url, 22 characters, from the column default (`0021`, spec 018
+     * §5.1): `orderService.place` names no token.
+     */
+    publicToken: text("public_token")
+      .notNull()
+      .default(sql.raw(PUBLIC_TOKEN_DEFAULT)),
     mode: text("mode").notNull(),
     customerId: uuid("customer_id")
       .notNull()
@@ -199,9 +260,27 @@ export const order = pgTable(
       .notNull()
       .default("en")
       .references(() => locale.code, { onDelete: "restrict" }),
+    /**
+     * Spec 010 §14 A-founder-2026-10-22 (`0019`): the purchase this order was bought in, with
+     * the same currency and mode by the composite key below; backfilled one per older order.
+     */
+    purchaseId: uuid("purchase_id").notNull(),
+    /**
+     * Spec 018 §5.1 (`0021`, TASK-337): the tracking token's version. `rotateTrackingToken` bumps
+     * it, so every token signed for an older version stops verifying.
+     */
+    trackingTokenVersion: smallint("tracking_token_version")
+      .notNull()
+      .default(1),
   },
   (table) => [
     unique("order_public_token_key").on(table.publicToken),
+    foreignKey({
+      name: "order_purchase_id_buyer_currency_code_mode_purchase_fk",
+      columns: [table.purchaseId, table.buyerCurrencyCode, table.mode],
+      foreignColumns: [purchase.id, purchase.buyerCurrencyCode, purchase.mode],
+    }).onDelete("restrict"),
+    index("order_purchase_id_idx").on(table.purchaseId),
     /** Spec 010 §14 A2.2 (`0013`): one order per reference; `order_reference()` is SQL. */
     uniqueIndex("order_reference_idx").on(sql`order_reference(${table.id})`),
     unique("order_id_buyer_currency_code_key").on(
@@ -210,7 +289,11 @@ export const order = pgTable(
     ),
     check(
       "order_public_token_check",
-      sql.raw(`public_token ~ '^[A-Za-z0-9_-]{22,}$'`),
+      sql.raw(`public_token ~ '^[A-Za-z0-9_-]{22}$'`),
+    ),
+    check(
+      "order_tracking_token_version_check",
+      sql`${table.trackingTokenVersion} >= 1`,
     ),
     check("order_mode_check", sql.raw(`mode in ${valueList(orderModes)}`)),
     check(

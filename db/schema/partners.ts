@@ -19,6 +19,10 @@
  *
  * `partnerMember.userId` references `users` (`0010`, TASK-022) and `payoutLine.orderId`
  * references `"order"` (`0007`, TASK-019): each key was deferred until its parent table existed.
+ *
+ * Migration `0022_florists_v0` (spec 011 §5.1; TASK-211) adds `partnerMember.localeCode` and the
+ * application form's columns and constraints (`contactName`, `weekendDelivery`,
+ * `privacyNoticeVersion`, `decidedAt`; `mediaAssetIds` constrained empty in Phase 0).
  */
 import { sql } from "drizzle-orm";
 import {
@@ -76,6 +80,23 @@ export const partnerApplicationStatuses = [
   "converted",
 ] as const;
 
+/** `partner_application.preferred_channel` (`0022`). */
+export const partnerApplicationChannels = [
+  "email",
+  "whatsapp",
+  "phone",
+] as const;
+
+/** `partner_application.weekend_delivery` (`0022`; `plan/10` §6's weekend question). */
+export const partnerApplicationWeekendAnswers = [
+  "yes",
+  "sometimes",
+  "no",
+] as const;
+
+/** `partner_member.locale_code` (`0022`): the languages the florist surface speaks (spec 011 §7). */
+export const partnerMemberLocales = ["en", "pl", "de"] as const;
+
 /** `payout.status`. */
 export const payoutStatuses = ["draft", "statement_sent", "paid"] as const;
 
@@ -125,6 +146,11 @@ export const fulfillmentPartner = pgTable(
     acceptanceRateBp: integer("acceptance_rate_bp"),
     source: text("source").notNull().default("seed"),
     ...timestamps,
+    /**
+     * Spec 018 §5.1 (`0021`, TASK-337): the first name the buyer sees once the order is being
+     * made, set with the florist's agreement; null reads "Made by our florist in {city}".
+     */
+    displayFirstName: text("display_first_name"),
   },
   (table) => [
     unique("fulfillment_partner_code_key").on(table.code),
@@ -158,6 +184,10 @@ export const fulfillmentPartner = pgTable(
     check(
       "fulfillment_partner_payout_currency_code_check",
       sql.raw(`payout_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+    check(
+      "fulfillment_partner_display_first_name_check",
+      sql`${table.displayFirstName} is null or btrim(${table.displayFirstName}) <> ''`,
     ),
     check(
       "fulfillment_partner_capacity_per_day_check",
@@ -224,6 +254,14 @@ export const partnerMember = pgTable(
       .defaultNow(),
     acceptedAt: timestamp("accepted_at", { withTimezone: true }),
     ...timestamps,
+    /**
+     * The florist's language for the inbox and the sign-in email (`0022`, spec 011 §7). After the
+     * timestamps: `ADD COLUMN` appends, and the mirror keeps the database's column order.
+     */
+    localeCode: text("locale_code")
+      .notNull()
+      .default("en")
+      .references(() => locale.code, { onDelete: "restrict" }),
   },
   (table) => [
     /** Leads with the user: a member's partners are loaded on every florist request. */
@@ -238,6 +276,10 @@ export const partnerMember = pgTable(
     check(
       "partner_member_accepted_at_check",
       sql`${table.acceptedAt} >= ${table.invitedAt}`,
+    ),
+    check(
+      "partner_member_locale_code_check",
+      sql.raw(`locale_code in ${valueList(partnerMemberLocales)}`),
     ),
   ],
 );
@@ -381,9 +423,11 @@ export const partnerApplication = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     businessName: text("business_name").notNull(),
     city: text("city").notNull(),
-    countryId: uuid("country_id").references(() => country.id, {
-      onDelete: "restrict",
-    }),
+    countryId: uuid("country_id")
+      .notNull()
+      .references(() => country.id, {
+        onDelete: "restrict",
+      }),
     coverageNote: text("coverage_note"),
     capacityPerDay: integer("capacity_per_day"),
     registrationNumber: text("registration_number"),
@@ -393,9 +437,12 @@ export const partnerApplication = pgTable(
     languageCode: text("language_code")
       .notNull()
       .references(() => locale.code, { onDelete: "restrict" }),
-    contactEmail: text("contact_email"),
-    contactPhone: text("contact_phone"),
-    /** `media_asset` ids (private, `kind = 'partner'`), held honest by the migration's triggers. */
+    contactEmail: text("contact_email").notNull(),
+    contactPhone: text("contact_phone").notNull(),
+    /**
+     * `media_asset` ids (private, `kind = 'partner'`), held honest by `0005`'s triggers, and
+     * constrained empty by `0022` until a spec adds an upload (spec 011 §13 Q5).
+     */
     mediaAssetIds: uuid("media_asset_ids")
       .array()
       .notNull()
@@ -403,6 +450,15 @@ export const partnerApplication = pgTable(
     status: text("status").notNull().default("new"),
     convertedPartnerId: uuid("converted_partner_id"),
     ...timestamps,
+    // `0022_florists_v0` (spec 011 §5.1), appended after the timestamps as `ADD COLUMN` does.
+    /** The person we call. */
+    contactName: text("contact_name").notNull(),
+    /** `yes` | `sometimes` | `no`. */
+    weekendDelivery: text("weekend_delivery"),
+    /** Which Art. 13 notice the applicant was shown (spec 011 §8). */
+    privacyNoticeVersion: text("privacy_notice_version").notNull(),
+    /** Set when the row is rejected or converted. */
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
   },
   (table) => [
     foreignKey({
@@ -425,6 +481,37 @@ export const partnerApplication = pgTable(
     check(
       "partner_application_media_asset_ids_check",
       sql`array_position(${table.mediaAssetIds}, null) is null`,
+    ),
+    check(
+      "partner_application_weekend_delivery_check",
+      sql.raw(
+        `weekend_delivery in ${valueList(partnerApplicationWeekendAnswers)}`,
+      ),
+    ),
+    check(
+      "partner_application_preferred_channel_check",
+      sql.raw(`preferred_channel in ${valueList(partnerApplicationChannels)}`),
+    ),
+    check(
+      "partner_application_capacity_per_day_range_check",
+      sql`${table.capacityPerDay} between 1 and 500`,
+    ),
+    check(
+      "partner_application_media_asset_ids_empty_check",
+      sql`cardinality(${table.mediaAssetIds}) = 0`,
+    ),
+    check(
+      "partner_application_lengths_check",
+      sql`char_length(${table.businessName}) between 1 and 200
+        and char_length(${table.contactName}) between 1 and 200
+        and char_length(${table.city}) between 1 and 200
+        and char_length(${table.coverageNote}) <= 1000
+        and char_length(${table.registrationNumber}) <= 100
+        and char_length(${table.instagramUrl}) <= 300
+        and char_length(${table.websiteUrl}) <= 300
+        and char_length(${table.contactEmail}) between 3 and 254
+        and char_length(${table.contactPhone}) between 7 and 32
+        and char_length(${table.privacyNoticeVersion}) between 1 and 64`,
     ),
     index("partner_application_media_asset_ids_idx").using(
       "gin",

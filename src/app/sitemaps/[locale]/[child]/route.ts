@@ -15,6 +15,8 @@
  * `force-dynamic` and the explicit `Cache-Control` are the index route's, for the same reason
  * (the environment decides what is announced, and the image is promoted between environments).
  */
+import { editorialSitemapSources } from "@/modules/content/blog/view";
+import { routableLocaleCodes } from "@/modules/i18n";
 import {
   SITEMAP_CACHE_CONTROL,
   SITEMAP_CONTENT_TYPE,
@@ -35,10 +37,15 @@ export async function GET(
   const parsed = SitemapParamsSchema.safeParse(await params);
   if (!parsed.success) return new Response(null, { status: NOT_FOUND });
 
+  // Spec 044 (TASK-322): the blog's pages, read here and handed to `modules/seo`.
+  const sources = {
+    editorial: await editorialSitemapSources(routableLocaleCodes()),
+  };
   const document = sitemapDocumentFor(
     parsed.data.locale,
     sitemapNameOf(parsed.data.child),
     deploymentDescriptor(process.env),
+    sources,
   );
   if (document === undefined) return new Response(null, { status: NOT_FOUND });
 

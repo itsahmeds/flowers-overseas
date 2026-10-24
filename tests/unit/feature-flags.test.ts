@@ -32,11 +32,30 @@ import {
 /* -------------------------------------------------------------------------- */
 
 describe("T-16 — the registry", () => {
-  it("holds exactly the two database flags spec 010's checkout reads", () => {
+  it("holds exactly spec 010's two checkout flags and spec 018's two", () => {
     expect(FEATURE_FLAGS.map((flag) => flag.key)).toEqual([
       "checkout.open",
       "checkout.demo_guard",
+      "account.open",
+      "invoice.issue",
     ]);
+  });
+
+  it("registers spec 018's flags: account.open global or per locale, invoice.issue per country", () => {
+    expect(flagDefinition("account.open")).toEqual({
+      key: "account.open",
+      scopeKinds: ["global", "locale"],
+      risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
+    expect(flagDefinition("invoice.issue")).toEqual({
+      key: "invoice.issue",
+      scopeKinds: ["country"],
+      risk: "standard",
+      dirties: [],
+      description: expect.stringMatching(/\S/u) as unknown as string,
+    });
   });
 
   it("registers checkout.open with country scope, standard risk and the catalog:{iso2} tag", () => {

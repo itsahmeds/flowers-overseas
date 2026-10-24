@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { ga4MeasurementId } from "@/lib/env.schema";
 import { setLocaleTag } from "@/lib/sentry";
 import { AnalyticsScripts } from "@/modules/analytics";
-import { missingInfoPageLinkIds } from "@/modules/content";
+import { blogIndexExists, missingInfoPageLinkIds } from "@/modules/content";
 import {
   LanguagePopup,
   localeGateDocumentAttributes,
@@ -196,6 +196,8 @@ export default async function LocaleLayout({
               // Spec 041's info pages that do not exist here (TASK-182): no content file in this
               // locale, or the company is not registered yet (imprint, terms, privacy).
               ...missingInfoPageLinkIds(locale.code),
+              // Spec 044's blog index (TASK-322): no post in this locale, no Blog link.
+              ...((await blogIndexExists(locale.code)) ? [] : ["blog"]),
             ],
           })}
         />

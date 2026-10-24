@@ -9,7 +9,22 @@
     },
     "skipToContent": "Skip to content"
   },
+  "blog": {
+    "index": {
+      "h1": "The Flowers Overseas blog",
+      "intro": "Customs, occasions and practical advice for sending flowers to someone in another country.",
+      "seoDescription": "Customs, occasions and practical advice for sending flowers to someone in another European country, from Flowers Overseas.",
+      "seoTitle": "Blog: sending flowers across Europe | Flowers Overseas"
+    },
+    "post": {
+      "byline": "By {name}",
+      "nextCorridor": "Read our guide to sending flowers to {country}",
+      "published": "Published {date}",
+      "updated": "Updated {date}"
+    }
+  },
   "breadcrumb": {
+    "blog": "Blog",
     "destinations": "Send flowers to",
     "entity": "{name}",
     "occasions": "Occasions",
@@ -550,6 +565,12 @@
     "seoDescription": "Seven countries in Europe, each with a guide we wrote ourselves: what is given, what is never given, and which dates matter in a year there.",
     "seoTitle": "Where we can send flowers"
   },
+  "emails": {
+    "floristSignIn": {
+      "body": "Otwórz swoje zamówienia: {link}. Link działa raz, przez godzinę. Jeśli to nie Ty o niego prosiłeś, zignoruj tę wiadomość.",
+      "subject": "Twój link do logowania w Flowers Overseas"
+    }
+  },
   "errors": {
     "notFound": {
       "body": "That page does not exist. Check the address, or start again from the home page.",
@@ -586,6 +607,23 @@
     },
     "submit": "Continue"
   },
+  "floristAuth": {
+    "confirmSubmit": "Przejdź do zamówień",
+    "email": "E-mail",
+    "expiredBody": "Ten link wygasł lub został już użyty. Poproś o nowy.",
+    "sentBody": "Jeśli ten adres należy do jednej z naszych kwiaciarni, wysłaliśmy na niego link. Link działa raz, przez godzinę.",
+    "sentTitle": "Sprawdź pocztę",
+    "submit": "Wyślij mi link",
+    "title": "Zaloguj się, aby zobaczyć zamówienia"
+  },
+  "floristInbox": {
+    "demoNotice": "<b>Demo:</b> to przykładowe zamówienia. Nikt nie płaci i nic nie jest dostarczane.",
+    "homeLabel": "Flowers Overseas, Twoje zamówienia",
+    "language": "Język",
+    "menu": "Menu",
+    "orders": "Zamówienia",
+    "signOut": "Wyloguj się"
+  },
   "footer": {
     "cookieSettings": "Ustawienia plików cookie",
     "group": {
@@ -594,6 +632,7 @@
       "sending": "Wysyłka"
     },
     "link": {
+      "blog": "Blog",
       "cookies": "Pliki cookie",
       "deliveryAndPayment": "Delivery and payment",
       "destinations": "Kierunki",

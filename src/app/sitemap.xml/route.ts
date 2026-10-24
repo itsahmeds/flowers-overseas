@@ -21,6 +21,8 @@
  * visitor (§5.4); the hour of shared caching is the `Cache-Control` header, and the `sitemap`
  * tag in `src/lib/cache.ts` is what `plan/01` §8's hourly job purges.
  */
+import { editorialSitemapSources } from "@/modules/content/blog/view";
+import { routableLocaleCodes } from "@/modules/i18n";
 import {
   SITEMAP_CACHE_CONTROL,
   SITEMAP_CONTENT_TYPE,
@@ -30,11 +32,22 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export function GET(): Response {
-  return new Response(sitemapIndexDocument(deploymentDescriptor(process.env)), {
-    headers: {
-      "content-type": SITEMAP_CONTENT_TYPE,
-      "cache-control": SITEMAP_CACHE_CONTROL,
+/**
+ * Asynchronous since spec 044 (TASK-322): the blog's pages are read from the blog source (its
+ * database half, gated on this build's manifest) and handed to `modules/seo`, which still decides
+ * every announcement by `pageIndexability()`.
+ */
+export async function GET(): Promise<Response> {
+  const sources = {
+    editorial: await editorialSitemapSources(routableLocaleCodes()),
+  };
+  return new Response(
+    sitemapIndexDocument(deploymentDescriptor(process.env), sources),
+    {
+      headers: {
+        "content-type": SITEMAP_CONTENT_TYPE,
+        "cache-control": SITEMAP_CACHE_CONTROL,
+      },
     },
-  });
+  );
 }

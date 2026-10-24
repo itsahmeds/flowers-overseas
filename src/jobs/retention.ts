@@ -37,6 +37,22 @@
  *  - `consent_records` (5 years after withdrawal, delete): a `consent_log` row is withdrawn when a
  *    later record for the same subject supersedes it; it is deleted once that later record is
  *    older than the cut-off. The latest record per subject is never deleted (it is the proof).
+ *  - `partner_application` (365 days after its last change, delete; spec 011 §5.1, §13 Q9;
+ *    TASK-211): florist applications whose `updated_at` is at or before the cut-off, **unless
+ *    converted** (`status = 'converted'`: the applicant became a partner, and the row is the
+ *    record of how). The only copy of this rule; spec 012's admin list uses it and keeps none.
+ *  - `auth_session`, `auth_verification_token` (one day after `expires`, delete; spec 011 §8;
+ *    TASK-211): `sessions` and `verification_tokens` rows of both sign-in surfaces whose `expires`
+ *    is at or before the cut-off. A live session or an unexpired link is never touched. The only
+ *    copy of the session rule (spec 012 keeps none).
+ *  - `review_attestation` (3 years after the attester's `admin_profile.deactivated_at`,
+ *    pseudonymise; spec 012b §8, AC-28): every ledger row of a deactivated signed-in attester has
+ *    `attester_name` replaced by "Reviewer {n}", n the same for every row of that user — the n
+ *    already on any of their rows, else one more than the highest n in the ledger, assigned in
+ *    user-id order. Nothing else in the row changes: the ledger is append-only, and its trigger
+ *    (`0023`) admits exactly this update, once per row, in this policy's session
+ *    (`app.role = 'system'`, `app.retention_policy = 'review_attestation'`). Imported rows carry
+ *    no user and are never selected.
  *  - `invoice_archive` (`keep`): nothing.
  *  - `checkout_draft`, `demo_order_personal`: their handlers are spec 010's (TASK-207). Until a key
  *    has a handler here it is reported `no_handler` and nothing is written for it.
@@ -499,6 +515,114 @@ const consentRecords: PolicyHandler = async ({ db, cutoff, dryRun }) => {
   };
 };
 
+/** The application status the 12-month rule never deletes: the applicant became a partner. */
+const CONVERTED = "converted";
+
+const partnerApplication: PolicyHandler = async ({ db, cutoff, dryRun }) => {
+  const due = await rows<{ count: number; converted: number }>(
+    db,
+    sql`SELECT count(*) FILTER (WHERE status <> ${CONVERTED})::int AS count,
+               count(*) FILTER (WHERE status = ${CONVERTED})::int AS converted
+        FROM public.partner_application
+        WHERE updated_at <= ${ts(cutoff)}`,
+  );
+  if (!dryRun) {
+    await db.execute(
+      sql`DELETE FROM public.partner_application
+          WHERE updated_at <= ${ts(cutoff)} AND status <> ${CONVERTED}`,
+    );
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: { partner_application: due[0]?.count ?? 0 },
+    skipped: { converted: due[0]?.converted ?? 0 },
+  };
+};
+
+/** Deletes the rows of an Auth.js table whose `expires` is at or before the cut-off. */
+function expiredAuthRows(
+  table: "sessions" | "verification_tokens",
+): PolicyHandler {
+  const target = sql.raw(`public.${table}`);
+  return async ({ db, cutoff, dryRun }) => {
+    const due = await rows<{ count: number }>(
+      db,
+      sql`SELECT count(*)::int AS count FROM ${target} WHERE expires <= ${ts(cutoff)}`,
+    );
+    if (!dryRun) {
+      await db.execute(
+        sql`DELETE FROM ${target} WHERE expires <= ${ts(cutoff)}`,
+      );
+    }
+    return {
+      status: dryRun ? "dry_run" : "applied",
+      counts: { [table]: due[0]?.count ?? 0 },
+      skipped: {},
+    };
+  };
+}
+
+/** The pseudonym the ledger's retention writes (spec 012b AC-28), as a Postgres regex. */
+const PSEUDONYM = "^Reviewer [1-9][0-9]*$";
+
+/** `Reviewer {n}` for the n-th pseudonymised attester. */
+export function reviewerPseudonym(n: number): string {
+  return `Reviewer ${String(n)}`;
+}
+
+const reviewAttestationNames: PolicyHandler = async ({
+  db,
+  cutoff,
+  dryRun,
+}) => {
+  const due = await rows<{
+    user_id: string;
+    rows: number;
+    existing: number | null;
+  }>(
+    db,
+    sql`SELECT a.attester_user_id AS user_id, count(*)::int AS rows,
+               (SELECT max(substring(b.attester_name FROM '^Reviewer ([0-9]+)$')::int)
+                  FROM public.review_attestation b
+                 WHERE b.attester_user_id = a.attester_user_id
+                   AND b.attester_name ~ ${PSEUDONYM}) AS existing
+        FROM public.review_attestation a
+        JOIN public.admin_profile p ON p.user_id = a.attester_user_id
+        WHERE p.deactivated_at IS NOT NULL AND p.deactivated_at <= ${ts(cutoff)}
+          AND a.attester_name !~ ${PSEUDONYM}
+        GROUP BY a.attester_user_id
+        ORDER BY a.attester_user_id`,
+  );
+  const [highest] = await rows<{ n: number | null }>(
+    db,
+    sql`SELECT max(substring(attester_name FROM '^Reviewer ([0-9]+)$')::int) AS n
+        FROM public.review_attestation WHERE attester_name ~ ${PSEUDONYM}`,
+  );
+  let next = (highest?.n ?? 0) + 1;
+  if (!dryRun && due.length > 0) {
+    await db.execute(
+      sql`SELECT set_config('app.retention_policy', 'review_attestation', true)`,
+    );
+    for (const attester of due) {
+      const n = attester.existing === null ? next++ : Number(attester.existing);
+      await db.execute(
+        sql`UPDATE public.review_attestation SET attester_name = ${reviewerPseudonym(n)}
+            WHERE attester_user_id = ${attester.user_id}::uuid
+              AND attester_name !~ ${PSEUDONYM}`,
+      );
+    }
+    await db.execute(sql`SELECT set_config('app.retention_policy', '', true)`);
+  }
+  return {
+    status: dryRun ? "dry_run" : "applied",
+    counts: {
+      attesters: due.length,
+      review_attestation: due.reduce((total, row) => total + row.rows, 0),
+    },
+    skipped: {},
+  };
+};
+
 /** The handler per `retention_policy.key`. A key absent here is reported `no_handler`. */
 export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   recipient_contact: recipientContact,
@@ -506,6 +630,10 @@ export const RETENTION_HANDLERS: Readonly<Record<string, PolicyHandler>> = {
   buyer_personal: buyerPersonal,
   fraud_signals: fraudSignals,
   consent_records: consentRecords,
+  partner_application: partnerApplication,
+  auth_session: expiredAuthRows("sessions"),
+  auth_verification_token: expiredAuthRows("verification_tokens"),
+  review_attestation: reviewAttestationNames,
 };
 
 /**

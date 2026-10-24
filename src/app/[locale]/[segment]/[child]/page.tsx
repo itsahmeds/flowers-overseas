@@ -37,6 +37,7 @@ import {
   countryShopRootMetadata,
   windowStart,
 } from "../../country-shop-root";
+import { BlogPostRoute, blogPostMetadata } from "../../blog-route";
 import { InfoPageRoute, infoPageRouteMetadata } from "../../info-page-route";
 import { ListingJsonLd } from "../../listing-json-ld";
 
@@ -185,6 +186,11 @@ export async function generateMetadata({
     return infoPageRouteMetadata(match.pageId, match.locale);
   }
 
+  // Spec 044's blog post (TASK-322), through the one blog helper.
+  if (match.kind === "blogPost") {
+    return blogPostMetadata(match.locale, match.slug);
+  }
+
   if (match.kind === "countryShopRoot") {
     return countryShopRootMetadata(match, listingRequest());
   }
@@ -302,6 +308,10 @@ export default async function LocaleChildRoute({ params }: ChildParams) {
   if (match.kind === "infoPage") {
     // Spec 041's legal documents (TASK-183), through the one info-page helper.
     return <InfoPageRoute pageId={match.pageId} locale={match.locale} />;
+  }
+
+  if (match.kind === "blogPost") {
+    return <BlogPostRoute locale={match.locale} slug={match.slug} />;
   }
 
   if (match.kind === "countryShopRoot") {

@@ -28,6 +28,7 @@ import {
   schemaOptions,
 } from "@/modules/seo";
 
+import { BlogIndexRoute, blogIndexMetadata } from "../blog-route";
 import { InfoPageRoute, infoPageRouteMetadata } from "../info-page-route";
 import { ListingJsonLd } from "../listing-json-ld";
 
@@ -142,6 +143,8 @@ export async function generateMetadata({
   if (match.kind === "infoPage") {
     return infoPageRouteMetadata(match.pageId, match.locale);
   }
+  // Spec 044's blog index (TASK-322), through the one blog helper.
+  if (match.kind === "blogIndex") return blogIndexMetadata(match.locale);
   if (match.kind !== "destinationsHub") notFound();
 
   const t = await getTranslations({
@@ -224,6 +227,10 @@ export default async function LocaleSegmentRoute({ params }: SegmentParams) {
 
   if (match.kind === "infoPage") {
     return <InfoPageRoute pageId={match.pageId} locale={match.locale} />;
+  }
+
+  if (match.kind === "blogIndex") {
+    return <BlogIndexRoute locale={match.locale} />;
   }
 
   if (match.kind !== "destinationsHub") notFound();

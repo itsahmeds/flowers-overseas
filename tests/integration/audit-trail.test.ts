@@ -30,6 +30,7 @@ import {
   AUDITED_TABLES,
   logAdminRead,
 } from "../../src/modules/admin/audit.ts";
+import { BLOG_TABLES } from "../../src/modules/content/blog/schemas.ts";
 import { country as insertCountry, partner, unique } from "./support/rows.ts";
 import {
   asApp,
@@ -237,14 +238,15 @@ const CASES: readonly TableCase[] = [
   },
   {
     table: "partner_application",
-    parents: async (tx) => {
-      await insertCountry(tx);
-      return {};
-    },
-    insert: (tx) =>
+    parents: async (tx) => ({ countryId: await insertCountry(tx) }),
+    // `0022_florists_v0` (TASK-211): country, contact and notice version are required.
+    insert: (tx, p) =>
       one(tx<{ id: string }[]>`
-        INSERT INTO partner_application (business_name, city, language_code)
-        VALUES ('Test Florist', 'Warszawa', 'en') RETURNING id`),
+        INSERT INTO partner_application (business_name, city, language_code, country_id,
+                                         contact_name, contact_email, contact_phone,
+                                         privacy_notice_version)
+        VALUES ('Test Florist', 'Warszawa', 'en', ${p["countryId"] ?? ""}, 'Test Applicant',
+                'applicant@example.test', '+48 500 000 000', '2026-10-04') RETURNING id`),
     update: (tx, id) =>
       tx`UPDATE partner_application SET status = 'contacted' WHERE id = ${id}`,
     remove: (tx, id) => tx`DELETE FROM partner_application WHERE id = ${id}`,
@@ -339,8 +341,10 @@ describe.skipIf(server.url === undefined)(
         JOIN pg_proc p ON p.oid = t.tgfoid
         WHERE p.proname = 'audit_row_change' AND NOT t.tgisinternal
         ORDER BY 1`;
+      // Spec 044 §5.1 item 7 (migration `0024_blog`, TASK-321) attaches the same trigger to the five
+      // blog tables; their audit rows are asserted by `tests/integration/blog.test.ts`.
       expect(triggers.map((row) => row.table)).toEqual(
-        [...AUDITED_TABLES].sort(),
+        [...AUDITED_TABLES, ...BLOG_TABLES].sort(),
       );
     });
 
@@ -564,9 +568,11 @@ describe.skipIf(server.url === undefined)(
             RETURNING id`;
           const [application] = await tx<{ id: string }[]>`
             INSERT INTO partner_application (business_name, city, language_code, contact_email,
-                                             contact_phone, registration_number, website_url)
+                                             contact_phone, registration_number, website_url,
+                                             country_id, contact_name, privacy_notice_version)
             VALUES ('Kwiaty Anny Nowak', 'Krakow', 'en', 'anna.nowak@example.test', '+48500000002',
-                    '5250000000', 'https://florist.example.test')
+                    '5250000000', 'https://florist.example.test', ${countryId}, 'Anna Nowak',
+                    '2026-10-04')
             RETURNING id`;
           return tx<
             {
@@ -592,6 +598,7 @@ describe.skipIf(server.url === undefined)(
         expect(partnerRow?.after["code"]).toBe("audit-mask");
         for (const column of [
           "business_name",
+          "contact_name",
           "contact_email",
           "contact_phone",
           "registration_number",

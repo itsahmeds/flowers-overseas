@@ -89,6 +89,9 @@
  *    12"; TASK-237 had already taken 12 for "shown", so it is 13 here, with the behaviour the spec
  *    gives it. The 500 boundary's copy (`error-copy.data.ts`) is held to the same rule by
  *    `tests/unit/i18n-check.test.ts`, which reads it.
+ * 14. **Relay language** (spec 018 AC-38, T-38; TASK-337) — `scripts/check-relay-language.ts` over
+ *    the resolved catalogues: no value and no key name in spec 018's buyer namespaces gives a
+ *    `relayMatches` match, none of them is exempt, and no pattern list is emptied.
  *
  * ## The usage heuristic (check 2) and its limits
  *
@@ -132,6 +135,11 @@ import {
   LocaleRegistrySchema,
   type LocaleConfig,
 } from "../src/config/locales.ts";
+import {
+  SCAN_LOCALES,
+  type ScanLocale,
+  relayLanguageProblems,
+} from "./check-relay-language.ts";
 import { scopeProblems, validScopeEntries } from "./i18n-check-scope.ts";
 import {
   describeHeadDashes,
@@ -921,6 +929,9 @@ function catalogueChecks(input: CatalogueCheckInput): CheckResult {
   // 13: no dash in head copy (A-founder-2026-10-15a clause 4, AC-50).
   problems.push(...headPunctuationProblems(input.locales));
 
+  // 14: no relay language in spec 018's buyer namespaces (spec 018 AC-38, T-38; TASK-337).
+  problems.push(...relayProblems(input.locales));
+
   const unapproved = [...sourceFlat.keys()].filter((key) => {
     const entry = scopeEntryFor(key);
     return (
@@ -960,6 +971,32 @@ function shownLocaleProblems(
  * Check 13. Every authored value, locale by locale, so a dash in `pl` alone is named as `pl`'s
  * (a value `en-gb` inherits from `en` is `en`'s problem, reported once, where it is written).
  */
+/**
+ * Check 14 (spec 018 AC-38): `scripts/check-relay-language.ts` over the catalogues as
+ * `resolveCatalogue()` resolves them, each problem named against the locale's catalogue file.
+ */
+function relayProblems(locales: readonly LoadedLocale[]): Problem[] {
+  const resolved: Partial<Record<ScanLocale, Record<string, unknown>>> = {};
+  const files = new Map<string, string>();
+  for (const locale of locales) {
+    files.set(locale.code, locale.cataloguePath);
+    if ((SCAN_LOCALES as readonly string[]).includes(locale.code)) {
+      resolved[locale.code as ScanLocale] = resolveCatalogue(locale.code);
+    }
+  }
+  return relayLanguageProblems(resolved).map((problem) => ({
+    file:
+      problem.locale === undefined
+        ? "src/config/honesty.ts"
+        : (files.get(problem.locale) ?? "messages"),
+    ...(problem.key === undefined ? {} : { key: problem.key }),
+    reason:
+      problem.locale === undefined
+        ? problem.reason
+        : `in locale \`${problem.locale}\` ${problem.reason} (spec 018 AC-38: reword it; no exemption)`,
+  }));
+}
+
 function headPunctuationProblems(locales: readonly LoadedLocale[]): Problem[] {
   const problems: Problem[] = [];
   for (const locale of locales) {

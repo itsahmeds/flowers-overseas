@@ -15,7 +15,7 @@
 import { getTableConfig, type PgTable } from "drizzle-orm/pg-core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { CUSTOMER_VIEWS, PARTNER_VIEWS } from "../../db/rls.ts";
+import { CUSTOMER_VIEWS, PARTNER_VIEWS, PUBLIC_VIEWS } from "../../db/rls.ts";
 import * as schema from "../../db/schema/index.ts";
 import {
   probeLocalServer,
@@ -37,7 +37,12 @@ const MIRROR_TABLES = Object.values(schema)
   .sort();
 
 /** The column-limited read paths of `0011` (`db/rls.ts`). */
-const VIEWS = [...Object.keys(PARTNER_VIEWS), ...Object.keys(CUSTOMER_VIEWS)];
+const VIEWS = [
+  ...Object.keys(PARTNER_VIEWS),
+  ...Object.keys(CUSTOMER_VIEWS),
+  // 0024 (TASK-321): the public author view (spec 044 §5.1 item 7).
+  ...Object.keys(PUBLIC_VIEWS),
+];
 
 /** Functions the migrations create (trigger functions and `set_updated_at`). */
 const FUNCTIONS = [
@@ -53,6 +58,8 @@ const FUNCTIONS = [
   "app_is_self",
   "app_is_staff",
   "app_partner_owns_payout",
+  // 0022 (TASK-211): the partner's view of its own delivery photo (spec 011 §5.1).
+  "app_partner_sees_media",
   "app_partner_sees_order",
   "audit_log_append_only",
   // 0016 (TASK-218): the audit trail and the status-flip guard (spec 012 §5.1).
@@ -62,9 +69,21 @@ const FUNCTIONS = [
   "audit_record_view",
   "audit_row_change",
   "audit_write",
+  // 0024 (TASK-321): the blog's hash, freeze, publish guard, slug lock and author rules (spec 044
+  // §5.1 item 5).
+  "blog_author_follow_profile",
+  "blog_author_guard",
+  "blog_post_rehash_drafts",
+  "blog_publish_guard",
+  "blog_revision_approved",
+  "blog_revision_freeze",
+  "blog_revision_hash",
+  "blog_slug_lock",
   "customer_self_update_guard",
   "delivery_proof_asset_check",
   "fulfillment_partner_coverage_country_guard",
+  // 0021 (TASK-337): an issued invoice never changes (spec 018 §5.1, AC-16).
+  "invoice_immutable",
   "media_asset_delivery_proof_guard",
   "media_asset_partner_application_guard",
   "order_assignment_mode_check",
@@ -80,6 +99,18 @@ const FUNCTIONS = [
   "partner_application_media_check",
   "partner_coverage_country_check",
   "payout_currency_check",
+  // 0019 (TASK-347): the deferred check that a purchase totals its orders (spec 010 §14
+  // A-founder-2026-10-22 item 2 A).
+  "purchase_total_check",
+  // 0023 (TASK-293): the review ledger (spec 012b §5.1 item 2).
+  "review_attestation_append_only",
+  "review_blog_revision_current_hash",
+  "review_blog_revision_hash",
+  "review_hash_part",
+  "review_product_copy_hash",
+  "review_row_is_own",
+  "review_subject_hash",
+  "review_write_guard",
   "set_updated_at",
   "status_flip_guard",
 ];

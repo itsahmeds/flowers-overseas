@@ -41,8 +41,8 @@ const child = async (locale: string, name: string): Promise<Response> =>
   );
 
 describe("GET /sitemap.xml", () => {
-  it("is XML, cached for an hour, with no cookie and no Vary (AC-13, §5.4)", () => {
-    const response = getIndex();
+  it("is XML, cached for an hour, with no cookie and no Vary (AC-13, §5.4)", async () => {
+    const response = await getIndex();
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toMatch(/^application\/xml/u);
     expect(response.headers.get("cache-control")).toBe("public, max-age=3600");
@@ -51,14 +51,14 @@ describe("GET /sitemap.xml", () => {
   });
 
   it("announces nothing on a deployment that may not be indexed", async () => {
-    const body = await getIndex().text();
+    const body = await (await getIndex()).text();
     expect(body).toContain("<sitemapindex");
     expect(body).not.toContain("<loc>");
   });
 
   it("lists one child index per announced locale once indexing is on", async () => {
     indexingEnvironment();
-    const body = await getIndex().text();
+    const body = await (await getIndex()).text();
     expect(body).toContain(
       `<loc>https://${CANONICAL_HOST}/sitemaps/en/index.xml</loc>`,
     );
