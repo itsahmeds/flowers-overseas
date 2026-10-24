@@ -4,7 +4,8 @@
  * `docs/design/system/components.dc.html`, "Listing and card blocks", rows 1–4).
  *
  * **What it renders, and it is the whole list** (AC-6 as amended by spec 004 §14
- * A-founder-2026-10-19b; TASK-285): the photograph or spec 006's placeholder in a fixed 4∶5 box,
+ * A-founder-2026-10-19b; TASK-285): the photograph or the wordless, `aria-hidden` placeholder box
+ * (spec 043 AC-14; TASK-290) in a fixed 4∶5 box,
  * the product name as the card's heading, **one** all-in price through `formatMoney` with
  * `catalog.price.inclusive` ("Includes VAT and delivery"; the authored legal formula in `de` and
  * `pl`) beside it, and the honesty label wherever the asset it displayed is `ai`, displayed or
@@ -140,7 +141,6 @@ export function ProductCard({
   qualifierBelow = false,
 }: ProductCardProps): ReactElement {
   const catalog = useTranslations("catalog");
-  const media = useTranslations("media");
   // Motion 6 moves a card that links to its page and is not the priority card (AC-44): the LCP
   // photograph and its ancestors carry no transition, no shadow layer and no line.
   const moving = card.href !== undefined && !priority;
@@ -181,11 +181,11 @@ export function ProductCard({
         {...(manifest === undefined ? {} : { manifest })}
       />
     ) : (
-      // No asset at all for this product: the captioned box, and **no `<img>`** — the same box the
-      // asset path degrades to, so the two placeholder routes are one rendered result
-      // (spec 006 §5.3, `plan/10` §3).
+      // No asset at all for this product: the wordless, `aria-hidden` box, and **no `<img>`**: the
+      // same box the asset path degrades to, so the two placeholder routes are one rendered
+      // result (spec 006 §5.3, `plan/10` §3; spec 043 §5.3 F, AC-14).
       <Photo
-        caption={media("placeholder.product")}
+        decorative
         ratio={CARD_RATIO}
         dataset={{
           "data-fo-media-slot": card.photo.slot,

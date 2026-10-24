@@ -274,6 +274,8 @@ describe("src/modules/catalog barrel (AC-1)", () => {
         "listingPages",
         "listingView",
         "productCardView",
+        // spec 043 §5.2 (TASK-290): photographed products first, re-exported from the design system.
+        "photoFirst",
         "publishedCountries",
         "writeExistenceSummary",
         // the listing parameter policy (TASK-114, spec 008 AC-9/AC-10/AC-15): one pure function,

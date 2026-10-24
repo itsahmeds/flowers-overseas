@@ -853,10 +853,8 @@ describe("spec 006 §14 A4: copy states no delivery timing, in any locale", () =
 describe("spec 006 §7: the `media.*` and catalogue message keys exist and are flagged", () => {
   const KEYS = [
     "media.provenance.aiExample",
-    "media.placeholder.hero",
-    "media.placeholder.occasion",
-    "media.placeholder.product",
-    "media.placeholder.delivery",
+    // `media.placeholder.*` was deleted: the placeholder box carries no words (spec 043 §5.3 F, §7,
+    // AC-14; TASK-290), asserted below.
     "media.watermark.demoSample",
     "a11y.media.gallery",
     "a11y.media.imageOfCount",
@@ -899,6 +897,17 @@ describe("spec 006 §7: the `media.*` and catalogue message keys exist and are f
     expect(meta[key]?.reviewed).toBe(
       key !== "catalog.descriptor.name" || recorded,
     );
+  });
+
+  it("has no `media.placeholder.*` key and no meta row for one (spec 043 §7, AC-14)", () => {
+    expect(
+      Object.keys(catalogue).filter((key) =>
+        key.startsWith("media.placeholder."),
+      ),
+    ).toEqual([]);
+    expect(
+      Object.keys(meta).filter((key) => key.startsWith("media.placeholder.")),
+    ).toEqual([]);
   });
 
   it("speaks in the first person and never says `relay`, `partner` or `network`", () => {
