@@ -118,7 +118,7 @@ const anyPolicyNamesOf = (table: string): string[] =>
     ),
   ].map((m) => m[1] ?? "");
 
-/** `0020`'s insert-only policies: `FOR INSERT TO app_web WITH CHECK (…)` (spec 011 §5.1). */
+/** `0022`'s insert-only policies: `FOR INSERT TO app_web WITH CHECK (…)` (spec 011 §5.1). */
 const INSERT_POLICIES: Policy[] = [
   ...up.matchAll(
     /CREATE POLICY (\w+) ON public\.(\w+)\s+FOR INSERT TO app_web\s+WITH CHECK \(([\s\S]*?)\);/g,
@@ -141,7 +141,7 @@ describe("migration 0011 — coverage", () => {
   });
 
   it("every policy the file creates was parsed (none hides behind an odd layout)", () => {
-    // The build role's policies (`0018`, spec 012b) and the insert-only ones (`0020`, spec 011)
+    // The build role's policies (`0018`, spec 012b) and the insert-only ones (`0022`, spec 011)
     // are read by their own blocks below.
     expect(
       POLICIES.length + BUILD_POLICIES.length + INSERT_POLICIES.length,
@@ -383,7 +383,7 @@ describe("migration 0011 — each class gets exactly its policies", () => {
 describe("rollback 0011", () => {
   it("drops the views, every policy, RLS on every table, and every function it created", () => {
     // `0011`'s own policies; a later migration's policy on an `0011` table is dropped by that
-    // migration's rollback (`0020_florists_v0`, below).
+    // migration's rollback (`0022_florists_v0`, below).
     for (const policy of POLICIES.filter(
       (p) =>
         !LATER_TABLES.has(p.table) &&
@@ -481,9 +481,9 @@ describe("migration 0018 — the build role reads the public set (spec 012b AC-4
   });
 });
 
-describe("migration 0020 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () => {
-  const up0020 = readMigration("0020_florists_v0.sql");
-  const down0020 = readMigration("0020_florists_v0.down.sql");
+describe("migration 0022 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () => {
+  const up0022 = readMigration("0022_florists_v0.sql");
+  const down0022 = readMigration("0022_florists_v0.down.sql");
 
   it("partner_application: staff, plus one public insert-only policy whose check pins status, partner and decision", () => {
     expect(Object.keys(PUBLIC_INSERT_ONLY_TABLES)).toEqual([
@@ -505,7 +505,7 @@ describe("migration 0020 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () 
           "app_current_role() = 'public' AND status = 'new' AND converted_partner_id IS NULL AND decided_at IS NULL",
       },
     ]);
-    expect(up0020).toContain("CHECK (cardinality(media_asset_ids) = 0)");
+    expect(up0022).toContain("CHECK (cardinality(media_asset_ids) = 0)");
   });
 
   it("media_asset: the partner reads delivery photos through a SECURITY DEFINER lookup on its open or accepted offers", () => {
@@ -524,10 +524,10 @@ describe("migration 0020 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () 
       using: "kind = 'delivery_proof' AND app_partner_sees_media(id)",
       check: "",
     });
-    expect(up0020).toMatch(
+    expect(up0022).toMatch(
       /CREATE FUNCTION public\.app_partner_sees_media\(target uuid\) RETURNS boolean\s+LANGUAGE sql STABLE\s+SECURITY DEFINER\s+SET search_path = pg_catalog, public/,
     );
-    expect(up0020).toMatch(
+    expect(up0022).toMatch(
       /WHERE p\.media_asset_id = target AND app_partner_sees_order\(p\.order_id\)/,
     );
   });
@@ -541,9 +541,9 @@ describe("migration 0020 — florists v0 (spec 011 §5.1, AC-14; TASK-211)", () 
       "DROP CONSTRAINT IF EXISTS partner_application_media_asset_ids_empty_check,",
       "DROP COLUMN IF EXISTS contact_name;",
     ]) {
-      expect(down0020).toContain(statement);
+      expect(down0022).toContain(statement);
     }
-    expect(down0020).toMatch(
+    expect(down0022).toMatch(
       /DELETE FROM public\.retention_policy\s+WHERE key IN \('partner_application', 'auth_session', 'auth_verification_token'\);/,
     );
   });

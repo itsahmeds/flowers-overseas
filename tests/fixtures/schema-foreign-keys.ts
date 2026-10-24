@@ -259,13 +259,13 @@ export const DEFERRED_FOREIGN_KEYS: readonly (readonly [
     "SET NULL",
     "0010_auth.sql",
   ],
-  // spec 011 §5.1 (`0020_florists_v0`, TASK-211): the florist's language.
+  // spec 011 §5.1 (`0022_florists_v0`, TASK-211): the florist's language.
   [
     "partner_member_locale_code_locale_code_fk",
     "locale_code",
     "locale",
     "code",
     "RESTRICT",
-    "0020_florists_v0.sql",
+    "0022_florists_v0.sql",
   ],
 ];

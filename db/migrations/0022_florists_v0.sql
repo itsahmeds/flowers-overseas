@@ -1,4 +1,4 @@
--- 0020_florists_v0 — the florist inbox's schema delta (spec 011 §5.1, AC-14, AC-17; TASK-211).
+-- 0022_florists_v0 — the florist inbox's schema delta (spec 011 §5.1, AC-14, AC-17; TASK-211).
 --
 -- What it adds, and why each piece is here rather than in an earlier migration:
 --
@@ -47,7 +47,7 @@
 --
 -- No change to `order`, `order_event`, `order_assignment`, `delivery_proof` or `order_transition`.
 --
--- Rollback: `0020_florists_v0.down.sql`.
+-- Rollback: `0022_florists_v0.down.sql`.
 
 SET LOCAL ROLE app_owner;
 

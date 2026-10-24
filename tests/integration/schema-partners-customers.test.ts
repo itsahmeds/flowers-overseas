@@ -232,7 +232,7 @@ describe.skipIf(sql === undefined)(
           "payout_line_order_id_order_id_fk",
           "partner_member_user_id_users_id_fk",
           "customer_user_id_users_id_fk",
-          // `0020` keys `partner_member.locale_code` to `locale` (spec 011 §5.1, TASK-211).
+          // `0022` keys `partner_member.locale_code` to `locale` (spec 011 §5.1, TASK-211).
           "partner_member_locale_code_locale_code_fk",
         ]);
         expect(rows.filter((row) => !LATER.has(row.fk))).toEqual(
@@ -348,7 +348,7 @@ describe.skipIf(sql === undefined)(
                  ON CONFLICT DO NOTHING`;
         await db`INSERT INTO country (iso2, currency_code, vat_rate_bp, iana_zone)
                  VALUES ('XW', 'EUR', 2000, 'Europe/Berlin') ON CONFLICT DO NOTHING`;
-        // `0020_florists_v0` keeps `media_asset_ids` empty in Phase 0 (spec 011 §13 Q5); these
+        // `0022_florists_v0` keeps `media_asset_ids` empty in Phase 0 (spec 011 §13 Q5); these
         // cases exercise `0005`'s guards, which stay for the spec that drops that check, so the
         // check is lifted here and restored by `cleanup`.
         await db`ALTER TABLE partner_application
@@ -523,7 +523,7 @@ describe.skipIf(sql === undefined)(
             /* ------------------------------------------------------- parents */
 
             await tx`INSERT INTO locale (code, bcp47, name) VALUES ('zz', 'zz', 'Test locale')`;
-            // `partner_member.locale_code` defaults to `en` (`0020`, spec 011 §5.1).
+            // `partner_member.locale_code` defaults to `en` (`0022`, spec 011 §5.1).
             await tx`INSERT INTO locale (code, bcp47, name) VALUES ('en', 'en', 'English')
                      ON CONFLICT DO NOTHING`;
             await tx`INSERT INTO currency (code, minor_unit_exponent) VALUES ('ZZZ', 2)`;
@@ -885,7 +885,7 @@ describe.skipIf(sql === undefined)(
 
             /* --------------------------------------------- application media */
 
-            // `0020` constrains the array empty (spec 011 §13 Q5); `0005`'s guards, tested here,
+            // `0022` constrains the array empty (spec 011 §13 Q5); `0005`'s guards, tested here,
             // stay for the spec that drops that check, so it is lifted inside this transaction.
             await tx`ALTER TABLE partner_application
                      DROP CONSTRAINT partner_application_media_asset_ids_empty_check`;

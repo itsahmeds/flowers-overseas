@@ -1,10 +1,10 @@
--- Rollback of 0020_florists_v0 (spec 011 §5.1 "Rollback"; TASK-211).
+-- Rollback of 0022_florists_v0 (spec 011 §5.1 "Rollback"; TASK-211).
 --
 -- In reverse: the retention rows, the partner media policy and its lookup, the member's language,
 -- the public insert policy, the constraints, then the four columns. Rows written by the form
 -- survive a rollback of the constraints but lose `contact_name`, `weekend_delivery`,
 -- `privacy_notice_version` and `decided_at`: export applications first
--- (`docs/runbooks/florists.md`). `0020` creates no table, type, role or schema.
+-- (`docs/runbooks/florists.md`). `0022` creates no table, type, role or schema.
 
 SET LOCAL ROLE app_owner;
 

@@ -53,7 +53,7 @@ const FUNCTIONS = [
   "app_is_self",
   "app_is_staff",
   "app_partner_owns_payout",
-  // 0020 (TASK-211): the partner's view of its own delivery photo (spec 011 §5.1).
+  // 0022 (TASK-211): the partner's view of its own delivery photo (spec 011 §5.1).
   "app_partner_sees_media",
   "app_partner_sees_order",
   "audit_log_append_only",
