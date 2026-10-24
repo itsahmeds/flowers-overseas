@@ -155,10 +155,8 @@ function RegisterTable({
 
 function Facts({
   view,
-  t,
 }: {
   readonly view: LegalDocumentView;
-  readonly t: Translator;
 }): ReactElement | null {
   const facts = view.facts;
   const labels = view.factsLabels;
@@ -201,8 +199,6 @@ function Facts({
       ),
     },
   ];
-  // `t` is unused for the facts' values: they are data, never translated (spec 041 §7).
-  void t;
   return (
     <dl className="border-rule m-0 grid border-t" data-fo-imprint-facts>
       {items.map((item) => (
@@ -278,7 +274,7 @@ function Block({
         </p>
       );
     case "facts":
-      return <Facts t={t} view={view} />;
+      return <Facts view={view} />;
     case "privacyLink":
       return (
         <p className={PROSE}>
