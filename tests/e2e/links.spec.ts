@@ -222,7 +222,8 @@ const CHROME = [
   "[data-fo-trending]",
 ] as const;
 
-/** The header's category row per locale, as the ruling draws it: eight entries, all links. */
+/** The header's row per locale: the eight category entries and, since spec 011 (TASK-210), `For
+ * florists` at its end; all links. */
 const ROW_IDS = [
   "our-selection",
   "birthday",
@@ -232,6 +233,7 @@ const ROW_IDS = [
   "roses",
   "plants",
   "destinations",
+  "for-florists",
 ] as const;
 
 test.describe("TASK-173: every chrome control is a link that answers 200, or is not drawn", () => {
@@ -242,7 +244,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
     }) => {
       expect((await page.goto(`/${locale}`))?.status()).toBe(200);
 
-      // The header's category row: the eight entries with a page, each an `<a>`, in order.
+      // The header's row: the nine entries with a page, each an `<a>`, in order.
       const row = await page
         .locator("[data-fo-header-item]")
         .evaluateAll((nodes) =>
@@ -259,11 +261,12 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
         expect(item.tag, item.id).toBe("A");
         expect(item.href, item.id).toMatch(new RegExp(`^/${locale}/`, "u"));
       }
-      // Our selection is the demo destination's shop, Destinations the hub.
+      // Our selection is the demo destination's shop, Destinations the hub, then For florists.
       expect(row[0]?.href).toMatch(
         /\/(?:poland|polen|polska)\/(?:flowers|blumen|kwiaty)$/u,
       );
       expect(row.at(-2)?.href).toBe(localePath(locale, "destinations"));
+      expect(row.at(-1)?.href).toBe(localePath(locale, "forFlorists"));
 
       // The footer's link columns are the entries with a page, and nothing else. Spec 041's trust
       // pages exist in English only (TASK-182): `en` and `en-gb` gain Delivery and payment and

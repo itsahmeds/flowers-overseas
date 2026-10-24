@@ -72,6 +72,8 @@ function inContext(locale: Locale, country: "poland" | "france"): Hrefs {
     roses: `/${locale}/${country}/flowers/roses`,
     plants: `/${locale}/${country}/flowers/plants`,
     destinations: base["destinations"] ?? "",
+    // Spec 011 §12 (TASK-210): `For florists` closes the row, out of the destination's context.
+    "for-florists": base["for-florists"] ?? "",
   };
 }
 
