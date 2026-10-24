@@ -1,4 +1,4 @@
--- 0020_product_facets — the product facts the catalogue reads and spec 002 §5.1 has no column
+-- 0026_product_facets — the product facts the catalogue reads and spec 002 §5.1 has no column
 -- for (spec 005 AC-27, spec 012b §2.2; TASK-070).
 --
 -- `dbCatalogueProvider` must hand over the same `ProductData` record the static provider does
@@ -26,7 +26,7 @@
 -- migration was written, and `tests/integration/catalog-db-providers.test.ts` proves a database
 -- seeded before it reads back exactly as the dataset after it.
 --
--- Rollback: `0020_product_facets.down.sql` drops the four columns and their checks.
+-- Rollback: `0026_product_facets.down.sql` drops the four columns and their checks.
 
 SET LOCAL ROLE app_owner;
 
