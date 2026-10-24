@@ -13,6 +13,8 @@ import {
   ADDRESS_FORMATS,
 } from "../../src/config/address-formats.ts";
 import {
+  BASKET_LIFETIME_DAYS,
+  BASKET_MAX_LINES,
   CHECKOUT_LIMITS,
   CHECKOUT_STEPS,
   DEMO_DAILY_ORDER_CAP,
@@ -113,6 +115,40 @@ describe("src/config/checkout.ts states spec 010's numbers once", () => {
         /^checkout\.placeKind\./u,
       );
     }
+  });
+});
+
+describe("the basket's numbers (§14 A-founder-2026-10-22 D3, D7; AC-55, T-55)", () => {
+  const migration = readFileSync(
+    resolve(process.cwd(), "db/migrations/0020_checkout_draft_lines.sql"),
+    "utf8",
+  );
+
+  it("caps a basket at five lines, and the migration's position check has the same bound", () => {
+    expect(BASKET_MAX_LINES).toBe(5);
+    const bound =
+      /CONSTRAINT checkout_draft_line_position_check CHECK \(position BETWEEN 1 AND (\d+)\)/u.exec(
+        migration,
+      );
+    expect(bound).not.toBeNull();
+    expect(Number(bound?.[1])).toBe(BASKET_MAX_LINES);
+  });
+
+  it("LinePositionSchema takes 1 to BASKET_MAX_LINES and nothing else", async () => {
+    const { LinePositionSchema } = await import("@/modules/checkout");
+    expect(
+      ["1", String(BASKET_MAX_LINES)].map((v) => LinePositionSchema.parse(v)),
+    ).toEqual([1, BASKET_MAX_LINES]);
+    for (const value of ["0", String(BASKET_MAX_LINES + 1), "x", "1.5", ""]) {
+      expect(LinePositionSchema.safeParse(value).success, value).toBe(false);
+    }
+  });
+
+  it("keeps a basket 30 days after its last change", () => {
+    expect(BASKET_LIFETIME_DAYS).toBe(30);
+    expect(migration).toContain(
+      "expires_at = d.last_activity_at + interval '30 days'",
+    );
   });
 });
 
