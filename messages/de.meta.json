@@ -3353,5 +3353,220 @@
     "source": "machine",
     "reviewed": false,
     "sourceHash": "bcfc18f77c106b8fcb98a5a8fc51c977976d278e2dacd6a3ee2d5c73070c9aff"
+  },
+  "checkout.action.back": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e815d26b8d9a1b400d05391741b37bb1fe70579ea5916f8367c9b32361c67e08"
+  },
+  "checkout.addons.add": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9fd728c66c9a256b121472dabf32a34317aed01d8427d70ec830289cf23a7cc8"
+  },
+  "checkout.addons.addLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "253e23d41a31318f309177530a2d29ace8914e847f804ec752db9d1401b3272b"
+  },
+  "checkout.addons.legend": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "97f0721e40460a7780783f462c14fb9a6166c8e142690ea0f3aa179e82f4b641"
+  },
+  "checkout.addons.remove": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "checkout.addons.removeLabel": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e6a3c4a1250a6ad3f10faa22333e5e50a6ba78e5b28a3b26f5743d9f8c7ede93"
+  },
+  "checkout.basket.alsoInBasket": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ff50c942048abfb244515d332bc63607e6689d178e09cddd487a05d7fc6c402c"
+  },
+  "checkout.buyer.legend": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c0bcd4c0f8e707844c003e6e8720cc209aff9410eb44daa252875e31c5468199"
+  },
+  "checkout.closed.back": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "01bf52cf30a40984b4cedf6d128a4e18cf94dde7adee73c49a4a34922b517857"
+  },
+  "checkout.closed.opensSoon": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "156b4555c62dde99f512cb01529097dc43fcf4a3e0a6ad387ac042a23732bb7d"
+  },
+  "checkout.closed.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b08e064b2e425e18d29a06da71df77e7e0c60672ae495b517894a0a9d4bdc5c3"
+  },
+  "checkout.date.legend": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
+  },
+  "checkout.date.useNext": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c8edaad6ae9c333b81701f7005ba507abe91c76011286254f69b042c54d87ab1"
+  },
+  "checkout.demo.cap": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "35c2f9fc1f2eb7c7fb0f21631bd5cf9f9bc690b0571855024962ef8be18896ae"
+  },
+  "checkout.demo.dateHeading": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6ecfe2ed92e4547d0accf7bd0e23abf94c9fa548a55c7ef95f85d09074f63e48"
+  },
+  "checkout.error.unable": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "959f8fba8fd2455f9549d4c31a72e5a38a7e19d7dd59ac7de689e9d1ff01fa30"
+  },
+  "checkout.expired.link": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "67365fd526e0b1747973be9e31ecb6a622a97d5e0796e2340206b36dfc6d9274"
+  },
+  "checkout.expired.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "964b4a6c1a5c53fe104322a5450a7c4ab9c1d86fe3e64675d8f0d9d33dfe30d6"
+  },
+  "checkout.recipient.deliveryNote": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "79cfb80448a908ff9d9cf3e4a150aab08acc28c44e774b15d88bb2fca988cce8"
+  },
+  "checkout.recipient.deliveryNoteHint": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "e9ea567ac3c8ac2a35770d4ec49fd3adf39a334e16dc00568d4f90adb112ad07"
+  },
+  "checkout.review.addons": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "ccfc53fcbd494330a3afbd856579cb719eea870425321dcd1d04e24576d24ed7"
+  },
+  "checkout.review.amount": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "93c91c851e7acc17d881c9b89ea954be1183070254014be03a93d169cf52dbbd"
+  },
+  "checkout.review.bouquet": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "124ec8b3756e4ff6a7e458848b0367260460124f0846dacd1238733133927a29"
+  },
+  "checkout.review.card": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "be3702e3f1af559a8df03568294283934a2558521fd8895f68eda09e3ce4f8a3"
+  },
+  "checkout.review.change": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c0bf75bd78bf9572596720d596bd5a20a5b9145cde0fe50dec1e783cb184d69b"
+  },
+  "checkout.review.date": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "checkout.review.noCard": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a9fac8afb9b1095a7f48bf406ed9ebc1730c55708c7965c2ba4337ad5c554aab"
+  },
+  "checkout.review.none": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "checkout.review.recipient": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
+  },
+  "checkout.step.card": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "f7c174ef7ad528b756b7d65847b1c44b0177b910f8564caae37752f27ae7bf5a"
+  },
+  "checkout.step.deliveryOf": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "583687a087c862bf3573edf912e4afc74d1c01b7f32e276033db0b3e1a1d6953"
+  },
+  "checkout.step.recipient": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "095f86141f4275611017053ce34b271b1c1ddedd7074c322b8b769b6dfa2da39"
+  },
+  "checkout.step.review": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "88890de95afcfac2d5c8cbeab4aa6f735a298abc4d51ba1b5e11d5ce980afd6b"
+  },
+  "confirmation.demo.body": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "9b0ff616314519aa5c879e5c1d6be39a301d9b2dac0fa216d3c2373904488095"
+  },
+  "confirmation.demo.next": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "b5e12f05a214a495ec590c1a30605b2a6a62aeeef873dcf36f75188dad75c866"
+  },
+  "confirmation.demo.reference": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "342ca923aa50fec3a43e3b93b81d54a8cf33f2f0c43a48799c0e742242171d5f"
+  },
+  "confirmation.demo.title": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a8ed6cf1397555f17176283959c1435096ae045a0745edc0cd482c67569a2486"
+  },
+  "confirmation.page.gone": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "6950a89088169eff05ea24dfffe8ddfa4cbf0d8ba77d86e879658b507d20c8c7"
+  },
+  "confirmation.page.promise": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "bb665a52536e859f75b586c994d4acb332cd37ecfd6cd69e559a0cf78cbdf869"
+  },
+  "confirmation.page.total": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "c9b3c38247f744e17dd26fda097d6a9ba9332586b6bdaa038bf8f313a863f2b8"
+  },
+  "product.entry.addToBasket": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "276ef9a05af4e88c84072fcfd7241705d10fd3f400ae1a58ade9fbc36323b9d7"
+  },
+  "product.entry.continue": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a9cb4ff078c3edcfeb3f2047e89e646ab14106ddd8a30e16fa94441e6b510380"
+  },
+  "product.entry.demo": {
+    "source": "machine",
+    "reviewed": false,
+    "sourceHash": "a0a54cc461dbc887eb87ec36926bace436b61cf09990b52b0ad11219b7a68c42"
   }
 }

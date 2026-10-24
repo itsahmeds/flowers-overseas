@@ -204,7 +204,8 @@
   "checkout": {
     "action": {
       "toCard": "Continue to your details",
-      "toReview": "Continue to check"
+      "toReview": "Continue to check",
+      "back": "Back to {product}"
     },
     "address": {
       "city": "Town or city",
@@ -232,13 +233,15 @@
       "total": "Total",
       "unavailable": "This bouquet is no longer available. Please remove it to continue.",
       "unavailableSummary": "{count, plural, one {Jeden bukiet w koszyku jest już niedostępny. Usuń go, aby kontynuować.} few {# bukiety w koszyku są już niedostępne. Usuń je, aby kontynuować.} many {# bukietów w koszyku jest już niedostępnych. Usuń je, aby kontynuować.} other {# bukietu w koszyku jest już niedostępne. Usuń je, aby kontynuować.}}",
-      "useNext": "Use {next}"
+      "useNext": "Use {next}",
+      "alsoInBasket": "Your basket also has {count, plural, one {# other bouquet} other {# other bouquets}}. Remove any you do not want before you place your order."
     },
     "buyer": {
       "country": "Country you live in",
       "email": "Email",
       "fullName": "Your name",
-      "phone": "Your phone"
+      "phone": "Your phone",
+      "legend": "Your details"
     },
     "card": {
       "blank": "Leave it blank and we send the flowers without a card.",
@@ -250,14 +253,18 @@
       "signAsHint": "Up to {max} characters"
     },
     "date": {
-      "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}."
+      "gone": "{date} is no longer available in {country}: {reason}. The next date is {next}.",
+      "legend": "Delivery date",
+      "useNext": "Use {next}"
     },
     "demo": {
       "bannerBody": "Nothing is charged and nothing is delivered. It shows how ordering works.",
       "bannerTitle": "This is a demo order.",
       "place": "Place demo order. Nothing is charged.",
       "placing": "Placing your demo order…",
-      "useSample": "Use sample details"
+      "useSample": "Use sample details",
+      "cap": "The demo has had a lot of orders today. Please try again tomorrow.",
+      "dateHeading": "Pick any date to see how it works. In the demo, nothing is delivered."
     },
     "error": {
       "addonUnavailable": "This extra is not available for this delivery. Please remove it.",
@@ -271,7 +278,8 @@
       "required": "Please fill this in to continue.",
       "summaryItem": "{field}: {message}",
       "summaryTitle": "Please check these details",
-      "tooLong": "Please shorten this to {max} characters or fewer."
+      "tooLong": "Please shorten this to {max} characters or fewer.",
+      "unable": "We could not place this order. Please check the details and try again."
     },
     "field": {
       "optional": "optional"
@@ -303,7 +311,9 @@
     },
     "recipient": {
       "phoneNonLocal": "This does not look like a phone number in {country}. Our florist may not be able to call it.",
-      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only."
+      "phoneReason": "Our florist calls the recipient if nobody answers the door. We use this number for this delivery only.",
+      "deliveryNote": "Delivery note",
+      "deliveryNoteHint": "Up to {max} characters"
     },
     "summary": {
       "delivery": "Delivery",
@@ -313,6 +323,39 @@
       "total": "You pay",
       "vat": "VAT {rate}",
       "vatOf": "Of which VAT {rate}"
+    },
+    "addons": {
+      "add": "Add",
+      "addLabel": "Add {name}, {price}",
+      "legend": "Add something",
+      "remove": "Remove",
+      "removeLabel": "Remove {name}"
+    },
+    "closed": {
+      "back": "Back to the flowers",
+      "opensSoon": "Ordering opens soon.",
+      "title": "We are not taking orders for {country} yet."
+    },
+    "expired": {
+      "link": "Choose flowers",
+      "title": "This order was not started, or it has expired."
+    },
+    "review": {
+      "addons": "Add-ons",
+      "amount": "Price",
+      "bouquet": "Bouquet",
+      "card": "Card",
+      "change": "Change",
+      "date": "Date",
+      "noCard": "No card",
+      "none": "None",
+      "recipient": "Recipient"
+    },
+    "step": {
+      "card": "Your card and your details",
+      "deliveryOf": "Delivery {n} of {total}",
+      "recipient": "Who are the flowers for?",
+      "review": "Check and place your order"
     }
   },
   "common": {
@@ -336,6 +379,17 @@
       "date": "Date",
       "nothingCharged": "Nothing was charged.",
       "recipient": "Recipient"
+    },
+    "demo": {
+      "body": "Nothing was charged and nothing will be delivered.",
+      "next": "In the real service, our florist in {city} makes the bouquet on the morning of delivery and hands it over in person.",
+      "reference": "Order {reference}",
+      "title": "Your demo order is in."
+    },
+    "page": {
+      "gone": "This confirmation is no longer available.",
+      "promise": "Our fresh-flower promise covers the flowers when they arrive.",
+      "total": "Total"
     }
   },
   "consent": {
@@ -979,7 +1033,12 @@
         "title": "If something is unavailable"
       }
     },
-    "vat": "VAT {rate}"
+    "vat": "VAT {rate}",
+    "entry": {
+      "addToBasket": "Add to basket",
+      "continue": "Continue, {total}",
+      "demo": "Try a demo order"
+    }
   },
   "shop": {
     "cardNote": {
