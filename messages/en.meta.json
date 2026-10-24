@@ -4637,82 +4637,114 @@
   },
   "floristInbox.orders": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "b7e8acdd522e6190ac9567ad16dff9873cbb78882bbf435b7e189c440a949159"
   },
   "floristInbox.stage.waiting": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "8e4b72ca2511e0bcdbb24cfba59f203972522cc440bfee2e8d9b7b0f7bebfd84"
   },
   "floristInbox.stage.inProgress": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "c1f88e9d6c4145cf0530ae020155384d5688d70ed82a07a35d783bbc4b32238c"
   },
   "floristInbox.answerBy": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "619f16d4add5b88715376bafe5857db2ca14cf97f32df136dae3aa16e02c61a3"
   },
   "floristInbox.forDate": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "092393bb3dfc8862a500dada0f815e23c07f2ed4be432050e554379398c82d24"
   },
   "floristInbox.youReceive": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "9ff9a4bc697dd08450ef0fbb0fa88582648f42837545596d290bd8961a06a433"
   },
   "floristInbox.deliveryDate": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "fea75f4d1cbafaedad93df25360ca9feb40e42df79e793bffc15b0013f1ac7fb"
   },
   "floristInbox.address": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "56ef8f20955f256423d328f65b62106005252551db25d660031887e421cb4684"
   },
   "floristInbox.recipient": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "51fac985e95345d90b3c8a69f5e60003cbbd47a06efdcf0270d76be85b408657"
   },
   "floristInbox.deliveryNote": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "79cfb80448a908ff9d9cf3e4a150aab08acc28c44e774b15d88bb2fca988cce8"
   },
   "floristInbox.cardMessage": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "46fe4a838806eec42b7be274b52577536001bbb76099fa2d209abda06a383604"
   },
   "floristInbox.accept": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "89713b9c9c1b8f659c9f49db25e4a47886dd673fee248c3f650391f09a759cef"
   },
   "floristInbox.decline": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "a2d285b352873457207a34a015267524bb4613c3e8c961c8998da4e08e0d5745"
   },
   "floristInbox.outForDelivery": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "1b8faad0f548636d4a3215c30dd32e9c39c212dbf751c27b9715064b405114aa"
   },
   "floristInbox.photo.choose": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "a028d458846b9a9e8fe1215d38304a935b95fc795eda6d6a6883433af35d702f"
   },
   "floristInbox.photo.send": {
     "source": "human",
-    "reviewed": false,
+    "reviewed": true,
+    "reviewedBy": "founder, 2026-10-24: ran record-approval-210.py (florists' walkthrough, PR 344) after reading the exact text it printed",
+    "reviewedAt": "2026-10-24T21:34:45Z",
     "sourceHash": "94282bd0e852ea6c15770321d9a79ab68a98932d7e88b66a09976b6d804b49e8"
   },
   "forFlorists.apply.title": {
