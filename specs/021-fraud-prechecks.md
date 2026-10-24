@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Status | proposed |
+| Status | approved (founder, 2026-10-24, "specs ok", on every open-question default) |
 | Phase | 1 |
 | Plan refs | plan/01 §3 §5 §8 §9 · plan/02 §4.1 §7 §14 · plan/03 §5 §7 §8 §10 · plan/06 §2.2 §2.3 §5.2 §6 §7 §9 · plan/07 §1.2 §1.3 §1.5 §3 §5 §10 · plan/09 Phase 1 (`021`; acceptance 5: "Chargebacks 0; Radar rules active; manual-review queue exercised with a synthetic >€300 order") · plan/12 §4 |
 | ADRs | ADR-0005 (Stripe primary, Mollie fallback) · ADR-0006 (no IP redirects; this spec reads no IP at all) · ADR-0009 (status only through `orderService.transition`) · ADR-0015 (Postgres on Neon EU). Proposes no ADR. Raises **spec 002 §14 A11** (proposed, §5.1) |
 | Depends on | spec 013 (approved; its `FakePaymentProvider` as amended by open PR 341, see §12), spec 016 (approved), spec 010 (approved), spec 012 (admin v0), spec 011 (delivery photo), spec 018 (PDF renderer, tracking page). Spec 025 (alerts) is pending and is not a blocker (§11) |
 | Author / date | spec-writer via /spec · 2026-10-24 |
-| Approved by / date | (founder) |
+| Approved by / date | founder, 2026-10-24 ("specs ok") |
 
 ## 0. Index
 
