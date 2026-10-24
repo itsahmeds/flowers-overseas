@@ -400,7 +400,8 @@ export class FakePaymentProvider implements PaymentProvider {
 
   chargeRefOf(intentRef: string): Promise<string> {
     const charge = this.state(intentRef).chargeRef;
-    if (charge === undefined) throw new Error(`fake intent ${intentRef} is unpaid`);
+    if (charge === undefined)
+      throw new Error(`fake intent ${intentRef} is unpaid`);
     return Promise.resolve(charge);
   }
 

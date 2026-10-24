@@ -129,7 +129,12 @@ export interface ProviderRefund {
  * provider state that still waits on a decision is `open`; a decision is `won` or `lost`; an
  * inquiry closed without a chargeback is `closed`.
  */
-export const providerDisputeStatuses = ["open", "won", "lost", "closed"] as const;
+export const providerDisputeStatuses = [
+  "open",
+  "won",
+  "lost",
+  "closed",
+] as const;
 export type ProviderDisputeStatus = (typeof providerDisputeStatuses)[number];
 
 /** A bank dispute on a charge, reduced to the fields spec 013 §5.2 "Disputes" reads. */

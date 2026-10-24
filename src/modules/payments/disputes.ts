@@ -31,7 +31,7 @@ import {
 } from "@/modules/orders";
 
 import { PAYMENTS_ACTOR } from "./context.ts";
-import type { ProviderDispute } from "./provider.ts";
+import { minorUnitsForProvider, type ProviderDispute } from "./provider.ts";
 import { CHARGEBACK_OPEN, IN_SET_C } from "./states.ts";
 
 export type DisputeApplied = "changed" | "unchanged" | "unknown";
@@ -94,7 +94,7 @@ async function openOnOrders(
       {
         mode: order.mode,
         dispute_id: scope.disputeId,
-        amount_minor: Number(remote.amount.amountMinor),
+        amount_minor: minorUnitsForProvider(remote.amount.amountMinor),
         currency_code: remote.amount.currency,
       },
       { executor: scope.executor },
@@ -156,7 +156,7 @@ export async function applyProviderDispute(
       INSERT INTO payment_dispute (payment_id, currency_code, provider_ref, amount_minor, reason,
                                    status, evidence_due_by, opened_at, closed_at)
       VALUES (${payment.id}, ${remote.amount.currency}, ${remote.ref},
-              ${Number(remote.amount.amountMinor)}, ${remote.reason}, ${remote.status},
+              ${minorUnitsForProvider(remote.amount.amountMinor)}, ${remote.reason}, ${remote.status},
               ${due}::timestamptz, ${remote.openedAt.toISOString()}::timestamptz,
               ${closedAt}::timestamptz)
       RETURNING id`);

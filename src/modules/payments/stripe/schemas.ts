@@ -14,7 +14,10 @@ const unixSeconds = z.number().int().nonnegative();
 const minorUnits = z.number().int().nonnegative();
 
 /** An expandable reference: the id, or the object with its id. */
-const expandable = z.union([z.string().min(1), z.object({ id: z.string().min(1) })]);
+const expandable = z.union([
+  z.string().min(1),
+  z.object({ id: z.string().min(1) }),
+]);
 
 export const StripeChargeSchema = z.object({
   id: z.string().min(1),

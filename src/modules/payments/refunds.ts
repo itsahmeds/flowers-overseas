@@ -635,7 +635,11 @@ export async function refund(
       }
       const order = OrderRow.parse(orderRaw);
       if (paymentRaw === undefined) {
-        return { kind: "refused", code: "NOT_REFUNDABLE", status: order.status };
+        return {
+          kind: "refused",
+          code: "NOT_REFUNDABLE",
+          status: order.status,
+        };
       }
       const payment = PaymentRow.parse(paymentRaw);
       if (currency !== payment.currency_code) {
@@ -654,7 +658,11 @@ export async function refund(
       ) {
         balanceOnly = true;
       } else {
-        return { kind: "refused", code: "NOT_REFUNDABLE", status: order.status };
+        return {
+          kind: "refused",
+          code: "NOT_REFUNDABLE",
+          status: order.status,
+        };
       }
 
       const [orderAsked] = await executor.execute(sql`

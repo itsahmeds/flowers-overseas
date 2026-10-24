@@ -103,6 +103,18 @@ describe("no exported payments function takes a charge amount (spec 013 AC-9, T-
   });
 });
 
+describe("a refund has no destination (spec 013 AC-28 signature half, T-28)", () => {
+  it("RefundInput's keys are exactly orderId, amount, reason and actor", () => {
+    expectTypeOf<keyof payments.RefundInput>().toEqualTypeOf<
+      "orderId" | "amount" | "reason" | "actor"
+    >();
+    expectTypeOf<Parameters<typeof payments.refund>>().toEqualTypeOf<
+      [payments.RefundInput, payments.RefundDeps]
+    >();
+    expect(payments.refund).toBeTypeOf("function");
+  });
+});
+
 describe("no hold can be asked for (spec 013 AC-14 type half, T-14)", () => {
   it("captureMethod is the literal 'automatic'", () => {
     expectTypeOf<

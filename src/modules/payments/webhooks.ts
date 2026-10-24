@@ -391,12 +391,7 @@ export async function processWebhook(
           executor,
         );
       } else if (REFUND_TYPES.has(type) || type === CHARGE_REFUNDED) {
-        routed = await routeRefund(
-          type,
-          row.data.object_ref,
-          deps,
-          lifecycle,
-        );
+        routed = await routeRefund(type, row.data.object_ref, deps, lifecycle);
       } else if (type.startsWith(DISPUTE_PREFIX)) {
         routed = await routeDispute(row.data.object_ref, deps, lifecycle);
       } else {

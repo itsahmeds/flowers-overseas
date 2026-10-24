@@ -147,7 +147,9 @@ function toProviderRefund(
 }
 
 /** The id of an expandable reference. */
-function idOf(value: string | { id: string } | null | undefined): string | null {
+function idOf(
+  value: string | { id: string } | null | undefined,
+): string | null {
   if (value === null || value === undefined) return null;
   return typeof value === "string" ? value : value.id;
 }
@@ -378,7 +380,9 @@ export function createStripeProvider(
           StripeRefundListSchema,
         );
         if (isProviderFailure(page)) return page;
-        collected.push(...page.data.map((refund) => toProviderRefund(refund, "")));
+        collected.push(
+          ...page.data.map((refund) => toProviderRefund(refund, "")),
+        );
         const last = page.data.at(-1);
         if (!page.has_more || last === undefined) break;
         startingAfter = last.id;

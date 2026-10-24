@@ -4,8 +4,8 @@
  *
  * No Stripe account exists (spec 013 §14 item 12): every event is the fake's, signed with the
  * fake's secret the way Stripe signs (`t=…,v1=HMAC-SHA256(t.body)`), and every intent is
- * retrieved from the fake. AC-24's refund and dispute sequences need TASK-261's paths: here those
- * types are proved to be stored and left `ignored` with `awaiting_handler`, moving nothing.
+ * retrieved from the fake. AC-24's refund and dispute sequences are TASK-261's, in
+ * `payments-refunds-disputes.test.ts`; here those types are proved to be routed to their paths.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -673,7 +673,7 @@ describe.skipIf(server.url === undefined)(
         expect(outOfOrder.outcomes).toEqual(["processed", "ignored:stale"]);
       });
 
-      it("refund and dispute types are stored and left ignored/awaiting_handler, moving nothing (their paths are TASK-261's)", async () => {
+      it("refund and dispute types are routed to their paths: about an object the provider does not know, ignored/unknown_object, moving nothing (sequences: payments-refunds-disputes.test.ts)", async () => {
         const fake = newFake();
         const { intentRef, orderIds } = await started(fake);
         const before = await orderEvents(orderIds[0] ?? "");
@@ -693,7 +693,7 @@ describe.skipIf(server.url === undefined)(
           expect(
             await processWebhook(enqueued[0] ?? "", processOf(fake)),
             type,
-          ).toEqual({ kind: "ignored", reason: "awaiting_handler" });
+          ).toEqual({ kind: "ignored", reason: "unknown_object" });
         }
         expect(await orderEvents(orderIds[0] ?? "")).toEqual(before);
       });
