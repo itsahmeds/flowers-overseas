@@ -6,7 +6,7 @@
  * the ledger **and** the only code that may set the review columns it mirrors —
  * `product_translation.reviewed` / `reviewed_by` / `reviewed_at` and `media_asset.review_state` /
  * `reviewed_by` / `reviewed_at`. Postgres enforces that at run time (`review_write_guard()`,
- * migration `0019`); this rule catches the attempt in review, before it can reach a database.
+ * migration `0023`); this rule catches the attempt in review, before it can reach a database.
  *
  * Reported outside a function named `attest`:
  *   1. **Drizzle** (`messageId: "drizzle"`): a `.set(patch)` with one argument, a `.values(row)` or
