@@ -29,7 +29,15 @@ One dated bullet per `/review`, newest last.
 
 One dated bullet per escalation: the question, who it went to, the answer or `open`.
 
-_None recorded._
+- 2026-10-24, finisher, to the orchestrator: **spec 042 AC-19 contradicts spec 004 AC-45 on the
+  guide's first screen.** AC-19 requires exactly one `aria-hidden` route SVG inside the first
+  screen of `/en-gb/send-flowers-to/poland` (180 x 120 at 1440, as the artboard draws it). AC-45
+  (spec 004 §14, TASK-189's T-50 in `tests/e2e/corridor-first-screen.spec.ts`) forbids any
+  `aria-hidden` element at least 48 x 48 px in the guide's first viewport. CI run 40089950907:
+  T-50 fails on `/en-gb/send-flowers-to/poland` and `/en/send-flowers-to/germany` at 1440 and
+  1280 with `aria-hidden svg`. Neither spec names the other. Options: (a) amend AC-45 to exempt
+  spec 042's route line (`[data-fo-route-line]`, decorative, CSS-drawn, out of flow) and its T-50
+  probe with it; (b) drop idea 6 from the guide. Not decided here. Answer: `open`.
 
 ## Progress
 
@@ -41,6 +49,7 @@ here.
 - 2026-10-21 (implementer): PR 316 draft. `CorridorRouteLine` + `src/config/interactions.ts` + the `globals.css` section shipped with unit suites `corridor-route-line.test.tsx`, `interactions-css.test.ts`, `interactions-budget.test.ts` (CSS +239 B Brotli, HTML +588 B), e2e `corridor-route-line.spec.ts`, a `first-screen` visual part. Unit mutations red. Next: one local build in the slot to read the geometry, then `visual:baselines`, ready, `ci:full`.
 - 2026-10-21 (implementer): local build inside the slot (geometry, e2e mutations), Linux baselines from run 39654760460 committed (3 images), PR ready with `ci:full`, row `in_review`. The orchestrator's MACHINE HEAT order (load 74) replaced `pnpm gates:cheap` with the six gates one by one and the touched unit files at `--maxWorkers=2`.
 - 2026-10-24, finisher: rebased on `origin/main`, where TASK-189 (PR 374) replaced the 7fr/4fr hero and its photo slot with `CorridorFirstScreen` (the artboard's 12-column band). The route line moved into that grid (`relative`, last child) and `globals.css` now centres it in the gap between the end of column 6 and the dates (`min(470px, 5 columns)`, `justify-self: end`), as the artboard places it; unit, e2e and visual suites read the first screen. Visual part is now the SVG alone at 1440 (`corridor-country-desktop-route-line`), so the dated cards stay out of a baseline; `laptop-guide` re-rendered (run 40088164103). `gates:cheap`: all green but `url-pii` timing out at load 21; alone 15/15. Shares `src/config/interactions.ts` and the two `interactions-*` suites with PR 339 (TASK-308): rebase after whichever merges first.
+- 2026-10-24, finisher: CI run 40089950907 (head `65d57185`): e2e red on two things. (1) At 1280 the SVG filled the whole 128 px gap and touched the H1's column box (AC-19): fixed, the SVG now takes the gap less 15 px each side (1440 unchanged at 180 x 120). (2) T-50 (AC-45) flags the SVG as an `aria-hidden` ornament: a spec conflict, escalated; row `blocked`.
 
 ## Result
 
