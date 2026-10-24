@@ -724,7 +724,7 @@
       },
       "notice": {
         "body": "Używamy tych danych, aby rozpatrzyć Twoje zgłoszenie i skontaktować się w sprawie współpracy. Podstawą prawną są działania podjęte na Twoje żądanie przed zawarciem umowy (RODO art. 6 ust. 1 lit. b). Przechowujemy je przez 12 miesięcy od naszego ostatniego kontaktu, a potem usuwamy, chyba że zaczniemy współpracę. Przechowują je nasi dostawcy hostingu, bazy danych i poczty e-mail, w tym firmy z USA działające w ramach unijnych zabezpieczeń przekazywania danych. Nie sprzedajemy ich i nie pokazujemy ich kupującym. Aby je zobaczyć, poprawić lub usunąć, zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
-        "controller": "Tę stronę prowadzi {representativeName}. W sprawie Twoich danych osobowych zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
+        "controller": "Tę stronę prowadzi {name}. W sprawie Twoich danych osobowych zadzwoń albo napisz do nas pod numer {phoneDisplay}.",
         "heading": "Co robimy z Twoimi danymi",
         "privacyLink": "Nasza polityka prywatności"
       },
