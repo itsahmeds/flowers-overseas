@@ -355,9 +355,7 @@ export const PROSE_RELAY_CONTEXT: Readonly<Record<string, RelayContext>> = {
 export function proseRelayPatterns(
   refinement: Readonly<Record<string, RelayContext>> = PROSE_RELAY_CONTEXT,
 ): Readonly<Record<RelayLocale, readonly RelayPattern[]>> {
-  const refine = (
-    patterns: readonly RelayPattern[],
-  ): readonly RelayPattern[] =>
+  const refine = (patterns: readonly RelayPattern[]): readonly RelayPattern[] =>
     patterns.map((pattern) => {
       const context = refinement[pattern.id];
       return context === undefined ? pattern : { ...pattern, context };

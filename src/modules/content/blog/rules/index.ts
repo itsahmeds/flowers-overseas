@@ -5,7 +5,7 @@
  *
  * Each result carries a stable rule id under `blog/` (spec 012b §2.5's pattern), the field it is
  * about and the parameters its admin message names (`admin.blog.rule.*` in
- * `messages/admin/en.json`); a relay refusal names the pattern id, the matched word as written and
+ * the admin catalogue); a relay refusal names the pattern id, the matched word as written and
  * the whole sentence (advisor fix 1 (a)).
  *
  * The honesty lists are imported, never copied: `src/config/honesty.ts`, `src/config/voice.ts`,
@@ -134,16 +134,18 @@ export interface BlogRuleContext {
 
 /** Whitespace-separated tokens holding a letter or a digit (`seed/copy.ts`'s `wordCount`). */
 export function blogWordCount(text: string): number {
-  return text
-    .split(/\s+/u)
-    .filter((token) => /[\p{L}\p{N}]/u.test(token)).length;
+  return text.split(/\s+/u).filter((token) => /[\p{L}\p{N}]/u.test(token))
+    .length;
 }
 
 const normalise = (sentence: string): string =>
   sentence.replaceAll(/\s+/gu, " ").trim();
 
 /** URL-, email- and phone-shaped strings (§2.3 rule 4; spec 012b §2.5). */
-const RAW_CONTACT: readonly { readonly kind: string; readonly pattern: RegExp }[] = [
+const RAW_CONTACT: readonly {
+  readonly kind: string;
+  readonly pattern: RegExp;
+}[] = [
   {
     kind: "email",
     pattern: /[a-z0-9._%+-]+@[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}/iu,
@@ -223,7 +225,10 @@ export function validateBlogRevision(
       .replaceAll(/[^\p{L}\p{N}\s]/gu, "")
       .replaceAll(/\s+/gu, " ")
       .trim();
-    if (blogWordCount(anchor) < BLOG_ANCHOR_WORDS_MIN || generic.includes(bare)) {
+    if (
+      blogWordCount(anchor) < BLOG_ANCHOR_WORDS_MIN ||
+      generic.includes(bare)
+    ) {
       hard("blog/anchor-generic", "bodyMd", { anchor });
     }
   }
@@ -234,16 +239,17 @@ export function validateBlogRevision(
   if (words < BLOG_BODY_WORDS_MIN) {
     hard("blog/min-words", "bodyMd", { words, min: BLOG_BODY_WORDS_MIN });
   }
-  const others: readonly { readonly against: string; readonly text: string }[] = [
-    ...context.otherPosts.map((post) => ({
-      against: `post:${post.postId}`,
-      text: blogPlainText(blogMarkdownBlocks(post.bodyMd)),
-    })),
-    ...context.corridorGuides.map((guide) => ({
-      against: `corridor:${guide.iso2}`,
-      text: guide.text,
-    })),
-  ];
+  const others: readonly { readonly against: string; readonly text: string }[] =
+    [
+      ...context.otherPosts.map((post) => ({
+        against: `post:${post.postId}`,
+        text: blogPlainText(blogMarkdownBlocks(post.bodyMd)),
+      })),
+      ...context.corridorGuides.map((guide) => ({
+        against: `corridor:${guide.iso2}`,
+        text: guide.text,
+      })),
+    ];
   for (const other of others) {
     const score = shingleDistinctness(body, other.text);
     if (score < BLOG_DISTINCTNESS_MIN) {
@@ -402,7 +408,7 @@ export function blogBodyRefs(bodyMd: string): readonly string[] {
 
 /**
  * The admin message a result is shown with: `blog/slug-shape` reads `admin.blog.rule.slugShape`
- * in `messages/admin/en.json`, formatted with the result's `params` (spec 044 §5.3).
+ * in the admin catalogue, formatted with the result's `params` (spec 044 §5.3).
  */
 export function blogRuleMessageKey(id: BlogRuleId): string {
   const name = id

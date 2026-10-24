@@ -63,7 +63,10 @@ export const BLOG_INDEX_MAX = 48;
 
 /** Spec 044 §5.2's queries. Every locale argument is a route locale (`en`, `en-gb`, `de`, …). */
 export interface BlogProvider {
-  blogPostView(locale: string, slug: string): Promise<BlogPostRecord | undefined>;
+  blogPostView(
+    locale: string,
+    slug: string,
+  ): Promise<BlogPostRecord | undefined>;
   blogIndexView(locale: string): Promise<readonly BlogIndexEntry[]>;
   blogPostExists(locale: string, slug: string): Promise<boolean>;
   blogIndexExists(locale: string): Promise<boolean>;
@@ -74,7 +77,9 @@ export interface BlogProvider {
   /** The locale's posts with their `<lastmod>` (the published revision's publish time). */
   editorialSitemapEntries(
     locale: string,
-  ): Promise<readonly { readonly slug: string; readonly lastModified: string }[]>;
+  ): Promise<
+    readonly { readonly slug: string; readonly lastModified: string }[]
+  >;
   /** A post's path in a locale by id (`fo:post/<id>` references), or `null` while it does not exist. */
   postPath(postId: string, locale: string): Promise<string | null>;
 }

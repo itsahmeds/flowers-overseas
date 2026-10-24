@@ -122,7 +122,10 @@ export interface BlogDeps {
   /** Spec 012b's `attest()` (default: the `src/modules/i18n` barrel's). */
   readonly attest: (input: AttestInput) => Promise<AttestOutcome>;
   /** One `info` line per event, ids only (§11). */
-  readonly log: (event: string, fields: Readonly<Record<string, unknown>>) => void;
+  readonly log: (
+    event: string,
+    fields: Readonly<Record<string, unknown>>,
+  ) => void;
 }
 
 async function defaultDeps(): Promise<BlogDeps> {
@@ -382,7 +385,11 @@ async function insertRevision(
   userId: string,
   fields: BlogRevisionFields,
 ): Promise<{ id: string; value_hash: string; updated_at: string }> {
-  const [row] = await rows<{ id: string; value_hash: string; updated_at: string }>(
+  const [row] = await rows<{
+    id: string;
+    value_hash: string;
+    updated_at: string;
+  }>(
     db,
     sql`INSERT INTO public.blog_post_revision (
           post_id, title, excerpt, seo_title, seo_description, body_md, cover_media_id,
@@ -393,7 +400,8 @@ async function insertRevision(
           ${userId}::uuid)
         RETURNING id, value_hash, to_char(updated_at AT TIME ZONE 'UTC', ${ISO}) AS updated_at`,
   );
-  if (row === undefined) throw new Error("blog: the revision insert returned no row");
+  if (row === undefined)
+    throw new Error("blog: the revision insert returned no row");
   return row;
 }
 
@@ -429,7 +437,9 @@ export async function createPost(
       {
         userId: parsed.userId,
         action: "blog.post.created",
-        ...(parsed.requestId === undefined ? {} : { requestId: parsed.requestId }),
+        ...(parsed.requestId === undefined
+          ? {}
+          : { requestId: parsed.requestId }),
       },
       async (db) => {
         const [author] = await rows<{ withdrawn_at: string | null }>(
@@ -462,7 +472,8 @@ export async function createPost(
               VALUES (${parsed.locale}, ${parsed.slug}, ${parsed.authorId}::uuid)
               RETURNING id`,
         );
-        if (post === undefined) throw new Error("blog: the post insert returned no row");
+        if (post === undefined)
+          throw new Error("blog: the post insert returned no row");
         await writeTags(db, post.id, parsed.countries, parsed.occasions);
         const revision = await insertRevision(
           db,
@@ -508,7 +519,9 @@ export async function saveRevision(
       {
         userId: parsed.userId,
         action: "blog.revision.saved",
-        ...(parsed.requestId === undefined ? {} : { requestId: parsed.requestId }),
+        ...(parsed.requestId === undefined
+          ? {}
+          : { requestId: parsed.requestId }),
       },
       async (db) => {
         const post = await postIn(db, parsed.postId);
@@ -644,9 +657,7 @@ export async function setTags(
 export async function approveRevision(
   input: BlogApproveInput,
   overrides: Partial<BlogDeps> = {},
-): Promise<
-  BlogCommandResult<{ readonly attestation: AttestOutcome }>
-> {
+): Promise<BlogCommandResult<{ readonly attestation: AttestOutcome }>> {
   const parsed = BlogApproveSchema.parse(input);
   const deps = await depsWith(overrides);
   const checked = await refusable(() =>
@@ -869,7 +880,8 @@ export async function createAuthor(
                       ${self ? sql`now()` : sql`NULL`})
               RETURNING id`,
         );
-        if (author === undefined) throw new Error("blog: the author insert returned no row");
+        if (author === undefined)
+          throw new Error("blog: the author insert returned no row");
         return { result: { ok: true as const, authorId: author.id }, tags: [] };
       },
     ),

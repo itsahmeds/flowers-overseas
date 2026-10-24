@@ -83,7 +83,10 @@ describe("blogMarkdownBlocks (T-07)", () => {
     it(`${name} is one paragraph of its literal text, with a warning naming line 3`, () => {
       const body = `Intro line.\n\n${line}`;
       const blocks = blogMarkdownBlocks(body);
-      expect(blocks[1]).toEqual({ kind: "p", inlines: [{ kind: "text", text: line }] });
+      expect(blocks[1]).toEqual({
+        kind: "p",
+        inlines: [{ kind: "text", text: line }],
+      });
       expect(blogMarkdownWarnings(body)).toContainEqual({ line: 3, construct });
     });
   }
@@ -94,17 +97,29 @@ describe("blogMarkdownBlocks (T-07)", () => {
       `${FIXTURE}\n\n<em>x</em> ![i](a.png) [u](javascript:alert(1)) [ok two](fo:info/help)`,
     );
     for (const block of blocks) {
-      const runs = block.kind === "ul" || block.kind === "ol" ? block.items.flat() : block.inlines;
+      const runs =
+        block.kind === "ul" || block.kind === "ol"
+          ? block.items.flat()
+          : block.inlines;
       for (const run of runs) {
         kinds.add(run.kind);
-        if (run.kind === "link") expect(BlogLinkRefSchema.safeParse(`fo:${run.ref.kind}/${run.ref.id}`).success).toBe(true);
+        if (run.kind === "link")
+          expect(
+            BlogLinkRefSchema.safeParse(`fo:${run.ref.kind}/${run.ref.id}`)
+              .success,
+          ).toBe(true);
       }
     }
     expect([...kinds].sort()).toEqual(["em", "link", "strong", "text"]);
   });
 
   it("refuses references of an unknown kind or shape", () => {
-    for (const target of ["fo:product/abc", "fo:corridor/pl", "fo:post/not-a-uuid", "fo:info/nope"]) {
+    for (const target of [
+      "fo:product/abc",
+      "fo:corridor/pl",
+      "fo:post/not-a-uuid",
+      "fo:info/nope",
+    ]) {
       expect(BlogLinkRefSchema.safeParse(target).success, target).toBe(false);
     }
   });
@@ -112,15 +127,30 @@ describe("blogMarkdownBlocks (T-07)", () => {
 
 describe("resolveBlogLink (T-07)", () => {
   const targets: BlogLinkTargets = {
-    pathOf: (ref) => Promise.resolve(ref.kind === "corridor" && ref.id === "PL" ? "/en/destinations/poland" : null),
+    pathOf: (ref) =>
+      Promise.resolve(
+        ref.kind === "corridor" && ref.id === "PL"
+          ? "/en/destinations/poland"
+          : null,
+      ),
   };
 
   it("an existing target is an href; a missing one is its anchor as text, with no link", async () => {
     await expect(
-      resolveBlogLink({ kind: "corridor", id: "PL" }, "our guide", "en", targets),
+      resolveBlogLink(
+        { kind: "corridor", id: "PL" },
+        "our guide",
+        "en",
+        targets,
+      ),
     ).resolves.toEqual({ href: "/en/destinations/poland" });
     await expect(
-      resolveBlogLink({ kind: "corridor", id: "DE" }, "our German guide", "en", targets),
+      resolveBlogLink(
+        { kind: "corridor", id: "DE" },
+        "our German guide",
+        "en",
+        targets,
+      ),
     ).resolves.toEqual({ text: "our German guide" });
   });
 });

@@ -66,10 +66,7 @@ export function siteBlogLinkTargets(postPath: BlogPostPathOf): BlogLinkTargets {
 }
 
 /** The guide text of a corridor page in a locale, where one exists (rule 3, advisor fix 3). */
-export function corridorGuideText(
-  iso2: string,
-  locale: string,
-): string | undefined {
+export function guideTextIn(iso2: string, locale: string): string | undefined {
   if (!isCountryIso2(iso2)) return undefined;
   if (corridorLinkHref(iso2, locale) === undefined) return undefined;
   return corridorContentView(iso2, locale, corridorState(iso2, locale))?.body;
@@ -87,7 +84,7 @@ export async function blogRuleContextFor(
   },
   targets: BlogLinkTargets,
   otherPosts: BlogRuleContext["otherPosts"],
-  guideText: (iso2: string, locale: string) => string | undefined = corridorGuideText,
+  guideText: (iso2: string, locale: string) => string | undefined = guideTextIn,
 ): Promise<BlogRuleContext> {
   const existingRefs = new Set<string>();
   for (const text of blogBodyRefs(input.bodyMd)) {

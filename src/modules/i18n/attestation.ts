@@ -139,7 +139,8 @@ export const LedgerEntrySchema = z
     (entry) =>
       (entry.subjectKind === "media_asset") === (entry.localeCode === null),
     {
-      message: "a photo has no locale; product copy and a blog revision have one",
+      message:
+        "a photo has no locale; product copy and a blog revision have one",
       path: ["localeCode"],
     },
   );
