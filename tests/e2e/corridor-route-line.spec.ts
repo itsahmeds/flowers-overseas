@@ -209,7 +209,7 @@ test.describe("the route line at 1,440 × 900 (AC-19)", () => {
   });
 });
 
-test.describe("as wide as the hero's gap, up to 180 px (the PR 297 carry-forward)", () => {
+test.describe("as wide as the hero's gap less 15 px each side, up to 180 px (the PR 297 carry-forward)", () => {
   test.beforeEach(({}, testInfo) => {
     test.skip(testInfo.project.name !== DESKTOP_ONLY, "desktop windows only");
   });
@@ -229,7 +229,10 @@ test.describe("as wide as the hero's gap, up to 180 px (the PR 297 carry-forward
       const gapEnd = found.dates.x;
       const gap = gapEnd - gapStart;
       expect(gap).toBeGreaterThan(40);
-      expect(route.width).toBeCloseTo(Math.min(180, gap), 0);
+      // The gap less 15 px each side (the artboard's 210 px gap and 180 px SVG at 1440), so
+      // the box never meets the H1's column where the gap is narrower.
+      expect(route.width).toBeCloseTo(Math.min(180, gap - 30), 0);
+      expect(route.x - gapStart).toBeGreaterThanOrEqual(14.5);
       expect(route.height).toBeCloseTo((route.width * 2) / 3, 0);
       expect(route.x - gapStart).toBeCloseTo(
         gapEnd - (route.x + route.width),
