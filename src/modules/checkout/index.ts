@@ -45,7 +45,9 @@ export {
 export {
   CHECKOUT_ERROR_KEYS,
   CardAndBuyerStepSchema,
+  CardStepSchema,
   CheckoutStartSchema,
+  LinePositionSchema,
   PHONE_NON_LOCAL_KEY,
   RecipientStepSchema,
   ReviewStepSchema,
@@ -70,16 +72,21 @@ export {
 } from "./phone";
 export { checkoutCurrency } from "./currency";
 
-// TASK-203: drafts, the start route, the step actions, quote issue and verification.
+// TASK-203: drafts, the start route, the step actions, quote issue and verification; TASK-348:
+// the basket (lines, append, remove, the line actions, `fo_basket`, the re-derivation).
 export {
   type CheckoutFlagReader,
   type CheckoutModeRequest,
   currentCheckoutMode,
 } from "./mode";
 export {
+  BASKET_COOKIE_ATTRIBUTES,
+  BASKET_COOKIE_NAME,
+  BASKET_COOKIE_VALUE_PATTERN,
   CHECKOUT_COOKIE_ATTRIBUTES,
   CHECKOUT_COOKIE_MAX_AGE_SECONDS,
   CHECKOUT_COOKIE_NAME,
+  basketCookieHeader,
   checkoutCookieHeader,
   draftTokenFromCookieHeader,
   draftTokenHash,
@@ -91,12 +98,21 @@ export {
   DraftCardSchema,
   DraftPatchSchema,
   DraftRecipientSchema,
+  LinePatchSchema,
+  NewLineSchema,
+  appendLine,
   createDraft,
   draftExpiryAt,
   draftModes,
   expireDrafts,
   loadDraft,
-  saveStep,
+  pendingNotices,
+  removeLine,
+  saveDraft,
+  saveLine,
+  withDraftConnection,
+  type AppendResult,
+  type BasketLine,
   type CreateDraftInput,
   type Draft,
   type DraftBuyer,
@@ -106,21 +122,40 @@ export {
   type DraftMode,
   type DraftPatch,
   type DraftRecipient,
-  type StepsCompleted,
+  type LinePatch,
+  type LineStepsCompleted,
+  type NewLine,
+  type PendingNotice,
 } from "./draft";
 export {
   ADDON_TIER_PREFIX,
+  BasketCurrencyUnavailable,
+  deriveLineQuote,
   deriveQuote,
-  draftTotals,
-  priceChange,
+  linePriceChange,
+  lineTotals,
+  pricingLocalesFor,
   selectionOf,
-  verifyDraftQuote,
+  verifyLineQuote,
   type DraftLine,
   type DraftTotals,
+  type LineSelection,
   type NoticeAmount,
+  type PriceNotice,
   type QuoteCheck,
   type QuoteSelection,
 } from "./pricing";
+export {
+  assessBasket,
+  assessLine,
+  unavailableReasons,
+  type AssessOptions,
+  type AssessedLine,
+  type BasketAssessment,
+  type LineAvailability,
+  type UnavailableReason,
+} from "./basket";
+export { lineDateStatus, nextDeliveryDate, type LineDateStatus } from "./dates";
 export {
   isSameOrigin,
   methodNotAllowed as checkoutMethodNotAllowed,
@@ -129,10 +164,17 @@ export {
 } from "./start";
 export {
   SelectionUpdateSchema,
+  UpdateLineSchema,
+  UseNextDateSchema,
+  basketPath,
+  firstIncompleteScreen,
   formValues,
   runCardAndBuyerStep,
   runRecipientStep,
+  runRemoveLine,
+  runUpdateLine,
   runUpdateSelection,
+  runUseNextDate,
   stepPath,
   type FieldIssue,
   type SelectionUpdate,
@@ -141,7 +183,10 @@ export {
   type StepState,
 } from "./steps";
 export {
+  removeLineAction,
   saveCardAndBuyerStep,
   saveRecipientStep,
+  updateLineAction,
   updateSelection,
+  useNextDateAction,
 } from "./actions";

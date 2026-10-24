@@ -83,8 +83,19 @@ export const DEMO_DAILY_ORDER_CAP = 200;
  */
 export const QUOTE_LOCK_MINUTES = 30;
 
-/** An unfinished checkout is deleted this many hours after its last activity (§2 "Retention"). */
+/**
+ * The buyer's, recipients' and cards' details in an unfinished checkout are cleared this many
+ * hours after its last activity (§2 "Retention"; §14 A-founder-2026-10-22 D7: the retention row
+ * `checkout_draft_personal`). The basket's lines live `BASKET_LIFETIME_DAYS`.
+ */
 export const DRAFT_LIFETIME_HOURS = 24;
+
+/**
+ * A basket (the draft and its lines) is deleted this many days after its last change, and the
+ * `fo_checkout` and `fo_basket` cookies live as long (§14 A-founder-2026-10-22 D7, item 7:
+ * `Max-Age=2592000`).
+ */
+export const BASKET_LIFETIME_DAYS = 30;
 
 /**
  * The kinds of place a bouquet can be delivered to: spec 002's

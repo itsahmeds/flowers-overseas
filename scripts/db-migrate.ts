@@ -212,7 +212,12 @@ async function main(): Promise<void> {
   const sql = postgres(url, {
     max: 1,
     prepare: false,
-    onnotice: () => undefined,
+    // A migration's own report (`RAISE NOTICE 'CODE: …'`, e.g. 0020's rollback counting the
+    // drafts it deletes) is printed; Postgres's chatter ("…does not exist, skipping") is not.
+    onnotice: (notice) => {
+      const message = String(notice["message"] ?? "");
+      if (/^[A-Z][A-Z0-9_]+: /u.test(message)) console.log(`  ${message}`);
+    },
   });
 
   try {
