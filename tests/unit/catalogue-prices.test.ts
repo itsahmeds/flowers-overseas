@@ -76,7 +76,8 @@ function plan10BandFor(
   // A SKU the founder priced apart from its band carries the recorded band change instead (spec
   // 005 §14 A-founder-2026-10-15a point 3), transcribed in the gate, not read from the dataset.
   const recorded = RECORDED_BAND_CHANGES.find(
-    (change) => change.countryIso2 === iso2 && change.skus.includes(product.sku),
+    (change) =>
+      change.countryIso2 === iso2 && change.skus.includes(product.sku),
   );
   if (recorded !== undefined) return recorded.band;
   const column = PLAN_10_COLUMN[iso2];
