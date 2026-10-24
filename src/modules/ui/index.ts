@@ -17,7 +17,9 @@
  *    components as generated Tailwind utilities, so no TypeScript constant can drift from the CSS
  *    and `fo/no-raw-color` has nothing to allow. `CONTRAST_PAIRS` and the ratio arithmetic *are*
  *    exported, because the gate that keeps the palette accessible is a manifest plus a test.
- *  - the font objects' internals. `fontVariables` is the one string a document layout needs.
+ *  - the fonts. `fontVariables`, the one string a document layout needs, comes from
+ *    `@/modules/ui/fonts`: route handlers reach this barrel (through `catalog` and `geo`), and
+ *    `next/font` is compiled only in the page graph (see the note where the fonts used to be).
  *
  * **`ConsentGallery` is deliberately not exported**, and the reason is a measurement rather than a
  * taste: it is a `"use client"` component that imports both consent views statically, and a
@@ -44,10 +46,11 @@
  * and the two constants the consent island and the reminder stub share with it.
  */
 
-// Fonts (AC-4, §14 A21 clause 3). `fontVariables` goes on `<html>`; the two Latin font objects
-// are exported for the preload assertions. Caveat (`./fonts/hand`) is deliberately not exported,
-// and nothing this barrel reaches imports it: only the product page's card preview may.
-export { bodyFont, displayFont, fontVariables } from "./fonts";
+// Fonts (AC-4, §14 A21 clause 3) are **not** in this barrel: the document layouts import
+// `@/modules/ui/fonts` directly. `next/font` is compiled only in the page graph, and route handlers
+// reach this barrel through `catalog` and `geo`; with the faces here, `next dev` evaluated
+// `localFont()` in a route handler, got `undefined` and failed every `/api/*` request at load
+// (`/api/health`, `POST /api/checkout/start`). `tests/unit/route-import-graph.test.ts` holds it.
 
 // Icons (AC-5). `MIRRORED_IN_RTL` is exported so the mirroring intent is assertable, not so a call
 // site can override it.

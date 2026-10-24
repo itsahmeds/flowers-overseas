@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import { ADMIN_LOCALE, adminT } from "@/modules/admin";
-import { fontVariables } from "@/modules/ui";
+import { fontVariables } from "@/modules/ui/fonts";
 
 import "../globals.css";
 
