@@ -140,7 +140,8 @@ function positionDiff(): string[] {
   for (const row of COUNTRY_PRICES) {
     if (row.surchargeKind !== null || row.activeTo !== null) continue;
     const sort = sortOf.get(`${row.sku}|${row.tierKey ?? "-"}`);
-    if (sort === undefined) throw new Error(`no tier ${row.sku} ${row.tierKey ?? "-"}`);
+    if (sort === undefined)
+      throw new Error(`no tier ${row.sku} ${row.tierKey ?? "-"}`);
     const base = BASE.products[row.sku]?.retailMinor[row.countryIso2]?.[sort];
     if (base !== row.retailMinor) {
       diff.push(
@@ -281,7 +282,11 @@ function problemsFor(overrides: Partial<CatalogueCheckInput>): Problem[] {
 }
 
 function withRetail(
-  patch: (sku: string, iso2: string, tierKey: string | null) => number | undefined,
+  patch: (
+    sku: string,
+    iso2: string,
+    tierKey: string | null,
+  ) => number | undefined,
 ): Partial<CatalogueCheckInput> {
   return {
     countryPrices: clean.countryPrices.map((row) => {
