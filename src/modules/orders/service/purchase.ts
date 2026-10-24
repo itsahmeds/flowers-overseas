@@ -26,7 +26,7 @@ import { randomUUID } from "node:crypto";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { BASKET_MAX_LINES } from "@/config/checkout";
+import { BASKET_MAX_LINES } from "@/config/basket";
 import { logger } from "@/lib/logger";
 
 import { OrderEngineError } from "./errors";

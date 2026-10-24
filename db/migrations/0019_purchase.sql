@@ -78,8 +78,7 @@ FROM public."order" o;
 ALTER TABLE public."order" ALTER COLUMN purchase_id SET NOT NULL;
 
 ALTER TABLE public."order"
-  ADD CONSTRAINT order_purchase_id_buyer_currency_code_mode_purchase_fk
-    FOREIGN KEY (purchase_id, buyer_currency_code, mode)
+  ADD CONSTRAINT order_purchase_id_buyer_currency_code_mode_purchase_fk FOREIGN KEY (purchase_id, buyer_currency_code, mode)
     REFERENCES public.purchase (id, buyer_currency_code, mode) ON DELETE RESTRICT;
 
 CREATE INDEX order_purchase_id_idx ON public."order" USING btree (purchase_id);
