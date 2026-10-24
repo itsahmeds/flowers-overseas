@@ -184,11 +184,11 @@ describe("the committed migration set", () => {
       "0018_catalogue_build_role.sql",
       "0019_purchase.sql",
       "0020_checkout_draft_lines.sql",
-      "0020_product_facets.sql",
       "0021_post_purchase.sql",
       "0022_florists_v0.sql",
       "0023_review_attestation.sql",
       "0024_blog.sql",
+      "0026_product_facets.sql",
     ]);
   });
 });

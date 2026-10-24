@@ -11,7 +11,7 @@
  * `sort`, label key, flag prefix or `partnerOnly` a definition is made of.
  *
  * A product row is rebuilt into the dataset's own record (`ProductDataSchema`, strict) from:
- * `product` (the primary flower and colour, and from `0020_product_facets` the others after them
+ * `product` (the primary flower and colour, and from `0026_product_facets` the others after them
  * and the allergen attribute), its `en` `product_translation` (name and slug, `CATALOGUE_LOCALE`),
  * and its `product_occasion` edges in their authored `sort`. One statement, with the occasion set
  * aggregated in a correlated subquery, so a read is one round trip whatever the catalogue's size.

@@ -1,4 +1,4 @@
--- Rollback of 0020_product_facets: drop the three product facet columns, the occasion edge's
+-- Rollback of 0026_product_facets: drop the three product facet columns, the occasion edge's
 -- `sort` and their checks (TASK-070). The values they held are the authored dataset's, which the
 -- seed writes again after a forward migration.
 
