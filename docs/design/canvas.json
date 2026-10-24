@@ -107,16 +107,16 @@
     {
       "file": "wireframes/home-sentence-listbox-desktop.dc.html",
       "title": "Home · the sentence listbox on a mouse · desktop 1440 (spec 004 A-founder-2026-10-21d)",
-      "x": 1990,
-      "y": 39900,
+      "x": 0,
+      "y": 686975,
       "w": 1440,
       "h": 8844
     },
     {
       "file": "wireframes/home-sentence-listbox-mobile.dc.html",
       "title": "Home · the sentence on a phone stays native · mobile 390 (spec 004 A-founder-2026-10-21d)",
-      "x": 3510,
-      "y": 39900,
+      "x": 1520,
+      "y": 686975,
       "w": 390,
       "h": 3215
     },
