@@ -107,12 +107,14 @@ const CONTROL_CHARACTER_EXCEPT_LINE_BREAK = new RegExp(
  * joiner U+034F, the Hangul fillers U+115F, U+1160 and U+3164, the Mongolian vowel separator
  * U+180E, the word joiner and the invisible operators U+2060–U+2064, the
  * unassigned U+2065, the deprecated format controls U+206A–U+206F, the byte-order mark U+FEFF and
- * the Unicode tag characters U+E0000–U+E007F, which can carry text no reader sees. A value made
+ * the Unicode tag characters U+E0000–U+E007F, which can carry text no reader sees, plus the
+ * halfwidth Hangul filler U+FFA0, the blank Braille pattern U+2800 and the soft hyphen U+00AD
+ * (`/break 275` hole 18, carried to TASK-204 and closed there). A value made
  * only of them is blank, not refused (a card of only U+FEFF is no card). The tags inside the three
  * subdivision flags (England, Scotland, Wales) are kept.
  */
 const HIDDEN_FORMAT =
-  /[\u200B\u034F\u115F\u1160\u180E\u3164\u2060-\u206F\uFEFF\u{E0000}-\u{E007F}]/u;
+  /[\u00AD\u200B\u034F\u115F\u1160\u180E\u2800\u3164\u2060-\u206F\uFEFF\uFFA0\u{E0000}-\u{E007F}]/u;
 /**
  * The three emoji flags Unicode recommends that use tag characters: England (`gbeng`), Scotland
  * (`gbsct`) and Wales (`gbwls`). Any other tag run after U+1F3F4 is text no reader sees

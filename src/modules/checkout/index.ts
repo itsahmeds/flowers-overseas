@@ -8,7 +8,7 @@
  * and the three steps, the recipient form model, phone parsing and the checkout's one currency.
  * TASK-203 adds drafts (`draft.ts`), the `fo_checkout` cookie, pricing over the quote
  * (`pricing.ts`), the start route's contract (`start.ts`) and the step actions (`steps.ts`,
- * `actions.ts`); placement and the payment-step seam arrive with TASK-205, behind this same barrel.
+ * `actions.ts`); TASK-205 adds placement (`place.ts`) and the payment-step seam (`payment-step.ts`).
  *
  * `CHECKOUT_FLAG_KEYS` and `stripeKeyKind()` are deliberately **not** exported (spec 010 AC-1,
  * `/break 201` hole 1): they are the inputs of the mode decision, and a file that could import
@@ -107,6 +107,8 @@ export {
   draftModes,
   expireDrafts,
   loadDraft,
+  loadDraftForUpdate,
+  markDraftPlaced,
   pendingNotices,
   removeLine,
   saveDraft,
@@ -184,6 +186,7 @@ export {
   type StepState,
 } from "./steps";
 export {
+  placeOrderAction,
   removeLineAction,
   saveCardAndBuyerStep,
   saveRecipientStep,
@@ -200,3 +203,22 @@ export {
   goneReason,
   loadBasketPage,
 } from "./basket-page";
+
+// TASK-205: placement and the payment seam.
+export {
+  PLACE_WARN_MS,
+  PlaceOrderFormSchema,
+  placeBasket,
+  placementRefusals,
+  runPlaceOrder,
+  type PlaceContext,
+  type PlaceOutcome,
+  type PlacementRefusal,
+} from "./place";
+export {
+  demoPaymentStep,
+  paymentStepFor,
+  registerPaymentStep,
+  type CheckoutPaymentStep,
+  type PaymentStepContext,
+} from "./payment-step";
