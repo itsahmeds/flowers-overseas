@@ -1,4 +1,4 @@
--- 0019_purchase — the record that groups the orders of one basket, paid together
+-- 0019_purchase: the record that groups the orders of one basket, paid together
 -- (spec 010 §14 A-founder-2026-10-22 items 1 D1, D9 and 2 A; AC-63, AC-66, AC-69; TASK-347).
 --
 -- A basket line becomes its own order (its own florist, date, VAT and reference); the lines are

@@ -1,4 +1,4 @@
--- 0020_checkout_draft_lines — a checkout draft becomes a basket of up to five lines
+-- 0020_checkout_draft_lines: a checkout draft becomes a basket of up to five lines
 -- (spec 010 §14 A-founder-2026-10-22 items 1 D3 to D8, 2 B and C; AC-54, AC-55, AC-66 draft
 -- half; TASK-348). Reshapes TASK-203's `0015_checkout_draft`.
 --
