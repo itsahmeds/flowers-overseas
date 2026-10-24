@@ -37,6 +37,11 @@ in production). A product page whose SKU has no `product` row places nothing: th
 "We could not place this order" and the log line `checkout.place_refused` carries the code
 (`product_not_in_database`, `country_not_in_database`, `addon_not_in_database`).
 
+The environment also needs `QUOTE_SIGNING_SECRET` (`openssl rand -hex 32`, one value per
+environment; `railway-cloudflare-setup.md`). Without it a deployed server signs no price, so
+every "Try a demo order" returns to the product page and the log line `checkout.refused` says
+`no_price`. CI's checkout origin makes a random one per run.
+
 ## The daily cap
 
 At most `DEMO_DAILY_ORDER_CAP` demo orders (200, `src/config/checkout.ts`) per UTC calendar day
