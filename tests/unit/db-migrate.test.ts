@@ -181,7 +181,7 @@ describe("the committed migration set", () => {
       "0016_audit_trail.sql",
       "0017_payments_a7.sql",
       "0018_catalogue_build_role.sql",
-      "0020_product_facets.sql",
+      "0026_product_facets.sql",
     ]);
   });
 });

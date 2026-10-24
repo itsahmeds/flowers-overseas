@@ -306,7 +306,7 @@ export function buildSeedPlan(tree: SeedTree): readonly SeedTablePlan[] {
   ];
 
   // The facets spec 002 §5.1's `product` row has no column for (TASK-070): the flower types and
-  // colours after the primary and the allergen attribute (`0020_product_facets`), and the occasion
+  // colours after the primary and the allergen attribute (`0026_product_facets`), and the occasion
   // set, which is `product_occasion`. Read from the authored products file the projection reads.
   const productsRaw = tree.raw.get("products.json");
   const authoredProducts =
