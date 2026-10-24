@@ -100,6 +100,7 @@ Two spec conflicts, each resolved the narrow way in PR 293 and flagged for the f
 - 2026-10-20: first `ci:full` run: the hub-copy cutoff sentences (Escalation 3) and the phone sentence's swap CLS (Escalation 4) fixed; the crawl's `de`/`pl` hub check corrected.
 - 2026-10-20: `tests/unit/ordering-state.test.tsx` (T-34/T-35/T-36 unit halves), `tests/e2e/ordering-state.spec.ts` (the AC-34 crawl and AC-33 surfaces), `tests/fixtures/poland-registry.ts` for the suites whose subject is the live path; four mutations watched red. Rebased on `df4a48f9`.
 - 2026-10-24, finisher: rebased on `origin/main` (TASKS.md, the awaiting-review list merged with TASK-182/183/189's keys, baselines taken from main). **Blocked on copy headroom:** main's queue is now `en` 25 / 575 unreviewed (`en-gb` 26); this PR's four keys make it 29 and 30, over spec 003's 5 % (28 max), so `en` and `en-gb` turn `noindex` and get the BETA tag in the switcher (seen in visual-baselines run 40088168530), failing 24 unit/contract files. With the four keys recorded `reviewed: true` locally (not committed) every one of those files passes except the sitemap fixtures' `lastmod` (expected: regenerate after the record run). Needs the founder's record run for the four keys in `.claude/state/copy-batch-1020.md` (at least two), then fixtures and baselines re-rendered.
+- 2026-10-24 evening (finisher 2): rebased onto `5a2e9f02` (map regenerated, no code conflict); CI fired on the new head.
 
 ## Result
 
