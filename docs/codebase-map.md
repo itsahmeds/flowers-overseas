@@ -160,6 +160,7 @@ task actually touches.
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20,… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate |
+| `check-relay-language.ts` | `check:relay-language` | `pnpm check:relay-language`: the catalogue scan of spec… |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec… |
 | `cloudflare/apply-zone-settings.ts` | `cloudflare:check` | Zone apply and check |
 | `cloudflare/edge.ts` | — | Edge as code |
@@ -209,8 +210,8 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 359 |
-| `tests/integration/` | 45 |
+| `tests/unit/` | 361 |
+| `tests/integration/` | 46 |
 | `tests/contract/` | 25 |
 | `tests/e2e/` | 70 |
 | `tests/a11y/` | 15 |

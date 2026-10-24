@@ -44,11 +44,23 @@ const up = readMigration("0007_orders_payments.sql");
 const down = readMigration("0007_orders_payments.down.sql");
 /**
  * `0013` (TASK-245) adds `"order".locale_code`, its key and `order_reference_idx`; `0017` (spec 002
- * §14 A7, TASK-254) the payment, refund and webhook-inbox columns, checks and index.
+ * §14 A7, TASK-254) the payment, refund and webhook-inbox columns, checks and index; the
+ * post-purchase file (spec 018 §5.1, TASK-337) `"order".tracking_token_version` and the exact
+ * `public_token` check.
  */
 const a7 = readMigration("0017_payments_a7.sql");
 /** `0019` (spec 010 §14 A-founder-2026-10-22, TASK-347) adds `"order".purchase_id`, its key and index. */
-const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${readMigration("0019_purchase.sql")}`;
+const purchase = readMigration("0019_purchase.sql");
+/**
+ * Spec 002 §14 A8.1's two `order_transition` rows ship in `NNNN_post_purchase` (TASK-337), found by
+ * name so a renumbering at rebase changes nothing here.
+ */
+const a8 = readMigration(
+  readdirSync(MIGRATIONS_DIR).find((name) =>
+    /^\d{4}_post_purchase\.sql$/.test(name),
+  ) ?? "NNNN_post_purchase.sql",
+);
+const later = `${readMigration("0013_order_engine_columns.sql")}\n${a7}\n${purchase}\n${a8}`;
 
 const TABLES = [
   "order_status",
@@ -64,16 +76,6 @@ const TABLES = [
   "refund",
   "webhook_inbox",
 ] as const;
-
-/**
- * Spec 002 §14 A8.1's two `order_transition` rows ship in `NNNN_post_purchase` (TASK-337), found by
- * name so a renumbering at rebase changes nothing here.
- */
-const a8 = readMigration(
-  readdirSync(MIGRATIONS_DIR).find((name) =>
-    /^\d{4}_post_purchase\.sql$/.test(name),
-  ) ?? "NNNN_post_purchase.sql",
-);
 
 /** The `INSERT … VALUES` rows of one table, as arrays of SQL literals, from `0007` and A8's file. */
 function seededRows(table: string): string[][] {
