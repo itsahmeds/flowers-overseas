@@ -1,17 +1,22 @@
 /**
  * Drizzle definitions for the `payments` tables — `payment`, `refund`, `payment_dispute` and
  * `webhook_inbox` (spec 002 §5.1 "`payments`", §8, §14 A7; `plan/01` §9; migrations
- * `0007_orders_payments.sql` (TASK-019) and `0017_payments_a7.sql` (spec 013, TASK-254)).
+ * `0007_orders_payments.sql` (TASK-019), `0017_payments_a7.sql` (spec 013, TASK-254) and
+ * `0028_payment_purchase.sql` (TASK-350)).
  *
  * The typed mirror of the migration. What to read off this file:
  *
- *  - **a payment is in its order's currency, a refund in its payment's** — both reference their
- *    parent by `(id, currency_code)`, so a mismatch is a foreign-key violation (AC-5);
+ *  - **a payment is in its purchase's currency, a refund in its payment's** — both reference
+ *    their parent by its id and currency, so a mismatch is a foreign-key violation (AC-5);
  *  - **store before process** — `webhookInbox` is unique on `(provider, event_id)`, so a provider's
  *    retry is a duplicate key, never a second side effect (spec 013 processes the rows);
  *  - **A7** — a payment row exists `pending` before the provider call (no `provider_ref` or
- *    `method` yet), a refund `requested` before it; one live payment per order; a dispute is in
- *    its payment's currency. The hold-only columns ship empty (spec 013 §14).
+ *    `method` yet), a refund `requested` before it; a dispute is in its payment's currency. The
+ *    hold-only columns ship empty (spec 013 §14);
+ *  - **one payment per purchase** (`0028_payment_purchase`, spec 013 §14 A-founder-2026-10-22
+ *    item 2) — a payment references its purchase by `(purchase_id, currency_code)`, one live
+ *    payment per purchase; a refund names its order, and `(order_id, purchase_id)` plus
+ *    `(payment_id, purchase_id)` make "an order of the purchase its payment paid for" a key.
  */
 import { sql } from "drizzle-orm";
 import {
@@ -34,7 +39,7 @@ import {
 
 import { currency } from "./geo.ts";
 import { timestamps } from "./i18n.ts";
-import { order } from "./orders.ts";
+import { order, purchase } from "./orders.ts";
 
 export const paymentProviders = ["stripe", "mollie"] as const;
 
@@ -98,7 +103,6 @@ export const payment = pgTable(
   "payment",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    orderId: uuid("order_id").notNull(),
     provider: text("provider").notNull(),
     providerRef: text("provider_ref"),
     status: text("status").notNull(),
@@ -127,14 +131,18 @@ export const payment = pgTable(
     lastDeclineRef: text("last_decline_ref"),
     cardBrand: text("card_brand"),
     cardLast4: char("card_last4", { length: 4 }),
+    // `0028_payment_purchase` (spec 013 §14 A-founder-2026-10-22 item 2, TASK-350): the payment
+    // belongs to the purchase, in its currency; `order_id` is gone.
+    purchaseId: uuid("purchase_id").notNull(),
   },
   (table) => [
     unique("payment_provider_ref_key").on(table.providerRef),
     unique("payment_id_currency_code_key").on(table.id, table.currencyCode),
+    unique("payment_id_purchase_id_key").on(table.id, table.purchaseId),
     foreignKey({
-      name: "payment_order_fkey",
-      columns: [table.orderId, table.currencyCode],
-      foreignColumns: [order.id, order.buyerCurrencyCode],
+      name: "payment_purchase_fkey",
+      columns: [table.purchaseId, table.currencyCode],
+      foreignColumns: [purchase.id, purchase.buyerCurrencyCode],
     }).onDelete("restrict"),
     check(
       "payment_provider_check",
@@ -179,9 +187,9 @@ export const payment = pgTable(
       sql`${table.amountRefundedMinor} between 0 and ${table.amountCapturedMinor}`,
     ),
     check("payment_attempts_check", sql`${table.attempts} >= 0`),
-    index("payment_order_id_idx").on(table.orderId),
-    uniqueIndex("payment_one_live_per_order_idx")
-      .on(table.orderId)
+    index("payment_purchase_id_idx").on(table.purchaseId),
+    uniqueIndex("payment_one_live_per_purchase_idx")
+      .on(table.purchaseId)
       .where(sql`status not in ('cancelled', 'failed')`),
   ],
 );
@@ -202,6 +210,10 @@ export const refund = pgTable(
     requestedBy: text("requested_by").notNull(),
     succeededAt: timestamp("succeeded_at", { withTimezone: true }),
     failureCode: text("failure_code"),
+    // `0028_payment_purchase` (TASK-350): the order this refund is for, an order of the purchase
+    // its payment paid for (both composite keys below), capped by `refund_order_ceiling`.
+    orderId: uuid("order_id").notNull(),
+    purchaseId: uuid("purchase_id").notNull(),
   },
   (table) => [
     unique("refund_provider_ref_key").on(table.providerRef),
@@ -209,6 +221,16 @@ export const refund = pgTable(
       name: "refund_payment_fkey",
       columns: [table.paymentId, table.currencyCode],
       foreignColumns: [payment.id, payment.currencyCode],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "refund_payment_purchase_fkey",
+      columns: [table.paymentId, table.purchaseId],
+      foreignColumns: [payment.id, payment.purchaseId],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "refund_order_purchase_fkey",
+      columns: [table.orderId, table.purchaseId],
+      foreignColumns: [order.id, order.purchaseId],
     }).onDelete("restrict"),
     check("refund_amount_minor_check", sql`${table.amountMinor} > 0`),
     check(
@@ -232,6 +254,7 @@ export const refund = pgTable(
       sql`(${table.status} = 'succeeded') = (${table.succeededAt} is not null)`,
     ),
     index("refund_payment_id_idx").on(table.paymentId),
+    index("refund_order_id_idx").on(table.orderId),
   ],
 );
 
