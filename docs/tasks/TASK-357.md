@@ -27,7 +27,7 @@ Planned 2026-10-22 by `/plan-tasks` (b) (work order `wo-1022-common.md`). Size L
 
 One dated bullet per `/review`, newest last.
 
-_None yet._
+- **From TASK-261 (2026-10-25, PR 411):** `adminRefund(input, deps)` and `adminCancel(input, deps)` live in `src/modules/payments/admin-actions.ts`, behind `orders.refund` and `orders.cancel` (admin only, already in `ADMIN_PERMISSIONS`; add `orders.reroute` and `orders.resend`). They write no `audit_log` row: no audited table is touched and `audit_write` is not callable from `app_web`, so the actor on `refund.requested_by` and on the order event is the record until `runOrderAction` adds `admin_order_action` and its audit row. `refund` has no transaction-handle option yet (request 1): it runs its own request transaction, then calls the provider after commit; add the handle here.
 
 ## Escalations
 
