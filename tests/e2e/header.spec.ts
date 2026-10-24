@@ -504,6 +504,37 @@ test.describe("the site header (AC-7)", () => {
     });
   });
 
+  // TASK-349: the Basket link takes a column in the one-row header, and at 1280 px the eight links
+  // once ran under the wordmark. The board's column gap (`--space-lg2`, 32 px) between the logo and
+  // the first link holds at the narrowest one-row width, in both directions and in German.
+  for (const [path, viewport] of [
+    ["/en-gb", { width: 1280, height: 800 }],
+    ["/de", { width: 1280, height: 800 }],
+    ["/ar-XB", { width: 1280, height: 800 }],
+    ["/en-gb", { width: 1440, height: 900 }],
+  ] as const) {
+    test(`${path} at ${String(viewport.width)} px: the first link keeps 32 px from the logo`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      expect((await page.goto(path))?.status()).toBe(200);
+      const gap = await page.evaluate(() => {
+        const logo = document
+          .querySelector("[data-fo-header-logo]")
+          ?.getBoundingClientRect();
+        const first = document
+          .querySelector('[data-fo-header-band="categories"] li a')
+          ?.getBoundingClientRect();
+        if (logo === undefined || first === undefined) return null;
+        return document.documentElement.dir === "rtl"
+          ? logo.left - first.right
+          : first.left - logo.right;
+      });
+      expect(gap).not.toBeNull();
+      expect(gap ?? 0).toBeGreaterThanOrEqual(32);
+    });
+  }
+
   for (const { path } of LOCALES) {
     test(`${path}: the currency and the switcher are in the Menu at 390 px and in the strip at 1440 px (AC-8, §14 A4, A24 clause 3)`, async ({
       page,

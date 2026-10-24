@@ -205,6 +205,16 @@ const BASKET_LINK =
   "text-ink hover:bg-paper-3 relative inline-grid size-(--target-min) place-items-center rounded-full no-underline focus-visible:outline-[2.5px] focus-visible:outline-offset-2 focus-visible:outline-solid focus-visible:outline-focus aria-[current=page]:shadow-[inset_0_0_0_1.5px_var(--color-ink)]";
 
 /**
+ * The desktop row's gap once the Basket link takes its column. The basket board draws 22 px at
+ * 1440 (`.hx-hdr .nav ul`); at 1280 the eight links, the pill and the 44 px icon leave the links
+ * about 25 px short of the board's 32 px column gap to the logo, so the gap eases from 22 px at a
+ * 1440 px viewport to 17.6 px at 1280 (never below 14 px). `vw`, not a container unit: a size
+ * container would also become the containing block of the Menu sheet.
+ */
+const BASKET_ROW_GAP =
+  "xl:gap-[clamp(14px,calc(18px_+_(100vw_-_1296px)_/_36),22px)]";
+
+/**
  * Every state the count can take, for `../basket/basket-count.ts`: index 0 the empty link
  * (`nav.basket`, no figure), index n the figure n through `Intl` and the `nav.basketCount` plural,
  * up to `BASKET_MAX_LINES`. Resolved here on the server, the same for every visitor, so the island
@@ -400,7 +410,7 @@ export function SiteHeader({
             data-fo-header-band="categories"
           >
             <ul
-              className={`m-0 flex list-none gap-(--space-sm) overflow-x-auto px-(--gutter-s) pb-(--space-sm2) md:px-(--gutter) xl:justify-end ${basket ? "xl:gap-[22px]" : "xl:gap-[26px]"} xl:overflow-visible xl:px-0 xl:pb-0`}
+              className={`m-0 flex list-none gap-(--space-sm) overflow-x-auto px-(--gutter-s) pb-(--space-sm2) md:px-(--gutter) xl:justify-end ${basket ? BASKET_ROW_GAP : "xl:gap-[26px]"} xl:overflow-visible xl:px-0 xl:pb-0`}
             >
               {entries.map((item) => (
                 <CategoryEntry item={item} key={item.id} t={t} />
