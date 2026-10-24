@@ -1878,3 +1878,58 @@ describe("TASK-230 (spec 009 AC-7, AC-28): every disabled chip is muted beside i
     }
   });
 });
+
+describe("TASK-249 (N-07, spec 004 AC-50, §8 WCAG 2.4.3): the trail is the first stop in <main>, in one DOM order", () => {
+  /** The route's own mount: the trail on the phone too (`phone="trail"`, no back link). */
+  function routeRender(view: ProductView): string {
+    return renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale={view.locale}
+        messages={loadMessages(view.locale as Locale, [...NAMESPACES])}
+        timeZone="UTC"
+      >
+        <ProductPage
+          breadcrumb={
+            <ListingBreadcrumb crumbs={view.breadcrumb} phone="trail" />
+          }
+          view={view}
+        />
+      </NextIntlClientProvider>,
+    );
+  }
+
+  /** The first element in `<main>` a Tab can stop at, as its opening tag. */
+  function firstTabStop(html: string): string {
+    const main = html.slice(html.indexOf("<main"));
+    const stop =
+      /<(?:a\s[^>]*href=|button\b|input\b|select\b|textarea\b|summary\b|[a-z]+\s[^>]*tabindex="0")[^>]*>/u.exec(
+        main.slice(main.indexOf(">") + 1),
+      );
+    return stop?.[0] ?? "";
+  }
+
+  it("en-gb Amber Hour: main's first tab stop is the trail's Home link, and the trail precedes the gallery and the buy section", async () => {
+    const view = await viewOf("en-gb", "PL", AMBER);
+    const html = routeRender(view);
+    // The one value: the Home crumb's link, restated rather than read from the view.
+    expect(firstTabStop(html)).toMatch(/^<a [^>]*href="\/en-gb"/u);
+    const first = html.slice(html.indexOf("data-fo-pdp-first"));
+    const trail = first.indexOf("data-fo-pdp-trail");
+    const gallery = first.indexOf("data-fo-pdp-gallery");
+    const buy = first.indexOf("data-fo-pdp-buy");
+    expect(trail).toBeGreaterThan(-1);
+    expect(trail).toBeLessThan(gallery);
+    expect(gallery).toBeLessThan(buy);
+    expect(first.slice(trail, gallery)).toContain("data-fo-breadcrumb-trail");
+  });
+
+  it("the trail is placed, not moved: row 3 under the buy section below md, row 1 from md, and the phone grid's focus follows its rows", async () => {
+    const html = routeRender(await viewOf("en-gb", "PL", AMBER));
+    const grid = /<div class="([^"]*)" data-fo-pdp-first/u.exec(html)?.[1];
+    expect(grid?.split(" ")).toContain("max-md:[reading-flow:grid-rows]");
+    const trail = /<div class="([^"]*)" data-fo-pdp-trail/u.exec(html)?.[1];
+    expect(trail?.split(" ")).toEqual(
+      expect.arrayContaining(["max-md:row-start-3", "md:row-start-1"]),
+    );
+  });
+});

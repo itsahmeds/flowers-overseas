@@ -2,8 +2,8 @@
  * `Breadcrumbs` — where you are, in links (components sheet v2 "Breadcrumbs"; spec 007 §2, spec
  * 008 §2; TASK-175).
  *
- * An ordered list inside a labelled `<nav>`: 15 px subtle ink, a hairline-coloured `/` between
- * crumbs (hidden from assistive technology), links in `ink-2` underlined at 4 px, the current page
+ * An ordered list inside a labelled `<nav>`: 15 px subtle ink, a hairline-coloured `/` after each
+ * crumb but the last (hidden from assistive technology; `CRUMB`), links in `ink-2` underlined at 4 px, the current page
  * in ink with `aria-current="page"`. A crumb whose page does not exist is **text**, never a
  * disabled link (spec 004 AC-14). The callers (`ListingBreadcrumb`, `CorridorBreadcrumb`) resolve
  * labels and hrefs from their view models; this only draws them.
@@ -42,6 +42,20 @@ export interface Crumb {
  */
 const BREADCRUMB_OFFSET = "mt-(--space-md2)";
 const BACK_LINK_OFFSET = "mt-[14px] md:mt-(--space-md2)";
+
+/**
+ * One crumb and the separator that **follows** it (TASK-249, QA Q1-22). The `/` closes the crumb
+ * before it rather than opening the one after it, so where the trail wraps the separator ends a
+ * line and never starts one: no line can read "/ Amber Hour". `li` is a flex row without wrap, so
+ * the separator cannot part from its crumb; the `ol` wraps only between `li`s. Drawn as generated
+ * content with empty alternative text (`content: "/" / ""`): a character in the flow, not a
+ * chevron that must mirror in RTL, and silent to assistive technology, as the `aria-hidden` span it
+ * replaces was. Not in `textContent` either, so every `<li>` holds its crumb's label and nothing
+ * else (the `BreadcrumbList` equality tests read it). The last crumb draws none. On one line the
+ * pixels are the old ones: 6 px from the crumb inside the `li`, 6 px to the next across the `ol`.
+ */
+const CRUMB =
+  "flex items-center gap-[6px] after:text-rule after:content-['/'_/_''] last:after:content-none";
 
 /**
  * What the breadcrumb displays below `md` (A24 clause 4 (e)): the back link on every page type but
@@ -94,13 +108,8 @@ export function Breadcrumbs({
         className={`text-ink-subtle m-0 flex list-none flex-wrap items-center gap-[6px] p-0 text-sm ${back ? "max-md:hidden" : ""}`.trim()}
         data-fo-breadcrumb-trail
       >
-        {crumbs.map((crumb, index) => (
-          <li className="flex items-center gap-[6px]" key={crumb.key}>
-            {index === 0 ? null : (
-              <span aria-hidden="true" className="text-rule">
-                {"/"}
-              </span>
-            )}
+        {crumbs.map((crumb) => (
+          <li className={CRUMB} key={crumb.key}>
             {crumb.current === true || crumb.href === undefined ? (
               <span
                 {...(crumb.current === true
