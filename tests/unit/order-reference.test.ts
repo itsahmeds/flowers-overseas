@@ -92,6 +92,9 @@ function recorder(failures: readonly (Error | undefined)[] = []): {
       if (/SELECT supply_model FROM country/.test(sql)) {
         return [{ supply_model: null }];
       }
+      if (/INSERT INTO purchase/.test(sql)) {
+        return [{ id: "3c2b1a09-8f7e-4d6c-9b5a-4e3d2c1b0a9f" }];
+      }
       if (/INSERT INTO "order"/.test(sql)) {
         inserts += 1;
         const failure = failures[inserts - 1];

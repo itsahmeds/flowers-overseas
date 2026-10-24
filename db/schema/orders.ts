@@ -144,6 +144,53 @@ export const orderTransition = pgTable(
 );
 
 /* -------------------------------------------------------------------------- */
+/* purchase                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Spec 010 §14 A-founder-2026-10-22 item 2 A (`0019_purchase`; TASK-347): the orders of one
+ * basket, bought together in one payment. `(id, buyer_currency_code, mode)` is the target of
+ * `"order"`'s composite key, so one purchase has one currency and one mode. At commit the
+ * deferred constraint trigger `purchase_total_check` (Drizzle does not model triggers) holds
+ * `total_minor` equal to the sum of its orders' `buyer_total_minor`, with at least one order.
+ * RLS: system (all) and admin (select) only.
+ */
+export const purchase = pgTable(
+  "purchase",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    mode: text("mode").notNull(),
+    buyerCurrencyCode: text("buyer_currency_code")
+      .notNull()
+      .references(() => currency.code, { onDelete: "restrict" }),
+    totalMinor: bigint("total_minor", { mode: "bigint" }).notNull(),
+    localeCode: text("locale_code")
+      .notNull()
+      .references(() => locale.code, { onDelete: "restrict" }),
+    customerId: uuid("customer_id").references(() => customer.id, {
+      onDelete: "restrict",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("purchase_id_buyer_currency_code_mode_key").on(
+      table.id,
+      table.buyerCurrencyCode,
+      table.mode,
+    ),
+    check("purchase_mode_check", sql.raw(`mode in ${valueList(orderModes)}`)),
+    check(
+      "purchase_buyer_currency_code_check",
+      sql.raw(`buyer_currency_code ~ '${CURRENCY_PATTERN}'`),
+    ),
+    check("purchase_total_minor_check", sql`${table.totalMinor} >= 0`),
+    index("purchase_customer_id_idx").on(table.customerId),
+  ],
+);
+
+/* -------------------------------------------------------------------------- */
 /* "order"                                                                    */
 /* -------------------------------------------------------------------------- */
 
@@ -199,9 +246,20 @@ export const order = pgTable(
       .notNull()
       .default("en")
       .references(() => locale.code, { onDelete: "restrict" }),
+    /**
+     * Spec 010 §14 A-founder-2026-10-22 (`0019`): the purchase this order was bought in, with
+     * the same currency and mode by the composite key below; backfilled one per older order.
+     */
+    purchaseId: uuid("purchase_id").notNull(),
   },
   (table) => [
     unique("order_public_token_key").on(table.publicToken),
+    foreignKey({
+      name: "order_purchase_id_buyer_currency_code_mode_purchase_fk",
+      columns: [table.purchaseId, table.buyerCurrencyCode, table.mode],
+      foreignColumns: [purchase.id, purchase.buyerCurrencyCode, purchase.mode],
+    }).onDelete("restrict"),
+    index("order_purchase_id_idx").on(table.purchaseId),
     /** Spec 010 §14 A2.2 (`0013`): one order per reference; `order_reference()` is SQL. */
     uniqueIndex("order_reference_idx").on(sql`order_reference(${table.id})`),
     unique("order_id_buyer_currency_code_key").on(
