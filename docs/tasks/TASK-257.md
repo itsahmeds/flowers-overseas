@@ -37,6 +37,7 @@ One dated bullet per escalation: the question, who it went to, the answer or `op
 
 - 2026-10-19 (`/plan-tasks`, to the founder; `open`). AC-38 orders the 3DS staging proof (TASK-256, blocked on the Stripe account) before any lifecycle task starts. Recommended: waive the start order, build on the fake, and hold the merge until TASK-256 passes. Until answered this row stays `blocked`.
 - 2026-10-22 (`/plan-tasks` (b), to the orchestrator; `open`). The founder's build order of 2026-10-22 says payments run in `test` on the fake provider until Stripe keys arrive, which reads as the answer to the AC-38 start-order escalation above (waive the start order, hold only TASK-266 and TASK-267 for the keys). The orchestrator confirms with the founder and unblocks this row and TASK-258.
+- 2026-10-24 (orchestrator bookkeeping): **answered.** Spec 013 §14 A-founder-2026-10-22 item 12 records the founder's answer ("for now build everything else"), and AC-38 as amended (PR 341) gates TASK-266 and the first `payments.stripe` switch-on, not this task's start or merge. The TASK-256 dependency is removed from the row.
 
 ## Progress
 
