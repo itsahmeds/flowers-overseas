@@ -1,9 +1,13 @@
 # Glossary and style guide — `de` (German)
 
-**Status: stub.** German copy in the repository today is an unreviewed English echo written by
-`pnpm i18n:draft` (`source: "machine"`, `reviewed: false`), so `de` is non-indexable and tagged
-`beta` — by design, not by omission (spec 003 §13 Q7, Q10). The first native review pass
-(`plan/13` B12) fills the empty sections below **and records its decisions here** so the second
+**Status: agent drafts, unreviewed.** German copy in the repository is an agent-written draft
+(spec 003 §14 A15; TASK-185), committed as `source: "machine"`, `reviewed: false`, with the
+`sourceHash` of the English it translates, so `de` stays non-indexable, hidden and tagged `beta`
+until a native reviewer attests it. It uses `Sie`. What is never drafted (legal, consent and
+price-display copy, sympathy, funeral and All Saints' copy, slugs and names) is listed in
+`content/i18n/draft-policy.json`, and `pnpm i18n:check` check 10 fails any other key still
+identical to English. The first native review pass (`plan/13` B12) reads `reviewBeforeOrders` in
+that file first, fills the empty sections below **and records its decisions here** so the second
 pass inherits them instead of re-deciding per string.
 
 Read `glossary.en.md` first: brand terms, the relay vocabulary, tone and the taboo list apply
