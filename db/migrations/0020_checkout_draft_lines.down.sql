@@ -62,7 +62,7 @@ BEGIN
 END
 $lines$;
 
-DROP TABLE public.checkout_draft_line;
+DROP TABLE IF EXISTS public.checkout_draft_line;
 
 ALTER TABLE public.checkout_draft
   DROP CONSTRAINT checkout_draft_pending_notice_check,
