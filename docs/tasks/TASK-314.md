@@ -43,6 +43,7 @@ here.
 - 2026-10-24: `ladderOverrides` on `DestinationPricing` (schema + PL data), override-aware expansion in `prices.data.ts` (module load refuses an unknown or missing tier key), `catalogue:check` band mode holds override SKUs to their own band and `RECORDED_BAND_CHANGES` transcribes it; seed projection and snapshot regenerated (six PL cells). Draft PR #395.
 - 2026-10-24: T-38 to T-40 in `tests/unit/catalogue-rose-overrides.test.ts`; runbook §9 "Changes made in place"; tests that pinned Amber Hour at 229/259 zł moved to 239/329 zł; PDP schema fixtures regenerated. 18 mutations each watched red. Rebased on main c81edd9e, gates:cheap green. Next: CI on ci:full, Linux visual baselines for the Amber Hour product pages.
 - 2026-10-24 evening (finisher 2): reworded the 107-character commit subject (commitlint header-max-length and subject-case), rebased onto `5a2e9f02` (map regenerated); CI fired on the new head.
+- 2026-10-25 (finisher 3): lighthouse on 474703b5 was LCP 2112-2191 ms on `/en-gb`, `/de`, `/pl` home only, which this diff does not render (main's own run on f947e149: 1991-2153 ms there; runner noise). Rebased onto `8ddc3e6f` (rows and map regenerated); visual-baselines run 40130139431 re-rendered this PR's 14 images byte-identical, so the files stand; the manifest is main's plus those 14 hashes. Next: CI on head.
 
 ## Result
 
