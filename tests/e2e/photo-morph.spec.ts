@@ -437,8 +437,15 @@ test.describe("T-9 / AC-9: the product page's LCP with and without the morph", (
       }
       const response = await route.fetch();
       const body = await response.text();
+      // The body is re-sent decoded, so the encoding and length headers go with the old bytes.
+      const headers = Object.fromEntries(
+        Object.entries(response.headers()).filter(
+          ([name]) => !/^content-(encoding|length)$/iu.test(name),
+        ),
+      );
       await route.fulfill({
         response,
+        headers,
         body: morph
           ? body
           : body.replace(/<style data-fo-morph="">[\s\S]*?<\/style>/u, ""),
