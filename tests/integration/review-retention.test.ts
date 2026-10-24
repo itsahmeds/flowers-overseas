@@ -1,5 +1,5 @@
 /**
- * T-28 (spec 012b §8, AC-28; migration `0019`'s `review_attestation` retention row; TASK-293): the
+ * T-28 (spec 012b §8, AC-28; migration `0023`'s `review_attestation` retention row; TASK-293): the
  * `retention.sweep` handler for the review ledger, on an injected clock.
  *
  * Three years (the policy's 1095 days) after an attester's `admin_profile.deactivated_at`, every

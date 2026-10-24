@@ -14,24 +14,25 @@ task actually touches.
 |---|---|---|---|
 | `admin` | Public barrel for `admin` (admin queries and actions) | 012 | `integration/admin-flags.test.ts`, `integration/admin-users.test.ts` +6 |
 | `analytics` | Public barrel for `analytics` (Consent Mode v2 + the… | 004, 023 | `unit/consent-bootstrap.test.tsx` |
-| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +83 |
+| `catalog` | The only import path into the catalogue and pricing… | 005 | `contract/catalog-static-providers-ecb-build.test.ts`, `contract/catalog-static-providers.test.ts` +88 |
 | `checkout` | Checkout's import path | 010 | `unit/checkout-address.test.ts`, `unit/checkout-boundary.test.ts` +6 |
-| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/info-page-head.test.tsx` +6 |
+| `content` | The only import path into the content module: the trust… | 041 | `e2e/info-pages.spec.ts`, `unit/catalog-routes.test.ts` +9 |
 | `customers` | Public barrel for `customers` (customers, recipients,… | 019 | — |
-| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +37 |
-| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +101 |
-| `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +2 |
+| `geo` | The only import path into the geo module | 007, 002, 009 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +41 |
+| `i18n` | The only import path for the i18n module | 003 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +104 |
+| `notifications` | Public barrel for `notifications` (email + WhatsApp… | 017 | `contract/resend-mailer.test.ts`, `integration/auth-after.test.ts` +3 |
 | `orders` | Public barrel for `orders` (state machine, order… | 015, 016 | — |
-| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | — |
+| `partners` | Public barrel for `partners` (fulfilment partners,… | 011, 026 | `unit/florist-surface.test.ts` |
 | `payments` | Public barrel for `payments` (PaymentProvider… | 013, 014 | `contract/payment-provider.test.ts`, `contract/stripe-adapter.test.ts` +7 |
-| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +27 |
-| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +51 |
+| `seo` | Indexability rule engine, canonical builder, robots… | 007 | `contract/pdp-schema.test.ts`, `contract/seo-schema-fixtures.test.ts` +29 |
+| `ui` | The only import path for the design system (spec 004 §2… | 004 | `contract/pdp-schema.test.ts`, `e2e/deferred-chunks.spec.ts` +53 |
 
 ## Config (`src/config/`)
 
 | File | Purpose | Spec |
 |---|---|---|
 | `address-formats.ts` | Address formats per destination country | 003 |
+| `basket.ts` | The basket's two numbers | 010 |
 | `card-message.ts` | The printed card's one limit (spec 004 §14… | 004 |
 | `catalogue/addons.data.ts` | The six Phase 0 add-ons (`plan/10` §2.1 "6 (chocolates,… | 005 |
 | `catalogue/categories.data.ts` | The 23 seeded categories (`plan/10` §2.1 "5 product… | 005 |
@@ -52,6 +53,7 @@ task actually touches.
 | `countries.ts` | Destination-country registry (spec 004 §2 "Everything… | 004 |
 | `currencies.ts` | Currency configuration | 003 |
 | `feature-flags.ts` | The feature-flag registry (AC-14) | 012 |
+| `florists.ts` | The florist surface's configuration (spec 011 §5.2… | 011 |
 | `freshness-claim.ts` | Freshness scan | 009 |
 | `honesty.ts` | Relay-language check, and the claim, scale and… | 041 |
 | `info-pages.ts` | The info-page registry | 041 |
@@ -105,6 +107,7 @@ task actually touches.
 | `[locale]/country-listing.tsx` | The country category's and the country occasion's head… | 008 |
 | `[locale]/country-shop-root.tsx` | The country shop root's head and body, once, for the… | 007 |
 | `[locale]/error.tsx` | Localised 500 boundary | 003 |
+| `[locale]/info-page-route.tsx` | One spec 041 info page's head and body, once, for the… | 041 |
 | `[locale]/layout.tsx` | The document layout for every localised URL (spec 003… | 003 |
 | `[locale]/page.tsx` | `/{locale}` placeholder home (spec 003 §5.3, §5.4;… | 003 |
 | `[locale]/route-header.tsx` | The commerce header as one route draws it (spec 043 §2… | 043 |
@@ -136,6 +139,17 @@ task actually touches.
 | `api/internal/mail-capture/route.ts` | GET: captured sign-in mail for e2e | 012 |
 | `api/reminders/route.ts` | `POST /api/reminders` — the occasion-reminder signup… | 004 |
 | `api/send/[locale]/route.ts` | `GET /api/send/{locale}` — the home sentence picker's… | 004 |
+| `demo/vendor-inbox/api/auth/[...nextauth]/route.ts` | Every florist Auth.js endpoint answers 404 | 011 |
+| `demo/vendor-inbox/api/auth/confirm/route.ts` | POST: confirm the florist sign-in, use the token (AC-19) | 011 |
+| `demo/vendor-inbox/api/auth/request/route.ts` | POST: ask for a florist link, one 303 for every address… | 011 |
+| `demo/vendor-inbox/api/auth/sign-out/route.ts` | POST: florist sign-out | 011 |
+| `demo/vendor-inbox/api/language/route.ts` | POST: store the florist's language (AC-32) | 011 |
+| `demo/vendor-inbox/chrome.tsx` | The florist pages' shared frame: header, language… | 011 |
+| `demo/vendor-inbox/layout.tsx` | Florist document: the member's language, noindex | 011 |
+| `demo/vendor-inbox/page.tsx` | GET {base}: the florist inbox (signed in; no session… | 011 |
+| `demo/vendor-inbox/request.ts` | The florist request's context and language, read once… | 011 |
+| `demo/vendor-inbox/sign-in/confirm/page.tsx` | GET {base}/sign-in/confirm: one Continue button, uses… | 011 |
+| `demo/vendor-inbox/sign-in/page.tsx` | GET {base}/sign-in: the florist sign-in form and its… | 011 |
 | `global-error.tsx` | The last-resort 500 document (spec 003 §5.3 "and… | 003 |
 | `layout.tsx` | App-root layout | 003 |
 | `not-found.tsx` | The `.label` metadata line: the status code this… | 003 |
@@ -158,6 +172,7 @@ task actually touches.
 | `check-no-db-imports.ts` | `check:no-db` | `pnpm check:no-db` |
 | `check-no-literal-disable.ts` | `check:no-literal-disable` | `pnpm check:no-literal-disable` (spec 001 §14 A20,… |
 | `check-no-vercel-env.ts` | `check:no-vercel-env` | Host-agnostic env gate |
+| `check-relay-language.ts` | `check:relay-language` | `pnpm check:relay-language`: the catalogue scan of spec… |
 | `client-js-budget.ts` | `budget:client-js` | `pnpm budget:client-js` — the AC-27 measurement (spec… |
 | `cloudflare/apply-zone-settings.ts` | `cloudflare:check` | Zone apply and check |
 | `cloudflare/edge.ts` | — | Edge as code |
@@ -207,14 +222,14 @@ task actually touches.
 
 | Layer | Files |
 |---|---|
-| `tests/unit/` | 352 |
-| `tests/integration/` | 44 |
+| `tests/unit/` | 362 |
+| `tests/integration/` | 51 |
 | `tests/contract/` | 24 |
-| `tests/e2e/` | 68 |
+| `tests/e2e/` | 70 |
 | `tests/a11y/` | 15 |
 | `tests/visual/` | 23 |
 | `tests/dev-os/` | 1 |
-| `tests/fixtures/` | 335 |
+| `tests/fixtures/` | 342 |
 | `tests/msw/` | 4 |
 
 ## Where does X live?

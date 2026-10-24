@@ -1,6 +1,6 @@
 /**
  * T-10, T-11 (integration half), T-12: the review ledger on a migrated scratch database (spec
- * 012b §2.4, §5.1 item 2, AC-10, AC-11, AC-12; migration `0019_review_attestation`; TASK-293).
+ * 012b §2.4, §5.1 item 2, AC-10, AC-11, AC-12; migration `0023_review_attestation`; TASK-293).
  *
  *  - T-10 (AC-10): `UPDATE`, `DELETE` and `TRUNCATE` on the ledger raise; a raw write of
  *    `product_translation.reviewed` or `media_asset.review_state` raises `REVIEW_DIRECT_WRITE`;
