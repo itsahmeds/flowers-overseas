@@ -254,9 +254,10 @@ describe("src/modules/ui barrel", () => {
         // spec 043 §5.2 (TASK-290): the stable photo-first partition every product list uses.
         "photoFirst",
         "ListingSortSchema",
-        // TASK-187 (spec 004 A23 R8, A10): the sort form on its own, placed under the grid as
-        // "Change the order" on the shop root and the country category. A Server Component GET
-        // form over `LISTING_SORTS`, not a generic form control.
+        // TASK-187, redrawn by TASK-289 (spec 043 §14 A-founder-2026-10-22 item 3): the compact
+        // sort pill on the listing's toolbar row. A Server Component GET form over
+        // `LISTING_SORTS`, not a generic form control; its chevron is the "How we sort" one too.
+        "ChevronDown",
         "ListingSortForm",
         "ListingToolbar",
         "MediaSlotSchema",

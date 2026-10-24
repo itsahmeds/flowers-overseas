@@ -48,6 +48,23 @@ const BREADCRUMB_OFFSET = "mt-(--space-md2)";
 const BACK_LINK_OFFSET = "mt-[14px] md:mt-(--space-md2)";
 
 /**
+ * The country listings' quiet trail (spec 043 §14 A-founder-2026-10-22 item 1, revised
+ * 2026-10-24; `.lh-crumbs`): 16 px under the header from `md` up (14 below), `--text-fine` in
+ * `--color-ink-3`, no underline at rest and one under the hovered or focused crumb, the current
+ * crumb in ink-2, the separator in `--color-border-strong`; below `md` the parent crumb only, as
+ * a 32 px back link at `--text-fine`.
+ */
+const QUIET = {
+  offset: "mt-[14px] md:mt-[16px]",
+  trail: "text-ink-subtle text-fine leading-[20px]",
+  crumb:
+    "flex items-center gap-[6px] after:text-border-strong after:content-['/'_/_''] last:after:content-none",
+  link: "text-ink-subtle hover:text-ink focus-visible:text-ink inline-flex min-h-[24px] items-center no-underline underline-offset-4 hover:underline focus-visible:underline",
+  current: "text-ink-muted",
+  back: "text-ink-subtle hover:text-ink inline-flex min-h-[32px] items-center gap-[6px] text-fine md:hidden",
+} as const;
+
+/**
  * One crumb and the separator that **follows** it (TASK-249, QA Q1-22). The `/` closes the crumb
  * before it rather than opening the one after it, so where the trail wraps the separator ends a
  * line and never starts one: no line can read "/ Amber Hour". `li` is a flex row without wrap, so
@@ -97,6 +114,8 @@ export interface BreadcrumbsProps {
   readonly className?: string;
   /** Below `md`: the back link (default) or the trail (the product page). */
   readonly phone?: BreadcrumbsPhone;
+  /** `quiet`: the country listings' head (spec 043 item 1). */
+  readonly tone?: "default" | "quiet";
 }
 
 export function Breadcrumbs({
@@ -104,31 +123,45 @@ export function Breadcrumbs({
   label,
   className,
   phone = "back",
+  tone = "default",
 }: BreadcrumbsProps): ReactElement {
+  const quiet = tone === "quiet";
   const ancestor = breadcrumbAncestor(crumbs);
   const back =
     phone === "back" && ancestor?.href !== undefined ? ancestor : undefined;
   return (
     <nav
       aria-label={label}
-      className={[back ? BACK_LINK_OFFSET : BREADCRUMB_OFFSET, className]
+      className={[
+        quiet ? QUIET.offset : back ? BACK_LINK_OFFSET : BREADCRUMB_OFFSET,
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
       data-fo-breadcrumb
       data-fo-breadcrumb-phone={back ? "back" : "trail"}
     >
       <ol
-        className={`text-ink-subtle m-0 flex list-none flex-wrap items-center gap-[6px] p-0 text-sm ${back ? "max-md:hidden" : ""}`.trim()}
+        className={`${quiet ? QUIET.trail : "text-ink-subtle text-sm"} m-0 flex list-none flex-wrap items-center gap-[6px] p-0 ${back ? "max-md:hidden" : ""}`.trim()}
         data-fo-breadcrumb-trail
       >
         {crumbs.map((crumb, index) => (
-          <li className={CRUMB} key={crumbKey(crumb, index)}>
+          <li
+            className={quiet ? QUIET.crumb : CRUMB}
+            key={crumbKey(crumb, index)}
+          >
             {crumb.current === true || crumb.href === undefined ? (
               <span
                 {...(crumb.current === true
                   ? { "aria-current": "page" as const }
                   : {})}
-                className={crumb.current === true ? "text-ink" : undefined}
+                className={
+                  crumb.current === true
+                    ? quiet
+                      ? QUIET.current
+                      : "text-ink"
+                    : undefined
+                }
               >
                 {crumb.label}
               </span>
@@ -136,7 +169,11 @@ export function Breadcrumbs({
               /* At least 24 px tall: every link in `<main>` clears WCAG 2.2's 24 × 24 target
                  (spec 004 §14 A23 clause 9, AC-43); the text alone is 21 px. */
               <a
-                className="text-ink-muted hover:text-link-strong inline-flex min-h-[24px] items-center underline underline-offset-4"
+                className={
+                  quiet
+                    ? QUIET.link
+                    : "text-ink-muted hover:text-link-strong inline-flex min-h-[24px] items-center underline underline-offset-4"
+                }
                 href={crumb.href}
               >
                 {crumb.label}
@@ -147,7 +184,11 @@ export function Breadcrumbs({
       </ol>
       {back ? (
         <a
-          className="text-ink-muted hover:text-link-strong inline-flex min-h-(--target-min) items-center gap-[4px] text-sm md:hidden"
+          className={
+            quiet
+              ? QUIET.back
+              : "text-ink-muted hover:text-link-strong inline-flex min-h-(--target-min) items-center gap-[4px] text-sm md:hidden"
+          }
           data-fo-back-link
           href={back.href}
         >
