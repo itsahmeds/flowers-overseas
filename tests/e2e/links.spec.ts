@@ -349,7 +349,7 @@ test.describe("TASK-173: every chrome control is a link that answers 200, or is 
           "For florists",
           "Add-ons",
           "Imprint",
-          "Withdrawal and refunds",
+          // "Withdrawal and refunds" has a page since TASK-183 and is a live footer link above.
           "Search flowers, occasions, a city or a country",
         ]) {
           for (const region of ["[data-fo-header]", "footer"]) {
